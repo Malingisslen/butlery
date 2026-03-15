@@ -44,6 +44,7 @@ class MockStorageRepository extends Mock implements StorageRepository {
   // - getReference()
   // - createReference()
   // - compressImage()
+  // - compressImageBytes()
   // - formatBytes()
   //
   // These can all be stubbed with when() in tests

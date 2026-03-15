@@ -233,7 +233,8 @@ class _AddItemDialogState extends State<_AddItemDialog> {
     if (_formKey.currentState!.validate()) {
       final item = UnifiedShoppingItem.basic(
         name: _nameController.text.trim(),
-        amount: double.tryParse(_amountController.text) ?? 1.0,
+        amount:
+            double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 1.0,
         unit: _unitController.text.trim(),
         category: _categoryController.text.trim().isEmpty
             ? ShoppingCategory.other
@@ -361,7 +362,8 @@ class _EditItemDialogState extends State<_EditItemDialog> {
     if (_formKey.currentState!.validate()) {
       final item = widget.item.copyWith(
         name: _nameController.text.trim(),
-        amount: double.tryParse(_amountController.text) ?? widget.item.amount,
+        amount: double.tryParse(_amountController.text.replaceAll(',', '.')) ??
+            widget.item.amount,
         unit: _unitController.text.trim(),
         category: _categoryController.text.trim().isEmpty
             ? ShoppingCategory.other
@@ -371,7 +373,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
             : _noteController.text.trim(),
         estimatedPrice: _priceController.text.trim().isEmpty
             ? null
-            : double.tryParse(_priceController.text),
+            : double.tryParse(_priceController.text.replaceAll(',', '.')),
         priority: widget.item.priority,
       );
 

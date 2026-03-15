@@ -124,17 +124,56 @@ class ShoppingItemManagementModule {
     }
 
     try {
-      // Use batch repository method for atomic Firebase operation
-      await repository.addItemsBatch(activeListId, items);
-
-      // Update local state with all items at once
       final listIndex = lists.indexWhere((list) => list.id == activeListId);
-      if (listIndex >= 0) {
-        lists[listIndex] = lists[listIndex].copyWith(
-          items: [...lists[listIndex].items, ...items],
-        );
-        notifyListeners();
+      if (listIndex == -1) return false;
+
+      final existingItems = lists[listIndex].items;
+      final itemsToAdd = <UnifiedShoppingItem>[];
+      final itemsToUpdate = <UnifiedShoppingItem>[];
+
+      // Dedup: merge quantities for matching items (same name, compatible units)
+      for (final newItem in items) {
+        final normalizedName = newItem.name.trim().toLowerCase();
+        final matchIndex = existingItems.indexWhere((existing) {
+          final existingName = existing.name.trim().toLowerCase();
+          if (existingName != normalizedName) return false;
+          // Compatible units: same unit or both empty
+          final unitsMatch = existing.unit.trim().toLowerCase() ==
+              newItem.unit.trim().toLowerCase();
+          return unitsMatch;
+        });
+
+        if (matchIndex >= 0) {
+          // Merge: sum amounts into existing item
+          final existing = existingItems[matchIndex];
+          final merged =
+              existing.copyWith(amount: existing.amount + newItem.amount);
+          itemsToUpdate.add(merged);
+        } else {
+          itemsToAdd.add(newItem);
+        }
       }
+
+      // Apply updates for merged items
+      for (final updated in itemsToUpdate) {
+        await repository.updateItem(activeListId, updated);
+      }
+
+      // Add genuinely new items
+      if (itemsToAdd.isNotEmpty) {
+        await repository.addItemsBatch(activeListId, itemsToAdd);
+      }
+
+      // Update local state
+      final currentItems =
+          List<UnifiedShoppingItem>.from(lists[listIndex].items);
+      for (final updated in itemsToUpdate) {
+        final idx = currentItems.indexWhere((i) => i.id == updated.id);
+        if (idx >= 0) currentItems[idx] = updated;
+      }
+      currentItems.addAll(itemsToAdd);
+      lists[listIndex] = lists[listIndex].copyWith(items: currentItems);
+      notifyListeners();
 
       return true;
     } catch (e) {
@@ -184,9 +223,8 @@ class ShoppingItemManagementModule {
         priority: priority ?? currentItem.priority,
       );
 
-      // Update in Firebase using repository's removeItem + addItem pattern
-      await repository.removeItem(activeListId, itemId);
-      await repository.addItem(activeListId, updatedItem);
+      // Atomic update in Firebase
+      await repository.updateItem(activeListId, updatedItem);
 
       // Update local state
       final updatedItems =
@@ -266,10 +304,9 @@ class ShoppingItemManagementModule {
     lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
     notifyListeners();
 
-    // BACKGROUND SYNC: Update Firebase asynchronously
+    // BACKGROUND SYNC: Atomic update to Firebase
     try {
-      await repository.removeItem(activeListId, itemId);
-      await repository.addItem(activeListId, updatedItem);
+      await repository.updateItem(activeListId, updatedItem);
       return true;
     } catch (e) {
       // ROLLBACK: Revert to original state on failure
@@ -302,12 +339,90 @@ class ShoppingItemManagementModule {
     return ShoppingCategory.other;
   }
 
-  Future<bool> clearCompletedItems() async => true;
-  Future<bool> uncheckAllItems() async => true;
+  Future<bool> clearCompletedItems() async {
+    final activeListId = getActiveListId();
+    if (activeListId == null) return false;
+
+    final listIndex = lists.indexWhere((list) => list.id == activeListId);
+    if (listIndex == -1) return false;
+
+    final boughtItems =
+        lists[listIndex].items.where((item) => item.bought).toList();
+    if (boughtItems.isEmpty) return true;
+
+    // Optimistic UI: remove from local state immediately
+    final remainingItems =
+        lists[listIndex].items.where((item) => !item.bought).toList();
+    lists[listIndex] = lists[listIndex].copyWith(items: remainingItems);
+    notifyListeners();
+
+    // Background: batch remove from Firebase
+    try {
+      final itemIds = boughtItems.map((item) => item.id).toList();
+      await repository.removeItemsBatch(activeListId, itemIds);
+      return true;
+    } catch (e) {
+      // Rollback on failure
+      lists[listIndex] = lists[listIndex].copyWith(
+        items: [...remainingItems, ...boughtItems],
+      );
+      notifyListeners();
+      AppLogger.error('Failed to clear completed items: $e');
+      return false;
+    }
+  }
+
+  Future<bool> uncheckAllItems() async {
+    final activeListId = getActiveListId();
+    if (activeListId == null) return false;
+
+    final listIndex = lists.indexWhere((list) => list.id == activeListId);
+    if (listIndex == -1) return false;
+
+    final checkedItems =
+        lists[listIndex].items.where((item) => item.bought).toList();
+    if (checkedItems.isEmpty) return true;
+
+    // Optimistic UI: uncheck all in local state
+    final originalItems =
+        List<UnifiedShoppingItem>.from(lists[listIndex].items);
+    final updatedItems = lists[listIndex].items.map((item) {
+      return item.bought ? item.copyWith(bought: false) : item;
+    }).toList();
+    lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
+    notifyListeners();
+
+    // Background: update checked items in Firebase (parallel)
+    try {
+      await Future.wait(
+        checkedItems.map((item) =>
+            repository.updateItem(activeListId, item.copyWith(bought: false))),
+      );
+      return true;
+    } catch (e) {
+      // Rollback on failure
+      lists[listIndex] = lists[listIndex].copyWith(items: originalItems);
+      notifyListeners();
+      AppLogger.error('Failed to uncheck all items: $e');
+      return false;
+    }
+  }
+
   Future<bool> addItemsFromRecipe({
     required String recipeId,
     required String recipeName,
     required List<dynamic> items,
-  }) async =>
-      true;
+  }) async {
+    if (items.isEmpty) return true;
+
+    final shoppingItems = items.map((item) {
+      if (item is UnifiedShoppingItem) return item;
+      return UnifiedShoppingItem(
+        name: item.toString(),
+        amount: 1,
+      );
+    }).toList();
+
+    return addItemsBatchToActiveList(shoppingItems);
+  }
 }

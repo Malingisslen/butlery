@@ -47,6 +47,12 @@ abstract class AuthRepository {
   /// Update the current user's password (requires recent authentication).
   Future<void> updatePassword(String newPassword);
 
+  /// Send email verification to the current user.
+  Future<void> sendEmailVerification();
+
+  /// Reload current user data from Firebase (to check emailVerified status).
+  Future<void> reloadCurrentUser();
+
   /// Send verification email to new address before updating (requires recent authentication).
   Future<void> verifyBeforeUpdateEmail(String newEmail);
 }

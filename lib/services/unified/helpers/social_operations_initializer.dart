@@ -1,5 +1,7 @@
 // lib/services/unified/helpers/social_operations_initializer.dart
 
+import 'dart:async';
+
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
@@ -94,21 +96,39 @@ class SocialOperationsInitializer {
     }
   }
 
+  /// Max retry attempts to prevent unbounded recursion.
+  static const _maxRetries = 5;
+
   /// Schedule retry initialization after delay.
-  static void scheduleRetry(
+  /// Returns a [Timer] so callers can cancel on dispose.
+  /// [onTimerCreated] is called for each subsequent retry timer so
+  /// the caller can track the latest pending timer for cancellation.
+  static Timer? scheduleRetry(
     dynamic parentService,
     void Function(SocialRecipeOperations) onSuccess,
-    Duration delay,
-  ) {
-    Future.delayed(delay, () {
+    Duration delay, {
+    int attempt = 0,
+    void Function(Timer)? onTimerCreated,
+  }) {
+    if (attempt >= _maxRetries) {
+      AppLogger.error(
+          '❌ Max social init retries ($_maxRetries) reached, giving up');
+      return null;
+    }
+
+    final timer = Timer(delay, () {
       final operations = retryWithRealRepositories(parentService);
       if (operations != null) {
         onSuccess(operations);
       } else {
-        // Retry again with exponential backoff
-        scheduleRetry(
-            parentService, onSuccess, Duration(seconds: delay.inSeconds * 2));
+        // Retry with exponential backoff using Duration multiplication
+        final nextTimer = scheduleRetry(parentService, onSuccess, delay * 2,
+            attempt: attempt + 1, onTimerCreated: onTimerCreated);
+        if (nextTimer != null) {
+          onTimerCreated?.call(nextTimer);
+        }
       }
     });
+    return timer;
   }
 }

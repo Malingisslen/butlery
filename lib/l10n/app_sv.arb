@@ -5307,6 +5307,7 @@
   "errorDescriptionTooLong": "Beskrivning för lång",
   "errorGroupNameRequired": "Gruppnamn krävs",
   "errorGroupNameExists": "Det här gruppnamnet finns redan",
+  "errorOnlyAdminCanAddMembers": "Endast administratör kan lägga till medlemmar",
   "errorOnlyAdminCanRemoveMembers": "Endast administratör kan ta bort medlemmar",
   "errorUseLeaveGroupToLeave": "Använd \"Lämna grupp\" för att lämna konversationen",
   "errorOnlyAdminCanChangeGroupName": "Endast administratör kan ändra gruppnamn",
@@ -8059,5 +8060,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "emailVerificationTitle": "Verifiera din e-post",
+  "emailVerificationMessage": "Vi har skickat ett verifieringsmail till {email}.",
+  "@emailVerificationMessage": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "emailVerificationResend": "Skicka igen",
+  "emailVerificationContinue": "Forts\u00e4tt \u00e4nd\u00e5",
+  "emailVerificationSuccess": "E-post verifierad!"
 }

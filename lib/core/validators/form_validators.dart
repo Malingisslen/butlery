@@ -63,6 +63,9 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// final passwordValidator = FormValidators.strongPassword();
 /// ```
 class FormValidators {
+  /// Minimum password length (NIST SP 800-63B Rev 4 — no complexity rules).
+  static const int minPasswordLength = 8;
+
   /// Regex patterns
   static final RegExp _urlRegex = RegExp(
     r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
@@ -282,8 +285,8 @@ class FormValidators {
       if (value == null || value.isEmpty) {
         return AppLocale.current.validationPasswordRequired;
       }
-      if (isSignUp && value.length < 6) {
-        return AppLocale.current.validationPasswordTooShort;
+      if (isSignUp && value.length < minPasswordLength) {
+        return AppLocale.current.validationPasswordMinEight;
       }
       return null;
     };
@@ -349,20 +352,8 @@ class FormValidators {
         return AppLocale.current.validationPasswordRequired;
       }
 
-      if (value.length < 8) {
+      if (value.length < minPasswordLength) {
         return AppLocale.current.validationPasswordMinEight;
-      }
-
-      if (!value.contains(RegExp(r'[A-Z]'))) {
-        return AppLocale.current.validationPasswordNeedsUppercase;
-      }
-
-      if (!value.contains(RegExp(r'[a-z]'))) {
-        return AppLocale.current.validationPasswordNeedsLowercase;
-      }
-
-      if (!value.contains(RegExp(r'[0-9]'))) {
-        return AppLocale.current.validationPasswordNeedsDigit;
       }
 
       return null;

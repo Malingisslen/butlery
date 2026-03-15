@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/permission_helper.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -36,7 +37,7 @@ enum RecipeSyncStatus {
 }
 
 /// Personal recipe CRUD operations module handling recipe creation, updates, import/export, and local storage.
-class PersonalRecipeModule {
+class PersonalRecipeModule with StreamManagementMixin {
   final RecipeRepository _recipeRepository;
   final UserRepository _userRepository;
   final JsonCacheHelper Function() _getCacheHelper;
@@ -287,8 +288,7 @@ class PersonalRecipeModule {
     await _saveToCache(recipe);
 
     if (kIsWeb) {
-      final syncSuccess =
-          await _syncRecipeToFirebaseAwaited(recipe, 'retag');
+      final syncSuccess = await _syncRecipeToFirebaseAwaited(recipe, 'retag');
       if (!syncSuccess) {
         throw Exception('Failed to sync retagged recipe to Firebase');
       }
@@ -670,9 +670,6 @@ class PersonalRecipeModule {
   /// Prevents indefinite hangs on slow/unavailable Firebase.
   static const _syncTimeout = Duration(seconds: 30);
 
-  /// Tracks retry attempts per recipe to enforce limits.
-  final Map<String, int> _backgroundRetryCount = {};
-
   /// BUG-003 FIX: Synchronous Firebase sync for web platform.
   /// On web, the local cache (Drift) is stubbed, so we MUST await Firebase
   /// to ensure recipes actually persist. Returns true if sync succeeded.
@@ -723,8 +720,13 @@ class PersonalRecipeModule {
 
   void _startBackgroundRecipeSync(Recipe recipe, String operation,
       {int retryAttempt = 0}) {
+    // Cancel any pending retry for this recipe — new sync supersedes old retry
+    cancelNamedTimer('retry_${recipe.id}');
+
     // HIGH-10: Mark as syncing when starting
     _syncStatus[recipe.id] = RecipeSyncStatus.syncing;
+
+    final recipeId = recipe.id;
 
     // Use Future.microtask to ensure this runs asynchronously without blocking
     Future.microtask(() async {
@@ -756,40 +758,53 @@ class PersonalRecipeModule {
         if (success) {
           AppLogger.success(
               '✅ Background $operation completed for: ${recipe.title}');
-          // HIGH-10: Mark as synced and clear retry counter on success
-          _syncStatus[recipe.id] = RecipeSyncStatus.synced;
+          // HIGH-10: Mark as synced on success
+          _syncStatus[recipeId] = RecipeSyncStatus.synced;
           // HIGH-11: Record sync timestamp for verification
-          _lastSyncedAt[recipe.id] = DateTime.now();
-          _backgroundRetryCount.remove(recipe.id);
+          _lastSyncedAt[recipeId] = DateTime.now();
         } else {
           AppLogger.error(
               '❌ Background $operation failed for: ${recipe.title}');
           // HIGH-10: Mark as pending for retry
-          _syncStatus[recipe.id] = RecipeSyncStatus.pending;
-          // Recipe is still in cache for retry later
-          _scheduleRetrySync(recipe, operation, retryAttempt);
+          _syncStatus[recipeId] = RecipeSyncStatus.pending;
+          // Pass ID instead of recipe object to avoid stale closure data loss
+          _scheduleRetrySync(recipeId, operation, retryAttempt);
         }
       } catch (e) {
         AppLogger.error(
             '❌ Background $operation error for ${recipe.title}: $e');
         // HIGH-10: Mark as pending for retry
-        _syncStatus[recipe.id] = RecipeSyncStatus.pending;
-        _scheduleRetrySync(recipe, operation, retryAttempt);
+        _syncStatus[recipeId] = RecipeSyncStatus.pending;
+        _scheduleRetrySync(recipeId, operation, retryAttempt);
       }
     });
   }
 
-  void _scheduleRetrySync(Recipe recipe, String operation, int currentAttempt) {
+  /// Loads the latest recipe from cache by ID.
+  /// Returns null if the recipe was deleted or cache read fails.
+  Future<Recipe?> _loadRecipeFromCache(String recipeId) async {
+    try {
+      final data = await _cacheHelper.loadJson(recipeId);
+      if (data == null) return null;
+      return Recipe.fromJson(data);
+    } catch (e) {
+      AppLogger.error('Failed to load recipe $recipeId from cache: $e');
+      return null;
+    }
+  }
+
+  void _scheduleRetrySync(
+      String recipeId, String operation, int currentAttempt) {
     final nextAttempt = currentAttempt + 1;
 
     // Enforce maximum retry limit
     if (nextAttempt > _maxBackgroundRetries) {
       AppLogger.error(
         '❌ Max retry attempts ($_maxBackgroundRetries) reached for '
-        '$operation: ${recipe.title}. Recipe remains in cache for manual sync.',
+        '$operation: $recipeId. Recipe remains in cache for manual sync.',
       );
       // HIGH-10: Mark as failed when max retries exceeded
-      _syncStatus[recipe.id] = RecipeSyncStatus.failed;
+      _syncStatus[recipeId] = RecipeSyncStatus.failed;
       return;
     }
 
@@ -799,12 +814,34 @@ class PersonalRecipeModule {
 
     AppLogger.info(
       '🔄 Scheduling retry $nextAttempt/$_maxBackgroundRetries '
-      'for $operation: ${recipe.title} in ${delay.inSeconds}s',
+      'for $operation: $recipeId in ${delay.inSeconds}s',
     );
 
-    Future.delayed(delay, () {
-      _startBackgroundRecipeSync(recipe, operation, retryAttempt: nextAttempt);
+    // Store as named timer so it can be cancelled on dispose or superseded
+    final timer = Timer(delay, () async {
+      try {
+        // Re-read fresh recipe from cache to avoid syncing stale data
+        final freshRecipe = await _loadRecipeFromCache(recipeId);
+        if (freshRecipe == null) {
+          AppLogger.info(
+            '🔄 Recipe $recipeId no longer in cache, skipping retry',
+          );
+          _syncStatus.remove(recipeId);
+          return;
+        }
+        _startBackgroundRecipeSync(freshRecipe, operation,
+            retryAttempt: nextAttempt);
+      } catch (e) {
+        AppLogger.error('❌ Retry sync error for $recipeId: $e');
+        _syncStatus[recipeId] = RecipeSyncStatus.failed;
+      }
     });
+    addTimer(timer, name: 'retry_$recipeId');
+  }
+
+  /// Cancels all pending retry timers. Call on dispose.
+  void cancelPendingRetries() {
+    disposeStreamResources();
   }
 
   /// Applies automatic tagging to a recipe if tagging service is available.

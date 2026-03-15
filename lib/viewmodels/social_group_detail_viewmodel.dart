@@ -304,7 +304,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  /// Transfer group ownership to a new owner.
+  /// Transfer group ownership to a new owner atomically via Firestore transaction.
   /// Returns true if ownership transfer succeeded.
   Future<bool> transferGroupOwnership(UserProfile newOwner) async {
     if (_group == null) {
@@ -316,17 +316,11 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         AppLogger.info(
             'Transferring ownership of "${_group!.name}" from ${_group!.ownerId} to ${newOwner.uid}');
 
-        // Create updated group with new owner
-        final updatedGroup = _group!.copyWith(
-          ownerId: newOwner.uid,
-          updatedAt: DateTime.now(),
-        );
+        // Use transactional transfer to prevent TOCTOU race conditions
+        await _friendsService.friendsCategoryRepositoryInternal
+            .transferOwnership(_group!.ownerId, groupId, newOwner.uid);
 
-        // Update local cache and sync to Firebase
-        _friendsService.updateCategoryInternal(groupId, updatedGroup);
-        await _friendsService.syncCategoryToFirebaseInternal(updatedGroup);
-
-        // Refresh local group data
+        // Refresh from authoritative source after transaction completes
         await loadGroupData();
 
         AppLogger.success(

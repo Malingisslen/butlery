@@ -14253,6 +14253,12 @@ abstract class AppLocalizations {
   /// **'Det här gruppnamnet finns redan'**
   String get errorGroupNameExists;
 
+  /// No description provided for @errorOnlyAdminCanAddMembers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Endast administratör kan lägga till medlemmar'**
+  String get errorOnlyAdminCanAddMembers;
+
   /// No description provided for @errorOnlyAdminCanRemoveMembers.
   ///
   /// In sv, this message translates to:
@@ -19827,6 +19833,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Växla kostpreferens {dietary}'**
   String dietaryToggleSemantics(String dietary);
+
+  /// No description provided for @emailVerificationTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Verifiera din e-post'**
+  String get emailVerificationTitle;
+
+  /// No description provided for @emailVerificationMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har skickat ett verifieringsmail till {email}.'**
+  String emailVerificationMessage(String email);
+
+  /// No description provided for @emailVerificationResend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka igen'**
+  String get emailVerificationResend;
+
+  /// No description provided for @emailVerificationContinue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt ändå'**
+  String get emailVerificationContinue;
+
+  /// No description provided for @emailVerificationSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post verifierad!'**
+  String get emailVerificationSuccess;
 }
 
 class _AppLocalizationsDelegate

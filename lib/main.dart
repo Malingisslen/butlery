@@ -65,6 +65,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 // Views
 import 'package:butlery/views/auth_view.dart';
+import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
 
@@ -741,6 +742,10 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   late final AuthService _authService;
   late final UserService _userService;
+  bool _verificationDismissed = false;
+
+  /// Only gate users created after this date (grandfather existing users).
+  static final DateTime _verificationGateDate = DateTime(2026, 3, 20);
 
   @override
   void initState() {
@@ -796,6 +801,24 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final user = _authService.currentUser;
 
     if (user != null) {
+      // Email verification gate for new users (soft — dismissable)
+      if (!_verificationDismissed) {
+        final createdAfterGate = user.metadata.creationTime?.isAfter(
+              _verificationGateDate,
+            ) ??
+            false;
+
+        if (createdAfterGate && !user.emailVerified) {
+          return EmailVerificationView(
+            email: user.email ?? '',
+            key: ValueKey('verify_${user.uid}'),
+            onDismiss: () {
+              setState(() => _verificationDismissed = true);
+            },
+          );
+        }
+      }
+
       // Check if user has completed onboarding
       final profile = _userService.currentUserProfile;
       if (profile != null && !profile.hasCompletedOnboarding) {

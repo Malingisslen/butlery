@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -16,9 +17,9 @@ import 'package:butlery/services/tagging/tagging_service.dart';
 ///   getRecipes: () => recipeService.getPersonalRecipes(),
 ///   saveRecipe: (recipe) => recipeService.updateRecipe(recipe),
 /// );
-/// await scheduler.scheduleRetaggingCheck();
+/// scheduler.scheduleRetaggingCheck();
 /// ```
-class RetaggingScheduler {
+class RetaggingScheduler with StreamManagementMixin {
   final TaggingService _taggingService;
   final Future<List<Recipe>> Function() _getRecipes;
   final Future<void> Function(Recipe) _saveRecipe;
@@ -38,9 +39,6 @@ class RetaggingScheduler {
 
   /// Maximum consecutive failures before skipping a recipe.
   static const _maxFailuresBeforeSkip = 3;
-
-  /// Timer for periodic retagging checks.
-  Timer? _periodicTimer;
 
   /// Whether a retagging operation is currently in progress.
   bool _isRetagging = false;
@@ -62,23 +60,27 @@ class RetaggingScheduler {
   ///
   /// Call this once when the app starts. It will wait for [_startupDelaySeconds]
   /// before checking for recipes that need retagging.
-  Future<void> scheduleRetaggingCheck() async {
+  void scheduleRetaggingCheck() {
     AppLogger.info(
       '📅 Scheduling retagging check in $_startupDelaySeconds seconds',
     );
 
-    await Future.delayed(const Duration(seconds: _startupDelaySeconds));
-    await _performRetagging();
+    createTimer(
+      const Duration(seconds: _startupDelaySeconds),
+      () => _performRetagging(),
+      name: 'startup',
+    );
   }
 
   /// Starts periodic retagging checks.
   ///
   /// Runs a retagging check every [intervalHours] hours.
   void startPeriodicChecks({int intervalHours = 24}) {
-    _periodicTimer?.cancel();
-    _periodicTimer = Timer.periodic(
+    cancelNamedTimer('periodic');
+    createPeriodicTimer(
       Duration(hours: intervalHours),
-      (_) => _performRetagging(),
+      () => _performRetagging(),
+      name: 'periodic',
     );
     AppLogger.info(
         '📅 Started periodic retagging checks every $intervalHours hours');
@@ -86,8 +88,7 @@ class RetaggingScheduler {
 
   /// Stops periodic retagging checks.
   void stopPeriodicChecks() {
-    _periodicTimer?.cancel();
-    _periodicTimer = null;
+    cancelNamedTimer('periodic');
     AppLogger.info('📅 Stopped periodic retagging checks');
   }
 
@@ -263,6 +264,6 @@ class RetaggingScheduler {
 
   /// Disposes of resources.
   void dispose() {
-    stopPeriodicChecks();
+    disposeStreamResources();
   }
 }

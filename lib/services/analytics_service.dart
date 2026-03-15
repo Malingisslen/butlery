@@ -70,7 +70,7 @@ class AnalyticsService extends BaseService {
   }
 
   Future<bool> _hasAnalyticsConsent() async {
-    if (_consentService == null) return true;
+    if (_consentService == null) return false;
     try {
       return await _consentService!.hasConsent('analytics');
     } catch (e) {
@@ -126,6 +126,7 @@ class AnalyticsService extends BaseService {
     bool? hasSharedRecipe,
     bool? hasCooked,
   }) async {
+    if (!await _hasAnalyticsConsent()) return;
     await _repository.setUserProperties(
       recipeCount: recipeCount,
       hasUsedImport: hasUsedImport,

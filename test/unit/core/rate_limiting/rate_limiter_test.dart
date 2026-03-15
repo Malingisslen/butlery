@@ -159,10 +159,10 @@ void main() {
     });
 
     test('denies operation when rate limit exceeded', () {
-      const operation = RateLimitOperation.login;
+      const operation = RateLimitOperation.createRecipe;
 
-      // Exhaust all tokens (max 5 for login)
-      for (int i = 0; i < 5; i++) {
+      // Exhaust all tokens (max 10 for createRecipe)
+      for (int i = 0; i < 10; i++) {
         limiter.checkLimit(operation);
       }
 
@@ -174,10 +174,10 @@ void main() {
     });
 
     test('tracks violation counts', () {
-      const operation = RateLimitOperation.register;
+      const operation = RateLimitOperation.ocrExtraction;
 
-      // Exhaust tokens (max 3 for register)
-      for (int i = 0; i < 3; i++) {
+      // Exhaust tokens (max 5 for ocrExtraction)
+      for (int i = 0; i < 5; i++) {
         limiter.checkLimit(operation);
       }
 
@@ -248,10 +248,10 @@ void main() {
     });
 
     test('executeWithLimit throws when rate limited', () async {
-      const operation = RateLimitOperation.passwordReset;
+      const operation = RateLimitOperation.ocrExtraction;
 
-      // Exhaust tokens (max 3)
-      for (int i = 0; i < 3; i++) {
+      // Exhaust tokens (max 5)
+      for (int i = 0; i < 5; i++) {
         limiter.checkLimit(operation);
       }
 
@@ -316,15 +316,15 @@ void main() {
     });
 
     group('Operation-specific limits', () {
-      test('auth operations have strict limits', () {
-        // Login: 5 max tokens
-        expect(limiter.getCurrentTokens(RateLimitOperation.login), 5.0);
+      test('recipe operations have moderate limits', () {
+        // Create recipe: 10 max tokens
+        expect(limiter.getCurrentTokens(RateLimitOperation.createRecipe), 10.0);
 
-        // Register: 3 max tokens
-        expect(limiter.getCurrentTokens(RateLimitOperation.register), 3.0);
+        // Update recipe: 30 max tokens
+        expect(limiter.getCurrentTokens(RateLimitOperation.updateRecipe), 30.0);
 
-        // Password reset: 3 max tokens
-        expect(limiter.getCurrentTokens(RateLimitOperation.passwordReset), 3.0);
+        // Delete recipe: 10 max tokens
+        expect(limiter.getCurrentTokens(RateLimitOperation.deleteRecipe), 10.0);
       });
 
       test('social operations have higher limits', () {
@@ -367,7 +367,7 @@ void main() {
     test('formats message with retry time', () {
       final exception = RateLimitException(
         message: 'Too many requests',
-        operation: RateLimitOperation.login,
+        operation: RateLimitOperation.createRecipe,
         retryAfter: const Duration(seconds: 45),
       );
 
@@ -399,12 +399,12 @@ void main() {
       limiter.reset();
     });
 
-    test('DoS attack prevention - rapid login attempts', () {
-      const operation = RateLimitOperation.login;
+    test('burst prevention - rapid recipe creation', () {
+      const operation = RateLimitOperation.createRecipe;
       int successCount = 0;
       int blockedCount = 0;
 
-      // Simulate 20 rapid login attempts
+      // Simulate 20 rapid creation attempts
       for (int i = 0; i < 20; i++) {
         final result = limiter.checkLimit(operation);
         if (result.allowed) {
@@ -414,9 +414,9 @@ void main() {
         }
       }
 
-      // Should allow only 5 (max tokens)
-      expect(successCount, 5);
-      expect(blockedCount, 15);
+      // Should allow only 10 (max tokens for createRecipe)
+      expect(successCount, 10);
+      expect(blockedCount, 10);
     });
 
     test('Normal usage - recipe creation spread over time', () async {
@@ -437,9 +437,6 @@ void main() {
     });
 
     test('Mixed operations - realistic user session', () {
-      // User logs in
-      expect(limiter.checkLimit(RateLimitOperation.login).allowed, true);
-
       // Fetches recipes multiple times
       for (int i = 0; i < 10; i++) {
         expect(

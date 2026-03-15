@@ -56,6 +56,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -303,8 +304,8 @@ class AuthViewModel extends ChangeNotifier
       return false;
     }
 
-    if (password.length < 6) {
-      _setError(l.errorPasswordMinSixChars);
+    if (password.length < FormValidators.minPasswordLength) {
+      _setError(l.validationPasswordMinEight);
       return false;
     }
 

@@ -81,13 +81,14 @@ class StorageService extends BaseService
     );
   }
 
-  /// Upload image from bytes (for web platform)
+  /// Upload image from bytes (for web platform and avatar uploads).
+  /// Compresses bytes before uploading when possible.
   Future<String?> uploadImageBytes(
     Uint8List imageBytes,
     String userId,
     String fileName, {
     Function(double)? onProgress,
-    String? prefix, // Allow custom prefix for different image types
+    String? prefix,
   }) async {
     return await executeServiceOperation<String?>(
       () async {
@@ -95,7 +96,10 @@ class StorageService extends BaseService
         final imagePrefix = prefix ?? 'avatar';
         final pathFolder = imagePrefix == 'avatar' ? 'avatars' : 'recipes';
 
-        // Generate unique filename if not provided
+        // Compress bytes before uploading (dimension + quality reduction)
+        final uploadBytes = await _repository.compressImageBytes(imageBytes);
+
+        // Generate unique filename
         final uniqueFileName = _repository.generateFileName(
           originalPath: fileName,
           prefix: imagePrefix,
@@ -103,9 +107,13 @@ class StorageService extends BaseService
         final path = 'users/$userId/$pathFolder/$uniqueFileName';
 
         final url = await _repository.uploadImageData(
-          imageData: imageBytes,
+          imageData: uploadBytes,
           userId: userId,
           path: path,
+          metadata: {
+            'originalSize': imageBytes.length.toString(),
+            'compressedSize': uploadBytes.length.toString(),
+          },
           onProgress: onProgress,
         );
 

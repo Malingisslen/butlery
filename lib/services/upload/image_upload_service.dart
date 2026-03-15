@@ -9,6 +9,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/upload/upload_queue_manager.dart';
 import 'package:butlery/services/upload/upload_retry_manager.dart';
@@ -57,7 +58,6 @@ class UploadResult {
 /// final result = await service.uploadImage(
 ///   file: imageFile,
 ///   userId: userId,
-///   path: 'users/$userId/recipes/image.jpg',
 ///   onProgress: (status) {
 ///     print('Progress: ${status.progressPercentage}%');
 ///   },
@@ -97,23 +97,17 @@ class ImageUploadService extends BaseService {
         _storageService =
             storageService ?? ServiceLocator.get<StorageService>();
 
-  /// Upload a single image with automatic retry and progress tracking
-  /// [file] - Image file to upload
-  /// [userId] - User ID for storage path
-  /// [path] - Storage path for the image
-  /// [maxRetryAttempts] - Maximum retry attempts (default 3)
-  /// [onProgress] - Optional callback for progress updates
-  /// Returns UploadResult with success status and URL or error
+  /// Upload a single image with automatic retry and progress tracking.
+  /// Path construction is handled by StorageService — callers should not specify paths.
   Future<UploadResult> uploadImage({
     required File file,
     required String userId,
-    required String path,
     int maxRetryAttempts = 3,
     void Function(ImageUploadStatus)? onProgress,
   }) async {
     final filePath = file.path;
 
-    AppLogger.info('🆙 UPLOAD_SERVICE: Starting upload for $filePath to $path');
+    AppLogger.info('🆙 UPLOAD_SERVICE: Starting upload for $filePath');
 
     // Add to queue
     _queueManager.addUpload(
@@ -133,7 +127,6 @@ class ImageUploadService extends BaseService {
       final result = await _executeUploadWithRetry(
         file: file,
         userId: userId,
-        path: path,
         onProgress: onProgress,
       );
 
@@ -149,7 +142,6 @@ class ImageUploadService extends BaseService {
   Future<UploadResult> _executeUploadWithRetry({
     required File file,
     required String userId,
-    required String path,
     void Function(ImageUploadStatus)? onProgress,
   }) async {
     final filePath = file.path;
@@ -202,7 +194,6 @@ class ImageUploadService extends BaseService {
         final url = await _attemptUpload(
           file: file,
           userId: userId,
-          path: path,
           onProgress: (progress) {
             final updatedStatus = _progressTracker.updateProgress(
               currentStatus: _queueManager.getStatus(filePath)!,
@@ -247,7 +238,6 @@ class ImageUploadService extends BaseService {
   Future<String> _attemptUpload({
     required File file,
     required String userId,
-    required String path,
     required void Function(double) onProgress,
   }) async {
     final url = await _storageService.uploadImageFile(
@@ -372,11 +362,54 @@ class ImageUploadService extends BaseService {
     AppLogger.info('🆙 UPLOAD_SERVICE: Cancellation requested for $filePath');
   }
 
+  /// Upload image from raw bytes with specified storage prefix.
+  /// Use for web uploads (where dart:io File doesn't work) and avatar uploads.
+  Future<UploadResult> uploadImageFromBytes({
+    required Uint8List bytes,
+    required String userId,
+    required String fileName,
+    String prefix = 'recipe',
+  }) async {
+    AppLogger.info(
+        '🆙 UPLOAD_SERVICE: Starting $prefix bytes upload for $fileName');
+
+    try {
+      if (bytes.isEmpty) {
+        return UploadResult.failure(
+          'Image bytes are empty',
+          ImageUploadErrorType.unknown,
+        );
+      }
+
+      final url = await _storageService.uploadImageBytes(
+        bytes,
+        userId,
+        fileName,
+        prefix: prefix,
+      );
+
+      if (url == null) {
+        return UploadResult.failure(
+          'Storage service returned null URL',
+          ImageUploadErrorType.unknown,
+        );
+      }
+
+      AppLogger.success('✅ $prefix image uploaded: $url');
+      return UploadResult.success(url);
+    } catch (e) {
+      AppLogger.error('❌ $prefix image upload failed: $e');
+      return UploadResult.failure(
+        e.toString(),
+        ImageUploadErrorType.unknown,
+      );
+    }
+  }
+
   /// Retry failed upload
   Future<UploadResult> retryUpload({
     required String filePath,
     required String userId,
-    required String path,
     void Function(ImageUploadStatus)? onProgress,
   }) async {
     final status = _queueManager.getStatus(filePath);
@@ -390,7 +423,6 @@ class ImageUploadService extends BaseService {
     return await uploadImage(
       file: status.file!,
       userId: userId,
-      path: path,
       maxRetryAttempts: status.maxRetryAttempts,
       onProgress: onProgress,
     );

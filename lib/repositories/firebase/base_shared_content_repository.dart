@@ -407,6 +407,18 @@ abstract class BaseSharedContentRepository<T>
   }
 
   Future<void> removeMember(String contentId, String userId) async {
+    final currentUser = requireCurrentUserId();
+    final isSelfRemoval = currentUser == userId;
+
+    // Owner can remove anyone; members can only remove themselves
+    if (!isSelfRemoval) {
+      final content = await read(contentId);
+      if (content == null || !isCreatedBy(content, currentUser)) {
+        throw PermissionDeniedException(
+            'Only the owner can remove other members from $contentTypeName');
+      }
+    }
+
     try {
       await getCollectionRef()
           .doc(contentId)
@@ -541,6 +553,13 @@ abstract class BaseSharedContentRepository<T>
   }
 
   Future<void> addCollaborator(String contentId, String userId) async {
+    final currentUser = requireCurrentUserId();
+    final content = await read(contentId);
+    if (content == null || !isCreatedBy(content, currentUser)) {
+      throw PermissionDeniedException(
+          'Only the owner can add collaborators to $contentTypeName');
+    }
+
     try {
       await getCollectionRef()
           .doc(contentId)
@@ -548,8 +567,8 @@ abstract class BaseSharedContentRepository<T>
           .doc(userId)
           .set({
         'userId': userId,
-        'joinedAt': DateTime.now(),
-        'lastEditAt': DateTime.now(),
+        'joinedAt': timestampProvider.serverTimestamp(),
+        'lastEditAt': timestampProvider.serverTimestamp(),
       }, SetOptions(merge: true));
 
       AppLogger.success(
@@ -561,6 +580,16 @@ abstract class BaseSharedContentRepository<T>
   }
 
   Future<void> removeCollaborator(String contentId, String userId) async {
+    final currentUser = requireCurrentUserId();
+    final isSelfRemoval = currentUser == userId;
+    if (!isSelfRemoval) {
+      final content = await read(contentId);
+      if (content == null || !isCreatedBy(content, currentUser)) {
+        throw PermissionDeniedException(
+            'Only the owner can remove other collaborators from $contentTypeName');
+      }
+    }
+
     try {
       await getCollectionRef()
           .doc(contentId)

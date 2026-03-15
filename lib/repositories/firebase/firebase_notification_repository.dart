@@ -9,6 +9,7 @@ import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/models/notification_batch.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Notification data repository for preferences, history, and batching.
 /// Uses Firestore for cloud storage with SharedPreferences offline fallback.
@@ -21,9 +22,12 @@ class NotificationRepository {
   NotificationPreferences? _cachedPreferences;
 
   // Collections
-  static const String _preferencesCollection = 'notification_preferences';
-  static const String _historyCollection = 'notification_history';
-  static const String _batchingCollection = 'notification_batches';
+  static const String _preferencesCollection =
+      FirestoreCollections.notificationPreferencesLegacy;
+  static const String _historyCollection =
+      FirestoreCollections.notificationHistory;
+  static const String _batchingCollection =
+      FirestoreCollections.notificationBatches;
 
   NotificationRepository({
     required String userId,

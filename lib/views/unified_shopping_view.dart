@@ -169,12 +169,32 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   Future<void> _onDeleteItem(UnifiedShoppingItem item) async {
     final removedMsg = context.l10n.shoppingItemRemoved(item.name);
     final errorMsg = context.l10n.shoppingItemRemoveError(item.name);
+
     final success = await _viewModel.removeItemFromActiveList(item.id);
-    if (success) {
-      _showSuccessSnackBar(removedMsg);
-    } else {
+    if (!success) {
       _showErrorSnackBar(errorMsg);
+      return;
     }
+
+    if (!mounted) return;
+
+    SnackBarUtils.showSuccessWithAction(
+      context,
+      removedMsg,
+      actionLabel: context.l10n.commonUndo,
+      onAction: () {
+        _viewModel.addItemToActiveList(
+          name: item.name,
+          amount: item.amount,
+          unit: item.unit,
+          category: item.category,
+          note: item.note,
+          estimatedPrice: item.estimatedPrice,
+          priority: item.priority,
+        );
+      },
+      duration: const Duration(seconds: 4),
+    );
   }
 
   /// Comprehensive item addition dialog with form validation and user feedback coordination.

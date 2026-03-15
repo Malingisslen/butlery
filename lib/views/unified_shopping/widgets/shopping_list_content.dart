@@ -196,12 +196,15 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       categorizedItems.putIfAbsent(category, () => []).add(item);
     }
 
-    return categorizedItems.entries.map((entry) {
-      final progress = categoryProgress[entry.key];
+    // Sort categories alphabetically for stable display order
+    final sortedKeys = categorizedItems.keys.toList()..sort();
+
+    return sortedKeys.map((key) {
+      final progress = categoryProgress[key];
       return _buildCategorySection(
         context,
-        entry.key,
-        entry.value,
+        key,
+        categorizedItems[key]!,
         false,
         progress: progress,
       );
@@ -223,11 +226,13 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       categorizedItems.putIfAbsent(category, () => []).add(item);
     }
 
-    return categorizedItems.entries.map((entry) {
+    final sortedKeys = categorizedItems.keys.toList()..sort();
+
+    return sortedKeys.map((key) {
       return _buildCategorySection(
         context,
-        entry.key,
-        entry.value,
+        key,
+        categorizedItems[key]!,
         true,
       );
     }).toList();

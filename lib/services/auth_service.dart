@@ -10,8 +10,8 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
-import 'package:butlery/models/auth/mfa_types.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
 class AuthService extends ChangeNotifier
@@ -30,6 +30,7 @@ class AuthService extends ChangeNotifier
   String? get currentUserPhotoUrl => _currentUser?.photoURL;
   String? get errorMessage => error;
   bool get isAuthenticated => _currentUser != null;
+  bool get isEmailVerified => _currentUser?.emailVerified ?? false;
   String? get currentUserId => _authRepository.currentUserId;
 
   AuthService({
@@ -65,6 +66,14 @@ class AuthService extends ChangeNotifier
       if (credential.user != null) {
         await _authRepository.updateDisplayName(credential.user!, displayName);
         _currentUser = _authRepository.currentUser;
+
+        // Send verification email (non-blocking — failure must not prevent registration)
+        try {
+          await _authRepository.sendEmailVerification();
+        } catch (e) {
+          AppLogger.warning('Failed to send verification email: $e');
+        }
+
         setLoading(false);
         await _analyticsService.logSignUp(method: 'email');
         return true;
@@ -241,249 +250,6 @@ class AuthService extends ChangeNotifier
     });
   }
 
-  /// Check if the current user has MFA enabled.
-  Future<bool> hasMfaEnabled() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return false;
-
-    try {
-      final factors = await user.multiFactor.getEnrolledFactors();
-      return factors.isNotEmpty;
-    } catch (e) {
-      AppLogger.warning('Failed to check MFA status: $e');
-      return false;
-    }
-  }
-
-  /// Get list of enrolled MFA factors as domain types.
-  Future<List<MfaFactorInfo>> getEnrolledFactors() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return [];
-
-    try {
-      final factors = await user.multiFactor.getEnrolledFactors();
-      return factors
-          .map((f) => MfaFactorInfo(
-                factor: f,
-                displayName: f.displayName,
-                enrollmentTimestamp: f.enrollmentTimestamp,
-              ))
-          .toList();
-    } catch (e) {
-      AppLogger.warning('Failed to get MFA factors: $e');
-      return [];
-    }
-  }
-
-  /// Start MFA enrollment with a phone number.
-  /// Calls [onCodeSent] when SMS code is sent, or [onError] on failure.
-  Future<void> startMfaEnrollment(
-    String phoneNumber, {
-    required void Function(String verificationId) onCodeSent,
-    required void Function(MfaError error) onError,
-    void Function()? onAutoVerified,
-  }) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      onError(
-          const MfaError(code: 'user-not-found', message: 'No user signed in'));
-      return;
-    }
-
-    try {
-      final session = await user.multiFactor.getSession();
-
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        multiFactorSession: session,
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          // Auto-verification on some Android devices
-          try {
-            await user.multiFactor.enroll(
-              PhoneMultiFactorGenerator.getAssertion(credential),
-            );
-            AppLogger.info('MFA auto-enrolled successfully');
-            onAutoVerified?.call();
-          } catch (e) {
-            AppLogger.error('MFA auto-enrollment failed: $e');
-            if (e is FirebaseAuthException) {
-              onError(MfaError(code: e.code, message: e.message));
-            }
-          }
-        },
-        verificationFailed: (FirebaseAuthException error) {
-          AppLogger.error('MFA verification failed: ${error.code}');
-          onError(MfaError(code: error.code, message: error.message));
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          AppLogger.info('MFA SMS code sent');
-          onCodeSent(verificationId);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          AppLogger.debug('MFA code auto-retrieval timeout');
-        },
-        timeout: const Duration(seconds: 60),
-      );
-    } catch (e) {
-      AppLogger.error('Failed to start MFA enrollment: $e');
-      if (e is FirebaseAuthException) {
-        onError(MfaError(code: e.code, message: e.message));
-      } else {
-        onError(MfaError(code: 'unknown', message: e.toString()));
-      }
-    }
-  }
-
-  /// Complete MFA enrollment with the SMS code.
-  Future<bool> completeMfaEnrollment(
-    String verificationId,
-    String smsCode,
-  ) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return false;
-
-    try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode,
-      );
-
-      await user.multiFactor.enroll(
-        PhoneMultiFactorGenerator.getAssertion(credential),
-      );
-
-      AppLogger.info('MFA enrollment completed successfully');
-      await _analyticsService.logEvent(
-        name: 'mfa_enrolled',
-        parameters: {'method': 'sms'},
-      );
-      return true;
-    } on FirebaseAuthException catch (e) {
-      AppLogger.error('MFA enrollment failed: ${e.code}');
-      _handleAuthError(e);
-      return false;
-    } catch (e) {
-      AppLogger.error('MFA enrollment error: $e');
-      setError(AppLocale.current.errorCouldNotCompleteMfa);
-      return false;
-    }
-  }
-
-  /// Unenroll a specific MFA factor.
-  Future<bool> unenrollMfa(MfaFactorInfo factor) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return false;
-
-    try {
-      final firebaseFactor = factor.unwrap<MultiFactorInfo>();
-      await user.multiFactor.unenroll(multiFactorInfo: firebaseFactor);
-      AppLogger.info('MFA factor unenrolled: ${firebaseFactor.uid}');
-      await _analyticsService.logEvent(name: 'mfa_unenrolled');
-      return true;
-    } on FirebaseAuthException catch (e) {
-      AppLogger.error('MFA unenroll failed: ${e.code}');
-      _handleAuthError(e);
-      return false;
-    } catch (e) {
-      AppLogger.error('MFA unenroll error: $e');
-      setError(AppLocale.current.errorCouldNotRemoveMfa);
-      return false;
-    }
-  }
-
-  /// Create an [MfaResolverInfo] from a [FirebaseAuthMultiFactorException].
-  /// Call this where the exception is caught, then pass the result to views.
-  MfaResolverInfo createMfaResolver(MultiFactorResolver resolver) {
-    final phoneHint =
-        resolver.hints.whereType<PhoneMultiFactorInfo>().firstOrNull;
-    return MfaResolverInfo(
-      resolver: resolver,
-      phoneHint: phoneHint?.phoneNumber,
-    );
-  }
-
-  /// Resolve MFA challenge during sign-in.
-  Future<void> startMfaSignIn(
-    MfaResolverInfo resolverInfo, {
-    required void Function(String verificationId) onCodeSent,
-    required void Function(MfaError error) onError,
-  }) async {
-    final resolver = resolverInfo.unwrap<MultiFactorResolver>();
-    final phoneHint =
-        resolver.hints.whereType<PhoneMultiFactorInfo>().firstOrNull;
-
-    if (phoneHint == null) {
-      onError(const MfaError(
-          code: 'no-phone-factor', message: 'No phone MFA found'));
-      return;
-    }
-
-    try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        multiFactorSession: resolver.session,
-        multiFactorInfo: phoneHint,
-        verificationCompleted: (credential) async {
-          // Auto-verify on some Android devices
-          try {
-            await resolver.resolveSignIn(
-              PhoneMultiFactorGenerator.getAssertion(credential),
-            );
-            _currentUser = FirebaseAuth.instance.currentUser;
-            AppLogger.info('MFA sign-in auto-completed');
-          } catch (e) {
-            if (e is FirebaseAuthException) {
-              onError(MfaError(code: e.code, message: e.message));
-            }
-          }
-        },
-        verificationFailed: (FirebaseAuthException error) {
-          onError(MfaError(code: error.code, message: error.message));
-        },
-        codeSent: (verificationId, _) => onCodeSent(verificationId),
-        codeAutoRetrievalTimeout: (_) {},
-        timeout: const Duration(seconds: 60),
-      );
-    } catch (e) {
-      if (e is FirebaseAuthException) {
-        onError(MfaError(code: e.code, message: e.message));
-      } else {
-        onError(MfaError(code: 'unknown', message: e.toString()));
-      }
-    }
-  }
-
-  /// Complete MFA sign-in with SMS code.
-  Future<bool> completeMfaSignIn(
-    MfaResolverInfo resolverInfo,
-    String verificationId,
-    String smsCode,
-  ) async {
-    try {
-      final resolver = resolverInfo.unwrap<MultiFactorResolver>();
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode,
-      );
-
-      await resolver.resolveSignIn(
-        PhoneMultiFactorGenerator.getAssertion(credential),
-      );
-
-      _currentUser = FirebaseAuth.instance.currentUser;
-      AppLogger.info('MFA sign-in completed');
-      await _analyticsService.logLogin(method: 'email_mfa');
-      return true;
-    } on FirebaseAuthException catch (e) {
-      AppLogger.error('MFA sign-in failed: ${e.code}');
-      _handleAuthError(e);
-      return false;
-    } catch (e) {
-      AppLogger.error('MFA sign-in error: $e');
-      setError(AppLocale.current.errorMfaVerificationFailed);
-      return false;
-    }
-  }
-
   /// Change user password. Requires prior reauthentication.
   Future<bool> changePassword(String newPassword) async {
     try {
@@ -528,63 +294,33 @@ class AuthService extends ChangeNotifier
     }
   }
 
-  void _handleAuthError(FirebaseAuthException e) {
-    final l = AppLocale.current;
-    String errorMessage;
-    AppLogger.error('Firebase Auth Error Code: ${e.code}');
-    switch (e.code) {
-      case 'weak-password':
-        errorMessage = l.errorWeakPassword;
-        break;
-      case 'email-already-in-use':
-        errorMessage = l.errorEmailAlreadyInUse;
-        break;
-      case 'invalid-email':
-        errorMessage = l.errorInvalidEmailAddress;
-        break;
-      case 'user-not-found':
-        errorMessage = l.errorUserNotFoundByEmail;
-        break;
-      case 'wrong-password':
-        errorMessage = l.errorWrongPassword;
-        break;
-      case 'invalid-credential':
-        errorMessage = l.errorInvalidCredentials;
-        break;
-      case 'user-disabled':
-        errorMessage = l.errorAccountDisabled;
-        break;
-      case 'too-many-requests':
-        errorMessage = l.errorTooManyAttempts;
-        break;
-      case 'network-request-failed':
-        errorMessage = l.errorNetwork;
-        break;
-      // MFA-specific errors
-      case 'invalid-verification-code':
-        errorMessage = l.errorInvalidVerificationCode;
-        break;
-      case 'session-expired':
-        errorMessage = l.errorSessionExpired;
-        break;
-      case 'quota-exceeded':
-        errorMessage = l.errorTooManySmsAttempts;
-        break;
-      case 'invalid-phone-number':
-        errorMessage = l.errorInvalidPhoneNumber;
-        break;
-      case 'missing-phone-number':
-        errorMessage = l.errorPhoneNumberMissing;
-        break;
-      default:
-        errorMessage = l.errorAuthentication;
+  /// Send email verification to the current user.
+  Future<void> sendEmailVerification() async {
+    try {
+      await _authRepository.sendEmailVerification();
+    } on FirebaseAuthException catch (e) {
+      _handleAuthError(e);
+      rethrow;
+    } catch (e) {
+      setError(AppLocale.current.errorUnexpected);
+      rethrow;
     }
-    setError(errorMessage);
   }
 
-  @override
-  void clearError() {
-    super.clearError();
+  /// Reload user data from Firebase and notify listeners.
+  Future<void> reloadUser() async {
+    try {
+      await _authRepository.reloadCurrentUser();
+      _currentUser = _authRepository.currentUser;
+      notifyListeners();
+    } catch (e) {
+      AppLogger.warning('Failed to reload user: $e');
+    }
+  }
+
+  void _handleAuthError(FirebaseAuthException e) {
+    AppLogger.error('Firebase Auth Error Code: ${e.code}');
+    setError(mapAuthErrorToMessage(e));
   }
 
   @override

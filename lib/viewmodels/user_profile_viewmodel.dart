@@ -7,8 +7,6 @@
 
 // lib/viewmodels/user_profile_viewmodel.dart
 
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -143,11 +141,15 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         throw Exception(_operationError);
       }
 
-      // Upload using ImageUploadService (with automatic retry, progress tracking)
-      final result = await _uploadService.uploadImage(
-        file: File(imageFile.path),
+      // Read bytes from file (works on both mobile and web)
+      final bytes = await imageFile.readAsBytes();
+
+      // Upload avatar using bytes-based method (correct Storage path: users/{uid}/avatars/...)
+      final result = await _uploadService.uploadImageFromBytes(
+        bytes: bytes,
         userId: userId,
-        path: 'avatars/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg',
+        fileName: imageFile.path.split('/').last,
+        prefix: 'avatar',
       );
 
       if (result.success && result.url != null) {

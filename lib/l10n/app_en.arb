@@ -5307,6 +5307,7 @@
   "errorDescriptionTooLong": "Description is too long",
   "errorGroupNameRequired": "Group name is required",
   "errorGroupNameExists": "This group name already exists",
+  "errorOnlyAdminCanAddMembers": "Only an admin can add members",
   "errorOnlyAdminCanRemoveMembers": "Only an admin can remove members",
   "errorUseLeaveGroupToLeave": "Use \"Leave group\" to leave the conversation",
   "errorOnlyAdminCanChangeGroupName": "Only an admin can change the group name",
@@ -8059,5 +8060,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "emailVerificationTitle": "Verify your email",
+  "emailVerificationMessage": "We've sent a verification email to {email}.",
+  "@emailVerificationMessage": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "emailVerificationResend": "Send again",
+  "emailVerificationContinue": "Continue anyway",
+  "emailVerificationSuccess": "Email verified!"
 }

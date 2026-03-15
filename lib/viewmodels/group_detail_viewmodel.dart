@@ -202,6 +202,11 @@ class GroupDetailViewModel extends ChangeNotifier
   ) async {
     if (_isDisposed || _conversation == null) return false;
 
+    if (!isAdmin) {
+      setError(AppLocale.current.errorOnlyAdminCanAddMembers);
+      return false;
+    }
+
     _isAddingMembers = true;
     clearError();
     _safeNotifyListeners();

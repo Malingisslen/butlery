@@ -30,6 +30,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { batchDeleteDocs } from "../shared/batch-delete";
 
 // Retention period defaults (can be overridden by Remote Config)
 const DEFAULT_RETENTION_DAYS = 90;
@@ -97,33 +98,31 @@ export const cleanupOldAuditLogs = functions
         return null;
       }
 
-      let deletedCount = 0;
-      let batch = db.batch();
-      let batchCount = 0;
+      const deletedCount = await batchDeleteDocs(db, snapshot);
 
-      for (const doc of snapshot.docs) {
-        batch.delete(doc.ref);
-        batchCount++;
-        deletedCount++;
+      // Clean up deletion_audit_logs using expireAt TTL field (GDPR Art.5)
+      const deletionAuditRef = db.collection("deletion_audit_logs");
+      const now = admin.firestore.Timestamp.now();
+      const deletionAuditSnapshot = await deletionAuditRef
+        .where("expireAt", "<", now)
+        .limit(10000)
+        .get();
 
-        // Commit every 500 operations (Firestore batch limit)
-        if (batchCount >= 500) {
-          await batch.commit();
-          batch = db.batch();
-          batchCount = 0;
-          functions.logger.info(`Committed batch of 500 deletions`);
-        }
-      }
+      const deletionAuditCount = deletionAuditSnapshot.empty
+        ? 0
+        : await batchDeleteDocs(db, deletionAuditSnapshot);
 
-      // Commit remaining deletions
-      if (batchCount > 0) {
-        await batch.commit();
+      if (deletionAuditCount > 0) {
+        functions.logger.info(
+          `Deletion audit log cleanup: deleted ${deletionAuditCount} expired entries`
+        );
       }
 
       // Log cleanup for monitoring/alerting
       const cleanupLog = {
         type: "audit_log_cleanup",
         deletedCount,
+        deletionAuditDeletedCount: deletionAuditCount,
         totalScanned: snapshot.size,
         retentionDays,
         cutoffDate: cutoffDate.toISOString(),

@@ -9,6 +9,7 @@ import 'package:butlery/models/friend_category_member.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/friend_category_member_module.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -73,7 +74,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   @override
   Future<bool> validateUpdatePermission(
       String userId, String resourceId, FriendCategory entity) async {
-    return entity.ownerId == userId || entity.friendUserIds.contains(userId);
+    return entity.ownerId == userId;
   }
 
   @override
@@ -96,8 +97,8 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
     // Only the owner can do a full document write
     if (currentUser != userId) {
-      throw Exception(
-          'Permission denied: Only the owner can fully save a category. '
+      throw PermissionDeniedException(
+          'Only the owner can fully save a category. '
           'Use addSelfToCategory() for member self-addition.');
     }
 
@@ -286,6 +287,46 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     if (updatedFriendIds.remove(friendId)) {
       await updateCategoryMembers(userId, categoryId, updatedFriendIds);
     }
+  }
+
+  /// Atomically transfer group ownership via Firestore transaction.
+  /// Only the current owner can initiate a transfer. The transaction verifies
+  /// ownership hasn't changed since read (prevents TOCTOU race conditions).
+  Future<void> transferOwnership(
+      String currentOwnerId, String categoryId, String newOwnerId) async {
+    final currentUser = requireCurrentUserId();
+    if (currentUser != currentOwnerId) {
+      throw PermissionDeniedException(
+          'Only the current owner can transfer ownership');
+    }
+
+    final docRef = _categoriesRef(currentOwnerId).doc(categoryId);
+
+    await firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) {
+        throw ResourceNotFoundException('Group not found',
+            resourceType: 'friend_category', resourceId: categoryId);
+      }
+
+      final category = FriendCategory.fromMap(snapshot.id, snapshot.data()!);
+      if (category.ownerId != currentUser) {
+        throw PermissionDeniedException('Ownership has already changed');
+      }
+
+      transaction.update(docRef, {
+        'ownerId': newOwnerId,
+        'updatedAt': timestampProvider.serverTimestamp(),
+      });
+    });
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'transfer_ownership',
+      granted: true,
+      details: 'Category: $categoryId, From: $currentOwnerId, To: $newOwnerId',
+    );
   }
 
   /// Get categories that contain a specific friend.

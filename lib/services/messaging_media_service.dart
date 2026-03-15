@@ -126,8 +126,6 @@ class MessagingMediaService extends BaseService {
       final result = await _uploadService.uploadImage(
         file: imageFile,
         userId: currentUserId,
-        path:
-            'messages/$conversationId/${DateTime.now().millisecondsSinceEpoch}_${path.basename(imagePath)}',
         onProgress:
             onProgress != null ? (status) => onProgress(status.progress) : null,
       );
