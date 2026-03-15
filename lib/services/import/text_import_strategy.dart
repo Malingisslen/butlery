@@ -104,7 +104,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     String firstLine = lines.first.trim();
 
-    // Remove common Instagram username patterns at start
+    // Skip standalone Instagram username lines (username alone on first line)
+    if (_looksLikeInstagramUsername(firstLine) && lines.length > 1) {
+      firstLine = lines[1].trim();
+    }
+
+    // Remove common Instagram username patterns at start of line
     firstLine = firstLine.replaceFirst(
       RegExp(r'^[a-z_][a-z0-9_\.]*\s+', caseSensitive: true),
       '',
@@ -117,10 +122,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         .replaceAll(RegExp(r'[\u{2700}-\u{27BF}]', unicode: true), '')
         .trim();
 
-    // Take text before first hyphen if it exists
-    final dashIndex = firstLine.indexOf('-');
-    if (dashIndex > 5 && dashIndex < 80) {
-      firstLine = firstLine.substring(0, dashIndex).trim();
+    // Take text before first dash (hyphen, en-dash, or em-dash)
+    final dashPattern = RegExp(r'[-\u2013\u2014]');
+    final dashMatch = dashPattern.firstMatch(firstLine);
+    if (dashMatch != null && dashMatch.start > 5 && dashMatch.start < 80) {
+      firstLine = firstLine.substring(0, dashMatch.start).trim();
     }
 
     // Cut at common Instagram intros
@@ -143,6 +149,15 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
 
     return '';
+  }
+
+  /// Check if a line looks like a standalone Instagram username
+  bool _looksLikeInstagramUsername(String line) {
+    // Instagram usernames: lowercase letters, numbers, underscores, dots
+    // Max 30 chars, no spaces
+    return line.length <= 30 &&
+        !line.contains(' ') &&
+        RegExp(r'^[a-z_][a-z0-9_\.]*$', caseSensitive: true).hasMatch(line);
   }
 
   /// Extract ingredients using measurement-first approach.
@@ -234,6 +249,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final lowerLine = line.toLowerCase();
 
         if (line.isEmpty || RecipeSectionDetector.isGarbage(line)) continue;
+        if (_looksLikeInstagramUsername(line)) continue;
         if (RecipeSectionDetector.isIngredientHeader(lowerLine) ||
             RecipeSectionDetector.isInstructionHeader(lowerLine)) {
           break;

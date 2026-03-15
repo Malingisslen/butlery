@@ -12,6 +12,8 @@ import 'package:butlery/services/account/export/social_export_manager.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
+import 'package:butlery/services/account/export/export_pagination_helper.dart'
+    show sanitizeForJson;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// GDPR Compliance - Right to Data Portability (Article 20) and Right of Access (Article 15)
@@ -138,8 +140,8 @@ class DataExportService extends BaseService {
 
             final currentUser = _authRepository.currentUser;
             return {
-              'private_profile': userDoc.data() ?? {},
-              'public_profile': publicProfileDoc.data() ?? {},
+              'private_profile': sanitizeForJson(userDoc.data() ?? {}),
+              'public_profile': sanitizeForJson(publicProfileDoc.data() ?? {}),
               'firebase_auth': {
                 'uid': userId,
                 'email': currentUser?.email,

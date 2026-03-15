@@ -2,7 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/services/account/export/export_pagination_helper.dart';
+import 'package:butlery/services/account/export/export_pagination_helper.dart'
+    show ExportPaginationHelper, sanitizeForJson;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of GDPR compliance data: audit logs, consent records.
@@ -39,7 +40,7 @@ class ComplianceExportManager {
           'resource_type': ((data['resourceType']) ?? 'unknown'),
           'resource_id': data['resourceId'],
           'granted': ((data['granted']) ?? false),
-          'metadata': data['metadata'],
+          'metadata': sanitizeForJson(data['metadata']),
         });
       }
 
@@ -129,7 +130,9 @@ class ComplianceExportManager {
         'total_consent_records': consentRecords.length,
         'consent_history': consentRecords,
         'current_consent':
-            currentConsentDoc.exists ? currentConsentDoc.data() : null,
+            currentConsentDoc.exists
+                ? sanitizeForJson(currentConsentDoc.data())
+                : null,
         'gdpr_article': 'Article 7 - Conditions for Consent',
         'note': 'Complete history of consent decisions and purposes',
       };

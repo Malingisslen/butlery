@@ -3,6 +3,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
+/// Sanitizes Firestore data for JSON serialization.
+/// Converts Timestamp, GeoPoint, DocumentReference, and other
+/// non-JSON-serializable types to safe representations.
+dynamic sanitizeForJson(dynamic value) {
+  if (value == null) return null;
+  if (value is Timestamp) return value.toDate().toIso8601String();
+  if (value is DateTime) return value.toIso8601String();
+  if (value is GeoPoint) {
+    return {'latitude': value.latitude, 'longitude': value.longitude};
+  }
+  if (value is DocumentReference) return value.path;
+  if (value is Blob) return '[binary data: ${value.bytes.length} bytes]';
+  if (value is Map) {
+    return value.map((k, v) => MapEntry(k.toString(), sanitizeForJson(v)));
+  }
+  if (value is List) return value.map(sanitizeForJson).toList();
+  // Primitives (String, int, double, bool) pass through
+  return value;
+}
+
 /// Helper for paginated exports to prevent timeout on large datasets.
 /// Implements cursor-based pagination for GDPR data exports.
 ///

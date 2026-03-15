@@ -2,6 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/services/account/export/export_pagination_helper.dart'
+    show sanitizeForJson;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of user preferences: settings, notifications.
@@ -24,7 +26,7 @@ class PreferencesExportManager {
           .get();
 
       return {
-        'preferences': prefsDoc.data() ?? {},
+        'preferences': sanitizeForJson(prefsDoc.data() ?? {}),
         'preferences_exist': prefsDoc.exists,
       };
     } catch (e) {
@@ -58,7 +60,7 @@ class PreferencesExportManager {
               data['createdAt']?.toDate()?.toIso8601String() ?? 'unknown',
           'read_at': data['readAt']?.toDate()?.toIso8601String(),
           'is_read': data['isRead'] ?? false,
-          'data': data['data'],
+          'data': sanitizeForJson(data['data']),
         });
       }
 
@@ -123,7 +125,7 @@ class PreferencesExportManager {
       }
 
       return {
-        'preferences': prefsDoc.exists ? prefsDoc.data() : null,
+        'preferences': prefsDoc.exists ? sanitizeForJson(prefsDoc.data()) : null,
         'preferences_exist': prefsDoc.exists,
         'fcm_token_registered': fcmDoc.exists,
         'fcm_token_updated_at': fcmTokenUpdatedAt,

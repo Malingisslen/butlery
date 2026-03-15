@@ -2,7 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/services/account/export/export_pagination_helper.dart';
+import 'package:butlery/services/account/export/export_pagination_helper.dart'
+    show ExportPaginationHelper, sanitizeForJson;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of user activity: comments, ratings, activity history.
@@ -35,7 +36,7 @@ class ActivityExportManager {
       for (final doc in comments) {
         data['comments'].add({
           'comment_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -50,7 +51,7 @@ class ActivityExportManager {
       for (final doc in ratings) {
         data['ratings'].add({
           'rating_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -81,7 +82,7 @@ class ActivityExportManager {
       for (final doc in activitySnapshot.docs) {
         activities.add({
           'activity_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
