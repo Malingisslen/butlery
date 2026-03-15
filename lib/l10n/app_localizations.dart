@@ -12243,6 +12243,144 @@ abstract class AppLocalizations {
   /// **'Sojafri'**
   String get filterSoyFree;
 
+  /// No description provided for @filterFishFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fiskfri'**
+  String get filterFishFree;
+
+  /// No description provided for @filterSesameFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sesamfri'**
+  String get filterSesameFree;
+
+  /// No description provided for @filterCeleryFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sellerifri'**
+  String get filterCeleryFree;
+
+  /// No description provided for @filterMustardFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senapfri'**
+  String get filterMustardFree;
+
+  /// No description provided for @filterShellfishFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skaldjursfri'**
+  String get filterShellfishFree;
+
+  /// No description provided for @filterLupinFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lupinfri'**
+  String get filterLupinFree;
+
+  /// No description provided for @filterSulfiteFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sulfitfri'**
+  String get filterSulfiteFree;
+
+  /// No description provided for @filterPeanutFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jordnötsfri'**
+  String get filterPeanutFree;
+
+  /// No description provided for @filterTreeNutFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Trädnötsfri'**
+  String get filterTreeNutFree;
+
+  /// No description provided for @filterAlcoholFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alkoholfri'**
+  String get filterAlcoholFree;
+
+  /// No description provided for @filterMoreAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler allergener'**
+  String get filterMoreAllergens;
+
+  /// No description provided for @filterFewerAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Färre allergener'**
+  String get filterFewerAllergens;
+
+  /// No description provided for @onboardingAllergenCelery.
+  ///
+  /// In sv, this message translates to:
+  /// **'Selleri'**
+  String get onboardingAllergenCelery;
+
+  /// No description provided for @onboardingAllergenMustard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senap'**
+  String get onboardingAllergenMustard;
+
+  /// No description provided for @onboardingAllergenLupin.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lupin'**
+  String get onboardingAllergenLupin;
+
+  /// No description provided for @onboardingAllergenSulfite.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sulfiter'**
+  String get onboardingAllergenSulfite;
+
+  /// No description provided for @onboardingAllergenLactose.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laktos'**
+  String get onboardingAllergenLactose;
+
+  /// No description provided for @onboardingAllergenPeanut.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jordnötter'**
+  String get onboardingAllergenPeanut;
+
+  /// No description provided for @onboardingAllergenTreeNut.
+  ///
+  /// In sv, this message translates to:
+  /// **'Trädnötter'**
+  String get onboardingAllergenTreeNut;
+
+  /// No description provided for @onboardingAllergenCrustacean.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kräftdjur'**
+  String get onboardingAllergenCrustacean;
+
+  /// No description provided for @onboardingAllergenMollusc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Blötdjur'**
+  String get onboardingAllergenMollusc;
+
+  /// No description provided for @onboardingShowAllAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa alla allergener'**
+  String get onboardingShowAllAllergens;
+
+  /// No description provided for @onboardingShowFewerAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa färre'**
+  String get onboardingShowFewerAllergens;
+
   /// No description provided for @filterVegetarian.
   ///
   /// In sv, this message translates to:

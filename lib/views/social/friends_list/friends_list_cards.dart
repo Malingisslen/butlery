@@ -11,7 +11,6 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/views/social/group_detail_view.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Consolidated friends list card components
@@ -143,11 +142,10 @@ class GroupCard {
 
   static void _navigateToGroupDetail(
       BuildContext context, FriendCategory group) {
-    Navigator.push(
+    Navigator.pushNamed(
       context,
-      MaterialPageRoute(
-        builder: (context) => GroupDetailView(groupId: group.id),
-      ),
+      Routes.groupDetail,
+      arguments: group.id,
     );
   }
 }

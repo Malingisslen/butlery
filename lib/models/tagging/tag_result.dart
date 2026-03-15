@@ -76,7 +76,6 @@ class TagResult {
 
   /// Whether any matched ingredients have 'draft' status (AI-generated, unvalidated).
   /// When true, allergen/dietary classifications may be less reliable.
-  /// Not stored in Firestore — derived at tagging time.
   final bool hasDraftIngredients;
 
   /// Creates a TagResult with the given properties.
@@ -303,6 +302,10 @@ class TagResult {
       // V2: Read errorReason field
       errorReason:
           SerializationUtils.safeNullableString(migratedData, 'errorReason'),
+      // Persist draft ingredient warning across reloads
+      hasDraftIngredients: SerializationUtils.safeBool(
+          migratedData, 'hasDraftIngredients',
+          defaultValue: false),
       // CRIT-2: Track coverage anomaly from stored data
       hasCoverageAnomaly: hasCoverageAnomaly,
     );
@@ -332,6 +335,9 @@ class TagResult {
       // L12: Include schema version for future migrations
       'schemaVersion': kTagResultSchemaVersion,
     };
+
+    // Persist draft ingredient warning so it survives reload
+    result['hasDraftIngredients'] = hasDraftIngredients;
 
     // V2: Include errorReason if present
     if (errorReason != null) {
@@ -366,6 +372,8 @@ class TagResult {
       'isPartial': isPartial,
       // L12: Include schema version for future migrations
       'schemaVersion': kTagResultSchemaVersion,
+      // Persist draft ingredient warning
+      'hasDraftIngredients': hasDraftIngredients,
       // V2: Include errorReason if present
       if (errorReason != null) 'errorReason': errorReason,
       // H3: Include decisions if present (for debugging)
@@ -433,6 +441,10 @@ class TagResult {
       // V2: Read errorReason field
       errorReason:
           SerializationUtils.safeNullableString(migratedData, 'errorReason'),
+      // Persist draft ingredient warning across reloads
+      hasDraftIngredients: SerializationUtils.safeBool(
+          migratedData, 'hasDraftIngredients',
+          defaultValue: false),
       // CRIT-2: Track coverage anomaly from stored data
       hasCoverageAnomaly: hasCoverageAnomaly,
     );
@@ -746,6 +758,7 @@ class TagResult {
           generatorVersion == other.generatorVersion &&
           isPartial == other.isPartial &&
           hasCoverageAnomaly == other.hasCoverageAnomaly && // CRIT-2
+          hasDraftIngredients == other.hasDraftIngredients &&
           _decisionsEqual(decisions, other.decisions) &&
           errorReason == other.errorReason;
 
@@ -781,6 +794,7 @@ class TagResult {
         generatorVersion,
         isPartial,
         hasCoverageAnomaly, // CRIT-2
+        hasDraftIngredients,
         decisions != null ? Object.hashAll(decisions!) : null,
         errorReason,
       );
@@ -803,6 +817,7 @@ class TagResult {
     List<TagDecision>? decisions,
     String? errorReason,
     bool? hasCoverageAnomaly,
+    bool? hasDraftIngredients,
   }) {
     return TagResult(
       tags: tags ?? this.tags,
@@ -816,6 +831,7 @@ class TagResult {
       decisions: decisions ?? this.decisions,
       errorReason: errorReason ?? this.errorReason,
       hasCoverageAnomaly: hasCoverageAnomaly ?? this.hasCoverageAnomaly,
+      hasDraftIngredients: hasDraftIngredients ?? this.hasDraftIngredients,
     );
   }
 

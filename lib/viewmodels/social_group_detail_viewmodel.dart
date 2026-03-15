@@ -69,6 +69,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   List<UserProfile> _members = [];
   List<GroupInvitation> _pendingInvitations = [];
   StreamSubscription<GroupEventType>? _eventSubscription;
+  DateTime? _lastRefresh;
 
   /// Creates ViewModel with required dependencies.
   SocialGroupDetailViewModel({
@@ -191,10 +192,16 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   }
 
   /// Load group data from services.
+  /// Only force-refreshes if data is stale (>30s) to avoid unnecessary network
+  /// traffic on back-navigation. Use refreshData() for explicit pull-to-refresh.
   Future<void> loadGroupData() async {
     await executeAsync(() async {
-      // Force refresh to get latest data
-      await _friendsService.refresh();
+      final now = DateTime.now();
+      if (_lastRefresh == null ||
+          now.difference(_lastRefresh!).inSeconds > 30) {
+        await _friendsService.refresh();
+        _lastRefresh = now;
+      }
 
       _group = _friendsService.getCategoryById(groupId);
 
@@ -216,9 +223,9 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     });
   }
 
-  /// Refresh group data (pull-to-refresh).
-  /// loadGroupData() already calls _friendsService.refresh().
+  /// Refresh group data (pull-to-refresh). Always forces network fetch.
   Future<void> refreshData() async {
+    _lastRefresh = null; // Force refresh on next load
     await loadGroupData();
   }
 

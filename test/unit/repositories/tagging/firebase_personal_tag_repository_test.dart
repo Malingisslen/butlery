@@ -86,31 +86,30 @@ void main() {
 
   group('#9: FirebasePersonalTagRepository batch operations', () {
     group('getByIds', () {
+      // Real code uses whereIn batch queries, not per-doc .get().
+      // These tests mock the actual query chain for fidelity.
+
       test('returns tags for valid IDs', () async {
-        // Arrange
+        // Arrange: mock the whereIn query chain
         final tag1 =
             PersonalTagBuilder().withId('tag-1').withName('Tag One').build();
         final tag2 =
             PersonalTagBuilder().withId('tag-2').withName('Tag Two').build();
 
-        final mockDoc1 = MockDocumentSnapshot();
-        final mockDoc2 = MockDocumentSnapshot();
+        final mockQuery = MockQuery();
+        final mockQuerySnapshot = MockQuerySnapshot();
+        final mockQDoc1 = MockQueryDocumentSnapshot();
+        final mockQDoc2 = MockQueryDocumentSnapshot();
 
-        when(() => mockDoc1.exists).thenReturn(true);
-        when(() => mockDoc1.id).thenReturn('tag-1');
-        when(() => mockDoc1.data()).thenReturn(tag1.toFirestore());
+        when(() => mockCollection.where(any(), whereIn: any(named: 'whereIn')))
+            .thenReturn(mockQuery);
+        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
+        when(() => mockQuerySnapshot.docs).thenReturn([mockQDoc1, mockQDoc2]);
 
-        when(() => mockDoc2.exists).thenReturn(true);
-        when(() => mockDoc2.id).thenReturn('tag-2');
-        when(() => mockDoc2.data()).thenReturn(tag2.toFirestore());
-
-        final mockDocRef1 = MockDocumentReference();
-        final mockDocRef2 = MockDocumentReference();
-
-        when(() => mockCollection.doc('tag-1')).thenReturn(mockDocRef1);
-        when(() => mockCollection.doc('tag-2')).thenReturn(mockDocRef2);
-        when(() => mockDocRef1.get()).thenAnswer((_) async => mockDoc1);
-        when(() => mockDocRef2.get()).thenAnswer((_) async => mockDoc2);
+        when(() => mockQDoc1.id).thenReturn('tag-1');
+        when(() => mockQDoc1.data()).thenReturn(tag1.toFirestore());
+        when(() => mockQDoc2.id).thenReturn('tag-2');
+        when(() => mockQDoc2.data()).thenReturn(tag2.toFirestore());
 
         // Act
         final result = await repository.getByIds(['tag-1', 'tag-2']);
@@ -130,26 +129,23 @@ void main() {
       });
 
       test('ignores missing IDs silently', () async {
-        // Arrange
+        // Arrange: whereIn only returns docs that exist — missing IDs
+        // are simply absent from the result (Firestore behavior).
         final tag1 =
             PersonalTagBuilder().withId('tag-1').withName('Tag One').build();
 
-        final mockDoc1 = MockDocumentSnapshot();
-        final mockDoc2 = MockDocumentSnapshot();
+        final mockQuery = MockQuery();
+        final mockQuerySnapshot = MockQuerySnapshot();
+        final mockQDoc1 = MockQueryDocumentSnapshot();
 
-        when(() => mockDoc1.exists).thenReturn(true);
-        when(() => mockDoc1.id).thenReturn('tag-1');
-        when(() => mockDoc1.data()).thenReturn(tag1.toFirestore());
+        when(() => mockCollection.where(any(), whereIn: any(named: 'whereIn')))
+            .thenReturn(mockQuery);
+        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
+        // Only tag-1 exists; 'missing-tag' simply not in results
+        when(() => mockQuerySnapshot.docs).thenReturn([mockQDoc1]);
 
-        when(() => mockDoc2.exists).thenReturn(false); // Missing tag
-
-        final mockDocRef1 = MockDocumentReference();
-        final mockDocRef2 = MockDocumentReference();
-
-        when(() => mockCollection.doc('tag-1')).thenReturn(mockDocRef1);
-        when(() => mockCollection.doc('missing-tag')).thenReturn(mockDocRef2);
-        when(() => mockDocRef1.get()).thenAnswer((_) async => mockDoc1);
-        when(() => mockDocRef2.get()).thenAnswer((_) async => mockDoc2);
+        when(() => mockQDoc1.id).thenReturn('tag-1');
+        when(() => mockQDoc1.data()).thenReturn(tag1.toFirestore());
 
         // Act
         final result = await repository.getByIds(['tag-1', 'missing-tag']);

@@ -126,6 +126,9 @@ abstract class FriendsRepository extends Repository<UserProfile> {
   /// Update an invitation document
   Future<void> updateInvitation(String invitationId, Map<String, dynamic> data);
 
+  /// Delete an invitation document (used for sender cancellation)
+  Future<void> deleteInvitation(String invitationId);
+
   /// Get document references for invitations that have expired
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
       DateTime now);

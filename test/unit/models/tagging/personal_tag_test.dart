@@ -350,6 +350,93 @@ void main() {
         );
         expect(invalidTag.isValid, isFalse);
       });
+
+      group('boundary cases', () {
+        test('should pass when name is exactly 50 characters', () {
+          final name50 = 'a' * 50;
+          expect(name50.length, 50);
+          expect(PersonalTag.validateName(name50), isNull);
+        });
+
+        test('should fail when name is 51 characters', () {
+          final name51 = 'a' * 51;
+          expect(name51.length, 51);
+          expect(PersonalTag.validateName(name51), isNotNull);
+        });
+
+        test('should fail when name is null', () {
+          expect(PersonalTag.validateName(null), isNotNull);
+        });
+
+        test('should fail when name is empty string', () {
+          expect(PersonalTag.validateName(''), isNotNull);
+        });
+
+        test('should fail when name is only whitespace', () {
+          expect(PersonalTag.validateName('   '), isNotNull);
+        });
+
+        test('should pass when name is a single character', () {
+          // PersonalTag.validateName has no minimum length beyond non-empty
+          expect(PersonalTag.validateName('a'), isNull);
+        });
+
+        test('should fail when name contains a comma', () {
+          expect(PersonalTag.validateName('Tag, Other'), isNotNull);
+        });
+
+        test('should fail when name is reserved season tag "sommar"', () {
+          expect(PersonalTag.validateName('sommar'), isNotNull);
+        });
+
+        test('should fail when name is reserved season tag case-insensitive',
+            () {
+          expect(PersonalTag.validateName('Sommar'), isNotNull);
+          expect(PersonalTag.validateName('SOMMAR'), isNotNull);
+        });
+
+        test('should fail when name is reserved dietary tag "vegetarisk"', () {
+          expect(PersonalTag.validateName('vegetarisk'), isNotNull);
+        });
+
+        test('should fail when name is reserved allergen tag', () {
+          expect(PersonalTag.validateName('glutenfri'), isNotNull);
+          expect(PersonalTag.validateName('laktosfri'), isNotNull);
+        });
+
+        test('should fail when name is reserved cooking method tag', () {
+          expect(PersonalTag.validateName('ugnsbakad'), isNotNull);
+          expect(PersonalTag.validateName('grillad'), isNotNull);
+        });
+
+        test('should fail when name is reserved cuisine tag', () {
+          expect(PersonalTag.validateName('italiensk'), isNotNull);
+          expect(PersonalTag.validateName('thailändsk'), isNotNull);
+        });
+
+        test('should pass when name is a valid unique name', () {
+          expect(PersonalTag.validateName('Mammas Recept'), isNull);
+          expect(PersonalTag.validateName('Fredagsmiddag Special'), isNull);
+        });
+
+        test(
+            'should pass when name has leading/trailing whitespace that trims valid',
+            () {
+          // Whitespace is trimmed before length check, so padded 50-char name passes
+          expect(PersonalTag.validateName('  Valid Tag  '), isNull);
+        });
+
+        test('should evaluate length after trimming', () {
+          // 49 chars + surrounding spaces = still valid after trim
+          final name49 = 'a' * 49;
+          expect(PersonalTag.validateName('  $name49  '), isNull);
+        });
+
+        test('should fail when trimmed content exceeds 50 characters', () {
+          final name51 = 'a' * 51;
+          expect(PersonalTag.validateName('  $name51  '), isNotNull);
+        });
+      });
     });
 
     group('equality', () {

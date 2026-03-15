@@ -233,11 +233,7 @@ class AllergenConfig {
 
   /// Gets an allergen by key.
   static AllergenEntry? getByKey(String key) {
-    try {
-      return all.firstWhere((a) => a.key == key);
-    } catch (_) {
-      return null;
-    }
+    return all.where((a) => a.key == key).firstOrNull;
   }
 
   /// Gets all EU allergens.

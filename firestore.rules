@@ -74,7 +74,8 @@ service cloud.firestore {
         // Only allow known fields (including isPartial, schemaVersion added in v1.0)
         tagResult.keys().hasOnly(['tags', 'allergenStatus', 'dietaryStatus',
                                   'coverage', 'unknownIngredients', 'generatedAt',
-                                  'generatorVersion', 'isPartial', 'schemaVersion', 'errorReason']) &&
+                                  'generatorVersion', 'isPartial', 'schemaVersion',
+                                  'errorReason', 'hasDraftIngredients']) &&
         // Coverage must be valid percentage (0.0-1.0)
         (tagResult.get('coverage', 0) >= 0 && tagResult.get('coverage', 0) <= 1) &&
         // GeneratedAt must be a timestamp if present
@@ -167,12 +168,18 @@ service cloud.firestore {
 
       // User's personal tags for custom recipe categorization
       match /personalTagIds/{tagId} {
-        allow read, write: if isOwner(userId);
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId)
+          // Structural validation: prevent oversized documents
+          && request.resource.data.get('name', '').size() <= 50
+          && request.resource.data.get('rules', []).size() <= 20;
       }
 
       // User's personal tag groups for organizing tags
       match /personalTagGroups/{groupId} {
-        allow read, write: if isOwner(userId);
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId)
+          && request.resource.data.get('name', '').size() <= 50;
       }
 
       // User's friends list
@@ -200,11 +207,13 @@ service cloud.firestore {
           request.auth.uid in resource.data.get('pendingInviteUserIds', [])
         );
 
-        // Allow updating if already a member OR have a pending invitation
+        // Non-owner members and invited users can only modify friendUserIds and updatedAt
+        // (prevents privilege escalation: renaming group, changing owner, removing others)
         allow update: if isAuthenticated() && (
           isInList('friendUserIds') ||
           request.auth.uid in resource.data.get('pendingInviteUserIds', [])
-        );
+        ) && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['friendUserIds', 'updatedAt']);
       }
       
       // Connection tests (for app initialization)
@@ -1231,6 +1240,7 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['tagName', 'sharedByUserId', 'sharedByDisplayName', 'sharedAt'])
+        && request.resource.data.tagName.size() <= 50
         && rateLimitWrite('shared_personal_tags', 10);
 
       // Only the creator can update their shared tags

@@ -311,15 +311,19 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      final cancelledInvitation = invitation.copyWith(
-        status: GroupInvitationStatus.cancelled,
-        respondedAt: DateTime.now(),
+      // Remove from local state (invitation will be deleted from Firebase)
+      _parent.updateSentInvitationInternal(
+        invitationId,
+        invitation.copyWith(
+          status: GroupInvitationStatus.cancelled,
+          respondedAt: DateTime.now(),
+        ),
       );
-
-      _parent.updateSentInvitationInternal(invitationId, cancelledInvitation);
       _parent.notifyListenersInternal();
+
+      // Delete from Firebase (Firestore rules block sender updates, but allow delete)
       await _parent.updateInvitationStatusInternal(
-          cancelledInvitation.id, cancelledInvitation.status);
+          invitationId, GroupInvitationStatus.cancelled);
 
       AppLogger.success('Invitation cancelled');
       return true;

@@ -11,7 +11,7 @@ import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 
 /// Generator version for tracking changes.
 /// Bump on any tagging logic change so needsRetagging detects stale recipes.
-const String kTagGeneratorVersion = '2.0.0';
+const String kTagGeneratorVersion = '2.1.0';
 
 /// Orchestrates the 5-phase tag generation process.
 ///

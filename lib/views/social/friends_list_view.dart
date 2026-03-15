@@ -65,7 +65,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         if (mounted) {
           setState(() {
             _currentTabIndex = _tabController.index;
+            // Clear search synchronously on tab switch to avoid stale query flash
+            _searchQuery = '';
           });
+          context.read<FriendsViewModel>().updateSearch('');
         }
       }
     });

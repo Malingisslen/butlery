@@ -95,6 +95,16 @@ class RecipeFilters {
     'nut-free': 'nötter',
     'egg-free': 'ägg',
     'soy-free': 'soja',
+    'fish-free': 'fisk',
+    'sesame-free': 'sesam',
+    'celery-free': 'selleri',
+    'mustard-free': 'senap',
+    'shellfish-free': 'skaldjur',
+    'lupin-free': 'lupin',
+    'sulfite-free': 'sulfiter',
+    'peanut-free': 'jordnötter',
+    'tree-nut-free': 'trädnötter',
+    'alcohol-free': 'alkohol',
   };
 
   static const _dietaryFilterValues = {
@@ -122,7 +132,7 @@ class RecipeFilters {
   static String? dietaryFilterValue(String filterId) =>
       _dietaryFilterValues[filterId];
 
-  /// Allergen-free filters (recipe must be proven FREE from these).
+  /// Primary allergen-free filters (always visible).
   static List<FilterOption> allergenFreeFilters(BuildContext context) => [
         FilterOption(
           id: 'gluten-free',
@@ -160,6 +170,77 @@ class RecipeFilters {
           icon: Icons.check_circle_outline,
           value: 'soja',
         ),
+      ];
+
+  /// Extended allergen-free filters (shown in "More allergens" section).
+  static List<FilterOption> extendedAllergenFreeFilters(BuildContext context) =>
+      [
+        FilterOption(
+          id: 'fish-free',
+          label: context.l10n.filterFishFree,
+          icon: Icons.check_circle_outline,
+          value: 'fisk',
+        ),
+        FilterOption(
+          id: 'shellfish-free',
+          label: context.l10n.filterShellfishFree,
+          icon: Icons.check_circle_outline,
+          value: 'skaldjur',
+        ),
+        FilterOption(
+          id: 'sesame-free',
+          label: context.l10n.filterSesameFree,
+          icon: Icons.check_circle_outline,
+          value: 'sesam',
+        ),
+        FilterOption(
+          id: 'peanut-free',
+          label: context.l10n.filterPeanutFree,
+          icon: Icons.check_circle_outline,
+          value: 'jordnötter',
+        ),
+        FilterOption(
+          id: 'tree-nut-free',
+          label: context.l10n.filterTreeNutFree,
+          icon: Icons.check_circle_outline,
+          value: 'trädnötter',
+        ),
+        FilterOption(
+          id: 'celery-free',
+          label: context.l10n.filterCeleryFree,
+          icon: Icons.check_circle_outline,
+          value: 'selleri',
+        ),
+        FilterOption(
+          id: 'mustard-free',
+          label: context.l10n.filterMustardFree,
+          icon: Icons.check_circle_outline,
+          value: 'senap',
+        ),
+        FilterOption(
+          id: 'lupin-free',
+          label: context.l10n.filterLupinFree,
+          icon: Icons.check_circle_outline,
+          value: 'lupin',
+        ),
+        FilterOption(
+          id: 'sulfite-free',
+          label: context.l10n.filterSulfiteFree,
+          icon: Icons.check_circle_outline,
+          value: 'sulfiter',
+        ),
+        FilterOption(
+          id: 'alcohol-free',
+          label: context.l10n.filterAlcoholFree,
+          icon: Icons.check_circle_outline,
+          value: 'alkohol',
+        ),
+      ];
+
+  /// All allergen-free filters combined (primary + extended).
+  static List<FilterOption> allAllergenFreeFilters(BuildContext context) => [
+        ...allergenFreeFilters(context),
+        ...extendedAllergenFreeFilters(context)
       ];
 
   /// Dietary restriction filters (recipe must be safe for this diet).

@@ -172,28 +172,45 @@ class SocialDeletionOperations {
       var batch = _firestore.batch();
       var opCount = 0;
 
-      final queries = [
-        _firestore
-            .collection(FirestoreCollections.recipeComments)
-            .where('userId', isEqualTo: userId)
-            .get(),
-        _firestore
-            .collection(FirestoreCollections.recipeRatings)
-            .where('userId', isEqualTo: userId)
-            .get(),
-        _firestore
-            .collection(FirestoreCollections.menuComments)
-            .where('userId', isEqualTo: userId)
-            .get(),
-        _firestore
-            .collection(FirestoreCollections.menuRatings)
-            .where('userId', isEqualTo: userId)
-            .get(),
-      ];
+      // Recipe comments: anonymize (not delete) to preserve thread structure
+      final recipeComments = await _firestore
+          .collection(FirestoreCollections.recipeComments)
+          .where('authorId', isEqualTo: userId)
+          .get();
 
-      final results = await Future.wait(queries);
+      for (final doc in recipeComments.docs) {
+        batch.update(doc.reference, {
+          'authorId': 'deleted',
+          'authorDisplayName': 'Borttagen användare',
+          'authorAvatarUrl': null,
+          'isDeleted': true,
+          'text': '[Borttaget]',
+        });
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
+      }
 
-      for (final snapshot in results) {
+      // Recipe ratings: hard-delete (userId field is correct)
+      final recipeRatings = await _firestore
+          .collection(FirestoreCollections.recipeRatings)
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      // Menu comments: hard-delete (field is commentedBy)
+      final menuComments = await _firestore
+          .collection(FirestoreCollections.menuComments)
+          .where('commentedBy', isEqualTo: userId)
+          .get();
+
+      // Menu ratings: hard-delete (field is ratedBy)
+      final menuRatings = await _firestore
+          .collection(FirestoreCollections.menuRatings)
+          .where('ratedBy', isEqualTo: userId)
+          .get();
+
+      for (final snapshot in [recipeRatings, menuComments, menuRatings]) {
         for (final doc in snapshot.docs) {
           batch.delete(doc.reference);
           opCount++;

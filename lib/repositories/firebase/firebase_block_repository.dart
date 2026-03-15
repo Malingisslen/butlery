@@ -8,7 +8,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
-  FirebaseBlockRepository({required super.authRepository});
+  FirebaseBlockRepository({super.firestore, required super.authRepository});
 
   @override
   String get collectionName => 'blocks';

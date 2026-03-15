@@ -7091,6 +7091,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterSoyFree => 'Soy-free';
 
   @override
+  String get filterFishFree => 'Fish-free';
+
+  @override
+  String get filterSesameFree => 'Sesame-free';
+
+  @override
+  String get filterCeleryFree => 'Celery-free';
+
+  @override
+  String get filterMustardFree => 'Mustard-free';
+
+  @override
+  String get filterShellfishFree => 'Shellfish-free';
+
+  @override
+  String get filterLupinFree => 'Lupin-free';
+
+  @override
+  String get filterSulfiteFree => 'Sulfite-free';
+
+  @override
+  String get filterPeanutFree => 'Peanut-free';
+
+  @override
+  String get filterTreeNutFree => 'Tree nut-free';
+
+  @override
+  String get filterAlcoholFree => 'Alcohol-free';
+
+  @override
+  String get filterMoreAllergens => 'More allergens';
+
+  @override
+  String get filterFewerAllergens => 'Fewer allergens';
+
+  @override
+  String get onboardingAllergenCelery => 'Celery';
+
+  @override
+  String get onboardingAllergenMustard => 'Mustard';
+
+  @override
+  String get onboardingAllergenLupin => 'Lupin';
+
+  @override
+  String get onboardingAllergenSulfite => 'Sulfites';
+
+  @override
+  String get onboardingAllergenLactose => 'Lactose';
+
+  @override
+  String get onboardingAllergenPeanut => 'Peanuts';
+
+  @override
+  String get onboardingAllergenTreeNut => 'Tree nuts';
+
+  @override
+  String get onboardingAllergenCrustacean => 'Crustaceans';
+
+  @override
+  String get onboardingAllergenMollusc => 'Molluscs';
+
+  @override
+  String get onboardingShowAllAllergens => 'Show all allergens';
+
+  @override
+  String get onboardingShowFewerAllergens => 'Show fewer';
+
+  @override
   String get filterVegetarian => 'Vegetarian';
 
   @override

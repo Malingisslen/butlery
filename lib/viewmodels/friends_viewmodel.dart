@@ -92,8 +92,8 @@ class FriendsViewModel extends ChangeNotifier
   /// Search results for user discovery
   List<UserProfile> get searchResults => _searchManager.searchResults;
 
-  /// Search operation state (always false, kept for compatibility)
-  bool get isSearching => false;
+  /// Whether a network search is in progress
+  bool get isSearching => _searchManager.isSearching;
 
   /// Search error message
   String? get searchError => _searchManager.searchError;

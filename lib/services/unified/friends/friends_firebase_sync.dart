@@ -35,7 +35,9 @@ class FriendsFirebaseSyncOperations {
     }
   }
 
-  /// Update friend request status in Firebase
+  /// Update friend request status in Firebase.
+  /// For cancellation (by sender), uses delete since Firestore rules only
+  /// allow the recipient to update status. The delete rule permits both parties.
   Future<void> updateFriendRequestStatus(FriendRequest request) async {
     try {
       final querySnapshot = await firestore
@@ -46,11 +48,18 @@ class FriendsFirebaseSyncOperations {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        await querySnapshot.docs.first.reference.update({
-          'status': request.status.toString().split('.').last,
-          'respondedAt': request.respondedAt ?? DateTime.now(),
-        });
-        AppLogger.success('Updated friend request status in Firebase');
+        if (request.status == FriendRequestStatus.cancelled) {
+          // Sender cancellation: delete the doc (Firestore rules block sender updates)
+          await querySnapshot.docs.first.reference.delete();
+          AppLogger.success('Deleted cancelled friend request from Firebase');
+        } else {
+          // Recipient accept/reject: update normally
+          await querySnapshot.docs.first.reference.update({
+            'status': request.status.toString().split('.').last,
+            'respondedAt': request.respondedAt ?? DateTime.now(),
+          });
+          AppLogger.success('Updated friend request status in Firebase');
+        }
       }
     } catch (e) {
       AppLogger.error('Failed to update friend request status', e);
@@ -77,6 +86,7 @@ class FriendsFirebaseSyncOperations {
           .set({
         'friendSince': DateTime.now(),
         'displayName': friend.displayName,
+        'displayNameLower': friend.displayName.toLowerCase(),
       });
 
       // Also add reverse relationship
@@ -93,6 +103,66 @@ class FriendsFirebaseSyncOperations {
     } catch (e) {
       AppLogger.error('Failed to sync friend to Firebase', e);
       rethrow;
+    }
+  }
+
+  /// Backfill displayNameLower for legacy friend docs missing the field.
+  /// Gated by a per-user migration flag to run only once.
+  Future<void> backfillDisplayNameLower(String userId) async {
+    try {
+      // Check migration flag
+      final migrationDoc = await firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection('rateLimits')
+          .doc('friendSearchMigrated')
+          .get();
+
+      if (migrationDoc.exists) return;
+
+      final friendsSnapshot = await firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.userFriends)
+          .get();
+
+      final docsToUpdate = friendsSnapshot.docs
+          .where((doc) => doc.data()['displayNameLower'] == null)
+          .toList();
+
+      if (docsToUpdate.isNotEmpty) {
+        var batch = firestore.batch();
+        var opCount = 0;
+
+        for (final doc in docsToUpdate) {
+          final displayName = doc.data()['displayName'] as String?;
+          if (displayName != null) {
+            batch.update(doc.reference, {
+              'displayNameLower': displayName.toLowerCase(),
+            });
+            opCount++;
+            if (opCount >= 450) {
+              await batch.commit();
+              batch = firestore.batch();
+              opCount = 0;
+            }
+          }
+        }
+
+        if (opCount > 0) await batch.commit();
+        AppLogger.success(
+            'Backfilled displayNameLower for ${docsToUpdate.length} friend docs');
+      }
+
+      // Set migration flag
+      await firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection('rateLimits')
+          .doc('friendSearchMigrated')
+          .set({'migratedAt': DateTime.now()});
+    } catch (e) {
+      AppLogger.warning('Failed to backfill displayNameLower: $e');
     }
   }
 

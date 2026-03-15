@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -58,6 +59,20 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
   Future<bool> validateDeletePermission(
           String userId, String resourceId) async =>
       true;
+
+  // Ownership is structural (user subcollection) — skip per-document
+  // validation and audit logging that the base readAll() does.
+  @override
+  Future<List<PersonalTag>> readAll() async {
+    requireCurrentUserId();
+    try {
+      final snapshot = await getCollectionRef().get();
+      return snapshot.docs.map(fromFirestore).toList();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to read all PersonalTag: $e', stackTrace);
+      rethrow;
+    }
+  }
 
   /// Gets all tags sorted by sortOrder.
   ///
@@ -128,9 +143,8 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
         i,
         (i + batchSize).clamp(0, tagIds.length),
       );
-      final snapshot = await ref
-          .where(FieldPath.documentId, whereIn: batch)
-          .get();
+      final snapshot =
+          await ref.where(FieldPath.documentId, whereIn: batch).get();
       results.addAll(snapshot.docs.map(fromFirestore));
     }
 

@@ -166,6 +166,13 @@ class UnifiedFriendsService extends ChangeNotifier
 
           // Run migration to ensure owners are members of their groups
           await categories.migrateOwnersAsMembers();
+
+          // Backfill displayNameLower for legacy friend docs (fire-and-forget)
+          _firebaseSyncOps
+              .backfillDisplayNameLower(user.uid)
+              .catchError((e) {
+            AppLogger.warning('displayNameLower backfill failed: $e');
+          });
         } else {
           // User logged out - clear all cached data
           AppLogger.info('🚪 User logged out - clearing friends data');
@@ -183,6 +190,14 @@ class UnifiedFriendsService extends ChangeNotifier
 
       // Run migration to ensure owners are members of their groups
       await categories.migrateOwnersAsMembers();
+
+      // Backfill displayNameLower for legacy friend docs (fire-and-forget)
+      final userId = currentUserId;
+      if (userId != null) {
+        _firebaseSyncOps.backfillDisplayNameLower(userId).catchError((e) {
+          AppLogger.warning('displayNameLower backfill failed: $e');
+        });
+      }
     }
 
     AppLogger.success(

@@ -51,7 +51,7 @@ class ResolvedTagData {
   /// Raw auto-generated tags before overrides.
   final Set<String> autoTags;
 
-  /// User-defined personal tags (stored as names).
+  /// User-defined personal tags (stored as UUIDs via personalTagIds).
   final Set<String> personalTags;
 
   /// Auto-tags after applying user overrides (added/removed).

@@ -230,10 +230,31 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   }
 
   /// Cancel a sent friend request.
+  /// Uses delete instead of update because Firestore rules only allow the
+  /// recipient (toUserId) to update status. The delete rule permits both parties.
   Future<bool> cancelFriendRequest(String requestId) async {
     final req = await fetchRequest(requestId);
     if (req == null) return false;
-    await updateRequest(req.cancel());
+
+    final currentUser = requireCurrentUserId();
+    if (currentUser != req.fromUserId) {
+      throw PermissionDeniedException(
+        'Only the sender can cancel a friend request',
+        resource: 'friend_request',
+        operation: 'cancel',
+        userId: currentUser,
+      );
+    }
+
+    await _friendRequestsRef.doc(requestId).delete();
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_request',
+      operation: 'cancel_delete',
+      granted: true,
+      details: 'Deleted request $requestId',
+    );
     return true;
   }
 

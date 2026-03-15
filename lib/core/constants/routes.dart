@@ -63,6 +63,7 @@ class Routes {
   static const String createSharedShopping = '/create-shared-shopping';
   static const String friendProfile = '/friend-profile';
   static const String sharedShoppingLists = '/shared-shopping-lists';
+  static const String groupDetail = '/group-detail';
 
   // Messaging routes
   static const String messages = '/messages';
@@ -114,6 +115,7 @@ class Routes {
     createSharedShopping,
     friendProfile,
     sharedShoppingLists,
+    groupDetail,
     messages,
     chat,
     cookingMode,
@@ -150,6 +152,7 @@ class Routes {
     createSharedShopping,
     friendProfile,
     sharedShoppingLists,
+    groupDetail,
     messages,
     chat,
     cookingMode,
@@ -236,6 +239,7 @@ class Routes {
     createSharedShopping,
     friendProfile,
     sharedShoppingLists,
+    groupDetail,
 
     // Messaging
     messages,

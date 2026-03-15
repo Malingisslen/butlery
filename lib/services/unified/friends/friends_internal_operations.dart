@@ -69,11 +69,16 @@ class FriendsInternalOperations {
           return;
         }
 
-        // ✅ CRITICAL FIX: Save to category owner's subcollection, not current user's!
-        // This allows members to update groups they've joined via invitation
+        // Route to correct method based on ownership to prevent privilege escalation
         AppLogger.debug(
             'Syncing category ${category.id} to owner ${category.ownerId} (current user: $currentUserId)');
-        await _categoryRepository.saveCategory(category.ownerId, category);
+        if (currentUserId == category.ownerId) {
+          await _categoryRepository.saveCategory(category.ownerId, category);
+        } else {
+          // Non-owner: only add self as member (no full doc overwrite)
+          await _categoryRepository.addSelfToCategory(
+              category.ownerId, category.id);
+        }
         AppLogger.success('✅ Category synced to Firebase: ${category.name}');
       } catch (e) {
         final errorString = e.toString();
@@ -99,9 +104,15 @@ class FriendsInternalOperations {
               } else {
                 AppLogger.warning(
                     '⚠️ Member count mismatch after save: expected $expectedMemberCount, got $savedMemberCount - retrying save');
-                // Retry the save operation
-                await _categoryRepository.saveCategory(
-                    category.ownerId, category);
+                // Retry the save operation (only owner can do full save)
+                final retryUserId = _authRepository.currentUser?.uid;
+                if (retryUserId == category.ownerId) {
+                  await _categoryRepository.saveCategory(
+                      category.ownerId, category);
+                } else {
+                  await _categoryRepository.addSelfToCategory(
+                      category.ownerId, category.id);
+                }
                 AppLogger.success(
                     '✅ Retry succeeded: ${category.name} ($expectedMemberCount members)');
                 return;
@@ -232,14 +243,22 @@ class FriendsInternalOperations {
     }
 
     try {
-      // Update invitation status in Firebase
-      await ServiceLocator.get<FriendsRepository>()
-          .updateInvitation(invitationId, {
-        'status': status.toString().split('.').last,
-        'respondedAt': DateTime.now(),
-      });
-      AppLogger.success(
-          '✅ Updated invitation $invitationId status to $status in Firebase');
+      final repo = ServiceLocator.get<FriendsRepository>();
+
+      if (status == GroupInvitationStatus.cancelled) {
+        // Sender cancellation: delete the doc (Firestore rules block sender updates)
+        await repo.deleteInvitation(invitationId);
+        AppLogger.success(
+            '✅ Deleted cancelled invitation $invitationId from Firebase');
+      } else {
+        // Recipient accept/reject: update normally
+        await repo.updateInvitation(invitationId, {
+          'status': status.toString().split('.').last,
+          'respondedAt': DateTime.now(),
+        });
+        AppLogger.success(
+            '✅ Updated invitation $invitationId status to $status in Firebase');
+      }
     } catch (e) {
       AppLogger.error('Failed to update invitation status in Firebase', e);
       rethrow;

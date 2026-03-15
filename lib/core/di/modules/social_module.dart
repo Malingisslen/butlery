@@ -120,7 +120,16 @@ class SocialModule implements DIModule {
 
       container.registerLazySingleton<CommentsRepository>(
         () => FirebaseCommentsRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+          recipeAccessValidator: (recipeId, userId) async {
+            try {
+              final coordinator = container<SocialRecipeCoordinator>();
+              return await coordinator.canViewRecipe(recipeId, userId);
+            } catch (_) {
+              return false;
+            }
+          },
+        ),
       );
 
       container.registerLazySingleton<RatingsRepository>(
@@ -194,10 +203,9 @@ class SocialModule implements DIModule {
                 AppLogger.error('SocialMenuCoordinator error: $error'),
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getMenu: (id) async {
-              // Stub: UnifiedMenuService.getById not yet available
-              AppLogger.warning(
+              // TODO(social-phase-2): implement when UnifiedMenuService.getById is available
+              throw UnimplementedError(
                   'SocialMenuCoordinator.getMenu not yet implemented');
-              return null;
             },
             saveMenu: (Map<String, List<Recipe>> menu) async {
               try {
@@ -253,16 +261,14 @@ class SocialModule implements DIModule {
                 AppLogger.error('SocialShoppingCoordinator error: $error'),
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getShoppingList: (id) async {
-              // Stub: UnifiedShoppingService.getById not yet available
-              AppLogger.warning(
+              // TODO(social-phase-2): implement when UnifiedShoppingService.getById is available
+              throw UnimplementedError(
                   'SocialShoppingCoordinator.getShoppingList not yet implemented');
-              return null;
             },
             saveShoppingList: (list) async {
-              // Stub: UnifiedShoppingService.save not yet available
-              AppLogger.warning(
+              // TODO(social-phase-2): implement when UnifiedShoppingService.save is available
+              throw UnimplementedError(
                   'SocialShoppingCoordinator.saveShoppingList not yet implemented');
-              return null;
             },
             cacheHelper: container<JsonCacheHelper>(),
           );

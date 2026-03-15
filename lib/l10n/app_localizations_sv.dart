@@ -7108,6 +7108,75 @@ class AppLocalizationsSv extends AppLocalizations {
   String get filterSoyFree => 'Sojafri';
 
   @override
+  String get filterFishFree => 'Fiskfri';
+
+  @override
+  String get filterSesameFree => 'Sesamfri';
+
+  @override
+  String get filterCeleryFree => 'Sellerifri';
+
+  @override
+  String get filterMustardFree => 'Senapfri';
+
+  @override
+  String get filterShellfishFree => 'Skaldjursfri';
+
+  @override
+  String get filterLupinFree => 'Lupinfri';
+
+  @override
+  String get filterSulfiteFree => 'Sulfitfri';
+
+  @override
+  String get filterPeanutFree => 'Jordnötsfri';
+
+  @override
+  String get filterTreeNutFree => 'Trädnötsfri';
+
+  @override
+  String get filterAlcoholFree => 'Alkoholfri';
+
+  @override
+  String get filterMoreAllergens => 'Fler allergener';
+
+  @override
+  String get filterFewerAllergens => 'Färre allergener';
+
+  @override
+  String get onboardingAllergenCelery => 'Selleri';
+
+  @override
+  String get onboardingAllergenMustard => 'Senap';
+
+  @override
+  String get onboardingAllergenLupin => 'Lupin';
+
+  @override
+  String get onboardingAllergenSulfite => 'Sulfiter';
+
+  @override
+  String get onboardingAllergenLactose => 'Laktos';
+
+  @override
+  String get onboardingAllergenPeanut => 'Jordnötter';
+
+  @override
+  String get onboardingAllergenTreeNut => 'Trädnötter';
+
+  @override
+  String get onboardingAllergenCrustacean => 'Kräftdjur';
+
+  @override
+  String get onboardingAllergenMollusc => 'Blötdjur';
+
+  @override
+  String get onboardingShowAllAllergens => 'Visa alla allergener';
+
+  @override
+  String get onboardingShowFewerAllergens => 'Visa färre';
+
+  @override
   String get filterVegetarian => 'Vegetarisk';
 
   @override
