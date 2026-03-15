@@ -81,120 +81,24 @@ class GroupSharedContentService extends BaseService {
   })  : _firestore = firestore,
         _permissionService = permissionService;
 
-  /// Get all shopping lists shared with a group
-  /// Returns lists where all group members are in sharedWithUserIds
+  // -- Public get methods --
+
   Future<List<SharedContentItem>> getSharedShoppingLists(
     FriendCategory group,
   ) async {
-    try {
-      final currentUserId = _permissionService.currentUserId;
-      if (currentUserId == null) return [];
-
-      final allMemberIds = group.allMemberIds;
-
-      AppLogger.debug('🔍 [SHOPPING_LISTS] Querying for group: ${group.name}');
-      AppLogger.debug('   All IDs for query: $allMemberIds');
-
-      // Query shopping lists shared with at least one group member
-      // C5 fix: field is 'sharedToUserIds' in shared_shopping_lists collection
-      final snapshot = await _firestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
-          .orderBy('sharedAt', descending: true)
-          .limit(20)
-          .get();
-
-      AppLogger.debug('   Found ${snapshot.docs.length} shopping lists');
-
-      final items = snapshot.docs
-          .map((doc) => SharedContentItem.fromFirestore(doc, 'shopping_list'))
-          .toList();
-
-      if (items.isNotEmpty) {
-        AppLogger.debug('   First item: ${items[0].title}');
-      }
-
-      return items;
-    } catch (e) {
-      AppLogger.error('Failed to fetch shared shopping lists for group', e);
-      return [];
-    }
+    return _getSharedContent(
+        group, FirestoreCollections.sharedShoppingLists, 'shopping_list');
   }
 
-  /// Get all menus shared with a group
   Future<List<SharedContentItem>> getSharedMenus(FriendCategory group) async {
-    try {
-      final currentUserId = _permissionService.currentUserId;
-      if (currentUserId == null) return [];
-
-      final allMemberIds = group.allMemberIds;
-
-      AppLogger.debug('🔍 [MENUS] Querying for group: ${group.name}');
-      AppLogger.debug('   All IDs for query: $allMemberIds');
-
-      // Query menus shared with at least one group member
-      final snapshot = await _firestore
-          .collection(FirestoreCollections.sharedMenus)
-          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
-          .orderBy('sharedAt', descending: true)
-          .limit(20)
-          .get();
-
-      AppLogger.debug('   Found ${snapshot.docs.length} menus');
-
-      final items = snapshot.docs
-          .map((doc) => SharedContentItem.fromFirestore(doc, 'menu'))
-          .toList();
-
-      if (items.isNotEmpty) {
-        AppLogger.debug('   First item: ${items[0].title}');
-      }
-
-      return items;
-    } catch (e) {
-      AppLogger.error('Failed to fetch shared menus for group', e);
-      return [];
-    }
+    return _getSharedContent(group, FirestoreCollections.sharedMenus, 'menu');
   }
 
-  /// Get all recipes shared with a group
-  /// Note: This depends on the actual recipe sharing implementation
   Future<List<SharedContentItem>> getSharedRecipes(
     FriendCategory group,
   ) async {
-    try {
-      final currentUserId = _permissionService.currentUserId;
-      if (currentUserId == null) return [];
-
-      final allMemberIds = group.allMemberIds;
-
-      AppLogger.debug('🔍 [RECIPES] Querying for group: ${group.name}');
-      AppLogger.debug('   All IDs for query: $allMemberIds');
-
-      // Query recipes shared with at least one group member
-      // Note: arrayContainsAny supports up to 30 values — sufficient for current group sizes
-      final snapshot = await _firestore
-          .collection(FirestoreCollections.sharedRecipes)
-          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
-          .orderBy('sharedAt', descending: true)
-          .limit(20)
-          .get();
-
-      AppLogger.debug('   Found ${snapshot.docs.length} recipes');
-
-      final items = snapshot.docs
-          .map((doc) => SharedContentItem.fromFirestore(doc, 'recipe'))
-          .toList();
-
-      if (items.isNotEmpty) {
-        AppLogger.debug('   First item: ${items[0].title}');
-      }
-
-      return items;
-    } catch (e) {
-      AppLogger.warning('Failed to fetch shared recipes for group: $e');
-      return [];
-    }
+    return _getSharedContent(
+        group, FirestoreCollections.sharedRecipes, 'recipe');
   }
 
   /// Get all shared content for a group (combined)
@@ -214,62 +118,87 @@ class GroupSharedContentService extends BaseService {
     };
   }
 
-  /// Stream of shopping lists shared with group (real-time updates)
+  // -- Public stream methods --
+
   Stream<List<SharedContentItem>> streamSharedShoppingLists(
     FriendCategory group,
   ) {
-    try {
-      return _firestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .where('sharedToUserIds', arrayContainsAny: group.allMemberIds)
-          .orderBy('sharedAt', descending: true)
-          .limit(20)
-          .snapshots()
-          .map((snapshot) => snapshot.docs
-              .map((doc) =>
-                  SharedContentItem.fromFirestore(doc, 'shopping_list'))
-              .toList());
-    } catch (e) {
-      AppLogger.error('Failed to stream shared shopping lists', e);
-      return Stream.value([]);
-    }
+    return _streamSharedContent(
+        group, FirestoreCollections.sharedShoppingLists, 'shopping_list');
   }
 
-  /// Stream of menus shared with group (real-time updates)
   Stream<List<SharedContentItem>> streamSharedMenus(FriendCategory group) {
+    return _streamSharedContent(
+        group, FirestoreCollections.sharedMenus, 'menu');
+  }
+
+  Stream<List<SharedContentItem>> streamSharedRecipes(FriendCategory group) {
+    return _streamSharedContent(
+        group, FirestoreCollections.sharedRecipes, 'recipe');
+  }
+
+  // -- Private helpers --
+
+  Future<List<SharedContentItem>> _getSharedContent(
+    FriendCategory group,
+    String collection,
+    String contentType,
+  ) async {
     try {
-      return _firestore
-          .collection(FirestoreCollections.sharedMenus)
-          .where('sharedToUserIds', arrayContainsAny: group.allMemberIds)
+      final currentUserId = _permissionService.currentUserId;
+      if (currentUserId == null) return [];
+
+      final allMemberIds = group.allMemberIds;
+
+      AppLogger.debug(
+          '🔍 [${contentType.toUpperCase()}] Querying for group: ${group.name}');
+      AppLogger.debug('   All IDs for query: $allMemberIds');
+
+      // arrayContainsAny supports up to 30 values — sufficient for current group sizes
+      final snapshot = await _firestore
+          .collection(collection)
+          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
-          .snapshots()
-          .map((snapshot) => snapshot.docs
-              .map((doc) => SharedContentItem.fromFirestore(doc, 'menu'))
-              .toList());
+          .get();
+
+      AppLogger.debug('   Found ${snapshot.docs.length} $contentType items');
+
+      final items = snapshot.docs
+          .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
+          .toList();
+
+      if (items.isNotEmpty) {
+        AppLogger.debug('   First item: ${items[0].title}');
+      }
+
+      return items;
     } catch (e) {
-      AppLogger.error('Failed to stream shared menus', e);
-      return Stream.value([]);
+      AppLogger.warning('Failed to fetch shared $contentType for group: $e');
+      return [];
     }
   }
 
-  /// Stream of recipes shared with group (real-time updates)
-  Stream<List<SharedContentItem>> streamSharedRecipes(FriendCategory group) {
+  Stream<List<SharedContentItem>> _streamSharedContent(
+    FriendCategory group,
+    String collection,
+    String contentType,
+  ) {
     try {
       final userId = _permissionService.currentUserId;
       if (userId == null) return Stream.value([]);
 
       return _firestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(collection)
           .where('sharedToUserIds', arrayContainsAny: group.allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .snapshots()
           .map((snapshot) => snapshot.docs
-              .map((doc) => SharedContentItem.fromFirestore(doc, 'recipe'))
+              .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
               .toList());
     } catch (e) {
-      AppLogger.warning('Failed to stream shared recipes: $e');
+      AppLogger.warning('Failed to stream shared $contentType: $e');
       return Stream.value([]);
     }
   }
