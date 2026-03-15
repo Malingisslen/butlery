@@ -756,7 +756,9 @@ class FirebaseSharedShoppingRepository
             'User does not have access to shopping list $listId');
       }
     } catch (e) {
-      if (e is PermissionDeniedException) rethrow;
+      if (e is PermissionDeniedException || e is AuthenticationException) {
+        rethrow;
+      }
       AppLogger.error('Failed to validate access for list $listId: $e');
       throw RepositoryException('Failed to validate list access: $e');
     }

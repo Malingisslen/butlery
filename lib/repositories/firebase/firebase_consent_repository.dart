@@ -134,9 +134,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
       );
       return consent;
     } catch (e) {
-      if (e is PermissionDeniedException || e is AuthenticationException) {
-        rethrow;
-      }
+      _rethrowSecurityExceptions(e);
       AppLogger.error('Failed to get user consent for $userId: $e');
       return null;
     }
@@ -184,9 +182,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
       );
       return true;
     } catch (e) {
-      if (e is PermissionDeniedException || e is AuthenticationException) {
-        rethrow;
-      }
+      _rethrowSecurityExceptions(e);
       AppLogger.error('Failed to save consent for $userId: $e');
       return false;
     }
@@ -220,9 +216,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
       AppLogger.success('✅ Consent deleted for user $userId');
       return true;
     } catch (e) {
-      if (e is PermissionDeniedException || e is AuthenticationException) {
-        rethrow;
-      }
+      _rethrowSecurityExceptions(e);
       AppLogger.error('Failed to delete consent for $userId: $e');
       return false;
     }
@@ -255,11 +249,15 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
       );
       return history;
     } catch (e) {
-      if (e is PermissionDeniedException || e is AuthenticationException) {
-        rethrow;
-      }
+      _rethrowSecurityExceptions(e);
       AppLogger.error('Failed to get consent history for $userId: $e');
       return [];
     }
+  }
+
+  /// Rethrows security exceptions that must propagate to callers.
+  Never? _rethrowSecurityExceptions(Object e) {
+    if (e is PermissionDeniedException || e is AuthenticationException) throw e;
+    return null;
   }
 }

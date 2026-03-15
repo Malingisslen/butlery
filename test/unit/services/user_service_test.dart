@@ -610,9 +610,7 @@ void main() {
         // Act
         await userService.dispose();
 
-        // Assert
-        // Service should be disposed without errors
-        expect(true, isTrue);
+        // Assert — test passes if dispose() completes without throwing
       });
     });
   });

@@ -57,7 +57,9 @@ void main() {
     });
 
     group('Permission Validation', () {
-      test('should reject create when senderId is null (system uses Cloud Functions)', () async {
+      test(
+          'should reject create when senderId is null (system uses Cloud Functions)',
+          () async {
         // Arrange - notification without senderId (system notification)
         final notification = _createNotification('user-123');
 
@@ -72,7 +74,8 @@ void main() {
       test('should allow users to create notification for themselves',
           () async {
         // Arrange - senderId must match the authenticated user
-        final notification = _createNotification('user-123', senderId: 'user-123');
+        final notification =
+            _createNotification('user-123', senderId: 'user-123');
 
         // Act
         final canCreate =
@@ -653,7 +656,9 @@ void main() {
     });
 
     group('Notification Preferences', () {
-      test('should serialize notification preferences with correct field structure', () {
+      test(
+          'should serialize notification preferences with correct field structure',
+          () {
         // Arrange
         final preferences = NotificationPreferences.defaults();
 
@@ -668,19 +673,23 @@ void main() {
         expect(data['vibrationEnabled'], isTrue);
         expect(data['digestFrequency'], equals('never'));
 
-        // Verify nested categorySettings map
+        // Verify nested categorySettings map (use enum.toString() to stay in sync with serialization)
         final categorySettings = data['categorySettings'] as Map<String, bool>;
-        expect(categorySettings['NotificationCategory.friends'], isTrue);
-        expect(categorySettings['NotificationCategory.recipes'], isTrue);
-        expect(categorySettings['NotificationCategory.shopping'], isFalse);
-        expect(categorySettings['NotificationCategory.social'], isFalse);
+        expect(
+            categorySettings[NotificationCategory.friends.toString()], isTrue);
+        expect(
+            categorySettings[NotificationCategory.recipes.toString()], isTrue);
+        expect(categorySettings[NotificationCategory.shopping.toString()],
+            isFalse);
+        expect(
+            categorySettings[NotificationCategory.social.toString()], isFalse);
 
         // Verify nested typeSettings map
         final typeSettings = data['typeSettings'] as Map<String, bool>;
-        expect(typeSettings['NotificationType.immediate'], isTrue);
-        expect(typeSettings['NotificationType.batchable'], isTrue);
-        expect(typeSettings['NotificationType.digest'], isFalse);
-        expect(typeSettings['NotificationType.optional'], isFalse);
+        expect(typeSettings[NotificationType.immediate.toString()], isTrue);
+        expect(typeSettings[NotificationType.batchable.toString()], isTrue);
+        expect(typeSettings[NotificationType.digest.toString()], isFalse);
+        expect(typeSettings[NotificationType.optional.toString()], isFalse);
       });
 
       test('should reject updating preferences for another user', () async {
