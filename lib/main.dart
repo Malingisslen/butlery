@@ -821,7 +821,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
       // Check if user has completed onboarding
       final profile = _userService.currentUserProfile;
-      if (profile != null && !profile.hasCompletedOnboarding) {
+      if (profile == null) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+      if (!profile.hasCompletedOnboarding) {
         AppLogger.debug('AuthWrapper: User needs onboarding');
         return OnboardingView(key: ValueKey('onboarding_${user.uid}'));
       }

@@ -302,9 +302,9 @@ void main() {
         final recipes = await stream.first;
 
         // Assert
-        expect(recipes, hasLength(50));
+        expect(recipes, hasLength(60)); // All 60 fit within 500 limit
         expect(recipes.first.id, equals('recipe-59'));
-        expect(recipes.last.id, equals('recipe-10'));
+        expect(recipes.last.id, equals('recipe-0'));
       });
 
       test('should subscribe to recipe changes', () async {

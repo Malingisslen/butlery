@@ -192,11 +192,10 @@ class FirebaseSharedRecipeRepository
       'sharedToUserIds': FieldValue.arrayUnion([sharedRecipe.sharedByUserId]),
     });
 
-    // Add all recipients to members subcollection (Issue #014: Unlimited sharing)
-    // Each addMember call also appends to sharedToUserIds via arrayUnion
-    for (final recipientId in recipientIds) {
-      await addMember(recipeId, recipientId, addedBy: uid);
-    }
+    // Add all recipients concurrently — each addMember also appends to sharedToUserIds
+    await Future.wait(
+      recipientIds.map((id) => addMember(recipeId, id, addedBy: uid)),
+    );
 
     AppLogger.success(
         '✅ Created shared recipe with ${recipientIds.length} members in subcollection');

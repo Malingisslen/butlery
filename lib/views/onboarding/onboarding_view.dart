@@ -50,29 +50,32 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Top bar with skip button
-            _buildTopBar(context, viewModel),
-            // Page content
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: viewModel.setPage,
-                children: const [
-                  OnboardingWelcomePage(),
-                  OnboardingAllergenPage(),
-                  OnboardingDietaryPage(),
-                  OnboardingImportPage(),
-                ],
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: cs.surface,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Top bar with skip button
+              _buildTopBar(context, viewModel),
+              // Page content
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: viewModel.setPage,
+                  children: const [
+                    OnboardingWelcomePage(),
+                    OnboardingAllergenPage(),
+                    OnboardingDietaryPage(),
+                    OnboardingImportPage(),
+                  ],
+                ),
               ),
-            ),
-            // Bottom section: dot indicators + navigation button
-            _buildBottomSection(context, viewModel),
-          ],
+              // Bottom section: dot indicators + navigation button
+              _buildBottomSection(context, viewModel),
+            ],
+          ),
         ),
       ),
     );
@@ -232,10 +235,15 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   Future<void> _completeOnboarding(
       BuildContext context, OnboardingViewModel viewModel) async {
     final success = await viewModel.completeOnboarding();
-    if (success && context.mounted) {
+    if (!context.mounted) return;
+    if (success) {
       Navigator.of(context).pushNamedAndRemoveUntil(
         Routes.home,
         (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.errorGeneric)),
       );
     }
   }

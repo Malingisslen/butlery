@@ -142,23 +142,47 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     Duration delay, {
     String? errorPrefix,
   }) async {
-    // Cancel existing timer
     _pendingOperations[operationName]?.cancel();
 
+    // Resolve superseded caller's future to prevent indefinite hang
+    final oldCompleter = _pendingCompleters[operationName];
+    if (oldCompleter != null && !oldCompleter.isCompleted) {
+      oldCompleter.complete(null);
+    }
+
+    // Generation counter detects stale in-flight results after re-debounce
+    final generation = (_operationGenerations[operationName] ?? 0) + 1;
+    _operationGenerations[operationName] = generation;
+
     final completer = Completer<T?>();
+    _pendingCompleters[operationName] = completer;
 
     _pendingOperations[operationName] = Timer(delay, () async {
       try {
+        // allowConcurrent lets debounce manage its own concurrency via generations,
+        // avoiding mutation of _activeOperations from outside executeNamedOperation
         final result = await executeNamedOperation(
           operationName,
           operation,
           errorPrefix: errorPrefix,
+          allowConcurrent: true,
         );
-        completer.complete(result);
+        if (!completer.isCompleted) {
+          if (_operationGenerations[operationName] == generation) {
+            completer.complete(result);
+          } else {
+            completer.complete(null);
+          }
+        }
       } catch (e) {
-        completer.completeError(e);
+        if (!completer.isCompleted) completer.completeError(e);
       } finally {
-        _pendingOperations.remove(operationName);
+        // Only clean up if we're still the current generation
+        if (_operationGenerations[operationName] == generation) {
+          _pendingOperations.remove(operationName);
+          _pendingCompleters.remove(operationName);
+          _operationGenerations.remove(operationName);
+        }
       }
     });
 
@@ -328,6 +352,11 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     _pendingOperations[operationName]?.cancel();
     _pendingOperations.remove(operationName);
     _activeOperations.remove(operationName);
+    // Resolve pending future so awaiting callers don't hang indefinitely
+    final completer = _pendingCompleters.remove(operationName);
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(null);
+    }
     AppLogger.debug('Operation $operationName cancelled');
   }
 
@@ -338,6 +367,14 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     }
     _pendingOperations.clear();
     _activeOperations.clear();
+    // Resolve all pending futures so awaiting callers don't hang indefinitely
+    for (final completer in _pendingCompleters.values) {
+      if (!completer.isCompleted) {
+        completer.complete(null);
+      }
+    }
+    _pendingCompleters.clear();
+    _operationGenerations.clear();
     AppLogger.debug('All operations cancelled');
   }
 
@@ -362,8 +399,8 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     return _pendingOperations.containsKey(operationName);
   }
 
-  /// Storage for operation execution times (for throttling)
-  static final Map<String, DateTime> _executionTimes = {};
+  /// Instance-scoped to prevent cross-ViewModel throttle interference
+  final Map<String, DateTime> _executionTimes = {};
 
   DateTime? _getLastExecutionTime(String operationName) {
     return _executionTimes[operationName];
@@ -382,6 +419,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     }
     _cacheExpiryTimers.clear();
     clearOperationCache();
+    _executionTimes.clear();
     super.dispose();
   }
 }
