@@ -180,12 +180,11 @@ class GroupSharedContentService extends BaseService {
       AppLogger.debug('   Group members: ${group.friendUserIds}');
       AppLogger.debug('   All IDs for query: $allMemberIds');
 
-      // TODO: Issue #014 migrated shared_recipes to subcollection-based members.
-      // This query won't find new docs. Needs CollectionGroup query on /members
-      // or a denormalized sharedToUserIds field for backward compatibility.
+      // Query recipes shared with at least one group member
+      // Note: arrayContainsAny supports up to 30 values — sufficient for current group sizes
       final snapshot = await _firestore
           .collection(FirestoreCollections.sharedRecipes)
-          .where('sharedByUserId', isEqualTo: currentUserId)
+          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .get();
@@ -203,7 +202,6 @@ class GroupSharedContentService extends BaseService {
       return items;
     } catch (e) {
       AppLogger.warning('Failed to fetch shared recipes for group: $e');
-      // Recipe sharing might use a different structure
       return [];
     }
   }
@@ -270,9 +268,12 @@ class GroupSharedContentService extends BaseService {
       final userId = _permissionService.currentUserId;
       if (userId == null) return Stream.value([]);
 
+      // Include owner in query — friendUserIds might not include the owner
+      final allMemberIds = [group.ownerId, ...group.friendUserIds];
+
       return _firestore
           .collection(FirestoreCollections.sharedRecipes)
-          .where('sharedByUserId', isEqualTo: userId)
+          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .snapshots()
@@ -280,7 +281,6 @@ class GroupSharedContentService extends BaseService {
               .map((doc) => SharedContentItem.fromFirestore(doc, 'recipe'))
               .toList());
     } catch (e) {
-      // Recipe sharing might use a different structure
       AppLogger.warning('Failed to stream shared recipes: $e');
       return Stream.value([]);
     }

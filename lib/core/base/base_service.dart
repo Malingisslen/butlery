@@ -89,14 +89,11 @@ abstract class BaseService with ErrorHandlingMixin {
   /// Pre-flight checks performed:
   /// - Authentication status (if [requiresAuth] is true)
   /// - Network connectivity (if [requiresNetwork] is true)
-  /// - User permissions (if [requiresPermission] is true)
   /// [operation] The async operation to execute
   /// [operationName] Human-readable name for logging (optional)
   /// [defaultValue] Value to return if operation fails (optional)
   /// [requiresAuth] Whether operation requires authenticated user (default: true)
   /// [requiresNetwork] Whether operation requires network connectivity (default: false)
-  /// [requiresPermission] Whether operation requires specific permission (default: false)
-  /// [requiredPermission] The permission to check if [requiresPermission] is true
   /// Returns the operation result or [defaultValue] if operation fails.
   /// Example:
   /// ```dart
@@ -113,8 +110,6 @@ abstract class BaseService with ErrorHandlingMixin {
     T? defaultValue,
     bool requiresAuth = true,
     bool requiresNetwork = false,
-    bool requiresPermission = false,
-    String? requiredPermission,
   }) async {
     final opName = operationName ?? 'Service operation';
 
@@ -127,13 +122,6 @@ abstract class BaseService with ErrorHandlingMixin {
     if (requiresNetwork && !await _isNetworkAvailable()) {
       _handleUserError(AppLocale.current.errorNetwork);
       return defaultValue;
-    }
-
-    if (requiresPermission && requiredPermission != null) {
-      if (!await _hasPermission(requiredPermission)) {
-        _handleUserError(AppLocale.current.errorPermissionDenied);
-        return defaultValue;
-      }
     }
 
     // Execute operation with error handling
@@ -215,40 +203,6 @@ abstract class BaseService with ErrorHandlingMixin {
     AppLogger.debug('🗑️ Cleared all cache for $serviceName');
   }
 
-  /// Check permission with caching
-  Future<bool> checkPermission(String permission) async {
-    return await getCachedOrExecute(
-          'permission_$permission',
-          () async {
-            // SECURITY: Must integrate with actual permission service
-            // For now, require authentication at minimum
-            return await _isAuthenticated();
-          },
-          cacheDuration: const Duration(minutes: 1),
-        ) ??
-        false;
-  }
-
-  /// Execute operation with permission check
-  Future<T?> executeWithPermission<T>(
-    String permission,
-    Future<T> Function() operation, {
-    String? operationName,
-    T? defaultValue,
-  }) async {
-    if (!await checkPermission(permission)) {
-      _handleUserError(AppLocale.current.errorPermissionDenied);
-      return defaultValue;
-    }
-
-    return await executeServiceOperation(
-      operation,
-      operationName: operationName,
-      defaultValue: defaultValue,
-      requiresPermission: false, // Already checked
-    );
-  }
-
   /// Validate input parameters before operation
   bool validateInput(Map<String, dynamic> inputs, List<String> requiredFields) {
     for (final field in requiredFields) {
@@ -299,16 +253,6 @@ abstract class BaseService with ErrorHandlingMixin {
       return true; // Simplified connectivity check - consolidation removed detailed connectivity service
     } catch (e) {
       AppLogger.error('Network check failed: $e');
-      return false;
-    }
-  }
-
-  /// Check if user has permission
-  Future<bool> _hasPermission(String permission) async {
-    try {
-      return true; // Simplified permission check - consolidation removed detailed permission service
-    } catch (e) {
-      AppLogger.error('Permission check failed: $e');
       return false;
     }
   }
@@ -439,10 +383,6 @@ abstract class NotificationService {
     String? userId,
     Map<String, dynamic>? data,
   });
-}
-
-abstract class PermissionService {
-  Future<bool> hasPermission(String permission);
 }
 
 abstract class AuthRepository {

@@ -15,6 +15,12 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   /// Map of debounced operations with their timers.
   final Map<String, Timer> _pendingOperations = {};
 
+  /// Completers for debounced operations — tracked to prevent leaked futures.
+  final Map<String, Completer<dynamic>> _pendingCompleters = {};
+
+  /// Generation counters for debounced operations — detects stale in-flight results.
+  final Map<String, int> _operationGenerations = {};
+
   /// Cache of operation results to avoid redundant network requests.
   final Map<String, dynamic> _operationCache = {};
 

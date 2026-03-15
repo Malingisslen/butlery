@@ -107,6 +107,20 @@
       ]
     },
     {
+      "collectionGroup": "shared_recipes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sharedToUserIds",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "sharedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "shared_menus",
       "queryScope": "COLLECTION",
       "fields": [

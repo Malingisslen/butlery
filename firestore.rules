@@ -406,9 +406,11 @@ service cloud.firestore {
 
     match /shared_recipes/{shareId} {
 
-      // Can list recipes you created (for "my shared recipes" view)
-      allow list: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
+      // Can list recipes you created or are shared with you
+      allow list: if isAuthenticated() && (
+        request.auth.uid == resource.data.sharedByUserId ||
+        request.auth.uid in resource.data.sharedToUserIds
+      );
 
       // Can read specific document if you're the owner or a member (Issue #014: subcollection-based)
       allow get: if isAuthenticated() && (
