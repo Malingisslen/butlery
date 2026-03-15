@@ -141,6 +141,9 @@ class FriendCategory {
   /// Compatibility getter for operations that expect memberIds
   List<String> get memberIds => friendUserIds;
 
+  /// All member IDs including the owner — for queries that need the full group
+  List<String> get allMemberIds => [ownerId, ...friendUserIds];
+
   /// Added: Alias for ownerId for compatibility with permissions
   String get createdBy => ownerId;
 

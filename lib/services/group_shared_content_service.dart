@@ -90,12 +90,9 @@ class GroupSharedContentService extends BaseService {
       final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return [];
 
-      // Include owner in query - friendUserIds might not include the owner
-      final allMemberIds = [group.ownerId, ...group.friendUserIds];
+      final allMemberIds = group.allMemberIds;
 
       AppLogger.debug('🔍 [SHOPPING_LISTS] Querying for group: ${group.name}');
-      AppLogger.debug('   Group owner: ${group.ownerId}');
-      AppLogger.debug('   Group members: ${group.friendUserIds}');
       AppLogger.debug('   All IDs for query: $allMemberIds');
 
       // Query shopping lists shared with at least one group member
@@ -130,12 +127,9 @@ class GroupSharedContentService extends BaseService {
       final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return [];
 
-      // Include owner in query - friendUserIds might not include the owner
-      final allMemberIds = [group.ownerId, ...group.friendUserIds];
+      final allMemberIds = group.allMemberIds;
 
       AppLogger.debug('🔍 [MENUS] Querying for group: ${group.name}');
-      AppLogger.debug('   Group owner: ${group.ownerId}');
-      AppLogger.debug('   Group members: ${group.friendUserIds}');
       AppLogger.debug('   All IDs for query: $allMemberIds');
 
       // Query menus shared with at least one group member
@@ -172,12 +166,9 @@ class GroupSharedContentService extends BaseService {
       final currentUserId = _permissionService.currentUserId;
       if (currentUserId == null) return [];
 
-      // Include owner in query - friendUserIds might not include the owner
-      final allMemberIds = [group.ownerId, ...group.friendUserIds];
+      final allMemberIds = group.allMemberIds;
 
       AppLogger.debug('🔍 [RECIPES] Querying for group: ${group.name}');
-      AppLogger.debug('   Group owner: ${group.ownerId}');
-      AppLogger.debug('   Group members: ${group.friendUserIds}');
       AppLogger.debug('   All IDs for query: $allMemberIds');
 
       // Query recipes shared with at least one group member
@@ -230,7 +221,7 @@ class GroupSharedContentService extends BaseService {
     try {
       return _firestore
           .collection(FirestoreCollections.sharedShoppingLists)
-          .where('sharedToUserIds', arrayContainsAny: group.friendUserIds)
+          .where('sharedToUserIds', arrayContainsAny: group.allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .snapshots()
@@ -249,7 +240,7 @@ class GroupSharedContentService extends BaseService {
     try {
       return _firestore
           .collection(FirestoreCollections.sharedMenus)
-          .where('sharedToUserIds', arrayContainsAny: group.friendUserIds)
+          .where('sharedToUserIds', arrayContainsAny: group.allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .snapshots()
@@ -268,12 +259,9 @@ class GroupSharedContentService extends BaseService {
       final userId = _permissionService.currentUserId;
       if (userId == null) return Stream.value([]);
 
-      // Include owner in query — friendUserIds might not include the owner
-      final allMemberIds = [group.ownerId, ...group.friendUserIds];
-
       return _firestore
           .collection(FirestoreCollections.sharedRecipes)
-          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
+          .where('sharedToUserIds', arrayContainsAny: group.allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .snapshots()

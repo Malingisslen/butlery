@@ -516,7 +516,28 @@ class UserService extends ChangeNotifier
       AppLogger.success('Onboarding marked as complete');
     } catch (e) {
       AppLogger.error('Failed to mark onboarding complete', e);
+      rethrow;
     }
+  }
+
+  /// Complete onboarding with preferences in a single atomic write.
+  Future<void> completeOnboardingWithPreferences(
+      UserAllergenPreferences? preferences) async {
+    final userId = currentUserId;
+    if (userId == null || _currentUserProfile == null) {
+      throw StateError('No current user for onboarding completion');
+    }
+
+    final updated = _currentUserProfile!.copyWith(
+      allergenPreferences:
+          preferences ?? _currentUserProfile!.allergenPreferences,
+      hasCompletedOnboarding: true,
+    );
+    await _repository.saveProfile(updated);
+
+    _currentUserProfile = updated;
+    _profileCache[userId] = updated;
+    notifyListeners();
   }
 
   /// Clear FCM token (e.g., on logout)

@@ -29,16 +29,16 @@ class OnboardingViewModel extends ChangeNotifier {
       _analytics?.logEvent(name: 'onboarding_started');
     }
     _currentPage = page;
+    _analytics?.logEvent(
+      name: 'onboarding_page_viewed',
+      parameters: {'page': _currentPage},
+    );
     notifyListeners();
   }
 
   void nextPage() {
     if (_currentPage < 3) {
       _currentPage++;
-      _analytics?.logEvent(
-        name: 'onboarding_page_viewed',
-        parameters: {'page': _currentPage},
-      );
       notifyListeners();
     }
   }
@@ -83,17 +83,15 @@ class OnboardingViewModel extends ChangeNotifier {
     try {
       final userService = ServiceLocator.get<UserService>();
 
-      // Save allergen/dietary preferences if any were selected
-      if (_selectedAllergens.isNotEmpty || _selectedDietaryPrefs.isNotEmpty) {
-        final prefs = UserAllergenPreferences(
-          trackedAllergens: _selectedAllergens,
-          trackedDietary: _selectedDietaryPrefs,
-        );
-        await userService.updateAllergenPreferences(prefs);
-      }
-
-      // Mark onboarding as completed on the profile
-      await userService.markOnboardingComplete();
+      // Save preferences and mark onboarding complete in a single write
+      final prefs =
+          (_selectedAllergens.isNotEmpty || _selectedDietaryPrefs.isNotEmpty)
+              ? UserAllergenPreferences(
+                  trackedAllergens: _selectedAllergens,
+                  trackedDietary: _selectedDietaryPrefs,
+                )
+              : null;
+      await userService.completeOnboardingWithPreferences(prefs);
 
       if (_currentPage < 3) {
         _analytics?.logEvent(

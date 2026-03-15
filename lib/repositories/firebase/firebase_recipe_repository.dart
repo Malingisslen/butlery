@@ -34,7 +34,7 @@ import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 /// - **Audit Logging**: Logs permission checks for security monitoring
 /// - **Field Validation**: Validates required fields and data integrity
 /// **Performance Optimizations:**
-/// - **Streaming Limits**: Caps recipe streams at 50 most recent recipes
+/// - **Streaming Limits**: Caps recipe streams at 500 most recent recipes
 /// - **Search Limits**: Limits search scope to 200 most recent recipes for performance
 /// - **Archive Limits**: Restricts archive queries to 100 recipes maximum
 /// - **Efficient Queries**: Uses server-side ordering and filtering where possible
@@ -54,7 +54,7 @@ import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 /// await recipeRepo.create(newRecipe);
 /// // Stream with performance limits
 /// recipeRepo.watchRecipes(userId).listen((recipes) {
-///   // Receives max 50 most recent recipes
+///   // Receives max 500 most recent recipes
 /// });
 /// // Search with scope limits
 /// final results = await recipeRepo.searchRecipes('chicken');
@@ -370,7 +370,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // ✅ PERFORMANCE FIX: Added limit to prevent streaming large datasets
     return getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
-        .limit(50) // Stream max 50 most recent recipes
+        .limit(
+            500) // Stream up to 500 recipes — UI has its own display pagination
         .snapshots()
         .map((snap) => snap.docs.map(fromFirestore).toList());
   }
@@ -613,7 +614,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }) {
     return getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
-        .limit(50)
+        .limit(500)
         .snapshots()
         .listen((snapshot) {
       onSyncStatusChanged?.call(
