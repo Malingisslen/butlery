@@ -7210,6 +7210,7 @@
     }
   },
   "commentDeleted": "[Kommentar borttagen]",
+  "deletedUser": "Borttagen användare",
   "sharedMenuTitlePattern": "{name}s veckomeny",
   "@sharedMenuTitlePattern": {
     "placeholders": {

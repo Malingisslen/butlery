@@ -10550,6 +10550,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commentDeleted => '[Comment deleted]';
 
   @override
+  String get deletedUser => 'Deleted user';
+
+  @override
   String sharedMenuTitlePattern(String name) {
     return '$name\'s weekly menu';
   }

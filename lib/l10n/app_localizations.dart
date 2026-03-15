@@ -18113,6 +18113,12 @@ abstract class AppLocalizations {
   /// **'[Kommentar borttagen]'**
   String get commentDeleted;
 
+  /// No description provided for @deletedUser.
+  ///
+  /// In sv, this message translates to:
+  /// **'Borttagen användare'**
+  String get deletedUser;
+
   /// No description provided for @sharedMenuTitlePattern.
   ///
   /// In sv, this message translates to:

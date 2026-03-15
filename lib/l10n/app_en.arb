@@ -7189,6 +7189,7 @@
     }
   },
   "commentDeleted": "[Comment deleted]",
+  "deletedUser": "Deleted user",
   "sharedMenuTitlePattern": "{name}'s weekly menu",
   "@sharedMenuTitlePattern": {
     "placeholders": {
