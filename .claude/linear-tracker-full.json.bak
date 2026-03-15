@@ -1,0 +1,2803 @@
+{
+  "findings": {
+    "direct-firestore-access": {
+      "issueId": "BUT-5",
+      "linearId": "84470002-a395-4b8e-a18d-1b4f00d0fd60",
+      "title": "Fix direct Firestore access in friends_state_manager.dart",
+      "createdAt": "2026-03-04",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Constructor injection only, no .instance calls in friends_state_manager",
+      "auditDate": "2026-03-15"
+    },
+    "files-exceeding-500-lines": {
+      "issueId": "BUT-6",
+      "linearId": "74d5d3b1-ce3e-451d-9bac-72d3545e358b",
+      "title": "Reduce 18 files exceeding 500-line limit",
+      "createdAt": "2026-03-04",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — 33 accepted exceptions, but ~30+ new files over 500 lines not documented.",
+      "auditDate": "2026-03-15"
+    },
+    "untested-services-viewmodels": {
+      "issueId": "BUT-7",
+      "linearId": "d59ff96c-02ca-4be0-9d4f-e10afbe9f923",
+      "title": "Add test coverage for untested services and viewmodels",
+      "createdAt": "2026-03-04",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — good coverage for core flows. Import, upload, social gaps remain.",
+      "auditDate": "2026-03-15"
+    },
+    "discontinued-dependencies": {
+      "issueId": "BUT-8",
+      "linearId": "f50bb758-6dd2-4790-8209-5bb3c555965c",
+      "title": "Remove discontinued transitive dependencies",
+      "createdAt": "2026-03-04",
+      "auditStatus": "done",
+      "auditComment": "FIXED: No deprecated packages remain in pubspec.yaml",
+      "auditDate": "2026-03-15"
+    },
+    "major-dependency-updates": {
+      "issueId": "BUT-9",
+      "linearId": "c2267a73-7ae6-498c-8b25-d99f5911b3d3",
+      "title": "Update major dependency versions",
+      "createdAt": "2026-03-04",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Largely resolved — all major deps current. Firebase BOM 33.7.0.",
+      "auditDate": "2026-03-15"
+    },
+    "direct-firebaseauth-access": {
+      "issueId": "BUT-10",
+      "linearId": "606b7d62-5054-4e82-ac08-5fc30a54c69f",
+      "title": "Fix direct FirebaseAuth access in auth_service.dart",
+      "createdAt": "2026-03-04",
+      "auditPriority": "urgent"
+    },
+    "import-html-sanitizer-bypass": {
+      "issueId": "BUT-12",
+      "linearId": "3f7cf849-171a-44a1-bf18-3759d1db1b34",
+      "title": "Import pipeline bypasses HtmlSanitizer for fetched HTML",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: HtmlSanitizer.stripToPlainText() called in url_import_strategy.dart",
+      "auditDate": "2026-03-15"
+    },
+    "error-message-info-disclosure": {
+      "issueId": "BUT-13",
+      "linearId": "54d04eba-4b80-4d17-ac5b-c238dc3926c4",
+      "title": "Error messages expose internal implementation details to users",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — SnackBarUtils sanitizes errors, but BaseViewModel.executeAsync stores raw e.toString() in _error field.",
+      "auditDate": "2026-03-15"
+    },
+    "ssrf-url-import": {
+      "issueId": "BUT-14",
+      "linearId": "22e45a10-efd0-4690-8f53-92303f45f5f1",
+      "title": "Add SSRF protection for URL import (private IP / metadata endpoint blocking)",
+      "createdAt": "2026-03-05",
+      "auditPriority": "urgent"
+    },
+    "stale-todo-fix-friends-tests": {
+      "issueId": "BUT-15",
+      "linearId": "03c26a04-65a1-43e6-9e99-b05a8ed2bc9a",
+      "title": "Fix 6 stale 'TODO Fix' test groups in unified_friends_service_test",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "5 of 6 TODO Fix groups remain (syncBlockedUsers removed).",
+      "updatedTitle": "Fix 5 stale TODO Fix test groups in unified_friends_service_test",
+      "auditDate": "2026-03-15"
+    },
+    "missing-firestore-security-rules": {
+      "issueId": "BUT-16",
+      "linearId": "897d0d98-acee-4457-9368-54179015036f",
+      "title": "Add missing Firestore security rules for 6 collections (features silently broken)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: All Firestore collections now have rules. Default-deny catch-all at line 1615.",
+      "auditDate": "2026-03-15"
+    },
+    "predictable-deeplink-shortcode": {
+      "issueId": "BUT-17",
+      "linearId": "8cae9d49-fba8-479c-83b2-b9594c3321ba",
+      "title": "Fix predictable deep link short code generation (weak entropy)",
+      "createdAt": "2026-03-05",
+      "auditPriority": "urgent"
+    },
+    "ultrathink-debug-strings": {
+      "issueId": "BUT-18",
+      "linearId": "efd9f019-230f-411b-ab35-dc262c1c3b6c",
+      "title": "Remove ULTRATHINK debug strings from production logger calls (16 files)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open-updated",
+      "auditComment": "Count grew from 16 to 19 files with ULTRATHINK debug strings.",
+      "updatedTitle": "Remove ULTRATHINK debug strings from production logger calls (19 files)",
+      "auditDate": "2026-03-15",
+      "auditPriority": "medium"
+    },
+    "firestore-rule-quality": {
+      "issueId": "BUT-19",
+      "linearId": "06f6784a-9ab0-4107-aeaf-ff8aa74c19a4",
+      "title": "Fix Firestore rule quality issues across 5 collections",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: 78KB rules file with helper functions, CRIT-numbered reviews complete",
+      "auditDate": "2026-03-15"
+    },
+    "silent-catch-blocks": {
+      "issueId": "BUT-20",
+      "linearId": "e598a56b-f4b7-45ca-a1c1-96ce5fd7a940",
+      "title": "Add logging to ~25 silent catch blocks across 15+ files",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Reduced from ~25 to 3 silent catch blocks. Remaining: web_scraper.dart (x2), app_monitoring_service.dart (x1).",
+      "updatedTitle": "Fix 3 remaining silent catch blocks (web_scraper, app_monitoring)",
+      "auditDate": "2026-03-15"
+    },
+    "unbounded-queries-n-plus-1": {
+      "issueId": "BUT-21",
+      "linearId": "26a04335-2dd4-426f-9fe7-a7a1d5419f47",
+      "title": "Fix unbounded Firestore queries and N+1 patterns (22+ locations)",
+      "createdAt": "2026-03-05",
+      "mergedFrom": [
+        "BUT-67"
+      ],
+      "auditStatus": "partially-fixed",
+      "auditComment": "Largely fixed — 23+ repo files have .limit(). Remaining N+1 in deleteBatch and createSharedRecipe.",
+      "auditDate": "2026-03-15"
+    },
+    "missing-accessibility-annotations": {
+      "issueId": "BUT-22",
+      "linearId": "f1919ac8-0076-4eaa-95ec-e95940d94923",
+      "title": "Add missing accessibility annotations (tooltips + semanticLabels)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — many tooltips added, ~8 IconButtons in social views still missing tooltip.",
+      "auditDate": "2026-03-15"
+    },
+    "dead-code-changenotifier-antipatterns": {
+      "issueId": "BUT-23",
+      "linearId": "1788d80d-7f45-4a61-80ec-8f1b1bd7dee7",
+      "title": "Remove dead code and fix ChangeNotifier anti-patterns",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — no ChangeNotifier anti-patterns, but 7+ @Deprecated methods not yet removed.",
+      "auditDate": "2026-03-15"
+    },
+    "broken-deep-links-invalid-routes": {
+      "issueId": "BUT-24",
+      "linearId": "306caf61-4ac3-45c5-adea-1bbc46513bf0",
+      "title": "Fix broken recipe deep links and invalid route references (3 bugs)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — deep_link_handler uses Routes constants. 3 files still use hardcoded '/login'.",
+      "auditDate": "2026-03-15"
+    },
+    "unsafe-fromjson-casts": {
+      "issueId": "BUT-25",
+      "linearId": "e5723771-f53b-43f5-8311-89b65215d159",
+      "title": "Fix unsafe fromJson() casts across 10+ models",
+      "createdAt": "2026-03-05",
+      "auditPriority": "medium"
+    },
+    "rating-distribution-map-crash": {
+      "issueId": "BUT-26",
+      "linearId": "78e12b63-6668-476a-9002-5873d6e8b881",
+      "title": "Fix Map<int,int>.from() crash on Firestore ratingDistribution",
+      "createdAt": "2026-03-05",
+      "auditPriority": "high"
+    },
+    "unstored-stream-subscriptions": {
+      "issueId": "BUT-27",
+      "linearId": "f27304de-719e-4274-ae61-b3ae8056885b",
+      "title": "Fix unstored StreamSubscription leaks in 5 services/widgets",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "2 of 5 unstored subscriptions remain: auth_service.dart:40, feature_flag_service.dart:191.",
+      "updatedTitle": "Fix 2 unstored StreamSubscriptions (auth_service, feature_flag_service)",
+      "auditDate": "2026-03-15"
+    },
+    "dart-io-web-crashes": {
+      "issueId": "BUT-28",
+      "linearId": "635e46d9-7428-4d3e-8128-a454d85f8d4d",
+      "title": "Add kIsWeb guards for dart:io usage in 4 core files",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open-updated",
+      "auditComment": "Now 6 files need kIsWeb guards (was 4). Added: user_profile_viewmodel.dart, recipe_image_manager.dart.",
+      "updatedTitle": "Add kIsWeb guards to 6 files with dart:io imports for web compatibility",
+      "auditDate": "2026-03-15",
+      "auditPriority": "medium"
+    },
+    "completer-double-completion": {
+      "issueId": "BUT-29",
+      "linearId": "87d7b38a-6023-4203-8827-8e4ee0b59bc4",
+      "title": "Fix Completer double-completion crash in StartupOptimizationManager",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Guard + error path correct in StartupOptimizationManager completer",
+      "auditDate": "2026-03-15"
+    },
+    "hardcoded-route-strings": {
+      "issueId": "BUT-30",
+      "linearId": "8587ecc2-46e0-4d07-9103-33d0993f48f9",
+      "title": "Replace hardcoded route strings with Routes constants (21 occurrences)",
+      "createdAt": "2026-03-05",
+      "auditPriority": "medium"
+    },
+    "hardcoded-collection-names": {
+      "issueId": "BUT-31",
+      "linearId": "d5b0464e-6d74-4942-b007-fee4014a7c76",
+      "title": "Replace hardcoded Firestore collection names with constants (14 occurrences)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Mostly fixed — 3 residual hardcoded .collection('users') in rate-limit paths. Down from 14 to 3.",
+      "auditDate": "2026-03-15"
+    },
+    "stale-personal-tag-viewmodel": {
+      "issueId": "BUT-32",
+      "linearId": "ef873368-2695-49eb-ad28-ea034c91e87b",
+      "title": "Fix singleton PersonalTagViewModel retaining stale data across logout",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Not singleton, has dispose(), no cross-logout retention",
+      "auditDate": "2026-03-15"
+    },
+    "unsafe-enum-access": {
+      "issueId": "BUT-33",
+      "linearId": "b940ff99-527b-4a73-93d7-f87d90c25d62",
+      "title": "Add enum bounds checks and .byName() fallbacks in models",
+      "createdAt": "2026-03-05",
+      "auditPriority": "medium"
+    },
+    "negative-friends-count": {
+      "issueId": "BUT-34",
+      "linearId": "f0989b11-b931-4b41-b513-760f9eea7215",
+      "title": "Fix friendsCount negative decrement in removeMutualFriends",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Transaction + existence check in removeMutualFriends prevents negative count",
+      "auditDate": "2026-03-15"
+    },
+    "state-notifier-mixin-disposed-guard": {
+      "issueId": "BUT-35",
+      "linearId": "0187e87e-5453-4544-8659-5182f82e1753",
+      "title": "Fix StateNotifierMixin missing disposed guard (systemic — affects ~20 ViewModels)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "dispose() exists but no per-method _isDisposed guard. Need guard on setLoading/setError/clearError.",
+      "updatedTitle": "Add _isDisposed check to StateNotifierMixin setLoading/setError/clearError",
+      "auditDate": "2026-03-15"
+    },
+    "batch-chunking-firestore": {
+      "issueId": "BUT-36",
+      "linearId": "3ed4fa76-7ea6-455b-acad-ef5c949a99d0",
+      "title": "Add batch chunking to 15+ unguarded Firestore batch operations",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: batchLimit = 500 with skip/take loop in heavy operations",
+      "auditDate": "2026-03-15"
+    },
+    "input-length-limits-validation": {
+      "issueId": "BUT-37",
+      "linearId": "5aa0d0ce-d93a-45c9-8753-8dd86947e875",
+      "title": "Add input length limits and validation to 12+ forms and backend paths",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — only 5 forms have maxLength. No Firestore field length validation.",
+      "auditDate": "2026-03-15"
+    },
+    "non-atomic-writes-race-condition": {
+      "issueId": "BUT-38",
+      "linearId": "8433e6c6-5c2d-4dd3-9fca-2d857b182e53",
+      "title": "Fix Firestore write safety: non-atomic sharing + comment like race condition",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Comment liking uses batch write with FieldValue.increment (atomic). Sharing ops use WriteBatch/runTransaction.",
+      "auditDate": "2026-03-15"
+    },
+    "uncancellable-async-retry-patterns": {
+      "issueId": "BUT-39",
+      "linearId": "bd35972a-489a-4f3b-bda1-25bb400a29df",
+      "title": "Fix uncancellable async retry and polling patterns across 6 locations",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — upload retry has cancellation. Pagination loop lacks cancellation but bounded.",
+      "auditDate": "2026-03-15"
+    },
+    "http-client-leak-ocr": {
+      "issueId": "BUT-40",
+      "linearId": "f66f47cc-737c-4622-ab09-95a589f7acc4",
+      "title": "Fix HTTP Client leak in OcrExtractionService (new client per call)",
+      "createdAt": "2026-03-05",
+      "auditPriority": "high"
+    },
+    "image-cache-width-missing": {
+      "issueId": "BUT-41",
+      "linearId": "4d58f5d2-c5be-4979-824c-7365235ffe1e",
+      "title": "Add cacheWidth/cacheHeight to network images on recipe detail and fullscreen",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — no cacheWidth/cacheHeight on recipe detail or fullscreen images.",
+      "auditDate": "2026-03-15"
+    },
+    "unbounded-memory-caches": {
+      "issueId": "BUT-42",
+      "linearId": "ac03600b-d59f-4bf4-be2f-b32d4a4218c5",
+      "title": "Add size caps to 4 unbounded in-memory caches",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — 3/4 caches bounded. realtime_sync_service and user_service unbounded.",
+      "auditDate": "2026-03-15"
+    },
+    "redos-url-regex": {
+      "issueId": "BUT-43",
+      "linearId": "6cbb40b1-af6a-43e6-a02c-893b52f40542",
+      "title": "Fix ReDoS vulnerability in FormValidators._urlRegex",
+      "createdAt": "2026-03-05",
+      "auditPriority": "medium"
+    },
+    "error-propagation-swallowed": {
+      "issueId": "BUT-44",
+      "linearId": "fdfeecb5-8cdb-49f7-b682-cce9de037ab1",
+      "title": "Fix error propagation: repositories swallow errors + stale VM error state",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: base_firebase_repository.dart now rethrows all errors (commit c4603170)",
+      "auditDate": "2026-03-15"
+    },
+    "auth-session-forcesignout-gaps": {
+      "issueId": "BUT-45",
+      "linearId": "6c1e19b0-cb92-434a-8089-e1d4fe377b6c",
+      "title": "Fix auth session invalidation and forceSignOut cleanup gaps (3 bugs)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "forceSignOut exists and clears _currentUser, but no FCM token cleanup or cache invalidation.",
+      "updatedTitle": "Complete auth session cleanup: add FCM/cache cleanup to forceSignOut",
+      "auditDate": "2026-03-15"
+    },
+    "unsafe-as-type-casts-firestore": {
+      "issueId": "BUT-46",
+      "linearId": "e10fff2c-707a-44d5-be96-d435ad6d9e7b",
+      "title": "Fix unsafe `as Type` casts on Firestore document data in 6 service/repository files",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Mostly fixed — 2 unsafe casts remain in firebase_comments_repository.dart.",
+      "auditDate": "2026-03-15"
+    },
+    "sharedprefs-race-conditions": {
+      "issueId": "BUT-47",
+      "linearId": "02110e1f-62df-432e-9280-8a9105b735b6",
+      "title": "Fix SharedPreferences race conditions in auto-save and locale provider",
+      "createdAt": "2026-03-05",
+      "auditPriority": "medium"
+    },
+    "excessive-notifylisteners": {
+      "issueId": "BUT-48",
+      "linearId": "b4e20021-0916-4484-a43b-65e004890497",
+      "title": "Reduce excessive notifyListeners calls (3x per async op in BaseViewModel + 3 more)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: BaseViewModel.executeAsync now 2 notifyListeners calls (was 3)",
+      "auditDate": "2026-03-15"
+    },
+    "rating-key0-crash-unsafe-first": {
+      "issueId": "BUT-49",
+      "linearId": "fc6da65b-290b-4a06-89cb-4f60588bb413",
+      "title": "Fix ratingDistribution key-0 crash and unsafe .first on collections",
+      "createdAt": "2026-03-05",
+      "auditPriority": "medium"
+    },
+    "provider-selector-scoping": {
+      "issueId": "BUT-50",
+      "linearId": "835d58d4-e087-41a4-8a4c-1d583e2182e7",
+      "title": "Add Provider Selector scoping to reduce rebuild waste (zero Selector usage)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — only 1 file uses Selector. Zero context.select usage.",
+      "auditDate": "2026-03-15"
+    },
+    "cache-expensive-computed-lists": {
+      "issueId": "BUT-51",
+      "linearId": "a2559ade-3cd7-4a36-8ea1-89982ac62058",
+      "title": "Cache expensive computed lists in build() (filtered content, shopping categories, tag sort)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — build() methods contain expensive .where().toList(), .sort() patterns without caching.",
+      "auditDate": "2026-03-15"
+    },
+    "e2e-mock-auth-in-production": {
+      "issueId": "BUT-52",
+      "linearId": "e9c8885e-2913-4785-9a28-bf8b37ab13a2",
+      "title": "Move E2E mock-auth entry points out of production lib/ tree",
+      "createdAt": "2026-03-05",
+      "auditPriority": "medium"
+    },
+    "notification-prefs-cleanup-dedup": {
+      "issueId": "BUT-53",
+      "linearId": "383df00b-99f9-4c50-ba97-846db7fda401",
+      "title": "Clean up notification preferences on logout and deduplicate writers",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — logout cleanup handled. Duplicate writers to same SharedPreferences key remain.",
+      "auditDate": "2026-03-15"
+    },
+    "web-localstorage-5mb-failure": {
+      "issueId": "BUT-54",
+      "linearId": "a0f3ffe0-2e1d-4550-93c4-17358c899271",
+      "title": "Fix web localStorage 5MB silent failure for recipe persistence",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — no localStorage quota-exceeded handling or data size guard.",
+      "auditDate": "2026-03-15"
+    },
+    "datetime-parse-crash-no-trycatch": {
+      "issueId": "BUT-55",
+      "linearId": "b61473ba-fb0b-4506-9d38-f80d92f6eb7f",
+      "title": "Fix DateTime.parse() crash risk across 15+ model/service files (no try-catch on external data)",
+      "createdAt": "2026-03-05",
+      "auditPriority": "high"
+    },
+    "timezone-local-vs-utc-mixing": {
+      "issueId": "BUT-56",
+      "linearId": "219881e4-6ba6-4ff7-9664-d788b9d9d83c",
+      "title": "Fix timezone inconsistencies — DateTime.now() local time mixed with UTC Firestore timestamps",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open-updated",
+      "auditComment": "Scale is 229 files with DateTime.now() - systemic scope, not a targeted fix.",
+      "updatedTitle": "Systemic DateTime.now() usage across 229 files - timezone/testing risk",
+      "auditDate": "2026-03-15"
+    },
+    "last-month-january-week-number": {
+      "issueId": "BUT-57",
+      "linearId": "1dd75398-bbaf-49ac-af1e-938877c5dda6",
+      "title": "Fix Last Month filter returning nothing in January + non-standard ISO week number",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Dart handles DateTime(year, 0) correctly as December - no bug",
+      "auditDate": "2026-03-15"
+    },
+    "image-upload-validation-gaps": {
+      "issueId": "BUT-58",
+      "linearId": "043bf126-3ac1-47d0-89f9-98d8de5d93a4",
+      "title": "Fix image upload pipeline — missing size/format validation, permission gaps, fake URL optimization",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — Storage rules + repo size check. No service-layer format validation.",
+      "auditDate": "2026-03-15"
+    },
+    "image-cachewidth-additional-locations": {
+      "issueId": "BUT-59",
+      "linearId": "43baf9ac-c297-4fda-9f3f-6a357e54bbe1",
+      "title": "Add cacheWidth/cacheHeight to Image.network and Image.memory in 5 additional locations",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — 7 files use Image.network/memory, only 4 have cacheWidth/cacheHeight.",
+      "auditDate": "2026-03-15"
+    },
+    "swedish-locale-decimal-sort-plurals": {
+      "issueId": "BUT-60",
+      "linearId": "9477e90d-31f1-44ce-bef3-60c59475b682",
+      "title": "Fix Swedish locale formatting — decimal separator (. not ,), alphabet sort order, plural stubs",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — formatFractional converts decimal. Raw toStringAsFixed and ASCII sort remain.",
+      "auditDate": "2026-03-15"
+    },
+    "hardcoded-ui-strings-l10n": {
+      "issueId": "BUT-61",
+      "linearId": "573736d3-1989-4d59-836b-67b6aaa9e977",
+      "title": "Replace hardcoded UI strings with l10n — Unknown User (25+ files), notification bodies, stub dialogs",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — 20+ hardcoded Unknown User fallbacks and Swedish notification strings.",
+      "auditDate": "2026-03-15"
+    },
+    "pii-in-production-logs-gdpr": {
+      "issueId": "BUT-62",
+      "linearId": "2f6411c2-d52c-4459-aa8e-c1c7fe8a3ed8",
+      "title": "Fix PII in production logs — unmasked email, displayName, userId (GDPR)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open-updated",
+      "auditComment": "LogSanitizer was created but never adopted at callsites. PII still flows through unsanitized log calls.",
+      "updatedTitle": "LogSanitizer created but not adopted - PII still in production logs (GDPR)",
+      "auditDate": "2026-03-15",
+      "auditPriority": "urgent"
+    },
+    "stub-example-com-urls": {
+      "issueId": "BUT-63",
+      "linearId": "c1d51e33-b17a-4985-9bd8-209cca9ee2a2",
+      "title": "Fix stub example.com URLs returned from production share/invite code paths",
+      "createdAt": "2026-03-05",
+      "auditPriority": "urgent"
+    },
+    "widget-lifecycle-streams-dialog-animation": {
+      "issueId": "BUT-64",
+      "linearId": "f5a05f43-1f55-4962-8ae1-5ba17931a36b",
+      "title": "Fix widget lifecycle bugs — uncancelled streams, stuck dialog, duplicate animation timers",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — chat_message_stream.dart:83 stream still uncancelled.",
+      "auditDate": "2026-03-15"
+    },
+    "leaked-firebase-admin-key": {
+      "issueId": "BUT-65",
+      "linearId": "46bc523f-d350-4a2c-b021-a8bb7e63edd4",
+      "title": "Revoke leaked Firebase Admin SDK private key from git history (commit f0e4b691)",
+      "createdAt": "2026-03-05",
+      "auditPriority": "urgent"
+    },
+    "missing-firestore-composite-indexes": {
+      "issueId": "BUT-66",
+      "linearId": "5b88dc6e-d9f1-4093-b6f2-f4a47d3a1db8",
+      "title": "Fix missing Firestore composite indexes across 15+ queries (will crash at runtime)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — 23 composite indexes defined. Gaps for recipe_ratings, menu_comments, engagements.",
+      "auditDate": "2026-03-15"
+    },
+    "unbounded-firestore-queries-limit": {
+      "issueId": "BUT-67",
+      "linearId": "eabe607a-30c7-433b-ba1a-6e15853f8c74",
+      "title": "Add .limit() to 15+ unbounded Firestore queries and collection group scans",
+      "createdAt": "2026-03-05",
+      "status": "duplicate",
+      "duplicateOf": "BUT-21",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Already merged as duplicate of BUT-21 in tracker",
+      "auditDate": "2026-03-15"
+    },
+    "notification-service-not-registered-di": {
+      "issueId": "BUT-68",
+      "linearId": "f2b958d4-44af-45a7-9a59-4b02fd5dd663",
+      "title": "Fix NotificationService not registered in DI — crashes 3 call sites at runtime",
+      "createdAt": "2026-03-05",
+      "auditPriority": "high"
+    },
+    "di-module-integrity-gaps": {
+      "issueId": "BUT-69",
+      "linearId": "ad849350-34b7-49eb-842a-f8880399acdf",
+      "title": "Fix DI module integrity — missing dependency declarations, singleton dispose gaps, unsafe casts",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — DI modules well-structured. Untyped container() calls and missing singleton dispose.",
+      "auditDate": "2026-03-15"
+    },
+    "silent-error-failures-messaging-settings": {
+      "issueId": "BUT-70",
+      "linearId": "47723c14-a827-4872-b41b-7ea32a2d65b9",
+      "title": "Fix silent error failures — user gets no feedback on 8+ messaging/settings operations",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — SnackBarUtils exists but many service operations still catch errors silently.",
+      "auditDate": "2026-03-15"
+    },
+    "denormalized-displayname-never-updated": {
+      "issueId": "BUT-71",
+      "linearId": "66cd8cef-dc27-453c-b978-d98663f2d2d2",
+      "title": "Fix denormalized displayName/avatarUrl never updated on profile change (10+ collections)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — no mechanism to propagate displayName/avatarUrl changes to other collections.",
+      "auditDate": "2026-03-15"
+    },
+    "missing-cascade-deletes-orphan-data": {
+      "issueId": "BUT-72",
+      "linearId": "b22d430b-b097-4135-a794-abc7e7c43f5d",
+      "title": "Fix missing cascade deletes — orphan comments, ratings, presence on recipe/account deletion",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — account deletion cascades to comments/ratings. No presence cleanup or recipe-level cascade.",
+      "auditDate": "2026-03-15"
+    },
+    "data-consistency-stale-counts-aggregates": {
+      "issueId": "BUT-73",
+      "linearId": "eabfd582-5863-44c9-98d8-15d154ad17a8",
+      "title": "Fix data consistency — stale counts, non-transactional aggregates, isLiked on shared doc",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — FieldValue.increment used in 12 files. isLiked computed client-side, unchanged.",
+      "auditDate": "2026-03-15"
+    },
+    "cicd-missing-env-injection": {
+      "issueId": "BUT-74",
+      "linearId": "59c9541b-0e47-4a69-abf9-8bd8fa5d0073",
+      "title": "Fix CI/CD workflow — missing .env injection from GitHub Secrets",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — CI workflow has no step to create .env from GitHub Secrets.",
+      "auditDate": "2026-03-15"
+    },
+    "html-sanitizer-content-drop": {
+      "issueId": "BUT-75",
+      "linearId": "0950865b-5b9a-4d9a-9182-5471c17af5e1",
+      "title": "Fix HTML sanitizer dropping all content after unclosed script/style tags",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: HTML sanitizer uses state-machine approach, handles unclosed script/style tags safely.",
+      "auditDate": "2026-03-15"
+    },
+    "ner-model-init-race-corrupted-cache": {
+      "issueId": "BUT-76",
+      "linearId": "d59b2036-c6da-4c8d-94de-f79646439c6f",
+      "title": "Fix NER/classifier model pipeline — init race condition, corrupted cache, non-atomic writes",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — init flag present. No Completer/mutex on concurrent init. Non-atomic file writes.",
+      "auditDate": "2026-03-15"
+    },
+    "platform-crashes-web-services": {
+      "issueId": "BUT-77",
+      "linearId": "ac3fb882-fae0-47b0-975f-0db5be80fbc2",
+      "title": "Fix Platform.*/InternetAddress crashes on web in 6+ service files (extends BUT-28)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — 6+ files use Platform.*/InternetAddress without kIsWeb guards.",
+      "auditDate": "2026-03-15"
+    },
+    "import-batch-future-wait-error": {
+      "issueId": "BUT-78",
+      "linearId": "a2ab604e-a87f-469c-99f3-1be4445c448d",
+      "title": "Fix Future.wait batch import — single item failure cancels entire batch",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: autoImport() wraps errors in try-catch returning failure result. Future.wait cannot fail-fast.",
+      "auditDate": "2026-03-15"
+    },
+    "android-release-debug-signing": {
+      "issueId": "BUT-79",
+      "linearId": "b86d635e-c413-4396-ba22-7d0d4ecee023",
+      "title": "Fix Android release build signing config still using debug keys",
+      "createdAt": "2026-03-05",
+      "auditPriority": "urgent"
+    },
+    "remote-model-loader-assert-release": {
+      "issueId": "BUT-80",
+      "linearId": "d0679db1-4d18-4fed-ae94-8666e0fddd29",
+      "title": "Fix RemoteModelLoader assert-only null guard stripped in release builds",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Bang operator provides runtime crash (safe) but assert diagnostic stripped in release. Downgrade - bang is sufficient safety.",
+      "updatedTitle": "Remote model loader: assert diagnostic stripped in release (low priority)",
+      "auditDate": "2026-03-15",
+      "auditPriority": "low"
+    },
+    "deferred-module-load-unhandled": {
+      "issueId": "BUT-81",
+      "linearId": "b5046319-8aaf-4a30-8f24-d0db9e6cdaae",
+      "title": "Add error handling to deferred module loaders (3 files use unguarded Future.wait)",
+      "createdAt": "2026-03-05"
+    },
+    "pwa-manifest-default-template": {
+      "issueId": "BUT-82",
+      "linearId": "af04a6c5-40b2-4a59-8da9-82fa46305c35",
+      "title": "Update PWA manifest and web meta tags from Flutter template defaults to Butlery branding",
+      "createdAt": "2026-03-05",
+      "auditPriority": "medium"
+    },
+    "stale-test-todos-30-days": {
+      "issueId": "BUT-83",
+      "linearId": "6e96ab68-d1fd-46fb-9572-df6644983274",
+      "title": "Clean up 15+ stale TODO/FIXME comments in test files (dating to Aug 2025)",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Reduced — 24 TODO/FIXME across 10 test files (down from 15+).",
+      "auditDate": "2026-03-15"
+    },
+    "stub-friend-request-actions": {
+      "issueId": "BUT-84",
+      "linearId": "aae2eb4f-dbe2-4706-9b2d-dc46d28b44b7",
+      "title": "Fix 12 stub friend request actions that simulate but never call Firebase",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: All friend request actions call real Firebase repository methods.",
+      "auditDate": "2026-03-15"
+    },
+    "stub-social-coordinator-methods": {
+      "issueId": "BUT-85",
+      "linearId": "c9f54df1-de17-4049-ba14-2abe5a9fcd33",
+      "title": "Fix stub social coordinator methods that silently return null",
+      "createdAt": "2026-03-05",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — most coordinators real. 3 UnimplementedError stubs + notification no-ops remain.",
+      "auditDate": "2026-03-15"
+    },
+    "unimplemented-error-production-paths": {
+      "issueId": "BUT-86",
+      "linearId": "f2a5d2a2-10d9-409d-8382-7a037b6bd933",
+      "title": "Fix UnimplementedError thrown in 3 production code paths",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — 5 UnimplementedError throws (up from 3).",
+      "auditDate": "2026-03-15"
+    },
+    "wrong-notification-enum-placeholders": {
+      "issueId": "BUT-87",
+      "linearId": "9dee186d-4c14-49a2-9857-68e29124a97c",
+      "title": "Fix wrong notification enum placeholders in realtime_notification_module",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — 3 wrong collaborationEnabled placeholders confirmed.",
+      "auditDate": "2026-03-15"
+    },
+    "provider-disposes-singleton-viewmodels": {
+      "issueId": "BUT-88",
+      "linearId": "9d27db42-63f4-4d6d-9872-06d4c92413c5",
+      "title": "Fix ChangeNotifierProvider wrapping ServiceLocator singletons — disposes shared VMs on pop",
+      "createdAt": "2026-03-05",
+      "auditStatus": "open",
+      "auditComment": "Still open — 8 views use ChangeNotifierProvider(create:) with ServiceLocator singletons.",
+      "auditDate": "2026-03-15"
+    },
+    "setstate-after-await-file-import": {
+      "issueId": "BUT-89",
+      "linearId": "54bdb364-3cee-4b3a-94ea-c8ee759da178",
+      "title": "Fix setState after await without mounted guard in file_import_view.dart",
+      "createdAt": "2026-03-05",
+      "auditPriority": "high"
+    },
+    "deep-link-params-bang-crash": {
+      "issueId": "BUT-90",
+      "linearId": "e1a751dd-659b-4378-bc97-634ae1b6b52d",
+      "title": "Fix deep link parameter bang operators crashing on malformed URLs",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: All params use null-safe params[key] + != null guards",
+      "auditDate": "2026-03-15"
+    },
+    "late-detection-result-crash": {
+      "issueId": "BUT-91",
+      "linearId": "22aa4316-dfe1-47cf-bbdc-7d9a78d67960",
+      "title": "Fix late _detectionResult crash in receive_share_view.dart",
+      "createdAt": "2026-03-05",
+      "auditStatus": "done",
+      "auditComment": "FIXED: State machine guarantees init before read via _isProcessing",
+      "auditDate": "2026-03-15"
+    },
+    "upload-service-add-after-close": {
+      "issueId": "BUT-92",
+      "linearId": "5259ffae-8396-4caa-97d5-f091ab0a99b1",
+      "title": "Fix ImageUploadService StreamController.add() race condition after close",
+      "createdAt": "2026-03-05",
+      "auditPriority": "high"
+    },
+    "neural-classifier-lifecycle-bugs": {
+      "issueId": "BUT-93",
+      "linearId": "90da2961-28ad-4ac8-a722-62209c8f7737",
+      "title": "Fix neural line classifier lifecycle and parsing pipeline bugs (6 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — dispose/isAvailable present. Same init race as BUT-76. Non-atomic cache writes.",
+      "auditDate": "2026-03-15"
+    },
+    "sharing-flow-data-integrity-bugs": {
+      "issueId": "BUT-94",
+      "linearId": "33cb7479-22c0-4b0f-90bc-f67c3b2190ac",
+      "title": "Fix sharing flow data integrity bugs (6 issues across social services)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — core sharing path real. Notification no-op, menu/shopping sharing broken.",
+      "auditDate": "2026-03-15"
+    },
+    "cloud-functions-admin-idor": {
+      "issueId": "BUT-95",
+      "linearId": "e31cd899-07f4-4b87-b85a-e45061b04de1",
+      "title": "Fix Cloud Functions admin endpoint authorization gaps (4 IDOR/access control bugs)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "FIXED: All admin endpoints check admin claims before proceeding.",
+      "auditDate": "2026-03-15"
+    },
+    "cloud-functions-cors-ratelimiter-ssrf": {
+      "issueId": "BUT-96",
+      "linearId": "b0dc2d1f-ae9b-4ea4-9b9d-c7ccb30d5f0c",
+      "title": "Fix Cloud Functions security: CORS wildcard, rate limiter fail-open, notification SSRF, path traversal",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Mostly fixed — per-user rate limiter fail-closed, SSRF protection added. checkGlobalLimit still fails open.",
+      "auditDate": "2026-03-15"
+    },
+    "cloud-functions-pii-logging": {
+      "issueId": "BUT-97",
+      "linearId": "c7565824-5467-44ae-9045-e3b63eedf200",
+      "title": "Fix PII logging in Cloud Functions (3 locations)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open (reduced scope) — 4 locations log Firebase UIDs.",
+      "auditDate": "2026-03-15"
+    },
+    "firestore-rules-gaps": {
+      "issueId": "BUT-98",
+      "linearId": "744f96a7-5eb7-4ea6-ba07-643655028c2e",
+      "title": "Fix 3 Firestore security rule bugs (engagements, isCollaborative, list query)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — engagements rules correct. isCollaborative field not validated on create/update.",
+      "auditDate": "2026-03-15"
+    },
+    "share-dialog-import-functional-bugs": {
+      "issueId": "BUT-99",
+      "linearId": "2b8cc184-da71-4ee9-b857-3fa5cc54b279",
+      "title": "Fix share dialog and import pipeline functional bugs (5 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Largely addressed — no stubs in share dialog VM. Import pipeline has circuit breaker.",
+      "auditDate": "2026-03-15"
+    },
+    "lint-suppression-dynamic-type-cleanup": {
+      "issueId": "BUT-100",
+      "linearId": "c2b6815b-a7e3-46b2-8351-1b94071810ee",
+      "title": "Clean up lint suppressions, dynamic type abuse, and code quality anti-patterns",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — 38 // ignore: lint suppressions across 23 files.",
+      "auditDate": "2026-03-15"
+    },
+    "fcm-deeplink-navigation-crashes": {
+      "issueId": "BUT-101",
+      "linearId": "f07ba7bd-401a-48e8-b37a-71205bcf6072",
+      "title": "Fix FCM notification and deep link handler navigation crashes (8 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — null context check present. Stale BuildContext lifecycle issue remains.",
+      "auditDate": "2026-03-15"
+    },
+    "shopping-list-operation-bugs": {
+      "issueId": "BUT-102",
+      "linearId": "75672a60-2ddd-4f6c-8471-80f79a73db96",
+      "title": "Fix shopping list operation bugs: stubs, zero-quantity items, non-atomic updates (5 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — no stubs. No zero-quantity guard in shopping_item_management_module.",
+      "auditDate": "2026-03-15"
+    },
+    "form-validation-input-handling-bugs": {
+      "issueId": "BUT-103",
+      "linearId": "65f5b985-c114-4c6b-bbb1-a7dc6796d44b",
+      "title": "Fix form validation and input handling bugs across 10+ views",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — core recipe forms well-validated. Other views not fully audited.",
+      "auditDate": "2026-03-15",
+      "createdAt": "2026-03-07"
+    },
+    "gdpr-performance-module-consent-bypass": {
+      "issueId": "BUT-104",
+      "linearId": "ce814fda-3eed-4a6c-bfe1-d51b4bc4b233",
+      "title": "Fix GDPR violation: PerformanceModule re-enables Firebase Performance without consent",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — GDPR consent bypass window in PerformanceModule init sequence.",
+      "auditDate": "2026-03-15"
+    },
+    "startup-lifecycle-race-conditions": {
+      "issueId": "BUT-105",
+      "linearId": "4f9a9889-7c8c-48e6-bf2f-1bb5c48401d9",
+      "title": "Fix startup lifecycle bugs: race conditions, static singletons, onboarding flash (6 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — bootstrap guards prevent double-init. Onboarding flash race remains.",
+      "auditDate": "2026-03-15"
+    },
+    "cross-user-cache-data-leakage": {
+      "issueId": "BUT-106",
+      "linearId": "9ecb07ed-c3d7-4462-a1ed-2e3e37536bd5",
+      "title": "Fix cross-user data leakage: 5+ caches not cleared on logout",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — 3 major caches cleared on logout. 4 caches still not cleared.",
+      "auditDate": "2026-03-15"
+    },
+    "offline-sync-data-loss": {
+      "issueId": "BUT-107",
+      "linearId": "94ad3372-4817-4614-abae-9176b8314c4a",
+      "title": "Fix offline sync data loss: collaborative sync stub + stream error recovery (4 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — collaborative sync has basic structure but stream error recovery limited.",
+      "auditDate": "2026-03-15"
+    },
+    "firebase-signed-url-image-cache": {
+      "issueId": "BUT-108",
+      "linearId": "57ab19ed-b69c-4002-8bb0-1472dc5a5255",
+      "title": "Fix Firebase signed URL breaking image disk cache + false-pressure cache flush",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — optimized_image_loader exists. CachedNetworkImage still uses signed URLs as cache keys.",
+      "auditDate": "2026-03-15"
+    },
+    "menu-generation-optimistic-state-bugs": {
+      "issueId": "BUT-109",
+      "linearId": "031db6ec-9351-4e10-bbea-9b8f2ccd5ad5",
+      "title": "Fix menu generation and optimistic state management bugs (7 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — no stubs. MenuGenerator allergen filtering fixed.",
+      "auditDate": "2026-03-15"
+    },
+    "sqlcipher-eol-firebase-bom-gap": {
+      "issueId": "BUT-110",
+      "linearId": "fde52b20-a4e3-4467-8698-6bd0553e3585",
+      "title": "Fix sqlcipher_flutter_libs EOL status + Android Firebase BOM 10 versions behind",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Largely resolved — Firebase BOM current. sqlcipher still maintained.",
+      "auditDate": "2026-03-15"
+    },
+    "buildcontext-after-await-mounted-guard": {
+      "issueId": "BUT-111",
+      "linearId": "f73840a1-0583-49ac-95fb-e1b21c18b534",
+      "title": "Fix BuildContext/setState after await without mounted guard across 8+ views",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — mfa_settings_view and mfa_challenge_dialog missing mounted guards.",
+      "auditDate": "2026-03-15"
+    },
+    "resource-disposal-listeners-streams-controllers": {
+      "issueId": "BUT-112",
+      "linearId": "dc2d8a12-2099-400b-817a-239631ceffe6",
+      "title": "Fix resource disposal: unstored streams, anonymous listeners, undisposed controllers (15+ locations)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — reduced to 1 unstored subscription (chat_message_stream).",
+      "auditDate": "2026-03-15"
+    },
+    "data-model-serialization-bugs": {
+      "issueId": "BUT-113",
+      "linearId": "ede8211e-65ba-49c9-a891-17f8aca5936e",
+      "title": "Fix data model serialization: toJson stub, permission index/name mismatch, tag rules type drop (5 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "FIXED: All serialization methods complete — toJson, permission roundtrip, tag rules preserved.",
+      "auditDate": "2026-03-15"
+    },
+    "copywith-cannot-clear-nullable-fields": {
+      "issueId": "BUT-114",
+      "linearId": "67e37696-dab8-41a3-8097-74f371a6753d",
+      "title": "Fix copyWith cannot clear nullable fields across Recipe and UserProfile models",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — copyWith uses field ?? this.field pattern, cannot clear nullable fields.",
+      "auditDate": "2026-03-15"
+    },
+    "error-recovery-ux-offline-retry": {
+      "issueId": "BUT-115",
+      "linearId": "1e1a0998-af27-46e5-abbb-86d669fe2ab7",
+      "title": "Fix error recovery UX: missing retry buttons, offline indicators, stream error handling (6 views)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — offline/error infrastructure exists. Missing retry buttons and stream error recovery.",
+      "auditDate": "2026-03-15"
+    },
+    "text-overflow-empty-state-social-views": {
+      "issueId": "BUT-116",
+      "linearId": "362460c5-70dd-4f7b-bd45-877ea1751b52",
+      "title": "Fix text overflow on user-supplied names and missing empty state actions across social views (10 locations)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — user-supplied names lack consistent maxLines/overflow. Empty states inconsistent.",
+      "auditDate": "2026-03-15"
+    },
+    "build-method-performance-antipatterns": {
+      "issueId": "BUT-117",
+      "linearId": "1265d555-7a37-4b06-b003-fed8c850de3e",
+      "title": "Fix build() performance: ServiceLocator in build, sort/filter on every rebuild, O(n²) comments (12+ locations)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — ServiceLocator.get in build() across 20+ files. Expensive sort/filter in build.",
+      "auditDate": "2026-03-15"
+    },
+    "security-uid-urls-appcheck-ratelimit": {
+      "issueId": "BUT-118",
+      "linearId": "41903009-5125-4708-942e-cd276d074931",
+      "title": "Fix security gaps: Firebase UID in URLs, App Check debug bypass, client-only rate limiting (5 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Mostly fixed — no UIDs in URLs. App Check correct. Minor global rate limit gap.",
+      "auditDate": "2026-03-15"
+    },
+    "missing-listview-keys-image-loading": {
+      "issueId": "BUT-119",
+      "linearId": "a90b1528-a1a8-4c84-9f1b-087ca35b87d7",
+      "title": "Fix missing ListView item keys and Image.network loadingBuilder across 10 views",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — only 8 views use item keys. Only 2 files use loadingBuilder.",
+      "auditDate": "2026-03-15"
+    },
+    "ux-friction-snackbar-keyboard-backguard": {
+      "issueId": "BUT-120",
+      "linearId": "9979622b-d66f-4188-a318-099375d0803f",
+      "title": "Fix UX friction: snackbar stacking, keyboard handling, missing back guard during import (8 locations)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — SnackBar management and PopScope in 6 views. Import views lack back guards.",
+      "auditDate": "2026-03-15"
+    },
+    "dark-mode-broken-auth-nav-chat-sync": {
+      "issueId": "BUT-121",
+      "linearId": "53c226f9-1de3-4db9-9fdb-c0179ca3f9ae",
+      "title": "Fix dark mode broken: auth view, nav bar, chat text, sync indicator bypass theme system (6 views)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — dark mode wired. auth_view and nav bar use hardcoded AppColors.",
+      "auditDate": "2026-03-15"
+    },
+    "hardcoded-design-values-spacing-icons-opacity": {
+      "issueId": "BUT-122",
+      "linearId": "fb8581e8-f34c-4c71-837e-7a6fb1caea67",
+      "title": "Fix hardcoded design values: raw spacing, icon sizes, opacity, border radius across 20+ files",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — hardcoded EdgeInsets, BorderRadius, icon sizes widespread.",
+      "auditDate": "2026-03-15"
+    },
+    "cooking-mode-advanced-features": {
+      "issueId": "BUT-202",
+      "linearId": "9940991b-c92d-4021-a74e-2ed7b953c09a",
+      "title": "Add cooking mode advanced features: substitutions, voice commands, multi-recipe, partner mode",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — IngredientSubstitutionService exists but not surfaced in cooking mode UI. Voice/multi-recipe/partner absent.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-discovery-sort-filter-tags": {
+      "issueId": "BUT-203",
+      "linearId": "07766ee6-d9bd-4e4c-9ec8-5a57a68fbb9a",
+      "title": "Improve recipe discovery with sort-by-cooked, quick filters, mood/season tags, and shuffle mode",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — SortCriteria enum exists but no sort-by-cooked. lastCookedAt field exists. Season tags exist via tagging engine.",
+      "auditDate": "2026-03-15"
+    },
+    "intelligent-menu-generation": {
+      "issueId": "BUT-204",
+      "linearId": "207b6d3a-2362-4173-8805-f9f8d5101001",
+      "title": "Add intelligent menu generation with weighted selection, seasonal awareness, and quick suggestions",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — MenuGenerator filters by allergen/dietary. No weighted selection, seasonal scoring, or quick suggestions.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-search-ingredients-social": {
+      "issueId": "BUT-205",
+      "linearId": "cf363bba-2b1a-4619-9138-239af987cd03",
+      "title": "Improve recipe search with ingredient-set queries, normalized matching, and social discovery feed",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — ingredient search is substring-based. No set-based matching. Social discovery feed absent. Overlaps BUT-157.",
+      "auditDate": "2026-03-15"
+    },
+    "editor-backend-ready-quick-wins": {
+      "issueId": "BUT-206",
+      "linearId": "3f41d645-c716-4ea5-82ed-9fd36630bd0d",
+      "title": "Wire up backend-ready editor features: drag-reorder, auto-save indicator, personal tags in create form",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — auto-save logic exists (RecipeAutoSaveManager). No drag-reorder, no visual indicator, no personal tags in create form. Drag-reorder duplicates BUT-178.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-creation-ux": {
+      "issueId": "BUT-207",
+      "linearId": "3e6e35a5-334e-4f35-9b89-1019c9001748",
+      "title": "Improve recipe creation UX: quick capture, section headers, duplication, clipboard detection, portion scaling",
+      "createdAt": "2026-03-07",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "import-data-richness": {
+      "issueId": "BUT-208",
+      "linearId": "88960a03-9cf3-4b1e-adc9-ef11e55c8eac",
+      "title": "Extract richer data from imports: Schema.org nutrition/cuisine, prep/cook time split, difficulty, structured ingredients",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — Schema.org prep/cook time split computed but not stored separately. Nutrition/cuisine/difficulty not extracted.",
+      "auditDate": "2026-03-15"
+    },
+    "parsing-dx-active-learning": {
+      "issueId": "BUT-209",
+      "linearId": "8a6eb8ee-3a39-4414-afb4-5a6575d5fc03",
+      "title": "Improve parsing DX: active learning loop, golden test runner, site config cache, tier consolidation, LLM truncation",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — active learning loop wired (RemoteWeightLoader). Site config cache exists. Missing: golden test runner, LLM truncation, tier consolidation.",
+      "auditDate": "2026-03-15"
+    },
+    "new-import-formats": {
+      "issueId": "BUT-210",
+      "linearId": "146b8d56-258d-4fc3-82f6-0a275edb242e",
+      "title": "Add new import formats: PDF cookbooks, voice dictation, multi-recipe selection UI",
+      "createdAt": "2026-03-07",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "calendar-weekly-menu": {
+      "issueId": "BUT-211",
+      "linearId": "7c12fa41-bc25-4fd3-8f66-bf12e26a3e40",
+      "title": "Add calendar-based weekly menu with day-level planning",
+      "createdAt": "2026-03-07",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "shopping-list-intelligence": {
+      "issueId": "BUT-212",
+      "linearId": "cd4e5cea-9b5d-4765-b590-d77827ade0e9",
+      "title": "Improve shopping list UX: aisle sort, pantry filter, budget totals, consolidated menu bridge, animations, collaborative presence",
+      "createdAt": "2026-03-07",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "architecture-modernization-evaluation": {
+      "issueId": "BUT-213",
+      "linearId": "1d8c25f4-5b84-4988-9fc7-7a2ff7ce28e2",
+      "title": "Evaluate architecture modernization: Riverpod, go_router, Freezed migration paths",
+      "createdAt": "2026-03-07",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "cicd-testing-golden-observability": {
+      "issueId": "BUT-214",
+      "linearId": "e4c88391-6c94-4251-9872-2db31b0646d7",
+      "title": "Improve CI/CD and testing: golden tests, iOS builds, coverage gates, structured observability",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — CI runs unit+widget tests with Codecov. Missing: iOS build, golden tests, coverage gates, observability.",
+      "auditDate": "2026-03-15"
+    },
+    "yearly-cooking-wrapped": {
+      "issueId": "BUT-215",
+      "linearId": "22c8ddb9-f2d9-46f5-ba48-0066112e97b3",
+      "title": "Add yearly cooking recap screen — 'Årets Kök' annual summary with cuisine breakdown and cook stats",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "dormant-recipe-nudges": {
+      "issueId": "BUT-216",
+      "linearId": "1409fbc1-02fe-4c39-9df9-b3bc5d05586d",
+      "title": "Add dormant recipe nudges — surface never-cooked recipes with smart scoring",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "cuisine-diversity-score": {
+      "issueId": "BUT-217",
+      "linearId": "6fa6cbcd-0ad1-4601-95e8-3174ad8039dc",
+      "title": "Add cuisine diversity score and flavor profile badge on profile screen",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "rich-cooking-identity": {
+      "issueId": "BUT-218",
+      "linearId": "e2eb9a2e-adfb-4177-856a-fd3d7de88b87",
+      "title": "Add rich cooking identity to profile: skill level, cuisine affinities, and bio",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "shareable-public-collection": {
+      "issueId": "BUT-219",
+      "linearId": "e1c00f35-4d60-4d6d-9126-54fde284cabf",
+      "title": "Add shareable public recipe collection with profile link",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-export-print-pdf": {
+      "issueId": "BUT-220",
+      "linearId": "38edb693-7b30-4746-baa1-a405ffe6d818",
+      "title": "Add recipe export: print-friendly HTML view and PDF generation per recipe and bulk 'Min kokbok'",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "tag-suggestions-quick-selector": {
+      "issueId": "BUT-221",
+      "linearId": "4e70814f-bac1-4ac5-b01e-b75cc30470b5",
+      "title": "Add smart tag suggestions in the quick-tag selector using existing suggestTagsForRecipe()",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — suggestTagsForRecipe() fully implemented in PersonalTagService. Not wired to any UI selector.",
+      "auditDate": "2026-03-15"
+    },
+    "cooked-recency-condition-type": {
+      "issueId": "BUT-222",
+      "linearId": "acf46a53-078f-46a5-bf73-4d0dce82055a",
+      "title": "Add lastCookedAt condition type to enable rotation-aware personal tag rules",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "tag-intelligence-dashboard": {
+      "issueId": "BUT-223",
+      "linearId": "ca6ecb35-09bf-4118-b941-11b6c4d6a53c",
+      "title": "Add tag analytics: usage heat map and dead tag detection in PersonalTagsView",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "paste-anywhere-url-import": {
+      "issueId": "BUT-224",
+      "linearId": "19271193-f946-43d7-8ea8-fb392ae3f31c",
+      "title": "Add paste-anywhere URL detection that triggers import flow globally on web",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "pwa-share-target-install-prompt": {
+      "issueId": "BUT-225",
+      "linearId": "170ed2db-67be-4b61-909c-419175d3c4c9",
+      "title": "Add PWA share-target registration and smart install prompt with session-count trigger",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "persistent-ui-import-preferences": {
+      "issueId": "BUT-226",
+      "linearId": "2cdfc57f-213a-4c5e-95a4-7d236d8534f4",
+      "title": "Add persistent display preferences: sort order, view mode, and default portions across sessions",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — view mode (grid/list) persisted. Sort order and default portions not persisted.",
+      "auditDate": "2026-03-15"
+    },
+    "cooking-mode-font-size": {
+      "issueId": "BUT-227",
+      "linearId": "3362a162-f749-4de1-ac3a-91ba9539d612",
+      "title": "Add cooking mode personalization: adjustable text size and active step highlighting",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "seasonal-recipe-surfacing": {
+      "issueId": "BUT-228",
+      "linearId": "656db80b-c888-4163-be58-b442a746e7da",
+      "title": "Add seasonal recipe prompt on home screen — surface recipes when their ingredients are in season",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-memories-anniversary": {
+      "issueId": "BUT-230",
+      "linearId": "6a0e8c8a-80f0-4ba8-86af-dbca61eba935",
+      "title": "Add recipe memories — 'För ett år sedan lagade du det här' anniversary surfacing",
+      "createdAt": "2026-03-12",
+      "auditStatus": "duplicate",
+      "auditComment": "DUPLICATE of BUT-229: identical title and scope (recipe memories anniversary surfacing).",
+      "auditDate": "2026-03-15"
+    },
+    "cooking-mode-tts-accessibility": {
+      "issueId": "BUT-231",
+      "linearId": "d34923f5-e254-4150-88af-d9262a8f8ba3",
+      "title": "Add TTS step readback and accessibility fixes to cooking mode (touch targets, Semantics, SystemUI)",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "contrast-wcag-aa-fixes": {
+      "issueId": "BUT-232",
+      "linearId": "416d7d33-2280-4cd6-856c-4dc1751b71c7",
+      "title": "Fix color contrast failures: recipeMeta, rust, and section labels fail WCAG AA on cream background",
+      "createdAt": "2026-03-12",
+      "auditStatus": "bug-not-feature",
+      "auditComment": "Bug — WCAG AA contrast failures on cream background. Not a feature.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-list-screen-reader-swipe": {
+      "issueId": "BUT-233",
+      "linearId": "9dea39a4-6edf-408d-ae51-4270e0c7f830",
+      "title": "Add screen reader announcements and accessible alternatives for swipe gestures in recipe list",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "first-recipe-celebration": {
+      "issueId": "BUT-234",
+      "linearId": "113959dd-b2f4-4b12-a854-6281a3cb7351",
+      "title": "Add first-recipe celebration overlay after saving the first recipe",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "onboarding-inline-import": {
+      "issueId": "BUT-235",
+      "linearId": "8c514fb0-0b80-4811-940d-ebf0a1051f4e",
+      "title": "Add inline URL import on onboarding page 4 instead of navigating away from the flow",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — OnboardingImportPage exists with URL and manual import cards. Navigates away rather than inline.",
+      "auditDate": "2026-03-15"
+    },
+    "first-time-empty-state-starters": {
+      "issueId": "BUT-236",
+      "linearId": "fa5da2cb-5d8f-4ccb-9d05-382505dca34a",
+      "title": "Add personalized first-time empty state with dietary context and starter recipe suggestions",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "cook-along-mode": {
+      "issueId": "BUT-237",
+      "linearId": "7baf5b7f-4618-40f6-a1e3-6d82e2405ac6",
+      "title": "Add cook-along mode: synchronized shared cooking session with step progress tracking",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "split-store-shopping": {
+      "issueId": "BUT-238",
+      "linearId": "732ba707-cafb-4aae-8cd1-82391c0ddeda",
+      "title": "Add split-store shopping: assign items to shoppers by zone with real-time check-off",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "menu-voting-household": {
+      "issueId": "BUT-239",
+      "linearId": "51e0df29-eebe-453d-bceb-1fdbf64e29f8",
+      "title": "Add household menu voting: poll-based weekly menu finalization with recipe slot votes",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — Poll model exists in messaging. No menu-specific voting UI in veckomeny_view.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-completeness-nudges": {
+      "issueId": "BUT-240",
+      "linearId": "ac34add3-ebb8-4f40-9338-eabd59ddd679",
+      "title": "Add recipe completeness badge and contextual improvement nudges for missing fields",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — RecipeQualityScorer + ConditionType.completeness exist. No completeness badge or nudge UI.",
+      "auditDate": "2026-03-15"
+    },
+    "smart-duplicate-merge": {
+      "issueId": "BUT-241",
+      "linearId": "b7da8fe5-17a9-4484-b476-4a59e3a756b8",
+      "title": "Upgrade duplicate detection to side-by-side comparison with field-level merge option",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "collection-health-dashboard": {
+      "issueId": "BUT-242",
+      "linearId": "ef04f106-20ff-455b-a955-0d9750cab6c4",
+      "title": "Add collection health dashboard showing completeness stats and quick-fix entry points",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "import-offline-resilience": {
+      "issueId": "BUT-243",
+      "linearId": "3fe4fc28-f5cd-4a4b-a880-60abf683bfbd",
+      "title": "Add import offline resilience: pre-check connectivity, save failed URLs, auto-retry on reconnect",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "skeleton-offline-animation-polish": {
+      "issueId": "BUT-244",
+      "linearId": "1bb63f20-7ce3-43b1-88ed-3cd8822dea0a",
+      "title": "Add shimmer sweep to skeleton screens and animated offline banner with reconnect confirmation",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — shimmer sweep on skeleton screens already implemented. Animated offline banner infra exists.",
+      "auditDate": "2026-03-15"
+    },
+    "hero-image-list-detail": {
+      "issueId": "BUT-245",
+      "linearId": "b3a2c65a-0d5e-48f6-b5a0-df43177b4da3",
+      "title": "Add Hero image animation between recipe list card and detail view",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — heroTag infra in image widgets. Not wired end-to-end from recipe list to detail.",
+      "auditDate": "2026-03-15"
+    },
+    "optimistic-favorite-toggle": {
+      "issueId": "BUT-246",
+      "linearId": "9387422e-52b1-4941-a777-f725fc424d8b",
+      "title": "Add optimistic UI for favorite toggle — instant heart animation, background Firebase sync",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "import-time-estimate": {
+      "issueId": "BUT-247",
+      "linearId": "d5532a58-d197-4b58-833e-98d4bae825d3",
+      "title": "Add elapsed time and estimated duration to import progress indicator",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "monetization-entitlement-iap-infrastructure": {
+      "issueId": "BUT-248",
+      "linearId": "8a205904-22fb-4e29-b0ad-96171ee98739",
+      "title": "Add entitlement and IAP infrastructure for future monetization readiness",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "collection-stats-dashboard-milestones-value": {
+      "issueId": "BUT-249",
+      "linearId": "3657e1d6-bfd9-404d-81ba-965b6a2dc5b9",
+      "title": "Add collection stats dashboard with cooking milestones and value demonstration",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "cross-device-cooking-session-sync-offline-qr": {
+      "issueId": "BUT-250",
+      "linearId": "76389f8e-6b32-44aa-99d3-6f43c785369f",
+      "title": "Add cross-device cooking session sync with offline pre-save and QR handoff",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "cooking-mode-accessibility-fonts-touch-semantics": {
+      "issueId": "BUT-251",
+      "linearId": "a065a2ef-1c56-496e-ab43-b38ac62183f4",
+      "title": "Fix cooking mode accessibility: hardcoded fonts, small touch targets, zero Semantics, no checkoff",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "web-platform-gaps-deeplinks-keyboard-print-clipboard": {
+      "issueId": "BUT-252",
+      "linearId": "9c689fac-bc7e-443b-99de-eea14a2c189d",
+      "title": "Fix web platform gaps: deep links broken, no keyboard shortcuts, no print, no clipboard auto-detect",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "tablet-two-column-layout-responsive-cooking": {
+      "issueId": "BUT-253",
+      "linearId": "4da6560a-d4ad-42cd-9f4c-e11c345be504",
+      "title": "Add tablet-optimized layouts: two-column recipe detail, responsive cooking mode, adaptive image heights",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-lifecycle-archival-cookcount-filter-notes": {
+      "issueId": "BUT-254",
+      "linearId": "0507c207-d83a-4838-b504-70b55ef63193",
+      "title": "Add recipe lifecycle: archival, cookCount tracking, never-cooked filter, per-cook notes, broken URL check",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "seasonal-proactive-surfacing-contextual-suggestions": {
+      "issueId": "BUT-255",
+      "linearId": "2f730de1-7dc9-42d5-9736-f4b9eebc9a8b",
+      "title": "Add seasonal proactive surfacing and contextual time-of-day recipe suggestions",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "household-accounts-shared-collection-allergen-assignment": {
+      "issueId": "BUT-256",
+      "linearId": "705ba29f-9806-4d6c-b146-3cc1307fdf4c",
+      "title": "Add household accounts: shared recipe collection, allergen aggregation, cooking assignment",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "collaborative-shopping-no-realtime-stream-pantry": {
+      "issueId": "BUT-257",
+      "linearId": "f2a86d65-cc80-4dca-b93e-31f1dd051f37",
+      "title": "Fix collaborative shopping list: no real-time Firestore stream, add shared pantry concept",
+      "createdAt": "2026-03-12",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "import-instagram-pipeline-paprika-migration-quality": {
+      "issueId": "BUT-258",
+      "linearId": "42b75ad7-9df0-4a39-8895-08485829a736",
+      "title": "Wire Instagram import pipeline, add Paprika/JSON migration, surface import quality to user",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — InstagramContentExtractor exists. No Paprika/JSON migration. No quality surfacing UI. Overlaps BUT-275.",
+      "auditDate": "2026-03-15"
+    },
+    "micro-interactions-hero-haptic-greeting-delight": {
+      "issueId": "BUT-259",
+      "linearId": "d032e10f-c772-4acf-b861-abf324dcdc58",
+      "title": "Add micro-interaction delight: Hero animations, haptic on favorite/swipe, contextual greeting, import merge",
+      "createdAt": "2026-03-12",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — HapticFeedback in 11 files. Hero in 6 files. No contextual greeting or import merge UI.",
+      "auditDate": "2026-03-15"
+    },
+    "dark-mode-needs-fixing": {
+      "issueId": "BUT-11",
+      "linearId": "6b077eee-be89-4d2d-a7e1-4655d311c32e",
+      "title": "Dark Mode needs fixing",
+      "createdAt": "2026-03-04",
+      "auditStatus": "duplicate",
+      "auditComment": "DUPLICATE of BUT-121: Dark mode infrastructure complete but 157 AppColors references in views.",
+      "auditDate": "2026-03-15"
+    },
+    "add-recipe-memories-för-ett-år-sedan-lagade-du-det-här-anniversary-surfacing": {
+      "issueId": "BUT-229",
+      "linearId": "631424b8-ded8-4cf6-a116-63828da572e6",
+      "title": "Add recipe memories — 'För ett år sedan lagade du det här' anniversary surfacing",
+      "createdAt": "2026-03-12",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-missing-async-init-guards-causing-double-init-races-in-3-services": {
+      "issueId": "BUT-123",
+      "linearId": "0558304b-d430-475d-8c1f-6ae3837af1be",
+      "title": "Fix missing async init guards causing double-init races in 3 services",
+      "createdAt": "2026-03-07",
+      "auditStatus": "duplicate",
+      "auditComment": "DUPLICATE of BUT-76: Same async init race — no Completer/mutex on ONNX + tag_config services.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-stale-closures-and-uncancellable-retries-causing-silent-data-loss-5-location": {
+      "issueId": "BUT-124",
+      "linearId": "557063ae-37e3-4f95-a845-ed63ce6e65b8",
+      "title": "Fix stale closures and uncancellable retries causing silent data loss (5 locations)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "Fixed: stale closure (re-read from cache on retry), unbounded retry (max 5 + Duration multiplication), uncancellable startup (StreamManagementMixin). Finding 4 confirmed safe.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-cache-counter-drift-presence-stream-deadlock-and-search-term-mixing-3-concur": {
+      "issueId": "BUT-125",
+      "linearId": "ef710097-5ab6-481f-8503-8786f2789196",
+      "title": "Fix cache counter drift, presence stream deadlock, and search term mixing (3 concurrency bugs)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — no stream lock in presence, no generation counter in search debounce, no atomic cache increment.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-55-trivial-test-assertions-giving-false-coverage-confidence-across-15-test-f": {
+      "issueId": "BUT-126",
+      "linearId": "9ff13401-4265-452c-b5f9-b3759371ed3c",
+      "title": "Fix 55+ trivial test assertions giving false coverage confidence across 15 test files",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — literal expect(true,true) largely cleaned up. 71 skip: across 24 test files remain.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-13-flaky-timing-tests-and-20-improperly-skipped-tests": {
+      "issueId": "BUT-127",
+      "linearId": "65234541-0155-4639-842b-4c8af3b5615d",
+      "title": "Fix 13+ flaky timing tests and 20+ improperly skipped tests",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — 71 skip: across 24 test files. Repository integration tests most affected.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-widget-architecture-duplicated-card-subtrees-deep-nesting-context-threading-": {
+      "issueId": "BUT-128",
+      "linearId": "25a85e29-3de3-48dc-86d4-8a81bc900953",
+      "title": "Fix widget architecture: duplicated card subtrees, deep nesting, context threading, setState anti-patterns (10+ views)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — 157 AppColors references in 37 view files. No card dedup refactoring done.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-service-contract-bugs-findbytitle-never-matches-notification-prefs-dual-coll": {
+      "issueId": "BUT-129",
+      "linearId": "ce6d016b-3d2d-4c03-9085-dd41b31ce860",
+      "title": "Fix service contract bugs: findByTitle never matches, notification prefs dual collection, FCM token deletion (6 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — findByTitle works (lowercase normalized). Dual notification repos remain. FCM delete works.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-accessibility-gaps-auth-contrast-fail-missing-autofocus-responsive-wrappers-": {
+      "issueId": "BUT-130",
+      "linearId": "94543b2b-936f-4df1-9f0f-16c6b7a64826",
+      "title": "Fix accessibility gaps: auth contrast fail, missing autofocus, responsive wrappers, focus management (14 locations)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — auth_view has 23 hardcoded colors, zero autofocus properties.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-cloud-functions-auth-gaps-4-missing-admin-checks-rate-limit-key-mismatch-ima": {
+      "issueId": "BUT-131",
+      "linearId": "30e85756-a281-403b-a308-755c2434b886",
+      "title": "Fix Cloud Functions auth gaps: 4 missing admin checks, rate limit key mismatch, imageUrl SSRF, LLM cost abuse (9 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "duplicate",
+      "auditComment": "DUPLICATE of BUT-95: Admin checks now present. LLM rate-limit/SSRF gaps remain.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-cloud-functions-idempotency-failures-oom-cleanup-n-1-queries-wrong-timeout-c": {
+      "issueId": "BUT-132",
+      "linearId": "a09094eb-86d2-481f-a406-ed9ce520e415",
+      "title": "Fix Cloud Functions: idempotency failures, OOM cleanup, N+1 queries, wrong timeout config (9 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — no idempotency patterns in Cloud Functions. N+1 in ingredient triggers.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-critical-firestore-rules-missing-for-camelcase-denorm-collections-8-more-col": {
+      "issueId": "BUT-133",
+      "linearId": "fd57e96a-553b-4242-bf14-7f4d00fae75a",
+      "title": "Fix CRITICAL: Firestore rules missing for camelCase denorm collections + 8 more collections (menu/shopping sharing broken)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "Fixed: added rules for counters, conversationMemberships, categoryMemberships, settings (user subcollections) + deep_links, activity_feed, ingredientSuggestions, notification_preferences, notification_history, notification_batches (top-level). Constants cleanup in Dart.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-firestore-rule-logic-bugs-menu-reads-permanently-denied-reactions-blocked-ow": {
+      "issueId": "BUT-134",
+      "linearId": "6861cfa9-9347-4092-b1e1-4bd39e5a81c9",
+      "title": "Fix Firestore rule logic bugs: menu reads permanently denied, reactions blocked, ownership hijack (7 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "Fixed 4 of 7 (3 were non-bugs). Ownership hijack closed via cannotModify guard on realtime collections, sharedMenus list rule added, hasRequiredFields on sharedMenus create, isServerTimestamp enforced on 5 create rules.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-app-lifecycle-deep-link-dropped-on-cold-start-fcm-navigation-unwired-auth-to": {
+      "issueId": "BUT-135",
+      "linearId": "f22b80ae-656f-4a63-a391-1ca2550b9370",
+      "title": "Fix app lifecycle: deep link dropped on cold start, FCM navigation unwired, auth token expiry swallowed (3 critical bugs)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — FCM getInitialMessage wired but onNotificationTapped callback never assigned. Auth token expiry swallowed.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-app-lifecycle-auto-save-lost-on-background-kill-presence-ghost-offline-sync-": {
+      "issueId": "BUT-136",
+      "linearId": "5ab4dc3b-9681-4c16-9679-d123bdc04960",
+      "title": "Fix app lifecycle: auto-save lost on background kill, presence ghost, offline sync race, FCM stub (4 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — auto-save works. Presence ghost on kill and offline sync race unaddressed.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-ios-critical-misconfigs-wrong-bundle-id-in-firebase-config-deployment-target": {
+      "issueId": "BUT-137",
+      "linearId": "a0a3aa1d-b39a-4012-a80d-f323c567a7b8",
+      "title": "Fix iOS critical misconfigs: wrong bundle ID in Firebase config, deployment target 13.0, https URL scheme, missing entitlements (5 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Still open — GoogleService-Info.plist BUNDLE_ID is com.example.butlery (should be se.butlery.app). Deployment target 13.0. Invalid https URL scheme.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-platform-config-cloud-functions-region-mismatch-not-found-missing-security-h": {
+      "issueId": "BUT-138",
+      "linearId": "00b41215-c475-4546-bb81-21349a8f247e",
+      "title": "Fix platform config: Cloud Functions region mismatch (NOT_FOUND), missing security headers, storage permission (4 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Cloud Functions region europe-west1 consistent. Storage rules proper. No mismatch.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-recipe-parsing-no-http-response-size-limit-oom-no-charset-detection-json-ld-": {
+      "issueId": "BUT-139",
+      "linearId": "46827192-9064-4ff3-9eb4-4c412a82bdaa",
+      "title": "Fix recipe parsing: no HTTP response size limit (OOM), no charset detection, JSON-LD @type array missed, instructions discarded (6 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — no HTTP response size limit in web_scraper. JSON-LD @type array not handled. No charset detection.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-di-lifecycle-cross-module-dependency-order-bugs-stateerror-at-bootstrap-sing": {
+      "issueId": "BUT-140",
+      "linearId": "0f900dc2-470f-4168-8c98-5cb4e675552d",
+      "title": "Fix DI lifecycle: cross-module dependency order bugs (StateError at bootstrap) + singleton streams not reset on logout (8 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — DI ordering addressed. Singleton stream reset on logout still missing.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-search-infrastructure-debounce-completer-leak-static-mixin-state-watchrecipe": {
+      "issueId": "BUT-141",
+      "linearId": "4425e58f-d11c-4569-94e8-8d3fb066bf29",
+      "title": "Fix search infrastructure: debounce Completer leak, static mixin state, watchRecipes 50-doc cap (4 critical bugs)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — search debounce uses Timer (no Completer leak). watchRecipes 50-doc cap remains.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-search-quality-algolia-empty-owner-firestore-fallback-unscoped-filter-state-": {
+      "issueId": "BUT-142",
+      "linearId": "8eb8695c-6d41-405f-b736-b7a92ab1f0f5",
+      "title": "Fix search quality: Algolia empty owner, Firestore fallback unscoped, filter state leak on logout, date range off-by-one (13 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — Algolia owner field, Firestore fallback scoping, filter state leak, date range off-by-one unresolved.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-critical-social-group-security-any-member-can-hijack-ownership-validatereadp": {
+      "issueId": "BUT-143",
+      "linearId": "3c112911-2c07-4c3b-a9e2-109172c77dba",
+      "title": "Fix CRITICAL social group security: any member can hijack ownership, validateReadPermission always true, members can overwrite all fields (6 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "All 6 issues fixed: Firestore rules split with immutable field guards, removeMember/addCollaborator/removeCollaborator permission checks, validateUpdatePermission owner-only, atomic transferOwnership transaction, addMembers admin gate.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-social-group-flow-acceptinvitation-doesn-t-add-member-cancel-blocked-remove-": {
+      "issueId": "BUT-144",
+      "linearId": "d1ef26b3-16ca-4929-b42a-215f9781db09",
+      "title": "Fix social group flow: acceptInvitation doesn't add member, cancel blocked, remove stub empty, rules mismatch (10 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "FIXED: acceptGroupInvitation adds member, updates status, fires GroupEventBus.memberAdded().",
+      "auditDate": "2026-03-15"
+    },
+    "fix-image-pipeline-wrong-storage-paths-bypass-security-web-uploads-crash-on-blob": {
+      "issueId": "BUT-145",
+      "linearId": "30e432c5-270f-4005-8676-5bcdc7e8563b",
+      "title": "Fix image pipeline: wrong Storage paths bypass security, web uploads crash on blob URL and missing compression (5 critical issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "All 5 issues fixed: avatar path, dead path param, web blob crash, web compression, dimension enforcement. Code reviewed via /simplify. Compression logic deduplicated, interface abstraction restored.",
+      "auditDate": "2026-03-15",
+      "completedAt": "2026-03-15"
+    },
+    "fix-image-display-and-cleanup-orphaned-images-on-delete-fake-cdn-params-fullscre": {
+      "issueId": "BUT-146",
+      "linearId": "3af8043a-56ff-48fb-9063-6bed53629dda",
+      "title": "Fix image display and cleanup: orphaned images on delete, fake CDN params, fullscreen OOM, double compression (10 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — no cascading image delete on recipe deletion. No CDN param stripping.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-auth-security-registration-without-email-verification-rate-limiter-bypassabl": {
+      "issueId": "BUT-147",
+      "linearId": "41a427a4-2e97-4b3a-853d-440e9c8b2492",
+      "title": "Fix auth security: registration without email verification, rate limiter bypassable, user enumeration via error messages (5 critical issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "All 5 issues fixed: email verification soft-gate for new users, client-side auth rate limiter removed (Firebase handles it), user enumeration prevented (generic error), password min 8 chars (NIST), auth state stream dedup. MFA extracted to AuthMfaService.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-auth-mfa-and-account-deletion-mfa-removal-without-re-auth-partial-deletion-s": {
+      "issueId": "BUT-148",
+      "linearId": "2adae2f9-076a-40a1-bc55-47076fe7530f",
+      "title": "Fix auth MFA and account deletion: MFA removal without re-auth, partial deletion state, audit log race, password minimum (11 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — deletion delegated to focused modules. MFA unenroll without re-auth still open. Password min 6 (should be 8).",
+      "auditDate": "2026-03-15"
+    },
+    "fix-shopping-and-menu-clearcompleted-uncheckall-export-stubs-isloading-stuck-men": {
+      "issueId": "BUT-149",
+      "linearId": "d4c88d76-6873-4c0a-afef-a93b69b2a21f",
+      "title": "Fix shopping and menu: clearCompleted/uncheckAll/export stubs, isLoading stuck, menu quantity corruption, recipe reuse (12 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "All 11 issues implemented. Issue 10 (shared list sync) deferred to separate ticket. Export text dedup spun out to BUT-276.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-onboarding-non-atomic-completion-error-swallowed-registration-bypasses-flow-": {
+      "issueId": "BUT-150",
+      "linearId": "c5bf5263-78ca-40a3-809b-2e6dcf6a0baf",
+      "title": "Fix onboarding: non-atomic completion, error swallowed, registration bypasses flow, FCM permission fires too early (12 issues)",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — completeOnboarding not atomic. FCM permission fires during startup, not after onboarding.",
+      "auditDate": "2026-03-15"
+    },
+    "rework-social-system-reduce-14-firestore-collections-to-3-eliminate-35k-lines-of": {
+      "issueId": "BUT-151",
+      "linearId": "a0c8ca95-7d9d-42c4-a6c0-d945d315221f",
+      "title": "Rework social system: reduce 14 Firestore collections to 3, eliminate 35K+ lines of scaffolding",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — ~40 Firestore collections, no consolidation. Architecture rework not started.",
+      "auditDate": "2026-03-15"
+    },
+    "rework-di-container-add-user-session-scope-to-fix-cross-user-cache-leaks-and-sin": {
+      "issueId": "BUT-152",
+      "linearId": "3717ce9b-0108-4085-ab2b-93fb073cad98",
+      "title": "Rework DI container: add user-session scope to fix cross-user cache leaks and singleton lifecycle bugs",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — no user-session scope in DI. Services registered as global lazy singletons.",
+      "auditDate": "2026-03-15"
+    },
+    "rework-unified-service-layer-replace-90-file-facade-with-4-focused-stream-based-": {
+      "issueId": "BUT-153",
+      "linearId": "34e425ac-8543-4319-9a38-90e79ed9d0df",
+      "title": "Rework unified service layer: replace 90-file facade with 4 focused, stream-based services",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — lib/services/unified/ has 89 files. No rework to focused stream-based services.",
+      "auditDate": "2026-03-15"
+    },
+    "add-drag-and-drop-weekly-meal-calendar-to-replace-flat-menu-list": {
+      "issueId": "BUT-154",
+      "linearId": "6c645847-5ea0-49ad-9f26-808966ed44cb",
+      "title": "Add drag-and-drop weekly meal calendar to replace flat menu list",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "add-cooking-timers-and-step-progression-to-cooking-mode": {
+      "issueId": "BUT-155",
+      "linearId": "40c0ad11-7a69-47fc-bc40-5c6776c3c8bd",
+      "title": "Add cooking timers and step progression to cooking mode",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "add-system-share-sheet-for-sharing-recipes-outside-the-app-via-deep-links": {
+      "issueId": "BUT-156",
+      "linearId": "5efa3769-8854-4db8-aa80-301dec4c8c1e",
+      "title": "Add system share sheet for sharing recipes outside the app via deep links",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — ShareService + share_plus wired. Deep link URL generation for external sharing unclear.",
+      "auditDate": "2026-03-15"
+    },
+    "add-reverse-ingredient-search-what-can-i-cook-with-what-i-have": {
+      "issueId": "BUT-157",
+      "linearId": "be4339a6-c0d3-4ef4-a625-3aa2fdff06e4",
+      "title": "Add reverse ingredient search: what can I cook with what I have?",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "add-ai-recipe-personalization-from-cooking-history-and-ratings": {
+      "issueId": "BUT-158",
+      "linearId": "e819ecf7-6d21-4245-9208-6c233faf2529",
+      "title": "Add AI recipe personalization from cooking history and ratings",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "rework-presence-service-replace-firestore-polling-with-firebase-realtime-databas": {
+      "issueId": "BUT-159",
+      "linearId": "dda4a77f-9d40-4825-ab3b-a69168439923",
+      "title": "Rework presence service: replace Firestore polling with Firebase Realtime Database onDisconnect",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — presence uses Firestore polling, not RTDB onDisconnect. No FirebaseDatabase usage.",
+      "auditDate": "2026-03-15"
+    },
+    "adopt-dart-3-switch-expressions-across-40-enum-files-and-fix-pwa-manifest-brandi": {
+      "issueId": "BUT-160",
+      "linearId": "03370f34-0cea-4f03-9ec6-ee27cd0bcc4e",
+      "title": "Adopt Dart 3 switch expressions across 40+ enum files and fix PWA manifest branding",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — 192 files with old-style switch statements. PWA manifest still has Flutter defaults.",
+      "auditDate": "2026-03-15"
+    },
+    "remove-startupoptimizationmanager-fake-delays-adding-2-3-seconds-to-app-startup": {
+      "issueId": "BUT-161",
+      "linearId": "f4640630-b9a0-4923-84c8-7e43dd95c8ed",
+      "title": "Remove StartupOptimizationManager fake delays adding 2-3 seconds to app startup",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — 11 sequential Future.delayed calls totaling ~2,350ms of artificial startup delay.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-shopping-list-clearcompleteditems-and-uncheckallitems-stubs-that-silently-do": {
+      "issueId": "BUT-162",
+      "linearId": "dbf9eb0b-c7f1-4dcd-a905-1c5c9a16c44d",
+      "title": "Fix shopping list clearCompletedItems and uncheckAllItems stubs that silently do nothing",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "Fixed via BUT-149 (shopping stubs). Closed as duplicate, archived in Linear 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "wire-account-deletion-ui-accountdeletionservice-exists-but-no-route-or-button-re": {
+      "issueId": "BUT-163",
+      "linearId": "f9353bee-75d4-478c-9129-20c433c7aa68",
+      "title": "Wire account deletion UI: AccountDeletionService exists but no route or button reaches it",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Account deletion fully wired — UI button in ProfileMenu → re-auth → AccountDeletionService.",
+      "auditDate": "2026-03-15"
+    },
+    "add-cooking-streak-and-milestone-system-using-existing-activitytype-achievementu": {
+      "issueId": "BUT-164",
+      "linearId": "a9093fb4-9360-40df-aa08-7c947a284f3f",
+      "title": "Add cooking streak and milestone system using existing ActivityType.achievementUnlocked infrastructure",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Infrastructure exists, not built.",
+      "auditDate": "2026-03-15"
+    },
+    "add-tag-discovery-view-browsable-auto-tag-catalogue-with-recipe-counts-per-tag": {
+      "issueId": "BUT-165",
+      "linearId": "93f99c9c-f81d-4a72-a5ae-4787bdc255c7",
+      "title": "Add tag discovery view: browsable auto-tag catalogue with recipe counts per tag",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "implement-daily-17-00-push-notification-habit-loop-with-recipe-suggestion": {
+      "issueId": "BUT-166",
+      "linearId": "4731f0aa-26e6-4b3b-a56f-2e982b93058f",
+      "title": "Implement daily 17:00 push notification habit loop with recipe suggestion",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-image-loading-cdn-query-params-ignored-by-firebase-storage-every-recipe-card": {
+      "issueId": "BUT-167",
+      "linearId": "ca20dd67-bd86-4f4e-8f60-34d7b764a764",
+      "title": "Fix image loading: CDN query params ignored by Firebase Storage, every recipe card downloads full 3-8MB originals",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — getDownloadURL returns full-resolution URL. Thumbnails exist but not plumbed to recipe cards.",
+      "auditDate": "2026-03-15"
+    },
+    "add-measurement-unit-preference-with-display-layer-conversion-for-imported-imper": {
+      "issueId": "BUT-168",
+      "linearId": "ab4dad44-b27a-4555-9161-b9e7ddd00414",
+      "title": "Add measurement unit preference with display-layer conversion for imported imperial recipes",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "wire-recipeseeds-into-onboarding-seed-3-5-starter-recipes-for-empty-first-sessio": {
+      "issueId": "BUT-169",
+      "linearId": "44df0373-e681-41bb-a712-7c9b0141f53a",
+      "title": "Wire RecipeSeeds into onboarding: seed 3-5 starter recipes for empty-first-session users",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — RecipeSeeds exists but not imported in onboarding views.",
+      "auditDate": "2026-03-15"
+    },
+    "implement-web-offline-storage-replace-cachedao-stub-with-indexeddb-backed-implem": {
+      "issueId": "BUT-170",
+      "linearId": "942613b0-ab3d-41b3-a1ed-7e53ace0c47e",
+      "title": "Implement web offline storage: replace CacheDao stub with IndexedDB-backed implementation",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — CacheDao web stub is explicit no-op. No IndexedDB implementation.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-connectivity-check-replace-30-second-firestore-server-reads-with-rtdb-info-c": {
+      "issueId": "BUT-171",
+      "linearId": "6077337d-6bcb-4b65-945f-bdcf07d5e661",
+      "title": "Fix connectivity check: replace 30-second Firestore server reads with RTDB .info/connected stream",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "FIXED: Connectivity uses DNS lookups with 3-5s timeouts, not 30s Firestore reads.",
+      "auditDate": "2026-03-15"
+    },
+    "streamline-share-to-import-bypass-intermediate-screen-use-smartimportviewmodel-d": {
+      "issueId": "BUT-172",
+      "linearId": "776c67e5-f391-4728-aa41-836efb4f6a0a",
+      "title": "Streamline share-to-import: bypass intermediate screen, use SmartImportViewModel directly",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "implement-menu-balance-score-gethealthinessscore-returns-hardcoded-0-75-entire-a": {
+      "issueId": "BUT-173",
+      "linearId": "1382c1f1-5c0c-4c63-a7ef-3690244c1234",
+      "title": "Implement menu balance score: getHealthinessScore() returns hardcoded 0.75, entire analytics layer is stub",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — getHealthinessScore() returns hardcoded 0.75 placeholder.",
+      "auditDate": "2026-03-15"
+    },
+    "add-smart-personal-tag-suggestions-detect-untagged-ingredient-cuisine-patterns-a": {
+      "issueId": "BUT-174",
+      "linearId": "f8c8385b-e6b9-465c-8e66-abe5c4dfee60",
+      "title": "Add smart personal tag suggestions: detect untagged ingredient/cuisine patterns and suggest tags",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "add-search-suggestions-discovery-shelves-and-sort-by-recency-to-recipe-list": {
+      "issueId": "BUT-175",
+      "linearId": "faf9fc25-adeb-41dc-bcc5-15442dcb2289",
+      "title": "Add search suggestions, discovery shelves, and sort-by-recency to recipe list",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "improve-filter-state-visibility-and-make-search-empty-states-actionable": {
+      "issueId": "BUT-176",
+      "linearId": "6b5d18ad-4aef-495c-8ea0-0b9976865f95",
+      "title": "Improve filter state visibility and make search empty states actionable",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-silent-ingredient-mutation-preprocessing-runs-on-every-keystroke-instead-of-": {
+      "issueId": "BUT-177",
+      "linearId": "0f791881-a782-49c8-bfa8-eb6a16fd0426",
+      "title": "Fix silent ingredient mutation: preprocessing runs on every keystroke instead of save-time",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — ingredient preprocessing runs on every keystroke, not save-time.",
+      "auditDate": "2026-03-15"
+    },
+    "add-drag-to-reorder-for-ingredients-and-instructions-in-recipe-form": {
+      "issueId": "BUT-178",
+      "linearId": "391bb7ed-e97a-4a11-8d31-83959ba9aad0",
+      "title": "Add drag-to-reorder for ingredients and instructions in recipe form",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "improve-recipe-form-portion-scaling-during-edit-visible-auto-save-and-create-edi": {
+      "issueId": "BUT-179",
+      "linearId": "60011308-1133-4ddd-bf77-20db8617f636",
+      "title": "Improve recipe form: portion scaling during edit, visible auto-save, and create/edit form unification",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-accessibility-semantic-labels-english-on-recipecard-missing-on-rating-pill-t": {
+      "issueId": "BUT-180",
+      "linearId": "9fc0c90a-fa2f-49ed-a71e-cf08644c6671",
+      "title": "Fix accessibility semantic labels: English on RecipeCard, missing on rating pill, typo in SyncIndicator",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — SyncIndicator has Swedish typo 'Offline-lage'. RecipeCard Semantics in English.",
+      "auditDate": "2026-03-15"
+    },
+    "extend-reduced-motion-support-to-16-widgets-and-add-text-scaling-protection-for-": {
+      "issueId": "BUT-181",
+      "linearId": "2ff3c0b0-84f8-467f-84fd-6d2a35f4b24b",
+      "title": "Extend reduced-motion support to 16+ widgets and add text-scaling protection for small text",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — ~10 widgets have reduced motion support. Need 16+. Text scaling not verified.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-offline-ux-sync-result-discarded-connectivity-check-hardcoded-true-no-offlin": {
+      "issueId": "BUT-182",
+      "linearId": "7d8d8ddd-6966-4eb7-b855-9180e00c7ebc",
+      "title": "Fix offline UX: sync result discarded, connectivity check hardcoded true, no offline banner",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — _isNetworkAvailable() returns hardcoded true. No offline banner.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-image-upload-error-always-blaming-internet-and-extend-empty-state-illustrati": {
+      "issueId": "BUT-183",
+      "linearId": "7b9ed8cb-f1d7-4033-b8f2-17d13cba7f25",
+      "title": "Fix image upload error always blaming internet and extend empty state illustrations to social/tags",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — error message improved. Retry hint still blames internet for all network errors.",
+      "auditDate": "2026-03-15"
+    },
+    "wire-cooking-history-into-menu-generator-and-recipe-discovery-to-avoid-repeat-me": {
+      "issueId": "BUT-184",
+      "linearId": "8e618f2d-69d1-4f33-b82b-f69490b3ac0c",
+      "title": "Wire cooking history into menu generator and recipe discovery to avoid repeat meals",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. lastCookedAt exists but MenuGenerator doesn't use it.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-menu-to-shopping-naive-ingredient-dedup-and-add-auto-tags-to-algolia-search-": {
+      "issueId": "BUT-185",
+      "linearId": "de5110fb-703c-44b1-81f9-989c9d3889ec",
+      "title": "Fix menu-to-shopping naive ingredient dedup and add auto-tags to Algolia search index",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — basic ingredient consolidation exists. Algolia auto-tags not indexed.",
+      "auditDate": "2026-03-15"
+    },
+    "add-allergen-warnings-when-receiving-shared-recipes-based-on-recipient-allergen-": {
+      "issueId": "BUT-186",
+      "linearId": "c453b1da-addd-4d2e-a218-b4e75cb42a8b",
+      "title": "Add allergen warnings when receiving shared recipes based on recipient allergen profile",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "improve-developer-experience-wire-very-good-analysis-activate-kill-switches-fix-": {
+      "issueId": "BUT-187",
+      "linearId": "cf21d30c-2847-424b-a98f-4c40f2ebf3fe",
+      "title": "Improve developer experience: wire very_good_analysis, activate kill switches, fix dynamic types, split test mocks",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — very_good_analysis in pubspec but analysis_options.yaml still uses flutter_lints.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-tab-switching-destroying-all-state-replace-pushreplacementnamed-with-indexed": {
+      "issueId": "BUT-188",
+      "linearId": "b2dda2f4-4878-4244-97c6-d314ee1ea6cf",
+      "title": "Fix tab switching destroying all state: replace pushReplacementNamed with IndexedStack",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — top-level navigation uses pushReplacementNamed, not IndexedStack. Tab switch destroys state.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-broken-deep-links-recipe-menu-shopping-all-fail-and-missing-login-route": {
+      "issueId": "BUT-189",
+      "linearId": "3f815356-adab-4bae-84a1-59851d900dad",
+      "title": "Fix broken deep links (recipe/menu/shopping all fail) and missing /login route",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — deep link handler handles recipe/menu/shopping. No /login route. Exceptions swallowed with bare catch.",
+      "auditDate": "2026-03-15"
+    },
+    "improve-navigation-convert-lagg-till-from-tab-to-modal-fix-social-views-showing-": {
+      "issueId": "BUT-190",
+      "linearId": "d2309687-2de3-4013-b617-4783c7c4f03b",
+      "title": "Improve navigation: convert Lagg till from tab to modal, fix social views showing wrong nav highlight",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — laggTill is a full nav tab, not modal. Social views use pushReplacementNamed causing wrong highlight.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-import-data-quality-url-dedup-not-normalized-mealtype-always-middag-unit-con": {
+      "issueId": "BUT-191",
+      "linearId": "2166f839-7b05-4d48-bebf-726fa2ad06f2",
+      "title": "Fix import data quality: URL dedup not normalized, mealType always Middag, unit conversion constants wrong",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — URL dedup normalization implemented. mealType hardcoded to Middag in 3 import paths.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-ingredient-data-structured-parse-results-discarded-before-firestore-ingredie": {
+      "issueId": "BUT-192",
+      "linearId": "7e130650-56a7-4869-9705-f4ba9e380640",
+      "title": "Fix ingredient data: structured parse results discarded before Firestore, ingredientsNormalized goes stale on edit",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "FIXED: create()/update() call IngredientProcessor.needsNormalization() before every Firestore write.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-collaboration-presence-random-coin-flip-simulation-and-ghost-users-on-crash": {
+      "issueId": "BUT-193",
+      "linearId": "b1e2e266-a84b-4d28-be66-e8a94ac5a155",
+      "title": "Fix collaboration presence: random coin flip simulation and ghost users on crash",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "FIXED: No Random() in presence code. Proper Firestore timestamps and user IDs.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-collaboration-last-write-wins-discards-concurrent-edits-enable-collaboration": {
+      "issueId": "BUT-194",
+      "linearId": "4c48741d-6af5-4212-8ffc-4d5d5152e4b5",
+      "title": "Fix collaboration: last-write-wins discards concurrent edits, enable-collaboration deletes original recipe",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — ConflictResolutionModule uses editCount vector clock. enable-collaboration recipe deletion unverified.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-3-collaboration-notification-types-using-wrong-notification-strategy": {
+      "issueId": "BUT-195",
+      "linearId": "f0fd3f42-8196-48a7-93ad-48f42339a26f",
+      "title": "Fix 3 collaboration notification types using wrong notification strategy",
+      "createdAt": "2026-03-07",
+      "auditStatus": "duplicate",
+      "auditComment": "DUPLICATE of BUT-87: Same 3 wrong NotificationStrategy.collaborationEnabled placeholders.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-notification-dead-features-win-back-never-sends-fcm-digest-has-no-ui-control": {
+      "issueId": "BUT-196",
+      "linearId": "1568e7de-622d-4bc6-9241-9c835dd702f0",
+      "title": "Fix notification dead features: win-back never sends FCM, digest has no UI control, DM push path missing",
+      "createdAt": "2026-03-07",
+      "auditStatus": "open",
+      "auditComment": "Still open — no win-back FCM, no digest UI toggle, no DM push wiring.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-gdpr-gaps-analytics-bypass-consent-algolia-orphaned-on-deletion-email-in-per": {
+      "issueId": "BUT-197",
+      "linearId": "39bea3e4-e39d-4402-9769-9dd763adbfee",
+      "title": "Fix GDPR gaps: analytics bypass consent, Algolia orphaned on deletion, email in permanent audit log",
+      "createdAt": "2026-03-07",
+      "auditStatus": "done",
+      "auditComment": "All 4 GDPR gaps fixed: consent guards on 4 methods, fail-closed defaults, Algolia cleanup on deletion, email hashed + TTL in audit log. ConsentService session cache added. Shared CryptoUtils + batchDeleteDocs utilities extracted.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-startup-latency-contentstage-blocks-on-non-critical-firestore-read-sync-mana": {
+      "issueId": "BUT-198",
+      "linearId": "840eb324-0129-484c-9663-883a1d97b4cd",
+      "title": "Fix startup latency: ContentStage blocks on non-critical Firestore read, sync manager blocks with 300ms delay",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — ContentStage non-blocking. FirebaseSyncManager still has 300ms artificial delay.",
+      "auditDate": "2026-03-15"
+    },
+    "fix-recipe-list-performance-eager-grid-build-on-tablet-context-watch-in-item-bui": {
+      "issueId": "BUT-199",
+      "linearId": "41bfa775-2666-468e-bc9b-732837b4e6da",
+      "title": "Fix recipe list performance: eager grid build on tablet, context.watch in item builder causes full rebuilds",
+      "createdAt": "2026-03-07",
+      "auditStatus": "partially-fixed",
+      "auditComment": "Partially fixed — GridView.builder is lazy. context.watch<UserService>() in item builder causes rebuilds.",
+      "auditDate": "2026-03-15"
+    },
+    "add-cooking-mode-core-ux-smart-timers-ingredient-cross-off-step-tracking-fractio": {
+      "issueId": "BUT-200",
+      "linearId": "82a3d5d1-93ad-485e-a218-8005905fc573",
+      "title": "Add cooking mode core UX: smart timers, ingredient cross-off, step tracking, fractional portions",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Basic skeleton exists, not built.",
+      "auditDate": "2026-03-15"
+    },
+    "add-post-cooking-flow-with-rating-prompt-cook-notes-and-cook-count-tracking": {
+      "issueId": "BUT-201",
+      "linearId": "63c21d61-38f8-419a-9ab7-48943cd35d07",
+      "title": "Add post-cooking flow with rating prompt, cook notes, and cook count tracking",
+      "createdAt": "2026-03-07",
+      "auditStatus": "archived",
+      "auditComment": "Feature idea — archived as Done in Linear 2026-03-15. Not implemented.",
+      "auditDate": "2026-03-15"
+    },
+    "assisted-import-dialog-ux": {
+      "issueId": "BUT-260",
+      "linearId": "13d6d5d2-909d-4322-a36e-be343ccbb8b9",
+      "title": "Fix assisted import dialog: filter noise lines, show image preview, allow dismiss",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "file-import-no-preview": {
+      "issueId": "BUT-261",
+      "linearId": "0f1f811c-6858-44f6-9bb9-b2cf3a37bbde",
+      "title": "Add preview and selection step to file/batch import flow",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "friend-invitation-link-ui": {
+      "issueId": "BUT-262",
+      "linearId": "0fee693b-61a6-40c9-9799-a9c50db3ae7e",
+      "title": "Surface friend invitation link in social UI for growth",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-detail-rating-ui": {
+      "issueId": "BUT-263",
+      "linearId": "180a29b0-390b-4136-b717-a1dfdeb84975",
+      "title": "Add interactive star rating to recipe detail view",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "comment-count-visibility": {
+      "issueId": "BUT-264",
+      "linearId": "c251a0b7-8855-4d5b-9e6f-0e4deea4bc77",
+      "title": "Surface comment count on recipe cards and auto-expand from notifications",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "social-activity-feed": {
+      "issueId": "BUT-265",
+      "linearId": "82a7ef5a-6c3b-4940-8d83-c25a7470b243",
+      "title": "Add social activity feed to give the app a living quality",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "dedicated-settings-hub": {
+      "issueId": "BUT-266",
+      "linearId": "d6b52647-6857-4f18-b945-c93fc3956379",
+      "title": "Add dedicated settings hub with grouped categories",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "recipe-detail-content-hierarchy": {
+      "issueId": "BUT-267",
+      "linearId": "e70d751e-2e19-44ab-83a9-f0c9155665c9",
+      "title": "Improve recipe detail content hierarchy: ingredients above fold",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "substitution-discoverability": {
+      "issueId": "BUT-268",
+      "linearId": "b0af5018-a689-43dc-be28-00f68a0648da",
+      "title": "Make ingredient substitution discoverable with visible affordance and allergen filtering",
+      "createdAt": "2026-03-13",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — IngredientSubstitutionService + substitution sheet exist, wired to recipe detail. No visible affordance/hint.",
+      "auditDate": "2026-03-15"
+    },
+    "shopping-list-ux-undo-search-colors": {
+      "issueId": "BUT-269",
+      "linearId": "f49a7e32-9707-42ae-aeea-d76ebd04c938",
+      "title": "Improve shopping list UX: add undo-delete, search bar, and distinct category colors",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "menu-swap-dietary-awareness": {
+      "issueId": "BUT-270",
+      "linearId": "e00d0f35-9118-407d-aa23-7ac08295ad2b",
+      "title": "Add dietary awareness to menu recipe swap with alternatives count",
+      "createdAt": "2026-03-13",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — menu swap logic exists. No dietary/allergen filtering on swap candidates.",
+      "auditDate": "2026-03-15"
+    },
+    "shared-with-me-empty-state-messaging": {
+      "issueId": "BUT-271",
+      "linearId": "cac97ef9-d4c1-4136-8416-7b0c403eaf5b",
+      "title": "Improve shared-with-me empty state and connect messaging to social actions",
+      "createdAt": "2026-03-13",
+      "auditStatus": "partially-implemented",
+      "auditComment": "Partial — empty state widgets exist. No messaging integration from empty states.",
+      "auditDate": "2026-03-15"
+    },
+    "friend-cards-profiles-enrichment": {
+      "issueId": "BUT-272",
+      "linearId": "8ac3dd30-8f34-4b32-ac84-964b76e7b339",
+      "title": "Enrich friend cards with context and add recipe browsing to friend profiles",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "onboarding-brand-dietary-bridge": {
+      "issueId": "BUT-273",
+      "linearId": "2304cb6e-6f41-4eae-b40b-bfd6895a63f1",
+      "title": "Improve onboarding: brand illustration, broader dietary choices, settings bridge",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "menu-popscope-blocks-tab-nav": {
+      "issueId": "BUT-274",
+      "linearId": "50c50ed5-ae5c-40be-9233-4de6923967ce",
+      "title": "Fix menu PopScope blocking all tab navigation with exit dialog",
+      "createdAt": "2026-03-13",
+      "auditStatus": "bug-not-feature",
+      "auditComment": "Bug — PopScope(canPop: false) in veckomeny_view blocks all tab navigation with exit dialog.",
+      "auditDate": "2026-03-15"
+    },
+    "import-ux-confidence-banner": {
+      "issueId": "BUT-275",
+      "linearId": "unknown",
+      "title": "Improve import UX: confidence banner, partial parse highlighting, and error fallbacks",
+      "createdAt": "2026-03-13",
+      "auditStatus": "not-implemented",
+      "auditComment": "Not implemented — verified 2026-03-15.",
+      "auditDate": "2026-03-15"
+    },
+    "shopping-export-text-dedup": {
+      "issueId": "BUT-276",
+      "linearId": "",
+      "title": "Consolidate 3 duplicate shopping list export implementations",
+      "createdAt": "2026-03-15",
+      "auditStatus": "open",
+      "auditComment": "Found during BUT-149 simplify review. Three independent categorized export implementations exist: shopping_list_management_module, personal_shopping_operations, ShoppingAnalyticsManager. Plus a stub in ShoppingExportModule. Should unify behind one implementation.",
+      "auditDate": "2026-03-15"
+    }
+  },
+  "lastScanDate": "2026-03-13",
+  "scanHistory": [
+    {
+      "date": "2026-03-04",
+      "focus": "architecture-gaps-parsing-import-menu-shopping-analytics-settings",
+      "created": 6
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "security-owasp-import-parsing",
+      "created": 3
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "social-menu-shopping-recipe",
+      "created": 0
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "analytics-settings-account-performance",
+      "created": 1
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "thorough-deep-scan",
+      "created": 8
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "ultrathink-deep-scan-6",
+      "created": 11
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "ultrathink-deep-scan-7-error-recovery-lifecycle-transactions-validation-leaks",
+      "created": 10
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "ultrathink-deep-scan-8-buildcontext-async-force-unwrap-sharedprefs-races-provider-rebuilds-auth-token",
+      "created": 10
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "ultrathink-deep-scan-9-datetime-handling-image-pipeline-navigation-lifecycle-i18n-widget-disposal",
+      "created": 10
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "ultrathink-deep-scan-10-firestore-queries-di-integrity-api-keys-error-ux-data-model",
+      "created": 10
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "ultrathink-deep-scan-11-parsing-pipeline-concurrency-web-build",
+      "created": 9,
+      "note": "Pushed 9 pending tickets (BUT-75 to BUT-83) after Linear MCP reconnected"
+    },
+    {
+      "date": "2026-03-05",
+      "focus": "ultrathink-deep-scan-12-provider-state-null-safety-streams-disposal-stubs",
+      "created": 9,
+      "note": "BUT-84 to BUT-92. 8 pending pushed after Linear MCP reconnected."
+    },
+    {
+      "date": "2026-03-06",
+      "focus": "ultrathink-deep-scan-13-parsing-sharing-firebase-functions-lint",
+      "created": 8,
+      "note": "BUT-93 to BUT-100. 8 pending tickets pushed after Linear MCP reconnected."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "ultrathink-deep-scan-14-routing-forms-startup-menu-shopping-caching-offline",
+      "created": 10,
+      "note": "BUT-101 to BUT-110. 10 pending tickets pushed after Linear MCP reconnected."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "ultrathink-deep-scan-15-build-patterns-async-safety-data-models-error-ux-security-disposal",
+      "created": 10,
+      "note": "BUT-111 to BUT-120. 10 pending tickets pushed after Linear MCP reconnected."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "ultrathink-deep-scan-16-theming-concurrency-tests-widgets-accessibility-contracts",
+      "created": 2,
+      "note": "BUT-121 to BUT-130. 8 pending tickets pushed in bulk (scan 16-22 batch push)."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "ultrathink-deep-scan-17-cloud-functions-firestore-rules-lifecycle-platform-parsing-di",
+      "created": 10,
+      "note": "BUT-131 to BUT-140. Pushed in bulk (scan 16-22 batch push)."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "ultrathink-deep-scan-18-search-social-groups-image-pipeline-auth-menu-shopping-onboarding",
+      "created": 10,
+      "note": "BUT-141 to BUT-150. Pushed in bulk (scan 16-22 batch push)."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "creative-scan-19-ux-architecture-features-modernization-social",
+      "created": 10,
+      "note": "BUT-151 to BUT-160. Pushed in bulk (scan 16-22 batch push)."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "creative-ultrathink-scan-20-tagging-analytics-import-settings-offline-onboarding",
+      "created": 12,
+      "note": "BUT-161 to BUT-172. Pushed in bulk (scan 16-22 batch push)."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "creative-ultrathink-scan-21-search-editing-accessibility-errors-synergies-dx",
+      "created": 13,
+      "note": "BUT-173 to BUT-187 (includes scan 20 overflow). Pushed in bulk (scan 16-22 batch push)."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "creative-ultrathink-scan-22-navigation-dataquality-collaboration-notifications-gdpr-performance",
+      "created": 12,
+      "note": "BUT-188 to BUT-199. Pushed in bulk (scan 16-22 batch push)."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "creative-ultrathink-scan-23-monetization-multidevice-lifecycle-household-import-delight",
+      "created": 12,
+      "note": "BUT-248 to BUT-259. 12 original tickets pushed 2026-03-12."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "creative-ultrathink-scan-24-parsing-cooking-discovery-creation-shopping-architecture",
+      "created": 15,
+      "note": "BUT-200 to BUT-214. 2 pushed initially, 13 pushed later. All 15 complete."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "creative-ultrathink-scan-25-analytics-profile-tagging-pwa-settings-engagement",
+      "created": 14,
+      "note": "BUT-215 to BUT-228. 14 of 14 tickets pushed 2026-03-12. All scan 25 tickets complete."
+    },
+    {
+      "date": "2026-03-07",
+      "focus": "creative-ultrathink-scan-26-accessibility-onboarding-collaboration-quality-errors-performance",
+      "created": 18,
+      "note": "BUT-230 to BUT-247. 18 pending tickets pushed 2026-03-12."
+    },
+    {
+      "date": "2026-03-13",
+      "focus": "creative-scan-27-import-social-theme-notifications-search-pantry-tagging-challenges",
+      "created": 1,
+      "note": "BUT-275 created. 10 tickets pending — Linear free plan issue limit reached."
+    }
+  ],
+  "lastScanFocus": "creative-scan-27-import-social-theme-notifications-search-pantry-tagging-challenges",
+  "lastIssueId": "BUT-276",
+  "pendingTickets": [
+    {
+      "key": "parsing-correction-feedback-loop",
+      "title": "Wire parsing correction feedback loop — RecipeDiffCalculator → Firestore",
+      "labels": [
+        "idea",
+        "parsing"
+      ],
+      "priority": 4,
+      "description": "## Opportunity\n`RecipeDiffCalculator` computes exactly what the parser got wrong vs. user corrections. `ParsingCorrection.create()` is called but never written to Firestore. Free training data for improving the parser is being silently discarded.\n\n## Current State\nThe infrastructure is 90% built: `RecipeDiffCalculator` in `lib/services/parsing/feedback/recipe_diff_calculator.dart` produces `ParsingCorrection` objects, but they're never persisted.\n\n## Proposed Improvement\nCreate `ParsingFeedbackService` that writes `ParsingCorrection` to `parsing_corrections` Firestore collection when user saves an edited imported recipe. Security rules needed for new collection.\n\n## Effort vs Impact\nLow effort (infrastructure exists). Medium-term impact: enables data-driven parser improvement over time.\n\n**Files:** `lib/services/parsing/feedback/recipe_diff_calculator.dart`, new `parsing_feedback_service.dart`"
+    },
+    {
+      "key": "comment-engagement-preview-edit-reactions",
+      "title": "Improve comment engagement: inline preview, edit capability, reaction discoverability",
+      "labels": [
+        "idea",
+        "social",
+        "recipe"
+      ],
+      "priority": 3,
+      "description": "## Opportunity\nThree comment UX gaps: (a) collapsed header shows only \"Kommentarer\" + count — no preview of latest comment; (b) users can delete but not edit own comments; (c) long-press emoji reaction picker has zero visual hint — completely undiscoverable.\n\n## Current State\nComments section collapses to a count badge. No edit capability. Reaction discovery relies entirely on users guessing long-press behavior.\n\n## Proposed Improvement\n(a) Show first/latest comment author + truncated text when collapsed (Instagram-style).\n(b) Add `onEdit` callback parallel to `onDelete` with inline text field.\n(c) Add subtle \"Håll inne för reaktion\" hint or tooltip on first interaction.\n\n## Effort vs Impact\nMedium effort across 2 widget files. High engagement payoff — comment interactions drive social stickiness.\n\n**Files:** `lib/views/recipe_detail/recipe_detail_comments.dart`, `lib/widgets/recipe/comment_item_widgets.dart`"
+    },
+    {
+      "key": "warm-dark-color-scheme",
+      "title": "Handcraft warm dark color scheme preserving brand identity",
+      "labels": [
+        "idea",
+        "recipe"
+      ],
+      "priority": 3,
+      "description": "## Opportunity\nCurrent dark mode uses `ColorScheme.fromSeed()` which generates cool M3 dark surfaces (#1C1B1F). The entire warm cream personality disappears. The brand is warm food colors — dark mode should be warm dark brown (#1A1611), not cold gray.\n\n## Current State\nDark mode auto-generates cold gray surfaces. `ButleryColors.dark` already has `copyWith` and `lerp` for smooth transitions.\n\n## Proposed Improvement\nReplace auto-generated dark surfaces with handcrafted warm dark palette. Also: delete legacy `AppColors.secondaryPurple` (off-brand, only used in shader warm-up).\n\n## Effort vs Impact\nMedium effort — theme files only. High brand payoff: dark mode finally feels like Butlery.\n\n**Files:** `lib/theme/app_theme.dart`, `lib/theme/app_colors.dart`, `lib/theme/butlery_colors.dart`"
+    },
+    {
+      "key": "seasonal-accent-color-variations",
+      "title": "Add seasonal accent color variations",
+      "labels": [
+        "idea",
+        "recipe"
+      ],
+      "priority": 4,
+      "description": "## Opportunity\nThe rust + forest green palette is static year-round. `ButleryColors` has `copyWith` — the mechanism to do month-based accent shifts exists. Warm amber tones in autumn, cooler blue-tinted cream in winter would give the app a living feel.\n\n## Current State\nStatic color palette year-round.\n\n## Proposed Improvement\n`SeasonalAccentService` reads current month, returns a `ButleryColors` override. Subtle — not a full re-theme, just accent warmth shifts. Could use `AnimatedTheme` for smooth transitions on month boundaries.\n\n## Effort vs Impact\nMedium effort (new service + theme integration). Delightful — gives the app personality that changes with the seasons.\n\n**Files:** New `lib/services/theme/seasonal_accent_service.dart`, `lib/theme/butlery_colors.dart`"
+    },
+    {
+      "key": "data-export-broken-web",
+      "title": "Fix data export broken on web platform",
+      "labels": [
+        "Bug",
+        "account"
+      ],
+      "priority": 2,
+      "description": "## Finding\n`DataExportView._handleDownload()` uses `getApplicationDocumentsDirectory()` which returns an in-memory VFS path on web — the file is written somewhere the user can never find. No `kIsWeb` guard. The share flow works, but the explicit \"Save file\" button is silently broken on web.\n\n## Why It Matters\nUsers on web cannot export their data — a GDPR requirement and basic user expectation.\n\n## Suggested Fix\nAdd `kIsWeb` check — on web, use `dart:html` `AnchorElement` download or redirect to share flow. Pattern already used in `lib/main.dart:126`.\n\n**Files:** `lib/views/account/data_export_view.dart`"
+    },
+    {
+      "key": "in-app-notification-inbox",
+      "title": "Add in-app notification inbox view",
+      "labels": [
+        "idea",
+        "social"
+      ],
+      "priority": 3,
+      "description": "## Opportunity\nNotifications only appear in the OS tray. Dismissed = lost forever. But `NotificationAnalyticsManager` stores notification history via `recordNotification`, `markNotificationDelivered`, `markNotificationOpened`. The data exists in Firestore — no view surfaces it.\n\n## Current State\nNo in-app notification history. OS tray is the only channel.\n\n## Proposed Improvement\nSimple `NotificationsView` backed by `_repository.getNotificationHistory(userId)` — list of recent notifications with tap-to-navigate. Could live under the social tab or as a bell icon in the app bar.\n\n## Effort vs Impact\nMedium effort (new view + viewmodel). High engagement — users never miss social actions.\n\n**Files:** New `lib/views/notifications/notifications_view.dart`, `lib/viewmodels/notifications_viewmodel.dart`"
+    },
+    {
+      "key": "search-history-algolia-highlights",
+      "title": "Add search history persistence and Algolia highlight rendering",
+      "labels": [
+        "idea",
+        "recipe"
+      ],
+      "priority": 3,
+      "description": "## Opportunity\n(a) No search history stored — users start fresh every session. `RecipeQueryViewModel` tracks `_lastSearchQuery` only as a cache key. (b) `RecipeSearchHit` carries `highlightedTitle`/`highlightedDescription` from Algolia but they're never rendered — matches aren't visually scannable.\n\n## Current State\nSearch is ephemeral with no history. Algolia highlight data is fetched but discarded at render time.\n\n## Proposed Improvement\n(a) Persist `List<String> recentSearches` (max 10) in SharedPreferences, show in suggestion overlay when search focused but empty.\n(b) Render Algolia `<em>` tags as bold spans in search result cards.\n\n## Effort vs Impact\nLow-medium effort. High UX payoff — search feels smarter and faster.\n\n**Files:** `lib/viewmodels/recipe_query_viewmodel.dart`, `lib/widgets/recipe/recipe_card.dart`, `lib/repositories/algolia/algolia_search_repository.dart`"
+    },
+    {
+      "key": "pantry-inventory-cook-with-what-i-have",
+      "title": "Add pantry inventory with \"Laga med vad jag har\" filter",
+      "labels": [
+        "idea",
+        "recipe",
+        "shopping"
+      ],
+      "priority": 3,
+      "description": "## Opportunity\nTop recipe apps (Samsung Food, KitchenPal, Cooklist) have pantry tracking. The killer feature is \"cook with what I have\" — filtering recipes by on-hand ingredients. Butlery has deep ingredient taxonomy (`IngredientLookupService`, `ingredient_data.dart`) but zero pantry tracking.\n\n## Current State\nNo pantry concept exists. Ingredient taxonomy is rich but unused for inventory.\n\n## Proposed Improvement\n`PantryItem` model (ingredient, quantity, optional expiry) + `PantryService` + \"Laga med vad jag har\" filter on recipe list. Connects naturally into existing ingredient taxonomy. Also a monetization hook.\n\n## Effort vs Impact\nLarge effort (new models, service, views, filter integration). Very high impact — a differentiating feature that leverages existing taxonomy.\n\n**Files:** New `lib/models/pantry/pantry_item.dart`, `lib/services/pantry/pantry_service.dart`, `lib/views/pantry/pantry_view.dart`"
+    },
+    {
+      "key": "tag-collection-insights",
+      "title": "Add tag-based collection insights for users",
+      "labels": [
+        "idea",
+        "tagging",
+        "analytics"
+      ],
+      "priority": 4,
+      "description": "## Opportunity\nButlery's auto-tagging engine produces rich dietary/allergen/cuisine data per recipe — unique in the market. But users never see aggregate insights. \"Your collection is 43% vegetarian, 12% vegan, top cuisine: Italian\" would showcase the tagging engine's value and help users understand their cooking patterns.\n\n## Current State\nRich per-recipe tag data exists. No aggregation or insights view.\n\n## Proposed Improvement\nCollection insights widget on profile or recipe list — pie chart or simple stat cards powered by existing tag data. No new computation needed — just aggregate what auto-tags already produce.\n\n## Effort vs Impact\nMedium effort (new widget + aggregation logic). High delight — users discover something about themselves.\n\n**Files:** New `lib/widgets/recipe/collection_insights_widget.dart`"
+    },
+    {
+      "key": "cooking-challenges-time-bounded-tags",
+      "title": "Add cooking challenges via time-bounded personal tag rules",
+      "labels": [
+        "idea",
+        "tagging",
+        "social"
+      ],
+      "priority": 4,
+      "description": "## Opportunity\nCookpad's engagement secret is challenges (\"cook something new every week\"). Butlery's personal tag + rule system + `retagging_scheduler.dart` already handles scheduled re-evaluation. Time-bounded challenges could be built entirely on existing infrastructure.\n\n## Current State\nPersonal tag rules support conditions but not date ranges. Retagging scheduler exists.\n\n## Proposed Improvement\nAdd `dateRange` condition to personal tag rules — a \"Mars-utmaningen\" tag auto-applied to newly cooked recipes during March. Leverage existing rule engine + scheduler. Social sharing of challenge completion optional.\n\n## Effort vs Impact\nMedium effort (extend rule model + scheduler). High engagement — gamification drives retention.\n\n**Files:** `lib/models/personal_tag/personal_tag_rule.dart`, `lib/services/tagging/retagging_scheduler.dart`"
+    },
+    {
+      "key": "tag-decision-audit-trail",
+      "title": "TagDecision audit trail for tag generation",
+      "labels": [
+        "Enhancement",
+        "Tagging"
+      ],
+      "priority": 4,
+      "description": "Record why each tag was assigned (which ingredients triggered it, which rules matched) so users can understand and verify automated tagging decisions.\n\n**Blocked on:** UX design for how to display the audit trail (tooltip? expandable section? separate view?)\n\nFrom tagging system improvement plan item 2b."
+    },
+    {
+      "key": "firebase-config-tag-thresholds",
+      "title": "Move tag generation thresholds to Firebase config",
+      "labels": [
+        "Enhancement",
+        "Tagging"
+      ],
+      "priority": 4,
+      "description": "Currently hardcoded thresholds (e.g. spice group count for \"kryddrik\", season detection minimums) could be moved to Firebase Remote Config for runtime tuning without app updates.\n\n**Deferred because:** Values change rarely and the added complexity is not justified yet.\n\nFrom tagging system improvement plan item 3e."
+    },
+    {
+      "key": "dynamic-allergen-filter-chips",
+      "title": "Dynamic allergen filter chips based on user preferences",
+      "labels": [
+        "Enhancement",
+        "Tagging"
+      ],
+      "priority": 3,
+      "description": "Currently the allergen filter chips in recipe search are static. They should dynamically reflect which allergens the user has chosen to track in their preferences, showing only relevant filters.\n\n**Blocked on:** UX design � significant change to the filter UI that needs design review.\n\nFrom tagging system improvement plan item 5a."
+    },
+    {
+      "key": "onboarding-visa-fler-allergens",
+      "title": "Allergen onboarding \"Visa fler\" expandable section",
+      "labels": [
+        "Enhancement",
+        "Tagging"
+      ],
+      "priority": 4,
+      "description": "During onboarding, show the most common allergens upfront and hide less common ones behind a \"Visa fler\" expansion. Reduces initial overwhelm while keeping full coverage accessible.\n\n**Blocked on:** UX design for the onboarding flow.\n\nFrom tagging system improvement plan item 5b."
+    },
+    {
+      "key": "unknown-allergen-visibility-toggle",
+      "title": "User toggle for UNKNOWN allergen status visibility",
+      "labels": [
+        "Enhancement",
+        "Tagging"
+      ],
+      "priority": 4,
+      "description": "UNKNOWN allergen statuses are currently hidden by design. Some users may want to see them to know when ingredient coverage is incomplete. Add a user preference toggle to show/hide UNKNOWN badges.\n\n**Blocked on:** UX decision � need to decide if this adds value or just creates noise/anxiety.\n\nFrom tagging system improvement plan item 5c."
+    },
+    {
+      "key": "industry-alignment-allergen-system",
+      "title": "Industry alignment review for allergen/dietary system",
+      "labels": [
+        "Enhancement",
+        "Tagging"
+      ],
+      "priority": 4,
+      "description": "Review the tagging system against industry standards:\n- EU FIC regulation (Regulation 1169/2011) � 14 major allergens\n- Codex Alimentarius allergen list\n- Swedish Livsmedelsverket guidelines\n- Cross-contamination/\"may contain\" handling\n\n**Future consideration** � not blocking any current functionality.\n\nFrom tagging system improvement plan section 6."
+    },
+    {
+      "title": "Delegate RecipeImageManager web upload to XFileUploadHandler",
+      "type": "tech-debt",
+      "area": [
+        "recipe"
+      ],
+      "priority": "Medium",
+      "body": "## Finding\n`RecipeImageManager._uploadXFileWithWebSupport()` (line ~874) duplicates the exact same web/blob upload logic that exists in `XFileUploadHandler.uploadXFile()` (line ~156). Both check `kIsWeb || blob:`, read bytes, call `uploadImageFromBytes()`, with identical error handling.\n\nThe handler was extracted specifically for this purpose, but the manager retained its own copy.\n\n## Why It Matters\nAny future change to the web upload path must be made in two places. The duplication was introduced during the BUT-145 image pipeline fix and caught during /simplify review.\n\n## Suggested Fix\nInject or instantiate `XFileUploadHandler` in `RecipeImageManager` and delegate `_uploadXFileWithWebSupport` to `XFileUploadHandler.uploadXFile()`. Delete the private method. Requires updating RecipeImageManager's constructor/DI to accept the handler.\n\nFiles: `lib/viewmodels/recipe_form/recipe_image_manager.dart`, `lib/viewmodels/recipe_form/image_management/xfile_upload_handler.dart`"
+    },
+    {
+      "title": "Optimize avatar compression dimensions to 400x400",
+      "type": "performance",
+      "area": [
+        "account"
+      ],
+      "priority": "Low",
+      "body": "## Finding\nAvatar uploads now go through `compressImageBytes()` with the default 1200x1200 max dimensions. Avatars are displayed at 48-128px in the app. Compressing to 1200x1200 is overkill and adds unnecessary latency � especially for large camera photos where the progressive quality loop (up to 4 iterations) may trigger.\n\n## Why It Matters\nUsers expect near-instant feedback after picking an avatar photo. For a 5MB camera photo, compression to 1200px can take 400ms-1.2s on mobile. Targeting 400x400 would produce much smaller output on the first pass and likely avoid the retry loop entirely, cutting compression time by ~60-75%.\n\n## Suggested Fix\nAdd optional `maxWidth`/`maxHeight` parameters to `StorageService.uploadImageBytes()` (or `ImageUploadService.uploadImageFromBytes()`), defaulting to 1200. Avatar callers pass 400. The `compressImageBytes()` method already accepts these parameters � just need to thread them through the service layers.\n\nFiles: `lib/services/storage_service.dart`, `lib/services/upload/image_upload_service.dart`, `lib/viewmodels/user_profile_viewmodel.dart`"
+    },
+    {
+      "issueId": "BUT-276",
+      "title": "Consolidate 3 duplicate shopping list export implementations",
+      "description": "Three independent categorized export implementations exist for shopping lists. Should unify behind one shared implementation.\n\nLocations:\n1. shopping_list_management_module.dart:exportListAsText() � plain text with check marks\n2. personal_shopping_operations.dart:exportListAsText() � rich text with emojis\n3. ShoppingAnalyticsManager.exportListAsTextWithCategories() � emoji-based, takes itemsByCategory map\n4. ShoppingExportModule (shopping_share_operations.dart) � still a stub returning fake text\n\nAll share the same category-grouping loop (putIfAbsent, sort, iterate). Extract shared categorization logic and unify export formatting.",
+      "labels": [
+        "Code Quality",
+        "Shopping"
+      ],
+      "priority": "Low"
+    }
+  ],
+  "lastAuditDate": "2026-03-15",
+  "auditSummary": {
+    "closedAsFixed": 21,
+    "partiallyFixed": 40,
+    "openConfirmed": 14,
+    "updatedDetails": 4,
+    "reprioritized": 23,
+    "uncheckedRemaining": "~20 tickets not individually verified"
+  },
+  "pendingStateChanges": [
+    {
+      "issueId": "BUT-145",
+      "linearId": "30e432c5-270f-4005-8676-5bcdc7e8563b",
+      "newState": "Done",
+      "reason": "All 5 image pipeline issues implemented and reviewed"
+    },
+    {
+      "issueId": "BUT-149",
+      "linearId": "d4c88d76-6873-4c0a-afef-a93b69b2a21f",
+      "newState": "Done",
+      "reason": "All 11 issues implemented (Issue 10 deferred per plan). clearCompleted, uncheckAll, export, isLoading, decimal parsing, atomic updates, dedup, sort stability, delete undo, menu date validation all fixed."
+    }
+  ]
+}
