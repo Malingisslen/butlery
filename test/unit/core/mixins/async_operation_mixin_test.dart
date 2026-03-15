@@ -2,13 +2,15 @@ import 'dart:async';
 
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
-import 'package:fake_async/fake_async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Concrete test class to exercise AsyncOperationMixin.
 class _TestAsyncViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {}
+
+/// Pump microtasks to let zero-duration timers and futures settle.
+Future<void> _pump() => Future<void>.delayed(const Duration(milliseconds: 20));
 
 void main() {
   group('AsyncOperationMixin', () {
@@ -27,7 +29,6 @@ void main() {
           () async {
         final futures = <Future<int?>>[];
 
-        // Fire 5 rapid debounced calls — only the last should produce a result
         for (var i = 0; i < 5; i++) {
           final index = i;
           futures.add(vm.executeDebounced<int>(
@@ -39,7 +40,6 @@ void main() {
 
         final results = await Future.wait(futures);
 
-        // First 4 should be null (superseded), last should be 4
         for (var i = 0; i < 4; i++) {
           expect(results[i], isNull, reason: 'Future $i should be null');
         }
@@ -109,7 +109,6 @@ void main() {
         );
         expect(result1, equals(1));
 
-        // vm2 should NOT be throttled by vm1's state
         final result2 = await vm2.executeThrottled<int>(
           'op',
           () async => 2,
@@ -120,83 +119,72 @@ void main() {
     });
 
     group('debounce handles in-flight operations', () {
-      test('no StateError when debounce fires during active operation', () {
-        fakeAsync((async) {
-          var callCount = 0;
-          final slowCompleter = Completer<int>();
+      test('no StateError when debounce fires during active operation',
+          () async {
+        var callCount = 0;
+        final slowCompleter = Completer<int>();
 
-          final f1 = vm.executeDebounced<int>(
-            'search',
-            () => slowCompleter.future,
-            Duration.zero,
-          );
+        // First call starts a slow operation via zero-duration timer
+        final f1 = vm.executeDebounced<int>(
+          'search',
+          () => slowCompleter.future,
+          Duration.zero,
+        );
 
-          // Fire the zero-duration timer
-          async.elapse(Duration.zero);
+        // Let timer fire and operation start
+        await _pump();
 
-          // Second call while first is in-flight
-          final f2 = vm.executeDebounced<int>(
-            'search',
-            () async {
-              callCount++;
-              return 99;
-            },
-            Duration.zero,
-          );
+        // Second call while first is in-flight
+        final f2 = vm.executeDebounced<int>(
+          'search',
+          () async {
+            callCount++;
+            return 99;
+          },
+          Duration.zero,
+        );
 
-          // Complete the slow operation — f1 was superseded
-          slowCompleter.complete(1);
-          async.elapse(Duration.zero);
+        // Complete the slow operation — f1 was superseded
+        slowCompleter.complete(1);
+        await _pump();
 
-          // f1 was superseded so should be null
-          expect(f1, completion(isNull));
-
-          // Fire second timer and let it complete
-          async.elapse(Duration.zero);
-          async.flushMicrotasks();
-
-          expect(callCount, equals(1));
-          expect(f2, completion(equals(99)));
-        });
+        expect(await f1, isNull);
+        expect(callCount, equals(1));
+        expect(await f2, equals(99));
       });
 
-      test('stale in-flight result is discarded via generation counter', () {
-        fakeAsync((async) {
-          final completer1 = Completer<int>();
-          final completer2 = Completer<int>();
+      test('stale in-flight result is discarded via generation counter',
+          () async {
+        final completer1 = Completer<int>();
+        final completer2 = Completer<int>();
 
-          final f1 = vm.executeDebounced<int>(
-            'search',
-            () => completer1.future,
-            Duration.zero,
-          );
+        final f1 = vm.executeDebounced<int>(
+          'search',
+          () => completer1.future,
+          Duration.zero,
+        );
 
-          // Fire first timer
-          async.elapse(Duration.zero);
+        // Fire first timer
+        await _pump();
 
-          // Second debounced call supersedes first
-          final f2 = vm.executeDebounced<int>(
-            'search',
-            () => completer2.future,
-            Duration.zero,
-          );
+        // Second call supersedes first
+        final f2 = vm.executeDebounced<int>(
+          'search',
+          () => completer2.future,
+          Duration.zero,
+        );
 
-          // Complete first operation after second was requested
-          completer1.complete(111);
-          async.flushMicrotasks();
+        // Complete first operation after second was requested
+        completer1.complete(111);
+        await _pump();
 
-          // f1 should resolve to null (superseded)
-          expect(f1, completion(isNull));
+        expect(await f1, isNull);
 
-          // Fire second timer
-          async.elapse(Duration.zero);
+        // Fire second timer and complete
+        await _pump();
+        completer2.complete(222);
 
-          // Complete second operation
-          completer2.complete(222);
-          async.flushMicrotasks();
-
-          expect(f2, completion(equals(222)));
-        });
+        expect(await f2, equals(222));
       });
 
       test('error propagates from latest debounced operation', () async {
@@ -206,7 +194,6 @@ void main() {
           const Duration(milliseconds: 10),
         );
 
-        // Wait for timer + operation
         await expectLater(future, throwsStateError);
       });
     });
