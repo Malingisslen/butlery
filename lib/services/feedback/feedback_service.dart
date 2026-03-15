@@ -2,10 +2,14 @@
 
 import 'dart:typed_data';
 
-import 'package:butlery/core/base/base_service.dart';
+import 'package:get_it/get_it.dart';
+
+import 'package:butlery/core/base/base_service.dart'
+    hide AuthRepository, PermissionService;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/feedback_entry.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/services/feedback/interaction_logger.dart';
 
@@ -16,8 +20,6 @@ class FeedbackService extends BaseService {
 
   InteractionLogger get _interactionLogger =>
       ServiceLocator.get<InteractionLogger>();
-
-  AuthRepository get _authRepository => ServiceLocator.get<AuthRepository>();
 
   FeedbackRepository get _feedbackRepository =>
       ServiceLocator.get<FeedbackRepository>();
@@ -30,7 +32,7 @@ class FeedbackService extends BaseService {
     Uint8List? screenshot,
   }) async {
     try {
-      final userId = _authRepository.currentUserId;
+      final userId = GetIt.instance.get<AuthRepository>().currentUserId;
       if (userId == null) throw Exception('User not authenticated');
 
       String? screenshotUrl;
@@ -60,12 +62,8 @@ class FeedbackService extends BaseService {
 
       AppLogger.info('Feedback submitted: ${category.name}');
       return true;
-    } catch (e, stack) {
-      // Temporary: surface actual error for debugging
-      // ignore: avoid_print
-      print('FEEDBACK SUBMIT FAILED: $e');
-      // ignore: avoid_print
-      print('FEEDBACK STACK: $stack');
+    } catch (e) {
+      AppLogger.error('Feedback submission failed: $e');
       return false;
     }
   }
