@@ -357,18 +357,22 @@ class CompactAllergenRow extends StatelessWidget {
 
     if (badges.isEmpty) return const SizedBox.shrink();
 
-    return Wrap(
-      spacing: AppDimensions.spacingXs,
-      runSpacing: AppDimensions.spacingXs,
-      children: badges.take(maxBadges).map((allergen) {
-        final status = tagResult.getAllergenStatus(allergen);
-        return AllergenStatusBadge(
-          allergen: allergen,
-          status: status,
-          compact: true,
-          showLabel: false,
-        );
-      }).toList(),
+    return Semantics(
+      label: context.l10n.a11yAllergenStatusRow,
+      container: true,
+      child: Wrap(
+        spacing: AppDimensions.spacingXs,
+        runSpacing: AppDimensions.spacingXs,
+        children: badges.take(maxBadges).map((allergen) {
+          final status = tagResult.getAllergenStatus(allergen);
+          return AllergenStatusBadge(
+            allergen: allergen,
+            status: status,
+            compact: true,
+            showLabel: false,
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -428,17 +432,21 @@ class CompactDietaryRow extends StatelessWidget {
 
     if (badges.isEmpty) return const SizedBox.shrink();
 
-    return Wrap(
-      spacing: AppDimensions.spacingXs,
-      runSpacing: AppDimensions.spacingXs,
-      children: badges.take(maxBadges).map((diet) {
-        return DietaryStatusBadge(
-          diet: diet,
-          status: TriState.free,
-          compact: true,
-          showLabel: true,
-        );
-      }).toList(),
+    return Semantics(
+      label: context.l10n.a11yDietaryStatusRow,
+      container: true,
+      child: Wrap(
+        spacing: AppDimensions.spacingXs,
+        runSpacing: AppDimensions.spacingXs,
+        children: badges.take(maxBadges).map((diet) {
+          return DietaryStatusBadge(
+            diet: diet,
+            status: TriState.free,
+            compact: true,
+            showLabel: true,
+          );
+        }).toList(),
+      ),
     );
   }
 

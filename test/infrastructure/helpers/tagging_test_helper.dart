@@ -273,6 +273,9 @@ class TaggingTestHelper {
     double coverage = 1.0,
     List<String>? unknownIngredients,
     String generatorVersion = '1.0.0',
+    bool isPartial = false,
+    bool hasDraftIngredients = false,
+    bool hasCoverageAnomaly = false,
   }) {
     return TagResult(
       tags: tags ?? {'test-tag'},
@@ -282,6 +285,45 @@ class TaggingTestHelper {
       unknownIngredients: unknownIngredients ?? [],
       generatedAt: DateTime.now(),
       generatorVersion: generatorVersion,
+      isPartial: isPartial,
+      hasDraftIngredients: hasDraftIngredients,
+      hasCoverageAnomaly: hasCoverageAnomaly,
+    );
+  }
+
+  /// Creates an [IngredientData] for testing.
+  ///
+  /// Replaces the private `_ingredient()` helpers duplicated across 9 test files.
+  static IngredientData ingredient(
+    String name,
+    String group,
+    Set<String> properties, {
+    String? priceCategory,
+    String? carbonFootprintCategory,
+    List<String>? seasonAvailability,
+  }) {
+    return IngredientData(
+      id: name.toLowerCase().replaceAll(' ', '-'),
+      swedish: name,
+      english: name,
+      group: group,
+      properties: properties,
+      priceCategory: priceCategory,
+      carbonFootprintCategory: carbonFootprintCategory,
+      seasonAvailability: seasonAvailability ?? const [],
+    );
+  }
+
+  /// Creates an [IngredientLookupResult] from a list of ingredients.
+  ///
+  /// Replaces the private `_createLookup()` helpers duplicated across 7 test files.
+  static IngredientLookupResult createLookup(
+    List<IngredientData> ingredients, {
+    List<String> unmatched = const [],
+  }) {
+    return IngredientLookupResult.fromLists(
+      matched: ingredients,
+      unmatched: unmatched,
     );
   }
 

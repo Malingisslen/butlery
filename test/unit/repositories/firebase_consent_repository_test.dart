@@ -106,7 +106,7 @@ void main() {
         // Act & Assert
         expect(
           () => repository.getUserConsent('any-user'),
-          throwsA(isA<PermissionDeniedException>()),
+          throwsA(isA<AuthenticationException>()),
         );
       });
     });
@@ -210,7 +210,7 @@ void main() {
         // Act & Assert
         expect(
           () => repository.saveConsent('any-user', consent),
-          throwsA(isA<PermissionDeniedException>()),
+          throwsA(isA<AuthenticationException>()),
         );
       });
     });
@@ -282,7 +282,7 @@ void main() {
         // Act & Assert
         expect(
           () => repository.deleteConsent('any-user'),
-          throwsA(isA<PermissionDeniedException>()),
+          throwsA(isA<AuthenticationException>()),
         );
       });
     });
@@ -372,7 +372,7 @@ void main() {
         // Act & Assert
         expect(
           () => repository.getConsentHistory('any-user'),
-          throwsA(isA<PermissionDeniedException>()),
+          throwsA(isA<AuthenticationException>()),
         );
       });
     });

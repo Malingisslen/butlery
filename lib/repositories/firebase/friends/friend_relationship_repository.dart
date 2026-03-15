@@ -22,6 +22,7 @@
 /// - **Count Maintenance**: Automatic friend count updates for profile statistics
 /// - **Optimized Queries**: Efficient Firestore queries with proper indexing for scalability
 
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -132,7 +133,18 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   ///
   /// Uses a Firestore transaction to ensure atomicity and prevent race conditions
   /// when the same friendship is being created from multiple sources simultaneously.
+  /// Stores `displayNameLower` on each friend doc to enable server-side prefix search.
   Future<void> addMutualFriends(String userId1, String userId2) async {
+    // Read both profiles outside the transaction to get display names
+    final user1ProfileDoc = await collection.doc(userId1).get();
+    final user2ProfileDoc = await collection.doc(userId2).get();
+    final user1Name =
+        (user1ProfileDoc.data()?['displayName'] as String? ?? '')
+            .toLowerCase();
+    final user2Name =
+        (user2ProfileDoc.data()?['displayName'] as String? ?? '')
+            .toLowerCase();
+
     await firestore.runTransaction((transaction) async {
       final user1FriendRef = _userFriendsRef(userId1).doc(userId2);
       final user2FriendRef = _userFriendsRef(userId2).doc(userId1);
@@ -148,15 +160,20 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
       }
 
       // Create friend documents for whichever side doesn't exist yet
+      // Each friend doc stores the OTHER user's displayNameLower for prefix search
       int docsCreated = 0;
       if (!user1FriendDoc.exists) {
-        transaction.set(
-            user1FriendRef, {'addedAt': timestampProvider.serverTimestamp()});
+        transaction.set(user1FriendRef, {
+          'addedAt': timestampProvider.serverTimestamp(),
+          'displayNameLower': user2Name,
+        });
         docsCreated++;
       }
       if (!user2FriendDoc.exists) {
-        transaction.set(
-            user2FriendRef, {'addedAt': timestampProvider.serverTimestamp()});
+        transaction.set(user2FriendRef, {
+          'addedAt': timestampProvider.serverTimestamp(),
+          'displayNameLower': user1Name,
+        });
         docsCreated++;
       }
 
@@ -186,22 +203,21 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
       final user1FriendDoc = await transaction.get(user1FriendRef);
       final user2FriendDoc = await transaction.get(user2FriendRef);
 
-      // If friendship doesn't exist, skip to prevent duplicate count decrements
-      if (!user1FriendDoc.exists && !user2FriendDoc.exists) {
-        return;
-      }
-
-      // Delete friend documents for both users
-      transaction.delete(user1FriendRef);
-      transaction.delete(user2FriendRef);
-
-      // Update friend counts atomically
+      // Conditionally delete each side and decrement its count
+      // Handles partial state from a previous failed write
       final user1Profile = collection.doc(userId1);
       final user2Profile = collection.doc(userId2);
-      transaction
-          .update(user1Profile, {'friendsCount': FieldValue.increment(-1)});
-      transaction
-          .update(user2Profile, {'friendsCount': FieldValue.increment(-1)});
+
+      if (user1FriendDoc.exists) {
+        transaction.delete(user1FriendRef);
+        transaction
+            .update(user1Profile, {'friendsCount': FieldValue.increment(-1)});
+      }
+      if (user2FriendDoc.exists) {
+        transaction.delete(user2FriendRef);
+        transaction
+            .update(user2Profile, {'friendsCount': FieldValue.increment(-1)});
+      }
     });
   }
 
@@ -226,16 +242,17 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
     if (userIds.isEmpty) return [];
     const batchSize = 10;
-    final profiles = <UserProfile>[];
+    final futures = <Future<QuerySnapshot<Map<String, dynamic>>>>[];
     for (var i = 0; i < userIds.length; i += batchSize) {
       final batch = userIds.skip(i).take(batchSize).toList();
-      final query =
-          await collection.where(FieldPath.documentId, whereIn: batch).get();
-      for (final doc in query.docs) {
-        profiles.add(UserProfile.fromMap(doc.id, doc.data()));
-      }
+      futures.add(
+          collection.where(FieldPath.documentId, whereIn: batch).get());
     }
-    return profiles;
+    final snapshots = await Future.wait(futures);
+    return snapshots
+        .expand((s) => s.docs)
+        .map((doc) => UserProfile.fromMap(doc.id, doc.data()))
+        .toList();
   }
 
   /// Get complete friend list with profiles for a user.
@@ -245,11 +262,28 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   }
 
   /// Get mutual friends between two users.
+  ///
+  /// Fetches user1's friend IDs and checks them against user2's friends subcollection
+  /// using `whereIn` batches of 10 (Firestore limit). This avoids downloading user2's
+  /// entire friend list. Capped at 300 of user1's IDs (30 batches) to bound cost.
   Future<List<String>> getMutualFriends(String userId1, String userId2) async {
     final friends1 = await fetchFriendIds(userId1);
-    final friends2 = await fetchFriendIds(userId2);
+    if (friends1.isEmpty) return [];
 
-    return friends1.where((id) => friends2.contains(id)).toList();
+    // Cap at 300 IDs (30 batches of 10) to bound query cost
+    final cappedFriends = friends1.take(300).toList();
+    final mutualIds = <String>[];
+
+    const batchSize = 10;
+    for (var i = 0; i < cappedFriends.length; i += batchSize) {
+      final batch = cappedFriends.skip(i).take(batchSize).toList();
+      final snapshot = await _userFriendsRef(userId2)
+          .where(FieldPath.documentId, whereIn: batch)
+          .get();
+      mutualIds.addAll(snapshot.docs.map((doc) => doc.id));
+    }
+
+    return mutualIds;
   }
 
   /// Count mutual friends between two users.
@@ -265,15 +299,19 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   }
 
   /// Stream friend ids for real-time updates.
-  /// Optimized (#043): Added limit to prevent unbounded stream for power users
+  ///
+  /// Limited to 1000 friends per stream snapshot. This balances real-time responsiveness
+  /// (each snapshot transfers all matching docs) against supporting users with large
+  /// friend lists. At 1000 friends the snapshot payload is ~50-100KB which is acceptable
+  /// for real-time listeners. Users exceeding 1000 friends will see a truncation warning.
   Stream<List<String>> friendIdsStream(String userId) {
     return _userFriendsRef(userId)
-        .limit(200) // Limit to 200 friends for stream performance
+        .limit(1000)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.docs.length == 200) {
+      if (snapshot.docs.length == 1000) {
         AppLogger.warning(
-            'friendIdsStream for user $userId returned exactly 200 docs — results may be silently truncated');
+            'friendIdsStream for user $userId hit 1000-doc limit — results are truncated');
       }
       return snapshot.docs.map((doc) => doc.id).toList();
     });
@@ -281,7 +319,9 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   /// Stream friend profiles for real-time updates.
   Stream<List<UserProfile>> friendProfilesStream(String userId) {
-    return friendIdsStream(userId).asyncMap((friendIds) async {
+    return friendIdsStream(userId)
+        .distinct((a, b) => const ListEquality<String>().equals(a, b))
+        .asyncMap((friendIds) async {
       return await fetchFriendProfiles(friendIds);
     });
   }
@@ -307,8 +347,12 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   /// Get friend statistics for a user.
   Future<Map<String, dynamic>> getFriendStatistics(String userId) async {
-    final friendIds = await fetchFriendIds(userId);
-    final recentFriends = await getRecentFriends(userId);
+    final results = await Future.wait([
+      fetchFriendIds(userId),
+      getRecentFriends(userId),
+    ]);
+    final friendIds = results[0] as List<String>;
+    final recentFriends = results[1] as List<UserProfile>;
 
     return {
       'totalFriends': friendIds.length,
@@ -317,15 +361,25 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     };
   }
 
-  /// Search friends by name or display name.
+  /// Search friends by display name prefix using server-side Firestore query.
+  ///
+  /// Queries the `users/{userId}/friends` subcollection using `displayNameLower`
+  /// prefix matching. Requires the `displayNameLower` field on friend docs
+  /// (written by [addMutualFriends]). Legacy friend docs without this field
+  /// will not appear in results. Results capped at 20.
   Future<List<UserProfile>> searchFriends(String userId, String query) async {
-    final friends = await getFriendsWithProfiles(userId);
-    final lowercaseQuery = query.toLowerCase();
+    if (query.isEmpty) return [];
+    final normalizedQuery = query.toLowerCase();
 
-    return friends.where((friend) {
-      return friend.displayName.toLowerCase().contains(lowercaseQuery) ||
-          (friend.email.toLowerCase().contains(lowercaseQuery) &&
-              friend.allowEmailSearch);
-    }).toList();
+    final snapshot = await _userFriendsRef(userId)
+        .where('displayNameLower',
+            isGreaterThanOrEqualTo: normalizedQuery)
+        .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
+        .limit(20)
+        .get();
+
+    final friendIds = snapshot.docs.map((doc) => doc.id).toList();
+    if (friendIds.isEmpty) return [];
+    return fetchFriendProfiles(friendIds);
   }
 }

@@ -42,19 +42,24 @@ class FilterChipsWidget extends StatelessWidget {
             children: options.map((option) {
               final isSelected = activeFilters.contains(option.id);
 
-              return FilterChip(
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (option.icon != null) ...[
-                      Icon(option.icon),
-                      const SizedBox(height: AppDimensions.spacingXs),
-                    ],
-                    Text(option.label),
-                  ],
-                ),
+              return Semantics(
+                label: '${option.label} filter',
                 selected: isSelected,
-                onSelected: (_) => onToggle(option.id),
+                button: true,
+                child: FilterChip(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (option.icon != null) ...[
+                        Icon(option.icon),
+                        const SizedBox(height: AppDimensions.spacingXs),
+                      ],
+                      Text(option.label),
+                    ],
+                  ),
+                  selected: isSelected,
+                  onSelected: (_) => onToggle(option.id),
+                ),
               );
             }).toList(),
           ),

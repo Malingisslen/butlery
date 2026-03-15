@@ -1,8 +1,8 @@
 // lib/services/unified/friends/friends_internal_operations.dart
 
-import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -212,12 +212,14 @@ class FriendsInternalOperations {
     }
   }
 
+  // Email/SMS invitations not yet implemented — returns false so callers show
+  // "not available yet" instead of pretending the invitation was sent.
   Future<bool> sendEmailInvitationInternal(
           {required String email, required dynamic invitation}) async =>
-      true;
+      false;
   Future<bool> sendSMSInvitationInternal(
           {required String phoneNumber, required dynamic invitation}) async =>
-      true;
+      false;
   String createInvitationLinkInternal(String invitationId) =>
       'https://example.com/invite/$invitationId';
 
@@ -231,7 +233,7 @@ class FriendsInternalOperations {
 
     try {
       // Update invitation status in Firebase
-      await FirebaseFriendsRepository(authRepository: _authRepository)
+      await ServiceLocator.get<FriendsRepository>()
           .updateInvitation(invitationId, {
         'status': status.toString().split('.').last,
         'respondedAt': DateTime.now(),

@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -522,6 +524,111 @@ void main() {
       expect(menuGenerator.isPromptOptimal('a' * 9), isFalse);
       expect(menuGenerator.isPromptOptimal('veckomeny weekly menu'),
           isTrue); // needs to be longer
+    });
+  });
+
+  group('MenuGenerator - Dietary Filtering with includeUnknownInMenu', () {
+    TagResult makeTagResult({
+      Map<String, TriState>? dietary,
+      Map<String, TriState>? allergen,
+    }) {
+      return TagResult(
+        tags: {},
+        allergenStatus: allergen ?? {},
+        dietaryStatus: dietary ?? {},
+        coverage: 1.0,
+        generatedAt: DateTime.now(),
+      );
+    }
+
+    Recipe recipeWith(String id, TagResult tagResult) {
+      final base = RecipeFactory.build(id: id, title: id);
+      return Recipe(
+        core: base.core.copyWith(tagResult: tagResult),
+        type: base.type,
+      );
+    }
+
+    test(
+        'should exclude UNKNOWN dietary when includeUnknownInMenu is false',
+        () {
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {},
+          trackedDietary: {'vegetarisk'},
+          includeUnknownInMenu: false,
+        ),
+      );
+
+      final freeRecipe = recipeWith(
+        'free',
+        makeTagResult(dietary: {'vegetarisk': TriState.free}),
+      );
+      final unknownRecipe = recipeWith(
+        'unknown',
+        makeTagResult(dietary: {'vegetarisk': TriState.unknown}),
+      );
+      final containsRecipe = recipeWith(
+        'contains',
+        makeTagResult(dietary: {'vegetarisk': TriState.contains}),
+      );
+
+      mockRecipeService.setRecipeState(
+        recipes: [freeRecipe, unknownRecipe, containsRecipe],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      expect(available.length, equals(1));
+      expect(available.first.id, equals('free'));
+    });
+
+    test('should keep UNKNOWN dietary when includeUnknownInMenu is true', () {
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {},
+          trackedDietary: {'vegetarisk'},
+          includeUnknownInMenu: true,
+        ),
+      );
+
+      final freeRecipe = recipeWith(
+        'free',
+        makeTagResult(dietary: {'vegetarisk': TriState.free}),
+      );
+      final unknownRecipe = recipeWith(
+        'unknown',
+        makeTagResult(dietary: {'vegetarisk': TriState.unknown}),
+      );
+
+      mockRecipeService.setRecipeState(
+        recipes: [freeRecipe, unknownRecipe],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      expect(available.length, equals(2));
+    });
+
+    test('should exclude recipes with no tag data when strict', () {
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {},
+          trackedDietary: {'vegetarisk'},
+          includeUnknownInMenu: false,
+        ),
+      );
+
+      // Recipe with no tagResult at all
+      final noTagRecipe = RecipeFactory.build(id: 'no_tags', title: 'No Tags');
+
+      mockRecipeService.setRecipeState(
+        recipes: [noTagRecipe],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      expect(available, isEmpty);
     });
   });
 }

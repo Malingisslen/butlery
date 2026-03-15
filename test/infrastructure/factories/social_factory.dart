@@ -1,19 +1,13 @@
 import 'package:butlery/models/recipe_comment.dart';
-import 'package:butlery/models/social/activity_feed_item.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/models/social/content_reaction.dart';
-import 'package:butlery/models/social/reaction_type.dart';
-import 'package:butlery/models/social/reaction_statistics.dart';
 import 'package:butlery/models/user_profile.dart';
 
 /// Factory for creating test social data
 class SocialFactory {
   static int _commentIdCounter = 0;
-  static int _activityIdCounter = 0;
   static int _requestIdCounter = 0;
   static int _categoryIdCounter = 0;
-  static int _reactionIdCounter = 0;
 
   /// Create a test recipe comment
   static RecipeComment createComment({
@@ -62,44 +56,6 @@ class SocialFactory {
       parentCommentId: actualParentCommentId,
       replyCount: replyCount,
       isDeleted: isDeleted,
-    );
-  }
-
-  /// Create a test activity feed item
-  static ActivityFeedItem createActivityFeedItem({
-    String? id,
-    String? userId,
-    String? userDisplayName,
-    String? userAvatarUrl,
-    ActivityType? type,
-    String? targetId,
-    String? targetType,
-    String? targetTitle,
-    String? targetImageUrl,
-    DateTime? timestamp,
-    Map<String, dynamic>? metadata,
-    List<String>? visibility,
-    ActivityVisibility? visibilityLevel,
-    ActivityEngagement? engagement,
-  }) {
-    return ActivityFeedItem(
-      id: id ?? 'activity_${_activityIdCounter++}',
-      userId: userId ?? 'user_test',
-      userDisplayName: userDisplayName ?? 'Test User',
-      userAvatarUrl: userAvatarUrl,
-      type: type ?? ActivityType.recipeCreated,
-      targetId: targetId ?? 'target_test',
-      targetType: targetType ?? 'recipe',
-      targetTitle: targetTitle ?? 'Test Recipe',
-      targetImageUrl: targetImageUrl,
-      parentId: null,
-      parentType: null,
-      timestamp: timestamp ?? DateTime.now(),
-      visibility: visibility ?? ['public'],
-      visibilityLevel: visibilityLevel ?? ActivityVisibility.public,
-      metadata: metadata ?? {},
-      engagement: engagement ??
-          const ActivityEngagement(likes: 0, comments: 0, shares: 0, views: 0),
     );
   }
 
@@ -159,50 +115,6 @@ class SocialFactory {
     );
   }
 
-  /// Create a test content reaction
-  static ContentReaction createReaction({
-    String? id,
-    String? userId,
-    String? contentId,
-    String? contentType,
-    ReactionType? reactionType,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return ContentReaction(
-      id: id ?? 'reaction_${_reactionIdCounter++}',
-      userId: userId ?? 'user_test',
-      contentId: contentId ?? 'content_test',
-      contentType: contentType ?? 'recipe',
-      reactionType: reactionType ?? ReactionType.like,
-      createdAt: createdAt ?? DateTime.now(),
-      updatedAt: updatedAt,
-    );
-  }
-
-  /// Create test reaction statistics
-  static ReactionStatistics createReactionStatistics({
-    String? contentId,
-    String? contentType,
-    Map<ReactionType, int>? reactionCounts,
-    Map<String, ReactionType>? userReactions,
-    int? totalCount,
-    DateTime? lastUpdated,
-  }) {
-    final counts = reactionCounts ??
-        {
-          ReactionType.like: 5,
-          ReactionType.love: 3,
-          ReactionType.delicious: 2,
-        };
-
-    return ReactionStatistics.fromCounts(
-      counts,
-      contentId: contentId ?? 'content_test',
-      contentType: contentType ?? 'recipe',
-    );
-  }
-
   /// Create a test user profile
   static UserProfile createUserProfile({
     String? uid,
@@ -253,27 +165,6 @@ class SocialFactory {
         comment: 'Test comment $index',
         timestamp: DateTime.now().subtract(Duration(hours: index)),
         likes: index * 2,
-      ),
-    );
-  }
-
-  /// Create a list of test activity feed items
-  static List<ActivityFeedItem> createActivityFeedList({
-    int count = 5,
-    String? userId,
-  }) {
-    final targetTypes = ['recipe', 'menu', 'user', 'comment', 'list'];
-
-    return List.generate(
-      count,
-      (index) => createActivityFeedItem(
-        id: 'activity_$index',
-        userId: userId ?? 'user_$index',
-        userDisplayName: 'User $index',
-        type: ActivityType.values[index % ActivityType.values.length],
-        targetType: targetTypes[index % targetTypes.length],
-        targetTitle: 'Target $index',
-        timestamp: DateTime.now().subtract(Duration(hours: index)),
       ),
     );
   }
@@ -397,9 +288,7 @@ class SocialFactory {
   /// Reset all counters (useful for test isolation)
   static void resetCounters() {
     _commentIdCounter = 0;
-    _activityIdCounter = 0;
     _requestIdCounter = 0;
     _categoryIdCounter = 0;
-    _reactionIdCounter = 0;
   }
 }

@@ -41,8 +41,13 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
 
   @override
   Future<bool> validateDeletePermission(
-          String userId, String resourceId) async =>
-      resourceId.startsWith('${userId}_');
+      String userId, String resourceId) async {
+    // Split on first '_' only to avoid false matches if UID contains '_'
+    final separatorIndex = resourceId.indexOf('_');
+    if (separatorIndex < 0) return false;
+    final blockerId = resourceId.substring(0, separatorIndex);
+    return blockerId == userId;
+  }
 
   /// Block a user. Idempotent — safe to call if already blocked.
   Future<void> blockUser(String targetId) async {

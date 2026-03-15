@@ -1,14 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+
+import '../../../infrastructure/helpers/tagging_test_helper.dart';
 
 void main() {
   group('IngredientLookupResult', () {
     group('construction', () {
       test('creates with required parameters', () {
         final matched = [
-          _ingredient('chicken', 'protein/meat/poultry', {'meat'}),
+          TaggingTestHelper.ingredient(
+              'chicken', 'protein/meat/poultry', {'meat'}),
         ];
         final result = IngredientLookupResult(
           matched: matched,
@@ -34,9 +36,9 @@ void main() {
       test('fromLists calculates coverage correctly', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('a', 'group', {}),
-            _ingredient('b', 'group', {}),
-            _ingredient('c', 'group', {}),
+            TaggingTestHelper.ingredient('a', 'group', {}),
+            TaggingTestHelper.ingredient('b', 'group', {}),
+            TaggingTestHelper.ingredient('c', 'group', {}),
           ],
           unmatched: ['unknown'],
         );
@@ -49,7 +51,7 @@ void main() {
 
       test('fromLists returns 100% coverage when all matched', () {
         final result = IngredientLookupResult.fromLists(
-          matched: [_ingredient('a', 'group', {})],
+          matched: [TaggingTestHelper.ingredient('a', 'group', {})],
           unmatched: [],
         );
 
@@ -71,11 +73,11 @@ void main() {
     group('convenience getters', () {
       test('hasUnknowns returns true when unmatched is not empty', () {
         final withUnknowns = IngredientLookupResult.fromLists(
-          matched: [_ingredient('a', 'group', {})],
+          matched: [TaggingTestHelper.ingredient('a', 'group', {})],
           unmatched: ['unknown'],
         );
         final withoutUnknowns = IngredientLookupResult.fromLists(
-          matched: [_ingredient('a', 'group', {})],
+          matched: [TaggingTestHelper.ingredient('a', 'group', {})],
           unmatched: [],
         );
 
@@ -102,8 +104,8 @@ void main() {
       test('count getters return correct values', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('a', 'group', {}),
-            _ingredient('b', 'group', {}),
+            TaggingTestHelper.ingredient('a', 'group', {}),
+            TaggingTestHelper.ingredient('b', 'group', {}),
           ],
           unmatched: ['x', 'y', 'z'],
         );
@@ -118,8 +120,10 @@ void main() {
       test('allProperties returns unique properties from all ingredients', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chicken', 'protein/meat', {'meat', 'poultry'}),
-            _ingredient('beef', 'protein/meat', {'meat', 'beef'}),
+            TaggingTestHelper.ingredient(
+                'chicken', 'protein/meat', {'meat', 'poultry'}),
+            TaggingTestHelper.ingredient(
+                'beef', 'protein/meat', {'meat', 'beef'}),
           ],
           unmatched: [],
         );
@@ -130,9 +134,9 @@ void main() {
       test('allGroups returns unique groups', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chicken', 'protein/meat/poultry', {}),
-            _ingredient('beef', 'protein/meat/beef', {}),
-            _ingredient('rice', 'grain', {}),
+            TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {}),
+            TaggingTestHelper.ingredient('beef', 'protein/meat/beef', {}),
+            TaggingTestHelper.ingredient('rice', 'grain', {}),
           ],
           unmatched: [],
         );
@@ -147,10 +151,10 @@ void main() {
       test('allTopLevelGroups returns unique top-level groups', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chicken', 'protein/meat/poultry', {}),
-            _ingredient('beef', 'protein/meat/beef', {}),
-            _ingredient('rice', 'grain', {}),
-            _ingredient('carrot', 'vegetable/root', {}),
+            TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {}),
+            TaggingTestHelper.ingredient('beef', 'protein/meat/beef', {}),
+            TaggingTestHelper.ingredient('rice', 'grain', {}),
+            TaggingTestHelper.ingredient('carrot', 'vegetable/root', {}),
           ],
           unmatched: [],
         );
@@ -165,9 +169,12 @@ void main() {
       setUp(() {
         result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
-            _ingredient('egg', 'protein/egg', {'egg', 'animal-product'}),
-            _ingredient('pasta', 'grain/pasta', {'contains-gluten'}),
+            TaggingTestHelper.ingredient(
+                'chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+            TaggingTestHelper.ingredient(
+                'egg', 'protein/egg', {'egg', 'animal-product'}),
+            TaggingTestHelper.ingredient(
+                'pasta', 'grain/pasta', {'contains-gluten'}),
           ],
           unmatched: [],
         );
@@ -199,10 +206,11 @@ void main() {
       setUp(() {
         result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chicken', 'protein/meat/poultry', {}),
-            _ingredient('salmon', 'protein/seafood/fish', {}),
-            _ingredient('shrimp', 'protein/seafood/shellfish', {}),
-            _ingredient('carrot', 'vegetable/root', {}),
+            TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {}),
+            TaggingTestHelper.ingredient('salmon', 'protein/seafood/fish', {}),
+            TaggingTestHelper.ingredient(
+                'shrimp', 'protein/seafood/shellfish', {}),
+            TaggingTestHelper.ingredient('carrot', 'vegetable/root', {}),
           ],
           unmatched: [],
         );
@@ -239,7 +247,7 @@ void main() {
       test('getPropertyStatus returns CONTAINS when property exists', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('pasta', 'grain', {'contains-gluten'})
+            TaggingTestHelper.ingredient('pasta', 'grain', {'contains-gluten'})
           ],
           unmatched: [],
         );
@@ -250,7 +258,7 @@ void main() {
       test('getPropertyStatus returns FREE when 100% coverage and no property',
           () {
         final result = IngredientLookupResult.fromLists(
-          matched: [_ingredient('rice', 'grain', {})],
+          matched: [TaggingTestHelper.ingredient('rice', 'grain', {})],
           unmatched: [],
         );
 
@@ -259,7 +267,7 @@ void main() {
 
       test('getPropertyStatus returns UNKNOWN when coverage < 100%', () {
         final result = IngredientLookupResult.fromLists(
-          matched: [_ingredient('rice', 'grain', {})],
+          matched: [TaggingTestHelper.ingredient('rice', 'grain', {})],
           unmatched: ['unknown'],
         );
 
@@ -269,7 +277,7 @@ void main() {
       test('getCombinedPropertyStatus uses OR logic', () {
         final result = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('almond', 'nut', {'tree-nut'})
+            TaggingTestHelper.ingredient('almond', 'nut', {'tree-nut'})
           ],
           unmatched: [],
         );
@@ -283,7 +291,7 @@ void main() {
 
       test('getCombinedPropertyStatus returns FREE when none present', () {
         final result = IngredientLookupResult.fromLists(
-          matched: [_ingredient('rice', 'grain', {})],
+          matched: [TaggingTestHelper.ingredient('rice', 'grain', {})],
           unmatched: [],
         );
 
@@ -296,13 +304,13 @@ void main() {
       test('getDietaryStatus checks excluded properties', () {
         final meatResult = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chicken', 'meat', {'meat'})
+            TaggingTestHelper.ingredient('chicken', 'meat', {'meat'})
           ],
           unmatched: [],
         );
 
         final veggieResult = IngredientLookupResult.fromLists(
-          matched: [_ingredient('tofu', 'plant', {})],
+          matched: [TaggingTestHelper.ingredient('tofu', 'plant', {})],
           unmatched: [],
         );
 
@@ -321,14 +329,14 @@ void main() {
     group('copyWith', () {
       test('creates copy with new matched ingredients', () {
         final original = IngredientLookupResult.fromLists(
-          matched: [_ingredient('a', 'group', {})],
+          matched: [TaggingTestHelper.ingredient('a', 'group', {})],
           unmatched: ['x'],
         );
 
         final copy = original.copyWith(
           matched: [
-            _ingredient('a', 'group', {}),
-            _ingredient('b', 'group', {}),
+            TaggingTestHelper.ingredient('a', 'group', {}),
+            TaggingTestHelper.ingredient('b', 'group', {}),
           ],
         );
 
@@ -340,7 +348,7 @@ void main() {
 
       test('creates copy with new unmatched ingredients', () {
         final original = IngredientLookupResult.fromLists(
-          matched: [_ingredient('a', 'group', {})],
+          matched: [TaggingTestHelper.ingredient('a', 'group', {})],
           unmatched: ['x'],
         );
 
@@ -355,11 +363,11 @@ void main() {
     group('merge', () {
       test('combines matched and unmatched from both results', () {
         final result1 = IngredientLookupResult.fromLists(
-          matched: [_ingredient('a', 'group', {})],
+          matched: [TaggingTestHelper.ingredient('a', 'group', {})],
           unmatched: ['x'],
         );
         final result2 = IngredientLookupResult.fromLists(
-          matched: [_ingredient('b', 'group', {})],
+          matched: [TaggingTestHelper.ingredient('b', 'group', {})],
           unmatched: ['y'],
         );
 
@@ -374,7 +382,7 @@ void main() {
     group('toString', () {
       test('includes match counts and coverage', () {
         final result = IngredientLookupResult.fromLists(
-          matched: [_ingredient('a', 'group', {})],
+          matched: [TaggingTestHelper.ingredient('a', 'group', {})],
           unmatched: ['x', 'y'],
         );
 
@@ -386,14 +394,4 @@ void main() {
       });
     });
   });
-}
-
-IngredientData _ingredient(String name, String group, Set<String> properties) {
-  return IngredientData(
-    id: name.toLowerCase().replaceAll(' ', '-'),
-    swedish: name,
-    english: name,
-    group: group,
-    properties: properties,
-  );
 }

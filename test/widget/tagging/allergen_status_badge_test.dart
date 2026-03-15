@@ -1,26 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
-import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 
-/// Wraps a widget in MaterialApp with l10n delegates and Butlery theme for testing.
-Widget _testApp({required Widget child}) {
-  return MaterialApp(
-    locale: const Locale('sv'),
-    supportedLocales: AppLocalizations.supportedLocales,
-    localizationsDelegates: const [
-      AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    theme: AppTheme.lightTheme,
-    home: Scaffold(body: child),
-  );
-}
+import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('AllergenStatusBadge', () {
@@ -28,7 +11,7 @@ void main() {
       testWidgets('should show check_circle_outline icon for FREE status',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -45,7 +28,7 @@ void main() {
       testWidgets('should show warning_amber icon for CONTAINS status',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.contains,
@@ -62,7 +45,7 @@ void main() {
       testWidgets('should show help_outline icon for UNKNOWN status',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.unknown,
@@ -81,7 +64,7 @@ void main() {
       testWidgets('should render 14px icon in compact mode',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -99,7 +82,7 @@ void main() {
       testWidgets('should render 18px icon in standard mode',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -119,7 +102,7 @@ void main() {
       testWidgets('should hide text when showLabel is false',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -143,7 +126,7 @@ void main() {
       testWidgets('should show text when showLabel is true (default)',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -164,7 +147,7 @@ void main() {
       testWidgets('should use custom label when provided',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -181,7 +164,7 @@ void main() {
           'should use default allergen label from config when no custom label',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -200,7 +183,7 @@ void main() {
           'should append coverage text for UNKNOWN status with coveragePercent',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.unknown,
@@ -218,7 +201,7 @@ void main() {
           'should not show coverage text for FREE status even with coveragePercent',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -236,7 +219,7 @@ void main() {
           'should not show coverage text for CONTAINS status even with coveragePercent',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.contains,
@@ -255,7 +238,7 @@ void main() {
           'should have Semantics label containing allergen name for FREE',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'gluten',
               status: TriState.free,
@@ -279,7 +262,7 @@ void main() {
           'should have Semantics label containing allergen name for CONTAINS',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'mjölk',
               status: TriState.contains,
@@ -302,7 +285,7 @@ void main() {
           'should have Semantics label containing allergen name for UNKNOWN',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
             child: const AllergenStatusBadge(
               allergen: 'nötter',
               status: TriState.unknown,

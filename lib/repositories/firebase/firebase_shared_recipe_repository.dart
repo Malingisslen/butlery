@@ -161,6 +161,9 @@ class FirebaseSharedRecipeRepository
     return content.sharedByUserId == userId;
   }
 
+  @override
+  DateTime getContentDate(SharedRecipe entity) => entity.sharedAt;
+
   /// Create new shared recipe with comprehensive validation
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
   /// is no longer stored in the model (tracked in Firestore subcollections instead).

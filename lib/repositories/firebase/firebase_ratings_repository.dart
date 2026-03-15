@@ -302,7 +302,6 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
         await collection.where('recipeId', isEqualTo: recipeId).get();
 
     final ratings = ratingsQuery.docs.map((doc) => fromFirestore(doc)).toList();
-
     return _calculateRatingStatistics(recipeId, ratings);
   }
 
@@ -336,14 +335,30 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
   @override
   Stream<RatingStatistics> getRatingStatisticsStream(String recipeId) {
-    // Optimized (#043): Added limit to prevent unbounded stream for popular recipes
-    return collection
-        .where('recipeId', isEqualTo: recipeId)
-        .limit(500) // Limit to 500 most recent ratings for statistics
-        .snapshots()
-        .map((snapshot) {
+    final baseQuery = collection.where('recipeId', isEqualTo: recipeId);
+
+    // Stream the first 500 ratings for distribution/average calculation,
+    // then use count() to get the true total when the stream limit is hit
+    return baseQuery.limit(500).snapshots().asyncMap((snapshot) async {
       final ratings = snapshot.docs.map((doc) => fromFirestore(doc)).toList();
-      return _calculateRatingStatistics(recipeId, ratings);
+      final stats = _calculateRatingStatistics(recipeId, ratings);
+
+      // If we hit the 500-doc limit, the true count may be higher
+      if (snapshot.docs.length == 500) {
+        final countSnapshot = await baseQuery.count().get();
+        final trueCount = countSnapshot.count ?? ratings.length;
+        if (trueCount > ratings.length) {
+          return RatingStatistics(
+            recipeId: recipeId,
+            averageRating: stats.averageRating,
+            totalRatings: trueCount,
+            ratingDistribution: stats.ratingDistribution,
+            lastRatedAt: stats.lastRatedAt,
+          );
+        }
+      }
+
+      return stats;
     });
   }
 

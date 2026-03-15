@@ -57,7 +57,6 @@ class RecipeEventsTracker extends BaseTracker {
     required String recipeType,
     String? source,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'recipe_viewed',
       parameters: {
@@ -73,7 +72,6 @@ class RecipeEventsTracker extends BaseTracker {
     required String recipeId,
     List<String>? fieldsChanged,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'recipe_edited',
       parameters: {
@@ -86,7 +84,6 @@ class RecipeEventsTracker extends BaseTracker {
 
   /// Log recipe copied
   Future<void> logRecipeCopied({required String recipeId}) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(name: 'recipe_copied', parameters: {'recipe_id': recipeId});
   }
 
@@ -96,7 +93,6 @@ class RecipeEventsTracker extends BaseTracker {
     required int imageCount,
     String? uploadSource,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'recipe_image_uploaded',
       parameters: {
@@ -113,7 +109,6 @@ class RecipeEventsTracker extends BaseTracker {
     required int resultsCount,
     List<String>? filtersApplied,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'recipe_search_performed',
       parameters: {

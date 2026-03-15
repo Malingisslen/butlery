@@ -7,63 +7,8 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
-/// Firebase Firestore implementation for push notification and user notification management.
-/// This repository implements the [NotificationsRepository] interface using Firebase Firestore
-/// for persistent notification storage and Firebase Cloud Messaging (FCM) for push notification
-/// delivery. It provides comprehensive notification operations with security validation,
-/// batch processing, and real-time streaming capabilities.
-/// **Architecture Design:**
-/// Extends [BaseFirebaseRepository] to leverage shared CRUD functionality while providing
-/// specialized notification operations. Uses multiple Firestore collections:
-/// - `user_notifications`: Persistent notification storage
-/// - `user_fcm_tokens`: FCM token management for push delivery
-/// - `user_notification_preferences`: User-controlled notification settings
-/// **Security Implementation:**
-/// - **Ownership Validation**: Users can only access and modify their own notifications
-/// - **Permission Logging**: Comprehensive audit trail for notification operations
-/// - **FCM Security**: Secure token management with timestamp tracking
-/// - **Preference Control**: User-controlled granular notification settings
-/// - **Batch Validation**: Security checks for bulk notification operations
-/// **Notification Features:**
-/// - **Individual Notifications**: Single-user targeted notification delivery
-/// - **Bulk Notifications**: Efficient mass notification distribution
-/// - **Read Status Management**: Mark individual, multiple, or all notifications as read
-/// - **Real-time Streams**: Live notification updates for reactive UI
-/// - **Notification History**: Persistent storage with pagination support
-/// - **Unread Counting**: Efficient unread notification badge counts
-/// **FCM Integration:**
-/// - **Token Management**: Secure FCM token storage and updates
-/// - **Token Cleanup**: Proper token removal for security and privacy
-/// - **Push Delivery**: Integration with FCM for real-time push notifications
-/// - **Preference Filtering**: Respects user notification preferences for delivery
-/// **Performance Optimizations:**
-/// - **Stream Limits**: Caps notification streams at 50 notifications for performance
-/// - **Batch Operations**: Efficient bulk read/write operations using Firestore batches
-/// - **Pagination Support**: Load notifications incrementally with since timestamps
-/// - **Efficient Queries**: Optimized Firestore queries with proper indexing
-/// **Usage Examples:**
-/// ```dart
-/// final notificationRepo = FirebaseNotificationsRepository(
-///   authRepository: ServiceLocator.get<AuthRepository>(),
-/// );
-/// // Send notification
-/// await notificationRepo.sendNotification(
-///   userId: targetUserId,
-///   type: NotificationType.friendRequest,
-///   title: 'New Friend Request',
-///   body: 'John wants to be your friend!',
-/// );
-/// // Real-time notifications
-/// notificationRepo.getNotificationsStream(userId).listen((notifications) {
-///   updateNotificationUI(notifications);
-///   updateBadgeCount(notifications.where((n) => !n.isRead).length);
-/// });
-/// // Manage preferences
-/// await notificationRepo.updateNotificationPreferences(
-///   userId,
-///   NotificationPreferences(enableFriendRequests: false),
-/// );
-/// ```
+/// Firebase implementation for notification management with FCM integration.
+/// Uses `user_notifications`, `user_fcm_tokens`, and `user_notification_preferences` collections.
 class FirebaseNotificationsRepository
     extends BaseFirebaseRepository<UserNotification>
     implements NotificationsRepository {
@@ -92,9 +37,10 @@ class FirebaseNotificationsRepository
     String userId,
     UserNotification entity,
   ) async {
-    // System can create notifications for any user (server-side notification creation)
-    // This supports notification delivery from system/admin operations
-    return true;
+    // Only the authenticated sender can create notifications.
+    // System/server notifications bypass client SDK via Cloud Functions.
+    if (entity.senderId == null) return false;
+    return userId == entity.senderId;
   }
 
   @override
@@ -289,16 +235,17 @@ class FirebaseNotificationsRepository
         .where('isRead', isEqualTo: false)
         .get();
 
-    final batch = firestore.batch();
-
-    for (final doc in unreadQuery.docs) {
-      batch.update(doc.reference, {
-        'isRead': true,
-        'readAt': timestampProvider.serverTimestamp(),
-      });
+    final docs = unreadQuery.docs;
+    for (var i = 0; i < docs.length; i += 500) {
+      final batch = firestore.batch();
+      for (final doc in docs.skip(i).take(500)) {
+        batch.update(doc.reference, {
+          'isRead': true,
+          'readAt': timestampProvider.serverTimestamp(),
+        });
+      }
+      await batch.commit();
     }
-
-    await batch.commit();
 
     logPermissionCheck(
       userId: currentUser,
@@ -341,12 +288,13 @@ class FirebaseNotificationsRepository
 
   @override
   Future<int> getUnreadCount(String userId) async {
-    final unreadQuery = await collection
+    final countResult = await collection
         .where('userId', isEqualTo: userId)
         .where('isRead', isEqualTo: false)
+        .count()
         .get();
 
-    return unreadQuery.docs.length;
+    return countResult.count ?? 0;
   }
 
   @override

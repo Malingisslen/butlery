@@ -14,7 +14,6 @@ class MenuEventsTracker extends BaseTracker {
 
   /// Log menu generation started
   Future<void> logMenuGenerationStarted({int? promptLength}) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'menu_generation_started',
       parameters: {if (promptLength != null) 'prompt_length': promptLength},
@@ -41,7 +40,6 @@ class MenuEventsTracker extends BaseTracker {
     required int recipeCount,
     bool isShared = false,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'menu_saved',
       parameters: {
@@ -57,7 +55,6 @@ class MenuEventsTracker extends BaseTracker {
     required String menuId,
     bool isOwned = true,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'menu_loaded',
       parameters: {'menu_id': menuId, 'is_owned': isOwned},
@@ -70,7 +67,6 @@ class MenuEventsTracker extends BaseTracker {
     required int recipientCount,
     String? shareMethod,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'menu_shared',
       parameters: {
@@ -83,7 +79,6 @@ class MenuEventsTracker extends BaseTracker {
 
   /// Log menu deleted
   Future<void> logMenuDeleted({required String menuId, String? reason}) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'menu_deleted',
       parameters: {'menu_id': menuId, if (reason != null) 'reason': reason},

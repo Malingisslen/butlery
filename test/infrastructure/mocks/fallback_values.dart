@@ -23,8 +23,6 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/models/social/activity_feed_item.dart';
-import 'package:butlery/models/social/reaction_type.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 
 // Service type imports
@@ -316,16 +314,6 @@ void registerAllFallbackValues() {
     content: 'Fake message',
   ));
 
-  // ===== Activity Types =====
-  registerFallbackValue(ActivityFeedItem.create(
-    userId: 'fake-user',
-    userDisplayName: 'Fake User',
-    type: ActivityType.recipeCreated,
-    targetId: 'fake-target',
-    targetType: 'recipe',
-    targetTitle: 'Fake Recipe',
-  ));
-
   // ===== Operation Results =====
   registerFallbackValue(RecipeOperationResult.success('test'));
 
@@ -335,12 +323,10 @@ void registerAllFallbackValues() {
   // ===== Enum Values =====
   registerFallbackValue(FriendRequestStatus.pending);
   registerFallbackValue(GroupInvitationStatus.pending);
-  registerFallbackValue(ActivityType.recipeCreated);
   registerFallbackValue(MessageStatus.sent);
   registerFallbackValue(MessageType.text);
   registerFallbackValue(NotificationCategory.social);
   registerFallbackValue(NotificationType.immediate);
-  registerFallbackValue(ReactionType.like);
   registerFallbackValue(ImportSourceType.text);
   registerFallbackValue(RecipeType.personal);
   registerFallbackValue(SyncErrorType.unknown);

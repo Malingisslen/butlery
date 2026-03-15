@@ -1,27 +1,8 @@
-/// Firebase Firestore implementation for comprehensive friend request lifecycle and social connection management.
-/// This repository provides sophisticated friend request functionality using Firebase Firestore as the
-/// backend, managing the complete lifecycle of friend requests from initiation through resolution.
-/// It implements advanced features like request validation, status tracking, duplicate prevention,
-/// and comprehensive security controls for safe social networking experiences.
-/// **Architecture Integration:**
-/// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
-/// - Uses global `friend_requests` collection for centralized request management
-/// - Integrates with permission validation system for comprehensive security controls
-/// - Coordinates with friend relationship repository for seamless friendship establishment
-/// - Implements real-time streams for immediate request status updates
-/// **Friend Request Lifecycle:**
-/// - **Request Creation**: Secure friend request initiation with validation and duplicate prevention
-/// - **Status Management**: Complete status tracking (pending, accepted, rejected, cancelled)
-/// - **Request Resolution**: Automatic cleanup and relationship establishment upon acceptance
-/// - **Security Validation**: Comprehensive checks to prevent abuse and unauthorized requests
-/// - **Real-time Updates**: Live streams for immediate request notifications and updates
-/// **Security and Validation:**
-/// - **Self-operation Validation**: Ensures users can only send requests from their own accounts
-/// - **Duplicate Prevention**: Automatic detection and prevention of duplicate friend requests
-/// - **Status Integrity**: Enforces correct status transitions and prevents invalid state changes
-/// - **Comprehensive Logging**: Complete audit trail for all friend request operations
+/// Firebase implementation for friend request lifecycle management.
+/// Handles creation, acceptance, rejection, and cancellation with security validation.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -29,39 +10,6 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
-/// Firebase implementation for friend request management with comprehensive lifecycle and security controls.
-/// This repository provides complete friend request functionality using Firebase Firestore with
-/// sophisticated request lifecycle management, security validation, and real-time updates. It handles
-/// the complete social connection workflow from initial request through friendship establishment.
-/// **Request Management System:**
-/// Uses a centralized collection approach for efficient request management and discovery:
-/// - `friend_requests`: Global collection storing all friend requests with status tracking
-/// - Comprehensive indexing for efficient querying by sender, recipient, and status
-/// - Real-time streams for immediate request notifications and status updates
-/// **Security and Validation:**
-/// - **Comprehensive Validation**: Multi-layer validation including self-operation checks
-/// - **Duplicate Prevention**: Automatic detection and prevention of duplicate requests
-/// - **Status Integrity**: Enforces valid status transitions and prevents invalid modifications
-/// - **Audit Logging**: Complete security audit trail for all request operations
-/// **Usage Examples:**
-/// ```dart
-/// final requestRepo = FriendRequestRepository(
-///   authRepository: ServiceLocator.get<AuthRepository>(),
-/// );
-/// // Send friend request
-/// final success = await requestRepo.sendFriendRequest(
-///   targetUserId,
-///   message: 'Would love to connect!',
-/// );
-/// // Handle incoming requests
-/// requestRepo.incomingRequestsStream(userId).listen((requests) {
-///   updateRequestsUI(requests);
-/// });
-/// // Accept request and establish friendship
-/// await requestRepo.acceptFriendRequest(requestId);
-/// // Get request statistics
-/// final stats = await requestRepo.getRequestStatistics(userId);
-/// ```
 class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   /// Creates a friend request repository with dependency injection support.
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
@@ -243,11 +191,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
     );
   }
 
-  /// Accept a friend request (status update only, no friendship creation).
-  /// R1 note: This method does fetch-then-update without a transaction.
-  /// The primary runtime path uses FriendsManagementOperations.acceptFriendRequest()
-  /// which calls addMutualFriends (transactional). This method only updates
-  /// request status and is not called from the main UI flow.
+  /// Non-transactional accept path — status update only, no friendship creation.
+  /// Production UI uses FriendsManagementOperations.acceptFriendRequest() instead.
+  @visibleForTesting
   Future<bool> acceptFriendRequest(String requestId) async {
     final req = await fetchRequest(requestId);
     if (req == null) {

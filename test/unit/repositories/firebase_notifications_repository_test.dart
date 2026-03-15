@@ -11,6 +11,7 @@ import 'package:butlery/repositories/firebase/firebase_notifications_repository.
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -42,10 +43,11 @@ void main() {
         isAuthenticated: true,
       );
 
-      // Create repository with fake Firestore
+      // Create repository with fake Firestore and test timestamp provider
       repository = FirebaseNotificationsRepository(
         firestore: fakeFirestore,
         authRepository: mockAuthRepo,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -55,22 +57,22 @@ void main() {
     });
 
     group('Permission Validation', () {
-      test('should allow system to create notification for any user', () async {
-        // Arrange
+      test('should reject create when senderId is null (system uses Cloud Functions)', () async {
+        // Arrange - notification without senderId (system notification)
         final notification = _createNotification('user-123');
 
         // Act
         final canCreate =
             await repository.validateCreatePermission('system', notification);
 
-        // Assert
-        expect(canCreate, isTrue); // System can create for any user
+        // Assert - system notifications now go through Cloud Functions, not client SDK
+        expect(canCreate, isFalse);
       });
 
       test('should allow users to create notification for themselves',
           () async {
-        // Arrange
-        final notification = _createNotification('user-123');
+        // Arrange - senderId must match the authenticated user
+        final notification = _createNotification('user-123', senderId: 'user-123');
 
         // Act
         final canCreate =
@@ -651,23 +653,34 @@ void main() {
     });
 
     group('Notification Preferences', () {
-      test('should update notification preferences successfully', () async {
+      test('should serialize notification preferences with correct field structure', () {
         // Arrange
-        const userId = 'user-123';
         final preferences = NotificationPreferences.defaults();
 
-        // Act
-        await repository.updateNotificationPreferences(userId, preferences);
+        // Act - verify toFirestore() output directly (avoids FakeFirebaseFirestore
+        // FieldValue.serverTimestamp() limitation with SetOptions merge)
+        final data = preferences.toFirestore();
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('user_notification_preferences')
-            .doc(userId)
-            .get();
-        expect(doc.exists, isTrue);
-        expect(doc.data()!['enableRecipeSharing'], isFalse);
-        expect(doc.data()!['enableFriendRequests'], isTrue);
-        expect(doc.data()!['enableGroupInvitations'], isFalse);
+        // Assert - verify structure matches current NotificationPreferences model
+        expect(data['enabled'], isTrue);
+        expect(data['allowBatching'], isTrue);
+        expect(data['soundEnabled'], isTrue);
+        expect(data['vibrationEnabled'], isTrue);
+        expect(data['digestFrequency'], equals('never'));
+
+        // Verify nested categorySettings map
+        final categorySettings = data['categorySettings'] as Map<String, bool>;
+        expect(categorySettings['NotificationCategory.friends'], isTrue);
+        expect(categorySettings['NotificationCategory.recipes'], isTrue);
+        expect(categorySettings['NotificationCategory.shopping'], isFalse);
+        expect(categorySettings['NotificationCategory.social'], isFalse);
+
+        // Verify nested typeSettings map
+        final typeSettings = data['typeSettings'] as Map<String, bool>;
+        expect(typeSettings['NotificationType.immediate'], isTrue);
+        expect(typeSettings['NotificationType.batchable'], isTrue);
+        expect(typeSettings['NotificationType.digest'], isFalse);
+        expect(typeSettings['NotificationType.optional'], isFalse);
       });
 
       test('should reject updating preferences for another user', () async {
@@ -683,20 +696,32 @@ void main() {
       });
 
       test('should get notification preferences', () async {
-        // Arrange
+        // Arrange - seed data matching NotificationPreferences.fromFirestore() structure
         const userId = 'user-123';
         await fakeFirestore
             .collection('user_notification_preferences')
             .doc(userId)
             .set({
-          'enableRecipeSharing': false,
-          'enableFriendRequests': true,
-          'enableGroupInvitations': false,
-          'enableComments': true,
-          'enableRatings': true,
-          'enableCollaborativeEditing': true,
-          'enableMenuSharing': true,
-          'enableGeneralUpdates': true,
+          'enabled': false,
+          'categorySettings': {
+            'NotificationCategory.friends': true,
+            'NotificationCategory.recipes': false,
+            'NotificationCategory.collaboration': true,
+            'NotificationCategory.shopping': false,
+            'NotificationCategory.social': false,
+            'NotificationCategory.system': true,
+          },
+          'typeSettings': {
+            'NotificationType.immediate': true,
+            'NotificationType.batchable': true,
+            'NotificationType.silent': true,
+            'NotificationType.digest': false,
+            'NotificationType.optional': false,
+          },
+          'allowBatching': true,
+          'digestFrequency': 'daily',
+          'soundEnabled': false,
+          'vibrationEnabled': false,
         });
 
         // Act
@@ -704,8 +729,10 @@ void main() {
 
         // Assert
         expect(preferences.enabled, isFalse);
-        expect(preferences.soundEnabled, isTrue);
+        expect(preferences.soundEnabled, isFalse);
         expect(preferences.vibrationEnabled, isFalse);
+        expect(preferences.allowBatching, isTrue);
+        expect(preferences.digestFrequency, equals('daily'));
       });
 
       test('should return default preferences when none exist', () async {
@@ -757,12 +784,14 @@ void main() {
 UserNotification _createNotification(
   String userId, {
   String? id,
+  String? senderId,
   bool isRead = false,
   DateTime? createdAt,
 }) {
   return UserNotification(
     id: id ?? 'notif-${DateTime.now().millisecondsSinceEpoch}',
     userId: userId,
+    senderId: senderId,
     type: NotificationType.immediate,
     title: 'Test Notification',
     body: 'This is a test notification',

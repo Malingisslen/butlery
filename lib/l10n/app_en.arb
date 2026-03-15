@@ -323,6 +323,8 @@
   "emptyNoTargetsSubtitle": "Add friends or groups to be able to share content",
   "emptyNoSavedMenusTitle": "No saved menus",
   "emptyNoSavedMenusSubtitle": "Create and save menus to easily load them later",
+  "emptyNoSharedShoppingListsTitle": "No shared shopping lists",
+  "emptyNoSharedShoppingListsSubtitle": "When you collaborate on shopping lists with friends or family, they will appear here.",
   "emptyGenericTitle": "No content to display",
   "recipeName": "Recipe name",
   "recipeDescription": "Description",
@@ -4792,6 +4794,8 @@
       }
     }
   },
+  "a11yAllergenStatusRow": "Allergen status",
+  "a11yDietaryStatusRow": "Dietary status",
   "a11yShowImage": "Show image",
   "a11yShowMore": "Show {count} more",
   "@a11yShowMore": {

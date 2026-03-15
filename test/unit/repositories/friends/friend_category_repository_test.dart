@@ -126,6 +126,10 @@ void main() {
       });
 
       test('should allow deleting own category', () async {
+        // Arrange — seed the category so validateDeletePermission can fetch it
+        final category = createTestCategory();
+        await seedCategory(testUserId, category);
+
         // Act
         final hasPermission = await repository.validateDeletePermission(
             testUserId, testCategoryId);

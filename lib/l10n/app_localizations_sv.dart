@@ -469,6 +469,13 @@ class AppLocalizationsSv extends AppLocalizations {
       'Skapa och spara menyer för att enkelt ladda dem senare';
 
   @override
+  String get emptyNoSharedShoppingListsTitle => 'Inga delade inköpslistor';
+
+  @override
+  String get emptyNoSharedShoppingListsSubtitle =>
+      'När du samarbetar på inköpslistor med vänner eller familj visas de här.';
+
+  @override
   String get emptyGenericTitle => 'Inget innehåll att visa';
 
   @override
@@ -7024,6 +7031,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yExcludeTag(String tagName, String status) {
     return 'Exkludera $tagName, $status';
   }
+
+  @override
+  String get a11yAllergenStatusRow => 'Allergenstatus';
+
+  @override
+  String get a11yDietaryStatusRow => 'Koststatus';
 
   @override
   String get a11yShowImage => 'Visa bild';

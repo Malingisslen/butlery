@@ -7,10 +7,9 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:butlery/models/tagging/ingredient_data.dart';
-import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 import '../../../infrastructure/builders/recipe_builder.dart';
+import '../../../infrastructure/helpers/tagging_test_helper.dart';
 
 void main() {
   late TagGenerator generator;
@@ -26,9 +25,10 @@ void main() {
             .withTitle('Pasta med grädde')
             .withIngredients(['pasta', 'grädde', 'salt']).withInstructions(
                 ['Koka pastan', 'Tillsätt grädde']).build();
-        final lookup = _createLookup([
-          _ingredient('pasta', 'grain/pasta-bread', {'contains-gluten'}),
-          _ingredient(
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'pasta', 'grain/pasta-bread', {'contains-gluten'}),
+          TaggingTestHelper.ingredient(
               'grädde', 'protein/dairy', {'dairy', 'animal-product', 'cream'}),
         ]);
 
@@ -43,9 +43,9 @@ void main() {
             .withTitle('Lax med crème fraiche')
             .withIngredients(['lax', 'crème fraiche', 'dill']).withInstructions(
                 ['Stek laxen', 'Gör en sås med crème fraiche']).build();
-        final lookup = _createLookup([
-          _ingredient('lax', 'protein/seafood/fish', {'fish'}),
-          _ingredient('crème fraiche', 'protein/dairy',
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('lax', 'protein/seafood/fish', {'fish'}),
+          TaggingTestHelper.ingredient('crème fraiche', 'protein/dairy',
               {'dairy', 'animal-product', 'cream'}),
         ]);
 
@@ -62,9 +62,11 @@ void main() {
           'curry'
         ]).withInstructions(
             ['Fräs kycklingen', 'Rör ner kokosmjölken']).build();
-        final lookup = _createLookup([
-          _ingredient('kokosmjölk', 'liquid', {'cream', 'plant-based'}),
-          _ingredient('kyckling', 'protein/poultry', {'poultry', 'meat'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'kokosmjölk', 'liquid', {'cream', 'plant-based'}),
+          TaggingTestHelper.ingredient(
+              'kyckling', 'protein/poultry', {'poultry', 'meat'}),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -76,9 +78,10 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Pasta med tomatsås')
             .withIngredients(['pasta', 'tomatsås', 'basilika']).build();
-        final lookup = _createLookup([
-          _ingredient('pasta', 'grain/pasta-bread', {'contains-gluten'}),
-          _ingredient('tomatsås', 'sauce', {}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'pasta', 'grain/pasta-bread', {'contains-gluten'}),
+          TaggingTestHelper.ingredient('tomatsås', 'sauce', {}),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -95,9 +98,10 @@ void main() {
           'Panera kycklingen',
           'Fritera tills den blir krispig'
         ]).build();
-        final lookup = _createLookup([
-          _ingredient('kyckling', 'protein/poultry', {'poultry', 'meat'}),
-          _ingredient('panko', 'grain', {'contains-gluten'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'kyckling', 'protein/poultry', {'poultry', 'meat'}),
+          TaggingTestHelper.ingredient('panko', 'grain', {'contains-gluten'}),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -110,9 +114,9 @@ void main() {
             .withTitle('Pommes frites')
             .withIngredients(['potatis', 'olja']).withInstructions(
                 ['Fritera potatisen i het olja']).build();
-        final lookup = _createLookup([
-          _ingredient('potatis', 'vegetable/root', {}),
-          _ingredient('olja', 'fat/oil', {}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('potatis', 'vegetable/root', {}),
+          TaggingTestHelper.ingredient('olja', 'fat/oil', {}),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -125,8 +129,9 @@ void main() {
             .withTitle('Kokt pasta')
             .withIngredients(['pasta', 'vatten', 'salt']).withInstructions(
                 ['Koka pastan i saltat vatten']).build();
-        final lookup = _createLookup([
-          _ingredient('pasta', 'grain/pasta-bread', {'contains-gluten'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'pasta', 'grain/pasta-bread', {'contains-gluten'}),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -140,9 +145,11 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Pasta med parmesan')
             .withIngredients(['pasta', 'parmesan', 'smör']).build();
-        final lookup = _createLookup([
-          _ingredient('pasta', 'grain/pasta-bread', {'contains-gluten'}),
-          _ingredient('parmesan', 'protein/dairy/cheese', {'dairy', 'cheese'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'pasta', 'grain/pasta-bread', {'contains-gluten'}),
+          TaggingTestHelper.ingredient(
+              'parmesan', 'protein/dairy/cheese', {'dairy', 'cheese'}),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -154,9 +161,10 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Pizza Margherita')
             .withIngredients(['pizzadeg', 'tomatsås', 'mozzarella']).build();
-        final lookup = _createLookup([
-          _ingredient('pizzadeg', 'grain/pasta-bread', {'contains-gluten'}),
-          _ingredient(
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'pizzadeg', 'grain/pasta-bread', {'contains-gluten'}),
+          TaggingTestHelper.ingredient(
               'mozzarella', 'protein/dairy/cheese', {'dairy', 'cheese'}),
         ]);
 
@@ -169,9 +177,11 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Smörgås med skinka')
             .withIngredients(['bröd', 'smör', 'skinka']).build();
-        final lookup = _createLookup([
-          _ingredient('bröd', 'grain/pasta-bread', {'contains-gluten'}),
-          _ingredient('skinka', 'protein/meat/pork', {'meat', 'pork'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'bröd', 'grain/pasta-bread', {'contains-gluten'}),
+          TaggingTestHelper.ingredient(
+              'skinka', 'protein/meat/pork', {'meat', 'pork'}),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -185,11 +195,13 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Krämig ostpasta')
             .withIngredients(['pasta', 'grädde', 'parmesan']).build();
-        final lookup = _createLookup([
-          _ingredient('pasta', 'grain/pasta-bread', {'contains-gluten'}),
-          _ingredient(
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'pasta', 'grain/pasta-bread', {'contains-gluten'}),
+          TaggingTestHelper.ingredient(
               'grädde', 'protein/dairy', {'dairy', 'animal-product', 'cream'}),
-          _ingredient('parmesan', 'protein/dairy/cheese', {'dairy', 'cheese'}),
+          TaggingTestHelper.ingredient(
+              'parmesan', 'protein/dairy/cheese', {'dairy', 'cheese'}),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -199,30 +211,4 @@ void main() {
       });
     });
   });
-}
-
-// Helper functions
-
-IngredientData _ingredient(
-  String name,
-  String group,
-  Set<String> properties,
-) {
-  return IngredientData(
-    id: name.toLowerCase().replaceAll(' ', '-'),
-    swedish: name,
-    english: name,
-    group: group,
-    properties: properties,
-    priceCategory: null,
-    carbonFootprintCategory: null,
-    seasonAvailability: const [],
-  );
-}
-
-IngredientLookupResult _createLookup(List<IngredientData> ingredients) {
-  return IngredientLookupResult.fromLists(
-    matched: ingredients,
-    unmatched: [],
-  );
 }

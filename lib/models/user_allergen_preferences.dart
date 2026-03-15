@@ -244,6 +244,8 @@ class AllergenPreferenceOptions {
     'kosheranpassad': 'Kosheranpassad',
     'graviditetssäker': 'Graviditetssäker',
     'barnvänlig': 'Barnvänlig',
+    'nötkötsfri': 'Nötkötsfri',
+    'aip-vänlig': 'AIP-vänlig',
   };
 
   /// Gets Swedish label for an allergen key.

@@ -9,6 +9,8 @@ enum FriendRequestStatus { pending, accepted, rejected, cancelled, expired }
 
 /// Friend request with status tracking and optional message.
 class FriendRequest with JsonSerializableMixin {
+  static const _expiryDuration = Duration(days: 7);
+
   final String id;
   final String fromUserId;
   final String toUserId;
@@ -16,6 +18,9 @@ class FriendRequest with JsonSerializableMixin {
   final DateTime sentAt;
   final DateTime? respondedAt;
   final String? message;
+
+  /// TTL field for Firestore TTL policy — auto-deletes expired requests.
+  final DateTime expiresAt;
 
   FriendRequest({
     required this.id,
@@ -25,19 +30,24 @@ class FriendRequest with JsonSerializableMixin {
     DateTime? sentAt,
     this.respondedAt,
     this.message,
-  }) : sentAt = sentAt ?? DateTime.now();
+    DateTime? expiresAt,
+  })  : sentAt = sentAt ?? DateTime.now(),
+        expiresAt = expiresAt ??
+            (sentAt ?? DateTime.now()).add(_expiryDuration);
 
   factory FriendRequest.create({
     required String fromUserId,
     required String toUserId,
     String? message,
   }) {
+    final now = DateTime.now();
     return FriendRequest(
       id: const Uuid().v4(),
       fromUserId: fromUserId,
       toUserId: toUserId,
       message: message,
-      sentAt: DateTime.now(),
+      sentAt: now,
+      expiresAt: now.add(_expiryDuration),
     );
   }
 
@@ -50,6 +60,7 @@ class FriendRequest with JsonSerializableMixin {
       sentAt: sentAt,
       respondedAt: respondedAt ?? this.respondedAt,
       message: message,
+      expiresAt: expiresAt,
     );
   }
 
@@ -79,7 +90,7 @@ class FriendRequest with JsonSerializableMixin {
   bool get isRejected => status == FriendRequestStatus.rejected;
   bool get isCancelled => status == FriendRequestStatus.cancelled;
   bool get isCompleted => respondedAt != null;
-  bool get isExpired => DateTime.now().difference(sentAt).inDays > 7;
+  bool get isExpired => isPending && DateTime.now().isAfter(expiresAt);
 
   String get timeAgoText {
     return TimeAgoFormatter.standard(sentAt);
@@ -91,6 +102,7 @@ class FriendRequest with JsonSerializableMixin {
       'toUserId': toUserId,
       'status': status.name,
       'sentAt': AppTimestamp.fromDateTime(sentAt).toFirestore(),
+      'expiresAt': AppTimestamp.fromDateTime(expiresAt).toFirestore(),
       'respondedAt': respondedAt != null
           ? AppTimestamp.fromDateTime(respondedAt!).toFirestore()
           : null,
@@ -99,6 +111,8 @@ class FriendRequest with JsonSerializableMixin {
   }
 
   factory FriendRequest.fromMap(String id, Map<String, dynamic> data) {
+    final sentAt = utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
+        DateTime.now();
     return FriendRequest(
       id: id,
       fromUserId: utils.SerializationUtils.safeString(data, 'fromUserId'),
@@ -110,8 +124,9 @@ class FriendRequest with JsonSerializableMixin {
         FriendRequestStatus.pending,
         (e) => e.name,
       ),
-      sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
-          DateTime.now(),
+      sentAt: sentAt,
+      expiresAt: utils.SerializationUtils.safeDateTime(data, 'expiresAt') ??
+          sentAt.add(_expiryDuration),
       respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
       message: utils.SerializationUtils.safeNullableString(data, 'message'),
     );
@@ -125,12 +140,15 @@ class FriendRequest with JsonSerializableMixin {
       'toUserId': toUserId,
       'status': status.name,
       'sentAt': serializeDateTime(sentAt),
+      'expiresAt': serializeDateTime(expiresAt),
       'respondedAt': serializeDateTime(respondedAt),
       'message': message,
     };
   }
 
   factory FriendRequest.fromJson(Map<String, dynamic> json) {
+    final sentAt =
+        FriendRequest._deserializeDateTime(json['sentAt']) ?? DateTime.now();
     return FriendRequest(
       id: json['id'] as String,
       fromUserId: json['fromUserId'] as String,
@@ -139,8 +157,9 @@ class FriendRequest with JsonSerializableMixin {
         (s) => s.name == json['status'],
         orElse: () => FriendRequestStatus.pending,
       ),
-      sentAt:
-          FriendRequest._deserializeDateTime(json['sentAt']) ?? DateTime.now(),
+      sentAt: sentAt,
+      expiresAt: FriendRequest._deserializeDateTime(json['expiresAt']) ??
+          sentAt.add(_expiryDuration),
       respondedAt: FriendRequest._deserializeDateTime(json['respondedAt']),
       message: json['message'] as String?,
     );

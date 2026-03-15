@@ -80,19 +80,26 @@ class MenuGenerator {
 
   /// Filters out recipes that don't match user's tracked dietary preferences.
   /// A recipe passes if it is FREE for ALL tracked dietary preferences.
-  /// Recipes with UNKNOWN dietary status are kept (same safety-first approach).
+  /// Respects includeUnknownInMenu setting for consistency with allergen filtering.
   List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) {
     final prefs = _userService.allergenPreferences;
     if (!prefs.hasTrackedDietary) return recipes;
 
     final tracked = prefs.trackedDietary;
+    final includeUnknown = prefs.includeUnknownInMenu;
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
-      if (tagResult == null) return true; // No tag data = keep
+      if (tagResult == null) {
+        return includeUnknown; // No tag data = respect preference
+      }
 
       for (final diet in tracked) {
-        if (tagResult.getDietaryStatus(diet) == TriState.contains) {
-          return false; // Exclude recipes that violate tracked dietary preferences
+        final status = tagResult.getDietaryStatus(diet);
+        if (status == TriState.contains) {
+          return false;
+        }
+        if (!includeUnknown && status == TriState.unknown) {
+          return false;
         }
       }
       return true;

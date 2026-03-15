@@ -36,6 +36,7 @@ import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart';
 
 // Services dependencies
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -96,6 +97,7 @@ class UIModule implements DIModule {
         UnifiedShoppingViewModel,
         CreateSharedListViewModel,
         ShoppingShareViewModel,
+        SharedShoppingListsViewModel,
 
         // Social ViewModels
         FriendsViewModel,
@@ -208,6 +210,13 @@ class UIModule implements DIModule {
           friendsService: container<UnifiedFriendsService>(),
         ),
       );
+      // Shared Shopping Lists ViewModel
+      container.registerFactory<SharedShoppingListsViewModel>(
+        () => SharedShoppingListsViewModel(
+          shoppingService: container<UnifiedShoppingService>(),
+        ),
+      );
+
       // Friends ViewModel
       container.registerFactory<FriendsViewModel>(
         () => FriendsViewModel(

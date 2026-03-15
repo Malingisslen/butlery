@@ -36,6 +36,7 @@ abstract class BaseTracker {
     required String name,
     Map<String, Object>? parameters,
   }) async {
+    if (!await hasAnalyticsConsent()) return;
     await repository.logEvent(name: name, parameters: parameters);
   }
 }

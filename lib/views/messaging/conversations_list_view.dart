@@ -20,9 +20,10 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:collection/collection.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
-import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Conversations list view showing all user's messaging conversations.
@@ -489,17 +490,23 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           orElse: () => conversation.participantIds.first);
 
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      final friends = friendsService.friends;
 
-      final UserProfile friendProfile = friends.firstWhere(
-        (friend) => friend.uid == otherParticipantId,
-        orElse: () => throw Exception('Friend not found'),
-      );
+      // Try friends list first, fall back to UserService for non-friend DM partners
+      final profile =
+          friendsService.friends.firstWhereOrNull(
+                (f) => f.uid == otherParticipantId,
+              ) ??
+              await ServiceLocator.get<UserService>()
+                  .getUserProfile(otherParticipantId);
+
+      if (profile == null) throw Exception('Profile not found');
+
+      if (!context.mounted) return;
 
       Navigator.pushNamed(
         context,
         Routes.friendProfile,
-        arguments: friendProfile,
+        arguments: profile,
       );
     } catch (e) {
       if (mounted) {
