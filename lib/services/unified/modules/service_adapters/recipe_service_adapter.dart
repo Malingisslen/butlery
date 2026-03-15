@@ -8,8 +8,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// Service adapter that provides repository pattern access for UnifiedRecipeService modules
 /// This adapter abstracts Firebase operations through repository interfaces,
@@ -134,9 +132,7 @@ class RecipeServiceAdapter {
       return [];
     }
     try {
-      final comments =
-          await _commentsRepository.getCommentsForRecipe(recipeId);
-      return _filterBlockedUserComments(comments);
+      return await _commentsRepository.getCommentsForRecipe(recipeId);
     } catch (e) {
       AppLogger.error('❌ Failed to get comments via repository', e);
       return [];
@@ -239,23 +235,7 @@ class RecipeServiceAdapter {
       AppLogger.warning('⚠️ CommentsRepository not available');
       return Stream.value([]);
     }
-    return _commentsRepository
-        .getCommentsStream(recipeId)
-        .map(_filterBlockedUserComments);
-  }
-
-  List<RecipeComment> _filterBlockedUserComments(
-      List<RecipeComment> comments) {
-    try {
-      final blockedUsers =
-          ServiceLocator.get<UnifiedFriendsService>().blockedUsers;
-      if (blockedUsers.isEmpty) return comments;
-      return comments
-          .where((c) => !blockedUsers.contains(c.authorId))
-          .toList();
-    } catch (_) {
-      return comments;
-    }
+    return _commentsRepository.getCommentsStream(recipeId);
   }
 
   /// Get rating statistics stream using repository pattern

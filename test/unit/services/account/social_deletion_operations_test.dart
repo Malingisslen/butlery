@@ -17,7 +17,9 @@ void main() {
   });
 
   group('removeFriendConnections', () {
-    test('should delete friends, friendCategories, friend requests and group invitations for user', () async {
+    test(
+        'should delete friends, friendCategories, friend requests and group invitations for user',
+        () async {
       // Arrange - seed friends subcollection
       await fakeFirestore
           .collection(FirestoreCollections.users)
@@ -91,7 +93,9 @@ void main() {
   });
 
   group('removeFromSharedContent', () {
-    test('should delete membership docs from members subcollection via collectionGroup', () async {
+    test(
+        'should delete membership docs from members subcollection via collectionGroup',
+        () async {
       // Arrange
       await fakeFirestore
           .collection(FirestoreCollections.sharedRecipes)
@@ -123,7 +127,9 @@ void main() {
       expect(remainingMembers.docs.first.data()['userId'], otherUserId);
     });
 
-    test('should delete views, engagements, and dismissals subcollection docs for user', () async {
+    test(
+        'should delete views, engagements, and dismissals subcollection docs for user',
+        () async {
       // Arrange
       await fakeFirestore
           .collection(FirestoreCollections.sharedRecipes)
@@ -174,7 +180,9 @@ void main() {
       expect(dismissals.docs, isEmpty);
     });
 
-    test('should remove user from legacy sharedWith array without affecting other users', () async {
+    test(
+        'should remove user from legacy sharedWith array without affecting other users',
+        () async {
       // Arrange
       await fakeFirestore
           .collection(FirestoreCollections.sharedRecipes)
@@ -235,7 +243,9 @@ void main() {
   });
 
   group('deleteCommentsAndRatings', () {
-    test('should anonymize recipe comments and delete ratings/menu data with correct field names', () async {
+    test(
+        'should anonymize recipe comments and delete ratings/menu data with correct field names',
+        () async {
       // Arrange — use actual field names from each collection
       await fakeFirestore
           .collection(FirestoreCollections.recipeComments)
@@ -282,7 +292,7 @@ void main() {
       expect(anonymized.data()!['authorDisplayName'], 'Borttagen användare');
       expect(anonymized.data()!['authorAvatarUrl'], isNull);
       expect(anonymized.data()!['isDeleted'], true);
-      expect(anonymized.data()!['text'], '[Borttaget]');
+      expect(anonymized.data()!['text'], '[Kommentar borttagen]');
 
       // Recipe ratings should be hard-deleted
       final ratings = await fakeFirestore
@@ -429,10 +439,8 @@ void main() {
           .get();
       expect(userReports.docs, isEmpty);
 
-      final otherReport = await fakeFirestore
-          .collection('reports')
-          .doc('report3')
-          .get();
+      final otherReport =
+          await fakeFirestore.collection('reports').doc('report3').get();
       expect(otherReport.exists, true);
     });
   });

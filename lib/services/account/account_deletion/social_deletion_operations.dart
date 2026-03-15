@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Handles deletion of social data (friends, messages, shared content, comments/ratings).
 class SocialDeletionOperations {
@@ -181,10 +182,10 @@ class SocialDeletionOperations {
       for (final doc in recipeComments.docs) {
         batch.update(doc.reference, {
           'authorId': 'deleted',
-          'authorDisplayName': 'Borttagen användare',
+          'authorDisplayName': AppLocale.current.deletedUser,
           'authorAvatarUrl': null,
           'isDeleted': true,
-          'text': '[Borttaget]',
+          'text': AppLocale.current.commentDeleted,
         });
         opCount++;
         final state = await _commitIfNeeded(batch, opCount);
@@ -192,25 +193,23 @@ class SocialDeletionOperations {
         opCount = state.count;
       }
 
-      // Recipe ratings: hard-delete (userId field is correct)
-      final recipeRatings = await _firestore
-          .collection(FirestoreCollections.recipeRatings)
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Hard-delete ratings and menu data (run queries in parallel)
+      final deleteResults = await Future.wait([
+        _firestore
+            .collection(FirestoreCollections.recipeRatings)
+            .where('userId', isEqualTo: userId)
+            .get(),
+        _firestore
+            .collection(FirestoreCollections.menuComments)
+            .where('commentedBy', isEqualTo: userId)
+            .get(),
+        _firestore
+            .collection(FirestoreCollections.menuRatings)
+            .where('ratedBy', isEqualTo: userId)
+            .get(),
+      ]);
 
-      // Menu comments: hard-delete (field is commentedBy)
-      final menuComments = await _firestore
-          .collection(FirestoreCollections.menuComments)
-          .where('commentedBy', isEqualTo: userId)
-          .get();
-
-      // Menu ratings: hard-delete (field is ratedBy)
-      final menuRatings = await _firestore
-          .collection(FirestoreCollections.menuRatings)
-          .where('ratedBy', isEqualTo: userId)
-          .get();
-
-      for (final snapshot in [recipeRatings, menuComments, menuRatings]) {
+      for (final snapshot in deleteResults) {
         for (final doc in snapshot.docs) {
           batch.delete(doc.reference);
           opCount++;

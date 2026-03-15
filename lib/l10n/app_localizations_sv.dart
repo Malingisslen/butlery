@@ -10582,6 +10582,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commentDeleted => '[Kommentar borttagen]';
 
   @override
+  String get deletedUser => 'Borttagen användare';
+
+  @override
   String sharedMenuTitlePattern(String name) {
     return '${name}s veckomeny';
   }

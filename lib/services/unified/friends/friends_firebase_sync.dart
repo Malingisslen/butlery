@@ -114,7 +114,7 @@ class FriendsFirebaseSyncOperations {
       final migrationDoc = await firestore
           .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('rateLimits')
+          .collection(FirestoreCollections.userRateLimits)
           .doc('friendSearchMigrated')
           .get();
 
@@ -158,7 +158,7 @@ class FriendsFirebaseSyncOperations {
       await firestore
           .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('rateLimits')
+          .collection(FirestoreCollections.userRateLimits)
           .doc('friendSearchMigrated')
           .set({'migratedAt': DateTime.now()});
     } catch (e) {
