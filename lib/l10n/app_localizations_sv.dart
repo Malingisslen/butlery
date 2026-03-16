@@ -4568,6 +4568,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Bilagor: Recept, Meny, Handlingslista, Foto';
 
   @override
+  String get chatCannotMessageNonFriend =>
+      'Du kan inte skicka meddelanden till denna person';
+
+  @override
   String get chatCouldNotSendMessage =>
       'Kunde inte skicka meddelandet. Försök igen.';
 

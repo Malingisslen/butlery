@@ -2936,6 +2936,7 @@
   "userNoUsersToShow": "No users to show",
   "chatAttachments": "Attachments",
   "chatAttachmentTypes": "Attachments: Recipe, Menu, Shopping list, Photo",
+  "chatCannotMessageNonFriend": "You cannot send messages to this person",
   "chatCouldNotSendMessage": "Could not send the message. Try again.",
   "chatLoadingMessages": "Loading messages...",
   "chatNoMessages": "No messages yet",

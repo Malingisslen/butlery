@@ -15,6 +15,8 @@ import 'package:butlery/widgets/messaging/typing_indicator.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Clean ChatView facade coordinating specialized components
 class ChatViewFacade extends StatefulWidget {
@@ -97,14 +99,26 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
                     typingUserNames: viewModel.typingUserNames,
                   ),
 
-                // Input section at bottom with reply banner integration
-                ChatInputSection(
-                  conversationId: widget.conversationId,
-                  onSendMessage: _actionHandler.handleSendMessage,
-                  onAttachment: _actionHandler.handleAttachment,
-                  replyToMessage: viewModel.replyToMessage,
-                  onCancelReply: viewModel.clearReplyToMessage,
-                ),
+                // Input section or friendship blocked banner
+                if (viewModel.isFriendshipBlocked)
+                  Container(
+                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    child: Text(
+                      context.l10n.chatCannotMessageNonFriend,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                else
+                  ChatInputSection(
+                    conversationId: widget.conversationId,
+                    onSendMessage: _actionHandler.handleSendMessage,
+                    onAttachment: _actionHandler.handleAttachment,
+                    replyToMessage: viewModel.replyToMessage,
+                    onCancelReply: viewModel.clearReplyToMessage,
+                  ),
               ],
             ),
           );
