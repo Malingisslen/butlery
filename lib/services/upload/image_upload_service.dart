@@ -24,18 +24,20 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class UploadResult {
   final bool success;
   final String? url;
+  final String? thumbnailUrl;
   final String? error;
   final ImageUploadErrorType? errorType;
 
   const UploadResult({
     required this.success,
     this.url,
+    this.thumbnailUrl,
     this.error,
     this.errorType,
   });
 
-  factory UploadResult.success(String url) =>
-      UploadResult(success: true, url: url);
+  factory UploadResult.success(String url, {String? thumbnailUrl}) =>
+      UploadResult(success: true, url: url, thumbnailUrl: thumbnailUrl);
 
   factory UploadResult.failure(String error, ImageUploadErrorType errorType) =>
       UploadResult(success: false, error: error, errorType: errorType);
@@ -191,7 +193,7 @@ class ImageUploadService extends BaseService {
 
       // Attempt upload
       try {
-        final url = await _attemptUpload(
+        final uploadResult = await _attemptUpload(
           file: file,
           userId: userId,
           onProgress: (progress) {
@@ -206,8 +208,11 @@ class ImageUploadService extends BaseService {
         );
 
         // Success!
-        _handleUploadSuccess(filePath, url);
-        return UploadResult.success(url);
+        _handleUploadSuccess(filePath, uploadResult.imageUrl);
+        return UploadResult.success(
+          uploadResult.imageUrl,
+          thumbnailUrl: uploadResult.thumbnailUrl,
+        );
       } catch (error) {
         // Classify error and handle failure
         final errorType = _retryManager.classifyError(error);
@@ -234,8 +239,8 @@ class ImageUploadService extends BaseService {
     }
   }
 
-  /// Attempt single upload to storage
-  Future<String> _attemptUpload({
+  /// Attempt single upload to storage, returning both image URL and thumbnail URL
+  Future<ImageUploadResult> _attemptUpload({
     required File file,
     required String userId,
     required void Function(double) onProgress,
@@ -250,7 +255,7 @@ class ImageUploadService extends BaseService {
       throw Exception('Storage service returned null URL');
     }
 
-    return result.imageUrl;
+    return result;
   }
 
   /// Handle successful upload

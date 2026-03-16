@@ -21,6 +21,7 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart'
     as interface_repo;
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
+import 'package:butlery/repositories/interfaces/device_repository.dart';
 
 /// Notification coordinator using modular architecture with 6 specialized managers.
 ///
@@ -44,6 +45,7 @@ class NotificationService extends BaseService {
   final auth_repo.AuthRepository _authRepository;
   final NotificationHistoryRepository _historyRepository;
   final NotificationBatchRepository _batchRepository;
+  final DeviceRepository _deviceRepository;
 
   /// Dynamic userId read from AuthRepository (survives logout/login cycles)
   String get _userId {
@@ -69,10 +71,12 @@ class NotificationService extends BaseService {
     required auth_repo.AuthRepository authRepository,
     required NotificationHistoryRepository historyRepository,
     required NotificationBatchRepository batchRepository,
+    required DeviceRepository deviceRepository,
   })  : _notificationsRepository = notificationsRepository,
         _authRepository = authRepository,
         _historyRepository = historyRepository,
-        _batchRepository = batchRepository;
+        _batchRepository = batchRepository,
+        _deviceRepository = deviceRepository;
 
   /// Initialize modules for the current authenticated user.
   /// Called on first [onInitialize] or after [resetForLogout].
@@ -101,7 +105,7 @@ class NotificationService extends BaseService {
 
     _tokenManager = FCMTokenManager(
       userId: userId,
-      repository: _notificationsRepository,
+      repository: _deviceRepository,
     );
 
     _analyticsManager = NotificationAnalyticsManager(

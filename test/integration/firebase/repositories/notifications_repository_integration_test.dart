@@ -345,38 +345,5 @@ void main() {
         expect(savedPreferences.allowBatching, isFalse);
       });
     });
-
-    group('FCM Token Management', () {
-      test('should update and remove FCM tokens', () async {
-        // Arrange
-        const userId = 'test_user';
-        const token1 = 'fcm_token_123';
-        const token2 = 'fcm_token_456';
-
-        // Act - Update tokens
-        await repository.updateFCMToken(userId, token1);
-        await repository.updateFCMToken(userId, token2);
-
-        // Assert - Check tokens were saved
-        final userDoc =
-            await fakeFirestore.collection('users').doc(userId).get();
-
-        final fcmTokens = List<String>.from(userDoc.data()?['fcmTokens'] ?? []);
-        expect(fcmTokens, contains(token1));
-        expect(fcmTokens, contains(token2));
-
-        // Act - Remove one token
-        await repository.removeFCMToken(userId, token1);
-
-        // Assert - Check token was removed
-        final updatedDoc =
-            await fakeFirestore.collection('users').doc(userId).get();
-
-        final updatedTokens =
-            List<String>.from(updatedDoc.data()?['fcmTokens'] ?? []);
-        expect(updatedTokens, isNot(contains(token1)));
-        expect(updatedTokens, contains(token2));
-      });
-    });
   });
 }

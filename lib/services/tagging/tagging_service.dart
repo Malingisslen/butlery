@@ -494,8 +494,6 @@ class TaggingService extends BaseService {
             // M9: Log individual recipe failures with browser-visible output
             final msg = 'Failed to retag recipe ${recipe.id}: $e';
             AppLogger.warning(msg, 'TaggingService');
-            // ignore: avoid_print
-            print('[TaggingService] $msg');
             failedRecipes.add(recipe.id);
             return false;
           }

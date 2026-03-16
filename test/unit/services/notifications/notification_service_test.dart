@@ -12,6 +12,7 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
+import 'package:butlery/repositories/interfaces/device_repository.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -31,6 +32,8 @@ class MockNotificationHistoryRepo extends Mock
 class MockNotificationBatchRepo extends Mock
     implements NotificationBatchRepository {}
 
+class MockDeviceRepo extends Mock implements DeviceRepository {}
+
 // ============= TESTS =============
 
 void main() {
@@ -40,6 +43,7 @@ void main() {
     late MockAuthRepo mockAuthRepo;
     late MockNotificationHistoryRepo mockHistoryRepo;
     late MockNotificationBatchRepo mockBatchRepo;
+    late MockDeviceRepo mockDeviceRepo;
     late FakeFirebaseFirestore fakeFirestore;
 
     setUpAll(() async {
@@ -62,6 +66,7 @@ void main() {
       mockAuthRepo = MockAuthRepo();
       mockHistoryRepo = MockNotificationHistoryRepo();
       mockBatchRepo = MockNotificationBatchRepo();
+      mockDeviceRepo = MockDeviceRepo();
 
       // Register mocks with TestServiceLocator
       TestServiceLocator.registerMock<NotificationsRepository>(
@@ -94,6 +99,7 @@ void main() {
         authRepository: mockAuthRepo,
         historyRepository: mockHistoryRepo,
         batchRepository: mockBatchRepo,
+        deviceRepository: mockDeviceRepo,
       );
     });
 

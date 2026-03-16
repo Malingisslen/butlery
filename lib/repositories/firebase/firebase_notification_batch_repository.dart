@@ -4,37 +4,54 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/timestamp_provider.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 
 /// Firebase implementation for notification batch aggregation.
 /// Uses `notification_batches` collection.
 class FirebaseNotificationBatchRepository
+    extends BaseFirebaseRepository<NotificationBatch>
     implements NotificationBatchRepository {
-  final FirebaseFirestore _firestore;
-  final AuthRepository _authRepository;
-  final TimestampProvider _timestampProvider;
-
   FirebaseNotificationBatchRepository({
-    FirebaseFirestore? firestore,
-    required AuthRepository authRepository,
-    TimestampProvider? timestampProvider,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository,
-        _timestampProvider =
-            timestampProvider ?? const ServerTimestampProvider();
+    super.firestore,
+    required super.authRepository,
+    super.auditRepository,
+    super.timestampProvider,
+  });
 
-  String get _userId {
-    final id = _authRepository.currentUserId;
-    if (id == null) {
-      throw StateError('NotificationBatchRepository: No authenticated user');
-    }
-    return id;
-  }
+  @override
+  String get collectionName => FirestoreCollections.notificationBatches;
 
-  CollectionReference<Map<String, dynamic>> get _collection =>
-      _firestore.collection(FirestoreCollections.notificationBatches);
+  @override
+  NotificationBatch fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
+      NotificationBatch.fromMap(doc.id, doc.data()!);
+
+  @override
+  Map<String, dynamic> toFirestore(NotificationBatch entity) => entity.toMap();
+
+  @override
+  String getId(NotificationBatch entity) => entity.batchKey;
+
+  @override
+  Future<bool> validateCreatePermission(
+          String userId, NotificationBatch entity) async =>
+      entity.userId == userId;
+
+  @override
+  Future<bool> validateReadPermission(
+          String userId, String resourceId, NotificationBatch? entity) async =>
+      entity?.userId == userId;
+
+  @override
+  Future<bool> validateUpdatePermission(
+          String userId, String resourceId, NotificationBatch entity) async =>
+      entity.userId == userId;
+
+  @override
+  Future<bool> validateDeletePermission(
+          String userId, String resourceId) async =>
+      true; // Batch cleanup is allowed for authenticated users
+
+  String get _userId => requireCurrentUserId();
 
   @override
   Future<void> addToBatch({
@@ -43,34 +60,32 @@ class FirebaseNotificationBatchRepository
     required Duration batchWindow,
   }) async {
     try {
-      final batchDoc = _collection.doc(batchKey);
+      final batchDoc = collection.doc(batchKey);
+      final appendData = {
+        'notifications': FieldValue.arrayUnion([notification.toMap()]),
+        'count': FieldValue.increment(1),
+        'lastUpdated': timestampProvider.serverTimestamp(),
+      };
 
-      await _firestore.runTransaction((transaction) async {
-        final doc = await transaction.get(batchDoc);
-
-        if (doc.exists && doc.data() != null) {
-          final data = doc.data();
-          final notifications = List<Map<String, dynamic>>.from(
-              (data?['notifications'] as List?).orEmpty());
-          notifications.add(notification.toMap());
-
-          transaction.update(batchDoc, {
-            'notifications': notifications,
-            'count': notifications.length,
-            'lastUpdated': _timestampProvider.serverTimestamp(),
-          });
-        } else {
-          transaction.set(batchDoc, {
+      try {
+        // Append to existing batch (preserves createdAt/scheduledFor)
+        await batchDoc.update(appendData);
+      } on FirebaseException catch (e) {
+        if (e.code == 'not-found') {
+          // First notification — use literal values (sentinels invalid in bare set)
+          await batchDoc.set({
             'userId': _userId,
             'batchKey': batchKey,
             'notifications': [notification.toMap()],
             'count': 1,
-            'createdAt': _timestampProvider.serverTimestamp(),
-            'lastUpdated': _timestampProvider.serverTimestamp(),
+            'lastUpdated': timestampProvider.serverTimestamp(),
+            'createdAt': timestampProvider.serverTimestamp(),
             'scheduledFor': Timestamp.fromDate(DateTime.now().add(batchWindow)),
           });
+        } else {
+          rethrow;
         }
-      });
+      }
     } catch (e) {
       AppLogger.error('Failed to add notification to batch', e);
       rethrow;
@@ -79,32 +94,25 @@ class FirebaseNotificationBatchRepository
 
   @override
   Future<List<NotificationBatch>> getPendingBatches() async {
-    try {
-      final now = Timestamp.now();
-      final query = await _collection
-          .where('userId', isEqualTo: _userId)
-          .where('scheduledFor', isLessThanOrEqualTo: now)
-          .get();
+    final now = Timestamp.now();
+    final query = await collection
+        .where('userId', isEqualTo: _userId)
+        .where('scheduledFor', isLessThanOrEqualTo: now)
+        .get();
 
-      return query.docs
-          .map((doc) => NotificationBatch.fromMap(doc.id, doc.data()))
-          .toList();
-    } catch (e) {
-      AppLogger.error('Failed to get pending batches', e);
-      return [];
-    }
+    return query.docs.map((doc) => fromFirestore(doc)).toList();
   }
 
   @override
   Future<NotificationBatch?> getBatchByKey(String batchKey) async {
     try {
-      final doc = await _collection.doc(batchKey).get();
+      final doc = await collection.doc(batchKey).get();
 
       if (!doc.exists || doc.data() == null) {
         return null;
       }
 
-      return NotificationBatch.fromMap(doc.id, doc.data()!);
+      return fromFirestore(doc);
     } catch (e) {
       AppLogger.error('Failed to get batch by key: $batchKey', e);
       return null;
@@ -114,9 +122,10 @@ class FirebaseNotificationBatchRepository
   @override
   Future<void> removeBatch(String batchKey) async {
     try {
-      await _collection.doc(batchKey).delete();
+      await collection.doc(batchKey).delete();
     } catch (e) {
       AppLogger.error('Failed to remove batch', e);
+      rethrow;
     }
   }
 }
