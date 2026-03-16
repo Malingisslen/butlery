@@ -19,8 +19,6 @@ import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
 
 // Core recipe views (eager - needed on home screen)
-import 'package:butlery/views/mina_recept_view.dart';
-import 'package:butlery/views/lagg_till_recept_view.dart';
 import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 import 'package:butlery/views/fran_sociala_medier_view.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
@@ -28,8 +26,8 @@ import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/veckomeny_view.dart' as vecko;
 import 'package:butlery/views/receive_share_view.dart';
 
-// Unified shopping system (eager - core feature)
-import 'package:butlery/views/unified_shopping_view.dart';
+// Shell layout (IndexedStack for tab state preservation)
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Settings views
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
@@ -143,8 +141,8 @@ class AppRouter {
       // Eager routes (core app functionality)
       switch (routeName) {
         case Routes.home:
-          return _buildRoute(const MinaReceptView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 0),
+              settings, Routes.getAnimationType(routeName));
 
         case Routes.auth:
           return _buildRoute(
@@ -155,8 +153,8 @@ class AppRouter {
               Routes.getAnimationType(routeName));
 
         case Routes.laggTill:
-          return _buildRoute(const LaggTillReceptView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 3),
+              settings, Routes.getAnimationType(routeName));
 
         case Routes.skrivSjalv:
           // Handle arguments for template or initial recipe
@@ -229,12 +227,12 @@ class AppRouter {
 
         case Routes.veckomeny:
           final menu = settings.arguments as SharedMenu?;
-          return _buildRoute(
-              menu != null
-                  ? vecko.VeckomenyView(sharedMenu: menu)
-                  : const vecko.VeckomenyView(),
-              settings,
-              Routes.getAnimationType(routeName));
+          if (menu != null) {
+            return _buildRoute(vecko.VeckomenyView(sharedMenu: menu), settings,
+                Routes.getAnimationType(routeName));
+          }
+          return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 1),
+              settings, Routes.getAnimationType(routeName));
 
         case Routes.realtimeMenu:
           // Navigate to VeckomenyView for collaborative menu
@@ -245,8 +243,8 @@ class AppRouter {
               Routes.getAnimationType(routeName));
 
         case Routes.inkopslista:
-          return _buildRoute(const UnifiedShoppingView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 2),
+              settings, Routes.getAnimationType(routeName));
 
         case Routes.cookingMode:
           final recipe = settings.arguments as Recipe?;
@@ -290,7 +288,7 @@ class AppRouter {
           const deepLinkPaths = ['/recipe', '/invite', '/menu', '/shopping'];
           if (deepLinkPaths.any((p) => routeName.startsWith(p))) {
             return _buildRoute(
-                const MinaReceptView(), settings, RouteAnimationType.fade);
+                LayoutScaffolds.mainMenu(), settings, RouteAnimationType.fade);
           }
           return _errorRoute('Unknown route: ${settings.name}');
       }

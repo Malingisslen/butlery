@@ -33,6 +33,7 @@
 /// ```
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 
@@ -56,11 +57,28 @@ import 'package:html/dom.dart';
 /// - `totalTime`: Total cooking/preparation time
 /// - `image`: Recipe image URL
 /// - `@type`: Always "Recipe" for identification
+/// Result of recipe extraction, distinguishing "no structured data found"
+/// from "structured data found but no recipe in it".
+class RecipeExtractionResult {
+  final Map<String, dynamic>? data;
+
+  /// Whether any JSON-LD or Microdata blocks were found at all.
+  final bool hadStructuredData;
+
+  const RecipeExtractionResult({this.data, this.hadStructuredData = false});
+}
+
 Map<String, dynamic>? extractRecipeFromHtml(String html) {
+  return extractRecipeFromHtmlDetailed(html).data;
+}
+
+/// Detailed extraction that reports whether structured data blocks existed.
+RecipeExtractionResult extractRecipeFromHtmlDetailed(String html) {
   // Primary extraction: Attempt JSON-LD structured data first
-  final jsonLd = _extractJsonLd(html);
-  if (jsonLd != null) {
-    return jsonLd;
+  final jsonLdResult = _extractJsonLd(html);
+  if (jsonLdResult.data != null) {
+    return RecipeExtractionResult(
+        data: jsonLdResult.data, hadStructuredData: true);
   }
 
   // Fallback extraction: Parse Microdata format for broader compatibility
@@ -71,11 +89,20 @@ Map<String, dynamic>? extractRecipeFromHtml(String html) {
   );
   if (recipeElements.isNotEmpty) {
     final recipeElem = recipeElements.first;
-    return _parseRecipeMicrodata(recipeElem);
+    return RecipeExtractionResult(
+        data: _parseRecipeMicrodata(recipeElem), hadStructuredData: true);
   }
 
-  // No recipe data found in supported formats
-  return null;
+  // No recipe data found — report whether any JSON-LD existed at all
+  return RecipeExtractionResult(
+      hadStructuredData: jsonLdResult.hadJsonLdBlocks);
+}
+
+/// Internal result from JSON-LD extraction.
+class _JsonLdResult {
+  final Map<String, dynamic>? data;
+  final bool hadJsonLdBlocks;
+  const _JsonLdResult({this.data, this.hadJsonLdBlocks = false});
 }
 
 /// Checks whether a JSON-LD @type value represents a Recipe.
@@ -92,14 +119,16 @@ bool _isRecipeType(dynamic type) {
 }
 
 /// Private helper: extracts JSON-LD of type "Recipe" if present.
-Map<String, dynamic>? _extractJsonLd(String html) {
-  // Hittar just <script type="application/ld+json">…</script> (dubbel‐citat).
+_JsonLdResult _extractJsonLd(String html) {
   final jsonLdRegex = RegExp(
     r"""<script[^>]*type=["']?application/ld\+json["']?[^>]*>([\s\S]*?)</script>""",
     caseSensitive: false,
   );
 
-  for (final match in jsonLdRegex.allMatches(html)) {
+  final matches = jsonLdRegex.allMatches(html);
+  final hadBlocks = matches.isNotEmpty;
+
+  for (final match in matches) {
     final content = match.group(1)?.trim();
     if (content == null) continue;
     try {
@@ -108,29 +137,32 @@ Map<String, dynamic>? _extractJsonLd(String html) {
       if (decoded is List) {
         for (final item in decoded) {
           if (item is Map<String, dynamic> && _isRecipeType(item['@type'])) {
-            return Map<String, dynamic>.from(item);
+            return _JsonLdResult(
+                data: Map<String, dynamic>.from(item), hadJsonLdBlocks: true);
           }
         }
       }
       // If JSON-LD is a single object
       else if (decoded is Map<String, dynamic> &&
           _isRecipeType(decoded['@type'])) {
-        return Map<String, dynamic>.from(decoded);
+        return _JsonLdResult(
+            data: Map<String, dynamic>.from(decoded), hadJsonLdBlocks: true);
       }
       // Handle @graph pattern (common in WordPress/Yoast SEO)
       else if (decoded is Map<String, dynamic> && decoded['@graph'] is List) {
         for (final item in (decoded['@graph'] as List)) {
           if (item is Map<String, dynamic> && _isRecipeType(item['@type'])) {
-            return Map<String, dynamic>.from(item);
+            return _JsonLdResult(
+                data: Map<String, dynamic>.from(item), hadJsonLdBlocks: true);
           }
         }
       }
-    } catch (_) {
-      // Om json.decode() misslyckas, ignorera och fortsätt
+    } catch (e) {
+      debugPrint('JSON-LD parse error: $e');
       continue;
     }
   }
-  return null;
+  return _JsonLdResult(hadJsonLdBlocks: hadBlocks);
 }
 
 /// Private helper: parse Microdata (schema.org/Recipe) from a DOM element.

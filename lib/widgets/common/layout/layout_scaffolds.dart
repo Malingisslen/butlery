@@ -1,8 +1,13 @@
 // lib/widgets/common/layout/layout_scaffolds.dart
 //
 // UI Redesign: Updated to use ButleryHeader and new navigation
+// BUT-188: IndexedStack for tab state preservation
 
 import 'package:flutter/material.dart';
+import 'package:butlery/views/mina_recept_view.dart';
+import 'package:butlery/views/veckomeny_view.dart';
+import 'package:butlery/views/unified_shopping_view.dart';
+import 'package:butlery/views/lagg_till_recept_view.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/butlery_header.dart';
 
@@ -10,30 +15,20 @@ import 'package:butlery/widgets/common/butlery_header.dart';
 /// This module provides the core layout structures including
 /// main menu with bottom navigation and simple layout for detail views.
 class LayoutScaffolds {
-  /// Main layout with bottom navigation and app bar
-  /// Exactly like original MainLayoutMenu with ALL functionality preserved
+  /// Main layout with bottom navigation and IndexedStack for tab persistence.
   ///
-  /// Set [appBar] to provide a custom header (e.g., MainViewHeader).
-  /// If [appBar] is null, uses default title-based header.
+  /// [initialIndex] sets the tab shown on first build (e.g. from deep link).
   static Widget mainMenu({
-    required Widget body,
-    int? currentIndex,
-    String? title,
-    List<Widget>? actions,
-    Widget? floatingActionButton,
+    int? initialIndex,
     PreferredSizeWidget? appBar,
   }) {
     return _MainMenuLayout(
-      body: body,
-      currentIndex: currentIndex,
-      title: title,
-      actions: actions,
-      floatingActionButton: floatingActionButton,
+      initialIndex: initialIndex ?? 0,
       appBar: appBar,
     );
   }
 
-  /// Simple layout with optional bottom navigation
+  /// Simple layout for views without bottom navigation.
   /// For detail views and dialogs
   static Widget simpleLayout({
     required Widget body,
@@ -56,36 +51,64 @@ class LayoutScaffolds {
   }
 }
 
-/// Main menu layout with adaptive navigation (BottomNav on mobile, NavigationRail on tablet/desktop)
-class _MainMenuLayout extends StatelessWidget {
-  final Widget body;
-  final int? currentIndex;
-  final String? title;
-  final List<Widget>? actions;
-  final Widget? floatingActionButton;
+/// Main menu layout with IndexedStack preserving tab state across switches.
+class _MainMenuLayout extends StatefulWidget {
+  final int initialIndex;
   final PreferredSizeWidget? appBar;
 
   const _MainMenuLayout({
-    required this.body,
-    this.currentIndex,
-    this.title,
-    this.actions,
-    this.floatingActionButton,
+    required this.initialIndex,
     this.appBar,
   });
 
   @override
+  State<_MainMenuLayout> createState() => _MainMenuLayoutState();
+}
+
+class _MainMenuLayoutState extends State<_MainMenuLayout> {
+  late int _selectedIndex;
+
+  /// Lazily built tab views — only created when first selected.
+  final List<Widget?> _tabs = List.filled(4, null);
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
+
+  Widget _buildTab(int index) {
+    _tabs[index] ??= switch (index) {
+      0 => const MinaReceptView(),
+      1 => const VeckomenyView(),
+      2 => const UnifiedShoppingView(),
+      3 => const LaggTillReceptView(),
+      _ => const SizedBox.shrink(),
+    };
+    return _tabs[index]!;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Use AdaptiveNavigationScaffold with Butlery's navigation items
-    return AdaptiveNavigationScaffold(
-      currentIndex: currentIndex ?? 0,
-      items: ButleryAdaptiveNavigation.getNavigationItems(context),
-      body: body,
-      title:
-          appBar == null ? title : null, // Only use title if no custom appBar
-      actions: appBar == null ? actions : null,
-      floatingActionButton: floatingActionButton,
-      appBar: appBar,
+    return PopScope(
+      canPop: _selectedIndex == 0,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (!didPop && _selectedIndex != 0) {
+          setState(() => _selectedIndex = 0);
+        }
+      },
+      child: AdaptiveNavigationScaffold(
+        currentIndex: _selectedIndex,
+        items: ButleryAdaptiveNavigation.getNavigationItems(context),
+        appBar: widget.appBar,
+        onNavigationChanged: (index) {
+          setState(() => _selectedIndex = index);
+        },
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: List.generate(4, _buildTab),
+        ),
+      ),
     );
   }
 }

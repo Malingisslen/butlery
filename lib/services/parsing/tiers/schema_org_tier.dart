@@ -52,15 +52,24 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   Future<TierResult> parse(ParsingContext context) async {
     final stopwatch = Stopwatch()..start();
 
-    // Use existing RecipeScraper
-    final data = extractRecipeFromHtml(context.sanitizedContent);
+    // Use existing RecipeScraper with detailed result
+    final extraction = extractRecipeFromHtmlDetailed(context.sanitizedContent);
 
-    if (data == null) {
+    if (extraction.data == null) {
+      if (extraction.hadStructuredData) {
+        return TierResult.failure(
+          tierName: tierName,
+          reason: TierFailureReason.parseError,
+          duration: stopwatch.elapsed,
+        );
+      }
       return TierResult.noData(
         tierName: tierName,
         duration: stopwatch.elapsed,
       );
     }
+
+    final data = extraction.data!;
 
     // Cache JSON-LD data in context for other tiers
     context.jsonLdData = data;
@@ -69,8 +78,9 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     final recipe = await _convertToRecipe(data, context);
 
     if (recipe == null) {
-      return TierResult.noData(
+      return TierResult.failure(
         tierName: tierName,
+        reason: TierFailureReason.parseError,
         duration: stopwatch.elapsed,
       );
     }
