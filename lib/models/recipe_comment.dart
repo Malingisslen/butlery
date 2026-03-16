@@ -217,10 +217,8 @@ class RecipeComment {
       authorDisplayName: json['authorDisplayName'] as String? ?? '?',
       authorAvatarUrl: json['authorAvatarUrl'] as String?,
       text: (json['text'] as String?).orEmpty(),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      editedAt: json['editedAt'] != null
-          ? DateTime.parse(json['editedAt'] as String)
-          : null,
+      createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
+      editedAt: SerializationUtils.safeDateTime(json, 'editedAt'),
       likesCount: json['likesCount'] as int? ?? 0,
       parentCommentId: json['parentCommentId'] as String?,
       replyCount: json['replyCount'] as int? ?? 0,

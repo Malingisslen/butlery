@@ -7,6 +7,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:uuid/uuid.dart';
 
 /// Comprehensive realtime menu factory with centralized construction logic and specialized parsing for collaborative meal planning.
@@ -132,8 +133,9 @@ class RealtimeMenuFactory {
       'ownerId': json['ownerId'] as String,
       'ownerDisplayName': json['ownerDisplayName'] as String,
       'participants': participants,
-      'createdAt': DateTime.parse(json['createdAt'] as String),
-      'lastEditedAt': DateTime.parse(json['lastEditedAt'] as String),
+      'createdAt': SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
+      'lastEditedAt':
+          SerializationUtils.safeRequiredDateTime(json, 'lastEditedAt'),
       'lastEditedBy': json['lastEditedBy'] as String,
       'lastEditedByDisplayName': json['lastEditedByDisplayName'] as String,
       'editCount': json['editCount'] as int? ?? 0,

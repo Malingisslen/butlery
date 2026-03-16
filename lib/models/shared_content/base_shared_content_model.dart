@@ -1,4 +1,5 @@
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
@@ -81,7 +82,8 @@ abstract class BaseSharedContentModel<TContent> {
     return {
       'sharedByUserId': (data['sharedByUserId'] as String?).orEmpty(),
       'sharedByDisplayName': (data['sharedByDisplayName'] as String?).orEmpty(),
-      'sharedAt': parseTimestamp(data['sharedAt']) ?? DateTime.now(),
+      'sharedAt':
+          SerializationUtils.parseRequiredDateTimeValue(data['sharedAt']),
       'shareMessage': data['shareMessage'] as String?,
       'viewCount': data['viewCount'] as int? ?? 0,
       'engagementCount': data['engagementCount'] as int? ?? 0,
@@ -96,49 +98,12 @@ abstract class BaseSharedContentModel<TContent> {
       'id': json['id'] as String,
       'sharedByUserId': (json['sharedByUserId'] as String?).orEmpty(),
       'sharedByDisplayName': (json['sharedByDisplayName'] as String?).orEmpty(),
-      'sharedAt': DateTime.parse(json['sharedAt'] as String),
+      'sharedAt': SerializationUtils.safeRequiredDateTime(json, 'sharedAt'),
       'shareMessage': json['shareMessage'] as String?,
       'viewCount': json['viewCount'] as int? ?? 0,
       'engagementCount': json['engagementCount'] as int? ?? 0,
       'dismissalCount': json['dismissalCount'] as int? ?? 0,
     };
-  }
-
-  /// Robust timestamp parsing supporting multiple formats.
-  static DateTime? parseTimestamp(dynamic timestamp) {
-    if (timestamp == null) return null;
-
-    try {
-      if (timestamp is DateTime) {
-        return timestamp;
-      } else if (timestamp is Map) {
-        // Handle raw timestamp data from Firestore
-        final seconds = timestamp['seconds'] as int?;
-        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
-        if (seconds != null) {
-          return DateTime.fromMillisecondsSinceEpoch(
-            seconds * 1000 + nanoseconds ~/ 1000000,
-          );
-        }
-      } else if (timestamp is int) {
-        // Handle milliseconds since epoch
-        return DateTime.fromMillisecondsSinceEpoch(timestamp);
-      } else if (timestamp is String) {
-        // Handle ISO string format
-        return DateTime.parse(timestamp);
-      } else if (timestamp.runtimeType.toString() == 'Timestamp') {
-        // Handle Firestore Timestamp objects
-        try {
-          return (timestamp as dynamic).toDate() as DateTime;
-        } catch (e) {
-          return DateTime.now();
-        }
-      }
-
-      return DateTime.now();
-    } catch (e) {
-      return DateTime.now();
-    }
   }
 
   @override

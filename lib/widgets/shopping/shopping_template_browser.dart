@@ -27,6 +27,7 @@ class ShoppingTemplateBrowser extends StatefulWidget {
 class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
   List<Map<String, dynamic>> _templates = [];
   bool _isLoading = false;
+  bool _hasError = false;
   late final UnifiedShoppingService _shoppingService;
 
   @override
@@ -48,7 +49,12 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
+      }
     }
   }
 
@@ -89,6 +95,17 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
           padding: EdgeInsets.all(AppDimensions.paddingXl),
           child: CircularProgressIndicator(),
         ),
+      );
+    }
+
+    if (_hasError) {
+      return StateWidget.error(
+        message: context.l10n.errorGeneric,
+        actionLabel: context.l10n.commonRetry,
+        onAction: () {
+          setState(() => _hasError = false);
+          _loadTemplates();
+        },
       );
     }
 

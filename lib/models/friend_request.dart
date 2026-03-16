@@ -32,8 +32,8 @@ class FriendRequest with JsonSerializableMixin {
     this.message,
     DateTime? expiresAt,
   })  : sentAt = sentAt ?? DateTime.now(),
-        expiresAt = expiresAt ??
-            (sentAt ?? DateTime.now()).add(_expiryDuration);
+        expiresAt =
+            expiresAt ?? (sentAt ?? DateTime.now()).add(_expiryDuration);
 
   factory FriendRequest.create({
     required String fromUserId,
@@ -111,8 +111,8 @@ class FriendRequest with JsonSerializableMixin {
   }
 
   factory FriendRequest.fromMap(String id, Map<String, dynamic> data) {
-    final sentAt = utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
-        DateTime.now();
+    final sentAt =
+        utils.SerializationUtils.safeDateTime(data, 'sentAt') ?? DateTime.now();
     return FriendRequest(
       id: id,
       fromUserId: utils.SerializationUtils.safeString(data, 'fromUserId'),
@@ -148,7 +148,7 @@ class FriendRequest with JsonSerializableMixin {
 
   factory FriendRequest.fromJson(Map<String, dynamic> json) {
     final sentAt =
-        FriendRequest._deserializeDateTime(json['sentAt']) ?? DateTime.now();
+        utils.SerializationUtils.parseRequiredDateTimeValue(json['sentAt']);
     return FriendRequest(
       id: json['id'] as String,
       fromUserId: json['fromUserId'] as String,
@@ -158,27 +158,13 @@ class FriendRequest with JsonSerializableMixin {
         orElse: () => FriendRequestStatus.pending,
       ),
       sentAt: sentAt,
-      expiresAt: FriendRequest._deserializeDateTime(json['expiresAt']) ??
-          sentAt.add(_expiryDuration),
-      respondedAt: FriendRequest._deserializeDateTime(json['respondedAt']),
+      expiresAt:
+          utils.SerializationUtils.parseDateTimeValue(json['expiresAt']) ??
+              sentAt.add(_expiryDuration),
+      respondedAt:
+          utils.SerializationUtils.parseDateTimeValue(json['respondedAt']),
       message: json['message'] as String?,
     );
-  }
-
-  /// Helper method for deserializing DateTime from JSON
-  static DateTime? _deserializeDateTime(dynamic value) {
-    if (value is String) return DateTime.parse(value);
-    if (value is DateTime) return value;
-    if (value is Map) {
-      // Handle raw timestamp data from Firestore
-      final seconds = value['seconds'] as int?;
-      final nanoseconds = value['nanoseconds'] as int? ?? 0;
-      if (seconds != null) {
-        return DateTime.fromMillisecondsSinceEpoch(
-            seconds * 1000 + nanoseconds ~/ 1000000);
-      }
-    }
-    return null;
   }
 
   @override

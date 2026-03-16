@@ -227,35 +227,63 @@ class ConversationsViewModel extends ChangeNotifier
 
   Future<void> togglePin(String conversationId) async {
     if (_isDisposed) return;
-    final conversation =
-        _allConversations.where((c) => c.id == conversationId).firstOrNull;
-    if (conversation == null) return;
+    final index =
+        _allConversations.indexWhere((c) => c.id == conversationId);
+    if (index == -1) return;
+    final conversation = _allConversations[index];
+    final newPinned = !conversation.isPinned;
+
+    // Optimistic update so the UI responds immediately
+    _allConversations[index] = conversation.copyWith(
+      isPinned: newPinned,
+      pinnedAt: newPinned ? DateTime.now() : null,
+    );
+    _applySearch();
+    _safeNotifyListeners();
 
     try {
-      if (conversation.isPinned) {
-        await _messagingService.unpinConversation(conversationId);
-      } else {
+      if (newPinned) {
         await _messagingService.pinConversation(conversationId);
+      } else {
+        await _messagingService.unpinConversation(conversationId);
       }
     } catch (e) {
+      // Roll back on failure
       AppLogger.error('Failed to toggle pin', e);
+      _allConversations[index] = conversation;
+      _applySearch();
+      _safeNotifyListeners();
     }
   }
 
   Future<void> toggleArchive(String conversationId) async {
     if (_isDisposed) return;
-    final conversation =
-        _allConversations.where((c) => c.id == conversationId).firstOrNull;
-    if (conversation == null) return;
+    final index =
+        _allConversations.indexWhere((c) => c.id == conversationId);
+    if (index == -1) return;
+    final conversation = _allConversations[index];
+    final newArchived = !conversation.isArchived;
+
+    // Optimistic update so the UI responds immediately
+    _allConversations[index] = conversation.copyWith(
+      isArchived: newArchived,
+      archivedAt: newArchived ? DateTime.now() : null,
+    );
+    _applySearch();
+    _safeNotifyListeners();
 
     try {
-      if (conversation.isArchived) {
-        await _messagingService.unarchiveConversation(conversationId);
-      } else {
+      if (newArchived) {
         await _messagingService.archiveConversation(conversationId);
+      } else {
+        await _messagingService.unarchiveConversation(conversationId);
       }
     } catch (e) {
+      // Roll back on failure
       AppLogger.error('Failed to toggle archive', e);
+      _allConversations[index] = conversation;
+      _applySearch();
+      _safeNotifyListeners();
     }
   }
 

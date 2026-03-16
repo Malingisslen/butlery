@@ -107,15 +107,17 @@ class ShoppingListGenerator {
           if (ingredients != null) {
             allIngredients.addAll(ingredients.map((e) => e.toString()));
           }
-        } else if (recipe.toString().contains('ingredients')) {
-          // Fallback for Recipe object format with dynamic property access
+        } else if (recipe is Recipe) {
+          allIngredients.addAll(recipe.ingredients);
+        } else {
+          // Fallback for other object formats with dynamic property access
           try {
             final recipeObj = recipe as dynamic;
             final ingredients = recipeObj.ingredients as List<String>?;
             if (ingredients != null) {
               allIngredients.addAll(ingredients);
             }
-          } catch (e) {
+          } catch (_) {
             // Gracefully handle parsing errors and continue processing
           }
         }
@@ -341,7 +343,7 @@ class ShoppingListGenerator {
     // Mejeri (Dairy)
     if (name.contains('mjölk') ||
         name.contains('grädde') ||
-        name.contains('fil') ||
+        RegExp(r'\bfil\b').hasMatch(name) ||
         name.contains('yoghurt') ||
         name.contains('ost') ||
         name.contains('smör') ||

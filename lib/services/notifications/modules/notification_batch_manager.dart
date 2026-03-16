@@ -205,7 +205,8 @@ class NotificationBatchManager {
 
     // Check for rapid succession (all within 1 minute)
     final timestamps = notifications
-        .map((n) => DateTime.parse(n.data['timestamp'] as String))
+        .map((n) => DateTime.tryParse(n.data['timestamp'] as String? ?? ''))
+        .whereType<DateTime>()
         .toList()
       ..sort();
 

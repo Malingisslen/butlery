@@ -97,7 +97,7 @@ class FriendCategoryMember {
       friendId: json['friendId'] as String,
       categoryId: json['categoryId'] as String,
       ownerId: json['ownerId'] as String,
-      addedAt: DateTime.parse(json['addedAt'] as String),
+      addedAt: SerializationUtils.safeRequiredDateTime(json, 'addedAt'),
       displayName: json['displayName'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
     );

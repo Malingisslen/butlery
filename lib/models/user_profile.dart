@@ -266,14 +266,16 @@ class UserProfile with JsonSerializableMixin {
       allowEmailSearch: (json['allowEmailSearch'] as bool?).orFalse(),
       publicRecipeCount: (json['publicRecipeCount'] as int?).orZero(),
       friendsCount: (json['friendsCount'] as int?).orZero(),
-      joinedAt: UserProfile._deserializeDateTime(json['joinedAt']).orNow(),
+      joinedAt:
+          utils.SerializationUtils.parseDateTimeValue(json['joinedAt']).orNow(),
       lastActiveAt:
-          UserProfile._deserializeDateTime(json['lastActiveAt']).orNow(),
+          utils.SerializationUtils.parseDateTimeValue(json['lastActiveAt'])
+              .orNow(),
       isOnline: (json['isOnline'] as bool?).orFalse(),
       // Notification fields
       fcmToken: json['fcmToken'] as String?,
-      fcmTokenUpdatedAt:
-          UserProfile._deserializeDateTime(json['fcmTokenUpdatedAt']),
+      fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(
+          json['fcmTokenUpdatedAt']),
       notificationsEnabled: (json['notificationsEnabled'] as bool?).orTrue(),
       // Locale preference
       preferredLocale: json['preferredLocale'] as String?,
@@ -285,12 +287,6 @@ class UserProfile with JsonSerializableMixin {
       hasCompletedOnboarding:
           (json['hasCompletedOnboarding'] as bool?).orFalse(),
     );
-  }
-
-  static DateTime? _deserializeDateTime(dynamic value) {
-    if (value is String) return DateTime.parse(value);
-    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
-    return null;
   }
 
   @override

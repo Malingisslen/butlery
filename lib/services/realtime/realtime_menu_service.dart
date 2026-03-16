@@ -397,9 +397,11 @@ class RealtimeMenuService extends ChangeNotifier
     _clearError();
     try {
       AppLogger.info('🔄 $operationName för meny: $resourceId');
-      // Get current menu from cache or Firebase
-      final currentMenu = _currentMenu ??
-          _syncService.getCachedResource<RealtimeMenu>(resourceId);
+      // Fetch latest version from Firestore to avoid stale read-modify-write
+      final currentMenu =
+          await _syncService.fetchLatestResource<RealtimeMenu>(resourceId) ??
+              _currentMenu ??
+              _syncService.getCachedResource<RealtimeMenu>(resourceId);
       if (currentMenu == null) {
         throw MenuOperationError(
           operation: operation,

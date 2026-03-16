@@ -1,5 +1,6 @@
 // lib/viewmodels/menu/menu_storage.dart
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -112,8 +113,11 @@ class MenuStorage {
 
       final data = doc.data()!;
 
-      // Verify ownership
-      if (data['sharedByUserId'] != userId) {
+      // Verify ownership or shared access
+      final sharedToUserIds =
+          List<String>.from(data['sharedToUserIds'] ?? []);
+      if (data['sharedByUserId'] != userId &&
+          !sharedToUserIds.contains(userId)) {
         AppLogger.warning('Menu $menuId does not belong to current user');
         return null;
       }
@@ -260,7 +264,7 @@ class MenuStorage {
           .doc(menuId)
           .update({
         'isModified': true,
-        'modifiedAt': DateTime.now().toIso8601String(),
+        'modifiedAt': FieldValue.serverTimestamp(),
       });
 
       AppLogger.success('✅ Menu marked as modified: $menuId');

@@ -34,6 +34,7 @@ class MenuTemplateBrowser extends StatefulWidget {
 class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
   List<Map<String, dynamic>> _templates = [];
   bool _isLoading = false;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -56,7 +57,10 @@ class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
       }
     }
   }
@@ -65,6 +69,20 @@ class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_hasError) {
+      return Padding(
+        padding: const EdgeInsets.all(AppDimensions.spacingXl),
+        child: StateWidget.error(
+          message: context.l10n.errorGeneric,
+          actionLabel: context.l10n.commonRetry,
+          onAction: () {
+            setState(() => _hasError = false);
+            _loadTemplates();
+          },
+        ),
+      );
     }
 
     if (_templates.isEmpty) {

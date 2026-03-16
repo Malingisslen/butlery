@@ -165,10 +165,6 @@ class AppTimestamp {
   factory AppTimestamp.fromMilliseconds(int milliseconds) => AppTimestamp._(
       DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true));
 
-  /// Create AppTimestamp from ISO string.
-  factory AppTimestamp.fromIsoString(String isoString) =>
-      AppTimestamp._(DateTime.parse(isoString).toUtc());
-
   /// Get underlying DateTime (preserves internal timezone).
   /// For display purposes, prefer [localDateTime].
   DateTime get dateTime => _dateTime;

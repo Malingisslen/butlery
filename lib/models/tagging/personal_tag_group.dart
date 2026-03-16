@@ -107,14 +107,6 @@ class PersonalTagGroup {
       throw ArgumentError('PersonalTagGroup.fromJson requires id field');
     }
 
-    DateTime parseDateTime(dynamic value) {
-      if (value == null) return DateTime.now();
-      if (value is DateTime) return value;
-      if (value is String) return DateTime.parse(value);
-      if (value is Timestamp) return value.toDate();
-      return DateTime.now();
-    }
-
     return PersonalTagGroup(
       id: id,
       name: SerializationUtils.safeString(json, 'name', defaultValue: ''),
@@ -124,8 +116,10 @@ class PersonalTagGroup {
         'isExclusive',
         defaultValue: false,
       ),
-      createdAt: parseDateTime(json['createdAt']),
-      updatedAt: parseDateTime(json['updatedAt']),
+      createdAt:
+          SerializationUtils.parseRequiredDateTimeValue(json['createdAt']),
+      updatedAt:
+          SerializationUtils.parseRequiredDateTimeValue(json['updatedAt']),
     );
   }
 

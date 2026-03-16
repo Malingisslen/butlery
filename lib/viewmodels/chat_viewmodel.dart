@@ -144,14 +144,22 @@ class ChatViewModel extends ChangeNotifier
       try {
         _conversation = await _messagingService.getConversation(conversationId);
         if (_isDisposed) return;
-        _checkFriendshipStatus();
-        _subscribeFriendshipChanges();
         _safeNotifyListeners();
       } catch (e) {
         if (_isDisposed) return;
         AppLogger.error('Failed to load conversation', e);
         _setError(AppLocale.current.errorCouldNotLoadConversation);
       }
+    }
+
+    // Always check friendship status and subscribe to changes,
+    // whether conversation was loaded or passed via initialConversation.
+    // Without this, passing initialConversation skips the friendship
+    // gate entirely and _isFriendWithOther stays true forever (BUG-040).
+    if (_conversation != null) {
+      _checkFriendshipStatus();
+      _subscribeFriendshipChanges();
+      _safeNotifyListeners();
     }
   }
 
@@ -182,6 +190,7 @@ class ChatViewModel extends ChangeNotifier
   void _subscribeFriendshipChanges() {
     if (_friendsService == null || _conversation == null) return;
     if (_conversation!.isGroup) return;
+    if (_friendsListener != null) return; // Already subscribed
 
     _friendsListener = () {
       final wasFriend = _isFriendWithOther;
@@ -253,6 +262,7 @@ class ChatViewModel extends ChangeNotifier
   // Message operations
   Future<bool> sendTextMessage(String content) async {
     if (_isDisposed) return false;
+    if (!canSendMessages) return false;
 
     if (content.trim().isEmpty) {
       _sendError = AppLocale.current.errorMessageCannotBeEmpty;
@@ -296,6 +306,7 @@ class ChatViewModel extends ChangeNotifier
     String? message,
   }) async {
     if (_isDisposed) return false;
+    if (!canSendMessages) return false;
 
     _isSending = true;
     _sendError = null;
@@ -443,6 +454,7 @@ class ChatViewModel extends ChangeNotifier
     required String content,
   }) async {
     if (_isDisposed || _replyToMessage == null) return false;
+    if (!canSendMessages) return false;
 
     _isSending = true;
     _sendError = null;

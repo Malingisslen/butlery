@@ -97,14 +97,9 @@
 /// ```
 /// **Firestore Integration:**
 /// ```dart
-/// class ShoppingList with JsonSerializableMixin, FirestoreSerializableMixin {
-///   // Automatic Firestore conversion
+/// class ShoppingList with JsonSerializableMixin {
 ///   Future<void> saveToFirestore() async {
-///     await firestore.collection('shopping_lists').doc(id).set(toFirestore());
-///   }
-///   static ShoppingList fromFirestoreDoc(DocumentSnapshot doc) {
-///     final data = FirestoreSerializableMixin.fromFirestore(doc);
-///     return ShoppingList.fromJson(data);
+///     await firestore.collection('shopping_lists').doc(id).set(toJson());
 ///   }
 /// }
 /// ```
@@ -189,12 +184,11 @@ mixin JsonSerializableMixin {
   DateTime? deserializeDateTime(dynamic value) {
     if (value == null) return null;
     if (value is String) {
-      try {
-        return DateTime.parse(value);
-      } catch (e) {
+      final parsed = DateTime.tryParse(value);
+      if (parsed == null) {
         AppLogger.warning('Failed to parse DateTime: $value');
-        return null;
       }
+      return parsed;
     }
     if (value is Timestamp) {
       return value.toDate();
@@ -359,136 +353,6 @@ mixin JsonSerializableMixin {
       }
     });
 
-    return result;
-  }
-}
-
-/// Mixin for Firestore serialization
-mixin FirestoreSerializableMixin on JsonSerializableMixin {
-  /// Convert model to Firestore document format
-  Map<String, dynamic> toFirestore({bool isNested = false}) {
-    final json = toJson();
-
-    // Convert DateTime strings to Timestamp for Firestore
-    final result = <String, dynamic>{};
-    json.forEach((key, value) {
-      if (value is String && _isIsoDateString(value)) {
-        result[key] = Timestamp.fromDate(DateTime.parse(value));
-      } else if (value is List) {
-        result[key] = _convertListToFirestore(value);
-      } else if (value is Map<String, dynamic>) {
-        result[key] = _convertMapToFirestore(value);
-      } else {
-        result[key] = value;
-      }
-    });
-
-    return result;
-  }
-
-  /// Create model from Firestore document
-  static Map<String, dynamic> fromFirestore(DocumentSnapshot doc) {
-    if (!doc.exists) {
-      throw StateError('Document does not exist');
-    }
-
-    final data = doc.data() as Map<String, dynamic>? ?? {};
-
-    // Add document ID
-    data['id'] = doc.id;
-
-    // Convert Timestamps to ISO strings
-    final result = <String, dynamic>{};
-    data.forEach((key, value) {
-      if (value is Timestamp) {
-        result[key] = value.toDate().toIso8601String();
-      } else if (value is List) {
-        result[key] = _convertListFromFirestore(value);
-      } else if (value is Map<String, dynamic>) {
-        result[key] = _convertMapFromFirestore(value);
-      } else {
-        result[key] = value;
-      }
-    });
-
-    return result;
-  }
-
-  /// Create model from Firestore query snapshot
-  static List<Map<String, dynamic>> fromFirestoreList(QuerySnapshot snapshot) {
-    return snapshot.docs.map((doc) => fromFirestore(doc)).toList();
-  }
-
-  /// Check if string is ISO date format
-  bool _isIsoDateString(String value) {
-    try {
-      final dateTime = DateTime.parse(value);
-      return dateTime.toIso8601String() == value;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Convert list to Firestore format
-  List<dynamic> _convertListToFirestore(List<dynamic> list) {
-    return list.map((item) {
-      if (item is String && _isIsoDateString(item)) {
-        return Timestamp.fromDate(DateTime.parse(item));
-      } else if (item is Map<String, dynamic>) {
-        return _convertMapToFirestore(item);
-      } else if (item is List) {
-        return _convertListToFirestore(item);
-      }
-      return item;
-    }).toList();
-  }
-
-  /// Convert map to Firestore format
-  Map<String, dynamic> _convertMapToFirestore(Map<String, dynamic> map) {
-    final result = <String, dynamic>{};
-    map.forEach((key, value) {
-      if (value is String && _isIsoDateString(value)) {
-        result[key] = Timestamp.fromDate(DateTime.parse(value));
-      } else if (value is List) {
-        result[key] = _convertListToFirestore(value);
-      } else if (value is Map<String, dynamic>) {
-        result[key] = _convertMapToFirestore(value);
-      } else {
-        result[key] = value;
-      }
-    });
-    return result;
-  }
-
-  /// Convert list from Firestore format
-  static List<dynamic> _convertListFromFirestore(List<dynamic> list) {
-    return list.map((item) {
-      if (item is Timestamp) {
-        return item.toDate().toIso8601String();
-      } else if (item is Map<String, dynamic>) {
-        return _convertMapFromFirestore(item);
-      } else if (item is List) {
-        return _convertListFromFirestore(item);
-      }
-      return item;
-    }).toList();
-  }
-
-  /// Convert map from Firestore format
-  static Map<String, dynamic> _convertMapFromFirestore(
-      Map<String, dynamic> map) {
-    final result = <String, dynamic>{};
-    map.forEach((key, value) {
-      if (value is Timestamp) {
-        result[key] = value.toDate().toIso8601String();
-      } else if (value is List) {
-        result[key] = _convertListFromFirestore(value);
-      } else if (value is Map<String, dynamic>) {
-        result[key] = _convertMapFromFirestore(value);
-      } else {
-        result[key] = value;
-      }
-    });
     return result;
   }
 }

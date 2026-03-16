@@ -551,13 +551,13 @@ class RecipeCore with JsonSerializableMixin {
       sourceUrl: json['sourceUrl'] as String?,
       imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
       thumbnailUrl: json['thumbnailUrl'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt:
+          utils.SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
+      updatedAt:
+          utils.SerializationUtils.safeRequiredDateTime(json, 'updatedAt'),
       createdBy: json['createdBy'] as String?,
       isPublic: (json['isPublic'] as bool?).orFalse(),
-      lastCookedAt: json['lastCookedAt'] != null
-          ? DateTime.parse(json['lastCookedAt'] as String)
-          : null,
+      lastCookedAt: utils.SerializationUtils.safeDateTime(json, 'lastCookedAt'),
       ingredientsNormalized: json['ingredientsNormalized'] != null
           ? List<String>.from(json['ingredientsNormalized'])
           : null,
@@ -566,9 +566,7 @@ class RecipeCore with JsonSerializableMixin {
       ratingDistribution: json['ratingDistribution'] != null
           ? Map<int, int>.from(json['ratingDistribution'])
           : null,
-      lastRatedAt: json['lastRatedAt'] != null
-          ? DateTime.parse(json['lastRatedAt'] as String)
-          : null,
+      lastRatedAt: utils.SerializationUtils.safeDateTime(json, 'lastRatedAt'),
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
@@ -852,14 +850,14 @@ class RecipeRealtimeData {
             ? List<String>.from(json['activeEditorIds'])
             : null,
         lastSeenAt: json['lastSeenAt'] != null
-            ? Map<String, DateTime>.from((json['lastSeenAt'] as Map)
-                .map((k, v) => MapEntry(k, DateTime.parse(v))))
+            ? Map<String, DateTime>.from((json['lastSeenAt'] as Map).map(
+                (k, v) => MapEntry(
+                    k, utils.SerializationUtils.parseRequiredDateTimeValue(v))))
             : null,
         lastEditedByUserId: json['lastEditedByUserId'] as String?,
         lastEditedByDisplayName: json['lastEditedByDisplayName'] as String?,
-        lastEditedAt: json['lastEditedAt'] != null
-            ? DateTime.parse(json['lastEditedAt'])
-            : null,
+        lastEditedAt:
+            utils.SerializationUtils.safeDateTime(json, 'lastEditedAt'),
         editCount: (json['editCount'] as int?).orZero(),
         isActive: (json['isActive'] as bool?).orTrue(),
       );
@@ -887,9 +885,8 @@ class RecipeOfflineData {
 
   factory RecipeOfflineData.fromJson(Map<String, dynamic> json) =>
       RecipeOfflineData(
-        lastSyncedAt: json['lastSyncedAt'] != null
-            ? DateTime.parse(json['lastSyncedAt'])
-            : null,
+        lastSyncedAt:
+            utils.SerializationUtils.safeDateTime(json, 'lastSyncedAt'),
         isModifiedOffline: (json['isModifiedOffline'] as bool?).orFalse(),
         pendingChanges: json['pendingChanges'] != null
             ? List<String>.from(json['pendingChanges'])

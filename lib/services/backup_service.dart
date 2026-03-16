@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -234,7 +235,8 @@ class BackupService extends BaseService {
         totalRecipes: recipesJson.length,
         successCount: successCount,
         skipCount: skipCount,
-        exportDate: DateTime.parse(backupData['exported_at']),
+        exportDate:
+            SerializationUtils.safeRequiredDateTime(backupData, 'exported_at'),
         exportEmail: backupData['user_email'],
         errors: errors,
         skippedTitles: skippedTitles,

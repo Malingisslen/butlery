@@ -54,10 +54,11 @@ class _AuthViewState extends State<AuthView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
-        backgroundColor: AppColors.cream,
+        backgroundColor: cs.surface,
         body: Consumer<AuthViewModel>(
           builder: (context, viewModel, _) {
             return Column(
@@ -143,8 +144,9 @@ class _AuthViewState extends State<AuthView> {
   }
 
   Widget _buildLoginCard(AuthViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      color: AppColors.cardWhite,
+      color: cs.surface,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingXl,
         vertical: AppDimensions.spacingLg + AppDimensions.spacingXs,
@@ -163,7 +165,7 @@ class _AuthViewState extends State<AuthView> {
                       : context.l10n.authCreateAccount,
                   style: AppTextStyles.headlineMedium.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textDark,
+                    color: cs.onSurface,
                   ),
                 ),
               ),
@@ -269,7 +271,7 @@ class _AuthViewState extends State<AuthView> {
                     child: Text(
                       context.l10n.authForgotPassword,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.forestGreenDark,
+                        color: cs.primary,
                       ),
                     ),
                   ),
@@ -303,7 +305,7 @@ class _AuthViewState extends State<AuthView> {
                         child: Text(
                           context.l10n.authAgeConfirmation,
                           style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textDark),
+                              .copyWith(color: cs.onSurface),
                         ),
                       ),
                     ),
@@ -336,17 +338,17 @@ class _AuthViewState extends State<AuthView> {
               // "eller" divider
               Row(
                 children: [
-                  const Expanded(child: Divider(color: AppColors.creamDarker)),
+                  Expanded(child: Divider(color: cs.outlineVariant)),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.spacingMd),
                     child: Text(
                       context.l10n.commonOr,
                       style: AppTextStyles.bodySmall
-                          .copyWith(color: AppColors.textMedium),
+                          .copyWith(color: cs.onSurfaceVariant),
                     ),
                   ),
-                  const Expanded(child: Divider(color: AppColors.creamDarker)),
+                  Expanded(child: Divider(color: cs.outlineVariant)),
                 ],
               ),
 
@@ -360,7 +362,7 @@ class _AuthViewState extends State<AuthView> {
                   onPressed:
                       viewModel.isLoading ? null : viewModel.toggleAuthMode,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.forestGreenDark),
+                    side: BorderSide(color: cs.primary),
                     shape: const RoundedRectangleBorder(),
                   ),
                   child: Text(
@@ -368,7 +370,7 @@ class _AuthViewState extends State<AuthView> {
                         ? context.l10n.authCreateAccount
                         : context.l10n.authLogin,
                     style: AppTextStyles.titleMedium.copyWith(
-                      color: AppColors.forestGreenDark,
+                      color: cs.primary,
                     ),
                   ),
                 ),
@@ -389,7 +391,8 @@ class _AuthViewState extends State<AuthView> {
       children: [
         Text(
           label,
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+          style: AppTextStyles.bodySmall.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         child,
@@ -401,35 +404,37 @@ class _AuthViewState extends State<AuthView> {
     String? hint,
     Widget? suffixIcon,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       hintText: hint,
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+      hintStyle:
+          AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
       filled: true,
-      fillColor: AppColors.cream,
+      fillColor: cs.surfaceContainerLow,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingModerate,
       ),
-      border: const OutlineInputBorder(
+      border: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.creamDarker),
+        borderSide: BorderSide(color: cs.outline),
       ),
-      enabledBorder: const OutlineInputBorder(
+      enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.creamDarker),
+        borderSide: BorderSide(color: cs.outline),
       ),
-      focusedBorder: const OutlineInputBorder(
+      focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.forestGreenDark),
+        borderSide: BorderSide(color: cs.primary),
       ),
-      errorBorder: const OutlineInputBorder(
+      errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.error),
+        borderSide: BorderSide(color: cs.error),
       ),
-      focusedErrorBorder: const OutlineInputBorder(
+      focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.error),
+        borderSide: BorderSide(color: cs.error),
       ),
     );
   }
@@ -458,7 +463,7 @@ class _AuthViewState extends State<AuthView> {
             Text(
               ' \u00B7 ',
               style: AppTextStyles.labelMedium
-                  .copyWith(color: AppColors.textMedium),
+                  .copyWith(color: cs.onSurfaceVariant),
             ),
             GestureDetector(
               onTap: () => Navigator.push(

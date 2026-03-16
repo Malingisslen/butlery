@@ -580,17 +580,13 @@ class UnifiedShoppingItem {
       bought: (json['bought'] as bool?).orFalse(),
       addedByUserId: json['addedByUserId'] as String?,
       addedByDisplayName: json['addedByDisplayName'] as String?,
-      addedAt: json['addedAt'] != null ? DateTime.parse(json['addedAt']) : null,
+      addedAt: SerializationUtils.safeDateTime(json, 'addedAt'),
       purchasedByUserId: json['purchasedByUserId'] as String?,
       purchasedByDisplayName: json['purchasedByDisplayName'] as String?,
-      purchasedAt: json['purchasedAt'] != null
-          ? DateTime.parse(json['purchasedAt'])
-          : null,
+      purchasedAt: SerializationUtils.safeDateTime(json, 'purchasedAt'),
       lastModifiedByUserId: json['lastModifiedByUserId'] as String?,
       lastModifiedByDisplayName: json['lastModifiedByDisplayName'] as String?,
-      lastModifiedAt: json['lastModifiedAt'] != null
-          ? DateTime.parse(json['lastModifiedAt'])
-          : null,
+      lastModifiedAt: SerializationUtils.safeDateTime(json, 'lastModifiedAt'),
       note: json['note'] as String?,
       estimatedPrice: (json['estimatedPrice'] as num?)?.toDouble(),
       priority: (json['priority'] as int?).orDefault(3),

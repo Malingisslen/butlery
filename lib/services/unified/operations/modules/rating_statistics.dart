@@ -32,8 +32,8 @@ class RatingStatistics {
     final average = totalRating / ratings.length;
     final distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
     for (final rating in ratings) {
-      final starRating = (rating['rating'] as double).round();
-      distribution[starRating] = distribution[starRating]! + 1;
+      final starRating = (rating['rating'] as double).round().clamp(1, 5);
+      distribution[starRating] = (distribution[starRating] ?? 0) + 1;
     }
     final reviews = ratings
         .where((rating) =>

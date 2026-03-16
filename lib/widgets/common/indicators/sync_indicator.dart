@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Sync status states derived from Firestore snapshot metadata.
 enum SyncStatus {
@@ -116,13 +116,15 @@ class _SyncIndicatorState extends State<SyncIndicator>
   }
 
   Widget _buildIndicator(SyncStatus status) {
+    final colors = context.butleryColors;
+    final cs = Theme.of(context).colorScheme;
     final (color, icon) = switch (status) {
-      SyncStatus.synced => (AppColors.success, Icons.cloud_done_outlined),
+      SyncStatus.synced => (colors.success, Icons.cloud_done_outlined),
       SyncStatus.pendingWrites => (
-          AppColors.warning,
+          colors.warning,
           Icons.cloud_upload_outlined
         ),
-      SyncStatus.offline => (AppColors.textLight, Icons.cloud_off_outlined),
+      SyncStatus.offline => (cs.onSurfaceVariant, Icons.cloud_off_outlined),
     };
 
     return Container(

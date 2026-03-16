@@ -150,14 +150,6 @@ class PersonalTagRule {
       throw ArgumentError('PersonalTagRule.fromJson requires id field');
     }
 
-    DateTime parseDateTime(dynamic value) {
-      if (value == null) return DateTime.now();
-      if (value is DateTime) return value;
-      if (value is String) return DateTime.parse(value);
-      if (value is Timestamp) return value.toDate();
-      return DateTime.now();
-    }
-
     return PersonalTagRule(
       id: id,
       tagId: SerializationUtils.safeString(json, 'tagId', defaultValue: ''),
@@ -170,22 +162,16 @@ class PersonalTagRule {
         'isEnabled',
         defaultValue: true,
       ),
-      createdAt: parseDateTime(json['createdAt']),
-      updatedAt: parseDateTime(json['updatedAt']),
+      createdAt:
+          SerializationUtils.parseRequiredDateTimeValue(json['createdAt']),
+      updatedAt:
+          SerializationUtils.parseRequiredDateTimeValue(json['updatedAt']),
     );
   }
 
   /// Creates from embedded map data (within a PersonalTag document).
   /// Does not require tagId since the parent tag provides context.
   factory PersonalTagRule.fromEmbeddedMap(Map<String, dynamic> data) {
-    DateTime parseDateTime(dynamic value) {
-      if (value == null) return DateTime.now();
-      if (value is DateTime) return value;
-      if (value is String) return DateTime.parse(value);
-      if (value is Timestamp) return value.toDate();
-      return DateTime.now();
-    }
-
     return PersonalTagRule(
       id: SerializationUtils.safeString(data, 'id',
           defaultValue: const Uuid().v4()),
@@ -199,8 +185,10 @@ class PersonalTagRule {
         'isEnabled',
         defaultValue: true,
       ),
-      createdAt: parseDateTime(data['createdAt']),
-      updatedAt: parseDateTime(data['updatedAt']),
+      createdAt:
+          SerializationUtils.parseRequiredDateTimeValue(data['createdAt']),
+      updatedAt:
+          SerializationUtils.parseRequiredDateTimeValue(data['updatedAt']),
     );
   }
 

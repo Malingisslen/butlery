@@ -387,6 +387,18 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     return _cachedResources[resourceId] as T?;
   }
 
+  /// Fetch the latest version of a resource directly from Firestore (bypasses cache).
+  /// Use this before read-modify-write operations to avoid stale data.
+  Future<T?> fetchLatestResource<T extends RealtimeResource>(
+      String resourceId) async {
+    try {
+      return await _parserModule.getLatestResource<T>(resourceId);
+    } catch (e) {
+      AppLogger.error('Failed to fetch latest resource: $resourceId', e);
+      return null;
+    }
+  }
+
   /// Check if resource is actively watched
   bool isResourceWatched(String resourceId) {
     return _activeListeners.containsKey(resourceId);
