@@ -17,7 +17,10 @@ String mapAuthErrorToMessage(FirebaseAuthException e) {
     'too-many-requests' => l.errorTooManyAttempts,
     'network-request-failed' => l.errorNetwork,
     'invalid-verification-code' => l.errorInvalidVerificationCode,
-    'session-expired' => l.errorSessionExpired,
+    'session-expired' ||
+    'user-token-expired' ||
+    'invalid-user-token' =>
+      l.errorSessionExpired,
     'quota-exceeded' => l.errorTooManySmsAttempts,
     'invalid-phone-number' => l.errorInvalidPhoneNumber,
     'missing-phone-number' => l.errorPhoneNumberMissing,
