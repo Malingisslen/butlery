@@ -24,6 +24,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Sort order for personal tags.
 enum TagSortOrder {
@@ -131,25 +132,33 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     return Scaffold(
       appBar: _buildAppBar(context),
       body: FocusTraversalGroup(
-        child: Consumer<PersonalTagViewModel>(
-          builder: (context, viewModel, _) {
-            if (viewModel.isLoading && !viewModel.hasTags) {
-              return StateWidget.loading();
-            }
+        child: Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            Expanded(
+              child: Consumer<PersonalTagViewModel>(
+                builder: (context, viewModel, _) {
+                  if (viewModel.isLoading && !viewModel.hasTags) {
+                    return StateWidget.loading();
+                  }
 
-            if (viewModel.hasError) {
-              return StateWidget.error(
-                message: viewModel.error ?? context.l10n.commonErrorOccurred,
-                onAction: viewModel.initialize,
-              );
-            }
+                  if (viewModel.hasError) {
+                    return StateWidget.error(
+                      message:
+                          viewModel.error ?? context.l10n.commonErrorOccurred,
+                      onAction: viewModel.initialize,
+                    );
+                  }
 
-            if (!viewModel.hasTags) {
-              return _buildEmptyState(context);
-            }
+                  if (!viewModel.hasTags) {
+                    return _buildEmptyState(context);
+                  }
 
-            return _buildTagList(context, viewModel);
-          },
+                  return _buildTagList(context, viewModel);
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

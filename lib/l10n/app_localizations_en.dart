@@ -474,6 +474,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'When you collaborate on shopping lists with friends or family, they will appear here.';
 
   @override
+  String get emptyNoTagsTitle => 'No tags yet';
+
+  @override
+  String get emptyNoTagsSubtitle =>
+      'Create personal tags to organize your recipes your way.';
+
+  @override
+  String get emptyNoGroupsTitle => 'No groups yet';
+
+  @override
+  String get emptyNoGroupsSubtitle =>
+      'Create a group to share recipes and plan meals together.';
+
+  @override
+  String get emptyNoConversationsTitle => 'No conversations yet';
+
+  @override
+  String get emptyNoConversationsSubtitle =>
+      'Start a conversation with a friend to chat about recipes.';
+
+  @override
   String get emptyGenericTitle => 'No content to display';
 
   @override

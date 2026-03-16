@@ -193,6 +193,56 @@ class ShoppingListGenerator {
     return displayList;
   }
 
+  /// Generate consolidated shopping items from a menu with ingredient dedup.
+  ///
+  /// Loops through all recipes, parses each ingredient, and consolidates
+  /// by (unit + normalizedName) so that e.g. "2 dl mjölk" and "3 dl mjölk"
+  /// become a single item with amount 5.
+  static List<UnifiedShoppingItem> generateShoppingItemsFromMenu(
+    Map<String, List<Recipe>> menu,
+  ) {
+    if (menu.isEmpty) return [];
+
+    final Map<String, double> quantities = {};
+    final Map<String, String> units = {};
+    final Map<String, String> displayNames = {};
+    final Map<String, String> categories = {};
+
+    for (final recipes in menu.values) {
+      for (final recipe in recipes) {
+        if (recipe.ingredients.isEmpty) continue;
+
+        for (final rawIngredient in recipe.ingredients) {
+          if (rawIngredient.trim().isEmpty) continue;
+
+          final processed =
+              IngredientProcessor.parseAndNormalize(rawIngredient);
+          final key = processed.unit.isEmpty
+              ? processed.normalizedName
+              : '${processed.unit}_${processed.normalizedName}';
+
+          quantities[key] = (quantities[key] ?? 0.0) + processed.quantity;
+          units.putIfAbsent(key, () => processed.unit);
+          displayNames.putIfAbsent(
+              key, () => processed.originalName.trim());
+          categories.putIfAbsent(
+              key, () => _categorizeIngredient(processed.normalizedName));
+        }
+      }
+    }
+
+    final sortedKeys = quantities.keys.toList()..sort();
+    return sortedKeys
+        .map((key) => UnifiedShoppingItem(
+              name: displayNames[key]!,
+              amount: quantities[key]!,
+              unit: units[key]!,
+              category: categories[key]!,
+              bought: false,
+            ))
+        .toList();
+  }
+
   /// Generate shopping items from a single recipe with Swedish ingredient parsing and categorization.
   /// This method creates UnifiedShoppingItem objects from a recipe's ingredients, providing
   /// structured shopping data ready for addition to shopping lists. It leverages the existing

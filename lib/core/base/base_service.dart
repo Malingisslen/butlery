@@ -12,6 +12,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
+import 'package:butlery/services/offline_service.dart';
 
 /// Abstract base class for all services in the Butlery application.
 /// Provides a standardized foundation for service implementations by consolidating
@@ -250,7 +251,8 @@ abstract class BaseService with ErrorHandlingMixin {
   /// Check if network is available
   Future<bool> _isNetworkAvailable() async {
     try {
-      return true; // Simplified connectivity check - consolidation removed detailed connectivity service
+      final offlineService = ServiceLocator.get<OfflineService>();
+      return offlineService.isOnline;
     } catch (e) {
       AppLogger.error('Network check failed: $e');
       return false;

@@ -81,7 +81,12 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
                       desktop: 900,
                     ),
                   ),
-                  child: _buildBody(context, viewModel),
+                  child: Column(
+                    children: [
+                      LayoutComponents.offlineIndicator(),
+                      Expanded(child: _buildBody(context, viewModel)),
+                    ],
+                  ),
                 ),
               ),
             ),
