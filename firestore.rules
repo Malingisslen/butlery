@@ -1059,7 +1059,9 @@ service cloud.firestore {
 
       // Per-user settings subcollection (archive, pin, etc.)
       match /userSettings/{settingsUserId} {
-        allow read, write: if isAuthenticated() && request.auth.uid == settingsUserId;
+        allow read, write: if isAuthenticated()
+          && request.auth.uid == settingsUserId
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds;
       }
     }
 
