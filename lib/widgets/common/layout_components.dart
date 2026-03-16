@@ -18,10 +18,12 @@ import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 
 /// Facade for layout components. Delegates to specialized layout modules.
 class LayoutComponents {
-  /// Creates the primary application layout with bottom navigation.
+  /// Creates a layout with bottom navigation for non-tab views
+  /// (e.g., photo import, friends list) that want bottom nav visible.
   ///
-  /// Set [appBar] to provide a custom header (e.g., MainViewHeader).
-  /// If [appBar] is null, uses default title-based header.
+  /// The 4 main tab views (recipes, menu, shopping, add) are now managed
+  /// by the shell (LayoutScaffolds.mainMenu) with IndexedStack — they
+  /// should use Scaffold directly, not this method.
   static Widget mainMenu({
     required Widget body,
     int? currentIndex,
@@ -30,13 +32,14 @@ class LayoutComponents {
     Widget? floatingActionButton,
     PreferredSizeWidget? appBar,
   }) {
-    return LayoutScaffolds.mainMenu(
+    return LayoutScaffolds.simpleLayout(
       body: body,
-      currentIndex: currentIndex,
       title: title,
       actions: actions,
-      floatingActionButton: floatingActionButton,
       appBar: appBar,
+      floatingActionButton: floatingActionButton,
+      showBottomNav: true,
+      bottomNavIndex: currentIndex ?? 0,
     );
   }
 

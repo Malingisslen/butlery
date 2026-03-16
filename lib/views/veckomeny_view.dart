@@ -25,8 +25,8 @@ class VeckomenyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _PersistentMenuViewModel.instance,
+    return ChangeNotifierProvider(
+      create: (_) => MenuViewModel(),
       child: _VeckomenyViewContent(sharedMenu: sharedMenu),
     );
   }
@@ -93,36 +93,27 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final weekNumber = _getCurrentWeekNumber();
     final menuItemCount = viewModel.hasMenu ? viewModel.totalRecipeCount : 0;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (bool didPop, Object? result) {
-        if (!didPop) VeckomenyDialogs.showExitDialog(context);
-      },
-      child: LayoutComponents.mainMenu(
-        currentIndex:
-            1, // UI Redesign: nav order is recipes(0), menu(1), shopping(2), add(3)
-        // UI Redesign: Use MainViewHeader with week badge
-        appBar: MainViewHeader(
-          title: 'veckans\nmeny',
-          countBadge: viewModel.hasMenu
-              ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
-              : context.l10n.menuWeekBadge(weekNumber),
-          actions: _buildHeaderActions(context, viewModel),
-        ),
-        body: _buildBody(context, viewModel),
-        floatingActionButton: viewModel.hasMenu
-            ? ActionButtons.actionButton(
-                context,
-                label: context.l10n.menuToShoppingList,
-                icon: Icons.shopping_cart,
-                onPressed: () => VeckomenyDialogs.showShoppingListSelector(
-                  context,
-                  viewModel: viewModel,
-                ),
-                style: ActionButtonStyle.primary,
-              )
-            : null,
+    return Scaffold(
+      appBar: MainViewHeader(
+        title: 'veckans\nmeny',
+        countBadge: viewModel.hasMenu
+            ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
+            : context.l10n.menuWeekBadge(weekNumber),
+        actions: _buildHeaderActions(context, viewModel),
       ),
+      body: _buildBody(context, viewModel),
+      floatingActionButton: viewModel.hasMenu
+          ? ActionButtons.actionButton(
+              context,
+              label: context.l10n.menuToShoppingList,
+              icon: Icons.shopping_cart,
+              onPressed: () => VeckomenyDialogs.showShoppingListSelector(
+                context,
+                viewModel: viewModel,
+              ),
+              style: ActionButtonStyle.primary,
+            )
+          : null,
     );
   }
 
@@ -249,15 +240,5 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       message: context.l10n.menuGeneratingOverlay,
       subtitle: context.l10n.menuGeneratingSubtitle,
     );
-  }
-}
-
-/// Preserves MenuViewModel state across navigation.
-class _PersistentMenuViewModel {
-  static MenuViewModel? _instance;
-
-  static MenuViewModel get instance {
-    _instance ??= MenuViewModel();
-    return _instance!;
   }
 }

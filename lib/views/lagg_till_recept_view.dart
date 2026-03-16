@@ -27,10 +27,7 @@ class LaggTillReceptView extends StatelessWidget {
   Widget build(BuildContext context) {
     final padding = AppDimensions.responsiveContentPadding(context);
 
-    return LayoutComponents.mainMenu(
-      currentIndex:
-          3, // UI Redesign: nav order is recipes(0), menu(1), shopping(2), add(3)
-      // UI Redesign: Use MainViewHeader with lowercase title
+    return Scaffold(
       appBar: MainViewHeader(
         title: context.l10n.addRecipeTitle,
       ),

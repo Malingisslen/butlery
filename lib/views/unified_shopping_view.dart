@@ -62,15 +62,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
               viewModel.activeList?.items.where((item) => item.bought).length ??
                   0;
 
-          return LayoutComponents.mainMenu(
-            currentIndex:
-                2, // UI Redesign: nav order is recipes(0), menu(1), shopping(2), add(3)
-            // UI Redesign: Use MainViewHeader with line break title
+          return Scaffold(
             appBar: MainViewHeader(
-              title: context.l10n
-                  .shoppingListTitle, // UI Redesign: forced line break per mockup
-              countBadge: context.l10n.shoppingCountBadge(
-                  itemCount, boughtCount), // UI Redesign: "X varor · X klara"
+              title: context.l10n.shoppingListTitle,
+              countBadge:
+                  context.l10n.shoppingCountBadge(itemCount, boughtCount),
               actions: ShoppingAppBar.buildHeaderActions(
                 context,
                 viewModel,
@@ -81,7 +77,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                 onBrowseTemplates: _showTemplateBrowser,
               ),
             ),
-            // Floating action button for quick item addition
             floatingActionButton: ShoppingAppBar.buildFloatingActionButton(
               context,
               _showAddItemDialog,
