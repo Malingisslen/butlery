@@ -4518,30 +4518,6 @@ class MockNotificationRepositoryV2 extends Mock
   Future<void> markNotificationDelivered(String notificationId) async {}
 
   Future<void> markNotificationOpened(String notificationId) async {}
-
-  // FCM token management methods (aligned to NotificationsRepository interface)
-  @override
-  Future<void> saveTokenToFirestore(
-      String docId, Map<String, dynamic> tokenData) async {}
-
-  @override
-  Future<void> updateDeviceInfo(
-      String docId, Map<String, dynamic> deviceData) async {}
-
-  @override
-  Future<void> updateTokenTimestamp(String docId) async {}
-
-  @override
-  Future<void> removeOldToken(String userId, String oldToken) async {}
-
-  @override
-  Future<void> cleanupOldDevices(String userId, DateTime olderThan) async {}
-
-  @override
-  Future<List<String>> getAllUserTokens(String userId) async => [];
-
-  @override
-  Future<void> markDeviceInactive(String docId) async {}
 }
 
 /// Simple error class for sync operations in tests

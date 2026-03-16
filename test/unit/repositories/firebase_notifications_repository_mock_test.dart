@@ -309,40 +309,6 @@ void main() {
       });
     });
 
-    group('FCM Token Management', () {
-      test('should update FCM token for user', () async {
-        // Arrange
-        const userId = 'test_user';
-        const token = 'fcm_token_12345';
-
-        // Stub the repository method
-        when(() => mockRepository.updateFCMToken(userId, token))
-            .thenAnswer((_) async {});
-
-        // Act
-        await mockRepository.updateFCMToken(userId, token);
-
-        // Assert
-        verify(() => mockRepository.updateFCMToken(userId, token)).called(1);
-      });
-
-      test('should remove FCM token for user', () async {
-        // Arrange
-        const userId = 'test_user';
-        const token = 'fcm_token_12345';
-
-        // Stub the repository method
-        when(() => mockRepository.removeFCMToken(userId, token))
-            .thenAnswer((_) async {});
-
-        // Act
-        await mockRepository.removeFCMToken(userId, token);
-
-        // Assert
-        verify(() => mockRepository.removeFCMToken(userId, token)).called(1);
-      });
-    });
-
     group('Notification Preferences', () {
       test('should update notification preferences', () async {
         // Arrange

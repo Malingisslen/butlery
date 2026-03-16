@@ -24,6 +24,8 @@ import 'package:butlery/repositories/interfaces/notification_history_repository.
 import 'package:butlery/repositories/firebase/firebase_notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_notification_batch_repository.dart';
+import 'package:butlery/repositories/interfaces/device_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_device_repository.dart';
 
 // Messaging repositories and interfaces
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
@@ -70,6 +72,7 @@ class MessagingModule implements DIModule {
         NotificationsRepository, // Also provides notifications repository
         NotificationHistoryRepository,
         NotificationBatchRepository,
+        DeviceRepository,
         NotificationService,
       ];
 
@@ -128,6 +131,13 @@ class MessagingModule implements DIModule {
         ),
       );
 
+      // Device repository for FCM token and device management
+      container.registerLazySingleton<DeviceRepository>(
+        () => FirebaseDeviceRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
       // Notification batch repository for batch aggregation
       container.registerLazySingleton<NotificationBatchRepository>(
         () => FirebaseNotificationBatchRepository(
@@ -142,6 +152,7 @@ class MessagingModule implements DIModule {
           authRepository: container<AuthRepository>(),
           historyRepository: container<NotificationHistoryRepository>(),
           batchRepository: container<NotificationBatchRepository>(),
+          deviceRepository: container<DeviceRepository>(),
         ),
         dispose: (s) => s.dispose(),
       );

@@ -592,69 +592,6 @@ void main() {
       });
     });
 
-    group('FCM Token Management', () {
-      test('should update FCM token successfully', () async {
-        // Arrange
-        const userId = 'user-123';
-        const token = 'fcm-token-abc123';
-
-        // Act
-        await repository.updateFCMToken(userId, token);
-
-        // Assert
-        final doc =
-            await fakeFirestore.collection('user_fcm_tokens').doc(userId).get();
-        expect(doc.exists, isTrue);
-        expect(doc.data()!['token'], equals(token));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
-
-      test('should update existing FCM token', () async {
-        // Arrange
-        const userId = 'user-123';
-        const oldToken = 'old-token';
-        const newToken = 'new-token';
-
-        await fakeFirestore.collection('user_fcm_tokens').doc(userId).set({
-          'token': oldToken,
-          'updatedAt': Timestamp.now(),
-        });
-
-        // Act
-        await repository.updateFCMToken(userId, newToken);
-
-        // Assert
-        final doc =
-            await fakeFirestore.collection('user_fcm_tokens').doc(userId).get();
-        expect(doc.data()!['token'], equals(newToken));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
-
-      test('should remove FCM token successfully', () async {
-        // Arrange
-        const userId = 'user-123';
-        await fakeFirestore.collection('user_fcm_tokens').doc(userId).set({
-          'token': 'fcm-token',
-          'updatedAt': Timestamp.now(),
-        });
-
-        // Verify token exists
-        var doc =
-            await fakeFirestore.collection('user_fcm_tokens').doc(userId).get();
-        expect(doc.exists, isTrue);
-
-        // Act
-        await repository.removeFCMToken(userId, 'fcm-token');
-
-        // Assert
-        doc =
-            await fakeFirestore.collection('user_fcm_tokens').doc(userId).get();
-        expect(doc.exists, isFalse);
-      });
-    });
-
     group('Notification Preferences', () {
       test(
           'should serialize notification preferences with correct field structure',

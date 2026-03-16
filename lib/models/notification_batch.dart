@@ -44,6 +44,14 @@ class NotificationBatch {
     );
   }
 
+  Map<String, dynamic> toMap() => {
+        'batchKey': batchKey,
+        'userId': userId,
+        'notifications': notifications.map((n) => n.toMap()).toList(),
+        'createdAt': Timestamp.fromDate(createdAt),
+        'scheduledFor': Timestamp.fromDate(scheduledFor),
+      };
+
   /// Create from Firestore document
   factory NotificationBatch.fromFirestore(DocumentSnapshot doc) {
     return NotificationBatch.fromMap(

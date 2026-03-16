@@ -49,12 +49,6 @@ abstract class NotificationsRepository extends Repository<UserNotification> {
   /// Get notifications stream for real-time updates
   Stream<List<UserNotification>> getNotificationsStream(String userId);
 
-  /// Update FCM token for a user
-  Future<void> updateFCMToken(String userId, String token);
-
-  /// Remove FCM token for a user
-  Future<void> removeFCMToken(String userId, String token);
-
   /// Update notification preferences
   Future<void> updateNotificationPreferences(
     String userId,
@@ -63,28 +57,6 @@ abstract class NotificationsRepository extends Repository<UserNotification> {
 
   /// Get notification preferences
   Future<NotificationPreferences> getNotificationPreferences(String userId);
-
-  /// Save FCM token to Firestore (per-device model)
-  Future<void> saveTokenToFirestore(
-      String docId, Map<String, dynamic> tokenData);
-
-  /// Update device information
-  Future<void> updateDeviceInfo(String docId, Map<String, dynamic> deviceData);
-
-  /// Update token timestamp without changing token data
-  Future<void> updateTokenTimestamp(String docId);
-
-  /// Remove old token by marking as inactive
-  Future<void> removeOldToken(String userId, String oldToken);
-
-  /// Get all active tokens for a user
-  Future<List<String>> getAllUserTokens(String userId);
-
-  /// Mark device as inactive
-  Future<void> markDeviceInactive(String docId);
-
-  /// Cleanup old devices for a user
-  Future<void> cleanupOldDevices(String userId, DateTime olderThan);
 }
 
 /// User notification model

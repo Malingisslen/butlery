@@ -11,8 +11,6 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
-import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
-import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -160,7 +158,6 @@ class AuthService extends ChangeNotifier
 
   Future<void> signOut() async {
     await executeAsync(() async {
-      await _cleanupFcmTokens();
       _resetSessionScopedServices();
       await _authRepository.signOut();
       _currentUser = null;
@@ -174,7 +171,6 @@ class AuthService extends ChangeNotifier
   /// Logout for session timeout - tracks separately for security monitoring.
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {
-      await _cleanupFcmTokens();
       _resetSessionScopedServices();
       await _authRepository.signOut();
       _currentUser = null;
@@ -305,22 +301,6 @@ class AuthService extends ChangeNotifier
       ServiceLocator.tryGet<NotificationService>()?.resetForLogout();
     } catch (e) {
       AppLogger.warning('NotificationService reset failed during sign-out: $e');
-    }
-  }
-
-  /// Clean up FCM tokens before sign-out to prevent stale delivery.
-  Future<void> _cleanupFcmTokens() async {
-    try {
-      final userId = _authRepository.currentUserId;
-      if (userId != null) {
-        final repository = ServiceLocator.get<NotificationsRepository>();
-        final tokenManager =
-            FCMTokenManager(userId: userId, repository: repository);
-        await tokenManager.cleanup();
-      }
-    } catch (e) {
-      // Don't block logout if FCM cleanup fails
-      AppLogger.warning('FCM token cleanup failed during sign-out: $e');
     }
   }
 

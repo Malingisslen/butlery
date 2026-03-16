@@ -3,36 +3,56 @@ import 'package:butlery/repositories/interfaces/notification_history_repository.
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/timestamp_provider.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 
 /// Firebase implementation for notification dedup and delivery tracking.
 /// Uses `notification_history` collection.
 class FirebaseNotificationHistoryRepository
+    extends BaseFirebaseRepository<Map<String, dynamic>>
     implements NotificationHistoryRepository {
-  final FirebaseFirestore _firestore;
-  final AuthRepository _authRepository;
-  final TimestampProvider _timestampProvider;
-
   FirebaseNotificationHistoryRepository({
-    FirebaseFirestore? firestore,
-    required AuthRepository authRepository,
-    TimestampProvider? timestampProvider,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository,
-        _timestampProvider =
-            timestampProvider ?? const ServerTimestampProvider();
+    super.firestore,
+    required super.authRepository,
+    super.auditRepository,
+    super.timestampProvider,
+  });
 
-  String get _userId {
-    final id = _authRepository.currentUserId;
-    if (id == null) {
-      throw StateError('NotificationHistoryRepository: No authenticated user');
-    }
-    return id;
-  }
+  @override
+  String get collectionName => FirestoreCollections.notificationHistory;
 
-  CollectionReference<Map<String, dynamic>> get _collection =>
-      _firestore.collection(FirestoreCollections.notificationHistory);
+  @override
+  Map<String, dynamic> fromFirestore(
+          DocumentSnapshot<Map<String, dynamic>> doc) =>
+      {'id': doc.id, ...doc.data() ?? {}};
+
+  @override
+  Map<String, dynamic> toFirestore(Map<String, dynamic> entity) => entity;
+
+  @override
+  String getId(Map<String, dynamic> entity) =>
+      entity['notificationId'] as String? ?? '';
+
+  @override
+  Future<bool> validateCreatePermission(
+          String userId, Map<String, dynamic> entity) async =>
+      entity['userId'] == userId;
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId,
+          Map<String, dynamic>? entity) async =>
+      entity?['userId'] == userId;
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId,
+          Map<String, dynamic> entity) async =>
+      entity['userId'] == userId;
+
+  @override
+  Future<bool> validateDeletePermission(
+          String userId, String resourceId) async =>
+      true; // History cleanup is allowed for authenticated users
+
+  String get _userId => requireCurrentUserId();
 
   @override
   Future<void> recordNotification({
@@ -42,13 +62,13 @@ class FirebaseNotificationHistoryRepository
     required Map<String, dynamic> data,
   }) async {
     try {
-      await _collection.doc(notificationId).set({
+      await collection.doc(notificationId).set({
         'userId': _userId,
         'notificationId': notificationId,
         'category': category.name,
         'type': type.name,
         'data': data,
-        'sentAt': _timestampProvider.serverTimestamp(),
+        'sentAt': timestampProvider.serverTimestamp(),
         'delivered': false,
         'opened': false,
       });
@@ -60,7 +80,7 @@ class FirebaseNotificationHistoryRepository
   @override
   Future<bool> wasNotificationSent(String notificationId) async {
     try {
-      final doc = await _collection.doc(notificationId).get();
+      final doc = await collection.doc(notificationId).get();
       return doc.exists && doc.data() != null;
     } catch (e) {
       AppLogger.error('Failed to check notification history', e);
@@ -71,9 +91,9 @@ class FirebaseNotificationHistoryRepository
   @override
   Future<void> markNotificationDelivered(String notificationId) async {
     try {
-      await _collection.doc(notificationId).update({
+      await collection.doc(notificationId).update({
         'delivered': true,
-        'deliveredAt': _timestampProvider.serverTimestamp(),
+        'deliveredAt': timestampProvider.serverTimestamp(),
       });
     } catch (e) {
       AppLogger.warning('Failed to mark notification as delivered: $e');
@@ -83,9 +103,9 @@ class FirebaseNotificationHistoryRepository
   @override
   Future<void> markNotificationOpened(String notificationId) async {
     try {
-      await _collection.doc(notificationId).update({
+      await collection.doc(notificationId).update({
         'opened': true,
-        'openedAt': _timestampProvider.serverTimestamp(),
+        'openedAt': timestampProvider.serverTimestamp(),
       });
     } catch (e) {
       AppLogger.warning('Failed to mark notification as opened: $e');
@@ -96,13 +116,13 @@ class FirebaseNotificationHistoryRepository
   Future<void> cleanupOldHistory(DateTime olderThan) async {
     try {
       final cutoffTimestamp = Timestamp.fromDate(olderThan);
-      final query = await _collection
+      final query = await collection
           .where('userId', isEqualTo: _userId)
           .where('sentAt', isLessThan: cutoffTimestamp)
           .limit(100)
           .get();
 
-      final batch = _firestore.batch();
+      final batch = firestore.batch();
       for (final doc in query.docs) {
         batch.delete(doc.reference);
       }

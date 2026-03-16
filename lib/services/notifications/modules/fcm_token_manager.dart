@@ -7,7 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/device_repository.dart';
+import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Specialized Firebase Cloud Messaging token management module providing comprehensive device token lifecycle management.
@@ -46,7 +47,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// await tokenManager.updateTopicSubscriptions(preferences);
 /// ```
 class FCMTokenManager {
-  final NotificationsRepository _repository;
+  final DeviceRepository _repository;
   final String _userId;
   final FirebaseMessaging _messaging;
 
@@ -67,7 +68,7 @@ class FCMTokenManager {
 
   FCMTokenManager({
     required String userId,
-    required NotificationsRepository repository,
+    required DeviceRepository repository,
     FirebaseMessaging? messaging,
   })  : _repository = repository,
         _userId = userId,
@@ -164,15 +165,15 @@ class FCMTokenManager {
           _updateDeviceInfo(newToken),
         ]);
 
-        // Clean up old token after new one is saved
+        // Deactivate old token after new one is saved
         if (oldToken != null) {
-          await _removeOldToken(oldToken);
+          await _deactivateDeviceToken();
         }
 
         AppLogger.debug('✅ Token refresh complete');
       } else {
         AppLogger.debug('📋 Token unchanged, updating timestamp only');
-        await _updateTokenTimestamp(newToken);
+        await _updateTokenTimestamp();
       }
     } catch (e) {
       AppLogger.error('❌ Failed to refresh FCM token', e);
@@ -186,6 +187,7 @@ class FCMTokenManager {
       _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
         (newToken) async {
           AppLogger.info('🔄 FCM token refreshed automatically');
+          final oldToken = _currentToken;
           _currentToken = newToken;
           _lastTokenRefresh = DateTime.now();
 
@@ -195,6 +197,12 @@ class FCMTokenManager {
               _saveTokenLocally(newToken),
               _updateDeviceInfo(newToken),
             ]);
+
+            // Deactivate old token (mirrors _refreshToken behavior)
+            if (oldToken != null && oldToken != newToken) {
+              await _deactivateDeviceToken();
+            }
+
             AppLogger.success('✅ Auto token refresh complete');
           } catch (e) {
             AppLogger.error('❌ Failed to handle auto token refresh', e);
@@ -305,7 +313,6 @@ class FCMTokenManager {
         'userId': _userId,
         'token': token,
         'platform': _getPlatformName(),
-        'createdAt': FieldValue.serverTimestamp(),
         'lastUpdated': FieldValue.serverTimestamp(),
         'isActive': true,
       };
@@ -355,7 +362,7 @@ class FCMTokenManager {
   }
 
   /// Update token timestamp without changing the token
-  Future<void> _updateTokenTimestamp(String token) async {
+  Future<void> _updateTokenTimestamp() async {
     try {
       await _repository.updateTokenTimestamp(
         '${_userId}_${await _getDeviceId()}',
@@ -365,12 +372,12 @@ class FCMTokenManager {
     }
   }
 
-  /// Remove old token from Firestore
-  Future<void> _removeOldToken(String oldToken) async {
+  /// Deactivate the current device's token doc in Firestore
+  Future<void> _deactivateDeviceToken() async {
     try {
-      await _repository.removeOldToken(_userId, oldToken);
+      await _repository.removeOldToken(_userId, await _getDeviceId());
     } catch (e) {
-      AppLogger.warning('⚠️ Failed to remove old token: $e');
+      AppLogger.warning('⚠️ Failed to deactivate device token: $e');
     }
   }
 
@@ -472,7 +479,7 @@ class FCMTokenManager {
 
       // Mark current token as inactive
       if (_currentToken != null) {
-        await _removeOldToken(_currentToken!);
+        await _deactivateDeviceToken();
       }
 
       // Mark device as inactive

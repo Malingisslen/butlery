@@ -14,7 +14,8 @@ import 'package:get_it/get_it.dart';
 
 // Production code being tested
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
-import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/device_repository.dart';
+import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
 // Test infrastructure
@@ -24,9 +25,8 @@ import '../../../../infrastructure/mocks/production_mocks.dart';
 
 // ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
 
-// Mock for the NotificationsRepository interface (FCM token operations)
-class MockNotificationRepositoryForFCM extends Mock
-    implements NotificationsRepository {}
+// Mock for the DeviceRepository interface (FCM token operations)
+class MockDeviceRepositoryForFCM extends Mock implements DeviceRepository {}
 
 void main() {
   setUpAll(() {
@@ -35,7 +35,7 @@ void main() {
 
   group('FCMTokenManager', () {
     late FCMTokenManager tokenManager;
-    late NotificationsRepository mockRepository;
+    late DeviceRepository mockRepository;
     late MockFirebaseMessaging mockMessaging;
     late MockSharedPreferences mockPreferences;
     late MockFirebaseFirestore mockFirestore;
@@ -46,7 +46,7 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Initialize mocks using centralized infrastructure
-      mockRepository = MockNotificationRepositoryForFCM();
+      mockRepository = MockDeviceRepositoryForFCM();
       mockMessaging = MockFirebaseMessaging();
       mockPreferences = MockSharedPreferences();
       mockFirestore = MockFirebaseFirestore();
