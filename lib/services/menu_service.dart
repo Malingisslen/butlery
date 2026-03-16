@@ -167,7 +167,9 @@ class MenuService extends BaseService {
       'middagar': 'middag',
       'luncher': 'lunch',
       'frukostar': 'frukost',
+      'frukoster': 'frukost',
       'desserter': 'dessert',
+      'efterrätter': 'efterrätt',
       'mellanmål': 'mellanmål',
       'fikor': 'fika',
     };

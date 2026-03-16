@@ -8,7 +8,6 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Conversation mutation module for write operations.
 class ConversationMutationModule {
@@ -384,7 +383,7 @@ class ConversationMutationModule {
   }
 
   /// Update user-specific conversation settings.
-  /// Writes to both subcollection (legacy) and denormalized map on main doc
+  /// Writes to the denormalized perUserSettings map on the main doc
   /// so that conversation streams can read the state without extra queries.
   ///
   /// Uses set(mergeFields:) on the main doc to avoid overwriting other
@@ -398,6 +397,8 @@ class ConversationMutationModule {
     required String userId,
     required Map<String, dynamic> settings,
   }) async {
+    if (settings.isEmpty) return;
+
     try {
       final docRef = firestore.collection(collectionName).doc(conversationId);
 
@@ -406,9 +407,8 @@ class ConversationMutationModule {
       // only touches the keys we're changing, preserving sibling users'
       // settings and other keys for this user, while also safely creating the
       // perUserSettings map and user sub-map when they don't exist yet.
-      final mergeFieldPaths = settings.keys
-          .map((key) => 'perUserSettings.$userId.$key')
-          .toList();
+      final mergeFieldPaths =
+          settings.keys.map((key) => 'perUserSettings.$userId.$key').toList();
 
       await docRef.set(
         {
@@ -418,17 +418,6 @@ class ConversationMutationModule {
         },
         SetOptions(mergeFields: mergeFieldPaths),
       );
-
-      // Write to subcollection (backward compat — non-critical)
-      try {
-        await docRef
-            .collection(FirestoreCollections.userSettingsTop)
-            .doc(userId)
-            .set(settings, SetOptions(merge: true));
-      } catch (e) {
-        AppLogger.warning(
-            'Subcollection userSettings write failed (non-critical): $e');
-      }
 
       AppLogger.debug(
           'Updated conversation settings for user $userId in $conversationId');
