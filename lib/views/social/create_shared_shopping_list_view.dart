@@ -28,10 +28,12 @@ class _CreateSharedShoppingListViewState
     extends State<CreateSharedShoppingListView> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  late final FriendsViewModel _friendsViewModel;
 
   @override
   void initState() {
     super.initState();
+    _friendsViewModel = ServiceLocator.get<FriendsViewModel>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args =
@@ -53,6 +55,7 @@ class _CreateSharedShoppingListViewState
 
   @override
   void dispose() {
+    _friendsViewModel.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
@@ -65,8 +68,8 @@ class _CreateSharedShoppingListViewState
         ChangeNotifierProvider(
           create: (_) => CreateSharedListViewModel(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => ServiceLocator.get<FriendsViewModel>(),
+        ChangeNotifierProvider.value(
+          value: _friendsViewModel,
         ),
         ChangeNotifierProvider.value(
           value: ServiceLocator.get<UnifiedFriendsService>(),

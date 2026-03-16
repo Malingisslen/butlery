@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/image/simple_image_widget.dart';
 
 /// Dialog for selecting recipes for menu categories
 class MenuRecipeSelectionDialog extends StatefulWidget {
@@ -28,11 +29,24 @@ class MenuRecipeSelectionDialog extends StatefulWidget {
 class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
   final Set<String> _selectedRecipeIds = {};
   String _searchQuery = '';
+  late final RecipeListViewModel _recipeListViewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _recipeListViewModel = ServiceLocator.get<RecipeListViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _recipeListViewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServiceLocator.get<RecipeListViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: _recipeListViewModel,
       child: Consumer<RecipeListViewModel>(
         builder: (context, viewModel, child) {
           return AlertDialog(
@@ -238,28 +252,16 @@ class MenuRecipeListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: AppDimensions.listItemPadding,
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: recipe.imageUrls.isNotEmpty
-            ? Image.network(
-                recipe.imageUrls.first,
-                width: AppDimensions.iconSizeDisplay,
-                height: AppDimensions.iconSizeDisplay,
-                fit: BoxFit.contain,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return const SizedBox(
-                    width: AppDimensions.iconSizeDisplay,
-                    height: AppDimensions.iconSizeDisplay,
-                    child: Center(
-                        child: CircularProgressIndicator(strokeWidth: 2)),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildPlaceholder(context),
-              )
-            : _buildPlaceholder(context),
-      ),
+      leading: recipe.imageUrls.isNotEmpty
+          ? NetworkImageWidget(
+              imageUrl: recipe.imageUrls.first,
+              width: AppDimensions.iconSizeDisplay,
+              height: AppDimensions.iconSizeDisplay,
+              fit: BoxFit.contain,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              errorWidget: _buildPlaceholder(context),
+            )
+          : _buildPlaceholder(context),
       title: Text(
         recipe.title,
         style: AppTextStyles.titleMedium,

@@ -23,13 +23,32 @@ import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-class UserProfileEditView extends StatelessWidget {
+class UserProfileEditView extends StatefulWidget {
   const UserProfileEditView({super.key});
 
   @override
+  State<UserProfileEditView> createState() => _UserProfileEditViewState();
+}
+
+class _UserProfileEditViewState extends State<UserProfileEditView> {
+  late final UserProfileViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<UserProfileViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServiceLocator.get<UserProfileViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: const _UserProfileEditViewContent(),
     );
   }

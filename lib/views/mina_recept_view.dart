@@ -10,7 +10,6 @@
 // lib/views/main_views/mina_recept_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 // ViewModel integration for comprehensive state management
@@ -55,16 +54,35 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Personal recipe management view with multi-provider architecture.
-class MinaReceptView extends StatelessWidget {
+class MinaReceptView extends StatefulWidget {
   const MinaReceptView({super.key});
+
+  @override
+  State<MinaReceptView> createState() => _MinaReceptViewState();
+}
+
+class _MinaReceptViewState extends State<MinaReceptView> {
+  late final RecipeListViewModel _recipeListViewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _recipeListViewModel = ServiceLocator.get<RecipeListViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _recipeListViewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         // Recipe collection state management
-        ChangeNotifierProvider<RecipeListViewModel>(
-          create: (context) => ServiceLocator.get<RecipeListViewModel>(),
+        ChangeNotifierProvider<RecipeListViewModel>.value(
+          value: _recipeListViewModel,
         ),
         // User profile and authentication service
         ChangeNotifierProvider.value(value: ServiceLocator.get<UserService>()),
@@ -170,33 +188,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         final viewModel = context.read<RecipeListViewModel>();
         viewModel.updateSort(criteria);
       });
-    }
-  }
-
-  // Exit dialog
-  Future<void> _showExitDialog(BuildContext context) async {
-    final shouldExit = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.navExitApp),
-        content: Text(context.l10n.navExitAppConfirmation),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: context.l10n.commonCancel,
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: context.l10n.navExit,
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldExit == true && context.mounted) {
-      SystemNavigator.pop();
     }
   }
 
@@ -393,84 +384,70 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ],
           );
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (bool didPop, Object? result) {
-        if (!didPop) {
-          if (viewModel.isSelectionMode) {
-            viewModel.clearSelection();
-          } else {
-            _showExitDialog(context);
-          }
-        }
-      },
-      child: LayoutComponents.mainMenu(
-        currentIndex: 0,
-        appBar: appBar,
-        body: FocusTraversalGroup(
-            child: Column(
-          children: [
-            LayoutComponents.offlineIndicator(),
-            SyncIndicator(
-              hasPendingWrites: viewModel.hasPendingWrites,
-              isFromCache: viewModel.isFromCache,
+    return Scaffold(
+      appBar: appBar,
+      body: FocusTraversalGroup(
+          child: Column(
+        children: [
+          LayoutComponents.offlineIndicator(),
+          SyncIndicator(
+            hasPendingWrites: viewModel.hasPendingWrites,
+            isFromCache: viewModel.isFromCache,
+          ),
+          if (!viewModel.isSelectionMode) ...[
+            SearchFilterWidget(
+              searchQuery: viewModel.searchQuery,
+              onSearchChanged: viewModel.updateSearch,
+              searchHint: context.l10n.recipeSearchHint,
+              activeTimeFilters: viewModel.activeTimeFilters,
+              activeMealTypeFilters: viewModel.activeMealTypeFilters,
+              activeRatingFilters: viewModel.activeRatingFilters,
+              activeAllergenFilters: viewModel.activeAllergenFilters,
+              activeDietaryFilters: viewModel.activeDietaryFilters,
+              onTimeFilterToggle: viewModel.toggleTimeFilter,
+              onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
+              onRatingFilterToggle: viewModel.toggleRatingFilter,
+              onAllergenFilterToggle: viewModel.toggleAllergenFilter,
+              onDietaryFilterToggle: viewModel.toggleDietaryFilter,
+              personalTagIds: personalTagViewModel.tags,
+              activePersonalTagFilters: viewModel.activePersonalTagFilters,
+              excludedPersonalTagFilters: viewModel.excludedPersonalTagFilters,
+              onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
+              onExcludedPersonalTagFilterToggle:
+                  viewModel.toggleExcludedPersonalTagFilter,
+              onManagePersonalTags: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PersonalTagsView(),
+                  ),
+                );
+              },
+              showFilters: _showFilters,
+              onToggleFilters: () =>
+                  setState(() => _showFilters = !_showFilters),
+              hasActiveFilters: viewModel.hasActiveFilters,
+              onClearAllFilters: viewModel.clearAllFilters,
+              resultCount: recipeCount,
+              showStats: false,
             ),
-            if (!viewModel.isSelectionMode) ...[
-              SearchFilterWidget(
-                searchQuery: viewModel.searchQuery,
-                onSearchChanged: viewModel.updateSearch,
-                searchHint: context.l10n.recipeSearchHint,
-                activeTimeFilters: viewModel.activeTimeFilters,
-                activeMealTypeFilters: viewModel.activeMealTypeFilters,
-                activeRatingFilters: viewModel.activeRatingFilters,
-                activeAllergenFilters: viewModel.activeAllergenFilters,
-                activeDietaryFilters: viewModel.activeDietaryFilters,
-                onTimeFilterToggle: viewModel.toggleTimeFilter,
-                onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
-                onRatingFilterToggle: viewModel.toggleRatingFilter,
-                onAllergenFilterToggle: viewModel.toggleAllergenFilter,
-                onDietaryFilterToggle: viewModel.toggleDietaryFilter,
-                personalTagIds: personalTagViewModel.tags,
-                activePersonalTagFilters: viewModel.activePersonalTagFilters,
-                excludedPersonalTagFilters:
-                    viewModel.excludedPersonalTagFilters,
-                onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
-                onExcludedPersonalTagFilterToggle:
-                    viewModel.toggleExcludedPersonalTagFilter,
-                onManagePersonalTags: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PersonalTagsView(),
-                    ),
-                  );
-                },
-                showFilters: _showFilters,
-                onToggleFilters: () =>
-                    setState(() => _showFilters = !_showFilters),
-                hasActiveFilters: viewModel.hasActiveFilters,
-                onClearAllFilters: viewModel.clearAllFilters,
-                resultCount: recipeCount,
-                showStats: false,
+            Selector<UserService, Set<String>>(
+              selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
+              builder: (context, trackedAllergens, _) => QuickFilterChips(
+                options: [
+                  ...QuickFilterChips.getDefaultRecipeFilters(context),
+                  ...QuickFilterChips.getAllergenFilters(trackedAllergens),
+                ],
+                selectedIds: _getQuickFilterIds(viewModel),
+                onFilterToggle: (filterId) =>
+                    _onQuickFilterToggle(viewModel, filterId),
+                trailing: _buildSortChip(viewModel),
               ),
-              Selector<UserService, Set<String>>(
-                selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
-                builder: (context, trackedAllergens, _) => QuickFilterChips(
-                  options: [
-                    ...QuickFilterChips.getDefaultRecipeFilters(context),
-                    ...QuickFilterChips.getAllergenFilters(trackedAllergens),
-                  ],
-                  selectedIds: _getQuickFilterIds(viewModel),
-                  onFilterToggle: (filterId) =>
-                      _onQuickFilterToggle(viewModel, filterId),
-                  trailing: _buildSortChip(viewModel),
-                ),
-              ),
-            ],
-            Expanded(child: _buildContent(viewModel, offlineService)),
+            ),
           ],
-        )),
-      ),
+          Expanded(child: _buildContent(viewModel, offlineService)),
+        ],
+      )),
     );
   }
 

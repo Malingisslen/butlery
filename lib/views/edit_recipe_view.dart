@@ -48,10 +48,30 @@ import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
-class EditRecipeView extends StatelessWidget {
+class EditRecipeView extends StatefulWidget {
   final Recipe recipe;
 
   const EditRecipeView({super.key, required this.recipe});
+
+  @override
+  State<EditRecipeView> createState() => _EditRecipeViewState();
+}
+
+class _EditRecipeViewState extends State<EditRecipeView> {
+  late final CollaborativeStatusViewModel _collaborativeStatusViewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _collaborativeStatusViewModel =
+        ServiceLocator.get<CollaborativeStatusViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _collaborativeStatusViewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,14 +82,14 @@ class EditRecipeView extends StatelessWidget {
         ChangeNotifierProvider<RecipeFormViewModel>(
           create: (_) => RecipeFormViewModel(
             recipeService: ServiceLocator.get(),
-            initialRecipe: recipe,
+            initialRecipe: widget.recipe,
           ),
         ),
-        ChangeNotifierProvider<CollaborativeStatusViewModel>(
-          create: (_) => ServiceLocator.get<CollaborativeStatusViewModel>(),
+        ChangeNotifierProvider<CollaborativeStatusViewModel>.value(
+          value: _collaborativeStatusViewModel,
         ),
       ],
-      child: _EditRecipeViewContent(recipe: recipe),
+      child: _EditRecipeViewContent(recipe: widget.recipe),
     );
   }
 }

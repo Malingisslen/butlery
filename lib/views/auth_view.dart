@@ -32,9 +32,17 @@ class _AuthViewState extends State<AuthView> {
   final _passwordFocus = FocusNode();
   final _nameFocus = FocusNode();
   bool _ageConfirmed = false;
+  late final AuthViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<AuthViewModel>();
+  }
 
   @override
   void dispose() {
+    _viewModel.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
@@ -46,8 +54,8 @@ class _AuthViewState extends State<AuthView> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServiceLocator.get<AuthViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: Scaffold(
         backgroundColor: AppColors.cream,
         body: Consumer<AuthViewModel>(

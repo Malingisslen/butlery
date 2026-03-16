@@ -49,7 +49,7 @@ enum _MenuAction {
 /// - User actions (edit, delete, share, fork)
 /// - Portion scaling functionality
 /// - Fullscreen image viewing
-class RecipeDetailView extends StatelessWidget {
+class RecipeDetailView extends StatefulWidget {
   final Recipe recipe;
 
   const RecipeDetailView({
@@ -58,20 +58,39 @@ class RecipeDetailView extends StatelessWidget {
   });
 
   @override
+  State<RecipeDetailView> createState() => _RecipeDetailViewState();
+}
+
+class _RecipeDetailViewState extends State<RecipeDetailView> {
+  late final SocialRecipeViewModel _socialRecipeViewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _socialRecipeViewModel = ServiceLocator.get<SocialRecipeViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _socialRecipeViewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => RecipeDetailViewModel(recipe: recipe),
+          create: (_) => RecipeDetailViewModel(recipe: widget.recipe),
         ),
-        ChangeNotifierProvider<SocialRecipeViewModel>(
-          create: (_) => ServiceLocator.get<SocialRecipeViewModel>(),
+        ChangeNotifierProvider<SocialRecipeViewModel>.value(
+          value: _socialRecipeViewModel,
         ),
         ChangeNotifierProvider.value(
           value: ServiceLocator.get<UserService>(),
         ),
       ],
-      child: _RecipeDetailViewContent(recipe: recipe),
+      child: _RecipeDetailViewContent(recipe: widget.recipe),
     );
   }
 }

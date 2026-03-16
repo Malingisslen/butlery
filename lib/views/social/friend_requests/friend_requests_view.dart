@@ -22,13 +22,32 @@ import 'package:butlery/views/social/friend_requests/friend_request_actions.dart
 import 'package:butlery/views/social/friend_requests/friend_request_builders.dart';
 
 /// Main friend requests view - thin facade coordinating extracted components
-class FriendRequestsView extends StatelessWidget {
+class FriendRequestsView extends StatefulWidget {
   const FriendRequestsView({super.key});
 
   @override
+  State<FriendRequestsView> createState() => _FriendRequestsViewState();
+}
+
+class _FriendRequestsViewState extends State<FriendRequestsView> {
+  late final FriendsViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<FriendsViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServiceLocator.get<FriendsViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: const _FriendRequestsViewContent(),
     );
   }
