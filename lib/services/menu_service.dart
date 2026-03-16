@@ -90,12 +90,19 @@ class MenuService extends BaseService {
 
     final rand = Random();
     final result = <String, List<Recipe>>{};
+    final usedIds = <String>{};
     counts.forEach((mealType, count) {
       final bucket = allRecipes
-          .where((r) => r.mealType.toLowerCase() == mealType.toLowerCase())
+          .where((r) =>
+              r.mealType.toLowerCase() == mealType.toLowerCase() &&
+              !usedIds.contains(r.id))
           .toList()
         ..shuffle(rand);
-      result[mealType] = bucket.take(min(count, bucket.length)).toList();
+      final selected = bucket.take(min(count, bucket.length)).toList();
+      for (final recipe in selected) {
+        usedIds.add(recipe.id);
+      }
+      result[mealType] = selected;
     });
 
     return result;
@@ -155,14 +162,22 @@ class MenuService extends BaseService {
 
   /// Normalizes plural forms and matches against available meal types.
   String? _detectType(String input, Set<String> available) {
-    final norm = input
-        .replaceAll(RegExp(r'\d+'), '')
-        .replaceAll(RegExp(r'(ar|er)$', unicode: true), '')
-        .trim();
+    // Explicit Swedish plural-to-singular map (avoids over-stripping with regex)
+    const pluralMap = {
+      'middagar': 'middag',
+      'luncher': 'lunch',
+      'frukostar': 'frukost',
+      'desserter': 'dessert',
+      'mellanmål': 'mellanmål',
+      'fikor': 'fika',
+    };
+
+    final norm = input.replaceAll(RegExp(r'\d+'), '').trim();
+    final singular = pluralMap[norm] ?? norm;
 
     for (var type in available) {
       final low = type.toLowerCase();
-      if (low == norm || low.startsWith(norm)) return type;
+      if (low == singular || low.startsWith(singular)) return type;
     }
     return null;
   }

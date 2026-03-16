@@ -393,23 +393,12 @@ class TagResult {
     final migratedData = _migrateSchema(data, schemaVersion);
 
     // H11: Log warning when DateTime is missing (could indicate data corruption)
-    DateTime parseDateTime(dynamic value) {
-      if (value == null) {
-        AppLogger.warning(
-          'TagResult.fromJson: generatedAt is null, defaulting to now(). '
-              'This may indicate corrupted data.',
-          'TagResult',
-        );
-        return DateTime.now();
-      }
-      if (value is DateTime) return value;
-      if (value is String) return DateTime.parse(value);
-      if (value is Timestamp) return value.toDate();
+    if (migratedData['generatedAt'] == null) {
       AppLogger.warning(
-        'TagResult.fromJson: unexpected generatedAt type ${value.runtimeType}, defaulting to now().',
+        'TagResult.fromJson: generatedAt is null, defaulting to now(). '
+            'This may indicate corrupted data.',
         'TagResult',
       );
-      return DateTime.now();
     }
 
     // H7/CRIT-2: Clamp coverage to valid [0.0, 1.0] range and track anomaly
@@ -431,7 +420,8 @@ class TagResult {
       dietaryStatus: _parseDietaryStatus(migratedData['dietaryStatus']),
       coverage: coverage,
       unknownIngredients: _parseStringList(migratedData['unknownIngredients']),
-      generatedAt: parseDateTime(migratedData['generatedAt']),
+      generatedAt: SerializationUtils.parseRequiredDateTimeValue(
+          migratedData['generatedAt']),
       generatorVersion: SerializationUtils.safeNullableString(
           migratedData, 'generatorVersion'),
       isPartial: SerializationUtils.safeBool(migratedData, 'isPartial',

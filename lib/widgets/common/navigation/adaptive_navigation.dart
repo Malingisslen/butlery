@@ -5,7 +5,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
@@ -439,7 +438,8 @@ class ButleryBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.creamDarker,
+        color: backgroundColor ??
+            Theme.of(context).colorScheme.surfaceContainerLow,
       ),
       child: SafeArea(
         top: false,
@@ -489,8 +489,8 @@ class _BottomNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final color = isSelected
-        ? (selectedColor ?? AppColors.forestGreenDark)
-        : (unselectedColor ?? AppColors.greenMuted);
+        ? (selectedColor ?? cs.primary)
+        : (unselectedColor ?? cs.onSurfaceVariant);
 
     return Semantics(
       label: item.accessibleLabel,

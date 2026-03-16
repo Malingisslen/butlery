@@ -488,7 +488,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     try {
       final otherParticipantId = conversation.participantIds.firstWhere(
           (id) => id != vm.currentUserId,
-          orElse: () => conversation.participantIds.first);
+          orElse: () => conversation.participantIds.firstOrNull ?? '');
 
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 

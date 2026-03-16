@@ -231,7 +231,7 @@ class PersistenceService extends BaseService {
 
       if (lastUpdatedString == null) return null;
 
-      return DateTime.parse(lastUpdatedString);
+      return DateTime.tryParse(lastUpdatedString);
     } catch (e) {
       AppLogger.error(
         'Fel vid hämtning av senaste uppdatering',

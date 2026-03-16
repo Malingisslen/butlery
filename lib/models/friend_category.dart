@@ -196,8 +196,10 @@ class FriendCategory {
       description: SerializationUtils.safeNullableString(data, 'description'),
       emoji: SerializationUtils.safeNullableString(data, 'emoji'),
       friendUserIds: SerializationUtils.safeStringList(data, 'friendUserIds'),
-      createdAt: _parseTimestamp(data['createdAt']) ?? DateTime.now(),
-      updatedAt: _parseTimestamp(data['updatedAt']) ?? DateTime.now(),
+      createdAt:
+          SerializationUtils.parseRequiredDateTimeValue(data['createdAt']),
+      updatedAt:
+          SerializationUtils.parseRequiredDateTimeValue(data['updatedAt']),
       sortOrder: SerializationUtils.safeInt(data, 'sortOrder'),
       isDefault: SerializationUtils.safeBool(data, 'isDefault'),
       usesSubcollectionMembers:
@@ -257,35 +259,6 @@ class FriendCategory {
 
   @override
   int get hashCode => id.hashCode;
-
-  /// Helper method for parsing timestamps from repository data
-  static DateTime? _parseTimestamp(dynamic timestamp) {
-    if (timestamp == null) return null;
-
-    try {
-      if (timestamp is DateTime) {
-        return timestamp;
-      } else if (timestamp is Map) {
-        // Handle raw timestamp data from Firestore
-        final seconds = timestamp['seconds'] as int?;
-        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
-        if (seconds != null) {
-          return DateTime.fromMillisecondsSinceEpoch(
-              seconds * 1000 + nanoseconds ~/ 1000000);
-        }
-      } else if (timestamp is int) {
-        // Handle milliseconds since epoch
-        return DateTime.fromMillisecondsSinceEpoch(timestamp);
-      } else if (timestamp is String) {
-        // Handle ISO string format
-        return DateTime.parse(timestamp);
-      }
-
-      return DateTime.now();
-    } catch (e) {
-      return DateTime.now();
-    }
-  }
 }
 
 /// Predefined category data for quick setup

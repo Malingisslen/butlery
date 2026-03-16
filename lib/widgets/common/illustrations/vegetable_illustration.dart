@@ -116,10 +116,10 @@ class VegetableIllustration extends StatelessWidget {
 
   static const _fallbackColors = {
     VegetableType.broccoli: AppColors.forestGreen,
-    VegetableType.mushroom: Color(0xFFA08060), // Brown
+    VegetableType.mushroom: AppColors.illustrationBrown,
     VegetableType.peaPod: AppColors.forestGreen,
-    VegetableType.carrot: Color(0xFFE07020), // Orange
-    VegetableType.redOnion: Color(0xFF8B2252), // Purple-red
+    VegetableType.carrot: AppColors.illustrationOrange,
+    VegetableType.redOnion: AppColors.illustrationPurpleRed,
   };
 
   Color _getFallbackColor(VegetableType type) {

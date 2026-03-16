@@ -76,29 +76,52 @@ class SerializationUtils {
   }
 
   // Date/time serialization
-  static DateTime? safeDateTime(Map<String, dynamic> map, String key) {
-    final value = map[key];
-    if (value == null) return null;
 
+  /// Parse a raw dynamic value to DateTime.
+  /// Handles: DateTime, String (ISO), int (epoch millis), Timestamp (duck-typed),
+  /// Map with seconds/nanoseconds keys (Firestore raw + JS SDK _seconds variant).
+  static DateTime? parseDateTimeValue(dynamic value) {
+    if (value == null) return null;
     if (value is DateTime) return value;
     if (value is String) return DateTime.tryParse(value);
     if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
 
-    // Firebase Timestamp handling
+    // Firebase Timestamp (duck-typed to avoid cloud_firestore import)
     if (value.runtimeType.toString() == 'Timestamp') {
       try {
         return (value as dynamic).toDate() as DateTime;
-      } catch (e) {
+      } catch (_) {
         return null;
+      }
+    }
+
+    // Raw Firestore Map {seconds, nanoseconds} or JS SDK {_seconds, _nanoseconds}
+    if (value is Map) {
+      final seconds = value['seconds'] as int? ?? value['_seconds'] as int?;
+      if (seconds != null) {
+        final nanos =
+            value['nanoseconds'] as int? ?? value['_nanoseconds'] as int? ?? 0;
+        return DateTime.fromMillisecondsSinceEpoch(
+            seconds * 1000 + nanos ~/ 1000000);
       }
     }
 
     return null;
   }
 
+  /// Non-nullable variant — falls back to [defaultValue] or DateTime.now().
+  static DateTime parseRequiredDateTimeValue(dynamic value,
+      {DateTime? defaultValue}) {
+    return parseDateTimeValue(value) ?? defaultValue ?? DateTime.now();
+  }
+
+  static DateTime? safeDateTime(Map<String, dynamic> map, String key) {
+    return parseDateTimeValue(map[key]);
+  }
+
   static DateTime safeRequiredDateTime(Map<String, dynamic> map, String key,
       {DateTime? defaultValue}) {
-    return safeDateTime(map, key) ?? defaultValue ?? DateTime.now();
+    return parseDateTimeValue(map[key]) ?? defaultValue ?? DateTime.now();
   }
 
   static dynamic serializeDateTime(DateTime? dateTime) {

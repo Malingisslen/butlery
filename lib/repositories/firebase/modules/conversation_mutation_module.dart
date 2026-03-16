@@ -47,10 +47,16 @@ class ConversationMutationModule {
       AppLogger.info(
           '🔍 Creating/getting direct conversation with deterministic ID: $conversationId');
 
-      // Try to get existing conversation
+      // Check if conversation already exists directly in top-level collection.
+      // Cannot use readFn here because UserScopedFirebaseRepository overrides
+      // getCollectionRef() to point at users/{uid}/conversations, which is a
+      // different path from the top-level conversations collection where DMs live.
       try {
-        final existing = await readFn(conversationId);
-        if (existing != null) {
+        final existingDoc = await firestore
+            .collection(collectionName)
+            .doc(conversationId)
+            .get();
+        if (existingDoc.exists) {
           AppLogger.success('✅ Found existing conversation: $conversationId');
           return conversationId;
         }
@@ -380,6 +386,13 @@ class ConversationMutationModule {
   /// Update user-specific conversation settings.
   /// Writes to both subcollection (legacy) and denormalized map on main doc
   /// so that conversation streams can read the state without extra queries.
+  ///
+  /// Uses set(mergeFields:) on the main doc to avoid overwriting other
+  /// users' settings or other setting keys for the same user (e.g. archiving
+  /// must not erase a previous pin). Unlike update(), set(mergeFields:) also
+  /// works when the perUserSettings field or the document itself doesn't
+  /// exist yet — update() would throw NOT_FOUND in that case, causing the
+  /// optimistic UI to roll back.
   Future<void> updateConversationUserSettings({
     required String conversationId,
     required String userId,
@@ -388,16 +401,34 @@ class ConversationMutationModule {
     try {
       final docRef = firestore.collection(collectionName).doc(conversationId);
 
-      // Write to subcollection (backward compat)
-      await docRef
-          .collection(FirestoreCollections.userSettingsTop)
-          .doc(userId)
-          .set(settings, SetOptions(merge: true));
+      // Denormalize to main document first — this is the authoritative source
+      // used by stream reads. set(mergeFields:) with dot-notation field paths
+      // only touches the keys we're changing, preserving sibling users'
+      // settings and other keys for this user, while also safely creating the
+      // perUserSettings map and user sub-map when they don't exist yet.
+      final mergeFieldPaths = settings.keys
+          .map((key) => 'perUserSettings.$userId.$key')
+          .toList();
 
-      // Denormalize to main document for stream reads
-      await docRef.set({
-        'perUserSettings': {userId: settings},
-      }, SetOptions(merge: true));
+      await docRef.set(
+        {
+          'perUserSettings': {
+            userId: settings,
+          },
+        },
+        SetOptions(mergeFields: mergeFieldPaths),
+      );
+
+      // Write to subcollection (backward compat — non-critical)
+      try {
+        await docRef
+            .collection(FirestoreCollections.userSettingsTop)
+            .doc(userId)
+            .set(settings, SetOptions(merge: true));
+      } catch (e) {
+        AppLogger.warning(
+            'Subcollection userSettings write failed (non-critical): $e');
+      }
 
       AppLogger.debug(
           'Updated conversation settings for user $userId in $conversationId');

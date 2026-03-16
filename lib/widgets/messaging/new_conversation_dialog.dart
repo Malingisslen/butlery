@@ -34,6 +34,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   final List<String> _selectedFriendIds = [];
   bool _isCreating = false;
   bool _isLoading = true;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -67,6 +68,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _hasError = true;
         });
       }
     }
@@ -185,6 +187,37 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: AppDimensions.iconSizeXxl,
+              color: cs.error,
+            ),
+            const SizedBox(height: AppDimensions.paddingM),
+            Text(
+              context.l10n.errorGeneric,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: AppDimensions.paddingM),
+            TextButton.icon(
+              onPressed: () {
+                setState(() => _hasError = false);
+                _loadFriends();
+              },
+              icon: const Icon(Icons.refresh),
+              label: Text(context.l10n.commonRetry),
+            ),
+          ],
+        ),
       );
     }
 

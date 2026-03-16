@@ -248,7 +248,10 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   bool _hasFilters() {
     return widget.activeTimeFilters != null &&
         widget.activeMealTypeFilters != null &&
-        widget.activeRatingFilters != null;
+        widget.activeRatingFilters != null &&
+        widget.onTimeFilterToggle != null &&
+        widget.onMealTypeFilterToggle != null &&
+        widget.onRatingFilterToggle != null;
   }
 
   /// Search bar with integrated filter toggle

@@ -2,6 +2,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Recipe serialization and deserialization.
 class RecipeSerialization {
@@ -83,11 +84,16 @@ class RecipeSerialization {
         imageUrls: List<String>.from(coreData['imageUrls'] ?? []),
         mealType: coreData['mealType'] as String? ?? 'Middag',
         sourceUrl: coreData['sourceUrl'] as String?,
-        createdAt: _parseTimestamp(coreData['createdAt']) ?? DateTime.now(),
-        updatedAt: _parseTimestamp(coreData['updatedAt']) ?? DateTime.now(),
+        createdAt:
+            SerializationUtils.parseDateTimeValue(coreData['createdAt']) ??
+                DateTime.now(),
+        updatedAt:
+            SerializationUtils.parseDateTimeValue(coreData['updatedAt']) ??
+                DateTime.now(),
         createdBy: coreData['createdBy'] as String?,
         isPublic: coreData['isPublic'] as bool? ?? false,
-        lastCookedAt: _parseTimestamp(coreData['lastCookedAt']),
+        lastCookedAt:
+            SerializationUtils.parseDateTimeValue(coreData['lastCookedAt']),
       ),
       type: RecipeType.realtime,
       socialData: _deserializeSocialData(recipeData),
@@ -185,10 +191,13 @@ class RecipeSerialization {
 
     // Timestamp fields
     sanitized['createdAt'] =
-        _parseTimestamp(data['createdAt']) ?? DateTime.now();
+        SerializationUtils.parseDateTimeValue(data['createdAt']) ??
+            DateTime.now();
     sanitized['updatedAt'] =
-        _parseTimestamp(data['updatedAt']) ?? DateTime.now();
-    sanitized['lastCookedAt'] = _parseTimestamp(data['lastCookedAt']);
+        SerializationUtils.parseDateTimeValue(data['updatedAt']) ??
+            DateTime.now();
+    sanitized['lastCookedAt'] =
+        SerializationUtils.parseDateTimeValue(data['lastCookedAt']);
 
     // String fields
     sanitized['sourceUrl'] = data['sourceUrl']?.toString();
@@ -208,25 +217,6 @@ class RecipeSerialization {
     }
 
     return sanitized;
-  }
-
-  static DateTime? _parseTimestamp(dynamic timestamp) {
-    if (timestamp == null) return null;
-
-    if (timestamp is DateTime) {
-      return timestamp;
-    }
-
-    if (timestamp is String) {
-      return DateTime.tryParse(timestamp);
-    }
-
-    if (timestamp is int) {
-      return DateTime.fromMillisecondsSinceEpoch(timestamp);
-    }
-
-    // Note: Firebase Timestamp handling moved to repository layer
-    return null;
   }
 
   /// Sanitize list of strings

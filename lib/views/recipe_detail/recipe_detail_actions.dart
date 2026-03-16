@@ -41,7 +41,7 @@ class RecipeDetailActions {
   void initializeActions(BuildContext context) {
     final viewModel = context.read<RecipeDetailViewModel>();
     _scaledIngredients = List.from(viewModel.recipe.ingredients);
-    _currentPortions = viewModel.recipe.portions ?? 0;
+    _currentPortions = viewModel.recipe.portions ?? 1;
     _isCommentsExpanded = false;
   }
 

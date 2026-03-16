@@ -1056,6 +1056,11 @@ service cloud.firestore {
 
       // Can delete if you're a participant
       allow delete: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
+
+      // Per-user settings subcollection (archive, pin, etc.)
+      match /userSettings/{settingsUserId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == settingsUserId;
+      }
     }
 
     // ========================================

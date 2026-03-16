@@ -202,7 +202,7 @@ class RealtimeMenuData {
     return RealtimeMenuData(
       menuTitle: SerializationUtils.safeString(json, 'menuTitle'),
       createdForDate:
-          DateTime.parse(SerializationUtils.safeString(json, 'createdForDate')),
+          SerializationUtils.safeRequiredDateTime(json, 'createdForDate'),
       menuSnapshot: menuSnapshot,
       menuNotes: SerializationUtils.safeNullableString(json, 'menuNotes'),
       favoriteRecipeIds: favoriteIds?.isEmpty == true ? null : favoriteIds,

@@ -83,14 +83,24 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         });
 
         // Listen to real-time updates
-        _messageStreamSubscription = _messageStream?.listen((newMessages) {
-          if (mounted) {
-            setState(() {
-              _updateMessagesIncremental(newMessages);
-            });
-            _scrollToBottom();
-          }
-        });
+        _messageStreamSubscription = _messageStream?.listen(
+          (newMessages) {
+            if (mounted) {
+              setState(() {
+                _updateMessagesIncremental(newMessages);
+              });
+              _scrollToBottom();
+            }
+          },
+          onError: (Object error) {
+            AppLogger.error('Message stream error', error);
+            if (mounted) {
+              setState(() {
+                _error = context.l10n.errorGeneric;
+              });
+            }
+          },
+        );
 
         // Auto-scroll to bottom for new messages
         WidgetsBinding.instance.addPostFrameCallback((_) {

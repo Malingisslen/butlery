@@ -14,11 +14,13 @@ import 'package:butlery/core/utils/logger.dart';
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Conversation? conversation;
   final Function(String) onMenuAction;
+  final void Function(Object error)? onError;
 
   const ChatAppBar({
     super.key,
     this.conversation,
     required this.onMenuAction,
+    this.onError,
   });
 
   @override
@@ -30,6 +32,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       await onMenuAction(action);
     } catch (e) {
       AppLogger.error('Failed to handle menu action: $action', e);
+      onError?.call(e);
     }
   }
 

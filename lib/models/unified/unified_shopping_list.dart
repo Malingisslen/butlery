@@ -646,10 +646,8 @@ class UnifiedShoppingList {
         'items',
         (item) => UnifiedShoppingItem.fromJson(item),
       ),
-      createdAt:
-          DateTime.parse(SerializationUtils.safeString(json, 'createdAt')),
-      updatedAt:
-          DateTime.parse(SerializationUtils.safeString(json, 'updatedAt')),
+      createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
+      updatedAt: SerializationUtils.safeRequiredDateTime(json, 'updatedAt'),
       lastSyncedAt:
           lastSyncedAtStr != null ? DateTime.tryParse(lastSyncedAtStr) : null,
       syncStatus: SyncStatus.values.firstWhere(

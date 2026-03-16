@@ -6,6 +6,7 @@
 /// - Cost tracking for LLM operations
 
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Result of a rate limit check.
 sealed class RateLimitResult {
@@ -238,31 +239,23 @@ class UsageLimits {
   factory UsageLimits.fromFirestore(Map<String, dynamic> data) {
     return UsageLimits(
       importsThisMinute: data['importsThisMinute'] as int? ?? 0,
-      minuteWindowStart: _parseTimestamp(data['minuteWindowStart']),
+      minuteWindowStart:
+          SerializationUtils.parseDateTimeValue(data['minuteWindowStart']),
       importsThisHour: data['importsThisHour'] as int? ?? 0,
-      hourWindowStart: _parseTimestamp(data['hourWindowStart']),
+      hourWindowStart:
+          SerializationUtils.parseDateTimeValue(data['hourWindowStart']),
       importsToday: data['importsToday'] as int? ?? 0,
-      dayWindowStart: _parseTimestamp(data['dayWindowStart']),
+      dayWindowStart:
+          SerializationUtils.parseDateTimeValue(data['dayWindowStart']),
       llmEnhancementsToday: data['llmEnhancementsToday'] as int? ?? 0,
       llmExtractionsToday: data['llmExtractionsToday'] as int? ?? 0,
       llmVisionToday: data['llmVisionToday'] as int? ?? 0,
       llmCostToday: (data['llmCostToday'] as num?)?.toDouble() ?? 0.0,
       llmCostThisMonth: (data['llmCostThisMonth'] as num?)?.toDouble() ?? 0.0,
       llmOperationsThisMonth: data['llmOperationsThisMonth'] as int? ?? 0,
-      monthWindowStart: _parseTimestamp(data['monthWindowStart']),
+      monthWindowStart:
+          SerializationUtils.parseDateTimeValue(data['monthWindowStart']),
     );
-  }
-
-  static DateTime? _parseTimestamp(dynamic value) {
-    if (value == null) return null;
-    if (value is DateTime) return value;
-    // Handle Firestore Timestamp
-    if (value is Map && value['_seconds'] != null) {
-      return DateTime.fromMillisecondsSinceEpoch(
-        (value['_seconds'] as int) * 1000,
-      );
-    }
-    return null;
   }
 
   /// Convert to Firestore data

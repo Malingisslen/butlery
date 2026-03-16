@@ -147,6 +147,11 @@ class AppColors {
   /// Background tint for subtle elevation
   static const Color backgroundTint = Color(0xFFFAF8F3);
 
+  // Illustration decorative colors (static across themes)
+  static const Color illustrationBrown = Color(0xFFA08060);
+  static const Color illustrationOrange = Color(0xFFE07020);
+  static const Color illustrationPurpleRed = Color(0xFF8B2252);
+
   /// Overlay for modals/dialogs
   static const Color overlay = Color(0x80000000);
 

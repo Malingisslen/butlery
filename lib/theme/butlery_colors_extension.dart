@@ -100,7 +100,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     chatBubbleOutgoing: Color(0xFF6B9B7A), // forestGreenLight
     chatBubbleIncoming: Color(0xFFF0EAD6), // creamDark
     chatTextOutgoing: Color(0xFFFFFFFF), // textOnPrimary
-    chatTextIncoming: Color(0xFF2C3E50), // textDark
+    chatTextIncoming: Color(0xFF1A1A1A), // textDark
     // Status: success (alias to forestGreen)
     success: Color(0xFF4A7C59),
     onSuccess: Color(0xFFFFFFFF),

@@ -123,19 +123,13 @@ class PersonalTag {
       throw ArgumentError('PersonalTag.fromJson requires id field');
     }
 
-    DateTime parseDateTime(dynamic value) {
-      if (value == null) return DateTime.now();
-      if (value is DateTime) return value;
-      if (value is String) return DateTime.parse(value);
-      if (value is Timestamp) return value.toDate();
-      return DateTime.now();
-    }
-
     return PersonalTag(
       id: id,
       name: SerializationUtils.safeString(json, 'name', defaultValue: ''),
-      createdAt: parseDateTime(json['createdAt']),
-      updatedAt: parseDateTime(json['updatedAt']),
+      createdAt:
+          SerializationUtils.parseRequiredDateTimeValue(json['createdAt']),
+      updatedAt:
+          SerializationUtils.parseRequiredDateTimeValue(json['updatedAt']),
       sortOrder: SerializationUtils.safeInt(json, 'sortOrder', defaultValue: 0),
       groupId: SerializationUtils.safeNullableString(json, 'groupId'),
       rules: _parseRules(json['rules']),

@@ -23,6 +23,7 @@
 /// - **Performance Optimization**: Efficient serialization minimizing Firestore read/write costs
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
 
@@ -67,8 +68,7 @@ class ConversationDto {
     Map<String, dynamic>? perUserSettings;
     if (currentUserId != null) {
       final allSettings = data['perUserSettings'] as Map<String, dynamic>?;
-      perUserSettings =
-          allSettings?[currentUserId] as Map<String, dynamic>?;
+      perUserSettings = allSettings?[currentUserId] as Map<String, dynamic>?;
     }
 
     return Conversation(
@@ -94,17 +94,11 @@ class ConversationDto {
       isArchived: perUserSettings?['isArchived'] as bool? ?? false,
       isPinned: perUserSettings?['isPinned'] as bool? ?? false,
       isMuted: perUserSettings?['isMuted'] as bool? ?? false,
-      archivedAt: _parseDateTime(perUserSettings?['archivedAt']),
-      pinnedAt: _parseDateTime(perUserSettings?['pinnedAt']),
+      archivedAt:
+          SerializationUtils.parseDateTimeValue(perUserSettings?['archivedAt']),
+      pinnedAt:
+          SerializationUtils.parseDateTimeValue(perUserSettings?['pinnedAt']),
     );
-  }
-
-  /// Parses a DateTime from either an ISO8601 string or a Firestore Timestamp.
-  static DateTime? _parseDateTime(dynamic value) {
-    if (value == null) return null;
-    if (value is Timestamp) return value.toDate();
-    if (value is String) return DateTime.tryParse(value);
-    return null;
   }
 
   /// Converts a Conversation domain model to Firestore document format.
