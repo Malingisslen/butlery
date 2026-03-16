@@ -43,6 +43,7 @@ class SearchTab {
       itemBuilder: (context, index) {
         final user = viewModel.searchResults[index];
         return AnimatedListItem(
+          key: ValueKey(user.uid),
           index: index,
           child: SearchResultCard.build(context, user, viewModel),
         );

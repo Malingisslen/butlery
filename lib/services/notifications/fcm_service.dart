@@ -57,6 +57,9 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 
 /// Firebase Cloud Messaging service for push notifications with deep linking.
 ///
@@ -417,48 +420,64 @@ class FCMService with ErrorHandlingMixin {
   /// Navigate to friend requests screen
   static void _navigateToFriendRequests(
       BuildContext context, Map<String, dynamic> data) {
-    Navigator.pushNamed(context, '/friends', arguments: {'tab': 'requests'});
+    Navigator.pushNamed(context, Routes.friends, arguments: {'tab': 'requests'});
   }
 
   /// Navigate to shared recipe screen
-  static void _navigateToSharedRecipe(
-      BuildContext context, Map<String, dynamic> data) {
-    final recipeId = data['recipeId'];
-    if (recipeId != null) {
-      Navigator.pushNamed(context, '/receptDetalj', arguments: recipeId);
+  static Future<void> _navigateToSharedRecipe(
+      BuildContext context, Map<String, dynamic> data) async {
+    final recipeId = data['recipeId'] as String?;
+    if (recipeId == null) return;
+
+    final recipeRepo = ServiceLocator.get<RecipeRepository>();
+    final recipe = await recipeRepo.read(recipeId);
+    if (recipe != null && context.mounted) {
+      Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
     }
   }
 
   /// Navigate to collaboration screen
-  static void _navigateToCollaboration(
-      BuildContext context, Map<String, dynamic> data) {
-    final resourceId = data['resourceId'];
-    final resourceType = data['resourceType'];
+  static Future<void> _navigateToCollaboration(
+      BuildContext context, Map<String, dynamic> data) async {
+    final resourceId = data['resourceId'] as String?;
+    final resourceType = data['resourceType'] as String?;
 
-    if (resourceId != null && resourceType != null) {
-      // Navigate to appropriate collaboration screen
-      switch (resourceType) {
-        case 'recipe':
-          Navigator.pushNamed(context, '/laggTillRecept',
+    if (resourceId == null || resourceType == null) return;
+
+    switch (resourceType) {
+      case 'recipe':
+        final recipeRepo = ServiceLocator.get<RecipeRepository>();
+        final recipe = await recipeRepo.read(resourceId);
+        if (recipe != null && context.mounted) {
+          Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
+        }
+        break;
+      case 'menu':
+        final menuRepo = ServiceLocator.get<FirebaseSharedMenuRepository>();
+        final menu = await menuRepo.getSharedMenu(resourceId);
+        if (menu != null && context.mounted) {
+          Navigator.pushNamed(context, Routes.menuPreview, arguments: menu);
+        }
+        break;
+      case 'shopping_list':
+        if (context.mounted) {
+          Navigator.pushNamed(context, Routes.collaborativeShopping,
               arguments: resourceId);
-          break;
-        case 'menu':
-          Navigator.pushNamed(context, '/veckomeny', arguments: resourceId);
-          break;
-        case 'shopping_list':
-          Navigator.pushNamed(context, '/shopping', arguments: resourceId);
-          break;
-      }
+        }
+        break;
     }
   }
 
   /// Navigate to recipe comments
-  static void _navigateToRecipeComments(
-      BuildContext context, Map<String, dynamic> data) {
-    final recipeId = data['recipeId'];
-    if (recipeId != null) {
-      Navigator.pushNamed(context, '/receptDetalj',
-          arguments: {'recipeId': recipeId, 'scrollToComments': true});
+  static Future<void> _navigateToRecipeComments(
+      BuildContext context, Map<String, dynamic> data) async {
+    final recipeId = data['recipeId'] as String?;
+    if (recipeId == null) return;
+
+    final recipeRepo = ServiceLocator.get<RecipeRepository>();
+    final recipe = await recipeRepo.read(recipeId);
+    if (recipe != null && context.mounted) {
+      Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
     }
   }
 

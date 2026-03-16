@@ -146,6 +146,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
       value.trim(),
       excludeId: widget.existingTag?.id,
     );
+    if (!mounted) return;
     setState(() {
       _isChecking = false;
       _nameError = exists ? context.l10n.tagAlreadyExists : null;
@@ -156,7 +157,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
     // Run validation
     await _validateName(_nameController.text);
 
-    if (_nameError != null) return;
+    if (_nameError != null || !mounted) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isSaving = true);

@@ -284,6 +284,15 @@ class GroupRecipeListItem extends StatelessWidget {
                 width: AppDimensions.iconSizeXl,
                 height: AppDimensions.iconSizeXl,
                 fit: BoxFit.contain,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return const SizedBox(
+                    width: AppDimensions.iconSizeXl,
+                    height: AppDimensions.iconSizeXl,
+                    child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2)),
+                  );
+                },
                 errorBuilder: (context, error, stackTrace) =>
                     _buildPlaceholder(context),
               )

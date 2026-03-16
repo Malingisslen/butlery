@@ -67,6 +67,7 @@ class _FileImportViewState extends State<FileImportView> {
       final recipes = await _fileImportStrategy.importMultiple();
 
       if (recipes.isEmpty) {
+        if (!mounted) return;
         setState(() {
           _state = _state.copyWith(
             statusMessage: context.l10n.importNoFileOrNoRecipes,
@@ -76,6 +77,7 @@ class _FileImportViewState extends State<FileImportView> {
         return;
       }
 
+      if (!mounted) return;
       setState(() {
         _state = _state.copyWith(
           statusMessage: context.l10n.importImportingRecipes(recipes.length),
@@ -101,17 +103,20 @@ class _FileImportViewState extends State<FileImportView> {
             sourceUrl: recipe.sourceUrl,
             imageUrls: recipe.imageUrls,
           );
+          if (!mounted) return;
           setState(() {
             _state = _state.copyWith(importedCount: _state.importedCount + 1);
           });
         } catch (e) {
           AppLogger.error('Failed to import recipe: ${recipe.title}', e);
+          if (!mounted) return;
           setState(() {
             _state = _state.copyWith(failedCount: _state.failedCount + 1);
           });
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
@@ -129,6 +134,7 @@ class _FileImportViewState extends State<FileImportView> {
       }
     } catch (e) {
       AppLogger.error('File import failed', e);
+      if (!mounted) return;
       setState(() {
         _state = _state.copyWith(
           isLoading: false,

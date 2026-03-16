@@ -43,6 +43,7 @@ class GroupSearchTab {
       itemBuilder: (context, index) {
         final group = filteredGroups[index];
         return AnimatedListItem(
+          key: ValueKey(group.id),
           index: index,
           child: GroupCard.build(context, group),
         );

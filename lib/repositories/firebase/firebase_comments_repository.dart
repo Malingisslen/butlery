@@ -169,9 +169,9 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     batch.set(docRef, commentData);
     batch.set(
       firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('rateLimits')
+          .collection(FirestoreCollections.userRateLimits)
           .doc('comments'),
       {'lastWrite': timestampProvider.serverTimestamp()},
       SetOptions(merge: true),

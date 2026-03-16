@@ -223,12 +223,15 @@ class IncomingRequestsTabBuilder {
                 final request = viewModel.incomingRequests[index];
                 final isSelected = selectedIncoming.contains(request.id);
 
-                return FriendRequestCard.buildIncomingCard(
-                  context,
-                  request,
-                  viewModel,
-                  isSelected,
-                  (selected) => onSelectionChanged(request.id, selected),
+                return KeyedSubtree(
+                  key: ValueKey(request.id),
+                  child: FriendRequestCard.buildIncomingCard(
+                    context,
+                    request,
+                    viewModel,
+                    isSelected,
+                    (selected) => onSelectionChanged(request.id, selected),
+                  ),
                 );
               },
             ),
@@ -311,12 +314,15 @@ class SentRequestsTabBuilder {
                 final request = viewModel.sentRequests[index];
                 final isSelected = selectedSent.contains(request.id);
 
-                return FriendRequestCard.buildSentCard(
-                  context,
-                  request,
-                  viewModel,
-                  isSelected,
-                  (selected) => onSelectionChanged(request.id, selected),
+                return KeyedSubtree(
+                  key: ValueKey(request.id),
+                  child: FriendRequestCard.buildSentCard(
+                    context,
+                    request,
+                    viewModel,
+                    isSelected,
+                    (selected) => onSelectionChanged(request.id, selected),
+                  ),
                 );
               },
             ),

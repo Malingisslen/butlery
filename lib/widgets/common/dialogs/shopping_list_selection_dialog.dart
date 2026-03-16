@@ -62,11 +62,13 @@ class _ShoppingListSelectionDialogState
         return permissionService.canEditShoppingList(list.id);
       }).toList();
 
+      if (!mounted) return;
       setState(() {
         _availableLists = editableLists;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });

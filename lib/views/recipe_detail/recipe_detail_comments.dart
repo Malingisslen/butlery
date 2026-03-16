@@ -223,6 +223,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       itemBuilder: (context, index) {
         final comment = vm.topLevelComments[index];
         return AnimatedListItem(
+          key: ValueKey(comment.id),
           index: index,
           child: _buildCommentWithReplies(comment, vm),
         );

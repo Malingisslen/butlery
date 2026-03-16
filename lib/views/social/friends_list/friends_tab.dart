@@ -36,6 +36,7 @@ class FriendsTab {
           itemBuilder: (context, index) {
             final friend = friends[index];
             return AnimatedListItem(
+              key: ValueKey(friend.uid),
               index: index,
               child: FriendCard.build(context, friend),
             );

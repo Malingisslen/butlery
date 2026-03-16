@@ -282,8 +282,7 @@ class RealtimeNotificationModule {
 
         await _notificationService.sendImmediateNotification(
           targetUserIds: [memberId],
-          strategy: NotificationStrategy
-              .collaborationEnabled, // Placeholder - would be collaborationDisabled
+          strategy: NotificationStrategy.collaborationDisabled,
           variables: {
             'disablerName': currentUserDisplayName,
             'recipeTitle': recipe.title,
@@ -417,8 +416,7 @@ class RealtimeNotificationModule {
       for (final memberId in addedMemberIds) {
         await _notificationService.sendImmediateNotification(
           targetUserIds: [memberId],
-          strategy: NotificationStrategy
-              .collaborationEnabled, // Placeholder - would be addedToCollaboration
+          strategy: NotificationStrategy.addedToCollaboration,
           variables: {
             'adderName': currentUserDisplayName,
             'recipeTitle': recipe.title,
@@ -478,8 +476,7 @@ class RealtimeNotificationModule {
       for (final memberId in removedMemberIds) {
         await _notificationService.sendImmediateNotification(
           targetUserIds: [memberId],
-          strategy: NotificationStrategy
-              .collaborationEnabled, // Placeholder - would be removedFromCollaboration
+          strategy: NotificationStrategy.removedFromCollaboration,
           variables: {
             'removerName': currentUserDisplayName,
             'recipeTitle': recipe.title,

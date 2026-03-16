@@ -269,12 +269,14 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       if (_isLast) {
         _close(anyDefined: true);
       } else {
+        if (!mounted) return;
         setState(() {
           _currentIndex++;
           _isSaving = false;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isSaving = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -243,7 +243,10 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           const SizedBox(height: AppDimensions.spacingM),
       itemBuilder: (context, index) {
         final friend = viewModel.filteredFriends[index];
-        return _buildFriendTile(friend, viewModel);
+        return KeyedSubtree(
+          key: ValueKey(friend.uid),
+          child: _buildFriendTile(friend, viewModel),
+        );
       },
     );
   }
