@@ -7965,6 +7965,12 @@ abstract class AppLocalizations {
   /// **'Bilagor: Recept, Meny, Handlingslista, Foto'**
   String get chatAttachmentTypes;
 
+  /// No description provided for @chatCannotMessageNonFriend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte skicka meddelanden till denna person'**
+  String get chatCannotMessageNonFriend;
+
   /// No description provided for @chatCouldNotSendMessage.
   ///
   /// In sv, this message translates to:

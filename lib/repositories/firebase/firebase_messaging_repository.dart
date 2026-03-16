@@ -94,7 +94,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
 
   @override
   Conversation fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
-      ConversationDto.fromFirestore(doc);
+      ConversationDto.fromFirestore(doc, currentUserId: currentUserId);
 
   @override
   Map<String, dynamic> toFirestore(Conversation entity) =>
