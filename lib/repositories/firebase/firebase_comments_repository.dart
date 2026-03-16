@@ -163,7 +163,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       'replyCount': 0,
     };
 
-    // Batch write: comment + rate limit doc for server-side enforcement
+    // Batch write: comment + rate limit doc + parent replyCount increment
     final batch = firestore.batch();
     final docRef = collection.doc();
     batch.set(docRef, commentData);
@@ -176,6 +176,14 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       {'lastWrite': timestampProvider.serverTimestamp()},
       SetOptions(merge: true),
     );
+
+    // Increment parent comment's replyCount when creating a reply
+    if (parentCommentId != null) {
+      batch.update(collection.doc(parentCommentId), {
+        'replyCount': FieldValue.increment(1),
+      });
+    }
+
     await batch.commit();
 
     final doc = await docRef.get();
@@ -252,7 +260,18 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       resourceId: commentId,
     );
 
-    await collection.doc(commentId).delete();
+    final batch = firestore.batch();
+    batch.delete(collection.doc(commentId));
+
+    // Decrement parent comment's replyCount when deleting a reply
+    final parentCommentId = commentData['parentCommentId'] as String?;
+    if (parentCommentId != null) {
+      batch.update(collection.doc(parentCommentId), {
+        'replyCount': FieldValue.increment(-1),
+      });
+    }
+
+    await batch.commit();
 
     logPermissionCheck(
       userId: currentUser,

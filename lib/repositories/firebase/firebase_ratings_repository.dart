@@ -409,8 +409,56 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   }
 
   Future<void> _updateRecipeRatingStatistics(String recipeId) async {
-    // This could update a separate statistics document for performance
-    // For now, statistics are calculated on-demand
-    // In production, consider maintaining denormalized stats
+    try {
+      // Query all ratings for this recipe and compute aggregate in a transaction
+      // to avoid stale data from concurrent writes
+      await firestore.runTransaction((transaction) async {
+        final ratingsSnapshot = await firestore
+            .collection(collectionName)
+            .where('recipeId', isEqualTo: recipeId)
+            .get();
+
+        final statsDocRef = firestore
+            .collection(FirestoreCollections.recipeSocialStats)
+            .doc(recipeId);
+
+        if (ratingsSnapshot.docs.isEmpty) {
+          transaction.delete(statsDocRef);
+          return;
+        }
+
+        final ratings = ratingsSnapshot.docs.map((doc) => doc.data()).toList();
+        final totalRating = ratings.fold<double>(0.0,
+            (total, r) => total + ((r['rating'] as num?)?.toDouble() ?? 0.0));
+        final average = totalRating / ratings.length;
+
+        final distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+        for (final r in ratings) {
+          final stars =
+              ((r['rating'] as num?)?.toDouble() ?? 3.0).round().clamp(1, 5);
+          distribution[stars] = (distribution[stars] ?? 0) + 1;
+        }
+
+        transaction.set(
+            statsDocRef,
+            {
+              'recipeId': recipeId,
+              'ratingCount': ratings.length,
+              'averageRating': double.parse(average.toStringAsFixed(1)),
+              'ratingDistribution': distribution,
+              'lastUpdated': FieldValue.serverTimestamp(),
+            },
+            SetOptions(merge: true));
+      });
+    } catch (e) {
+      // Non-critical: stats are eventually consistent via fallback query
+      logPermissionCheck(
+        userId: 'system',
+        resource: 'recipe_social_stats',
+        operation: 'update_aggregate',
+        granted: false,
+        details: 'Failed for recipe $recipeId: $e',
+      );
+    }
   }
 }

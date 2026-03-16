@@ -17,21 +17,17 @@ class ContentDeletionOperations {
           .collection(FirestoreCollections.recipes)
           .get();
 
-      final batch = _firestore.batch();
-      for (final doc in recipesSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
       final unifiedSnapshot = await _firestore
           .collection(FirestoreCollections.recipes)
           .where('userId', isEqualTo: userId)
           .get();
 
-      for (final doc in unifiedSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
+      final allDocs = [
+        ...recipesSnapshot.docs,
+        ...unifiedSnapshot.docs,
+      ];
 
-      await batch.commit();
+      await _deleteInBatches(allDocs);
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete recipes', e);
