@@ -3,6 +3,9 @@
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -185,10 +188,28 @@ class CollaborationManagementModule {
         return true;
       }
 
-      // TODO: Implement Firestore write for adding collaborators
-      AppLogger.warning(
-          'addCollaborators not yet implemented — no Firestore write performed');
-      return false;
+      final repo = ServiceLocator.get<RecipeRepository>();
+      final freshRecipe = await repo.read(recipeId);
+      if (freshRecipe == null) return false;
+
+      final currentPerms =
+          Map<String, ResourcePermission>.from(
+              freshRecipe.socialData?.memberPermissions ?? {});
+      for (final memberId in newMembers) {
+        currentPerms[memberId] = ResourcePermission.editor;
+      }
+
+      final updated = freshRecipe.copyWith(
+        socialData: freshRecipe.socialData?.copyWith(
+              memberPermissions: currentPerms,
+            ) ??
+            RecipeSocialData(memberPermissions: currentPerms),
+      );
+      await repo.update(updated);
+
+      AppLogger.success(
+          'Added ${newMembers.length} collaborator(s) to recipe');
+      return true;
     } catch (e) {
       AppLogger.error('Failed to add collaborators', e);
       return false;
@@ -228,10 +249,27 @@ class CollaborationManagementModule {
         return false;
       }
 
-      // TODO: Implement Firestore write for removing collaborators
-      AppLogger.warning(
-          'removeCollaborators not yet implemented — no Firestore write performed');
-      return false;
+      final repo = ServiceLocator.get<RecipeRepository>();
+      final freshRecipe = await repo.read(recipeId);
+      if (freshRecipe == null) return false;
+
+      final currentPerms =
+          Map<String, ResourcePermission>.from(
+              freshRecipe.socialData?.memberPermissions ?? {});
+      for (final memberId in memberIds) {
+        currentPerms.remove(memberId);
+      }
+
+      final updated = freshRecipe.copyWith(
+        socialData: freshRecipe.socialData?.copyWith(
+          memberPermissions: currentPerms,
+        ),
+      );
+      await repo.update(updated);
+
+      AppLogger.success(
+          'Removed ${memberIds.length} collaborator(s) from recipe');
+      return true;
     } catch (e) {
       AppLogger.error('Failed to remove collaborators', e);
       return false;
@@ -274,10 +312,34 @@ class CollaborationManagementModule {
         }
       }
 
-      // TODO: Implement Firestore write for updating member permissions
-      AppLogger.warning(
-          'updateMemberPermissions not yet implemented — no Firestore write performed');
-      return false;
+      final permissionMap = <String, ResourcePermission>{};
+      for (final entry in memberPermissions.entries) {
+        permissionMap[entry.key] = switch (entry.value) {
+          'view' => ResourcePermission.viewer,
+          'edit' => ResourcePermission.editor,
+          'admin' => ResourcePermission.owner,
+          _ => ResourcePermission.viewer,
+        };
+      }
+
+      final repo = ServiceLocator.get<RecipeRepository>();
+      final freshRecipe = await repo.read(recipeId);
+      if (freshRecipe == null) return false;
+
+      final currentPerms =
+          Map<String, ResourcePermission>.from(
+              freshRecipe.socialData?.memberPermissions ?? {});
+      currentPerms.addAll(permissionMap);
+
+      final updated = freshRecipe.copyWith(
+        socialData: freshRecipe.socialData?.copyWith(
+          memberPermissions: currentPerms,
+        ),
+      );
+      await repo.update(updated);
+
+      AppLogger.success('Updated permissions for ${memberPermissions.length} member(s)');
+      return true;
     } catch (e) {
       AppLogger.error('Failed to update member permissions', e);
       return false;
@@ -317,10 +379,30 @@ class CollaborationManagementModule {
         return false;
       }
 
-      // TODO: Implement Firestore write for transferring ownership
-      AppLogger.warning(
-          'transferOwnership not yet implemented — no Firestore write performed');
-      return false;
+      final repo = ServiceLocator.get<RecipeRepository>();
+      final freshRecipe = await repo.read(recipeId);
+      if (freshRecipe == null) return false;
+
+      // Swap permissions: demote old owner to editor, elevate new owner
+      final currentPerms =
+          Map<String, ResourcePermission>.from(
+              freshRecipe.socialData?.memberPermissions ?? {});
+      if (currentOwnerId != null) {
+        currentPerms[currentOwnerId] = ResourcePermission.editor;
+      }
+      currentPerms[newOwnerId] = ResourcePermission.owner;
+
+      // Single update with both ownerId and permissions for atomicity
+      final updated = freshRecipe.copyWith(
+        socialData: freshRecipe.socialData?.copyWith(
+          ownerId: newOwnerId,
+          memberPermissions: currentPerms,
+        ),
+      );
+      await repo.update(updated);
+
+      AppLogger.success('Transferred recipe ownership to $newOwnerId');
+      return true;
     } catch (e) {
       AppLogger.error('Failed to transfer ownership', e);
       return false;
