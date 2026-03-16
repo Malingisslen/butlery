@@ -43,6 +43,7 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
 
   @override
   void dispose() {
+    _searchController.removeListener(_filterFriends);
     _searchController.dispose();
     super.dispose();
   }

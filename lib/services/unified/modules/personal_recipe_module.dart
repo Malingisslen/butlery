@@ -727,9 +727,19 @@ class PersonalRecipeModule with StreamManagementMixin {
     _syncStatus[recipe.id] = RecipeSyncStatus.syncing;
 
     final recipeId = recipe.id;
+    final startingUserId = _getCurrentUserId();
 
     // Use Future.microtask to ensure this runs asynchronously without blocking
     Future.microtask(() async {
+      // Guard: abort if user changed (logout/switch) since sync was queued
+      if (_getCurrentUserId() != startingUserId || startingUserId == null) {
+        AppLogger.warning(
+            '⚠️ Aborting background $operation for ${recipe.title}: '
+            'user changed since sync was queued');
+        _syncStatus[recipeId] = RecipeSyncStatus.failed;
+        return;
+      }
+
       try {
         AppLogger.info(
             '🔄 Starting background $operation for recipe: ${recipe.title}');

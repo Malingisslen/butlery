@@ -42,6 +42,7 @@ class RecipeTaggingHandler {
     if (confirmed != true || !context.mounted) return;
 
     // Show blocking loading dialog
+    bool dialogShown = true;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -64,14 +65,23 @@ class RecipeTaggingHandler {
       ),
     );
 
+    void closeDialog() {
+      if (dialogShown && context.mounted) {
+        dialogShown = false;
+        Navigator.of(context).pop();
+      }
+    }
+
     try {
       // Generate new tags
       final tagResult = await taggingService.generateTags(viewModel.recipe);
 
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        closeDialog();
+        return;
+      }
 
-      // Close loading dialog
-      Navigator.of(context).pop();
+      closeDialog();
 
       if (tagResult == null) {
         showSnackBar(
@@ -105,9 +115,8 @@ class RecipeTaggingHandler {
         backgroundColor: context.butleryColors.success,
       );
     } catch (e) {
+      closeDialog();
       if (!context.mounted) return;
-      // Close loading dialog if still open
-      Navigator.of(context).pop();
       showSnackBar(
         context.l10n.taggingError(
           SnackBarUtils.userFriendlyMessage(context, e),

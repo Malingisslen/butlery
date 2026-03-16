@@ -136,7 +136,7 @@ class PersonalTagViewModel extends ChangeNotifier
     } catch (e, stack) {
       AppLogger.error('Failed to initialize PersonalTagViewModel', stack);
 
-      if (_retryAttempts < _maxRetryAttempts) {
+      if (!isDisposed && _retryAttempts < _maxRetryAttempts) {
         _retryAttempts++;
         final delay = _initialRetryDelay * (1 << (_retryAttempts - 1));
         AppLogger.info(
@@ -144,6 +144,7 @@ class PersonalTagViewModel extends ChangeNotifier
           '(attempt $_retryAttempts/$_maxRetryAttempts)',
         );
         await Future.delayed(delay);
+        if (isDisposed) return;
         return initialize();
       }
 

@@ -1,5 +1,7 @@
 // lib/services/feature_flags/feature_flag_service.dart
 
+import 'dart:async';
+
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -18,6 +20,7 @@ import 'package:butlery/services/analytics_service.dart';
 class FeatureFlagService {
   final FirebaseRemoteConfig _remoteConfig;
   bool _initialized = false;
+  StreamSubscription<RemoteConfigUpdate>? _configUpdateSubscription;
 
   FeatureFlagService({FirebaseRemoteConfig? remoteConfig})
       : _remoteConfig = remoteConfig ?? FirebaseRemoteConfig.instance;
@@ -188,7 +191,8 @@ class FeatureFlagService {
   /// Only supported on some platforms.
   void addOnConfigUpdatedListener(void Function() onUpdated) {
     try {
-      _remoteConfig.onConfigUpdated.listen((_) {
+      _configUpdateSubscription?.cancel();
+      _configUpdateSubscription = _remoteConfig.onConfigUpdated.listen((_) {
         _remoteConfig.activate().then((_) {
           AppLogger.info('Feature flags updated in real-time');
           onUpdated();
@@ -198,6 +202,11 @@ class FeatureFlagService {
       // Real-time updates not supported on this platform
       AppLogger.debug('Real-time config updates not available: $e');
     }
+  }
+
+  /// Cancel active subscriptions.
+  void dispose() {
+    _configUpdateSubscription?.cancel();
   }
 }
 
