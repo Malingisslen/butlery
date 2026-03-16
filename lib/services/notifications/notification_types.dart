@@ -236,6 +236,45 @@ class NotificationStrategy {
     },
   );
 
+  /// Collaboration disabled - immediate notification when collaboration is turned off
+  static const collaborationDisabled = NotificationStrategy(
+    type: NotificationType.immediate,
+    priority: NotificationPriority.high,
+    category: NotificationCategory.collaboration,
+    localization: {
+      'title_sv': 'Samarbete inaktiverat',
+      'title_en': 'Collaboration disabled',
+      'body_sv': '{disablerName} inaktiverade samarbete för "{recipeTitle}"',
+      'body_en': '{disablerName} disabled collaboration for "{recipeTitle}"',
+    },
+  );
+
+  /// Added to collaboration - immediate notification when invited to collaborate
+  static const addedToCollaboration = NotificationStrategy(
+    type: NotificationType.immediate,
+    priority: NotificationPriority.high,
+    category: NotificationCategory.collaboration,
+    localization: {
+      'title_sv': 'Tillagd i samarbete',
+      'title_en': 'Added to collaboration',
+      'body_sv': '{adderName} la till dig i "{recipeTitle}"',
+      'body_en': '{adderName} added you to "{recipeTitle}"',
+    },
+  );
+
+  /// Removed from collaboration - immediate notification when removed
+  static const removedFromCollaboration = NotificationStrategy(
+    type: NotificationType.immediate,
+    priority: NotificationPriority.high,
+    category: NotificationCategory.collaboration,
+    localization: {
+      'title_sv': 'Borttagen från samarbete',
+      'title_en': 'Removed from collaboration',
+      'body_sv': '{removerName} tog bort dig från "{recipeTitle}"',
+      'body_en': '{removerName} removed you from "{recipeTitle}"',
+    },
+  );
+
   /// Tag shared - immediate notification when someone shares a personal tag
   static const tagShared = NotificationStrategy(
     type: NotificationType.immediate,

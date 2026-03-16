@@ -329,6 +329,15 @@ class _ProfileMenuState extends State<ProfileMenu> {
                 width: avatarSize,
                 height: avatarSize,
                 fit: BoxFit.cover,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return const SizedBox(
+                    width: avatarSize,
+                    height: avatarSize,
+                    child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2)),
+                  );
+                },
                 errorBuilder: (context, error, stackTrace) =>
                     _buildInitialsAvatar(context, avatarSize),
               ),

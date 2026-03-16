@@ -65,11 +65,14 @@ class GroupMembersList {
                 const SizedBox(height: AppDimensions.spacingS),
             itemBuilder: (context, index) {
               final member = members[index];
-              return GroupMemberCard.build(
-                context,
-                member,
-                group,
-                onMemberRemoved,
+              return KeyedSubtree(
+                key: ValueKey(member.uid),
+                child: GroupMemberCard.build(
+                  context,
+                  member,
+                  group,
+                  onMemberRemoved,
+                ),
               );
             },
           ),
@@ -95,10 +98,13 @@ class GroupMembersList {
                 const SizedBox(height: AppDimensions.spacingS),
             itemBuilder: (context, index) {
               final invitation = pendingInvitations[index];
-              return GroupInvitationCard.build(
-                context,
-                invitation,
-                onInvitationCancelled,
+              return KeyedSubtree(
+                key: ValueKey(invitation.id),
+                child: GroupInvitationCard.build(
+                  context,
+                  invitation,
+                  onInvitationCancelled,
+                ),
               );
             },
           ),

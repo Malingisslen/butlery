@@ -246,6 +246,15 @@ class MenuRecipeListItem extends StatelessWidget {
                 width: AppDimensions.iconSizeDisplay,
                 height: AppDimensions.iconSizeDisplay,
                 fit: BoxFit.contain,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return const SizedBox(
+                    width: AppDimensions.iconSizeDisplay,
+                    height: AppDimensions.iconSizeDisplay,
+                    child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2)),
+                  );
+                },
                 errorBuilder: (context, error, stackTrace) =>
                     _buildPlaceholder(context),
               )

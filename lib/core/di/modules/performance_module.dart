@@ -100,8 +100,8 @@ class PerformanceModule implements DIModule {
       final performanceMonitoring = container<PerformanceMonitoringService>();
       performanceMonitoring.initialize();
 
-      // Initialize Firebase Performance (enabled by default)
-      await FirebasePerformanceService.setPerformanceCollectionEnabled(true);
+      // Disabled by default — consent-gated via _enableCollectionIfConsented()
+      await FirebasePerformanceService.setPerformanceCollectionEnabled(false);
 
       // Note: IntelligentCacheManager is lazy and will initialize on first use
     } catch (e) {

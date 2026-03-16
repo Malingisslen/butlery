@@ -91,6 +91,7 @@ class _ShoppingMemberManagementDialogState
       );
 
       if (success) {
+        if (!mounted) return;
         setState(() {
           _localPermissions[userId] = newPermission;
         });
@@ -108,18 +109,22 @@ class _ShoppingMemberManagementDialogState
           );
         }
       } else {
+        if (!mounted) return;
         setState(() {
           _error = context.l10n.shoppingCouldNotUpdatePermission;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = context.l10n.shoppingErrorUpdating(e.toString());
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -218,7 +223,7 @@ class _ShoppingMemberManagementDialogState
         }
       }
 
-      if (addedMembers.isNotEmpty) {
+      if (addedMembers.isNotEmpty && mounted) {
         setState(() {
           for (final friendId in addedMembers) {
             _localPermissions[friendId] = SharedListPermission.edit;

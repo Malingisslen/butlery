@@ -54,6 +54,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       AppLogger.error('Failed to load MFA status: $e');
     }
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
@@ -75,6 +76,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     await _authService.startMfaEnrollment(
       formattedPhone,
       onCodeSent: (verificationId) {
+        if (!mounted) return;
         setState(() {
           _verificationId = verificationId;
           _isEnrolling = true;
@@ -82,12 +84,14 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         });
       },
       onError: (error) {
+        if (!mounted) return;
         setState(() {
           _errorMessage = _mapErrorMessage(error.code);
           _isLoading = false;
         });
       },
       onAutoVerified: () {
+        if (!mounted) return;
         setState(() {
           _isEnrolling = false;
           _isLoading = false;
@@ -115,6 +119,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       code,
     );
 
+    if (!mounted) return;
+
     if (success) {
       _codeController.clear();
       _phoneController.clear();
@@ -123,7 +129,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         _verificationId = null;
       });
       await _loadMfaStatus();
-      _showSuccessSnackBar('MFA aktiverat!');
+      if (mounted) _showSuccessSnackBar('MFA aktiverat!');
     } else {
       setState(() {
         _errorMessage =
@@ -131,7 +137,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       });
     }
 
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _unenrollMfa(MfaFactorInfo factor) async {

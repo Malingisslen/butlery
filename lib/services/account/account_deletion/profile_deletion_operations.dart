@@ -76,7 +76,7 @@ class ProfileDeletionOperations {
   Future<bool> deleteFcmTokens(String userId) async {
     try {
       final tokens = await _firestore
-          .collection('user_fcm_tokens')
+          .collection(FirestoreCollections.userFcmTokens)
           .where('userId', isEqualTo: userId)
           .get();
 
@@ -96,7 +96,7 @@ class ProfileDeletionOperations {
   Future<bool> deleteNotificationPreferences(String userId) async {
     try {
       final prefs = await _firestore
-          .collection('user_notification_preferences')
+          .collection(FirestoreCollections.userNotificationPreferences)
           .doc(userId)
           .get();
 
@@ -115,7 +115,7 @@ class ProfileDeletionOperations {
   Future<bool> deleteNotifications(String userId) async {
     try {
       final notifications = await _firestore
-          .collection('user_notifications')
+          .collection(FirestoreCollections.userNotifications)
           .where('userId', isEqualTo: userId)
           .get();
 
@@ -136,9 +136,9 @@ class ProfileDeletionOperations {
   Future<bool> deleteConsentRecords(String userId) async {
     try {
       final consents = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('consent')
+          .collection(FirestoreCollections.userConsent)
           .get();
 
       final batch = _firestore.batch();

@@ -102,9 +102,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
     batch.set(_friendRequestsRef.doc(request.id), request.toFirestore());
     batch.set(
       firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(currentUser)
-          .collection('rateLimits')
+          .collection(FirestoreCollections.userRateLimits)
           .doc('friend_requests'),
       {'lastWrite': timestampProvider.serverTimestamp()},
       SetOptions(merge: true),

@@ -74,6 +74,7 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
     await _authService.startMfaSignIn(
       widget.resolver,
       onCodeSent: (verificationId) {
+        if (!mounted) return;
         setState(() {
           _verificationId = verificationId;
           _codeSent = true;
@@ -82,6 +83,7 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
       },
       onError: (error) {
         AppLogger.error('MFA verification error: ${error.code}');
+        if (!mounted) return;
         setState(() {
           _errorMessage = _mapErrorMessage(error.code);
           _isLoading = false;
@@ -107,6 +109,8 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
       _verificationId!,
       code,
     );
+
+    if (!mounted) return;
 
     if (success) {
       widget.onSuccess();

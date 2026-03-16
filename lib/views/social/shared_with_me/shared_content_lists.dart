@@ -52,10 +52,13 @@ class SharedContentLists {
           }
 
           final sharedRecipe = recipes[index];
-          return SharedRecipeCard.build(
-            context,
-            viewModel,
-            sharedRecipe,
+          return KeyedSubtree(
+            key: ValueKey(sharedRecipe.id),
+            child: SharedRecipeCard.build(
+              context,
+              viewModel,
+              sharedRecipe,
+            ),
           );
         },
       ),
@@ -102,10 +105,13 @@ class SharedContentLists {
           }
 
           final sharedMenu = menus[index];
-          return SharedMenuCard.build(
-            context,
-            viewModel,
-            sharedMenu,
+          return KeyedSubtree(
+            key: ValueKey(sharedMenu.id),
+            child: SharedMenuCard.build(
+              context,
+              viewModel,
+              sharedMenu,
+            ),
           );
         },
       ),
@@ -152,10 +158,13 @@ class SharedContentLists {
           }
 
           final sharedShoppingList = sharedShoppingLists[index];
-          return SharedShoppingListCard.build(
-            context,
-            viewModel,
-            sharedShoppingList,
+          return KeyedSubtree(
+            key: ValueKey(sharedShoppingList.id),
+            child: SharedShoppingListCard.build(
+              context,
+              viewModel,
+              sharedShoppingList,
+            ),
           );
         },
       ),
