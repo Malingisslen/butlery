@@ -476,6 +476,27 @@ class AppLocalizationsSv extends AppLocalizations {
       'När du samarbetar på inköpslistor med vänner eller familj visas de här.';
 
   @override
+  String get emptyNoTagsTitle => 'Inga taggar ännu';
+
+  @override
+  String get emptyNoTagsSubtitle =>
+      'Skapa personliga taggar för att organisera dina recept.';
+
+  @override
+  String get emptyNoGroupsTitle => 'Inga grupper ännu';
+
+  @override
+  String get emptyNoGroupsSubtitle =>
+      'Skapa en grupp för att dela recept och planera måltider tillsammans.';
+
+  @override
+  String get emptyNoConversationsTitle => 'Inga konversationer ännu';
+
+  @override
+  String get emptyNoConversationsSubtitle =>
+      'Starta en konversation med en vän för att prata om recept.';
+
+  @override
   String get emptyGenericTitle => 'Inget innehåll att visa';
 
   @override

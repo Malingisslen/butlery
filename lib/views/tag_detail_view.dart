@@ -25,6 +25,7 @@ import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/tagging/tag_detail_header.dart';
 import 'package:butlery/widgets/tagging/tag_detail_rules_section.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Full-screen view for viewing and editing a single personal tag.
 class TagDetailView extends StatelessWidget {
@@ -148,7 +149,12 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
         return Scaffold(
           appBar: _buildAppBar(context, tag),
-          body: _buildBody(context, viewModel, tag),
+          body: Column(
+            children: [
+              LayoutComponents.offlineIndicator(),
+              Expanded(child: _buildBody(context, viewModel, tag)),
+            ],
+          ),
         );
       },
     );

@@ -988,11 +988,31 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     final failed = summary['failed'] as int;
     final active = summary['active'] as int;
 
+    // Determine dominant error type from failed uploads
+    ImageUploadErrorType? dominantErrorType;
+    if (failed > 0) {
+      final errorTypes = _imageStates.values
+          .where((s) => s.state == ImageUploadState.failed && s.errorType != null)
+          .map((s) => s.errorType!)
+          .toList();
+      if (errorTypes.isNotEmpty) {
+        // Pick the most common error type
+        final counts = <ImageUploadErrorType, int>{};
+        for (final t in errorTypes) {
+          counts[t] = (counts[t] ?? 0) + 1;
+        }
+        dominantErrorType = counts.entries
+            .reduce((a, b) => a.value >= b.value ? a : b)
+            .key;
+      }
+    }
+
     _notificationManager.checkAndTriggerNotifications(
       total: total,
       completed: completed,
       failed: failed,
       active: active,
+      dominantErrorType: dominantErrorType,
     );
   }
 

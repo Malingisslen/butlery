@@ -198,20 +198,21 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     if (offlineService.isOnline) {
       try {
-        // Show loading indicator
         if (mounted) {
           SnackBarUtils.showInfo(context, context.l10n.statusSyncing);
         }
 
-        // Sync offline changes
-        await offlineService.syncNow();
-
-        // Update recipe list
+        final result = await offlineService.syncNow();
         await viewModel.refresh();
 
-        // Show success
         if (mounted) {
-          SnackBarUtils.showSuccess(context, context.l10n.syncComplete);
+          if (result.success && !(result.isRetry)) {
+            SnackBarUtils.showSuccess(context, context.l10n.syncComplete);
+          } else if (result.success && result.isRetry) {
+            SnackBarUtils.showInfo(context, result.message);
+          } else {
+            SnackBarUtils.showError(context, result.message);
+          }
         }
       } catch (e) {
         if (mounted) {

@@ -139,6 +139,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 ),
                 child: Column(
                   children: [
+                    LayoutComponents.offlineIndicator(),
                     // TabBar with proper styling
                     ColoredBox(
                       color: Theme.of(context).colorScheme.surface,

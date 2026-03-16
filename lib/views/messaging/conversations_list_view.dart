@@ -105,6 +105,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             child: FocusTraversalGroup(
               child: Column(
                 children: [
+                  LayoutComponents.offlineIndicator(),
                   _buildSearchBar(),
                   Expanded(
                     child: _buildConversationsList(),

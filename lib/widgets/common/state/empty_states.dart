@@ -202,6 +202,28 @@ class EmptyStates {
           subtitle: l10n.emptyNoSharedShoppingListsSubtitle,
           actionIcon: null,
         );
+      case EmptyStateVariant.noTags:
+        return _EmptyStateConfig(
+          icon: Icons.label_outline,
+          illustration: VegetableType.mushroom,
+          title: l10n.emptyNoTagsTitle,
+          subtitle: l10n.emptyNoTagsSubtitle,
+          actionIcon: AdaptiveIcons.add,
+        );
+      case EmptyStateVariant.noGroups:
+        return _EmptyStateConfig(
+          icon: Icons.group_outlined,
+          title: l10n.emptyNoGroupsTitle,
+          subtitle: l10n.emptyNoGroupsSubtitle,
+          actionIcon: AdaptiveIcons.add,
+        );
+      case EmptyStateVariant.noConversations:
+        return _EmptyStateConfig(
+          icon: Icons.chat_bubble_outline,
+          title: l10n.emptyNoConversationsTitle,
+          subtitle: l10n.emptyNoConversationsSubtitle,
+          actionIcon: null,
+        );
       case EmptyStateVariant.generic:
       default:
         return _EmptyStateConfig(
