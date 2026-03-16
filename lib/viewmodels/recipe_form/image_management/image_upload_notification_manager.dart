@@ -76,23 +76,40 @@ class ImageUploadNotificationManager {
     ));
   }
 
-  /// Trigger major failure notification when significant uploads fail
-  void triggerMajorFailureNotification(int failedCount, int totalCount) {
+  /// Trigger major failure notification when significant uploads fail.
+  /// [dominantErrorType] is the most common error type among failed uploads.
+  void triggerMajorFailureNotification(
+    int failedCount,
+    int totalCount, {
+    ImageUploadErrorType? dominantErrorType,
+  }) {
     if (_notificationTriggers
         .contains(UploadNotificationTrigger.majorFailure)) {
       return; // Already sent
     }
 
     if (failedCount >= 2 || (totalCount > 1 && failedCount >= totalCount / 2)) {
+      final message = _errorMessageForType(dominantErrorType);
       sendNotificationEvent(UploadNotificationEvent(
         trigger: UploadNotificationTrigger.majorFailure,
         title: AppLocale.current.errorGeneric,
-        message: AppLocale.current.errorNoInternetCheckConnection,
+        message: message,
         priority: NotificationPriority.high,
         data: {'failedCount': failedCount, 'totalCount': totalCount},
         timestamp: DateTime.now(),
       ));
     }
+  }
+
+  String _errorMessageForType(ImageUploadErrorType? errorType) {
+    final l = AppLocale.current;
+    return switch (errorType) {
+      ImageUploadErrorType.network => l.uploadFailureNetwork,
+      ImageUploadErrorType.server => l.uploadFailureServer,
+      ImageUploadErrorType.validation => l.errorGeneric,
+      ImageUploadErrorType.cancelled => l.errorGeneric,
+      _ => l.errorGeneric,
+    };
   }
 
   /// Trigger retry success notification (when previously failed upload succeeds)
@@ -151,6 +168,7 @@ class ImageUploadNotificationManager {
     required int completed,
     required int failed,
     required int active,
+    ImageUploadErrorType? dominantErrorType,
   }) {
     // Trigger completion notification if all uploads are done
     if (total > 0 && completed == total && active == 0) {
@@ -159,7 +177,8 @@ class ImageUploadNotificationManager {
 
     // Trigger major failure notification if significant failures
     if (failed > 0) {
-      triggerMajorFailureNotification(failed, total);
+      triggerMajorFailureNotification(failed, total,
+          dominantErrorType: dominantErrorType);
     }
 
     // Trigger queue cleared if everything is finished

@@ -86,7 +86,11 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                 desktop: 700,
               ),
             ),
-            child: SingleChildScrollView(
+            child: Column(
+              children: [
+                LayoutComponents.offlineIndicator(),
+                Expanded(
+                  child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 child: Column(
@@ -191,6 +195,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                   ],
                 ),
               ),
+            ),
+                ),
+              ],
             ),
           ),
         ),

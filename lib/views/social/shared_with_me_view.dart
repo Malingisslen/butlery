@@ -109,6 +109,9 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                 ),
                 child: CustomScrollView(
                   slivers: [
+                    SliverToBoxAdapter(
+                      child: LayoutComponents.offlineIndicator(),
+                    ),
                     SharedContentAppBar.build(context, viewModel),
                     SharedContentSearchBar.build(
                         context, viewModel, _searchController),

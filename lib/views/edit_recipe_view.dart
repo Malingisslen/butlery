@@ -144,6 +144,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                 ),
                 child: Column(
                   children: [
+                    LayoutComponents.offlineIndicator(),
                     _buildSmartBanners(context, widget.recipe),
                     Expanded(
                       child: Padding(
