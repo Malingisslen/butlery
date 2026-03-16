@@ -2,7 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/services/account/export/export_pagination_helper.dart';
+import 'package:butlery/services/account/export/export_pagination_helper.dart'
+    show ExportPaginationHelper, sanitizeForJson;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of social data: friends, messages, shared content.
@@ -40,7 +41,7 @@ class SocialExportManager {
       for (final doc in friendsSnapshot) {
         friendsData['friends'].add({
           'friend_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -55,7 +56,7 @@ class SocialExportManager {
       for (final doc in sentRequests) {
         friendsData['friend_requests_sent'].add({
           'request_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -70,7 +71,7 @@ class SocialExportManager {
       for (final doc in receivedRequests) {
         friendsData['friend_requests_received'].add({
           'request_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -85,7 +86,7 @@ class SocialExportManager {
       for (final doc in categories.docs) {
         friendsData['friend_categories'].add({
           'category_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -128,7 +129,7 @@ class SocialExportManager {
         final messagesList = <Map<String, dynamic>>[];
         final conversationData = {
           'conversation_id': conversationDoc.id,
-          'conversation_info': conversationDoc.data(),
+          'conversation_info': sanitizeForJson(conversationDoc.data()),
           'messages': messagesList,
         };
 
@@ -141,7 +142,8 @@ class SocialExportManager {
 
         for (final messageDoc in messages.docs) {
           // Only include messages sent by this user or received by this user
-          final messageData = messageDoc.data();
+          final messageData =
+              sanitizeForJson(messageDoc.data()) as Map<String, dynamic>;
           final recipientIds = messageData['recipientIds'] as List?;
           if (messageData['senderId'] == userId ||
               (recipientIds != null && recipientIds.contains(userId))) {
@@ -191,7 +193,7 @@ class SocialExportManager {
       for (final doc in sharedRecipes) {
         sharedData['shared_recipes_received'].add({
           'share_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -206,7 +208,7 @@ class SocialExportManager {
       for (final doc in sharedMenus) {
         sharedData['shared_menus_received'].add({
           'menu_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
