@@ -58,8 +58,18 @@ class ConversationDto {
   /// - Timestamps converted from Firestore Timestamp to DateTime objects
   /// - Metadata preserved as flexible key-value pairs for extensibility
   static Conversation fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
+    DocumentSnapshot<Map<String, dynamic>> doc, {
+    String? currentUserId,
+  }) {
     final data = doc.data()!;
+
+    // Extract per-user settings from denormalized map
+    Map<String, dynamic>? perUserSettings;
+    if (currentUserId != null) {
+      final allSettings = data['perUserSettings'] as Map<String, dynamic>?;
+      perUserSettings =
+          allSettings?[currentUserId] as Map<String, dynamic>?;
+    }
 
     return Conversation(
       id: doc.id,
@@ -81,7 +91,20 @@ class ConversationDto {
       title: data['title'] as String?,
       isGroup: data['isGroup'] as bool? ?? false,
       metadata: data['metadata'] as Map<String, dynamic>?,
+      isArchived: perUserSettings?['isArchived'] as bool? ?? false,
+      isPinned: perUserSettings?['isPinned'] as bool? ?? false,
+      isMuted: perUserSettings?['isMuted'] as bool? ?? false,
+      archivedAt: _parseDateTime(perUserSettings?['archivedAt']),
+      pinnedAt: _parseDateTime(perUserSettings?['pinnedAt']),
     );
+  }
+
+  /// Parses a DateTime from either an ISO8601 string or a Firestore Timestamp.
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) return DateTime.tryParse(value);
+    return null;
   }
 
   /// Converts a Conversation domain model to Firestore document format.

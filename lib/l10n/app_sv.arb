@@ -2936,6 +2936,7 @@
   "userNoUsersToShow": "Inga användare att visa",
   "chatAttachments": "Bilagor",
   "chatAttachmentTypes": "Bilagor: Recept, Meny, Handlingslista, Foto",
+  "chatCannotMessageNonFriend": "Du kan inte skicka meddelanden till denna person",
   "chatCouldNotSendMessage": "Kunde inte skicka meddelandet. Försök igen.",
   "chatLoadingMessages": "Laddar meddelanden...",
   "chatNoMessages": "Inga meddelanden än",

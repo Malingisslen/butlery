@@ -4560,6 +4560,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Attachments: Recipe, Menu, Shopping list, Photo';
 
   @override
+  String get chatCannotMessageNonFriend =>
+      'You cannot send messages to this person';
+
+  @override
   String get chatCouldNotSendMessage =>
       'Could not send the message. Try again.';
 

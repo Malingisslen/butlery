@@ -378,18 +378,26 @@ class ConversationMutationModule {
   }
 
   /// Update user-specific conversation settings.
+  /// Writes to both subcollection (legacy) and denormalized map on main doc
+  /// so that conversation streams can read the state without extra queries.
   Future<void> updateConversationUserSettings({
     required String conversationId,
     required String userId,
     required Map<String, dynamic> settings,
   }) async {
     try {
-      await firestore
-          .collection(collectionName)
-          .doc(conversationId)
+      final docRef = firestore.collection(collectionName).doc(conversationId);
+
+      // Write to subcollection (backward compat)
+      await docRef
           .collection(FirestoreCollections.userSettingsTop)
           .doc(userId)
           .set(settings, SetOptions(merge: true));
+
+      // Denormalize to main document for stream reads
+      await docRef.set({
+        'perUserSettings': {userId: settings},
+      }, SetOptions(merge: true));
 
       AppLogger.debug(
           'Updated conversation settings for user $userId in $conversationId');

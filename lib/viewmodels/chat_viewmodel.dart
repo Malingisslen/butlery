@@ -15,6 +15,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 class ChatViewModel extends ChangeNotifier
     with
@@ -25,11 +26,14 @@ class ChatViewModel extends ChangeNotifier
   final MessagingService _messagingService;
   final PresenceService? _presenceService;
   ContentFilterService? _contentFilter;
+  UnifiedFriendsService? _friendsService;
+  VoidCallback? _friendsListener;
 
   final String conversationId;
 
   // State
   bool _isDisposed = false;
+  bool _isFriendWithOther = true;
   Conversation? _conversation;
   List<Message> _messages = [];
   bool _isSending = false;
@@ -59,6 +63,11 @@ class ChatViewModel extends ChangeNotifier
       _contentFilter = ServiceLocator.get<ContentFilterService>();
     } catch (_) {
       // Filter not available — proceed without it
+    }
+    try {
+      _friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    } catch (_) {
+      // Friends service not available — allow sending by default
     }
     // Start in loading state until messages arrive from stream
     setLoading(true);
@@ -111,7 +120,12 @@ class ChatViewModel extends ChangeNotifier
     return '';
   }
 
-  bool get canSendMessages => _conversation != null && !_isDisposed;
+  bool get canSendMessages =>
+      _conversation != null && !_isDisposed && _isFriendWithOther;
+
+  /// True when messaging is blocked because users are no longer friends.
+  bool get isFriendshipBlocked =>
+      !_isFriendWithOther && !(_conversation?.isGroup ?? true);
 
   void _initializeChat() {
     if (_isDisposed) return;
@@ -129,12 +143,54 @@ class ChatViewModel extends ChangeNotifier
     if (_conversation == null) {
       try {
         _conversation = await _messagingService.getConversation(conversationId);
+        if (_isDisposed) return;
+        _checkFriendshipStatus();
+        _subscribeFriendshipChanges();
         _safeNotifyListeners();
       } catch (e) {
+        if (_isDisposed) return;
         AppLogger.error('Failed to load conversation', e);
         _setError(AppLocale.current.errorCouldNotLoadConversation);
       }
     }
+  }
+
+  void _checkFriendshipStatus() {
+    if (_conversation == null ||
+        _conversation!.isGroup ||
+        _friendsService == null) {
+      _isFriendWithOther = true;
+      return;
+    }
+    try {
+      final myId = currentUserId;
+      if (myId == null) {
+        _isFriendWithOther = true;
+        return;
+      }
+      final otherId = _conversation!.getOtherParticipantId(myId);
+      if (otherId == null) {
+        _isFriendWithOther = true;
+        return;
+      }
+      _isFriendWithOther = _friendsService!.management.isFriend(otherId);
+    } catch (_) {
+      _isFriendWithOther = true;
+    }
+  }
+
+  void _subscribeFriendshipChanges() {
+    if (_friendsService == null || _conversation == null) return;
+    if (_conversation!.isGroup) return;
+
+    _friendsListener = () {
+      final wasFriend = _isFriendWithOther;
+      _checkFriendshipStatus();
+      if (wasFriend != _isFriendWithOther) {
+        _safeNotifyListeners();
+      }
+    };
+    _friendsService!.addListener(_friendsListener!);
   }
 
   void _loadMessages() {
@@ -477,6 +533,9 @@ class ChatViewModel extends ChangeNotifier
   @override
   void dispose() {
     _isDisposed = true;
+    if (_friendsListener != null) {
+      _friendsService?.removeListener(_friendsListener!);
+    }
     _messagesSubscription?.cancel();
     _typingSubscription?.cancel();
     _typingDebounceTimer?.cancel();
