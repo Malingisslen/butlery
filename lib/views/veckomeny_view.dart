@@ -172,6 +172,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             ),
             child: Column(
               children: [
+                LayoutComponents.offlineIndicator(),
                 Padding(
                   padding: AppDimensions.responsiveContentPadding(context),
                   child: Column(

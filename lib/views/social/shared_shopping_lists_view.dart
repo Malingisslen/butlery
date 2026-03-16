@@ -40,7 +40,11 @@ class SharedShoppingListsView extends StatelessWidget {
                       desktop: 800,
                     ),
                   ),
-                  child: RefreshIndicator(
+                  child: Column(
+                    children: [
+                      LayoutComponents.offlineIndicator(),
+                      Expanded(
+                        child: RefreshIndicator(
                     onRefresh: viewModel.refreshData,
                     child: LoadingStateBuilder<List<UnifiedShoppingList>>(
                       isLoading: viewModel.isLoading,
@@ -80,6 +84,9 @@ class SharedShoppingListsView extends StatelessWidget {
                         );
                       },
                     ),
+                  ),
+                      ),
+                    ],
                   ),
                 ),
               ),

@@ -180,6 +180,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           ),
           body: CustomScrollView(
             slivers: [
+              SliverToBoxAdapter(
+                child: LayoutComponents.offlineIndicator(),
+              ),
               // App bar with recipe title and actions
               // UI Redesign: Hero buttons are solid cream squares with green icons
               SliverAppBar(
