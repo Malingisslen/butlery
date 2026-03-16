@@ -1,6 +1,7 @@
 // lib/widgets/recipe/recipe_form/dynamic_list_builder.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -13,6 +14,7 @@ class DynamicListBuilder extends StatelessWidget {
   final void Function(int index, String value) onUpdate;
   final VoidCallback onAdd;
   final void Function(int index) onRemove;
+  final int maxLength;
 
   const DynamicListBuilder({
     super.key,
@@ -21,6 +23,7 @@ class DynamicListBuilder extends StatelessWidget {
     required this.onUpdate,
     required this.onAdd,
     required this.onRemove,
+    this.maxLength = 500,
   });
 
   @override
@@ -49,6 +52,13 @@ class DynamicListBuilder extends StatelessWidget {
                 style: AppTextStyles.bodyMedium,
                 textInputAction: TextInputAction.next,
                 maxLines: null,
+                maxLength: maxLength,
+                maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                buildCounter: (context,
+                        {required currentLength,
+                        required isFocused,
+                        required maxLength}) =>
+                    null,
                 keyboardType: TextInputType.multiline,
                 onChanged: (value) => _handleChange(index, value),
               ),
