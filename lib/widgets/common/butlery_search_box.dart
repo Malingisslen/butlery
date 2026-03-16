@@ -224,7 +224,7 @@ class ButleryHeaderSearchBox extends StatelessWidget {
       ),
       child: readOnly
           ? Semantics(
-              label: 'Sok recept',
+              label: 'Sök recept',
               button: true,
               child: GestureDetector(
                 onTap: onTap,

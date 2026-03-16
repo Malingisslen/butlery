@@ -152,6 +152,7 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
               ),
               child: Column(
                 children: [
+                  LayoutComponents.offlineIndicator(),
                   FriendRequestsHeaderBuilder.buildErrorDisplay(
                       context, viewModel),
                   Expanded(

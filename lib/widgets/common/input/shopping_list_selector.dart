@@ -16,6 +16,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/utils/text/shopping_list_generator.dart';
 
 /// Shopping List Selector Widget
 /// A comprehensive widget that allows users to:
@@ -387,38 +388,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     }
   }
 
-  /// Convert menu recipes to shopping items
+  /// Convert menu recipes to shopping items with proper ingredient consolidation
   List<UnifiedShoppingItem> _convertMenuToShoppingItems() {
     if (widget.menu == null) return [];
-
-    final Map<String, UnifiedShoppingItem> itemMap = {};
-
-    for (final dayRecipes in widget.menu!.values) {
-      for (final recipe in dayRecipes) {
-        for (final ingredient in recipe.ingredients) {
-          final key = ingredient.toLowerCase().trim();
-
-          if (itemMap.containsKey(key)) {
-            // Combine quantities if possible
-            final existingItem = itemMap[key]!;
-            itemMap[key] = existingItem.copyWith(
-              amount: existingItem.amount + 1,
-            );
-          } else {
-            itemMap[key] = UnifiedShoppingItem(
-              name: ingredient,
-              amount:
-                  0, // No additional amount since ingredient already contains quantity
-              unit:
-                  '', // No additional unit since ingredient already contains unit
-              bought: false,
-            );
-          }
-        }
-      }
-    }
-
-    return itemMap.values.toList()..sort((a, b) => a.name.compareTo(b.name));
+    return ShoppingListGenerator.generateShoppingItemsFromMenu(widget.menu!);
   }
 
   @override
