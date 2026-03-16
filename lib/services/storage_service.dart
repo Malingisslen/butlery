@@ -13,6 +13,14 @@ import 'package:butlery/services/permission_service.dart' as permission;
 export 'package:butlery/repositories/interfaces/storage_repository.dart'
     show StorageInfo;
 
+/// Result of an image upload containing both the full image URL and optional thumbnail URL.
+class ImageUploadResult {
+  final String imageUrl;
+  final String? thumbnailUrl;
+
+  const ImageUploadResult({required this.imageUrl, this.thumbnailUrl});
+}
+
 /// Storage service for image upload and management
 /// This service now uses dependency injection for better testability while
 /// maintaining the singleton pattern and existing API. The repository pattern
@@ -45,13 +53,13 @@ class StorageService extends BaseService
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
 
-  /// Upload an image file to storage
-  Future<String?> uploadImageFile(
+  /// Upload an image file to storage, returning both the full image URL and thumbnail URL.
+  Future<ImageUploadResult?> uploadImageFile(
     File imageFile,
     String userId, {
     Function(double)? onProgress,
   }) async {
-    return await executeServiceOperation<String?>(
+    return await executeServiceOperation<ImageUploadResult?>(
       () async {
         // Generate unique filename
         final fileName = _repository.generateFileName(
@@ -67,12 +75,21 @@ class StorageService extends BaseService
           onProgress: onProgress,
         );
 
-        if (url != null) {
-          // Create thumbnail in background
-          _createThumbnailInBackground(imageFile, userId, path);
+        if (url == null) return null;
+
+        // Await thumbnail creation — ~30KB, <1 second
+        String? thumbUrl;
+        try {
+          thumbUrl = await _repository.createAndUploadThumbnail(
+            imageFile: imageFile,
+            userId: userId,
+            originalPath: path,
+          );
+        } catch (e) {
+          AppLogger.error('Thumbnail creation failed: $e');
         }
 
-        return url;
+        return ImageUploadResult(imageUrl: url, thumbnailUrl: thumbUrl);
       },
       operationName: 'Upload image file',
       requiresAuth: true,
@@ -181,8 +198,8 @@ class StorageService extends BaseService
     return _repository.isValidImageFile(file);
   }
 
-  /// Upload a recipe image
-  Future<String?> uploadRecipeImage(
+  /// Upload a recipe image, returning both the full image URL and thumbnail URL.
+  Future<ImageUploadResult?> uploadRecipeImage(
     File imageFile,
     String recipeId, {
     Function(double)? onProgress,
@@ -219,26 +236,5 @@ class StorageService extends BaseService
       requiresNetwork: true,
       defaultValue: null,
     );
-  }
-
-  /// Create thumbnail in background (fire-and-forget)
-  void _createThumbnailInBackground(
-    File imageFile,
-    String userId,
-    String originalPath,
-  ) {
-    // Run in background without waiting
-    Future(() async {
-      try {
-        await _repository.createAndUploadThumbnail(
-          imageFile: imageFile,
-          userId: userId,
-          originalPath: originalPath,
-        );
-      } catch (e) {
-        AppLogger.error('Thumbnail creation failed: $e');
-        // Not critical if thumbnail fails
-      }
-    });
   }
 }

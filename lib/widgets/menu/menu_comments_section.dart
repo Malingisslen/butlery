@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
@@ -293,7 +294,7 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           FilledButton(
-            onPressed: () => Navigator.pushNamed(context, '/login'),
+            onPressed: () => Navigator.pushNamed(context, Routes.auth),
             child: Text(context.l10n.authLogIn),
           ),
         ],

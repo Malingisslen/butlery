@@ -12,6 +12,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 
@@ -215,12 +216,13 @@ class DeepLinkHandler {
     final menuId = params['id'];
 
     if (menuId != null && _isValidFirestoreId(menuId)) {
-      // Pre-load social module before navigation
       await _ensureSocialModuleLoaded();
 
-      if (context.mounted) {
-        // Navigate to shared with me view to see the menu
-        Navigator.of(context).pushNamed(Routes.shared);
+      // Fetch full SharedMenu object — router expects SharedMenu, not String ID
+      final menuRepo = ServiceLocator.get<FirebaseSharedMenuRepository>();
+      final menu = await menuRepo.getSharedMenu(menuId);
+      if (menu != null && context.mounted) {
+        Navigator.of(context).pushNamed(Routes.menuPreview, arguments: menu);
       }
     }
   }
@@ -238,7 +240,8 @@ class DeepLinkHandler {
 
       if (context.mounted) {
         // Navigate to collaborative shopping view
-        Navigator.of(context).pushNamed(Routes.collaborativeShopping);
+        Navigator.of(context)
+            .pushNamed(Routes.collaborativeShopping, arguments: listId);
       }
     }
   }

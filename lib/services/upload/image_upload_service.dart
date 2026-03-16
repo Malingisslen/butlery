@@ -240,17 +240,17 @@ class ImageUploadService extends BaseService {
     required String userId,
     required void Function(double) onProgress,
   }) async {
-    final url = await _storageService.uploadImageFile(
+    final result = await _storageService.uploadImageFile(
       file,
       userId,
       onProgress: onProgress,
     );
 
-    if (url == null) {
+    if (result == null) {
       throw Exception('Storage service returned null URL');
     }
 
-    return url;
+    return result.imageUrl;
   }
 
   /// Handle successful upload

@@ -1,6 +1,7 @@
 // lib/widgets/menu/menu_rating_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -253,7 +254,7 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           FilledButton(
-            onPressed: () => Navigator.pushNamed(context, '/login'),
+            onPressed: () => Navigator.pushNamed(context, Routes.auth),
             child: Text(context.l10n.authLogIn),
           ),
         ],

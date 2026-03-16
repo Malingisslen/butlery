@@ -53,10 +53,9 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// final shoppingRepo = FirebaseShoppingRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// // Create and set active list
+/// // Create a list
 /// final list = UnifiedShoppingList(name: 'Weekly Groceries');
 /// final created = await shoppingRepo.create(list);
-/// await shoppingRepo.setActiveList(created.id);
 /// // Save as template
 /// final templateId = await shoppingRepo.saveAsTemplate(
 ///   listId: created.id,
@@ -73,8 +72,6 @@ class FirebaseShoppingRepository
     extends BaseFirebaseRepository<UnifiedShoppingList>
     with UserScopedFirebaseRepository<UnifiedShoppingList>
     implements ShoppingRepository {
-  String? _activeListId;
-
   // Feature modules
   late final ShoppingRepositoryRoutingModule _routingModule;
   late final ShoppingRepositoryQueryModule _queryModule;
@@ -290,14 +287,6 @@ class FirebaseShoppingRepository
 
   @override
   Future<List<UnifiedShoppingList>> readAll() async => _queryModule.readAll();
-  @override
-  Future<void> setActiveList(String listId) async {
-    _activeListId = listId;
-  }
-
-  @override
-  Future<UnifiedShoppingList?> getActiveList() async =>
-      _queryModule.getActiveList(_activeListId);
 
   @override
   Future<void> addItem(String listId, UnifiedShoppingItem item) async =>

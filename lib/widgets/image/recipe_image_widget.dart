@@ -14,6 +14,7 @@ class RecipeImageWidget extends StatefulWidget {
   final VoidCallback? onTap;
   final Function(int)? onImageTap;
   final String? heroTag;
+  final String? thumbnailUrl;
 
   const RecipeImageWidget({
     super.key,
@@ -22,6 +23,7 @@ class RecipeImageWidget extends StatefulWidget {
     this.onTap,
     this.onImageTap,
     this.heroTag,
+    this.thumbnailUrl,
   });
 
   factory RecipeImageWidget.card({
@@ -57,6 +59,7 @@ class RecipeImageWidget extends StatefulWidget {
     bool showNavigationDots = true,
     bool showImageCounter = true,
     String? heroTag,
+    String? thumbnailUrl,
     VoidCallback? onTap,
     Function(int)? onImageTap,
   }) {
@@ -72,6 +75,7 @@ class RecipeImageWidget extends StatefulWidget {
       onTap: onTap,
       onImageTap: onImageTap,
       heroTag: heroTag,
+      thumbnailUrl: thumbnailUrl,
     );
   }
 
@@ -132,6 +136,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
         OptimizedImageLoader.recipeCard(
           imageUrl: primaryImage,
           config: widget.config,
+          thumbnailUrl: widget.thumbnailUrl,
           onTap: widget.onTap,
         ),
         if (widget.config.showMultipleIndicator && widget.imageUrls.length > 1)
@@ -198,6 +203,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
         key: ValueKey('optimized_single_$imageUrl'),
         imageUrl: imageUrl,
         config: widget.config,
+        thumbnailUrl: widget.thumbnailUrl,
         onTap: null,
       ),
     );

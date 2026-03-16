@@ -115,6 +115,18 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     return validUrls;
   }
 
+  /// Get the first available thumbnail URL from uploaded images.
+  /// Used to set `thumbnailUrl` on the recipe model during save.
+  String? get firstThumbnailUrl {
+    final thumbs = _coordinator.thumbnailUrls;
+    if (thumbs.isEmpty) return null;
+    // Return thumbnail for the first valid image URL (primary image)
+    for (final url in validImageUrls) {
+      if (thumbs.containsKey(url)) return thumbs[url];
+    }
+    return thumbs.values.first;
+  }
+
   /// Get pending files for background upload during save
   List<File> get pendingImages {
     final List<File> pending = [];

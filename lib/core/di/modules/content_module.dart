@@ -55,6 +55,7 @@ import 'package:butlery/repositories/firebase/firebase_recipe_presence_repositor
 
 // Import core module for dependencies
 import 'package:butlery/core/di/modules/core_module.dart';
+import 'package:butlery/core/di/modules/tagging_module.dart';
 
 // Site parsers for URL import
 import 'package:butlery/services/extraction/site_parsers/site_parser_registry.dart';
@@ -128,7 +129,10 @@ class ContentModule implements DIModule {
   String get name => 'Content';
 
   @override
-  List<Type> get dependencies => [CoreModule]; // Depends on Core Module
+  List<Type> get dependencies => [
+        CoreModule,
+        TaggingModule
+      ]; // Depends on Core Module + TaggingModule (IngredientRepository)
 
   @override
   List<Type> get provides => [
@@ -184,6 +188,10 @@ class ContentModule implements DIModule {
         NeuralLineClassifier,
         // Ingredient substitution
         IngredientSubstitutionService,
+        // Ingredient registry (enriches static KnownIngredients from Firestore)
+        IngredientRegistryService,
+        // Firebase Storage instance for model loaders
+        FirebaseStorage,
       ];
 
   @override
@@ -238,6 +246,7 @@ class ContentModule implements DIModule {
               ? container<FirestoreRepository>()
               : null,
         ),
+        dispose: (s) => s.dispose(),
       );
 
       // Import manager for various content import methods

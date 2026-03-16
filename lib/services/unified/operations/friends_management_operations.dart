@@ -24,31 +24,14 @@ class FriendsManagementOperations extends BaseService {
   String get serviceName => 'FriendsManagementOperations';
   final UnifiedFriendsService _parent;
   late final user_svc.UserService _userService;
-  notif.NotificationService? _notificationServiceInstance;
 
   FriendsManagementOperations(this._parent) {
     _userService = ServiceLocator.get<user_svc.UserService>();
-    // NotificationService is now lazy initialized on first access
   }
 
-  /// Lazy getter for notification service - initializes on first access after MessagingModule has loaded
-  notif.NotificationService? get _notificationService {
-    _notificationServiceInstance ??=
-        safeExecuteSync<notif.NotificationService?>(
-      () {
-        final currentUserId = _parent.currentUserId;
-        if (currentUserId != null) {
-          final service = notif.NotificationService(userId: currentUserId);
-          service.initialize();
-          return service;
-        }
-        return null;
-      },
-      operationName: 'Initialize notification service',
-      customErrorMessage: 'Could not initialize friend notifications',
-    );
-    return _notificationServiceInstance;
-  }
+  /// Get NotificationService from DI (registered by MessagingModule)
+  notif.NotificationService? get _notificationService =>
+      ServiceLocator.tryGet<notif.NotificationService>();
 
   Future<bool> sendFriendRequest(String recipientId, {String? message}) async {
     // Validate input
@@ -282,9 +265,8 @@ class FriendsManagementOperations extends BaseService {
       final incomingFromBlocked = _parent.incomingRequests
           .where((r) => r.fromUserId == userId)
           .toList();
-      final outgoingToBlocked = _parent.outgoingRequests
-          .where((r) => r.toUserId == userId)
-          .toList();
+      final outgoingToBlocked =
+          _parent.outgoingRequests.where((r) => r.toUserId == userId).toList();
 
       for (final request in incomingFromBlocked) {
         _parent.removeIncomingRequestInternal(request.id);

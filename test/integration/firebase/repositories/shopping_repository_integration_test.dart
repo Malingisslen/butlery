@@ -354,65 +354,6 @@ void main() {
       });
     });
 
-    group('Active List Management', () {
-      test('should set and get active list', () async {
-        // Arrange
-        final list = UnifiedShoppingList.personal(
-          name: 'Active List',
-          ownerId: testUserId,
-          ownerDisplayName: testUserDisplayName,
-        );
-        final created = await repository.create(list);
-
-        // Act
-        await repository.setActiveList(created.id);
-        final active = await repository.getActiveList();
-
-        // Assert
-        expect(active, isNotNull);
-        expect(active!.id, equals(created.id));
-        expect(active.name, equals('Active List'));
-      });
-
-      test('should return null when no active list', () async {
-        // Act
-        final active = await repository.getActiveList();
-
-        // Assert
-        expect(active, isNull);
-      });
-
-      test('should handle switching active lists', () async {
-        // Arrange
-        final list1 = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'List 1',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-          ),
-        );
-
-        final list2 = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'List 2',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-          ),
-        );
-
-        // Act
-        await repository.setActiveList(list1.id);
-        var active = await repository.getActiveList();
-        expect(active!.id, equals(list1.id));
-
-        await repository.setActiveList(list2.id);
-        active = await repository.getActiveList();
-
-        // Assert
-        expect(active!.id, equals(list2.id));
-      });
-    });
-
     group('Item Operations with FieldValue', () {
       test('should add item to shopping list', () async {
         // Arrange

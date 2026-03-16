@@ -27,6 +27,11 @@ class ImageUploadCoordinator {
   // Active upload tracking
   final Set<_CancellableUploadOperation> _activeUploads = {};
 
+  /// Maps imageUrl → thumbnailUrl from the most recent upload batch.
+  /// Cleared at the start of each upload batch.
+  final Map<String, String> _thumbnailUrls = {};
+  Map<String, String> get thumbnailUrls => Map.unmodifiable(_thumbnailUrls);
+
   // Callbacks for state synchronization
   final void Function() _notifyListeners;
   final void Function(String error) _setError;
@@ -73,6 +78,7 @@ class ImageUploadCoordinator {
 
     AppLogger.info(
         '🚀 Starting thread-safe upload of ${pendingImages.length} pending images');
+    _thumbnailUrls.clear();
     final List<String> uploadedUrls = [];
     int completed = 0;
     final total = pendingImages.length;
@@ -166,7 +172,7 @@ class ImageUploadCoordinator {
         return null;
       }
 
-      final imageUrl = await _storageService.uploadRecipeImage(file, recipeId);
+      final result = await _storageService.uploadRecipeImage(file, recipeId);
 
       // CRITICAL FIX: Check cancellation after upload completes
       if (disposed || uploadsCanceled) {
@@ -175,7 +181,13 @@ class ImageUploadCoordinator {
         return null;
       }
 
+      final imageUrl = result?.imageUrl;
       if (imageUrl != null && imageUrl.isNotEmpty) {
+        // Track thumbnail URL if available
+        if (result?.thumbnailUrl != null) {
+          _thumbnailUrls[imageUrl] = result!.thumbnailUrl!;
+        }
+
         // Update state to completed with URL
         imageStates.remove(filePath);
         imageStates[imageUrl] = ImageUploadStatus(

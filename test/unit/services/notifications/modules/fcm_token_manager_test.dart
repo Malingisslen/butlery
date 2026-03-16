@@ -14,9 +14,8 @@ import 'package:get_it/get_it.dart';
 
 // Production code being tested
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
-import 'package:butlery/repositories/firebase/firebase_notification_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/models/notification_preferences.dart';
 
 // Test infrastructure
 import '../../../../test_support/base_unit_test.dart';
@@ -25,9 +24,9 @@ import '../../../../infrastructure/mocks/production_mocks.dart';
 
 // ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
 
-// Mock for the concrete NotificationRepository class (FCM token operations)
+// Mock for the NotificationsRepository interface (FCM token operations)
 class MockNotificationRepositoryForFCM extends Mock
-    implements NotificationRepository {}
+    implements NotificationsRepository {}
 
 void main() {
   setUpAll(() {
@@ -36,7 +35,7 @@ void main() {
 
   group('FCMTokenManager', () {
     late FCMTokenManager tokenManager;
-    late NotificationRepository mockRepository;
+    late NotificationsRepository mockRepository;
     late MockFirebaseMessaging mockMessaging;
     late MockSharedPreferences mockPreferences;
     late MockFirebaseFirestore mockFirestore;
@@ -52,33 +51,29 @@ void main() {
       mockPreferences = MockSharedPreferences();
       mockFirestore = MockFirebaseFirestore();
 
-      // Register mocks in GetIt for dependency injection
-      GetIt.instance.registerSingleton<NotificationRepository>(mockRepository);
+      // Register Firestore mock in GetIt
       GetIt.instance.registerSingleton<FirebaseFirestore>(mockFirestore);
 
-      // Configure default mock behavior for NotificationRepository
-      when(() => mockRepository.getPreferences())
-          .thenAnswer((_) async => NotificationPreferences.defaults());
-
-      when(() => mockRepository.saveTokenToFirestore(any(), any(), any()))
+      // Configure default mock behavior for NotificationsRepository
+      when(() => mockRepository.saveTokenToFirestore(any(), any()))
           .thenAnswer((_) async {});
 
-      when(() => mockRepository.updateDeviceInfo(any(), any(), any()))
+      when(() => mockRepository.updateDeviceInfo(any(), any()))
           .thenAnswer((_) async {});
 
-      when(() => mockRepository.updateTokenTimestamp(any(), any()))
+      when(() => mockRepository.updateTokenTimestamp(any()))
           .thenAnswer((_) async {});
 
-      when(() => mockRepository.removeOldToken(any(), any(), any()))
+      when(() => mockRepository.removeOldToken(any(), any()))
           .thenAnswer((_) async {});
 
-      when(() => mockRepository.cleanupOldDevices(any(), any(),
-          olderThan: any(named: 'olderThan'))).thenAnswer((_) async {});
+      when(() => mockRepository.cleanupOldDevices(any(), any()))
+          .thenAnswer((_) async {});
 
-      when(() => mockRepository.getAllUserTokens(any(), any()))
+      when(() => mockRepository.getAllUserTokens(any()))
           .thenAnswer((_) async => []);
 
-      when(() => mockRepository.markDeviceInactive(any(), any()))
+      when(() => mockRepository.markDeviceInactive(any()))
           .thenAnswer((_) async {});
 
       // Configure Firebase Messaging mock
@@ -144,7 +139,7 @@ void main() {
               provisional: false,
             )).called(1);
         verify(() => mockMessaging.getToken()).called(1);
-        verify(() => mockRepository.saveTokenToFirestore(any(), any(), any()))
+        verify(() => mockRepository.saveTokenToFirestore(any(), any()))
             .called(greaterThanOrEqualTo(1));
       });
 
@@ -160,7 +155,7 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         // Assert
-        verify(() => mockRepository.saveTokenToFirestore(any(), any(), any()))
+        verify(() => mockRepository.saveTokenToFirestore(any(), any()))
             .called(greaterThanOrEqualTo(2));
 
         // Cleanup
@@ -194,7 +189,7 @@ void main() {
         // Assert
         verify(() => mockMessaging.getToken())
             .called(2); // Once in init, once in refresh
-        verify(() => mockRepository.saveTokenToFirestore(any(), any(), any()))
+        verify(() => mockRepository.saveTokenToFirestore(any(), any()))
             .called(greaterThanOrEqualTo(2));
       });
 
@@ -208,7 +203,7 @@ void main() {
         // Assert
         verify(() => mockMessaging.unsubscribeFromTopic('user_test-user-123'))
             .called(1);
-        verify(() => mockRepository.markDeviceInactive(any(), any())).called(1);
+        verify(() => mockRepository.markDeviceInactive(any())).called(1);
       });
 
       test('should handle null token from Firebase', () async {
@@ -220,8 +215,7 @@ void main() {
 
         // Assert
         expect(tokenManager.isInitialized, isFalse);
-        verifyNever(
-            () => mockRepository.saveTokenToFirestore(any(), any(), any()));
+        verifyNever(() => mockRepository.saveTokenToFirestore(any(), any()));
       });
     });
 
@@ -389,7 +383,7 @@ void main() {
 
       test('should handle repository save failures gracefully', () async {
         // Arrange
-        when(() => mockRepository.saveTokenToFirestore(any(), any(), any()))
+        when(() => mockRepository.saveTokenToFirestore(any(), any()))
             .thenAnswer((_) async => throw Exception('Firestore error'));
 
         // Act & Assert
@@ -406,8 +400,7 @@ void main() {
         await tokenManager.initialize();
 
         // Assert
-        verify(() => mockRepository.updateDeviceInfo(any(), any(), any()))
-            .called(1);
+        verify(() => mockRepository.updateDeviceInfo(any(), any())).called(1);
       });
 
       test('should cleanup old devices on initialization', () async {
@@ -417,8 +410,7 @@ void main() {
         // Assert
         verify(() => mockRepository.cleanupOldDevices(
               any(),
-              'test-user-123',
-              olderThan: const Duration(days: 30),
+              any(),
             )).called(1);
       });
 
@@ -430,12 +422,12 @@ void main() {
         await tokenManager.cleanup();
 
         // Assert
-        verify(() => mockRepository.markDeviceInactive(any(), any())).called(1);
+        verify(() => mockRepository.markDeviceInactive(any())).called(1);
       });
 
       test('should get all user tokens', () async {
         // Arrange
-        when(() => mockRepository.getAllUserTokens(any(), any()))
+        when(() => mockRepository.getAllUserTokens(any()))
             .thenAnswer((_) async => ['token1', 'token2', 'token3']);
 
         // Act

@@ -68,10 +68,8 @@ class ImageOptimizationParams {
   }
 
   bool _supportsTransformation(String url) {
-    // Check for known image CDNs that support transformation
-    return url.contains('firebasestorage.googleapis.com') ||
-        url.contains('cloudinary.com') ||
-        url.contains('imgix.net');
+    // Firebase Storage doesn't support URL-based transforms — use real thumbnails instead
+    return url.contains('cloudinary.com') || url.contains('imgix.net');
   }
 }
 
@@ -151,6 +149,7 @@ class OptimizedImageLoader extends StatefulWidget {
   final VoidCallback? onTap;
   final bool enableProgressive;
   final bool enableThumbnail;
+  final String? thumbnailUrl;
 
   const OptimizedImageLoader({
     super.key,
@@ -163,6 +162,7 @@ class OptimizedImageLoader extends StatefulWidget {
     this.onTap,
     this.enableProgressive = true,
     this.enableThumbnail = true,
+    this.thumbnailUrl,
   });
 
   /// Factory for recipe card images
@@ -170,6 +170,7 @@ class OptimizedImageLoader extends StatefulWidget {
     Key? key,
     required String imageUrl,
     required ImageConfig config,
+    String? thumbnailUrl,
     VoidCallback? onTap,
   }) {
     final dimensions = config.getDimensions();
@@ -184,6 +185,7 @@ class OptimizedImageLoader extends StatefulWidget {
       ),
       onTap: onTap,
       enableThumbnail: true,
+      thumbnailUrl: thumbnailUrl,
     );
   }
 
@@ -192,6 +194,7 @@ class OptimizedImageLoader extends StatefulWidget {
     Key? key,
     required String imageUrl,
     required ImageConfig config,
+    String? thumbnailUrl,
     VoidCallback? onTap,
   }) {
     final dimensions = config.getDimensions();
@@ -207,7 +210,8 @@ class OptimizedImageLoader extends StatefulWidget {
       fit: BoxFit.contain, // Show full image without cropping
       onTap: onTap,
       enableProgressive: true,
-      enableThumbnail: false,
+      enableThumbnail: thumbnailUrl != null,
+      thumbnailUrl: thumbnailUrl,
     );
   }
 
@@ -253,8 +257,11 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
     super.dispose();
   }
 
-  /// Generate thumbnail URL for progressive loading
+  /// Get thumbnail URL for progressive loading.
+  /// Uses real thumbnail URL when available, falls back to CDN params for supported hosts.
   String _generateThumbnailUrl() {
+    if (widget.thumbnailUrl != null) return widget.thumbnailUrl!;
+
     final params = ImageOptimizationParams(
       targetSize: Size(
         math.min(widget.targetSize.width, 50),

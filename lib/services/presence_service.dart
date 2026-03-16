@@ -161,6 +161,29 @@ class PresenceService extends BaseService {
     await _setPresenceStatus(PresenceStatus.offline);
   }
 
+  /// Reset all state for logout. Cancels timers and sets offline status.
+  /// Safe to call mid-operation — timer cancellation is synchronous.
+  Future<void> resetForLogout() async {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+    _typingCleanupTimer?.cancel();
+    _typingCleanupTimer = null;
+
+    for (final timer in _typingDebounceTimers.values) {
+      timer.cancel();
+    }
+    _typingDebounceTimers.clear();
+
+    // Best-effort offline status update (user is signing out)
+    try {
+      await _setPresenceStatus(PresenceStatus.offline);
+    } catch (_) {
+      // Ignore — user is leaving anyway
+    }
+
+    AppLogger.info('PresenceService reset for logout');
+  }
+
   /// Get real-time presence stream for a user
   Stream<UserPresence?> getPresenceStream(String userId) {
     return _firestore

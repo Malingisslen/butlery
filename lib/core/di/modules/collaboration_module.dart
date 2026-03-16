@@ -36,6 +36,7 @@ class CollaborationModule implements DIModule {
         RealtimeMenuService,
         UnifiedShoppingService,
         MenuCollaborationRepository,
+        ShoppingRepository,
       ];
 
   @override

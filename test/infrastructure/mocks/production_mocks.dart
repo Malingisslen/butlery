@@ -26,10 +26,7 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/repositories/firebase/firebase_notification_repository.dart'
-    as legacy;
 // ActivityRepository removed - dead code
-import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
@@ -3595,69 +3592,6 @@ extension FakeNotificationActionListExtension on List<FakeNotificationAction> {
   }
 }
 
-/// ✅ FIXED: Complete MockLegacyNotificationRepository - PHASE 4B SUCCESS!
-/// Legacy notification repository mock for backward compatibility
-class MockLegacyNotificationRepository extends Mock
-    implements legacy.NotificationRepository {
-  // Configuration state
-  Map<String, dynamic> _preferences = {};
-  List<Map<String, dynamic>> _notifications = [];
-
-  /// Configure mock state
-  void setLegacyNotificationState({
-    Map<String, dynamic>? preferences,
-    List<Map<String, dynamic>>? notifications,
-  }) {
-    if (preferences != null) _preferences = preferences;
-    if (notifications != null) _notifications = notifications;
-  }
-
-  // Mock methods with correct return types
-  @override
-  Future<NotificationPreferences> getPreferences() async {
-    return NotificationPreferences.defaults();
-  }
-
-  /// ✅ FIXED: Missing methods for Phase 5B - MockLegacyNotificationRepository completion
-  @override
-  Future<bool> wasNotificationSent(String notificationId) async {
-    return _notifications
-        .any((notification) => notification['id'] == notificationId);
-  }
-
-  @override
-  Future<void> markNotificationDelivered(String notificationId) async {
-    // Mock implementation - find notification and mark as delivered
-    for (var notification in _notifications) {
-      if (notification['id'] == notificationId) {
-        notification['delivered'] = true;
-        break;
-      }
-    }
-  }
-
-  @override
-  Future<void> markNotificationOpened(String notificationId) async {
-    // Mock implementation - find notification and mark as opened
-    for (var notification in _notifications) {
-      if (notification['id'] == notificationId) {
-        notification['opened'] = true;
-        break;
-      }
-    }
-  }
-
-  @override
-  void clearCache() {
-    // Mock implementation - clear cached data
-    _preferences.clear();
-  }
-
-  // Getters for test access
-  Map<String, dynamic> get preferences => _preferences;
-  List<Map<String, dynamic>> get notifications => _notifications;
-}
-
 /// Mock implementation of RealtimeSyncService
 ///
 /// Provides comprehensive real-time synchronization mocking for collaborative features.
@@ -4585,56 +4519,29 @@ class MockNotificationRepositoryV2 extends Mock
 
   Future<void> markNotificationOpened(String notificationId) async {}
 
-  // FCM token management methods (complete interface alignment)
+  // FCM token management methods (aligned to NotificationsRepository interface)
+  @override
   Future<void> saveTokenToFirestore(
-      String collection, String docId, Map<String, dynamic> tokenData) async {}
+      String docId, Map<String, dynamic> tokenData) async {}
 
+  @override
   Future<void> updateDeviceInfo(
-      String collection, String docId, Map<String, dynamic> deviceData) async {}
+      String docId, Map<String, dynamic> deviceData) async {}
 
-  Future<void> updateTokenTimestamp(String collection, String docId) async {}
+  @override
+  Future<void> updateTokenTimestamp(String docId) async {}
 
-  Future<void> removeOldToken(
-      String collection, String userId, String oldToken) async {}
+  @override
+  Future<void> removeOldToken(String userId, String oldToken) async {}
 
-  Future<void> cleanupOldDevices(String collection, String userId,
-      {Duration? olderThan}) async {}
+  @override
+  Future<void> cleanupOldDevices(String userId, DateTime olderThan) async {}
 
-  Future<List<String>> getAllUserTokens(
-          String collection, String userId) async =>
-      [];
+  @override
+  Future<List<String>> getAllUserTokens(String userId) async => [];
 
-  Future<void> markDeviceInactive(String collection, String docId) async {}
-
-  // Batch management methods
-  Future<void> addToBatch({
-    required String batchKey,
-    required NotificationTemplate notification,
-    required Duration batchWindow,
-  }) async {}
-
-  Future<List<NotificationBatch>> getPendingBatches() async => [];
-
-  Future<void> removeBatch(String batchKey) async {}
-
-  // Utility methods
-  Future<bool> shouldReceiveNotification(
-          NotificationCategory category, NotificationType type) async =>
-      true;
-
-  Future<void> cleanupOldHistory({Duration? olderThan}) async {}
-
-  void clearCache() {}
-
-  // Additional device management methods
-  Future<void> batchUpdateDevices(
-      String collection, List<Map<String, dynamic>> updates) async {}
-  Future<List<Map<String, dynamic>>> queryDevices(
-          String collection, Map<String, dynamic> filters,
-          {int? limit}) async =>
-      [];
-  Future<void> updateDeviceLastSeen(String collection, String deviceId) async {}
-  Future<void> deactivateUserDevices(String collection, String userId) async {}
+  @override
+  Future<void> markDeviceInactive(String docId) async {}
 }
 
 /// Simple error class for sync operations in tests

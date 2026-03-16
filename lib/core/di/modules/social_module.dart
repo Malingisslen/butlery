@@ -116,6 +116,7 @@ class SocialModule implements DIModule {
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<AuthRepository>(),
         ),
+        dispose: (s) => s.dispose(),
       );
 
       container.registerLazySingleton<CommentsRepository>(
@@ -162,7 +163,9 @@ class SocialModule implements DIModule {
           permissionService: container<PermissionService>(),
           sharedRecipeRepository: container<FirebaseSharedRecipeRepository>(),
           sharedMenuRepository: container<FirebaseSharedMenuRepository>(),
-          shoppingService: container<UnifiedShoppingService>(),
+          shoppingService: container.isRegistered<UnifiedShoppingService>()
+              ? container<UnifiedShoppingService>()
+              : null,
         ),
       );
 

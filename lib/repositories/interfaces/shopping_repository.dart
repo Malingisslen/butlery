@@ -4,12 +4,6 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Repository interface for shopping list operations.
 abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
-  /// Sets the specified shopping list as the currently active list.
-  Future<void> setActiveList(String listId);
-
-  /// Retrieves the currently active shopping list, if one is set.
-  Future<UnifiedShoppingList?> getActiveList();
-
   /// Adds a new item to the specified shopping list.
   Future<void> addItem(String listId, UnifiedShoppingItem item);
 
