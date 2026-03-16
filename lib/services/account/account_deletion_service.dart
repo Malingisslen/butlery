@@ -132,6 +132,8 @@ class AccountDeletionService extends BaseService {
         'offline_cache': () => _storageOps.clearOfflineData(userId),
         'public_profile': () => _profileOps.deletePublicProfile(userId),
         'realtime_recipes': () => _storageOps.deleteRealtimeRecipes(userId),
+        'realtime_menus': () => _storageOps.deleteRealtimeMenus(userId),
+        'presence': () => _storageOps.deletePresence(userId),
         'activity_feed': () => _profileOps.deleteActivityFeed(userId),
         'storage_files': () => _storageOps.deleteUserStorageFiles(userId),
         'profile': () => _profileOps.deleteUserProfile(userId),
