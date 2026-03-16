@@ -78,6 +78,14 @@ enum NotificationCategory {
   system, // App updates and maintenance
 }
 
+/// FCM payload type identifiers used in notification data['type'].
+abstract final class NotificationPayloadType {
+  static const String friendRequest = 'friend_request';
+  static const String recipeShared = 'recipe_shared';
+  static const String collaborationInvite = 'collaboration_invite';
+  static const String recipeComment = 'recipe_comment';
+}
+
 /// Notification delivery strategy configuration
 class NotificationStrategy {
   final NotificationType type;

@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/image/simple_image_widget.dart';
 
 /// Dialog for sharing recipes with friends
 class FriendRecipeSharingDialog extends StatelessWidget {
@@ -272,28 +273,16 @@ class FriendRecipeListItem extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: recipe.imageUrls.isNotEmpty
-            ? Image.network(
-                recipe.imageUrls.first,
-                width: AppDimensions.iconSizeXl,
-                height: AppDimensions.iconSizeXl,
-                fit: BoxFit.contain,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return const SizedBox(
-                    width: AppDimensions.iconSizeXl,
-                    height: AppDimensions.iconSizeXl,
-                    child: Center(
-                        child: CircularProgressIndicator(strokeWidth: 2)),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildPlaceholder(context),
-              )
-            : _buildPlaceholder(context),
-      ),
+      leading: recipe.imageUrls.isNotEmpty
+          ? NetworkImageWidget(
+              imageUrl: recipe.imageUrls.first,
+              width: AppDimensions.iconSizeXl,
+              height: AppDimensions.iconSizeXl,
+              fit: BoxFit.contain,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              errorWidget: _buildPlaceholder(context),
+            )
+          : _buildPlaceholder(context),
       title: Row(
         children: [
           Expanded(
