@@ -13,13 +13,32 @@ import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Import via URL view with sourceUrl support
-class ImportViaUrlView extends StatelessWidget {
+class ImportViaUrlView extends StatefulWidget {
   const ImportViaUrlView({super.key});
 
   @override
+  State<ImportViaUrlView> createState() => _ImportViaUrlViewState();
+}
+
+class _ImportViaUrlViewState extends State<ImportViaUrlView> {
+  late final UrlImportViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<UrlImportViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServiceLocator.get<UrlImportViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: const _ImportViaUrlViewContent(),
     );
   }

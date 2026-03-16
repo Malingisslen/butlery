@@ -51,8 +51,8 @@ class MessagingDeferredModule implements DeferredModule {
   Widget buildRoute(String routeName, RouteSettings settings) {
     switch (routeName) {
       case Routes.messages:
-        return ChangeNotifierProvider(
-          create: (_) => ServiceLocator.get<ConversationsViewModel>(),
+        // ignore: prefer_const_constructors
+        return _ConversationsProviderWrapper(
           child: conversations.ConversationsListView(),
         );
 
@@ -66,5 +66,41 @@ class MessagingDeferredModule implements DeferredModule {
       default:
         throw ArgumentError('Unknown messaging route: $routeName');
     }
+  }
+}
+
+/// Wrapper that owns the ConversationsViewModel lifecycle.
+class _ConversationsProviderWrapper extends StatefulWidget {
+  final Widget child;
+
+  const _ConversationsProviderWrapper({required this.child});
+
+  @override
+  State<_ConversationsProviderWrapper> createState() =>
+      _ConversationsProviderWrapperState();
+}
+
+class _ConversationsProviderWrapperState
+    extends State<_ConversationsProviderWrapper> {
+  late final ConversationsViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<ConversationsViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
+      child: widget.child,
+    );
   }
 }

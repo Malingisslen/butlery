@@ -16,13 +16,32 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
-class ImporteraFranArkivView extends StatelessWidget {
+class ImporteraFranArkivView extends StatefulWidget {
   const ImporteraFranArkivView({super.key});
 
   @override
+  State<ImporteraFranArkivView> createState() => _ImporteraFranArkivViewState();
+}
+
+class _ImporteraFranArkivViewState extends State<ImporteraFranArkivView> {
+  late final ArchiveImportViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<ArchiveImportViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServiceLocator.get<ArchiveImportViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: const _ImporteraFranArkivViewContent(),
     );
   }

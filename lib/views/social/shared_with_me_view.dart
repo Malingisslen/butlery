@@ -23,25 +23,32 @@ import 'package:butlery/views/social/shared_with_me/shared_content_tab_bar.dart'
 import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 
 /// Shared content view with tabbed display for recipes, menus, and shopping lists.
-class SharedWithMeView extends StatelessWidget {
+class SharedWithMeView extends StatefulWidget {
   const SharedWithMeView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    AppLogger.info('SharedWithMeView.build() called');
-    AppLogger.info(
-        'Creating ChangeNotifierProvider for SharedContentCoordinatorViewModel');
+  State<SharedWithMeView> createState() => _SharedWithMeViewState();
+}
 
-    return ChangeNotifierProvider<SharedContentCoordinatorViewModel>(
-      create: (context) {
-        AppLogger.info(
-            'Provider create() called - getting SharedContentCoordinatorViewModel from ServiceLocator');
-        final viewModel =
-            ServiceLocator.get<SharedContentCoordinatorViewModel>();
-        AppLogger.info(
-            'SharedContentCoordinatorViewModel obtained from ServiceLocator');
-        return viewModel;
-      },
+class _SharedWithMeViewState extends State<SharedWithMeView> {
+  late final SharedContentCoordinatorViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<SharedContentCoordinatorViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<SharedContentCoordinatorViewModel>.value(
+      value: _viewModel,
       child: const _SharedWithMeViewContent(),
     );
   }

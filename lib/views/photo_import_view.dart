@@ -18,13 +18,32 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
-class PhotoImportView extends StatelessWidget {
+class PhotoImportView extends StatefulWidget {
   const PhotoImportView({super.key});
 
   @override
+  State<PhotoImportView> createState() => _PhotoImportViewState();
+}
+
+class _PhotoImportViewState extends State<PhotoImportView> {
+  late final PhotoImportViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<PhotoImportViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServiceLocator.get<PhotoImportViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: const _PhotoImportViewContent(),
     );
   }

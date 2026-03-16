@@ -16,7 +16,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Text import view for parsing recipes from copied text.
-class FranSocialaMedierView extends StatelessWidget {
+class FranSocialaMedierView extends StatefulWidget {
   final String? initialText;
   final String? sourceUrl;
 
@@ -27,21 +27,34 @@ class FranSocialaMedierView extends StatelessWidget {
   });
 
   @override
+  State<FranSocialaMedierView> createState() => _FranSocialaMedierViewState();
+}
+
+class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
+  late final TextImportViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = ServiceLocator.get<TextImportViewModel>();
+    if (widget.sourceUrl != null) {
+      _viewModel.setSourceUrl(widget.sourceUrl!);
+    }
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) {
-        final viewModel = ServiceLocator.get<TextImportViewModel>();
-
-        // Set sourceUrl if available
-        if (sourceUrl != null) {
-          viewModel.setSourceUrl(sourceUrl!);
-        }
-
-        return viewModel;
-      },
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: _FranSocialaMedierViewContent(
-        initialText: initialText,
-        sourceUrl: sourceUrl,
+        initialText: widget.initialText,
+        sourceUrl: widget.sourceUrl,
       ),
     );
   }
