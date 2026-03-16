@@ -2,7 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/services/account/export/export_pagination_helper.dart';
+import 'package:butlery/services/account/export/export_pagination_helper.dart'
+    show ExportPaginationHelper, sanitizeForJson;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of user content: recipes, menus, shopping lists.
@@ -34,7 +35,7 @@ class ContentExportManager {
         recipes.add({
           'recipe_id': doc.id,
           'type': 'personal',
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -50,7 +51,7 @@ class ContentExportManager {
         recipes.add({
           'recipe_id': doc.id,
           'type': 'unified',
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -84,7 +85,7 @@ class ContentExportManager {
       for (final doc in menusSnapshot) {
         menus.add({
           'menu_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -100,7 +101,7 @@ class ContentExportManager {
         menus.add({
           'menu_id': doc.id,
           'type': 'shared',
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -192,7 +193,7 @@ class ContentExportManager {
       for (final doc in tagsSnapshot) {
         tags.add({
           'tag_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
@@ -227,7 +228,7 @@ class ContentExportManager {
       for (final doc in groupsSnapshot) {
         groups.add({
           'group_id': doc.id,
-          'data': doc.data(),
+          'data': sanitizeForJson(doc.data()),
         });
       }
 
