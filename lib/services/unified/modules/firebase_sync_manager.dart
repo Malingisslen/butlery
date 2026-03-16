@@ -70,38 +70,7 @@ class FirebaseSyncManager {
 
       final subscriptions = <String, StreamSubscription>{};
 
-      // STEP 1: Fetch existing recipes from Firestore to populate cache
-      try {
-        final recipeRepository = GetIt.instance<RecipeRepository>();
-        AppLogger.info('📥 Fetching existing recipes from Firestore...');
-
-        final existingRecipes = await recipeRepository.fetchUserRecipes(
-          currentUserId,
-        );
-
-        AppLogger.info('📥 Fetched ${existingRecipes.length} existing recipes');
-
-        // Process each existing recipe through the update callback to populate cache
-        // Note: onRecipeUpdated is synchronous but may trigger async operations internally
-        for (final recipe in existingRecipes) {
-          onRecipeUpdated(recipe, 'initial_fetch');
-        }
-
-        // Wait adequately for all async cache operations to complete
-        // This accounts for internal async operations in the cache layer
-        await Future.delayed(const Duration(milliseconds: 300));
-
-        AppLogger.success(
-          '✅ Initial fetch complete: ${existingRecipes.length} recipes loaded',
-        );
-      } catch (e) {
-        AppLogger.error('❌ Error fetching existing recipes: $e');
-        // Don't rethrow - continue with real-time sync even if initial fetch fails
-        onSyncError('initial_fetch', e);
-      }
-
-      // STEP 2: Start real-time listeners for future changes
-      // Start personal recipes sync
+      // STEP 1: Start real-time listeners FIRST so UI renders from cache immediately (BUT-198)
       // ignore: cancel_subscriptions - returned in Map for caller to manage
       final personalSub = _startPersonalRecipesSync(
         currentUserId: currentUserId,
@@ -112,7 +81,6 @@ class FirebaseSyncManager {
       );
       subscriptions['personal_recipes'] = personalSub;
 
-      // Start collaborative recipes sync
       // ignore: cancel_subscriptions - returned in Map for caller to manage
       final collaborativeSub = _startCollaborativeRecipesSync(
         currentUserId: currentUserId,
@@ -126,6 +94,16 @@ class FirebaseSyncManager {
       AppLogger.success(
         '✅ Repository sync started (${subscriptions.length} streams)',
       );
+
+      // STEP 2: Fire-and-forget initial fetch to backfill cache (BUT-198)
+      // Real-time listeners already active so no data is missed.
+      // ignore: unawaited_futures
+      _fetchExistingRecipes(
+        currentUserId: currentUserId,
+        onRecipeUpdated: onRecipeUpdated,
+        onSyncError: onSyncError,
+      );
+
       return subscriptions;
     } catch (e) {
       AppLogger.error('❌ Error starting repository sync: $e');
@@ -148,6 +126,36 @@ class FirebaseSyncManager {
     } catch (e) {
       AppLogger.error('Error stopping repository sync: $e');
       rethrow;
+    }
+  }
+
+  /// Fetches existing recipes from Firestore to backfill cache (BUT-198).
+  /// Runs as fire-and-forget after listeners are active.
+  static Future<void> _fetchExistingRecipes({
+    required String currentUserId,
+    required void Function(Recipe, String) onRecipeUpdated,
+    required void Function(String, dynamic) onSyncError,
+  }) async {
+    try {
+      final recipeRepository = GetIt.instance<RecipeRepository>();
+      AppLogger.info('📥 Fetching existing recipes from Firestore...');
+
+      final existingRecipes = await recipeRepository.fetchUserRecipes(
+        currentUserId,
+      );
+
+      AppLogger.info('📥 Fetched ${existingRecipes.length} existing recipes');
+
+      for (final recipe in existingRecipes) {
+        onRecipeUpdated(recipe, 'initial_fetch');
+      }
+
+      AppLogger.success(
+        '✅ Initial fetch complete: ${existingRecipes.length} recipes loaded',
+      );
+    } catch (e) {
+      AppLogger.error('❌ Error fetching existing recipes: $e');
+      onSyncError('initial_fetch', e);
     }
   }
 

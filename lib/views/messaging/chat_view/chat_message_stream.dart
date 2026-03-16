@@ -3,6 +3,7 @@
 /// previously embedded in the massive ChatView. Implements clean separation of
 /// concerns with real-time message updates.
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -41,6 +42,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   bool _isLoading = true;
   String? _error;
   Stream<List<Message>>? _messageStream;
+  StreamSubscription<List<Message>>? _messageStreamSubscription;
 
   @override
   void initState() {
@@ -50,6 +52,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
 
   @override
   void dispose() {
+    _messageStreamSubscription?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -80,7 +83,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         });
 
         // Listen to real-time updates
-        _messageStream?.listen((newMessages) {
+        _messageStreamSubscription = _messageStream?.listen((newMessages) {
           if (mounted) {
             setState(() {
               _updateMessagesIncremental(newMessages);

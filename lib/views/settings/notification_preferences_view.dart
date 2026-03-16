@@ -6,6 +6,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Settings view for notification category toggles and quiet hours.
 class NotificationPreferencesView extends StatefulWidget {
@@ -20,6 +21,7 @@ class _NotificationPreferencesViewState
     extends State<NotificationPreferencesView> {
   NotificationPreferences _preferences = NotificationPreferences.defaults();
   bool _isLoading = true;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -28,6 +30,10 @@ class _NotificationPreferencesViewState
   }
 
   Future<void> _loadPreferences() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       final service = ServiceLocator.get<NotificationService>();
       final prefs = await service.getPreferences();
@@ -39,7 +45,10 @@ class _NotificationPreferencesViewState
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
       }
     }
   }
@@ -68,26 +77,33 @@ class _NotificationPreferencesViewState
       appBar: AppBar(title: Text(context.l10n.notificationTitle)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildMasterToggle(),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      _buildCategorySection(),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      _buildQuietHoursSection(),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      _buildSoundVibrationSection(),
-                    ],
+          : _hasError
+              ? StateWidget.error(
+                  message:
+                      context.l10n.errorCouldNotLoad('aviseringsinställningar'),
+                  actionLabel: context.l10n.commonRetry,
+                  onAction: _loadPreferences,
+                )
+              : Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 700),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(AppDimensions.paddingL),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildMasterToggle(),
+                          const SizedBox(height: AppDimensions.spacingXl),
+                          _buildCategorySection(),
+                          const SizedBox(height: AppDimensions.spacingXl),
+                          _buildQuietHoursSection(),
+                          const SizedBox(height: AppDimensions.spacingXl),
+                          _buildSoundVibrationSection(),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
     );
   }
 

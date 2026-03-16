@@ -65,6 +65,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   Timer? _feedbackTimer;
   String? _currentDraftId;
   bool _isAutoSaving = false;
+  bool _isDisposed = false;
   bool _hasShownAutoSaveNotice = false;
   DateTime? _lastAutoSaveTime;
   bool _isTemplate = false; // Track if this is a template-based form
@@ -127,7 +128,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     }
 
     _isAutoSaving = true;
-    notifyListeners();
+    if (!_isDisposed) notifyListeners();
 
     try {
       final now = DateTime.now();
@@ -164,7 +165,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       // Don't show error to user for auto-save failures - it's background operation
     } finally {
       _isAutoSaving = false;
-      notifyListeners();
+      if (!_isDisposed) notifyListeners();
     }
   }
 
@@ -427,6 +428,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   /// Dispose resources
   @override
   void dispose() {
+    _isDisposed = true;
     _autoSaveTimer?.cancel();
     _feedbackTimer?.cancel();
     super.dispose();

@@ -499,29 +499,9 @@ class FriendsCategoriesOperations {
     AppLogger.info(
         '🔒 Privacy setting requested for category: $categoryId (public: $isPublic)');
 
-    // FEATURE STUB: Privacy controls not yet implemented
+    // Feature not yet implemented — return gracefully instead of crashing
     AppLogger.warning(
         '⚠️ Friend category privacy controls are not yet available');
-
-    throw UnimplementedError(
-        'Friend category privacy controls are planned for future release. '
-        'This will allow categories to be set as public (discoverable) or '
-        'private (invitation-only) with appropriate permission management.');
-
-    // FUTURE IMPLEMENTATION:
-    // try {
-    //   final category = await getFriendCategory(categoryId);
-    //   if (category != null && _canEditCategory(category)) {
-    //     final updatedCategory = category.copyWith(isPublic: isPublic);
-    //     await _repository.updateFriendCategory(categoryId, updatedCategory);
-    //     AppLogger.success('✅ Category privacy updated: $categoryId');
-    //   } else {
-    //     throw PermissionDeniedException('Cannot modify category privacy');
-    //   }
-    // } catch (e) {
-    //   AppLogger.error('❌ Failed to update category privacy', e);
-    //   rethrow;
-    // }
   }
 
   List<FriendCategory> get categoriesList => _parent.categoriesList;

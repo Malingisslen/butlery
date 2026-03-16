@@ -184,6 +184,15 @@ class MessagingModule implements DIModule {
       final presenceService = container<PresenceService>();
       await presenceService.initialize();
 
+      // Initialize NotificationService (non-critical — guarded so startup continues)
+      try {
+        final notificationService = container<NotificationService>();
+        await notificationService.initialize();
+      } catch (e) {
+        // NotificationService initialization may fail (e.g. FCM not available on web)
+        // but should not block app startup
+      }
+
       // Validate MessageReactionsService is accessible
       final reactionsService = container<MessageReactionsService>();
       reactionsService.toString();

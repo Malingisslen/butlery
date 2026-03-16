@@ -81,6 +81,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:butlery/firebase_options.dart';
@@ -115,6 +116,17 @@ Future<void> main() async {
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
         );
+
+        // Configure Firestore settings early, before any DI module can
+        // instantiate FirestoreRepository and trigger Firestore operations.
+        try {
+          FirebaseFirestore.instance.settings = const Settings(
+            persistenceEnabled: true,
+            cacheSizeBytes: 100 * 1024 * 1024, // 100 MB
+          );
+        } catch (e) {
+          // Settings already applied (e.g. hot restart)
+        }
 
         // Default Crashlytics to disabled until consent is verified (GDPR)
         // App Check can proceed immediately (security, not analytics)
@@ -304,6 +316,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   final SnackbarRouteObserver _snackbarObserver = SnackbarRouteObserver();
   final PerformanceNavigatorObserver _performanceObserver =
       PerformanceNavigatorObserver();
+  InteractionRouteObserver? _interactionObserver;
   SessionTimeoutService? _sessionTimeoutService;
   SessionActivityObserver? _sessionActivityObserver;
   DateTime? _sessionStartTime;
@@ -609,11 +622,15 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   }
 
   Widget _buildMainApp() {
+    // Lazily create once so rebuilds don't allocate a new observer each time
+    _interactionObserver ??=
+        InteractionRouteObserver(ServiceLocator.get<InteractionLogger>());
+
     // Build navigator observers list with performance, snackbar, session activity, and optional analytics observers
     final observers = <NavigatorObserver>[
       _performanceObserver, // Track screen performance with Firebase Performance
       _snackbarObserver,
-      InteractionRouteObserver(ServiceLocator.get<InteractionLogger>()),
+      _interactionObserver!,
       if (_sessionActivityObserver != null) _sessionActivityObserver!,
       if (_analyticsObserver != null) _analyticsObserver!,
     ];
@@ -778,6 +795,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
     _authService.addListener(_onAuthStateChanged);
     // Listen to UserService to react when profile loads
     _userService.addListener(_onUserProfileChanged);
+
+    // Handle race: if UserService loaded the profile before our listener
+    // was attached, we'd never get notified. Re-read state after this frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _userService.currentUserProfile != null) {
+        setState(() {});
+      }
+    });
   }
 
   void _onAuthStateChanged() {

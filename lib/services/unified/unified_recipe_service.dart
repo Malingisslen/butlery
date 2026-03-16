@@ -456,15 +456,8 @@ class UnifiedRecipeService extends ChangeNotifier
       _isLoading = true;
       notifyListeners();
 
-      // Configure Firestore settings (PRODUCTION: Persistence enabled for offline capability)
-      try {
-        _firestore.settings = const Settings(
-          persistenceEnabled: true,
-          cacheSizeBytes: 100 * 1024 * 1024, // 100 MB
-        );
-      } catch (e) {
-        AppLogger.debug('Firestore settings already configured');
-      }
+      // Firestore settings are configured early in main.dart bootstrap
+      // (before any DI modules run) to avoid microtask queue races.
 
       // Wait for modules to be initialized if not already
       if (!_areModulesInitialized()) {
@@ -521,12 +514,11 @@ class UnifiedRecipeService extends ChangeNotifier
             );
           }
         } else {
-          // On mobile, reload from cache after initial fetch has populated it
-          _recipes.clear();
-          final fetchedRecipes = await _cacheModule.initializeCache();
-          _recipes.addAll(fetchedRecipes);
+          // BUT-198: startFirebaseSync returns immediately (listeners + background fetch).
+          // Cache was already loaded earlier in initialize(), real-time listeners
+          // will push updates as they arrive — no blocking reload needed.
           AppLogger.info(
-            '📦 Reloaded ${fetchedRecipes.length} recipes from cache after initial fetch',
+            '📦 Firebase sync started, serving ${_recipes.length} cached recipes',
           );
         }
       }
