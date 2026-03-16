@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Utility operations for friends service providing helper methods for:
@@ -46,7 +47,7 @@ class FriendsUtilityOperations {
           .get();
 
       if (!userDoc.exists) {
-        AppLogger.warning('User not found: $userId');
+        AppLogger.warning('User not found: ${userId.maskedUserId}');
         return [];
       }
 
@@ -83,10 +84,11 @@ class FriendsUtilityOperations {
       }
 
       AppLogger.success(
-          'Found ${friendProfiles.length} friends for user $userId');
+          'Found ${friendProfiles.length} friends for user ${userId.maskedUserId}');
       return friendProfiles;
     } catch (e) {
-      AppLogger.error('Failed to get friends of user $userId', e);
+      AppLogger.error(
+          'Failed to get friends of user ${userId.maskedUserId}', e);
       return [];
     }
   }

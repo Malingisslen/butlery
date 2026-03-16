@@ -9,6 +9,7 @@ import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/shared_content_member.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -57,7 +58,8 @@ abstract class BaseSharedContentRepository<T>
       }, SetOptions(merge: true));
     } catch (e) {
       // Log but don't fail - counter is best-effort optimization
-      AppLogger.warning('Failed to increment counter for $userId: $e');
+      AppLogger.warning(
+          'Failed to increment counter for ${userId.maskedUserId}: $e');
     }
   }
 
@@ -80,7 +82,8 @@ abstract class BaseSharedContentRepository<T>
       });
     } catch (e) {
       // Log but don't fail - counter is best-effort optimization
-      AppLogger.warning('Failed to decrement counter for $userId: $e');
+      AppLogger.warning(
+          'Failed to decrement counter for ${userId.maskedUserId}: $e');
     }
   }
 
@@ -93,7 +96,7 @@ abstract class BaseSharedContentRepository<T>
       final counterField = UserCounterIncrements.fieldForType(counterTypeKey);
       return counterDoc.data()?[counterField] as int? ?? 0;
     } catch (e) {
-      AppLogger.warning('Failed to get counter for $userId: $e');
+      AppLogger.warning('Failed to get counter for ${userId.maskedUserId}: $e');
       return 0;
     }
   }
@@ -162,7 +165,7 @@ abstract class BaseSharedContentRepository<T>
       await addView(contentId, userId);
 
       AppLogger.success(
-          '✅ Marked shared $contentTypeName $contentId as $importAction by user $userId');
+          '✅ Marked shared $contentTypeName $contentId as $importAction by user ${userId.maskedUserId}');
 
       logPermissionCheck(
         userId: uid,
@@ -209,10 +212,11 @@ abstract class BaseSharedContentRepository<T>
       // Fast path: use denormalized counter
       final count = await getUnreadCountFromCounter(userId);
       AppLogger.info(
-          '📊 Unread shared $contentTypeName count for user $userId: $count');
+          '📊 Unread shared $contentTypeName count for user ${userId.maskedUserId}: $count');
       return count;
     } catch (e) {
-      AppLogger.error('Failed to get unread count for user $userId: $e');
+      AppLogger.error(
+          'Failed to get unread count for user ${userId.maskedUserId}: $e');
       return 0;
     }
   }
@@ -246,10 +250,11 @@ abstract class BaseSharedContentRepository<T>
       }, SetOptions(merge: true));
 
       AppLogger.info(
-          '📊 Recalculated unread $contentTypeName count for user $userId: $unreadCount');
+          '📊 Recalculated unread $contentTypeName count for user ${userId.maskedUserId}: $unreadCount');
       return unreadCount;
     } catch (e) {
-      AppLogger.error('Failed to recalculate count for user $userId: $e');
+      AppLogger.error(
+          'Failed to recalculate count for user ${userId.maskedUserId}: $e');
       return 0;
     }
   }

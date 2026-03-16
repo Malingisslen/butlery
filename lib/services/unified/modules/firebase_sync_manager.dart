@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -66,7 +67,8 @@ class FirebaseSyncManager {
     void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) async {
     try {
-      AppLogger.info('🔄 Starting Firebase sync for user: $currentUserId');
+      AppLogger.info(
+          '🔄 Starting Firebase sync for user: ${currentUserId.maskedUserId}');
 
       final subscriptions = <String, StreamSubscription>{};
 

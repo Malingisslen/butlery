@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart'
     as interface_repo;
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Focused module for notification preferences and quiet hours management
 /// This module handles ONLY notification preference responsibilities:
@@ -130,7 +131,8 @@ class NotificationPreferenceManager {
       );
       return await manager.isInQuietHours();
     } catch (e) {
-      AppLogger.error('❌ Failed to check quiet hours for user $userId', e);
+      AppLogger.error(
+          '❌ Failed to check quiet hours for user ${userId.maskedUserId}', e);
       return false;
     }
   }

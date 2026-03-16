@@ -42,6 +42,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
@@ -402,10 +403,11 @@ class SocialMenuCoordinator
   /// Wraps repository call with error handling and logging.
   Future<List<SharedMenu>> getSharedMenusForUser(String userId) async {
     try {
-      AppLogger.info('📥 Loading shared menus for user $userId');
+      AppLogger.info('📥 Loading shared menus for user ${userId.maskedUserId}');
       return await _sharedMenuRepository.getSharedContentForUser(userId);
     } catch (e) {
-      AppLogger.error('Failed to load shared menus for user $userId', e);
+      AppLogger.error(
+          'Failed to load shared menus for user ${userId.maskedUserId}', e);
       return [];
     }
   }

@@ -6,6 +6,7 @@ import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -60,7 +61,8 @@ class RealtimeParticipantManager {
       throw Exception(AppLocale.current.errorNoPermissionToManageParticipants);
     }
 
-    AppLogger.info('👤 Adding participant: $userDisplayName ($permission)');
+    AppLogger.info(
+        '👤 Adding participant: ${userDisplayName.maskedName} ($permission)');
 
     try {
       await _menuService.addParticipant(
@@ -73,9 +75,10 @@ class RealtimeParticipantManager {
       // Update participant tracker
       _participantTracker.updateDisplayName(userId, userDisplayName);
 
-      AppLogger.success('✅ Participant added: $userDisplayName');
+      AppLogger.success('✅ Participant added: ${userDisplayName.maskedName}');
     } catch (e) {
-      AppLogger.error('❌ Failed to add participant: $userDisplayName', e);
+      AppLogger.error(
+          '❌ Failed to add participant: ${userDisplayName.maskedName}', e);
       rethrow;
     }
   }
@@ -93,7 +96,7 @@ class RealtimeParticipantManager {
       throw Exception(AppLocale.current.errorCannotRemoveSelf);
     }
 
-    AppLogger.info('👤 Removing participant: $userId');
+    AppLogger.info('👤 Removing participant: ${userId.maskedUserId}');
 
     try {
       await _menuService.removeParticipant(

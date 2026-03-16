@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -12,14 +13,18 @@ import 'package:butlery/models/auth/mfa_types.dart';
 class AuthMfaService extends ChangeNotifier
     with StateNotifierMixin, ErrorHandlingMixin {
   final AnalyticsService _analyticsService;
+  final AuthRepository _authRepository;
 
   String? get errorMessage => error;
 
-  AuthMfaService({required AnalyticsService analyticsService})
-      : _analyticsService = analyticsService;
+  AuthMfaService({
+    required AnalyticsService analyticsService,
+    required AuthRepository authRepository,
+  })  : _analyticsService = analyticsService,
+        _authRepository = authRepository;
 
   Future<bool> hasMfaEnabled() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _authRepository.currentUser;
     if (user == null) return false;
 
     try {
@@ -32,7 +37,7 @@ class AuthMfaService extends ChangeNotifier
   }
 
   Future<List<MfaFactorInfo>> getEnrolledFactors() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _authRepository.currentUser;
     if (user == null) return [];
 
     try {
@@ -56,7 +61,7 @@ class AuthMfaService extends ChangeNotifier
     required void Function(MfaError error) onError,
     void Function()? onAutoVerified,
   }) async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _authRepository.currentUser;
     if (user == null) {
       onError(
           const MfaError(code: 'user-not-found', message: 'No user signed in'));
@@ -66,7 +71,7 @@ class AuthMfaService extends ChangeNotifier
     try {
       final session = await user.multiFactor.getSession();
 
-      await FirebaseAuth.instance.verifyPhoneNumber(
+      await _authRepository.verifyPhoneNumber(
         multiFactorSession: session,
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
@@ -110,7 +115,7 @@ class AuthMfaService extends ChangeNotifier
     String verificationId,
     String smsCode,
   ) async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _authRepository.currentUser;
     if (user == null) return false;
 
     try {
@@ -141,7 +146,7 @@ class AuthMfaService extends ChangeNotifier
   }
 
   Future<bool> unenrollMfa(MfaFactorInfo factor) async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _authRepository.currentUser;
     if (user == null) return false;
 
     try {
@@ -186,9 +191,10 @@ class AuthMfaService extends ChangeNotifier
     }
 
     try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
+      await _authRepository.verifyPhoneNumber(
         multiFactorSession: resolver.session,
         multiFactorInfo: phoneHint,
+        phoneNumber: null,
         verificationCompleted: (credential) async {
           try {
             await resolver.resolveSignIn(

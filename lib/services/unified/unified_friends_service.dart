@@ -168,9 +168,7 @@ class UnifiedFriendsService extends ChangeNotifier
           await categories.migrateOwnersAsMembers();
 
           // Backfill displayNameLower for legacy friend docs (fire-and-forget)
-          _firebaseSyncOps
-              .backfillDisplayNameLower(user.uid)
-              .catchError((e) {
+          _firebaseSyncOps.backfillDisplayNameLower(user.uid).catchError((e) {
             AppLogger.warning('displayNameLower backfill failed: $e');
           });
         } else {
@@ -339,7 +337,7 @@ class UnifiedFriendsService extends ChangeNotifier
           phoneNumber: phoneNumber, invitation: invitation);
 
   /// Internal method to create invitation link (for operations classes)
-  String createInvitationLinkInternal(String invitationId) =>
+  Future<String> createInvitationLinkInternal(String invitationId) =>
       _internalOps.createInvitationLinkInternal(invitationId);
 
   /// Internal method to update invitation status (for operations classes)

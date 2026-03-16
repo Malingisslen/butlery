@@ -22,6 +22,8 @@
 /// - **Temporal Analytics**: Click history with detailed timestamp tracking
 /// - **Engagement Metrics**: Comprehensive link performance and user engagement data
 
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 // import '../interfaces/auth_repository.dart'; // Imported from base class
@@ -250,16 +252,16 @@ class FirebaseDeepLinkRepository
     }
   }
 
+  static final Random _random = Random.secure();
+
   /// Generate a unique short code for URLs
   String _generateShortCode() {
     const chars =
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final random = DateTime.now().millisecondsSinceEpoch;
     final buffer = StringBuffer();
 
     for (int i = 0; i < 8; i++) {
-      final index = (random + i) % chars.length;
-      buffer.write(chars[index]);
+      buffer.write(chars[_random.nextInt(chars.length)]);
     }
 
     return buffer.toString();

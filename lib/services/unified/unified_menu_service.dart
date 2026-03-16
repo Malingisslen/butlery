@@ -12,6 +12,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/menu_service.dart';
@@ -482,7 +483,8 @@ class UnifiedMenuService extends ChangeNotifier
 
     final result = await safeExecute<List<SharedMenu>>(() async {
       try {
-        AppLogger.info('📥 Getting received menu invitations for user $userId');
+        AppLogger.info(
+            '📥 Getting received menu invitations for user ${userId.maskedUserId}');
         return await _sharedMenuRepository.getSharedMenusForUser(userId);
       } catch (e) {
         AppLogger.error('Failed to get received menu invitations: $e');

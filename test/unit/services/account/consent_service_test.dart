@@ -20,13 +20,11 @@ class MockFirebaseConsentRepository extends Mock
 void main() {
   group('ConsentService - GDPR Consent Management', () {
     late ConsentService service;
-    late MockFirebaseAuth mockAuth;
-    late MockUser mockUser;
+    late MockAuthRepository mockAuthRepository;
     late MockFirebaseConsentRepository mockConsentRepository;
 
     // Test data
     const testUserId = 'user-123';
-    const testEmail = 'test@example.com';
     const currentVersion = '1.0.0';
 
     final testConsentPurposes = ConsentPurposes(
@@ -63,20 +61,15 @@ void main() {
 
     setUp(() {
       // Create mocks
-      mockAuth = MockFirebaseAuth();
-      mockUser = MockUser();
+      mockAuthRepository = MockAuthRepository();
       mockConsentRepository = MockFirebaseConsentRepository();
 
-      // Configure mock user
-      mockUser.setUserState(
-        uid: testUserId,
-        email: testEmail,
-      );
-      mockAuth.setAuthState(currentUser: mockUser);
+      // Configure mock auth
+      mockAuthRepository.setAuthState(userId: testUserId);
 
       // Create service
       service = ConsentService(
-        auth: mockAuth,
+        authRepository: mockAuthRepository,
         consentRepository: mockConsentRepository,
       );
     });
@@ -124,7 +117,7 @@ void main() {
 
       test('should return null when user not authenticated', () async {
         // Arrange
-        mockAuth.setAuthState(currentUser: null);
+        mockAuthRepository.setAuthState(userId: null);
 
         // Act
         final result = await service.getUserConsent();
@@ -215,7 +208,7 @@ void main() {
 
       test('should return false when user not authenticated', () async {
         // Arrange
-        mockAuth.setAuthState(currentUser: null);
+        mockAuthRepository.setAuthState(userId: null);
 
         // Act
         final result = await service.saveConsent(testConsentPurposes);
@@ -485,7 +478,7 @@ void main() {
 
       test('should return false when user not authenticated', () async {
         // Arrange
-        mockAuth.setAuthState(currentUser: null);
+        mockAuthRepository.setAuthState(userId: null);
 
         // Act
         final result = await service.revokeOptionalConsents();
@@ -547,7 +540,7 @@ void main() {
 
       test('should return empty list when user not authenticated', () async {
         // Arrange
-        mockAuth.setAuthState(currentUser: null);
+        mockAuthRepository.setAuthState(userId: null);
 
         // Act
         final result = await service.getConsentHistory();

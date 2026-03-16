@@ -8,6 +8,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// ViewModel for profile management and user account operations.
 /// Handles:
@@ -82,7 +83,8 @@ class ProfileViewModel extends ChangeNotifier
           throw Exception('No user logged in');
         }
 
-        AppLogger.info('Starting account deletion for user: $userId');
+        AppLogger.info(
+            'Starting account deletion for user: ${userId.maskedUserId}');
 
         // Delete all user data and Firebase Auth account
         final result = await _accountDeletionService.deleteUserAccount(

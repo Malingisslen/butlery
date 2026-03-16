@@ -4,6 +4,7 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for GDPR consent management (Article 7: Conditions for consent).
@@ -130,12 +131,13 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
 
       final consent = UserConsent.fromFirestore(doc);
       AppLogger.info(
-        '✅ Retrieved consent for user $userId (version: ${consent.consentVersion})',
+        '✅ Retrieved consent for user ${userId.maskedUserId} (version: ${consent.consentVersion})',
       );
       return consent;
     } catch (e) {
       _rethrowSecurityExceptions(e);
-      AppLogger.error('Failed to get user consent for $userId: $e');
+      AppLogger.error(
+          'Failed to get user consent for ${userId.maskedUserId}: $e');
       return null;
     }
   }
@@ -151,7 +153,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
       // Validate consent belongs to the correct user
       if (consent.userId != userId) {
         AppLogger.error(
-          'Consent userId mismatch: expected $userId, got ${consent.userId}',
+          'Consent userId mismatch: expected ${userId.maskedUserId}, got ${consent.userId.maskedUserId}',
         );
         return false;
       }
@@ -178,12 +180,12 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
       );
 
       AppLogger.success(
-        '✅ Consent saved for user $userId (version: ${consent.consentVersion})',
+        '✅ Consent saved for user ${userId.maskedUserId} (version: ${consent.consentVersion})',
       );
       return true;
     } catch (e) {
       _rethrowSecurityExceptions(e);
-      AppLogger.error('Failed to save consent for $userId: $e');
+      AppLogger.error('Failed to save consent for ${userId.maskedUserId}: $e');
       return false;
     }
   }
@@ -213,11 +215,12 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
         metadata: {'timestamp': DateTime.now().toIso8601String()},
       );
 
-      AppLogger.success('✅ Consent deleted for user $userId');
+      AppLogger.success('✅ Consent deleted for user ${userId.maskedUserId}');
       return true;
     } catch (e) {
       _rethrowSecurityExceptions(e);
-      AppLogger.error('Failed to delete consent for $userId: $e');
+      AppLogger.error(
+          'Failed to delete consent for ${userId.maskedUserId}: $e');
       return false;
     }
   }
@@ -245,12 +248,13 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
           snapshot.docs.map((doc) => UserConsent.fromFirestore(doc)).toList();
 
       AppLogger.info(
-        'Retrieved ${history.length} consent history entries for user $userId',
+        'Retrieved ${history.length} consent history entries for user ${userId.maskedUserId}',
       );
       return history;
     } catch (e) {
       _rethrowSecurityExceptions(e);
-      AppLogger.error('Failed to get consent history for $userId: $e');
+      AppLogger.error(
+          'Failed to get consent history for ${userId.maskedUserId}: $e');
       return [];
     }
   }

@@ -14,6 +14,7 @@ import 'package:butlery/services/unified/operations/modules/recipe_permission_he
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 // Permission modules
 import 'package:butlery/services/permissions/recipe_permission_module.dart';
@@ -159,7 +160,8 @@ class PermissionService extends BaseService {
       return await ServiceLocator.get<user_svc.UserService>()
           .getUserProfile(userId);
     } catch (e) {
-      AppLogger.warning('Failed to fetch user profile for $userId: $e');
+      AppLogger.warning(
+          'Failed to fetch user profile for ${userId.maskedUserId}: $e');
       return null;
     }
   }

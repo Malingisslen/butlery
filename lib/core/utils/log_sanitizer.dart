@@ -38,6 +38,24 @@ class LogSanitizer {
     if (userId.length <= 8) return userId;
     return '${userId.substring(0, 8)}...';
   }
+
+  /// Masks a phone number for safe logging.
+  /// Example: "+46701234567" -> "+467***4567"
+  static String maskPhoneNumber(String? phone) {
+    if (phone == null) return 'null';
+    if (phone.isEmpty) return '[empty]';
+    if (phone.length <= 4) return '***';
+    return '${phone.substring(0, 4)}***${phone.substring(phone.length - 4)}';
+  }
+
+  /// Masks a display name for safe logging.
+  /// Example: "Anna Svensson" -> "An***"
+  static String maskDisplayName(String? name) {
+    if (name == null) return 'null';
+    if (name.isEmpty) return '[empty]';
+    if (name.length <= 2) return '${name[0]}***';
+    return '${name.substring(0, 2)}***';
+  }
 }
 
 /// Extension methods for convenient PII masking.
@@ -47,4 +65,10 @@ extension LogSanitizationExtensions on String? {
 
   /// Masks userId for safe logging.
   String get maskedUserId => LogSanitizer.maskUserId(this);
+
+  /// Masks phone number for safe logging.
+  String get maskedPhone => LogSanitizer.maskPhoneNumber(this);
+
+  /// Masks display name for safe logging.
+  String get maskedName => LogSanitizer.maskDisplayName(this);
 }

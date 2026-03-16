@@ -177,4 +177,27 @@ class FirebaseAuthRepository implements AuthRepository {
     AppLogger.success(
         'Verification email sent to: $newEmail', 'AuthRepository');
   }
+
+  @override
+  Future<void> verifyPhoneNumber({
+    PhoneMultiFactorInfo? multiFactorInfo,
+    MultiFactorSession? multiFactorSession,
+    required String? phoneNumber,
+    required void Function(PhoneAuthCredential) verificationCompleted,
+    required void Function(FirebaseAuthException) verificationFailed,
+    required void Function(String verificationId, int? resendToken) codeSent,
+    required void Function(String verificationId) codeAutoRetrievalTimeout,
+    Duration timeout = const Duration(seconds: 60),
+  }) async {
+    await _firebaseAuth.verifyPhoneNumber(
+      multiFactorInfo: multiFactorInfo,
+      multiFactorSession: multiFactorSession,
+      phoneNumber: phoneNumber,
+      verificationCompleted: verificationCompleted,
+      verificationFailed: verificationFailed,
+      codeSent: codeSent,
+      codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
+      timeout: timeout,
+    );
+  }
 }

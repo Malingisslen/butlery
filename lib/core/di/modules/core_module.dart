@@ -54,7 +54,6 @@ import 'package:butlery/services/feedback/interaction_logger.dart';
 import 'package:butlery/services/feedback/feedback_service.dart';
 
 // Firebase dependencies
-import 'package:firebase_auth/firebase_auth.dart';
 
 /// Core module providing foundational application services.
 /// This module is the foundation of the dependency injection system and
@@ -174,6 +173,7 @@ class CoreModule implements DIModule {
       container.registerLazySingleton<AuthMfaService>(
         () => AuthMfaService(
           analyticsService: container<AnalyticsService>(),
+          authRepository: container<AuthRepository>(),
         ),
       );
 
@@ -218,7 +218,7 @@ class CoreModule implements DIModule {
       // Consent service for GDPR Article 7 (Consent Management)
       container.registerLazySingleton<ConsentService>(
         () => ConsentService(
-          auth: FirebaseAuth.instance,
+          authRepository: container<AuthRepository>(),
           consentRepository: container<FirebaseConsentRepository>(),
         ),
       );

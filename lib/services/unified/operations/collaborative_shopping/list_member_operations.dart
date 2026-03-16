@@ -1,5 +1,6 @@
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -47,7 +48,8 @@ class ListMemberOperations {
 
       await _parent.updateList(updatedList);
 
-      AppLogger.success('Added member $userDisplayName to ${list.name}');
+      AppLogger.success(
+          'Added member ${userDisplayName.maskedName} to ${list.name}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to add member', e);

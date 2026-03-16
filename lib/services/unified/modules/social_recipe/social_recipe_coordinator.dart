@@ -4,6 +4,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
@@ -352,10 +353,12 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   /// Wraps repository call with error handling and logging.
   Future<List<SharedRecipe>> getSharedRecipesForUser(String userId) async {
     try {
-      AppLogger.info('📥 Loading shared recipes for user $userId');
+      AppLogger.info(
+          '📥 Loading shared recipes for user ${userId.maskedUserId}');
       return await _sharedRecipeRepository.getSharedRecipesForUser(userId);
     } catch (e) {
-      AppLogger.error('Failed to load shared recipes for user $userId', e);
+      AppLogger.error(
+          'Failed to load shared recipes for user ${userId.maskedUserId}', e);
       return [];
     }
   }

@@ -56,6 +56,7 @@ import 'package:butlery/repositories/firebase/shared_content/shared_menu_dismiss
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for shared menu operations with consistent API patterns
@@ -298,7 +299,7 @@ class FirebaseSharedMenuRepository
           .get();
 
       if (engagementsSnapshot.docs.isEmpty) {
-        AppLogger.info('📋 User $userId has no imported menus');
+        AppLogger.info('📋 User ${userId.maskedUserId} has no imported menus');
         return [];
       }
 
@@ -328,10 +329,11 @@ class FirebaseSharedMenuRepository
       }
 
       AppLogger.info(
-          '📋 User $userId has imported ${importedMenus.length} shared menus');
+          '📋 User ${userId.maskedUserId} has imported ${importedMenus.length} shared menus');
       return importedMenus;
     } catch (e) {
-      AppLogger.error('Failed to get imported menus for user $userId: $e');
+      AppLogger.error(
+          'Failed to get imported menus for user ${userId.maskedUserId}: $e');
       throw RepositoryException('Failed to get imported menus: $e');
     }
   }

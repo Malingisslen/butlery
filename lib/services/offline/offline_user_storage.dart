@@ -7,6 +7,7 @@ import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Handles user-specific storage operations for offline service
 /// Now uses Drift database instead of Hive
@@ -121,7 +122,8 @@ class OfflineUserStorage {
   Future<void> deleteRecipeForUser(String recipeId, String userId) async {
     await _recipeDao.deleteRecipe(recipeId, userId);
     await _syncQueueDao.removeForRecipe(userId, recipeId);
-    AppLogger.info('🗑️ Recipe deleted offline for user $userId: $recipeId');
+    AppLogger.info(
+        '🗑️ Recipe deleted offline for user ${userId.maskedUserId}: $recipeId');
   }
 
   /// Clear data for specific user

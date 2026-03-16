@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -140,7 +141,7 @@ class UserService extends ChangeNotifier
       _profileCache[user.uid] = profile;
       _cacheTimestamps[user.uid] = DateTime.now();
 
-      AppLogger.success('✅ Profil sparad: ${profile.displayName}');
+      AppLogger.success('✅ Profil sparad: ${profile.displayName.maskedName}');
       notifyListeners();
       return profile;
     } catch (e) {
@@ -371,7 +372,8 @@ class UserService extends ChangeNotifier
     try {
       await _repository.ensureBaseUserDocument(userId);
 
-      AppLogger.info('✅ Base user document ensured for: $userId');
+      AppLogger.info(
+          '✅ Base user document ensured for: ${userId.maskedUserId}');
     } catch (e) {
       AppLogger.warning('⚠️ Could not ensure base user document: $e');
       // Don't throw - this is not critical for user functionality
@@ -382,7 +384,7 @@ class UserService extends ChangeNotifier
     try {
       return await _repository.fetchProfile(userId);
     } catch (e) {
-      AppLogger.error('❌ Kunde inte hämta profil $userId: $e');
+      AppLogger.error('❌ Kunde inte hämta profil ${userId.maskedUserId}: $e');
       return null;
     }
   }
@@ -416,7 +418,7 @@ class UserService extends ChangeNotifier
     }
 
     try {
-      AppLogger.info('🔔 Updating FCM token for user: $userId');
+      AppLogger.info('🔔 Updating FCM token for user: ${userId.maskedUserId}');
 
       await _repository.updateFCMToken(userId, token);
 
@@ -445,7 +447,8 @@ class UserService extends ChangeNotifier
     }
 
     try {
-      AppLogger.info('🔔 Updating notification settings for user: $userId');
+      AppLogger.info(
+          '🔔 Updating notification settings for user: ${userId.maskedUserId}');
 
       await _repository.updateNotificationSettings(userId, enabled);
 
@@ -476,7 +479,8 @@ class UserService extends ChangeNotifier
     try {
       _setLoading(true);
       _clearError();
-      AppLogger.info('🍽️ Updating allergen preferences for user: $userId');
+      AppLogger.info(
+          '🍽️ Updating allergen preferences for user: ${userId.maskedUserId}');
 
       await _repository.updateAllergenPreferences(userId, preferences);
 
@@ -546,7 +550,7 @@ class UserService extends ChangeNotifier
     if (userId == null) return;
 
     try {
-      AppLogger.info('🔔 Clearing FCM token for user: $userId');
+      AppLogger.info('🔔 Clearing FCM token for user: ${userId.maskedUserId}');
 
       await _repository.clearFCMToken(userId);
 

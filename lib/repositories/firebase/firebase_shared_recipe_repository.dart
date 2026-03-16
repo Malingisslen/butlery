@@ -56,6 +56,7 @@ import 'package:butlery/repositories/firebase/shared_content/shared_recipe_dismi
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for shared recipe operations with consistent API patterns
@@ -303,7 +304,8 @@ class FirebaseSharedRecipeRepository
           .get();
 
       if (engagementsSnapshot.docs.isEmpty) {
-        AppLogger.info('📋 User $userId has no imported recipes');
+        AppLogger.info(
+            '📋 User ${userId.maskedUserId} has no imported recipes');
         return [];
       }
 
@@ -334,10 +336,11 @@ class FirebaseSharedRecipeRepository
       }
 
       AppLogger.info(
-          '📋 User $userId has imported ${importedRecipes.length} shared recipes');
+          '📋 User ${userId.maskedUserId} has imported ${importedRecipes.length} shared recipes');
       return importedRecipes;
     } catch (e) {
-      AppLogger.error('Failed to get imported recipes for user $userId: $e');
+      AppLogger.error(
+          'Failed to get imported recipes for user ${userId.maskedUserId}: $e');
       throw RepositoryException('Failed to get imported recipes: $e');
     }
   }

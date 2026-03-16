@@ -10,6 +10,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/deep_link_service.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Consolidated friends internal operations handling Firebase sync and category management
 class FriendsInternalOperations {
@@ -231,8 +233,14 @@ class FriendsInternalOperations {
   Future<bool> sendSMSInvitationInternal(
           {required String phoneNumber, required dynamic invitation}) async =>
       false;
-  String createInvitationLinkInternal(String invitationId) =>
-      'https://example.com/invite/$invitationId';
+  Future<String> createInvitationLinkInternal(String invitationId) async {
+    final userId = ServiceLocator.get<PermissionService>().currentUserId ?? '';
+    final longUrl = DeepLinkService.generateFriendInvitationLink(
+      invitationId: invitationId,
+      fromUserId: userId,
+    );
+    return DeepLinkService.generateShortUrl(longUrl);
+  }
 
   Future<void> updateInvitationStatusInternal(
       String invitationId, dynamic status) async {

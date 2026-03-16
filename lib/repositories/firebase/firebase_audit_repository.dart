@@ -20,6 +20,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/audit_log.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for persistent audit log storage and retrieval.
@@ -193,12 +194,13 @@ class FirebaseAuditRepository {
           snapshot.docs.map((doc) => AuditLog.fromFirestore(doc)).toList();
 
       AppLogger.info(
-        '📊 Retrieved ${logs.length} audit logs for user $userId',
+        '📊 Retrieved ${logs.length} audit logs for user ${userId.maskedUserId}',
       );
 
       return logs;
     } catch (e) {
-      AppLogger.error('Failed to retrieve audit logs for user $userId: $e');
+      AppLogger.error(
+          'Failed to retrieve audit logs for user ${userId.maskedUserId}: $e');
       rethrow; // This is an admin operation, so throwing is appropriate
     }
   }
@@ -316,7 +318,8 @@ class FirebaseAuditRepository {
 
       return stats;
     } catch (e) {
-      AppLogger.error('Failed to get audit stats for user $userId: $e');
+      AppLogger.error(
+          'Failed to get audit stats for user ${userId.maskedUserId}: $e');
       rethrow;
     }
   }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
@@ -447,7 +448,8 @@ class TaggingService extends BaseService {
     final total = recipesToRetag.length;
 
     if (total == 0) {
-      AppLogger.info('No recipes need retagging for user $userId');
+      AppLogger.info(
+          'No recipes need retagging for user ${userId.maskedUserId}');
       onProgress?.call(0, 0);
       return 0;
     }
@@ -525,7 +527,8 @@ class TaggingService extends BaseService {
       );
     }
 
-    AppLogger.info('Retagged $retaggedCount recipes for user $userId');
+    AppLogger.info(
+        'Retagged $retaggedCount recipes for user ${userId.maskedUserId}');
     return retaggedCount;
   }
 
