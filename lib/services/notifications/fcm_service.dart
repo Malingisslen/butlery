@@ -58,8 +58,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
+import 'package:butlery/services/notifications/notification_service.dart';
 
 /// Firebase Cloud Messaging service for push notifications with deep linking.
 ///
@@ -179,7 +182,10 @@ class FCMService with ErrorHandlingMixin {
       const initializationSettings =
           InitializationSettings(android: initializationSettingsAndroid);
 
-      await _localNotifications.initialize(settings: initializationSettings);
+      await _localNotifications.initialize(
+        settings: initializationSettings,
+        onDidReceiveNotificationResponse: _onLocalNotificationTapped,
+      );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to initialize notification channels: $e');
       // Non-critical - FCM will still work with default channel
@@ -378,9 +384,10 @@ class FCMService with ErrorHandlingMixin {
         '🔔 Should show foreground notification: ${message.notification?.title}');
   }
 
-  /// Navigate to appropriate screen based on notification data
-  static void handleNotificationNavigation(
-      RemoteMessage message, BuildContext? context) {
+  /// Navigate to appropriate screen based on notification data.
+  /// Uses appNavigatorKey to avoid stale BuildContext crashes.
+  static Future<void> handleNotificationNavigation(
+      RemoteMessage message) async {
     try {
       final data = message.data;
       final notificationType = data['type'];
@@ -389,24 +396,25 @@ class FCMService with ErrorHandlingMixin {
       AppLogger.info(
           '🔔 Handling notification navigation: type=$notificationType, screen=$screen');
 
-      if (context == null) {
-        AppLogger.warning('⚠️ Cannot navigate - no context available');
+      final navigator = appNavigatorKey.currentState;
+      if (navigator == null) {
+        AppLogger.warning('⚠️ Cannot navigate - no navigator available');
         return;
       }
 
-      // Navigate based on notification type and screen
       switch (notificationType) {
-        case 'friend_request':
-          _navigateToFriendRequests(context, data);
+        case NotificationPayloadType.friendRequest:
+          navigator.pushNamed(Routes.friends,
+              arguments: {'tab': 'requests'});
           break;
-        case 'recipe_shared':
-          _navigateToSharedRecipe(context, data);
+        case NotificationPayloadType.recipeShared:
+          await _navigateToSharedRecipe(navigator, data);
           break;
-        case 'collaboration_invite':
-          _navigateToCollaboration(context, data);
+        case NotificationPayloadType.collaborationInvite:
+          await _navigateToCollaboration(navigator, data);
           break;
-        case 'recipe_comment':
-          _navigateToRecipeComments(context, data);
+        case NotificationPayloadType.recipeComment:
+          await _navigateToSharedRecipe(navigator, data);
           break;
         default:
           AppLogger.warning(
@@ -417,28 +425,34 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Navigate to friend requests screen
-  static void _navigateToFriendRequests(
-      BuildContext context, Map<String, dynamic> data) {
-    Navigator.pushNamed(context, Routes.friends, arguments: {'tab': 'requests'});
+  /// Handle local notification tap via appNavigatorKey.
+  static void _onLocalNotificationTapped(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload == null || payload.isEmpty) return;
+
+    // Delegate to onNotificationTapped if wired
+    NotificationService.onNotificationTapped?.call(
+      payload,
+      <String, String?>{},
+    );
   }
 
   /// Navigate to shared recipe screen
   static Future<void> _navigateToSharedRecipe(
-      BuildContext context, Map<String, dynamic> data) async {
+      NavigatorState navigator, Map<String, dynamic> data) async {
     final recipeId = data['recipeId'] as String?;
     if (recipeId == null) return;
 
     final recipeRepo = ServiceLocator.get<RecipeRepository>();
     final recipe = await recipeRepo.read(recipeId);
-    if (recipe != null && context.mounted) {
-      Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
+    if (recipe != null) {
+      navigator.pushNamed(Routes.receptDetalj, arguments: recipe);
     }
   }
 
   /// Navigate to collaboration screen
   static Future<void> _navigateToCollaboration(
-      BuildContext context, Map<String, dynamic> data) async {
+      NavigatorState navigator, Map<String, dynamic> data) async {
     final resourceId = data['resourceId'] as String?;
     final resourceType = data['resourceType'] as String?;
 
@@ -448,36 +462,24 @@ class FCMService with ErrorHandlingMixin {
       case 'recipe':
         final recipeRepo = ServiceLocator.get<RecipeRepository>();
         final recipe = await recipeRepo.read(resourceId);
-        if (recipe != null && context.mounted) {
-          Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
+        if (recipe != null) {
+          navigator.pushNamed(Routes.receptDetalj, arguments: recipe);
         }
         break;
       case 'menu':
         final menuRepo = ServiceLocator.get<FirebaseSharedMenuRepository>();
         final menu = await menuRepo.getSharedMenu(resourceId);
-        if (menu != null && context.mounted) {
-          Navigator.pushNamed(context, Routes.menuPreview, arguments: menu);
+        if (menu != null) {
+          navigator.pushNamed(Routes.menuPreview, arguments: menu);
         }
         break;
       case 'shopping_list':
-        if (context.mounted) {
-          Navigator.pushNamed(context, Routes.collaborativeShopping,
-              arguments: resourceId);
-        }
+        navigator.pushNamed(Routes.collaborativeShopping,
+            arguments: resourceId);
         break;
-    }
-  }
-
-  /// Navigate to recipe comments
-  static Future<void> _navigateToRecipeComments(
-      BuildContext context, Map<String, dynamic> data) async {
-    final recipeId = data['recipeId'] as String?;
-    if (recipeId == null) return;
-
-    final recipeRepo = ServiceLocator.get<RecipeRepository>();
-    final recipe = await recipeRepo.read(recipeId);
-    if (recipe != null && context.mounted) {
-      Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
+      default:
+        AppLogger.warning(
+            '⚠️ Unknown collaboration resource type: $resourceType');
     }
   }
 
