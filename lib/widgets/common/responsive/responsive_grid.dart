@@ -22,8 +22,14 @@ import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 /// - Desktop: 3 columns
 /// - Large Desktop: 4 columns
 class ResponsiveGrid extends StatelessWidget {
-  /// Grid items
-  final List<Widget> children;
+  /// Grid items (provide this OR lazyItemBuilder+itemCount)
+  final List<Widget>? children;
+
+  /// Lazy item builder for on-demand widget construction
+  final IndexedWidgetBuilder? lazyItemBuilder;
+
+  /// Item count for lazy builder mode
+  final int? lazyItemCount;
 
   /// Spacing between grid items
   /// If null, uses AppDimensions.responsiveGridSpacing
@@ -58,7 +64,9 @@ class ResponsiveGrid extends StatelessWidget {
 
   const ResponsiveGrid({
     super.key,
-    required this.children,
+    this.children,
+    this.lazyItemBuilder,
+    this.lazyItemCount,
     this.spacing,
     this.mobileColumns,
     this.tabletColumns,
@@ -91,6 +99,9 @@ class ResponsiveGrid extends StatelessWidget {
     final columnCount = _getColumnCount(context);
     final gridSpacing = _getSpacing(context);
 
+    final isLazy = lazyItemBuilder != null;
+    final count = isLazy ? (lazyItemCount ?? 0) : children!.length;
+
     return GridView.builder(
       padding: padding ?? AppDimensions.responsiveContentPadding(context),
       shrinkWrap: shrinkWrap,
@@ -101,14 +112,16 @@ class ResponsiveGrid extends StatelessWidget {
         crossAxisSpacing: crossAxisSpacing ?? gridSpacing,
         childAspectRatio: childAspectRatio ?? 1.0,
       ),
-      itemCount: children.length,
-      itemBuilder: (context, index) {
-        final child = children[index];
-        if (animate) {
-          return AnimatedListItem(index: index, child: child);
-        }
-        return child;
-      },
+      itemCount: count,
+      itemBuilder: isLazy
+          ? lazyItemBuilder!
+          : (context, index) {
+              final child = children![index];
+              if (animate) {
+                return AnimatedListItem(index: index, child: child);
+              }
+              return child;
+            },
     );
   }
 }
@@ -419,7 +432,14 @@ class ResponsiveListGrid<T> extends StatelessWidget {
         physics: physics,
         childAspectRatio: gridChildAspectRatio,
         animate: animate,
-        children: items.map((item) => itemBuilder(context, item)).toList(),
+        lazyItemCount: items.length,
+        lazyItemBuilder: (context, index) {
+          final child = itemBuilder(context, items[index]);
+          if (animate) {
+            return AnimatedListItem(index: index, child: child);
+          }
+          return child;
+        },
       );
     } else {
       // Mobile: vertical list
