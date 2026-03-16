@@ -15,6 +15,11 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/cache/permission_cache_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/performance/intelligent_cache_manager.dart';
+import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_user_ingredient_repository.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
 class AuthService extends ChangeNotifier
@@ -301,6 +306,32 @@ class AuthService extends ChangeNotifier
       ServiceLocator.tryGet<NotificationService>()?.resetForLogout();
     } catch (e) {
       AppLogger.warning('NotificationService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<PermissionCacheService>()?.invalidateAll();
+    } catch (e) {
+      AppLogger.warning(
+          'PermissionCacheService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<ConsentService>()?.clearConsentCache();
+    } catch (e) {
+      AppLogger.warning('ConsentService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<IntelligentCacheManager>()?.clearCache();
+    } catch (e) {
+      AppLogger.warning(
+          'IntelligentCacheManager reset failed during sign-out: $e');
+    }
+    try {
+      final ingredientRepo = ServiceLocator.tryGet<UserIngredientRepository>();
+      if (ingredientRepo is FirebaseUserIngredientRepository) {
+        ingredientRepo.clearAllCaches();
+      }
+    } catch (e) {
+      AppLogger.warning(
+          'UserIngredientRepository reset failed during sign-out: $e');
     }
   }
 
