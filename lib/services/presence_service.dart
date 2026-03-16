@@ -417,17 +417,44 @@ class PresenceService extends BaseService {
     if (streams.isEmpty) return Stream.value({});
     if (streams.length == 1) return streams.first;
 
-    // Combine multiple streams into one
-    return streams.first.asyncMap((firstMap) async {
-      final combined = Map<String, UserPresence>.from(firstMap);
+    // Use Rx.combineLatest to merge all streams without blocking
+    return _combineLatestMaps(streams);
+  }
 
-      for (var i = 1; i < streams.length; i++) {
-        await for (final map in streams[i].take(1)) {
-          combined.addAll(map);
-        }
+  /// Combines multiple map streams, emitting the merged map whenever any stream updates.
+  Stream<Map<String, UserPresence>> _combineLatestMaps(
+    List<Stream<Map<String, UserPresence>>> streams,
+  ) {
+    final latestValues =
+        List<Map<String, UserPresence>?>.filled(streams.length, null);
+    final controller = StreamController<Map<String, UserPresence>>.broadcast();
+    final subscriptions = <StreamSubscription<Map<String, UserPresence>>>[];
+
+    for (var i = 0; i < streams.length; i++) {
+      final index = i;
+      subscriptions.add(streams[index].listen(
+        (map) {
+          latestValues[index] = map;
+          // Emit combined map only when all streams have emitted at least once
+          if (latestValues.every((v) => v != null)) {
+            final combined = <String, UserPresence>{};
+            for (final map in latestValues) {
+              combined.addAll(map!);
+            }
+            controller.add(combined);
+          }
+        },
+        onError: controller.addError,
+      ));
+    }
+
+    controller.onCancel = () {
+      for (final sub in subscriptions) {
+        sub.cancel();
       }
+      controller.close();
+    };
 
-      return combined;
-    });
+    return controller.stream;
   }
 }
