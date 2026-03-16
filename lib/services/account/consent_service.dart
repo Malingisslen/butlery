@@ -204,6 +204,13 @@ class ConsentService extends BaseService {
   // Note: Audit logging for consent changes is now handled automatically by FirebaseConsentRepository
   // This ensures GDPR compliance with Article 30 (Records of Processing Activities)
 
+  /// Clear session cache on logout to prevent cross-user data leakage.
+  void clearConsentCache() {
+    _cachedConsent = null;
+    _cachedUserId = null;
+    _cachePopulated = false;
+  }
+
   /// Get current consent version
   String get currentConsentVersion => _currentConsentVersion;
 }
