@@ -13,6 +13,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/friends/friends_search_manager.dart';
 import 'package:butlery/viewmodels/friends/friends_profile_cache_manager.dart';
@@ -159,13 +160,14 @@ class FriendsViewModel extends ChangeNotifier
 
   /// Send friend request to user
   Future<bool> sendFriendRequest(String userId, {String? message}) async {
-    AppLogger.info('🔄 Sending friend request to $userId...');
+    AppLogger.info('🔄 Sending friend request to ${userId.maskedUserId}...');
 
     final success = await _friendsService.management
         .sendFriendRequest(userId, message: message);
 
     if (success) {
-      AppLogger.success('✅ Friend request sent successfully to $userId');
+      AppLogger.success(
+          '✅ Friend request sent successfully to ${userId.maskedUserId}');
 
       // Track friend request sent
       await _analyticsService.logFriendRequestSent(
@@ -182,7 +184,8 @@ class FriendsViewModel extends ChangeNotifier
       AppLogger.debug(
           '🔄 UI notified of friend request state change with search cleared');
     } else {
-      AppLogger.error('❌ Failed to send friend request to $userId');
+      AppLogger.error(
+          '❌ Failed to send friend request to ${userId.maskedUserId}');
     }
 
     return success;

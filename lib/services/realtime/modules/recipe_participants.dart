@@ -3,6 +3,7 @@
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
 
@@ -57,7 +58,7 @@ class RecipeParticipants {
     }
 
     AppLogger.info(
-        '👥 Adding participant: $userDisplayName ($userId) with permission: ${permission.name}');
+        '👥 Adding participant: ${userDisplayName.maskedName} (${userId.maskedUserId}) with permission: ${permission.name}');
 
     return recipe.addParticipant(userId, userDisplayName, permission);
   }
@@ -94,7 +95,7 @@ class RecipeParticipants {
       );
     }
 
-    AppLogger.info('👥 Removing participant: $userId');
+    AppLogger.info('👥 Removing participant: ${userId.maskedUserId}');
 
     return recipe.removeParticipant(userId);
   }
@@ -134,12 +135,13 @@ class RecipeParticipants {
 
     final currentPermission = getUserPermission(recipe, userId);
     if (currentPermission == newPermission) {
-      AppLogger.info('👥 Permission unchanged for user: $userId');
+      AppLogger.info(
+          '👥 Permission unchanged for user: ${userId.maskedUserId}');
       return recipe; // No change needed
     }
 
     AppLogger.info(
-        '👥 Updating permission for user $userId: ${currentPermission?.name} -> ${newPermission.name}');
+        '👥 Updating permission for user ${userId.maskedUserId}: ${currentPermission?.name} -> ${newPermission.name}');
 
     return recipe.updateParticipantPermission(userId, newPermission);
   }

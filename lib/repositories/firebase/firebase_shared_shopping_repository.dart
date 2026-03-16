@@ -57,6 +57,7 @@ import 'package:butlery/repositories/firebase/shared_content/shared_shopping_dis
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for shared shopping list operations with consistent API patterns
@@ -302,7 +303,8 @@ class FirebaseSharedShoppingRepository
           .get();
 
       if (engagementsSnapshot.docs.isEmpty) {
-        AppLogger.info('📋 User $userId has no joined shopping lists');
+        AppLogger.info(
+            '📋 User ${userId.maskedUserId} has no joined shopping lists');
         return [];
       }
 

@@ -4,6 +4,7 @@ import 'package:algoliasearch/algoliasearch.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Algolia implementation of SearchRepository.
 ///
@@ -196,7 +197,7 @@ class AlgoliaSearchRepository implements SearchRepository {
       );
       AppLogger.debug('Removed user $userId from Algolia');
     } catch (e) {
-      AppLogger.error('Failed to remove user $userId', e);
+      AppLogger.error('Failed to remove user ${userId.maskedUserId}', e);
       rethrow;
     }
   }

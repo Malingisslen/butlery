@@ -40,6 +40,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -260,7 +261,8 @@ class RecipeSelectionViewModel extends ChangeNotifier
       clearSelection(); // Rensa valet efter lyckad delning
 
       _setSharing(false);
-      AppLogger.success('✅ Recept delade med ${targetFriend.displayName}');
+      AppLogger.success(
+          '✅ Recept delade med ${targetFriend.displayName.maskedName}');
       return true;
     } catch (e) {
       AppLogger.error('❌ Fel vid delning av recept', e);

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Conversation query module for read-only operations.
 /// Supports both legacy arrayContains queries and new subcollection-based queries.
@@ -44,7 +45,8 @@ class ConversationQueryModule {
         return conversations;
       });
     } catch (e) {
-      AppLogger.error('Failed to get user conversations for $userId', e);
+      AppLogger.error(
+          'Failed to get user conversations for ${userId.maskedUserId}', e);
       return const Stream.empty();
     }
   }
@@ -97,7 +99,8 @@ class ConversationQueryModule {
 
       return totalUnread;
     } catch (e) {
-      AppLogger.error('Failed to get unread message count for $userId', e);
+      AppLogger.error(
+          'Failed to get unread message count for ${userId.maskedUserId}', e);
       return 0;
     }
   }

@@ -2,6 +2,7 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/base/base_service.dart';
 
@@ -247,7 +248,7 @@ class RecipeDiscoveryService extends BaseService {
     String? searchQuery,
   }) async {
     try {
-      AppLogger.info('🔍 Getting recipes by user $userId');
+      AppLogger.info('🔍 Getting recipes by user ${userId.maskedUserId}');
 
       final currentUserId = _parent.currentUserId;
       if (currentUserId == null) {

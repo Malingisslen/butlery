@@ -14,6 +14,7 @@ import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -106,7 +107,8 @@ class RecipeCollaborativeManager extends ChangeNotifier
           _realtimeRecipe!.addParticipant(userId, userDisplayName, permission);
       await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
-      AppLogger.info('Användare inbjuden till collaboration: $userDisplayName');
+      AppLogger.info(
+          'Användare inbjuden till collaboration: ${userDisplayName.maskedName}');
       notifyListeners();
     } catch (e) {
       AppLogger.error('Fel vid inbjudning av användare: $e');
@@ -121,7 +123,8 @@ class RecipeCollaborativeManager extends ChangeNotifier
       _realtimeRecipe = _realtimeRecipe!.removeParticipant(userId);
       await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
-      AppLogger.info('Användare borttagen från collaboration: $userId');
+      AppLogger.info(
+          'Användare borttagen från collaboration: ${userId.maskedUserId}');
       notifyListeners();
     } catch (e) {
       AppLogger.error('Fel vid borttagning av användare: $e');

@@ -55,4 +55,16 @@ abstract class AuthRepository {
 
   /// Send verification email to new address before updating (requires recent authentication).
   Future<void> verifyBeforeUpdateEmail(String newEmail);
+
+  /// Verify a phone number (for MFA enrollment/sign-in).
+  Future<void> verifyPhoneNumber({
+    PhoneMultiFactorInfo? multiFactorInfo,
+    MultiFactorSession? multiFactorSession,
+    required String? phoneNumber,
+    required void Function(PhoneAuthCredential) verificationCompleted,
+    required void Function(FirebaseAuthException) verificationFailed,
+    required void Function(String verificationId, int? resendToken) codeSent,
+    required void Function(String verificationId) codeAutoRetrievalTimeout,
+    Duration timeout = const Duration(seconds: 60),
+  });
 }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -124,7 +125,8 @@ class ParsingCorrectionRepository {
           await _collection.where('userId', isEqualTo: userId).get();
 
       if (snapshot.docs.isEmpty) {
-        AppLogger.info('No parsing corrections to delete for user: $userId');
+        AppLogger.info(
+            'No parsing corrections to delete for user: ${userId.maskedUserId}');
         return;
       }
 

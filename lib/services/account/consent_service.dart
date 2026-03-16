@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
@@ -16,7 +16,7 @@ class ConsentService extends BaseService {
   static const String _currentConsentVersion =
       '1.1.0'; // 1.1.0: Added aiProcessing consent purpose
 
-  final FirebaseAuth _auth;
+  final auth.AuthRepository _authRepository;
   final FirebaseConsentRepository _consentRepository;
 
   // Session cache — consent rarely changes, no need to hit Firestore every call
@@ -25,14 +25,14 @@ class ConsentService extends BaseService {
   bool _cachePopulated = false;
 
   ConsentService({
-    required FirebaseAuth auth,
+    required auth.AuthRepository authRepository,
     required FirebaseConsentRepository consentRepository,
-  })  : _auth = auth,
+  })  : _authRepository = authRepository,
         _consentRepository = consentRepository;
 
   /// Get current user's consent (cached per session, invalidated on save)
   Future<UserConsent?> getUserConsent() async {
-    final userId = _auth.currentUser?.uid;
+    final userId = _authRepository.currentUserId;
     if (userId == null) {
       app_logger.AppLogger.warning('[$_logTag] No authenticated user');
       return null;
@@ -57,7 +57,7 @@ class ConsentService extends BaseService {
 
   /// Save or update user consent
   Future<bool> saveConsent(ConsentPurposes purposes) async {
-    final userId = _auth.currentUser?.uid;
+    final userId = _authRepository.currentUserId;
     if (userId == null) {
       app_logger.AppLogger.warning('[$_logTag] No authenticated user');
       return false;
@@ -149,7 +149,7 @@ class ConsentService extends BaseService {
 
   /// Revoke all optional consents (keep only required ones)
   Future<bool> revokeOptionalConsents() async {
-    final userId = _auth.currentUser?.uid;
+    final userId = _authRepository.currentUserId;
     if (userId == null) return false;
 
     return await safeExecute(
@@ -165,7 +165,7 @@ class ConsentService extends BaseService {
 
   /// Get consent history for user (for GDPR accountability)
   Future<List<UserConsent>> getConsentHistory() async {
-    final userId = _auth.currentUser?.uid;
+    final userId = _authRepository.currentUserId;
     if (userId == null) return [];
 
     return await safeExecute(

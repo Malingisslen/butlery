@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/services/unified/operations/modules/invitation_validation_module.dart';
@@ -142,7 +143,7 @@ class FriendsInvitationsOperations {
       );
 
       if (emailSent) {
-        AppLogger.success('Email invitation sent to $email');
+        AppLogger.success('Email invitation sent to ${email.maskedEmail}');
         return true;
       } else {
         AppLogger.error(
@@ -205,7 +206,7 @@ class FriendsInvitationsOperations {
       );
 
       if (smsSent) {
-        AppLogger.success('SMS invitation sent to $phoneNumber');
+        AppLogger.success('SMS invitation sent to ${phoneNumber.maskedPhone}');
         return true;
       } else {
         AppLogger.error('SMS invitation failed: SMS service not implemented');
@@ -250,7 +251,7 @@ class FriendsInvitationsOperations {
       _parent.addSentInvitationInternal(invitation);
       _parent.notifyListenersInternal();
 
-      final link = _parent.createInvitationLinkInternal(invitation.id);
+      final link = await _parent.createInvitationLinkInternal(invitation.id);
 
       AppLogger.success('Invitation link created');
       return link;

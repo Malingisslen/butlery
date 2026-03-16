@@ -69,7 +69,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       return uri.hasScheme &&
           (uri.scheme == 'http' || uri.scheme == 'https') &&
           uri.hasAuthority &&
-          uri.host.isNotEmpty;
+          uri.host.isNotEmpty &&
+          !HttpContentFetcher.isBlockedHost(uri.host);
     } catch (e) {
       return false;
     }

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
@@ -71,7 +72,7 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       final success = await _saveRecipe(updatedRecipe);
       if (success) {
         _notifyListeners(); // Notify UI of changes
-        AppLogger.success('✅ Added member to recipe: $userId');
+        AppLogger.success('✅ Added member to recipe: ${userId.maskedUserId}');
       }
 
       return success;
@@ -108,7 +109,8 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       final success = await _saveRecipe(updatedRecipe);
       if (success) {
         _notifyListeners(); // Notify UI of changes
-        AppLogger.success('✅ Removed member from recipe: $userId');
+        AppLogger.success(
+            '✅ Removed member from recipe: ${userId.maskedUserId}');
       }
 
       return success;

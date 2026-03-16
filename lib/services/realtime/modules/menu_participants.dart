@@ -3,6 +3,7 @@
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/realtime/modules/menu_operations.dart';
 
@@ -48,7 +49,7 @@ class MenuParticipants {
     }
 
     AppLogger.info(
-        '👥 Adding participant: $userDisplayName ($userId) with permission: ${permission.name}');
+        '👥 Adding participant: ${userDisplayName.maskedName} (${userId.maskedUserId}) with permission: ${permission.name}');
 
     return menu.addParticipant(userId, userDisplayName, permission);
   }
@@ -85,7 +86,7 @@ class MenuParticipants {
       );
     }
 
-    AppLogger.info('👥 Removing participant: $userId');
+    AppLogger.info('👥 Removing participant: ${userId.maskedUserId}');
 
     return menu.removeParticipant(userId);
   }
@@ -134,12 +135,13 @@ class MenuParticipants {
 
     final currentPermission = getUserPermission(menu, userId);
     if (currentPermission == newPermission) {
-      AppLogger.info('👥 Permission unchanged for user: $userId');
+      AppLogger.info(
+          '👥 Permission unchanged for user: ${userId.maskedUserId}');
       return menu; // No change needed
     }
 
     AppLogger.info(
-        '👥 Updating permission for user $userId: ${currentPermission?.name} -> ${newPermission.name}');
+        '👥 Updating permission for user ${userId.maskedUserId}: ${currentPermission?.name} -> ${newPermission.name}');
 
     return menu.updateParticipantPermission(userId, newPermission);
   }

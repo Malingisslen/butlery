@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
@@ -87,7 +88,8 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
       );
 
       final url = await uploadTask.ref.getDownloadURL();
-      AppLogger.info('Feedback screenshot uploaded for user $userId');
+      AppLogger.info(
+          'Feedback screenshot uploaded for user ${userId.maskedUserId}');
       return url;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to upload feedback screenshot: $e', stackTrace);

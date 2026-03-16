@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
@@ -23,6 +24,46 @@ class HttpContentFetcher {
   })  : _httpClient = httpClient,
         _webScraperFactory = webScraperFactory;
 
+  /// Returns true if the host should be blocked (private/internal addresses).
+  static bool isBlockedHost(String host) {
+    if (host.isEmpty) return true;
+
+    final lower = host.toLowerCase();
+    if (lower == 'localhost') return true;
+
+    final addr = InternetAddress.tryParse(host);
+    if (addr == null) return false; // Non-IP hostname, allow
+
+    if (addr.type == InternetAddressType.IPv4) {
+      final bytes = addr.rawAddress;
+      if (bytes[0] == 127) return true; // 127.0.0.0/8
+      if (bytes[0] == 10) return true; // 10.0.0.0/8
+      if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) {
+        return true; // 172.16.0.0/12
+      }
+      if (bytes[0] == 192 && bytes[1] == 168) return true; // 192.168.0.0/16
+      if (bytes[0] == 169 && bytes[1] == 254) return true; // 169.254.0.0/16
+      if (bytes[0] == 0) return true; // 0.0.0.0
+      return false;
+    }
+
+    if (addr.type == InternetAddressType.IPv6) {
+      final bytes = addr.rawAddress;
+      // ::1 loopback
+      if (bytes.every((b) => b == 0) ||
+          (bytes.sublist(0, 15).every((b) => b == 0) && bytes[15] == 1)) {
+        return true;
+      }
+      // fc00::/7 unique local
+      if ((bytes[0] & 0xFE) == 0xFC) return true;
+      // fe80::/10 link-local
+      if (bytes[0] == 0xFE && (bytes[1] & 0xC0) == 0x80) return true;
+      return false;
+    }
+
+    return false;
+  }
+
   /// Fetches HTML content from URL with timeout and size limit.
   ///
   /// Returns the decoded HTML string, or `null` on failure.
@@ -30,6 +71,13 @@ class HttpContentFetcher {
   /// response exceeds the 5 MB size limit.
   Future<String?> fetchHtmlWithTimeout(String url) async {
     try {
+      final uri = Uri.parse(url);
+      if (isBlockedHost(uri.host)) {
+        AppLogger.warning(
+            'HttpContentFetcher: Blocked request to private/internal host: ${uri.host}');
+        return null;
+      }
+
       final client = _httpClient ?? http.Client();
       final shouldCloseClient = _httpClient == null;
 

@@ -2479,7 +2479,8 @@ class MockShoppingExportModule extends ShoppingExportModule {
 }
 
 class MockShoppingExternalShareModule extends ShoppingExternalShareModule {
-  MockShoppingExternalShareModule();
+  MockShoppingExternalShareModule()
+      : super(permissionService: MockPermissionService());
 }
 
 class MockShoppingTemplateModule extends ShoppingTemplateModule {

@@ -1,6 +1,7 @@
 // lib/services/unified/operations/shopping_share_operations.dart
 
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -28,7 +29,10 @@ class ShoppingExportModule {
 
 /// Consolidated shopping external share module (simplified)
 class ShoppingExternalShareModule {
-  ShoppingExternalShareModule();
+  final PermissionService _permissionService;
+
+  ShoppingExternalShareModule({required PermissionService permissionService})
+      : _permissionService = permissionService;
 
   Future<bool> shareList({
     required String listId,
@@ -36,8 +40,15 @@ class ShoppingExternalShareModule {
     String? customMessage,
   }) async =>
       true;
-  Future<String?> createPublicLink(String listId) async =>
-      'https://example.com/shared/$listId';
+  Future<String?> createPublicLink(String listId) async {
+    final userId = _permissionService.currentUserId;
+    if (userId == null) return null;
+    final longUrl = DeepLinkService.generateShoppingListShareLink(
+      listId: listId,
+      fromUserId: userId,
+    );
+    return DeepLinkService.generateShortUrl(longUrl);
+  }
 }
 
 /// Consolidated shopping template module (simplified)
@@ -96,7 +107,9 @@ class ShoppingShareOperations {
   /// Initialize all focused modules
   void _initializeModules() {
     _exportModule = ShoppingExportModule();
-    _externalShareModule = ShoppingExternalShareModule();
+    _externalShareModule = ShoppingExternalShareModule(
+      permissionService: _permissionService,
+    );
     _templateModule = ShoppingTemplateModule();
     _importModule = ShoppingImportModule();
     _socialShareModule = ShoppingSocialShareModule(

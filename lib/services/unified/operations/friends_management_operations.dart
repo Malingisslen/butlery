@@ -5,6 +5,7 @@ import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynam
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart' as model;
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -246,7 +247,7 @@ class FriendsManagementOperations extends BaseService {
         friendId,
       );
 
-      AppLogger.success('Removed friend: ${friend.displayName}');
+      AppLogger.success('Removed friend: ${friend.displayName.maskedName}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to remove friend', e);
