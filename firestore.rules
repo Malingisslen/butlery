@@ -406,11 +406,9 @@ service cloud.firestore {
 
     match /shared_recipes/{shareId} {
 
-      // Can list recipes you created or are shared with you
-      allow list: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.sharedToUserIds
-      );
+      // Can list recipes you created (members use collection group query on /members/)
+      allow list: if isAuthenticated()
+        && request.auth.uid == resource.data.sharedByUserId;
 
       // Can read specific document if you're the owner or a member (Issue #014: subcollection-based)
       allow get: if isAuthenticated() && (
@@ -667,7 +665,7 @@ service cloud.firestore {
         // Owner can add collaborators, users can add themselves if collaboration allowed
         allow create: if isAuthenticated() && (
           request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId ||
-          (request.auth.uid == userId && get(/databases/$(database)/documents/shared_menus/$(menuId)).data.isCollaborative == true)
+          (request.auth.uid == userId && get(/databases/$(database)/documents/shared_menus/$(menuId)).data.allowCollaboration == true)
         ) && hasRequiredFields(['userId', 'joinedAt']);
 
         // Owner can remove collaborators, users can remove themselves
@@ -1633,6 +1631,13 @@ service cloud.firestore {
     // Applies to: shared_recipes/members, shared_menus/members, shared_shopping_lists/members
     match /{path=**}/members/{memberId} {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Users can read their OWN engagement documents across all collections
+    // This enables: firestore.collectionGroup('engagements').where('userId', isEqualTo: currentUserId)
+    // Applies to: shared_recipes/engagements, shared_menus/engagements, shared_shopping_lists/engagements
+    match /{path=**}/engagements/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
     }
 
     // ========================================
