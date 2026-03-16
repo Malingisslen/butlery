@@ -74,6 +74,7 @@ import 'package:butlery/widgets/common/feedback_fab.dart';
 
 // Services for auth wrapper
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
@@ -711,11 +712,23 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     );
   }
 
-  void _onApplicationReady() {
-    // Process any pending deep links
-    if (mounted) {
-      DeepLinkHandler().processPendingDeepLink(context);
+  Future<void> _onApplicationReady() async {
+    if (!mounted) return;
+
+    // Ensure deep link handler is initialized before processing
+    // (_initializeUI is not awaited, so it may still be in progress)
+    final handler = DeepLinkHandler();
+    if (!handler.isInitialized) {
+      await handler.initialize();
     }
+    if (mounted) {
+      handler.processPendingDeepLink(context);
+    }
+
+    // Wire notification tap → navigator so taps actually navigate
+    NotificationService.onNotificationTapped = (route, data) {
+      appNavigatorKey.currentState?.pushNamed(route, arguments: data);
+    };
   }
 }
 
@@ -743,6 +756,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   late final AuthService _authService;
   late final UserService _userService;
   bool _verificationDismissed = false;
+  bool _wasAuthenticated = false;
 
   /// Only gate users created after this date (grandfather existing users).
   static final DateTime _verificationGateDate = DateTime(2026, 3, 20);
@@ -773,9 +787,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
       final user = _authService.currentUser;
       if (user != null) {
         AppLogger.debug('AuthWrapper: User authenticated: ${user.uid}');
+        // Re-process pending deep link when transitioning to authenticated
+        if (!_wasAuthenticated) {
+          DeepLinkHandler().processPendingDeepLink(context);
+        }
       } else {
         AppLogger.debug('AuthWrapper: User signed out');
       }
+      _wasAuthenticated = user != null;
     }
   }
 

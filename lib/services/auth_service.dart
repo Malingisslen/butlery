@@ -52,7 +52,13 @@ class AuthService extends ChangeNotifier
         notifyListeners();
       },
       onError: (error) {
-        AppLogger.debug('Auth state stream error (non-blocking): $error');
+        final code = error is FirebaseAuthException ? error.code : '';
+        if (code == 'user-token-expired' || code == 'invalid-user-token') {
+          AppLogger.warning('Auth token expired — forcing sign out: $error');
+          forceSignOut();
+        } else {
+          AppLogger.debug('Auth state stream error (non-blocking): $error');
+        }
       },
     );
   }
