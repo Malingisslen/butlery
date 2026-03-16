@@ -367,14 +367,22 @@ class ChatViewModel extends ChangeNotifier
     }
   }
 
+  int _typingSubscribeRetries = 0;
+  static const _maxTypingSubscribeRetries = 10;
+
   void _subscribeToTypingIndicators() {
     if (_isDisposed || _presenceService == null) return;
 
     // Wait for conversation to load first
     if (_conversation == null) {
-      // Retry after a short delay
+      _typingSubscribeRetries++;
+      if (_typingSubscribeRetries > _maxTypingSubscribeRetries) {
+        AppLogger.warning(
+            'Gave up waiting for conversation to subscribe to typing indicators');
+        return;
+      }
       Future.delayed(const Duration(milliseconds: 500), () {
-        _subscribeToTypingIndicators();
+        if (!_isDisposed) _subscribeToTypingIndicators();
       });
       return;
     }

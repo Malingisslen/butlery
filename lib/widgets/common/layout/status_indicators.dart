@@ -1,19 +1,18 @@
 // lib/widgets/common/layout/status_indicators.dart
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Status indicators for app state display
 /// This module provides widgets for displaying app status like
 /// offline indicators and connection status.
 class StatusIndicators {
   /// Offline indicator that shows when the app is offline
-  /// Exactly like original OfflineIndicator
   static Widget offlineIndicator({
     String? message,
     Color? backgroundColor,
@@ -30,7 +29,9 @@ class StatusIndicators {
   }
 }
 
-/// Offline indicator widget that shows when the app is offline
+/// Offline indicator widget that shows when the app is offline.
+/// Uses ServiceLocator to access OfflineService directly so it works in any
+/// route without requiring a ChangeNotifierProvider ancestor.
 class OfflineIndicator extends StatelessWidget {
   final String? message;
   final Color? backgroundColor;
@@ -43,14 +44,15 @@ class OfflineIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<OfflineService>(
-      builder: (context, offlineService, child) {
-        // Show nothing if online
+    final offlineService = ServiceLocator.get<OfflineService>();
+
+    return ListenableBuilder(
+      listenable: offlineService,
+      builder: (context, child) {
         if (offlineService.isOnline) {
           return const SizedBox.shrink();
         }
 
-        // Show offline banner
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
@@ -81,14 +83,19 @@ class OfflineIndicator extends StatelessWidget {
   }
 }
 
-/// Small offline status icon for app bar
+/// Small offline status icon for app bar.
+/// Uses ServiceLocator to access OfflineService directly so it works in any
+/// route without requiring a ChangeNotifierProvider ancestor.
 class OfflineStatusIcon extends StatelessWidget {
   const OfflineStatusIcon({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<OfflineService>(
-      builder: (context, offlineService, child) {
+    final offlineService = ServiceLocator.get<OfflineService>();
+
+    return ListenableBuilder(
+      listenable: offlineService,
+      builder: (context, child) {
         if (offlineService.isOnline) {
           return const SizedBox.shrink();
         }

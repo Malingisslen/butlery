@@ -890,6 +890,42 @@ abstract class AppLocalizations {
   /// **'När du samarbetar på inköpslistor med vänner eller familj visas de här.'**
   String get emptyNoSharedShoppingListsSubtitle;
 
+  /// No description provided for @emptyNoTagsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga taggar ännu'**
+  String get emptyNoTagsTitle;
+
+  /// No description provided for @emptyNoTagsSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa personliga taggar för att organisera dina recept.'**
+  String get emptyNoTagsSubtitle;
+
+  /// No description provided for @emptyNoGroupsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga grupper ännu'**
+  String get emptyNoGroupsTitle;
+
+  /// No description provided for @emptyNoGroupsSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa en grupp för att dela recept och planera måltider tillsammans.'**
+  String get emptyNoGroupsSubtitle;
+
+  /// No description provided for @emptyNoConversationsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga konversationer ännu'**
+  String get emptyNoConversationsTitle;
+
+  /// No description provided for @emptyNoConversationsSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Starta en konversation med en vän för att prata om recept.'**
+  String get emptyNoConversationsSubtitle;
+
   /// No description provided for @emptyGenericTitle.
   ///
   /// In sv, this message translates to:

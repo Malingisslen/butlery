@@ -70,6 +70,11 @@ import 'package:butlery/core/utils/logger.dart';
 mixin StateNotifierMixin on ChangeNotifier {
   bool _isLoading = false;
   String? _error;
+  bool _isDisposed = false;
+
+  /// Whether this notifier has been disposed.
+  /// Subclasses can use this to guard async callbacks.
+  bool get isDisposed => _isDisposed;
 
   /// Whether the component is currently loading
   bool get isLoading => _isLoading;
@@ -89,6 +94,7 @@ mixin StateNotifierMixin on ChangeNotifier {
   /// Set loading state and notify listeners
   @protected
   void setLoading(bool loading) {
+    if (_isDisposed) return;
     if (_isLoading != loading) {
       _isLoading = loading;
       notifyListeners();
@@ -99,6 +105,7 @@ mixin StateNotifierMixin on ChangeNotifier {
   /// Set error state, clear loading, and notify listeners
   @protected
   void setError(String message) {
+    if (_isDisposed) return;
     _error = message;
     _isLoading = false;
     notifyListeners();
@@ -108,6 +115,7 @@ mixin StateNotifierMixin on ChangeNotifier {
   /// Clear error state and notify listeners
   @protected
   void clearError() {
+    if (_isDisposed) return;
     if (_error != null) {
       _error = null;
       notifyListeners();
@@ -118,6 +126,7 @@ mixin StateNotifierMixin on ChangeNotifier {
   /// Clear all state (loading and error) and notify listeners
   @protected
   void clearState() {
+    if (_isDisposed) return;
     if (_isLoading || _error != null) {
       _isLoading = false;
       _error = null;
@@ -129,6 +138,7 @@ mixin StateNotifierMixin on ChangeNotifier {
   /// Set success state (clear loading and error) and notify listeners
   @protected
   void setSuccess() {
+    if (_isDisposed) return;
     if (_isLoading || _error != null) {
       _isLoading = false;
       _error = null;
@@ -264,7 +274,7 @@ mixin StateNotifierMixin on ChangeNotifier {
 
   @override
   void dispose() {
-    clearState();
+    _isDisposed = true;
     super.dispose();
   }
 }

@@ -21,6 +21,10 @@ class ConnectionStateModule {
   /// Connection state
   bool _isConnected = false;
 
+  /// Stream subscriptions for cleanup
+  StreamSubscription<dynamic>? _connectivitySubscription;
+  StreamSubscription<User?>? _authStateSubscription;
+
   /// Notification listeners
   final List<VoidCallback> _listeners = [];
 
@@ -57,7 +61,7 @@ class ConnectionStateModule {
   void startConnectionMonitoring(
       Function(SyncErrorType, String, {dynamic originalError}) handleError) {
     // Listen to Firebase connection state via Firestore connectivity
-    firestoreRepository.connectivityStream().listen(
+    _connectivitySubscription = firestoreRepository.connectivityStream().listen(
       (snapshot) {
         setConnectionState(true);
       },
@@ -74,7 +78,8 @@ class ConnectionStateModule {
 
   /// Setup auth state change listener
   void setupAuthStateListener() {
-    authRepository.authStateChanges().listen(onAuthStateChanged);
+    _authStateSubscription =
+        authRepository.authStateChanges().listen(onAuthStateChanged);
   }
 
   /// Handle auth state changes
@@ -102,6 +107,8 @@ class ConnectionStateModule {
 
   /// Cleanup
   void dispose() {
+    _connectivitySubscription?.cancel();
+    _authStateSubscription?.cancel();
     _listeners.clear();
   }
 }

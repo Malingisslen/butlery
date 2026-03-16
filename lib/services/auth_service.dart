@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
@@ -31,6 +33,7 @@ class AuthService extends ChangeNotifier
   final auth_repo.AuthRepository _authRepository;
   final AnalyticsService _analyticsService;
   User? _currentUser;
+  StreamSubscription<User?>? _authStateSubscription;
 
   User? get currentUser => _currentUser;
   String? get currentUserDisplayName => _currentUser?.displayName;
@@ -46,7 +49,7 @@ class AuthService extends ChangeNotifier
     required AnalyticsService analyticsService,
   })  : _authRepository = authRepository ?? FirebaseAuthRepository(),
         _analyticsService = analyticsService {
-    _authRepository.authStateChanges().listen(
+    _authStateSubscription = _authRepository.authStateChanges().listen(
       (User? user) {
         _currentUser = user;
         notifyListeners();
@@ -372,6 +375,7 @@ class AuthService extends ChangeNotifier
 
   @override
   void dispose() {
+    _authStateSubscription?.cancel();
     disposeStreamResources();
     super.dispose();
   }
