@@ -50,8 +50,8 @@ void main() {
                 any(),
                 onProgress: any(named: 'onProgress'),
               ))
-          .thenAnswer(
-              (_) async => 'https://storage.firebase.com/uploaded_image.jpg');
+          .thenAnswer((_) async => const ImageUploadResult(
+              imageUrl: 'https://storage.firebase.com/uploaded_image.jpg'));
 
       when(() => mockStorageService.deleteRecipeImage(any()))
           .thenAnswer((_) async {});
@@ -412,7 +412,7 @@ void main() {
       test('should handle upload state correctly during file upload', () async {
         // Arrange
         final testFile = MockFactory.createXFile('/test/image.jpg');
-        final completer = Completer<String?>();
+        final completer = Completer<ImageUploadResult?>();
         when(() => mockStorageService.uploadRecipeImage(
               any(),
               any(),
@@ -431,7 +431,8 @@ void main() {
         expect(imageManager.isUploadingImage, isTrue);
 
         // Complete the upload
-        completer.complete('https://uploaded.jpg');
+        completer.complete(
+            const ImageUploadResult(imageUrl: 'https://uploaded.jpg'));
         await uploadFuture;
 
         // Assert - should not be uploading anymore
@@ -509,7 +510,7 @@ void main() {
               any(),
               any(),
               onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => '');
+            )).thenAnswer((_) async => const ImageUploadResult(imageUrl: ''));
 
         // Act
         await imageManager.uploadImageFromFile(testFile, testRecipeId);
@@ -537,8 +538,9 @@ void main() {
                   any(),
                   onProgress: any(named: 'onProgress'),
                 ))
-            .thenAnswer((_) async =>
-                'https://storage.firebase.com/uploaded_image${++callCount}.jpg');
+            .thenAnswer((_) async => ImageUploadResult(
+                imageUrl:
+                    'https://storage.firebase.com/uploaded_image${++callCount}.jpg'));
 
         var notificationCount = 0;
         imageManager.addListener(() => notificationCount++);
@@ -585,10 +587,12 @@ void main() {
 
         var callCount = 0;
         when(() => mockStorageService.uploadRecipeImage(
-              any(),
-              any(),
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => 'https://uploaded${++callCount}.jpg');
+                  any(),
+                  any(),
+                  onProgress: any(named: 'onProgress'),
+                ))
+            .thenAnswer((_) async => ImageUploadResult(
+                imageUrl: 'https://uploaded${++callCount}.jpg'));
 
         // Act
         await imageManager.uploadMultipleImages(testFiles, testRecipeId);
@@ -623,7 +627,7 @@ void main() {
             )).thenAnswer((_) async {
           callCount++;
           if (callCount == 2) return null; // Second upload fails
-          return 'https://uploaded$callCount.jpg';
+          return ImageUploadResult(imageUrl: 'https://uploaded$callCount.jpg');
         });
 
         // Act
@@ -907,7 +911,7 @@ void main() {
         imageManager.addListener(
             () => uploadingStates.add(imageManager.isUploadingImage));
 
-        final completer = Completer<String?>();
+        final completer = Completer<ImageUploadResult?>();
         when(() => mockStorageService.uploadRecipeImage(
               any(),
               any(),
@@ -919,7 +923,8 @@ void main() {
             MockFactory.createXFile('/test/image.jpg'), testRecipeId);
 
         // Complete upload
-        completer.complete('https://uploaded.jpg');
+        completer.complete(
+            const ImageUploadResult(imageUrl: 'https://uploaded.jpg'));
         await uploadFuture;
 
         // Assert
@@ -1014,8 +1019,9 @@ void main() {
                   any(),
                   onProgress: any(named: 'onProgress'),
                 ))
-            .thenAnswer((_) async =>
-                'https://storage.firebase.com/uploaded_image${++callCount}.jpg');
+            .thenAnswer((_) async => ImageUploadResult(
+                imageUrl:
+                    'https://storage.firebase.com/uploaded_image${++callCount}.jpg'));
 
         // Act - start multiple uploads concurrently
         final futures = testFiles
@@ -1171,8 +1177,9 @@ void main() {
                   any(),
                   onProgress: any(named: 'onProgress'),
                 ))
-            .thenAnswer((_) async =>
-                'https://storage.firebase.com/multiple_${++multipleCallCount}.jpg');
+            .thenAnswer((_) async => ImageUploadResult(
+                imageUrl:
+                    'https://storage.firebase.com/multiple_${++multipleCallCount}.jpg'));
 
         await imageManager.uploadMultipleImages(multipleFiles, testRecipeId);
         expect(imageManager.imageUrls.length, equals(5)); // Back to max

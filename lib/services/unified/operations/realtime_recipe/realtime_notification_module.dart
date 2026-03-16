@@ -6,6 +6,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Interface for notification module parent
 abstract class NotificationParent {
@@ -25,24 +26,7 @@ class RealtimeNotificationModule {
   final NotificationService? _notificationService;
 
   RealtimeNotificationModule(this._parent)
-      : _notificationService = _initializeNotificationService(_parent);
-
-  static NotificationService? _initializeNotificationService(dynamic parent) {
-    try {
-      final currentUserId = parent.currentUserId;
-      if (currentUserId != null) {
-        final service = NotificationService(
-          userId: currentUserId,
-        );
-        service.initialize();
-        return service;
-      }
-      return null;
-    } catch (e) {
-      AppLogger.warning('⚠️ Could not initialize notification service: $e');
-      return null;
-    }
-  }
+      : _notificationService = ServiceLocator.tryGet<NotificationService>();
 
   Future<void> sendCollaborationJoinedNotification(Recipe recipe) async {
     if (_notificationService == null || !recipe.isCollaborative) {

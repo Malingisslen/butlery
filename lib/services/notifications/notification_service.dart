@@ -6,10 +6,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/repositories/firebase/firebase_notification_repository.dart'
-    as legacy;
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/models/notification_batch.dart';
+import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
 import 'package:butlery/services/notifications/modules/notification_content_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_preference_manager.dart';
@@ -19,7 +19,8 @@ import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_analytics_manager.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart'
     as interface_repo;
-import 'package:get_it/get_it.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 
 /// Notification coordinator using modular architecture with 6 specialized managers.
 ///
@@ -39,36 +40,51 @@ import 'package:get_it/get_it.dart';
 class NotificationService extends BaseService {
   @override
   String get serviceName => 'NotificationService';
-  final String _userId;
-  late final legacy.NotificationRepository _repository;
+  final interface_repo.NotificationsRepository _notificationsRepository;
+  final auth_repo.AuthRepository _authRepository;
+  final NotificationHistoryRepository _historyRepository;
+  final NotificationBatchRepository _batchRepository;
+
+  /// Dynamic userId read from AuthRepository (survives logout/login cycles)
+  String get _userId {
+    final id = _authRepository.currentUserId;
+    if (id == null) {
+      throw StateError('NotificationService: No authenticated user');
+    }
+    return id;
+  }
 
   // Focused notification modules (Single Responsibility)
-  late final NotificationContentManager _contentManager;
-  late final NotificationPreferenceManager _preferenceManager;
-  late final NotificationOfflineManager _offlineManager;
-  late final NotificationBatchManager _batchManager;
-  late final FCMTokenManager _tokenManager;
-  late final NotificationAnalyticsManager _analyticsManager;
+  late NotificationContentManager _contentManager;
+  late NotificationPreferenceManager _preferenceManager;
+  late NotificationOfflineManager _offlineManager;
+  late NotificationBatchManager _batchManager;
+  late FCMTokenManager _tokenManager;
+  late NotificationAnalyticsManager _analyticsManager;
 
   bool _isInitialized = false;
 
   NotificationService({
-    required String userId,
-  }) : _userId = userId {
-    final notificationsRepository =
-        GetIt.instance<interface_repo.NotificationsRepository>();
+    required interface_repo.NotificationsRepository notificationsRepository,
+    required auth_repo.AuthRepository authRepository,
+    required NotificationHistoryRepository historyRepository,
+    required NotificationBatchRepository batchRepository,
+  })  : _notificationsRepository = notificationsRepository,
+        _authRepository = authRepository,
+        _historyRepository = historyRepository,
+        _batchRepository = batchRepository;
 
-    _repository = legacy.NotificationRepository(
-      userId: userId,
-    );
+  /// Initialize modules for the current authenticated user.
+  /// Called on first [onInitialize] or after [resetForLogout].
+  void _initializeModules() {
+    final userId = _userId;
 
-    // Initialize all focused modules
     _contentManager = NotificationContentManager(
       userId: userId,
     );
 
     _preferenceManager = NotificationPreferenceManager(
-      notificationsRepository: notificationsRepository,
+      notificationsRepository: _notificationsRepository,
       userId: userId,
     );
 
@@ -79,12 +95,13 @@ class NotificationService extends BaseService {
 
     _batchManager = NotificationBatchManager(
       userId: userId,
-      repository: _repository,
+      repository: _batchRepository,
       sendBatchCallback: _sendBatchedNotification,
     );
 
     _tokenManager = FCMTokenManager(
       userId: userId,
+      repository: _notificationsRepository,
     );
 
     _analyticsManager = NotificationAnalyticsManager(
@@ -103,6 +120,9 @@ class NotificationService extends BaseService {
 
     await safeExecute(
       () async {
+        // Initialize modules for current user on first init
+        _initializeModules();
+
         AppLogger.info(
             '🔔 Initializing NotificationService coordinator for user: $_userId');
 
@@ -171,7 +191,7 @@ class NotificationService extends BaseService {
 
             // Check if already sent (prevent duplicates)
             final alreadySent =
-                await _repository.wasNotificationSent(notificationId);
+                await _historyRepository.wasNotificationSent(notificationId);
             if (alreadySent) {
               AppLogger.info(
                   '📋 Notification $notificationId already sent, skipping');
@@ -200,7 +220,7 @@ class NotificationService extends BaseService {
             );
 
             // Record in history
-            await _repository.recordNotification(
+            await _historyRepository.recordNotification(
               notificationId: notificationId,
               category: strategy.category,
               type: strategy.type,
@@ -361,7 +381,7 @@ class NotificationService extends BaseService {
       // Record analytics
       final notificationId = message.data['notificationId'] as String?;
       if (notificationId != null) {
-        _repository.markNotificationDelivered(notificationId);
+        _historyRepository.markNotificationDelivered(notificationId);
         _analyticsManager.recordNotificationDelivered(
           notificationId: notificationId,
           deliveryMetadata: message.data,
@@ -385,7 +405,7 @@ class NotificationService extends BaseService {
       // Record analytics
       final notificationId = message.data['notificationId'] as String?;
       if (notificationId != null) {
-        _repository.markNotificationOpened(notificationId);
+        _historyRepository.markNotificationOpened(notificationId);
         _analyticsManager.recordNotificationOpened(
           notificationId: notificationId,
           context: message.data,
@@ -534,25 +554,36 @@ class NotificationService extends BaseService {
     return _batchManager.getBatchStatistics();
   }
 
+  /// Reset state for logout. Allows re-initialization for a new user session.
+  Future<void> resetForLogout() async {
+    if (!_isInitialized) return;
+
+    try {
+      await _tokenManager.cleanup();
+      await _disposeModules();
+      AppLogger.info('🔔 NotificationService reset for logout');
+    } catch (e) {
+      AppLogger.error('❌ Failed to reset NotificationService for logout', e);
+    }
+  }
+
   @override
   Future<void> onDispose() async {
     try {
       AppLogger.info('🔔 Disposing NotificationService coordinator...');
-
-      // Dispose all modules
-      _batchManager.dispose();
-      _offlineManager.dispose();
-      _tokenManager.dispose();
-      await _analyticsManager.dispose();
-      _preferenceManager.dispose();
-
-      // Clear repository cache
-      _repository.clearCache();
-
-      _isInitialized = false;
+      await _disposeModules();
       AppLogger.success('✅ NotificationService coordinator disposed');
     } catch (e) {
       AppLogger.error('❌ Failed to dispose NotificationService coordinator', e);
     }
+  }
+
+  Future<void> _disposeModules() async {
+    _batchManager.dispose();
+    _offlineManager.dispose();
+    _tokenManager.dispose();
+    await _analyticsManager.dispose();
+    _preferenceManager.dispose();
+    _isInitialized = false;
   }
 }

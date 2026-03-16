@@ -661,7 +661,8 @@ class RecipeFormState extends ChangeNotifier {
   }
 
   /// Create Recipe from current form state
-  Recipe createRecipe({String? recipeId, List<String>? imageUrls}) {
+  Recipe createRecipe(
+      {String? recipeId, List<String>? imageUrls, String? thumbnailUrl}) {
     final cleanIngredients = _ingredientsManager.values
         .where((ingredient) => ingredient.trim().isNotEmpty)
         .toList();
@@ -705,6 +706,7 @@ class RecipeFormState extends ChangeNotifier {
         personalTagIds: cleanTagIds,
         personalTags: personalTags,
         imageUrls: imageUrls ?? _imageUrls,
+        thumbnailUrl: thumbnailUrl ?? _originalRecipe?.core.thumbnailUrl,
         sourceUrl: _sourceUrl?.trim(),
         createdAt: (_originalRecipe?.createdAt).orNow(),
         updatedAt: DateTime.now(),

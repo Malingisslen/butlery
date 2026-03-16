@@ -589,7 +589,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     try {
       final snap = await getCollectionForUser(userId)
-          .where('core.title', isEqualTo: normalized)
+          .where('core.titleLower', isEqualTo: normalized)
           .limit(5)
           .get();
       return snap.docs.map(fromFirestore).toList();

@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 
 /// Recipe detail comments widget with expandable section.
@@ -182,7 +183,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           FilledButton(
-            onPressed: () => Navigator.pushNamed(context, '/login'),
+            onPressed: () => Navigator.pushNamed(context, Routes.auth),
             child: Text(context.l10n.authLogIn),
           ),
         ],

@@ -12,7 +12,7 @@ import 'package:clock/clock.dart';
 // Production code being tested
 import 'package:butlery/services/notifications/modules/notification_batch_manager.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/repositories/firebase/firebase_notification_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/models/notification_batch.dart';
 
 // Test infrastructure
@@ -21,7 +21,7 @@ import '../../../../infrastructure/di/test_service_locator.dart';
 
 // Mock classes
 class MockNotificationRepository extends Mock
-    implements NotificationRepository {}
+    implements NotificationBatchRepository {}
 
 // Fake classes for fallback values
 class FakeNotificationTemplate extends Fake implements NotificationTemplate {}
@@ -567,7 +567,9 @@ void main() {
           (NotificationCategory.friends, 'Vänaktivitet'),
           (NotificationCategory.collaboration, 'Samarbetsaktivitet'),
           (NotificationCategory.shopping, 'Inköpslistor'),
+          (NotificationCategory.messaging, 'Meddelanden'),
           (NotificationCategory.social, 'Social aktivitet'),
+          (NotificationCategory.system, 'Systemmeddelanden'),
         ];
 
         for (final (category, expectedTitle) in categoryTests) {

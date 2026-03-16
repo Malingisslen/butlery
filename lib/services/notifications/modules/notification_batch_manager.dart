@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/repositories/firebase/firebase_notification_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -15,7 +15,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// ```
 class NotificationBatchManager {
   final String _userId;
-  final NotificationRepository _repository;
+  final NotificationBatchRepository _repository;
   final Clock _clock;
 
   // Batch timers for different notification types
@@ -32,7 +32,7 @@ class NotificationBatchManager {
 
   NotificationBatchManager({
     required String userId,
-    required NotificationRepository repository,
+    required NotificationBatchRepository repository,
     Future<void> Function(NotificationBatch)? sendBatchCallback,
     Clock? clock,
   })  : _userId = userId,
@@ -345,34 +345,42 @@ class NotificationBatchManager {
 
     // Combine multiple notifications into a summary
     final firstNotification = notifications.first;
-    final category = firstNotification.data['category'] as String;
+    final categoryString = firstNotification.data['category'] as String;
+    // Extract enum name from either 'recipes' or legacy 'NotificationCategory.recipes' format
+    final categoryName = categoryString.contains('.')
+        ? categoryString.split('.').last
+        : categoryString;
+    final category = NotificationCategory.values
+        .cast<NotificationCategory?>()
+        .firstWhere((c) => c?.name == categoryName, orElse: () => null);
 
     String title;
     String body;
 
     // Build localized batched content based on category
     switch (category) {
-      case 'NotificationCategory.recipes':
+      case NotificationCategory.recipes:
         title = 'Ny receptaktivitet';
         body = '${notifications.length} nya händelser på dina recept';
-        break;
-      case 'NotificationCategory.friends':
+      case NotificationCategory.friends:
         title = 'Vänaktivitet';
         body = '${notifications.length} nya aktiviteter från dina vänner';
-        break;
-      case 'NotificationCategory.collaboration':
+      case NotificationCategory.collaboration:
         title = 'Samarbetsaktivitet';
         body = '${notifications.length} nya samarbetshändelser';
-        break;
-      case 'NotificationCategory.shopping':
+      case NotificationCategory.shopping:
         title = 'Inköpslistor';
         body = '${notifications.length} uppdateringar av inköpslistor';
-        break;
-      case 'NotificationCategory.social':
+      case NotificationCategory.messaging:
+        title = 'Meddelanden';
+        body = '${notifications.length} nya meddelanden';
+      case NotificationCategory.social:
         title = 'Social aktivitet';
         body = '${notifications.length} nya sociala händelser';
-        break;
-      default:
+      case NotificationCategory.system:
+        title = 'Systemmeddelanden';
+        body = '${notifications.length} nya systemhändelser';
+      case null:
         title = 'Ny aktivitet';
         body = '${notifications.length} nya händelser i Butlery';
     }

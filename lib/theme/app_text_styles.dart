@@ -313,7 +313,7 @@ class AppTextStyles {
 
   /// Body medium with warning color - for warning state messages
   static TextStyle get bodyMediumWarning => bodyMedium.copyWith(
-        color: AppColors.warning,
+        color: AppColors.warningText,
       );
 
   /// Body medium muted - for secondary/muted body text
@@ -352,7 +352,7 @@ class AppTextStyles {
 
   /// Warning text - for warning state messages
   static TextStyle get warningText => bodySmall.copyWith(
-        color: AppColors.warning,
+        color: AppColors.warningText,
       );
 
   /// Info text - for informational messages
@@ -391,7 +391,7 @@ class AppTextStyles {
         fontSize: 10,
         fontWeight: FontWeight.w700,
         letterSpacing: 3,
-        color: AppColors.rust,
+        color: AppColors.forestGreenDark,
       );
 
   /// Filter chip text style

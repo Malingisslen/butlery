@@ -1,9 +1,5 @@
 // lib/services/notifications/modules/fcm_token_manager.dart
 
-// ✅ MIGRATION COMPLETE: All Firestore operations now use repository pattern
-// ✅ Repository Pattern: FCM token management fully migrated to NotificationRepository
-// ✅ Architecture: Clean separation between service logic and data persistence
-
 import 'dart:async';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,10 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/repositories/firebase/firebase_notification_repository.dart';
-import 'package:butlery/models/notification_preferences.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:get_it/get_it.dart';
 
 /// Specialized Firebase Cloud Messaging token management module providing comprehensive device token lifecycle management.
 /// This focused module implements sophisticated FCM token management following Single Responsibility Principle,
@@ -52,7 +46,7 @@ import 'package:get_it/get_it.dart';
 /// await tokenManager.updateTopicSubscriptions(preferences);
 /// ```
 class FCMTokenManager {
-  final NotificationRepository _repository;
+  final NotificationsRepository _repository;
   final String _userId;
   final FirebaseMessaging _messaging;
 
@@ -60,10 +54,6 @@ class FCMTokenManager {
   String? _currentToken;
   DateTime? _lastTokenRefresh;
   StreamSubscription<String>? _tokenRefreshSubscription;
-
-  // Collections
-  static const String _tokensCollection = 'user_fcm_tokens';
-  static const String _deviceInfoCollection = 'user_devices';
 
   // Local storage keys
   static const String _tokenStorageKey = 'fcm_token';
@@ -77,9 +67,9 @@ class FCMTokenManager {
 
   FCMTokenManager({
     required String userId,
-    NotificationRepository? repository,
+    required NotificationsRepository repository,
     FirebaseMessaging? messaging,
-  })  : _repository = repository ?? GetIt.instance<NotificationRepository>(),
+  })  : _repository = repository,
         _userId = userId,
         _messaging = messaging ?? FirebaseMessaging.instance;
 
@@ -167,16 +157,14 @@ class FCMTokenManager {
       if (oldToken != newToken) {
         AppLogger.info('FCM token updated successfully');
 
-        // Save to Firestore
-        await _saveTokenToFirestore(newToken);
+        // Run independent writes concurrently
+        await Future.wait([
+          _saveTokenToFirestore(newToken),
+          _saveTokenLocally(newToken),
+          _updateDeviceInfo(newToken),
+        ]);
 
-        // Save locally for offline access
-        await _saveTokenLocally(newToken);
-
-        // Update device info
-        await _updateDeviceInfo(newToken);
-
-        // Clean up old token if it existed
+        // Clean up old token after new one is saved
         if (oldToken != null) {
           await _removeOldToken(oldToken);
         }
@@ -202,9 +190,11 @@ class FCMTokenManager {
           _lastTokenRefresh = DateTime.now();
 
           try {
-            await _saveTokenToFirestore(newToken);
-            await _saveTokenLocally(newToken);
-            await _updateDeviceInfo(newToken);
+            await Future.wait([
+              _saveTokenToFirestore(newToken),
+              _saveTokenLocally(newToken),
+              _updateDeviceInfo(newToken),
+            ]);
             AppLogger.success('✅ Auto token refresh complete');
           } catch (e) {
             AppLogger.error('❌ Failed to handle auto token refresh', e);
@@ -321,7 +311,6 @@ class FCMTokenManager {
       };
 
       await _repository.saveTokenToFirestore(
-        _tokensCollection,
         '${_userId}_${await _getDeviceId()}',
         tokenDoc,
       );
@@ -346,9 +335,10 @@ class FCMTokenManager {
   /// Update device information with new token
   Future<void> _updateDeviceInfo(String token) async {
     try {
+      final deviceId = await _getDeviceId();
       final deviceDoc = {
         'userId': _userId,
-        'deviceId': await _getDeviceId(),
+        'deviceId': deviceId,
         'platform': _getPlatformName(),
         'fcmToken': token,
         'lastSeen': FieldValue.serverTimestamp(),
@@ -356,8 +346,7 @@ class FCMTokenManager {
       };
 
       await _repository.updateDeviceInfo(
-        _deviceInfoCollection,
-        '${_userId}_${await _getDeviceId()}',
+        '${_userId}_$deviceId',
         deviceDoc,
       );
     } catch (e) {
@@ -369,7 +358,6 @@ class FCMTokenManager {
   Future<void> _updateTokenTimestamp(String token) async {
     try {
       await _repository.updateTokenTimestamp(
-        _tokensCollection,
         '${_userId}_${await _getDeviceId()}',
       );
     } catch (e) {
@@ -380,7 +368,7 @@ class FCMTokenManager {
   /// Remove old token from Firestore
   Future<void> _removeOldToken(String oldToken) async {
     try {
-      await _repository.removeOldToken(_tokensCollection, _userId, oldToken);
+      await _repository.removeOldToken(_userId, oldToken);
     } catch (e) {
       AppLogger.warning('⚠️ Failed to remove old token: $e');
     }
@@ -391,9 +379,8 @@ class FCMTokenManager {
     try {
       // Use repository method for device cleanup
       await _repository.cleanupOldDevices(
-        _deviceInfoCollection,
         _userId,
-        olderThan: const Duration(days: 30),
+        DateTime.now().subtract(const Duration(days: 30)),
       );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to cleanup old devices: $e');
@@ -422,20 +409,29 @@ class FCMTokenManager {
         _cachedDeviceId = android.id;
       } else if (Platform.isIOS) {
         final ios = await deviceInfo.iosInfo;
-        _cachedDeviceId = ios.identifierForVendor ?? _fallbackDeviceId();
+        _cachedDeviceId = ios.identifierForVendor ?? await _fallbackDeviceId();
       } else {
-        _cachedDeviceId = _fallbackDeviceId();
+        _cachedDeviceId = await _fallbackDeviceId();
       }
     } catch (e) {
       AppLogger.warning('Failed to get device ID: $e');
-      _cachedDeviceId = _fallbackDeviceId();
+      _cachedDeviceId = await _fallbackDeviceId();
     }
     return _cachedDeviceId!;
   }
 
-  /// Fallback device ID when platform-specific ID is unavailable
-  String _fallbackDeviceId() =>
-      'fallback_${DateTime.now().millisecondsSinceEpoch}';
+  static const _fallbackDeviceIdKey = 'butlery_fallback_device_id';
+
+  /// Fallback device ID when platform-specific ID is unavailable.
+  /// Persists to secure storage so the same ID is reused across sessions.
+  Future<String> _fallbackDeviceId() async {
+    final existing = await _secureStorage.read(key: _fallbackDeviceIdKey);
+    if (existing != null) return existing;
+
+    final newId = 'fallback_${DateTime.now().millisecondsSinceEpoch}';
+    await _secureStorage.write(key: _fallbackDeviceIdKey, value: newId);
+    return newId;
+  }
 
   /// Get platform name for tracking
   String _getPlatformName() {
@@ -450,7 +446,7 @@ class FCMTokenManager {
   /// Get all active tokens for the current user (for admin purposes)
   Future<List<String>> getAllUserTokens() async {
     try {
-      return await _repository.getAllUserTokens(_tokensCollection, _userId);
+      return await _repository.getAllUserTokens(_userId);
     } catch (e) {
       AppLogger.error('❌ Failed to get user tokens', e);
       return [];
@@ -482,7 +478,6 @@ class FCMTokenManager {
       // Mark device as inactive
       try {
         await _repository.markDeviceInactive(
-          _deviceInfoCollection,
           '${_userId}_${await _getDeviceId()}',
         );
       } catch (e) {

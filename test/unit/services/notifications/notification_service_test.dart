@@ -9,8 +9,9 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_notification_repository.dart'
-    as legacy;
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -19,15 +20,27 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 // Using centralized mocks from production_mocks.dart:
 // MockRemoteNotification, MockLegacyNotificationRepository, FakeNotificationPreferences, FakeNotificationStrategy, FakeNotificationAction
 
+class MockAuthRepo extends Mock implements AuthRepository {
+  @override
+  String? get currentUserId => 'test-user-123';
+}
+
+class MockNotificationHistoryRepo extends Mock
+    implements NotificationHistoryRepository {}
+
+class MockNotificationBatchRepo extends Mock
+    implements NotificationBatchRepository {}
+
 // ============= TESTS =============
 
 void main() {
   group('NotificationService', () {
     late NotificationService notificationService;
     late MockNotificationsRepository mockNotificationsRepo;
-    late MockLegacyNotificationRepository mockLegacyRepo;
+    late MockAuthRepo mockAuthRepo;
+    late MockNotificationHistoryRepo mockHistoryRepo;
+    late MockNotificationBatchRepo mockBatchRepo;
     late FakeFirebaseFirestore fakeFirestore;
-    const testUserId = 'test-user-123';
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -46,14 +59,14 @@ void main() {
     setUp(() {
       mockNotificationsRepo = MockNotificationsRepository();
       fakeFirestore = FakeFirebaseFirestore();
-      mockLegacyRepo = MockLegacyNotificationRepository();
+      mockAuthRepo = MockAuthRepo();
+      mockHistoryRepo = MockNotificationHistoryRepo();
+      mockBatchRepo = MockNotificationBatchRepo();
 
       // Register mocks with TestServiceLocator
       TestServiceLocator.registerMock<NotificationsRepository>(
           mockNotificationsRepo);
       TestServiceLocator.registerMock<FirebaseFirestore>(fakeFirestore);
-      TestServiceLocator.registerMock<legacy.NotificationRepository>(
-          mockLegacyRepo);
 
       // Setup default stubs for notifications repository
       when(() => mockNotificationsRepo.getNotificationPreferences(any()))
@@ -62,29 +75,25 @@ void main() {
               mockNotificationsRepo.updateNotificationPreferences(any(), any()))
           .thenAnswer((_) async {});
 
-      // Setup stubs for legacy notification repository
-      when(() => mockLegacyRepo.wasNotificationSent(any()))
+      // Setup stubs for history repository
+      when(() => mockHistoryRepo.wasNotificationSent(any()))
           .thenAnswer((_) async => false);
-      when(() => mockLegacyRepo.recordNotification(
+      when(() => mockHistoryRepo.recordNotification(
             notificationId: any(named: 'notificationId'),
             category: any(named: 'category'),
             type: any(named: 'type'),
             data: any(named: 'data'),
           )).thenAnswer((_) async {});
-      when(() => mockLegacyRepo.getPreferences())
-          .thenAnswer((_) async => NotificationPreferences.defaults());
-      when(() => mockLegacyRepo.markNotificationDelivered(any()))
+      when(() => mockHistoryRepo.markNotificationDelivered(any()))
           .thenAnswer((_) async {});
-      when(() => mockLegacyRepo.markNotificationOpened(any()))
-          .thenAnswer((_) async {});
-      when(() => mockLegacyRepo.clearCache()).thenReturn(null);
-
-      // Additional stubs for error handling tests
-      when(() => mockLegacyRepo.updatePreferences(any()))
+      when(() => mockHistoryRepo.markNotificationOpened(any()))
           .thenAnswer((_) async {});
 
       notificationService = NotificationService(
-        userId: testUserId,
+        notificationsRepository: mockNotificationsRepo,
+        authRepository: mockAuthRepo,
+        historyRepository: mockHistoryRepo,
+        batchRepository: mockBatchRepo,
       );
     });
 
@@ -784,10 +793,6 @@ void main() {
 
       group('Quiet Hours & User Preference Errors', () {
         test('should handle invalid quiet hour settings', () async {
-          // Arrange - End time before start time
-          when(() => mockLegacyRepo.getPreferences())
-              .thenAnswer((_) async => NotificationPreferences.defaults());
-
           // Act & Assert - Should handle invalid settings
           final isQuiet = await notificationService.isInQuietHours('user-123');
           expect(isQuiet, isA<bool>());
@@ -795,8 +800,6 @@ void main() {
 
         test('should handle user preferences fetch failure', () async {
           // Arrange
-          when(() => mockLegacyRepo.getPreferences()).thenAnswer(
-              (_) async => throw Exception('Failed to fetch preferences'));
           when(() => mockNotificationsRepo.getNotificationPreferences(any()))
               .thenAnswer((_) async => throw Exception('Database error'));
 
@@ -809,16 +812,6 @@ void main() {
           // Arrange
           final prefs1 = FakeNotificationPreferences(enabled: true);
           final prefs2 = FakeNotificationPreferences(enabled: false);
-
-          var updateCount = 0;
-          when(() => mockLegacyRepo.updatePreferences(any()))
-              .thenAnswer((_) async {
-            updateCount++;
-            if (updateCount == 1) {
-              // Simulate concurrent modification
-              throw Exception('CONCURRENT_MODIFICATION');
-            }
-          });
 
           // Act - Try to update twice concurrently
           final update1 = notificationService

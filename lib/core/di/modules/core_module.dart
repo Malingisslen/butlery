@@ -97,6 +97,9 @@ class CoreModule implements DIModule {
       FeedbackRepository,
       InteractionLogger,
       FeedbackService,
+      // Auth MFA and device integrity
+      AuthMfaService,
+      DeviceIntegrityService,
     ];
 
     return services;
@@ -164,6 +167,7 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           analyticsService: container<AnalyticsService>(),
         ),
+        dispose: (s) => s.dispose(),
       );
 
       // MFA service (extracted from AuthService for file size compliance)

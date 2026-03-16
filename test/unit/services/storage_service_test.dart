@@ -129,7 +129,9 @@ void main() {
         );
 
         // Assert
-        expect(result, equals(expectedUrl));
+        expect(result?.imageUrl, equals(expectedUrl));
+        expect(result?.thumbnailUrl,
+            equals('https://storage.googleapis.com/test/thumb.jpg'));
         verify(() => mockRepository.uploadImage(
               imageFile: mockFile,
               userId: userId,
@@ -206,7 +208,7 @@ void main() {
         );
 
         // Assert
-        expect(result, equals(expectedUrl));
+        expect(result?.imageUrl, equals(expectedUrl));
       });
     });
 
@@ -410,10 +412,12 @@ void main() {
     });
 
     group('Thumbnail Creation', () {
-      test('should create thumbnail in background after upload', () async {
+      test('should await thumbnail creation and return both URLs', () async {
         // Arrange
         const userId = 'test_user_123';
         const expectedUrl = 'https://storage.googleapis.com/test/image.jpg';
+        const expectedThumbUrl =
+            'https://storage.googleapis.com/test/thumb.jpg';
 
         when(() => mockRepository.generateFileName(
               originalPath: any(named: 'originalPath'),
@@ -428,23 +432,22 @@ void main() {
             )).thenAnswer((_) async => expectedUrl);
 
         when(() => mockRepository.createAndUploadThumbnail(
-                  imageFile: any(named: 'imageFile'),
-                  userId: any(named: 'userId'),
-                  originalPath: any(named: 'originalPath'),
-                ))
-            .thenAnswer(
-                (_) async => 'https://storage.googleapis.com/test/thumb.jpg');
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              originalPath: any(named: 'originalPath'),
+            )).thenAnswer((_) async => expectedThumbUrl);
 
         // Act
-        await storageService.uploadImageFile(mockFile, userId);
+        final result = await storageService.uploadImageFile(mockFile, userId);
 
-        // Wait a bit for background operation to start
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Assert
-        // Thumbnail creation happens in background, so we can't verify immediately
-        // But the method should have been called
-        expect(expectedUrl, isNotNull);
+        // Assert — thumbnail creation is now awaited, not fire-and-forget
+        expect(result?.imageUrl, equals(expectedUrl));
+        expect(result?.thumbnailUrl, equals(expectedThumbUrl));
+        verify(() => mockRepository.createAndUploadThumbnail(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              originalPath: any(named: 'originalPath'),
+            )).called(1);
       });
     });
 

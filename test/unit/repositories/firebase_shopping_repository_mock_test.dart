@@ -168,57 +168,6 @@ void main() {
       });
     });
 
-    group('Active List Management', () {
-      test('should set active list', () async {
-        // Arrange
-        const listId = 'list-1';
-
-        when(() => mockRepository.setActiveList(listId))
-            .thenAnswer((_) async {});
-
-        // Act
-        await mockRepository.setActiveList(listId);
-
-        // Assert
-        verify(() => mockRepository.setActiveList(listId)).called(1);
-      });
-
-      test('should get active list', () async {
-        // Arrange
-        final activeList = UnifiedShoppingList(
-          id: 'list-1',
-          name: 'Active List',
-          ownerId: 'test-user-123',
-          ownerDisplayName: 'Test User',
-        );
-
-        when(() => mockRepository.getActiveList())
-            .thenAnswer((_) async => activeList);
-
-        // Act
-        final list = await mockRepository.getActiveList();
-
-        // Assert
-        expect(list, isNotNull);
-        expect(list!.name, equals('Active List'));
-
-        verify(() => mockRepository.getActiveList()).called(1);
-      });
-
-      test('should return null when no active list', () async {
-        // Arrange
-        when(() => mockRepository.getActiveList())
-            .thenAnswer((_) async => null);
-
-        // Act
-        final list = await mockRepository.getActiveList();
-
-        // Assert
-        expect(list, isNull);
-        verify(() => mockRepository.getActiveList()).called(1);
-      });
-    });
-
     group('Item Operations', () {
       test('should add item to shopping list', () async {
         // Arrange

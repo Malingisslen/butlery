@@ -96,6 +96,7 @@
 
 | ID | Title |
 |----|-------|
+| BUG-035 | Share-to-group fails ("Kunde inte uppdatera gruppdelning") — permission hardcoding fixed (812b583b), self-sharing exclusion added; Firestore `isValidTagResult` rejection unconfirmed (needs Chrome MCP to reproduce) |
 | BUG-039 | Conversation archive doesn't persist — `ConversationDto.fromFirestore()` never reads `isArchived` from `userSettings` subcollection; archive state lost on next stream event |
 | BUG-040 | Unfriend doesn't block messaging — `ChatViewModel.canSendMessages` only checks `_conversation != null && !_isDisposed` with no friendship status check; unfriended users can still send messages |
 
@@ -1218,6 +1219,15 @@ Verify device integrity, caching, OCR quota, and retag progress behaviors.
   - ONB-12 (No re-show after complete): PASS - reload after completion shows main view
 - **Method:** Reset hasCompletedOnboarding to false in Firestore public_profiles, reload app
 - **Updated Progress:** 471/962 tests (449 passed, 1 failed, 21 N/A), **1 open bug (BUG-035)**
+
+**Session 35b - 2026-03-16 (code analysis, no Chrome MCP):**
+- **BUG-035 investigation:**
+  - Root cause 1 (hardcoded `ResourcePermission.read`): Already fixed in commit 812b583b
+  - Root cause 2 (Firestore `isValidTagResult` rejection): Code analysis shows serialization path is correct — `TagResult.toFirestore()` produces valid data matching Firestore rules allowlist
+  - Added self-sharing exclusion in `_resolveGroupMembers` — prevents current user being added as group member to their own recipe
+  - Removed unused `memberDisplayNames` collection in `shareRecipeWithGroups`
+  - Downgraded severity to Low — needs live reproduction via Chrome MCP to confirm if Firestore rejection still occurs
+- **Chrome MCP not available** — could not run Phase 19-21 tests
 
 **Session 36 - 2026-03-15 (via Chrome MCP):**
 - **Phase 20: GDPR & Account Management** — 7 PASS, 0 FAIL, 8 N/A (BUG-036 fixed)

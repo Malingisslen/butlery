@@ -20,6 +20,10 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 // Dependencies from Social Module (for notifications)
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_notification_history_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_notification_batch_repository.dart';
 
 // Messaging repositories and interfaces
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
@@ -29,6 +33,7 @@ import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/presence_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 
 // Firestore repository
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -63,6 +68,9 @@ class MessagingModule implements DIModule {
         MessageReactionsService,
         PresenceService,
         NotificationsRepository, // Also provides notifications repository
+        NotificationHistoryRepository,
+        NotificationBatchRepository,
+        NotificationService,
       ];
 
   @override
@@ -110,6 +118,32 @@ class MessagingModule implements DIModule {
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<AuthRepository>(),
         ),
+        dispose: (s) => s.dispose(),
+      );
+
+      // Notification history repository for dedup and delivery tracking
+      container.registerLazySingleton<NotificationHistoryRepository>(
+        () => FirebaseNotificationHistoryRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      // Notification batch repository for batch aggregation
+      container.registerLazySingleton<NotificationBatchRepository>(
+        () => FirebaseNotificationBatchRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      // NotificationService - coordinated notification delivery with FCM
+      container.registerLazySingleton<NotificationService>(
+        () => NotificationService(
+          notificationsRepository: container<NotificationsRepository>(),
+          authRepository: container<AuthRepository>(),
+          historyRepository: container<NotificationHistoryRepository>(),
+          batchRepository: container<NotificationBatchRepository>(),
+        ),
+        dispose: (s) => s.dispose(),
       );
     } catch (e) {
       throw DIModuleException(

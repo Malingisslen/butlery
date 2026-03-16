@@ -141,7 +141,8 @@ class FirebaseNotificationsRepository
         .limit(limit);
 
     if (since != null) {
-      query = query.where('createdAt', isGreaterThan: since);
+      query =
+          query.where('createdAt', isGreaterThan: Timestamp.fromDate(since));
     }
 
     final querySnapshot = await query.get();
@@ -321,9 +322,7 @@ class FirebaseNotificationsRepository
 
   @override
   Future<void> removeFCMToken(String userId, String token) async {
-    final fcmCollection =
-        firestore.collection(FirestoreCollections.userFcmTokens);
-    await fcmCollection.doc(userId).delete();
+    await removeOldToken(userId, token);
   }
 
   @override
@@ -368,5 +367,79 @@ class FirebaseNotificationsRepository
     }
 
     return NotificationPreferences.fromFirestore(doc);
+  }
+
+  CollectionReference<Map<String, dynamic>> get _fcmCollection =>
+      firestore.collection(FirestoreCollections.userFcmTokens);
+
+  CollectionReference<Map<String, dynamic>> get _deviceCollection =>
+      firestore.collection(FirestoreCollections.userDevices);
+
+  @override
+  Future<void> saveTokenToFirestore(
+      String docId, Map<String, dynamic> tokenData) async {
+    await _fcmCollection.doc(docId).set(tokenData, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> updateDeviceInfo(
+      String docId, Map<String, dynamic> deviceData) async {
+    await _deviceCollection.doc(docId).set(deviceData, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> updateTokenTimestamp(String docId) async {
+    await _fcmCollection.doc(docId).update({
+      'lastUpdated': timestampProvider.serverTimestamp(),
+    });
+  }
+
+  @override
+  Future<void> removeOldToken(String userId, String oldToken) async {
+    final query = await _fcmCollection
+        .where('userId', isEqualTo: userId)
+        .where('token', isEqualTo: oldToken)
+        .get();
+
+    final batch = firestore.batch();
+    for (final doc in query.docs) {
+      batch.update(doc.reference, {'isActive': false});
+    }
+    if (query.docs.isNotEmpty) {
+      await batch.commit();
+    }
+  }
+
+  @override
+  Future<List<String>> getAllUserTokens(String userId) async {
+    final query = await _fcmCollection
+        .where('userId', isEqualTo: userId)
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    return query.docs.map((doc) => doc.data()['token'] as String).toList();
+  }
+
+  @override
+  Future<void> markDeviceInactive(String docId) async {
+    await _deviceCollection.doc(docId).update({'isActive': false});
+  }
+
+  @override
+  Future<void> cleanupOldDevices(String userId, DateTime olderThan) async {
+    final cutoffTimestamp = Timestamp.fromDate(olderThan);
+    final query = await _deviceCollection
+        .where('userId', isEqualTo: userId)
+        .where('lastSeen', isLessThan: cutoffTimestamp)
+        .limit(100)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      final batch = firestore.batch();
+      for (final doc in query.docs) {
+        batch.update(doc.reference, {'isActive': false});
+      }
+      await batch.commit();
+    }
   }
 }

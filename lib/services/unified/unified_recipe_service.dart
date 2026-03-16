@@ -865,6 +865,34 @@ class UnifiedRecipeService extends ChangeNotifier
     };
   }
 
+  /// Reset state for logout. Allows re-initialization for a new user session.
+  /// Safe to call mid-operation — cancels subscriptions/timers first, then clears state.
+  void resetForLogout() {
+    // Cancel subscriptions first to prevent callbacks during reset
+    _authSubscription?.cancel();
+    _authSubscription = null;
+    _socialRetryTimer?.cancel();
+    _socialRetryTimer = null;
+
+    // Note: _taggingFailureController kept open — broadcast stream, new listeners after re-login OK
+
+    // Clear recipe state
+    _recipes.clear();
+    _isInitialized = false;
+    _isLoading = false;
+    _error = null;
+    _socialInitialized = false;
+    _serviceAdapter = null;
+
+    if (_areModulesInitialized()) {
+      _personalModule.cancelPendingRetries();
+      _cacheModule.dispose();
+      _realtimeModule.dispose();
+    }
+
+    AppLogger.info('UnifiedRecipeService reset for logout');
+  }
+
   @override
   void dispose() {
     // Cancel auth state subscription

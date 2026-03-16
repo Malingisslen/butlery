@@ -75,8 +75,8 @@ class RecipeRating {
         'userId': userId,
         'rating': rating,
         'review': review,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
+        'createdAt': Timestamp.fromDate(createdAt),
+        'updatedAt': Timestamp.fromDate(updatedAt),
       };
 
   factory RecipeRating.fromFirestore(Map<String, dynamic> data, String id) =>

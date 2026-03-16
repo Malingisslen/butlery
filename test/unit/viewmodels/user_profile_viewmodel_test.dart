@@ -107,8 +107,9 @@ void main() {
       when(() => mockImagePickerService.pickImage(any()))
           .thenAnswer((_) async => null);
 
-      when(() => mockStorageService.uploadImageFile(any(), any()))
-          .thenAnswer((_) async => 'https://example.com/avatar.jpg');
+      when(() => mockStorageService.uploadImageFile(any(), any())).thenAnswer(
+          (_) async => const ImageUploadResult(
+              imageUrl: 'https://example.com/avatar.jpg'));
 
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UserService>(mockUserService);
@@ -335,8 +336,9 @@ void main() {
             '/test/path/image.jpg'); // Mobile platform path, not blob
         when(() => mockImagePickerService.pickImage(ImageSource.gallery))
             .thenAnswer((_) async => mockFile);
-        when(() => mockStorageService.uploadImageFile(any(), any()))
-            .thenAnswer((_) async => 'https://example.com/new-avatar.jpg');
+        when(() => mockStorageService.uploadImageFile(any(), any())).thenAnswer(
+            (_) async => const ImageUploadResult(
+                imageUrl: 'https://example.com/new-avatar.jpg'));
 
         // Act
         final result = await viewModel.uploadAvatar();

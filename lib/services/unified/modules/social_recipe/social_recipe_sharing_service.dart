@@ -166,13 +166,14 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
       // Resolve group IDs to member user IDs
       final allMemberIds = <String>{};
-      final memberDisplayNames = <String, String>{};
 
       for (final groupId in groupIds) {
         final groupMembers = await _resolveGroupMembers(groupId);
         allMemberIds.addAll(groupMembers.keys);
-        memberDisplayNames.addAll(groupMembers);
       }
+
+      // Don't share with yourself
+      allMemberIds.remove(currentUserId);
 
       if (allMemberIds.isEmpty) {
         _setError(AppLocale.current.errorNoGroupMembersFound);

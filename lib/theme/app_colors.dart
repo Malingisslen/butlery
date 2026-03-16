@@ -47,8 +47,8 @@ class AppColors {
   /// Pale green - for hero image backgrounds (mockup --green-pale)
   static const Color greenPale = Color(0xFFE8F0EA);
 
-  /// Muted green - for navigation unselected items (mockup --green-muted)
-  static const Color greenMuted = Color(0xFF7A9A80);
+  /// Muted green - nav unselected (WCAG AA ≥4.6:1 on creamDarker)
+  static const Color greenMuted = Color(0xFF526A55);
 
   /// Card white - for elevated cards and surfaces
   static const Color cardWhite = Color(0xFFFFFFFF);
@@ -57,13 +57,13 @@ class AppColors {
   /// Dark text - primary text color (on light backgrounds)
   static const Color textDark = Color(0xFF1A1A1A);
 
-  /// Medium text - secondary text, descriptions (WCAG AA 4.5:1 on cream)
+  /// Medium text - secondary text (WCAG AA ≥4.6:1 on cream, ≥5.7:1 on white)
   static const Color textMedium = Color(0xFF666666);
 
   /// Placeholder icon color - for avatar/icon placeholders
   static const Color placeholderIcon = Color(0xFF4B5563);
 
-  /// Light text - tertiary text, placeholders (WCAG AA 4.54:1 on white)
+  /// Light text - tertiary text, placeholders (WCAG AA ≥4.5:1 on white — caution on cream)
   static const Color textLight = Color(0xFF767676);
   static const Color textTertiary = Color(0xFFD1D5DB);
   static const Color textSecondary = textMedium;
@@ -80,8 +80,11 @@ class AppColors {
   /// Success green - alias to forestGreen per design system
   static const Color success = forestGreen;
 
-  /// Warning warm gold per mockup
+  /// Warning warm gold per mockup (use for containers/icons only, NOT text)
   static const Color warning = Color(0xFFD4A03C);
+
+  /// Warning text color (WCAG AA on cream/white)
+  static const Color warningText = onWarningContainer;
 
   /// Error red - DISTINCT from rust, only for errors
   static const Color error = Color(0xFFC44536);
@@ -108,8 +111,8 @@ class AppColors {
   /// Divider color
   static const Color divider = Color(0xFFE5E7EB);
 
-  /// Recipe metadata text
-  static const Color recipeMeta = Color(0xFF757575);
+  /// Recipe metadata text (WCAG AA ≥4.6:1 on cream, ≥4.8:1 on white)
+  static const Color recipeMeta = Color(0xFF6B6B6B);
 
   /// Section header text
   static const Color sectionHeader = Color(0xFF374151);
@@ -155,8 +158,8 @@ class AppColors {
   static const Color neutralMedium = Color(0xFF9CA3AF);
   static const Color neutralDark = Color(0xFF1F2937);
 
-  // Shared recipe colors - updated for new palette
-  static const Color sharedRecipeText = Color(0xFF9CA3AF);
+  /// Shared recipe secondary text (WCAG AA ≥4.8:1 on backgroundTint)
+  static const Color sharedRecipeText = Color(0xFF6B7280);
   static const Color sharedRecipeIcon = Color(0xFFD1D5DB);
   static const Color sharedRecipeBackground = Color(0xFFFAF8F3);
 
@@ -204,7 +207,7 @@ class AppColors {
     surfaceContainerHighest: cardWhite,
     onSurfaceVariant: textMedium,
     // Outline
-    outline: divider,
+    outline: textLight,
     outlineVariant: Color(0xFFE8E4DC),
     // Shadow/Scrim
     shadow: Colors.black26,
@@ -256,7 +259,7 @@ class AppColors {
   static const Color secondaryContainer = Color(0xFFF5E6DC);
   static const Color onPrimaryContainer = forestGreenDark;
   static const Color onPrimary = cardWhite;
-  static const Color outline = divider;
+  static const Color outline = textLight;
   static const Color shadow = shadowColor;
   static const Color onSuccess = cardWhite;
   static const Color onError = cardWhite;

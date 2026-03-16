@@ -37,6 +37,7 @@ abstract final class FirestoreCollections {
   static const String userNotificationPreferences =
       'user_notification_preferences';
   static const String userFcmTokens = 'user_fcm_tokens';
+  static const String userDevices = 'user_devices';
   static const String unifiedShoppingLists = 'unified_shopping_lists';
   static const String unifiedSharedShoppingLists =
       'unified_shared_shopping_lists';
@@ -48,8 +49,6 @@ abstract final class FirestoreCollections {
   static const String butleryArchive = 'butlery_archive';
   static const String activityFeed = 'activity_feed';
   static const String reports = 'reports';
-  static const String notificationPreferencesLegacy =
-      'notification_preferences';
   static const String notificationHistory = 'notification_history';
   static const String notificationBatches = 'notification_batches';
 

@@ -267,8 +267,8 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildRecipeImage(BuildContext context,
       {double? size, double? width, double? height}) {
-    final imageUrls = recipe.imageUrls;
-    final hasImage = imageUrls.isNotEmpty;
+    final thumbnailOrImage = recipe.displayThumbnailUrl;
+    final hasImage = thumbnailOrImage != null;
     final imageSize = size ?? 64.0;
 
     return Container(
@@ -282,7 +282,7 @@ class RecipeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         child: hasImage
             ? SimpleImageWidget(
-                imageUrl: imageUrls.first,
+                imageUrl: thumbnailOrImage,
                 fit: BoxFit.cover,
                 // PERFORMANCE FIX: Use thumbnail config for 64x64 display
                 config: ImageConfig.thumbnail(
@@ -345,7 +345,6 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildMetadataRow(BuildContext context, {bool compact = false}) {
-    final cs = Theme.of(context).colorScheme;
     // UI Redesign: Text+dots format with optional rating pill
     final parts = <String>[];
 
@@ -372,10 +371,7 @@ class RecipeCard extends StatelessWidget {
           Flexible(
             child: Text(
               parts.join(' \u00B7 '),
-              style: AppTextStyles.labelSmall.copyWith(
-                color: cs.outline,
-                fontWeight: FontWeight.w400,
-              ),
+              style: AppTextStyles.recipeMeta,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

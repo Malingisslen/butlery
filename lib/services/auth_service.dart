@@ -12,6 +12,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/presence_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
 class AuthService extends ChangeNotifier
@@ -156,6 +161,7 @@ class AuthService extends ChangeNotifier
   Future<void> signOut() async {
     await executeAsync(() async {
       await _cleanupFcmTokens();
+      _resetSessionScopedServices();
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User signed out successfully');
@@ -169,6 +175,7 @@ class AuthService extends ChangeNotifier
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {
       await _cleanupFcmTokens();
+      _resetSessionScopedServices();
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User logged out due to session inactivity');
@@ -187,6 +194,7 @@ class AuthService extends ChangeNotifier
 
   Future<void> forceSignOut() async {
     try {
+      _resetSessionScopedServices();
       await _authRepository.signOut();
       _currentUser = null;
       clearError();
@@ -280,12 +288,34 @@ class AuthService extends ChangeNotifier
     }
   }
 
+  /// Reset session-scoped services before sign-out to prevent stale timers/data.
+  void _resetSessionScopedServices() {
+    try {
+      ServiceLocator.tryGet<PresenceService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning('PresenceService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<UnifiedRecipeService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning(
+          'UnifiedRecipeService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<NotificationService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning('NotificationService reset failed during sign-out: $e');
+    }
+  }
+
   /// Clean up FCM tokens before sign-out to prevent stale delivery.
   Future<void> _cleanupFcmTokens() async {
     try {
       final userId = _authRepository.currentUserId;
       if (userId != null) {
-        final tokenManager = FCMTokenManager(userId: userId);
+        final repository = ServiceLocator.get<NotificationsRepository>();
+        final tokenManager =
+            FCMTokenManager(userId: userId, repository: repository);
         await tokenManager.cleanup();
       }
     } catch (e) {

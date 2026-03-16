@@ -229,6 +229,7 @@ class RecipeSerialization {
       'rating': recipe.core.rating,
       'personalTagIds': recipe.core.personalTagIds,
       'imageUrls': recipe.core.imageUrls,
+      'thumbnailUrl': recipe.core.thumbnailUrl,
       'sourceUrl': recipe.core.sourceUrl,
       'exportedAt': DateTime.now().toIso8601String(),
       'exportFormat': 'butlery-simple-v1',
@@ -261,6 +262,7 @@ class RecipeSerialization {
         imageUrls: data['imageUrls'] is List
             ? List<String>.from(data['imageUrls'])
             : [],
+        thumbnailUrl: data['thumbnailUrl']?.toString(),
         sourceUrl: data['sourceUrl']?.toString(),
         createdBy: importedBy,
       ),
@@ -293,6 +295,9 @@ class RecipeSerialization {
     if (recipe.core.imageUrls.isNotEmpty) {
       compressed['img'] = recipe.core.imageUrls;
     }
+    if (recipe.core.thumbnailUrl != null) {
+      compressed['thu'] = recipe.core.thumbnailUrl;
+    }
     if (recipe.core.sourceUrl != null) {
       compressed['src'] = recipe.core.sourceUrl;
     }
@@ -320,6 +325,7 @@ class RecipeSerialization {
         imageUrls: compressed['img'] is List
             ? List<String>.from(compressed['img'])
             : [],
+        thumbnailUrl: compressed['thu']?.toString(),
         sourceUrl: compressed['src']?.toString(),
       ),
       type: RecipeType.values[(compressed['ty'] as int?).orZero()],

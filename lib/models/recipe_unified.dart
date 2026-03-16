@@ -147,6 +147,11 @@ class RecipeCore with JsonSerializableMixin {
 
   List<String> imageUrls;
 
+  /// URL of the pre-generated 300x300 thumbnail for this recipe's primary image.
+  /// Stored after upload to avoid downloading multi-MB originals in list views.
+  /// Null for recipes created before thumbnail tracking was added.
+  String? thumbnailUrl;
+
   final DateTime createdAt;
 
   DateTime updatedAt;
@@ -281,6 +286,7 @@ class RecipeCore with JsonSerializableMixin {
     required this.mealType,
     this.sourceUrl,
     List<String>? imageUrls,
+    this.thumbnailUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
     this.createdBy,
@@ -334,6 +340,7 @@ class RecipeCore with JsonSerializableMixin {
     String? mealType,
     String? sourceUrl,
     List<String>? imageUrls,
+    String? thumbnailUrl,
     DateTime? updatedAt,
     String? createdBy,
     bool? isPublic,
@@ -385,6 +392,7 @@ class RecipeCore with JsonSerializableMixin {
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       imageUrls: imageUrls ?? this.imageUrls,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       createdAt: createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
       createdBy: createdBy ?? this.createdBy,
@@ -408,6 +416,7 @@ class RecipeCore with JsonSerializableMixin {
   // Helper getters
   bool get hasImages => imageUrls.isNotEmpty;
   String? get primaryImageUrl => imageUrls.isNotEmpty ? imageUrls.first : null;
+  String? get displayThumbnailUrl => thumbnailUrl ?? primaryImageUrl;
   String get cookTimeText => timeMinutes != null
       ? AppLocale.current.recipeCookTimeMinutes(timeMinutes!)
       : '–';
@@ -438,6 +447,7 @@ class RecipeCore with JsonSerializableMixin {
         'mealType': mealType,
         'sourceUrl': sourceUrl,
         'imageUrls': imageUrls,
+        'thumbnailUrl': thumbnailUrl,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
         'createdBy': createdBy,
@@ -458,6 +468,7 @@ class RecipeCore with JsonSerializableMixin {
   Map<String, dynamic> toFirestore() => {
         'id': id,
         'title': title,
+        'titleLower': title.toLowerCase(),
         'description': description,
         'portions': portions,
         'timeMinutes': timeMinutes,
@@ -469,6 +480,7 @@ class RecipeCore with JsonSerializableMixin {
         'mealType': mealType,
         'sourceUrl': sourceUrl,
         'imageUrls': imageUrls,
+        'thumbnailUrl': thumbnailUrl,
         'createdAt': Timestamp.fromDate(createdAt),
         'updatedAt': Timestamp.fromDate(updatedAt),
         'createdBy': createdBy,
@@ -538,6 +550,7 @@ class RecipeCore with JsonSerializableMixin {
       mealType: json['mealType'] as String,
       sourceUrl: json['sourceUrl'] as String?,
       imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
+      thumbnailUrl: json['thumbnailUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       createdBy: json['createdBy'] as String?,
@@ -692,6 +705,8 @@ class RecipeCore with JsonSerializableMixin {
           defaultValue: 'Middag'),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
       imageUrls: utils.SerializationUtils.safeStringList(data, 'imageUrls'),
+      thumbnailUrl:
+          utils.SerializationUtils.safeNullableString(data, 'thumbnailUrl'),
       createdAt:
           utils.SerializationUtils.safeDateTime(data, 'createdAt').orNow(),
       updatedAt:
@@ -926,6 +941,7 @@ class Recipe {
   // Helper getters
   bool get hasImages => core.hasImages;
   String? get primaryImageUrl => core.primaryImageUrl;
+  String? get displayThumbnailUrl => core.displayThumbnailUrl;
   String get cookTimeText => core.cookTimeText;
   String? get lastCookedText => core.lastCookedText;
   TagResult? get tagResult => core.tagResult;

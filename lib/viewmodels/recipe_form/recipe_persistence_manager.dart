@@ -166,6 +166,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           final recipe = _state.createRecipe(
             recipeId: recipeId,
             imageUrls: validImageUrls,
+            thumbnailUrl: _imageManager.firstThumbnailUrl,
           );
 
           Recipe savedRecipe;

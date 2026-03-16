@@ -8,6 +8,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 // Import focused modules
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
@@ -40,20 +41,7 @@ class SocialRecipeOperations {
     required FirestoreRepository firestoreRepository,
   })  : _ratingsRepository = ratingsRepository,
         _firestoreRepository = firestoreRepository {
-    try {
-      final currentUserId = _parent.currentUserId;
-      if (currentUserId != null) {
-        _notificationService = NotificationService(
-          userId: currentUserId,
-        );
-        _notificationService?.initialize();
-      } else {
-        _notificationService = null;
-      }
-    } catch (e) {
-      AppLogger.warning('⚠️ Could not initialize notification service: $e');
-      _notificationService = null;
-    }
+    _notificationService = ServiceLocator.tryGet<NotificationService>();
     _sharingManager = RecipeSharingManager(_parent, _notificationService);
     _memberManager = RecipeMemberManager(_parent, _notificationService);
     _commentsManager = RecipeCommentsManager(_parent, _notificationService);
