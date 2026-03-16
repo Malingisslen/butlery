@@ -218,13 +218,9 @@ class RealtimeMenuOperations {
     AppLogger.info(
         '🤖 AI Menu Regeneration requested for category: $categoryName');
 
-    // FEATURE STUB: AI menu regeneration not yet implemented
-    AppLogger.warning('⚠️ AI menu regeneration is not yet available');
-
-    throw UnimplementedError(
-        'AI menu regeneration feature is planned for future release. '
-        'This will integrate with MenuService to provide AI-powered '
-        'category regeneration based on user preferences and dietary needs.');
+    // Feature not yet implemented — return gracefully instead of crashing
+    AppLogger.warning(
+        '⚠️ AI menu regeneration is not yet available for category: $categoryName');
   }
 
   /// Add multiple recipes to category

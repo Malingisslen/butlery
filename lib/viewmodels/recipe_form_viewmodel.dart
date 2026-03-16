@@ -328,27 +328,32 @@ class RecipeFormViewModel extends ChangeNotifier
     );
   }
 
-  void _initializeManagerErrorCoordination() {
-    _state.addListener(() {
-      if (_state.hasError) {
-        reportError(
-          source: ErrorSource.formValidation,
-          message: _state.error!,
-          severity: ErrorSeverity.medium,
-        );
-      }
-    });
+  void _onStateError() {
+    if (_disposed) return;
+    if (_state.hasError) {
+      reportError(
+        source: ErrorSource.formValidation,
+        message: _state.error!,
+        severity: ErrorSeverity.medium,
+      );
+    }
+  }
 
-    _imageManager.addListener(() {
-      if (_imageManager.hasImageUploadError) {
-        reportError(
-          source: ErrorSource.imageUpload,
-          message: _imageManager.imageUploadError!,
-          severity: ErrorSeverity.high,
-          actions: [ErrorRecoveryAction.retry, ErrorRecoveryAction.ignore],
-        );
-      }
-    });
+  void _onImageError() {
+    if (_disposed) return;
+    if (_imageManager.hasImageUploadError) {
+      reportError(
+        source: ErrorSource.imageUpload,
+        message: _imageManager.imageUploadError!,
+        severity: ErrorSeverity.high,
+        actions: [ErrorRecoveryAction.retry, ErrorRecoveryAction.ignore],
+      );
+    }
+  }
+
+  void _initializeManagerErrorCoordination() {
+    _state.addListener(_onStateError);
+    _imageManager.addListener(_onImageError);
   }
 
   UnifiedErrorCoordinator get errorCoordinator => _errorCoordinator;
@@ -569,6 +574,11 @@ class RecipeFormViewModel extends ChangeNotifier
   void dispose() {
     _disposed = true;
     clearComponentErrors();
+
+    // Remove error coordination listeners before disposing managers
+    _state.removeListener(_onStateError);
+    _imageManager.removeListener(_onImageError);
+
     // CRITICAL: Cancel uploads FIRST to prevent race condition crashes
     _imageManager.cancelAllUploads();
 

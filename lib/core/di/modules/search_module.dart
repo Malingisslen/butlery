@@ -38,41 +38,14 @@ class SearchModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     try {
-      final featureFlags = container.isRegistered<FeatureFlagService>()
-          ? container<FeatureFlagService>()
-          : null;
-
-      final useAlgolia =
-          featureFlags?.isEnabled(FeatureFlags.enableAlgoliaSearch) ?? false;
-
-      if (useAlgolia) {
-        // Try to configure Algolia
-        const appId = String.fromEnvironment('ALGOLIA_APP_ID');
-        const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
-
-        if (appId.isNotEmpty && apiKey.isNotEmpty) {
-          container.registerLazySingleton<SearchRepository>(
-            () => AlgoliaSearchRepository(
-              appId: appId,
-              apiKey: apiKey,
-            ),
-          );
-          AppLogger.info('SearchModule: Using Algolia search provider');
-        } else {
-          // Algolia enabled but credentials missing, fall back
-          AppLogger.warning(
-              'SearchModule: Algolia enabled but credentials missing, using Firestore');
-          container.registerLazySingleton<SearchRepository>(
-            () => FirestoreSearchRepository(),
-          );
-        }
-      } else {
-        // Algolia disabled, use Firestore fallback
-        container.registerLazySingleton<SearchRepository>(
-          () => FirestoreSearchRepository(),
-        );
-        AppLogger.info('SearchModule: Using Firestore search provider');
-      }
+      // Always register Firestore search as the default provider.
+      // Feature flags (Remote Config) are not yet fetched at configure() time,
+      // so we defer the Algolia swap to initialize().
+      container.registerLazySingleton<SearchRepository>(
+        () => FirestoreSearchRepository(),
+      );
+      AppLogger.info(
+          'SearchModule: Registered default Firestore search provider');
     } catch (e) {
       throw DIModuleException(
         name,
@@ -87,9 +60,39 @@ class SearchModule implements DIModule {
   Future<void> initialize() async {
     try {
       final container = GetIt.instance;
-      final searchRepository = container<SearchRepository>();
 
-      // Perform health check
+      // Now that Remote Config has been fetched, check the feature flag
+      // and swap to Algolia if enabled and credentials are available.
+      final featureFlags = container.isRegistered<FeatureFlagService>()
+          ? container<FeatureFlagService>()
+          : null;
+
+      final useAlgolia =
+          featureFlags?.isEnabled(FeatureFlags.enableAlgoliaSearch) ?? false;
+
+      if (useAlgolia) {
+        const appId = String.fromEnvironment('ALGOLIA_APP_ID');
+        const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
+
+        if (appId.isNotEmpty && apiKey.isNotEmpty) {
+          // Unregister default Firestore provider and register Algolia
+          container.unregister<SearchRepository>();
+          container.registerLazySingleton<SearchRepository>(
+            () => AlgoliaSearchRepository(
+              appId: appId,
+              apiKey: apiKey,
+            ),
+          );
+          AppLogger.info(
+              'SearchModule: Switched to Algolia search provider (feature flag)');
+        } else {
+          AppLogger.warning(
+              'SearchModule: Algolia enabled but credentials missing, keeping Firestore');
+        }
+      }
+
+      // Perform health check on whichever provider is active
+      final searchRepository = container<SearchRepository>();
       final isHealthy = await searchRepository.healthCheck();
       if (!isHealthy) {
         AppLogger.warning('SearchModule: Search provider health check failed');

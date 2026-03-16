@@ -24,6 +24,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 class RealtimeMenuViewModel extends ChangeNotifier {
   final RealtimeMenuService _menuService;
+  bool _isDisposed = false;
 
   late final RealtimeMenuState _state;
   late final RealtimeStreamManager _streamManager;
@@ -32,6 +33,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   late final OptimisticUpdateManager _optimisticManager;
   late final ParticipantTracker _participantTracker;
   late final ConnectionMonitor _connectionMonitor;
+  late final VoidCallback _onStateChanged;
 
   RealtimeMenuViewModel({
     required RealtimeMenuService menuService,
@@ -65,7 +67,10 @@ class RealtimeMenuViewModel extends ChangeNotifier {
       participantTracker: _participantTracker,
     );
 
-    _state.addListener(() => notifyListeners());
+    _onStateChanged = () {
+      if (!_isDisposed) notifyListeners();
+    };
+    _state.addListener(_onStateChanged);
     _initialize();
   }
 
@@ -401,12 +406,14 @@ class RealtimeMenuViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _isDisposed = true;
     AppLogger.info('🗑️ RealtimeMenuViewModel disposing...');
 
     _streamManager.dispose();
     _menuService.removeListener(_onServiceStateChanged);
 
-    // Dispose focused modules
+    // Remove listener before disposing state
+    _state.removeListener(_onStateChanged);
     _state.dispose();
 
     // Dispose legacy managers

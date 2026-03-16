@@ -90,20 +90,32 @@ class DebouncedSyncOperations {
     AppLogger.debug(
         'Syncing ${recipesToSync.length} pending recipes to Firebase');
 
-    final syncFutures = recipesToSync.map((recipeId) => _syncRecipeToFirebase(
-          recipeId: recipeId,
-          recipeLoader: recipeLoader,
-          currentUserId: currentUserId,
-        ));
+    final failedIds = <String>[];
 
-    try {
-      await Future.wait(syncFutures);
+    // Sync each recipe individually to track per-recipe failures
+    await Future.wait(
+      recipesToSync.map((recipeId) async {
+        try {
+          await _syncRecipeToFirebase(
+            recipeId: recipeId,
+            recipeLoader: recipeLoader,
+            currentUserId: currentUserId,
+          );
+        } catch (e) {
+          AppLogger.error('❌ Error syncing recipe $recipeId: $e');
+          failedIds.add(recipeId);
+        }
+      }),
+    );
+
+    if (failedIds.isEmpty) {
       AppLogger.success(
           '✅ Successfully synced ${recipesToSync.length} recipes');
-    } catch (e) {
-      AppLogger.error('❌ Error syncing recipes: $e');
-      // Re-add failed syncs back to pending
-      pendingSyncIds.addAll(recipesToSync);
+    } else {
+      AppLogger.warning(
+          '⚠️ ${failedIds.length}/${recipesToSync.length} recipes failed to sync');
+      // Only re-add the ones that actually failed
+      pendingSyncIds.addAll(failedIds);
     }
   }
 
@@ -158,14 +170,11 @@ class DebouncedSyncOperations {
     required Recipe recipe,
   }) async {
     try {
-      // Collaborative recipe synchronization using specialized repository patterns
-      // Currently deferred pending collaborative repository integration
-      AppLogger.debug(
-          'Collaborative recipe sync: ${recipe.title} (specialized sync in development)');
+      // Sync collaborative recipes through the same repository
+      // until dedicated collaborative repository is integrated
+      final recipeRepository = GetIt.instance<RecipeRepository>();
+      await recipeRepository.update(recipe);
 
-      // NOTE: Collaborative recipe sync requires RealtimeRecipe conversion
-      // Will be implemented when collaborative editing is fully integrated
-      // final collaborativeRepository = GetIt.instance<CollaborativeRecipeRepository>();
       AppLogger.debug('Collaborative recipe synced: ${recipe.title}');
     } catch (e) {
       AppLogger.error(

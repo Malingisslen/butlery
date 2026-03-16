@@ -30,11 +30,14 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final MenuService _menuService;
   final AnalyticsService _analyticsService;
 
+  bool _isDisposed = false;
+
   // Modules
   late final MenuStateManager _stateManager;
   late final MenuGenerator _generator;
   late final MenuStorage _storage;
   late final MenuSocialManager _socialManager;
+  late final VoidCallback _onStateChanged;
   MenuViewModel({
     UnifiedRecipeService? recipeService,
     MenuService? menuService,
@@ -57,7 +60,10 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     // Forward state manager notifications
-    _stateManager.addListener(() => notifyListeners());
+    _onStateChanged = () {
+      if (!_isDisposed) notifyListeners();
+    };
+    _stateManager.addListener(_onStateChanged);
 
     // Listen to recipe service changes
     _recipeService.addListener(_onRecipesChanged);
@@ -558,6 +564,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// all recipe availability changes are immediately reflected in menu generation capabilities
   /// for consistent user experience and real-time recipe status updates.
   void _onRecipesChanged() {
+    if (_isDisposed) return;
     notifyListeners();
   }
 
@@ -601,6 +608,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// in dynamic menu management scenarios with ViewModel creation and disposal.
   @override
   void dispose() {
+    _isDisposed = true;
+    _stateManager.removeListener(_onStateChanged);
     _stateManager.dispose();
     _recipeService.removeListener(_onRecipesChanged);
     super.dispose();

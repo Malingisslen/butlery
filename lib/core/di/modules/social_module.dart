@@ -31,6 +31,7 @@ import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -198,6 +199,9 @@ class SocialModule implements DIModule {
           final authRepo = container<AuthRepository>();
           final userService = container<UserService>();
 
+          final menuService = container<UnifiedMenuService>();
+          final firestoreRepo = container<FirestoreRepository>();
+
           return SocialMenuCoordinator(
             getCurrentUserId: () => authRepo.currentUserId,
             getCurrentUserDisplayName: () =>
@@ -206,13 +210,11 @@ class SocialModule implements DIModule {
                 AppLogger.error('SocialMenuCoordinator error: $error'),
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getMenu: (id) async {
-              // TODO(social-phase-2): implement when UnifiedMenuService.getById is available
-              throw UnimplementedError(
-                  'SocialMenuCoordinator.getMenu not yet implemented');
+              final sharedMenu = menuService.getMenuById(id);
+              return sharedMenu?.menuSnapshot;
             },
             saveMenu: (Map<String, List<Recipe>> menu) async {
               try {
-                final firestoreRepo = container<FirestoreRepository>();
                 final userId = authRepo.currentUserId;
                 final displayName =
                     userService.currentUserProfile?.displayName ??
@@ -256,6 +258,8 @@ class SocialModule implements DIModule {
           final authRepo = container<AuthRepository>();
           final userService = container<UserService>();
 
+          final shoppingService = container<UnifiedShoppingService>();
+
           return SocialShoppingCoordinator(
             getCurrentUserId: () => authRepo.currentUserId,
             getCurrentUserDisplayName: () =>
@@ -264,14 +268,14 @@ class SocialModule implements DIModule {
                 AppLogger.error('SocialShoppingCoordinator error: $error'),
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getShoppingList: (id) async {
-              // TODO(social-phase-2): implement when UnifiedShoppingService.getById is available
-              throw UnimplementedError(
-                  'SocialShoppingCoordinator.getShoppingList not yet implemented');
+              return shoppingService.lists.where((l) => l.id == id).firstOrNull;
             },
             saveShoppingList: (list) async {
-              // TODO(social-phase-2): implement when UnifiedShoppingService.save is available
-              throw UnimplementedError(
-                  'SocialShoppingCoordinator.saveShoppingList not yet implemented');
+              // Shopping lists use direct collaboration (joinSharedShoppingList)
+              // so this save path is not expected to be reached
+              AppLogger.warning(
+                  '⚠️ SocialShoppingCoordinator.saveShoppingList called unexpectedly for list: ${list.name}');
+              return null;
             },
             cacheHelper: container<JsonCacheHelper>(),
           );

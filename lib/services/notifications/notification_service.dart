@@ -61,10 +61,11 @@ class NotificationService extends BaseService {
   late NotificationPreferenceManager _preferenceManager;
   late NotificationOfflineManager _offlineManager;
   late NotificationBatchManager _batchManager;
-  late FCMTokenManager _tokenManager;
+  FCMTokenManager? _tokenManager;
   late NotificationAnalyticsManager _analyticsManager;
 
   bool _isInitialized = false;
+  bool _modulesCreated = false;
 
   NotificationService({
     required interface_repo.NotificationsRepository notificationsRepository,
@@ -81,6 +82,7 @@ class NotificationService extends BaseService {
   /// Initialize modules for the current authenticated user.
   /// Called on first [onInitialize] or after [resetForLogout].
   void _initializeModules() {
+    if (_modulesCreated) return;
     final userId = _userId;
 
     _contentManager = NotificationContentManager(
@@ -103,14 +105,31 @@ class NotificationService extends BaseService {
       sendBatchCallback: _sendBatchedNotification,
     );
 
-    _tokenManager = FCMTokenManager(
-      userId: userId,
-      repository: _deviceRepository,
-    );
+    // FCMTokenManager accesses FirebaseMessaging.instance in its constructor,
+    // which may not be available (e.g. web, tests). Other modules still work.
+    try {
+      _tokenManager = FCMTokenManager(
+        userId: userId,
+        repository: _deviceRepository,
+      );
+    } catch (e) {
+      _tokenManager = null;
+      AppLogger.warning('FCMTokenManager unavailable: $e');
+    }
 
     _analyticsManager = NotificationAnalyticsManager(
       userId: userId,
     );
+
+    _modulesCreated = true;
+  }
+
+  /// Ensure modules are created even if full [onInitialize] hasn't run.
+  /// Allows methods like [getPreferences] to work before full FCM setup.
+  void _ensureModulesCreated() {
+    if (!_modulesCreated) {
+      _initializeModules();
+    }
   }
 
   /// Initialize the notification service
@@ -136,12 +155,12 @@ class NotificationService extends BaseService {
           onMessageOpenedApp: _handleMessageOpened,
         );
 
-        // Initialize FCM token manager
-        await _tokenManager.initialize();
+        // Initialize FCM token manager (may be null if Firebase unavailable)
+        await _tokenManager?.initialize();
 
         // Subscribe to user-specific topics based on preferences
         final preferences = await _preferenceManager.getPreferences();
-        await _tokenManager.updateTopicSubscriptions(preferences);
+        await _tokenManager?.updateTopicSubscriptions(preferences);
 
         // Process any pending batches
         await _batchManager.processAllPendingBatches();
@@ -168,6 +187,7 @@ class NotificationService extends BaseService {
     String? imageUrl,
     List<NotificationAction>? actions,
   }) async {
+    _ensureModulesCreated();
     try {
       await safeExecute(
         () async {
@@ -263,6 +283,7 @@ class NotificationService extends BaseService {
     Map<String, dynamic>? additionalData,
     String? imageUrl,
   }) async {
+    _ensureModulesCreated();
     await safeExecute(
       () async {
         AppLogger.info(
@@ -319,6 +340,7 @@ class NotificationService extends BaseService {
     required List<Map<String, String>> activityList,
     Map<String, dynamic>? additionalData,
   }) async {
+    _ensureModulesCreated();
     // Digest notifications are not critical, don't rethrow errors
     await safeExecute(
       () async {
@@ -370,6 +392,7 @@ class NotificationService extends BaseService {
 
   /// Check if user should receive notification based on quiet hours
   Future<bool> isInQuietHours(String targetUserId) async {
+    _ensureModulesCreated();
     return await _preferenceManager.isInQuietHours();
   }
 
@@ -429,9 +452,10 @@ class NotificationService extends BaseService {
 
   /// Update topic subscriptions based on user preferences
   Future<void> updateTopicSubscriptions() async {
+    _ensureModulesCreated();
     try {
       final preferences = await _preferenceManager.getPreferences();
-      await _tokenManager.updateTopicSubscriptions(preferences);
+      await _tokenManager?.updateTopicSubscriptions(preferences);
       AppLogger.success('✅ Updated topic subscriptions');
     } catch (e) {
       AppLogger.error('❌ Failed to update topic subscriptions', e);
@@ -526,44 +550,53 @@ class NotificationService extends BaseService {
 
   /// Update online status
   void setOnlineStatus(bool isOnline) {
+    _ensureModulesCreated();
     _offlineManager.setOnlineStatus(isOnline);
   }
 
   /// Get notification preferences for current user
   Future<NotificationPreferences> getPreferences() async {
+    _ensureModulesCreated();
     return await _preferenceManager.getPreferences();
   }
 
   /// Update notification preferences for current user
   Future<void> updatePreferences(NotificationPreferences preferences) async {
+    _ensureModulesCreated();
     await _preferenceManager.updatePreferences(preferences);
   }
 
   /// Get current FCM token
   Future<String?> getCurrentToken() async {
-    return await _tokenManager.getCurrentToken();
+    _ensureModulesCreated();
+    return await _tokenManager?.getCurrentToken();
   }
 
   /// Get notification analytics summary
   Future<Map<String, dynamic>> getAnalyticsSummary() async {
+    _ensureModulesCreated();
     return await _analyticsManager.getUserEngagementSummary();
   }
 
   /// Get offline queue statistics
   Map<String, dynamic> getOfflineQueueStats() {
+    _ensureModulesCreated();
     return _offlineManager.getQueueStatistics();
   }
 
   Map<String, dynamic> getBatchStats() {
+    _ensureModulesCreated();
     return _batchManager.getBatchStatistics();
   }
 
   /// Reset state for logout. Allows re-initialization for a new user session.
   Future<void> resetForLogout() async {
-    if (!_isInitialized) return;
+    // Guard on _modulesCreated (not _isInitialized) because modules may have
+    // been lazily created via _ensureModulesCreated() without full FCM init.
+    if (!_modulesCreated) return;
 
     try {
-      await _tokenManager.cleanup();
+      await _tokenManager?.cleanup();
       await _disposeModules();
       AppLogger.info('🔔 NotificationService reset for logout');
     } catch (e) {
@@ -573,6 +606,7 @@ class NotificationService extends BaseService {
 
   @override
   Future<void> onDispose() async {
+    if (!_modulesCreated) return;
     try {
       AppLogger.info('🔔 Disposing NotificationService coordinator...');
       await _disposeModules();
@@ -585,9 +619,10 @@ class NotificationService extends BaseService {
   Future<void> _disposeModules() async {
     _batchManager.dispose();
     _offlineManager.dispose();
-    _tokenManager.dispose();
+    _tokenManager?.dispose();
     await _analyticsManager.dispose();
     _preferenceManager.dispose();
     _isInitialized = false;
+    _modulesCreated = false;
   }
 }

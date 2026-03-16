@@ -178,7 +178,11 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       onConnectivityChanged: () {
         refreshSyncState();
       },
-      onReconnected: () => _syncManager.syncPendingChanges(isOnline: isOnline),
+      onReconnected: () {
+        if (_isSyncManagerReady) {
+          _syncManager.syncPendingChanges(isOnline: isOnline);
+        }
+      },
     );
 
     await _initialization.initialize();
