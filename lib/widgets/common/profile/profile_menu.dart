@@ -7,6 +7,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -322,25 +323,13 @@ class _ProfileMenuState extends State<ProfileMenu> {
         color: cs.surface,
       ),
       child: hasImage
-          ? ClipRRect(
+          ? NetworkImageWidget(
+              imageUrl: widget.userImageUrl!,
+              width: avatarSize,
+              height: avatarSize,
+              fit: BoxFit.cover,
               borderRadius: BorderRadius.zero,
-              child: Image.network(
-                widget.userImageUrl!,
-                width: avatarSize,
-                height: avatarSize,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return const SizedBox(
-                    width: avatarSize,
-                    height: avatarSize,
-                    child: Center(
-                        child: CircularProgressIndicator(strokeWidth: 2)),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildInitialsAvatar(context, avatarSize),
-              ),
+              errorWidget: _buildInitialsAvatar(context, avatarSize),
             )
           : _buildInitialsAvatar(context, avatarSize),
     );

@@ -196,7 +196,7 @@ void main() {
     });
 
     group('Navigation Handling', () {
-      test('should navigate based on notification type', () {
+      test('should navigate based on notification type', () async {
         // Arrange
         final testCases = [
           {'type': 'friend_request', 'expectedRoute': '/friends'},
@@ -209,31 +209,28 @@ void main() {
         for (final testCase in testCases) {
           when(() => mockMessage.data).thenReturn(testCase);
 
-          // Navigation requires real BuildContext, testing with null
-          expect(() {
-            FCMService.handleNotificationNavigation(mockMessage, null);
-          }, returnsNormally);
+          // Navigation requires navigator key, testing without one
+          await expectLater(
+              FCMService.handleNotificationNavigation(mockMessage), completes);
         }
       });
 
-      test('should handle navigation without context', () {
+      test('should handle navigation without context', () async {
         // Arrange
         when(() => mockMessage.data).thenReturn({'type': 'test'});
 
         // Act & Assert
-        expect(() {
-          FCMService.handleNotificationNavigation(mockMessage, null);
-        }, returnsNormally);
+        await expectLater(
+            FCMService.handleNotificationNavigation(mockMessage), completes);
       });
 
-      test('should handle unknown notification types', () {
+      test('should handle unknown notification types', () async {
         // Arrange
         when(() => mockMessage.data).thenReturn({'type': 'unknown_type'});
 
         // Act & Assert
-        expect(() {
-          FCMService.handleNotificationNavigation(mockMessage, null);
-        }, returnsNormally);
+        await expectLater(
+            FCMService.handleNotificationNavigation(mockMessage), completes);
       });
     });
 
