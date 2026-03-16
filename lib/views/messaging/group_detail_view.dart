@@ -221,6 +221,7 @@ class ConversationGroupDetailView extends StatelessWidget {
             labelText: context.l10n.messagingGroupName,
             hintText: context.l10n.messagingEnterNewGroupName,
           ),
+          maxLength: 50,
           autofocus: true,
         ),
         actions: [

@@ -147,6 +147,12 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       );
     }
 
+    if (content.length > 2000) {
+      throw SecurityViolationException(
+        'Comment content exceeds maximum length of 2000 characters',
+      );
+    }
+
     // Get the actual display name from the current user
     final displayName = authRepository.currentUser?.displayName ?? 'Anonymous';
 
@@ -223,6 +229,12 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     if (newContent.trim().isEmpty) {
       throw SecurityViolationException(
         'Comment content cannot be empty',
+      );
+    }
+
+    if (newContent.length > 2000) {
+      throw SecurityViolationException(
+        'Comment content exceeds maximum length of 2000 characters',
       );
     }
 
