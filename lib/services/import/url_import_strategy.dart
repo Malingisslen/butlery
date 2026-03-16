@@ -164,11 +164,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       _logImportEvent(url, domain, null, false, stopwatch);
       return _createFailureResult(url, bestHtml);
     } catch (e) {
+      AppLogger.error('URL import failed', e);
       return ImportResult.failure(
-        'Error importing from URL: ${e.toString()}',
+        'Could not import recipe from URL. Please try again.',
         metadata: {
           'strategy': strategyName,
-          'error_type': e.runtimeType.toString(),
         },
       );
     }

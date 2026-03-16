@@ -64,7 +64,7 @@ class NotificationContentManager {
       String targetUserId, NotificationStrategy strategy) {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final random = Random().nextInt(1000);
+      final random = Random.secure().nextInt(1000);
       final id =
           '${strategy.category.name}_${targetUserId}_${timestamp}_$random';
 
