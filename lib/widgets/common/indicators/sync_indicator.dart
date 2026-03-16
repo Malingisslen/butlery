@@ -151,7 +151,7 @@ class _SyncIndicatorState extends State<SyncIndicator>
     return switch (status) {
       SyncStatus.synced => 'Data synkroniserad',
       SyncStatus.pendingWrites => 'Sparar till servern',
-      SyncStatus.offline => 'Offline-lage',
+      SyncStatus.offline => 'Offline-läge',
     };
   }
 }

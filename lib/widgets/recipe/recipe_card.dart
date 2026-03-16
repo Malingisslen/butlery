@@ -79,7 +79,7 @@ class RecipeCard extends StatelessWidget {
 
     return RepaintBoundary(
       child: Semantics(
-        label: 'Recipe: ${recipe.title}',
+        label: 'Recept: ${recipe.title}',
         child: Container(
           margin:
               margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
@@ -387,17 +387,20 @@ class RecipeCard extends StatelessWidget {
   Widget _buildRatingPill(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: cs.primary,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
-      ),
-      child: Text(
-        '\u2605 ${recipe.rating!.toStringAsFixed(1)}',
-        style: AppTextStyles.badge.copyWith(
-          color: cs.onPrimary,
-          fontWeight: FontWeight.w600,
+    return Semantics(
+      label: 'Betyg: ${recipe.rating!.toStringAsFixed(1)}',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: cs.primary,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+        ),
+        child: Text(
+          '\u2605 ${recipe.rating!.toStringAsFixed(1)}',
+          style: AppTextStyles.badge.copyWith(
+            color: cs.onPrimary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
