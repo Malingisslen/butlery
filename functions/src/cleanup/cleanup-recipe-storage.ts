@@ -59,6 +59,16 @@ export const onRecipeDeleted = functions
         continue;
       }
 
+      // Path traversal protection: reject paths containing ../ sequences
+      // that could escape the user's directory after URL decoding
+      if (filePath.includes("..") || filePath.includes("//")) {
+        functions.logger.warn(
+          `Path traversal attempt blocked: ${filePath}`
+        );
+        failedCount++;
+        continue;
+      }
+
       // Validate the file belongs to this user
       if (!filePath.startsWith(`users/${userId}/`)) {
         functions.logger.warn(

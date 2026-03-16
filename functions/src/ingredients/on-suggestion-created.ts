@@ -11,6 +11,12 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as crypto from "crypto";
+
+/** Hash userId for GDPR-safe logging (dietary prefs = special category data). */
+function hashUserId(uid: string): string {
+  return crypto.createHash("sha256").update(uid).digest("hex").substring(0, 12);
+}
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
@@ -48,14 +54,11 @@ export const onSuggestionCreated = functions.firestore
     const suggestion = snapshot.data() as IngredientSuggestion;
 
     functions.logger.info(
-      `📥 New ingredient suggestion received: "${suggestion.ingredientName}"`,
+      `📥 New ingredient suggestion received`,
       {
         suggestionId,
-        userId: suggestion.userId,
-        ingredientName: suggestion.ingredientName,
-        originalName: suggestion.originalName,
+        userHash: hashUserId(suggestion.userId),
         suggestedCategory: suggestion.suggestedCategory,
-        recipeContext: suggestion.recipeContext,
       }
     );
 
@@ -73,7 +76,6 @@ export const onSuggestionCreated = functions.firestore
       functions.logger.info(
         `✅ Suggestion processed: ${suggestionId}`,
         {
-          ingredientName: suggestion.ingredientName,
           status: "notification_sent",
         }
       );
@@ -117,22 +119,18 @@ export const onSuggestionStatusChanged = functions.firestore
       `📋 Suggestion status changed: ${before.status} → ${after.status}`,
       {
         suggestionId,
-        ingredientName: after.ingredientName,
         oldStatus: before.status,
         newStatus: after.status,
-        reviewedBy: after.reviewedBy,
       }
     );
 
     // If approved, log for ingredient sync
     if (after.status === "approved") {
       functions.logger.info(
-        `✅ Suggestion approved for addition: "${after.ingredientName}"`,
+        `✅ Suggestion approved for addition`,
         {
           suggestionId,
-          ingredientName: after.ingredientName,
           suggestedCategory: after.suggestedCategory,
-          suggestedProperties: after.suggestedProperties,
         }
       );
     }

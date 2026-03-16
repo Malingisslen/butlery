@@ -29,6 +29,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
@@ -213,11 +214,11 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         ),
       );
     } catch (e) {
+      AppLogger.error('Photo import failed', e);
       return ImportResult.failure(
-        'Photo import error: ${e.toString()}',
+        'Could not extract recipe from photo. Please try again.',
         metadata: {
           'strategy': strategyName,
-          'error_type': e.runtimeType.toString(),
         },
       );
     }

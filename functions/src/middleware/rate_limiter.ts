@@ -120,6 +120,8 @@ function getConfig(operationType: string): RateLimitConfig {
 
 /**
  * Get Firestore reference for rate limit document.
+ * Stored under system_rate_limits/ (not user subcollection) so clients cannot
+ * reset their own limits by deleting documents.
  */
 function getRateLimitRef(
   userId: string,
@@ -127,10 +129,8 @@ function getRateLimitRef(
 ): admin.firestore.DocumentReference {
   return admin
     .firestore()
-    .collection("users")
-    .doc(userId)
-    .collection("rateLimits")
-    .doc(operationType);
+    .collection("system_rate_limits")
+    .doc(`${userId}_${operationType}`);
 }
 
 /**
@@ -307,9 +307,9 @@ export async function checkGlobalLimit(): Promise<boolean> {
 
     return result;
   } catch (error) {
-    // Fail open on error — don't block users due to counter issues
-    functions.logger.warn("Global limit check failed, allowing request:", error);
-    return true;
+    // Fail closed on error — deny request to prevent abuse bypass
+    functions.logger.error("Global limit check failed, denying request:", error);
+    return false;
   }
 }
 

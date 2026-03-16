@@ -56,12 +56,12 @@ class AuthService extends ChangeNotifier
       },
       onError: (error) {
         final code = error is FirebaseAuthException ? error.code : '';
-        if (code == 'user-token-expired' || code == 'invalid-user-token') {
-          AppLogger.warning('Auth token expired — forcing sign out: $error');
-          forceSignOut();
-        } else {
-          AppLogger.debug('Auth state stream error (non-blocking): $error');
-        }
+        AppLogger.warning('Auth state stream error (code: $code): $error');
+        // Invalidate session on any auth stream error to prevent
+        // fake-authenticated state where UI shows logged-in but session is broken
+        _currentUser = null;
+        notifyListeners();
+        forceSignOut();
       },
     );
   }
@@ -203,14 +203,24 @@ class AuthService extends ChangeNotifier
   }
 
   Future<void> forceSignOut() async {
+    // Clean up FCM tokens before sign-out to prevent stale push notifications.
+    // Done first and independently so sign-out proceeds even if cleanup fails.
+    try {
+      await ServiceLocator.tryGet<NotificationService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning('FCM token cleanup failed during force sign-out: $e');
+    }
+
     try {
       _resetSessionScopedServices();
       await _authRepository.signOut();
-      _currentUser = null;
-      clearError();
-      AppLogger.info('Force sign out completed');
     } catch (e) {
       AppLogger.error('Force sign out error: $e');
+    } finally {
+      _currentUser = null;
+      clearError();
+      notifyListeners();
+      AppLogger.info('Force sign out completed');
     }
   }
 

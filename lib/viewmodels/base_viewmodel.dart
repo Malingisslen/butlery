@@ -68,6 +68,7 @@
 // lib/viewmodels/base_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Comprehensive foundational ViewModel base class providing advanced MVVM architecture and state management for Flutter applications.
 /// Serves as the foundation for all ViewModels in the application, providing essential MVVM patterns including
@@ -180,9 +181,9 @@ abstract class BaseViewModel extends ChangeNotifier {
       setLoading(false);
       return result;
     } catch (e) {
-      final errorMessage =
-          errorPrefix != null ? '$errorPrefix: ${e.toString()}' : e.toString();
-      setError(errorMessage);
+      // Log full technical details but only show the prefix to users
+      AppLogger.error(errorPrefix ?? 'Async operation failed', e);
+      setError(errorPrefix ?? 'Ett oväntat fel uppstod');
       rethrow;
     }
   }
@@ -218,9 +219,9 @@ abstract class BaseViewModel extends ChangeNotifier {
       setLoading(false);
       return true;
     } catch (e) {
-      final errorMessage =
-          errorPrefix != null ? '$errorPrefix: ${e.toString()}' : e.toString();
-      setError(errorMessage);
+      // Log full technical details but only show the prefix to users
+      AppLogger.error(errorPrefix ?? 'Async void operation failed', e);
+      setError(errorPrefix ?? 'Ett oväntat fel uppstod');
       return false;
     }
   }
