@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
@@ -189,7 +190,7 @@ class OCRExtractionService extends BaseService {
   final Map<String, OCRResult> _cache = {};
   static const int _maxCacheSize = 100;
   static const Duration _cacheExpiry = Duration(hours: 24);
-  static const int _maxImageSize = 10 * 1024 * 1024;
+  static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
   static const double _minConfidenceThreshold = 0.6;
 
   // Getters with test dependency injection support
@@ -487,7 +488,7 @@ class OCRExtractionService extends BaseService {
       recommendations.add(AppLocale.current.ocrCompressImage);
       qualityScore -= 0.2;
     }
-    if (imageBytes.length < 50 * 1024) {
+    if (imageBytes.length < UploadConstants.minOcrImageBytes) {
       issues.add(AppLocale.current.ocrImageTooSmall);
       recommendations.add(AppLocale.current.ocrUseHigherResolution);
       qualityScore -= 0.3;

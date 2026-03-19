@@ -43,7 +43,6 @@ class PersonalRecipeModule with StreamManagementMixin {
   final JsonCacheHelper Function() _getCacheHelper;
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
-  bool _disposed = false;
   final void Function(String) _setError;
   final void Function() _notifyListeners;
   final RecipeServiceAdapter Function() _getServiceAdapter;
@@ -733,7 +732,7 @@ class PersonalRecipeModule with StreamManagementMixin {
     // Use Future.microtask to ensure this runs asynchronously without blocking
     Future.microtask(() async {
       // Guard: abort if module was disposed while microtask was queued
-      if (_disposed) return;
+      if (isStreamDisposed) return;
 
       // Guard: abort if user changed (logout/switch) since sync was queued
       if (_getCurrentUserId() != startingUserId || startingUserId == null) {
@@ -855,7 +854,6 @@ class PersonalRecipeModule with StreamManagementMixin {
 
   /// Cancels all pending retry timers. Call on dispose.
   void cancelPendingRetries() {
-    _disposed = true;
     disposeStreamResources();
   }
 

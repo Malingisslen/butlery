@@ -186,7 +186,7 @@ class ContentExportManager {
         collection: _firestore
             .collection(FirestoreCollections.users)
             .doc(userId)
-            .collection(FirestoreCollections.userPersonalTagIds),
+            .collection(FirestoreCollections.userPersonalTags),
         maxDocuments: tagLimit,
       );
 

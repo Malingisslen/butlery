@@ -18,7 +18,7 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
   });
 
   @override
-  String get collectionName => FirestoreCollections.userPersonalTagIds;
+  String get collectionName => FirestoreCollections.userPersonalTags;
 
   @override
   PersonalTag fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {

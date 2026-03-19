@@ -82,7 +82,7 @@ class ContentDeletionOperations {
       final tagsSnapshot = await _firestore
           .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection(FirestoreCollections.userPersonalTagIds)
+          .collection(FirestoreCollections.userPersonalTags)
           .get();
 
       await _deleteInBatches(tagsSnapshot.docs);

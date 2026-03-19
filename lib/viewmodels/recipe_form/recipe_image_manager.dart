@@ -10,6 +10,7 @@ import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 import 'package:butlery/widgets/recipe/upload_choice_dialog.dart'
     as upload_dialog;
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
@@ -641,7 +642,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Validate file size for web
     try {
       final fileSize = await xFile.length();
-      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+      const maxSizeInBytes = UploadConstants.maxRecipeImageBytes;
       if (fileSize > maxSizeInBytes) {
         _setImageUploadError(AppLocale.current.errorGeneric);
         return;
@@ -1068,8 +1069,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
       // Check file size (before compression)
       final fileSize = await imageFile.length();
-      const maxSizeInBytes =
-          20 * 1024 * 1024; // 20MB (generous limit before compression)
+      const maxSizeInBytes = UploadConstants.maxPreCompressionBytes;
       if (fileSize > maxSizeInBytes) {
         _setImageUploadError(AppLocale.current.errorGeneric);
         return false;

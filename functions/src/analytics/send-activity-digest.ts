@@ -53,37 +53,24 @@ export const sendWeeklyActivityDigest = functions
         for (const userDoc of userBatch) {
           const userId = userDoc.id;
 
-          // Count new recipes in the past 7 days
-          const recipesSnapshot = await db
-            .collection("users")
-            .doc(userId)
-            .collection("recipes")
-            .where("core.createdAt", ">=", sevenDaysAgo)
-            .get();
+          // Count activity in past 7 days (parallel queries)
+          const [recipesSnapshot, commentsSnapshot, ratingsSnapshot, sharedSnapshot] =
+            await Promise.all([
+              db.collection("users").doc(userId).collection("recipes")
+                .where("core.createdAt", ">=", sevenDaysAgo).get(),
+              db.collection("recipe_comments")
+                .where("authorId", "==", userId)
+                .where("createdAt", ">=", sevenDaysAgo).get(),
+              db.collection("recipe_ratings")
+                .where("userId", "==", userId)
+                .where("createdAt", ">=", sevenDaysAgo).get(),
+              db.collection("shared_recipes")
+                .where("sharedByUserId", "==", userId)
+                .where("sharedAt", ">=", sevenDaysAgo).get(),
+            ]);
           const newRecipeCount = recipesSnapshot.size;
-
-          // Count new comments authored in the past 7 days
-          const commentsSnapshot = await db
-            .collection("recipe_comments")
-            .where("authorId", "==", userId)
-            .where("createdAt", ">=", sevenDaysAgo)
-            .get();
           const newCommentCount = commentsSnapshot.size;
-
-          // Count new ratings in the past 7 days
-          const ratingsSnapshot = await db
-            .collection("recipe_ratings")
-            .where("userId", "==", userId)
-            .where("createdAt", ">=", sevenDaysAgo)
-            .get();
           const newRatingCount = ratingsSnapshot.size;
-
-          // Count shared recipes in the past 7 days
-          const sharedSnapshot = await db
-            .collection("shared_recipes")
-            .where("sharedByUserId", "==", userId)
-            .where("sharedAt", ">=", sevenDaysAgo)
-            .get();
           const newShareCount = sharedSnapshot.size;
 
           if (

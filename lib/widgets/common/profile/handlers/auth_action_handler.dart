@@ -11,6 +11,24 @@ import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 
 /// Handler for authentication-related actions (logout, delete account).
 class AuthActionHandler {
+  /// Shows password dialog and re-authenticates. Returns true on success.
+  /// On failure, shows error via [onError] callback and returns false.
+  static Future<bool> reauthenticate(
+    BuildContext context, {
+    void Function(String error)? onError,
+  }) async {
+    final password = await ProfileDialogs.showPasswordDialog(context);
+    if (password == null || !context.mounted) return false;
+
+    final authService = ServiceLocator.get<AuthService>();
+    final success = await authService.reauthenticateWithPassword(password);
+    if (!success && context.mounted) {
+      final msg = authService.errorMessage ?? context.l10n.errorSessionExpired;
+      onError?.call(msg);
+    }
+    return success;
+  }
+
   /// Handle logout flow.
   static Future<void> handleLogout(BuildContext context) async {
     final shouldLogout = await ProfileDialogs.showLogoutDialog(context);
@@ -50,9 +68,19 @@ class AuthActionHandler {
     final shouldDelete = await ProfileDialogs.showDeleteAccountDialog(context);
     if (shouldDelete != true || !context.mounted) return;
 
-    // Show password re-authentication dialog
-    final password = await ProfileDialogs.showPasswordDialog(context);
-    if (password == null || !context.mounted) return;
+    // Re-authenticate before proceeding
+    String? reauthError;
+    final reauthSuccess = await reauthenticate(
+      context,
+      onError: (msg) => reauthError = msg,
+    );
+    if (!reauthSuccess) {
+      if (reauthError != null && context.mounted) {
+        ProfileDialogs.showErrorDialog(context, reauthError!);
+      }
+      return;
+    }
+    if (!context.mounted) return;
 
     // Show loading indicator
     showDialog(
@@ -64,18 +92,6 @@ class AuthActionHandler {
     );
 
     try {
-      // Re-authenticate user via AuthService
-      final authService = ServiceLocator.get<AuthService>();
-      final reauthSuccess =
-          await authService.reauthenticateWithPassword(password);
-      if (!reauthSuccess) {
-        final errorMsg = authService.errorMessage ??
-            (context.mounted
-                ? context.l10n.profileAuthenticationFailed
-                : 'Authentication failed');
-        throw Exception(errorMsg);
-      }
-
       // Perform deletion using ProfileViewModel
       final profileViewModel = ServiceLocator.get<ProfileViewModel>();
       final success = await profileViewModel.deleteAccount(

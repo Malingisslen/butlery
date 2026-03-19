@@ -188,6 +188,8 @@ mixin StreamManagementMixin {
   /// Disposal state tracking
   bool _isDisposed = false;
 
+  bool get isStreamDisposed => _isDisposed;
+
   /// Add subscription to management registry
   /// Automatically handles disposal when service is disposed
   void addSubscription(StreamSubscription subscription, {String? name}) {
