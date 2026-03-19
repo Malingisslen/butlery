@@ -12,6 +12,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { requireAdmin } from "../shared/require-admin";
 
 // Note: db is accessed lazily to ensure initializeApp() has been called
 const getDb = () => admin.firestore();
@@ -324,21 +325,7 @@ export const seedSiteConfigs = functions.https.onCall(
  */
 export const getSiteConfigStats = functions.https.onCall(
   async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Authentication required"
-      );
-    }
-
-    const isAdmin = context.auth.token.admin === true ||
-                    context.auth.token.role === "admin";
-    if (!isAdmin) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "Admin access required"
-      );
-    }
+    requireAdmin(context);
 
     try {
       const snapshot = await getDb().collection("site_configs").get();

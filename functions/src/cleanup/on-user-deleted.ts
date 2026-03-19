@@ -56,8 +56,15 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     feedbackCleaned: 0,
   };
 
+  // Fetch friends list once (used by steps 1 and 4)
+  const friendsSnapshot = await db
+    .collection("users")
+    .doc(userId)
+    .collection("friends")
+    .get();
+
   // 1. Remove reverse friendship documents
-  results.friendsRemoved = await cleanupReverseFriendships(userId);
+  results.friendsRemoved = await cleanupReverseFriendships(userId, friendsSnapshot);
 
   // 2. Clean up friend requests (sent and received)
   results.friendRequestsCleaned = await cleanupFriendRequests(userId);
@@ -66,7 +73,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   results.groupMembershipsRemoved = await cleanupGroupMemberships(userId);
 
   // 4. Update friend counts
-  results.friendCountsUpdated = await updateFriendCounts(userId);
+  results.friendCountsUpdated = await updateFriendCounts(friendsSnapshot);
 
   // 5. Clean up feedback submissions and screenshots
   results.feedbackCleaned = await cleanupFeedback(userId);
@@ -85,14 +92,10 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
  * For each friend of the deleted user, remove the deleted user's doc
  * from their friends subcollection.
  */
-async function cleanupReverseFriendships(userId: string): Promise<number> {
-  // Get the deleted user's friends list
-  const friendsSnapshot = await db
-    .collection("users")
-    .doc(userId)
-    .collection("friends")
-    .get();
-
+async function cleanupReverseFriendships(
+  userId: string,
+  friendsSnapshot: admin.firestore.QuerySnapshot
+): Promise<number> {
   if (friendsSnapshot.empty) return 0;
 
   let count = 0;
@@ -205,13 +208,9 @@ async function cleanupGroupMemberships(userId: string): Promise<number> {
 /**
  * D4: Decrement friend counts on remaining users' public profiles.
  */
-async function updateFriendCounts(userId: string): Promise<number> {
-  const friendsSnapshot = await db
-    .collection("users")
-    .doc(userId)
-    .collection("friends")
-    .get();
-
+async function updateFriendCounts(
+  friendsSnapshot: admin.firestore.QuerySnapshot
+): Promise<number> {
   if (friendsSnapshot.empty) return 0;
 
   let batch = db.batch();

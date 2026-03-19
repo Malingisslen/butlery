@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
@@ -14,8 +15,7 @@ import 'package:butlery/services/upload/upload_models.dart';
 /// - Cleanup of pending/failed uploads
 /// **Used by:** RecipeImageManager for pre-save validation
 class ImageUploadValidator {
-  /// Maximum image size in bytes (5MB)
-  static const int maxImageSizeBytes = 5 * 1024 * 1024;
+  static const int maxImageSizeBytes = UploadConstants.maxRecipeImageBytes;
 
   /// Supported image formats
   static const List<String> validImageExtensions = [

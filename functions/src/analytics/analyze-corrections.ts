@@ -16,6 +16,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
+import { requireAdmin } from "../shared/require-admin";
 
 const getDb = () => admin.firestore();
 
@@ -303,21 +304,7 @@ async function processAliasCandidate(
  */
 export const getCorrectionStats = functions.https.onCall(
   async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Authentication required"
-      );
-    }
-
-    const isAdmin = context.auth.token.admin === true ||
-                    context.auth.token.role === "admin";
-    if (!isAdmin) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "Admin access required"
-      );
-    }
+    requireAdmin(context);
 
     const db = getDb();
     const limit = data?.limit || 50;

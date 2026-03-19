@@ -9,6 +9,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
+import { requireAdmin } from "../shared/require-admin";
 
 const getDb = () => admin.firestore();
 const BATCH_LIMIT = 500;
@@ -36,6 +37,9 @@ const TOP_LEVEL_RENAMES: Array<{ from: string; to: string }> = [
   { from: "shoppingListTemplates", to: "shopping_list_templates" },
   { from: "tagConfigs", to: "tag_configs" },
   { from: "ingredientSuggestions", to: "ingredient_suggestions" },
+  // Legacy camelCase collections (Phase 3)
+  { from: "sharedMenus", to: "shared_menus" },
+  { from: "sharedShoppingLists", to: "shared_shopping_lists" },
 ];
 
 // User subcollection renames (under users/{uid}/)
@@ -78,25 +82,26 @@ async function migrateTopLevel(
   const stats: CollectionStats = { found: 0, alreadyExists: 0, migrated: 0, errors: 0 };
 
   try {
-    const sourceSnapshot = await db.collection(from).get();
+    const [sourceSnapshot, targetSnapshot] = await Promise.all([
+      db.collection(from).get(),
+      db.collection(to).select().get(),
+    ]);
     stats.found = sourceSnapshot.size;
 
     if (sourceSnapshot.empty) return stats;
 
+    const existingIds = new Set(targetSnapshot.docs.map(d => d.id));
     let batch = db.batch();
     let batchCount = 0;
 
     for (const doc of sourceSnapshot.docs) {
-      const targetRef = db.collection(to).doc(doc.id);
-      const existing = await targetRef.get();
-
-      if (existing.exists) {
+      if (existingIds.has(doc.id)) {
         stats.alreadyExists++;
         continue;
       }
 
       if (!dryRun) {
-        batch.set(targetRef, doc.data());
+        batch.set(db.collection(to).doc(doc.id), doc.data());
         batchCount++;
 
         if (batchCount >= BATCH_LIMIT) {
@@ -132,35 +137,27 @@ async function migrateUserSubcollections(
     const usersSnapshot = await db.collection("users").get();
 
     for (const userDoc of usersSnapshot.docs) {
-      const userId = userDoc.id;
-      const sourceSnapshot = await db
-        .collection("users")
-        .doc(userId)
-        .collection(from)
-        .get();
+      const userRef = db.collection("users").doc(userDoc.id);
+      const [sourceSnapshot, targetSnapshot] = await Promise.all([
+        userRef.collection(from).get(),
+        userRef.collection(to).select().get(),
+      ]);
 
       stats.found += sourceSnapshot.size;
-
       if (sourceSnapshot.empty) continue;
 
+      const existingIds = new Set(targetSnapshot.docs.map(d => d.id));
       let batch = db.batch();
       let batchCount = 0;
 
       for (const doc of sourceSnapshot.docs) {
-        const targetRef = db
-          .collection("users")
-          .doc(userId)
-          .collection(to)
-          .doc(doc.id);
-        const existing = await targetRef.get();
-
-        if (existing.exists) {
+        if (existingIds.has(doc.id)) {
           stats.alreadyExists++;
           continue;
         }
 
         if (!dryRun) {
-          batch.set(targetRef, doc.data());
+          batch.set(userRef.collection(to).doc(doc.id), doc.data());
           batchCount++;
 
           if (batchCount >= BATCH_LIMIT) {
@@ -176,10 +173,6 @@ async function migrateUserSubcollections(
       if (!dryRun && batchCount > 0) {
         await batch.commit();
       }
-
-      functions.logger.info(
-        `User ${hashUid(userId)}: subcollection "${from}" → "${to}": ${sourceSnapshot.size} docs`
-      );
     }
   } catch (error) {
     stats.errors++;
@@ -205,34 +198,28 @@ async function migrateNestedCollections(
     const baseSnapshot = await db.collection(fromBase).get();
 
     for (const baseDoc of baseSnapshot.docs) {
-      const subSnapshot = await db
-        .collection(fromBase)
-        .doc(baseDoc.id)
-        .collection(fromSub)
-        .get();
+      const sourceRef = db.collection(fromBase).doc(baseDoc.id);
+      const targetBaseRef = db.collection(toBase).doc(baseDoc.id);
+      const [subSnapshot, targetSubSnapshot] = await Promise.all([
+        sourceRef.collection(fromSub).get(),
+        targetBaseRef.collection(toSub).select().get(),
+      ]);
 
       stats.found += subSnapshot.size;
-
       if (subSnapshot.empty) continue;
 
+      const existingIds = new Set(targetSubSnapshot.docs.map(d => d.id));
       let batch = db.batch();
       let batchCount = 0;
 
       for (const doc of subSnapshot.docs) {
-        const targetRef = db
-          .collection(toBase)
-          .doc(baseDoc.id)
-          .collection(toSub)
-          .doc(doc.id);
-        const existing = await targetRef.get();
-
-        if (existing.exists) {
+        if (existingIds.has(doc.id)) {
           stats.alreadyExists++;
           continue;
         }
 
         if (!dryRun) {
-          batch.set(targetRef, doc.data());
+          batch.set(targetBaseRef.collection(toSub).doc(doc.id), doc.data());
           batchCount++;
 
           if (batchCount >= BATCH_LIMIT) {
@@ -261,22 +248,7 @@ async function migrateNestedCollections(
 
 export const migrateCollectionNames = functions.https.onCall(
   async (data: MigrationRequest, context): Promise<MigrationResult> => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Authentication required"
-      );
-    }
-
-    const isAdmin =
-      context.auth.token.admin === true ||
-      context.auth.token.role === "admin";
-    if (!isAdmin) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "Admin access required"
-      );
-    }
+    requireAdmin(context);
 
     const dryRun = data?.dryRun !== false;
     const filterCollection = data?.collection;

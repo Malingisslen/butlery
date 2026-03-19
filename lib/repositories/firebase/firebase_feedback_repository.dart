@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/feedback_entry.dart';
@@ -77,7 +78,7 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
 
   @override
   Future<String> uploadScreenshot(String userId, Uint8List bytes) async {
-    if (bytes.length > 5 * 1024 * 1024) {
+    if (bytes.length > UploadConstants.maxScreenshotBytes) {
       throw ArgumentError('Screenshot exceeds 5MB limit');
     }
 

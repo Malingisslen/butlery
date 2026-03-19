@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
@@ -76,7 +77,7 @@ class XFileUploadHandler {
   /// Validate XFile size for web platform.
   /// Returns null if valid, error message if invalid.
   Future<String?> validateXFileSize(XFile xFile,
-      {int maxSizeBytes = 5 * 1024 * 1024}) async {
+      {int maxSizeBytes = UploadConstants.maxRecipeImageBytes}) async {
     try {
       final fileSize = await xFile.length();
       if (fileSize > maxSizeBytes) {

@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/repositories/base/base_storage_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -441,8 +442,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
     try {
       final originalSize = bytes.length;
 
-      // Skip compression for small images (under 500KB)
-      const maxSizeWithoutCompression = 500 * 1024;
+      const maxSizeWithoutCompression = UploadConstants.skipCompressionThreshold;
       if (originalSize < maxSizeWithoutCompression) {
         AppLogger.info(
           '⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB',
@@ -467,7 +467,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
 
       // Progressive quality reduction if still too large (max 4 iterations)
       int currentQuality = quality;
-      while (compressed.length > 1024 * 1024 && currentQuality > 50) {
+      while (compressed.length > UploadConstants.compressionTargetBytes && currentQuality > 50) {
         currentQuality -= 10;
         compressed = await FlutterImageCompress.compressWithList(
           bytes,
@@ -584,8 +584,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
       return false;
     }
 
-    // Check file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = UploadConstants.maxStorageFileBytes;
     if (file.lengthSync() > maxSize) {
       return false;
     }

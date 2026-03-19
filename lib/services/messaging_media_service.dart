@@ -6,6 +6,7 @@ import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:image_picker/image_picker.dart';
@@ -123,9 +124,8 @@ class MessagingMediaService extends BaseService {
         return false;
       }
 
-      // Validate file size (max 10MB for messaging images)
       final fileSize = await imageFile.length();
-      if (fileSize > 10 * 1024 * 1024) {
+      if (fileSize > UploadConstants.maxMessagingImageBytes) {
         AppLogger.error('❌ Image too large: ${fileSize ~/ 1024}KB');
         return false;
       }

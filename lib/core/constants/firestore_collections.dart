@@ -63,7 +63,7 @@ abstract final class FirestoreCollections {
   static const String userFriends = 'friends';
   static const String userFriendCategories = 'friend_categories';
   static const String userCategoryMemberships = 'category_memberships';
-  static const String userPersonalTagIds = 'personal_tags';
+  static const String userPersonalTags = 'personal_tags';
   static const String userPersonalTagGroups = 'personal_tag_groups';
   static const String userSettings = 'settings';
   static const String userConsent = 'consent';
