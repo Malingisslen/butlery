@@ -25,12 +25,7 @@ import {
 } from "./gemini-client";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
-import * as crypto from "crypto";
-
-/** Hash userId for GDPR-safe logging. */
-function hashUid(uid: string): string {
-  return crypto.createHash("sha256").update(uid).digest("hex").substring(0, 12);
-}
+import { hashUid } from "../shared/hash-uid";
 
 // =============================================================================
 // Request/Response Types

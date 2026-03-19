@@ -8,12 +8,8 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import * as crypto from "crypto";
-
-/** Hash userId for GDPR-safe logging. */
-function hashUid(uid: string): string {
-  return crypto.createHash("sha256").update(uid).digest("hex").substring(0, 12);
-}
+import { hashUid } from "../shared/hash-uid";
+import { isAllowedUrl } from "../shared/url-safety";
 import {
   getGeminiClient,
   getTextModel,
@@ -271,46 +267,6 @@ function buildContentParts(
   }
 
   return parts;
-}
-
-/**
- * Validate that a URL is safe to pass to an external AI service.
- * Rejects private IPs, localhost, and non-HTTPS protocols to prevent SSRF.
- */
-function isAllowedUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-
-    // Only allow HTTPS
-    if (parsed.protocol !== "https:") return false;
-
-    const hostname = parsed.hostname.toLowerCase();
-
-    // Block localhost and loopback
-    if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "[::1]" ||
-      hostname === "0.0.0.0"
-    ) {
-      return false;
-    }
-
-    // Block private IP ranges
-    const parts = hostname.split(".");
-    if (parts.length === 4 && parts.every((p) => /^\d+$/.test(p))) {
-      const first = parseInt(parts[0]);
-      const second = parseInt(parts[1]);
-      if (first === 10) return false; // 10.0.0.0/8
-      if (first === 172 && second >= 16 && second <= 31) return false; // 172.16.0.0/12
-      if (first === 192 && second === 168) return false; // 192.168.0.0/16
-      if (first === 169 && second === 254) return false; // link-local
-    }
-
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**

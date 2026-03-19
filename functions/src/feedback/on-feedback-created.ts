@@ -5,11 +5,7 @@
  */
 
 import * as functions from "firebase-functions";
-import * as crypto from "crypto";
-
-function hashUid(uid: string): string {
-  return crypto.createHash("sha256").update(uid).digest("hex").substring(0, 12);
-}
+import { hashUid } from "../shared/hash-uid";
 
 export const onFeedbackCreated = functions.firestore
   .document("feedback/{feedbackId}")
