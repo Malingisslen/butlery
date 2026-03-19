@@ -299,14 +299,17 @@ class SharedContentSearchViewModel extends ChangeNotifier {
       return;
     }
 
+    // Snapshot query at method start to prevent mixing across sequential awaits
+    final query = _searchQuery;
+
     _setSearching(true);
 
     try {
-      _allResults = [
+      final results = [
         ...await _searchContent<SharedRecipe>(
             _recipeViewModel,
             ContentType.recipes,
-            _searchQuery,
+            query,
             (SharedRecipe r) => SearchResult(
                   id: r.id,
                   title: r.recipeTitle,
@@ -319,12 +322,12 @@ class SharedContentSearchViewModel extends ChangeNotifier {
                   isDismissed: _recipeViewModel.isRecipeDismissed(r),
                   isCollaborative: _recipeViewModel.isRecipeCollaborative(r),
                   content: r,
-                  relevanceScore: _calculateRecipeRelevance(r, _searchQuery),
+                  relevanceScore: _calculateRecipeRelevance(r, query),
                 )),
         ...await _searchContent<SharedMenu>(
             _menuViewModel,
             ContentType.menus,
-            _searchQuery,
+            query,
             (SharedMenu m) => SearchResult(
                   id: m.id,
                   title: m.menuTitle,
@@ -337,12 +340,12 @@ class SharedContentSearchViewModel extends ChangeNotifier {
                   isDismissed: _menuViewModel.isMenuDismissed(m),
                   isCollaborative: _menuViewModel.isMenuCollaborative(m),
                   content: m,
-                  relevanceScore: _calculateMenuRelevance(m, _searchQuery),
+                  relevanceScore: _calculateMenuRelevance(m, query),
                 )),
         ...await _searchContent<SharedShoppingList>(
             _shoppingViewModel,
             ContentType.shoppingLists,
-            _searchQuery,
+            query,
             (SharedShoppingList l) => SearchResult(
                   id: l.id,
                   title: l.listName,
@@ -355,17 +358,25 @@ class SharedContentSearchViewModel extends ChangeNotifier {
                   isDismissed: _shoppingViewModel.isShoppingListDismissed(l),
                   isCollaborative: _shoppingViewModel.isShoppingListJoined(l),
                   content: l,
-                  relevanceScore:
-                      _calculateShoppingListRelevance(l, _searchQuery),
+                  relevanceScore: _calculateShoppingListRelevance(l, query),
                 )),
       ];
-      AppLogger.info(
-          '🔍 Search completed: ${_allResults.length} results for "$_searchQuery"');
+
+      // Only apply results if query hasn't changed during search
+      if (_searchQuery == query) {
+        _allResults = results;
+        AppLogger.info(
+            '🔍 Search completed: ${_allResults.length} results for "$query"');
+      }
     } catch (e) {
       AppLogger.error('Search failed: $e');
-      _allResults.clear();
+      if (_searchQuery == query) {
+        _allResults.clear();
+      }
     } finally {
-      _setSearching(false);
+      if (_searchQuery == query) {
+        _setSearching(false);
+      }
     }
   }
 

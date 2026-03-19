@@ -19905,6 +19905,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'E-post verifierad!'**
   String get emailVerificationSuccess;
+
+  /// No description provided for @recipeSelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markerad'**
+  String get recipeSelected;
+
+  /// No description provided for @recipeNotSelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ej markerad'**
+  String get recipeNotSelected;
 }
 
 class _AppLocalizationsDelegate

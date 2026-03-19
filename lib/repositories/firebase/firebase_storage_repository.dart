@@ -8,6 +8,7 @@ import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/repositories/base/base_storage_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 
 /// Firebase implementation of the StorageRepository interface with security validation.
@@ -246,10 +247,13 @@ class FirebaseStorageRepository extends BaseStorageRepository
           final storageRef = storage.ref().child(path);
 
           // Create upload task
+          final contentType =
+              ImageFormatUtils.detectMimeTypeWithFallback(imageData, path);
+
           final uploadTask = storageRef.putData(
             imageData,
             SettableMetadata(
-              contentType: 'image/jpeg',
+              contentType: contentType,
               customMetadata: {
                 'uploadedAt': DateTime.now().toIso8601String(),
                 'uploadedBy': userId, // 🔒 SECURITY: Required by storage.rules

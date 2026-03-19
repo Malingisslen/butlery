@@ -392,9 +392,10 @@ class ChatViewModel extends ChangeNotifier
             'Gave up waiting for conversation to subscribe to typing indicators');
         return;
       }
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (!_isDisposed) _subscribeToTypingIndicators();
-      });
+      cancelNamedTimer('typing_retry');
+      createTimer(const Duration(milliseconds: 500),
+          () => _subscribeToTypingIndicators(),
+          name: 'typing_retry');
       return;
     }
 

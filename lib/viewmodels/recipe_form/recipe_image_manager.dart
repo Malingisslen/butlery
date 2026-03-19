@@ -64,7 +64,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   String? _imageUploadError;
 
   // Random instance for temporary recipe ID generation
-  static final Random _random = Random();
+  static final Random _random = Random.secure();
 
   static const int maxImages = 5;
 
@@ -992,7 +992,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     ImageUploadErrorType? dominantErrorType;
     if (failed > 0) {
       final errorTypes = _imageStates.values
-          .where((s) => s.state == ImageUploadState.failed && s.errorType != null)
+          .where(
+              (s) => s.state == ImageUploadState.failed && s.errorType != null)
           .map((s) => s.errorType!)
           .toList();
       if (errorTypes.isNotEmpty) {
@@ -1001,9 +1002,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         for (final t in errorTypes) {
           counts[t] = (counts[t] ?? 0) + 1;
         }
-        dominantErrorType = counts.entries
-            .reduce((a, b) => a.value >= b.value ? a : b)
-            .key;
+        dominantErrorType =
+            counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
       }
     }
 

@@ -255,6 +255,7 @@ class _FranSocialaMedierViewContentState
         ),
         keyboardType: TextInputType.multiline,
         maxLines: null,
+        maxLength: 10000,
         expands: true,
         textAlignVertical: TextAlignVertical.top,
         style: AppTextStyles.bodyMedium,

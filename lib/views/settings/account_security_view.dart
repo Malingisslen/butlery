@@ -22,6 +22,12 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
   final _emailPasswordController = TextEditingController();
   final _newEmailController = TextEditingController();
 
+  final _currentPasswordFocus = FocusNode();
+  final _newPasswordFocus = FocusNode();
+  final _confirmPasswordFocus = FocusNode();
+  final _emailPasswordFocus = FocusNode();
+  final _newEmailFocus = FocusNode();
+
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
@@ -34,6 +40,11 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
     _confirmPasswordController.dispose();
     _emailPasswordController.dispose();
     _newEmailController.dispose();
+    _currentPasswordFocus.dispose();
+    _newPasswordFocus.dispose();
+    _confirmPasswordFocus.dispose();
+    _emailPasswordFocus.dispose();
+    _newEmailFocus.dispose();
     _viewModel.dispose();
     super.dispose();
   }
@@ -147,7 +158,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         const SizedBox(height: AppDimensions.spacingMd),
         TextField(
           controller: _currentPasswordController,
+          focusNode: _currentPasswordFocus,
           obscureText: _obscureCurrentPassword,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) => _newPasswordFocus.requestFocus(),
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
@@ -166,7 +180,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         const SizedBox(height: AppDimensions.spacingSm),
         TextField(
           controller: _newPasswordController,
+          focusNode: _newPasswordFocus,
           obscureText: _obscureNewPassword,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) => _confirmPasswordFocus.requestFocus(),
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityNewPassword,
             border: const OutlineInputBorder(),
@@ -185,7 +202,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         const SizedBox(height: AppDimensions.spacingSm),
         TextField(
           controller: _confirmPasswordController,
+          focusNode: _confirmPasswordFocus,
           obscureText: _obscureConfirmPassword,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _handleChangePassword(),
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityConfirmPassword,
             border: const OutlineInputBorder(),
@@ -248,7 +268,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           ),
         TextField(
           controller: _emailPasswordController,
+          focusNode: _emailPasswordFocus,
           obscureText: _obscureEmailPassword,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) => _newEmailFocus.requestFocus(),
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
@@ -267,7 +290,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         const SizedBox(height: AppDimensions.spacingSm),
         TextField(
           controller: _newEmailController,
+          focusNode: _newEmailFocus,
           keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _handleChangeEmail(),
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityNewEmail,
             border: const OutlineInputBorder(),

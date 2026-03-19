@@ -78,8 +78,15 @@ class ConnectionStateModule {
 
   /// Setup auth state change listener
   void setupAuthStateListener() {
-    _authStateSubscription =
-        authRepository.authStateChanges().listen(onAuthStateChanged);
+    _authStateSubscription = authRepository.authStateChanges().listen(
+      onAuthStateChanged,
+      onError: (error) {
+        AppLogger.warning(
+            'Auth state stream error in ConnectionStateModule: $error');
+        // Treat auth stream errors as logout to prevent stale authenticated state
+        onUserLoggedOut();
+      },
+    );
   }
 
   /// Handle auth state changes

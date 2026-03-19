@@ -14,6 +14,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { checkRateLimit } from "../middleware/rate_limiter";
+import { isAllowedUrl } from "../shared/url-safety";
 
 /**
  * Sanitizes user-provided text by stripping HTML tags.
@@ -183,7 +184,7 @@ export const sendNotification = functions.https.onCall(
           body: sanitizeText(body) || body!,
         };
 
-        if (imageUrl) {
+        if (imageUrl && isAllowedUrl(imageUrl)) {
           message.notification.imageUrl = imageUrl;
         }
 
@@ -529,7 +530,7 @@ async function sendNotificationInternal(
         title: sanitizeText(title) || "",
         body: sanitizeText(body) || "",
       };
-      if (imageUrl) {
+      if (imageUrl && isAllowedUrl(imageUrl)) {
         message.notification.imageUrl = imageUrl;
       }
       message.android = {

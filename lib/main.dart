@@ -133,14 +133,17 @@ Future<void> main() async {
         await Future.wait([
           if (!kIsWeb)
             FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false),
-          if (!kDebugMode)
-            FirebaseAppCheck.instance.activate(
-              providerWeb: ReCaptchaV3Provider(
-                '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
-              ),
-              providerAndroid: const AndroidPlayIntegrityProvider(),
-              providerApple: const AppleDeviceCheckProvider(),
+          FirebaseAppCheck.instance.activate(
+            providerWeb: ReCaptchaV3Provider(
+              '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
             ),
+            providerAndroid: kDebugMode
+                ? const AndroidDebugProvider()
+                : const AndroidPlayIntegrityProvider(),
+            providerApple: kDebugMode
+                ? const AppleDebugProvider()
+                : const AppleDeviceCheckProvider(),
+          ),
         ]);
 
         // Set up native error handlers (after Crashlytics available)

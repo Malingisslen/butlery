@@ -96,12 +96,11 @@ class DeepLinkService extends BaseService {
     final params = <String, String>{
       'id': invitationId,
       'type': 'friend',
-      'from': fromUserId,
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
     if (customMessage != null) {
-      params['message'] = Uri.encodeComponent(customMessage);
+      params['message'] = Uri.encodeComponent(_sanitizeMessage(customMessage));
     }
 
     return _buildUrl(_invitePath, params);
@@ -116,12 +115,11 @@ class DeepLinkService extends BaseService {
     final params = <String, String>{
       'id': recipeId,
       'type': 'recipe',
-      'from': fromUserId,
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
     if (customMessage != null) {
-      params['message'] = Uri.encodeComponent(customMessage);
+      params['message'] = Uri.encodeComponent(_sanitizeMessage(customMessage));
     }
 
     return _buildUrl(_recipePath, params);
@@ -136,12 +134,11 @@ class DeepLinkService extends BaseService {
     final params = <String, String>{
       'id': menuId,
       'type': 'menu',
-      'from': fromUserId,
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
     if (customMessage != null) {
-      params['message'] = Uri.encodeComponent(customMessage);
+      params['message'] = Uri.encodeComponent(_sanitizeMessage(customMessage));
     }
 
     return _buildUrl(_menuPath, params);
@@ -156,12 +153,11 @@ class DeepLinkService extends BaseService {
     final params = <String, String>{
       'id': listId,
       'type': 'shopping',
-      'from': fromUserId,
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
     if (customMessage != null) {
-      params['message'] = Uri.encodeComponent(customMessage);
+      params['message'] = Uri.encodeComponent(_sanitizeMessage(customMessage));
     }
 
     return _buildUrl(_shoppingPath, params);
@@ -248,6 +244,14 @@ class DeepLinkService extends BaseService {
     final now = DateTime.now();
 
     return now.difference(createdAt) <= maxAge;
+  }
+
+  /// Sanitize user-provided message to prevent XSS and limit length.
+  static String _sanitizeMessage(String message) {
+    // Strip HTML tags
+    final stripped = message.replaceAll(RegExp(r'<[^>]*>'), '');
+    // Limit length to 500 characters
+    return stripped.length > 500 ? stripped.substring(0, 500) : stripped;
   }
 
   /// Build URL with parameters

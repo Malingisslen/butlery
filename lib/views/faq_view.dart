@@ -25,45 +25,50 @@ class FaqView extends StatelessWidget {
         foregroundColor: cs.onPrimary,
       ),
       backgroundColor: cs.surfaceContainerHighest,
-      body: ListView(
-        padding: AppDimensions.screenPadding,
-        children: const [
-          _FaqTile(
-            question: 'Hur importerar jag recept?',
-            answer: 'Du kan importera recept pa flera satt: '
-                'klistra in en URL fran en receptsida, '
-                'ta ett foto av ett recept, '
-                'eller klistra in recepttext direkt. '
-                'Tryck pa "Lagg till" pa startsidan och valj metod.',
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 700),
+          child: ListView(
+            padding: AppDimensions.screenPadding,
+            children: const [
+              _FaqTile(
+                question: 'Hur importerar jag recept?',
+                answer: 'Du kan importera recept pa flera satt: '
+                    'klistra in en URL fran en receptsida, '
+                    'ta ett foto av ett recept, '
+                    'eller klistra in recepttext direkt. '
+                    'Tryck pa "Lagg till" pa startsidan och valj metod.',
+              ),
+              _FaqTile(
+                question: 'Hur delar jag recept med vanner?',
+                answer: 'Oppna ett recept och tryck pa dela-ikonen. '
+                    'Du kan skicka receptet till vanner som anvander Butlery, '
+                    'eller dela en lank. Dina vanner kan sedan spara '
+                    'receptet till sin egen samling.',
+              ),
+              _FaqTile(
+                question: 'Hur anvander jag veckomeny?',
+                answer: 'Ga till veckomeny via navigeringen. '
+                    'Dar kan du planera veckans maltider genom att '
+                    'lagga till recept fran din samling. '
+                    'Ingredienser fran menyn kan skickas direkt till inkopslistan.',
+              ),
+              _FaqTile(
+                question: 'Hur skapar jag personliga taggar?',
+                answer: 'Ga till profilen och valj "Mina taggar". '
+                    'Dar kan du skapa taggar som "Vardagsmat" eller "Festmat" '
+                    'och tilldela dem till dina recept for enkel filtrering.',
+              ),
+              _FaqTile(
+                question: 'Hur rapporterar jag problem?',
+                answer: 'Tryck pa "!"-knappen som syns langst ner till hoger '
+                    'pa varje sida. Dar kan du beskriva problemet, '
+                    'valja kategori och bifoga en skarmavbild. '
+                    'Vi laser all feedback!',
+              ),
+            ],
           ),
-          _FaqTile(
-            question: 'Hur delar jag recept med vanner?',
-            answer: 'Oppna ett recept och tryck pa dela-ikonen. '
-                'Du kan skicka receptet till vanner som anvander Butlery, '
-                'eller dela en lank. Dina vanner kan sedan spara '
-                'receptet till sin egen samling.',
-          ),
-          _FaqTile(
-            question: 'Hur anvander jag veckomeny?',
-            answer: 'Ga till veckomeny via navigeringen. '
-                'Dar kan du planera veckans maltider genom att '
-                'lagga till recept fran din samling. '
-                'Ingredienser fran menyn kan skickas direkt till inkopslistan.',
-          ),
-          _FaqTile(
-            question: 'Hur skapar jag personliga taggar?',
-            answer: 'Ga till profilen och valj "Mina taggar". '
-                'Dar kan du skapa taggar som "Vardagsmat" eller "Festmat" '
-                'och tilldela dem till dina recept for enkel filtrering.',
-          ),
-          _FaqTile(
-            question: 'Hur rapporterar jag problem?',
-            answer: 'Tryck pa "!"-knappen som syns langst ner till hoger '
-                'pa varje sida. Dar kan du beskriva problemet, '
-                'valja kategori och bifoga en skarmavbild. '
-                'Vi laser all feedback!',
-          ),
-        ],
+        ),
       ),
     );
   }

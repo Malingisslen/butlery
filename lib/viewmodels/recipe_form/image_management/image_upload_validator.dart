@@ -69,6 +69,7 @@ class ImageUploadValidator {
   Future<bool> waitForUploadsToComplete({
     required Map<String, ImageUploadStatus> imageStates,
     Duration? timeout,
+    bool Function()? isCancelled,
   }) async {
     final timeoutDuration = timeout ?? const Duration(minutes: 2);
     final startTime = DateTime.now();
@@ -77,6 +78,11 @@ class ImageUploadValidator {
         'Waiting for uploads to complete (timeout: ${timeoutDuration.inSeconds}s)');
 
     while (true) {
+      if (isCancelled?.call() == true) {
+        AppLogger.info('Upload wait cancelled by caller');
+        return false;
+      }
+
       final safetyCheck = checkUploadSafety(imageStates);
 
       if (safetyCheck.isSafe) {
@@ -116,7 +122,7 @@ class ImageUploadValidator {
   /// Returns true if the image URL has a valid image extension
   bool isValidImageFormat(String imageUrl) {
     final lowercaseUrl = imageUrl.toLowerCase();
-    return validImageExtensions.any((ext) => lowercaseUrl.contains(ext));
+    return validImageExtensions.any((ext) => lowercaseUrl.endsWith(ext));
   }
 
   /// Validate image size
@@ -126,8 +132,8 @@ class ImageUploadValidator {
       final fileSize = await imageFile.length();
       return fileSize <= maxImageSizeBytes;
     } catch (e) {
-      AppLogger.error('Fel vid validering av bildstorlek: $e');
-      return true; // Continue if we can't validate
+      AppLogger.error('Image size validation failed: $e');
+      return false; // Fail closed — reject if we can't validate
     }
   }
 

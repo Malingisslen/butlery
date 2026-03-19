@@ -5,6 +5,7 @@
  */
 
 import * as functions from "firebase-functions";
+import { hashUid } from "../shared/hash-uid";
 
 export const onFeedbackCreated = functions.firestore
   .document("feedback/{feedbackId}")
@@ -14,7 +15,7 @@ export const onFeedbackCreated = functions.firestore
 
     functions.logger.info(
       `New feedback received [${feedbackId}]: ` +
-      `category=${data.category}, userId=${data.userId}`
+      `category=${data.category}, userHash=${hashUid(data.userId || "unknown")}`
     );
 
     // Future enhancement: send email notification to the team

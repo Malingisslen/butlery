@@ -4,9 +4,11 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Service adapter that provides repository pattern access for UnifiedRecipeService modules
@@ -18,16 +20,19 @@ class RecipeServiceAdapter {
   final CommentsRepository? _commentsRepository;
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
+  final FirestoreRepository? _firestoreRepository;
 
   RecipeServiceAdapter({
     required RecipeRepository recipeRepository,
     CommentsRepository? commentsRepository,
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
+    FirestoreRepository? firestoreRepository,
   })  : _recipeRepository = recipeRepository,
         _commentsRepository = commentsRepository,
         _ratingsRepository = ratingsRepository,
-        _notificationsRepository = notificationsRepository;
+        _notificationsRepository = notificationsRepository,
+        _firestoreRepository = firestoreRepository;
 
   /// Create a new recipe using repository pattern
   Future<String?> createRecipe(Recipe recipe) async {
@@ -56,15 +61,66 @@ class RecipeServiceAdapter {
     }
   }
 
-  /// Delete a recipe using repository pattern
+  /// Delete a recipe and cascade-delete related data (comments, ratings, social stats)
   Future<bool> deleteRecipe(String recipeId) async {
     try {
+      // Clean up related data before deleting the recipe itself
+      await _cleanupRecipeReferences(recipeId);
       await _recipeRepository.delete(recipeId);
       AppLogger.success('✅ Recipe deleted via repository: $recipeId');
       return true;
     } catch (e) {
       AppLogger.error('❌ Failed to delete recipe via repository', e);
       return false;
+    }
+  }
+
+  /// Remove orphan comments, ratings, and social_stats for a deleted recipe
+  Future<void> _cleanupRecipeReferences(String recipeId) async {
+    final firestore = _firestoreRepository?.firestore;
+    if (firestore == null) return;
+
+    try {
+      // Delete comments (paginated to respect batch limits)
+      final commentQuery = firestore
+          .collection(FirestoreCollections.recipeComments)
+          .where('recipeId', isEqualTo: recipeId)
+          .limit(450);
+      var snapshot = await commentQuery.get();
+      while (snapshot.docs.isNotEmpty) {
+        final batch = firestore.batch();
+        for (final doc in snapshot.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+        if (snapshot.docs.length < 450) break;
+        snapshot = await commentQuery.get();
+      }
+
+      // Delete ratings (paginated)
+      final ratingQuery = firestore
+          .collection(FirestoreCollections.recipeRatings)
+          .where('recipeId', isEqualTo: recipeId)
+          .limit(450);
+      snapshot = await ratingQuery.get();
+      while (snapshot.docs.isNotEmpty) {
+        final batch = firestore.batch();
+        for (final doc in snapshot.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+        if (snapshot.docs.length < 450) break;
+        snapshot = await ratingQuery.get();
+      }
+
+      // Delete social stats aggregate doc
+      await firestore
+          .collection(FirestoreCollections.recipeSocialStats)
+          .doc(recipeId)
+          .delete();
+    } catch (e) {
+      // Log but don't fail the recipe deletion for cleanup errors
+      AppLogger.warning('⚠️ Partial cleanup failure for recipe $recipeId: $e');
     }
   }
 

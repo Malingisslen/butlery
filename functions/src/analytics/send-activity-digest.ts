@@ -55,22 +55,43 @@ export const sendWeeklyActivityDigest = functions
 
           // Count new recipes in the past 7 days
           const recipesSnapshot = await db
+            .collection("users")
+            .doc(userId)
             .collection("recipes")
-            .where("ownerId", "==", userId)
-            .where("createdAt", ">=", sevenDaysAgo)
+            .where("core.createdAt", ">=", sevenDaysAgo)
             .get();
           const newRecipeCount = recipesSnapshot.size;
 
-          // Count new comments in the past 7 days
+          // Count new comments authored in the past 7 days
           const commentsSnapshot = await db
-            .collection("recipe_interactions")
-            .where("userId", "==", userId)
-            .where("type", "==", "comment")
+            .collection("recipe_comments")
+            .where("authorId", "==", userId)
             .where("createdAt", ">=", sevenDaysAgo)
             .get();
           const newCommentCount = commentsSnapshot.size;
 
-          if (newRecipeCount === 0 && newCommentCount === 0) {
+          // Count new ratings in the past 7 days
+          const ratingsSnapshot = await db
+            .collection("recipe_ratings")
+            .where("userId", "==", userId)
+            .where("createdAt", ">=", sevenDaysAgo)
+            .get();
+          const newRatingCount = ratingsSnapshot.size;
+
+          // Count shared recipes in the past 7 days
+          const sharedSnapshot = await db
+            .collection("shared_recipes")
+            .where("sharedByUserId", "==", userId)
+            .where("sharedAt", ">=", sevenDaysAgo)
+            .get();
+          const newShareCount = sharedSnapshot.size;
+
+          if (
+            newRecipeCount === 0 &&
+            newCommentCount === 0 &&
+            newRatingCount === 0 &&
+            newShareCount === 0
+          ) {
             usersSkipped++;
             continue;
           }
@@ -85,6 +106,8 @@ export const sendWeeklyActivityDigest = functions
             type: "activity_digest",
             newRecipeCount,
             newCommentCount,
+            newRatingCount,
+            newShareCount,
             period: "weekly",
             createdAt: now,
             read: false,

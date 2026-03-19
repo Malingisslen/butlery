@@ -37,6 +37,8 @@ export { logParseEvent } from "./events/log-parse-event";
 // Admin Functions - Site config management
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
 export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
+export { migrateLegacyCollections } from "./admin/migrate-legacy-collections";
+export { migrateCollectionNames } from "./admin/migrate-collection-names";
 
 // Notification Functions - FCM push notifications
 export { sendNotification, sendNotificationBatch } from "./notifications/send-notification";
@@ -112,12 +114,12 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
     // Calculate aggregates
     if (ratingsSnapshot.empty) {
       // No ratings - clear all rating stats
-      await db.collection("recipes").doc(recipeId).update({
+      await db.collection("recipe_social_stats").doc(recipeId).set({
         ratingCount: 0,
         averageRating: null,
         ratingDistribution: null,
         lastRatedAt: null,
-      });
+      }, { merge: true });
 
       functions.logger.info(
         `Cleared rating stats for recipe ${recipeId} (no ratings)`
@@ -171,7 +173,7 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
       lastRatedAt: lastRatedAt || admin.firestore.Timestamp.now(),
     };
 
-    await db.collection("recipes").doc(recipeId).update(stats);
+    await db.collection("recipe_social_stats").doc(recipeId).set(stats, { merge: true });
 
     functions.logger.info(
       `Updated recipe ${recipeId}: ${ratingCount} ratings, avg ${stats.averageRating}`

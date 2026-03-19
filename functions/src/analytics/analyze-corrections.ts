@@ -244,53 +244,58 @@ async function processAliasCandidate(
 
   const aliasRef = db.collection("learned_ingredient_aliases").doc(docId);
 
-  // Atomic update: increment count, add userId
-  await aliasRef.set(
-    {
-      originalName: params.originalName.toLowerCase().trim(),
-      correctedName: params.correctedName.toLowerCase().trim(),
-      ingredientId: ingredient.id,
-      userIds: admin.firestore.FieldValue.arrayUnion(params.userId),
-      count: admin.firestore.FieldValue.increment(1),
-      lastSeen: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true }
-  );
+  // Use transaction to atomically update, check threshold, and approve
+  // to prevent race condition where concurrent calls double-approve
+  await db.runTransaction(async (tx) => {
+    const doc = await tx.get(aliasRef);
+    const docData = doc.data();
 
-  // Set firstSeen and initial status only on creation
-  const doc = await aliasRef.get();
-  const docData = doc.data();
-  if (docData && !docData.firstSeen) {
-    await aliasRef.update({
-      firstSeen: admin.firestore.FieldValue.serverTimestamp(),
-      status: "pending",
-    });
-  }
-
-  // Check if threshold is met for auto-approval
-  if (docData && docData.status !== "approved") {
-    const userIds = (docData.userIds as string[]) || [];
-    if (userIds.length >= ALIAS_APPROVAL_THRESHOLD) {
-      // Auto-approve: write alias to ingredient doc
-      await aliasRef.update({ status: "approved" });
-
-      const ingredientRef = db
-        .collection("ingredients")
-        .doc(ingredient.id);
-
-      await ingredientRef.update({
-        learnedAliasesSv: admin.firestore.FieldValue.arrayUnion(
-          params.originalName.toLowerCase().trim()
-        ),
+    if (doc.exists && docData) {
+      // Update existing alias candidate
+      tx.update(aliasRef, {
+        userIds: admin.firestore.FieldValue.arrayUnion(params.userId),
+        count: admin.firestore.FieldValue.increment(1),
+        lastSeen: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      functions.logger.info(
-        `Auto-approved alias: "${params.originalName}" → ` +
-          `"${params.correctedName}" (ingredient: ${ingredient.id}, ` +
-          `${userIds.length} distinct users)`
-      );
+      // Check if threshold is met for auto-approval
+      if (docData.status !== "approved") {
+        const userIds = (docData.userIds as string[]) || [];
+        // +1 because arrayUnion hasn't committed yet — check if adding this user reaches threshold
+        const uniqueUsers = new Set([...userIds, params.userId]);
+        if (uniqueUsers.size >= ALIAS_APPROVAL_THRESHOLD) {
+          tx.update(aliasRef, { status: "approved" });
+
+          const ingredientRef = db
+            .collection("ingredients")
+            .doc(ingredient!.id);
+          tx.update(ingredientRef, {
+            learnedAliasesSv: admin.firestore.FieldValue.arrayUnion(
+              params.originalName.toLowerCase().trim()
+            ),
+          });
+
+          functions.logger.info(
+            `Auto-approved alias: "${params.originalName}" → ` +
+              `"${params.correctedName}" (ingredient: ${ingredient!.id}, ` +
+              `${uniqueUsers.size} distinct users)`
+          );
+        }
+      }
+    } else {
+      // Create new alias candidate
+      tx.set(aliasRef, {
+        originalName: params.originalName.toLowerCase().trim(),
+        correctedName: params.correctedName.toLowerCase().trim(),
+        ingredientId: ingredient!.id,
+        userIds: [params.userId],
+        count: 1,
+        firstSeen: admin.firestore.FieldValue.serverTimestamp(),
+        lastSeen: admin.firestore.FieldValue.serverTimestamp(),
+        status: "pending",
+      });
     }
-  }
+  });
 }
 
 /**
@@ -302,6 +307,15 @@ export const getCorrectionStats = functions.https.onCall(
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
+      );
+    }
+
+    const isAdmin = context.auth.token.admin === true ||
+                    context.auth.token.role === "admin";
+    if (!isAdmin) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Admin access required"
       );
     }
 

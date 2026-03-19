@@ -407,11 +407,19 @@ export const getRetagStatus = functions.https.onCall(
     byVersion: { [version: string]: number };
     total: number;
   }> => {
-    // Require authentication
     if (!context.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
+      );
+    }
+
+    const isAdmin = context.auth.token.admin === true ||
+                    context.auth.token.role === "admin";
+    if (!isAdmin) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Admin access required"
       );
     }
 

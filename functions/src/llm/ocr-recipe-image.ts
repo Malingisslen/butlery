@@ -6,7 +6,10 @@
  */
 
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { hashUid } from "../shared/hash-uid";
+import { isAllowedUrl } from "../shared/url-safety";
 import {
   getGeminiClient,
   getTextModel,
@@ -64,7 +67,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     secrets: [geminiApiKey],
     memory: "1GiB", // Vision needs more memory
     timeoutSeconds: 120,
-    cors: true,
+    cors: ["https://butlery.app", "https://www.butlery.app"],
     region: "europe-west1",
   },
   withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
@@ -109,9 +112,9 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       const client = getGeminiClient(geminiApiKey.value());
       const model = getTextModel(client);
 
-      console.log(
-        `[ocrRecipeImage] Processing image for user ${request.auth!.uid} (prompt v${PROMPT_VERSION})`,
-        imageUrl ? `URL: ${imageUrl}` : `Base64: ${imageBase64?.length} chars`
+      functions.logger.info(
+        `[ocrRecipeImage] Processing image for user ${hashUid(request.auth!.uid)} (prompt v${PROMPT_VERSION})`,
+        { inputType: imageUrl ? "url" : "base64" }
       );
 
       // Build user prompt — scrub context text for PII
@@ -139,7 +142,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       const actualCost = calculateGeminiCost(response.usageMetadata, 0.01);
 
       if (!content) {
-        console.error("[ocrRecipeImage] Empty response from Gemini");
+        functions.logger.error("[ocrRecipeImage] Empty response from Gemini");
         return {
           success: false,
           error: "Inget svar från AI-tjänsten.",
@@ -150,7 +153,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       // Try to parse as structured recipe
       const recipe = parseRecipeResponse(content);
       if (recipe) {
-        console.log(
+        functions.logger.info(
           `[ocrRecipeImage] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
         );
         return {
@@ -162,7 +165,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       }
 
       // If parsing failed, the model might have returned raw text
-      console.warn(
+      functions.logger.warn(
         "[ocrRecipeImage] Could not parse as recipe, returning raw text"
       );
       return {
@@ -172,7 +175,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
         estimatedCost: actualCost,
       };
     } catch (error) {
-      console.error("[ocrRecipeImage] Error:", error);
+      functions.logger.error("[ocrRecipeImage] Error:", error);
 
       if (error instanceof HttpsError) {
         throw error;
@@ -264,46 +267,6 @@ function buildContentParts(
   }
 
   return parts;
-}
-
-/**
- * Validate that a URL is safe to pass to an external AI service.
- * Rejects private IPs, localhost, and non-HTTPS protocols to prevent SSRF.
- */
-function isAllowedUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-
-    // Only allow HTTPS
-    if (parsed.protocol !== "https:") return false;
-
-    const hostname = parsed.hostname.toLowerCase();
-
-    // Block localhost and loopback
-    if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "[::1]" ||
-      hostname === "0.0.0.0"
-    ) {
-      return false;
-    }
-
-    // Block private IP ranges
-    const parts = hostname.split(".");
-    if (parts.length === 4 && parts.every((p) => /^\d+$/.test(p))) {
-      const first = parseInt(parts[0]);
-      const second = parseInt(parts[1]);
-      if (first === 10) return false; // 10.0.0.0/8
-      if (first === 172 && second >= 16 && second <= 31) return false; // 172.16.0.0/12
-      if (first === 192 && second === 168) return false; // 192.168.0.0/16
-      if (first === 169 && second === 254) return false; // link-local
-    }
-
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**

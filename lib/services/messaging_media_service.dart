@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -119,6 +120,23 @@ class MessagingMediaService extends BaseService {
       final imageFile = File(imagePath);
       if (!await imageFile.exists()) {
         AppLogger.error('❌ Image file does not exist: $imagePath');
+        return false;
+      }
+
+      // Validate file size (max 10MB for messaging images)
+      final fileSize = await imageFile.length();
+      if (fileSize > 10 * 1024 * 1024) {
+        AppLogger.error('❌ Image too large: ${fileSize ~/ 1024}KB');
+        return false;
+      }
+
+      // Validate image format via magic bytes
+      final headerBytes = await imageFile.openRead(0, 12).fold<List<int>>(
+        [],
+        (prev, chunk) => prev..addAll(chunk),
+      );
+      if (!ImageFormatUtils.isSupportedImage(headerBytes)) {
+        AppLogger.error('❌ Unsupported image format: $imagePath');
         return false;
       }
 

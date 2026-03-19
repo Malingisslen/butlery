@@ -240,10 +240,10 @@ class ImportFailure extends ImportResultV2 {
     this.tier,
   });
 
-  /// Create from exception
+  /// Create from exception — generic user message, technical details logged only.
   factory ImportFailure.fromException(Object error, {String? pipeline}) {
     return ImportFailure(
-      message: 'Import failed: ${error.toString()}',
+      message: AppLocale.current.importErrorUnexpected,
       errorCode: ImportErrorCode.unknown,
       technicalDetails: error.toString(),
       pipeline: pipeline,

@@ -482,6 +482,13 @@ class FCMTokenManager {
         await _deactivateDeviceToken();
       }
 
+      // Invalidate token on Google's servers (not just Firestore)
+      try {
+        await _messaging.deleteToken();
+      } catch (e) {
+        AppLogger.warning('⚠️ Failed to delete FCM token from SDK: $e');
+      }
+
       // Mark device as inactive
       try {
         await _repository.markDeviceInactive(

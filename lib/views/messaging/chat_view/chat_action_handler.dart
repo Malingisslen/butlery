@@ -298,6 +298,7 @@ class ChatActionHandler {
         content: TextField(
           controller: controller,
           maxLines: null,
+          maxLength: 5000,
           decoration: InputDecoration(
             hintText: l10n.chatWriteYourMessage,
           ),
