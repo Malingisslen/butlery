@@ -1,5 +1,7 @@
 // lib/widgets/common/animations/animated_list_item.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -72,6 +74,8 @@ class _AnimatedListItemState extends State<AnimatedListItem>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   bool _reduceMotion = false;
+  Timer? _staggerTimer;
+  bool _hasAnimated = false;
 
   @override
   void initState() {
@@ -106,6 +110,9 @@ class _AnimatedListItemState extends State<AnimatedListItem>
   }
 
   void _startAnimation() {
+    if (_hasAnimated) return;
+    _hasAnimated = true;
+
     if (_reduceMotion) {
       // Skip animation, show immediately
       _controller.value = 1.0;
@@ -118,7 +125,8 @@ class _AnimatedListItemState extends State<AnimatedListItem>
     final delay = Duration(milliseconds: cappedMs);
 
     // Start animation after stagger delay
-    Future.delayed(delay, () {
+    _staggerTimer?.cancel();
+    _staggerTimer = Timer(delay, () {
       if (mounted) {
         _controller.forward();
       }
@@ -127,6 +135,7 @@ class _AnimatedListItemState extends State<AnimatedListItem>
 
   @override
   void dispose() {
+    _staggerTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }

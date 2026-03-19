@@ -8079,5 +8079,7 @@
   },
   "emailVerificationResend": "Send again",
   "emailVerificationContinue": "Continue anyway",
-  "emailVerificationSuccess": "Email verified!"
+  "emailVerificationSuccess": "Email verified!",
+  "recipeSelected": "Selected",
+  "recipeNotSelected": "Not selected"
 }

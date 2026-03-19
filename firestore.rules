@@ -115,9 +115,9 @@ service cloud.firestore {
       return !exists(/databases/$(database)/documents/blocks/$(targetUserId + '_' + request.auth.uid));
     }
 
-    // P3-13: Server-side UGC rate limiting via rateLimits subcollection
+    // P3-13: Server-side UGC rate limiting via rate_limits subcollection
     function rateLimitWrite(collection, seconds) {
-      let limitsPath = /databases/$(database)/documents/users/$(request.auth.uid)/rateLimits/$(collection);
+      let limitsPath = /databases/$(database)/documents/users/$(request.auth.uid)/rate_limits/$(collection);
       return !exists(limitsPath)
         || get(limitsPath).data.lastWrite + duration.value(seconds, 's') <= request.time;
     }
@@ -172,7 +172,7 @@ service cloud.firestore {
       }
 
       // User's personal tags for custom recipe categorization
-      match /personalTagIds/{tagId} {
+      match /personal_tags/{tagId} {
         allow read: if isOwner(userId);
         allow write: if isOwner(userId)
           // Structural validation: prevent oversized documents
@@ -181,7 +181,7 @@ service cloud.firestore {
       }
 
       // User's personal tag groups for organizing tags
-      match /personalTagGroups/{groupId} {
+      match /personal_tag_groups/{groupId} {
         allow read: if isOwner(userId);
         allow write: if isOwner(userId)
           && request.resource.data.get('name', '').size() <= 50;
@@ -199,7 +199,7 @@ service cloud.firestore {
       }
       
       // Friend categories/groups
-      match /friendCategories/{categoryId} {
+      match /friend_categories/{categoryId} {
         // Owner: read access
         allow read: if isOwner(userId);
 
@@ -245,7 +245,7 @@ service cloud.firestore {
       }
 
       // P3-06: Rate limit tracking subcollection — owner read/write only
-      match /rateLimits/{type} {
+      match /rate_limits/{type} {
         allow read, write: if isOwner(userId);
       }
 
@@ -265,7 +265,7 @@ service cloud.firestore {
       }
 
       // Conversation memberships — cross-user writes when adding to group chats
-      match /conversationMemberships/{conversationId} {
+      match /conversation_memberships/{conversationId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isAuthenticated()
           && request.resource.data.keys().hasOnly([
@@ -277,7 +277,7 @@ service cloud.firestore {
       }
 
       // Category memberships — category owner writes to friend's subcollection
-      match /categoryMemberships/{categoryId} {
+      match /category_memberships/{categoryId} {
         allow read, delete: if isOwner(userId);
         // Only the category owner can create memberships for friends
         allow create, update: if isAuthenticated()
@@ -405,125 +405,80 @@ service cloud.firestore {
     // ========================================
 
     match /shared_recipes/{shareId} {
+      function parentDoc() {
+        return get(/databases/$(database)/documents/shared_recipes/$(shareId)).data;
+      }
+      function isShareOwner() {
+        return request.auth.uid == parentDoc().sharedByUserId;
+      }
+      function isShareMember() {
+        return exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid));
+      }
+      function hasAccess() {
+        return isShareOwner() || isShareMember();
+      }
 
-      // Can list recipes you created (members use collection group query on /members/)
       allow list: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
-
-      // Can read specific document if you're the owner or a member (Issue #014: subcollection-based)
       allow get: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
+        request.auth.uid == resource.data.sharedByUserId || isShareMember()
       );
-
-      // Can create if you're the sharedByUserId (Issue #014: sharedWithUserIds removed, members in subcollection)
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'originalRecipeId', 'sharedAt']);
-
-      // Owner can update any field; members can update non-ownership fields only
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
-        (exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
+        (isShareMember()
          && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['sharedByUserId', 'originalRecipeId', 'sharedAt']))
       );
-
-      // Can delete if you're the owner
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
-      // ========================================
-      // SUBCOLLECTIONS (Issue #014: Unlimited Sharing)
-      // ========================================
-
-      // Members subcollection - who the recipe is shared with
       match /members/{userId} {
-        // Users can read their OWN membership (for collection group queries)
-        // Owner and other members can read the full member list
         allow read: if isAuthenticated() && (
-          userId == request.auth.uid ||
-          request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
+          userId == request.auth.uid || isShareOwner() || isShareMember()
         );
-
-        // Only owner can add members
         allow create: if isAuthenticated()
-          && request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId
+          && isShareOwner()
           && hasRequiredFields(['userId', 'addedBy', 'addedAt']);
-
-        // Members can remove themselves, owner can remove anyone
         allow delete: if isAuthenticated() && (
-          request.auth.uid == userId ||
-          request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId
+          request.auth.uid == userId || isShareOwner()
         );
       }
 
-      // Views subcollection - who has viewed the recipe
       match /views/{userId} {
-        // Anyone with access to the recipe can read views
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
-        );
-
-        // Users can mark themselves as having viewed
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'viewedAt']);
       }
 
-      // Engagements subcollection - who has imported the recipe
       match /engagements/{userId} {
-        // Anyone with access to the recipe can read engagements
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
-        );
-
-        // Users can mark themselves as having engaged (imported)
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'action', 'engagedAt']);
       }
 
-      // Dismissals subcollection - who has dismissed the recipe
       match /dismissals/{userId} {
-        // Owner can read who dismissed, users can read their own dismissal
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId ||
-          request.auth.uid == userId
-        );
-
-        // Users can dismiss for themselves
+        allow read: if isAuthenticated() && (isShareOwner() || request.auth.uid == userId);
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId'])
           && request.resource.data.keys().hasAll(['timestamp']);
-
-        // Users can undismiss for themselves
         allow delete: if isAuthenticated()
           && request.auth.uid == userId;
       }
 
-      // Collaborators subcollection - who is actively collaborating
       match /collaborators/{userId} {
-        // Anyone with access can read collaborators
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
-        );
-
-        // Owner can add collaborators, users can add themselves if collaboration allowed
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId ||
-          (request.auth.uid == userId && get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.allowCollaboration == true)
+          isShareOwner() ||
+          (request.auth.uid == userId && parentDoc().allowCollaboration == true)
         ) && hasRequiredFields(['userId', 'joinedAt']);
-
-        // Owner can remove collaborators, users can remove themselves
         allow delete: if isAuthenticated() && (
-          request.auth.uid == userId ||
-          request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId
+          request.auth.uid == userId || isShareOwner()
         );
       }
     }
@@ -556,122 +511,77 @@ service cloud.firestore {
     // ========================================
 
     match /shared_menus/{menuId} {
+      function parentDoc() {
+        return get(/databases/$(database)/documents/shared_menus/$(menuId)).data;
+      }
+      function isShareOwner() {
+        return request.auth.uid == parentDoc().sharedByUserId;
+      }
+      function isShareMember() {
+        return exists(/databases/$(database)/documents/shared_menus/$(menuId)/members/$(request.auth.uid));
+      }
+      function hasAccess() {
+        return isShareOwner() || isShareMember();
+      }
 
-      // Can list menus you created (for "my saved menus" view)
       allow list: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
-
-      // Can read specific document if you're the owner or a member (Issue #014: subcollection-based)
       allow get: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        exists(/databases/$(database)/documents/shared_menus/$(menuId)/members/$(request.auth.uid))
+        request.auth.uid == resource.data.sharedByUserId || isShareMember()
       );
-
-      // Can create if you're the sharedByUserId (Issue #014: sharedToUserIds removed, members in subcollection)
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'menuSnapshot', 'sharedAt']);
-
-      // Can update if you're the sharedByUserId
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
-
-      // Can delete if you're the sharedByUserId
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
-      // ========================================
-      // SUBCOLLECTIONS (Issue #014: Unlimited Sharing)
-      // ========================================
-
-      // Members subcollection - who the menu is shared with
       match /members/{userId} {
-        // Users can read their OWN membership (for collection group queries)
-        // Owner and other members can read the full member list
         allow read: if isAuthenticated() && (
-          userId == request.auth.uid ||
-          request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_menus/$(menuId)/members/$(request.auth.uid))
+          userId == request.auth.uid || isShareOwner() || isShareMember()
         );
-
-        // Only owner can add members
         allow create: if isAuthenticated()
-          && request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId
+          && isShareOwner()
           && hasRequiredFields(['userId', 'addedBy', 'addedAt']);
-
-        // Members can remove themselves, owner can remove anyone
         allow delete: if isAuthenticated() && (
-          request.auth.uid == userId ||
-          request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId
+          request.auth.uid == userId || isShareOwner()
         );
       }
 
-      // Views subcollection - who has viewed the menu
       match /views/{userId} {
-        // Anyone with access to the menu can read views
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_menus/$(menuId)/members/$(request.auth.uid))
-        );
-
-        // Users can mark themselves as having viewed
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId'])
           && request.resource.data.keys().hasAll(['timestamp']);
       }
 
-      // Engagements subcollection - who has imported the menu
       match /engagements/{userId} {
-        // Anyone with access to the menu can read engagements
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_menus/$(menuId)/members/$(request.auth.uid))
-        );
-
-        // Users can mark themselves as having engaged (imported)
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && request.resource.data.keys().hasAll(['timestamp']);
       }
 
-      // Dismissals subcollection - who has dismissed the menu
       match /dismissals/{userId} {
-        // Owner can read who dismissed, users can read their own dismissal
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId ||
-          request.auth.uid == userId
-        );
-
-        // Users can dismiss for themselves
+        allow read: if isAuthenticated() && (isShareOwner() || request.auth.uid == userId);
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId'])
           && request.resource.data.keys().hasAll(['timestamp']);
-
-        // Users can undismiss for themselves
         allow delete: if isAuthenticated()
           && request.auth.uid == userId;
       }
 
-      // Collaborators subcollection - who is actively collaborating
       match /collaborators/{userId} {
-        // Anyone with access can read collaborators
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_menus/$(menuId)/members/$(request.auth.uid))
-        );
-
-        // Owner can add collaborators, users can add themselves if collaboration allowed
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId ||
-          (request.auth.uid == userId && get(/databases/$(database)/documents/shared_menus/$(menuId)).data.allowCollaboration == true)
+          isShareOwner() ||
+          (request.auth.uid == userId && parentDoc().allowCollaboration == true)
         ) && hasRequiredFields(['userId', 'joinedAt']);
-
-        // Owner can remove collaborators, users can remove themselves
         allow delete: if isAuthenticated() && (
-          request.auth.uid == userId ||
-          request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId
+          request.auth.uid == userId || isShareOwner()
         );
       }
     }
@@ -681,133 +591,83 @@ service cloud.firestore {
     // ========================================
     
     match /shared_shopping_lists/{listId} {
-      // Can read if you're in the sharedToUserIds list or the sharedByUserId
+      function parentDoc() {
+        return get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data;
+      }
+      function isShareOwner() {
+        return request.auth.uid == parentDoc().sharedByUserId;
+      }
+      function isShareMember() {
+        return exists(/databases/$(database)/documents/shared_shopping_lists/$(listId)/members/$(request.auth.uid));
+      }
+      function hasAccess() {
+        return isShareOwner() || isShareMember();
+      }
+
       allow read: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
         request.auth.uid in resource.data.sharedToUserIds
       );
-
-      // Can create if you're the sharedByUserId and adding yourself to the list
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && request.auth.uid in request.resource.data.sharedToUserIds
         && hasRequiredFields(['sharedByUserId', 'sharedToUserIds', 'listSnapshot', 'sharedAt']);
-
-      // Can update if you're in the sharedToUserIds (for real-time collaboration)
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
         (request.auth.uid in resource.data.sharedToUserIds
          && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['sharedByUserId', 'sharedToUserIds', 'sharedAt']))
       );
-
-      // Can delete if you're the sharedByUserId
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
-      // ========================================
-      // SUBCOLLECTIONS (Issue #014: Unlimited Sharing)
-      // ========================================
-
-      // Members subcollection - who the shopping list is shared with
       match /members/{userId} {
-        // Users can read their OWN membership (for collection group queries)
-        // Owner and other members can read the full member list
         allow read: if isAuthenticated() && (
-          userId == request.auth.uid ||
-          request.auth.uid == get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_shopping_lists/$(listId)/members/$(request.auth.uid))
+          userId == request.auth.uid || isShareOwner() || isShareMember()
         );
-
-        // Only owner can add members
         allow create: if isAuthenticated()
-          && request.auth.uid == get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data.sharedByUserId
+          && isShareOwner()
           && hasRequiredFields(['userId', 'addedBy', 'addedAt']);
-
-        // Members can remove themselves, owner can remove anyone
         allow delete: if isAuthenticated() && (
-          request.auth.uid == userId ||
-          request.auth.uid == get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data.sharedByUserId
+          request.auth.uid == userId || isShareOwner()
         );
       }
 
-      // Views subcollection - who has viewed the shopping list
       match /views/{userId} {
-        // Anyone with access to the shopping list can read views
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_shopping_lists/$(listId)/members/$(request.auth.uid))
-        );
-
-        // Users can mark themselves as having viewed
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'viewedAt']);
       }
 
-      // Engagements subcollection - who has joined the shopping list
       match /engagements/{userId} {
-        // Anyone with access to the shopping list can read engagements
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data.sharedByUserId ||
-          exists(/databases/$(database)/documents/shared_shopping_lists/$(listId)/members/$(request.auth.uid))
-        );
-
-        // Users can mark themselves as having engaged (joined)
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'action', 'engagedAt']);
       }
 
-      // Dismissals subcollection - who has dismissed the shopping list
       match /dismissals/{userId} {
-        // Owner can read who dismissed, users can read their own dismissal
-        allow read: if isAuthenticated() && (
-          request.auth.uid == get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data.sharedByUserId ||
-          request.auth.uid == userId
-        );
-
-        // Users can dismiss for themselves
+        allow read: if isAuthenticated() && (isShareOwner() || request.auth.uid == userId);
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId'])
           && request.resource.data.keys().hasAll(['timestamp']);
-
-        // Users can undismiss for themselves
         allow delete: if isAuthenticated()
           && request.auth.uid == userId;
       }
 
-      // ========================================
-      // SHOPPING LIST ITEMS SUBCOLLECTION (Issue #015)
-      // ========================================
-      // Allows collaborative editing: all members can add/modify/remove items
       match /items/{itemId} {
-        // Helper function to check if user has access to the shopping list
-        function isSharedWithUser(userId) {
-          return userId == get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data.sharedByUserId
-              || exists(/databases/$(database)/documents/shared_shopping_lists/$(listId)/members/$(userId));
-        }
-
-        // Members can read all items
-        allow read: if isAuthenticated() && isSharedWithUser(request.auth.uid);
-
-        // Members can add items (collaborative shopping)
-        // Validates: required fields, itemId matches document ID, user claims their own ID
+        allow read: if isAuthenticated() && hasAccess();
         allow create: if isAuthenticated()
-          && isSharedWithUser(request.auth.uid)
+          && hasAccess()
           && hasRequiredFields(['id', 'name', 'amount', 'unit', 'category', 'bought'])
           && request.resource.data.id == itemId
           && request.resource.data.addedByUserId == request.auth.uid;
-
-        // Members can update items (check off, modify quantities, add notes)
-        // Validates: user claims their own ID in lastModifiedByUserId
         allow update: if isAuthenticated()
-          && isSharedWithUser(request.auth.uid)
+          && hasAccess()
           && request.resource.data.lastModifiedByUserId == request.auth.uid;
-
-        // Members can delete items (remove from shared list)
-        allow delete: if isAuthenticated() && isSharedWithUser(request.auth.uid);
+        allow delete: if isAuthenticated() && hasAccess();
       }
     }
     
@@ -1137,7 +997,7 @@ service cloud.firestore {
     // SHOPPING LIST TEMPLATES - Reusable shopping list patterns
     // ========================================
     
-    match /shoppingListTemplates/{templateId} {
+    match /shopping_list_templates/{templateId} {
       // Public templates can be read by anyone
       // Private templates can only be read by the creator
       allow read: if isAuthenticated() && (
@@ -1167,55 +1027,31 @@ service cloud.firestore {
     // SHOPPING LISTS - Top-level personal shopping lists
     // ========================================
 
+    // Legacy collection — reads allowed for migration, writes locked
     match /shoppingLists/{listId} {
-      // Can read if you're the owner
       allow read: if isAuthenticated()
         && request.auth.uid == resource.data.ownerId;
-
-      // Can create if authenticated and providing ownerId
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.ownerId;
-
-      // Can update if you're the owner
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
-
-      // Can delete if authenticated and you're the owner
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
+      allow write: if false;
     }
 
     // ========================================
     // SHARED SHOPPING LISTS - Shopping list sharing system
     // ========================================
 
+    // Legacy collection — reads allowed for migration, writes locked
     match /sharedShoppingLists/{listId} {
-
-      // Can read specific document if you shared it or it's shared with you
       allow get: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
         request.auth.uid in resource.data.sharedWithUserIds
       );
-
-      // Can create if you're the sharer
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'sharedWithUserIds', 'listData', 'sharedAt']);
-
-      // Can update if you're the sharer
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
-
-      // Can delete if you're the sharer
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
+      allow write: if false;
     }
 
     // ========================================
     // USER SHARED SHOPPING LISTS - Tracking received lists
     // ========================================
 
-    match /userSharedShoppingLists/{userId}/receivedLists/{listId} {
+    match /user_shared_shopping_lists/{userId}/received_lists/{listId} {
       // Users can read their own received lists
       allow read: if isAuthenticated() && request.auth.uid == userId;
 
@@ -1230,36 +1066,24 @@ service cloud.firestore {
     // SHARED MENUS - Menu sharing system
     // ========================================
 
+    // Legacy collection — reads allowed for migration, writes locked
     match /sharedMenus/{menuId} {
-
-      // Can read specific document if you shared it or it's shared with you
       allow get: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
         request.auth.uid in resource.data.sharedWithUserIds
       );
-
-      // Can list shared menus you're involved in
-      allow list: if isAuthenticated();
-
-      // Can create if you're the sharer
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'sharedWithUserIds', 'menu', 'sharedAt']);
-
-      // Can update if you're the sharer
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
-
-      // Can delete if you're the sharer
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
+      allow list: if isAuthenticated() && (
+        request.auth.uid == resource.data.sharedByUserId ||
+        request.auth.uid in resource.data.sharedWithUserIds
+      );
+      allow write: if false;
     }
 
     // ========================================
     // USER SHARED MENUS - Subcollection tracking
     // ========================================
 
-    match /userSharedMenus/{userId}/receivedMenus/{menuId} {
+    match /user_shared_menus/{userId}/received_menus/{menuId} {
       // Users can read their own received menus
       allow read: if isAuthenticated() && request.auth.uid == userId;
 
@@ -1280,11 +1104,6 @@ service cloud.firestore {
 
       // Can only write your own presence
       allow write: if isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // Legacy shared_content collection — locked down, use typed collections instead
-    match /shared_content/{contentId} {
-      allow read, write: if false;
     }
 
     // ========================================
@@ -1685,7 +1504,7 @@ service cloud.firestore {
 
     // Read-only tag configuration documents (allergens, dietary, cuisine,
     // properties, display). Managed by admin via console/Cloud Functions.
-    match /tagConfigs/{doc} {
+    match /tag_configs/{doc} {
       allow read: if isAuthenticated();
       allow write: if false;
     }
@@ -1721,7 +1540,10 @@ service cloud.firestore {
 
       match /clicks/{clickId} {
         allow read: if isAuthenticated();
-        allow create: if isAuthenticated();
+        allow create: if isAuthenticated()
+          && request.resource.data.keys().hasOnly(['userId', 'clickedAt', 'referrer'])
+          && request.resource.data.userId == request.auth.uid
+          && rateLimitWrite('deep_link_click', 10);
         allow update, delete: if false;
       }
     }
@@ -1742,7 +1564,7 @@ service cloud.firestore {
     // INGREDIENT SUGGESTIONS - User-submitted ingredients
     // ========================================
 
-    match /ingredientSuggestions/{suggestionId} {
+    match /ingredient_suggestions/{suggestionId} {
       allow read: if isAuthenticated()
         && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated()

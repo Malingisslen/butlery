@@ -6,7 +6,6 @@
 /// - Thumbnail generation for lists
 /// - Network bandwidth optimization
 
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -37,39 +36,11 @@ class ImageOptimizationParams {
     );
   }
 
-  /// Generate optimized URL with transformation parameters
+  /// Returns the original URL unchanged.
+  /// Firebase Storage doesn't support URL-based transforms;
+  /// use pre-generated thumbnails instead.
   String getOptimizedUrl(String originalUrl) {
-    // Check if URL supports transformation (e.g., Firebase Storage, Cloudinary)
-    if (_supportsTransformation(originalUrl)) {
-      final params = <String, String>{
-        'w': targetSize.width.isFinite
-            ? targetSize.width.round().toString()
-            : '800',
-        'h': targetSize.height.isFinite
-            ? targetSize.height.round().toString()
-            : '600',
-        'q': quality.toString(),
-        'f': format,
-      };
-
-      if (progressive) {
-        params['progressive'] = 'true';
-      }
-
-      // Add parameters to URL
-      final separator = originalUrl.contains('?') ? '&' : '?';
-      final queryString =
-          params.entries.map((e) => '${e.key}=${e.value}').join('&');
-
-      return '$originalUrl$separator$queryString';
-    }
-
     return originalUrl;
-  }
-
-  bool _supportsTransformation(String url) {
-    // Firebase Storage doesn't support URL-based transforms — use real thumbnails instead
-    return url.contains('cloudinary.com') || url.contains('imgix.net');
   }
 }
 
@@ -258,20 +229,9 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
   }
 
   /// Get thumbnail URL for progressive loading.
-  /// Uses real thumbnail URL when available, falls back to CDN params for supported hosts.
+  /// Uses real thumbnail URL when available, falls back to original URL.
   String _generateThumbnailUrl() {
-    if (widget.thumbnailUrl != null) return widget.thumbnailUrl!;
-
-    final params = ImageOptimizationParams(
-      targetSize: Size(
-        math.min(widget.targetSize.width, 50),
-        math.min(widget.targetSize.height, 50),
-      ),
-      quality: 30,
-      format: 'webp',
-    );
-
-    return params.getOptimizedUrl(widget.imageUrl);
+    return widget.thumbnailUrl ?? widget.imageUrl;
   }
 
   @override

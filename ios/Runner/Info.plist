@@ -63,15 +63,8 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>butlery</string>
-				<string>https</string>
 			</array>
 		</dict>
-	</array>
-	
-	<!-- Universal Links Configuration -->
-	<key>com.apple.developer.associated-domains</key>
-	<array>
-		<string>applinks:butlery.app</string>
 	</array>
 </dict>
 </plist>

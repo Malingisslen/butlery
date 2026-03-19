@@ -310,6 +310,15 @@ export const getCorrectionStats = functions.https.onCall(
       );
     }
 
+    const isAdmin = context.auth.token.admin === true ||
+                    context.auth.token.role === "admin";
+    if (!isAdmin) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Admin access required"
+      );
+    }
+
     const db = getDb();
     const limit = data?.limit || 50;
 

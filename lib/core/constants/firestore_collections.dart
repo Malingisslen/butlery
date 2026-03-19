@@ -19,7 +19,7 @@ abstract final class FirestoreCollections {
   static const String conversations = 'conversations';
   static const String messages = 'messages';
   static const String ingredients = 'ingredients';
-  static const String ingredientSuggestions = 'ingredientSuggestions';
+  static const String ingredientSuggestions = 'ingredient_suggestions';
   static const String auditLogs = 'audit_logs';
   static const String deletionAuditLogs = 'deletion_audit_logs';
   static const String feedback = 'feedback';
@@ -43,7 +43,7 @@ abstract final class FirestoreCollections {
   static const String unifiedSharedShoppingLists =
       'unified_shared_shopping_lists';
   static const String siteConfigs = 'site_configs';
-  static const String tagConfigs = 'tagConfigs';
+  static const String tagConfigs = 'tag_configs';
   static const String parsingCorrections = 'parsing_corrections';
   static const String deepLinks = 'deep_links';
   static const String connectivityTest = 'connectivity_test';
@@ -53,7 +53,7 @@ abstract final class FirestoreCollections {
   static const String notificationHistory = 'notification_history';
   static const String notificationBatches = 'notification_batches';
 
-  static const String shoppingListTemplates = 'shoppingListTemplates';
+  static const String shoppingListTemplates = 'shopping_list_templates';
 
   // ── User subcollections (under users/{userId}/) ──
 
@@ -61,25 +61,24 @@ abstract final class FirestoreCollections {
   static const String userMenus = 'menus';
   static const String userShoppingLists = 'shopping_lists';
   static const String userFriends = 'friends';
-  static const String userFriendsTop = 'userFriends';
-  static const String userFriendCategories = 'friendCategories';
-  static const String userCategoryMemberships = 'categoryMemberships';
-  static const String userPersonalTagIds = 'personalTagIds';
-  static const String userPersonalTagGroups = 'personalTagGroups';
+  static const String userFriendCategories = 'friend_categories';
+  static const String userCategoryMemberships = 'category_memberships';
+  static const String userPersonalTagIds = 'personal_tags';
+  static const String userPersonalTagGroups = 'personal_tag_groups';
   static const String userSettings = 'settings';
   static const String userConsent = 'consent';
-  static const String userConversationMemberships = 'conversationMemberships';
-  static const String userRateLimits = 'rateLimits';
-  static const String userSharedMenus = 'userSharedMenus';
-  static const String userSharedShoppingLists = 'userSharedShoppingLists';
+  static const String userConversationMemberships = 'conversation_memberships';
+  static const String userRateLimits = 'rate_limits';
+  static const String userSharedMenus = 'user_shared_menus';
+  static const String userSharedShoppingLists = 'user_shared_shopping_lists';
 
   // ── Shared content subcollections ──
 
   static const String members = 'members';
   static const String collaborators = 'collaborators';
   static const String items = 'items';
-  static const String receivedMenus = 'receivedMenus';
-  static const String receivedLists = 'receivedLists';
+  static const String receivedMenus = 'received_menus';
+  static const String receivedLists = 'received_lists';
   static const String counters = 'counters';
 
   // ── Other subcollections ──

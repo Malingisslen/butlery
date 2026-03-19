@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -160,16 +161,40 @@ class AccountDeletionService extends BaseService {
         'collections_failed': result['failedCollections'].length,
       });
 
-      if (result['failedCollections'].isEmpty) {
+      // Invalidate FCM token at SDK level before deleting auth
+      try {
+        await FirebaseMessaging.instance.deleteToken();
+      } catch (e) {
+        app_logger.AppLogger.warning(
+          '[$_logTag] Failed to delete FCM token from SDK: $e',
+        );
+      }
+
+      // Always attempt auth deletion — orphaned Firestore data can be cleaned
+      // by scheduled Cloud Functions, but a zombie auth entry cannot.
+      try {
         await user.delete();
         result['success'] = true;
-        app_logger.AppLogger.info(
-          '[$_logTag] Account deletion completed successfully for user: $userId',
+        if (result['failedCollections'].isNotEmpty) {
+          app_logger.AppLogger.warning(
+            '[$_logTag] Auth deleted but some Firestore collections failed: '
+            '${result['failedCollections']}',
+          );
+        } else {
+          app_logger.AppLogger.info(
+            '[$_logTag] Account deletion completed successfully for user: $userId',
+          );
+        }
+      } catch (authError) {
+        app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete auth entry',
+          authError,
         );
-      } else {
-        app_logger.AppLogger.warning(
-          '[$_logTag] Account deletion incomplete - some collections failed',
-        );
+        result['errors'].add('auth_deletion: ${authError.toString()}');
+        if (authError is FirebaseAuthException &&
+            authError.code == 'requires-recent-login') {
+          result['requiresReauth'] = true;
+        }
       }
 
       return result;

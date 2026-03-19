@@ -132,8 +132,8 @@ class _CookingModeContent extends StatelessWidget {
             child: InkWell(
               onTap: () => Navigator.pop(context),
               child: SizedBox(
-                width: 40,
-                height: 40,
+                width: AppDimensions.minTouchTarget,
+                height: AppDimensions.minTouchTarget,
                 child: Icon(
                   Icons.close,
                   color: cs.primary,
@@ -274,8 +274,8 @@ class _IngredientsPanel extends StatelessWidget {
       child: InkWell(
         onTap: onPressed,
         child: Container(
-          width: 36,
-          height: 36,
+          width: AppDimensions.minTouchTarget,
+          height: AppDimensions.minTouchTarget,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             border: Border.all(
@@ -320,8 +320,8 @@ class _InstructionsPanel extends StatelessWidget {
               children: [
                 // Step number badge
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: AppDimensions.minTouchTarget,
+                  height: AppDimensions.minTouchTarget,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: cs.surface,

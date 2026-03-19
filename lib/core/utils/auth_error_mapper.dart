@@ -19,7 +19,8 @@ String mapAuthErrorToMessage(FirebaseAuthException e) {
     'invalid-verification-code' => l.errorInvalidVerificationCode,
     'session-expired' ||
     'user-token-expired' ||
-    'invalid-user-token' =>
+    'invalid-user-token' ||
+    'requires-recent-login' =>
       l.errorSessionExpired,
     'quota-exceeded' => l.errorTooManySmsAttempts,
     'invalid-phone-number' => l.errorInvalidPhoneNumber,

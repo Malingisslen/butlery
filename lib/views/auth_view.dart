@@ -114,6 +114,7 @@ class _AuthViewState extends State<AuthView> {
               Image.asset(
                 'assets/illustrations/broccoli.png',
                 height: 60,
+                excludeFromSemantics: true,
               ),
               const SizedBox(width: AppDimensions.spacingL),
               Padding(
@@ -134,8 +135,7 @@ class _AuthViewState extends State<AuthView> {
           Text(
             context.l10n.authTagline,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.cardWhite
-                  .withValues(alpha: AppDimensions.opacityDark),
+              color: AppColors.cardWhite,
             ),
           ),
         ],
@@ -391,8 +391,8 @@ class _AuthViewState extends State<AuthView> {
       children: [
         Text(
           label,
-          style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: AppTextStyles.bodySmall
+              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         child,
@@ -407,8 +407,7 @@ class _AuthViewState extends State<AuthView> {
     final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       hintText: hint,
-      hintStyle:
-          AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
+      hintStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
       filled: true,
       fillColor: cs.surfaceContainerLow,
       suffixIcon: suffixIcon,
@@ -449,14 +448,18 @@ class _AuthViewState extends State<AuthView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            GestureDetector(
-              onTap: () => Navigator.pushNamed(context, Routes.termsOfService),
-              child: Text(
-                context.l10n.authTermsOfService,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: cs.primary,
-                  decoration: TextDecoration.underline,
-                  decorationColor: cs.primary,
+            Semantics(
+              link: true,
+              child: InkWell(
+                onTap: () =>
+                    Navigator.pushNamed(context, Routes.termsOfService),
+                child: Text(
+                  context.l10n.authTermsOfService,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: cs.primary,
+                    decoration: TextDecoration.underline,
+                    decorationColor: cs.primary,
+                  ),
                 ),
               ),
             ),
@@ -465,19 +468,22 @@ class _AuthViewState extends State<AuthView> {
               style: AppTextStyles.labelMedium
                   .copyWith(color: cs.onSurfaceVariant),
             ),
-            GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const PrivacyPolicyView(),
+            Semantics(
+              link: true,
+              child: InkWell(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PrivacyPolicyView(),
+                  ),
                 ),
-              ),
-              child: Text(
-                context.l10n.profilePrivacyPolicy,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: cs.primary,
-                  decoration: TextDecoration.underline,
-                  decorationColor: cs.primary,
+                child: Text(
+                  context.l10n.profilePrivacyPolicy,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: cs.primary,
+                    decoration: TextDecoration.underline,
+                    decorationColor: cs.primary,
+                  ),
                 ),
               ),
             ),
@@ -555,6 +561,7 @@ class _AuthViewState extends State<AuthView> {
               const SizedBox(height: AppDimensions.spacingXl),
               TextField(
                 key: const Key('reset_email_field'),
+                autofocus: true,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: context.l10n.authEmail,
