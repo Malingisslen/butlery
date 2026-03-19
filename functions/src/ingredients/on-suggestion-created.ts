@@ -11,6 +11,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { hashUid } from "../shared/hash-uid";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
@@ -42,27 +43,24 @@ interface IngredientSuggestion {
  * Event: onCreate
  */
 export const onSuggestionCreated = functions.firestore
-  .document("ingredientSuggestions/{suggestionId}")
+  .document("ingredient_suggestions/{suggestionId}")
   .onCreate(async (snapshot, context) => {
     const suggestionId = context.params.suggestionId;
     const suggestion = snapshot.data() as IngredientSuggestion;
 
     functions.logger.info(
-      `📥 New ingredient suggestion received: "${suggestion.ingredientName}"`,
+      `📥 New ingredient suggestion received`,
       {
         suggestionId,
-        userId: suggestion.userId,
-        ingredientName: suggestion.ingredientName,
-        originalName: suggestion.originalName,
+        userHash: hashUid(suggestion.userId),
         suggestedCategory: suggestion.suggestedCategory,
-        recipeContext: suggestion.recipeContext,
       }
     );
 
     try {
       // Update document with notification metadata
       await getDb()
-        .collection("ingredientSuggestions")
+        .collection("ingredient_suggestions")
         .doc(suggestionId)
         .update({
           notifiedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -73,7 +71,6 @@ export const onSuggestionCreated = functions.firestore
       functions.logger.info(
         `✅ Suggestion processed: ${suggestionId}`,
         {
-          ingredientName: suggestion.ingredientName,
           status: "notification_sent",
         }
       );
@@ -102,7 +99,7 @@ export const onSuggestionCreated = functions.firestore
  * Logs status changes for audit trail.
  */
 export const onSuggestionStatusChanged = functions.firestore
-  .document("ingredientSuggestions/{suggestionId}")
+  .document("ingredient_suggestions/{suggestionId}")
   .onUpdate(async (change, context) => {
     const before = change.before.data() as IngredientSuggestion;
     const after = change.after.data() as IngredientSuggestion;
@@ -117,22 +114,18 @@ export const onSuggestionStatusChanged = functions.firestore
       `📋 Suggestion status changed: ${before.status} → ${after.status}`,
       {
         suggestionId,
-        ingredientName: after.ingredientName,
         oldStatus: before.status,
         newStatus: after.status,
-        reviewedBy: after.reviewedBy,
       }
     );
 
     // If approved, log for ingredient sync
     if (after.status === "approved") {
       functions.logger.info(
-        `✅ Suggestion approved for addition: "${after.ingredientName}"`,
+        `✅ Suggestion approved for addition`,
         {
           suggestionId,
-          ingredientName: after.ingredientName,
           suggestedCategory: after.suggestedCategory,
-          suggestedProperties: after.suggestedProperties,
         }
       );
     }

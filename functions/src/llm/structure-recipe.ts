@@ -6,6 +6,7 @@
  */
 
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import {
   getGeminiClient,
@@ -24,6 +25,7 @@ import {
 } from "./gemini-client";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
+import { hashUid } from "../shared/hash-uid";
 
 // =============================================================================
 // Request/Response Types
@@ -68,7 +70,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
     secrets: [geminiApiKey],
     memory: "512MiB",
     timeoutSeconds: 60,
-    cors: true,
+    cors: ["https://butlery.app", "https://www.butlery.app"],
     region: "europe-west1",
   },
   withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
@@ -139,8 +141,8 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
           userPrompt = buildExtractionPrompt(cleanText, cleanSourceUrl);
       }
 
-      console.log(
-        `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${request.auth!.uid} (prompt v${PROMPT_VERSION})`
+      functions.logger.info(
+        `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${hashUid(request.auth!.uid)} (prompt v${PROMPT_VERSION})`
       );
 
       // Call Gemini API
@@ -155,7 +157,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       const content = response.text();
 
       if (!content) {
-        console.error("[structureRecipe] Empty response from Gemini");
+        functions.logger.error("[structureRecipe] Empty response from Gemini");
         return {
           success: false,
           error: "Inget svar från AI-tjänsten.",
@@ -170,7 +172,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       if (isIngredientLines) {
         const ingredients = parseIngredientLinesResponse(content);
         if (!ingredients) {
-          console.error("[structureRecipe] Failed to parse ingredient lines:", content);
+          functions.logger.error("[structureRecipe] Failed to parse ingredient lines:", content);
           return {
             success: false,
             error: "Kunde inte tolka AI-svaret som ingredienser.",
@@ -178,7 +180,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
           };
         }
 
-        console.log(
+        functions.logger.info(
           `[structureRecipe] Parsed ${ingredients.length} ingredient lines (cost: $${actualCost.toFixed(6)})`
         );
 
@@ -204,7 +206,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
 
       const recipe = parseRecipeResponse(content);
       if (!recipe) {
-        console.error("[structureRecipe] Failed to parse response:", content);
+        functions.logger.error("[structureRecipe] Failed to parse response:", content);
         return {
           success: false,
           error: "Kunde inte tolka AI-svaret som ett recept.",
@@ -217,7 +219,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         recipe.source = cleanSourceUrl;
       }
 
-      console.log(
+      functions.logger.info(
         `[structureRecipe] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
       );
 
@@ -228,7 +230,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         promptVersion: PROMPT_VERSION,
       };
     } catch (error) {
-      console.error("[structureRecipe] Error:", error);
+      functions.logger.error("[structureRecipe] Error:", error);
 
       if (error instanceof HttpsError) {
         throw error;

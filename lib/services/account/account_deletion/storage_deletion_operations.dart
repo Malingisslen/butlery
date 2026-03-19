@@ -89,6 +89,41 @@ class StorageDeletionOperations extends BaseStorageRepository {
     }
   }
 
+  /// Delete all realtime menus owned by the user (Firestore cleanup)
+  Future<bool> deleteRealtimeMenus(String userId) async {
+    try {
+      final realtimeMenus = await _firestore
+          .collection(FirestoreCollections.realtimeMenus)
+          .where('ownerId', isEqualTo: userId)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in realtimeMenus.docs) {
+        batch.delete(doc.reference);
+      }
+      if (realtimeMenus.docs.isNotEmpty) await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete realtime menus', e);
+      return false;
+    }
+  }
+
+  /// Delete presence document for the user
+  Future<bool> deletePresence(String userId) async {
+    try {
+      await _firestore
+          .collection(FirestoreCollections.presence)
+          .doc(userId)
+          .delete();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to delete presence', e);
+      return false;
+    }
+  }
+
   /// Clear offline cached data for the user (local storage cleanup)
   /// **Note:** This is local cache (not Firebase Storage), so it doesn't use BaseStorageRepository methods
   Future<bool> clearOfflineData(String userId) async {

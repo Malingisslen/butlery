@@ -39,9 +39,9 @@ export const correlateNotificationEffectiveness = functions
     functions.logger.info("Starting notification effectiveness correlation...");
 
     try {
-      // Query sent_notifications from the past 24h
+      // Query notification_history from the past 24h
       const notificationsSnapshot = await db
-        .collection("sent_notifications")
+        .collection("notification_history")
         .where("sentAt", ">=", twentyFourHoursAgo)
         .get();
 

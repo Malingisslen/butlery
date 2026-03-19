@@ -114,8 +114,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
       }
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av kollaborativ lista', e);
-      throw Exception(
-          AppLocale.current.errorCouldNotLoadListDetail(e.toString()));
+      throw Exception(AppLocale.current.errorUnexpected);
     }
   }
 

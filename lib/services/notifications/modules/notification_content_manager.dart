@@ -51,6 +51,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// final digest = await contentManager.generateDigestContent(activityData);
 /// ```
 class NotificationContentManager {
+  static final Random _secureRandom = Random.secure();
   final String _userId;
 
   NotificationContentManager({
@@ -64,7 +65,7 @@ class NotificationContentManager {
       String targetUserId, NotificationStrategy strategy) {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final random = Random().nextInt(1000);
+      final random = _secureRandom.nextInt(1000);
       final id =
           '${strategy.category.name}_${targetUserId}_${timestamp}_$random';
 

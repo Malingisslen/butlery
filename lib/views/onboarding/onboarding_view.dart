@@ -55,26 +55,31 @@ class _OnboardingContentState extends State<_OnboardingContent> {
       child: Scaffold(
         backgroundColor: cs.surface,
         body: SafeArea(
-          child: Column(
-            children: [
-              // Top bar with skip button
-              _buildTopBar(context, viewModel),
-              // Page content
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: viewModel.setPage,
-                  children: const [
-                    OnboardingWelcomePage(),
-                    OnboardingAllergenPage(),
-                    OnboardingDietaryPage(),
-                    OnboardingImportPage(),
-                  ],
-                ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: Column(
+                children: [
+                  // Top bar with skip button
+                  _buildTopBar(context, viewModel),
+                  // Page content
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: viewModel.setPage,
+                      children: const [
+                        OnboardingWelcomePage(),
+                        OnboardingAllergenPage(),
+                        OnboardingDietaryPage(),
+                        OnboardingImportPage(),
+                      ],
+                    ),
+                  ),
+                  // Bottom section: dot indicators + navigation button
+                  _buildBottomSection(context, viewModel),
+                ],
               ),
-              // Bottom section: dot indicators + navigation button
-              _buildBottomSection(context, viewModel),
-            ],
+            ),
           ),
         ),
       ),

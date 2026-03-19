@@ -147,7 +147,7 @@ class IntelligentCacheManager {
   UserBehaviorPattern? _currentPattern;
   Timer? _prefetchTimer;
   Timer? _behaviorSaveTimer;
-  int _currentMemoryUsage = 0; // in bytes
+  bool _clearInProgress = false;
 
   // Services (lazy loaded)
   UnifiedRecipeService? _recipeService;
@@ -247,8 +247,25 @@ class IntelligentCacheManager {
     }
   }
 
+  /// Compute current memory usage from actual cache contents
+  int get _currentMemoryUsage {
+    var total = 0;
+    for (final entry in _recipeCache.values) {
+      total += entry.size;
+    }
+    for (final entry in _userCache.values) {
+      total += entry.size;
+    }
+    for (final entry in _genericCache.values) {
+      total += entry.size;
+    }
+    return total;
+  }
+
   /// Cache a recipe with memory management
   void _cacheRecipe(Recipe recipe) {
+    if (_clearInProgress) return;
+
     final size = _estimateRecipeSize(recipe);
 
     // Check memory pressure
@@ -259,8 +276,6 @@ class IntelligentCacheManager {
       data: recipe,
       size: size,
     );
-
-    _currentMemoryUsage += size;
   }
 
   /// Preload multiple recipes
@@ -400,7 +415,6 @@ class IntelligentCacheManager {
       }
 
       freedBytes += entry.size;
-      _currentMemoryUsage -= entry.size;
 
       AppLogger.debug(
           'Evicted cache entry: ${entry.key} (score: ${entry.evictionScore.toStringAsFixed(2)})');
@@ -487,14 +501,18 @@ class IntelligentCacheManager {
 
   /// Clear all caches
   Future<void> clearCache() async {
-    _recipeCache.clear();
-    _userCache.clear();
-    _genericCache.clear();
-    _currentMemoryUsage = 0;
+    _clearInProgress = true;
+    try {
+      _recipeCache.clear();
+      _userCache.clear();
+      _genericCache.clear();
 
-    await _behaviorCache.clear();
+      await _behaviorCache.clear();
 
-    AppLogger.info('Cleared all intelligent caches');
+      AppLogger.info('Cleared all intelligent caches');
+    } finally {
+      _clearInProgress = false;
+    }
   }
 
   /// Pause background operations when app goes to background.
@@ -542,12 +560,6 @@ class IntelligentCacheManager {
       }
     } else {
       _userCache.clear();
-    }
-
-    // Reset memory tracking
-    _currentMemoryUsage = 0;
-    for (final entry in _userCache.values) {
-      _currentMemoryUsage += entry.size;
     }
 
     final freedMemory = beforeMemory - _currentMemoryUsage;

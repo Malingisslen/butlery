@@ -150,6 +150,20 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           );
         }
 
+        if (vm.conversationsError != null) {
+          return EmptyStates.buildEmptyState(
+            context,
+            variant: EmptyStateVariant.generic,
+            icon: Icons.error_outline,
+            title: l10n.errorGeneric,
+            subtitle: vm.conversationsError!,
+            customAction: StyledButton.primary(
+              text: l10n.commonRetry,
+              onPressed: vm.refresh,
+            ),
+          );
+        }
+
         if (!vm.hasConversations) {
           if (vm.searchQuery.isNotEmpty) {
             return EmptyStates.buildEmptyState(
@@ -493,12 +507,11 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
       // Try friends list first, fall back to UserService for non-friend DM partners
-      final profile =
-          friendsService.friends.firstWhereOrNull(
-                (f) => f.uid == otherParticipantId,
-              ) ??
-              await ServiceLocator.get<UserService>()
-                  .getUserProfile(otherParticipantId);
+      final profile = friendsService.friends.firstWhereOrNull(
+            (f) => f.uid == otherParticipantId,
+          ) ??
+          await ServiceLocator.get<UserService>()
+              .getUserProfile(otherParticipantId);
 
       if (profile == null) throw Exception('Profile not found');
 

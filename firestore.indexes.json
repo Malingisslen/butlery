@@ -249,6 +249,20 @@
           "arrayConfig": "CONTAINS"
         },
         {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "conversations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "participantIds",
+          "arrayConfig": "CONTAINS"
+        },
+        {
           "fieldPath": "isGroup",
           "order": "ASCENDING"
         },
@@ -319,7 +333,7 @@
       ]
     },
     {
-      "collectionGroup": "shoppingListTemplates",
+      "collectionGroup": "shopping_list_templates",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -333,7 +347,7 @@
       ]
     },
     {
-      "collectionGroup": "shoppingListTemplates",
+      "collectionGroup": "shopping_list_templates",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -405,7 +419,7 @@
   ],
   "fieldOverrides": [
     {
-      "collectionGroup": "friendCategories",
+      "collectionGroup": "friend_categories",
       "fieldPath": "friendUserIds",
       "indexes": [
         {

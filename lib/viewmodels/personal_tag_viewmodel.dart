@@ -128,6 +128,7 @@ class PersonalTagViewModel extends ChangeNotifier
       _watchTagsWithGroups();
 
       _retryAttempts = 0;
+      setLoading(false);
 
       AppLogger.info(
         'PersonalTagViewModel initialized with '
@@ -143,14 +144,14 @@ class PersonalTagViewModel extends ChangeNotifier
           'Retrying PersonalTagViewModel init in ${delay.inSeconds}s '
           '(attempt $_retryAttempts/$_maxRetryAttempts)',
         );
+        // Loading stays true during retry delay — no flicker
         await Future.delayed(delay);
         if (isDisposed) return;
         return initialize();
       }
 
-      setError(AppLocale.current.errorCouldNotLoadTags);
-    } finally {
       setLoading(false);
+      setError(AppLocale.current.errorCouldNotLoadTags);
     }
   }
 

@@ -135,10 +135,10 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _stateManager.handleOperationError(
           AppLocale.current.errorImportFailed, e);
 
-      // Track menu generation failure
+      // Track menu generation failure — log generic code, not full exception
       await _analyticsService.logMenuGenerationFailed(
         errorCode: 'menu_generation_error',
-        errorMessage: e.toString(),
+        errorMessage: 'menu_generation_failed',
       );
     } finally {
       _stateManager.setGenerating(false);

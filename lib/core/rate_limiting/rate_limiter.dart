@@ -143,7 +143,11 @@ class RateLimitResult {
   }
 }
 
-/// Client-side rate limiter using token bucket algorithm
+/// Client-side rate limiter using token bucket algorithm.
+///
+/// SECURITY NOTE: This is a UX-only rate limiter (in-memory, resets on app restart).
+/// Actual enforcement is server-side in Cloud Functions (functions/src/middleware/rate_limiter.ts)
+/// which uses Firestore-backed token buckets and fails closed on errors.
 class RateLimiter {
   static final RateLimiter _instance = RateLimiter._internal();
   factory RateLimiter() => _instance;

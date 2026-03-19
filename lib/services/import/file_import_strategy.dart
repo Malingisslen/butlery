@@ -75,7 +75,8 @@ class FileImportStrategy extends ImportStrategy {
       );
     } catch (e) {
       AppLogger.error('File import failed', e);
-      return ImportResult.failure('Import failed: ${e.toString()}');
+      return ImportResult.failure(
+          'Could not import from file. Please try again.');
     }
   }
 
@@ -103,7 +104,8 @@ class FileImportStrategy extends ImportStrategy {
       }
     } catch (e) {
       AppLogger.error('Content import failed', e);
-      return ImportResult.failure('Import failed: ${e.toString()}');
+      return ImportResult.failure(
+          'Could not parse file content. Please check the file format.');
     }
   }
 

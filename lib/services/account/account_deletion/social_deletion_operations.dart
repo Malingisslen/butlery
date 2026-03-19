@@ -27,12 +27,48 @@ class SocialDeletionOperations {
       var batch = _firestore.batch();
       var opCount = 0;
 
-      final queries = [
-        _firestore
+      // Read friends list first — needed for reverse cleanup
+      final friendsSnapshot = await _firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.userFriends)
+          .get();
+
+      final friendIds = friendsSnapshot.docs.map((d) => d.id).toList();
+
+      // Clean up reverse friend links and categoryMemberships on each friend
+      for (final friendId in friendIds) {
+        // Remove this user from friend's friends list
+        batch.delete(_firestore
             .collection(FirestoreCollections.users)
-            .doc(userId)
+            .doc(friendId)
             .collection(FirestoreCollections.userFriends)
-            .get(),
+            .doc(userId));
+        opCount++;
+        var state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
+
+        // Remove categoryMemberships where this user is the owner
+        final memberships = await _firestore
+            .collection(FirestoreCollections.users)
+            .doc(friendId)
+            .collection(FirestoreCollections.userCategoryMemberships)
+            .where('ownerId', isEqualTo: userId)
+            .get();
+
+        for (final doc in memberships.docs) {
+          batch.delete(doc.reference);
+          opCount++;
+          state = await _commitIfNeeded(batch, opCount);
+          batch = state.batch;
+          opCount = state.count;
+        }
+      }
+
+      // Delete user's own friends list, categories, and requests
+      final queries = [
+        Future.value(friendsSnapshot), // Already fetched above
         _firestore
             .collection(FirestoreCollections.users)
             .doc(userId)
