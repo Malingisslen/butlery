@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
-import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
-import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
+import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -166,24 +165,16 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     if (confirm != true || !mounted) return;
 
     // Re-authenticate before unenrolling MFA (sensitive operation)
-    final password = await ProfileDialogs.showPasswordDialog(context);
-    if (password == null || !mounted) return;
+    final reauthSuccess = await AuthActionHandler.reauthenticate(
+      context,
+      onError: (msg) => setState(() {
+        _errorMessage = msg;
+        _isLoading = false;
+      }),
+    );
+    if (!reauthSuccess) return;
 
     setState(() => _isLoading = true);
-
-    final authService = ServiceLocator.get<AuthService>();
-    final reauthSuccess =
-        await authService.reauthenticateWithPassword(password);
-    if (!reauthSuccess) {
-      if (mounted) {
-        setState(() {
-          _errorMessage =
-              authService.errorMessage ?? context.l10n.errorSessionExpired;
-          _isLoading = false;
-        });
-      }
-      return;
-    }
 
     final success = await _authService.unenrollMfa(factor);
 
