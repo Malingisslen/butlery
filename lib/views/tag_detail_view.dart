@@ -55,6 +55,7 @@ class _TagDetailViewContent extends StatefulWidget {
 class _TagDetailViewContentState extends State<_TagDetailViewContent> {
   bool _isEditMode = false;
   final _nameController = TextEditingController();
+  final _nameFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -70,6 +71,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
   @override
   void dispose() {
     _nameController.dispose();
+    _nameFocusNode.dispose();
     super.dispose();
   }
 
@@ -77,6 +79,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     setState(() {
       _isEditMode = true;
       _nameController.text = tag.name;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _nameFocusNode.requestFocus();
     });
   }
 
@@ -288,6 +293,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
                   const SizedBox(height: AppDimensions.spacingSm),
                   TextField(
                     controller: _nameController,
+                    focusNode: _nameFocusNode,
                     decoration: InputDecoration(
                       hintText: context.l10n.tagDetailNameHint,
                       border: const OutlineInputBorder(),

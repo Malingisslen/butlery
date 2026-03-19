@@ -8079,5 +8079,7 @@
   },
   "emailVerificationResend": "Skicka igen",
   "emailVerificationContinue": "Forts\u00e4tt \u00e4nd\u00e5",
-  "emailVerificationSuccess": "E-post verifierad!"
+  "emailVerificationSuccess": "E-post verifierad!",
+  "recipeSelected": "Markerad",
+  "recipeNotSelected": "Ej markerad"
 }

@@ -517,10 +517,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           Positioned(
             top: AppDimensions.spacingSm,
             left: AppDimensions.spacingSm,
-            child: Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
-              color: isSelected ? cs.primary : cs.outline,
-              size: AppDimensions.iconSizeM,
+            child: Semantics(
+              selected: isSelected,
+              label: isSelected
+                  ? context.l10n.recipeSelected
+                  : context.l10n.recipeNotSelected,
+              child: Icon(
+                isSelected ? Icons.check_circle : Icons.circle_outlined,
+                color: isSelected ? cs.primary : cs.outline,
+                size: AppDimensions.iconSizeM,
+              ),
             ),
           ),
         ],

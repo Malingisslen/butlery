@@ -324,11 +324,19 @@ export const seedSiteConfigs = functions.https.onCall(
  */
 export const getSiteConfigStats = functions.https.onCall(
   async (data, context) => {
-    // Require authentication
     if (!context.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
-        "Must be logged in"
+        "Authentication required"
+      );
+    }
+
+    const isAdmin = context.auth.token.admin === true ||
+                    context.auth.token.role === "admin";
+    if (!isAdmin) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Admin access required"
       );
     }
 

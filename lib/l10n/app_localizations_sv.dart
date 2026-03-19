@@ -11655,4 +11655,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get emailVerificationSuccess => 'E-post verifierad!';
+
+  @override
+  String get recipeSelected => 'Markerad';
+
+  @override
+  String get recipeNotSelected => 'Ej markerad';
 }

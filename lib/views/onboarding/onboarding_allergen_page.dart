@@ -101,8 +101,8 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
           const SizedBox(height: AppDimensions.spacingLg),
           Expanded(
             child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 220,
                 crossAxisSpacing: AppDimensions.spacingSm,
                 mainAxisSpacing: AppDimensions.spacingSm,
                 childAspectRatio: 2.5,

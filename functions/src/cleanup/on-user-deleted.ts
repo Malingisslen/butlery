@@ -15,6 +15,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { withTimeout } from "../shared/with-timeout";
+import { cleanUserFromLearnedAliases } from "../analytics/analyze-corrections";
 
 const db = admin.firestore();
 const BATCH_LIMIT = 500;
@@ -70,7 +71,10 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   // 5. Clean up feedback submissions and screenshots
   results.feedbackCleaned = await cleanupFeedback(userId);
 
-  // 6. Delete public profile
+  // 6. GDPR: Remove userId from learned ingredient aliases
+  await cleanUserFromLearnedAliases(userId);
+
+  // 7. Delete public profile
   await db.collection("public_profiles").doc(userId).delete();
 
   functions.logger.info(`Cleanup results for ${userId}:`, results);
@@ -169,7 +173,7 @@ async function cleanupFriendRequests(userId: string): Promise<number> {
  */
 async function cleanupGroupMemberships(userId: string): Promise<number> {
   const groupsSnapshot = await db
-    .collectionGroup("friendCategories")
+    .collectionGroup("friend_categories")
     .where("friendUserIds", "array-contains", userId)
     .get();
 

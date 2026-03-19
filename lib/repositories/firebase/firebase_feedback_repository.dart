@@ -77,6 +77,10 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
 
   @override
   Future<String> uploadScreenshot(String userId, Uint8List bytes) async {
+    if (bytes.length > 5 * 1024 * 1024) {
+      throw ArgumentError('Screenshot exceeds 5MB limit');
+    }
+
     try {
       requireCurrentUserId();
       final timestamp = DateTime.now().millisecondsSinceEpoch;

@@ -3,6 +3,8 @@
 /// Uses the arta/artskida0-5.PNG frames to create a breathing animation
 /// where peas fill and empty (0→5→0 loop) with 100-150ms frame swaps.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -54,7 +56,7 @@ class _PeaLoadingAnimationState extends State<PeaLoadingAnimation>
   static const _frameSequence = [0, 1, 2, 3, 4, 5, 4, 3, 2, 1];
 
   int _currentSequenceIndex = 0;
-  bool _isDisposed = false;
+  Timer? _animationTimer;
 
   @override
   void initState() {
@@ -64,22 +66,21 @@ class _PeaLoadingAnimationState extends State<PeaLoadingAnimation>
 
   @override
   void dispose() {
-    _isDisposed = true;
+    _animationTimer?.cancel();
     super.dispose();
   }
 
   void _startAnimation() {
-    if (_isDisposed) return;
-
-    Future.delayed(widget.frameInterval, () {
-      if (_isDisposed || !mounted) return;
+    _animationTimer = Timer.periodic(widget.frameInterval, (_) {
+      if (!mounted) {
+        _animationTimer?.cancel();
+        return;
+      }
 
       setState(() {
         _currentSequenceIndex =
             (_currentSequenceIndex + 1) % _frameSequence.length;
       });
-
-      _startAnimation();
     });
   }
 

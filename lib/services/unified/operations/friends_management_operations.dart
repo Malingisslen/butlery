@@ -444,7 +444,7 @@ class FriendsManagementOperations extends BaseService {
       // Query Firebase for the target user's friends
       final firestore = _parent.firestore;
       final targetUserFriendsQuery = await firestore
-          .collection(FirestoreCollections.userFriendsTop)
+          .collection(FirestoreCollections.users)
           .doc(userId)
           .collection(FirestoreCollections.userFriends)
           .get();

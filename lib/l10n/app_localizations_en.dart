@@ -11623,4 +11623,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailVerificationSuccess => 'Email verified!';
+
+  @override
+  String get recipeSelected => 'Selected';
+
+  @override
+  String get recipeNotSelected => 'Not selected';
 }

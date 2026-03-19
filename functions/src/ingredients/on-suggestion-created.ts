@@ -43,7 +43,7 @@ interface IngredientSuggestion {
  * Event: onCreate
  */
 export const onSuggestionCreated = functions.firestore
-  .document("ingredientSuggestions/{suggestionId}")
+  .document("ingredient_suggestions/{suggestionId}")
   .onCreate(async (snapshot, context) => {
     const suggestionId = context.params.suggestionId;
     const suggestion = snapshot.data() as IngredientSuggestion;
@@ -60,7 +60,7 @@ export const onSuggestionCreated = functions.firestore
     try {
       // Update document with notification metadata
       await getDb()
-        .collection("ingredientSuggestions")
+        .collection("ingredient_suggestions")
         .doc(suggestionId)
         .update({
           notifiedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -99,7 +99,7 @@ export const onSuggestionCreated = functions.firestore
  * Logs status changes for audit trail.
  */
 export const onSuggestionStatusChanged = functions.firestore
-  .document("ingredientSuggestions/{suggestionId}")
+  .document("ingredient_suggestions/{suggestionId}")
   .onUpdate(async (change, context) => {
     const before = change.before.data() as IngredientSuggestion;
     const after = change.after.data() as IngredientSuggestion;
