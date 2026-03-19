@@ -14,6 +14,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { checkRateLimit } from "../middleware/rate_limiter";
+import { isAllowedUrl } from "../shared/url-safety";
 
 /**
  * Sanitizes user-provided text by stripping HTML tags.
@@ -23,41 +24,6 @@ import { checkRateLimit } from "../middleware/rate_limiter";
  * - Future web notification support would be vulnerable to XSS
  * - Ensures consistent plain-text display across all platforms
  */
-/**
- * Validates that an image URL is safe (HTTPS, no private IPs) to prevent SSRF.
- */
-function isAllowedImageUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:") return false;
-
-    const hostname = parsed.hostname.toLowerCase();
-    if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "[::1]" ||
-      hostname === "0.0.0.0"
-    ) {
-      return false;
-    }
-
-    // Block private IP ranges
-    const parts = hostname.split(".");
-    if (parts.length === 4 && parts.every((p) => /^\d+$/.test(p))) {
-      const first = parseInt(parts[0]);
-      const second = parseInt(parts[1]);
-      if (first === 10) return false;
-      if (first === 172 && second >= 16 && second <= 31) return false;
-      if (first === 192 && second === 168) return false;
-      if (first === 169 && second === 254) return false;
-    }
-
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function sanitizeText(text: string | undefined): string | undefined {
   if (!text) return text;
   // Strip all HTML tags and decode common HTML entities
@@ -218,7 +184,7 @@ export const sendNotification = functions.https.onCall(
           body: sanitizeText(body) || body!,
         };
 
-        if (imageUrl && isAllowedImageUrl(imageUrl)) {
+        if (imageUrl && isAllowedUrl(imageUrl)) {
           message.notification.imageUrl = imageUrl;
         }
 
@@ -564,7 +530,7 @@ async function sendNotificationInternal(
         title: sanitizeText(title) || "",
         body: sanitizeText(body) || "",
       };
-      if (imageUrl && isAllowedImageUrl(imageUrl)) {
+      if (imageUrl && isAllowedUrl(imageUrl)) {
         message.notification.imageUrl = imageUrl;
       }
       message.android = {

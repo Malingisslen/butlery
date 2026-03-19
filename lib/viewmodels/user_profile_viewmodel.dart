@@ -162,9 +162,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
             result.error ?? AppLocale.current.errorCouldNotUpdate('avatar');
         throw Exception(_operationError);
       }
-    } catch (e, stackTrace) {
-      AppLogger.error('🖼️ VIEWMODEL ERROR: Exception in uploadAvatar: $e');
-      AppLogger.error('🖼️ VIEWMODEL ERROR: Stack trace: $stackTrace');
+    } catch (e) {
       AppLogger.error('Avatar upload failed', e);
       _operationError ??= AppLocale.current.errorGeneric;
       return false;

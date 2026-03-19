@@ -69,6 +69,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive foundational ViewModel base class providing advanced MVVM architecture and state management for Flutter applications.
 /// Serves as the foundation for all ViewModels in the application, providing essential MVVM patterns including
@@ -183,7 +184,7 @@ abstract class BaseViewModel extends ChangeNotifier {
     } catch (e) {
       // Log full technical details but only show the prefix to users
       AppLogger.error(errorPrefix ?? 'Async operation failed', e);
-      setError(errorPrefix ?? 'Ett oväntat fel uppstod');
+      setError(errorPrefix ?? AppLocale.current.errorUnexpected);
       rethrow;
     }
   }
@@ -221,7 +222,7 @@ abstract class BaseViewModel extends ChangeNotifier {
     } catch (e) {
       // Log full technical details but only show the prefix to users
       AppLogger.error(errorPrefix ?? 'Async void operation failed', e);
-      setError(errorPrefix ?? 'Ett oväntat fel uppstod');
+      setError(errorPrefix ?? AppLocale.current.errorUnexpected);
       return false;
     }
   }

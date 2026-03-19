@@ -11,12 +11,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import * as crypto from "crypto";
-
-/** Hash userId for GDPR-safe logging (dietary prefs = special category data). */
-function hashUserId(uid: string): string {
-  return crypto.createHash("sha256").update(uid).digest("hex").substring(0, 12);
-}
+import { hashUid } from "../shared/hash-uid";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
@@ -57,7 +52,7 @@ export const onSuggestionCreated = functions.firestore
       `📥 New ingredient suggestion received`,
       {
         suggestionId,
-        userHash: hashUserId(suggestion.userId),
+        userHash: hashUid(suggestion.userId),
         suggestedCategory: suggestion.suggestedCategory,
       }
     );

@@ -203,14 +203,6 @@ class AuthService extends ChangeNotifier
   }
 
   Future<void> forceSignOut() async {
-    // Clean up FCM tokens before sign-out to prevent stale push notifications.
-    // Done first and independently so sign-out proceeds even if cleanup fails.
-    try {
-      await ServiceLocator.tryGet<NotificationService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning('FCM token cleanup failed during force sign-out: $e');
-    }
-
     try {
       _resetSessionScopedServices();
       await _authRepository.signOut();
