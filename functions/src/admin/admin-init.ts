@@ -49,15 +49,15 @@ export function findFirebaseCredentials(): string | null {
  * Initialize Firebase Admin with auto-discovered credentials.
  * Idempotent — safe to call multiple times.
  */
-export function initializeAdminApp(): void {
-  if (admin.apps.length) return;
+export function initializeAdminApp(): admin.app.App {
+  if (admin.apps.length) return admin.app();
 
   const credPath = findFirebaseCredentials();
   if (credPath) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = credPath;
     console.error(`Using credentials: ${credPath}`);
   }
-  admin.initializeApp({
+  return admin.initializeApp({
     credential: admin.credential.applicationDefault(),
     projectId: PROJECT_ID,
   });
