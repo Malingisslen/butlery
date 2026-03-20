@@ -4,6 +4,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/block_record.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -11,7 +12,7 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
   FirebaseBlockRepository({super.firestore, required super.authRepository});
 
   @override
-  String get collectionName => 'blocks';
+  String get collectionName => FirestoreCollections.blocks;
 
   @override
   BlockRecord fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {

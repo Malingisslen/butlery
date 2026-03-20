@@ -78,15 +78,14 @@ export const cleanupOldRateLimits = functions
       const docsToDelete: admin.firestore.DocumentReference[] = [];
 
       for (const userDoc of usersSnapshot.docs) {
-        const rateLimitsRef = userDoc.ref.collection("rateLimits");
+        const rateLimitsRef = userDoc.ref.collection("rate_limits");
         const rateLimitsSnapshot = await rateLimitsRef.get();
 
         for (const limitDoc of rateLimitsSnapshot.docs) {
           const data = limitDoc.data();
 
-          // Check the most recent window start timestamp
-          const lastUpdate = data.dayWindowStart?.toDate() ||
-                            data.monthWindowStart?.toDate();
+          // Check the last write timestamp (written by Firestore rules rateLimitWrite)
+          const lastUpdate = data.lastWrite?.toDate();
 
           if (lastUpdate && lastUpdate < cutoffDate) {
             docsToDelete.push(limitDoc.ref);

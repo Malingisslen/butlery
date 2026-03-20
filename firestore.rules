@@ -14,12 +14,12 @@ service cloud.firestore {
     //   public_profiles, friend_requests, group_invitations,
     //   shared_recipes(/members/views/engagements/dismissals/collaborators),
     //   shared_menus(same subs), shared_shopping_lists(same subs + /items),
-    //   shared_personal_tags, recipe_comments, recipe_ratings,
-    //   recipe_social_stats, menu_ratings, menu_comments
+    //   shared_personal_tags, recipe_comments(/likes), recipe_ratings,
+    //   recipe_social_stats (server-only), menu_ratings, menu_comments
     //
     // Realtime collaboration:
     //   realtime_recipes(/presence), realtime_menus(/presence),
-    //   realtime_resources(/presence), recipePresence(/activeUsers)
+    //   recipePresence(/activeUsers)
     //
     // Infrastructure / read-only:
     //   ingredients (global), ingredient_substitutions, tag_configs,
@@ -444,10 +444,12 @@ service cloud.firestore {
         && isNotBlockedBy(request.resource.data.toUserId)
         && rateLimitWrite('group_invitations', 10);
       
-      // Can update if you're the recipient
-      allow update: if isAuthenticated() 
+      // Can update if you're the recipient — only status + response/expiry timestamps
+      allow update: if isAuthenticated()
         && request.auth.uid == resource.data.toUserId
-        && request.resource.data.status in ['accepted', 'rejected'];
+        && request.resource.data.status in ['accepted', 'rejected', 'expired']
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'respondedAt', 'expiredAt']);
       
       // Can delete if you're the sender or recipient
       allow delete: if isAuthenticated() && (
@@ -468,7 +470,8 @@ service cloud.firestore {
       );
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'originalRecipeId', 'sharedAt']);
+        && hasRequiredFields(['sharedByUserId', 'originalRecipeId', 'sharedAt'])
+        && rateLimitWrite('shared_recipes', 10);
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
         (isSharedMember('shared_recipes', shareId)
@@ -495,6 +498,7 @@ service cloud.firestore {
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'viewedAt']);
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 
       match /engagements/{userId} {
@@ -502,6 +506,7 @@ service cloud.firestore {
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'action', 'engagedAt']);
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 
       match /dismissals/{userId} {
@@ -560,7 +565,8 @@ service cloud.firestore {
       );
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'menuSnapshot', 'sharedAt']);
+        && hasRequiredFields(['sharedByUserId', 'menuSnapshot', 'sharedAt'])
+        && rateLimitWrite('shared_menus', 10);
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
       allow delete: if isAuthenticated()
@@ -583,6 +589,7 @@ service cloud.firestore {
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'viewedAt']);
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 
       match /engagements/{userId} {
@@ -590,6 +597,7 @@ service cloud.firestore {
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'action', 'engagedAt']);
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 
       match /dismissals/{userId} {
@@ -625,7 +633,8 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && request.auth.uid in request.resource.data.sharedToUserIds
-        && hasRequiredFields(['sharedByUserId', 'sharedToUserIds', 'listSnapshot', 'sharedAt']);
+        && hasRequiredFields(['sharedByUserId', 'sharedToUserIds', 'listSnapshot', 'sharedAt'])
+        && rateLimitWrite('shared_shopping_lists', 10);
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
         (request.auth.uid in resource.data.sharedToUserIds
@@ -652,6 +661,7 @@ service cloud.firestore {
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'viewedAt']);
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 
       match /engagements/{userId} {
@@ -659,6 +669,7 @@ service cloud.firestore {
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'action', 'engagedAt']);
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
 
       match /dismissals/{userId} {
@@ -742,34 +753,6 @@ service cloud.firestore {
 
 
     // ========================================
-    // REALTIME RESOURCES - Unified collection for all realtime collaborative resources
-    // ========================================
-
-    match /realtime_resources/{resourceId} {
-      allow read: if isAuthenticated()
-        && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds);
-
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.ownerId
-        && request.auth.uid in request.resource.data.participantIds
-        && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'type', 'createdAt']);
-
-      allow update: if isAuthenticated()
-        && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds)
-        && cannotModify(['ownerId', 'createdAt']);
-
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
-
-      match /presence/{userId} {
-        allow read: if isAuthenticated() && isRealtimeParticipant('realtime_resources', resourceId);
-        allow write: if isAuthenticated()
-          && request.auth.uid == userId
-          && isRealtimeParticipant('realtime_resources', resourceId);
-      }
-    }
-
-    // ========================================
     // RECIPE PRESENCE - Real-time presence tracking for recipe viewing
     // ========================================
     // Note: This is separate from realtime_recipes/presence which is for collaborative editing.
@@ -815,17 +798,30 @@ service cloud.firestore {
         && isServerTimestamp('createdAt')
         && rateLimitWrite('comments', 5);
 
-      // Can update only your own comments
+      // Can update only your own comments — immutable fields protected
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.authorId
         && request.resource.data.text.size() > 0
-        && request.resource.data.text.size() <= 1000;
+        && request.resource.data.text.size() <= 1000
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['text', 'updatedAt', 'editedAt']);
 
       // Can delete only your own comments
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.authorId;
+
+      // Comment likes — users can like/unlike comments
+      match /likes/{userId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated()
+          && request.auth.uid == userId
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.keys().hasOnly(['userId', 'likedAt']);
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
+        allow update: if false;
+      }
     }
-    
+
     // ========================================
     // BUTLERY ARCHIVE - Read-only community recipes
     // ========================================
@@ -1077,7 +1073,9 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.userId
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
-        && hasRequiredFields(['recipeId', 'userId', 'rating', 'createdAt']);
+        && hasRequiredFields(['recipeId', 'userId', 'rating', 'createdAt'])
+        && isServerTimestamp('createdAt')
+        && rateLimitWrite('recipe_ratings', 5);
 
       // Can update only your own ratings
       allow update: if isAuthenticated()
@@ -1201,11 +1199,16 @@ service cloud.firestore {
         && request.resource.data.rating >= 1.0
         && request.resource.data.rating <= 5.0
         && hasRequiredFields(['rating', 'ratedBy', 'ratedByDisplayName', 'ratedAt'])
-        && isServerTimestamp('ratedAt');
+        && isServerTimestamp('ratedAt')
+        && rateLimitWrite('menu_ratings', 5);
 
-      // Can update only your own rating
+      // Can update only your own rating — validate bounds, protect immutable fields
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ratedBy;
+        && request.auth.uid == resource.data.ratedBy
+        && request.resource.data.rating >= 1.0
+        && request.resource.data.rating <= 5.0
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['rating', 'comment', 'updatedAt']);
 
       // Can delete only your own rating
       allow delete: if isAuthenticated()
@@ -1226,11 +1229,16 @@ service cloud.firestore {
         && request.resource.data.comment.size() > 0
         && request.resource.data.comment.size() <= 1000
         && hasRequiredFields(['comment', 'commentedBy', 'commentedByDisplayName', 'commentedAt'])
-        && isServerTimestamp('commentedAt');
+        && isServerTimestamp('commentedAt')
+        && rateLimitWrite('menu_comments', 5);
 
-      // Can update only your own comment
+      // Can update only your own comment — validate bounds, protect immutable fields
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.commentedBy;
+        && request.auth.uid == resource.data.commentedBy
+        && request.resource.data.comment.size() > 0
+        && request.resource.data.comment.size() <= 1000
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['comment', 'updatedAt']);
 
       // Can delete only your own comment
       allow delete: if isAuthenticated()
@@ -1481,7 +1489,11 @@ service cloud.firestore {
       allow read, delete: if isAuthenticated()
         && resource.data.userId == request.auth.uid;
       allow create, update: if isAuthenticated()
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'userId', 'notificationId', 'category', 'type', 'data',
+          'sentAt', 'delivered', 'opened', 'deliveredAt', 'openedAt'
+        ]);
     }
 
     // ========================================
@@ -1492,7 +1504,11 @@ service cloud.firestore {
       allow read, delete: if isAuthenticated()
         && resource.data.userId == request.auth.uid;
       allow create, update: if isAuthenticated()
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'userId', 'batchKey', 'notifications', 'count',
+          'lastUpdated', 'createdAt', 'scheduledFor'
+        ]);
     }
 
     // ========================================
@@ -1501,13 +1517,7 @@ service cloud.firestore {
 
     match /recipe_social_stats/{recipeId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated()
-        && hasRequiredFields(['recipeId', 'ratingCount', 'averageRating', 'lastUpdated'])
-        && request.resource.data.recipeId == recipeId
-        && request.resource.data.averageRating >= 0
-        && request.resource.data.averageRating <= 5
-        && request.resource.data.ratingCount >= 0;
-      allow delete: if isAuthenticated();
+      allow create, update, delete: if false;  // Server-only via Cloud Functions (Admin SDK)
     }
 
     // ========================================

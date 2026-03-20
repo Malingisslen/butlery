@@ -5,6 +5,7 @@ import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/cache/content_fingerprint.dart';
 import 'package:butlery/services/import/cache/cache_entry.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Global cross-user recipe cache for deduplication.
 ///
@@ -23,8 +24,7 @@ class GlobalRecipeCache extends BaseService {
   final UrlNormalizer _urlNormalizer;
   final ContentFingerprint _fingerprinter;
 
-  /// Collection name for the global cache
-  static const String _collectionName = 'globalRecipeCache';
+  static const String _collectionName = FirestoreCollections.globalRecipeCache;
 
   /// TTL by source type (in days)
   static const Map<String, int> _ttlBySource = {
