@@ -29,59 +29,62 @@ export const trackDayNRetention = functions
     functions.logger.info("Starting day-N retention tracking...");
 
     try {
-      const usersSnapshot = await db
-        .collection("users")
-        .where("lastActiveAt", "!=", null)
-        .get();
-
-      if (usersSnapshot.empty) {
-        functions.logger.info("No users with lastActiveAt found");
-        return null;
-      }
-
       let processedUsers = 0;
       let eventsWritten = 0;
       let batch = db.batch();
       let batchCount = 0;
 
-      for (const userDoc of usersSnapshot.docs) {
-        const data = userDoc.data();
-        const joinedAt = data.joinedAt as admin.firestore.Timestamp | undefined;
-        const lastActiveAt = data.lastActiveAt as admin.firestore.Timestamp | undefined;
+      const PAGE_SIZE = 500;
+      let query = db
+        .collection("users")
+        .where("lastActiveAt", "!=", null)
+        .orderBy("lastActiveAt")
+        .limit(PAGE_SIZE);
+      let usersSnapshot = await query.get();
 
-        if (!joinedAt || !lastActiveAt) {
-          continue;
+      while (usersSnapshot.size > 0) {
+        for (const userDoc of usersSnapshot.docs) {
+          const data = userDoc.data();
+          const joinedAt = data.joinedAt as admin.firestore.Timestamp | undefined;
+          const lastActiveAt = data.lastActiveAt as admin.firestore.Timestamp | undefined;
+
+          if (!joinedAt || !lastActiveAt) {
+            continue;
+          }
+
+          const daysSinceSignup = Math.floor(
+            (nowMs - joinedAt.toMillis()) / MS_PER_DAY
+          );
+
+          if (!RETENTION_DAYS.includes(daysSinceSignup)) {
+            continue;
+          }
+
+          const wasActiveWithin24h =
+            nowMs - lastActiveAt.toMillis() < MS_PER_DAY;
+
+          const eventRef = db.collection("analytics").doc("retention").collection("events").doc();
+          batch.set(eventRef, {
+            userId: userDoc.id,
+            day: daysSinceSignup,
+            timestamp: now,
+            wasActive: wasActiveWithin24h,
+          });
+
+          batchCount++;
+          eventsWritten++;
+
+          if (batchCount >= BATCH_LIMIT) {
+            await batch.commit();
+            batch = db.batch();
+            batchCount = 0;
+          }
+
+          processedUsers++;
         }
 
-        const daysSinceSignup = Math.floor(
-          (nowMs - joinedAt.toMillis()) / MS_PER_DAY
-        );
-
-        if (!RETENTION_DAYS.includes(daysSinceSignup)) {
-          continue;
-        }
-
-        const wasActiveWithin24h =
-          nowMs - lastActiveAt.toMillis() < MS_PER_DAY;
-
-        const eventRef = db.collection("analytics").doc("retention").collection("events").doc();
-        batch.set(eventRef, {
-          userId: userDoc.id,
-          day: daysSinceSignup,
-          timestamp: now,
-          wasActive: wasActiveWithin24h,
-        });
-
-        batchCount++;
-        eventsWritten++;
-
-        if (batchCount >= BATCH_LIMIT) {
-          await batch.commit();
-          batch = db.batch();
-          batchCount = 0;
-        }
-
-        processedUsers++;
+        const lastDoc = usersSnapshot.docs[usersSnapshot.docs.length - 1];
+        usersSnapshot = await query.startAfter(lastDoc).get();
       }
 
       if (batchCount > 0) {
@@ -93,6 +96,7 @@ export const trackDayNRetention = functions
       );
     } catch (error) {
       functions.logger.error("Failed to track retention:", error);
+      throw error;
     }
 
     return null;
