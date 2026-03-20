@@ -593,6 +593,13 @@ class RecipeFormState extends ChangeNotifier {
         isQuickSave: isQuickSave, skipIfBusy: skipIfBusy);
   }
 
+  /// Immediately flush any pending auto-save (e.g. when app is backgrounded).
+  Future<void> flushAutoSave() async {
+    if (_isSaving || _isForking) return;
+    final formData = _serializeFormData();
+    await _autoSaveManager.saveNow(formData);
+  }
+
   /// Serialize current form state for auto-save
   Map<String, dynamic> _serializeFormData() {
     return {

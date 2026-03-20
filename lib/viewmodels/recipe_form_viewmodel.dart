@@ -46,7 +46,8 @@ class RecipeFormViewModel extends ChangeNotifier
     with
         ErrorHandlingMixin,
         ErrorCoordinatorMixin,
-        RecipeBackwardCompatibilityMixin {
+        RecipeBackwardCompatibilityMixin,
+        WidgetsBindingObserver {
   final UnifiedRecipeService _recipeService;
 
   bool _disposed = false;
@@ -130,6 +131,9 @@ class RecipeFormViewModel extends ChangeNotifier
         _imageManager.setUploadedImageUrls(initialRecipe.imageUrls);
       }
     }
+
+    // Register lifecycle observer for auto-save on app background/kill
+    WidgetsBinding.instance.addObserver(this);
 
     // Feedback loop: Retrieve original ParsedRecipe for imported recipes
     // This enables diff calculation when user saves, capturing corrections
@@ -573,8 +577,17 @@ class RecipeFormViewModel extends ChangeNotifier
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _state.flushAutoSave();
+    }
+  }
+
+  @override
   void dispose() {
     _disposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     clearComponentErrors();
 
     // Remove error coordination listeners before disposing managers

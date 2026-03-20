@@ -400,6 +400,13 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     }
   }
 
+  /// Immediately flush any pending auto-save (cancels debounce timer).
+  /// Used when the app is backgrounded or about to be killed.
+  Future<void> saveNow(Map<String, dynamic> formData) async {
+    _autoSaveTimer?.cancel();
+    await _performAutoSave(formData);
+  }
+
   /// Show subtle auto-save notice to user (once per session)
   void _showAutoSaveNotice() {
     // Delayed subtle notification
