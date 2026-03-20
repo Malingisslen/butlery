@@ -191,6 +191,7 @@ class FirebaseSyncManager {
       final subscription = firestoreInstance
           .collection(FirestoreCollections.realtimeRecipes)
           .where('participantIds', arrayContains: currentUserId)
+          .limit(200)
           .snapshots()
           .listen(
             (snapshot) => _handleCollaborativeRecipeChanges(

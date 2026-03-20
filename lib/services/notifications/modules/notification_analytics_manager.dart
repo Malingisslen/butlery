@@ -200,6 +200,7 @@ class NotificationAnalyticsManager {
           .where('sentAt',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
           .where('sentAt', isLessThan: Timestamp.fromDate(endOfDay))
+          .limit(500)
           .get();
 
       // Calculate metrics by category and type

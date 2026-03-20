@@ -58,30 +58,7 @@ class FriendsUtilityOperations {
         return [];
       }
 
-      // Fetch friend profiles
-      final friendProfiles = <UserProfile>[];
-      for (final friendId in friendIds) {
-        final friendDoc = await firestore
-            .collection(FirestoreCollections.users)
-            .doc(friendId)
-            .get();
-
-        if (friendDoc.exists) {
-          final friendData = friendDoc.data()!;
-          friendProfiles.add(UserProfile(
-            uid: friendId,
-            displayName: friendData['displayName'] ?? 'Unknown User',
-            email: friendData['email'] ?? '',
-            avatarUrl: friendData['avatarUrl'],
-            joinedAt: friendData['joinedAt'] != null
-                ? (friendData['joinedAt'] as Timestamp).toDate()
-                : DateTime.now(),
-            lastActiveAt: friendData['lastActiveAt'] != null
-                ? (friendData['lastActiveAt'] as Timestamp).toDate()
-                : DateTime.now(),
-          ));
-        }
-      }
+      final friendProfiles = await _batchFetchUserProfiles(friendIds);
 
       AppLogger.success(
           'Found ${friendProfiles.length} friends for user ${userId.maskedUserId}');
@@ -161,31 +138,8 @@ class FriendsUtilityOperations {
         return [];
       }
 
-      // Fetch user profiles for collaborators
-      final collaborators = <UserProfile>[];
-      for (final collaboratorId in collaboratorIds.take(10)) {
-        // Limit to 10 most recent
-        final userDoc = await firestore
-            .collection(FirestoreCollections.users)
-            .doc(collaboratorId)
-            .get();
-
-        if (userDoc.exists) {
-          final userData = userDoc.data()!;
-          collaborators.add(UserProfile(
-            uid: collaboratorId,
-            displayName: userData['displayName'] ?? 'Unknown User',
-            email: userData['email'] ?? '',
-            avatarUrl: userData['avatarUrl'],
-            joinedAt: userData['joinedAt'] != null
-                ? (userData['joinedAt'] as Timestamp).toDate()
-                : DateTime.now(),
-            lastActiveAt: userData['lastActiveAt'] != null
-                ? (userData['lastActiveAt'] as Timestamp).toDate()
-                : DateTime.now(),
-          ));
-        }
-      }
+      final collaborators =
+          await _batchFetchUserProfiles(collaboratorIds.take(10).toList());
 
       AppLogger.success('Found ${collaborators.length} recent collaborators');
       return collaborators;
@@ -242,31 +196,8 @@ class FriendsUtilityOperations {
         return [];
       }
 
-      // Fetch user profiles for collaborators
-      final collaborators = <UserProfile>[];
-      for (final collaboratorId in collaboratorIds.take(10)) {
-        // Limit to 10 most recent
-        final userDoc = await firestore
-            .collection(FirestoreCollections.users)
-            .doc(collaboratorId)
-            .get();
-
-        if (userDoc.exists) {
-          final userData = userDoc.data()!;
-          collaborators.add(UserProfile(
-            uid: collaboratorId,
-            displayName: userData['displayName'] ?? 'Unknown User',
-            email: userData['email'] ?? '',
-            avatarUrl: userData['avatarUrl'],
-            joinedAt: userData['joinedAt'] != null
-                ? (userData['joinedAt'] as Timestamp).toDate()
-                : DateTime.now(),
-            lastActiveAt: userData['lastActiveAt'] != null
-                ? (userData['lastActiveAt'] as Timestamp).toDate()
-                : DateTime.now(),
-          ));
-        }
-      }
+      final collaborators =
+          await _batchFetchUserProfiles(collaboratorIds.take(10).toList());
 
       AppLogger.success(
           'Found ${collaborators.length} recent shopping collaborators');
@@ -275,5 +206,41 @@ class FriendsUtilityOperations {
       AppLogger.error('Failed to get recent shopping collaborators', e);
       return [];
     }
+  }
+
+  Future<List<UserProfile>> _batchFetchUserProfiles(
+      List<String> userIds) async {
+    if (userIds.isEmpty) return [];
+
+    final profileMap = <String, UserProfile>{};
+
+    for (var i = 0; i < userIds.length; i += 30) {
+      final chunk = userIds.skip(i).take(30).toList();
+      final querySnapshot = await firestore
+          .collection(FirestoreCollections.users)
+          .where(FieldPath.documentId, whereIn: chunk)
+          .get();
+
+      for (final doc in querySnapshot.docs) {
+        final data = doc.data();
+        profileMap[doc.id] = UserProfile(
+          uid: doc.id,
+          displayName: data['displayName'] ?? 'Unknown User',
+          email: data['email'] ?? '',
+          avatarUrl: data['avatarUrl'],
+          joinedAt: data['joinedAt'] != null
+              ? (data['joinedAt'] as Timestamp).toDate()
+              : DateTime.now(),
+          lastActiveAt: data['lastActiveAt'] != null
+              ? (data['lastActiveAt'] as Timestamp).toDate()
+              : DateTime.now(),
+        );
+      }
+    }
+
+    return userIds
+        .where((id) => profileMap.containsKey(id))
+        .map((id) => profileMap[id]!)
+        .toList();
   }
 }

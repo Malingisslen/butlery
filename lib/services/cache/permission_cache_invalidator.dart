@@ -61,6 +61,7 @@ class PermissionCacheInvalidator {
       _firestore
           .collection(FirestoreCollections.sharedRecipes)
           .where('participantIds', arrayContains: userId)
+          .limit(200)
           .snapshots()
           .listen(
             (snapshot) => _handleDocumentChanges(snapshot, 'shared_recipe'),
@@ -74,6 +75,7 @@ class PermissionCacheInvalidator {
       _firestore
           .collection(FirestoreCollections.sharedMenus)
           .where('participantIds', arrayContains: userId)
+          .limit(200)
           .snapshots()
           .listen(
             (snapshot) => _handleDocumentChanges(snapshot, 'shared_menu'),
@@ -87,6 +89,7 @@ class PermissionCacheInvalidator {
       _firestore
           .collection(FirestoreCollections.sharedShoppingLists)
           .where('participantIds', arrayContains: userId)
+          .limit(200)
           .snapshots()
           .listen(
             (snapshot) => _handleDocumentChanges(snapshot, 'shared_shopping'),

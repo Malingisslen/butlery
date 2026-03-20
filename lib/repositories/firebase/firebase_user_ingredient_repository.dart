@@ -86,11 +86,29 @@ class FirebaseUserIngredientRepository
   @override
   Future<List<IngredientData>> getAll(String userId) async {
     try {
-      final snapshot = await _getUserCollection(userId).get();
+      final ingredients = <IngredientData>[];
+      DocumentSnapshot? lastDoc;
+      const batchSize = 500;
 
-      final ingredients = snapshot.docs
-          .map((doc) => IngredientData.fromFirestore(doc))
-          .toList();
+      while (true) {
+        var query = _getUserCollection(userId)
+            .orderBy(FieldPath.documentId)
+            .limit(batchSize);
+
+        if (lastDoc != null) {
+          query = query.startAfterDocument(lastDoc);
+        }
+
+        final snapshot = await query.get();
+        if (snapshot.docs.isEmpty) break;
+
+        ingredients.addAll(
+          snapshot.docs.map((doc) => IngredientData.fromFirestore(doc)),
+        );
+        lastDoc = snapshot.docs.last;
+
+        if (snapshot.docs.length < batchSize) break;
+      }
 
       // Update cache
       _userCache[userId] = {
