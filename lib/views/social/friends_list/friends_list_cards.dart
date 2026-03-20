@@ -44,6 +44,8 @@ class FriendCard {
         title: Text(
           friend.displayName,
           style: AppTextStyles.titleMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
@@ -111,6 +113,8 @@ class GroupCard {
         title: Text(
           group.name,
           style: AppTextStyles.titleMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

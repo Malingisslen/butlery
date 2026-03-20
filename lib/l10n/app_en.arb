@@ -3468,6 +3468,8 @@
     }
   },
   "taggingManageTags": "Manage tags",
+  "tagSuggested": "Suggested",
+  "tagAll": "All tags",
   "taggingNoPersonalTags": "No personal tags",
   "taggingPersonalTags": "Personal tags",
   "taggingPersonalTagsRemoved": "Personal tags removed",
@@ -3609,6 +3611,8 @@
   "socialDefaultFriendMessage": "Hi! Would you like to be friends?",
   "socialFindNewFriends": "Find new friends",
   "socialFindNewFriendsDescription": "Use the search field above to find people you want to be friends with. Search by name or username.",
+  "socialInviteFriends": "Invite friends",
+  "socialInviteSubject": "Join Butlery!",
   "socialFriendRequestAccepted": "Friend request accepted!",
   "socialFriendRequestAcceptedFrom": "Friend request from {name} accepted!",
   "@socialFriendRequestAcceptedFrom": {
@@ -5095,6 +5099,15 @@
   "ratingRemoveMessage": "Do you want to remove your rating for this recipe?",
   "ratingRemoved": "Rating removed",
   "ratingRemoveError": "Could not remove rating",
+  "ratingError": "Could not set rating",
+  "ratingStarLabel": "Rate {count} stars",
+  "@ratingStarLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "messagingSending": "Sending",
   "messagingSent": "Sent",
   "messagingDelivered": "Delivered",

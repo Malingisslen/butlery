@@ -5421,6 +5421,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get taggingManageTags => 'Hantera taggar';
 
   @override
+  String get tagSuggested => 'Föreslagna';
+
+  @override
+  String get tagAll => 'Alla taggar';
+
+  @override
   String get taggingNoPersonalTags => 'Inga personliga taggar';
 
   @override
@@ -5636,6 +5642,12 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get socialFindNewFriendsDescription =>
       'Använd sökfältet ovan för att hitta personer du vill bli vän med. Sök på namn eller användarnamn.';
+
+  @override
+  String get socialInviteFriends => 'Bjud in vänner';
+
+  @override
+  String get socialInviteSubject => 'Gå med i Butlery!';
 
   @override
   String get socialFriendRequestAccepted => 'Vänskapsförfrågan accepterad!';
@@ -7630,6 +7642,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get ratingRemoveError => 'Kunde inte ta bort betyg';
+
+  @override
+  String get ratingError => 'Kunde inte sätta betyg';
+
+  @override
+  String ratingStarLabel(int count) {
+    return 'Ge $count stjärnor';
+  }
 
   @override
   String get messagingSending => 'Skickar';

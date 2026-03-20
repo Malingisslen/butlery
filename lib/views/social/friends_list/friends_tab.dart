@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
+import 'package:butlery/views/social/friends_list/requests_tab.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// FriendsTab - Friends list tab component
@@ -24,6 +25,8 @@ class FriendsTab {
       emptyTitle: context.l10n.socialNoFriendsYet,
       emptySubtitle: context.l10n.socialAddFriendsToGetStarted,
       emptyIcon: Icons.people_outline,
+      emptyActionLabel: context.l10n.socialInviteFriends,
+      onEmptyAction: () => RequestsTab.shareInvitationLink(context, viewModel),
       builder: (context, friends) => RefreshIndicator(
         onRefresh: () async {
           await viewModel.refresh();
