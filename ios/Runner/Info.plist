@@ -54,6 +54,9 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Butlery behöver tillgång till bildgalleriet för att spara bilder av recept</string>
 
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
 	<!-- Deep Link Configuration -->
 	<key>CFBundleURLTypes</key>
 	<array>
