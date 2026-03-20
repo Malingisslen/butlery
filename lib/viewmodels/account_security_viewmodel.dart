@@ -5,6 +5,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 
 class AccountSecurityViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
@@ -29,7 +30,7 @@ class AccountSecurityViewModel extends ChangeNotifier
       setError(AppLocale.current.validationPasswordRequired);
       return false;
     }
-    if (newPassword.length < 6) {
+    if (newPassword.length < FormValidators.minPasswordLength) {
       setError(AppLocale.current.validationPasswordTooShort);
       return false;
     }
