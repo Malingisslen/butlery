@@ -9,9 +9,11 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -39,6 +41,7 @@ class RecipePersonalTagHandler {
       useSafeArea: true,
       builder: (context) => _PersonalTagQuickSelector(
         selectedTagIds: currentTagIds,
+        recipe: recipe,
       ),
     );
 
@@ -113,9 +116,11 @@ class RecipePersonalTagHandler {
 /// Bottom sheet for quick personal tag selection.
 class _PersonalTagQuickSelector extends StatefulWidget {
   final List<String> selectedTagIds;
+  final Recipe recipe;
 
   const _PersonalTagQuickSelector({
     required this.selectedTagIds,
+    required this.recipe,
   });
 
   @override
@@ -127,6 +132,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
   late PersonalTagViewModel _viewModel;
   late List<String> _selectedTagIds;
   bool _initialized = false;
+  Set<String> _suggestedTagIds = {};
 
   @override
   void initState() {
@@ -134,6 +140,21 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
     _selectedTagIds = List.from(widget.selectedTagIds);
     _viewModel = ServiceLocator.get<PersonalTagViewModel>();
     _initialized = true;
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    try {
+      final tagService = ServiceLocator.get<PersonalTagService>();
+      final suggested = await tagService.suggestTagsForRecipe(widget.recipe);
+      if (mounted) {
+        setState(() {
+          _suggestedTagIds = suggested.map((t) => t.id).toSet();
+        });
+      }
+    } catch (e) {
+      AppLogger.warning('Could not load tag suggestions: $e');
+    }
   }
 
   void _toggleTag(PersonalTag tag) {
@@ -292,17 +313,47 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
           const SizedBox(height: AppDimensions.spacingMd),
         ],
 
-        // Tag grid
+        // Suggested tags section
+        if (_suggestedTagIds.isNotEmpty) ...[
+          Text(
+            context.l10n.tagSuggested,
+            style: AppTextStyles.labelLarge,
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Wrap(
+            spacing: AppDimensions.spacingSm,
+            runSpacing: AppDimensions.spacingSm,
+            children: tags
+                .where((tag) => _suggestedTagIds.contains(tag.id))
+                .map((tag) => _QuickTagChip(
+                      tag: tag,
+                      isSelected: _isTagSelected(tag),
+                      onTap: () => _toggleTag(tag),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          Text(
+            context.l10n.tagAll,
+            style: AppTextStyles.labelLarge,
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+        ],
+
+        // All tags (excluding suggested if suggestions shown)
         Wrap(
           spacing: AppDimensions.spacingSm,
           runSpacing: AppDimensions.spacingSm,
-          children: tags.map((tag) {
-            return _QuickTagChip(
-              tag: tag,
-              isSelected: _isTagSelected(tag),
-              onTap: () => _toggleTag(tag),
-            );
-          }).toList(),
+          children: tags
+              .where((tag) =>
+                  _suggestedTagIds.isEmpty ||
+                  !_suggestedTagIds.contains(tag.id))
+              .map((tag) => _QuickTagChip(
+                    tag: tag,
+                    isSelected: _isTagSelected(tag),
+                    onTap: () => _toggleTag(tag),
+                  ))
+              .toList(),
         ),
         const SizedBox(height: AppDimensions.spacingXl),
 

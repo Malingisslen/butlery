@@ -5421,6 +5421,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get taggingManageTags => 'Hantera taggar';
 
   @override
+  String get tagSuggested => 'Föreslagna';
+
+  @override
+  String get tagAll => 'Alla taggar';
+
+  @override
   String get taggingNoPersonalTags => 'Inga personliga taggar';
 
   @override
