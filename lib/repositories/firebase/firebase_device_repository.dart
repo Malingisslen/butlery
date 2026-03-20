@@ -4,7 +4,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for device and FCM token management.
-/// Uses `user_fcm_tokens` and `user_devices` collections.
+/// Uses only `user_fcm_tokens` collection.
 class FirebaseDeviceRepository
     extends BaseFirebaseRepository<Map<String, dynamic>>
     implements DeviceRepository {
@@ -49,10 +49,6 @@ class FirebaseDeviceRepository
           String userId, String resourceId) async =>
       resourceId.startsWith('${userId}_');
 
-  /// Device collection is separate from the primary FCM token collection.
-  CollectionReference<Map<String, dynamic>> get _deviceCollection =>
-      firestore.collection(FirestoreCollections.userDevices);
-
   @override
   Future<void> saveTokenToFirestore(
       String docId, Map<String, dynamic> tokenData) async {
@@ -62,7 +58,7 @@ class FirebaseDeviceRepository
   @override
   Future<void> updateDeviceInfo(
       String docId, Map<String, dynamic> deviceData) async {
-    await _deviceCollection.doc(docId).set(deviceData, SetOptions(merge: true));
+    await collection.doc(docId).set(deviceData, SetOptions(merge: true));
   }
 
   @override
@@ -94,13 +90,13 @@ class FirebaseDeviceRepository
 
   @override
   Future<void> markDeviceInactive(String docId) async {
-    await _deviceCollection.doc(docId).update({'isActive': false});
+    await collection.doc(docId).update({'isActive': false});
   }
 
   @override
   Future<void> cleanupOldDevices(String userId, DateTime olderThan) async {
     final cutoffTimestamp = Timestamp.fromDate(olderThan);
-    final query = await _deviceCollection
+    final query = await collection
         .where('userId', isEqualTo: userId)
         .where('lastSeen', isLessThan: cutoffTimestamp)
         .limit(100)

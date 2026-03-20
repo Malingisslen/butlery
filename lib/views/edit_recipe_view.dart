@@ -211,6 +211,37 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                     .withValues(alpha: AppDimensions.opacityVeryLight)
                 : null,
             actions: [
+              Builder(
+                builder: (context) {
+                  final formVm = context.watch<RecipeFormViewModel>();
+                  if (formVm.isAutoSaving) {
+                    return const Padding(
+                      padding: EdgeInsetsDirectional.only(
+                          end: AppDimensions.spacingL),
+                      child: Center(
+                        child: SizedBox(
+                          width: AppDimensions.iconSizeS,
+                          height: AppDimensions.iconSizeS,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    );
+                  } else if (formVm.hasRecentAutoSave) {
+                    return Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                          end: AppDimensions.spacingL),
+                      child: Center(
+                        child: Icon(
+                          Icons.cloud_done_outlined,
+                          size: AppDimensions.iconSizeM,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
               if (isCollaborative)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(
@@ -415,6 +446,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onUpdate: viewModel.updateIngredient,
         onAdd: viewModel.addIngredient,
         onRemove: viewModel.removeIngredient,
+        onReorder: viewModel.reorderIngredient,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
@@ -425,6 +457,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onUpdate: viewModel.updateInstruction,
         onAdd: viewModel.addInstruction,
         onRemove: viewModel.removeInstruction,
+        onReorder: viewModel.reorderInstruction,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 

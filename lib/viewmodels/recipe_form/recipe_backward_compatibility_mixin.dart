@@ -144,6 +144,13 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
+  /// Reorder ingredient from [oldIndex] to [newIndex]
+  void reorderIngredient(int oldIndex, int newIndex) {
+    state.ingredientsManager.reorderAt(oldIndex, newIndex);
+    notifyListeners();
+    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
+  }
+
   /// Update instruction at index
   void updateInstruction(int index, String value) {
     state.instructionsManager.updateAt(index, value);
@@ -164,6 +171,13 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// Remove instruction at index
   void removeInstruction(int index) {
     state.instructionsManager.removeAt(index);
+    notifyListeners();
+    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
+  }
+
+  /// Reorder instruction from [oldIndex] to [newIndex]
+  void reorderInstruction(int oldIndex, int newIndex) {
+    state.instructionsManager.reorderAt(oldIndex, newIndex);
     notifyListeners();
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }

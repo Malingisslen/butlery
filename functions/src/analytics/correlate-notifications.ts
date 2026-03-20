@@ -6,8 +6,8 @@
  * Writes per-notification correlation data and a daily summary by type.
  *
  * Firestore writes:
- * /notification_effectiveness/{auto} — per-notification correlation
- * /notification_effectiveness_summary/{date} — daily aggregate by type
+ * /analytics/notifications/effectiveness/{auto} — per-notification correlation
+ * /analytics/notifications/summary/{date} — daily aggregate by type
  */
 
 import * as functions from "firebase-functions";
@@ -84,7 +84,7 @@ export const correlateNotificationEffectiveness = functions
         }
 
         // Write correlation record
-        const correlationRef = db.collection("notification_effectiveness").doc();
+        const correlationRef = db.collection("analytics").doc("notifications").collection("effectiveness").doc();
         batch.set(correlationRef, {
           notificationId: notifDoc.id,
           userId,
@@ -126,7 +126,9 @@ export const correlateNotificationEffectiveness = functions
       // Write daily summary
       const dateStr = new Date(nowMs).toISOString().slice(0, 10);
       const summaryRef = db
-        .collection("notification_effectiveness_summary")
+        .collection("analytics")
+        .doc("notifications")
+        .collection("summary")
         .doc(dateStr);
       batch.set(summaryRef, {
         date: dateStr,

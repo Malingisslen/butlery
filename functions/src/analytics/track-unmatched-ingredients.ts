@@ -6,7 +6,7 @@
  * prioritize which ingredients to add to the global database.
  *
  * Firestore structure:
- * /ingredientAnalytics/unmatched/{normalizedName}
+ * /analytics/ingredients/unmatched/{normalizedName}
  *   - name: string (original name, for display)
  *   - count: number (occurrence count)
  *   - firstSeen: Timestamp
@@ -91,9 +91,9 @@ export const trackUnmatchedIngredients = functions.firestore
       }
 
       const docRef = db
-        .collection("ingredientAnalytics")
-        .doc("unmatched")
-        .collection("items")
+        .collection("analytics")
+        .doc("ingredients")
+        .collection("unmatched")
         .doc(normalizedName);
 
       // Use set with merge to handle both create and update

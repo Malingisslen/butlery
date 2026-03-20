@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Builds friend request card widgets for incoming and sent requests
 class FriendRequestCard {
@@ -347,12 +348,8 @@ class FriendRequestCard {
     final success = await viewModel.acceptFriendRequest(request.id);
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.socialFriendRequestAccepted),
-          backgroundColor: context.butleryColors.success,
-        ),
-      );
+      SnackBarUtils.showSuccess(
+          context, context.l10n.socialFriendRequestAccepted);
     }
   }
 
@@ -364,12 +361,8 @@ class FriendRequestCard {
     final success = await viewModel.rejectFriendRequest(request.id);
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.socialFriendRequestDeclined),
-          backgroundColor: context.butleryColors.warning,
-        ),
-      );
+      SnackBarUtils.showWarning(
+          context, context.l10n.socialFriendRequestDeclined);
     }
   }
 
@@ -381,12 +374,7 @@ class FriendRequestCard {
     final success = await viewModel.cancelSentRequest(request.id);
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.socialRequestCancelled),
-          backgroundColor: context.butleryColors.warning,
-        ),
-      );
+      SnackBarUtils.showWarning(context, context.l10n.socialRequestCancelled);
     }
   }
 }

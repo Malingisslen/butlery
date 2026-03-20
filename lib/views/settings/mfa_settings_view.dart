@@ -223,22 +223,27 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       ),
       body: _isLoading && !_isEnrolling
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoCard(),
-                  const SizedBox(height: AppDimensions.spacingLg),
-                  if (_hasMfa)
-                    _buildEnrolledSection()
-                  else
-                    _buildEnrollSection(),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: AppDimensions.spacingMd),
-                    _buildErrorMessage(),
-                  ],
-                ],
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoCard(),
+                      const SizedBox(height: AppDimensions.spacingLg),
+                      if (_hasMfa)
+                        _buildEnrolledSection()
+                      else
+                        _buildEnrollSection(),
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: AppDimensions.spacingMd),
+                        _buildErrorMessage(),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
     );

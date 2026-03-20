@@ -79,6 +79,14 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   String getId(UserProfile entity) => entity.uid;
+
+  DocumentReference<Map<String, dynamic>> _settingsDoc(String userId) =>
+      firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.userSettings)
+          .doc('preferences');
+
   @override
   Future<bool> validateCreatePermission(
       String userId, UserProfile entity) async {
@@ -132,7 +140,11 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
     final data = profile.toFirestore();
     data['displayNameLower'] = profile.displayName.toLowerCase();
-    await collection.doc(profile.uid).set(data);
+    await Future.wait([
+      collection.doc(profile.uid).set(data),
+      _settingsDoc(profile.uid)
+          .set(profile.toPrivateSettings(), SetOptions(merge: true)),
+    ]);
 
     logPermissionCheck(
       userId: currentUser,
@@ -148,7 +160,34 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   /// and profiles rarely change mid-session.
   @override
   Future<UserProfile?> fetchProfile(String userId) async {
-    return await readCacheFirst(userId);
+    final profile = await readCacheFirst(userId);
+    if (profile == null) return null;
+    final currentUserId = authRepository.currentUser?.uid;
+    if (currentUserId != null && currentUserId == userId) {
+      try {
+        final settingsDoc = await _settingsDoc(userId).get();
+        if (settingsDoc.exists && settingsDoc.data() != null) {
+          final s = settingsDoc.data()!;
+          return profile.copyWith(
+            fcmToken: s['fcmToken'] as String?,
+            fcmTokenUpdatedAt: s['fcmTokenUpdatedAt'] != null
+                ? (s['fcmTokenUpdatedAt'] as Timestamp).toDate()
+                : null,
+            notificationsEnabled: s['notificationsEnabled'] as bool? ?? true,
+            preferredLocale: s['preferredLocale'] as String?,
+            allergenPreferences: s['allergenPreferences'] != null
+                ? UserAllergenPreferences.fromFirestore(
+                    s['allergenPreferences'] as Map<String, dynamic>)
+                : null,
+            hasCompletedOnboarding:
+                s['hasCompletedOnboarding'] as bool? ?? false,
+          );
+        }
+      } catch (e) {
+        AppLogger.warning('Failed to load private settings for $userId: $e');
+      }
+    }
+    return profile;
   }
 
   /// Fetch multiple profiles in batches (Firestore limit 10 per query).
@@ -388,10 +427,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'update FCM token',
     );
 
-    await collection.doc(userId).update({
+    await _settingsDoc(userId).set({
       'fcmToken': token,
       'fcmTokenUpdatedAt': timestampProvider.serverTimestamp(),
-    });
+    }, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,
@@ -412,9 +451,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'update notification settings',
     );
 
-    await collection.doc(userId).update({
+    await _settingsDoc(userId).set({
       'notificationsEnabled': enabled,
-    });
+    }, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,
@@ -435,10 +474,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'clear FCM token',
     );
 
-    await collection.doc(userId).update({
+    await _settingsDoc(userId).set({
       'fcmToken': null,
       'fcmTokenUpdatedAt': null,
-    });
+    }, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,
@@ -517,9 +556,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       operation: 'update allergen preferences',
     );
 
-    await collection.doc(userId).update({
+    await _settingsDoc(userId).set({
       'allergenPreferences': preferences.toFirestore(),
-    });
+    }, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,

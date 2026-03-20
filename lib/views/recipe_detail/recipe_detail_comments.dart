@@ -198,7 +198,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       return StateWidget.loading(message: context.l10n.socialLoadingComments);
     }
     if (vm.commentsError != null) {
-      return StateWidget.error(message: vm.commentsError!);
+      return StateWidget.error(
+        message: vm.commentsError!,
+        onAction: () => vm.refreshComments(widget.recipe.id),
+      );
     }
     if (vm.comments.isEmpty) {
       return Padding(

@@ -2757,6 +2757,7 @@
     }
   },
   "importImportingRecipesProgress": "Importerar recept...",
+  "importWaitForCompletion": "Vänta tills importen är klar...",
   "importNoFileOrNoRecipes": "Ingen fil vald eller filen innehåller inga recept",
   "importNoRecipesMatchedFilters": "Inga recept matchade filtren",
   "importParsingText": "Tolkar text...",

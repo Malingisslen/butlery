@@ -6,7 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// Builds a dynamic list of text fields with add/remove functionality.
+/// Builds a dynamic list of text fields with add/remove/reorder functionality.
 /// Used for ingredients, instructions, and tags in recipe forms.
 class DynamicListBuilder extends StatelessWidget {
   final String label;
@@ -14,6 +14,7 @@ class DynamicListBuilder extends StatelessWidget {
   final void Function(int index, String value) onUpdate;
   final VoidCallback onAdd;
   final void Function(int index) onRemove;
+  final void Function(int oldIndex, int newIndex)? onReorder;
   final int maxLength;
 
   const DynamicListBuilder({
@@ -23,6 +24,7 @@ class DynamicListBuilder extends StatelessWidget {
     required this.onUpdate,
     required this.onAdd,
     required this.onRemove,
+    this.onReorder,
     this.maxLength = 500,
   });
 
@@ -33,10 +35,79 @@ class DynamicListBuilder extends StatelessWidget {
       children: [
         Text(label, style: AppTextStyles.labelLarge),
         const SizedBox(height: AppDimensions.spacingM),
-        for (int index = 0; index < controllers.length; index++)
-          _buildItemRow(context, index),
+        if (controllers.isNotEmpty && onReorder != null)
+          _buildReorderableList(context)
+        else ...[
+          for (int index = 0; index < controllers.length; index++)
+            _buildItemRow(context, index),
+        ],
         if (controllers.isEmpty) _buildAddButton(context),
       ],
+    );
+  }
+
+  Widget _buildReorderableList(BuildContext context) {
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      buildDefaultDragHandles: false,
+      itemCount: controllers.length,
+      onReorder: onReorder!,
+      proxyDecorator: (child, index, animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) => Material(
+            elevation: animation.value * 4,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            child: child,
+          ),
+          child: child,
+        );
+      },
+      itemBuilder: (context, index) {
+        return _buildReorderableRow(context, index);
+      },
+    );
+  }
+
+  Widget _buildReorderableRow(BuildContext context, int index) {
+    return Padding(
+      key: ValueKey('${label}_$index'),
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      child: Row(
+        children: [
+          ReorderableDragStartListener(
+            index: index,
+            child: const Padding(
+              padding: EdgeInsets.only(right: AppDimensions.spacingS),
+              child: Icon(Icons.drag_handle, size: AppDimensions.iconSizeM),
+            ),
+          ),
+          Expanded(
+            child: TextFormField(
+              controller: controllers[index],
+              decoration: InputDecoration(hintText: '$label ${index + 1}'),
+              style: AppTextStyles.bodyMedium,
+              textInputAction: TextInputAction.next,
+              maxLines: null,
+              maxLength: maxLength,
+              maxLengthEnforcement: MaxLengthEnforcement.enforced,
+              buildCounter: (context,
+                      {required currentLength,
+                      required isFocused,
+                      required maxLength}) =>
+                  null,
+              keyboardType: TextInputType.multiline,
+              onChanged: (value) => _handleChange(index, value),
+            ),
+          ),
+          if (controllers.length > 1)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () => onRemove(index),
+            ),
+        ],
+      ),
     );
   }
 

@@ -163,7 +163,7 @@ class UserProfile with JsonSerializableMixin {
     }
   }
 
-  /// Convert to Firestore format
+  /// Convert to Firestore format (public fields only — written to public_profiles)
   Map<String, dynamic> toFirestore() {
     return {
       'displayName': displayName,
@@ -176,15 +176,18 @@ class UserProfile with JsonSerializableMixin {
       'joinedAt': AppTimestamp.fromDateTime(joinedAt).toFirestore(),
       'lastActiveAt': AppTimestamp.fromDateTime(lastActiveAt).toFirestore(),
       'isOnline': isOnline,
-      // Notification fields
+    };
+  }
+
+  /// Sensitive fields stored in users/{uid}/settings/preferences subcollection
+  Map<String, dynamic> toPrivateSettings() {
+    return {
       'fcmToken': fcmToken,
       'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null
           ? AppTimestamp.fromDateTime(fcmTokenUpdatedAt!).toFirestore()
           : null,
       'notificationsEnabled': notificationsEnabled,
-      // Locale preference
       'preferredLocale': preferredLocale,
-      // Allergen preferences
       'allergenPreferences': allergenPreferences?.toFirestore(),
       'hasCompletedOnboarding': hasCompletedOnboarding,
     };
