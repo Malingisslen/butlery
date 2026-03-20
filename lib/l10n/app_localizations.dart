@@ -7491,6 +7491,12 @@ abstract class AppLocalizations {
   /// **'Importerar recept...'**
   String get importImportingRecipesProgress;
 
+  /// No description provided for @importWaitForCompletion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänta tills importen är klar...'**
+  String get importWaitForCompletion;
+
   /// No description provided for @importNoFileOrNoRecipes.
   ///
   /// In sv, this message translates to:

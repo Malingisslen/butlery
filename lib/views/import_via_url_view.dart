@@ -106,9 +106,11 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
     return LayoutComponents.mainMenu(
       currentIndex: null,
       title: context.l10n.importViaUrl,
-      body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
-        child: Center(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: SafeArea(
+          child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: LayoutComponents.valueFor(
@@ -183,6 +185,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );
