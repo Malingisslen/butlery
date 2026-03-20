@@ -3,6 +3,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/repositories/base/base_storage_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Handles deletion of storage and cached data (Firebase Storage, realtime recipes, offline cache).
 /// **Architecture:** Extends BaseStorageRepository for proper repository pattern and GDPR compliance
@@ -67,69 +68,31 @@ class StorageDeletionOperations extends BaseStorageRepository {
     }
   }
 
-  /// Delete all realtime recipes owned by the user (Firestore cleanup)
-  /// **Note:** This is Firestore (not Storage), so it doesn't use BaseStorageRepository methods
-  Future<bool> deleteRealtimeRecipes(String userId) async {
+  /// Delete all realtime documents owned by the user for a given collection.
+  Future<bool> _deleteRealtimeCollection(
+      String userId, String collection) async {
     try {
-      final realtimeRecipes = await _firestore
-          .collection(FirestoreCollections.realtimeRecipes)
+      final docs = await _firestore
+          .collection(collection)
           .where('ownerId', isEqualTo: userId)
           .get();
 
-      final batch = _firestore.batch();
-      for (final doc in realtimeRecipes.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
+      await batchDeleteDocs(_firestore, docs.docs);
       return true;
     } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete realtime recipes', e);
+      app_logger.AppLogger.error('[$_logTag] Failed to delete $collection', e);
       return false;
     }
   }
 
-  /// Delete all realtime menus owned by the user (Firestore cleanup)
-  Future<bool> deleteRealtimeMenus(String userId) async {
-    try {
-      final realtimeMenus = await _firestore
-          .collection(FirestoreCollections.realtimeMenus)
-          .where('ownerId', isEqualTo: userId)
-          .get();
+  Future<bool> deleteRealtimeRecipes(String userId) =>
+      _deleteRealtimeCollection(userId, FirestoreCollections.realtimeRecipes);
 
-      final batch = _firestore.batch();
-      for (final doc in realtimeMenus.docs) {
-        batch.delete(doc.reference);
-      }
-      if (realtimeMenus.docs.isNotEmpty) await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete realtime menus', e);
-      return false;
-    }
-  }
+  Future<bool> deleteRealtimeMenus(String userId) =>
+      _deleteRealtimeCollection(userId, FirestoreCollections.realtimeMenus);
 
-  /// Delete all realtime resources owned by the user (Firestore cleanup)
-  Future<bool> deleteRealtimeResources(String userId) async {
-    try {
-      final realtimeResources = await _firestore
-          .collection(FirestoreCollections.realtimeResources)
-          .where('ownerId', isEqualTo: userId)
-          .get();
-
-      final batch = _firestore.batch();
-      for (final doc in realtimeResources.docs) {
-        batch.delete(doc.reference);
-      }
-      if (realtimeResources.docs.isNotEmpty) await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete realtime resources', e);
-      return false;
-    }
-  }
+  Future<bool> deleteRealtimeResources(String userId) =>
+      _deleteRealtimeCollection(userId, FirestoreCollections.realtimeResources);
 
   /// Delete presence document for the user
   Future<bool> deletePresence(String userId) async {

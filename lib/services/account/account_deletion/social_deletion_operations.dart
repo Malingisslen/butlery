@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Handles deletion of social data (friends, messages, shared content, comments/ratings).
 class SocialDeletionOperations {
@@ -356,26 +357,49 @@ class SocialDeletionOperations {
   /// Delete content reports submitted by user (GDPR — user's own data).
   Future<bool> deleteUserReports(String userId) async {
     try {
-      var batch = _firestore.batch();
-      var opCount = 0;
-
       final reportsSnapshot = await _firestore
           .collection(FirestoreCollections.reports)
           .where('reporterId', isEqualTo: userId)
           .get();
 
-      for (final doc in reportsSnapshot.docs) {
-        batch.delete(doc.reference);
-        opCount++;
-        final state = await _commitIfNeeded(batch, opCount);
-        batch = state.batch;
-        opCount = state.count;
-      }
-
-      if (opCount > 0) await batch.commit();
+      await batchDeleteDocs(_firestore, reportsSnapshot.docs);
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete user reports', e);
+      return false;
+    }
+  }
+
+  /// Delete user's shared personal tags.
+  Future<bool> deleteSharedPersonalTags(String userId) async {
+    try {
+      final tags = await _firestore
+          .collection(FirestoreCollections.sharedPersonalTags)
+          .where('sharedByUserId', isEqualTo: userId)
+          .get();
+
+      await batchDeleteDocs(_firestore, tags.docs);
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete shared personal tags', e);
+      return false;
+    }
+  }
+
+  /// Delete user's menu activity records.
+  Future<bool> deleteMenuActivity(String userId) async {
+    try {
+      final activities = await _firestore
+          .collection(FirestoreCollections.menuActivity)
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      await batchDeleteDocs(_firestore, activities.docs);
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete menu activity', e);
       return false;
     }
   }
