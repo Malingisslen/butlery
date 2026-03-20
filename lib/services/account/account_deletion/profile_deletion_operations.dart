@@ -52,26 +52,6 @@ class ProfileDeletionOperations {
     }
   }
 
-  Future<bool> deleteActivityFeed(String userId) async {
-    try {
-      final activities = await _firestore
-          .collection(FirestoreCollections.activityFeed)
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      final batch = _firestore.batch();
-      for (final doc in activities.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete activity feed', e);
-      return false;
-    }
-  }
-
   /// Delete FCM tokens stored for push notifications.
   Future<bool> deleteFcmTokens(String userId) async {
     try {

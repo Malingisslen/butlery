@@ -47,7 +47,6 @@ abstract final class FirestoreCollections {
   static const String deepLinks = 'deep_links';
   static const String connectivityTest = 'connectivity_test';
   static const String butleryArchive = 'butlery_archive';
-  static const String activityFeed = 'activity_feed';
   static const String reports = 'reports';
   static const String notificationHistory = 'notification_history';
   static const String notificationBatches = 'notification_batches';
@@ -58,7 +57,6 @@ abstract final class FirestoreCollections {
   // ── User subcollections (under users/{userId}/) ──
 
   static const String userRecipes = 'recipes';
-  static const String userMenus = 'menus';
   static const String userShoppingLists = 'shopping_lists';
   static const String userFriends = 'friends';
   static const String userFriendCategories = 'friend_categories';

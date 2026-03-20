@@ -102,20 +102,20 @@
 ///   }
 /// }
 /// ```
-/// **Social Activity Feed:**
+/// **Notification Processing:**
 /// ```dart
-/// class ActivityFeedService extends ChangeNotifier with StreamManagementMixin, StreamPatternMixin {
-///   void startActivityFeed() {
-///     // Throttled activity updates
+/// class NotificationFeedService extends ChangeNotifier with StreamManagementMixin, StreamPatternMixin {
+///   void startNotificationFeed() {
+///     // Throttled notification updates
 ///     throttleStream(
-///       _activityStream,
-///       Duration(seconds: 1),
-///       (activity) => _addToFeed(activity),
-///       name: 'throttled_activity',
-///     );
-///     // Buffered notification processing
-///     bufferStream(
 ///       _notificationStream,
+///       Duration(seconds: 1),
+///       (notification) => _handleNotification(notification),
+///       name: 'throttled_notifications',
+///     );
+///     // Buffered batch processing
+///     bufferStream(
+///       _batchStream,
 ///       Duration(seconds: 5),
 ///       (notifications) => _processBatchNotifications(notifications),
 ///       name: 'buffered_notifications',

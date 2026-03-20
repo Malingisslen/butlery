@@ -103,7 +103,6 @@ class DataExportService extends BaseService {
       // Activity exports
       'comments_and_ratings':
           await _activityManager.exportCommentsAndRatings(userId),
-      'activity_history': await _activityManager.exportActivityHistory(userId),
       // Compliance exports (GDPR-critical)
       'audit_logs': await _complianceManager.exportAuditLogs(userId),
       'consent_records': await _complianceManager.exportConsentRecords(userId),
