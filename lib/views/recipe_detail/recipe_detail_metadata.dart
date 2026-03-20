@@ -9,6 +9,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/star_rating_row.dart';
 
 /// Recipe detail metadata widget — inline row with time, portions, rating,
 /// and "Lagat idag" chip. Source URL is shown as subtitle in the parent view.
@@ -107,7 +108,12 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     metadataWidgets.add(Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildInteractiveStarRating(context, recipe.rating ?? 0),
+        StarRatingRow(
+          rating: recipe.rating ?? 0,
+          interactive: true,
+          onRatingChanged: (value) => _rateRecipe(context, value),
+          semanticsLabel: (star) => context.l10n.ratingStarLabel(star),
+        ),
         if ((recipe.rating ?? 0) > 0) ...[
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
@@ -158,37 +164,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       runSpacing: AppDimensions.spacingSm,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: metadataWidgets,
-    );
-  }
-
-  Widget _buildInteractiveStarRating(BuildContext context, double rating) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) {
-        final starValue = index + 1;
-        final isFilled = starValue <= rating;
-        final isHalf = !isFilled && starValue - 0.5 <= rating;
-
-        return Semantics(
-          label: context.l10n.ratingStarLabel(starValue),
-          child: GestureDetector(
-            onTap: () => _rateRecipe(context, starValue.toDouble()),
-            child: Icon(
-              isFilled
-                  ? Icons.star
-                  : isHalf
-                      ? Icons.star_half
-                      : Icons.star_border,
-              color: isFilled || isHalf
-                  ? context.butleryColors.starGold
-                  : cs.onSurfaceVariant,
-              size: AppDimensions.iconSizeL,
-            ),
-          ),
-        );
-      }),
     );
   }
 

@@ -8,8 +8,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/services/deep_link_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 
@@ -130,18 +131,17 @@ class RequestsTab {
     BuildContext context,
     FriendsViewModel viewModel,
   ) async {
-    final userId = viewModel.currentUserId;
-    if (userId == null) return;
+    if (viewModel.currentUserId == null) return;
 
+    final subject = context.l10n.socialInviteSubject;
     try {
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       final invitationId = const Uuid().v4();
-      final url = DeepLinkService.generateFriendInvitationLink(
-        invitationId: invitationId,
-        fromUserId: userId,
-      );
+      final url =
+          await friendsService.createInvitationLinkInternal(invitationId);
       await SharePlus.instance.share(ShareParams(
         text: url,
-        subject: context.l10n.socialInviteSubject,
+        subject: subject,
       ));
     } catch (e) {
       if (!context.mounted) return;
