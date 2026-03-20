@@ -205,30 +205,6 @@
         { "fieldPath": "recipientUserIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "sharedAt", "order": "DESCENDING" }
       ]
-    },
-    {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" },
-        { "fieldPath": "tagResult.coverage", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" },
-        { "fieldPath": "tagResult.generatedAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "core.createdBy", "order": "ASCENDING" },
-        { "fieldPath": "core.tagResult.generatorVersion", "order": "ASCENDING" }
-      ]
     }
   ],
   "fieldOverrides": [
