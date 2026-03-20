@@ -6,11 +6,11 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Shared star rating row supporting display-only and interactive modes.
 ///
+/// Interactive when [onRatingChanged] is provided; display-only otherwise.
 /// Used by recipe detail metadata and menu rating section.
 class StarRatingRow extends StatelessWidget {
   final double rating;
   final double size;
-  final bool interactive;
   final ValueChanged<double>? onRatingChanged;
   final String Function(int starValue)? semanticsLabel;
 
@@ -18,7 +18,6 @@ class StarRatingRow extends StatelessWidget {
     super.key,
     required this.rating,
     this.size = AppDimensions.iconSizeL,
-    this.interactive = false,
     this.onRatingChanged,
     this.semanticsLabel,
   });
@@ -45,7 +44,7 @@ class StarRatingRow extends StatelessWidget {
           size: size,
         );
 
-        if (!interactive || onRatingChanged == null) return star;
+        if (onRatingChanged == null) return star;
 
         Widget tappableStar = GestureDetector(
           onTap: () => onRatingChanged!(starValue.toDouble()),
