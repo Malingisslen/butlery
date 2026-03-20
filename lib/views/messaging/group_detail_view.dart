@@ -89,6 +89,7 @@ class ConversationGroupDetailView extends StatelessWidget {
     if (viewModel.error != null && !viewModel.hasConversation) {
       return StateWidget.error(
         message: context.l10n.messagingCouldNotLoadGroupInfo(viewModel.error!),
+        onAction: viewModel.reload,
       );
     }
 
