@@ -150,9 +150,9 @@ class FriendRequest with JsonSerializableMixin {
     final sentAt =
         utils.SerializationUtils.parseRequiredDateTimeValue(json['sentAt']);
     return FriendRequest(
-      id: json['id'] as String,
-      fromUserId: json['fromUserId'] as String,
-      toUserId: json['toUserId'] as String,
+      id: utils.SerializationUtils.safeString(json, 'id'),
+      fromUserId: utils.SerializationUtils.safeString(json, 'fromUserId'),
+      toUserId: utils.SerializationUtils.safeString(json, 'toUserId'),
       status: FriendRequestStatus.values.firstWhere(
         (s) => s.name == json['status'],
         orElse: () => FriendRequestStatus.pending,
@@ -163,7 +163,7 @@ class FriendRequest with JsonSerializableMixin {
               sentAt.add(_expiryDuration),
       respondedAt:
           utils.SerializationUtils.parseDateTimeValue(json['respondedAt']),
-      message: json['message'] as String?,
+      message: utils.SerializationUtils.safeNullableString(json, 'message'),
     );
   }
 

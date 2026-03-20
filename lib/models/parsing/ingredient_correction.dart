@@ -1,3 +1,5 @@
+import 'package:butlery/core/utils/serialization_utils.dart';
+
 /// Types of corrections that can be made to ingredients.
 enum IngredientCorrectionType {
   /// New ingredient added by user (not in original parse)
@@ -182,17 +184,17 @@ class IngredientCorrection {
         (t) => t.name == json['type'],
         orElse: () => IngredientCorrectionType.multipleFixed,
       ),
-      originalIndex: json['originalIndex'] as int?,
-      correctedIndex: json['correctedIndex'] as int?,
-      originalLine: json['originalLine'] as String?,
-      originalQuantity: json['originalQuantity'] as String?,
-      originalUnit: json['originalUnit'] as String?,
-      originalName: json['originalName'] as String?,
-      correctedLine: json['correctedLine'] as String?,
-      correctedName: json['correctedName'] as String?,
-      quantityChanged: json['quantityChanged'] as bool? ?? false,
-      unitChanged: json['unitChanged'] as bool? ?? false,
-      nameChanged: json['nameChanged'] as bool? ?? false,
+      originalIndex: SerializationUtils.safeNullableInt(json, 'originalIndex'),
+      correctedIndex: SerializationUtils.safeNullableInt(json, 'correctedIndex'),
+      originalLine: json['originalLine']?.toString(),
+      originalQuantity: json['originalQuantity']?.toString(),
+      originalUnit: json['originalUnit']?.toString(),
+      originalName: json['originalName']?.toString(),
+      correctedLine: json['correctedLine']?.toString(),
+      correctedName: json['correctedName']?.toString(),
+      quantityChanged: SerializationUtils.safeBool(json, 'quantityChanged'),
+      unitChanged: SerializationUtils.safeBool(json, 'unitChanged'),
+      nameChanged: SerializationUtils.safeBool(json, 'nameChanged'),
     );
   }
 

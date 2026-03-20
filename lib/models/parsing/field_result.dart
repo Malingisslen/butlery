@@ -138,8 +138,8 @@ class FieldResult<T> {
   ) =>
       FieldResult(
         value: json['value'] != null ? valueConverter(json['value']) : null,
-        confidence: ParseConfidence.values.byName(json['confidence'] as String),
-        failureReason: json['failureReason'] as String?,
+        confidence: ParseConfidence.values.byName(json['confidence']?.toString() ?? 'medium'),
+        failureReason: json['failureReason']?.toString(),
       );
 
   @override

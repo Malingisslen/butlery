@@ -1,3 +1,5 @@
+import 'package:butlery/core/utils/serialization_utils.dart';
+
 /// Types of corrections that can be made to instructions.
 enum InstructionCorrectionType {
   /// New instruction added by user
@@ -115,10 +117,10 @@ class InstructionCorrection {
         (t) => t.name == json['type'],
         orElse: () => InstructionCorrectionType.textModified,
       ),
-      originalIndex: json['originalIndex'] as int?,
-      correctedIndex: json['correctedIndex'] as int?,
-      originalText: json['originalText'] as String?,
-      correctedText: json['correctedText'] as String?,
+      originalIndex: SerializationUtils.safeNullableInt(json, 'originalIndex'),
+      correctedIndex: SerializationUtils.safeNullableInt(json, 'correctedIndex'),
+      originalText: json['originalText']?.toString(),
+      correctedText: json['correctedText']?.toString(),
     );
   }
 

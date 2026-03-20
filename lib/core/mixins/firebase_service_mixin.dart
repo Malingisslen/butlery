@@ -37,6 +37,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -509,12 +510,10 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       ].contains(error.code);
     }
 
-    // Check for DNS resolution errors
-    if (error is SocketException) {
-      return true; // Network issues are generally retryable
+    if (!kIsWeb && error is SocketException) {
+      return true;
     }
 
-    // Check error message for DNS-related issues
     final errorMessage = error.toString().toLowerCase();
     if (errorMessage.contains('resolve') ||
         errorMessage.contains('dns') ||
@@ -553,7 +552,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       return FirebaseErrorType.serviceError;
     }
 
-    // Check error message for DNS-related issues FIRST (before generic SocketException handling)
     final errorMessage = error.toString().toLowerCase();
     if (errorMessage.contains('resolve') ||
         errorMessage.contains('dns') ||
@@ -563,8 +561,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       return FirebaseErrorType.dnsResolution;
     }
 
-    // Handle SocketException after DNS check
-    if (error is SocketException) {
+    if (!kIsWeb && error is SocketException) {
       return FirebaseErrorType.networkConnectivity;
     }
 
@@ -644,6 +641,8 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   /// within the Firebase service context.
   /// Returns `true` if any DNS server responds successfully
   Future<bool> _testEnhancedDNSResolution() async {
+    if (kIsWeb) return false;
+
     const enhancedDnsServers = [
       'google.com',
       'cloudflare.com',

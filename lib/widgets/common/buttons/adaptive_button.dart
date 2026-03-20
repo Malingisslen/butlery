@@ -4,6 +4,7 @@
 
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -88,7 +89,7 @@ class AdaptiveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       return CupertinoButton.filled(
         onPressed: onPressed,
         padding: padding,
@@ -123,7 +124,7 @@ class _AdaptiveTextButton extends AdaptiveButton {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       return CupertinoButton(
         onPressed: onPressed,
         padding: padding ?? EdgeInsets.zero,
@@ -159,7 +160,7 @@ class _AdaptiveDestructiveButton extends AdaptiveButton {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       return CupertinoButton(
         onPressed: onPressed,
         padding: padding ?? EdgeInsets.zero,
@@ -218,7 +219,7 @@ class AdaptiveIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       final button = CupertinoButton(
         onPressed: onPressed,
         padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),

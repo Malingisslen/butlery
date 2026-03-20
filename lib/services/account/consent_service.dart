@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
@@ -180,7 +181,9 @@ class ConsentService extends BaseService {
   Future<String> _getDeviceInfo() async {
     return await safeExecute(
           () async {
-            if (Platform.isAndroid) {
+            if (kIsWeb) {
+              return 'Web Browser';
+            } else if (Platform.isAndroid) {
               return 'Android Device';
             } else if (Platform.isIOS) {
               return 'iOS Device';

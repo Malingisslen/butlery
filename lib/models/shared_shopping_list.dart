@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
@@ -96,9 +95,8 @@ class SharedShoppingList
     final commonFields =
         BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
 
-    final itemCount = data['itemCount'] as int? ??
-        (data['listItems'] as List<dynamic>?)?.length ??
-        0;
+    final itemCount = SerializationUtils.safeInt(data, 'itemCount',
+        defaultValue: (data['listItems'] as List<dynamic>?)?.length ?? 0);
 
     return SharedShoppingList(
       id: doc.id,
@@ -108,9 +106,10 @@ class SharedShoppingList
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
       engagementCount:
-          data['joinedCount'] as int? ?? commonFields['engagementCount'] as int,
+          SerializationUtils.safeInt(data, 'joinedCount',
+              defaultValue: commonFields['engagementCount'] as int),
       dismissalCount: commonFields['dismissalCount'] as int,
-      listName: (data['listName'] as String?).orEmpty(),
+      listName: SerializationUtils.safeString(data, 'listName'),
       listDescription: data['listDescription'],
       itemCount: itemCount,
       originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
@@ -182,9 +181,8 @@ class SharedShoppingList
   factory SharedShoppingList.fromJson(Map<String, dynamic> json) {
     final commonFields = BaseSharedContentModel.parseCommonFieldsFromJson(json);
 
-    final itemCount = json['itemCount'] as int? ??
-        (json['listItems'] as List<dynamic>?)?.length ??
-        0;
+    final itemCount = SerializationUtils.safeInt(json, 'itemCount',
+        defaultValue: (json['listItems'] as List<dynamic>?)?.length ?? 0);
 
     return SharedShoppingList(
       id: commonFields['id'] as String,
@@ -194,13 +192,14 @@ class SharedShoppingList
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
       engagementCount:
-          json['joinedCount'] as int? ?? commonFields['engagementCount'] as int,
+          SerializationUtils.safeInt(json, 'joinedCount',
+              defaultValue: commonFields['engagementCount'] as int),
       dismissalCount: commonFields['dismissalCount'] as int,
-      listName: json['listName'] as String,
-      listDescription: json['listDescription'] as String?,
+      listName: SerializationUtils.safeString(json, 'listName'),
+      listDescription: SerializationUtils.safeNullableString(json, 'listDescription'),
       itemCount: itemCount,
-      originalOwnerId: json['originalOwnerId'] as String,
-      originalOwnerDisplayName: json['originalOwnerDisplayName'] as String,
+      originalOwnerId: SerializationUtils.safeString(json, 'originalOwnerId'),
+      originalOwnerDisplayName: SerializationUtils.safeString(json, 'originalOwnerDisplayName'),
     );
   }
 

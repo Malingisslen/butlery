@@ -2,6 +2,7 @@
 // lib/models/realtime/realtime_resource.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -386,8 +387,8 @@ abstract class RealtimeResource {
       'lastEditedBy': (data['lastEditedBy'] as String?).orEmpty(),
       'lastEditedByDisplayName':
           (data['lastEditedByDisplayName'] as String?).orEmpty(),
-      'editCount': data['editCount'] as int? ?? 0,
-      'isActive': data['isActive'] as bool? ?? true,
+      'editCount': SerializationUtils.safeInt(data, 'editCount'),
+      'isActive': SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
       'metadata': Map<String, dynamic>.from(data['metadata'] ?? {}),
     };
   }

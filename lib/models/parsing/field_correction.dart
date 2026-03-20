@@ -64,8 +64,8 @@ class FieldCorrection {
 
   factory FieldCorrection.fromJson(Map<String, dynamic> json) {
     return FieldCorrection(
-      originalValue: json['original'] as String?,
-      correctedValue: json['corrected'] as String?,
+      originalValue: json['original']?.toString(),
+      correctedValue: json['corrected']?.toString(),
     );
   }
 

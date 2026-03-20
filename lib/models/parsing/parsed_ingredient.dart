@@ -123,18 +123,20 @@ class ParsedIngredient {
       };
 
   /// Creates from JSON.
-  factory ParsedIngredient.fromJson(Map<String, dynamic> json) =>
-      ParsedIngredient(
-        name: json['name'] as String,
-        originalLine: json['originalLine'] as String? ?? json['name'] as String,
-        confidence: ParseConfidence.values
-            .byName(json['confidence'] as String? ?? 'medium'),
-        quantity: json['quantity'] as String?,
-        unit: json['unit'] as String?,
-        size: json['size'] as String?,
-        preparation: json['preparation'] as String?,
-        notes: json['notes'] as String?,
-      );
+  factory ParsedIngredient.fromJson(Map<String, dynamic> json) {
+    final name = json['name']?.toString() ?? '';
+    return ParsedIngredient(
+      name: name,
+      originalLine: json['originalLine']?.toString() ?? name,
+      confidence: ParseConfidence.values
+          .byName(json['confidence']?.toString() ?? 'medium'),
+      quantity: json['quantity']?.toString(),
+      unit: json['unit']?.toString(),
+      size: json['size']?.toString(),
+      preparation: json['preparation']?.toString(),
+      notes: json['notes']?.toString(),
+    );
+  }
 
   @override
   bool operator ==(Object other) =>

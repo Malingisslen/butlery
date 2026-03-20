@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Configuration for parsing a specific recipe website.
 ///
@@ -179,26 +180,26 @@ class SiteConfig {
   /// Creates from Firestore document.
   factory SiteConfig.fromFirestore(Map<String, dynamic> data) => SiteConfig(
         domain: (data['domain'] as String?).orEmpty(),
-        titleSelector: data['titleSelector'] as String?,
-        ingredientsSelector: data['ingredientsSelector'] as String?,
-        instructionsSelector: data['instructionsSelector'] as String?,
-        portionsSelector: data['portionsSelector'] as String?,
-        timeSelector: data['timeSelector'] as String?,
-        imageSelector: data['imageSelector'] as String?,
-        descriptionSelector: data['descriptionSelector'] as String?,
-        titleSelectorFallback: data['titleSelectorFallback'] as String?,
+        titleSelector: data['titleSelector']?.toString(),
+        ingredientsSelector: data['ingredientsSelector']?.toString(),
+        instructionsSelector: data['instructionsSelector']?.toString(),
+        portionsSelector: data['portionsSelector']?.toString(),
+        timeSelector: data['timeSelector']?.toString(),
+        imageSelector: data['imageSelector']?.toString(),
+        descriptionSelector: data['descriptionSelector']?.toString(),
+        titleSelectorFallback: data['titleSelectorFallback']?.toString(),
         ingredientsSelectorFallback:
-            data['ingredientsSelectorFallback'] as String?,
+            data['ingredientsSelectorFallback']?.toString(),
         instructionsSelectorFallback:
-            data['instructionsSelectorFallback'] as String?,
-        isSupported: data['isSupported'] as bool? ?? true,
+            data['instructionsSelectorFallback']?.toString(),
+        isSupported: SerializationUtils.safeBool(data, 'isSupported', defaultValue: true),
         qualityScore: (data['qualityScore'] as num?)?.toDouble() ?? 0.5,
-        successCount: data['successCount'] as int? ?? 0,
-        failureCount: data['failureCount'] as int? ?? 0,
+        successCount: SerializationUtils.safeInt(data, 'successCount'),
+        failureCount: SerializationUtils.safeInt(data, 'failureCount'),
         lastUpdated: data['lastUpdated'] != null
             ? (data['lastUpdated'] as Timestamp).toDate()
             : null,
-        notes: data['notes'] as String?,
+        notes: data['notes']?.toString(),
       );
 
   /// Creates default config for a domain.

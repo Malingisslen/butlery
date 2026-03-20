@@ -1,4 +1,5 @@
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 
 /// Mixin providing copy-on-write collaboration support for shared content.
@@ -84,20 +85,20 @@ mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
   static Map<String, dynamic> parseCopyOnWriteFieldsFromFirestore(
       Map<String, dynamic> data) {
     return {
-      'isOriginalReference': data['isOriginalReference'] as bool? ?? true,
-      'copyOnWriteTriggered': data['copyOnWriteTriggered'] as bool? ?? false,
-      'originalOwnerStaticCopyId': data['originalOwnerStaticCopyId'] as String?,
-      'activeCollaboratorCount': data['activeCollaboratorCount'] as int? ?? 0,
+      'isOriginalReference': SerializationUtils.safeBool(data, 'isOriginalReference', defaultValue: true),
+      'copyOnWriteTriggered': SerializationUtils.safeBool(data, 'copyOnWriteTriggered'),
+      'originalOwnerStaticCopyId': SerializationUtils.safeNullableString(data, 'originalOwnerStaticCopyId'),
+      'activeCollaboratorCount': SerializationUtils.safeInt(data, 'activeCollaboratorCount'),
     };
   }
 
   static Map<String, dynamic> parseCopyOnWriteFieldsFromJson(
       Map<String, dynamic> json) {
     return {
-      'isOriginalReference': json['isOriginalReference'] as bool? ?? true,
-      'copyOnWriteTriggered': json['copyOnWriteTriggered'] as bool? ?? false,
-      'originalOwnerStaticCopyId': json['originalOwnerStaticCopyId'] as String?,
-      'activeCollaboratorCount': json['activeCollaboratorCount'] as int? ?? 0,
+      'isOriginalReference': SerializationUtils.safeBool(json, 'isOriginalReference', defaultValue: true),
+      'copyOnWriteTriggered': SerializationUtils.safeBool(json, 'copyOnWriteTriggered'),
+      'originalOwnerStaticCopyId': SerializationUtils.safeNullableString(json, 'originalOwnerStaticCopyId'),
+      'activeCollaboratorCount': SerializationUtils.safeInt(json, 'activeCollaboratorCount'),
     };
   }
 

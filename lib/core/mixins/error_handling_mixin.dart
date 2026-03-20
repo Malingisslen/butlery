@@ -37,6 +37,7 @@
 /// );
 /// ```
 
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -309,6 +310,10 @@ mixin ErrorHandlingMixin {
         AppLogger.warning(
             'Network operation attempt $attempts failed, retrying: $e');
         await Future.delayed(retryDelay);
+        if (this is StateNotifierMixin &&
+            (this as StateNotifierMixin).isDisposed) {
+          return defaultValue;
+        }
       }
     }
 
@@ -437,6 +442,10 @@ mixin ErrorHandlingMixin {
         AppLogger.warning(
             '$operationName attempt $attempts failed, retrying in ${currentDelay.inSeconds}s: $e');
         await Future.delayed(currentDelay);
+        if (this is StateNotifierMixin &&
+            (this as StateNotifierMixin).isDisposed) {
+          rethrow;
+        }
         currentDelay = Duration(
             milliseconds:
                 (currentDelay.inMilliseconds * backoffMultiplier).round());
