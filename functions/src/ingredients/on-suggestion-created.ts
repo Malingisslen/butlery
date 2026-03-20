@@ -58,6 +58,12 @@ export const onSuggestionCreated = functions.firestore
     );
 
     try {
+      // Idempotency guard: skip if already processed
+      if (suggestion.notifiedAt) {
+        functions.logger.info(`Suggestion ${suggestionId} already processed, skipping`);
+        return;
+      }
+
       // Update document with notification metadata
       await getDb()
         .collection("ingredient_suggestions")

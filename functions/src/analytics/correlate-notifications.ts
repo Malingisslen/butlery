@@ -55,6 +55,29 @@ export const correlateNotificationEffectiveness = functions
       let batch = db.batch();
       let batchCount = 0;
 
+      // Batch-fetch all referenced users to avoid N+1 queries
+      const uniqueUserIds = [
+        ...new Set(
+          notificationsSnapshot.docs
+            .map((d) => d.data().userId as string)
+            .filter(Boolean)
+        ),
+      ];
+      const userRefs = uniqueUserIds.map((id) =>
+        db.collection("users").doc(id)
+      );
+      const GETALL_LIMIT = 100;
+      const userMap = new Map<string, FirebaseFirestore.DocumentData>();
+      for (let i = 0; i < userRefs.length; i += GETALL_LIMIT) {
+        const chunk = userRefs.slice(i, i + GETALL_LIMIT);
+        const userDocs = await db.getAll(...chunk);
+        for (const doc of userDocs) {
+          if (doc.exists) {
+            userMap.set(doc.id, doc.data()!);
+          }
+        }
+      }
+
       for (const notifDoc of notificationsSnapshot.docs) {
         const notifData = notifDoc.data();
         const userId = notifData.userId as string;
@@ -65,9 +88,8 @@ export const correlateNotificationEffectiveness = functions
           continue;
         }
 
-        // Check if user was active within 2 hours after notification
-        const userDoc = await db.collection("users").doc(userId).get();
-        const userData = userDoc.data();
+        // Look up user from pre-fetched map
+        const userData = userMap.get(userId);
         const lastActiveAt = userData?.lastActiveAt as
           | admin.firestore.Timestamp
           | undefined;
@@ -151,6 +173,7 @@ export const correlateNotificationEffectiveness = functions
         "Failed to correlate notification effectiveness:",
         error
       );
+      throw error;
     }
 
     return null;

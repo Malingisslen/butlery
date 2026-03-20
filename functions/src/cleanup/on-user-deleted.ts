@@ -26,6 +26,7 @@ const BATCH_LIMIT = 500;
  */
 export const onUserDeleted = functions
   .region("europe-west1")
+  .runWith({ timeoutSeconds: 540, memory: "512MB" })
   .auth.user()
   .onDelete(async (user) => {
     const userId = user.uid;

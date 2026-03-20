@@ -43,6 +43,7 @@ export const onProfileUpdated = functions
 
     const db = getDb();
     let totalUpdated = 0;
+    const errors: Error[] = [];
 
     // Build shared update maps
     const messageUpdates: Record<string, unknown> = {};
@@ -54,75 +55,104 @@ export const onProfileUpdated = functions
     if (avatarChanged) memberUpdates["avatarUrl"] = newAvatar;
 
     // 1. Update messages where senderId == userId
-    totalUpdated += await batchUpdateQuery(
-      db.collection("messages").where("senderId", "==", userId),
-      messageUpdates,
-      db
-    );
-
-    // 2. Update conversations where participantIds contains userId
-    const convUpdates: Record<string, unknown> = {};
-    if (nameChanged) convUpdates[`participantDisplayNames.${userId}`] = newName;
-    if (avatarChanged) convUpdates[`participantAvatarUrls.${userId}`] = newAvatar;
-
-    totalUpdated += await batchUpdateQuery(
-      db.collection("conversations").where("participantIds", "array-contains", userId),
-      convUpdates,
-      db
-    );
-
-    // 3. Update recipe_comments where authorId == userId
-    if (nameChanged) {
+    try {
       totalUpdated += await batchUpdateQuery(
-        db.collection("recipe_comments").where("authorId", "==", userId),
-        { authorDisplayName: newName },
+        db.collection("messages").where("senderId", "==", userId),
+        messageUpdates,
         db
       );
+    } catch (e) {
+      functions.logger.error(`Failed to update messages for ${userHash}`, e);
+      errors.push(e as Error);
+    }
+
+    // 2. Update conversations where participantIds contains userId
+    try {
+      const convUpdates: Record<string, unknown> = {};
+      if (nameChanged) convUpdates[`participantDisplayNames.${userId}`] = newName;
+      if (avatarChanged) convUpdates[`participantAvatarUrls.${userId}`] = newAvatar;
+
+      totalUpdated += await batchUpdateQuery(
+        db.collection("conversations").where("participantIds", "array-contains", userId),
+        convUpdates,
+        db
+      );
+    } catch (e) {
+      functions.logger.error(`Failed to update conversations for ${userHash}`, e);
+      errors.push(e as Error);
+    }
+
+    // 3. Update recipe_comments where authorId == userId
+    try {
+      if (nameChanged) {
+        totalUpdated += await batchUpdateQuery(
+          db.collection("recipe_comments").where("authorId", "==", userId),
+          { authorDisplayName: newName },
+          db
+        );
+      }
+    } catch (e) {
+      functions.logger.error(`Failed to update recipe_comments for ${userHash}`, e);
+      errors.push(e as Error);
     }
 
     // 4. Update friends subcollections via friends list lookup
-    if (nameChanged) {
-      const friendsSnapshot = await db
-        .collection("users")
-        .doc(userId)
-        .collection("friends")
-        .get();
+    try {
+      if (nameChanged) {
+        const friendsSnapshot = await db
+          .collection("users")
+          .doc(userId)
+          .collection("friends")
+          .get();
 
-      if (!friendsSnapshot.empty) {
-        let batch = db.batch();
-        let batchCount = 0;
+        if (!friendsSnapshot.empty) {
+          let batch = db.batch();
+          let batchCount = 0;
 
-        for (const friendDoc of friendsSnapshot.docs) {
-          batch.update(
-            db.collection("users").doc(friendDoc.id).collection("friends").doc(userId),
-            { displayNameLower: newName?.toLowerCase() }
-          );
-          batchCount++;
-          totalUpdated++;
+          for (const friendDoc of friendsSnapshot.docs) {
+            batch.update(
+              db.collection("users").doc(friendDoc.id).collection("friends").doc(userId),
+              { displayNameLower: newName?.toLowerCase() }
+            );
+            batchCount++;
+            totalUpdated++;
 
-          if (batchCount >= BATCH_LIMIT) {
+            if (batchCount >= BATCH_LIMIT) {
+              await batch.commit();
+              batch = db.batch();
+              batchCount = 0;
+            }
+          }
+
+          if (batchCount > 0) {
             await batch.commit();
-            batch = db.batch();
-            batchCount = 0;
           }
         }
-
-        if (batchCount > 0) {
-          await batch.commit();
-        }
       }
+    } catch (e) {
+      functions.logger.error(`Failed to update friends for ${userHash}`, e);
+      errors.push(e as Error);
     }
 
     // 5. Update shared content members subcollections (shared_recipes, shared_menus, etc.)
-    totalUpdated += await batchUpdateQuery(
-      db.collectionGroup("members").where("userId", "==", userId),
-      memberUpdates,
-      db
-    );
+    try {
+      totalUpdated += await batchUpdateQuery(
+        db.collectionGroup("members").where("userId", "==", userId),
+        memberUpdates,
+        db
+      );
+    } catch (e) {
+      functions.logger.error(`Failed to update members for ${userHash}`, e);
+      errors.push(e as Error);
+    }
 
     functions.logger.info(
-      `Profile propagation complete for ${userHash}: ${totalUpdated} documents updated`
+      `Profile propagation complete for ${userHash}: ${totalUpdated} documents updated, ${errors.length} errors`
     );
+
+    if (errors.length > 0) {
+      throw errors[0]; // Trigger Cloud Functions retry
+    }
   });
 
 async function batchUpdateQuery(
