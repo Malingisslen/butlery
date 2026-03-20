@@ -2,7 +2,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/data/recipes/recipe_seeds.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 
@@ -93,6 +95,9 @@ class OnboardingViewModel extends ChangeNotifier {
               : null;
       await userService.completeOnboardingWithPreferences(prefs);
 
+      // Seed starter recipes for new users (fire-and-forget, never blocks onboarding)
+      _seedStarterRecipes();
+
       if (_currentPage < 3) {
         _analytics?.logEvent(
           name: 'onboarding_skipped',
@@ -116,6 +121,40 @@ class OnboardingViewModel extends ChangeNotifier {
     } finally {
       _isCompleting = false;
       notifyListeners();
+    }
+  }
+
+  /// Seeds starter recipes so new users don't see an empty app.
+  /// Runs in the background — failures are logged but never surface to the user.
+  Future<void> _seedStarterRecipes() async {
+    try {
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final seeds = RecipeSeeds.allRecipes;
+
+      for (final seed in seeds) {
+        try {
+          await recipeService.createPersonalRecipe(
+            title: seed.core.title,
+            description: seed.core.description,
+            ingredients: seed.core.ingredients,
+            instructions: seed.core.instructions,
+            mealType: seed.core.mealType,
+            portions: seed.core.portions,
+            timeMinutes: seed.core.timeMinutes,
+            sourceUrl: 'Butlery starter recipes',
+          );
+        } catch (e) {
+          AppLogger.warning('Failed to seed recipe "${seed.core.title}": $e');
+        }
+      }
+
+      _analytics?.logEvent(
+        name: 'onboarding_recipes_seeded',
+        parameters: {'count': seeds.length},
+      );
+      AppLogger.info('Seeded ${seeds.length} starter recipes');
+    } catch (e) {
+      AppLogger.warning('Failed to seed starter recipes: $e');
     }
   }
 }
