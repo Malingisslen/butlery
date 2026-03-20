@@ -140,10 +140,40 @@ class AccountDeletionService extends BaseService {
         'profile': () => _profileOps.deleteUserProfile(userId),
       };
 
+      // Delete auth entry FIRST — if reauth is required, abort before
+      // touching any Firestore data. Orphaned Firestore data can be cleaned
+      // by scheduled Cloud Functions, but a zombie auth entry cannot.
+      try {
+        await user.delete();
+      } catch (authError) {
+        app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete auth entry',
+          authError,
+        );
+        result['errors'].add('auth_deletion: ${authError.toString()}');
+        if (authError is FirebaseAuthException &&
+            authError.code == 'requires-recent-login') {
+          result['requiresReauth'] = true;
+        }
+        // Auth deletion failed — abort entire operation
+        return result;
+      }
+
+      // Auth deleted — now clean up Firestore data
       for (final entry in deletionSteps.entries) {
         await _runDeletionStep(entry.key, result, entry.value);
       }
 
+      // Invalidate FCM token at SDK level
+      try {
+        await FirebaseMessaging.instance.deleteToken();
+      } catch (e) {
+        app_logger.AppLogger.warning(
+          '[$_logTag] Failed to delete FCM token from SDK: $e',
+        );
+      }
+
+      // Audit log AFTER auth deletion succeeds — no lying audit on failure
       if (createAuditLog) {
         result['auditLogId'] = await _createDeletionAuditLog(
           userId: userId,
@@ -161,40 +191,16 @@ class AccountDeletionService extends BaseService {
         'collections_failed': result['failedCollections'].length,
       });
 
-      // Invalidate FCM token at SDK level before deleting auth
-      try {
-        await FirebaseMessaging.instance.deleteToken();
-      } catch (e) {
+      result['success'] = true;
+      if (result['failedCollections'].isNotEmpty) {
         app_logger.AppLogger.warning(
-          '[$_logTag] Failed to delete FCM token from SDK: $e',
+          '[$_logTag] Auth deleted but some Firestore collections failed: '
+          '${result['failedCollections']}',
         );
-      }
-
-      // Always attempt auth deletion — orphaned Firestore data can be cleaned
-      // by scheduled Cloud Functions, but a zombie auth entry cannot.
-      try {
-        await user.delete();
-        result['success'] = true;
-        if (result['failedCollections'].isNotEmpty) {
-          app_logger.AppLogger.warning(
-            '[$_logTag] Auth deleted but some Firestore collections failed: '
-            '${result['failedCollections']}',
-          );
-        } else {
-          app_logger.AppLogger.info(
-            '[$_logTag] Account deletion completed successfully for user: $userId',
-          );
-        }
-      } catch (authError) {
-        app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete auth entry',
-          authError,
+      } else {
+        app_logger.AppLogger.info(
+          '[$_logTag] Account deletion completed successfully for user: $userId',
         );
-        result['errors'].add('auth_deletion: ${authError.toString()}');
-        if (authError is FirebaseAuthException &&
-            authError.code == 'requires-recent-login') {
-          result['requiresReauth'] = true;
-        }
       }
 
       return result;

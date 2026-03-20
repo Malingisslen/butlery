@@ -66,6 +66,15 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       return;
     }
 
+    // Re-authenticate before enrolling MFA (sensitive operation)
+    final reauthSuccess = await AuthActionHandler.reauthenticate(
+      context,
+      onError: (msg) => setState(() {
+        _errorMessage = msg;
+      }),
+    );
+    if (!reauthSuccess || !mounted) return;
+
     // Ensure phone number has country code
     final formattedPhone = phone.startsWith('+') ? phone : '+46$phone';
 
