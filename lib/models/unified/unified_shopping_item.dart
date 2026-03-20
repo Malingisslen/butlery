@@ -59,7 +59,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Language-neutral shopping category constants for Firestore storage.
@@ -572,24 +571,24 @@ class UnifiedShoppingItem {
   /// Returns a new [UnifiedShoppingItem] instance with all data properly parsed from JSON.
   factory UnifiedShoppingItem.fromJson(Map<String, dynamic> json) {
     return UnifiedShoppingItem(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      unit: (json['unit'] as String?).orEmpty(),
-      category: (json['category'] as String?).orDefault(ShoppingCategory.other),
-      bought: (json['bought'] as bool?).orFalse(),
-      addedByUserId: json['addedByUserId'] as String?,
-      addedByDisplayName: json['addedByDisplayName'] as String?,
+      id: SerializationUtils.safeString(json, 'id'),
+      name: SerializationUtils.safeString(json, 'name'),
+      amount: SerializationUtils.safeDouble(json, 'amount'),
+      unit: SerializationUtils.safeString(json, 'unit'),
+      category: SerializationUtils.safeString(json, 'category', defaultValue: ShoppingCategory.other),
+      bought: SerializationUtils.safeBool(json, 'bought'),
+      addedByUserId: SerializationUtils.safeNullableString(json, 'addedByUserId'),
+      addedByDisplayName: SerializationUtils.safeNullableString(json, 'addedByDisplayName'),
       addedAt: SerializationUtils.safeDateTime(json, 'addedAt'),
-      purchasedByUserId: json['purchasedByUserId'] as String?,
-      purchasedByDisplayName: json['purchasedByDisplayName'] as String?,
+      purchasedByUserId: SerializationUtils.safeNullableString(json, 'purchasedByUserId'),
+      purchasedByDisplayName: SerializationUtils.safeNullableString(json, 'purchasedByDisplayName'),
       purchasedAt: SerializationUtils.safeDateTime(json, 'purchasedAt'),
-      lastModifiedByUserId: json['lastModifiedByUserId'] as String?,
-      lastModifiedByDisplayName: json['lastModifiedByDisplayName'] as String?,
+      lastModifiedByUserId: SerializationUtils.safeNullableString(json, 'lastModifiedByUserId'),
+      lastModifiedByDisplayName: SerializationUtils.safeNullableString(json, 'lastModifiedByDisplayName'),
       lastModifiedAt: SerializationUtils.safeDateTime(json, 'lastModifiedAt'),
-      note: json['note'] as String?,
-      estimatedPrice: (json['estimatedPrice'] as num?)?.toDouble(),
-      priority: (json['priority'] as int?).orDefault(3),
+      note: SerializationUtils.safeNullableString(json, 'note'),
+      estimatedPrice: SerializationUtils.safeNullableDouble(json, 'estimatedPrice'),
+      priority: SerializationUtils.safeInt(json, 'priority', defaultValue: 3),
     );
   }
 

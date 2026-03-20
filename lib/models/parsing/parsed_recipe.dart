@@ -163,32 +163,33 @@ class ParsedRecipe {
   /// Creates from JSON.
   factory ParsedRecipe.fromJson(Map<String, dynamic> json) => ParsedRecipe(
         title: FieldResult.fromJson(
-          json['title'] as Map<String, dynamic>,
-          (v) => v as String,
+          json['title'] as Map<String, dynamic>? ?? {},
+          (v) => v.toString(),
         ),
         portions: FieldResult.fromJson(
-          json['portions'] as Map<String, dynamic>,
-          (v) => v as int,
+          json['portions'] as Map<String, dynamic>? ?? {},
+          (v) => v is int ? v : int.tryParse(v.toString()) ?? 0,
         ),
         ingredients: FieldResult.fromJson(
-          json['ingredients'] as Map<String, dynamic>,
-          (v) => (v as List)
-              .map((i) => ParsedIngredient.fromJson(i as Map<String, dynamic>))
+          json['ingredients'] as Map<String, dynamic>? ?? {},
+          (v) => (v is List ? v : [])
+              .map((i) => ParsedIngredient.fromJson(
+                  i is Map<String, dynamic> ? i : Map<String, dynamic>.from(i as Map)))
               .toList(),
         ),
         instructions: FieldResult.fromJson(
-          json['instructions'] as Map<String, dynamic>,
-          (v) => (v as List).cast<String>(),
+          json['instructions'] as Map<String, dynamic>? ?? {},
+          (v) => (v is List ? v : []).map((e) => e.toString()).toList(),
         ),
         totalTime: FieldResult.fromJson(
-          json['totalTime'] as Map<String, dynamic>,
-          (v) => Duration(minutes: v as int),
+          json['totalTime'] as Map<String, dynamic>? ?? {},
+          (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
         ),
         metadata: ParseMetadata.fromJson(
-          json['metadata'] as Map<String, dynamic>,
+          json['metadata'] as Map<String, dynamic>? ?? {},
         ),
-        imageUrl: json['imageUrl'] as String?,
-        description: json['description'] as String?,
+        imageUrl: json['imageUrl']?.toString(),
+        description: json['description']?.toString(),
       );
 
   @override

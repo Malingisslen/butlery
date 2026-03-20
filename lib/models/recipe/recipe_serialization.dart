@@ -18,8 +18,8 @@ class RecipeSerialization {
   /// Deserialize recipe from JSON format
   static Recipe fromJson(Map<String, dynamic> json) {
     return Recipe(
-      core: RecipeCore.fromJson(json['core'] as Map<String, dynamic>),
-      type: RecipeType.values[json['type'] as int],
+      core: RecipeCore.fromJson(json['core'] as Map<String, dynamic>? ?? json),
+      type: RecipeType.values[(json['type'] as int?).orZero()],
       socialData: json['socialData'] != null
           ? RecipeSocialData.fromJson(
               json['socialData'] as Map<String, dynamic>)

@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -410,15 +411,20 @@ class FCMTokenManager {
     if (_cachedDeviceId != null) return _cachedDeviceId!;
 
     try {
-      final deviceInfo = DeviceInfoPlugin();
-      if (Platform.isAndroid) {
-        final android = await deviceInfo.androidInfo;
-        _cachedDeviceId = android.id;
-      } else if (Platform.isIOS) {
-        final ios = await deviceInfo.iosInfo;
-        _cachedDeviceId = ios.identifierForVendor ?? await _fallbackDeviceId();
-      } else {
+      if (kIsWeb) {
         _cachedDeviceId = await _fallbackDeviceId();
+      } else {
+        final deviceInfo = DeviceInfoPlugin();
+        if (Platform.isAndroid) {
+          final android = await deviceInfo.androidInfo;
+          _cachedDeviceId = android.id;
+        } else if (Platform.isIOS) {
+          final ios = await deviceInfo.iosInfo;
+          _cachedDeviceId =
+              ios.identifierForVendor ?? await _fallbackDeviceId();
+        } else {
+          _cachedDeviceId = await _fallbackDeviceId();
+        }
       }
     } catch (e) {
       AppLogger.warning('Failed to get device ID: $e');
@@ -442,6 +448,7 @@ class FCMTokenManager {
 
   /// Get platform name for tracking
   String _getPlatformName() {
+    if (kIsWeb) return 'web';
     if (Platform.isAndroid) return 'android';
     if (Platform.isIOS) return 'ios';
     if (Platform.isMacOS) return 'macos';

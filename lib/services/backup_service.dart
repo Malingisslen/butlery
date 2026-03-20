@@ -1,6 +1,7 @@
 /// Backup and restore service for recipe export/import with cross-platform file operations and duplicate detection.
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -41,7 +42,9 @@ class BackupService extends BaseService {
       final filename =
           'butlery_backup_${timestamp.year}${timestamp.month.toString().padLeft(2, '0')}${timestamp.day.toString().padLeft(2, '0')}_${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}.json';
 
-      if (Platform.isAndroid) {
+      if (kIsWeb) {
+        return BackupResult.error(AppLocale.current.backupPlatformNotSupported);
+      } else if (Platform.isAndroid) {
         return await _saveToAndroidDownloads(
           jsonString,
           filename,

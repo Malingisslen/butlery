@@ -501,13 +501,13 @@ class RecipeCore with JsonSerializableMixin {
       };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
-    final id = json['id'] as String;
-    final title = json['title'] as String;
+    final id = utils.SerializationUtils.safeString(json, 'id');
+    final title = utils.SerializationUtils.safeString(json, 'title');
     final ingredients =
         List<String>.from((json['ingredients'] as List?).orEmpty());
     final instructions =
         List<String>.from((json['instructions'] as List?).orEmpty());
-    final storedChecksum = json['dataChecksum'] as String?;
+    final storedChecksum = utils.SerializationUtils.safeNullableString(json, 'dataChecksum');
 
     // Compute data integrity status
     DataIntegrityStatus integrityStatus;
@@ -534,9 +534,9 @@ class RecipeCore with JsonSerializableMixin {
     return RecipeCore(
       id: id,
       title: title,
-      description: json['description'] as String,
-      portions: json['portions'] as int?,
-      timeMinutes: json['timeMinutes'] as int?,
+      description: utils.SerializationUtils.safeString(json, 'description'),
+      portions: utils.SerializationUtils.safeNullableInt(json, 'portions'),
+      timeMinutes: utils.SerializationUtils.safeNullableInt(json, 'timeMinutes'),
       ingredients: ingredients,
       instructions: instructions,
       personalTagIds: json['personalTagIds'] != null
@@ -547,21 +547,21 @@ class RecipeCore with JsonSerializableMixin {
         json['personalTagIds'],
       ),
       rating: (json['rating'] as num?)?.toDouble(),
-      mealType: json['mealType'] as String,
-      sourceUrl: json['sourceUrl'] as String?,
+      mealType: utils.SerializationUtils.safeString(json, 'mealType', defaultValue: 'Middag'),
+      sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
       imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
-      thumbnailUrl: json['thumbnailUrl'] as String?,
+      thumbnailUrl: utils.SerializationUtils.safeNullableString(json, 'thumbnailUrl'),
       createdAt:
           utils.SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
       updatedAt:
           utils.SerializationUtils.safeRequiredDateTime(json, 'updatedAt'),
-      createdBy: json['createdBy'] as String?,
-      isPublic: (json['isPublic'] as bool?).orFalse(),
+      createdBy: utils.SerializationUtils.safeNullableString(json, 'createdBy'),
+      isPublic: utils.SerializationUtils.safeBool(json, 'isPublic'),
       lastCookedAt: utils.SerializationUtils.safeDateTime(json, 'lastCookedAt'),
       ingredientsNormalized: json['ingredientsNormalized'] != null
           ? List<String>.from(json['ingredientsNormalized'])
           : null,
-      ratingCount: json['ratingCount'] as int?,
+      ratingCount: utils.SerializationUtils.safeNullableInt(json, 'ratingCount'),
       averageRating: (json['averageRating'] as num?)?.toDouble(),
       ratingDistribution: json['ratingDistribution'] != null
           ? Map<int, int>.from(json['ratingDistribution'])
@@ -570,8 +570,8 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
-      personalTagVersion: json['personalTagVersion'] as int?,
-      isFavorite: (json['isFavorite'] as bool?) ?? false,
+      personalTagVersion: utils.SerializationUtils.safeNullableInt(json, 'personalTagVersion'),
+      isFavorite: utils.SerializationUtils.safeBool(json, 'isFavorite'),
       dataIntegrityStatus: integrityStatus,
     );
   }
@@ -776,19 +776,19 @@ class RecipeSocialData {
 
   factory RecipeSocialData.fromJson(Map<String, dynamic> json) =>
       RecipeSocialData(
-        ownerId: json['ownerId'] as String?,
-        ownerDisplayName: json['ownerDisplayName'] as String?,
+        ownerId: utils.SerializationUtils.safeNullableString(json, 'ownerId'),
+        ownerDisplayName: utils.SerializationUtils.safeNullableString(json, 'ownerDisplayName'),
         memberPermissions: json['memberPermissions'] != null
             ? Map<String, ResourcePermission>.from(
                 (json['memberPermissions'] as Map)
                     .map((k, v) => MapEntry(k, ResourcePermission.values[v])))
             : null,
-        allowGuestViewing: (json['allowGuestViewing'] as bool?).orFalse(),
-        allowMemberInvites: (json['allowMemberInvites'] as bool?).orTrue(),
+        allowGuestViewing: utils.SerializationUtils.safeBool(json, 'allowGuestViewing'),
+        allowMemberInvites: utils.SerializationUtils.safeBool(json, 'allowMemberInvites', defaultValue: true),
         categoryIds: json['categoryIds'] != null
             ? List<String>.from(json['categoryIds'])
             : null,
-        descriptionCollaborative: json['descriptionCollaborative'] as String?,
+        descriptionCollaborative: utils.SerializationUtils.safeNullableString(json, 'descriptionCollaborative'),
       );
 
   RecipeSocialData copyWith({
@@ -854,12 +854,12 @@ class RecipeRealtimeData {
                 (k, v) => MapEntry(
                     k, utils.SerializationUtils.parseRequiredDateTimeValue(v))))
             : null,
-        lastEditedByUserId: json['lastEditedByUserId'] as String?,
-        lastEditedByDisplayName: json['lastEditedByDisplayName'] as String?,
+        lastEditedByUserId: utils.SerializationUtils.safeNullableString(json, 'lastEditedByUserId'),
+        lastEditedByDisplayName: utils.SerializationUtils.safeNullableString(json, 'lastEditedByDisplayName'),
         lastEditedAt:
             utils.SerializationUtils.safeDateTime(json, 'lastEditedAt'),
-        editCount: (json['editCount'] as int?).orZero(),
-        isActive: (json['isActive'] as bool?).orTrue(),
+        editCount: utils.SerializationUtils.safeInt(json, 'editCount'),
+        isActive: utils.SerializationUtils.safeBool(json, 'isActive', defaultValue: true),
       );
 }
 
@@ -887,7 +887,7 @@ class RecipeOfflineData {
       RecipeOfflineData(
         lastSyncedAt:
             utils.SerializationUtils.safeDateTime(json, 'lastSyncedAt'),
-        isModifiedOffline: (json['isModifiedOffline'] as bool?).orFalse(),
+        isModifiedOffline: utils.SerializationUtils.safeBool(json, 'isModifiedOffline'),
         pendingChanges: json['pendingChanges'] != null
             ? List<String>.from(json['pendingChanges'])
             : null,

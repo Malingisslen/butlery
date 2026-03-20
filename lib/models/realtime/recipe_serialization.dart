@@ -70,11 +70,11 @@ class RecipeSerialization {
 
     return Recipe(
       core: RecipeCore(
-        id: coreData['id'] as String? ?? fallbackId,
-        title: (coreData['title'] as String?).orEmpty(),
-        description: (coreData['description'] as String?).orEmpty(),
-        portions: coreData['portions'] as int?,
-        timeMinutes: coreData['timeMinutes'] as int?,
+        id: SerializationUtils.safeString(coreData, 'id', defaultValue: fallbackId),
+        title: SerializationUtils.safeString(coreData, 'title'),
+        description: SerializationUtils.safeString(coreData, 'description'),
+        portions: SerializationUtils.safeNullableInt(coreData, 'portions'),
+        timeMinutes: SerializationUtils.safeNullableInt(coreData, 'timeMinutes'),
         ingredients: List<String>.from(coreData['ingredients'] ?? []),
         instructions: List<String>.from(coreData['instructions'] ?? []),
         personalTagIds: coreData['personalTagIds'] != null
@@ -82,16 +82,16 @@ class RecipeSerialization {
             : null,
         rating: (coreData['rating'] as num?)?.toDouble(),
         imageUrls: List<String>.from(coreData['imageUrls'] ?? []),
-        mealType: coreData['mealType'] as String? ?? 'Middag',
-        sourceUrl: coreData['sourceUrl'] as String?,
+        mealType: SerializationUtils.safeString(coreData, 'mealType', defaultValue: 'Middag'),
+        sourceUrl: SerializationUtils.safeNullableString(coreData, 'sourceUrl'),
         createdAt:
             SerializationUtils.parseDateTimeValue(coreData['createdAt']) ??
                 DateTime.now(),
         updatedAt:
             SerializationUtils.parseDateTimeValue(coreData['updatedAt']) ??
                 DateTime.now(),
-        createdBy: coreData['createdBy'] as String?,
-        isPublic: coreData['isPublic'] as bool? ?? false,
+        createdBy: SerializationUtils.safeNullableString(coreData, 'createdBy'),
+        isPublic: SerializationUtils.safeBool(coreData, 'isPublic'),
         lastCookedAt:
             SerializationUtils.parseDateTimeValue(coreData['lastCookedAt']),
       ),
@@ -112,16 +112,16 @@ class RecipeSerialization {
     // Extract metadata without Firebase-specific parsing
     final metadataMap = {
       'id': id,
-      'ownerId': data['ownerId'] as String,
-      'ownerDisplayName': data['ownerDisplayName'] as String,
+      'ownerId': SerializationUtils.safeString(data, 'ownerId'),
+      'ownerDisplayName': SerializationUtils.safeString(data, 'ownerDisplayName'),
       'participants': data['participants'] as Map<String, dynamic>? ?? {},
-      'createdAt': data['createdAt'], // Repository provides DateTime
-      'lastEditedAt': data['lastEditedAt'], // Repository provides DateTime
-      'lastEditedBy': data['lastEditedBy'] as String,
-      'lastEditedByDisplayName': data['lastEditedByDisplayName'] as String,
-      'editCount': data['editCount'] as int? ?? 0,
-      'isActive': data['isActive'] as bool? ?? true,
-      'metadata': data['metadata'] as Map<String, dynamic>? ?? {},
+      'createdAt': data['createdAt'],
+      'lastEditedAt': data['lastEditedAt'],
+      'lastEditedBy': SerializationUtils.safeString(data, 'lastEditedBy'),
+      'lastEditedByDisplayName': SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
+      'editCount': SerializationUtils.safeInt(data, 'editCount'),
+      'isActive': SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      'metadata': SerializationUtils.safeMap(data, 'metadata'),
     };
 
     return (recipe, metadataMap);
@@ -207,7 +207,7 @@ class RecipeSerialization {
         data['lastEditedByDisplayName']?.toString();
 
     // Boolean fields
-    sanitized['isPublic'] = data['isPublic'] as bool? ?? false;
+    sanitized['isPublic'] = SerializationUtils.safeBool(data, 'isPublic');
 
     // Preserve additional fields
     for (final entry in data.entries) {
@@ -255,13 +255,13 @@ class RecipeSerialization {
     if (socialData == null) return null;
 
     return RecipeSocialData(
-      ownerId: socialData['ownerId'] as String?,
-      ownerDisplayName: socialData['ownerDisplayName'] as String?,
+      ownerId: socialData['ownerId']?.toString(),
+      ownerDisplayName: socialData['ownerDisplayName']?.toString(),
       memberPermissions: _parsePermissions(socialData['memberPermissions']),
-      allowGuestViewing: socialData['allowGuestViewing'] as bool? ?? false,
-      allowMemberInvites: socialData['allowMemberInvites'] as bool? ?? true,
+      allowGuestViewing: SerializationUtils.safeBool(socialData, 'allowGuestViewing'),
+      allowMemberInvites: SerializationUtils.safeBool(socialData, 'allowMemberInvites', defaultValue: true),
       categoryIds: _sanitizeStringList(socialData['categoryIds']),
-      descriptionCollaborative: socialData['description'] as String?,
+      descriptionCollaborative: socialData['description']?.toString(),
     );
   }
 

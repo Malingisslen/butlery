@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
@@ -117,6 +118,10 @@ class SocialOperationsInitializer {
     }
 
     final timer = Timer(delay, () {
+      if (parentService is StateNotifierMixin &&
+          parentService.isDisposed) {
+        return;
+      }
       final operations = retryWithRealRepositories(parentService);
       if (operations != null) {
         onSuccess(operations);

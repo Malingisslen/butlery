@@ -135,7 +135,7 @@ class FCMService with ErrorHandlingMixin {
   /// Initialize Android notification channels (required for Android 8+)
   static Future<void> _initializeNotificationChannels() async {
     // Only initialize on Android
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || !Platform.isAndroid) return;
 
     try {
       AppLogger.info('🔔 Initializing Android notification channels...');

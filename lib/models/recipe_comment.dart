@@ -4,7 +4,6 @@ import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Recipe comment with threaded discussions and social engagement.
 ///
@@ -211,18 +210,18 @@ class RecipeComment {
   /// Creates a recipe comment instance from JSON data for caching.
   factory RecipeComment.fromJson(Map<String, dynamic> json) {
     return RecipeComment(
-      id: json['id'] as String,
-      recipeId: json['recipeId'] as String,
-      authorId: json['authorId'] as String,
-      authorDisplayName: json['authorDisplayName'] as String? ?? '?',
-      authorAvatarUrl: json['authorAvatarUrl'] as String?,
-      text: (json['text'] as String?).orEmpty(),
+      id: SerializationUtils.safeString(json, 'id'),
+      recipeId: SerializationUtils.safeString(json, 'recipeId'),
+      authorId: SerializationUtils.safeString(json, 'authorId'),
+      authorDisplayName: SerializationUtils.safeString(json, 'authorDisplayName', defaultValue: '?'),
+      authorAvatarUrl: SerializationUtils.safeNullableString(json, 'authorAvatarUrl'),
+      text: SerializationUtils.safeString(json, 'text'),
       createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
       editedAt: SerializationUtils.safeDateTime(json, 'editedAt'),
-      likesCount: json['likesCount'] as int? ?? 0,
-      parentCommentId: json['parentCommentId'] as String?,
-      replyCount: json['replyCount'] as int? ?? 0,
-      isDeleted: json['isDeleted'] as bool? ?? false,
+      likesCount: SerializationUtils.safeInt(json, 'likesCount'),
+      parentCommentId: SerializationUtils.safeNullableString(json, 'parentCommentId'),
+      replyCount: SerializationUtils.safeInt(json, 'replyCount'),
+      isDeleted: SerializationUtils.safeBool(json, 'isDeleted'),
       reactions:
           SerializationUtils.safeStringListMap(json, 'reactions') ?? const {},
     );

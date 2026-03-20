@@ -7,12 +7,14 @@ class SerializationUtils {
       {String defaultValue = ''}) {
     final value = map[key];
     if (value == null) return defaultValue;
+    if (value is String) return value;
     return value.toString();
   }
 
   static String? safeNullableString(Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) return null;
+    if (value is String) return value;
     return value.toString();
   }
 

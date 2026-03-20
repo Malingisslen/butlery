@@ -1,3 +1,4 @@
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 
 /// Source type for recipe import.
@@ -197,19 +198,17 @@ class ParseMetadata {
 
   /// Creates from JSON.
   factory ParseMetadata.fromJson(Map<String, dynamic> json) => ParseMetadata(
-        source: ImportSource.values.byName(json['source'] as String),
-        domain: json['domain'] as String?,
-        sourceUrl: json['sourceUrl'] as String?,
-        cacheKey: json['cacheKey'] as String?,
-        parserVersion: json['parserVersion'] as String? ?? '1.0',
-        timestamp: json['timestamp'] != null
-            ? DateTime.parse(json['timestamp'] as String)
-            : DateTime.now(),
+        source: ImportSource.values.byName(json['source']?.toString() ?? 'url'),
+        domain: json['domain']?.toString(),
+        sourceUrl: json['sourceUrl']?.toString(),
+        cacheKey: json['cacheKey']?.toString(),
+        parserVersion: json['parserVersion']?.toString() ?? '1.0',
+        timestamp: SerializationUtils.safeRequiredDateTime(json, 'timestamp'),
         totalParseTime:
-            Duration(milliseconds: json['totalParseTimeMs'] as int? ?? 0),
-        tierResults: const [], // Tier results are not stored in JSON
-        totalCostSek: (json['totalCostSek'] as num?)?.toDouble(),
-        totalTokensUsed: json['totalTokensUsed'] as int?,
+            Duration(milliseconds: SerializationUtils.safeInt(json, 'totalParseTimeMs')),
+        tierResults: const [],
+        totalCostSek: SerializationUtils.safeNullableDouble(json, 'totalCostSek'),
+        totalTokensUsed: SerializationUtils.safeNullableInt(json, 'totalTokensUsed'),
       );
 
   @override

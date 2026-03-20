@@ -27,6 +27,7 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
   }
 
   Future<void> _loadContent() async {
+    if (!mounted) return;
     try {
       setState(() {
         _isLoading = true;

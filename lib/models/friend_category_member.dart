@@ -94,12 +94,12 @@ class FriendCategoryMember {
   /// Create from JSON
   factory FriendCategoryMember.fromJson(Map<String, dynamic> json) {
     return FriendCategoryMember(
-      friendId: json['friendId'] as String,
-      categoryId: json['categoryId'] as String,
-      ownerId: json['ownerId'] as String,
+      friendId: SerializationUtils.safeString(json, 'friendId'),
+      categoryId: SerializationUtils.safeString(json, 'categoryId'),
+      ownerId: SerializationUtils.safeString(json, 'ownerId'),
       addedAt: SerializationUtils.safeRequiredDateTime(json, 'addedAt'),
-      displayName: json['displayName'] as String?,
-      avatarUrl: json['avatarUrl'] as String?,
+      displayName: SerializationUtils.safeNullableString(json, 'displayName'),
+      avatarUrl: SerializationUtils.safeNullableString(json, 'avatarUrl'),
     );
   }
 

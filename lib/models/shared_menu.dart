@@ -421,7 +421,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       menuTitle: (json['menuTitle'] as String?).orDefault('?'),
       menuSnapshot: reconstructedMenu,
       allowCollaboration: (json['allowCollaboration'] as bool?).orFalse(),
-      realtimeMenuId: json['realtimeMenuId'] as String?,
+      realtimeMenuId: json['realtimeMenuId']?.toString(),
       isOriginalReference: cowFields['isOriginalReference'] as bool,
       copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
       originalOwnerStaticCopyId:

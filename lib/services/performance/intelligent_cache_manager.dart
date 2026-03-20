@@ -83,7 +83,7 @@ class UserBehaviorPattern {
       recipeViews:
           Map<String, int>.from((json['recipeViews'] as Map?).orEmpty()),
       lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)
-          ?.map((k, v) => MapEntry(k, DateTime.parse(v)))).orEmpty(),
+          ?.map((k, v) => MapEntry(k, DateTime.tryParse(v) ?? DateTime.now()))).orEmpty(),
       mealTypePreferences: Map<String, int>.from(
           (json['mealTypePreferences'] as Map?).orEmpty()),
       viewTimePreferences:

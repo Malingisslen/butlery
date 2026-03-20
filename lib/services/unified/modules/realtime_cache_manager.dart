@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 
 /// Focused module for real-time cache management and cleanup
@@ -185,14 +186,7 @@ class RealtimeCacheManager {
       final cacheTimestamp = cachedData['editedAt'];
       if (cacheTimestamp == null) return true;
 
-      // Parse timestamp (could be Timestamp or ISO string)
-      DateTime cacheTime;
-      if (cacheTimestamp is String) {
-        cacheTime = DateTime.parse(cacheTimestamp);
-      } else {
-        // Assume it's a Firestore Timestamp
-        cacheTime = cacheTimestamp.toDate();
-      }
+      final cacheTime = SerializationUtils.parseRequiredDateTimeValue(cacheTimestamp);
 
       return lastFirestoreUpdate.isAfter(cacheTime);
     } catch (e) {

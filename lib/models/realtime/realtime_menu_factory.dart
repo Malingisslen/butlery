@@ -94,18 +94,18 @@ class RealtimeMenuFactory {
 
     return {
       'id': id,
-      'ownerId': data['ownerId'] as String,
-      'ownerDisplayName': data['ownerDisplayName'] as String,
+      'ownerId': SerializationUtils.safeString(data, 'ownerId'),
+      'ownerDisplayName': SerializationUtils.safeString(data, 'ownerDisplayName'),
       'participants': participants,
       'createdAt':
           data['createdAt'] as DateTime, // Repository provides DateTime
       'lastEditedAt':
           data['lastEditedAt'] as DateTime, // Repository provides DateTime
-      'lastEditedBy': data['lastEditedBy'] as String,
-      'lastEditedByDisplayName': data['lastEditedByDisplayName'] as String,
-      'editCount': data['editCount'] as int? ?? 0,
-      'isActive': data['isActive'] as bool? ?? true,
-      'metadata': data['metadata'] as Map<String, dynamic>? ?? {},
+      'lastEditedBy': SerializationUtils.safeString(data, 'lastEditedBy'),
+      'lastEditedByDisplayName': SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
+      'editCount': SerializationUtils.safeInt(data, 'editCount'),
+      'isActive': SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      'metadata': SerializationUtils.safeMap(data, 'metadata'),
       'data': menuData,
     };
   }
@@ -129,18 +129,18 @@ class RealtimeMenuFactory {
     final menuData = RealtimeMenuData.fromJson(json);
 
     return {
-      'id': json['id'] as String,
-      'ownerId': json['ownerId'] as String,
-      'ownerDisplayName': json['ownerDisplayName'] as String,
+      'id': SerializationUtils.safeString(json, 'id'),
+      'ownerId': SerializationUtils.safeString(json, 'ownerId'),
+      'ownerDisplayName': SerializationUtils.safeString(json, 'ownerDisplayName'),
       'participants': participants,
       'createdAt': SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
       'lastEditedAt':
           SerializationUtils.safeRequiredDateTime(json, 'lastEditedAt'),
-      'lastEditedBy': json['lastEditedBy'] as String,
-      'lastEditedByDisplayName': json['lastEditedByDisplayName'] as String,
-      'editCount': json['editCount'] as int? ?? 0,
-      'isActive': json['isActive'] as bool? ?? true,
-      'metadata': json['metadata'] as Map<String, dynamic>? ?? {},
+      'lastEditedBy': SerializationUtils.safeString(json, 'lastEditedBy'),
+      'lastEditedByDisplayName': SerializationUtils.safeString(json, 'lastEditedByDisplayName'),
+      'editCount': SerializationUtils.safeInt(json, 'editCount'),
+      'isActive': SerializationUtils.safeBool(json, 'isActive', defaultValue: true),
+      'metadata': SerializationUtils.safeMap(json, 'metadata'),
       'data': menuData,
     };
   }
