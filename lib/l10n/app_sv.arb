@@ -6960,6 +6960,7 @@
   "errorUrlMissingScheme": "URL måste inkludera http:// eller https://",
   "errorUrlUnsupportedScheme": "Endast HTTP- och HTTPS-URL:er stöds",
   "errorUrlMissingDomain": "URL måste inkludera ett domännamn",
+  "errorUrlPrivateAddress": "URL:en pekar på en privat eller reserverad adress och kan inte användas",
   "errorInvalidCategoryName": "Ogiltigt kategorinamn: {name}",
   "@errorInvalidCategoryName": {
     "placeholders": {

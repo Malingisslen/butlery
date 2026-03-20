@@ -6939,6 +6939,7 @@
   "errorUrlMissingScheme": "URL must include http:// or https://",
   "errorUrlUnsupportedScheme": "Only HTTP and HTTPS URLs are supported",
   "errorUrlMissingDomain": "URL must include a domain name",
+  "errorUrlPrivateAddress": "The URL points to a private or reserved address and cannot be used",
   "errorInvalidCategoryName": "Invalid category name: {name}",
   "@errorInvalidCategoryName": {
     "placeholders": {

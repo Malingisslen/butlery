@@ -5,6 +5,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
@@ -152,7 +153,7 @@ class AuthMfaService extends ChangeNotifier
     try {
       final firebaseFactor = factor.unwrap<MultiFactorInfo>();
       await user.multiFactor.unenroll(multiFactorInfo: firebaseFactor);
-      AppLogger.info('MFA factor unenrolled: ${firebaseFactor.uid}');
+      AppLogger.info('MFA factor unenrolled: ${firebaseFactor.uid.maskedUserId}');
       await _analyticsService.logEvent(name: 'mfa_unenrolled');
       return true;
     } on FirebaseAuthException catch (e) {

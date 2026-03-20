@@ -683,7 +683,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(category.ownerId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(category.id)
             .get();
         final retrieved = FriendCategory.fromMap(doc.id, doc.data()!);
@@ -798,7 +798,7 @@ Future<void> _seedCategory(
   await firestore
       .collection('users')
       .doc(userId)
-      .collection('friendCategories')
+      .collection('friend_categories')
       .doc(categoryId)
       .set(data);
 }

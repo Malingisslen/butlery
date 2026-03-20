@@ -226,12 +226,44 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
 
       if (!uri.hasAuthority) {
         errors.add(l.errorUrlMissingDomain);
+      } else if (_isPrivateOrReservedHost(uri.host)) {
+        errors.add(l.errorUrlPrivateAddress);
       }
     } catch (e) {
       errors.add(AppLocale.current.errorInvalidUrlFormat);
     }
 
     return errors;
+  }
+
+  /// Returns true if the host is a private, loopback, or reserved address.
+  static bool _isPrivateOrReservedHost(String host) {
+    final h = host.toLowerCase();
+
+    // Block loopback and localhost
+    if (h == 'localhost' || h == '127.0.0.1' || h == '[::1]' || h == '0.0.0.0') {
+      return true;
+    }
+
+    // Block IPv6 private (fc00::/7) and link-local (fe80::/10)
+    if (h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80')) {
+      return true;
+    }
+
+    // Block private IPv4 ranges
+    final parts = h.split('.');
+    if (parts.length == 4 && parts.every((p) => int.tryParse(p) != null)) {
+      final octets = parts.map(int.parse).toList();
+      final first = octets[0];
+      final second = octets[1];
+      if (first == 0) return true; // 0.0.0.0/8
+      if (first == 10) return true; // 10.0.0.0/8
+      if (first == 172 && second >= 16 && second <= 31) return true; // 172.16.0.0/12
+      if (first == 192 && second == 168) return true; // 192.168.0.0/16
+      if (first == 169 && second == 254) return true; // 169.254.0.0/16
+    }
+
+    return false;
   }
 
   /// Checks if URL points to known recipe site with optimized extraction capabilities.

@@ -108,7 +108,28 @@ class AccountDeletionService extends BaseService {
             () => _deleteSearchIndexRecipes(userId));
       }
 
-      final deletionSteps = <String, Future<bool> Function()>{
+      // Delete auth entry FIRST — if reauth is required, abort before
+      // touching any Firestore data. Orphaned Firestore data can be cleaned
+      // by scheduled Cloud Functions, but a zombie auth entry cannot.
+      try {
+        await user.delete();
+      } catch (authError) {
+        app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete auth entry',
+          authError,
+        );
+        result['errors'].add('auth_deletion: ${authError.toString()}');
+        if (authError is FirebaseAuthException &&
+            authError.code == 'requires-recent-login') {
+          result['requiresReauth'] = true;
+        }
+        // Auth deletion failed — abort entire operation
+        return result;
+      }
+
+      // Auth deleted — now clean up Firestore data in parallel tiers.
+      // Tier 1: All independent content, social, notification, and storage deletions.
+      final tier1 = <String, Future<bool> Function()>{
         'recipes': () => _contentOps.deleteRecipes(userId),
         'menus': () => _contentOps.deleteMenus(userId),
         'shopping_lists': () => _contentOps.deleteShoppingLists(userId),
@@ -129,9 +150,6 @@ class AccountDeletionService extends BaseService {
         'notification_preferences': () =>
             _profileOps.deleteNotificationPreferences(userId),
         'notifications': () => _profileOps.deleteNotifications(userId),
-        'consent_records': () => _profileOps.deleteConsentRecords(userId),
-        'user_subcollections': () =>
-            _profileOps.deleteUserSubcollections(userId),
         'notification_analytics': () =>
             _profileOps.deleteNotificationAnalytics(userId),
         'shared_personal_tags': () =>
@@ -144,31 +162,25 @@ class AccountDeletionService extends BaseService {
         'realtime_resources': () => _storageOps.deleteRealtimeResources(userId),
         'presence': () => _storageOps.deletePresence(userId),
         'storage_files': () => _storageOps.deleteUserStorageFiles(userId),
+      };
+
+      // Tier 2: Subcollections under users/{uid} (must complete before doc deletion).
+      final tier2 = <String, Future<bool> Function()>{
+        'consent_records': () => _profileOps.deleteConsentRecords(userId),
+        'user_subcollections': () =>
+            _profileOps.deleteUserSubcollections(userId),
+      };
+
+      // Tier 3: The user document itself (must be last).
+      final tier3 = <String, Future<bool> Function()>{
         'profile': () => _profileOps.deleteUserProfile(userId),
       };
 
-      // Delete auth entry FIRST — if reauth is required, abort before
-      // touching any Firestore data. Orphaned Firestore data can be cleaned
-      // by scheduled Cloud Functions, but a zombie auth entry cannot.
-      try {
-        await user.delete();
-      } catch (authError) {
-        app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete auth entry',
-          authError,
+      // Execute each tier in parallel, tiers sequentially
+      for (final tier in [tier1, tier2, tier3]) {
+        await Future.wait(
+          tier.entries.map((e) => _runDeletionStep(e.key, result, e.value)),
         );
-        result['errors'].add('auth_deletion: ${authError.toString()}');
-        if (authError is FirebaseAuthException &&
-            authError.code == 'requires-recent-login') {
-          result['requiresReauth'] = true;
-        }
-        // Auth deletion failed — abort entire operation
-        return result;
-      }
-
-      // Auth deleted — now clean up Firestore data
-      for (final entry in deletionSteps.entries) {
-        await _runDeletionStep(entry.key, result, entry.value);
       }
 
       // Invalidate FCM token at SDK level
