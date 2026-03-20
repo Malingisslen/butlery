@@ -486,16 +486,20 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               if (recipe.sourceUrl != null &&
                                   recipe.sourceUrl!.isNotEmpty) ...[
                                 const SizedBox(height: AppDimensions.spacingXs),
-                                GestureDetector(
-                                  onTap: () => _launchSourceUrl(
-                                      context, recipe.sourceUrl!),
-                                  child: Text(
-                                    context.l10n.recipeSourceFrom(
-                                        Uri.tryParse(recipe.sourceUrl!)?.host ??
-                                            recipe.sourceUrl!),
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color: cs.onSurfaceVariant,
-                                      decoration: TextDecoration.underline,
+                                Semantics(
+                                  link: true,
+                                  child: GestureDetector(
+                                    onTap: () => _launchSourceUrl(
+                                        context, recipe.sourceUrl!),
+                                    child: Text(
+                                      context.l10n.recipeSourceFrom(
+                                          Uri.tryParse(recipe.sourceUrl!)
+                                                  ?.host ??
+                                              recipe.sourceUrl!),
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        color: cs.onSurfaceVariant,
+                                        decoration: TextDecoration.underline,
+                                      ),
                                     ),
                                   ),
                                 ),

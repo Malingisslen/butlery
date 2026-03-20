@@ -85,13 +85,16 @@ class _ImportOptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
-          border: Border.all(color: cs.outlineVariant),
-        ),
+    return Semantics(
+      button: true,
+      label: title,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest,
+            border: Border.all(color: cs.outlineVariant),
+          ),
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
@@ -128,6 +131,7 @@ class _ImportOptionCard extends StatelessWidget {
               color: cs.outline,
             ),
           ],
+        ),
         ),
       ),
     );
