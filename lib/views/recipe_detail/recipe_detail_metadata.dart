@@ -40,7 +40,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
 
   Future<void> _checkUserRating() async {
     final recipe = widget.viewModel.recipe;
-    if ((recipe.rating ?? 0) <= 0) return;
+    if (recipe.isPersonal || (recipe.rating ?? 0) <= 0) return;
 
     try {
       final userRating =
