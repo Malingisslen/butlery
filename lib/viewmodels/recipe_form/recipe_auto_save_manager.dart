@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
@@ -36,10 +37,8 @@ class DraftMetadata {
 
   factory DraftMetadata.fromJson(Map<String, dynamic> json) => DraftMetadata(
         draftId: (json['draftId'] as String?).orEmpty(),
-        createdAt: DateTime.parse((json['createdAt'] as String?)
-            .orDefault(DateTime.now().toIso8601String())),
-        lastModifiedAt: DateTime.parse((json['lastModifiedAt'] as String?)
-            .orDefault(DateTime.now().toIso8601String())),
+        createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
+        lastModifiedAt: SerializationUtils.safeRequiredDateTime(json, 'lastModifiedAt'),
         title: (json['title'] as String?).orEmpty(),
         fieldCount: (json['fieldCount'] as int?).orZero(),
       );

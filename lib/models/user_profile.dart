@@ -261,34 +261,32 @@ class UserProfile with JsonSerializableMixin {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      uid: json['uid'] as String,
-      displayName: (json['displayName'] as String?).orEmpty(),
-      email: (json['email'] as String?).orEmpty(),
-      avatarUrl: json['avatarUrl'] as String?,
-      isSearchable: (json['isSearchable'] as bool?).orTrue(),
-      allowEmailSearch: (json['allowEmailSearch'] as bool?).orFalse(),
-      publicRecipeCount: (json['publicRecipeCount'] as int?).orZero(),
-      friendsCount: (json['friendsCount'] as int?).orZero(),
+      uid: utils.SerializationUtils.safeString(json, 'uid'),
+      displayName: utils.SerializationUtils.safeString(json, 'displayName'),
+      email: utils.SerializationUtils.safeString(json, 'email'),
+      avatarUrl: utils.SerializationUtils.safeNullableString(json, 'avatarUrl'),
+      isSearchable: utils.SerializationUtils.safeBool(json, 'isSearchable', defaultValue: true),
+      allowEmailSearch: utils.SerializationUtils.safeBool(json, 'allowEmailSearch'),
+      publicRecipeCount: utils.SerializationUtils.safeInt(json, 'publicRecipeCount'),
+      friendsCount: utils.SerializationUtils.safeInt(json, 'friendsCount'),
       joinedAt:
           utils.SerializationUtils.parseDateTimeValue(json['joinedAt']).orNow(),
       lastActiveAt:
           utils.SerializationUtils.parseDateTimeValue(json['lastActiveAt'])
               .orNow(),
-      isOnline: (json['isOnline'] as bool?).orFalse(),
-      // Notification fields
-      fcmToken: json['fcmToken'] as String?,
+      isOnline: utils.SerializationUtils.safeBool(json, 'isOnline'),
+      fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(
           json['fcmTokenUpdatedAt']),
-      notificationsEnabled: (json['notificationsEnabled'] as bool?).orTrue(),
-      // Locale preference
-      preferredLocale: json['preferredLocale'] as String?,
+      notificationsEnabled: utils.SerializationUtils.safeBool(json, 'notificationsEnabled', defaultValue: true),
+      preferredLocale: utils.SerializationUtils.safeNullableString(json, 'preferredLocale'),
       // Allergen preferences
       allergenPreferences: json['allergenPreferences'] != null
           ? UserAllergenPreferences.fromFirestore(
               json['allergenPreferences'] as Map<String, dynamic>)
           : null,
       hasCompletedOnboarding:
-          (json['hasCompletedOnboarding'] as bool?).orFalse(),
+          utils.SerializationUtils.safeBool(json, 'hasCompletedOnboarding'),
     );
   }
 

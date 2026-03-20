@@ -265,6 +265,7 @@ mixin StateNotifierMixin on ChangeNotifier {
         AppLogger.warning(
             'Operation failed, retrying in ${currentDelay.inSeconds}s (attempt $attempts/$maxRetries): $e');
         await Future.delayed(currentDelay);
+        if (isDisposed) rethrow;
         currentDelay *= 2; // Exponential backoff
       }
     }

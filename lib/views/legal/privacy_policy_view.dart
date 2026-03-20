@@ -36,6 +36,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Future<void> _loadPrivacyPolicy() async {
+    if (!mounted) return;
     try {
       setState(() {
         _isLoading = true;

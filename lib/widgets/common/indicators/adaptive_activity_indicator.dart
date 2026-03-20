@@ -3,6 +3,7 @@
 
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 /// A platform-adaptive activity indicator.
@@ -52,7 +53,7 @@ class AdaptiveActivityIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       return CupertinoActivityIndicator(
         radius: radius ?? 10.0,
         color: color,

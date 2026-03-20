@@ -45,6 +45,7 @@
 /// ```
 
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -81,6 +82,7 @@ class ConnectivityCheck {
   /// ```
   /// **Performance:** O(1) - Single DNS lookup with 3-second timeout
   static Future<bool> hasInternetConnection() async {
+    if (kIsWeb) return true;
     try {
       final result = await InternetAddress.lookup(
         'google.com',
@@ -121,6 +123,7 @@ class ConnectivityCheck {
   /// ```
   /// **Performance:** O(n) - Up to 5 DNS lookups with 5-second timeout each
   static Future<bool> hasRobustInternetConnection() async {
+    if (kIsWeb) return true;
     final dnsServers = [
       'google.com',
       'cloudflare.com',
@@ -236,7 +239,7 @@ class ConnectivityCheck {
   /// 3. **Multiple Endpoints**: Test multiple Firebase service endpoints
   /// 4. **Timeout Management**: 3-second timeout per test for responsive validation
   static Future<bool> _testFirebaseWithDNSFailover() async {
-    // Test Firebase endpoints with DNS failover
+    if (kIsWeb) return false;
     for (final entry in _firebaseEndpoints.entries) {
       final domain = entry.key;
       final ipAddresses = entry.value;
@@ -361,6 +364,7 @@ class ConnectivityCheck {
   /// }
   /// ```
   static Future<bool> hasEnhancedDNSResolution() async {
+    if (kIsWeb) return false;
     for (final server in _enhancedDnsServers) {
       try {
         final result = await InternetAddress.lookup(server)

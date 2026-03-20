@@ -4,6 +4,7 @@
 
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -27,7 +28,7 @@ class AdaptiveDatePicker {
     String? cancelText,
     String? confirmText,
   }) async {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       return _showCupertinoDatePicker(
         context,
         initialDate: initialDate,
@@ -150,7 +151,7 @@ class AdaptiveDatePicker {
     String? cancelText,
     String? confirmText,
   }) async {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       return _showCupertinoDateTimePicker(
         context,
         initialDateTime: initialDateTime,
@@ -291,7 +292,7 @@ class AdaptiveDatePicker {
     String? cancelText,
     String? confirmText,
   }) async {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       return _showCupertinoTimePicker(
         context,
         initialTime: initialTime,

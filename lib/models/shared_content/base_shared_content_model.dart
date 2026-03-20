@@ -1,7 +1,6 @@
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Abstract base class for all shared content models providing common functionality.
 abstract class BaseSharedContentModel<TContent> {
@@ -80,14 +79,14 @@ abstract class BaseSharedContentModel<TContent> {
     Map<String, dynamic> data,
   ) {
     return {
-      'sharedByUserId': (data['sharedByUserId'] as String?).orEmpty(),
-      'sharedByDisplayName': (data['sharedByDisplayName'] as String?).orEmpty(),
+      'sharedByUserId': SerializationUtils.safeString(data, 'sharedByUserId'),
+      'sharedByDisplayName': SerializationUtils.safeString(data, 'sharedByDisplayName'),
       'sharedAt':
           SerializationUtils.parseRequiredDateTimeValue(data['sharedAt']),
-      'shareMessage': data['shareMessage'] as String?,
-      'viewCount': data['viewCount'] as int? ?? 0,
-      'engagementCount': data['engagementCount'] as int? ?? 0,
-      'dismissalCount': data['dismissalCount'] as int? ?? 0,
+      'shareMessage': SerializationUtils.safeNullableString(data, 'shareMessage'),
+      'viewCount': SerializationUtils.safeInt(data, 'viewCount'),
+      'engagementCount': SerializationUtils.safeInt(data, 'engagementCount'),
+      'dismissalCount': SerializationUtils.safeInt(data, 'dismissalCount'),
     };
   }
 
@@ -95,14 +94,14 @@ abstract class BaseSharedContentModel<TContent> {
     Map<String, dynamic> json,
   ) {
     return {
-      'id': json['id'] as String,
-      'sharedByUserId': (json['sharedByUserId'] as String?).orEmpty(),
-      'sharedByDisplayName': (json['sharedByDisplayName'] as String?).orEmpty(),
+      'id': SerializationUtils.safeString(json, 'id'),
+      'sharedByUserId': SerializationUtils.safeString(json, 'sharedByUserId'),
+      'sharedByDisplayName': SerializationUtils.safeString(json, 'sharedByDisplayName'),
       'sharedAt': SerializationUtils.safeRequiredDateTime(json, 'sharedAt'),
-      'shareMessage': json['shareMessage'] as String?,
-      'viewCount': json['viewCount'] as int? ?? 0,
-      'engagementCount': json['engagementCount'] as int? ?? 0,
-      'dismissalCount': json['dismissalCount'] as int? ?? 0,
+      'shareMessage': SerializationUtils.safeNullableString(json, 'shareMessage'),
+      'viewCount': SerializationUtils.safeInt(json, 'viewCount'),
+      'engagementCount': SerializationUtils.safeInt(json, 'engagementCount'),
+      'dismissalCount': SerializationUtils.safeInt(json, 'dismissalCount'),
     };
   }
 

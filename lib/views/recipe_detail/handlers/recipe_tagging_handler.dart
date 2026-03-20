@@ -41,9 +41,10 @@ class RecipeTaggingHandler {
 
     if (confirmed != true || !context.mounted) return;
 
-    // Show blocking loading dialog
-    bool dialogShown = true;
-    showDialog(
+    // Show blocking loading dialog — track route so closeDialog pops the
+    // correct route even if generateTags throws before the dialog's first frame.
+    bool dialogShown = false;
+    final dialogRoute = DialogRoute<void>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => PopScope(
@@ -64,11 +65,13 @@ class RecipeTaggingHandler {
         ),
       ),
     );
+    Navigator.of(context).push(dialogRoute);
+    dialogShown = true;
 
     void closeDialog() {
-      if (dialogShown && context.mounted) {
+      if (dialogShown && dialogRoute.isActive && context.mounted) {
         dialogShown = false;
-        Navigator.of(context).pop();
+        Navigator.of(context).removeRoute(dialogRoute);
       }
     }
 

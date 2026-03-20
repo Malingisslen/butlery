@@ -205,9 +205,7 @@ class ParsingCorrection {
       id: SerializationUtils.safeString(json, 'id'),
       recipeId: SerializationUtils.safeString(json, 'recipeId'),
       userId: SerializationUtils.safeString(json, 'userId'),
-      timestamp: json['timestamp'] is Timestamp
-          ? (json['timestamp'] as Timestamp).toDate()
-          : DateTime.parse(SerializationUtils.safeString(json, 'timestamp')),
+      timestamp: SerializationUtils.safeRequiredDateTime(json, 'timestamp'),
       source: ImportSource.values.firstWhere(
         (s) => s.name == SerializationUtils.safeString(json, 'source'),
         orElse: () => ImportSource.unknown,
