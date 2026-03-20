@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
+import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
@@ -313,6 +314,27 @@ class _SkrivSjalvReceptViewContentState
             color: Theme.of(context).colorScheme.primary,
             size: AppDimensions.iconSizeL,
           ),
+          actions: [
+            if (viewModel.isAutoSaving)
+              const Padding(
+                padding: EdgeInsets.only(right: AppDimensions.paddingM),
+                child: SizedBox(
+                  width: AppDimensions.iconSizeS,
+                  height: AppDimensions.iconSizeS,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else if (viewModel.hasRecentAutoSave)
+              Padding(
+                padding:
+                    const EdgeInsets.only(right: AppDimensions.paddingM),
+                child: Icon(
+                  Icons.cloud_done_outlined,
+                  size: AppDimensions.iconSizeM,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+          ],
         ),
         body: Stack(
           children: [
@@ -472,6 +494,7 @@ class _SkrivSjalvReceptViewContentState
                           onUpdate: viewModel.updateIngredient,
                           onAdd: viewModel.addIngredient,
                           onRemove: viewModel.removeIngredient,
+                          onReorder: viewModel.reorderIngredient,
                           viewModel: viewModel,
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
@@ -483,18 +506,19 @@ class _SkrivSjalvReceptViewContentState
                           onUpdate: viewModel.updateInstruction,
                           onAdd: viewModel.addInstruction,
                           onRemove: viewModel.removeInstruction,
+                          onReorder: viewModel.reorderInstruction,
                           viewModel: viewModel,
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
 
-                        // Taggar
-                        _buildDynamicList(
-                          label: context.l10n.recipeTag,
-                          controllers: viewModel.tagControllers,
-                          onUpdate: viewModel.updateTag,
-                          onAdd: viewModel.addTag,
-                          onRemove: viewModel.removeTag,
-                          viewModel: viewModel,
+                        // Personal tags selector
+                        PersonalTagSelector(
+                          selectedTagIds: viewModel.tags
+                              .where((t) => t.isNotEmpty)
+                              .toList(),
+                          onChanged: viewModel.setPersonalTagNames,
+                          title: context.l10n.recipePersonalTags,
+                          showManageButton: true,
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
 
@@ -586,49 +610,115 @@ class _SkrivSjalvReceptViewContentState
     required VoidCallback onAdd,
     required Function(int) onRemove,
     required RecipeFormViewModel viewModel,
+    void Function(int, int)? onReorder,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTextStyles.labelLarge),
         const SizedBox(height: AppDimensions.spacingM),
-        for (int index = 0; index < controllers.length; index++)
-          Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: StyledInput(
-                      controller: controllers[index],
-                      hint: '$label ${index + 1}',
-                      textInputAction: TextInputAction.next,
-                      maxLines: null,
-                      minLines: 1,
-                      keyboardType: TextInputType.multiline,
-                      onChanged: (value) {
-                        onUpdate(index, value);
-                        // Add new field when typing in the last field and it becomes non-empty
-                        if (index == controllers.length - 1 &&
-                            value.trim().isNotEmpty &&
-                            value.length == 1) {
-                          // Only on first character to prevent duplicates
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            onAdd();
-                          });
-                        }
-                      },
+        if (controllers.isNotEmpty && onReorder != null)
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: false,
+            itemCount: controllers.length,
+            onReorder: onReorder,
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) => Material(
+                  elevation: animation.value * 4,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                  child: child,
+                ),
+                child: child,
+              );
+            },
+            itemBuilder: (context, index) {
+              return Padding(
+                key: ValueKey('${label}_$index'),
+                padding:
+                    const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                child: Row(
+                  children: [
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: const Padding(
+                        padding:
+                            EdgeInsets.only(right: AppDimensions.spacingS),
+                        child: Icon(Icons.drag_handle,
+                            size: AppDimensions.iconSizeM),
+                      ),
                     ),
-                  ),
-                  if (controllers.length > 1)
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => onRemove(index),
+                    Expanded(
+                      child: StyledInput(
+                        controller: controllers[index],
+                        hint: '$label ${index + 1}',
+                        textInputAction: TextInputAction.next,
+                        maxLines: null,
+                        minLines: 1,
+                        keyboardType: TextInputType.multiline,
+                        onChanged: (value) {
+                          onUpdate(index, value);
+                          if (index == controllers.length - 1 &&
+                              value.trim().isNotEmpty &&
+                              value.length == 1) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              onAdd();
+                            });
+                          }
+                        },
+                      ),
                     ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.spacingS),
-            ],
-          ),
+                    if (controllers.length > 1)
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => onRemove(index),
+                      ),
+                  ],
+                ),
+              );
+            },
+          )
+        else ...[
+          for (int index = 0; index < controllers.length; index++)
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: StyledInput(
+                        controller: controllers[index],
+                        hint: '$label ${index + 1}',
+                        textInputAction: TextInputAction.next,
+                        maxLines: null,
+                        minLines: 1,
+                        keyboardType: TextInputType.multiline,
+                        onChanged: (value) {
+                          onUpdate(index, value);
+                          if (index == controllers.length - 1 &&
+                              value.trim().isNotEmpty &&
+                              value.length == 1) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              onAdd();
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                    if (controllers.length > 1)
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => onRemove(index),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.spacingS),
+              ],
+            ),
+        ],
         if (controllers.isEmpty)
           TextButton.icon(
             icon: const Icon(Icons.add),
