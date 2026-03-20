@@ -8,6 +8,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart'
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:flutter/widgets.dart';
 
 /// Presence states for users
 enum PresenceStatus {
@@ -68,6 +69,22 @@ class UserPresence {
     });
   }
 
+  /// Returns true if the heartbeat is stale (older than the given threshold).
+  /// A stale heartbeat means the user's app was likely killed without
+  /// a graceful shutdown, so they should be treated as offline.
+  bool isHeartbeatStale(Duration threshold) {
+    return DateTime.now().difference(lastSeen) > threshold;
+  }
+
+  /// Returns the effective status, treating stale heartbeats as offline.
+  PresenceStatus effectiveStatus(Duration heartbeatStaleThreshold) {
+    if (status == PresenceStatus.offline) return PresenceStatus.offline;
+    if (isHeartbeatStale(heartbeatStaleThreshold)) {
+      return PresenceStatus.offline;
+    }
+    return status;
+  }
+
   bool isTypingIn(String conversationId) {
     final typingTime = typingIn[conversationId];
     if (typingTime == null) return false;
@@ -90,7 +107,7 @@ class UserPresence {
 ///   - lastSeen: Timestamp
 ///   - typingIn: { conversationId: Timestamp }
 /// ```
-class PresenceService extends BaseService {
+class PresenceService extends BaseService with WidgetsBindingObserver {
   @override
   String get serviceName => 'PresenceService';
   final FirestoreRepository _firestoreRepository;
@@ -102,6 +119,8 @@ class PresenceService extends BaseService {
 
   static const Duration _heartbeatInterval =
       Duration(minutes: 2); // Optimized: 50% write reduction
+  static const Duration _heartbeatStaleThreshold =
+      Duration(minutes: 4); // 2x heartbeat — treat as offline
   static const Duration _typingTimeout = Duration(seconds: 5);
   static const Duration _typingDebounce = Duration(milliseconds: 500);
   static const Duration _typingCleanupInterval =
@@ -149,6 +168,7 @@ class PresenceService extends BaseService {
   /// Clean up presence tracking
   @override
   Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
     _heartbeatTimer?.cancel();
     _typingCleanupTimer?.cancel();
 
@@ -184,7 +204,9 @@ class PresenceService extends BaseService {
     AppLogger.info('PresenceService reset for logout');
   }
 
-  /// Get real-time presence stream for a user
+  /// Get real-time presence stream for a user.
+  /// Applies staleness check: if lastSeen is older than 2x heartbeat interval,
+  /// the effective status is treated as offline regardless of stored value.
   Stream<UserPresence?> getPresenceStream(String userId) {
     return _firestore
         .collection(FirestoreCollections.presence)
@@ -192,10 +214,21 @@ class PresenceService extends BaseService {
         .snapshots()
         .map((snapshot) {
       if (!snapshot.exists) return null;
-      return UserPresence.fromFirestore(
+      final presence = UserPresence.fromFirestore(
         snapshot.data() as Map<String, dynamic>,
         userId,
       );
+      final effectiveStatus =
+          presence.effectiveStatus(_heartbeatStaleThreshold);
+      if (effectiveStatus != presence.status) {
+        return UserPresence(
+          userId: presence.userId,
+          status: effectiveStatus,
+          lastSeen: presence.lastSeen,
+          typingIn: presence.typingIn,
+        );
+      }
+      return presence;
     });
   }
 
@@ -223,10 +256,20 @@ class PresenceService extends BaseService {
           .map((snapshot) {
         final presenceMap = <String, UserPresence>{};
         for (final doc in snapshot.docs) {
-          presenceMap[doc.id] = UserPresence.fromFirestore(
+          final presence = UserPresence.fromFirestore(
             doc.data(),
             doc.id,
           );
+          final effectiveStatus =
+              presence.effectiveStatus(_heartbeatStaleThreshold);
+          presenceMap[doc.id] = effectiveStatus != presence.status
+              ? UserPresence(
+                  userId: presence.userId,
+                  status: effectiveStatus,
+                  lastSeen: presence.lastSeen,
+                  typingIn: presence.typingIn,
+                )
+              : presence;
         }
         return presenceMap;
       });
@@ -303,7 +346,8 @@ class PresenceService extends BaseService {
     });
   }
 
-  /// Check if user is currently online
+  /// Check if user is currently online.
+  /// Returns false if the heartbeat is stale (app was likely killed).
   Future<bool> isUserOnline(String userId) async {
     try {
       final snapshot = await _firestore
@@ -318,7 +362,8 @@ class PresenceService extends BaseService {
         userId,
       );
 
-      return presence.status == PresenceStatus.online;
+      return presence.effectiveStatus(_heartbeatStaleThreshold) ==
+          PresenceStatus.online;
     } catch (e) {
       AppLogger.error('Failed to check online status', e);
       return false;
@@ -345,17 +390,29 @@ class PresenceService extends BaseService {
   }
 
   Future<void> _setupDisconnectHandler() async {
-    // Note: Firestore doesn't have native onDisconnect like Realtime Database
-    // Instead, we rely on heartbeat timeout and app lifecycle
-    // For production, consider using Firebase Realtime Database for presence
-    // or implementing Cloud Functions to detect stale presence
+    // Register lifecycle observer to set offline on app pause/detach.
+    // This catches normal backgrounding; the staleness check on read
+    // handles force-kill where no lifecycle callback fires.
+    WidgetsBinding.instance.addObserver(this);
+    AppLogger.debug(
+        'Disconnect handler set up (lifecycle observer + staleness check)');
+  }
 
-    final currentUser = _authRepository.currentUser;
-    if (currentUser == null) return;
-
-    // Set offline status when dispose is called
-    // In production, use Cloud Functions to detect stale lastSeen timestamps
-    AppLogger.debug('Disconnect handler set up (manual cleanup on dispose)');
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        _setPresenceStatus(PresenceStatus.offline);
+        _heartbeatTimer?.cancel();
+        break;
+      case AppLifecycleState.resumed:
+        _setPresenceStatus(PresenceStatus.online);
+        _startHeartbeat();
+        break;
+      default:
+        break;
+    }
   }
 
   void _startHeartbeat() {
