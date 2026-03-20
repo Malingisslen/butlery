@@ -103,12 +103,12 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       ));
     }
 
-    // Star rating row with optional remove button
-    if ((recipe.rating ?? 0) > 0) {
-      metadataWidgets.add(Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildStarRating(context, recipe.rating ?? 0),
+    // Star rating row — always visible, tappable to set rating
+    metadataWidgets.add(Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildInteractiveStarRating(context, recipe.rating ?? 0),
+        if ((recipe.rating ?? 0) > 0) ...[
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             recipe.rating!.toStringAsFixed(1),
@@ -127,8 +127,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             ),
           ],
         ],
-      ));
-    }
+      ],
+    ));
 
     // "Lagat idag" as subtle chip (thin border, minimal padding)
     metadataWidgets.add(
@@ -161,42 +161,51 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     );
   }
 
-  Widget _buildStarRating(BuildContext context, double rating) {
+  Widget _buildInteractiveStarRating(BuildContext context, double rating) {
     final cs = Theme.of(context).colorScheme;
-    final fullStars = rating.floor();
-    final hasHalfStar = rating - fullStars >= 0.5;
-    final emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        // Full stars
-        ...List.generate(
-            fullStars,
-            (index) => Icon(
-                  Icons.star,
-                  color: context.butleryColors.starGold,
-                  size: AppDimensions.iconSizeM,
-                )),
+      children: List.generate(5, (index) {
+        final starValue = index + 1;
+        final isFilled = starValue <= rating;
+        final isHalf = !isFilled && starValue - 0.5 <= rating;
 
-        // Half star
-        if (hasHalfStar)
-          Icon(
-            Icons.star_half,
-            color: context.butleryColors.starGold,
-            size: AppDimensions.iconSizeM,
+        return Semantics(
+          label: context.l10n.ratingStarLabel(starValue),
+          child: GestureDetector(
+            onTap: () => _rateRecipe(context, starValue.toDouble()),
+            child: Icon(
+              isFilled
+                  ? Icons.star
+                  : isHalf
+                      ? Icons.star_half
+                      : Icons.star_border,
+              color: isFilled || isHalf
+                  ? context.butleryColors.starGold
+                  : cs.onSurfaceVariant,
+              size: AppDimensions.iconSizeL,
+            ),
           ),
-
-        // Empty stars
-        ...List.generate(
-            emptyStars,
-            (index) => Icon(
-                  Icons.star_border,
-                  color: cs.onSurfaceVariant,
-                  size: AppDimensions.iconSizeM,
-                )),
-      ],
+        );
+      }),
     );
+  }
+
+  Future<void> _rateRecipe(BuildContext context, double rating) async {
+    try {
+      final success = await widget.viewModel.rateRecipe(rating);
+      if (!context.mounted) return;
+      if (success) {
+        setState(() {
+          _hasUserRating = true;
+          _checkedUserRating = true;
+        });
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      SnackBarUtils.showError(context, context.l10n.ratingError);
+    }
   }
 
   Future<void> _removeMyRating(BuildContext context) async {

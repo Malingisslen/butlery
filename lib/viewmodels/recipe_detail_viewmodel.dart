@@ -297,6 +297,44 @@ class RecipeDetailViewModel extends ChangeNotifier
     await _recipeService.toggleFavorite(_recipe.id, newValue);
   }
 
+  /// Rates this recipe with a 1-5 star value.
+  /// For personal recipes: persists via updateRecipe.
+  /// For shared/collaborative: uses social rating system.
+  Future<bool> rateRecipe(double rating) async {
+    return await executeAsync(() async {
+      final previousRating = _recipe.rating;
+
+      if (_recipe.isPersonal) {
+        // Optimistic update
+        _recipe = _recipe.copyWith(rating: rating);
+        notifyListeners();
+
+        final success =
+            await _recipeService.updateRecipe(_recipe);
+        if (!success) {
+          // Revert on failure
+          _recipe = _recipe.copyWith(rating: previousRating);
+          notifyListeners();
+          throw Exception(AppLocale.current.errorCouldNotUpdate('betyg'));
+        }
+        return true;
+      } else {
+        // Shared/collaborative — use social rating system
+        final success = await _recipeService.social.rateRecipe(
+          recipeId: _recipe.id,
+          rating: rating,
+        );
+        if (success) {
+          _recipe = _recipe.copyWith(rating: rating);
+          notifyListeners();
+          return true;
+        } else {
+          throw Exception(AppLocale.current.errorCouldNotUpdate('betyg'));
+        }
+      }
+    });
+  }
+
   /// Removes the current user's rating from this recipe.
   /// Returns true if the rating was successfully removed.
   Future<bool> removeMyRating() async {

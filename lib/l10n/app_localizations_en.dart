@@ -5415,6 +5415,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taggingManageTags => 'Manage tags';
 
   @override
+  String get tagSuggested => 'Suggested';
+
+  @override
+  String get tagAll => 'All tags';
+
+  @override
   String get taggingNoPersonalTags => 'No personal tags';
 
   @override
@@ -5628,6 +5634,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get socialFindNewFriendsDescription =>
       'Use the search field above to find people you want to be friends with. Search by name or username.';
+
+  @override
+  String get socialInviteFriends => 'Invite friends';
+
+  @override
+  String get socialInviteSubject => 'Join Butlery!';
 
   @override
   String get socialFriendRequestAccepted => 'Friend request accepted!';
@@ -7613,6 +7625,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratingRemoveError => 'Could not remove rating';
+
+  @override
+  String get ratingError => 'Could not set rating';
+
+  @override
+  String ratingStarLabel(int count) {
+    return 'Rate $count stars';
+  }
 
   @override
   String get messagingSending => 'Sending';

@@ -37,6 +37,8 @@ class GroupMemberCard {
         title: Text(
           member.displayName,
           style: AppTextStyles.titleMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

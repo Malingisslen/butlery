@@ -9453,6 +9453,18 @@ abstract class AppLocalizations {
   /// **'Hantera taggar'**
   String get taggingManageTags;
 
+  /// No description provided for @tagSuggested.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslagna'**
+  String get tagSuggested;
+
+  /// No description provided for @tagAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla taggar'**
+  String get tagAll;
+
   /// No description provided for @taggingNoPersonalTags.
   ///
   /// In sv, this message translates to:
@@ -9818,6 +9830,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Använd sökfältet ovan för att hitta personer du vill bli vän med. Sök på namn eller användarnamn.'**
   String get socialFindNewFriendsDescription;
+
+  /// No description provided for @socialInviteFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bjud in vänner'**
+  String get socialInviteFriends;
+
+  /// No description provided for @socialInviteSubject.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gå med i Butlery!'**
+  String get socialInviteSubject;
 
   /// No description provided for @socialFriendRequestAccepted.
   ///
@@ -13208,6 +13232,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte ta bort betyg'**
   String get ratingRemoveError;
+
+  /// No description provided for @ratingError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte sätta betyg'**
+  String get ratingError;
+
+  /// No description provided for @ratingStarLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ge {count} stjärnor'**
+  String ratingStarLabel(int count);
 
   /// No description provided for @messagingSending.
   ///

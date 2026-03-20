@@ -31,6 +31,8 @@ class GroupDetailHeader {
                     Text(
                       group.name,
                       style: AppTextStyles.sectionHeader,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(

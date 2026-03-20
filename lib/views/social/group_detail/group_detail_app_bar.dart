@@ -18,7 +18,11 @@ class GroupDetailAppBar {
     required Function(String action) onMenuAction,
   }) {
     return AppBar(
-      title: Text(group.name),
+      title: Text(
+        group.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       actions: [
         if (isLoading)
           const Padding(
