@@ -31,26 +31,25 @@ export const sendWeeklyActivityDigest = functions
     functions.logger.info("Starting weekly activity digest...");
 
     try {
-      const usersSnapshot = await db
-        .collection("users")
-        .where("lastActiveAt", ">=", sevenDaysAgo)
-        .get();
-
-      if (usersSnapshot.empty) {
-        functions.logger.info("No active users in the past 7 days");
-        return null;
-      }
-
       let usersNotified = 0;
       let usersSkipped = 0;
 
-      // Process users in batches
-      for (let i = 0; i < usersSnapshot.docs.length; i += USER_BATCH_SIZE) {
-        const userBatch = usersSnapshot.docs.slice(i, i + USER_BATCH_SIZE);
-        let batch = db.batch();
-        let batchCount = 0;
+      const PAGE_SIZE = 500;
+      let userQuery = db
+        .collection("users")
+        .where("lastActiveAt", ">=", sevenDaysAgo)
+        .orderBy("lastActiveAt")
+        .limit(PAGE_SIZE);
+      let usersSnapshot = await userQuery.get();
 
-        for (const userDoc of userBatch) {
+      while (usersSnapshot.size > 0) {
+        // Process users in sub-batches for per-user queries
+        for (let i = 0; i < usersSnapshot.docs.length; i += USER_BATCH_SIZE) {
+          const userBatch = usersSnapshot.docs.slice(i, i + USER_BATCH_SIZE);
+          let batch = db.batch();
+          let batchCount = 0;
+
+          for (const userDoc of userBatch) {
           const userId = userDoc.id;
 
           // Count activity in past 7 days (parallel queries)
@@ -113,6 +112,10 @@ export const sendWeeklyActivityDigest = functions
         if (batchCount > 0) {
           await batch.commit();
         }
+        }
+
+        const lastDoc = usersSnapshot.docs[usersSnapshot.docs.length - 1];
+        usersSnapshot = await userQuery.startAfter(lastDoc).get();
       }
 
       functions.logger.info(
@@ -120,6 +123,7 @@ export const sendWeeklyActivityDigest = functions
       );
     } catch (error) {
       functions.logger.error("Failed to send weekly activity digest:", error);
+      throw error;
     }
 
     return null;

@@ -136,6 +136,7 @@ export const detectLapsedUsers = functions
       );
     } catch (error) {
       functions.logger.error("Failed to detect lapsed users:", error);
+      throw error;
     }
 
     return null;
