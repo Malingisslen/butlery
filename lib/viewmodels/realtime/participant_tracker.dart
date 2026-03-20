@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Data for a participant's activity
@@ -126,7 +127,7 @@ class ParticipantTracker {
     if (_participantNames[userId] != displayName) {
       _participantNames[userId] = displayName;
       onUpdated?.call();
-      AppLogger.debug('👤 Display name uppdaterat för $userId: $displayName');
+      AppLogger.debug('👤 Display name uppdaterat för ${userId.maskedUserId}: ${displayName.maskedName}');
     }
   }
 
@@ -135,7 +136,7 @@ class ParticipantTracker {
     _participantActivity[userId] = DateTime.now();
     _participantNames[userId] = displayName;
     onUpdated?.call();
-    AppLogger.debug('✅ $displayName markerad som aktiv');
+    AppLogger.debug('✅ ${displayName.maskedName} markerad som aktiv');
   }
 
   /// Clean up old activities (older than 1 hour)
@@ -178,7 +179,7 @@ class ParticipantTracker {
 
     if (removed) {
       onUpdated?.call();
-      AppLogger.debug('🚫 Deltagare $userId borttagen från tracking');
+      AppLogger.debug('🚫 Deltagare ${userId.maskedUserId} borttagen från tracking');
     }
   }
 

@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Focused module for social engagement metrics
@@ -127,7 +128,7 @@ class SocialEngagementMetrics {
     required List<Recipe> userRecipes,
   }) async {
     try {
-      AppLogger.debug('📊 Calculating social stats for user $userId');
+      AppLogger.debug('📊 Calculating social stats for user ${userId.maskedUserId}');
 
       final collaborativeRecipes =
           userRecipes.where((r) => r.isCollaborative).toList();

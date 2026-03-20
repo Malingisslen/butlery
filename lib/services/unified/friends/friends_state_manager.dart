@@ -10,6 +10,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Consolidated friends state manager handling all friend-related state with real-time synchronization
 class FriendsStateManager extends ChangeNotifier {
@@ -509,14 +510,14 @@ class FriendsStateManager extends ChangeNotifier {
 
   void addBlockedUser(String userId) {
     if (_blockedUsers.add(userId)) {
-      AppLogger.debug('Added blocked user to state: $userId');
+      AppLogger.debug('Added blocked user to state: ${userId.maskedUserId}');
       notifyListeners();
     }
   }
 
   void removeBlockedUser(String userId) {
     if (_blockedUsers.remove(userId)) {
-      AppLogger.debug('Removed blocked user from state: $userId');
+      AppLogger.debug('Removed blocked user from state: ${userId.maskedUserId}');
       notifyListeners();
     }
   }

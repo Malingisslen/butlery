@@ -50,6 +50,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
@@ -392,13 +393,13 @@ class UnifiedFriendsService extends ChangeNotifier
   /// Internal method to add friend
   void addFriendInternal(UserProfile friend) {
     _stateManager.addFriend(friend);
-    AppLogger.debug('✅ Added friend ${friend.displayName} via state manager');
+    AppLogger.debug('✅ Added friend ${friend.displayName.maskedName} via state manager');
   }
 
   /// Internal method to remove friend
   void removeFriendInternal(String friendId) {
     _stateManager.removeFriend(friendId);
-    AppLogger.debug('✅ Removed friend $friendId via state manager');
+    AppLogger.debug('✅ Removed friend ${friendId.maskedUserId} via state manager');
   }
 
   /// Sync friend request to Firebase

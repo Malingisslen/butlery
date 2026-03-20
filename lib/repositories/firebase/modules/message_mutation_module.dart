@@ -7,6 +7,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -289,7 +290,7 @@ class MessageMutationModule {
         timestamp: DateTime.now(),
       );
 
-      AppLogger.debug('Message marked as read: $messageId by $userId');
+      AppLogger.debug('Message marked as read: $messageId by ${userId.maskedUserId}');
     } catch (e) {
       AppLogger.error('Failed to mark message as read: $messageId', e);
       rethrow;

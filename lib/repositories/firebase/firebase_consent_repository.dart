@@ -125,7 +125,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
           .get();
 
       if (!doc.exists) {
-        AppLogger.debug('No consent found for user $userId');
+        AppLogger.debug('No consent found for user ${userId.maskedUserId}');
         return null;
       }
 

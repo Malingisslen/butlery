@@ -38,7 +38,7 @@ class FriendsUtilityOperations {
   /// Get friends of a specific user
   Future<List<UserProfile>> getFriendsOfUser(String userId) async {
     try {
-      AppLogger.debug('Getting friends of user: $userId');
+      AppLogger.debug('Getting friends of user: ${userId.maskedUserId}');
 
       // Get friend IDs from user document
       final userDoc = await firestore
@@ -80,7 +80,7 @@ class FriendsUtilityOperations {
         return [];
       }
 
-      AppLogger.debug('Fetching recent collaborators for user: $userId');
+      AppLogger.debug('Fetching recent collaborators for user: ${userId.maskedUserId}');
 
       // Get recent collaborators from recipes
       final recentRecipes = await firestore

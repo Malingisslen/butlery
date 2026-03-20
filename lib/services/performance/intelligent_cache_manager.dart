@@ -11,6 +11,7 @@
 import 'dart:async';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -446,7 +447,7 @@ class IntelligentCacheManager {
 
       if (data != null) {
         _currentPattern = UserBehaviorPattern.fromJson(data);
-        AppLogger.debug('Loaded behavior pattern for user $userId');
+        AppLogger.debug('Loaded behavior pattern for user ${userId.maskedUserId}');
       } else {
         _currentPattern = UserBehaviorPattern(userId: userId);
       }
