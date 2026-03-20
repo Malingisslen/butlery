@@ -4288,6 +4288,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importImportingRecipesProgress => 'Importing recipes...';
 
   @override
+  String get importWaitForCompletion =>
+      'Please wait until the import is complete...';
+
+  @override
   String get importNoFileOrNoRecipes =>
       'No file selected or the file contains no recipes';
 

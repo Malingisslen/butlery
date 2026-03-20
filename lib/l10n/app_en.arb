@@ -2757,6 +2757,7 @@
     }
   },
   "importImportingRecipesProgress": "Importing recipes...",
+  "importWaitForCompletion": "Please wait until the import is complete...",
   "importNoFileOrNoRecipes": "No file selected or the file contains no recipes",
   "importNoRecipesMatchedFilters": "No recipes matched the filters",
   "importParsingText": "Parsing text...",

@@ -13,6 +13,7 @@ import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Consolidated state class for ChatInputSection to reduce setState calls
@@ -139,13 +140,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       // Keep text in field so user can retry
       // Show error to user
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.chatCouldNotSendMessage),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        SnackBarUtils.showError(context, context.l10n.chatCouldNotSendMessage);
       }
     }
   }

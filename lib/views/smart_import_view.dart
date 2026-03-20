@@ -25,6 +25,7 @@ import 'package:butlery/widgets/recipe/duplicate_import_dialog.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Main view for unified recipe imports.
 class SmartImportView extends StatelessWidget {
@@ -75,13 +76,24 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.importRecipeTitle),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Center(
+    return PopScope(
+      canPop: !viewModel.isImporting,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && viewModel.isImporting) {
+          SnackBarUtils.showWarning(
+              context, context.l10n.importWaitForCompletion);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(context.l10n.importRecipeTitle),
+          centerTitle: true,
+        ),
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.translucent,
+          child: SafeArea(
+            child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: Padding(
@@ -155,6 +167,8 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
             ),
           ),
         ),
+        ),
+      ),
       ),
     );
   }
