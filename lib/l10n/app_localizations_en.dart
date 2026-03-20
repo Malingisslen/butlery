@@ -7615,6 +7615,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ratingRemoveError => 'Could not remove rating';
 
   @override
+  String get ratingError => 'Could not set rating';
+
+  @override
+  String ratingStarLabel(int count) {
+    return 'Rate $count stars';
+  }
+
+  @override
   String get messagingSending => 'Sending';
 
   @override

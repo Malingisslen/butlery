@@ -7632,6 +7632,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ratingRemoveError => 'Kunde inte ta bort betyg';
 
   @override
+  String get ratingError => 'Kunde inte sätta betyg';
+
+  @override
+  String ratingStarLabel(int count) {
+    return 'Ge $count stjärnor';
+  }
+
+  @override
   String get messagingSending => 'Skickar';
 
   @override
