@@ -196,36 +196,40 @@ class SocialRecipeService extends ChangeNotifier
       final sharedMenu = _sharedMenus.where((m) => m.id == menuId).firstOrNull;
       if (sharedMenu == null) return false;
 
-      // Import all recipes from the menu
-      bool allImported = true;
+      int successCount = 0;
+      int totalCount = 0;
       for (final entry in sharedMenu.menuSnapshot.entries) {
         for (final recipe in entry.value) {
-          final success = await _recipeService.personal.createRecipe(
-            title: recipe.title,
-            description: recipe.description,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            imageUrls: recipe.imageUrls,
-            mealType: recipe.mealType,
-            portions: recipe.portions,
-            timeMinutes: recipe.timeMinutes,
-            personalTagIds: recipe.personalTagIds,
-            rating: recipe.rating,
-          );
-          if (success == null) allImported = false;
+          totalCount++;
+          try {
+            final success = await _recipeService.personal.createRecipe(
+              title: recipe.title,
+              description: recipe.description,
+              ingredients: recipe.ingredients,
+              instructions: recipe.instructions,
+              imageUrls: recipe.imageUrls,
+              mealType: recipe.mealType,
+              portions: recipe.portions,
+              timeMinutes: recipe.timeMinutes,
+              personalTagIds: recipe.personalTagIds,
+              rating: recipe.rating,
+            );
+            if (success != null) successCount++;
+          } catch (e) {
+            AppLogger.error('Failed to import recipe "${recipe.title}"', e);
+          }
         }
       }
 
-      if (allImported) {
-        // Mark as imported
-        if (_permissionService.isAuthenticated) {
-          await _sharedMenuRepository.markAsImportedOrJoined(
-              menuId, _permissionService.currentUserId!);
-        }
-        AppLogger.success('Menu imported successfully');
-        return true;
+      if (successCount == 0) return false;
+
+      if (_permissionService.isAuthenticated) {
+        await _sharedMenuRepository.markAsImportedOrJoined(
+            menuId, _permissionService.currentUserId!);
       }
-      return false;
+      AppLogger.success(
+          'Menu imported: $successCount/$totalCount recipes');
+      return true;
     } catch (e) {
       AppLogger.error('Failed to import shared menu', e);
       return false;

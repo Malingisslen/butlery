@@ -66,56 +66,12 @@ class MenuJoinResult {
   });
 }
 
-/// Menu-specific service adapter for menu operations
-class MenuServiceAdapter {
-  final UnifiedMenuService _menuService;
-
-  MenuServiceAdapter({UnifiedMenuService? menuService})
-      : _menuService = menuService ?? ServiceLocator.get<UnifiedMenuService>();
-
-  /// Get menu by ID from the unified menu service
-  Future<Map<String, List<Recipe>>?> getMenuById(String menuId) async {
-    try {
-      // Implementation depends on how menus are stored in UnifiedMenuService
-      // This is a placeholder - the actual implementation would need to be
-      // coordinated with the UnifiedMenuService API
-      AppLogger.info('📋 Getting menu by ID: $menuId (using $_menuService)');
-      return null; // Placeholder - needs actual implementation
-    } catch (e) {
-      AppLogger.error('Failed to get menu by ID $menuId: $e');
-      return null;
-    }
-  }
-
-  /// Save menu using the unified menu service
-  Future<String?> saveMenu(Map<String, List<Recipe>> menu) async {
-    try {
-      // Implementation depends on how menus are saved in UnifiedMenuService
-      // This is a placeholder - the actual implementation would need to be
-      // coordinated with the UnifiedMenuService API
-      AppLogger.info(
-          '💾 Saving menu with ${_getMenuRecipeCount(menu)} recipes (using $_menuService)');
-      return null; // Placeholder - needs actual implementation
-    } catch (e) {
-      AppLogger.error('Failed to save menu: $e');
-      return null;
-    }
-  }
-
-  /// Get total recipe count in menu for logging
-  int _getMenuRecipeCount(Map<String, List<Recipe>> menu) {
-    return menu.values.fold(0, (sum, recipes) => sum + recipes.length);
-  }
-}
-
 /// Social Menu Coordinator extending BaseSocialCoordinator for consistent patterns
 class SocialMenuCoordinator
     extends BaseSocialCoordinator<Map<String, List<Recipe>>, SharedMenu> {
   @override
   String get serviceName => 'SocialMenuCoordinator';
 
-  // Menu-specific dependencies
-  final MenuServiceAdapter _serviceAdapter;
   late final FirebaseSharedMenuRepository _sharedMenuRepository;
   final Future<Map<String, List<Recipe>>?> Function(String) _getMenu;
   final Future<String?> Function(Map<String, List<Recipe>>) _saveMenu;
@@ -137,15 +93,12 @@ class SocialMenuCoordinator
     required Future<Map<String, List<Recipe>>?> Function(String) getMenu,
     required Future<String?> Function(Map<String, List<Recipe>>) saveMenu,
     JsonCacheHelper? cacheHelper,
-    MenuServiceAdapter? serviceAdapter,
-  })  : _serviceAdapter = serviceAdapter ?? MenuServiceAdapter(),
-        _getMenu = getMenu,
+  })  : _getMenu = getMenu,
         _saveMenu = saveMenu {
-    // Initialize SharedMenu repository
     _sharedMenuRepository = FirebaseSharedMenuRepository();
 
     AppLogger.info(
-        '✅ SocialMenuCoordinator initialized for menu sharing and collaboration using $_serviceAdapter');
+        '✅ SocialMenuCoordinator initialized for menu sharing and collaboration');
   }
   @override
   String get contentTypeName => 'menu';
@@ -374,7 +327,7 @@ class SocialMenuCoordinator
           sharedMenu.createImportMenu(newOwnerId: currentUserId!);
 
       // Save imported menu
-      final menuId = await _serviceAdapter.saveMenu(importedMenu);
+      final menuId = await _saveMenu(importedMenu);
       if (menuId == null) {
         AppLogger.error('Failed to save imported menu');
         return null;

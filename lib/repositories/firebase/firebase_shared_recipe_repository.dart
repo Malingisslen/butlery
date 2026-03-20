@@ -249,8 +249,8 @@ class FirebaseSharedRecipeRepository
   /// Mark shared recipe as viewed by user
   @override
   Future<void> markAsViewed(String recipeId, String userId) async {
-    // Use subcollection method (Issue #014: Unlimited views support)
-    return await addView(recipeId, userId);
+    await addView(recipeId, userId);
+    await decrementUnreadCounter(userId);
   }
 
   /// Mark shared recipe as imported by user (copy-on-write)

@@ -81,19 +81,28 @@ class RealtimeRecipeUtils {
     };
   }
 
-  /// Merge two recipe versions for conflict resolution
+  /// Merge two recipe versions for conflict resolution.
+  /// When [localActiveField] is provided, the local version of that field
+  /// is preserved (the user is actively editing it). All other content
+  /// fields still take the remote version.
   static Recipe mergeRecipeVersions(
     Recipe local,
     Recipe remote,
     String? currentUserId,
-    String? currentUserDisplayName,
-  ) {
-    // Simple merge strategy - prefer remote for most fields, local for user-specific data
+    String? currentUserDisplayName, {
+    String? localActiveField,
+  }) {
     return local.copyWith(
-      title: remote.title,
-      description: remote.description,
-      ingredients: remote.ingredients,
-      instructions: remote.instructions,
+      title: localActiveField == 'title' ? local.title : remote.title,
+      description: localActiveField == 'description'
+          ? local.description
+          : remote.description,
+      ingredients: localActiveField == 'ingredients'
+          ? local.ingredients
+          : remote.ingredients,
+      instructions: localActiveField == 'instructions'
+          ? local.instructions
+          : remote.instructions,
       imageUrls: <String>{...local.imageUrls, ...remote.imageUrls}.toList(),
       rating: local.rating ?? remote.rating,
       personalTagIds: <String>{

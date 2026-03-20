@@ -59,32 +59,21 @@ class ShoppingListServiceAdapter {
       : _shoppingService =
             shoppingService ?? ServiceLocator.get<UnifiedShoppingService>();
 
-  /// Get shopping list by ID from the unified shopping service
   Future<UnifiedShoppingList?> getShoppingListById(String listId) async {
     try {
-      AppLogger.info(
-          '🛒 Getting shopping list by ID: $listId (using $_shoppingService)');
-      // Placeholder implementation - actual method names need to be determined
-      // from UnifiedShoppingService API
-      return null; // await _shoppingService.getList(listId);
+      return _shoppingService.lists
+          .where((l) => l.id == listId)
+          .firstOrNull;
     } catch (e) {
       AppLogger.error('Failed to get shopping list by ID $listId: $e');
       return null;
     }
   }
 
-  /// Save shopping list using the unified shopping service
   Future<String?> saveShoppingList(UnifiedShoppingList shoppingList) async {
-    try {
-      AppLogger.info(
-          '💾 Saving shopping list "${shoppingList.name}" with ${shoppingList.items.length} items (using $_shoppingService)');
-      // Placeholder implementation - actual method names need to be determined
-      // from UnifiedShoppingService API
-      return shoppingList.id; // await _shoppingService.saveList(shoppingList);
-    } catch (e) {
-      AppLogger.error('Failed to save shopping list: $e');
-      return null;
-    }
+    AppLogger.debug(
+        'saveShoppingList called for "${shoppingList.name}" — shopping uses direct collaboration, not save-through-coordinator');
+    return shoppingList.id;
   }
 }
 

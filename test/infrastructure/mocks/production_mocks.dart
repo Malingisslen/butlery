@@ -2668,7 +2668,8 @@ class MockRealtimeRecipeOperations extends Mock
           {required String recipeId,
           required Recipe localVersion,
           required Recipe remoteVersion,
-          required String resolution}) async =>
+          required String resolution,
+          String? localActiveField}) async =>
       true;
 
   @override
@@ -2676,7 +2677,8 @@ class MockRealtimeRecipeOperations extends Mock
           {required String recipeId,
           required Recipe localVersion,
           required Recipe remoteVersion,
-          String strategy = 'merge'}) async =>
+          String strategy = 'merge',
+          String? localActiveField}) async =>
       true;
 
   @override
