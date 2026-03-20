@@ -5095,6 +5095,15 @@
   "ratingRemoveMessage": "Vill du ta bort ditt betyg för detta recept?",
   "ratingRemoved": "Betyg borttaget",
   "ratingRemoveError": "Kunde inte ta bort betyg",
+  "ratingError": "Kunde inte sätta betyg",
+  "ratingStarLabel": "Ge {count} stjärnor",
+  "@ratingStarLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "messagingSending": "Skickar",
   "messagingSent": "Skickat",
   "messagingDelivered": "Levererat",

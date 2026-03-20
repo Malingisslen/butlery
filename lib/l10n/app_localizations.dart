@@ -13209,6 +13209,18 @@ abstract class AppLocalizations {
   /// **'Kunde inte ta bort betyg'**
   String get ratingRemoveError;
 
+  /// No description provided for @ratingError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte sätta betyg'**
+  String get ratingError;
+
+  /// No description provided for @ratingStarLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ge {count} stjärnor'**
+  String ratingStarLabel(int count);
+
   /// No description provided for @messagingSending.
   ///
   /// In sv, this message translates to:

@@ -5095,6 +5095,15 @@
   "ratingRemoveMessage": "Do you want to remove your rating for this recipe?",
   "ratingRemoved": "Rating removed",
   "ratingRemoveError": "Could not remove rating",
+  "ratingError": "Could not set rating",
+  "ratingStarLabel": "Rate {count} stars",
+  "@ratingStarLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "messagingSending": "Sending",
   "messagingSent": "Sent",
   "messagingDelivered": "Delivered",
