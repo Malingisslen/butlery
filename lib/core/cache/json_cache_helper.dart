@@ -4,6 +4,7 @@ import 'dart:convert';
 // Use conditional import for platform-specific cache DAO
 import 'package:butlery/core/cache/cache_dao_interface.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// JSON cache helper that uses Drift database for storage
 /// Replaces the previous Hive-based implementation
@@ -36,7 +37,7 @@ class JsonCacheHelper {
         value: jsonString,
       );
 
-      AppLogger.debug('Saved JSON to cache: $key in ${boxBaseName}_$_userId');
+      AppLogger.debug('Saved JSON to cache: $key in ${boxBaseName}_${_userId.maskedUserId}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to save JSON cache item $key: $e');
@@ -105,7 +106,7 @@ class JsonCacheHelper {
     try {
       await _cacheDao.deleteJson(boxBaseName, _userId, key);
 
-      AppLogger.debug('Deleted cache item: $key from ${boxBaseName}_$_userId');
+      AppLogger.debug('Deleted cache item: $key from ${boxBaseName}_${_userId.maskedUserId}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to delete cache item $key: $e');
@@ -136,7 +137,7 @@ class JsonCacheHelper {
     try {
       await _cacheDao.clearJsonBox(boxBaseName, _userId);
 
-      AppLogger.info('Cleared all cache data from ${boxBaseName}_$_userId');
+      AppLogger.info('Cleared all cache data from ${boxBaseName}_${_userId.maskedUserId}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to clear cache: $e');

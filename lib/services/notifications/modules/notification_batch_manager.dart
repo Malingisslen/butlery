@@ -6,6 +6,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Notification batching and spam prevention with intelligent grouping, rate limiting, and spam detection.
 /// Follows SRP - handles only batching/spam (not FCM tokens, content, preferences, or analytics).
@@ -462,7 +463,7 @@ class NotificationBatchManager {
 
   /// Dispose resources and cleanup
   void dispose() {
-    AppLogger.info('🔔 Disposing NotificationBatchManager for user $_userId');
+    AppLogger.info('🔔 Disposing NotificationBatchManager for user ${_userId.maskedUserId}');
 
     // Cancel all batch timers
     for (final timer in _batchTimers.values) {

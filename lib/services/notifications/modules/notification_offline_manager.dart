@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Specialized offline notification queue management module providing comprehensive connectivity-aware notification handling.
 /// This focused module implements sophisticated offline notification management following Single Responsibility Principle,
@@ -348,7 +349,7 @@ class NotificationOfflineManager {
 
   /// Dispose resources and cleanup
   void dispose() {
-    AppLogger.info('🔔 Disposing NotificationOfflineManager for user $_userId');
+    AppLogger.info('🔔 Disposing NotificationOfflineManager for user ${_userId.maskedUserId}');
 
     _connectivityRestoreTimer?.cancel();
     _cancelRetryTimer();

@@ -195,7 +195,7 @@ class AlgoliaSearchRepository implements SearchRepository {
         indexName: _usersIndex,
         objectID: userId,
       );
-      AppLogger.debug('Removed user $userId from Algolia');
+      AppLogger.debug('Removed user ${userId.maskedUserId} from Algolia');
     } catch (e) {
       AppLogger.error('Failed to remove user ${userId.maskedUserId}', e);
       rethrow;

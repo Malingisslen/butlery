@@ -11,6 +11,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Specialized Firebase Cloud Messaging token management module providing comprehensive device token lifecycle management.
 /// This focused module implements sophisticated FCM token management following Single Responsibility Principle,
@@ -79,7 +80,7 @@ class FCMTokenManager {
   /// This should be called after user authentication to ensure tokens are properly managed
   Future<void> initialize() async {
     try {
-      AppLogger.info('🔔 Initializing FCM token management for user: $_userId');
+      AppLogger.info('🔔 Initializing FCM token management for user: ${_userId.maskedUserId}');
 
       // Request permission for notifications
       final permission = await _messaging.requestPermission(
@@ -513,7 +514,7 @@ class FCMTokenManager {
 
   /// Dispose resources
   void dispose() {
-    AppLogger.info('🔔 Disposing FCMTokenManager for user $_userId');
+    AppLogger.info('🔔 Disposing FCMTokenManager for user ${_userId.maskedUserId}');
 
     // Cancel token refresh subscription
     _tokenRefreshSubscription?.cancel();

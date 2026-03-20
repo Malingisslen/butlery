@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
@@ -19,7 +20,7 @@ class FirebaseAuthRepository implements AuthRepository {
     _ignoreInitialNull = (_cachedUser != null);
 
     if (_cachedUser != null) {
-      AppLogger.info('Auth protection enabled for user: ${_cachedUser!.uid}',
+      AppLogger.info('Auth protection enabled for user: ${_cachedUser!.uid.maskedUserId}',
           'AuthRepository');
     }
   }

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Module handling query operations for shopping lists.
@@ -31,7 +32,7 @@ class ShoppingRepositoryQueryModule {
   Future<List<UnifiedShoppingList>> readAll() async {
     try {
       final uid = requireCurrentUserId();
-      AppLogger.info('Loading shopping lists for user: $uid');
+      AppLogger.info('Loading shopping lists for user: ${uid.maskedUserId}');
 
       // Get personal lists using user collection
       final personalRef = getUserCollection(uid);

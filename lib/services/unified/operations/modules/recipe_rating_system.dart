@@ -4,6 +4,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for recipe rating system
@@ -210,7 +211,7 @@ class RecipeRatingSystem {
     int? limit,
   }) async {
     try {
-      AppLogger.debug('📊 Getting ratings given by user $userId');
+      AppLogger.debug('📊 Getting ratings given by user ${userId.maskedUserId}');
       final ratings = await _ratingsRepository.getUserRatings(userId);
 
       if (limit != null && ratings.length > limit) {

@@ -458,7 +458,7 @@ class FriendsManagementOperations extends BaseService {
           currentUserFriends.intersection(targetUserFriendIds).toList();
 
       if (mutualFriendIds.isEmpty) {
-        AppLogger.debug('No mutual friends found with user $userId');
+        AppLogger.debug('No mutual friends found with user ${userId.maskedUserId}');
         return [];
       }
 

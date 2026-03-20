@@ -8,6 +8,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase Firestore implementation for user profile management and social discovery.
@@ -184,7 +185,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           );
         }
       } catch (e) {
-        AppLogger.warning('Failed to load private settings for $userId: $e');
+        AppLogger.warning('Failed to load private settings for ${userId.maskedUserId}: $e');
       }
     }
     return profile;

@@ -114,7 +114,7 @@ class NotificationPreferenceManager {
       final prefs = await getPreferences();
       return _checkQuietHours(prefs);
     } catch (e) {
-      AppLogger.error('❌ Failed to check quiet hours for $_userId', e);
+      AppLogger.error('❌ Failed to check quiet hours for ${_userId.maskedUserId}', e);
       return false; // Default to no quiet hours restriction
     }
   }
@@ -159,14 +159,14 @@ class NotificationPreferenceManager {
               _isTimeInRange(now, const TimeOfDay(hour: 0, minute: 0), end);
 
       if (inQuietHours) {
-        AppLogger.info('📋 User $_userId is in quiet hours (spans midnight)');
+        AppLogger.info('📋 User ${_userId.maskedUserId} is in quiet hours (spans midnight)');
       }
       return inQuietHours;
     } else {
       // Normal quiet hours within same day
       final inQuietHours = _isTimeInRange(now, start, end);
       if (inQuietHours) {
-        AppLogger.info('📋 User $_userId is in quiet hours');
+        AppLogger.info('📋 User ${_userId.maskedUserId} is in quiet hours');
       }
       return inQuietHours;
     }
@@ -187,11 +187,11 @@ class NotificationPreferenceManager {
     try {
       // Return cached preferences if available and not expired
       if (_cachedPreferences != null && _isCacheValid()) {
-        AppLogger.debug('📋 Using cached preferences for $_userId');
+        AppLogger.debug('📋 Using cached preferences for ${_userId.maskedUserId}');
         return _cachedPreferences!;
       }
 
-      AppLogger.info('📋 Loading notification preferences for user: $_userId');
+      AppLogger.info('📋 Loading notification preferences for user: ${_userId.maskedUserId}');
 
       // Try to load from repository first
       NotificationPreferences preferences;
@@ -237,7 +237,7 @@ class NotificationPreferenceManager {
   /// Updates both Firestore and local cache, with offline support
   Future<void> updatePreferences(NotificationPreferences preferences) async {
     try {
-      AppLogger.info('📋 Updating notification preferences for user: $_userId');
+      AppLogger.info('📋 Updating notification preferences for user: ${_userId.maskedUserId}');
 
       // Save via repository
       await _notificationsRepository.updateNotificationPreferences(
@@ -260,7 +260,7 @@ class NotificationPreferenceManager {
   /// Reset preferences to defaults
   Future<void> resetToDefaults() async {
     try {
-      AppLogger.info('📋 Resetting preferences to defaults for user: $_userId');
+      AppLogger.info('📋 Resetting preferences to defaults for user: ${_userId.maskedUserId}');
 
       final defaultPrefs = NotificationPreferences.defaults();
       await updatePreferences(defaultPrefs);
@@ -340,7 +340,7 @@ class NotificationPreferenceManager {
       final prefs = await SharedPreferences.getInstance();
       final prefsJson = preferences.toJson();
       await prefs.setString('notification_preferences_$_userId', prefsJson);
-      AppLogger.debug('📋 Saved preferences locally for $_userId');
+      AppLogger.debug('📋 Saved preferences locally for ${_userId.maskedUserId}');
     } catch (e) {
       AppLogger.warning('⚠️ Failed to save preferences locally: $e');
     }
@@ -367,7 +367,7 @@ class NotificationPreferenceManager {
   void clearCache() {
     _cachedPreferences = null;
     _cacheTimestamp = null;
-    AppLogger.debug('📋 Cleared preference cache for $_userId');
+    AppLogger.debug('📋 Cleared preference cache for ${_userId.maskedUserId}');
   }
 
   /// Dispose resources

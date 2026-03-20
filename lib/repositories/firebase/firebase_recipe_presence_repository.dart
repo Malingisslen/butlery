@@ -19,6 +19,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -68,7 +69,7 @@ class FirebaseRecipePresenceRepository {
         'isActive': true,
       }, SetOptions(merge: true));
 
-      AppLogger.debug('Set presence for user $userId in recipe $recipeId');
+      AppLogger.debug('Set presence for user ${userId.maskedUserId} in recipe $recipeId');
     } catch (e) {
       AppLogger.error('Failed to set user presence: $e');
       rethrow;
@@ -97,7 +98,7 @@ class FirebaseRecipePresenceRepository {
         'leftAt': _timestampProvider.serverTimestamp(),
       });
 
-      AppLogger.debug('Marked user $userId inactive in recipe $recipeId');
+      AppLogger.debug('Marked user ${userId.maskedUserId} inactive in recipe $recipeId');
     } catch (e) {
       AppLogger.error('Failed to mark user inactive: $e');
       rethrow;
@@ -125,7 +126,7 @@ class FirebaseRecipePresenceRepository {
         'lastSeen': _timestampProvider.serverTimestamp(),
       });
 
-      AppLogger.debug('Updated heartbeat for user $userId in recipe $recipeId');
+      AppLogger.debug('Updated heartbeat for user ${userId.maskedUserId} in recipe $recipeId');
     } catch (e) {
       AppLogger.error('Failed to update presence heartbeat: $e');
       rethrow;
