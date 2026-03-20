@@ -53,6 +53,7 @@ abstract final class FirestoreCollections {
   static const String notificationBatches = 'notification_batches';
 
   static const String shoppingListTemplates = 'shopping_list_templates';
+  static const String globalRecipeCache = 'globalRecipeCache';
 
   // ── User subcollections (under users/{userId}/) ──
 
