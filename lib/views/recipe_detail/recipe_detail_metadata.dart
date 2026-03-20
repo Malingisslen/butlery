@@ -197,10 +197,14 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       final success = await widget.viewModel.rateRecipe(rating);
       if (!context.mounted) return;
       if (success) {
-        setState(() {
-          _hasUserRating = true;
-          _checkedUserRating = true;
-        });
+        // Only track user rating state for shared/collaborative recipes
+        // (personal recipes store rating directly, no social rating record)
+        if (!widget.viewModel.recipe.isPersonal) {
+          setState(() {
+            _hasUserRating = true;
+            _checkedUserRating = true;
+          });
+        }
       }
     } catch (e) {
       if (!context.mounted) return;

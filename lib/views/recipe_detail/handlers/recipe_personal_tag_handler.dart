@@ -157,6 +157,20 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
     }
   }
 
+  Widget _buildTagWrap(Iterable<PersonalTag> tagsToShow) {
+    return Wrap(
+      spacing: AppDimensions.spacingSm,
+      runSpacing: AppDimensions.spacingSm,
+      children: tagsToShow
+          .map((tag) => _QuickTagChip(
+                tag: tag,
+                isSelected: _isTagSelected(tag),
+                onTap: () => _toggleTag(tag),
+              ))
+          .toList(),
+    );
+  }
+
   void _toggleTag(PersonalTag tag) {
     setState(() {
       if (_selectedTagIds.contains(tag.id)) {
@@ -320,18 +334,8 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             style: AppTextStyles.labelLarge,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
-          Wrap(
-            spacing: AppDimensions.spacingSm,
-            runSpacing: AppDimensions.spacingSm,
-            children: tags
-                .where((tag) => _suggestedTagIds.contains(tag.id))
-                .map((tag) => _QuickTagChip(
-                      tag: tag,
-                      isSelected: _isTagSelected(tag),
-                      onTap: () => _toggleTag(tag),
-                    ))
-                .toList(),
-          ),
+          _buildTagWrap(
+              tags.where((tag) => _suggestedTagIds.contains(tag.id))),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             context.l10n.tagAll,
@@ -341,20 +345,9 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
         ],
 
         // All tags (excluding suggested if suggestions shown)
-        Wrap(
-          spacing: AppDimensions.spacingSm,
-          runSpacing: AppDimensions.spacingSm,
-          children: tags
-              .where((tag) =>
-                  _suggestedTagIds.isEmpty ||
-                  !_suggestedTagIds.contains(tag.id))
-              .map((tag) => _QuickTagChip(
-                    tag: tag,
-                    isSelected: _isTagSelected(tag),
-                    onTap: () => _toggleTag(tag),
-                  ))
-              .toList(),
-        ),
+        _buildTagWrap(tags.where((tag) =>
+            _suggestedTagIds.isEmpty ||
+            !_suggestedTagIds.contains(tag.id))),
         const SizedBox(height: AppDimensions.spacingXl),
 
         // Manage tags link
