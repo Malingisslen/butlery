@@ -164,6 +164,8 @@ class RecipeFormViewModel extends ChangeNotifier
   bool get hasError => _state.hasError;
   bool get isEditing => _state.isEditing;
   bool get isValid => _state.isValid;
+  bool get isAutoSaving => _state.isAutoSaving;
+  bool get hasRecentAutoSave => _state.hasRecentAutoSave;
 
   /// CRITICAL: Detects unsaved changes to prevent data loss on navigation.
   bool get hasUnsavedChanges {
