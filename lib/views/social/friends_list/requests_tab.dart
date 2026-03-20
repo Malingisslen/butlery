@@ -130,14 +130,15 @@ class RequestsTab {
     BuildContext context,
     FriendsViewModel viewModel,
   ) async {
-    if (viewModel.currentUserId == null) return;
+    final userId = viewModel.currentUserId;
+    if (userId == null) return;
 
     final subject = context.l10n.socialInviteSubject;
     try {
       final invitationId = const Uuid().v4();
       final url = DeepLinkService.generateFriendInvitationLink(
         invitationId: invitationId,
-        fromUserId: viewModel.currentUserId!,
+        fromUserId: userId,
       );
       await SharePlus.instance.share(ShareParams(
         text: url,
