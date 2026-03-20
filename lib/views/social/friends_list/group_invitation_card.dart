@@ -66,6 +66,8 @@ class GroupInvitationCard {
                       Text(
                         invitation.groupName,
                         style: AppTextStyles.titleBold,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         context.l10n
@@ -73,6 +75,8 @@ class GroupInvitationCard {
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         '${context.l10n.groupSent}: ${invitation.timeAgoText}',

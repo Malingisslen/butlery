@@ -43,7 +43,11 @@ class _FriendProfileViewState extends State<FriendProfileView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(friend.displayName),
+        title: Text(
+          friend.displayName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         actions: [
@@ -108,6 +112,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                           Text(
                             friend.displayName,
                             style: AppTextStyles.headlineMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),

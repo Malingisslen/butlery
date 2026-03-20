@@ -16,8 +16,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 class GroupsTab {
   static Widget build(
     BuildContext context,
-    UnifiedFriendsService friendsService,
-  ) {
+    UnifiedFriendsService friendsService, {
+    VoidCallback? onCreateGroup,
+  }) {
     return AnimatedBuilder(
       animation: friendsService,
       builder: (context, child) {
@@ -101,6 +102,10 @@ class GroupsTab {
                     title: context.l10n.groupNoGroupsYet,
                     subtitle: context.l10n.groupNoGroupsDescription,
                     icon: Icons.groups_outlined,
+                    actionLabel: onCreateGroup != null
+                        ? context.l10n.groupCreateGroup
+                        : null,
+                    onAction: onCreateGroup,
                   ),
                 ),
               ],
