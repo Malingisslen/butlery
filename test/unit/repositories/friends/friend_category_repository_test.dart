@@ -81,7 +81,7 @@ void main() {
       await fakeFirestore
           .collection('users')
           .doc(userId)
-          .collection('friendCategories')
+          .collection('friend_categories')
           .doc(category.id)
           .set(category.toFirestore());
     }
@@ -153,7 +153,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(testUserId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(testCategoryId)
             .get();
         expect(doc.exists, isTrue);
@@ -229,7 +229,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(testUserId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(testCategoryId)
             .get();
         expect(doc.exists, isFalse);
@@ -250,7 +250,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(testUserId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(testCategoryId)
             .get();
         expect(doc.data()?['name'], 'Updated Family');
@@ -275,7 +275,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(testUserId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(testCategoryId)
             .get();
         final friendIds = List<String>.from(doc.data()?['friendUserIds'] ?? []);
@@ -296,7 +296,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(testUserId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(testCategoryId)
             .get();
         final friendIds = List<String>.from(doc.data()?['friendUserIds'] ?? []);
@@ -318,7 +318,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(testUserId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(testCategoryId)
             .get();
         final friendIds = List<String>.from(doc.data()?['friendUserIds'] ?? []);
@@ -425,7 +425,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(testUserId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(testCategoryId)
             .get();
         expect(doc.exists, isTrue);
@@ -442,7 +442,7 @@ void main() {
 
     group('Base Repository Implementation', () {
       test('should use correct collection name', () {
-        expect(repository.collectionName, 'friendCategories');
+        expect(repository.collectionName, 'friend_categories');
       });
 
       test('should convert entity to ID correctly', () {
@@ -478,7 +478,7 @@ void main() {
         final doc = await fakeFirestore
             .collection('users')
             .doc(testUserId)
-            .collection('friendCategories')
+            .collection('friend_categories')
             .doc(testCategoryId)
             .get();
         final result = repository.fromFirestore(doc);

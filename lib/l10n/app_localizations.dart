@@ -17685,6 +17685,12 @@ abstract class AppLocalizations {
   /// **'URL måste inkludera ett domännamn'**
   String get errorUrlMissingDomain;
 
+  /// No description provided for @errorUrlPrivateAddress.
+  ///
+  /// In sv, this message translates to:
+  /// **'URL:en pekar på en privat eller reserverad adress och kan inte användas'**
+  String get errorUrlPrivateAddress;
+
   /// No description provided for @errorInvalidCategoryName.
   ///
   /// In sv, this message translates to:

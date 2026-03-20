@@ -25,32 +25,67 @@ class ActivityExportManager {
       final commentLimit = ExportPaginationHelper.getLimitForType('comments');
       final ratingLimit = ExportPaginationHelper.getLimitForType('ratings');
 
-      // Get comments (paginated)
-      final comments = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.recipeComments)
-            .where('userId', isEqualTo: userId),
-        maxDocuments: commentLimit,
-      );
+      // Run all 4 independent queries in parallel
+      final results = await Future.wait([
+        ExportPaginationHelper.paginatedQuery(
+          query: _firestore
+              .collection(FirestoreCollections.recipeComments)
+              .where('authorId', isEqualTo: userId),
+          maxDocuments: commentLimit,
+        ),
+        ExportPaginationHelper.paginatedQuery(
+          query: _firestore
+              .collection(FirestoreCollections.recipeRatings)
+              .where('userId', isEqualTo: userId),
+          maxDocuments: ratingLimit,
+        ),
+        ExportPaginationHelper.paginatedQuery(
+          query: _firestore
+              .collectionGroup(FirestoreCollections.comments)
+              .where('commentedBy', isEqualTo: userId),
+          maxDocuments: commentLimit,
+        ),
+        ExportPaginationHelper.paginatedQuery(
+          query: _firestore
+              .collectionGroup(FirestoreCollections.ratings)
+              .where('ratedBy', isEqualTo: userId),
+          maxDocuments: ratingLimit,
+        ),
+      ]);
 
-      for (final doc in comments) {
+      final recipeComments = results[0];
+      final recipeRatings = results[1];
+      final menuComments = results[2];
+      final menuRatings = results[3];
+
+      for (final doc in recipeComments) {
         data['comments'].add({
           'comment_id': doc.id,
+          'type': 'recipe',
           'data': sanitizeForJson(doc.data()),
         });
       }
 
-      // Get ratings (paginated)
-      final ratings = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.recipeRatings)
-            .where('userId', isEqualTo: userId),
-        maxDocuments: ratingLimit,
-      );
-
-      for (final doc in ratings) {
+      for (final doc in recipeRatings) {
         data['ratings'].add({
           'rating_id': doc.id,
+          'type': 'recipe',
+          'data': sanitizeForJson(doc.data()),
+        });
+      }
+
+      for (final doc in menuComments) {
+        data['comments'].add({
+          'comment_id': doc.id,
+          'type': 'menu',
+          'data': sanitizeForJson(doc.data()),
+        });
+      }
+
+      for (final doc in menuRatings) {
+        data['ratings'].add({
+          'rating_id': doc.id,
+          'type': 'menu',
           'data': sanitizeForJson(doc.data()),
         });
       }

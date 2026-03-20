@@ -11,6 +11,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -133,7 +134,7 @@ class AuthService extends ChangeNotifier
           'Attempting login for email: ${email.substring(0, 3)}...');
       await _authRepository.signIn(email: email, password: password);
       _currentUser = _authRepository.currentUser;
-      AppLogger.debug('Login result - User: ${_currentUser?.uid ?? "null"}');
+      AppLogger.debug('Login result - User: ${_currentUser?.uid.maskedUserId ?? "null"}');
 
       setLoading(false);
 

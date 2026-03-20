@@ -89,6 +89,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -814,7 +815,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
       final user = _authService.currentUser;
       if (user != null) {
-        AppLogger.debug('AuthWrapper: User authenticated: ${user.uid}');
+        AppLogger.debug('AuthWrapper: User authenticated: ${user.uid.maskedUserId}');
         // Re-process pending deep link when transitioning to authenticated
         if (!_wasAuthenticated) {
           DeepLinkHandler().processPendingDeepLink(context);
@@ -835,7 +836,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void dispose() {
     AppLogger.debug(
-      'AuthWrapper: Disposing wrapper for user: ${_authService.currentUser?.uid ?? 'NULL'}',
+      'AuthWrapper: Disposing wrapper for user: ${_authService.currentUser?.uid.maskedUserId ?? 'NULL'}',
     );
     _authService.removeListener(_onAuthStateChanged);
     _userService.removeListener(_onUserProfileChanged);

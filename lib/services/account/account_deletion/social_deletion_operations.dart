@@ -237,11 +237,11 @@ class SocialDeletionOperations {
             .where('userId', isEqualTo: userId)
             .get(),
         _firestore
-            .collection(FirestoreCollections.menuComments)
+            .collectionGroup(FirestoreCollections.comments)
             .where('commentedBy', isEqualTo: userId)
             .get(),
         _firestore
-            .collection(FirestoreCollections.menuRatings)
+            .collectionGroup(FirestoreCollections.ratings)
             .where('ratedBy', isEqualTo: userId)
             .get(),
       ]);

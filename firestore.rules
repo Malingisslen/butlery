@@ -37,7 +37,10 @@ service cloud.firestore {
     //   user_shared_shopping_lists, user_shared_menus, menu_templates,
     //   menu_activity
     //
-    // Collection groups: members, engagements
+    // Collection groups: members, engagements, comments, ratings
+    //
+    // Notification analytics:
+    //   notification_delivery, notification_engagement, notification_metrics
 
     // ========================================
     // HELPER FUNCTIONS
@@ -1394,6 +1397,22 @@ service cloud.firestore {
       allow read: if isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Users can read/delete their OWN comments via collectionGroup (GDPR export + erasure).
+    // NOTE: Matches ALL 'comments' subcollections — currently only menu_comments/{id}/comments.
+    // If new 'comments' subcollections are added, review this rule.
+    match /{path=**}/comments/{commentId} {
+      allow read, delete: if isAuthenticated()
+        && resource.data.commentedBy == request.auth.uid;
+    }
+
+    // Users can read/delete their OWN ratings via collectionGroup (GDPR export + erasure).
+    // NOTE: Matches ALL 'ratings' subcollections — currently only menu_ratings/{id}/ratings.
+    // If new 'ratings' subcollections are added, review this rule.
+    match /{path=**}/ratings/{ratingId} {
+      allow read, delete: if isAuthenticated()
+        && resource.data.ratedBy == request.auth.uid;
+    }
+
     // ========================================
     // CONTENT REPORTS - User-submitted reports
     // ========================================
@@ -1527,6 +1546,53 @@ service cloud.firestore {
           'userId', 'batchKey', 'notifications', 'count',
           'lastUpdated', 'createdAt', 'scheduledFor'
         ]);
+    }
+
+    // ========================================
+    // NOTIFICATION ANALYTICS - Delivery, engagement, and metrics tracking
+    // ========================================
+
+    match /notification_delivery/{notificationId} {
+      allow read: if isAuthenticated()
+        && (resource.data.senderId == request.auth.uid
+            || resource.data.targetUserId == request.auth.uid);
+      allow create: if isAuthenticated()
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'notificationId', 'senderId', 'targetUserId', 'category',
+          'type', 'status', 'sentAt', 'metadata',
+          'delivered', 'deliveredAt', 'opened', 'openedAt',
+          'failedAt', 'errorCode', 'errorMessage', 'deliveryMetadata'
+        ]);
+      // Sender can update all mutable fields; target can only mark as opened
+      allow update: if isAuthenticated()
+        && cannotModify(['senderId', 'targetUserId', 'notificationId'])
+        && (resource.data.senderId == request.auth.uid
+            || (resource.data.targetUserId == request.auth.uid
+                && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['opened', 'openedAt'])));
+      allow delete: if isAuthenticated()
+        && (resource.data.senderId == request.auth.uid
+            || resource.data.targetUserId == request.auth.uid);
+    }
+
+    match /notification_engagement/{engagementId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'notificationId', 'userId', 'action', 'timestamp',
+          'context', 'actionId', 'actionData', 'reason'
+        ]);
+      allow delete: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /notification_metrics/{dateKey} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;  // No client writer exists
     }
 
     // ========================================

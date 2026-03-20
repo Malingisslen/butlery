@@ -10276,6 +10276,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorUrlMissingDomain => 'URL must include a domain name';
 
   @override
+  String get errorUrlPrivateAddress =>
+      'The URL points to a private or reserved address and cannot be used';
+
+  @override
   String errorInvalidCategoryName(String name) {
     return 'Invalid category name: $name';
   }

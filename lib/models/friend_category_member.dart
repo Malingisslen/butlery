@@ -3,7 +3,7 @@
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Junction document for friend category membership.
-/// Stored at: users/{ownerId}/friendCategories/{categoryId}/members/{friendId}
+/// Stored at: users/{ownerId}/friend_categories/{categoryId}/members/{friendId}
 ///
 /// Enables scalable friend category membership beyond Firestore's 1MB document limit.
 /// Uses two-way indexing for efficient queries in both directions.

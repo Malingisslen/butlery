@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
@@ -145,7 +146,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
         return;
       }
 
-      AppLogger.info('Initializing presence for user: ${currentUser.uid}');
+      AppLogger.info('Initializing presence for user: ${currentUser.uid.maskedUserId}');
 
       // Set initial online status
       await _setPresenceStatus(PresenceStatus.online);

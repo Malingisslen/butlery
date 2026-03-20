@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart'
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/messaging/message_sending_operations.dart';
@@ -360,7 +361,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
     _typingTimers[conversationId]?.cancel();
     _typingTimers.remove(conversationId);
 
-    AppLogger.debug('Typing indicator cleared for $userId in $conversationId');
+    AppLogger.debug('Typing indicator cleared for ${userId.maskedUserId} in $conversationId');
   }
 
   /// Get users currently typing in conversation

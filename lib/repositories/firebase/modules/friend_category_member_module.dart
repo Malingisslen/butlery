@@ -10,7 +10,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// Module for managing friend category members using subcollections.
 ///
 /// Uses two-way indexing for efficient queries:
-/// 1. `users/{ownerId}/friendCategories/{categoryId}/members/{friendId}` - Get members in category
+/// 1. `users/{ownerId}/friend_categories/{categoryId}/members/{friendId}` - Get members in category
 /// 2. `users/{friendId}/categoryMemberships/{categoryId}` - Get categories a friend is in
 ///
 /// This replaces inline `friendUserIds` arrays for categories exceeding the threshold,

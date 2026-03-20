@@ -10309,6 +10309,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorUrlMissingDomain => 'URL måste inkludera ett domännamn';
 
   @override
+  String get errorUrlPrivateAddress =>
+      'URL:en pekar på en privat eller reserverad adress och kan inte användas';
+
+  @override
   String errorInvalidCategoryName(String name) {
     return 'Ogiltigt kategorinamn: $name';
   }

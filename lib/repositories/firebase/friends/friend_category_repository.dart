@@ -1,5 +1,5 @@
 /// Firebase implementation for friend category management.
-/// Uses user-scoped subcollections (`users/{userId}/friendCategories`) for data isolation.
+/// Uses user-scoped subcollections (`users/{userId}/friend_categories`) for data isolation.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -196,7 +196,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   /// Note: The Firestore field is 'friendUserIds', not 'memberIds'.
   Future<List<FriendCategory>> fetchMemberCategories(String userId) async {
     final snap = await firestore
-        .collectionGroup('friendCategories')
+        .collectionGroup(FirestoreCollections.userFriendCategories)
         .where('friendUserIds', arrayContains: userId)
         .get();
     return snap.docs
@@ -351,7 +351,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   /// Note: The Firestore field is 'friendUserIds', not 'memberIds' (which is just a Dart alias).
   Stream<List<FriendCategory>> memberCategoriesStream(String userId) {
     return firestore
-        .collectionGroup('friendCategories')
+        .collectionGroup(FirestoreCollections.userFriendCategories)
         .where('friendUserIds', arrayContains: userId)
         .limit(200)
         .snapshots()
