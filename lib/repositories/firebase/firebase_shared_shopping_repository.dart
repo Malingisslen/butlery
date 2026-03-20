@@ -300,6 +300,7 @@ class FirebaseSharedShoppingRepository
           .collectionGroup('engagements')
           .where('userId', isEqualTo: userId)
           .where('action', isEqualTo: 'join')
+          .limit(200)
           .get();
 
       if (engagementsSnapshot.docs.isEmpty) {

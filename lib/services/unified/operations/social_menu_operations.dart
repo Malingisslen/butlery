@@ -208,30 +208,50 @@ class SocialMenuOperations {
           .orderBy('sharedAt', descending: true)
           .get();
 
-      final sharedMenus = <Map<String, dynamic>>[];
+      final pointerDocs = querySnapshot.docs;
+      if (pointerDocs.isEmpty) return [];
 
-      for (final doc in querySnapshot.docs) {
+      final pointerDataById = <String, Map<String, dynamic>>{};
+      final sharedMenuIds = <String>[];
+      for (final doc in pointerDocs) {
         final data = doc.data();
-        final sharedMenuId = data['sharedMenuId'];
+        final sharedMenuId = data['sharedMenuId'] as String?;
+        if (sharedMenuId != null) {
+          pointerDataById[sharedMenuId] = data;
+          sharedMenuIds.add(sharedMenuId);
+        }
+      }
 
-        // Get full menu data
-        final menuDoc = await _firestore
+      if (sharedMenuIds.isEmpty) return [];
+
+      final menuDocsById = <String, Map<String, dynamic>>{};
+      for (var i = 0; i < sharedMenuIds.length; i += 30) {
+        final chunk = sharedMenuIds.skip(i).take(30).toList();
+        final menuQuery = await _firestore
             .collection(FirestoreCollections.sharedMenus)
-            .doc(sharedMenuId)
+            .where(FieldPath.documentId, whereIn: chunk)
             .get();
 
-        if (menuDoc.exists && menuDoc.data()!['isActive'] == true) {
-          final menuData = menuDoc.data()!;
+        for (final menuDoc in menuQuery.docs) {
+          menuDocsById[menuDoc.id] = menuDoc.data();
+        }
+      }
+
+      final sharedMenus = <Map<String, dynamic>>[];
+      for (final sharedMenuId in sharedMenuIds) {
+        final menuData = menuDocsById[sharedMenuId];
+        if (menuData != null && menuData['isActive'] == true) {
+          final pointerData = pointerDataById[sharedMenuId]!;
           sharedMenus.add({
             'id': sharedMenuId,
             'title': menuData['title'] ?? '?',
             'sharedByDisplayName': menuData['sharedByDisplayName'] ?? '?',
             'sharedByAvatarUrl': menuData['sharedByAvatarUrl'],
-            'sharedAt': data['sharedAt'],
+            'sharedAt': pointerData['sharedAt'],
             'totalRecipes': menuData['totalRecipes'] ?? 0,
             'description': menuData['description'],
-            'isViewed': data['isViewed'] ?? false,
-            'isImported': data['isImported'] ?? false,
+            'isViewed': pointerData['isViewed'] ?? false,
+            'isImported': pointerData['isImported'] ?? false,
           });
         }
       }

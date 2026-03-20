@@ -188,8 +188,8 @@ class FirebaseNotificationsRepository
     final currentUser = requireCurrentUserId();
     final batch = firestore.batch();
 
-    // Verify ownership of each notification
-    for (final id in notificationIds) {
+    // Verify ownership of all notifications in parallel
+    await Future.wait(notificationIds.map((id) async {
       final doc = await getDocumentWithPermissionCheck(
         docRef: collection.doc(id),
         currentUserId: currentUser,
@@ -208,7 +208,7 @@ class FirebaseNotificationsRepository
         'isRead': true,
         'readAt': timestampProvider.serverTimestamp(),
       });
-    }
+    }));
 
     await batch.commit();
 

@@ -301,6 +301,7 @@ class FirebaseSharedRecipeRepository
           .collectionGroup('engagements')
           .where('userId', isEqualTo: userId)
           .where('action', isEqualTo: 'import')
+          .limit(200)
           .get();
 
       if (engagementsSnapshot.docs.isEmpty) {
