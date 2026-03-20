@@ -5630,6 +5630,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use the search field above to find people you want to be friends with. Search by name or username.';
 
   @override
+  String get socialInviteFriends => 'Invite friends';
+
+  @override
+  String get socialInviteSubject => 'Join Butlery!';
+
+  @override
   String get socialFriendRequestAccepted => 'Friend request accepted!';
 
   @override

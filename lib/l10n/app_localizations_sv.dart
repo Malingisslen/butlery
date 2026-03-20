@@ -5638,6 +5638,12 @@ class AppLocalizationsSv extends AppLocalizations {
       'Använd sökfältet ovan för att hitta personer du vill bli vän med. Sök på namn eller användarnamn.';
 
   @override
+  String get socialInviteFriends => 'Bjud in vänner';
+
+  @override
+  String get socialInviteSubject => 'Gå med i Butlery!';
+
+  @override
   String get socialFriendRequestAccepted => 'Vänskapsförfrågan accepterad!';
 
   @override
