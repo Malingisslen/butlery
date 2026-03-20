@@ -367,6 +367,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     final querySnapshot = await collection
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
+        .limit(100)
         .get();
 
     return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();

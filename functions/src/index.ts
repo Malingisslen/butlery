@@ -37,7 +37,6 @@ export { logParseEvent } from "./events/log-parse-event";
 // Admin Functions - Site config management
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
 export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
-export { migrateCollectionNames } from "./admin/migrate-collection-names";
 
 // Notification Functions - FCM push notifications
 export { sendNotification, sendNotificationBatch } from "./notifications/send-notification";

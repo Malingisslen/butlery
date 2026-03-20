@@ -5,7 +5,7 @@
  * and writes a retention event if the user hits day 1, 7, or 30.
  *
  * Firestore writes:
- * /retention_events/{auto} — {userId, day, timestamp, wasActive}
+ * /analytics/retention/events/{auto} — {userId, day, timestamp, wasActive}
  */
 
 import * as functions from "firebase-functions";
@@ -64,7 +64,7 @@ export const trackDayNRetention = functions
         const wasActiveWithin24h =
           nowMs - lastActiveAt.toMillis() < MS_PER_DAY;
 
-        const eventRef = db.collection("retention_events").doc();
+        const eventRef = db.collection("analytics").doc("retention").collection("events").doc();
         batch.set(eventRef, {
           userId: userDoc.id,
           day: daysSinceSignup,

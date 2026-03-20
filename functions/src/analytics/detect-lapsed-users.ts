@@ -5,7 +5,7 @@
  * for 7, 14, or 30 days and writes win-back notifications.
  *
  * Firestore writes:
- * /lapsed_user_events/{auto} — lapsed user event record
+ * /analytics/lapsed_users/events/{auto} — lapsed user event record
  * /users/{userId}/notifications/{auto} — win-back notification
  */
 
@@ -84,7 +84,7 @@ export const detectLapsedUsers = functions
 
         for (const userDoc of usersSnapshot.docs) {
           // Write lapsed user event
-          const eventRef = db.collection("lapsed_user_events").doc();
+          const eventRef = db.collection("analytics").doc("lapsed_users").collection("events").doc();
           batch.set(eventRef, {
             userId: userDoc.id,
             daysInactive: threshold.days,

@@ -8,8 +8,8 @@
  * ingredient, the alias is auto-approved and written to the ingredient doc.
  *
  * Firestore collections:
- * - learned_ingredient_aliases/{normalizedOriginal} — alias candidates
- * - parsing_analytics/corrections/domains/{domain} — domain/tier stats
+ * - analytics/ingredients/learned_aliases/{normalizedOriginal} — alias candidates
+ * - analytics/parsing/corrections/{domain} — domain/tier stats
  * - ingredients/{id}.learnedAliasesSv — approved learned aliases
  */
 
@@ -188,9 +188,9 @@ async function aggregateDomainStats(
   }
 ): Promise<void> {
   const docRef = db
-    .collection("parsing_analytics")
-    .doc("corrections")
-    .collection("domains")
+    .collection("analytics")
+    .doc("parsing")
+    .collection("corrections")
     .doc(params.domain);
 
   await docRef.set(
@@ -243,7 +243,7 @@ async function processAliasCandidate(
   const docId = normalizeForDocId(params.originalName);
   if (!docId) return;
 
-  const aliasRef = db.collection("learned_ingredient_aliases").doc(docId);
+  const aliasRef = db.collection("analytics").doc("ingredients").collection("learned_aliases").doc(docId);
 
   // Use transaction to atomically update, check threshold, and approve
   // to prevent race condition where concurrent calls double-approve
@@ -311,9 +311,9 @@ export const getCorrectionStats = functions.https.onCall(
 
     // Get domain stats
     const domainsSnapshot = await db
-      .collection("parsing_analytics")
-      .doc("corrections")
-      .collection("domains")
+      .collection("analytics")
+      .doc("parsing")
+      .collection("corrections")
       .orderBy("totalCorrections", "desc")
       .limit(limit)
       .get();
@@ -325,7 +325,7 @@ export const getCorrectionStats = functions.https.onCall(
 
     // Get pending alias candidates
     const pendingSnapshot = await db
-      .collection("learned_ingredient_aliases")
+      .collection("analytics").doc("ingredients").collection("learned_aliases")
       .where("status", "==", "pending")
       .orderBy("count", "desc")
       .limit(limit)
@@ -338,7 +338,7 @@ export const getCorrectionStats = functions.https.onCall(
 
     // Get approved aliases
     const approvedSnapshot = await db
-      .collection("learned_ingredient_aliases")
+      .collection("analytics").doc("ingredients").collection("learned_aliases")
       .where("status", "==", "approved")
       .orderBy("count", "desc")
       .limit(limit)
@@ -368,7 +368,7 @@ export async function cleanUserFromLearnedAliases(
   const db = getDb();
 
   const snapshot = await db
-    .collection("learned_ingredient_aliases")
+    .collection("analytics").doc("ingredients").collection("learned_aliases")
     .where("userIds", "array-contains", userId)
     .get();
 
