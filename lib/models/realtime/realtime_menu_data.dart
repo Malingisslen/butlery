@@ -150,8 +150,9 @@ class RealtimeMenuData {
 
     return RealtimeMenuData(
       menuTitle: SerializationUtils.safeString(data, 'menuTitle'),
-      createdForDate:
-          AppTimestamp.fromFirestore(data['createdForDate']).dateTime,
+      createdForDate: data['createdForDate'] != null
+          ? AppTimestamp.fromFirestore(data['createdForDate']).dateTime
+          : DateTime.now(),
       menuSnapshot: menuSnapshot,
       menuNotes: SerializationUtils.safeNullableString(data, 'menuNotes'),
       favoriteRecipeIds: favoriteIds?.isEmpty == true ? null : favoriteIds,

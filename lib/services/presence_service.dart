@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
@@ -146,7 +147,8 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
         return;
       }
 
-      AppLogger.info('Initializing presence for user: ${currentUser.uid.maskedUserId}');
+      AppLogger.info(
+          'Initializing presence for user: ${currentUser.uid.maskedUserId}');
 
       // Set initial online status
       await _setPresenceStatus(PresenceStatus.online);
@@ -452,7 +454,8 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       final updates = <String, dynamic>{};
 
       for (final entry in typingIn.entries) {
-        final timestamp = (entry.value as Timestamp).toDate();
+        final timestamp = SerializationUtils.parseDateTimeValue(entry.value) ??
+            DateTime.now();
         if (now.difference(timestamp) > _typingTimeout) {
           updates['typingIn.${entry.key}'] = FieldValue.delete();
         }

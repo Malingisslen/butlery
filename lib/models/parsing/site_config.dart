@@ -192,13 +192,12 @@ class SiteConfig {
             data['ingredientsSelectorFallback']?.toString(),
         instructionsSelectorFallback:
             data['instructionsSelectorFallback']?.toString(),
-        isSupported: SerializationUtils.safeBool(data, 'isSupported', defaultValue: true),
+        isSupported: SerializationUtils.safeBool(data, 'isSupported',
+            defaultValue: true),
         qualityScore: (data['qualityScore'] as num?)?.toDouble() ?? 0.5,
         successCount: SerializationUtils.safeInt(data, 'successCount'),
         failureCount: SerializationUtils.safeInt(data, 'failureCount'),
-        lastUpdated: data['lastUpdated'] != null
-            ? (data['lastUpdated'] as Timestamp).toDate()
-            : null,
+        lastUpdated: SerializationUtils.parseDateTimeValue(data['lastUpdated']),
         notes: data['notes']?.toString(),
       );
 

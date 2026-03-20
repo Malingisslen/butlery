@@ -6,6 +6,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation for notification management with FCM integration.
 /// Uses `user_notifications`, `user_fcm_tokens`, and `user_notification_preferences` collections.
@@ -88,17 +89,22 @@ class FirebaseNotificationsRepository
     required String body,
     Map<String, dynamic>? data,
   }) async {
-    await collection.add({
-      'userId': userId,
-      'senderId':
-          currentUserId, // 🔒 SECURITY: Required by firestore.rules for spam prevention
-      'type': type.toString(),
-      'title': title,
-      'body': body,
-      'data': data,
-      'isRead': false,
-      'createdAt': timestampProvider.serverTimestamp(),
-    });
+    try {
+      await collection.add({
+        'userId': userId,
+        'senderId':
+            currentUserId, // 🔒 SECURITY: Required by firestore.rules for spam prevention
+        'type': type.toString(),
+        'title': title,
+        'body': body,
+        'data': data,
+        'isRead': false,
+        'createdAt': timestampProvider.serverTimestamp(),
+      });
+    } catch (e) {
+      AppLogger.error('Failed to send notification to $userId', e);
+      rethrow;
+    }
   }
 
   @override
@@ -126,7 +132,12 @@ class FirebaseNotificationsRepository
       });
     }
 
-    await batch.commit();
+    try {
+      await batch.commit();
+    } catch (e) {
+      AppLogger.error('Failed to send bulk notifications', e);
+      rethrow;
+    }
   }
 
   @override

@@ -31,30 +31,29 @@ class CommentReactionsSystem {
           .collection(FirestoreCollections.recipeComments)
           .doc(commentId);
 
-      final doc = await docRef.get();
-      if (!doc.exists) {
-        AppLogger.error('Comment $commentId not found');
-        return false;
-      }
+      // Use a transaction to atomically check-and-toggle without race conditions
+      await _firestoreRepository.firestore.runTransaction((transaction) async {
+        final doc = await transaction.get(docRef);
+        if (!doc.exists) {
+          AppLogger.error('Comment $commentId not found');
+          return;
+        }
 
-      final data = doc.data() ?? {};
-      final reactions = data['reactions'] as Map<String, dynamic>? ?? {};
-      final emojiReactions = reactions[emoji] as List<dynamic>? ?? [];
-      final hasReacted = emojiReactions.contains(userId);
+        final data = doc.data() ?? {};
+        final reactions = data['reactions'] as Map<String, dynamic>? ?? {};
+        final emojiReactions = reactions[emoji] as List<dynamic>? ?? [];
+        final hasReacted = emojiReactions.contains(userId);
 
-      if (hasReacted) {
-        // Remove the user's reaction
-        await docRef.update({
-          'reactions.$emoji': FieldValue.arrayRemove([userId]),
-        });
-        AppLogger.success('Reaction "$emoji" removed from comment');
-      } else {
-        // Add the user's reaction
-        await docRef.update({
-          'reactions.$emoji': FieldValue.arrayUnion([userId]),
-        });
-        AppLogger.success('Reaction "$emoji" added to comment');
-      }
+        if (hasReacted) {
+          transaction.update(docRef, {
+            'reactions.$emoji': FieldValue.arrayRemove([userId]),
+          });
+        } else {
+          transaction.update(docRef, {
+            'reactions.$emoji': FieldValue.arrayUnion([userId]),
+          });
+        }
+      });
 
       return true;
     } catch (e) {

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -80,7 +81,8 @@ class FriendsUtilityOperations {
         return [];
       }
 
-      AppLogger.debug('Fetching recent collaborators for user: ${userId.maskedUserId}');
+      AppLogger.debug(
+          'Fetching recent collaborators for user: ${userId.maskedUserId}');
 
       // Get recent collaborators from recipes
       final recentRecipes = await firestore
@@ -228,12 +230,11 @@ class FriendsUtilityOperations {
           displayName: data['displayName'] ?? 'Unknown User',
           email: data['email'] ?? '',
           avatarUrl: data['avatarUrl'],
-          joinedAt: data['joinedAt'] != null
-              ? (data['joinedAt'] as Timestamp).toDate()
-              : DateTime.now(),
-          lastActiveAt: data['lastActiveAt'] != null
-              ? (data['lastActiveAt'] as Timestamp).toDate()
-              : DateTime.now(),
+          joinedAt: SerializationUtils.parseDateTimeValue(data['joinedAt']) ??
+              DateTime.now(),
+          lastActiveAt:
+              SerializationUtils.parseDateTimeValue(data['lastActiveAt']) ??
+                  DateTime.now(),
         );
       }
     }

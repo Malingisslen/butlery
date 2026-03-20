@@ -109,7 +109,12 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
       resourceType: 'friend category',
     );
 
-    await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
+    try {
+      await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
+    } catch (e) {
+      AppLogger.error('Failed to save category ${category.id}', e);
+      rethrow;
+    }
 
     logPermissionCheck(
       userId: currentUser,
@@ -125,10 +130,15 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   Future<void> addSelfToCategory(String ownerId, String categoryId) async {
     final currentUser = requireCurrentUserId();
 
-    await _categoriesRef(ownerId).doc(categoryId).update({
-      'friendUserIds': FieldValue.arrayUnion([currentUser]),
-      'updatedAt': timestampProvider.serverTimestamp(),
-    });
+    try {
+      await _categoriesRef(ownerId).doc(categoryId).update({
+        'friendUserIds': FieldValue.arrayUnion([currentUser]),
+        'updatedAt': timestampProvider.serverTimestamp(),
+      });
+    } catch (e) {
+      AppLogger.error('Failed to add self to category $categoryId', e);
+      rethrow;
+    }
 
     logPermissionCheck(
       userId: currentUser,

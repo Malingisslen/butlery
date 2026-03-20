@@ -44,28 +44,29 @@ class MessageReactionsService extends BaseService {
           .doc(messageId);
       final field = 'reactions.$emoji';
 
-      final doc = await messageRef.get();
-      if (!doc.exists) {
-        AppLogger.warning('Message $messageId not found for reaction toggle');
-        return;
-      }
+      // Use a transaction to atomically check-and-toggle without race conditions
+      await _firestoreRepository.firestore.runTransaction((transaction) async {
+        final doc = await transaction.get(messageRef);
+        if (!doc.exists) {
+          AppLogger.warning('Message $messageId not found for reaction toggle');
+          return;
+        }
 
-      final data = doc.data();
-      final reactions = data?['reactions'] as Map<String, dynamic>? ?? {};
-      final currentVoters =
-          (reactions[emoji] as List<dynamic>?)?.cast<String>() ?? [];
+        final data = doc.data();
+        final reactions = data?['reactions'] as Map<String, dynamic>? ?? {};
+        final currentVoters =
+            (reactions[emoji] as List<dynamic>?)?.cast<String>() ?? [];
 
-      if (currentVoters.contains(userId)) {
-        await messageRef.update({
-          field: FieldValue.arrayRemove([userId])
-        });
-        AppLogger.debug('Removed reaction $emoji from message $messageId');
-      } else {
-        await messageRef.update({
-          field: FieldValue.arrayUnion([userId])
-        });
-        AppLogger.debug('Added reaction $emoji to message $messageId');
-      }
+        if (currentVoters.contains(userId)) {
+          transaction.update(messageRef, {
+            field: FieldValue.arrayRemove([userId])
+          });
+        } else {
+          transaction.update(messageRef, {
+            field: FieldValue.arrayUnion([userId])
+          });
+        }
+      });
     } catch (e) {
       AppLogger.error('Failed to toggle reaction on message $messageId', e);
       rethrow;
