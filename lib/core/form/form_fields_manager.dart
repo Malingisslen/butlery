@@ -282,6 +282,24 @@ class FormFieldsManager {
     removeController(index);
   }
 
+  /// Reorder item from [oldIndex] to [newIndex].
+  void reorderAt(int oldIndex, int newIndex) {
+    if (oldIndex < 0 || oldIndex >= _values.length) return;
+    var adjustedNew = newIndex;
+    if (adjustedNew > oldIndex) adjustedNew--;
+    if (adjustedNew < 0 || adjustedNew >= _values.length) return;
+    final item = _values.removeAt(oldIndex);
+    _values.insert(adjustedNew, item);
+    // Clear cached controllers so they rebuild with correct indices
+    for (final entry in _controllers.entries) {
+      final listener = _controllerListeners[entry.key];
+      if (listener != null) entry.value.removeListener(listener);
+      entry.value.dispose();
+    }
+    _controllers.clear();
+    _controllerListeners.clear();
+  }
+
   /// Get controllers property - creates controllers for current internal values
   List<TextEditingController> get controllers {
     // Don't sync - just create controllers for current internal values

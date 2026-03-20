@@ -38,7 +38,6 @@ abstract final class FirestoreCollections {
   static const String userNotificationPreferences =
       'user_notification_preferences';
   static const String userFcmTokens = 'user_fcm_tokens';
-  static const String userDevices = 'user_devices';
   static const String unifiedShoppingLists = 'unified_shopping_lists';
   static const String unifiedSharedShoppingLists =
       'unified_shared_shopping_lists';

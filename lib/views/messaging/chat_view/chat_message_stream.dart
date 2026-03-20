@@ -13,10 +13,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
-import 'package:butlery/widgets/common/state/state_enums.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Message stream widget with real-time updates (50 message limit)
@@ -192,20 +191,9 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     }
 
     if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(_error!),
-            const SizedBox(height: AppDimensions.spacingL),
-            ActionButtons.actionButton(
-              context,
-              label: context.l10n.commonRetry,
-              onPressed: _refreshMessages,
-              icon: Icons.refresh,
-            ),
-          ],
-        ),
+      return StateWidget.error(
+        message: _error!,
+        onAction: _refreshMessages,
       );
     }
 

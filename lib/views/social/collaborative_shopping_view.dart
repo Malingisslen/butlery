@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 // Focused components (Phase 9 refactoring)
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_header.dart';
@@ -174,12 +175,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       _newItemController.clear();
     } else if (viewModel.hasError) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(viewModel.error!),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showError(context, viewModel.error!);
     }
   }
 
@@ -189,12 +185,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
     if (!success && viewModel.hasError) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(viewModel.error!),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showError(context, viewModel.error!);
     }
   }
 

@@ -71,9 +71,6 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   },
   { name: "shared_content" },
   { name: "shared_personal_tags" },
-  { name: "sharedRecipes" },
-  { name: "sharedMenus" },
-  { name: "sharedShoppingLists" },
   { name: "friend_requests" },
   { name: "group_invitations" },
   {
@@ -117,13 +114,10 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "userFriends" },
   { name: "userSettings" },
   { name: "friend_categories" },
-  { name: "lapsed_user_events" },
-  { name: "notification_preferences" },
-  { name: "parsing_analytics" },
+  { name: "analytics" },
   { name: "shopping_list_invitations" },
   { name: "user_shared_menus" },
   { name: "user_shared_shopping_lists" },
-  { name: "user_devices" },
   { name: "tag_configs" },
 ];
 

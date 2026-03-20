@@ -154,6 +154,12 @@ class GroupDetailViewModel extends ChangeNotifier
     }
   }
 
+  /// Reload conversation data (for retry on error)
+  Future<void> reload() async {
+    clearError();
+    await _loadConversation();
+  }
+
   /// Load conversation data initially
   Future<void> _loadConversation() async {
     try {

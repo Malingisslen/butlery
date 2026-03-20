@@ -4296,6 +4296,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importImportingRecipesProgress => 'Importerar recept...';
 
   @override
+  String get importWaitForCompletion => 'Vänta tills importen är klar...';
+
+  @override
   String get importNoFileOrNoRecipes =>
       'Ingen fil vald eller filen innehåller inga recept';
 

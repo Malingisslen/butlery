@@ -367,6 +367,7 @@ class FirebaseMenuCollaborationRepository
           .doc(menuId)
           .collection(FirestoreCollections.ratings)
           .orderBy('ratedAt', descending: true)
+          .limit(100)
           .get();
 
       return ratingsSnapshot.docs.map((doc) {
@@ -463,6 +464,7 @@ class FirebaseMenuCollaborationRepository
         .doc(menuId)
         .collection(FirestoreCollections.comments)
         .orderBy('commentedAt', descending: false)
+        .limit(100)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
