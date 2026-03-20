@@ -15,6 +15,8 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
+admin.initializeApp();
+
 // LLM Functions - Mistral AI integration
 export { structureRecipe } from "./llm/structure-recipe";
 export { ocrRecipeImage } from "./llm/ocr-recipe-image";
@@ -66,7 +68,6 @@ export { onFeedbackCreated } from "./feedback/on-feedback-created";
 // Content Moderation - Report processing
 export { onReportCreated } from "./feedback/on-report-created";
 
-admin.initializeApp();
 const db = admin.firestore();
 
 /**
