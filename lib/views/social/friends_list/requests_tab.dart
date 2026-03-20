@@ -133,6 +133,7 @@ class RequestsTab {
     final userId = viewModel.currentUserId;
     if (userId == null) return;
 
+    final subject = context.l10n.socialInviteSubject;
     try {
       final invitationId = const Uuid().v4();
       final url = DeepLinkService.generateFriendInvitationLink(
@@ -141,7 +142,7 @@ class RequestsTab {
       );
       await SharePlus.instance.share(ShareParams(
         text: url,
-        subject: context.l10n.socialInviteSubject,
+        subject: subject,
       ));
     } catch (e) {
       if (!context.mounted) return;

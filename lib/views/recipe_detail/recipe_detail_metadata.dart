@@ -9,6 +9,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/star_rating_row.dart';
 
 /// Recipe detail metadata widget — inline row with time, portions, rating,
 /// and "Lagat idag" chip. Source URL is shown as subtitle in the parent view.
@@ -40,7 +41,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
 
   Future<void> _checkUserRating() async {
     final recipe = widget.viewModel.recipe;
-    if ((recipe.rating ?? 0) <= 0) return;
+    if (recipe.isPersonal || (recipe.rating ?? 0) <= 0) return;
 
     try {
       final userRating =
@@ -107,7 +108,11 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     metadataWidgets.add(Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildInteractiveStarRating(context, recipe.rating ?? 0),
+        StarRatingRow(
+          rating: recipe.rating ?? 0,
+          onRatingChanged: (value) => _rateRecipe(context, value),
+          semanticsLabel: (star) => context.l10n.ratingStarLabel(star),
+        ),
         if ((recipe.rating ?? 0) > 0) ...[
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
@@ -161,46 +166,19 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     );
   }
 
-  Widget _buildInteractiveStarRating(BuildContext context, double rating) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) {
-        final starValue = index + 1;
-        final isFilled = starValue <= rating;
-        final isHalf = !isFilled && starValue - 0.5 <= rating;
-
-        return Semantics(
-          label: context.l10n.ratingStarLabel(starValue),
-          child: GestureDetector(
-            onTap: () => _rateRecipe(context, starValue.toDouble()),
-            child: Icon(
-              isFilled
-                  ? Icons.star
-                  : isHalf
-                      ? Icons.star_half
-                      : Icons.star_border,
-              color: isFilled || isHalf
-                  ? context.butleryColors.starGold
-                  : cs.onSurfaceVariant,
-              size: AppDimensions.iconSizeL,
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
   Future<void> _rateRecipe(BuildContext context, double rating) async {
     try {
       final success = await widget.viewModel.rateRecipe(rating);
       if (!context.mounted) return;
       if (success) {
-        setState(() {
-          _hasUserRating = true;
-          _checkedUserRating = true;
-        });
+        // Only track user rating state for shared/collaborative recipes
+        // (personal recipes store rating directly, no social rating record)
+        if (!widget.viewModel.recipe.isPersonal) {
+          setState(() {
+            _hasUserRating = true;
+            _checkedUserRating = true;
+          });
+        }
       }
     } catch (e) {
       if (!context.mounted) return;
