@@ -10,6 +10,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/star_rating_row.dart';
 
 /// Star rating section for saved/shared menus.
 /// Displays average rating and allows users to submit their own rating.
@@ -227,10 +228,9 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStarRow(
+            StarRatingRow(
               rating: _averageRating,
               size: 20.0,
-              interactive: false,
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
@@ -274,7 +274,7 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
         // Interactive star rating
         Row(
           children: [
-            _buildStarRow(
+            StarRatingRow(
               rating: _userRating,
               size: 36.0,
               interactive: true,
@@ -308,47 +308,4 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
     );
   }
 
-  /// Builds a row of 5 star icons, supporting whole-star precision.
-  Widget _buildStarRow({
-    required double rating,
-    required double size,
-    required bool interactive,
-    ValueChanged<double>? onRatingChanged,
-  }) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) {
-        final starValue = index + 1.0;
-        final isFilled = rating >= starValue;
-        final isHalfFilled = rating >= starValue - 0.5 && rating < starValue;
-
-        IconData icon;
-        if (isFilled) {
-          icon = Icons.star;
-        } else if (isHalfFilled) {
-          icon = Icons.star_half;
-        } else {
-          icon = Icons.star_border;
-        }
-
-        final cs = Theme.of(context).colorScheme;
-        final star = Icon(
-          icon,
-          color: isFilled || isHalfFilled ? cs.secondary : cs.onSurfaceVariant,
-          size: size,
-        );
-
-        if (!interactive || onRatingChanged == null) return star;
-
-        return GestureDetector(
-          onTap: () => onRatingChanged(starValue),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingXxs),
-            child: star,
-          ),
-        );
-      }),
-    );
-  }
 }
