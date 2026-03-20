@@ -32,7 +32,7 @@ service cloud.firestore {
     // Other:
     //   menus, blocks, presence, feedback, deep_links(/clicks), reports,
     //   audit_logs, deletion_audit_logs, ingredient_suggestions,
-    //   butlery_archive(/recipes, /recipe_summaries),
+    //   butlery_archive,
     //   unified_shared_shopping_lists, shopping_list_templates,
     //   user_shared_shopping_lists, user_shared_menus, menu_templates,
     //   menu_activity
