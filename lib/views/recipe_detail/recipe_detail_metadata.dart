@@ -110,7 +110,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       children: [
         StarRatingRow(
           rating: recipe.rating ?? 0,
-          interactive: true,
           onRatingChanged: (value) => _rateRecipe(context, value),
           semanticsLabel: (star) => context.l10n.ratingStarLabel(star),
         ),

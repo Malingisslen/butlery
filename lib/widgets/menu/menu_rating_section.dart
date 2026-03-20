@@ -277,7 +277,6 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
             StarRatingRow(
               rating: _userRating,
               size: 36.0,
-              interactive: true,
               onRatingChanged: _isSaving ? null : _submitRating,
             ),
             if (_isSaving) ...[
