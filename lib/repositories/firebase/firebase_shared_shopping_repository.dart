@@ -247,8 +247,8 @@ class FirebaseSharedShoppingRepository
   /// Mark shared shopping list as viewed by user
   @override
   Future<void> markAsViewed(String listId, String userId) async {
-    // Use subcollection method (Issue #014: Unlimited views support)
-    return await addView(listId, userId);
+    await addView(listId, userId);
+    await decrementUnreadCounter(userId);
   }
 
   /// Mark shared shopping list as joined by user

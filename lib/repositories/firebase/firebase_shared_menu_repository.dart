@@ -244,8 +244,8 @@ class FirebaseSharedMenuRepository
   /// Mark shared menu as viewed by user
   @override
   Future<void> markAsViewed(String menuId, String userId) async {
-    // Use subcollection method (Issue #014: Unlimited views support)
-    return await addView(menuId, userId);
+    await addView(menuId, userId);
+    await decrementUnreadCounter(userId);
   }
 
   /// Mark shared menu as imported by user (copy-on-write)

@@ -139,8 +139,6 @@ abstract class BaseSharedContentRepository<T>
   }
 
   Future<void> markAsViewed(String contentId, String userId) async {
-    await _updateUserStatus(contentId, userId, 'viewedByUserIds', 'viewed');
-    // Decrement unread counter when content is viewed
     await decrementUnreadCounter(userId);
   }
 
@@ -296,52 +294,6 @@ abstract class BaseSharedContentRepository<T>
     }
   }
 
-  Future<void> _updateUserStatus(String contentId, String userId,
-      String statusField, String operation) async {
-    final uid = requireCurrentUserId();
-
-    if (userId != uid) {
-      throw PermissionDeniedException(
-          'Cannot update $contentTypeName status for another user');
-    }
-
-    try {
-      final sharedContent = await read(contentId);
-      if (sharedContent == null) {
-        throw ResourceNotFoundException('Shared $contentTypeName not found',
-            resourceType: resourceType, resourceId: contentId);
-      }
-
-      final updateData = <String, dynamic>{
-        statusField: FieldValue.arrayUnion([userId]),
-      };
-
-      if (operation == 'viewed' && tracksCounts) {
-        updateData['viewCount'] = FieldValue.increment(1);
-      }
-
-      await getCollectionRef().doc(contentId).update(updateData);
-
-      AppLogger.success(
-          '✅ Marked shared $contentTypeName $contentId as $operation by user $userId');
-
-      logPermissionCheck(
-        userId: uid,
-        resource: resourceType,
-        operation: 'mark_$operation',
-        granted: true,
-        details:
-            '$contentTypeName: "${getContentTitle(sharedContent)}" ($contentId)',
-      );
-    } catch (e) {
-      AppLogger.error(
-          'Failed to mark $contentTypeName $contentId as $operation: $e');
-      if (e is PermissionDeniedException || e is ResourceNotFoundException) {
-        rethrow;
-      }
-      throw RepositoryException('Failed to update $operation status: $e');
-    }
-  }
 
   Future<void> addMember(
     String contentId,
