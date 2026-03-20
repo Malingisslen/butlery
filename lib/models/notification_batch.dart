@@ -37,10 +37,14 @@ class NotificationBatch {
       notifications: notifications,
       createdAt: data['createdAt'] is DateTime
           ? data['createdAt'] as DateTime
-          : AppTimestamp.fromFirestore(data['createdAt']).dateTime,
+          : data['createdAt'] != null
+              ? AppTimestamp.fromFirestore(data['createdAt']).dateTime
+              : DateTime.now(),
       scheduledFor: data['scheduledFor'] is DateTime
           ? data['scheduledFor'] as DateTime
-          : AppTimestamp.fromFirestore(data['scheduledFor']).dateTime,
+          : data['scheduledFor'] != null
+              ? AppTimestamp.fromFirestore(data['scheduledFor']).dateTime
+              : DateTime.now(),
     );
   }
 

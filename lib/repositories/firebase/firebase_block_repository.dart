@@ -50,38 +50,54 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
     return blockerId == userId;
   }
 
-  /// Block a user. Idempotent — safe to call if already blocked.
   Future<void> blockUser(String targetId) async {
     final uid = requireCurrentUserId();
     final record = BlockRecord.create(blockerId: uid, blockedId: targetId);
 
-    await collection.doc(record.id).set(record.toFirestore());
-    AppLogger.info('Blocked user: $targetId');
+    try {
+      await collection.doc(record.id).set(record.toFirestore());
+      AppLogger.info('Blocked user: $targetId');
+    } catch (e) {
+      AppLogger.error('Failed to block user: $targetId', e);
+      rethrow;
+    }
   }
 
-  /// Unblock a user. Idempotent — safe to call if not blocked.
   Future<void> unblockUser(String targetId) async {
     final uid = requireCurrentUserId();
     final docId = BlockRecord.compositeId(uid, targetId);
 
-    await collection.doc(docId).delete();
-    AppLogger.info('Unblocked user: $targetId');
+    try {
+      await collection.doc(docId).delete();
+      AppLogger.info('Unblocked user: $targetId');
+    } catch (e) {
+      AppLogger.error('Failed to unblock user: $targetId', e);
+      rethrow;
+    }
   }
 
-  /// Check if current user has blocked a target user.
   Future<bool> isBlocked(String targetId) async {
     final uid = requireCurrentUserId();
     final docId = BlockRecord.compositeId(uid, targetId);
-    final doc = await collection.doc(docId).get();
-    return doc.exists;
+    try {
+      final doc = await collection.doc(docId).get();
+      return doc.exists;
+    } catch (e) {
+      AppLogger.error('Failed to check block status for $targetId', e);
+      return false;
+    }
   }
 
-  /// Check if current user is blocked BY a target user.
   Future<bool> isBlockedBy(String targetId) async {
     final uid = requireCurrentUserId();
     final docId = BlockRecord.compositeId(targetId, uid);
-    final doc = await collection.doc(docId).get();
-    return doc.exists;
+    try {
+      final doc = await collection.doc(docId).get();
+      return doc.exists;
+    } catch (e) {
+      AppLogger.error('Failed to check blockedBy status for $targetId', e);
+      return false;
+    }
   }
 
   /// Get all users blocked by the current user.

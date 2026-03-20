@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase Firestore implementation for recipe rating system and statistics management.
 /// This repository implements the [RatingsRepository] interface using Firebase Firestore
@@ -256,11 +257,16 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
   @override
   Future<RecipeRating?> getUserRating(String recipeId, String userId) async {
-    final ratingId = '${recipeId}_$userId';
-    final doc = await collection.doc(ratingId).get();
+    try {
+      final ratingId = '${recipeId}_$userId';
+      final doc = await collection.doc(ratingId).get();
 
-    if (!doc.exists) return null;
-    return fromFirestore(doc);
+      if (!doc.exists) return null;
+      return fromFirestore(doc);
+    } catch (e) {
+      AppLogger.error('Failed to get user rating for recipe $recipeId', e);
+      return null;
+    }
   }
 
   @override

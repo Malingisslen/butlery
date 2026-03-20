@@ -118,7 +118,7 @@ class SocialDeletionOperations {
     try {
       final conversationsSnapshot = await _firestore
           .collection(FirestoreCollections.conversations)
-          .where('participants', arrayContains: userId)
+          .where('participantIds', arrayContains: userId)
           .get();
 
       var batch = _firestore.batch();
@@ -137,12 +137,12 @@ class SocialDeletionOperations {
         }
 
         final participants =
-            List<String>.from(doc.data()['participants'] ?? []);
+            List<String>.from(doc.data()['participantIds'] ?? []);
         if (participants.length <= 2) {
           batch.delete(doc.reference);
         } else {
           participants.remove(userId);
-          batch.update(doc.reference, {'participants': participants});
+          batch.update(doc.reference, {'participantIds': participants});
         }
         opCount++;
         final state = await _commitIfNeeded(batch, opCount);
@@ -185,7 +185,7 @@ class SocialDeletionOperations {
 
       final ownedSharedSnapshot = await _firestore
           .collection(FirestoreCollections.sharedRecipes)
-          .where('ownerId', isEqualTo: userId)
+          .where('sharedByUserId', isEqualTo: userId)
           .get();
 
       for (final doc in ownedSharedSnapshot.docs) {
@@ -290,7 +290,7 @@ class SocialDeletionOperations {
       // Menus owned by user
       final ownedSnapshot = await _firestore
           .collection(FirestoreCollections.sharedMenus)
-          .where('ownerId', isEqualTo: userId)
+          .where('sharedByUserId', isEqualTo: userId)
           .get();
 
       for (final doc in ownedSnapshot.docs) {
@@ -334,7 +334,7 @@ class SocialDeletionOperations {
       // Lists owned by user
       final ownedSnapshot = await _firestore
           .collection(FirestoreCollections.sharedShoppingLists)
-          .where('ownerId', isEqualTo: userId)
+          .where('sharedByUserId', isEqualTo: userId)
           .get();
 
       for (final doc in ownedSnapshot.docs) {

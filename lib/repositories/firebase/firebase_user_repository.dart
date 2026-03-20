@@ -8,6 +8,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -171,9 +172,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           final s = settingsDoc.data()!;
           return profile.copyWith(
             fcmToken: s['fcmToken'] as String?,
-            fcmTokenUpdatedAt: s['fcmTokenUpdatedAt'] != null
-                ? (s['fcmTokenUpdatedAt'] as Timestamp).toDate()
-                : null,
+            fcmTokenUpdatedAt:
+                SerializationUtils.parseDateTimeValue(s['fcmTokenUpdatedAt']),
             notificationsEnabled: s['notificationsEnabled'] as bool? ?? true,
             preferredLocale: s['preferredLocale'] as String?,
             allergenPreferences: s['allergenPreferences'] != null
@@ -185,7 +185,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           );
         }
       } catch (e) {
-        AppLogger.warning('Failed to load private settings for ${userId.maskedUserId}: $e');
+        AppLogger.warning(
+            'Failed to load private settings for ${userId.maskedUserId}: $e');
       }
     }
     return profile;

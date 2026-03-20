@@ -286,7 +286,8 @@ service cloud.firestore {
           isInList('friendUserIds') ||
           request.auth.uid in resource.data.get('pendingInviteUserIds', [])
         ) && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['friendUserIds', 'updatedAt']);
+            .hasOnly(['friendUserIds', 'updatedAt'])
+        && request.resource.data.friendUserIds.size() <= 200;
       }
       
       // User's conversations metadata (read receipts, per-user settings)
@@ -475,12 +476,10 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'originalRecipeId', 'sharedAt'])
         && rateLimitWrite('shared_recipes', 10);
-      allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        (isSharedMember('shared_recipes', shareId)
-         && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['sharedByUserId', 'originalRecipeId', 'sharedAt']))
-      );
+      allow update: if isAuthenticated()
+        && cannotModify(['sharedByUserId', 'originalRecipeId', 'sharedAt'])
+        && (request.auth.uid == resource.data.sharedByUserId
+            || isSharedMember('shared_recipes', shareId));
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
@@ -547,15 +546,14 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'menuTitle', 'sharedAt']);
 
-      // Can update if you're the sharedByUserId
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
+        && request.auth.uid == resource.data.sharedByUserId
+        && cannotModify(['sharedByUserId', 'sharedAt']);
 
-      // Can delete if you're the sharedByUserId
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
     }
-    
+
     // ========================================
     // SHARED MENUS - Bulk recipe sharing
     // ========================================
@@ -571,7 +569,8 @@ service cloud.firestore {
         && hasRequiredFields(['sharedByUserId', 'menuSnapshot', 'sharedAt'])
         && rateLimitWrite('shared_menus', 10);
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
+        && request.auth.uid == resource.data.sharedByUserId
+        && cannotModify(['sharedByUserId', 'sharedAt']);
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
@@ -638,12 +637,12 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.sharedToUserIds
         && hasRequiredFields(['sharedByUserId', 'sharedToUserIds', 'listSnapshot', 'sharedAt'])
         && rateLimitWrite('shared_shopping_lists', 10);
-      allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        (request.auth.uid in resource.data.sharedToUserIds
-         && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['sharedByUserId', 'sharedToUserIds', 'sharedAt']))
-      );
+      allow update: if isAuthenticated()
+        && cannotModify(['sharedByUserId', 'sharedAt'])
+        && (request.auth.uid == resource.data.sharedByUserId
+            || (request.auth.uid in resource.data.sharedToUserIds
+                && !request.resource.data.diff(resource.data).affectedKeys()
+                   .hasAny(['sharedToUserIds'])));
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
@@ -857,17 +856,8 @@ service cloud.firestore {
     // BUTLERY ARCHIVE - Read-only community recipes
     // ========================================
     
-    match /butlery_archive/recipes/{recipeId} {
-      // Anyone authenticated can read archive recipes
+    match /butlery_archive/{recipeId} {
       allow read: if isAuthenticated();
-      // No writing allowed - admin only via server
-      allow write: if false;
-    }
-    
-    match /butlery_archive/recipe_summaries/{recipeId} {
-      // Anyone authenticated can read archive summaries
-      allow read: if isAuthenticated();
-      // No writing allowed - admin only via server
       allow write: if false;
     }
     
@@ -920,11 +910,12 @@ service cloud.firestore {
         && request.resource.data.content.size() <= 5000
         && rateLimitWrite('messages', 5);
 
-      // Can update your own messages
+      // Can update your own messages (content only — identity fields are immutable)
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.senderId
         && request.resource.data.content is string
-        && request.resource.data.content.size() <= 5000;
+        && request.resource.data.content.size() <= 5000
+        && cannotModify(['senderId', 'conversationId', 'sentAt']);
 
       // Can delete your own messages
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.senderId;

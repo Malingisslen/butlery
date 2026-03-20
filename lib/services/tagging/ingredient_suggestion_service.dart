@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -226,10 +227,9 @@ class IngredientSuggestion {
           : null,
       recipeContext: data['recipeContext'] as String?,
       status: _parseStatus(data['status'] as String?),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      reviewedAt: data['reviewedAt'] != null
-          ? (data['reviewedAt'] as Timestamp).toDate()
-          : null,
+      createdAt: SerializationUtils.parseDateTimeValue(data['createdAt']) ??
+          DateTime.now(),
+      reviewedAt: SerializationUtils.parseDateTimeValue(data['reviewedAt']),
       reviewedBy: data['reviewedBy'] as String?,
       reviewNotes: data['reviewNotes'] as String?,
     );

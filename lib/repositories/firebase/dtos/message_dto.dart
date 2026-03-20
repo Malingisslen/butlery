@@ -90,19 +90,14 @@ class MessageDto {
         (s) => s.name == data['status'],
         orElse: () => MessageStatus.sent,
       ),
-      sentAt: (data['sentAt'] as Timestamp).toDate(),
-      deliveredAt: data['deliveredAt'] != null
-          ? (data['deliveredAt'] as Timestamp).toDate()
-          : null,
-      readAt: data['readAt'] != null
-          ? (data['readAt'] as Timestamp).toDate()
-          : null,
+      sentAt: SerializationUtils.parseDateTimeValue(data['sentAt']) ??
+          DateTime.now(),
+      deliveredAt: SerializationUtils.parseDateTimeValue(data['deliveredAt']),
+      readAt: SerializationUtils.parseDateTimeValue(data['readAt']),
       metadata: data['metadata'] as Map<String, dynamic>?,
       replyToMessageId: data['replyToMessageId'] as String?,
       isEdited: data['isEdited'] as bool? ?? false,
-      editedAt: data['editedAt'] != null
-          ? (data['editedAt'] as Timestamp).toDate()
-          : null,
+      editedAt: SerializationUtils.parseDateTimeValue(data['editedAt']),
       reactions:
           SerializationUtils.safeStringListMap(data, 'reactions') ?? const {},
     );

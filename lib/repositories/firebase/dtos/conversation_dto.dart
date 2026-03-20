@@ -81,13 +81,16 @@ class ConversationDto {
       lastMessage: data['lastMessage'] != null
           ? MessageDto.fromMap(data['lastMessage'] as Map<String, dynamic>)
           : null,
-      lastReadTimestamps:
-          (data['lastReadTimestamps'] as Map<String, dynamic>?)?.map(
-                (key, value) => MapEntry(key, (value as Timestamp).toDate()),
-              ) ??
-              {},
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      lastReadTimestamps: (data['lastReadTimestamps'] as Map<String, dynamic>?)
+              ?.map(
+            (key, value) => MapEntry(key,
+                SerializationUtils.parseDateTimeValue(value) ?? DateTime.now()),
+          ) ??
+          {},
+      createdAt: SerializationUtils.parseDateTimeValue(data['createdAt']) ??
+          DateTime.now(),
+      updatedAt: SerializationUtils.parseDateTimeValue(data['updatedAt']) ??
+          DateTime.now(),
       title: data['title'] as String?,
       isGroup: data['isGroup'] as bool? ?? false,
       metadata: data['metadata'] as Map<String, dynamic>?,

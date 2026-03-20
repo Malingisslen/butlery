@@ -4,6 +4,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Shared content model with multi-target distribution and engagement tracking.
 class SharedContent {
@@ -212,9 +213,7 @@ class SharingPermissions {
       canEdit: (map['canEdit'] as bool?).orFalse(),
       canReshare: (map['canReshare'] as bool?).orFalse(),
       canComment: (map['canComment'] as bool?).orTrue(),
-      expiresAt: map['expiresAt'] != null
-          ? (map['expiresAt'] as Timestamp).toDate()
-          : null,
+      expiresAt: SerializationUtils.parseDateTimeValue(map['expiresAt']),
     );
   }
 
