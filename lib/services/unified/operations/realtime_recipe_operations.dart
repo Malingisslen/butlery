@@ -246,6 +246,7 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     required Recipe localVersion,
     required Recipe remoteVersion,
     required String resolution,
+    String? localActiveField,
   }) async {
     return _executeWithNotification(
       recipeId,
@@ -254,12 +255,35 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
         localVersion: localVersion,
         remoteVersion: remoteVersion,
         resolution: resolution,
+        localActiveField: localActiveField,
       ),
       (recipe) {
         final affectedUsers =
             recipe.socialData?.memberPermissions?.keys.toList() ?? [];
         return _notificationModule.sendConflictResolvedNotification(
             recipe, resolution, affectedUsers);
+      },
+      beforeNotification: () async {
+        // Notify the user whose edit was overridden
+        try {
+          final recipe =
+              _parent.recipes.firstWhere((r) => r.id == recipeId);
+          final overriddenUserId = resolution == 'local'
+              ? remoteVersion.realtimeData?.lastEditedByUserId
+              : resolution == 'remote'
+                  ? localVersion.realtimeData?.lastEditedByUserId
+                  : null;
+          if (overriddenUserId != null &&
+              overriddenUserId != _parent.currentUserId) {
+            await _notificationModule.sendConflictNotification(
+              recipe,
+              'Edit conflict resolved using $resolution strategy',
+              [overriddenUserId],
+            );
+          }
+        } catch (_) {
+          // Recipe lookup failed, skip conflict notification
+        }
       },
     );
   }
@@ -270,12 +294,14 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     required Recipe localVersion,
     required Recipe remoteVersion,
     String strategy = 'merge',
+    String? localActiveField,
   }) {
     return _editingModule.autoResolveConflict(
       recipeId: recipeId,
       localVersion: localVersion,
       remoteVersion: remoteVersion,
       strategy: strategy,
+      localActiveField: localActiveField,
     );
   }
 

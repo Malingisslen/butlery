@@ -173,12 +173,15 @@ class RealtimeEditingModule {
     }
   }
 
-  /// Resolve edit conflict manually
+  /// Resolve edit conflict manually.
+  /// [localActiveField] is the field the local user is currently editing;
+  /// when using the 'merge' strategy this field keeps the local version.
   Future<bool> resolveConflict({
     required String recipeId,
     required Recipe localVersion,
     required Recipe remoteVersion,
     required String resolution, // 'local', 'remote', or 'merge'
+    String? localActiveField,
   }) async {
     try {
       if (_realtimeSyncService == null) {
@@ -204,6 +207,7 @@ class RealtimeEditingModule {
             remoteVersion,
             _parent.currentUserId,
             _parent.currentUserDisplayName,
+            localActiveField: localActiveField,
           );
           AppLogger.info('Conflict resolved using merge strategy');
           break;
@@ -230,12 +234,14 @@ class RealtimeEditingModule {
     required Recipe localVersion,
     required Recipe remoteVersion,
     String strategy = 'merge',
+    String? localActiveField,
   }) async {
     return await resolveConflict(
       recipeId: recipeId,
       localVersion: localVersion,
       remoteVersion: remoteVersion,
       resolution: strategy,
+      localActiveField: localActiveField,
     );
   }
 
