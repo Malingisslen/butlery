@@ -1,7 +1,44 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
+    // COLLECTION INVENTORY (quick reference — does this collection have rules?)
+    //
+    // User-scoped (under users/{userId}):
+    //   recipes, unified_shopping_lists(/items), ingredients, personal_tags,
+    //   personal_tag_groups, friends, friend_categories, conversations,
+    //   rate_limits, counters, conversation_memberships, category_memberships,
+    //   settings, consent
+    //
+    // Social / shared:
+    //   public_profiles, friend_requests, group_invitations,
+    //   shared_recipes(/members/views/engagements/dismissals/collaborators),
+    //   shared_menus(same subs), shared_shopping_lists(same subs + /items),
+    //   shared_personal_tags, recipe_comments, recipe_ratings,
+    //   recipe_social_stats, menu_ratings, menu_comments
+    //
+    // Realtime collaboration:
+    //   realtime_recipes(/presence), realtime_menus(/presence),
+    //   realtime_resources(/presence), recipePresence(/activeUsers)
+    //
+    // Infrastructure / read-only:
+    //   ingredients (global), ingredient_substitutions, tag_configs,
+    //   site_configs, globalRecipeCache, connectivity_test
+    //
+    // Notifications / messaging:
+    //   user_notifications, user_fcm_tokens, user_notification_preferences,
+    //   notification_history, notification_batches, conversations, messages
+    //
+    // Other:
+    //   menus, blocks, presence, feedback, deep_links(/clicks), reports,
+    //   audit_logs, deletion_audit_logs, activity_feed, ingredient_suggestions,
+    //   butlery_archive(/recipes, /recipe_summaries),
+    //   unified_shared_shopping_lists, shopping_list_templates,
+    //   user_shared_shopping_lists, user_shared_menus, menu_templates,
+    //   menu_activity
+    //
+    // Collection groups: members, engagements
+
     // ========================================
     // HELPER FUNCTIONS
     // ========================================
@@ -162,11 +199,6 @@ service cloud.firestore {
           && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null));
       }
       
-      // Recipe summaries (lightweight documents)
-      match /recipe_summaries/{recipeId} {
-        allow read, write: if isOwner(userId);
-      }
-      
       // User's unified shopping lists
       match /unified_shopping_lists/{listId} {
         allow read, write: if isOwner(userId);
@@ -254,11 +286,6 @@ service cloud.firestore {
             .hasOnly(['friendUserIds', 'updatedAt']);
       }
       
-      // Connection tests (for app initialization)
-      match /connection_tests/{document} {
-        allow read, write: if isOwner(userId);
-      }
-
       // User's conversations metadata (read receipts, per-user settings)
       match /conversations/{conversationId} {
         allow read, write: if isOwner(userId);
@@ -925,24 +952,24 @@ service cloud.firestore {
     
     match /shopping_list_templates/{templateId} {
       // Public templates can be read by anyone
-      // Private templates can only be read by the creator
+      // Private templates can only be read by the owner
       allow read: if isAuthenticated() && (
         resource.data.isPublic == true ||
-        request.auth.uid == resource.data.creatorId
+        request.auth.uid == resource.data.ownerId
       );
-      
-      // Can create if authenticated and setting yourself as creator
+
+      // Can create if authenticated and setting yourself as owner
       allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.creatorId
-        && hasRequiredFields(['creatorId', 'name', 'items', 'isPublic', 'createdAt']);
-      
-      // Can update if you're the creator
+        && request.auth.uid == request.resource.data.ownerId
+        && hasRequiredFields(['ownerId', 'name', 'items', 'isPublic', 'createdAt']);
+
+      // Can update if you're the owner
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.creatorId;
-      
-      // Can delete if you're the creator
+        && request.auth.uid == resource.data.ownerId;
+
+      // Can delete if you're the owner
       allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.creatorId;
+        && request.auth.uid == resource.data.ownerId;
     }
     
     // ========================================
@@ -1313,15 +1340,6 @@ service cloud.firestore {
     }
 
     // ========================================
-    // PARSE EVENTS - Server-side analytics only
-    // ========================================
-
-    match /parse_events/{eventId} {
-      // No direct client access - logs via callable function only
-      allow read, write: if false;
-    }
-
-    // ========================================
     // COLLECTION GROUP RULES (Issue #014: Unlimited Sharing)
     // Required for collectionGroup('members') queries
     // ========================================
@@ -1475,6 +1493,21 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
       allow create, update: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ========================================
+    // RECIPE SOCIAL STATS - Aggregate rating statistics
+    // ========================================
+
+    match /recipe_social_stats/{recipeId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated()
+        && hasRequiredFields(['recipeId', 'ratingCount', 'averageRating', 'lastUpdated'])
+        && request.resource.data.recipeId == recipeId
+        && request.resource.data.averageRating >= 0
+        && request.resource.data.averageRating <= 5
+        && request.resource.data.ratingCount >= 0;
+      allow delete: if isAuthenticated();
     }
 
     // ========================================
