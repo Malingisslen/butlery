@@ -113,6 +113,8 @@ class SharedRecipeCard {
                     : AppTextStyles.bodyBold.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                       ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               Text(
                 timeago.format(sharedRecipe.sharedAt, locale: 'sv'),

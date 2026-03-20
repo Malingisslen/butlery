@@ -256,8 +256,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         index: _currentTabIndex,
                         children: [
                           _buildFriendsTab(viewModel), // Friends
-                          _buildGroupsTab(
-                              friendsService), // Grupper (with search)
+                          _buildGroupsTab(friendsService,
+                              viewModel), // Grupper (with search)
                           _buildDiscoveryTab(viewModel), // Find Friends
                         ],
                       ),
@@ -306,10 +306,17 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
             isGroupsSearch: false);
   }
 
-  Widget _buildGroupsTab(UnifiedFriendsService friendsService) {
+  Widget _buildGroupsTab(
+    UnifiedFriendsService friendsService,
+    FriendsViewModel viewModel,
+  ) {
     // Groups tab with search functionality
     return _searchQuery.isEmpty
-        ? GroupsTab.build(context, friendsService)
+        ? GroupsTab.build(
+            context,
+            friendsService,
+            onCreateGroup: () => _showCreateGroupDialog(viewModel),
+          )
         : GroupSearchTab.build(context, friendsService, _searchQuery);
   }
 
