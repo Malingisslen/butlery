@@ -51,9 +51,12 @@ class _AllergenPreferencesContent extends StatelessWidget {
       ),
       body: viewModel.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              child: Column(
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildAllergenSection(context, viewModel),
@@ -78,6 +81,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
     );
   }
 

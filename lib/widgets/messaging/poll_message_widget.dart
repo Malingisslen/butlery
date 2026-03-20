@@ -91,14 +91,17 @@ class PollMessageWidget extends StatelessWidget {
               poll.creatorId == currentUserId &&
               onClose != null) ...[
             const SizedBox(height: AppDimensions.spacingSm),
-            GestureDetector(
-              onTap: onClose,
-              child: Text(
-                context.l10n.pollCloseAction,
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: isFromCurrentUser ? cs.onPrimary : cs.primary,
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.underline,
+            Semantics(
+              button: true,
+              child: GestureDetector(
+                onTap: onClose,
+                child: Text(
+                  context.l10n.pollCloseAction,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: isFromCurrentUser ? cs.onPrimary : cs.primary,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ),

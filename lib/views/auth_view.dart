@@ -271,7 +271,7 @@ class _AuthViewState extends State<AuthView> {
                     child: Text(
                       context.l10n.authForgotPassword,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.primary,
+                        color: cs.onPrimaryContainer,
                       ),
                     ),
                   ),
@@ -297,15 +297,19 @@ class _AuthViewState extends State<AuthView> {
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: viewModel.isLoading
-                            ? null
-                            : () =>
-                                setState(() => _ageConfirmed = !_ageConfirmed),
-                        child: Text(
-                          context.l10n.authAgeConfirmation,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: cs.onSurface),
+                      child: Semantics(
+                        button: true,
+                        toggled: _ageConfirmed,
+                        child: GestureDetector(
+                          onTap: viewModel.isLoading
+                              ? null
+                              : () => setState(
+                                  () => _ageConfirmed = !_ageConfirmed),
+                          child: Text(
+                            context.l10n.authAgeConfirmation,
+                            style: AppTextStyles.bodySmall
+                                .copyWith(color: cs.onSurface),
+                          ),
                         ),
                       ),
                     ),
@@ -370,7 +374,7 @@ class _AuthViewState extends State<AuthView> {
                         ? context.l10n.authCreateAccount
                         : context.l10n.authLogin,
                     style: AppTextStyles.titleMedium.copyWith(
-                      color: cs.primary,
+                      color: cs.onPrimaryContainer,
                     ),
                   ),
                 ),
@@ -456,9 +460,9 @@ class _AuthViewState extends State<AuthView> {
                 child: Text(
                   context.l10n.authTermsOfService,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onPrimaryContainer,
                     decoration: TextDecoration.underline,
-                    decorationColor: cs.primary,
+                    decorationColor: cs.onPrimaryContainer,
                   ),
                 ),
               ),
@@ -480,9 +484,9 @@ class _AuthViewState extends State<AuthView> {
                 child: Text(
                   context.l10n.profilePrivacyPolicy,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.primary,
+                    color: cs.onPrimaryContainer,
                     decoration: TextDecoration.underline,
-                    decorationColor: cs.primary,
+                    decorationColor: cs.onPrimaryContainer,
                   ),
                 ),
               ),

@@ -144,34 +144,40 @@ class _ShowAllToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: onToggle,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              showAll ? Icons.expand_less : Icons.expand_more,
-              size: AppDimensions.iconSizeM,
-              color: cs.primary,
-            ),
-            const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              showAll
-                  ? context.l10n.onboardingShowFewerAllergens
-                  : context.l10n.onboardingShowAllAllergens,
-              style: AppTextStyles.labelLarge.copyWith(
+    return Semantics(
+      button: true,
+      label: showAll
+          ? context.l10n.onboardingShowFewerAllergens
+          : context.l10n.onboardingShowAllAllergens,
+      child: GestureDetector(
+        onTap: onToggle,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: cs.outlineVariant),
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingM,
+            vertical: AppDimensions.paddingS,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                showAll ? Icons.expand_less : Icons.expand_more,
+                size: AppDimensions.iconSizeM,
                 color: cs.primary,
               ),
-            ),
-          ],
+              const SizedBox(width: AppDimensions.spacingXs),
+              Text(
+                showAll
+                    ? context.l10n.onboardingShowFewerAllergens
+                    : context.l10n.onboardingShowAllAllergens,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: cs.primary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

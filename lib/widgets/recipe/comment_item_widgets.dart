@@ -372,13 +372,16 @@ class _CommentItemContentState extends State<_CommentItemContent> {
               // Like count (tappable to show who liked)
               if (comment.likeCount > 0) ...[
                 const SizedBox(height: AppDimensions.spacingS),
-                GestureDetector(
-                  onTap: widget.onShowLikes,
-                  child: Text(
-                    context.l10n.socialLikeCount(comment.likeCount),
-                    style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: cs.primary,
-                      decoration: TextDecoration.underline,
+                Semantics(
+                  button: true,
+                  child: GestureDetector(
+                    onTap: widget.onShowLikes,
+                    child: Text(
+                      context.l10n.socialLikeCount(comment.likeCount),
+                      style: AppTextStyles.metadataEmphasized.copyWith(
+                        color: cs.primary,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                 ),
