@@ -5415,6 +5415,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taggingManageTags => 'Manage tags';
 
   @override
+  String get tagSuggested => 'Suggested';
+
+  @override
+  String get tagAll => 'All tags';
+
+  @override
   String get taggingNoPersonalTags => 'No personal tags';
 
   @override

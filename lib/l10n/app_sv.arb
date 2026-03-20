@@ -3468,6 +3468,8 @@
     }
   },
   "taggingManageTags": "Hantera taggar",
+  "tagSuggested": "Föreslagna",
+  "tagAll": "Alla taggar",
   "taggingNoPersonalTags": "Inga personliga taggar",
   "taggingPersonalTags": "Personliga taggar",
   "taggingPersonalTagsRemoved": "Personliga taggar borttagna",

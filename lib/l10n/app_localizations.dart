@@ -9453,6 +9453,18 @@ abstract class AppLocalizations {
   /// **'Hantera taggar'**
   String get taggingManageTags;
 
+  /// No description provided for @tagSuggested.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslagna'**
+  String get tagSuggested;
+
+  /// No description provided for @tagAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla taggar'**
+  String get tagAll;
+
   /// No description provided for @taggingNoPersonalTags.
   ///
   /// In sv, this message translates to:

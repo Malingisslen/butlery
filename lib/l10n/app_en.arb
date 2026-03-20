@@ -3468,6 +3468,8 @@
     }
   },
   "taggingManageTags": "Manage tags",
+  "tagSuggested": "Suggested",
+  "tagAll": "All tags",
   "taggingNoPersonalTags": "No personal tags",
   "taggingPersonalTags": "Personal tags",
   "taggingPersonalTagsRemoved": "Personal tags removed",
