@@ -353,6 +353,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     return firestore
         .collectionGroup('friendCategories')
         .where('friendUserIds', arrayContains: userId)
+        .limit(200)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))

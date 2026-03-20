@@ -101,12 +101,28 @@ class ParsingCorrectionRepository {
   /// Returns map of domain -> correction count.
   Future<Map<String, int>> getDomainStats() async {
     try {
-      final snapshot = await _collection.get();
       final stats = <String, int>{};
+      DocumentSnapshot? lastDoc;
+      const batchSize = 500;
 
-      for (final doc in snapshot.docs) {
-        final domain = doc.data()['domain'] as String? ?? 'unknown';
-        stats[domain] = (stats[domain] ?? 0) + 1;
+      while (true) {
+        Query<Map<String, dynamic>> query =
+            _collection.orderBy(FieldPath.documentId).limit(batchSize);
+
+        if (lastDoc != null) {
+          query = query.startAfterDocument(lastDoc);
+        }
+
+        final snapshot = await query.get();
+        if (snapshot.docs.isEmpty) break;
+
+        for (final doc in snapshot.docs) {
+          final domain = doc.data()['domain'] as String? ?? 'unknown';
+          stats[domain] = (stats[domain] ?? 0) + 1;
+        }
+
+        lastDoc = snapshot.docs.last;
+        if (snapshot.docs.length < batchSize) break;
       }
 
       return stats;

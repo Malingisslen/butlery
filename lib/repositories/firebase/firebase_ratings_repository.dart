@@ -289,11 +289,30 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
   @override
   Future<RatingStatistics> getRatingStatistics(String recipeId) async {
-    final ratingsQuery =
-        await collection.where('recipeId', isEqualTo: recipeId).get();
+    final allRatings = <RecipeRating>[];
+    DocumentSnapshot? lastDoc;
+    const batchSize = 500;
 
-    final ratings = ratingsQuery.docs.map((doc) => fromFirestore(doc)).toList();
-    return _calculateRatingStatistics(recipeId, ratings);
+    while (true) {
+      var query = collection
+          .where('recipeId', isEqualTo: recipeId)
+          .orderBy('createdAt', descending: true)
+          .limit(batchSize);
+
+      if (lastDoc != null) {
+        query = query.startAfterDocument(lastDoc);
+      }
+
+      final snap = await query.get();
+      if (snap.docs.isEmpty) break;
+
+      allRatings.addAll(snap.docs.map((doc) => fromFirestore(doc)));
+      lastDoc = snap.docs.last;
+
+      if (snap.docs.length < batchSize) break;
+    }
+
+    return _calculateRatingStatistics(recipeId, allRatings);
   }
 
   @override
