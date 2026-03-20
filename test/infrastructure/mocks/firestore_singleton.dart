@@ -92,7 +92,6 @@ class FirestoreSingleton {
         'shared_menus',
         'realtime_recipes',
         'universal_links',
-        'activity_feed',
         'user_stats',
         'test_models',
         'test_collection', // For base repository tests

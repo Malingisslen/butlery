@@ -110,6 +110,27 @@ class StorageDeletionOperations extends BaseStorageRepository {
     }
   }
 
+  /// Delete all realtime resources owned by the user (Firestore cleanup)
+  Future<bool> deleteRealtimeResources(String userId) async {
+    try {
+      final realtimeResources = await _firestore
+          .collection(FirestoreCollections.realtimeResources)
+          .where('ownerId', isEqualTo: userId)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in realtimeResources.docs) {
+        batch.delete(doc.reference);
+      }
+      if (realtimeResources.docs.isNotEmpty) await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete realtime resources', e);
+      return false;
+    }
+  }
+
   /// Delete presence document for the user
   Future<bool> deletePresence(String userId) async {
     try {

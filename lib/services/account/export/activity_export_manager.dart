@@ -6,7 +6,7 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
-/// Handles export of user activity: comments, ratings, activity history.
+/// Handles export of user activity: comments and ratings.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
 class ActivityExportManager {
   final FirebaseFirestore _firestore;
@@ -62,38 +62,6 @@ class ActivityExportManager {
     } catch (e) {
       app_logger.AppLogger.error(
           '[$_logTag] Failed to export comments and ratings', e);
-      return {'error': e.toString()};
-    }
-  }
-
-  /// Export user activity feed history
-  Future<Map<String, dynamic>> exportActivityHistory(String userId) async {
-    try {
-      final activities = <Map<String, dynamic>>[];
-
-      // Get user's activity feed items
-      final activitySnapshot = await _firestore
-          .collection(FirestoreCollections.activityFeed)
-          .where('userId', isEqualTo: userId)
-          .orderBy('timestamp', descending: true)
-          .limit(500) // Limit to last 500 activities
-          .get();
-
-      for (final doc in activitySnapshot.docs) {
-        activities.add({
-          'activity_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
-        });
-      }
-
-      return {
-        'total_count': activities.length,
-        'activities': activities,
-        'note': 'Limited to last 500 activities for export size',
-      };
-    } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to export activity history', e);
       return {'error': e.toString()};
     }
   }

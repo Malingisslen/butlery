@@ -51,14 +51,6 @@
       ]
     },
     {
-      "collectionGroup": "shared_menus",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "sharedWith", "arrayConfig": "CONTAINS" },
-        { "fieldPath": "sharedAt", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "shared_shopping_lists",
       "queryScope": "COLLECTION",
       "fields": [
