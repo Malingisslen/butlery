@@ -8,6 +8,10 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/services/deep_link_service.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:uuid/uuid.dart';
 
 /// RequestsTab - Friend discovery hub component
 /// Primary social discovery tab with search encouragement and request management.
@@ -34,7 +38,7 @@ class RequestsTab {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Discovery encouragement section
-            _buildDiscoverySection(context),
+            _buildDiscoverySection(context, viewModel),
 
             const SizedBox(height: AppDimensions.spacingXl),
 
@@ -66,7 +70,10 @@ class RequestsTab {
   }
 
   /// Build discovery encouragement section
-  static Widget _buildDiscoverySection(BuildContext context) {
+  static Widget _buildDiscoverySection(
+    BuildContext context,
+    FriendsViewModel viewModel,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -107,9 +114,39 @@ class RequestsTab {
             ),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: AppDimensions.spacingM),
+          FilledButton.icon(
+            onPressed: () => shareInvitationLink(context, viewModel),
+            icon: const Icon(Icons.share, size: AppDimensions.iconSizeM),
+            label: Text(context.l10n.socialInviteFriends),
+          ),
         ],
       ),
     );
+  }
+
+  /// Generates an invitation link and opens the native share sheet.
+  static Future<void> shareInvitationLink(
+    BuildContext context,
+    FriendsViewModel viewModel,
+  ) async {
+    final userId = viewModel.currentUserId;
+    if (userId == null) return;
+
+    try {
+      final invitationId = const Uuid().v4();
+      final url = DeepLinkService.generateFriendInvitationLink(
+        invitationId: invitationId,
+        fromUserId: userId,
+      );
+      await SharePlus.instance.share(ShareParams(
+        text: url,
+        subject: context.l10n.socialInviteSubject,
+      ));
+    } catch (e) {
+      if (!context.mounted) return;
+      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+    }
   }
 
   /// Build incoming requests section

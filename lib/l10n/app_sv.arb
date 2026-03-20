@@ -3609,6 +3609,8 @@
   "socialDefaultFriendMessage": "Hej! Skulle vi kunna bli vänner?",
   "socialFindNewFriends": "Hitta nya vänner",
   "socialFindNewFriendsDescription": "Använd sökfältet ovan för att hitta personer du vill bli vän med. Sök på namn eller användarnamn.",
+  "socialInviteFriends": "Bjud in vänner",
+  "socialInviteSubject": "Gå med i Butlery!",
   "socialFriendRequestAccepted": "Vänskapsförfrågan accepterad!",
   "socialFriendRequestAcceptedFrom": "Vänskapsförfrågan från {name} accepterad!",
   "@socialFriendRequestAcceptedFrom": {

@@ -9819,6 +9819,18 @@ abstract class AppLocalizations {
   /// **'Använd sökfältet ovan för att hitta personer du vill bli vän med. Sök på namn eller användarnamn.'**
   String get socialFindNewFriendsDescription;
 
+  /// No description provided for @socialInviteFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bjud in vänner'**
+  String get socialInviteFriends;
+
+  /// No description provided for @socialInviteSubject.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gå med i Butlery!'**
+  String get socialInviteSubject;
+
   /// No description provided for @socialFriendRequestAccepted.
   ///
   /// In sv, this message translates to:

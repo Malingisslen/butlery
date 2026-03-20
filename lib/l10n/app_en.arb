@@ -3609,6 +3609,8 @@
   "socialDefaultFriendMessage": "Hi! Would you like to be friends?",
   "socialFindNewFriends": "Find new friends",
   "socialFindNewFriendsDescription": "Use the search field above to find people you want to be friends with. Search by name or username.",
+  "socialInviteFriends": "Invite friends",
+  "socialInviteSubject": "Join Butlery!",
   "socialFriendRequestAccepted": "Friend request accepted!",
   "socialFriendRequestAcceptedFrom": "Friend request from {name} accepted!",
   "@socialFriendRequestAcceptedFrom": {
