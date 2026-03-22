@@ -10,7 +10,8 @@
       "mcp__linear__get_issue",
       "mcp__Claude_Preview__preview_start",
       "mcp__linear__save_comment",
-      "mcp__linear__list_projects"
+      "mcp__linear__list_projects",
+      "Skill(update-config)"
     ]
   }
 }
