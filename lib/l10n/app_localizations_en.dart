@@ -5200,6 +5200,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please wait while the recipe is saved...';
 
   @override
+  String get celebrationFirstRecipeTitle => 'Congratulations!';
+
+  @override
+  String celebrationFirstRecipeMessage(String recipeTitle) {
+    return 'You saved your first recipe: $recipeTitle. Welcome to Butlery!';
+  }
+
+  @override
+  String get celebrationFirstRecipeContinue => 'Continue';
+
+  @override
   String get recipeWriteNew => 'Write new recipe';
 
   @override

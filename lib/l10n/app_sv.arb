@@ -3311,6 +3311,16 @@
   },
   "recipeSaveStartedDuringDialog": "En sparning påbörjades under valet. Vänta medan receptet sparas...",
   "recipeWaitWhileSaving": "Vänta medan receptet sparas...",
+  "celebrationFirstRecipeTitle": "Grattis!",
+  "celebrationFirstRecipeMessage": "Du har sparat ditt första recept: {recipeTitle}. Välkommen till Butlery!",
+  "@celebrationFirstRecipeMessage": {
+    "placeholders": {
+      "recipeTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "celebrationFirstRecipeContinue": "Fortsätt",
   "recipeWriteNew": "Skriv nytt recept",
   "recipeAddItem": "Lägg till {label}",
   "@recipeAddItem": {

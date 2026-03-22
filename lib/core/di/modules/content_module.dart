@@ -198,7 +198,41 @@ class ContentModule implements DIModule {
   int get priority => 10; // After Core Module (priority 1)
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    final app = GetIt.instance;
+
+    container.registerLazySingleton<UnifiedRecipeService>(
+      () => UnifiedRecipeService(
+        authRepository: app<auth.AuthRepository>() as FirebaseAuthRepository,
+        ratingsRepository: app.isRegistered<RatingsRepository>()
+            ? app<RatingsRepository>()
+            : null,
+        firestoreRepository: app.isRegistered<FirestoreRepository>()
+            ? app<FirestoreRepository>()
+            : null,
+      ),
+      dispose: (s) => s.dispose(),
+    );
+
+    container.registerLazySingleton<ImportManager>(
+      () => ImportManager(container<UnifiedRecipeService>().personal),
+    );
+
+    container.registerLazySingleton<UnifiedMenuService>(
+      () => UnifiedMenuService(
+        firestoreRepository: app<FirestoreRepository>(),
+      ),
+      dispose: (s) => s.resetForLogout(),
+    );
+
+    container.registerLazySingleton<OfflineService>(
+      () => OfflineService(
+        firestoreRepository: app<FirestoreRepository>(),
+        authRepository: app<auth.AuthRepository>(),
+      ),
+      dispose: (s) => s.resetForLogout(),
+    );
+  }
 
   @override
   Future<void> configure(GetIt container) async {
@@ -235,27 +269,8 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // UnifiedRecipeService - core recipe management
-      // Note: We use lazy singleton to ensure social dependencies are available
-      container.registerLazySingleton<UnifiedRecipeService>(
-        () => UnifiedRecipeService(
-          authRepository:
-              container<auth.AuthRepository>() as FirebaseAuthRepository,
-          // Include social dependencies if available (from SocialModule)
-          ratingsRepository: container.isRegistered<RatingsRepository>()
-              ? container<RatingsRepository>()
-              : null,
-          firestoreRepository: container.isRegistered<FirestoreRepository>()
-              ? container<FirestoreRepository>()
-              : null,
-        ),
-        dispose: (s) => s.dispose(),
-      );
-
-      // Import manager for various content import methods
-      container.registerLazySingleton<ImportManager>(
-        () => ImportManager(container<UnifiedRecipeService>().personal),
-      );
+      // UnifiedRecipeService, ImportManager, UnifiedMenuService, OfflineService:
+      // registered in configureUserScope
 
       // URL normalizer for consistent cache keys
       container.registerLazySingleton<UrlNormalizer>(
@@ -427,13 +442,6 @@ class ContentModule implements DIModule {
         () => MenuService(),
       );
 
-      // Unified menu service for collaborative menu planning
-      container.registerLazySingleton<UnifiedMenuService>(
-        () => UnifiedMenuService(
-          firestoreRepository: container<FirestoreRepository>(),
-        ),
-      );
-
       // Search service for content discovery
       container.registerLazySingleton<SearchService>(
         () => SearchService(),
@@ -466,14 +474,6 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<ImageUploadService>(
         () => ImageUploadService(
           storageService: container<StorageService>(),
-        ),
-      );
-
-      // Offline service for content synchronization (lazy for faster startup)
-      container.registerLazySingleton<OfflineService>(
-        () => OfflineService(
-          firestoreRepository: container<FirestoreRepository>(),
-          authRepository: container<auth.AuthRepository>(),
         ),
       );
 

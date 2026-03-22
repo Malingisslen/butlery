@@ -651,6 +651,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       AppLogger.error('ðŸŒ WEB_FIX: Could not validate file size: $e');
     }
 
+    // Validate magic bytes match a supported image format
+    if (!await _validator.isValidImageContent(xFile)) {
+      _setImageUploadError(AppLocale.current.errorGeneric);
+      return;
+    }
+
     // Store XFile reference for later upload
     _pendingXFiles[filePath] = xFile;
 
@@ -1071,6 +1077,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       final fileSize = await imageFile.length();
       const maxSizeInBytes = UploadConstants.maxPreCompressionBytes;
       if (fileSize > maxSizeInBytes) {
+        _setImageUploadError(AppLocale.current.errorGeneric);
+        return false;
+      }
+
+      // Validate magic bytes match a supported image format
+      final xFile = XFile(imageFile.path);
+      if (!await _validator.isValidImageContent(xFile)) {
         _setImageUploadError(AppLocale.current.errorGeneric);
         return false;
       }

@@ -88,4 +88,12 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Update allergen preferences for a user
   Future<void> updateAllergenPreferences(
       String userId, UserAllergenPreferences preferences);
+
+  /// Propagate displayName/avatarUrl changes to all denormalized Firestore locations.
+  /// Fault-tolerant: logs errors per collection but does not throw.
+  Future<void> propagateProfileChanges({
+    required String userId,
+    required String newDisplayName,
+    String? newAvatarUrl,
+  });
 }

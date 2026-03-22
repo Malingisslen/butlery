@@ -108,7 +108,17 @@ class CoreModule implements DIModule {
   int get priority => 1; // Highest priority - initialize first
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    final app = GetIt.instance;
+
+    container.registerLazySingleton<ConsentService>(
+      () => ConsentService(
+        authRepository: app<AuthRepository>(),
+        consentRepository: app<FirebaseConsentRepository>(),
+      ),
+      dispose: (s) => s.clearConsentCache(),
+    );
+  }
 
   @override
   Future<void> configure(GetIt container) async {
@@ -219,12 +229,7 @@ class CoreModule implements DIModule {
       );
 
       // Consent service for GDPR Article 7 (Consent Management)
-      container.registerLazySingleton<ConsentService>(
-        () => ConsentService(
-          authRepository: container<AuthRepository>(),
-          consentRepository: container<FirebaseConsentRepository>(),
-        ),
-      );
+      // ConsentService: registered in configureUserScope
 
       // Device integrity service for root/jailbreak detection
       container.registerLazySingleton<DeviceIntegrityService>(
