@@ -11,7 +11,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
-import { batchUpdateDocs } from "../shared/batch-update";
+import { batchUpdateRefs } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
 
 import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
@@ -87,11 +87,10 @@ export const onIngredientSoftDeleted = functions.firestore
       );
 
       const db = getDb();
-      const totalUpdated = await batchUpdateDocs(
-        null,
-        db,
+      const totalUpdated = await batchUpdateRefs(
+        recipesSnapshot.docs.map((doc) => doc.ref),
         () => ({ "core.tagResult.generatorVersion": "stale-ingredient" }),
-        recipesSnapshot.docs.map((doc) => doc.ref)
+        db
       );
 
       functions.logger.info(

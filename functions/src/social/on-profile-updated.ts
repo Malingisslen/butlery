@@ -13,7 +13,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
-import { batchUpdateQuery, batchUpdateDocs } from "../shared/batch-update";
+import { batchUpdateQuery, batchUpdateDocs, batchUpdateRefs } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
 
 const getDb = () => admin.firestore();
@@ -95,13 +95,12 @@ export const onProfileUpdated = functions
         (async () => {
           const friendsSnapshot = await db.collection(Collections.users).doc(userId).collection("friends").get();
           if (friendsSnapshot.empty) return 0;
-          return batchUpdateDocs(
-            null,
-            db,
-            () => ({ displayNameLower: newName?.toLowerCase() }),
+          return batchUpdateRefs(
             friendsSnapshot.docs.map((friendDoc) =>
               db.collection(Collections.users).doc(friendDoc.id).collection("friends").doc(userId)
-            )
+            ),
+            () => ({ displayNameLower: newName?.toLowerCase() }),
+            db
           );
         })().catch((e) => { functions.logger.error(`Failed to update friends for ${userHash}`, e); return 0; })
       );
@@ -194,10 +193,10 @@ async function mergedDualUpdate(
 
   if (merged.size === 0) return 0;
 
-  return batchUpdateDocs(
-    null,
-    db,
-    (doc) => merged.get(doc.ref.id)?.updates ?? {},
-    Array.from(merged.values()).map((e) => e.ref)
+  const entries = Array.from(merged.values());
+  return batchUpdateRefs(
+    entries.map((e) => e.ref),
+    (ref) => merged.get(ref.id)?.updates ?? {},
+    db
   );
 }

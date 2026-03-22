@@ -5,7 +5,7 @@
 
 import * as admin from "firebase-admin";
 
-const BATCH_LIMIT = 500;
+export const BATCH_LIMIT = 500;
 
 /**
  * Batch-update all docs matching a query with the same update map.
@@ -62,6 +62,40 @@ export async function batchUpdateDocs(
 
   for (const doc of docs) {
     batch.update(doc.ref, getUpdates(doc));
+    batchCount++;
+    total++;
+
+    if (batchCount >= BATCH_LIMIT) {
+      await batch.commit();
+      batch = db.batch();
+      batchCount = 0;
+    }
+  }
+
+  if (batchCount > 0) {
+    await batch.commit();
+  }
+
+  return total;
+}
+
+/**
+ * Batch-update explicit document refs with per-ref update maps.
+ * Type-safe alternative to batchUpdateDocs when working with refs directly.
+ */
+export async function batchUpdateRefs(
+  refs: admin.firestore.DocumentReference[],
+  getUpdates: (ref: admin.firestore.DocumentReference) => Record<string, unknown>,
+  db: admin.firestore.Firestore
+): Promise<number> {
+  if (refs.length === 0) return 0;
+
+  let batch = db.batch();
+  let batchCount = 0;
+  let total = 0;
+
+  for (const ref of refs) {
+    batch.update(ref, getUpdates(ref));
     batchCount++;
     total++;
 
