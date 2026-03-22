@@ -222,12 +222,9 @@ void main() {
             recipe: recipe,
           );
 
-          // Just verify result is valid - no assertion needed for memory test
+          // Verify result is valid each iteration
           expect(result.generatorVersion, isNotEmpty);
         }
-
-        // If we get here without error, memory is stable
-        expect(true, isTrue);
       });
 
       test('generator is reusable across many operations', () {

@@ -158,6 +158,10 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     notifyListeners();
   }
 
+  void resetForLogout() {
+    setCurrentUser(null);
+  }
+
   /// Set current user for offline storage
   void setCurrentUser(String? userId) {
     if (_currentUserId != userId) {

@@ -217,12 +217,15 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final recipes = RecipeFactory.buildList(count: 2);
 
-        // final beforeSave = DateTime.now(); // Reserved for future timestamp validation
+        final beforeSave = DateTime.now();
         await service.saveRecipes(recipes);
 
-        // Since we can't directly access the timestamp in the current implementation,
-        // we verify that save operation succeeds
-        expect(true, isTrue); // Placeholder for timestamp verification
+        // Verify the last updated timestamp was saved
+        final prefs = await SharedPreferences.getInstance();
+        final lastUpdated = prefs.getString('butlery_last_updated');
+        expect(lastUpdated, isNotNull);
+        final parsedTime = DateTime.parse(lastUpdated!);
+        expect(parsedTime.isAfter(beforeSave.subtract(const Duration(seconds: 1))), isTrue);
       });
     });
 

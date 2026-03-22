@@ -421,6 +421,13 @@ class UnifiedShoppingService extends ChangeNotifier
     notifyListeners();
   }
 
+  void resetForLogout() {
+    stopFirebaseSync();
+    _lists.clear();
+    _error = null;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     stopFirebaseSync();

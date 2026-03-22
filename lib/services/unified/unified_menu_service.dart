@@ -622,9 +622,15 @@ class UnifiedMenuService extends ChangeNotifier
       ServiceLocator.get<PermissionService>().currentUserId;
   String? get currentUserDisplayName =>
       ServiceLocator.get<PermissionService>().currentUserDisplayName;
+  void resetForLogout() {
+    _menus.clear();
+    _isInitialized = false;
+    _error = null;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
-    // Clean up any resources
     _menus.clear();
     super.dispose();
   }

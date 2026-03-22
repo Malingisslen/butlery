@@ -335,9 +335,6 @@ void main() {
           final sub = repository.connectionStream.listen((_) {});
           await sub.cancel();
         }
-
-        // Assert - Should not throw or cause issues
-        expect(true, isTrue);
       }, skip: 'Requires Flutter bindings for Connectivity plugin');
     });
   });

@@ -393,13 +393,15 @@ class UnifiedFriendsService extends ChangeNotifier
   /// Internal method to add friend
   void addFriendInternal(UserProfile friend) {
     _stateManager.addFriend(friend);
-    AppLogger.debug('✅ Added friend ${friend.displayName.maskedName} via state manager');
+    AppLogger.debug(
+        '✅ Added friend ${friend.displayName.maskedName} via state manager');
   }
 
   /// Internal method to remove friend
   void removeFriendInternal(String friendId) {
     _stateManager.removeFriend(friendId);
-    AppLogger.debug('✅ Removed friend ${friendId.maskedUserId} via state manager');
+    AppLogger.debug(
+        '✅ Removed friend ${friendId.maskedUserId} via state manager');
   }
 
   /// Sync friend request to Firebase
@@ -454,14 +456,14 @@ class UnifiedFriendsService extends ChangeNotifier
   /// Cancel sent invitation (for ViewModels)
   Future<bool> cancelSentInvitation(String invitationId) async =>
       await invitations.cancelInvitation(invitationId);
+  void resetForLogout() {
+    _stateManager.clearAllData();
+    disposeStreamResources();
+  }
+
   @override
   void dispose() {
-    // Clear friends state manager first
-    _stateManager.clearAllData();
-
-    // Dispose stream subscriptions (async, so we'll do it without await)
-    disposeStreamResources();
-
+    resetForLogout();
     super.dispose();
   }
 }

@@ -416,10 +416,10 @@ void main() {
       await monitor.dispose();
 
       // Adding events after dispose should not affect monitor
-      mockSyncService.triggerConnectionChange(true);
-
-      // Should remain in disposed state (can't test internal state after dispose)
-      expect(true, isTrue); // Just verify no crash
+      expect(
+        () => mockSyncService.triggerConnectionChange(true),
+        returnsNormally,
+      );
     });
   });
 
