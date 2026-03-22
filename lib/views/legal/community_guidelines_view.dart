@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/legal/legal_contact_footer.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -132,45 +132,8 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
             ),
           ),
         ),
-        _buildContactButton(),
+        const LegalContactFooter(),
       ],
-    );
-  }
-
-  Widget _buildContactButton() {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        border: Border(
-          top: BorderSide(color: cs.outlineVariant, width: 1),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            context.l10n.privacyQuestionsTitle,
-            style: AppTextStyles.bodyBold,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          ElevatedButton.icon(
-            onPressed: () =>
-                app_logger.AppLogger.info('Contact support tapped'),
-            icon: const Icon(Icons.email_rounded),
-            label: Text(context.l10n.privacyContactUs),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: cs.primary,
-              foregroundColor: cs.onPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

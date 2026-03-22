@@ -17,6 +17,7 @@ import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 /// Clean ChatView facade coordinating specialized components
 class ChatViewFacade extends StatefulWidget {
@@ -74,6 +75,24 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
 
   @override
   Widget build(BuildContext context) {
+    // Kill switch: gate messaging behind feature flag
+    final featureFlags = ServiceLocator.get<FeatureFlagService>();
+    if (!featureFlags.isEnabled(FeatureFlags.enableMessaging)) {
+      return Scaffold(
+        appBar: AppBar(title: Text(context.l10n.chatTitle)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Text(
+              'Meddelandefunktionen är tillfälligt inaktiverad.',
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Consumer<ChatViewModel>(
@@ -106,7 +125,8 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
                     child: Text(
                       context.l10n.chatCannotMessageNonFriend,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                       textAlign: TextAlign.center,
                     ),

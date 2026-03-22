@@ -5,9 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
+import 'package:butlery/widgets/social/shared_card_header.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -62,7 +62,21 @@ class SharedMenuCard {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header med delningsinfo
-                _buildHeader(context, viewModel, sharedMenu, isRead),
+                SharedCardHeader(
+                  displayName: sharedMenu.sharedByDisplayName,
+                  timestampText:
+                      timeago.format(sharedMenu.sharedAt, locale: 'sv'),
+                  isRead: isRead,
+                  onDismiss: () => SharedContentActions.dismissMenu(
+                    context,
+                    viewModel,
+                    sharedMenu,
+                  ),
+                  onUnshare: () => SharedContentActions.unshareMenu(
+                    context,
+                    sharedMenu,
+                  ),
+                ),
                 const SizedBox(height: AppDimensions.spacingS),
 
                 // Meny content
@@ -89,113 +103,6 @@ class SharedMenuCard {
           ),
         ),
       ),
-    );
-  }
-
-  static Widget _buildHeader(
-    BuildContext context,
-    SharedContentCoordinatorViewModel viewModel,
-    SharedMenu sharedMenu,
-    bool isRead,
-  ) {
-    return Row(
-      children: [
-        SocialAvatarComponents.avatar(
-          size: ImageSize.small,
-          displayName: sharedMenu.sharedByDisplayName,
-        ),
-        const SizedBox(width: AppDimensions.spacingS),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.sharedByName(sharedMenu.sharedByDisplayName),
-                style: isRead
-                    ? AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                      )
-                    : AppTextStyles.bodyBold.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                timeago.format(sharedMenu.sharedAt, locale: 'sv'),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Overflow menu with dismiss and unshare actions
-        PopupMenuButton<String>(
-          icon: Icon(
-            Icons.more_vert,
-            size: AppDimensions.iconSizeM,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          shape: const RoundedRectangleBorder(),
-          onSelected: (value) {
-            switch (value) {
-              case 'dismiss':
-                SharedContentActions.dismissMenu(
-                  context,
-                  viewModel,
-                  sharedMenu,
-                );
-              case 'unshare':
-                SharedContentActions.unshareMenu(
-                  context,
-                  sharedMenu,
-                );
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem<String>(
-              value: 'dismiss',
-              child: Row(
-                children: [
-                  Icon(Icons.close,
-                      size: AppDimensions.iconSizeM,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Text(context.l10n.commonHide),
-                ],
-              ),
-            ),
-            PopupMenuItem<String>(
-              value: 'unshare',
-              child: Row(
-                children: [
-                  Icon(Icons.link_off,
-                      size: AppDimensions.iconSizeM,
-                      color: Theme.of(context).colorScheme.error),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Text(
-                    context.l10n.unshareButton,
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        if (!isRead)
-          Container(
-            width: 8,
-            height: 8,
-            margin: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingXs),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
-          ),
-      ],
     );
   }
 
