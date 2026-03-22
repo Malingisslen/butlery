@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart'
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/widgets.dart';
+import 'package:rxdart/rxdart.dart';
 
 enum PresenceStatus { online, offline, away }
 
@@ -73,19 +74,6 @@ class UserPresence {
     if (typingTime == null) return false;
     return DateTime.now().difference(typingTime).inSeconds < 5;
   }
-
-  UserPresence copyWith({
-    PresenceStatus? status,
-    DateTime? lastSeen,
-    Map<String, DateTime>? typingIn,
-  }) {
-    return UserPresence(
-      userId: userId,
-      status: status ?? this.status,
-      lastSeen: lastSeen ?? this.lastSeen,
-      typingIn: typingIn ?? this.typingIn,
-    );
-  }
 }
 
 /// Hybrid presence service: RTDB for online/offline (server-side onDisconnect),
@@ -130,12 +118,13 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
       _presenceRef = _database.ref('presence/${currentUser.uid}');
 
-      // Set online and register server-side disconnect handler
-      await _presenceRef!
-          .set({'status': 'online', 'lastSeen': ServerValue.timestamp});
+      // Register disconnect handler BEFORE setting online — if the process
+      // dies between these two calls, onDisconnect is already in place.
       await _presenceRef!
           .onDisconnect()
           .set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
+      await _presenceRef!
+          .set({'status': 'online', 'lastSeen': ServerValue.timestamp});
 
       // Register lifecycle observer for graceful backgrounding
       WidgetsBinding.instance.addObserver(this);
@@ -232,8 +221,6 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     return controller.stream;
   }
 
-  // --- Typing indicators (Firestore) ---
-
   Future<void> startTyping(String conversationId) async {
     try {
       final currentUser = _authRepository.currentUser;
@@ -321,31 +308,28 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     }
   }
 
-  // --- Lifecycle ---
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
       case AppLifecycleState.detached:
         // Set offline explicitly for graceful backgrounding
         _presenceRef
             ?.set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
         break;
       case AppLifecycleState.resumed:
-        // Re-establish online + onDisconnect
-        _presenceRef
-            ?.set({'status': 'online', 'lastSeen': ServerValue.timestamp});
+        // Re-establish onDisconnect first, then set online
         _presenceRef
             ?.onDisconnect()
             .set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
+        _presenceRef
+            ?.set({'status': 'online', 'lastSeen': ServerValue.timestamp});
         break;
       default:
         break;
     }
   }
-
-  // --- Private helpers ---
 
   void _startTypingCleanup() {
     _typingCleanupTimer?.cancel();
@@ -392,30 +376,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
   Stream<List<String>> _combineTypingStreams(
       List<Stream<List<String>>> streams) {
-    final latestValues = List<List<String>?>.filled(streams.length, null);
-    final controller = StreamController<List<String>>.broadcast();
-    final subscriptions = <StreamSubscription<List<String>>>[];
-
-    for (var i = 0; i < streams.length; i++) {
-      final index = i;
-      subscriptions.add(streams[index].listen(
-        (list) {
-          latestValues[index] = list;
-          if (latestValues.every((v) => v != null)) {
-            controller.add(latestValues.expand((v) => v!).toList());
-          }
-        },
-        onError: controller.addError,
-      ));
-    }
-
-    controller.onCancel = () {
-      for (final sub in subscriptions) {
-        sub.cancel();
-      }
-      controller.close();
-    };
-
-    return controller.stream;
+    return Rx.combineLatestList(streams)
+        .map((lists) => lists.expand((l) => l).toList());
   }
 }
