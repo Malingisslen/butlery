@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -232,6 +233,7 @@ class NetworkImageWidget extends StatelessWidget {
 
     Widget image = CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
       width: width,
       height: height,
       fit: fit,

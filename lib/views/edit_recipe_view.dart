@@ -107,6 +107,14 @@ class _EditRecipeViewContent extends StatefulWidget {
 /// Recipe editing view content state with all inlined components.
 class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   final _formKey = GlobalKey<FormState>();
+  late final String _currentUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUserId =
+        ServiceLocator.get<PermissionService>().currentUserId ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -378,7 +386,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             viewModel.setPrimaryImage(imageUrl);
           }
         },
-        userId: ServiceLocator.get<PermissionService>().currentUserId ?? '',
+        userId: _currentUserId,
         onPickImage: () => RecipeImagePicker.showAndPick(
           context: context,
           viewModel: viewModel,

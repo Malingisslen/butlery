@@ -43,6 +43,9 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Search query for filtering content
   String _searchQuery = '';
 
+  /// Cached filtered content — invalidated when _content or _searchQuery changes
+  List<TContent>? _filteredContentCache;
+
   /// Loading state indicator
   bool _isLoading = false;
 
@@ -139,12 +142,17 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// All loaded content
   List<TContent> get content => List.unmodifiable(_content);
 
-  /// Filtered content based on search query
+  /// Filtered content based on search query (memoized)
   List<TContent> get filteredContent {
-    if (_searchQuery.isEmpty) return content;
-    return _content
-        .where((item) => contentMatchesSearch(item, _searchQuery))
-        .toList();
+    if (_filteredContentCache != null) return _filteredContentCache!;
+    if (_searchQuery.isEmpty) {
+      _filteredContentCache = content;
+    } else {
+      _filteredContentCache = _content
+          .where((item) => contentMatchesSearch(item, _searchQuery))
+          .toList();
+    }
+    return _filteredContentCache!;
   }
 
   /// Content count
@@ -195,6 +203,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       );
 
       _content = loadedContent;
+      _invalidateFilteredCache();
 
       // Update pagination state
       _lastDocument = getLastDocumentFromContent(loadedContent);
@@ -234,6 +243,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
       // Append to existing content
       _content.addAll(loadedContent);
+      _invalidateFilteredCache();
 
       // Update pagination state
       _lastDocument = getLastDocumentFromContent(loadedContent);
@@ -257,10 +267,16 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     await loadContent();
   }
 
+  /// Invalidate the filtered content cache
+  void _invalidateFilteredCache() {
+    _filteredContentCache = null;
+  }
+
   /// Update search query and notify listeners
   void updateSearchQuery(String query) {
     if (_searchQuery != query) {
       _searchQuery = query;
+      _invalidateFilteredCache();
       AppLogger.info('🔍 Updated search query for $contentTypeName: "$query"');
       notifyListeners();
     }
@@ -304,6 +320,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Add content to local collection
   void addContent(TContent content) {
     _content.add(content);
+    _invalidateFilteredCache();
     AppLogger.info('➕ Added $contentTypeName: ${getContentTitle(content)}');
     notifyListeners();
   }
@@ -311,6 +328,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Remove content from local collection
   void removeContent(TContent content) {
     if (_content.remove(content)) {
+      _invalidateFilteredCache();
       AppLogger.info('➖ Removed $contentTypeName: ${getContentTitle(content)}');
       notifyListeners();
     }
@@ -321,6 +339,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     final index = _content.indexOf(oldContent);
     if (index != -1) {
       _content[index] = newContent;
+      _invalidateFilteredCache();
       AppLogger.info(
           '🔄 Updated $contentTypeName: ${getContentTitle(newContent)}');
       notifyListeners();
@@ -330,6 +349,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Replace entire content collection
   void replaceContent(List<TContent> newContent) {
     _content = List.from(newContent);
+    _invalidateFilteredCache();
     AppLogger.info(
         '🔄 Replaced $contentTypeName collection with ${_content.length} items');
     notifyListeners();

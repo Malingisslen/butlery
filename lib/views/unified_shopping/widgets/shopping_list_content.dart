@@ -68,6 +68,72 @@ class ShoppingListContentWidget extends StatefulWidget {
 class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   final Set<String> _collapsedCategories = {};
 
+  /// Cached categorized pending items — invalidated when items change
+  Map<String, List<UnifiedShoppingItem>>? _pendingByCategory;
+  List<String>? _pendingSortedKeys;
+
+  /// Cached categorized completed items — invalidated when items change
+  Map<String, List<UnifiedShoppingItem>>? _completedByCategory;
+  List<String>? _completedSortedKeys;
+
+  /// Cached category progress
+  Map<String, ({int total, int completed})>? _categoryProgressCache;
+
+  /// Last items list identity for cache invalidation
+  List<UnifiedShoppingItem>? _lastItems;
+
+  void _invalidateCaches() {
+    _pendingByCategory = null;
+    _pendingSortedKeys = null;
+    _completedByCategory = null;
+    _completedSortedKeys = null;
+    _categoryProgressCache = null;
+    _lastItems = null;
+  }
+
+  void _ensureCaches(UnifiedShoppingViewModel viewModel) {
+    if (identical(_lastItems, viewModel.items)) return;
+    _lastItems = viewModel.items;
+
+    // Compute category progress
+    final progress = <String, ({int total, int completed})>{};
+    for (final item in viewModel.items) {
+      final category =
+          item.category.isEmpty ? ShoppingCategory.other : item.category;
+      final existing = progress[category] ?? (total: 0, completed: 0);
+      progress[category] = (
+        total: existing.total + 1,
+        completed: existing.completed + (item.isCompleted ? 1 : 0),
+      );
+    }
+    _categoryProgressCache = progress;
+
+    // Compute pending items by category
+    final pendingMap = <String, List<UnifiedShoppingItem>>{};
+    final completedMap = <String, List<UnifiedShoppingItem>>{};
+    for (final item in viewModel.items) {
+      final category =
+          item.category.isEmpty ? ShoppingCategory.other : item.category;
+      if (item.isCompleted) {
+        completedMap.putIfAbsent(category, () => []).add(item);
+      } else {
+        pendingMap.putIfAbsent(category, () => []).add(item);
+      }
+    }
+    _pendingByCategory = pendingMap;
+    _pendingSortedKeys = pendingMap.keys.toList()..sort();
+    _completedByCategory = completedMap;
+    _completedSortedKeys = completedMap.keys.toList()..sort();
+  }
+
+  @override
+  void didUpdateWidget(ShoppingListContentWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.viewModel != widget.viewModel) {
+      _invalidateCaches();
+    }
+  }
+
   /// Translate language-neutral category constant to localized display name.
   String _categoryDisplayName(BuildContext context, String category) {
     switch (category) {
@@ -138,19 +204,39 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
   ) {
-    // Pre-compute category progress from ALL items
-    final categoryProgress = _computeCategoryProgress(viewModel);
+    _ensureCaches(viewModel);
+
+    final categoryProgress = _categoryProgressCache!;
+    final pendingKeys = _pendingSortedKeys!;
+    final pendingMap = _pendingByCategory!;
+    final completedKeys = _completedSortedKeys!;
+    final completedMap = _completedByCategory!;
 
     final widgets = <Widget>[
       // Pending items by category
-      ..._buildPendingItemsByCategory(context, viewModel, categoryProgress),
+      ...pendingKeys.map((key) {
+        return _buildCategorySection(
+          context,
+          key,
+          pendingMap[key]!,
+          false,
+          progress: categoryProgress[key],
+        );
+      }),
 
       // Completed items section
       if (viewModel.boughtItems > 0) ...[
         const SizedBox(height: AppDimensions.spacingLg),
         _buildCompletedItemsHeader(context, viewModel),
         const SizedBox(height: AppDimensions.spacingSm),
-        ..._buildCompletedItems(context, viewModel),
+        ...completedKeys.map((key) {
+          return _buildCategorySection(
+            context,
+            key,
+            completedMap[key]!,
+            true,
+          );
+        }),
       ],
 
       const SizedBox(height: AppDimensions.spacingHuge),
@@ -161,81 +247,6 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       itemCount: widgets.length,
       itemBuilder: (context, index) => widgets[index],
     );
-  }
-
-  /// Compute total and completed counts per category across all items.
-  Map<String, ({int total, int completed})> _computeCategoryProgress(
-    UnifiedShoppingViewModel viewModel,
-  ) {
-    final result = <String, ({int total, int completed})>{};
-    for (final item in viewModel.items) {
-      final category =
-          item.category.isEmpty ? ShoppingCategory.other : item.category;
-      final existing = result[category] ?? (total: 0, completed: 0);
-      result[category] = (
-        total: existing.total + 1,
-        completed: existing.completed + (item.isCompleted ? 1 : 0),
-      );
-    }
-    return result;
-  }
-
-  List<Widget> _buildPendingItemsByCategory(
-    BuildContext context,
-    UnifiedShoppingViewModel viewModel,
-    Map<String, ({int total, int completed})> categoryProgress,
-  ) {
-    final pendingItems =
-        viewModel.items.where((item) => !item.isCompleted).toList();
-    if (pendingItems.isEmpty) return [];
-
-    final categorizedItems = <String, List<UnifiedShoppingItem>>{};
-    for (final item in pendingItems) {
-      final category =
-          item.category.isEmpty ? ShoppingCategory.other : item.category;
-      categorizedItems.putIfAbsent(category, () => []).add(item);
-    }
-
-    // Sort categories alphabetically for stable display order
-    final sortedKeys = categorizedItems.keys.toList()..sort();
-
-    return sortedKeys.map((key) {
-      final progress = categoryProgress[key];
-      return _buildCategorySection(
-        context,
-        key,
-        categorizedItems[key]!,
-        false,
-        progress: progress,
-      );
-    }).toList();
-  }
-
-  List<Widget> _buildCompletedItems(
-    BuildContext context,
-    UnifiedShoppingViewModel viewModel,
-  ) {
-    final completedItems =
-        viewModel.items.where((item) => item.isCompleted).toList();
-    if (completedItems.isEmpty) return [];
-
-    final categorizedItems = <String, List<UnifiedShoppingItem>>{};
-    for (final item in completedItems) {
-      final category =
-          item.category.isEmpty ? ShoppingCategory.other : item.category;
-      categorizedItems.putIfAbsent(category, () => []).add(item);
-    }
-
-    final sortedKeys = categorizedItems.keys.toList()..sort();
-
-    return sortedKeys.map((key) {
-      return _buildCategorySection(
-        context,
-        key,
-        categorizedItems[key]!,
-        true,
-      );
-    }).toList();
   }
 
   Widget _buildCategorySection(

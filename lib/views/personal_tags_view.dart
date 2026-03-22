@@ -58,6 +58,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   TagSortOrder _sortOrder = TagSortOrder.byUsage;
   List<SharedPersonalTag> _pendingSharedTags = [];
 
+  /// Cached sorted tags per group key (null = ungrouped)
+  final Map<String?, List<PersonalTag>> _sortedTagsCache = {};
+  TagSortOrder? _lastSortOrder;
+  PersonalTagViewModel? _lastViewModel;
+
   @override
   void initState() {
     super.initState();
@@ -105,7 +110,22 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     }
   }
 
-  List<PersonalTag> _sortTags(List<PersonalTag> tags, PersonalTagViewModel vm) {
+  void _invalidateSortCache() {
+    _sortedTagsCache.clear();
+  }
+
+  List<PersonalTag> _sortTags(
+      List<PersonalTag> tags, PersonalTagViewModel vm, String? groupId) {
+    // Invalidate if sort order or viewmodel identity changed
+    if (_lastSortOrder != _sortOrder || !identical(_lastViewModel, vm)) {
+      _invalidateSortCache();
+      _lastSortOrder = _sortOrder;
+      _lastViewModel = vm;
+    }
+
+    final cached = _sortedTagsCache[groupId];
+    if (cached != null) return cached;
+
     final sorted = List<PersonalTag>.from(tags);
     switch (_sortOrder) {
       case TagSortOrder.byName:
@@ -124,6 +144,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           return bRules.compareTo(aRules);
         });
     }
+    _sortedTagsCache[groupId] = sorted;
     return sorted;
   }
 
@@ -188,7 +209,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     return PopupMenuButton<TagSortOrder>(
       icon: const Icon(Icons.sort),
       tooltip: context.l10n.commonSort,
-      onSelected: (order) => setState(() => _sortOrder = order),
+      onSelected: (order) => setState(() {
+        _sortOrder = order;
+        _invalidateSortCache();
+      }),
       itemBuilder: (context) => TagSortOrder.values.map((order) {
         final label = switch (order) {
           TagSortOrder.byName => context.l10n.personalTagSortByName,
@@ -261,7 +285,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   Widget _buildTagList(BuildContext context, PersonalTagViewModel viewModel) {
     final groups = viewModel.groups;
-    final ungroupedTags = _sortTags(viewModel.getTagsForGroup(null), viewModel);
+    final ungroupedTags =
+        _sortTags(viewModel.getTagsForGroup(null), viewModel, null);
 
     return SafeArea(
       child: LayoutBuilder(
@@ -296,8 +321,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                         PersonalTagGroupSection(
                           key: ValueKey(group.id),
                           group: group,
-                          tags: _sortTags(
-                              viewModel.getTagsForGroup(group.id), viewModel),
+                          tags: _sortTags(viewModel.getTagsForGroup(group.id),
+                              viewModel, group.id),
                           viewModel: viewModel,
                         ),
                       const SizedBox(height: AppDimensions.spacingXxl),

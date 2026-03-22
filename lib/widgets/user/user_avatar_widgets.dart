@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -46,6 +47,7 @@ class UserAvatarWidgets {
               ? ClipRect(
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
+                    cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
                     width: avatarSize,
                     height: avatarSize,
                     fit: BoxFit.cover,

@@ -9,6 +9,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
@@ -199,6 +200,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
   // Loading states
   bool _isLoadingFull = true;
   bool _hasError = false;
+  bool _hasRecordedCacheMiss = false;
 
   // Thumbnail for progressive loading
   String? _thumbnailUrl;
@@ -320,6 +322,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
     final tintColor = Theme.of(context).colorScheme.surfaceContainerLow;
     return CachedNetworkImage(
       imageUrl: _thumbnailUrl!,
+      cacheKey: FirebaseUrlUtils.stableCacheKey(_thumbnailUrl!),
       fit: widget.fit,
       placeholder: (_, __) => Container(color: tintColor),
       errorWidget: (_, __, ___) => Container(color: tintColor),
@@ -346,6 +349,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
   Widget _buildFullImage(String optimizedUrl, Size cacheSize) {
     return CachedNetworkImage(
       imageUrl: optimizedUrl,
+      cacheKey: FirebaseUrlUtils.stableCacheKey(optimizedUrl),
       fit: widget.fit,
       memCacheWidth:
           cacheSize.width == double.infinity ? 800 : cacheSize.width.toInt(),
@@ -362,8 +366,11 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
           });
         }
 
-        // Record cache miss
-        _cacheManager.recordCacheAccess(false, _estimateImageSize(cacheSize));
+        // Record cache miss once per load, not on every progress tick
+        if (!_hasRecordedCacheMiss) {
+          _hasRecordedCacheMiss = true;
+          _cacheManager.recordCacheAccess(false, _estimateImageSize(cacheSize));
+        }
 
         return const SizedBox.shrink(); // Thumbnail handles loading state
       },

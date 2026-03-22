@@ -243,6 +243,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
   Widget _buildActionButtons(FriendCategory group) {
     return GroupActionButtons(
       group: group,
+      isAdmin: ServiceLocator.get<PermissionService>().isGroupAdmin(group.id),
       onShareRecipe: () => _showRecipeSelectionForGroup(group),
       onShareMenu: () => _showMenuSelectionForGroup(group),
       onShareShoppingList: () => _showShoppingListSelectionForGroup(group),
