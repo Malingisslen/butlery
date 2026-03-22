@@ -16,6 +16,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 // Import focused components
 import 'package:butlery/views/social/friends_list/friends_tab.dart';
@@ -108,6 +109,25 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   @override
   Widget build(BuildContext context) {
+    // Kill switch: gate social features behind feature flag
+    final featureFlags = ServiceLocator.get<FeatureFlagService>();
+    if (!featureFlags.isEnabled(FeatureFlags.enableSocialFeatures)) {
+      return LayoutComponents.mainMenu(
+        currentIndex: null,
+        title: context.l10n.socialFriendsAndGroups,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            child: Text(
+              'Sociala funktioner är tillfälligt inaktiverade.',
+              style: AppTextStyles.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Consumer2<FriendsViewModel, UnifiedFriendsService>(
       builder: (context, viewModel, friendsService, child) {
         // 🎯 UX ENHANCEMENT: Sync local search query with ViewModel

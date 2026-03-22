@@ -452,7 +452,7 @@ class FriendsStateManager extends ChangeNotifier {
   }
 
   Map<String, Set<String>> get relationshipsInternal => <String, Set<String>>{};
-  dynamic getCategoryById(String categoryId) {
+  FriendCategory? getCategoryById(String categoryId) {
     return _categories.where((c) => c.id == categoryId).firstOrNull;
   }
 
@@ -517,7 +517,8 @@ class FriendsStateManager extends ChangeNotifier {
 
   void removeBlockedUser(String userId) {
     if (_blockedUsers.remove(userId)) {
-      AppLogger.debug('Removed blocked user from state: ${userId.maskedUserId}');
+      AppLogger.debug(
+          'Removed blocked user from state: ${userId.maskedUserId}');
       notifyListeners();
     }
   }

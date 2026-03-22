@@ -40,7 +40,7 @@ class FriendsInternalOperations {
     // This is handled through the state manager's ChangeNotifier
   }
 
-  dynamic getCategoryByIdInternal(String categoryId) {
+  FriendCategory? getCategoryByIdInternal(String categoryId) {
     return _stateManager.categories
         .where((category) => category.id == categoryId)
         .firstOrNull;

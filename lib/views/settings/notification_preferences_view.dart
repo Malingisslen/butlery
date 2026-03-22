@@ -99,14 +99,11 @@ class _NotificationPreferencesViewState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildMasterToggle(),
-                                const SizedBox(
-                                    height: AppDimensions.spacingXl),
+                                const SizedBox(height: AppDimensions.spacingXl),
                                 _buildCategorySection(),
-                                const SizedBox(
-                                    height: AppDimensions.spacingXl),
+                                const SizedBox(height: AppDimensions.spacingXl),
                                 _buildQuietHoursSection(),
-                                const SizedBox(
-                                    height: AppDimensions.spacingXl),
+                                const SizedBox(height: AppDimensions.spacingXl),
                                 _buildSoundVibrationSection(),
                               ],
                             ),
@@ -143,12 +140,7 @@ class _NotificationPreferencesViewState
         _copyPreferences(enabled: value),
       ),
       activeTrackColor: cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return cs.primary;
-        }
-        return null;
-      }),
+      thumbColor: _primaryThumbColor(cs),
       contentPadding: EdgeInsets.zero,
     );
   }
@@ -192,12 +184,7 @@ class _NotificationPreferencesViewState
             : null,
         activeTrackColor:
             cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return cs.primary;
-          }
-          return null;
-        }),
+        thumbColor: _primaryThumbColor(cs),
         contentPadding: EdgeInsets.zero,
       ),
     );
@@ -247,12 +234,7 @@ class _NotificationPreferencesViewState
           },
           activeTrackColor:
               cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-          thumbColor: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.selected)) {
-              return cs.primary;
-            }
-            return null;
-          }),
+          thumbColor: _primaryThumbColor(cs),
           contentPadding: EdgeInsets.zero,
         ),
         if (hasQuietHours) ...[
@@ -374,12 +356,7 @@ class _NotificationPreferencesViewState
           ),
           activeTrackColor:
               cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-          thumbColor: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.selected)) {
-              return cs.primary;
-            }
-            return null;
-          }),
+          thumbColor: _primaryThumbColor(cs),
           contentPadding: EdgeInsets.zero,
         ),
         const Divider(),
@@ -397,16 +374,20 @@ class _NotificationPreferencesViewState
           ),
           activeTrackColor:
               cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-          thumbColor: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.selected)) {
-              return cs.primary;
-            }
-            return null;
-          }),
+          thumbColor: _primaryThumbColor(cs),
           contentPadding: EdgeInsets.zero,
         ),
       ],
     );
+  }
+
+  WidgetStateProperty<Color?> _primaryThumbColor(ColorScheme cs) {
+    return WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.selected)) {
+        return cs.primary;
+      }
+      return null;
+    });
   }
 
   /// Manual copyWith since the model doesn't provide one.
