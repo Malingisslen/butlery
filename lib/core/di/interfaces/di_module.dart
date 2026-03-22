@@ -54,6 +54,11 @@ abstract class DIModule {
   /// This is used during startup validation and ongoing health monitoring.
   Future<bool> healthCheck();
 
+  /// Register services that belong to the user-session scope.
+  /// These are created on login and automatically disposed on logout.
+  /// Default: no-op (all services stay in app scope until migrated).
+  Future<void> configureUserScope(GetIt container) async {}
+
   /// Get the priority order for this module.
   /// Lower numbers have higher priority (initialize first).
   /// Default priority is 100. Core modules should use lower numbers.

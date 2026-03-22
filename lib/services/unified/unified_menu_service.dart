@@ -631,7 +631,7 @@ class UnifiedMenuService extends ChangeNotifier
 
   @override
   void dispose() {
-    _menus.clear();
+    resetForLogout();
     super.dispose();
   }
 }

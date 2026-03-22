@@ -400,7 +400,6 @@ class UserService extends ChangeNotifier
     _profileCache.clear();
     _cacheTimestamps.clear();
     _clearError();
-    notifyListeners();
   }
 
   void _clearError() {

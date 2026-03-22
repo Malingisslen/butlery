@@ -14,6 +14,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
+import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/presence_service.dart';
@@ -99,6 +100,7 @@ class AuthService extends ChangeNotifier
         }
 
         setLoading(false);
+        await DIContainer().pushUserScope();
         await _analyticsService.logSignUp(method: 'email');
         return true;
       }
@@ -151,6 +153,7 @@ class AuthService extends ChangeNotifier
         return false;
       }
 
+      await DIContainer().pushUserScope();
       await _analyticsService.logLogin(method: 'email');
       return true;
     } on FirebaseAuthException catch (e) {
@@ -180,6 +183,7 @@ class AuthService extends ChangeNotifier
 
   Future<void> signOut() async {
     await executeAsync(() async {
+      await DIContainer().popUserScope();
       _resetSessionScopedServices();
       await _authRepository.signOut();
       _currentUser = null;
@@ -193,6 +197,7 @@ class AuthService extends ChangeNotifier
   /// Logout for session timeout - tracks separately for security monitoring.
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {
+      await DIContainer().popUserScope();
       _resetSessionScopedServices();
       await _authRepository.signOut();
       _currentUser = null;
@@ -212,6 +217,7 @@ class AuthService extends ChangeNotifier
 
   Future<void> forceSignOut() async {
     try {
+      await DIContainer().popUserScope();
       _resetSessionScopedServices();
       await _authRepository.signOut();
     } catch (e) {
@@ -310,80 +316,44 @@ class AuthService extends ChangeNotifier
 
   /// Reset session-scoped services before sign-out to prevent stale timers/data.
   void _resetSessionScopedServices() {
-    try {
-      ServiceLocator.tryGet<PresenceService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning('PresenceService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<UnifiedRecipeService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning(
-          'UnifiedRecipeService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<NotificationService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning('NotificationService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<PermissionCacheService>()?.invalidateAll();
-    } catch (e) {
-      AppLogger.warning(
-          'PermissionCacheService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<ConsentService>()?.clearConsentCache();
-    } catch (e) {
-      AppLogger.warning('ConsentService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<IntelligentCacheManager>()?.clearCache();
-    } catch (e) {
-      AppLogger.warning(
-          'IntelligentCacheManager reset failed during sign-out: $e');
-    }
-    try {
-      final ingredientRepo = ServiceLocator.tryGet<UserIngredientRepository>();
-      if (ingredientRepo is FirebaseUserIngredientRepository) {
-        ingredientRepo.clearAllCaches();
+    void safeReset(String name, void Function() fn) {
+      try {
+        fn();
+      } catch (e) {
+        AppLogger.warning('$name reset failed during sign-out: $e');
       }
-    } catch (e) {
-      AppLogger.warning(
-          'UserIngredientRepository reset failed during sign-out: $e');
     }
-    try {
-      ServiceLocator.tryGet<PersonalTagService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning('PersonalTagService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<UnifiedMenuService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning('UnifiedMenuService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<UnifiedShoppingService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning(
-          'UnifiedShoppingService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<OfflineService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning('OfflineService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<UserService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning('UserService reset failed during sign-out: $e');
-    }
-    try {
-      ServiceLocator.tryGet<UnifiedFriendsService>()?.resetForLogout();
-    } catch (e) {
-      AppLogger.warning(
-          'UnifiedFriendsService reset failed during sign-out: $e');
-    }
+
+    safeReset('PresenceService',
+        () => ServiceLocator.tryGet<PresenceService>()?.resetForLogout());
+    safeReset('UnifiedRecipeService',
+        () => ServiceLocator.tryGet<UnifiedRecipeService>()?.resetForLogout());
+    safeReset('NotificationService',
+        () => ServiceLocator.tryGet<NotificationService>()?.resetForLogout());
+    safeReset('PermissionCacheService',
+        () => ServiceLocator.tryGet<PermissionCacheService>()?.invalidateAll());
+    safeReset('ConsentService',
+        () => ServiceLocator.tryGet<ConsentService>()?.clearConsentCache());
+    safeReset('IntelligentCacheManager',
+        () => ServiceLocator.tryGet<IntelligentCacheManager>()?.clearCache());
+    safeReset('UserIngredientRepository', () {
+      final repo = ServiceLocator.tryGet<UserIngredientRepository>();
+      if (repo is FirebaseUserIngredientRepository) repo.clearAllCaches();
+    });
+    safeReset('PersonalTagService',
+        () => ServiceLocator.tryGet<PersonalTagService>()?.resetForLogout());
+    safeReset('UnifiedMenuService',
+        () => ServiceLocator.tryGet<UnifiedMenuService>()?.resetForLogout());
+    safeReset(
+        'UnifiedShoppingService',
+        () =>
+            ServiceLocator.tryGet<UnifiedShoppingService>()?.resetForLogout());
+    safeReset('OfflineService',
+        () => ServiceLocator.tryGet<OfflineService>()?.resetForLogout());
+    safeReset('UserService',
+        () => ServiceLocator.tryGet<UserService>()?.resetForLogout());
+    safeReset('UnifiedFriendsService',
+        () => ServiceLocator.tryGet<UnifiedFriendsService>()?.resetForLogout());
   }
 
   /// Send email verification to the current user.

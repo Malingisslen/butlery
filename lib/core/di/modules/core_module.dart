@@ -108,6 +108,9 @@ class CoreModule implements DIModule {
   int get priority => 1; // Highest priority - initialize first
 
   @override
+  @override
+  Future<void> configureUserScope(GetIt container) async {}
+
   Future<void> configure(GetIt container) async {
     try {
       // SharedPreferences must be registered first as many services depend on it
