@@ -81,9 +81,9 @@ class MessagingModule implements DIModule {
   int get priority => 30; // After Core (1), Content (10), and Social (20)
 
   @override
-  @override
   Future<void> configureUserScope(GetIt container) async {}
 
+  @override
   Future<void> configure(GetIt container) async {
     try {
       // Messaging repository for direct messages and conversations

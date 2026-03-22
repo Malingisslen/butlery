@@ -87,9 +87,9 @@ class SocialModule implements DIModule {
   int get priority => 20;
 
   @override
-  @override
   Future<void> configureUserScope(GetIt container) async {}
 
+  @override
   Future<void> configure(GetIt container) async {
     try {
       container.registerLazySingleton<UserRepository>(

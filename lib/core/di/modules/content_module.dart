@@ -198,9 +198,9 @@ class ContentModule implements DIModule {
   int get priority => 10; // After Core Module (priority 1)
 
   @override
-  @override
   Future<void> configureUserScope(GetIt container) async {}
 
+  @override
   Future<void> configure(GetIt container) async {
     try {
       // Recipe repository - depends on Auth from Core Module
