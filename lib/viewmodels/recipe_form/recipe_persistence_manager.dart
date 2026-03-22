@@ -32,6 +32,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   Recipe? _lastSaveResult;
   final Map<String, Completer<Recipe?>> _pendingSaveOperations = {};
 
+  bool _isFirstRecipe = false;
+  bool get isFirstRecipe => _isFirstRecipe;
+
   bool _disposed = false;
   bool get disposed => _disposed;
 
@@ -55,6 +58,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     required bool isCollaborative,
     required void Function() onNotify,
   }) async {
+    _isFirstRecipe = false;
+
     if (_disposed) {
       AppLogger.warning('⚠️ Save operation prevented - Manager disposed');
       return null;
@@ -368,6 +373,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
     // P8-10 + P8-20: Activation metric & time-to-first-value (first recipe only)
     if (recipeCount == 1) {
+      _isFirstRecipe = true;
       _trackFirstRecipeMetrics();
     }
   }

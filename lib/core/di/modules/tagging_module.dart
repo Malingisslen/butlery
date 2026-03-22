@@ -82,7 +82,42 @@ class TaggingModule implements DIModule {
   int get priority => 25; // After Core (1), before Content (10) is also valid
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    final app = GetIt.instance;
+
+    container.registerLazySingleton<UserIngredientRepository>(
+      () => FirebaseUserIngredientRepository(
+        authRepository: app<AuthRepository>(),
+      ),
+      dispose: (s) {
+        if (s is FirebaseUserIngredientRepository) s.clearAllCaches();
+      },
+    );
+
+    container.registerLazySingleton<PersonalTagCrudService>(
+      () => PersonalTagCrudService(
+        tagRepository: app<FirebasePersonalTagRepository>(),
+        groupRepository: app<FirebasePersonalTagGroupRepository>(),
+      ),
+    );
+
+    container.registerLazySingleton<PersonalTagSharingService>(
+      () => PersonalTagSharingService(
+        tagRepository: app<FirebasePersonalTagRepository>(),
+      ),
+    );
+
+    container.registerLazySingleton<PersonalTagService>(
+      () => PersonalTagService(
+        crudService: container<PersonalTagCrudService>(),
+        ruleEvaluator: app<PersonalTagRuleEvaluator>(),
+        sharingService: container<PersonalTagSharingService>(),
+        tagRepository: app<FirebasePersonalTagRepository>(),
+        groupRepository: app<FirebasePersonalTagGroupRepository>(),
+      ),
+      dispose: (s) => s.resetForLogout(),
+    );
+  }
 
   @override
   Future<void> configure(GetIt container) async {
@@ -100,11 +135,8 @@ class TaggingModule implements DIModule {
       );
 
       // User-scoped ingredient repository for custom ingredients
-      container.registerLazySingleton<UserIngredientRepository>(
-        () => FirebaseUserIngredientRepository(
-          authRepository: container<AuthRepository>(),
-        ),
-      );
+      // UserIngredientRepository, PersonalTagCrudService, PersonalTagSharingService,
+      // PersonalTagService: registered in configureUserScope
 
       // Ingredient lookup service for matching recipe ingredients
       container.registerLazySingleton<IngredientLookupService>(
@@ -156,12 +188,6 @@ class TaggingModule implements DIModule {
       );
 
       // Personal tag sub-services (registered before facade)
-      container.registerLazySingleton<PersonalTagCrudService>(
-        () => PersonalTagCrudService(
-          tagRepository: container<FirebasePersonalTagRepository>(),
-          groupRepository: container<FirebasePersonalTagGroupRepository>(),
-        ),
-      );
 
       container.registerLazySingleton<PersonalTagRuleEvaluator>(
         () => PersonalTagRuleEvaluator(
@@ -169,22 +195,6 @@ class TaggingModule implements DIModule {
         ),
       );
 
-      container.registerLazySingleton<PersonalTagSharingService>(
-        () => PersonalTagSharingService(
-          tagRepository: container<FirebasePersonalTagRepository>(),
-        ),
-      );
-
-      // Personal tag facade - delegates to sub-services
-      container.registerLazySingleton<PersonalTagService>(
-        () => PersonalTagService(
-          crudService: container<PersonalTagCrudService>(),
-          ruleEvaluator: container<PersonalTagRuleEvaluator>(),
-          sharingService: container<PersonalTagSharingService>(),
-          tagRepository: container<FirebasePersonalTagRepository>(),
-          groupRepository: container<FirebasePersonalTagGroupRepository>(),
-        ),
-      );
       // Tag resolution service - unified tag data for recipes
       container.registerLazySingleton<TagResolutionService>(
         () => TagResolutionService(

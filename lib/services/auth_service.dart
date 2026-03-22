@@ -15,19 +15,6 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/services/presence_service.dart';
-import 'package:butlery/services/tagging/personal_tag_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/unified/unified_menu_service.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/notifications/notification_service.dart';
-import 'package:butlery/services/account/consent_service.dart';
-import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_user_ingredient_repository.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
 class AuthService extends ChangeNotifier
@@ -182,7 +169,7 @@ class AuthService extends ChangeNotifier
   Future<void> signOut() async {
     await executeAsync(() async {
       await DIContainer().popUserScope();
-      _resetSessionScopedServices();
+
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User signed out successfully');
@@ -196,7 +183,7 @@ class AuthService extends ChangeNotifier
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {
       await DIContainer().popUserScope();
-      _resetSessionScopedServices();
+
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User logged out due to session inactivity');
@@ -216,7 +203,7 @@ class AuthService extends ChangeNotifier
   Future<void> forceSignOut() async {
     try {
       await DIContainer().popUserScope();
-      _resetSessionScopedServices();
+
       await _authRepository.signOut();
     } catch (e) {
       AppLogger.error('Force sign out error: $e');
@@ -310,42 +297,6 @@ class AuthService extends ChangeNotifier
       setError(AppLocale.current.errorUnexpected);
       return false;
     }
-  }
-
-  /// Reset session-scoped services before sign-out to prevent stale timers/data.
-  void _resetSessionScopedServices() {
-    void safeReset(String name, void Function() fn) {
-      try {
-        fn();
-      } catch (e) {
-        AppLogger.warning('$name reset failed during sign-out: $e');
-      }
-    }
-
-    // PresenceService + NotificationService: handled by user scope disposal
-    safeReset('UnifiedRecipeService',
-        () => ServiceLocator.tryGet<UnifiedRecipeService>()?.resetForLogout());
-    // PermissionCacheService + IntelligentCacheManager: handled by user scope disposal
-    safeReset('ConsentService',
-        () => ServiceLocator.tryGet<ConsentService>()?.clearConsentCache());
-    safeReset('UserIngredientRepository', () {
-      final repo = ServiceLocator.tryGet<UserIngredientRepository>();
-      if (repo is FirebaseUserIngredientRepository) repo.clearAllCaches();
-    });
-    safeReset('PersonalTagService',
-        () => ServiceLocator.tryGet<PersonalTagService>()?.resetForLogout());
-    safeReset('UnifiedMenuService',
-        () => ServiceLocator.tryGet<UnifiedMenuService>()?.resetForLogout());
-    safeReset(
-        'UnifiedShoppingService',
-        () =>
-            ServiceLocator.tryGet<UnifiedShoppingService>()?.resetForLogout());
-    safeReset('OfflineService',
-        () => ServiceLocator.tryGet<OfflineService>()?.resetForLogout());
-    safeReset('UserService',
-        () => ServiceLocator.tryGet<UserService>()?.resetForLogout());
-    safeReset('UnifiedFriendsService',
-        () => ServiceLocator.tryGet<UnifiedFriendsService>()?.resetForLogout());
   }
 
   /// Send email verification to the current user.

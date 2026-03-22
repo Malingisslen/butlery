@@ -11,6 +11,7 @@ import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -61,7 +62,20 @@ class SocialContentFeatures {
   /// Performs friend loading through service coordination with error handling
   /// and social context management for sharing operations.
   static Future<List<UserProfile>> loadFriends(dynamic service) async {
-    return <UserProfile>[];
+    try {
+      if (service is UnifiedFriendsService) {
+        if (!service.isInitialized) {
+          await service.initialize();
+        }
+        return service.friends;
+      }
+      AppLogger.warning(
+          'loadFriends called with unsupported service type: ${service.runtimeType}');
+      return <UserProfile>[];
+    } catch (e) {
+      AppLogger.error('Failed to load friends for sharing', e);
+      return <UserProfile>[];
+    }
   }
 
   /// Updates share message with reactive state coordination and input management.

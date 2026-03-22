@@ -44,49 +44,52 @@ class CollaborationModule implements DIModule {
       40; // After Core (1), Content (10), Social (20), Messaging (30)
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    final app = GetIt.instance;
+
+    container.registerLazySingleton<RealtimeSyncService>(
+      () => RealtimeSyncService(
+        firestoreRepository: app<FirestoreRepository>(),
+        authRepository: app<AuthRepository>(),
+      ),
+    );
+
+    container.registerLazySingleton<UnifiedShoppingService>(
+      () => UnifiedShoppingService(
+        firestoreRepository: app<FirestoreRepository>(),
+        authRepository: app<AuthRepository>(),
+        shoppingRepository: app<ShoppingRepository>(),
+      ),
+      dispose: (s) => s.resetForLogout(),
+    );
+
+    container.registerLazySingleton<RealtimeMenuService>(
+      () => RealtimeMenuService(
+        syncService: container<RealtimeSyncService>(),
+        authService: app<AuthService>(),
+      ),
+    );
+
+    container.registerLazySingleton<RealtimeRecipeService>(
+      () => RealtimeRecipeService(
+        syncService: container<RealtimeSyncService>(),
+        permissionService: app<PermissionService>(),
+      ),
+    );
+  }
 
   @override
   Future<void> configure(GetIt container) async {
     try {
-      container.registerLazySingleton<RealtimeSyncService>(
-        () => RealtimeSyncService(
-          firestoreRepository: container<FirestoreRepository>(),
-          authRepository: container<AuthRepository>(),
-        ),
-      );
-
       container.registerLazySingleton<MenuCollaborationRepository>(
         () => FirebaseMenuCollaborationRepository(
           authRepository: container<AuthRepository>(),
         ),
       );
 
-      container.registerLazySingleton<RealtimeMenuService>(
-        () => RealtimeMenuService(
-          syncService: container<RealtimeSyncService>(),
-          authService: container<AuthService>(),
-        ),
-      );
-
       container.registerLazySingleton<ShoppingRepository>(
         () => FirebaseShoppingRepository(
           authRepository: container<AuthRepository>(),
-        ),
-      );
-
-      container.registerLazySingleton<UnifiedShoppingService>(
-        () => UnifiedShoppingService(
-          firestoreRepository: container<FirestoreRepository>(),
-          authRepository: container<AuthRepository>(),
-          shoppingRepository: container<ShoppingRepository>(),
-        ),
-      );
-
-      container.registerLazySingleton<RealtimeRecipeService>(
-        () => RealtimeRecipeService(
-          syncService: container<RealtimeSyncService>(),
-          permissionService: container<PermissionService>(),
         ),
       );
     } catch (e) {

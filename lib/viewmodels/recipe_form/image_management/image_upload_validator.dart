@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
+import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
@@ -134,6 +135,31 @@ class ImageUploadValidator {
     } catch (e) {
       AppLogger.error('Image size validation failed: $e');
       return false; // Fail closed — reject if we can't validate
+    }
+  }
+
+  /// Validate image content by checking magic bytes against file extension.
+  /// Returns true if the file's actual content matches a supported image format.
+  Future<bool> isValidImageContent(XFile imageFile) async {
+    try {
+      // Read first 12 bytes for magic-byte detection (enough for WebP RIFF header)
+      final bytes = await imageFile.readAsBytes();
+      if (bytes.length < 12) {
+        AppLogger.warning('Image file too small for format validation');
+        return false;
+      }
+
+      final headerBytes = bytes.take(12).toList();
+      if (!ImageFormatUtils.isSupportedImage(headerBytes)) {
+        AppLogger.warning(
+            'Image content does not match any supported format (magic bytes)');
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      AppLogger.error('Image content validation failed: $e');
+      return false;
     }
   }
 

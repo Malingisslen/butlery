@@ -317,6 +317,8 @@ class RecipeFormViewModel extends ChangeNotifier
   static const List<String> mealTypes = RecipeFormState.mealTypes;
   static const int maxImages = RecipeFormState.maxImages;
 
+  bool get isFirstRecipe => _persistenceManager.isFirstRecipe;
+
   Future<Recipe?> saveRecipe() async {
     return await _persistenceManager.saveRecipe(
       isCollaborative: isCollaborative,

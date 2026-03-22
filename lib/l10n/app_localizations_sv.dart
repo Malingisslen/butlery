@@ -5205,6 +5205,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeWaitWhileSaving => 'Vänta medan receptet sparas...';
 
   @override
+  String get celebrationFirstRecipeTitle => 'Grattis!';
+
+  @override
+  String celebrationFirstRecipeMessage(String recipeTitle) {
+    return 'Du har sparat ditt första recept: $recipeTitle. Välkommen till Butlery!';
+  }
+
+  @override
+  String get celebrationFirstRecipeContinue => 'Fortsätt';
+
+  @override
   String get recipeWriteNew => 'Skriv nytt recept';
 
   @override

@@ -9093,6 +9093,24 @@ abstract class AppLocalizations {
   /// **'Vänta medan receptet sparas...'**
   String get recipeWaitWhileSaving;
 
+  /// No description provided for @celebrationFirstRecipeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grattis!'**
+  String get celebrationFirstRecipeTitle;
+
+  /// No description provided for @celebrationFirstRecipeMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har sparat ditt första recept: {recipeTitle}. Välkommen till Butlery!'**
+  String celebrationFirstRecipeMessage(String recipeTitle);
+
+  /// No description provided for @celebrationFirstRecipeContinue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsätt'**
+  String get celebrationFirstRecipeContinue;
+
   /// No description provided for @recipeWriteNew.
   ///
   /// In sv, this message translates to:

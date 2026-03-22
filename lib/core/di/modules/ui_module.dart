@@ -130,7 +130,12 @@ class UIModule implements DIModule {
       100; // UI has lowest priority, runs after all other modules
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    container.registerLazySingleton<PersonalTagViewModel>(
+      () => PersonalTagViewModel(),
+      dispose: (s) => s.dispose(),
+    );
+  }
 
   @override
   Future<void> configure(GetIt container) async {
@@ -297,9 +302,7 @@ class UIModule implements DIModule {
       );
 
       // Personal Tag ViewModel - Singleton (holds Firestore stream)
-      container.registerLazySingleton<PersonalTagViewModel>(
-        () => PersonalTagViewModel(),
-      );
+      // PersonalTagViewModel: registered in configureUserScope
 
       // Onboarding ViewModel
       container.registerFactory<OnboardingViewModel>(

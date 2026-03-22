@@ -3311,6 +3311,16 @@
   },
   "recipeSaveStartedDuringDialog": "A save started during the dialog. Please wait while the recipe is saved...",
   "recipeWaitWhileSaving": "Please wait while the recipe is saved...",
+  "celebrationFirstRecipeTitle": "Congratulations!",
+  "celebrationFirstRecipeMessage": "You saved your first recipe: {recipeTitle}. Welcome to Butlery!",
+  "@celebrationFirstRecipeMessage": {
+    "placeholders": {
+      "recipeTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "celebrationFirstRecipeContinue": "Continue",
   "recipeWriteNew": "Write new recipe",
   "recipeAddItem": "Add {label}",
   "@recipeAddItem": {

@@ -87,7 +87,126 @@ class SocialModule implements DIModule {
   int get priority => 20;
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    final app = GetIt.instance;
+
+    container.registerLazySingleton<UserService>(
+      () => UserService(
+        repository: app<UserRepository>(),
+        authRepository: app<AuthRepository>(),
+      ),
+      dispose: (s) => s.resetForLogout(),
+    );
+
+    container.registerLazySingleton<UnifiedFriendsService>(
+      () => UnifiedFriendsService(
+        firestoreRepository: app<FirestoreRepository>(),
+        authRepository: app<AuthRepository>(),
+      ),
+      dispose: (s) => s.dispose(),
+    );
+
+    container.registerLazySingleton<SocialRecipeService>(
+      () => SocialRecipeService(
+        userService: container<UserService>(),
+        recipeService: container<UnifiedRecipeService>(),
+        permissionService: app<PermissionService>(),
+        sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
+        sharedMenuRepository: app<FirebaseSharedMenuRepository>(),
+        shoppingService: container.isRegistered<UnifiedShoppingService>()
+            ? container<UnifiedShoppingService>()
+            : null,
+      ),
+    );
+
+    container.registerLazySingleton<SocialRecipeCoordinator>(() {
+      final authRepo = app<AuthRepository>();
+      final userService = container<UserService>();
+      final recipeService = container<UnifiedRecipeService>();
+      return SocialRecipeCoordinator(
+        getCacheHelper: () => app<JsonCacheHelper>(),
+        getCurrentUserId: () => authRepo.currentUserId,
+        getCurrentUserDisplayName: () =>
+            userService.currentUserProfile?.displayName ?? 'Unknown User',
+        setError: (error) =>
+            AppLogger.error('SocialRecipeCoordinator error: $error'),
+        notifyListeners: () {},
+        getRecipe: (id) async => recipeService.getRecipeById(id),
+        saveRecipe: (recipe) async =>
+            await recipeService.saveRecipeForSocialModule(recipe),
+      );
+    });
+
+    container.registerLazySingleton<SocialMenuCoordinator>(() {
+      final authRepo = app<AuthRepository>();
+      final userService = container<UserService>();
+      final menuService = container<UnifiedMenuService>();
+      final firestoreRepo = app<FirestoreRepository>();
+      return SocialMenuCoordinator(
+        getCurrentUserId: () => authRepo.currentUserId,
+        getCurrentUserDisplayName: () =>
+            userService.currentUserProfile?.displayName ?? 'Unknown User',
+        setError: (error) =>
+            AppLogger.error('SocialMenuCoordinator error: $error'),
+        notifyListeners: () {},
+        getMenu: (id) async => menuService.getMenuById(id)?.menuSnapshot,
+        saveMenu: (Map<String, List<Recipe>> menu) async {
+          try {
+            final userId = authRepo.currentUserId;
+            final displayName =
+                userService.currentUserProfile?.displayName ?? 'Unknown User';
+            if (userId == null) return null;
+            final sharedMenu = SharedMenu.create(
+              sharedByUserId: userId,
+              sharedByDisplayName: displayName,
+              sharedToUserIds: [],
+              shareMessage: null,
+              menuTitle: 'Importerad meny',
+              menuSnapshot: menu,
+            );
+            final menuData = sharedMenu.toFirestore();
+            final docRef = await firestoreRepo.firestore
+                .collection(FirestoreCollections.menus)
+                .add(menuData);
+            return docRef.id;
+          } catch (e) {
+            AppLogger.error('Failed to save imported menu: $e');
+            return null;
+          }
+        },
+        cacheHelper: app<JsonCacheHelper>(),
+      );
+    });
+
+    container.registerLazySingleton<SocialShoppingCoordinator>(() {
+      final authRepo = app<AuthRepository>();
+      final userService = container<UserService>();
+      final shoppingService = container<UnifiedShoppingService>();
+      return SocialShoppingCoordinator(
+        getCurrentUserId: () => authRepo.currentUserId,
+        getCurrentUserDisplayName: () =>
+            userService.currentUserProfile?.displayName ?? 'Unknown User',
+        setError: (error) =>
+            AppLogger.error('SocialShoppingCoordinator error: $error'),
+        notifyListeners: () {},
+        getShoppingList: (id) async =>
+            shoppingService.lists.where((l) => l.id == id).firstOrNull,
+        saveShoppingList: (list) async {
+          AppLogger.warning(
+              'SocialShoppingCoordinator.saveShoppingList called unexpectedly');
+          return null;
+        },
+        cacheHelper: app<JsonCacheHelper>(),
+      );
+    });
+
+    container.registerLazySingleton<SocialMenuOperations>(
+      () => SocialMenuOperations(
+        firestore: app<FirestoreRepository>().firestore,
+        friendsService: container<UnifiedFriendsService>(),
+      ),
+    );
+  }
 
   @override
   Future<void> configure(GetIt container) async {
@@ -97,12 +216,8 @@ class SocialModule implements DIModule {
             FirebaseUserRepository(authRepository: container<AuthRepository>()),
       );
 
-      container.registerLazySingleton<UserService>(
-        () => UserService(
-          repository: container<UserRepository>(),
-          authRepository: container<AuthRepository>(),
-        ),
-      );
+      // UserService, UnifiedFriendsService, SocialRecipeService,
+      // coordinators, SocialMenuOperations: registered in configureUserScope
 
       container.registerLazySingleton<FriendsRepository>(
         () => FirebaseFriendsRepository(
@@ -112,15 +227,6 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<FirebaseBlockRepository>(
         () => FirebaseBlockRepository(
             authRepository: container<AuthRepository>()),
-      );
-
-      // Lazy registration for faster startup
-      container.registerLazySingleton<UnifiedFriendsService>(
-        () => UnifiedFriendsService(
-          firestoreRepository: container<FirestoreRepository>(),
-          authRepository: container<AuthRepository>(),
-        ),
-        dispose: (s) => s.dispose(),
       );
 
       container.registerLazySingleton<CommentsRepository>(
@@ -156,133 +262,6 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<FirebaseSharedShoppingRepository>(
         () => FirebaseSharedShoppingRepository(
             authRepository: container<AuthRepository>()),
-      );
-
-      // Note: SocialRecipeService registration is deferred to lazy singleton
-      // because it depends on services from other modules that may not be available yet
-      container.registerLazySingleton<SocialRecipeService>(
-        () => SocialRecipeService(
-          userService: container<UserService>(),
-          recipeService: container<UnifiedRecipeService>(),
-          permissionService: container<PermissionService>(),
-          sharedRecipeRepository: container<FirebaseSharedRecipeRepository>(),
-          sharedMenuRepository: container<FirebaseSharedMenuRepository>(),
-          shoppingService: container.isRegistered<UnifiedShoppingService>()
-              ? container<UnifiedShoppingService>()
-              : null,
-        ),
-      );
-
-      // Social coordinators for shared content operations
-      // These provide facade coordination for social recipe/menu/shopping features
-      container.registerLazySingleton<SocialRecipeCoordinator>(
-        () {
-          final authRepo = container<AuthRepository>();
-          final userService = container<UserService>();
-          final recipeService = container<UnifiedRecipeService>();
-
-          return SocialRecipeCoordinator(
-            getCacheHelper: () => container<JsonCacheHelper>(),
-            getCurrentUserId: () => authRepo.currentUserId,
-            getCurrentUserDisplayName: () =>
-                userService.currentUserProfile?.displayName ?? 'Unknown User',
-            setError: (error) =>
-                AppLogger.error('SocialRecipeCoordinator error: $error'),
-            notifyListeners: () {}, // Coordinators are services, not ViewModels
-            getRecipe: (id) async => recipeService.getRecipeById(id),
-            saveRecipe: (recipe) async {
-              return await recipeService.saveRecipeForSocialModule(recipe);
-            },
-          );
-        },
-      );
-
-      container.registerLazySingleton<SocialMenuCoordinator>(
-        () {
-          final authRepo = container<AuthRepository>();
-          final userService = container<UserService>();
-
-          final menuService = container<UnifiedMenuService>();
-          final firestoreRepo = container<FirestoreRepository>();
-
-          return SocialMenuCoordinator(
-            getCurrentUserId: () => authRepo.currentUserId,
-            getCurrentUserDisplayName: () =>
-                userService.currentUserProfile?.displayName ?? 'Unknown User',
-            setError: (error) =>
-                AppLogger.error('SocialMenuCoordinator error: $error'),
-            notifyListeners: () {}, // Coordinators are services, not ViewModels
-            getMenu: (id) async {
-              final sharedMenu = menuService.getMenuById(id);
-              return sharedMenu?.menuSnapshot;
-            },
-            saveMenu: (Map<String, List<Recipe>> menu) async {
-              try {
-                final userId = authRepo.currentUserId;
-                final displayName =
-                    userService.currentUserProfile?.displayName ??
-                        'Unknown User';
-
-                if (userId == null) {
-                  AppLogger.error('Cannot save menu: No authenticated user');
-                  return null;
-                }
-
-                // Create SharedMenu model for the imported menu
-                final sharedMenu = SharedMenu.create(
-                  sharedByUserId: userId,
-                  sharedByDisplayName: displayName,
-                  sharedToUserIds: [],
-                  shareMessage: null,
-                  menuTitle: 'Importerad meny',
-                  menuSnapshot: menu,
-                );
-
-                // Save to menus collection
-                final menuData = sharedMenu.toFirestore();
-                final docRef = await firestoreRepo.firestore
-                    .collection(FirestoreCollections.menus)
-                    .add(menuData);
-
-                AppLogger.success('✅ Saved imported menu: ${docRef.id}');
-                return docRef.id;
-              } catch (e) {
-                AppLogger.error('Failed to save imported menu: $e');
-                return null;
-              }
-            },
-            cacheHelper: container<JsonCacheHelper>(),
-          );
-        },
-      );
-
-      container.registerLazySingleton<SocialShoppingCoordinator>(
-        () {
-          final authRepo = container<AuthRepository>();
-          final userService = container<UserService>();
-
-          final shoppingService = container<UnifiedShoppingService>();
-
-          return SocialShoppingCoordinator(
-            getCurrentUserId: () => authRepo.currentUserId,
-            getCurrentUserDisplayName: () =>
-                userService.currentUserProfile?.displayName ?? 'Unknown User',
-            setError: (error) =>
-                AppLogger.error('SocialShoppingCoordinator error: $error'),
-            notifyListeners: () {}, // Coordinators are services, not ViewModels
-            getShoppingList: (id) async {
-              return shoppingService.lists.where((l) => l.id == id).firstOrNull;
-            },
-            saveShoppingList: (list) async {
-              // Shopping lists use direct collaboration (joinSharedShoppingList)
-              // so this save path is not expected to be reached
-              AppLogger.warning(
-                  '⚠️ SocialShoppingCoordinator.saveShoppingList called unexpectedly for list: ${list.name}');
-              return null;
-            },
-            cacheHelper: container<JsonCacheHelper>(),
-          );
-        },
       );
 
       // Content reporting repository and service
@@ -324,15 +303,6 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<ConnectivityMonitoringService>(
         () => ConnectivityMonitoringService(
           connectivityRepository: container<ConnectivityRepository>(),
-        ),
-      );
-
-      // Note: SocialMenuOperations depends on services that may not be available yet
-      // We'll register it as lazy singleton to defer creation
-      container.registerLazySingleton<SocialMenuOperations>(
-        () => SocialMenuOperations(
-          firestore: container<FirestoreRepository>().firestore,
-          friendsService: container<UnifiedFriendsService>(),
         ),
       );
 
