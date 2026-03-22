@@ -98,7 +98,7 @@ export const onProfileUpdated = functions
 
     // 4. Update friends subcollections via friends list lookup
     try {
-      if (nameChanged) {
+      if (nameChanged || avatarChanged) {
         const friendsSnapshot = await db
           .collection("users")
           .doc(userId)
@@ -110,9 +110,17 @@ export const onProfileUpdated = functions
           let batchCount = 0;
 
           for (const friendDoc of friendsSnapshot.docs) {
+            const friendUpdate: Record<string, unknown> = {};
+            if (nameChanged) {
+              friendUpdate.displayName = newName;
+              friendUpdate.displayNameLower = newName?.toLowerCase();
+            }
+            if (avatarChanged) {
+              friendUpdate.avatarUrl = newAvatar;
+            }
             batch.update(
               db.collection("users").doc(friendDoc.id).collection("friends").doc(userId),
-              { displayNameLower: newName?.toLowerCase() }
+              friendUpdate
             );
             batchCount++;
             totalUpdated++;
