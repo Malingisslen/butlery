@@ -20,6 +20,7 @@ dependencies:
   firebase_core: ^4.2.1        # Updated for CVE-2025-0838 fix
   firebase_auth: ^6.1.2        # Updated for security patches
   cloud_firestore: ^6.1.0      # Updated for CVE-2024-7254 fix
+  firebase_database: ^12.1.3   # Realtime Database for presence onDisconnect
   firebase_storage: ^13.0.4    # Updated for bug fixes
   firebase_analytics: ^12.0.4  # Updated for tracking improvements
   firebase_app_check: ^0.4.0
