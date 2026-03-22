@@ -7,7 +7,14 @@
 
 # The following line activates a set of recommended lints for Flutter apps,
 # packages, and plugins designed to encourage good coding practices.
+include: package:very_good_analysis/analysis_options.yaml
+
 analyzer:
+  language:
+    # Disable strict modes until existing code is migrated
+    strict-casts: false
+    strict-inference: false
+    strict-raw-types: false
   exclude:
     # Exclude generated files
     - "**/*.g.dart"
@@ -23,55 +30,40 @@ analyzer:
     missing_return: error
     # Firebase architecture enforcement
     depend_on_referenced_packages: error
-    
+
   # Custom analysis for architecture enforcement
   plugins:
     # Enable strict mode for architecture compliance
     - custom_lint
-    
-include: package:flutter_lints/flutter.yaml
 
 linter:
-  # The lint rules applied to this project can be customized in the
-  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
-  # included above or to enable additional rules. A list of all available lints
-  # and their documentation is published at https://dart.dev/lints.
-  #
-  # Instead of disabling a lint rule for the entire project in the
-  # section below, it can also be suppressed for a single line of code
-  # or a specific dart file by using the `// ignore: name_of_lint` and
-  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
-  # producing the lint.
   rules:
     # Architecture enforcement rules
     always_use_package_imports: true
-    # avoid_relative_imports_for_files_in_lib: true # Not available in current Flutter SDK
-    
+
     # Code quality rules
-    avoid_print: true  # Prevents print() in production - use AppLogger or wrap debugPrint in kDebugMode
+    avoid_print: true
     prefer_single_quotes: true
     prefer_const_constructors: true
     prefer_const_declarations: true
     prefer_final_fields: true
     prefer_final_locals: true
     use_key_in_widget_constructors: true
-    
+
     # Architecture and dependency rules
     prefer_mixin: true
-    # sort_constructors_first: true # Disabled - too noisy for existing codebase
-    # sort_unnamed_constructors_first: true # Disabled - too noisy for existing codebase
-    
-    # File size and complexity rules (helps enforce SRP)
-    lines_longer_than_80_chars: false # Allow longer lines for readability
-    
+
+    # File size and complexity rules
+    lines_longer_than_80_chars: false
+
     # Documentation rules
-    public_member_api_docs: false # Too strict for existing code
-    
+    public_member_api_docs: false
+
     # Async rules
     avoid_void_async: true
     cancel_subscriptions: true
     close_sinks: true
-    
+
     # Security and best practices
     avoid_web_libraries_in_flutter: true
     no_logic_in_create_state: true
@@ -79,6 +71,74 @@ linter:
     sized_box_shrink_expand: true
     use_colored_box: true
     use_decorated_box: true
+
+    # Disabled very_good_analysis rules — too noisy for existing codebase
+    # Enable incrementally as code is cleaned up
+    require_trailing_commas: false
+    directives_ordering: false
+    avoid_redundant_argument_values: false
+    avoid_catches_without_on_clauses: false
+    sort_constructors_first: false
+    cascade_invocations: false
+    omit_local_variable_types: false
+    always_put_required_named_parameters_first: false
+    prefer_int_literals: false
+    discarded_futures: false
+    unnecessary_await_in_return: false
+    avoid_dynamic_calls: false
+    unnecessary_lambdas: false
+    cast_nullable_to_non_nullable: false
+    unnecessary_breaks: false
+    use_setters_to_change_properties: false
+    one_member_abstracts: false
+    use_if_null_to_convert_nulls_to_bools: false
+    join_return_with_assignment: false
+    prefer_constructors_over_static_methods: false
+    avoid_bool_literals_in_conditional_expressions: false
+    prefer_asserts_with_message: false
+    avoid_positional_boolean_parameters: false
+    avoid_returning_this: false
+    unawaited_futures: false
+    unreachable_from_main: false
+    avoid_equals_and_hash_code_on_mutable_classes: false
+    document_ignores: false
+    unnecessary_parenthesis: false
+    use_named_constants: false
+    unnecessary_raw_strings: false
+    noop_primitive_operations: false
+    only_throw_errors: false
+    avoid_escaping_inner_quotes: false
+    comment_references: false
+    no_default_cases: false
+    use_raw_strings: false
+    leading_newlines_in_multiline_strings: false
+    avoid_unused_constructor_parameters: false
+    prefer_foreach: false
+    use_is_even_rather_than_modulo: false
+    unnecessary_null_checks: false
+    matching_super_parameters: false
+    unnecessary_ignore: false
+    use_enums: false
+    prefer_expression_function_bodies: false
+    flutter_style_todos: false
+    specify_nonobvious_property_types: false
+    no_literal_bool_comparisons: false
+    parameter_assignments: false
+    prefer_final_in_for_each: false
+    avoid_slow_async_io: false
+    missing_code_block_language_in_doc_comment: false
+    no_runtimeType_toString: false
+    combinators_ordering: false
+    use_late_for_private_fields_and_variables: false
+    sort_unnamed_constructors_first: false
+    sort_pub_dependencies: false
+    prefer_if_elements_to_conditional_expressions: false
+    no_self_assignments: false
+    missing_whitespace_between_adjacent_strings: false
+    avoid_catching_errors: false
+    unnecessary_library_directive: false
+    avoid_multiple_declarations_per_line: false
+    switch_on_type: false
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
