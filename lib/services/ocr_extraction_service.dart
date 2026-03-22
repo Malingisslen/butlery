@@ -642,14 +642,12 @@ class OCRExtractionService extends BaseService {
     };
   }
 
-  /// Clear OCR cache
-
   /// Clear cache for testing
   static void clearCacheForTesting() => instance.clearAllCache();
 
-  /// Dispose OCR service
   @override
   Future<void> dispose() async {
     _cache.clear();
+    await super.dispose();
   }
 }
