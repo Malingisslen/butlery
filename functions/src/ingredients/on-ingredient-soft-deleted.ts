@@ -12,6 +12,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { batchUpdateDocs } from "../shared/batch-update";
+import { Collections } from "../shared/collections";
 
 import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
 
@@ -66,7 +67,7 @@ export const onIngredientSoftDeleted = functions.firestore
       // CRIT-5: Use Swedish-normalized name to match Dart-side storage
       // (ingredientsNormalized stores å→a, ä→a, ö→o transformed names)
       const recipesSnapshot = await getDb()
-        .collection("recipes")
+        .collection(Collections.recipes)
         .where(
           "core.ingredientsNormalized",
           "array-contains",
