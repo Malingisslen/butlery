@@ -79,8 +79,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   /// Cached category progress
   Map<String, ({int total, int completed})>? _categoryProgressCache;
 
-  /// Last items list identity for cache invalidation
-  List<UnifiedShoppingItem>? _lastItems;
+  /// Last items snapshot for cache invalidation
+  int _lastItemCount = -1;
+  int _lastCompletedCount = -1;
 
   void _invalidateCaches() {
     _pendingByCategory = null;
@@ -88,12 +89,19 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     _completedByCategory = null;
     _completedSortedKeys = null;
     _categoryProgressCache = null;
-    _lastItems = null;
+    _lastItemCount = -1;
+    _lastCompletedCount = -1;
   }
 
   void _ensureCaches(UnifiedShoppingViewModel viewModel) {
-    if (identical(_lastItems, viewModel.items)) return;
-    _lastItems = viewModel.items;
+    final items = viewModel.items;
+    final completedCount = items.where((i) => i.isCompleted).length;
+    if (items.length == _lastItemCount &&
+        completedCount == _lastCompletedCount) {
+      return;
+    }
+    _lastItemCount = items.length;
+    _lastCompletedCount = completedCount;
 
     // Compute category progress
     final progress = <String, ({int total, int completed})>{};

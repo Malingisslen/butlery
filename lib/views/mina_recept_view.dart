@@ -53,7 +53,6 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/models/tagging/personal_tag.dart';
 
 /// Personal recipe management view with multi-provider architecture.
 class MinaReceptView extends StatefulWidget {
@@ -364,8 +363,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final viewModel = context.watch<RecipeListViewModel>();
     final isOnline = context
         .select<offline_service.OfflineService, bool>((svc) => svc.isOnline);
-    final personalTags = context
-        .select<PersonalTagViewModel, List<PersonalTag>>((vm) => vm.tags);
+    final personalTags = context.watch<PersonalTagViewModel>().tags;
     final recipeCount = viewModel.recipes.length;
 
     // Selection mode uses a different app bar
