@@ -1,7 +1,8 @@
 import * as admin from "firebase-admin";
+import { BATCH_LIMIT } from "./batch-update";
 
 /**
- * Batch-delete all documents in a snapshot, committing every 500 (Firestore limit).
+ * Batch-delete all documents in a snapshot, committing every BATCH_LIMIT ops.
  * Returns the number of documents deleted.
  */
 export async function batchDeleteDocs(
@@ -17,7 +18,7 @@ export async function batchDeleteDocs(
     batchCount++;
     deleted++;
 
-    if (batchCount >= 500) {
+    if (batchCount >= BATCH_LIMIT) {
       await batch.commit();
       batch = db.batch();
       batchCount = 0;

@@ -126,9 +126,9 @@ export const trackUnmatchedIngredients = functions.firestore
         if (!normalizedName) continue;
 
         const docRef = db
-          .collection("ingredientAnalytics")
-          .doc("unmatched")
-          .collection("items")
+          .collection("analytics")
+          .doc("ingredients")
+          .collection("unmatched")
           .doc(normalizedName);
 
         const doc = await docRef.get();
@@ -168,9 +168,9 @@ export const getUnmatchedIngredientStats = functions.https.onCall(
     const limit = data?.limit || 50;
 
     const snapshot = await db
-      .collection("ingredientAnalytics")
-      .doc("unmatched")
-      .collection("items")
+      .collection("analytics")
+      .doc("ingredients")
+      .collection("unmatched")
       .orderBy("count", "desc")
       .limit(limit)
       .get();
