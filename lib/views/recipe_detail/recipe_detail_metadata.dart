@@ -73,8 +73,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       metadataWidgets.add(Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.access_time, size: 16, color: cs.primary),
-          const SizedBox(width: 4),
+          Icon(Icons.access_time,
+              size: AppDimensions.iconSizeS, color: cs.primary),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(
             TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
             style: AppTextStyles.bodySmall.copyWith(
@@ -91,8 +92,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       metadataWidgets.add(Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.person_outline, size: 16, color: cs.primary),
-          const SizedBox(width: 4),
+          Icon(Icons.person_outline,
+              size: AppDimensions.iconSizeS, color: cs.primary),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(
             '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
             style: AppTextStyles.bodySmall.copyWith(
@@ -147,7 +149,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           side: BorderSide(color: context.butleryColors.success, width: 0.5),
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingSm,
-            vertical: 2,
+            vertical: AppDimensions.spacingXxs,
           ),
           minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,

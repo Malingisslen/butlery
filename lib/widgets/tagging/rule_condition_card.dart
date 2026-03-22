@@ -65,8 +65,8 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                     decoration: const InputDecoration(
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                        horizontal: AppDimensions.paddingM,
+                        vertical: AppDimensions.paddingMs,
                       ),
                       border: OutlineInputBorder(),
                     ),
@@ -98,8 +98,8 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                     decoration: const InputDecoration(
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                        horizontal: AppDimensions.paddingM,
+                        vertical: AppDimensions.paddingMs,
                       ),
                       border: OutlineInputBorder(),
                     ),
@@ -131,8 +131,8 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.paddingM,
                 ),
                 hintText: _getHintText(widget.condition.type),
                 border: const OutlineInputBorder(),

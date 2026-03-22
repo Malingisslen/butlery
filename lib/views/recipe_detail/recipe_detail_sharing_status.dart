@@ -240,7 +240,7 @@ class _ShareeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXxs),
       child: Row(
         children: [
           Icon(icon, size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),

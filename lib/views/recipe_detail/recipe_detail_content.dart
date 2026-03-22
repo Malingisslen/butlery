@@ -221,7 +221,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                 InkWell(
                   onTap: () => _showSubstitutionSheet(context, parsed.name),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppDimensions.spacingModerate),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

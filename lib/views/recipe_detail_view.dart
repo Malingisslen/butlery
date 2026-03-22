@@ -195,7 +195,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 foregroundColor: cs.onSurface,
                 // UI Redesign: Custom leading widget (back button)
                 leading: Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: AppDimensions.paddingAll8,
                   child: _HeroButton(
                     icon: Icons.arrow_back,
                     onPressed: () => Navigator.pop(context),
@@ -263,7 +263,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 actions: [
                   // Start cooking mode
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: AppDimensions.paddingVertical8,
                     child: _HeroButton(
                       icon: Icons.restaurant,
                       onPressed: () => Navigator.pushNamed(
@@ -276,7 +276,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   ),
                   // Favorite toggle
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: AppDimensions.paddingVertical8,
                     child: _HeroButton(
                       icon: recipe.isFavorite
                           ? Icons.favorite
@@ -289,7 +289,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   ),
                   // Internal sharing with friends and groups
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: AppDimensions.paddingVertical8,
                     child: _HeroButton(
                       icon: Icons.people_outline,
                       onPressed: () => _actions.showSocialShareDialog(context),
@@ -298,7 +298,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   ),
                   // External sharing
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: AppDimensions.paddingVertical8,
                     child: _HeroButton(
                       icon: Icons.share_outlined,
                       onPressed: () => _actions.shareRecipe(context),
@@ -307,7 +307,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   ),
                   // More actions menu
                   Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 8, right: 8),
+                    padding: const EdgeInsets.only(
+                        top: AppDimensions.spacingSm,
+                        bottom: AppDimensions.spacingSm,
+                        right: AppDimensions.spacingSm),
                     child: _HeroMenuButton(
                       icon: Icons.more_horiz,
                       itemBuilder: (context) {
