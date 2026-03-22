@@ -136,7 +136,7 @@ class MessagingMediaService extends BaseService {
         (prev, chunk) => prev..addAll(chunk),
       );
       if (!ImageFormatUtils.isSupportedImage(headerBytes)) {
-        AppLogger.error('❌ Unsupported image format: $imagePath');
+        AppLogger.error('❌ Unsupported image format: ${path.extension(imagePath)}');
         return false;
       }
 

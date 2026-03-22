@@ -51,13 +51,8 @@ class ImageFormatUtils {
     return 'image/jpeg';
   }
 
-  static bool _startsWith(List<int> data, List<int> prefix) {
-    if (data.length < prefix.length) return false;
-    for (var i = 0; i < prefix.length; i++) {
-      if (data[i] != prefix[i]) return false;
-    }
-    return true;
-  }
+  static bool _startsWith(List<int> data, List<int> prefix) =>
+      _matchesAt(data, 0, prefix);
 
   static bool _matchesAt(List<int> data, int offset, List<int> pattern) {
     if (data.length < offset + pattern.length) return false;

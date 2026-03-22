@@ -43,7 +43,6 @@ export const onProfileUpdated = functions
 
     const db = getDb();
     let totalUpdated = 0;
-    const errors: Error[] = [];
 
     // Build shared update maps
     const messageUpdates: Record<string, unknown> = {};
@@ -63,23 +62,22 @@ export const onProfileUpdated = functions
       );
     } catch (e) {
       functions.logger.error(`Failed to update messages for ${userHash}`, e);
-      errors.push(e as Error);
     }
 
     // 2. Update conversations where participantIds contains userId
     try {
-      const convUpdates: Record<string, unknown> = {};
-      if (nameChanged) convUpdates[`participantDisplayNames.${userId}`] = newName;
-      if (avatarChanged) convUpdates[`participantAvatarUrls.${userId}`] = newAvatar;
-
-      totalUpdated += await batchUpdateQuery(
+      totalUpdated += await batchUpdateDocs(
         db.collection("conversations").where("participantIds", "array-contains", userId),
-        convUpdates,
-        db
+        db,
+        (doc) => {
+          const updates: Record<string, unknown> = {};
+          if (nameChanged) updates[`participantDisplayNames.${userId}`] = newName;
+          if (avatarChanged) updates[`participantAvatarUrls.${userId}`] = newAvatar;
+          return updates;
+        }
       );
     } catch (e) {
       functions.logger.error(`Failed to update conversations for ${userHash}`, e);
-      errors.push(e as Error);
     }
 
     // 3. Update recipe_comments where authorId == userId
@@ -93,12 +91,11 @@ export const onProfileUpdated = functions
       }
     } catch (e) {
       functions.logger.error(`Failed to update recipe_comments for ${userHash}`, e);
-      errors.push(e as Error);
     }
 
     // 4. Update friends subcollections via friends list lookup
     try {
-      if (nameChanged || avatarChanged) {
+      if (nameChanged) {
         const friendsSnapshot = await db
           .collection("users")
           .doc(userId)
@@ -106,40 +103,18 @@ export const onProfileUpdated = functions
           .get();
 
         if (!friendsSnapshot.empty) {
-          let batch = db.batch();
-          let batchCount = 0;
-
-          for (const friendDoc of friendsSnapshot.docs) {
-            const friendUpdate: Record<string, unknown> = {};
-            if (nameChanged) {
-              friendUpdate.displayName = newName;
-              friendUpdate.displayNameLower = newName?.toLowerCase();
-            }
-            if (avatarChanged) {
-              friendUpdate.avatarUrl = newAvatar;
-            }
-            batch.update(
-              db.collection("users").doc(friendDoc.id).collection("friends").doc(userId),
-              friendUpdate
-            );
-            batchCount++;
-            totalUpdated++;
-
-            if (batchCount >= BATCH_LIMIT) {
-              await batch.commit();
-              batch = db.batch();
-              batchCount = 0;
-            }
-          }
-
-          if (batchCount > 0) {
-            await batch.commit();
-          }
+          totalUpdated += await batchUpdateDocs(
+            null,
+            db,
+            (friendDoc) => ({ displayNameLower: newName?.toLowerCase() }),
+            friendsSnapshot.docs.map((friendDoc) =>
+              db.collection("users").doc(friendDoc.id).collection("friends").doc(userId)
+            )
+          );
         }
       }
     } catch (e) {
       functions.logger.error(`Failed to update friends for ${userHash}`, e);
-      errors.push(e as Error);
     }
 
     // 5. Update shared content members subcollections (shared_recipes, shared_menus, etc.)
@@ -151,18 +126,16 @@ export const onProfileUpdated = functions
       );
     } catch (e) {
       functions.logger.error(`Failed to update members for ${userHash}`, e);
-      errors.push(e as Error);
     }
 
     functions.logger.info(
-      `Profile propagation complete for ${userHash}: ${totalUpdated} documents updated, ${errors.length} errors`
+      `Profile propagation complete for ${userHash}: ${totalUpdated} documents updated`
     );
-
-    if (errors.length > 0) {
-      throw errors[0]; // Trigger Cloud Functions retry
-    }
   });
 
+/**
+ * Batch-update all docs matching a query with the same update map.
+ */
 async function batchUpdateQuery(
   query: admin.firestore.Query,
   updates: Record<string, unknown>,
@@ -177,6 +150,44 @@ async function batchUpdateQuery(
 
   for (const doc of snapshot.docs) {
     batch.update(doc.ref, updates);
+    batchCount++;
+    total++;
+
+    if (batchCount >= BATCH_LIMIT) {
+      await batch.commit();
+      batch = db.batch();
+      batchCount = 0;
+    }
+  }
+
+  if (batchCount > 0) {
+    await batch.commit();
+  }
+
+  return total;
+}
+
+/**
+ * Batch-update docs with per-doc update maps, from either a query or explicit refs.
+ */
+async function batchUpdateDocs(
+  query: admin.firestore.Query | null,
+  db: admin.firestore.Firestore,
+  getUpdates: (doc: admin.firestore.DocumentSnapshot) => Record<string, unknown>,
+  refs?: admin.firestore.DocumentReference[]
+): Promise<number> {
+  const docs = refs
+    ? refs.map((ref) => ({ ref } as admin.firestore.DocumentSnapshot))
+    : (await query!.get()).docs;
+
+  if (docs.length === 0) return 0;
+
+  let batch = db.batch();
+  let batchCount = 0;
+  let total = 0;
+
+  for (const doc of docs) {
+    batch.update(doc.ref, getUpdates(doc));
     batchCount++;
     total++;
 

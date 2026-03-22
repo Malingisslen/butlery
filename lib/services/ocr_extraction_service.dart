@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 
@@ -585,24 +586,8 @@ class OCRExtractionService extends BaseService {
     _cache[imageHash] = result;
   }
 
-  /// Basic image format validation
   bool _isValidImageFormat(Uint8List bytes) {
-    if (bytes.length < 4) return false;
-
-    // Check JPEG
-    if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
-      return true;
-    }
-
-    // Check PNG
-    if (bytes[0] == 0x89 &&
-        bytes[1] == 0x50 &&
-        bytes[2] == 0x4E &&
-        bytes[3] == 0x47) {
-      return true;
-    }
-
-    return false;
+    return ImageFormatUtils.isSupportedImage(bytes);
   }
 
   /// Get comprehensive OCR service status

@@ -7,6 +7,7 @@
 import 'dart:typed_data';
 
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/image_format_utils.dart';
 
 /// Mode for structuring recipe text.
 enum StructureMode {
@@ -130,27 +131,7 @@ class OcrRecipeImageRequest {
   }
 
   static String _detectMimeType(Uint8List bytes) {
-    if (bytes.length < 4) return 'image/jpeg';
-
-    // Check magic bytes
-    if (bytes[0] == 0xFF && bytes[1] == 0xD8) return 'image/jpeg';
-    if (bytes[0] == 0x89 &&
-        bytes[1] == 0x50 &&
-        bytes[2] == 0x4E &&
-        bytes[3] == 0x47) {
-      return 'image/png';
-    }
-    if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
-      return 'image/gif';
-    }
-    if (bytes[0] == 0x52 &&
-        bytes[1] == 0x49 &&
-        bytes[2] == 0x46 &&
-        bytes[3] == 0x46) {
-      return 'image/webp';
-    }
-
-    return 'image/jpeg'; // Default
+    return ImageFormatUtils.detectMimeType(bytes) ?? 'image/jpeg';
   }
 }
 
