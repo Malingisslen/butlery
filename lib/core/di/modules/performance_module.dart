@@ -49,7 +49,19 @@ class PerformanceModule implements DIModule {
       15; // Medium priority - cache infrastructure needed by Social module (priority 20)
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    container.registerLazySingleton<IntelligentCacheManager>(
+      () => IntelligentCacheManager(),
+      dispose: (s) => s.clearCache(),
+    );
+
+    container.registerLazySingleton<PermissionCacheService>(
+      () => PermissionCacheService(
+        featureFlags: GetIt.instance.get<FeatureFlagService>(),
+      ),
+      dispose: (s) => s.invalidateAll(),
+    );
+  }
 
   @override
   Future<void> configure(GetIt container) async {
@@ -63,11 +75,6 @@ class PerformanceModule implements DIModule {
         );
       });
 
-      // Intelligent cache manager (lazy singleton - initialized on first use)
-      container.registerLazySingleton<IntelligentCacheManager>(
-        () => IntelligentCacheManager(),
-      );
-
       // Performance monitoring service
       container.registerLazySingleton<PerformanceMonitoringService>(
         () => PerformanceMonitoringService(),
@@ -76,13 +83,6 @@ class PerformanceModule implements DIModule {
       // App monitoring service for alerting integration
       container.registerLazySingleton<AppMonitoringService>(
         () => AppMonitoringService(),
-      );
-
-      // Permission cache service (lazy singleton - requires FeatureFlagService)
-      container.registerLazySingleton<PermissionCacheService>(
-        () => PermissionCacheService(
-          featureFlags: container<FeatureFlagService>(),
-        ),
       );
     } catch (e) {
       throw DIModuleException(

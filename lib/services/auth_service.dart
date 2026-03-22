@@ -25,9 +25,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
-import 'package:butlery/services/cache/permission_cache_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
-import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_user_ingredient_repository.dart';
 
@@ -324,18 +322,12 @@ class AuthService extends ChangeNotifier
       }
     }
 
-    safeReset('PresenceService',
-        () => ServiceLocator.tryGet<PresenceService>()?.resetForLogout());
+    // PresenceService + NotificationService: handled by user scope disposal
     safeReset('UnifiedRecipeService',
         () => ServiceLocator.tryGet<UnifiedRecipeService>()?.resetForLogout());
-    safeReset('NotificationService',
-        () => ServiceLocator.tryGet<NotificationService>()?.resetForLogout());
-    safeReset('PermissionCacheService',
-        () => ServiceLocator.tryGet<PermissionCacheService>()?.invalidateAll());
+    // PermissionCacheService + IntelligentCacheManager: handled by user scope disposal
     safeReset('ConsentService',
         () => ServiceLocator.tryGet<ConsentService>()?.clearConsentCache());
-    safeReset('IntelligentCacheManager',
-        () => ServiceLocator.tryGet<IntelligentCacheManager>()?.clearCache());
     safeReset('UserIngredientRepository', () {
       final repo = ServiceLocator.tryGet<UserIngredientRepository>();
       if (repo is FirebaseUserIngredientRepository) repo.clearAllCaches();

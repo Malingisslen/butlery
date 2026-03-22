@@ -81,7 +81,37 @@ class MessagingModule implements DIModule {
   int get priority => 30; // After Core (1), Content (10), and Social (20)
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    final appScope = GetIt.instance;
+
+    container.registerLazySingleton<MessagingService>(
+      () => MessagingService(
+        messagingRepository: appScope<MessagingRepository>(),
+        authRepository: appScope<AuthRepository>(),
+        reactionsService: appScope<MessageReactionsService>(),
+      ),
+    );
+
+    container.registerLazySingleton<PresenceService>(
+      () => PresenceService(
+        firestoreRepository: appScope<FirestoreRepository>(),
+        authRepository: appScope<AuthRepository>(),
+        database: FirebaseDatabase.instance,
+      ),
+      dispose: (s) => s.dispose(),
+    );
+
+    container.registerLazySingleton<NotificationService>(
+      () => NotificationService(
+        notificationsRepository: appScope<NotificationsRepository>(),
+        authRepository: appScope<AuthRepository>(),
+        historyRepository: appScope<NotificationHistoryRepository>(),
+        batchRepository: appScope<NotificationBatchRepository>(),
+        deviceRepository: appScope<DeviceRepository>(),
+      ),
+      dispose: (s) => s.dispose(),
+    );
+  }
 
   @override
   Future<void> configure(GetIt container) async {
@@ -110,24 +140,7 @@ class MessagingModule implements DIModule {
         ),
       );
 
-      // MessagingService - handles direct messaging with FCM integration
-      container.registerLazySingleton<MessagingService>(
-        () => MessagingService(
-          messagingRepository: container<MessagingRepository>(),
-          authRepository: container<AuthRepository>(),
-          reactionsService: container<MessageReactionsService>(),
-        ),
-      );
-
-      // PresenceService - handles online/offline status and typing indicators
-      container.registerLazySingleton<PresenceService>(
-        () => PresenceService(
-          firestoreRepository: container<FirestoreRepository>(),
-          authRepository: container<AuthRepository>(),
-          database: FirebaseDatabase.instance,
-        ),
-        dispose: (s) => s.dispose(),
-      );
+      // MessagingService, PresenceService, NotificationService: registered in configureUserScope
 
       // Notification history repository for dedup and delivery tracking
       container.registerLazySingleton<NotificationHistoryRepository>(
@@ -150,17 +163,7 @@ class MessagingModule implements DIModule {
         ),
       );
 
-      // NotificationService - coordinated notification delivery with FCM
-      container.registerLazySingleton<NotificationService>(
-        () => NotificationService(
-          notificationsRepository: container<NotificationsRepository>(),
-          authRepository: container<AuthRepository>(),
-          historyRepository: container<NotificationHistoryRepository>(),
-          batchRepository: container<NotificationBatchRepository>(),
-          deviceRepository: container<DeviceRepository>(),
-        ),
-        dispose: (s) => s.dispose(),
-      );
+      // NotificationService: registered in configureUserScope
     } catch (e) {
       throw DIModuleException(
         name,
