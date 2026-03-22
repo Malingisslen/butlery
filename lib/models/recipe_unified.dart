@@ -22,6 +22,9 @@ import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/recipe/recipe_serialization.dart';
 
+/// Sentinel value for copyWith methods — distinguishes "not provided" from null.
+const _sentinel = Object();
+
 /// Enumeration defining the different types of recipes and their behavior.
 /// Recipe types determine the sharing model, editing permissions, and
 /// collaboration features available for a recipe:
@@ -324,36 +327,37 @@ class RecipeCore with JsonSerializableMixin {
     return personalTagIds!.every(tagIdSet.contains);
   }
 
-  /// Create copy with updated values
+  /// Create copy with updated values.
+  /// Uses sentinel pattern so passing null explicitly clears nullable fields.
   /// Note: If critical fields (title, ingredients, instructions) change,
   /// the checksum is automatically recomputed.
   RecipeCore copyWith({
     String? title,
     String? description,
-    int? portions,
-    int? timeMinutes,
+    Object? portions = _sentinel,
+    Object? timeMinutes = _sentinel,
     List<String>? ingredients,
     List<String>? instructions,
-    List<String>? personalTagIds,
-    List<RecipePersonalTag>? personalTags,
-    double? rating,
+    Object? personalTagIds = _sentinel,
+    Object? personalTags = _sentinel,
+    Object? rating = _sentinel,
     String? mealType,
-    String? sourceUrl,
+    Object? sourceUrl = _sentinel,
     List<String>? imageUrls,
-    String? thumbnailUrl,
+    Object? thumbnailUrl = _sentinel,
     DateTime? updatedAt,
-    String? createdBy,
+    Object? createdBy = _sentinel,
     bool? isPublic,
-    DateTime? lastCookedAt,
-    List<String>? ingredientsNormalized,
-    int? ratingCount,
-    double? averageRating,
-    Map<int, int>? ratingDistribution,
-    DateTime? lastRatedAt,
-    String? dataChecksum,
-    TagResult? tagResult,
-    TagOverrides? tagOverrides,
-    int? personalTagVersion,
+    Object? lastCookedAt = _sentinel,
+    Object? ingredientsNormalized = _sentinel,
+    Object? ratingCount = _sentinel,
+    Object? averageRating = _sentinel,
+    Object? ratingDistribution = _sentinel,
+    Object? lastRatedAt = _sentinel,
+    Object? dataChecksum = _sentinel,
+    Object? tagResult = _sentinel,
+    Object? tagOverrides = _sentinel,
+    Object? personalTagVersion = _sentinel,
     bool? isFavorite,
     DataIntegrityStatus? dataIntegrityStatus,
   }) {
@@ -364,6 +368,8 @@ class RecipeCore with JsonSerializableMixin {
     // Recompute checksum if critical fields changed
     final needsChecksumUpdate =
         title != null || ingredients != null || instructions != null;
+    final resolvedChecksum =
+        dataChecksum == _sentinel ? this.dataChecksum : dataChecksum as String?;
     final newChecksum = needsChecksumUpdate
         ? computeChecksum(
             id: id,
@@ -371,7 +377,7 @@ class RecipeCore with JsonSerializableMixin {
             ingredients: newIngredients,
             instructions: newInstructions,
           )
-        : (dataChecksum ?? this.dataChecksum);
+        : resolvedChecksum;
 
     // Set status to valid when checksum is recomputed
     final newIntegrityStatus = needsChecksumUpdate
@@ -382,32 +388,54 @@ class RecipeCore with JsonSerializableMixin {
       id: id,
       title: newTitle,
       description: description ?? this.description,
-      portions: portions ?? this.portions,
-      timeMinutes: timeMinutes ?? this.timeMinutes,
+      portions: portions == _sentinel ? this.portions : portions as int?,
+      timeMinutes:
+          timeMinutes == _sentinel ? this.timeMinutes : timeMinutes as int?,
       ingredients: newIngredients,
       instructions: newInstructions,
-      personalTagIds: personalTagIds ?? this.personalTagIds,
-      personalTags: personalTags ?? this.personalTags,
-      rating: rating ?? this.rating,
+      personalTagIds: personalTagIds == _sentinel
+          ? this.personalTagIds
+          : personalTagIds as List<String>?,
+      personalTags: personalTags == _sentinel
+          ? this.personalTags
+          : personalTags as List<RecipePersonalTag>?,
+      rating: rating == _sentinel ? this.rating : rating as double?,
       mealType: mealType ?? this.mealType,
-      sourceUrl: sourceUrl ?? this.sourceUrl,
+      sourceUrl: sourceUrl == _sentinel ? this.sourceUrl : sourceUrl as String?,
       imageUrls: imageUrls ?? this.imageUrls,
-      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      thumbnailUrl: thumbnailUrl == _sentinel
+          ? this.thumbnailUrl
+          : thumbnailUrl as String?,
       createdAt: createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
-      createdBy: createdBy ?? this.createdBy,
+      createdBy: createdBy == _sentinel ? this.createdBy : createdBy as String?,
       isPublic: isPublic ?? this.isPublic,
-      lastCookedAt: lastCookedAt ?? this.lastCookedAt,
-      ingredientsNormalized:
-          ingredientsNormalized ?? this.ingredientsNormalized,
-      ratingCount: ratingCount ?? this.ratingCount,
-      averageRating: averageRating ?? this.averageRating,
-      ratingDistribution: ratingDistribution ?? this.ratingDistribution,
-      lastRatedAt: lastRatedAt ?? this.lastRatedAt,
+      lastCookedAt: lastCookedAt == _sentinel
+          ? this.lastCookedAt
+          : lastCookedAt as DateTime?,
+      ingredientsNormalized: ingredientsNormalized == _sentinel
+          ? this.ingredientsNormalized
+          : ingredientsNormalized as List<String>?,
+      ratingCount:
+          ratingCount == _sentinel ? this.ratingCount : ratingCount as int?,
+      averageRating: averageRating == _sentinel
+          ? this.averageRating
+          : averageRating as double?,
+      ratingDistribution: ratingDistribution == _sentinel
+          ? this.ratingDistribution
+          : ratingDistribution as Map<int, int>?,
+      lastRatedAt: lastRatedAt == _sentinel
+          ? this.lastRatedAt
+          : lastRatedAt as DateTime?,
       dataChecksum: newChecksum,
-      tagResult: tagResult ?? this.tagResult,
-      tagOverrides: tagOverrides ?? this.tagOverrides,
-      personalTagVersion: personalTagVersion ?? this.personalTagVersion,
+      tagResult:
+          tagResult == _sentinel ? this.tagResult : tagResult as TagResult?,
+      tagOverrides: tagOverrides == _sentinel
+          ? this.tagOverrides
+          : tagOverrides as TagOverrides?,
+      personalTagVersion: personalTagVersion == _sentinel
+          ? this.personalTagVersion
+          : personalTagVersion as int?,
       isFavorite: isFavorite ?? this.isFavorite,
       dataIntegrityStatus: newIntegrityStatus,
     );
@@ -507,7 +535,8 @@ class RecipeCore with JsonSerializableMixin {
         List<String>.from((json['ingredients'] as List?).orEmpty());
     final instructions =
         List<String>.from((json['instructions'] as List?).orEmpty());
-    final storedChecksum = utils.SerializationUtils.safeNullableString(json, 'dataChecksum');
+    final storedChecksum =
+        utils.SerializationUtils.safeNullableString(json, 'dataChecksum');
 
     // Compute data integrity status
     DataIntegrityStatus integrityStatus;
@@ -536,7 +565,8 @@ class RecipeCore with JsonSerializableMixin {
       title: title,
       description: utils.SerializationUtils.safeString(json, 'description'),
       portions: utils.SerializationUtils.safeNullableInt(json, 'portions'),
-      timeMinutes: utils.SerializationUtils.safeNullableInt(json, 'timeMinutes'),
+      timeMinutes:
+          utils.SerializationUtils.safeNullableInt(json, 'timeMinutes'),
       ingredients: ingredients,
       instructions: instructions,
       personalTagIds: json['personalTagIds'] != null
@@ -547,10 +577,12 @@ class RecipeCore with JsonSerializableMixin {
         json['personalTagIds'],
       ),
       rating: (json['rating'] as num?)?.toDouble(),
-      mealType: utils.SerializationUtils.safeString(json, 'mealType', defaultValue: 'Middag'),
+      mealType: utils.SerializationUtils.safeString(json, 'mealType',
+          defaultValue: 'Middag'),
       sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
       imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
-      thumbnailUrl: utils.SerializationUtils.safeNullableString(json, 'thumbnailUrl'),
+      thumbnailUrl:
+          utils.SerializationUtils.safeNullableString(json, 'thumbnailUrl'),
       createdAt:
           utils.SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
       updatedAt:
@@ -561,7 +593,8 @@ class RecipeCore with JsonSerializableMixin {
       ingredientsNormalized: json['ingredientsNormalized'] != null
           ? List<String>.from(json['ingredientsNormalized'])
           : null,
-      ratingCount: utils.SerializationUtils.safeNullableInt(json, 'ratingCount'),
+      ratingCount:
+          utils.SerializationUtils.safeNullableInt(json, 'ratingCount'),
       averageRating: (json['averageRating'] as num?)?.toDouble(),
       ratingDistribution:
           utils.SerializationUtils.safeIntKeyIntMap(json, 'ratingDistribution'),
@@ -569,7 +602,8 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
-      personalTagVersion: utils.SerializationUtils.safeNullableInt(json, 'personalTagVersion'),
+      personalTagVersion:
+          utils.SerializationUtils.safeNullableInt(json, 'personalTagVersion'),
       isFavorite: utils.SerializationUtils.safeBool(json, 'isFavorite'),
       dataIntegrityStatus: integrityStatus,
     );
@@ -775,38 +809,50 @@ class RecipeSocialData {
   factory RecipeSocialData.fromJson(Map<String, dynamic> json) =>
       RecipeSocialData(
         ownerId: utils.SerializationUtils.safeNullableString(json, 'ownerId'),
-        ownerDisplayName: utils.SerializationUtils.safeNullableString(json, 'ownerDisplayName'),
+        ownerDisplayName: utils.SerializationUtils.safeNullableString(
+            json, 'ownerDisplayName'),
         memberPermissions: json['memberPermissions'] != null
             ? Map<String, ResourcePermission>.from(
                 (json['memberPermissions'] as Map)
                     .map((k, v) => MapEntry(k, ResourcePermission.values[v])))
             : null,
-        allowGuestViewing: utils.SerializationUtils.safeBool(json, 'allowGuestViewing'),
-        allowMemberInvites: utils.SerializationUtils.safeBool(json, 'allowMemberInvites', defaultValue: true),
+        allowGuestViewing:
+            utils.SerializationUtils.safeBool(json, 'allowGuestViewing'),
+        allowMemberInvites: utils.SerializationUtils.safeBool(
+            json, 'allowMemberInvites',
+            defaultValue: true),
         categoryIds: json['categoryIds'] != null
             ? List<String>.from(json['categoryIds'])
             : null,
-        descriptionCollaborative: utils.SerializationUtils.safeNullableString(json, 'descriptionCollaborative'),
+        descriptionCollaborative: utils.SerializationUtils.safeNullableString(
+            json, 'descriptionCollaborative'),
       );
 
   RecipeSocialData copyWith({
-    String? ownerId,
-    String? ownerDisplayName,
-    Map<String, ResourcePermission>? memberPermissions,
+    Object? ownerId = _sentinel,
+    Object? ownerDisplayName = _sentinel,
+    Object? memberPermissions = _sentinel,
     bool? allowGuestViewing,
     bool? allowMemberInvites,
-    List<String>? categoryIds,
-    String? descriptionCollaborative,
+    Object? categoryIds = _sentinel,
+    Object? descriptionCollaborative = _sentinel,
   }) {
     return RecipeSocialData(
-      ownerId: ownerId ?? this.ownerId,
-      ownerDisplayName: ownerDisplayName ?? this.ownerDisplayName,
-      memberPermissions: memberPermissions ?? this.memberPermissions,
+      ownerId: ownerId == _sentinel ? this.ownerId : ownerId as String?,
+      ownerDisplayName: ownerDisplayName == _sentinel
+          ? this.ownerDisplayName
+          : ownerDisplayName as String?,
+      memberPermissions: memberPermissions == _sentinel
+          ? this.memberPermissions
+          : memberPermissions as Map<String, ResourcePermission>?,
       allowGuestViewing: allowGuestViewing ?? this.allowGuestViewing,
       allowMemberInvites: allowMemberInvites ?? this.allowMemberInvites,
-      categoryIds: categoryIds ?? this.categoryIds,
-      descriptionCollaborative:
-          descriptionCollaborative ?? this.descriptionCollaborative,
+      categoryIds: categoryIds == _sentinel
+          ? this.categoryIds
+          : categoryIds as List<String>?,
+      descriptionCollaborative: descriptionCollaborative == _sentinel
+          ? this.descriptionCollaborative
+          : descriptionCollaborative as String?,
     );
   }
 }
@@ -852,12 +898,15 @@ class RecipeRealtimeData {
                 (k, v) => MapEntry(
                     k, utils.SerializationUtils.parseRequiredDateTimeValue(v))))
             : null,
-        lastEditedByUserId: utils.SerializationUtils.safeNullableString(json, 'lastEditedByUserId'),
-        lastEditedByDisplayName: utils.SerializationUtils.safeNullableString(json, 'lastEditedByDisplayName'),
+        lastEditedByUserId: utils.SerializationUtils.safeNullableString(
+            json, 'lastEditedByUserId'),
+        lastEditedByDisplayName: utils.SerializationUtils.safeNullableString(
+            json, 'lastEditedByDisplayName'),
         lastEditedAt:
             utils.SerializationUtils.safeDateTime(json, 'lastEditedAt'),
         editCount: utils.SerializationUtils.safeInt(json, 'editCount'),
-        isActive: utils.SerializationUtils.safeBool(json, 'isActive', defaultValue: true),
+        isActive: utils.SerializationUtils.safeBool(json, 'isActive',
+            defaultValue: true),
       );
 }
 
@@ -885,7 +934,8 @@ class RecipeOfflineData {
       RecipeOfflineData(
         lastSyncedAt:
             utils.SerializationUtils.safeDateTime(json, 'lastSyncedAt'),
-        isModifiedOffline: utils.SerializationUtils.safeBool(json, 'isModifiedOffline'),
+        isModifiedOffline:
+            utils.SerializationUtils.safeBool(json, 'isModifiedOffline'),
         pendingChanges: json['pendingChanges'] != null
             ? List<String>.from(json['pendingChanges'])
             : null,
@@ -1140,29 +1190,29 @@ class Recipe {
   Recipe copyWith({
     String? title,
     String? description,
-    int? portions,
-    int? timeMinutes,
+    Object? portions = _sentinel,
+    Object? timeMinutes = _sentinel,
     List<String>? ingredients,
     List<String>? instructions,
-    List<String>? personalTagIds,
-    List<RecipePersonalTag>? personalTags,
-    double? rating,
+    Object? personalTagIds = _sentinel,
+    Object? personalTags = _sentinel,
+    Object? rating = _sentinel,
     String? mealType,
-    String? sourceUrl,
+    Object? sourceUrl = _sentinel,
     List<String>? imageUrls,
-    String? createdBy,
+    Object? createdBy = _sentinel,
     bool? isPublic,
-    DateTime? lastCookedAt,
-    List<String>? ingredientsNormalized,
+    Object? lastCookedAt = _sentinel,
+    Object? ingredientsNormalized = _sentinel,
     String? lastEditedByUserId,
     String? lastEditedByDisplayName,
     RecipeType? type,
-    RecipeSocialData? socialData,
-    RecipeRealtimeData? realtimeData,
-    RecipeOfflineData? offlineData,
-    TagOverrides? tagOverrides,
-    TagResult? tagResult,
-    int? personalTagVersion,
+    Object? socialData = _sentinel,
+    Object? realtimeData = _sentinel,
+    Object? offlineData = _sentinel,
+    Object? tagOverrides = _sentinel,
+    Object? tagResult = _sentinel,
+    Object? personalTagVersion = _sentinel,
     bool? isFavorite,
   }) {
     return Recipe(
@@ -1193,9 +1243,15 @@ class Recipe {
       // When converting to personal recipe, clear social data
       socialData: (type == RecipeType.personal && type != this.type)
           ? null
-          : (socialData ?? this.socialData),
-      realtimeData: realtimeData ?? this.realtimeData,
-      offlineData: offlineData ?? this.offlineData,
+          : (socialData == _sentinel
+              ? this.socialData
+              : socialData as RecipeSocialData?),
+      realtimeData: realtimeData == _sentinel
+          ? this.realtimeData
+          : realtimeData as RecipeRealtimeData?,
+      offlineData: offlineData == _sentinel
+          ? this.offlineData
+          : offlineData as RecipeOfflineData?,
     );
   }
 }

@@ -46,10 +46,12 @@ class UserProfile with JsonSerializableMixin {
     this.hasCompletedOnboarding = false,
   });
 
+  static const _sentinel = Object();
+
   UserProfile copyWith({
     String? displayName,
     String? email,
-    String? avatarUrl,
+    Object? avatarUrl = _sentinel,
     bool? isSearchable,
     bool? allowEmailSearch,
     int? publicRecipeCount,
@@ -57,21 +59,18 @@ class UserProfile with JsonSerializableMixin {
     DateTime? joinedAt,
     DateTime? lastActiveAt,
     bool? isOnline,
-    // Notification fields
-    String? fcmToken,
-    DateTime? fcmTokenUpdatedAt,
+    Object? fcmToken = _sentinel,
+    Object? fcmTokenUpdatedAt = _sentinel,
     bool? notificationsEnabled,
-    // Locale preference
-    String? preferredLocale,
-    // Allergen preferences
-    UserAllergenPreferences? allergenPreferences,
+    Object? preferredLocale = _sentinel,
+    Object? allergenPreferences = _sentinel,
     bool? hasCompletedOnboarding,
   }) {
     return UserProfile(
       uid: uid,
       displayName: displayName ?? this.displayName,
       email: email ?? this.email,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
+      avatarUrl: avatarUrl == _sentinel ? this.avatarUrl : avatarUrl as String?,
       isSearchable: isSearchable ?? this.isSearchable,
       allowEmailSearch: allowEmailSearch ?? this.allowEmailSearch,
       publicRecipeCount: publicRecipeCount ?? this.publicRecipeCount,
@@ -79,14 +78,17 @@ class UserProfile with JsonSerializableMixin {
       joinedAt: joinedAt ?? this.joinedAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       isOnline: isOnline ?? this.isOnline,
-      // Notification fields
-      fcmToken: fcmToken ?? this.fcmToken,
-      fcmTokenUpdatedAt: fcmTokenUpdatedAt ?? this.fcmTokenUpdatedAt,
+      fcmToken: fcmToken == _sentinel ? this.fcmToken : fcmToken as String?,
+      fcmTokenUpdatedAt: fcmTokenUpdatedAt == _sentinel
+          ? this.fcmTokenUpdatedAt
+          : fcmTokenUpdatedAt as DateTime?,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
-      // Locale preference
-      preferredLocale: preferredLocale ?? this.preferredLocale,
-      // Allergen preferences
-      allergenPreferences: allergenPreferences ?? this.allergenPreferences,
+      preferredLocale: preferredLocale == _sentinel
+          ? this.preferredLocale
+          : preferredLocale as String?,
+      allergenPreferences: allergenPreferences == _sentinel
+          ? this.allergenPreferences
+          : allergenPreferences as UserAllergenPreferences?,
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
     );
@@ -265,9 +267,12 @@ class UserProfile with JsonSerializableMixin {
       displayName: utils.SerializationUtils.safeString(json, 'displayName'),
       email: utils.SerializationUtils.safeString(json, 'email'),
       avatarUrl: utils.SerializationUtils.safeNullableString(json, 'avatarUrl'),
-      isSearchable: utils.SerializationUtils.safeBool(json, 'isSearchable', defaultValue: true),
-      allowEmailSearch: utils.SerializationUtils.safeBool(json, 'allowEmailSearch'),
-      publicRecipeCount: utils.SerializationUtils.safeInt(json, 'publicRecipeCount'),
+      isSearchable: utils.SerializationUtils.safeBool(json, 'isSearchable',
+          defaultValue: true),
+      allowEmailSearch:
+          utils.SerializationUtils.safeBool(json, 'allowEmailSearch'),
+      publicRecipeCount:
+          utils.SerializationUtils.safeInt(json, 'publicRecipeCount'),
       friendsCount: utils.SerializationUtils.safeInt(json, 'friendsCount'),
       joinedAt:
           utils.SerializationUtils.parseDateTimeValue(json['joinedAt']).orNow(),
@@ -278,8 +283,11 @@ class UserProfile with JsonSerializableMixin {
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(
           json['fcmTokenUpdatedAt']),
-      notificationsEnabled: utils.SerializationUtils.safeBool(json, 'notificationsEnabled', defaultValue: true),
-      preferredLocale: utils.SerializationUtils.safeNullableString(json, 'preferredLocale'),
+      notificationsEnabled: utils.SerializationUtils.safeBool(
+          json, 'notificationsEnabled',
+          defaultValue: true),
+      preferredLocale:
+          utils.SerializationUtils.safeNullableString(json, 'preferredLocale'),
       // Allergen preferences
       allergenPreferences: json['allergenPreferences'] != null
           ? UserAllergenPreferences.fromFirestore(
