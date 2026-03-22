@@ -57,9 +57,17 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   @override
   void initState() {
     super.initState();
-    // Auto-focus the input field
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _focusNode.requestFocus();
+
+      // Auto-check clipboard for recipe URLs
+      final viewModel = context.read<SmartImportViewModel>();
+      await viewModel.checkClipboardForUrl();
+      if (!mounted) return;
+      final url = viewModel.clipboardUrl;
+      if (url != null) {
+        _showClipboardSuggestion(url, viewModel);
+      }
     });
   }
 
@@ -94,82 +102,102 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           behavior: HitTestBehavior.translucent,
           child: SafeArea(
             child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: IntrinsicHeight(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Input section
-                            _InputSection(
-                              controller: _inputController,
-                              focusNode: _focusNode,
-                              viewModel: viewModel,
-                              onChanged: viewModel.updateInput,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: IntrinsicHeight(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Input section
+                                _InputSection(
+                                  controller: _inputController,
+                                  focusNode: _focusNode,
+                                  viewModel: viewModel,
+                                  onChanged: viewModel.updateInput,
+                                ),
+
+                                // Platform badge
+                                if (viewModel.detection != null &&
+                                    viewModel.detection!.input.isNotEmpty) ...[
+                                  const SizedBox(
+                                      height: AppDimensions.spacingL),
+                                  PlatformBadgeWidget(
+                                      detection: viewModel.detection),
+                                ],
+
+                                // Progress indicator
+                                if (viewModel.isImporting ||
+                                    viewModel.phase ==
+                                        ImportPhase.complete) ...[
+                                  const SizedBox(
+                                      height: AppDimensions.spacingLg),
+                                  ImportProgressWidget(
+                                    currentStep: viewModel.currentStep,
+                                    message: viewModel.progressMessage,
+                                    isLoading: viewModel.isImporting,
+                                    isVisible: true,
+                                  ),
+                                ],
+
+                                // Error message
+                                if (viewModel.error != null &&
+                                    viewModel.phase == ImportPhase.error) ...[
+                                  const SizedBox(
+                                      height: AppDimensions.spacingMd),
+                                  _ErrorMessage(
+                                    message: viewModel.error!,
+                                    colorScheme: colorScheme,
+                                  ),
+                                ],
+
+                                const Spacer(),
+
+                                // Action buttons
+                                _ActionSection(
+                                  viewModel: viewModel,
+                                  onImport: () =>
+                                      _handleImport(context, viewModel),
+                                  onManualImport: () =>
+                                      _handleManualImport(context, viewModel),
+                                  onPaste: () => _handlePaste(viewModel),
+                                ),
+                              ],
                             ),
-
-                            // Platform badge
-                            if (viewModel.detection != null &&
-                                viewModel.detection!.input.isNotEmpty) ...[
-                              const SizedBox(height: AppDimensions.spacingL),
-                              PlatformBadgeWidget(
-                                  detection: viewModel.detection),
-                            ],
-
-                            // Progress indicator
-                            if (viewModel.isImporting ||
-                                viewModel.phase == ImportPhase.complete) ...[
-                              const SizedBox(height: AppDimensions.spacingLg),
-                              ImportProgressWidget(
-                                currentStep: viewModel.currentStep,
-                                message: viewModel.progressMessage,
-                                isLoading: viewModel.isImporting,
-                                isVisible: true,
-                              ),
-                            ],
-
-                            // Error message
-                            if (viewModel.error != null &&
-                                viewModel.phase == ImportPhase.error) ...[
-                              const SizedBox(height: AppDimensions.spacingMd),
-                              _ErrorMessage(
-                                message: viewModel.error!,
-                                colorScheme: colorScheme,
-                              ),
-                            ],
-
-                            const Spacer(),
-
-                            // Action buttons
-                            _ActionSection(
-                              viewModel: viewModel,
-                              onImport: () => _handleImport(context, viewModel),
-                              onManualImport: () =>
-                                  _handleManualImport(context, viewModel),
-                              onPaste: () => _handlePaste(viewModel),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                },
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),
         ),
-        ),
       ),
-      ),
+    );
+  }
+
+  void _showClipboardSuggestion(String url, SmartImportViewModel viewModel) {
+    SnackBarUtils.showInfo(
+      context,
+      context.l10n.importClipboardUrlDetected,
+      actionLabel: context.l10n.importClipboardUseUrl,
+      onAction: () {
+        if (!mounted) return;
+        _inputController.text = url;
+        viewModel.updateInput(url);
+        viewModel.clearClipboardSuggestion();
+      },
+      duration: SnackBarConfig.normalDuration,
     );
   }
 

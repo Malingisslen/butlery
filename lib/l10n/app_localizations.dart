@@ -8355,6 +8355,18 @@ abstract class AppLocalizations {
   /// **'Klistra in från urklipp'**
   String get importPasteFromClipboard;
 
+  /// No description provided for @importClipboardUrlDetected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptlänk hittad i urklipp'**
+  String get importClipboardUrlDetected;
+
+  /// No description provided for @importClipboardUseUrl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd'**
+  String get importClipboardUseUrl;
+
   /// No description provided for @importPasteLinkOrText.
   ///
   /// In sv, this message translates to:

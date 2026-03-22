@@ -291,7 +291,8 @@ service cloud.firestore {
           request.auth.uid in resource.data.get('pendingInviteUserIds', [])
         ) && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['friendUserIds', 'updatedAt'])
-        && request.resource.data.friendUserIds.size() <= 200;
+        && request.resource.data.friendUserIds.size() <= 200
+        && rateLimitWrite('friend_category_member', 5);
       }
       
       // User's conversations metadata (read receipts, per-user settings)
@@ -416,6 +417,7 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.fromUserId
         && request.resource.data.status == 'pending'
         && hasRequiredFields(['fromUserId', 'toUserId', 'status', 'sentAt'])
+        && isServerTimestamp('sentAt')
         && isNotBlockedBy(request.resource.data.toUserId)
         && rateLimitWrite('friend_requests', 10);
       
@@ -449,6 +451,7 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.fromUserId
         && request.resource.data.status == 'pending'
         && hasRequiredFields(['groupId', 'fromUserId', 'toUserId', 'status', 'sentAt'])
+        && isServerTimestamp('sentAt')
         && isNotBlockedBy(request.resource.data.toUserId)
         && rateLimitWrite('group_invitations', 10);
       
@@ -479,6 +482,7 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'originalRecipeId', 'sharedAt'])
+        && isServerTimestamp('sharedAt')
         && rateLimitWrite('shared_recipes', 10);
       allow update: if isAuthenticated()
         && cannotModify(['sharedByUserId', 'originalRecipeId', 'sharedAt'])
@@ -571,6 +575,7 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'menuSnapshot', 'sharedAt'])
+        && isServerTimestamp('sharedAt')
         && rateLimitWrite('shared_menus', 10);
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId
@@ -879,7 +884,9 @@ service cloud.firestore {
       // Can create if you're adding yourself as a participant
       allow create: if isAuthenticated()
         && request.auth.uid in request.resource.data.participantIds
-        && hasRequiredFields(['participantIds', 'createdAt']);
+        && hasRequiredFields(['participantIds', 'createdAt'])
+        && isServerTimestamp('createdAt')
+        && rateLimitWrite('conversations', 10);
 
       // Can update if you're a participant (but cannot modify participantIds or createdAt)
       allow update: if isAuthenticated() && request.auth.uid in resource.data.participantIds
@@ -912,6 +919,7 @@ service cloud.firestore {
         && hasRequiredFields(['senderId', 'conversationId', 'content', 'sentAt'])
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
+        && isServerTimestamp('sentAt')
         && rateLimitWrite('messages', 5);
 
       // Can update your own messages (content only — identity fields are immutable)
@@ -999,14 +1007,13 @@ service cloud.firestore {
     // ========================================
 
     match /user_shared_shopping_lists/{userId}/received_lists/{listId} {
-      // Users can read their own received lists
-      allow read: if isAuthenticated() && request.auth.uid == userId;
-
-      // Users can manage their own lists, OR sharers can create notification records
-      allow write: if isAuthenticated() && (
-        request.auth.uid == userId ||
-        request.auth.uid == request.resource.data.sharedByUserId
-      );
+      allow read, delete: if isOwner(userId);
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.sharedByUserId
+        && hasRequiredFields(['sharedByUserId', 'listId', 'sharedAt'])
+        && isServerTimestamp('sharedAt')
+        && rateLimitWrite('received_list', 10);
+      allow update: if isOwner(userId);
     }
 
     // ========================================
@@ -1014,14 +1021,13 @@ service cloud.firestore {
     // ========================================
 
     match /user_shared_menus/{userId}/received_menus/{menuId} {
-      // Users can read their own received menus
-      allow read: if isAuthenticated() && request.auth.uid == userId;
-
-      // Users can manage their own menus, OR sharers can create notification records
-      allow write: if isAuthenticated() && (
-        request.auth.uid == userId ||
-        request.auth.uid == request.resource.data.sharedByUserId
-      );
+      allow read, delete: if isOwner(userId);
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.sharedByUserId
+        && hasRequiredFields(['sharedByUserId', 'menuId', 'sharedAt'])
+        && isServerTimestamp('sharedAt')
+        && rateLimitWrite('received_menu', 10);
+      allow update: if isOwner(userId);
     }
 
     // ========================================
@@ -1029,11 +1035,10 @@ service cloud.firestore {
     // ========================================
 
     match /presence/{userId} {
-      // Anyone authenticated can read presence for online status
       allow read: if isAuthenticated();
-
-      // Can only write your own presence
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated()
+        && request.auth.uid == userId
+        && rateLimitWrite('presence', 2);
     }
 
     // ========================================
@@ -1332,7 +1337,8 @@ service cloud.firestore {
       // Prevents modification of cached recipe data
       allow update: if isAuthenticated()
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['accessCount', 'lastAccessedAt']);
+            .hasOnly(['accessCount', 'lastAccessedAt'])
+        && rateLimitWrite('globalRecipeCache_access', 10);
 
       // No deletes from client - cleanup handled by Cloud Functions
       allow delete: if false;

@@ -101,7 +101,8 @@ abstract class BaseSharedContentRepository<T>
     }
   }
 
-  Future<String> createSharedContent(T entity) async {
+  Future<String> createSharedContent(T entity,
+      {List<String>? initialSharedToUserIds}) async {
     final uid = requireCurrentUserId();
 
     validateRequiredFields(
@@ -119,6 +120,9 @@ abstract class BaseSharedContentRepository<T>
 
       // Create new instance with correct ID
       final entityData = toFirestore(entity);
+      if (initialSharedToUserIds != null) {
+        entityData['sharedToUserIds'] = initialSharedToUserIds;
+      }
       await docRef.set(entityData);
 
       logPermissionCheck(

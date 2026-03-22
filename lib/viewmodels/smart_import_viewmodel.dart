@@ -7,6 +7,9 @@
 /// - Result handling for all ImportResultV2 types
 library;
 
+import 'package:flutter/services.dart';
+
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
@@ -98,6 +101,9 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   /// Successfully imported recipe.
   Recipe? _importedRecipe;
 
+  String? _clipboardUrl;
+  String? _lastPromptedUrl;
+
   SmartImportViewModel({
     required ImportManager importManager,
     InputDetector? inputDetector,
@@ -111,6 +117,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   InputDetectionResult? get detection => _detection;
   SmartImportResult? get lastResult => _lastResult;
   Recipe? get importedRecipe => _importedRecipe;
+  String? get clipboardUrl => _clipboardUrl;
 
   /// Whether input is valid for import.
   bool get canImport => _input.trim().isNotEmpty;
@@ -160,6 +167,35 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   }
 
   int _lastStepBeforeError = 0;
+
+  // Clipboard
+
+  /// Check clipboard for a recipe URL. Called once when the import view opens.
+  Future<void> checkClipboardForUrl() async {
+    try {
+      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+      if (isDisposed) return;
+      final text = clipboardData?.text?.trim();
+      if (text == null || text.isEmpty) return;
+
+      final detection = _inputDetector.detect(text);
+      if (!detection.isUrl) return;
+
+      if (text == _lastPromptedUrl) return;
+
+      _clipboardUrl = text;
+      _lastPromptedUrl = text;
+      notifyListeners();
+    } catch (e) {
+      AppLogger.debug('Clipboard check failed: $e');
+    }
+  }
+
+  void clearClipboardSuggestion() {
+    if (isDisposed) return;
+    _clipboardUrl = null;
+    notifyListeners();
+  }
 
   // Input Handling
 
@@ -434,6 +470,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     _detection = null;
     _lastResult = null;
     _importedRecipe = null;
+    _clipboardUrl = null;
+    _lastPromptedUrl = null;
     super.dispose();
   }
 }

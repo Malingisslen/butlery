@@ -23,6 +23,8 @@ import * as admin from "firebase-admin";
 
 const DEFAULT_TTL_DAYS = 90;
 const BATCH_LIMIT = 500;
+const PARENT_CHUNK_SIZE = 100;
+const MAX_EXECUTION_TIME_MS = 8 * 60 * 1000; // 8 minutes (leave 1 min margin)
 
 const PARENT_COLLECTIONS = [
   "shared_recipes",
@@ -53,20 +55,46 @@ export const cleanupSharedContentMetadata = functions
     );
 
     let totalDeleted = 0;
+    const startTime = Date.now();
 
     for (const parentCollection of PARENT_COLLECTIONS) {
-      const parentDocs = await db.collection(parentCollection).listDocuments();
+      let lastDoc: admin.firestore.DocumentSnapshot | null = null;
+      let hasMore = true;
 
-      for (const parentDoc of parentDocs) {
-        for (const subcollection of METADATA_SUBCOLLECTIONS) {
-          const deleted = await cleanupSubcollection(
-            db,
-            parentDoc.path,
-            subcollection,
-            cutoffTimestamp
+      while (hasMore) {
+        if (Date.now() - startTime > MAX_EXECUTION_TIME_MS) {
+          functions.logger.warn(
+            `Approaching timeout — stopping cleanup for ${parentCollection}. Will continue next run.`
           );
-          totalDeleted += deleted;
+          hasMore = false;
+          break;
         }
+
+        let query = db.collection(parentCollection)
+          .orderBy("__name__")
+          .limit(PARENT_CHUNK_SIZE);
+
+        if (lastDoc) {
+          query = query.startAfter(lastDoc);
+        }
+
+        const snapshot = await query.get();
+        if (snapshot.empty) { hasMore = false; break; }
+
+        for (const parentDoc of snapshot.docs) {
+          for (const subcollection of METADATA_SUBCOLLECTIONS) {
+            const deleted = await cleanupSubcollection(
+              db,
+              parentDoc.ref.path,
+              subcollection,
+              cutoffTimestamp
+            );
+            totalDeleted += deleted;
+          }
+        }
+
+        lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        if (snapshot.size < PARENT_CHUNK_SIZE) { hasMore = false; }
       }
     }
 

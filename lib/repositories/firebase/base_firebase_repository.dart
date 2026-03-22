@@ -153,7 +153,11 @@ abstract class BaseFirebaseRepository<T>
     try {
       final userId = requireCurrentUserId();
       final ref = getCollectionRef();
-      final snapshot = await ref.get();
+      final snapshot = await ref.limit(10000).get();
+      if (snapshot.docs.length == 10000) {
+        AppLogger.warning(
+            'readAll() hit 10,000 doc limit for $collectionName — results truncated');
+      }
 
       final allowedEntities = <T>[];
       for (final doc in snapshot.docs) {
