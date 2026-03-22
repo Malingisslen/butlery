@@ -395,6 +395,14 @@ class UserService extends ChangeNotifier
     notifyListeners();
   }
 
+  void resetForLogout() {
+    _currentUserProfile = null;
+    _profileCache.clear();
+    _cacheTimestamps.clear();
+    _clearError();
+    notifyListeners();
+  }
+
   void _clearError() {
     _error = null;
   }

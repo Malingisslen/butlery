@@ -120,22 +120,15 @@ void main() {
     });
 
     group('Initialization', () {
-      test('should initialize service successfully', () {
-        // Act
-        service.initialize();
-
-        // Assert
-        // Since we can't easily access internal state, just ensure no exceptions
-        expect(true, isTrue);
+      test('should initialize service successfully', () async {
+        // Act & Assert - should complete without error
+        await expectLater(service.initialize(), completes);
       });
 
-      test('should handle multiple initialization calls', () {
-        // Act
-        service.initialize();
-        service.initialize(); // Should not cause issues
-
-        // Assert
-        expect(true, isTrue);
+      test('should handle multiple initialization calls', () async {
+        // Act & Assert - second init should also complete without error
+        await expectLater(service.initialize(), completes);
+        await expectLater(service.initialize(), completes);
       });
     });
 

@@ -809,11 +809,11 @@ void main() {
         // Arrange
         const conversationId = 'conv-typing';
 
-        // Act
-        await messagingService.setTypingIndicator(conversationId);
-
-        // Assert - Typing indicator is handled internally, no repository call
-        expect(true, isTrue); // Placeholder assertion
+        // Act & Assert - should complete without error
+        await expectLater(
+          messagingService.setTypingIndicator(conversationId),
+          completes,
+        );
       });
 
       test('should get typing users list', () {
@@ -1320,25 +1320,16 @@ void main() {
         // Arrange
         const conversationId = 'conv-typing-error';
 
-        // Act
-        await messagingService.setTypingIndicator(conversationId);
-
-        // Simulate connection loss (typing indicators are ephemeral)
-        // The service should handle this gracefully
-
-        // Assert - Should not throw, typing indicators fail silently
-        expect(true, isTrue);
+        // Act & Assert - should not throw, typing indicators fail silently
+        await expectLater(
+          messagingService.setTypingIndicator(conversationId),
+          completes,
+        );
       });
 
       test('should handle presence update failures', () async {
-        // Arrange
-        // Note: updatePresence doesn't exist in MessagingService
-        // This test is for future implementation
-
-        // Act & Assert
-        // Skip test - method not implemented yet
-        expect(true, isTrue);
-      });
+        // updatePresence doesn't exist in MessagingService yet
+      }, skip: 'updatePresence not implemented');
 
       test('should handle stream cancellation errors', () async {
         // Arrange
@@ -1402,14 +1393,8 @@ void main() {
       });
 
       test('should handle reacting to non-existent message', () async {
-        // Arrange
-        // Note: addReaction doesn't exist in MessagingService
-        // This test is for future implementation
-
-        // Act & Assert
-        // Skip test - method not implemented yet
-        expect(true, isTrue);
-      });
+        // addReaction doesn't exist in MessagingService yet
+      }, skip: 'addReaction not implemented');
 
       test('should handle mark as read for invalid conversation', () async {
         // Arrange
@@ -1455,14 +1440,8 @@ void main() {
       });
 
       test('should handle removing reaction that does not exist', () async {
-        // Arrange
-        // Note: removeReaction doesn't exist in MessagingService
-        // This test is for future implementation
-
-        // Act & Assert
-        // Skip test - method not implemented yet
-        expect(true, isTrue);
-      });
+        // removeReaction doesn't exist in MessagingService yet
+      }, skip: 'removeReaction not implemented');
     });
 
     group('Concurrent Operation Errors', () {

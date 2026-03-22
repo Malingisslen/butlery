@@ -15,8 +15,14 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/presence_service.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/cache/permission_cache_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
@@ -134,7 +140,8 @@ class AuthService extends ChangeNotifier
           'Attempting login for email: ${email.substring(0, 3)}...');
       await _authRepository.signIn(email: email, password: password);
       _currentUser = _authRepository.currentUser;
-      AppLogger.debug('Login result - User: ${_currentUser?.uid.maskedUserId ?? "null"}');
+      AppLogger.debug(
+          'Login result - User: ${_currentUser?.uid.maskedUserId ?? "null"}');
 
       setLoading(false);
 
@@ -344,6 +351,38 @@ class AuthService extends ChangeNotifier
     } catch (e) {
       AppLogger.warning(
           'UserIngredientRepository reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<PersonalTagService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning('PersonalTagService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<UnifiedMenuService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning('UnifiedMenuService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<UnifiedShoppingService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning(
+          'UnifiedShoppingService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<OfflineService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning('OfflineService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<UserService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning('UserService reset failed during sign-out: $e');
+    }
+    try {
+      ServiceLocator.tryGet<UnifiedFriendsService>()?.resetForLogout();
+    } catch (e) {
+      AppLogger.warning(
+          'UnifiedFriendsService reset failed during sign-out: $e');
     }
   }
 

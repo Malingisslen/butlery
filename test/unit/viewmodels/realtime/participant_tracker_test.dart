@@ -579,8 +579,8 @@ void main() {
 
       participantTracker.forceCleanup();
 
-      // Should complete without error
-      expect(true, isTrue);
+      // Recently added user should survive cleanup
+      expect(participantTracker.activeParticipantIds, contains('user_1'));
     });
 
     test('should trigger callback on force cleanup', () {

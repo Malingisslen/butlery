@@ -290,15 +290,15 @@ void main() {
           'editedByDisplayName': 'Other User',
         };
 
-        // Act
-        await RealtimeEventHandler.sendRealtimeEditNotification(
-          recipeId: recipeId,
-          editedBy: editedBy,
-          data: data,
+        // Act & Assert - should complete without error
+        await expectLater(
+          RealtimeEventHandler.sendRealtimeEditNotification(
+            recipeId: recipeId,
+            editedBy: editedBy,
+            data: data,
+          ),
+          completes,
         );
-
-        // Assert - method logs but doesn't throw
-        expect(true, isTrue); // Notification logged successfully
       });
 
       test('should skip notification for null editor', () async {
@@ -306,15 +306,15 @@ void main() {
         const recipeId = 'recipe-1';
         final data = {'editType': 'realtime_edit'};
 
-        // Act
-        await RealtimeEventHandler.sendRealtimeEditNotification(
-          recipeId: recipeId,
-          editedBy: null,
-          data: data,
+        // Act & Assert - should return early without error for null editor
+        await expectLater(
+          RealtimeEventHandler.sendRealtimeEditNotification(
+            recipeId: recipeId,
+            editedBy: null,
+            data: data,
+          ),
+          completes,
         );
-
-        // Assert - method returns early for null editor
-        expect(true, isTrue);
       });
 
       test('should extract edit details correctly', () {

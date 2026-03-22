@@ -731,9 +731,6 @@ void main() {
           final stream = commentsManager.getCommentsStream('rapid-test-$i');
           expect(stream, isA<Stream<List<RecipeComment>>>());
         }
-
-        // Assert - All streams created successfully
-        expect(true, isTrue);
       });
 
       test('should handle special characters in content', () async {

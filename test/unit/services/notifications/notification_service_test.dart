@@ -248,16 +248,16 @@ void main() {
           'timestamp': '2024-01-15'
         };
 
-        // Act
-        await notificationService.sendBatchableNotification(
-          targetUserIds: targetUserIds,
-          strategy: strategy.toNotificationStrategy(),
-          variables: variables,
-          additionalData: additionalData,
+        // Act & Assert - should complete without error
+        await expectLater(
+          notificationService.sendBatchableNotification(
+            targetUserIds: targetUserIds,
+            strategy: strategy.toNotificationStrategy(),
+            variables: variables,
+            additionalData: additionalData,
+          ),
+          completes,
         );
-
-        // Assert
-        expect(true, isTrue); // Placeholder
       });
     });
 
@@ -272,14 +272,14 @@ void main() {
           'timestamp': DateTime.now().toIso8601String(),
         };
 
-        // Act
-        await notificationService.sendSilentNotification(
-          targetUserIds: targetUserIds,
-          data: data,
+        // Act & Assert - should complete without error
+        await expectLater(
+          notificationService.sendSilentNotification(
+            targetUserIds: targetUserIds,
+            data: data,
+          ),
+          completes,
         );
-
-        // Assert - Silent notification was prepared
-        expect(true, isTrue); // Placeholder
       });
 
       test('should handle empty target list for silent notification', () async {
@@ -313,15 +313,15 @@ void main() {
           {'type': 'comments', 'count': '5'},
         ];
 
-        // Act
-        await notificationService.sendDigestNotification(
-          targetUserId: targetUserId,
-          strategy: strategy.toNotificationStrategy(),
-          activityList: activityList,
+        // Act & Assert - should complete without error
+        await expectLater(
+          notificationService.sendDigestNotification(
+            targetUserId: targetUserId,
+            strategy: strategy.toNotificationStrategy(),
+            activityList: activityList,
+          ),
+          completes,
         );
-
-        // Assert - Digest was prepared
-        expect(true, isTrue); // Placeholder
       });
 
       test('should handle empty activity list', () async {

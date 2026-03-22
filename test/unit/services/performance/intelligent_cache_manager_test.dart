@@ -241,12 +241,8 @@ void main() {
           },
         });
 
-        // Act
-        await manager.initialize();
-
-        // Assert
-        // Since we can't easily verify internal state, just ensure no exceptions
-        expect(true, isTrue);
+        // Act & Assert - should complete without error
+        await expectLater(manager.initialize(), completes);
       });
 
       test('should handle initialization errors gracefully', () async {
@@ -314,12 +310,11 @@ void main() {
           recipes: recipes,
         );
 
-        // Act
-        await manager.preloadLikelyContent('test_user_123');
-
-        // Assert
-        // Verify no exceptions thrown
-        expect(true, isTrue);
+        // Act & Assert - should complete without error
+        await expectLater(
+          manager.preloadLikelyContent('test_user_123'),
+          completes,
+        );
       });
 
       test('should handle preload errors gracefully', () async {

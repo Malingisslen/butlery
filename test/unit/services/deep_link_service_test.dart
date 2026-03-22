@@ -576,14 +576,13 @@ void main() {
           return 'abc123';
         });
 
-        // Act
-        await DeepLinkService.generateShortUrl(
-            'https://butlery.app/recipe?id=123');
-
-        // Assert
-        // Since the static method doesn't properly use DI, metadata won't be captured
-        // This is a limitation of the current implementation
-        expect(true, isTrue); // Placeholder assertion
+        // Act & Assert
+        // Static method doesn't properly use DI, so metadata capture is limited
+        await expectLater(
+          DeepLinkService.generateShortUrl(
+              'https://butlery.app/recipe?id=123'),
+          completes,
+        );
       });
     });
 

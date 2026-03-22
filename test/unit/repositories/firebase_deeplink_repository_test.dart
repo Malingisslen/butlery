@@ -502,14 +502,9 @@ void main() {
 
     group('Short Code Generation', () {
       test('should generate unique short codes', () async {
-        // This test documents expected behavior for short code generation
-        // We can't directly test _generateShortCode as it's private,
-        // but we can test through createShortUrl
-
-        // Assert - Short codes should be 8 characters
-        // This is verified in the "Create Short URL" tests
-        expect(true, isTrue); // Placeholder for short code generation tests
-      });
+        // _generateShortCode is private; short code length is verified
+        // in the "Create Short URL" group (expects 8 characters)
+      }, skip: 'covered by createShortUrl tests above');
     });
   });
 }

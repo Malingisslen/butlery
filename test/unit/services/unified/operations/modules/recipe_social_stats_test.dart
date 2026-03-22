@@ -739,11 +739,11 @@ void main() {
         // Arrange
         final recipeIds = ['recipe_1', 'recipe_2', 'recipe_3'];
 
-        // Act
-        await stats.updateMultipleRatingAggregates(recipeIds);
-
-        // Assert - Should complete without errors
-        expect(true, isTrue); // Operation completed
+        // Act & Assert - should complete without errors
+        await expectLater(
+          stats.updateMultipleRatingAggregates(recipeIds),
+          completes,
+        );
       });
 
       test('should format Swedish locale numbers', () {
@@ -790,15 +790,15 @@ void main() {
           notificationResults: {'milestone': true},
         );
 
-        // Act
-        await stats.sendRatingMilestone(
-          recipeId: 'recipe_1',
-          totalRatings: 100,
-          averageRating: 4.8,
+        // Act & Assert - should handle Swedish content without error
+        await expectLater(
+          stats.sendRatingMilestone(
+            recipeId: 'recipe_1',
+            totalRatings: 100,
+            averageRating: 4.8,
+          ),
+          completes,
         );
-
-        // Assert - Should handle Swedish content
-        expect(true, isTrue); // Operation completed
       });
     });
 
