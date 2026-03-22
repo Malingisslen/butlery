@@ -7,7 +7,7 @@
  * shared recipes, shopping lists, and group invitations.
  *
  * Safety: paginated batches (500-op limit), skips if no name/avatar change,
- * uses hashUid for GDPR-safe logging.
+ * uses hashUid for GDPR-safe logging. Steps run in parallel via Promise.allSettled.
  */
 
 import * as functions from "firebase-functions";
@@ -18,6 +18,7 @@ const getDb = () => admin.firestore();
 const BATCH_LIMIT = 500;
 
 export const onProfileUpdated = functions
+  .runWith({ timeoutSeconds: 540 })
   .region("europe-west1")
   .firestore.document("public_profiles/{userId}")
   .onUpdate(async (change, context) => {
@@ -43,9 +44,7 @@ export const onProfileUpdated = functions
     );
 
     const db = getDb();
-    let totalUpdated = 0;
 
-    // Build shared update maps
     const messageUpdates: Record<string, unknown> = {};
     if (nameChanged) messageUpdates["senderDisplayName"] = newName;
     if (avatarChanged) messageUpdates["senderAvatarUrl"] = newAvatar;
@@ -54,152 +53,109 @@ export const onProfileUpdated = functions
     if (nameChanged) memberUpdates["displayName"] = newName;
     if (avatarChanged) memberUpdates["avatarUrl"] = newAvatar;
 
-    // 1. Update messages where senderId == userId
-    try {
-      totalUpdated += await batchUpdateQuery(
+    const commentUpdates: Record<string, unknown> = {};
+    if (nameChanged) commentUpdates["authorDisplayName"] = newName;
+    if (avatarChanged) commentUpdates["authorAvatarUrl"] = newAvatar;
+
+    // All steps are independent — run in parallel
+    const steps: Array<Promise<number>> = [
+      // Messages
+      batchUpdateQuery(
         db.collection("messages").where("senderId", "==", userId),
         messageUpdates,
         db
-      );
-    } catch (e) {
-      functions.logger.error(`Failed to update messages for ${userHash}`, e);
-    }
+      ).catch((e) => { functions.logger.error(`Failed to update messages for ${userHash}`, e); return 0; }),
 
-    // 2. Update conversations where participantIds contains userId
-    try {
-      totalUpdated += await batchUpdateDocs(
+      // Conversations — per-doc update for map-key fields
+      batchUpdateDocs(
         db.collection("conversations").where("participantIds", "array-contains", userId),
         db,
-        (doc) => {
+        () => {
           const updates: Record<string, unknown> = {};
           if (nameChanged) updates[`participantDisplayNames.${userId}`] = newName;
           if (avatarChanged) updates[`participantAvatarUrls.${userId}`] = newAvatar;
           return updates;
         }
-      );
-    } catch (e) {
-      functions.logger.error(`Failed to update conversations for ${userHash}`, e);
-    }
+      ).catch((e) => { functions.logger.error(`Failed to update conversations for ${userHash}`, e); return 0; }),
 
-    // 3. Update recipe_comments where authorId == userId
-    try {
-      const commentUpdates: Record<string, unknown> = {};
-      if (nameChanged) commentUpdates["authorDisplayName"] = newName;
-      if (avatarChanged) commentUpdates["authorAvatarUrl"] = newAvatar;
+      // Recipe comments
+      batchUpdateQuery(
+        db.collection("recipe_comments").where("authorId", "==", userId),
+        commentUpdates,
+        db
+      ).catch((e) => { functions.logger.error(`Failed to update recipe_comments for ${userHash}`, e); return 0; }),
 
-      if (Object.keys(commentUpdates).length > 0) {
-        totalUpdated += await batchUpdateQuery(
-          db.collection("recipe_comments").where("authorId", "==", userId),
-          commentUpdates,
-          db
-        );
-      }
-    } catch (e) {
-      functions.logger.error(`Failed to update recipe_comments for ${userHash}`, e);
-    }
+      // Shared content members (collectionGroup)
+      batchUpdateQuery(
+        db.collectionGroup("members").where("userId", "==", userId),
+        memberUpdates,
+        db
+      ).catch((e) => { functions.logger.error(`Failed to update members for ${userHash}`, e); return 0; }),
+    ];
 
-    // 4. Update friends subcollections via friends list lookup
-    try {
-      if (nameChanged) {
-        const friendsSnapshot = await db
-          .collection("users")
-          .doc(userId)
-          .collection("friends")
-          .get();
-
-        if (!friendsSnapshot.empty) {
-          totalUpdated += await batchUpdateDocs(
+    // Name-only propagation steps
+    if (nameChanged) {
+      // Friends subcollections
+      steps.push(
+        (async () => {
+          const friendsSnapshot = await db.collection("users").doc(userId).collection("friends").get();
+          if (friendsSnapshot.empty) return 0;
+          return batchUpdateDocs(
             null,
             db,
-            (friendDoc) => ({ displayNameLower: newName?.toLowerCase() }),
+            () => ({ displayNameLower: newName?.toLowerCase() }),
             friendsSnapshot.docs.map((friendDoc) =>
               db.collection("users").doc(friendDoc.id).collection("friends").doc(userId)
             )
           );
-        }
-      }
-    } catch (e) {
-      functions.logger.error(`Failed to update friends for ${userHash}`, e);
-    }
-
-    // 5. Update shared content members subcollections (shared_recipes, shared_menus, etc.)
-    try {
-      totalUpdated += await batchUpdateQuery(
-        db.collectionGroup("members").where("userId", "==", userId),
-        memberUpdates,
-        db
+        })().catch((e) => { functions.logger.error(`Failed to update friends for ${userHash}`, e); return 0; })
       );
-    } catch (e) {
-      functions.logger.error(`Failed to update members for ${userHash}`, e);
-    }
 
-    // 6. Update realtime_recipes + realtime_menus (owner + last-editor)
-    for (const col of ["realtime_recipes", "realtime_menus"]) {
-      try {
-        if (nameChanged) {
-          totalUpdated += await batchUpdateQuery(
-            db.collection(col).where("ownerId", "==", userId),
-            { ownerDisplayName: newName },
-            db
-          );
-          totalUpdated += await batchUpdateQuery(
-            db.collection(col).where("lastEditedBy", "==", userId),
-            { lastEditedByDisplayName: newName },
-            db
-          );
-        }
-      } catch (e) {
-        functions.logger.error(`Failed to update ${col} for ${userHash}`, e);
+      // Realtime resources (owner + last-editor)
+      for (const col of ["realtime_recipes", "realtime_menus"]) {
+        steps.push(
+          Promise.all([
+            batchUpdateQuery(db.collection(col).where("ownerId", "==", userId), { ownerDisplayName: newName }, db),
+            batchUpdateQuery(db.collection(col).where("lastEditedBy", "==", userId), { lastEditedByDisplayName: newName }, db),
+          ]).then(([a, b]) => a + b)
+            .catch((e) => { functions.logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
+        );
       }
-    }
 
-    // 7. Update shared_recipes — socialData.ownerDisplayName
-    try {
-      if (nameChanged) {
-        totalUpdated += await batchUpdateQuery(
+      // Shared recipes
+      steps.push(
+        batchUpdateQuery(
           db.collection("shared_recipes").where("socialData.ownerId", "==", userId),
           { "socialData.ownerDisplayName": newName },
           db
+        ).catch((e) => { functions.logger.error(`Failed to update shared_recipes for ${userHash}`, e); return 0; })
+      );
+
+      // Shopping lists (owner + last-activity)
+      for (const col of ["unified_shopping_lists", "unified_shared_shopping_lists"]) {
+        steps.push(
+          Promise.all([
+            batchUpdateQuery(db.collection(col).where("ownerId", "==", userId), { ownerDisplayName: newName }, db),
+            batchUpdateQuery(db.collection(col).where("lastActivityByUserId", "==", userId), { lastActivityByDisplayName: newName }, db),
+          ]).then(([a, b]) => a + b)
+            .catch((e) => { functions.logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
         );
       }
-    } catch (e) {
-      functions.logger.error(`Failed to update shared_recipes for ${userHash}`, e);
-    }
 
-    // 8. Update shopping lists (owner + last-activity)
-    for (const col of ["unified_shopping_lists", "unified_shared_shopping_lists"]) {
-      try {
-        if (nameChanged) {
-          totalUpdated += await batchUpdateQuery(
-            db.collection(col).where("ownerId", "==", userId),
-            { ownerDisplayName: newName },
-            db
-          );
-          totalUpdated += await batchUpdateQuery(
-            db.collection(col).where("lastActivityByUserId", "==", userId),
-            { lastActivityByDisplayName: newName },
-            db
-          );
-        }
-      } catch (e) {
-        functions.logger.error(`Failed to update ${col} for ${userHash}`, e);
-      }
-    }
-
-    // 9. Update pending group_invitations
-    try {
-      if (nameChanged) {
-        totalUpdated += await batchUpdateQuery(
+      // Pending group invitations
+      steps.push(
+        batchUpdateQuery(
           db.collection("group_invitations")
             .where("fromUserId", "==", userId)
             .where("status", "==", "pending"),
           { fromUserName: newName },
           db
-        );
-      }
-    } catch (e) {
-      functions.logger.error(`Failed to update group_invitations for ${userHash}`, e);
+        ).catch((e) => { functions.logger.error(`Failed to update group_invitations for ${userHash}`, e); return 0; })
+      );
     }
+
+    const results = await Promise.all(steps);
+    const totalUpdated = results.reduce((sum, n) => sum + n, 0);
 
     functions.logger.info(
       `Profile propagation complete for ${userHash}: ${totalUpdated} documents updated`
