@@ -107,20 +107,11 @@ class CollaborationModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      final realtimeSyncService = container<RealtimeSyncService>();
-      await realtimeSyncService.initialize();
+      // RealtimeSyncService, UnifiedShoppingService, RealtimeMenuService,
+      // RealtimeRecipeService are user-scoped — initialized on login, not here
 
-      final shoppingService = container<UnifiedShoppingService>();
-      await shoppingService.initialize();
-
-      final permissionService = container<PermissionService>();
-      permissionService.toString();
-
-      final realtimeMenuService = container<RealtimeMenuService>();
-      realtimeMenuService.toString();
-
-      final realtimeRecipeService = container<RealtimeRecipeService>();
-      realtimeRecipeService.toString();
+      // Validate app-scoped services
+      container<PermissionService>();
     } catch (e) {
       throw DIModuleException(
         name,

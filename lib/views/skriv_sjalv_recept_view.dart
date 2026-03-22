@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/first_recipe_celebration_overlay.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
@@ -169,31 +170,33 @@ class _SkrivSjalvReceptViewContentState
 
       if (mounted) {
         if (savedRecipe != null) {
-          // Build success message with optional tag summary
-          final tagResult = savedRecipe.tagResult;
-
-          // Check if tagging failed - show warning instead of success
-          if (tagResult != null && tagResult.hasFailed) {
-            UtilityComponents.showWarningSnackbar(
+          if (viewModel.isFirstRecipe) {
+            await FirstRecipeCelebrationOverlay.show(
               context,
-              context.l10n.recipeSavedTaggingFailed,
-            );
-          } else if (tagResult != null && tagResult.tags.isNotEmpty) {
-            final coverage = (tagResult.coverage * 100).toInt();
-            UtilityComponents.showSuccessSnackbar(
-              context,
-              context.l10n.recipeSavedWithTags(tagResult.tags.length, coverage),
+              recipeTitle: savedRecipe.title,
             );
           } else {
-            UtilityComponents.showSuccessSnackbar(
-                context, context.l10n.recipeSaved);
+            final tagResult = savedRecipe.tagResult;
+
+            if (tagResult != null && tagResult.hasFailed) {
+              UtilityComponents.showWarningSnackbar(
+                context,
+                context.l10n.recipeSavedTaggingFailed,
+              );
+            } else if (tagResult != null && tagResult.tags.isNotEmpty) {
+              final coverage = (tagResult.coverage * 100).toInt();
+              UtilityComponents.showSuccessSnackbar(
+                context,
+                context.l10n
+                    .recipeSavedWithTags(tagResult.tags.length, coverage),
+              );
+            } else {
+              UtilityComponents.showSuccessSnackbar(
+                  context, context.l10n.recipeSaved);
+            }
           }
-          // MEDIUM PRIORITY FIX: Better navigation that preserves user context
-          // Navigate to recipe detail or back to recipes list instead of clearing entire stack
-          Navigator.of(context)
-              .pop(savedRecipe); // Return to previous screen with saved recipe
+          if (mounted) Navigator.of(context).pop(savedRecipe);
         } else {
-          // Use UtilityComponents.showErrorSnackbar
           UtilityComponents.showErrorSnackbar(
               context, viewModel.error ?? context.l10n.recipeCouldNotSave);
         }
