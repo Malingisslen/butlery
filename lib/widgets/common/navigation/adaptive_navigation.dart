@@ -522,11 +522,11 @@ class _BottomNavItem extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppDimensions.spacingXxs),
                 // Rust indicator bar below text when selected (text width)
                 AnimatedContainer(
                   duration: AppDimensions.animationDurationFast,
-                  height: 2,
+                  height: AppDimensions.spacingXxs,
                   width: isSelected ? _getTextWidth(context) : 0,
                   color: isSelected ? cs.secondary : Colors.transparent,
                 ),

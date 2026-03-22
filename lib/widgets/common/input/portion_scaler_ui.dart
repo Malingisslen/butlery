@@ -81,7 +81,7 @@ class PortionScalerUI {
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: AppDimensions.spacingMd),
         _buildPortionControls(
           context,
           currentPortions,
@@ -122,7 +122,8 @@ class PortionScalerUI {
 
               // Current portions
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingM),
                 child: Text(
                   '$currentPortions',
                   style: AppTextStyles.bodyBold.copyWith(

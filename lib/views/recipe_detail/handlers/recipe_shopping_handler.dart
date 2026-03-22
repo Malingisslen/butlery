@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -61,7 +62,7 @@ class RecipeShoppingHandler {
                     shoppingItems.length, recipe.title),
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimensions.spacingL),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 300),
                 child: ListView.builder(
@@ -70,7 +71,7 @@ class RecipeShoppingHandler {
                   itemBuilder: (context, index) {
                     final item = shoppingItems[index];
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      padding: AppDimensions.paddingVertical4,
                       child: Row(
                         children: [
                           Container(
@@ -81,7 +82,7 @@ class RecipeShoppingHandler {
                               borderRadius: BorderRadius.circular(0),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: AppDimensions.spacingL),
                           Expanded(
                             child: Text(
                               item.name,

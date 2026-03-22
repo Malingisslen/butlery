@@ -81,8 +81,10 @@ class RecipeCard extends StatelessWidget {
       child: Semantics(
         label: 'Recept: ${recipe.title}',
         child: Container(
-          margin:
-              margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
+          margin: margin ??
+              const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingMd,
+                  vertical: AppDimensions.borderWidthStandard),
           // UI Redesign: Left green border + bottom rust border
           decoration: isSelected
               ? BoxDecoration(
@@ -106,7 +108,9 @@ class RecipeCard extends StatelessWidget {
                   onLongPress != null ? () => onLongPress!(recipe) : null,
               child: Container(
                 padding: padding ??
-                    const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    const EdgeInsets.symmetric(
+                        vertical: AppDimensions.spacingModerate,
+                        horizontal: AppDimensions.spacingMd),
                 child: _buildCardContent(context),
               ),
             ),
@@ -390,7 +394,7 @@ class RecipeCard extends StatelessWidget {
     return Semantics(
       label: 'Betyg: ${recipe.rating!.toStringAsFixed(1)}',
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        padding: AppDimensions.paddingSymmetric6x2,
         decoration: BoxDecoration(
           color: cs.primary,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),

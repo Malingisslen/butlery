@@ -574,7 +574,8 @@ class _ActionSection extends StatelessWidget {
             icon: const Icon(Icons.content_paste),
             label: Text(context.l10n.importPasteFromClipboard),
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.spacingModerate),
             ),
           ),
           const SizedBox(height: AppDimensions.spacingL),
