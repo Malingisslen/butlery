@@ -502,7 +502,7 @@ class OCRExtractionService extends BaseService {
       recommendations.add(AppLocale.current.ocrUseHigherResolution);
       qualityScore -= 0.3;
     }
-    if (!_isValidImageFormat(imageBytes)) {
+    if (!ImageFormatUtils.isSupportedImage(imageBytes)) {
       issues.add(AppLocale.current.ocrImageFormatNotOptimal);
       recommendations.add(AppLocale.current.ocrUseJpegOrPng);
       qualityScore -= 0.1;
@@ -584,10 +584,6 @@ class OCRExtractionService extends BaseService {
       }
     }
     _cache[imageHash] = result;
-  }
-
-  bool _isValidImageFormat(Uint8List bytes) {
-    return ImageFormatUtils.isSupportedImage(bytes);
   }
 
   /// Get comprehensive OCR service status
