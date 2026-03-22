@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
@@ -21,6 +23,7 @@ class NeuralIngredientParser {
 
   final OnnxNerService _nerService;
   final NerModelManager _modelManager;
+  Completer<bool>? _initCompleter;
 
   NeuralIngredientParser({
     required OnnxNerService nerService,
@@ -35,9 +38,12 @@ class NeuralIngredientParser {
   ///
   /// Returns true if the model is ready for inference.
   /// This is fire-and-forget safe — failures never throw.
+  /// Concurrent callers join the in-flight initialization.
   Future<bool> ensureInitialized() async {
     if (_nerService.isAvailable) return true;
+    if (_initCompleter != null) return _initCompleter!.future;
 
+    _initCompleter = Completer<bool>();
     try {
       // Reset state if a previous attempt failed, allowing retry
       await _nerService.dispose();
@@ -46,17 +52,23 @@ class NeuralIngredientParser {
       final modelFiles = await _modelManager.ensureModelAvailable();
       if (modelFiles == null) {
         AppLogger.debug('$_serviceName: Model not available');
+        _initCompleter!.complete(false);
         return false;
       }
 
       // Initialize ONNX Runtime with model and vocab
-      return await _nerService.initialize(
+      final result = await _nerService.initialize(
         modelPath: modelFiles.modelPath,
         vocabContent: modelFiles.vocabContent,
       );
+      _initCompleter!.complete(result);
+      return result;
     } catch (e) {
       AppLogger.debug('$_serviceName: Initialization failed: $e');
+      _initCompleter!.complete(false);
       return false;
+    } finally {
+      _initCompleter = null;
     }
   }
 

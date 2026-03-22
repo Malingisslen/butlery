@@ -11663,4 +11663,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeNotSelected => 'Not selected';
+
+  @override
+  String get a11yCookingModeClose => 'Close cooking mode';
+
+  @override
+  String a11yCookingModeIngredient(String ingredient) {
+    return '$ingredient';
+  }
+
+  @override
+  String a11yCookingModeStep(int step, String instruction) {
+    return 'Step $step: $instruction';
+  }
 }

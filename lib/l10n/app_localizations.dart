@@ -19977,6 +19977,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ej markerad'**
   String get recipeNotSelected;
+
+  /// No description provided for @a11yCookingModeClose.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng tillagningsläge'**
+  String get a11yCookingModeClose;
+
+  /// No description provided for @a11yCookingModeIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'{ingredient}'**
+  String a11yCookingModeIngredient(String ingredient);
+
+  /// No description provided for @a11yCookingModeStep.
+  ///
+  /// In sv, this message translates to:
+  /// **'Steg {step}: {instruction}'**
+  String a11yCookingModeStep(int step, String instruction);
 }
 
 class _AppLocalizationsDelegate

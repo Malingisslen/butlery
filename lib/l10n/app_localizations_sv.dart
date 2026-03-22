@@ -11694,4 +11694,17 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipeNotSelected => 'Ej markerad';
+
+  @override
+  String get a11yCookingModeClose => 'Stäng tillagningsläge';
+
+  @override
+  String a11yCookingModeIngredient(String ingredient) {
+    return '$ingredient';
+  }
+
+  @override
+  String a11yCookingModeStep(int step, String instruction) {
+    return 'Steg $step: $instruction';
+  }
 }

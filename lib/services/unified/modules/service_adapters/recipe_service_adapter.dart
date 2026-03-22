@@ -8,6 +8,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -21,6 +22,7 @@ class RecipeServiceAdapter {
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
   final FirestoreRepository? _firestoreRepository;
+  final StorageService? _storageService;
 
   RecipeServiceAdapter({
     required RecipeRepository recipeRepository,
@@ -28,11 +30,13 @@ class RecipeServiceAdapter {
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
     FirestoreRepository? firestoreRepository,
+    StorageService? storageService,
   })  : _recipeRepository = recipeRepository,
         _commentsRepository = commentsRepository,
         _ratingsRepository = ratingsRepository,
         _notificationsRepository = notificationsRepository,
-        _firestoreRepository = firestoreRepository;
+        _firestoreRepository = firestoreRepository,
+        _storageService = storageService;
 
   /// Create a new recipe using repository pattern
   Future<String?> createRecipe(Recipe recipe) async {
@@ -61,9 +65,12 @@ class RecipeServiceAdapter {
     }
   }
 
-  /// Delete a recipe and cascade-delete related data (comments, ratings, social stats)
+  /// Delete a recipe and cascade-delete related data (images, comments, ratings, social stats)
   Future<bool> deleteRecipe(String recipeId) async {
     try {
+      // Delete storage images before removing the Firestore doc
+      await _deleteRecipeImages(recipeId);
+
       // Clean up related data before deleting the recipe itself
       await _cleanupRecipeReferences(recipeId);
       await _recipeRepository.delete(recipeId);
@@ -72,6 +79,24 @@ class RecipeServiceAdapter {
     } catch (e) {
       AppLogger.error('❌ Failed to delete recipe via repository', e);
       return false;
+    }
+  }
+
+  /// Delete all images associated with a recipe from Firebase Storage.
+  /// Failures are logged but do not block recipe deletion.
+  Future<void> _deleteRecipeImages(String recipeId) async {
+    if (_storageService == null) return;
+
+    try {
+      final recipe = await _recipeRepository.read(recipeId);
+      if (recipe == null || recipe.imageUrls.isEmpty) return;
+
+      await _storageService.deleteMultipleImages(recipe.imageUrls);
+      AppLogger.info(
+          '🗑️ Deleted ${recipe.imageUrls.length} image(s) for recipe $recipeId');
+    } catch (e) {
+      AppLogger.warning(
+          '⚠️ Storage cleanup failed for recipe $recipeId: $e');
     }
   }
 

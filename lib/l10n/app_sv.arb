@@ -8098,5 +8098,25 @@
   "emailVerificationContinue": "Forts\u00e4tt \u00e4nd\u00e5",
   "emailVerificationSuccess": "E-post verifierad!",
   "recipeSelected": "Markerad",
-  "recipeNotSelected": "Ej markerad"
+  "recipeNotSelected": "Ej markerad",
+  "a11yCookingModeClose": "Stäng tillagningsläge",
+  "a11yCookingModeIngredient": "{ingredient}",
+  "@a11yCookingModeIngredient": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yCookingModeStep": "Steg {step}: {instruction}",
+  "@a11yCookingModeStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "instruction": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -151,16 +151,16 @@ void main() {
         };
         final additionalData = {'requestId': 'req-123'};
 
-        // Act
-        await notificationService.sendImmediateNotification(
-          targetUserIds: targetUserIds,
-          strategy: strategy.toNotificationStrategy(),
-          variables: variables,
-          additionalData: additionalData,
+        // Act & Assert - should complete without error
+        await expectLater(
+          notificationService.sendImmediateNotification(
+            targetUserIds: targetUserIds,
+            strategy: strategy.toNotificationStrategy(),
+            variables: variables,
+            additionalData: additionalData,
+          ),
+          completes,
         );
-
-        // Assert - Notification was prepared (logged in dev mode)
-        expect(true, isTrue); // Placeholder - actual sending is logged
       });
 
       test('should handle empty target user list', () async {
@@ -200,17 +200,17 @@ void main() {
           ),
         ];
 
-        // Act
-        await notificationService.sendImmediateNotification(
-          targetUserIds: targetUserIds,
-          strategy: strategy.toNotificationStrategy(),
-          variables: variables,
-          imageUrl: imageUrl,
-          actions: actions.toNotificationActionList(),
+        // Act & Assert - should complete without error
+        await expectLater(
+          notificationService.sendImmediateNotification(
+            targetUserIds: targetUserIds,
+            strategy: strategy.toNotificationStrategy(),
+            variables: variables,
+            imageUrl: imageUrl,
+            actions: actions.toNotificationActionList(),
+          ),
+          completes,
         );
-
-        // Assert - Notification was prepared with image and actions
-        expect(true, isTrue); // Placeholder
       });
     });
 
@@ -224,15 +224,15 @@ void main() {
         );
         final variables = {'count': '5', 'type': 'nya kommentarer'};
 
-        // Act
-        await notificationService.sendBatchableNotification(
-          targetUserIds: targetUserIds,
-          strategy: strategy.toNotificationStrategy(),
-          variables: variables,
+        // Act & Assert - should complete without error
+        await expectLater(
+          notificationService.sendBatchableNotification(
+            targetUserIds: targetUserIds,
+            strategy: strategy.toNotificationStrategy(),
+            variables: variables,
+          ),
+          completes,
         );
-
-        // Assert - Notification was queued for batching
-        expect(true, isTrue); // Placeholder
       });
 
       test('should handle batch with additional data', () async {

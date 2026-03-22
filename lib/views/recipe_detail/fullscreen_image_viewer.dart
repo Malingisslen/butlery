@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -106,33 +108,26 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                 height: double.infinity,
                 color: cs.onSurface,
                 child: Center(
-                  child: Image.network(
-                    widget.imageUrls[index],
+                  child: CachedNetworkImage(
+                    imageUrl: widget.imageUrls[index],
+                    cacheKey: FirebaseUrlUtils.stableCacheKey(
+                        widget.imageUrls[index]),
                     fit: BoxFit.contain,
-                    cacheWidth: (MediaQuery.sizeOf(context).width *
+                    memCacheWidth: (MediaQuery.sizeOf(context).width *
                             MediaQuery.devicePixelRatioOf(context))
                         .round(),
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: cs.surfaceContainerHighest,
-                          value: progress.expectedTotalBytes != null
-                              ? progress.cumulativeBytesLoaded /
-                                  progress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child: Icon(
-                          Icons.error_outline,
-                          size: AppDimensions.iconSizeXxl,
-                          color: AppColors.cardWhite54,
-                        ),
-                      );
-                    },
+                    placeholder: (_, __) => Center(
+                      child: CircularProgressIndicator(
+                        color: cs.surfaceContainerHighest,
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) => const Center(
+                      child: Icon(
+                        Icons.error_outline,
+                        size: AppDimensions.iconSizeXxl,
+                        color: AppColors.cardWhite54,
+                      ),
+                    ),
                   ),
                 ),
               ),

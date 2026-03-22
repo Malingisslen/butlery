@@ -27,6 +27,7 @@ import 'package:butlery/services/unified/modules/social_recipe_module.dart';
 import 'package:butlery/services/unified/modules/realtime_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/services/storage_service.dart';
 
 // Legacy feature interfaces (for backward compatibility)
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
@@ -197,6 +198,7 @@ class UnifiedRecipeService extends ChangeNotifier
           _ratingsRepository ?? ServiceLocator.tryGet<RatingsRepository>(),
       notificationsRepository: _notificationsRepository ??
           ServiceLocator.tryGet<NotificationsRepository>(),
+      storageService: ServiceLocator.tryGet<StorageService>(),
     );
     return _serviceAdapter!;
   }
