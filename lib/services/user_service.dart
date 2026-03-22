@@ -136,32 +136,14 @@ class UserService extends ChangeNotifier
         );
       }
 
-      // Detect if displayName or avatarUrl changed for propagation
-      final displayNameChanged =
-          existingProfile != null && existingProfile.displayName != displayName;
-      final avatarChanged =
-          existingProfile != null && existingProfile.avatarUrl != avatarUrl;
-
       await _repository.saveProfile(profile);
 
       _currentUserProfile = profile;
       _cacheProfile(user.uid, profile);
 
-      // Propagate changes to denormalized locations (fire-and-forget, fault-tolerant)
-      if (displayNameChanged || avatarChanged) {
-        _repository
-            .propagateProfileChanges(
-          userId: user.uid,
-          newDisplayName: displayName,
-          newAvatarUrl: avatarUrl,
-        )
-            .catchError((Object e) {
-          AppLogger.warning(
-              '⚠️ Profile saved but propagation partially failed: $e');
-        });
-      }
+      // Profile propagation handled by Cloud Function (on-profile-updated.ts)
 
-      AppLogger.success('✅ Profil sparad: ${profile.displayName.maskedName}');
+      AppLogger.success('Profil sparad: ${profile.displayName.maskedName}');
       notifyListeners();
       return profile;
     } catch (e) {
