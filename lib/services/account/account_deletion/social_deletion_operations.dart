@@ -13,6 +13,22 @@ class SocialDeletionOperations {
 
   SocialDeletionOperations(this._firestore);
 
+  /// Delete all docs in a collection owned by userId, draining member subcollections first.
+  Future<void> _deleteOwnedSharedContent(
+      String collection, String userId) async {
+    final ownedSnapshot = await _firestore
+        .collection(collection)
+        .where('sharedByUserId', isEqualTo: userId)
+        .get();
+
+    for (final doc in ownedSnapshot.docs) {
+      final members =
+          await doc.reference.collection(FirestoreCollections.members).get();
+      await batchDeleteDocs(_firestore, members.docs);
+    }
+    await batchDeleteDocs(_firestore, ownedSnapshot.docs);
+  }
+
   /// Commits batch when op count reaches limit, returns a fresh batch and resets counter.
   Future<({WriteBatch batch, int count})> _commitIfNeeded(
       WriteBatch batch, int count) async {
@@ -158,45 +174,44 @@ class SocialDeletionOperations {
     }
   }
 
+  /// Remove user from all shared content memberships and delete owned shared recipes.
   Future<bool> removeFromSharedContent(String userId) async {
     try {
+      // Delete user's member subcollection docs and clean up sharedToUserIds
+      final memberDocs = await _firestore
+          .collectionGroup(FirestoreCollections.members)
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      // Clean up sharedToUserIds on parent docs (batched)
       var batch = _firestore.batch();
       var opCount = 0;
-
-      final sharedRecipesSnapshot = await _firestore
-          .collection(FirestoreCollections.sharedRecipes)
-          .where('sharedWith', arrayContains: userId)
-          .get();
-
-      for (final doc in sharedRecipesSnapshot.docs) {
-        final sharedWith = List<String>.from(doc.data()['sharedWith'] ?? []);
-        sharedWith.remove(userId);
-
-        if (sharedWith.isEmpty) {
-          batch.delete(doc.reference);
-        } else {
-          batch.update(doc.reference, {'sharedWith': sharedWith});
+      for (final doc in memberDocs.docs) {
+        final parentRef = doc.reference.parent.parent;
+        if (parentRef != null) {
+          batch.update(parentRef, {
+            'sharedToUserIds': FieldValue.arrayRemove([userId]),
+          });
+          opCount++;
+          final state = await _commitIfNeeded(batch, opCount);
+          batch = state.batch;
+          opCount = state.count;
         }
-        opCount++;
-        final state = await _commitIfNeeded(batch, opCount);
-        batch = state.batch;
-        opCount = state.count;
       }
-
-      final ownedSharedSnapshot = await _firestore
-          .collection(FirestoreCollections.sharedRecipes)
-          .where('sharedByUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in ownedSharedSnapshot.docs) {
-        batch.delete(doc.reference);
-        opCount++;
-        final state = await _commitIfNeeded(batch, opCount);
-        batch = state.batch;
-        opCount = state.count;
+      // Commit remaining updates, ignoring not-found errors from already-deleted parents
+      if (opCount > 0) {
+        try {
+          await batch.commit();
+        } catch (e) {
+          app_logger.AppLogger.warning(
+              '[$_logTag] Some sharedToUserIds updates failed (parents may be deleted): $e');
+        }
       }
+      await batchDeleteDocs(_firestore, memberDocs.docs);
 
-      if (opCount > 0) await batch.commit();
+      await _deleteOwnedSharedContent(
+          FirestoreCollections.sharedRecipes, userId);
+
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
@@ -265,43 +280,10 @@ class SocialDeletionOperations {
     }
   }
 
-  /// Delete shared menus owned by or shared with user.
+  /// Delete shared menus owned by user.
   Future<bool> deleteSharedMenus(String userId) async {
     try {
-      var batch = _firestore.batch();
-      var opCount = 0;
-
-      // Menus shared with user
-      final sharedWithSnapshot = await _firestore
-          .collection(FirestoreCollections.sharedMenus)
-          .where('sharedWith', arrayContains: userId)
-          .get();
-
-      for (final doc in sharedWithSnapshot.docs) {
-        batch.update(doc.reference, {
-          'sharedWith': FieldValue.arrayRemove([userId]),
-        });
-        opCount++;
-        final state = await _commitIfNeeded(batch, opCount);
-        batch = state.batch;
-        opCount = state.count;
-      }
-
-      // Menus owned by user
-      final ownedSnapshot = await _firestore
-          .collection(FirestoreCollections.sharedMenus)
-          .where('sharedByUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in ownedSnapshot.docs) {
-        batch.delete(doc.reference);
-        opCount++;
-        final state = await _commitIfNeeded(batch, opCount);
-        batch = state.batch;
-        opCount = state.count;
-      }
-
-      if (opCount > 0) await batch.commit();
+      await _deleteOwnedSharedContent(FirestoreCollections.sharedMenus, userId);
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete shared menus', e);
@@ -309,43 +291,11 @@ class SocialDeletionOperations {
     }
   }
 
-  /// Delete shared shopping lists owned by or shared with user.
+  /// Delete shared shopping lists owned by user.
   Future<bool> deleteSharedShoppingLists(String userId) async {
     try {
-      var batch = _firestore.batch();
-      var opCount = 0;
-
-      // Lists shared with user
-      final sharedWithSnapshot = await _firestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .where('sharedWith', arrayContains: userId)
-          .get();
-
-      for (final doc in sharedWithSnapshot.docs) {
-        batch.update(doc.reference, {
-          'sharedWith': FieldValue.arrayRemove([userId]),
-        });
-        opCount++;
-        final state = await _commitIfNeeded(batch, opCount);
-        batch = state.batch;
-        opCount = state.count;
-      }
-
-      // Lists owned by user
-      final ownedSnapshot = await _firestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .where('sharedByUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in ownedSnapshot.docs) {
-        batch.delete(doc.reference);
-        opCount++;
-        final state = await _commitIfNeeded(batch, opCount);
-        batch = state.batch;
-        opCount = state.count;
-      }
-
-      if (opCount > 0) await batch.commit();
+      await _deleteOwnedSharedContent(
+          FirestoreCollections.sharedShoppingLists, userId);
       return true;
     } catch (e) {
       app_logger.AppLogger.error(

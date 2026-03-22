@@ -177,9 +177,13 @@ service cloud.firestore {
     }
 
     // Realtime collaboration helper — used by realtime_recipes, realtime_menus, realtime_resources
+    // Uses get() which returns null for non-existent docs (avoids exists()+get() double read)
     function isRealtimeParticipant(collectionName, docId) {
-      let parentData = getDocData(collectionName, docId);
-      return request.auth.uid == parentData.ownerId || request.auth.uid in parentData.participantIds;
+      let parentPath = /databases/$(database)/documents/$(collectionName)/$(docId);
+      let parentDoc = get(parentPath);
+      return parentDoc != null
+        && (request.auth.uid == parentDoc.data.ownerId
+            || request.auth.uid in parentDoc.data.participantIds);
     }
 
     // ========================================
@@ -1374,11 +1378,11 @@ service cloud.firestore {
     // Required for collectionGroup('members') queries
     // ========================================
 
-    // Users can read their OWN membership documents across all collections
-    // This enables: firestore.collectionGroup('members').where('userId', isEqualTo: currentUserId)
-    // Applies to: shared_recipes/members, shared_menus/members, shared_shopping_lists/members
+    // Users can read/delete their OWN membership documents across all collections.
+    // NOTE: Matches ALL 'members' subcollections. Safe because only shared content
+    // members have a 'userId' field (friend_category members use 'friendId' instead).
     match /{path=**}/members/{memberId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // Users can read their OWN engagement documents across all collections

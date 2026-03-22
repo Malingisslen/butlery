@@ -33,6 +33,9 @@ export { cleanupExpiredFriendRequests } from "./cleanup/cleanup-expired-friend-r
 // Social Cleanup - User deletion and moderation
 export { onUserDeleted } from "./cleanup/on-user-deleted";
 
+// Social - Profile propagation
+export { onProfileUpdated } from "./social/on-profile-updated";
+
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";
 

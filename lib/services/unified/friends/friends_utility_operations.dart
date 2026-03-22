@@ -84,54 +84,20 @@ class FriendsUtilityOperations {
       AppLogger.debug(
           'Fetching recent collaborators for user: ${userId.maskedUserId}');
 
-      // Get recent collaborators from recipes
-      final recentRecipes = await firestore
-          .collection(FirestoreCollections.recipes)
-          .where('sharedWith', arrayContains: userId)
-          .orderBy('lastModified', descending: true)
-          .limit(20)
+      // Find shared content where user is a member (via collectionGroup)
+      final memberDocs = await firestore
+          .collectionGroup(FirestoreCollections.members)
+          .where('userId', isEqualTo: userId)
+          .limit(40)
           .get();
 
-      // Get recent collaborators from menus
-      final recentMenus = await firestore
-          .collection(FirestoreCollections.menus)
-          .where('sharedWith', arrayContains: userId)
-          .orderBy('lastModified', descending: true)
-          .limit(20)
-          .get();
-
-      // Collect unique collaborator IDs
+      // Collect unique collaborator IDs from parent doc owners
       final collaboratorIds = <String>{};
 
-      // Add recipe collaborators
-      for (final doc in recentRecipes.docs) {
-        final data = doc.data();
-        final ownerId = data['ownerId'] as String?;
-        final sharedWith = List<String>.from(data['sharedWith'] ?? []);
-
-        if (ownerId != null && ownerId != userId) {
-          collaboratorIds.add(ownerId);
-        }
-        for (final collaboratorId in sharedWith) {
-          if (collaboratorId != userId) {
-            collaboratorIds.add(collaboratorId);
-          }
-        }
-      }
-
-      // Add menu collaborators
-      for (final doc in recentMenus.docs) {
-        final data = doc.data();
-        final ownerId = data['ownerId'] as String?;
-        final sharedWith = List<String>.from(data['sharedWith'] ?? []);
-
-        if (ownerId != null && ownerId != userId) {
-          collaboratorIds.add(ownerId);
-        }
-        for (final collaboratorId in sharedWith) {
-          if (collaboratorId != userId) {
-            collaboratorIds.add(collaboratorId);
-          }
+      for (final doc in memberDocs.docs) {
+        final addedBy = doc.data()['addedBy'] as String?;
+        if (addedBy != null && addedBy != userId) {
+          collaboratorIds.add(addedBy);
         }
       }
 
