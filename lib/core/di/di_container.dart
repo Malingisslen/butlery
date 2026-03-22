@@ -280,6 +280,37 @@ class DIContainer {
   /// Check if a service is registered.
   bool isRegistered<T extends Object>() => _container.isRegistered<T>();
 
+  static const String _userScopeName = 'user_session';
+
+  /// Whether a user session scope is currently active.
+  bool get hasUserScope => _container.hasScope(_userScopeName);
+
+  /// Push a new user-session scope. Called on login.
+  /// Registers user-scoped services via each module's [configureUserScope].
+  Future<void> pushUserScope() async {
+    if (hasUserScope) {
+      await popUserScope();
+    }
+    await _container.pushNewScopeAsync(
+      scopeName: _userScopeName,
+      init: (getIt) async {
+        for (final module in _modules) {
+          await module.configureUserScope(getIt);
+        }
+      },
+    );
+    AppLogger.info('User session scope pushed');
+  }
+
+  /// Pop the user-session scope. Called on logout.
+  /// Automatically disposes all services registered in the scope.
+  Future<void> popUserScope() async {
+    if (hasUserScope) {
+      await _container.dropScope(_userScopeName);
+      AppLogger.info('User session scope popped');
+    }
+  }
+
   /// Reset the container (for testing).
   Future<void> reset() async {
     await _container.reset();

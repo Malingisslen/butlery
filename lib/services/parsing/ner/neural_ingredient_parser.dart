@@ -48,7 +48,6 @@ class NeuralIngredientParser {
       // Reset state if a previous attempt failed, allowing retry
       await _nerService.dispose();
 
-      // Ensure model files are available locally
       final modelFiles = await _modelManager.ensureModelAvailable();
       if (modelFiles == null) {
         AppLogger.debug('$_serviceName: Model not available');
@@ -56,7 +55,6 @@ class NeuralIngredientParser {
         return false;
       }
 
-      // Initialize ONNX Runtime with model and vocab
       final result = await _nerService.initialize(
         modelPath: modelFiles.modelPath,
         vocabContent: modelFiles.vocabContent,

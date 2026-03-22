@@ -456,14 +456,17 @@ class UnifiedFriendsService extends ChangeNotifier
   /// Cancel sent invitation (for ViewModels)
   Future<bool> cancelSentInvitation(String invitationId) async =>
       await invitations.cancelInvitation(invitationId);
+
+  /// Clear user-specific state only — does NOT dispose stream resources
+  /// (the auth listener must survive to handle the next login).
   void resetForLogout() {
     _stateManager.clearAllData();
-    disposeStreamResources();
   }
 
   @override
   void dispose() {
-    resetForLogout();
+    _stateManager.clearAllData();
+    disposeStreamResources();
     super.dispose();
   }
 }

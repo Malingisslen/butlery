@@ -130,6 +130,9 @@ class UIModule implements DIModule {
       100; // UI has lowest priority, runs after all other modules
 
   @override
+  @override
+  Future<void> configureUserScope(GetIt container) async {}
+
   Future<void> configure(GetIt container) async {
     try {
       // Auth ViewModel - Auth service dependency

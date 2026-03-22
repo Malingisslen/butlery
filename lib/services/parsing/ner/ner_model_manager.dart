@@ -81,10 +81,8 @@ class NerModelManager extends RemoteModelLoader {
       if (!await vocabFile.exists() || !await versionFile.exists()) return null;
 
       // Clean up any leftover .tmp files from interrupted writes
-      for (final tmpSuffix in ['.tmp']) {
-        final tmpModel = File('$modelPath$tmpSuffix');
-        if (await tmpModel.exists()) await tmpModel.delete();
-      }
+      final tmpModel = File('$modelPath.tmp');
+      if (await tmpModel.exists()) await tmpModel.delete();
 
       final [vocabContent, versionStr] = await Future.wait([
         vocabFile.readAsString(),
@@ -147,9 +145,8 @@ class NerModelManager extends RemoteModelLoader {
 
       final modelPath = '${dir.path}/$_modelFileName';
       final vocabPath = '${dir.path}/$_vocabFileName';
-      final versionPath2 = '${dir.path}/$_versionFileName';
+      final localVersionPath = '${dir.path}/$_versionFileName';
 
-      // Write to temp files first
       final modelTmpFile = File('$modelPath.tmp');
       await modelTmpFile.writeAsBytes(modelData);
 
@@ -161,9 +158,9 @@ class NerModelManager extends RemoteModelLoader {
       await vocabTmpFile.rename(vocabPath);
 
       // Version file written last — if it exists, all other files are complete
-      final versionTmpFile = File('$versionPath2.tmp');
+      final versionTmpFile = File('$localVersionPath.tmp');
       await versionTmpFile.writeAsString(latestVersion.toString());
-      await versionTmpFile.rename(versionPath2);
+      await versionTmpFile.rename(localVersionPath);
 
       _cachedModelPath = modelPath;
 

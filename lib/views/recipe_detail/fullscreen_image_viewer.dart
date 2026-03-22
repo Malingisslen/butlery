@@ -83,58 +83,61 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: PageView.builder(
-        controller: _pageController,
-        onPageChanged: (index) {
-          if (mounted) {
-            setState(() {
-              _currentIndex = index;
-            });
-          }
-        },
-        itemCount: widget.imageUrls.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
+      body: Builder(builder: (context) {
+        final cacheWidth = (MediaQuery.sizeOf(context).width *
+                MediaQuery.devicePixelRatioOf(context))
+            .round();
+        return PageView.builder(
+          controller: _pageController,
+          onPageChanged: (index) {
+            if (mounted) {
               setState(() {
-                _showAppBar = !_showAppBar;
+                _currentIndex = index;
               });
-            },
-            child: InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: cs.onSurface,
-                child: Center(
-                  child: CachedNetworkImage(
-                    imageUrl: widget.imageUrls[index],
-                    cacheKey: FirebaseUrlUtils.stableCacheKey(
-                        widget.imageUrls[index]),
-                    fit: BoxFit.contain,
-                    memCacheWidth: (MediaQuery.sizeOf(context).width *
-                            MediaQuery.devicePixelRatioOf(context))
-                        .round(),
-                    placeholder: (_, __) => Center(
-                      child: CircularProgressIndicator(
-                        color: cs.surfaceContainerHighest,
+            }
+          },
+          itemCount: widget.imageUrls.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showAppBar = !_showAppBar;
+                });
+              },
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: cs.onSurface,
+                  child: Center(
+                    child: CachedNetworkImage(
+                      imageUrl: widget.imageUrls[index],
+                      cacheKey: FirebaseUrlUtils.stableCacheKey(
+                          widget.imageUrls[index]),
+                      fit: BoxFit.contain,
+                      memCacheWidth: cacheWidth,
+                      placeholder: (_, __) => Center(
+                        child: CircularProgressIndicator(
+                          color: cs.surfaceContainerHighest,
+                        ),
                       ),
-                    ),
-                    errorWidget: (_, __, ___) => const Center(
-                      child: Icon(
-                        Icons.error_outline,
-                        size: AppDimensions.iconSizeXxl,
-                        color: AppColors.cardWhite54,
+                      errorWidget: (_, __, ___) => const Center(
+                        child: Icon(
+                          Icons.error_outline,
+                          size: AppDimensions.iconSizeXxl,
+                          color: AppColors.cardWhite54,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      }),
     );
   }
 }

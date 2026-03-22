@@ -36,6 +36,9 @@ class SearchModule implements DIModule {
   int get priority => 15; // After Core (1), before Content (10)
 
   @override
+  @override
+  Future<void> configureUserScope(GetIt container) async {}
+
   Future<void> configure(GetIt container) async {
     try {
       // Always register Firestore search as the default provider.

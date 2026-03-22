@@ -366,12 +366,10 @@ class PersonalTagService extends BaseService {
     }
   }
 
-  /// Clear all user-specific state for logout. Cancels Firestore stream
-  /// subscriptions so a new user's tags don't mix with the previous user's.
-  Future<void> resetForLogout() async {
-    await _tagStreamSub?.cancel();
+  void resetForLogout() {
+    _tagStreamSub?.cancel();
     _tagStreamSub = null;
-    await _groupStreamSub?.cancel();
+    _groupStreamSub?.cancel();
     _groupStreamSub = null;
     _streamsInitialized = false;
     _cachedTagVersion = null;
@@ -380,6 +378,6 @@ class PersonalTagService extends BaseService {
 
   @override
   Future<void> onDispose() async {
-    await resetForLogout();
+    resetForLogout();
   }
 }
