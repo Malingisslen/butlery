@@ -363,6 +363,7 @@ class ContentModule implements DIModule {
           classifierService: container<OnnxLineClassifierService>(),
           modelManager: container<LineClassifierModelManager>(),
         ),
+        dispose: (s) => s.dispose(),
       );
 
       // Shared ingredient parsing strategy (CRF → BERT NER → regex fallback)

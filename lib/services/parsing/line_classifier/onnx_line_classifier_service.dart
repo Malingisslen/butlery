@@ -39,6 +39,8 @@ class OnnxLineClassifierService {
   WordPieceTokenizer? _tokenizer;
   bool _initialized = false;
   bool _initFailed = false;
+  bool _isDisposed = false;
+  bool _isRunning = false;
   String? _inputIdName;
   String? _attentionMaskName;
   String? _outputName;
@@ -46,13 +48,14 @@ class OnnxLineClassifierService {
   OnnxLineClassifierService({OnnxRuntime? runtime})
       : _runtime = runtime ?? OnnxRuntime();
 
-  bool get isAvailable => _initialized && !_initFailed;
+  bool get isAvailable => _initialized && !_initFailed && !_isDisposed;
 
   /// Initialize with model and vocabulary data.
   Future<bool> initialize({
     required String modelPath,
     required String vocabContent,
   }) async {
+    if (_isDisposed) return false;
     if (_initialized) return !_initFailed;
 
     try {
@@ -135,6 +138,8 @@ class OnnxLineClassifierService {
   }
 
   Future<List<ClassifiedLine>?> _classifyChunk(List<String> texts) async {
+    if (_isDisposed || _session == null || _tokenizer == null) return null;
+    _isRunning = true;
     try {
       final tokenResults = texts
           .map((t) => _tokenizer!.tokenizeWords(t.split(RegExp(r'\s+'))))
@@ -193,6 +198,8 @@ class OnnxLineClassifierService {
     } catch (e) {
       AppLogger.warning('$_serviceName: Batch classification failed: $e');
       return null;
+    } finally {
+      _isRunning = false;
     }
   }
 
@@ -279,6 +286,11 @@ class OnnxLineClassifierService {
   }
 
   Future<void> dispose() async {
+    _isDisposed = true;
+    // Wait for any in-flight inference to complete before closing session
+    while (_isRunning) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
     await _session?.close();
     _session = null;
     _tokenizer = null;
@@ -287,5 +299,11 @@ class OnnxLineClassifierService {
     _inputIdName = null;
     _attentionMaskName = null;
     _outputName = null;
+  }
+
+  /// Reset disposed state so the service can be re-initialized.
+  void resetForReuse() {
+    if (!_isDisposed) return;
+    _isDisposed = false;
   }
 }

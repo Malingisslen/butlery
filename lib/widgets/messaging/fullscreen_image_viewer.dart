@@ -63,6 +63,9 @@ class FullscreenImageViewer extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.contain,
+                  memCacheWidth: (MediaQuery.of(context).size.width *
+                          MediaQuery.of(context).devicePixelRatio)
+                      .round(),
                   placeholder: (context, url) => Center(
                     child: CircularProgressIndicator(
                       color: cs.surfaceContainerHighest,
