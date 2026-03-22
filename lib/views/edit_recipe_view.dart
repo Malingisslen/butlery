@@ -202,14 +202,10 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   PreferredSizeWidget _buildAppBar(BuildContext context, Recipe recipe) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: Consumer<CollaborativeStatusViewModel>(
-        builder: (context, collaborativeViewModel, child) {
-          final status = collaborativeViewModel.getRecipeCollaborativeStatus(
-            recipe.id,
-            recipe,
-          );
-          final isCollaborative = status.isCollaborative;
-
+      child: Selector<CollaborativeStatusViewModel, bool>(
+        selector: (_, vm) =>
+            vm.getRecipeCollaborativeStatus(recipe.id, recipe).isCollaborative,
+        builder: (context, isCollaborative, child) {
           return AppBar(
             title: Text(context.l10n.recipeEdit),
             backgroundColor: isCollaborative
@@ -219,10 +215,11 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                     .withValues(alpha: AppDimensions.opacityVeryLight)
                 : null,
             actions: [
-              Builder(
-                builder: (context) {
-                  final formVm = context.watch<RecipeFormViewModel>();
-                  if (formVm.isAutoSaving) {
+              Selector<RecipeFormViewModel, (bool, bool)>(
+                selector: (_, vm) => (vm.isAutoSaving, vm.hasRecentAutoSave),
+                builder: (context, state, _) {
+                  final (isAutoSaving, hasRecentAutoSave) = state;
+                  if (isAutoSaving) {
                     return const Padding(
                       padding: EdgeInsetsDirectional.only(
                           end: AppDimensions.spacingL),
@@ -234,7 +231,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                         ),
                       ),
                     );
-                  } else if (formVm.hasRecentAutoSave) {
+                  } else if (hasRecentAutoSave) {
                     return Padding(
                       padding: const EdgeInsetsDirectional.only(
                           end: AppDimensions.spacingL),
@@ -270,30 +267,29 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   }
 
   Widget _buildSmartBanners(BuildContext context, Recipe recipe) {
-    return Consumer2<CollaborativeStatusViewModel, RecipeFormViewModel>(
-      builder: (context, collaborativeViewModel, recipeViewModel, child) {
-        return Column(
-          children: [
-            _buildCollaborativeBanner(context, recipe),
-            SocialCollaborativeComponents.smartPermissionsBanner(
+    return Column(
+      children: [
+        _buildCollaborativeBanner(context, recipe),
+        Selector<RecipeFormViewModel, String?>(
+          selector: (_, vm) => vm.editMode,
+          builder: (context, _, __) {
+            final recipeViewModel = context.read<RecipeFormViewModel>();
+            return SocialCollaborativeComponents.smartPermissionsBanner(
               context: context,
               viewModel: recipeViewModel,
-            ),
-          ],
-        );
-      },
+            );
+          },
+        ),
+      ],
     );
   }
 
   Widget _buildCollaborativeBanner(BuildContext context, Recipe recipe) {
-    return Consumer<CollaborativeStatusViewModel>(
-      builder: (context, collaborativeViewModel, child) {
-        final status = collaborativeViewModel.getRecipeCollaborativeStatus(
-          recipe.id,
-          recipe,
-        );
-
-        if (!status.isCollaborative) return const SizedBox.shrink();
+    return Selector<CollaborativeStatusViewModel, bool>(
+      selector: (_, vm) =>
+          vm.getRecipeCollaborativeStatus(recipe.id, recipe).isCollaborative,
+      builder: (context, isCollaborative, child) {
+        if (!isCollaborative) return const SizedBox.shrink();
 
         return SocialCollaborativeComponents.collaborativeBanner(
           title: context.l10n.socialEditingTogether,

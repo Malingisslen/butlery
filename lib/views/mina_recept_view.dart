@@ -52,6 +52,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/tagging/personal_tag.dart';
 
 /// Personal recipe management view with multi-provider architecture.
 class MinaReceptView extends StatefulWidget {
@@ -360,8 +362,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeListViewModel>();
-    final offlineService = context.watch<offline_service.OfflineService>();
-    final personalTagViewModel = context.watch<PersonalTagViewModel>();
+    final isOnline = context
+        .select<offline_service.OfflineService, bool>((svc) => svc.isOnline);
+    final personalTags = context
+        .select<PersonalTagViewModel, List<PersonalTag>>((vm) => vm.tags);
     final recipeCount = viewModel.recipes.length;
 
     // Selection mode uses a different app bar
@@ -410,7 +414,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               onRatingFilterToggle: viewModel.toggleRatingFilter,
               onAllergenFilterToggle: viewModel.toggleAllergenFilter,
               onDietaryFilterToggle: viewModel.toggleDietaryFilter,
-              personalTagIds: personalTagViewModel.tags,
+              personalTagIds: personalTags,
               activePersonalTagFilters: viewModel.activePersonalTagFilters,
               excludedPersonalTagFilters: viewModel.excludedPersonalTagFilters,
               onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
@@ -446,7 +450,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               ),
             ),
           ],
-          Expanded(child: _buildContent(viewModel, offlineService)),
+          Expanded(child: _buildContent(viewModel, isOnline)),
         ],
       )),
     );
@@ -470,8 +474,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     RecipeListViewModel viewModel,
     Recipe recipe,
   ) {
-    final userService = context.watch<UserService>();
-    final allergenPrefs = userService.allergenPreferences;
+    final allergenPrefs = context.select<UserService, UserAllergenPreferences>(
+        (svc) => svc.allergenPreferences);
     final isSelected = viewModel.selectedIds.contains(recipe.id);
     final cs = Theme.of(context).colorScheme;
 
@@ -584,7 +588,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
   Widget _buildContent(
     RecipeListViewModel viewModel,
-    offline_service.OfflineService offlineService,
+    bool isOnline,
   ) {
     if (viewModel.isLoading) {
       return Column(
@@ -624,7 +628,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        if (offlineService.isOnline) {
+        if (isOnline) {
           await _syncWithOnline();
         } else {
           await viewModel.refresh();
