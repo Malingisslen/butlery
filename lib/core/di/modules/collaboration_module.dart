@@ -44,9 +44,9 @@ class CollaborationModule implements DIModule {
       40; // After Core (1), Content (10), Social (20), Messaging (30)
 
   @override
-  @override
   Future<void> configureUserScope(GetIt container) async {}
 
+  @override
   Future<void> configure(GetIt container) async {
     try {
       container.registerLazySingleton<RealtimeSyncService>(

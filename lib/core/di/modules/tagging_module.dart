@@ -82,9 +82,9 @@ class TaggingModule implements DIModule {
   int get priority => 25; // After Core (1), before Content (10) is also valid
 
   @override
-  @override
   Future<void> configureUserScope(GetIt container) async {}
 
+  @override
   Future<void> configure(GetIt container) async {
     try {
       // Tag configuration service with Firebase + SharedPreferences caching

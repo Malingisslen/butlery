@@ -49,9 +49,9 @@ class PerformanceModule implements DIModule {
       15; // Medium priority - cache infrastructure needed by Social module (priority 20)
 
   @override
-  @override
   Future<void> configureUserScope(GetIt container) async {}
 
+  @override
   Future<void> configure(GetIt container) async {
     try {
       // JSON cache helper (lazy singleton - uses CacheDao from OfflineService)
