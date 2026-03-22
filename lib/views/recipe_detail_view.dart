@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
@@ -220,6 +221,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ),
                             child: CachedNetworkImage(
                               imageUrl: recipe.imageUrls.first,
+                              cacheKey: FirebaseUrlUtils.stableCacheKey(recipe.imageUrls.first),
                               fit: BoxFit.cover,
                               memCacheWidth: (600 *
                                       MediaQuery.of(context).devicePixelRatio)

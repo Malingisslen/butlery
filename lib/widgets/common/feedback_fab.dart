@@ -26,12 +26,25 @@ final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Square "!" button positioned at bottom-right that opens a feedback form.
 /// Only visible when the user is authenticated.
-class FeedbackFAB extends StatelessWidget {
+class FeedbackFAB extends StatefulWidget {
   const FeedbackFAB({super.key});
 
   @override
+  State<FeedbackFAB> createState() => _FeedbackFABState();
+}
+
+class _FeedbackFABState extends State<FeedbackFAB> {
+  AuthService? _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = ServiceLocator.tryGet<AuthService>();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final authService = ServiceLocator.tryGet<AuthService>();
+    final authService = _authService;
     if (authService == null) return const SizedBox.shrink();
 
     return ListenableBuilder(

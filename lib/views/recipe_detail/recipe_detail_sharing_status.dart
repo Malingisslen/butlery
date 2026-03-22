@@ -12,7 +12,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Shows sharing status for a recipe the user owns.
 /// Displays shared members/groups with per-item revoke buttons.
-class RecipeDetailSharingStatus extends StatelessWidget {
+class RecipeDetailSharingStatus extends StatefulWidget {
   final Recipe recipe;
   final VoidCallback onSharingChanged;
 
@@ -23,8 +23,27 @@ class RecipeDetailSharingStatus extends StatelessWidget {
   });
 
   @override
+  State<RecipeDetailSharingStatus> createState() =>
+      _RecipeDetailSharingStatusState();
+}
+
+class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
+  late final String? _currentUserId;
+  late final UnifiedFriendsService _friendsService;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    _friendsService = ServiceLocator.get<UnifiedFriendsService>();
+  }
+
+  Recipe get recipe => widget.recipe;
+  VoidCallback get onSharingChanged => widget.onSharingChanged;
+
+  @override
   Widget build(BuildContext context) {
-    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    final currentUserId = _currentUserId;
 
     // Only show for owner with sharing data
     if (recipe.createdBy != currentUserId) return const SizedBox.shrink();
@@ -44,7 +63,6 @@ class RecipeDetailSharingStatus extends StatelessWidget {
     }
 
     final cs = Theme.of(context).colorScheme;
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
     return Padding(
       padding: AppDimensions.responsiveContentPadding(context),
@@ -90,7 +108,7 @@ class RecipeDetailSharingStatus extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             ...sharedMemberIds.map((userId) {
-              final friend = friendsService.friends
+              final friend = _friendsService.friends
                   .where((f) => f.uid == userId)
                   .firstOrNull;
               final displayName = friend?.displayName ?? userId;
@@ -116,7 +134,7 @@ class RecipeDetailSharingStatus extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             ...categoryIds.map((groupId) {
-              final group = friendsService.categoriesList
+              final group = _friendsService.categoriesList
                   .where((c) => c.id == groupId)
                   .firstOrNull;
               final displayName = group?.name ?? groupId;

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'dart:io';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -243,6 +244,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             child: imagePath.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: imagePath,
+                    cacheKey: FirebaseUrlUtils.stableCacheKey(imagePath),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
