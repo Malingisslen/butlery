@@ -182,6 +182,13 @@ class OCRExtractionService extends BaseService {
   @override
   String get serviceName => 'OCRExtractionService';
 
+  @override
+  Future<void> onDispose() async {
+    _cachedHttpClient?.close();
+    _cachedHttpClient = null;
+    await super.onDispose();
+  }
+
   // Circuit breakers (late initialized with time provider)
   late final CircuitBreaker _ocrSpaceCircuitBreaker;
   late final CircuitBreaker _googleVisionCircuitBreaker;
@@ -193,10 +200,11 @@ class OCRExtractionService extends BaseService {
   static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
   static const double _minConfidenceThreshold = 0.6;
 
-  // Getters with test dependency injection support
+  // Lazily-created HTTP client (reused across calls, closed on dispose)
+  http.Client? _cachedHttpClient;
   http.Client get _httpClient {
     if (_testHttpClient != null) return _testHttpClient;
-    return http.Client();
+    return _cachedHttpClient ??= http.Client();
   }
 
   String get _ocrApiKey {
