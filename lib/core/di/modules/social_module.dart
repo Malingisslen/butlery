@@ -328,24 +328,11 @@ class SocialModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // Initialize UserService
-      final userService = container<UserService>();
-      await userService.initialize();
+      // UserService + UnifiedFriendsService are user-scoped — initialized on login, not here
 
-      // Initialize Enhanced UnifiedFriendsService
-      final friendsService = container<UnifiedFriendsService>();
-      await friendsService.initialize();
-
-      // Validate other services are accessible
-      final services = [
-        container<DeepLinkService>(),
-        container<ConnectivityMonitoringService>(),
-      ];
-
-      for (final service in services) {
-        // Basic validation - service is accessible
-        service.toString();
-      }
+      // Validate app-scoped services are accessible
+      container<DeepLinkService>();
+      container<ConnectivityMonitoringService>();
     } catch (e) {
       throw DIModuleException(
         name,
