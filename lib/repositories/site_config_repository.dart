@@ -21,6 +21,9 @@ class SiteConfigRepository {
   /// How long cached configs remain valid.
   static const _cacheDuration = Duration(hours: 1);
 
+  /// Maximum number of cached configs.
+  static const int _maxCacheSize = 50;
+
   SiteConfigRepository({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
@@ -234,6 +237,14 @@ class SiteConfigRepository {
     ),
   ];
 
+  void _cacheConfig(String domain, _CachedConfig config) {
+    _cache.remove(domain);
+    _cache[domain] = config;
+    if (_cache.length > _maxCacheSize) {
+      _cache.remove(_cache.keys.first);
+    }
+  }
+
   /// Load a site config for a domain.
   ///
   /// Returns cached config if available and not expired.
@@ -254,7 +265,7 @@ class SiteConfigRepository {
 
       if (doc.exists && doc.data() != null) {
         final config = SiteConfig.fromFirestore(doc.data()!);
-        _cache[normalizedDomain] = _CachedConfig(config);
+        _cacheConfig(normalizedDomain, _CachedConfig(config));
         AppLogger.debug(
           'SiteConfigRepository: Loaded config for $normalizedDomain',
         );
@@ -268,7 +279,7 @@ class SiteConfigRepository {
 
     // Return default config
     final defaultConfig = SiteConfig.defaultFor(normalizedDomain);
-    _cache[normalizedDomain] = _CachedConfig(defaultConfig);
+    _cacheConfig(normalizedDomain, _CachedConfig(defaultConfig));
     return defaultConfig;
   }
 
@@ -290,7 +301,7 @@ class SiteConfigRepository {
 
       if (doc.exists && doc.data() != null) {
         final config = SiteConfig.fromFirestore(doc.data()!);
-        _cache[normalizedDomain] = _CachedConfig(config);
+        _cacheConfig(normalizedDomain, _CachedConfig(config));
 
         if (config.isSupported && config.hasSelectors) {
           return config;

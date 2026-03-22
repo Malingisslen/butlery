@@ -259,7 +259,7 @@ class UserService extends ChangeNotifier
         lastActiveAt: DateTime.now(),
       );
 
-      _profileCache[userId] = _currentUserProfile!;
+      _cacheProfile(userId, _currentUserProfile!);
       notifyListeners();
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte uppdatera online-status: $e');
@@ -293,7 +293,7 @@ class UserService extends ChangeNotifier
           publicRecipeCount: publicRecipeCount,
         );
 
-        _profileCache[userId] = _currentUserProfile!;
+        _cacheProfile(userId, _currentUserProfile!);
         notifyListeners();
       }
     } catch (e) {
@@ -347,8 +347,7 @@ class UserService extends ChangeNotifier
       }
 
       if (_currentUserProfile != null) {
-        _profileCache[user.uid] = _currentUserProfile!;
-        _cacheTimestamps[user.uid] = DateTime.now();
+        _cacheProfile(user.uid, _currentUserProfile!);
         AppLogger.info(
             '👤 Nuvarande profil laddad: ${_currentUserProfile!.displayName}');
       } else {
@@ -437,7 +436,7 @@ class UserService extends ChangeNotifier
         fcmTokenUpdatedAt: DateTime.now(),
       );
 
-      _profileCache[userId] = _currentUserProfile!;
+      _cacheProfile(userId, _currentUserProfile!);
       notifyListeners();
 
       AppLogger.success('✅ FCM token updated successfully');
@@ -466,7 +465,7 @@ class UserService extends ChangeNotifier
         notificationsEnabled: enabled,
       );
 
-      _profileCache[userId] = _currentUserProfile!;
+      _cacheProfile(userId, _currentUserProfile!);
       notifyListeners();
 
       AppLogger.success('✅ Notification settings updated successfully');
@@ -498,7 +497,7 @@ class UserService extends ChangeNotifier
         allergenPreferences: preferences,
       );
 
-      _profileCache[userId] = _currentUserProfile!;
+      _cacheProfile(userId, _currentUserProfile!);
       notifyListeners();
 
       AppLogger.success('✅ Allergen preferences updated successfully');
@@ -524,7 +523,7 @@ class UserService extends ChangeNotifier
       await _repository.saveProfile(updated);
 
       _currentUserProfile = updated;
-      _profileCache[userId] = updated;
+      _cacheProfile(userId, updated);
       notifyListeners();
 
       AppLogger.success('Onboarding marked as complete');
@@ -550,7 +549,7 @@ class UserService extends ChangeNotifier
     await _repository.saveProfile(updated);
 
     _currentUserProfile = updated;
-    _profileCache[userId] = updated;
+    _cacheProfile(userId, updated);
     notifyListeners();
   }
 
@@ -569,7 +568,7 @@ class UserService extends ChangeNotifier
           fcmToken: null,
           fcmTokenUpdatedAt: null,
         );
-        _profileCache[userId] = _currentUserProfile!;
+        _cacheProfile(userId, _currentUserProfile!);
         notifyListeners();
       }
 

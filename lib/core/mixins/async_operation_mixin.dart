@@ -21,6 +21,9 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   /// Generation counters for debounced operations — detects stale in-flight results.
   final Map<String, int> _operationGenerations = {};
 
+  /// Maximum cached operation results.
+  static const int _maxCacheSize = 100;
+
   /// Cache of operation results to avoid redundant network requests.
   final Map<String, dynamic> _operationCache = {};
 
@@ -113,8 +116,12 @@ mixin AsyncOperationMixin on StateNotifierMixin {
         errorPrefix: errorPrefix,
       );
 
-      // Cache the result
+      // Cache the result with LRU eviction
+      _operationCache.remove(cacheKey);
       _operationCache[cacheKey] = result;
+      if (_operationCache.length > _maxCacheSize) {
+        _operationCache.remove(_operationCache.keys.first);
+      }
 
       // Set cache expiry if specified
       if (cacheExpiry != null) {

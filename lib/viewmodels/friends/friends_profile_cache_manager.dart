@@ -12,6 +12,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class FriendsProfileCacheManager extends ChangeNotifier {
   final UserService _userService;
 
+  static const int _maxCacheSize = 100;
   final Map<String, UserProfile> _requestUserProfiles = {};
   bool _isLoadingUserProfiles = false;
   bool _isDisposed = false;
@@ -56,9 +57,13 @@ class FriendsProfileCacheManager extends ChangeNotifier {
 
         if (_isDisposed) return;
 
-        // Update cache
+        // Update cache with LRU eviction
         for (final profile in profiles) {
+          _requestUserProfiles.remove(profile.uid);
           _requestUserProfiles[profile.uid] = profile;
+          if (_requestUserProfiles.length > _maxCacheSize) {
+            _requestUserProfiles.remove(_requestUserProfiles.keys.first);
+          }
         }
 
         AppLogger.success(
