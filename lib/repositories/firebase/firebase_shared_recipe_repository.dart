@@ -185,13 +185,9 @@ class FirebaseSharedRecipeRepository
       throw ArgumentError('Must specify at least one recipient');
     }
 
-    // Create the shared recipe document
-    final recipeId = await createSharedContent(sharedRecipe);
-
-    // Seed creator in sharedToUserIds for group queries
-    await getCollectionRef().doc(recipeId).update({
-      'sharedToUserIds': FieldValue.arrayUnion([sharedRecipe.sharedByUserId]),
-    });
+    // Create the shared recipe document (seed creator in sharedToUserIds to avoid extra write)
+    final recipeId = await createSharedContent(sharedRecipe,
+        initialSharedToUserIds: [sharedRecipe.sharedByUserId]);
 
     // Add all recipients concurrently — each addMember also appends to sharedToUserIds
     await Future.wait(

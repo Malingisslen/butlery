@@ -3053,6 +3053,8 @@
   "importOcrMayFail": "OCR kan misslyckas eller ge dåliga resultat.",
   "importOtherApp": "annan app",
   "importPasteFromClipboard": "Klistra in från urklipp",
+  "importClipboardUrlDetected": "Receptlänk hittad i urklipp",
+  "importClipboardUseUrl": "Använd",
   "importPasteLinkOrText": "Klistra in länk eller text här...",
   "importPasteText": "Klistra in text",
   "importPhotoDescription": "Ta bild av ett recept eller välj från galleriet för att importera text automatiskt",

@@ -3053,6 +3053,8 @@
   "importOcrMayFail": "OCR may fail or give poor results.",
   "importOtherApp": "another app",
   "importPasteFromClipboard": "Paste from clipboard",
+  "importClipboardUrlDetected": "Recipe URL found in clipboard",
+  "importClipboardUseUrl": "Use",
   "importPasteLinkOrText": "Paste link or text here...",
   "importPasteText": "Paste text",
   "importPhotoDescription": "Take a picture of a recipe or choose from gallery to import text automatically",

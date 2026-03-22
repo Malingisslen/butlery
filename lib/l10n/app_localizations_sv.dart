@@ -4786,6 +4786,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importPasteFromClipboard => 'Klistra in från urklipp';
 
   @override
+  String get importClipboardUrlDetected => 'Receptlänk hittad i urklipp';
+
+  @override
+  String get importClipboardUseUrl => 'Använd';
+
+  @override
   String get importPasteLinkOrText => 'Klistra in länk eller text här...';
 
   @override

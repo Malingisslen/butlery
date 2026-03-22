@@ -29,6 +29,7 @@ export { cleanupDeletedIngredients, getDeletedIngredientStats } from "./cleanup/
 export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
 export { cleanupExpiredFriendRequests } from "./cleanup/cleanup-expired-friend-requests";
+export { cleanupOldNotifications } from "./cleanup/cleanup-old-notifications";
 
 // Social Cleanup - User deletion and moderation
 export { onUserDeleted } from "./cleanup/on-user-deleted";

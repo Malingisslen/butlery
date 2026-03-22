@@ -4779,6 +4779,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importPasteFromClipboard => 'Paste from clipboard';
 
   @override
+  String get importClipboardUrlDetected => 'Recipe URL found in clipboard';
+
+  @override
+  String get importClipboardUseUrl => 'Use';
+
+  @override
   String get importPasteLinkOrText => 'Paste link or text here...';
 
   @override
