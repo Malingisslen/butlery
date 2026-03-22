@@ -70,11 +70,25 @@ class NeuralLineClassifier {
     }
   }
 
+  /// Release resources and allow re-initialization after next [ensureInitialized].
+  Future<void> dispose() async {
+    _isDisposed = true;
+    _lastInitFailure = null;
+    await _classifierService.dispose();
+  }
+
+  /// Reset after dispose so [ensureInitialized] can re-create the session.
+  void resetForReuse() {
+    if (!_isDisposed) return;
+    _isDisposed = false;
+    _classifierService.resetForReuse();
+  }
+
   /// Async version that actually uses the neural model.
   ///
   /// Preferred entry point — callers that can await should use this.
   Future<ParsedRecipeStructure> parseStructureAsync(String text) async {
-    if (!_classifierService.isAvailable) {
+    if (_isDisposed || !_classifierService.isAvailable) {
       return SwedishLineClassifier.instance.parseStructure(text);
     }
 
