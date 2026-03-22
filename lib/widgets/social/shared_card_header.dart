@@ -4,8 +4,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:flutter/material.dart';
 
+enum _CardAction { dismiss, unshare }
+
 /// Shared header row used by all shared content cards (recipe, menu, shopping list).
-/// Shows avatar, sharer name, timestamp, overflow menu (dismiss/unshare), and unread dot.
 class SharedCardHeader extends StatelessWidget {
   const SharedCardHeader({
     required this.displayName,
@@ -54,7 +55,7 @@ class SharedCardHeader extends StatelessWidget {
             ],
           ),
         ),
-        PopupMenuButton<String>(
+        PopupMenuButton<_CardAction>(
           icon: Icon(
             Icons.more_vert,
             size: AppDimensions.iconSizeM,
@@ -63,15 +64,15 @@ class SharedCardHeader extends StatelessWidget {
           shape: const RoundedRectangleBorder(),
           onSelected: (value) {
             switch (value) {
-              case 'dismiss':
+              case _CardAction.dismiss:
                 onDismiss();
-              case 'unshare':
+              case _CardAction.unshare:
                 onUnshare();
             }
           },
           itemBuilder: (context) => [
-            PopupMenuItem<String>(
-              value: 'dismiss',
+            PopupMenuItem<_CardAction>(
+              value: _CardAction.dismiss,
               child: Row(
                 children: [
                   Icon(
@@ -84,8 +85,8 @@ class SharedCardHeader extends StatelessWidget {
                 ],
               ),
             ),
-            PopupMenuItem<String>(
-              value: 'unshare',
+            PopupMenuItem<_CardAction>(
+              value: _CardAction.unshare,
               child: Row(
                 children: [
                   Icon(

@@ -54,12 +54,15 @@ class _FriendsListViewContent extends StatefulWidget {
 class _FriendsListViewContentState extends State<_FriendsListViewContent>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  late final bool _socialEnabled;
   int _currentTabIndex = 0;
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
+    _socialEnabled = ServiceLocator.get<FeatureFlagService>()
+        .isEnabled(FeatureFlags.enableSocialFeatures);
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
@@ -109,9 +112,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   @override
   Widget build(BuildContext context) {
-    // Kill switch: gate social features behind feature flag
-    final featureFlags = ServiceLocator.get<FeatureFlagService>();
-    if (!featureFlags.isEnabled(FeatureFlags.enableSocialFeatures)) {
+    if (!_socialEnabled) {
       return LayoutComponents.mainMenu(
         currentIndex: null,
         title: context.l10n.socialFriendsAndGroups,
