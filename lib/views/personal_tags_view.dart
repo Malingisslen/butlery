@@ -61,7 +61,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   /// Cached sorted tags per group key (null = ungrouped)
   final Map<String?, List<PersonalTag>> _sortedTagsCache = {};
   TagSortOrder? _lastSortOrder;
-  PersonalTagViewModel? _lastViewModel;
+  int _lastTagCount = -1;
 
   @override
   void initState() {
@@ -117,10 +117,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   List<PersonalTag> _sortTags(
       List<PersonalTag> tags, PersonalTagViewModel vm, String? groupId) {
     // Invalidate if sort order or viewmodel identity changed
-    if (_lastSortOrder != _sortOrder || !identical(_lastViewModel, vm)) {
+    if (_lastSortOrder != _sortOrder || vm.tags.length != _lastTagCount) {
       _invalidateSortCache();
       _lastSortOrder = _sortOrder;
-      _lastViewModel = vm;
+      _lastTagCount = vm.tags.length;
     }
 
     final cached = _sortedTagsCache[groupId];
