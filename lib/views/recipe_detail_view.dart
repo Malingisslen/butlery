@@ -221,6 +221,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             child: CachedNetworkImage(
                               imageUrl: recipe.imageUrls.first,
                               fit: BoxFit.cover,
+                              memCacheWidth: (600 *
+                                      MediaQuery.of(context).devicePixelRatio)
+                                  .round(),
                               placeholder: (context, url) => ColoredBox(
                                 color: cs.surfaceContainerHighest,
                                 child: const Center(

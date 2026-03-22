@@ -22,6 +22,7 @@
 /// - **Swedish Localization**: User-friendly Swedish language logging and error messages
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -103,6 +104,12 @@ class PersistenceService extends BaseService {
   /// - Atomic write operations preventing data races in concurrent scenarios
   /// - Optimized storage format reducing persistent data size and access time
   Future<bool> saveRecipes(List<Recipe> recipes) async {
+    // Web uses localStorage (5MB limit) — skip local persistence since Firestore is the source of truth
+    if (kIsWeb) {
+      AppLogger.debug('Hoppar över lokal receptlagring på webb', 'Persistence');
+      return true;
+    }
+
     try {
       final prefs = await _prefs;
 
@@ -135,6 +142,11 @@ class PersistenceService extends BaseService {
   /// Loads all recipes from local storage
   /// Converts JSON text back to Recipe objects
   Future<List<Recipe>> loadRecipes() async {
+    // Web uses localStorage (5MB limit) — skip local persistence since Firestore is the source of truth
+    if (kIsWeb) {
+      return [];
+    }
+
     try {
       final prefs = await _prefs;
 

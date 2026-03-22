@@ -20,6 +20,7 @@ class NeuralLineClassifier {
 
   DateTime? _lastInitFailure;
   static const _initRetryDelay = Duration(minutes: 5);
+  bool _isDisposed = false;
 
   NeuralLineClassifier({
     required OnnxLineClassifierService classifierService,
@@ -28,12 +29,13 @@ class NeuralLineClassifier {
         _modelManager = modelManager;
 
   /// Whether the neural model is ready for inference.
-  bool get isAvailable => _classifierService.isAvailable;
+  bool get isAvailable => !_isDisposed && _classifierService.isAvailable;
 
   /// Initialize the model (download if needed, load into ONNX Runtime).
   ///
   /// Retries after 5 minutes if initialization fails (e.g., network issues).
   Future<bool> ensureInitialized() async {
+    if (_isDisposed) return false;
     if (_classifierService.isAvailable) return true;
 
     if (_lastInitFailure != null &&

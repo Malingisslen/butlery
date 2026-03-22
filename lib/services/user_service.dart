@@ -50,6 +50,7 @@ class UserService extends ChangeNotifier
 
   // Constants
   static const int _cacheDurationMinutes = 30;
+  static const int _maxCacheSize = 200;
 
   // Getters
   UserProfile? get currentUserProfile => _currentUserProfile;
@@ -138,8 +139,7 @@ class UserService extends ChangeNotifier
       await _repository.saveProfile(profile);
 
       _currentUserProfile = profile;
-      _profileCache[user.uid] = profile;
-      _cacheTimestamps[user.uid] = DateTime.now();
+      _cacheProfile(user.uid, profile);
 
       AppLogger.success('✅ Profil sparad: ${profile.displayName.maskedName}');
       notifyListeners();
@@ -164,8 +164,7 @@ class UserService extends ChangeNotifier
       final results = await _repository.searchProfiles(query);
 
       for (final profile in results) {
-        _profileCache[profile.uid] = profile;
-        _cacheTimestamps[profile.uid] = DateTime.now();
+        _cacheProfile(profile.uid, profile);
       }
 
       return results;
@@ -197,8 +196,7 @@ class UserService extends ChangeNotifier
       () async {
         final profile = await _getProfileFromRepository(userId);
         if (profile != null) {
-          _profileCache[userId] = profile;
-          _cacheTimestamps[userId] = DateTime.now();
+          _cacheProfile(userId, profile);
         }
         return profile;
       },
@@ -238,8 +236,7 @@ class UserService extends ChangeNotifier
         final fetched = await _repository.fetchProfiles(uncachedIds);
         for (final profile in fetched) {
           results.add(profile);
-          _profileCache[profile.uid] = profile;
-          _cacheTimestamps[profile.uid] = DateTime.now();
+          _cacheProfile(profile.uid, profile);
         }
       } catch (e) {
         AppLogger.error('❌ Kunde inte hämta profilbatch: $e');
@@ -401,6 +398,19 @@ class UserService extends ChangeNotifier
 
   void _clearError() {
     _error = null;
+  }
+
+  /// LRU cache insert: removes existing key (resets order), inserts at end, evicts oldest if over cap.
+  void _cacheProfile(String userId, UserProfile profile) {
+    _profileCache.remove(userId);
+    _cacheTimestamps.remove(userId);
+    _profileCache[userId] = profile;
+    _cacheTimestamps[userId] = DateTime.now();
+    if (_profileCache.length > _maxCacheSize) {
+      final oldest = _profileCache.keys.first;
+      _profileCache.remove(oldest);
+      _cacheTimestamps.remove(oldest);
+    }
   }
 
   /// Public error clearing
