@@ -117,27 +117,30 @@ class _CookingModeContent extends StatelessWidget {
           Expanded(
             child: Text(
               vm.title.toLowerCase(),
-              style: AppTextStyles.appBarTitle.copyWith(
+              style: AppTextStyles.headerTitle.copyWith(
                 color: cs.onPrimary,
-                fontSize: 20,
                 letterSpacing: 1,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           // Close button
-          Material(
-            color: cs.surface,
-            borderRadius: BorderRadius.zero,
-            child: InkWell(
-              onTap: () => Navigator.pop(context),
-              child: SizedBox(
-                width: AppDimensions.minTouchTarget,
-                height: AppDimensions.minTouchTarget,
-                child: Icon(
-                  Icons.close,
-                  color: cs.primary,
-                  size: AppDimensions.iconSizeM,
+          Semantics(
+            label: context.l10n.a11yCookingModeClose,
+            button: true,
+            child: Material(
+              color: cs.surface,
+              borderRadius: BorderRadius.zero,
+              child: InkWell(
+                onTap: () => Navigator.pop(context),
+                child: SizedBox(
+                  width: AppDimensions.minTouchTarget,
+                  height: AppDimensions.minTouchTarget,
+                  child: Icon(
+                    Icons.close,
+                    color: cs.primary,
+                    size: AppDimensions.iconSizeM,
+                  ),
                 ),
               ),
             ),
@@ -198,8 +201,7 @@ class _IngredientsPanel extends StatelessWidget {
                   ),
                   child: Text(
                     '${vm.currentPortions}',
-                    style: AppTextStyles.bodyBold.copyWith(
-                      fontSize: 20,
+                    style: AppTextStyles.groupTitle.copyWith(
                       fontWeight: FontWeight.w700,
                       color: cs.onPrimary,
                     ),
@@ -225,33 +227,35 @@ class _IngredientsPanel extends StatelessWidget {
               ),
               itemCount: vm.scaledIngredients.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.spacingTight,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        margin: const EdgeInsets.only(top: 8, right: 12),
-                        decoration: BoxDecoration(
-                          color: cs.onPrimary,
-                          shape: BoxShape.rectangle,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          vm.scaledIngredients[index],
-                          style: AppTextStyles.bodyLarge.copyWith(
+                final ingredientText = vm.scaledIngredients[index];
+                return Semantics(
+                  label: context.l10n.a11yCookingModeIngredient(ingredientText),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.spacingTight,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          margin: const EdgeInsets.only(top: 8, right: 12),
+                          decoration: BoxDecoration(
                             color: cs.onPrimary,
-                            fontSize: 16,
-                            height: 1.5,
+                            shape: BoxShape.rectangle,
                           ),
                         ),
-                      ),
-                    ],
+                        Expanded(
+                          child: Text(
+                            ingredientText,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              color: cs.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -269,27 +273,36 @@ class _IngredientsPanel extends StatelessWidget {
   }) {
     final cs = Theme.of(context).colorScheme;
     final isEnabled = onPressed != null;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        child: Container(
-          width: AppDimensions.minTouchTarget,
-          height: AppDimensions.minTouchTarget,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border.all(
+    final label = icon == Icons.remove
+        ? context.l10n.portionDecrease
+        : context.l10n.portionIncrease;
+    return Semantics(
+      label: label,
+      button: true,
+      enabled: isEnabled,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          child: Container(
+            width: AppDimensions.minTouchTarget,
+            height: AppDimensions.minTouchTarget,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isEnabled
+                    ? cs.onPrimary
+                    : cs.onPrimary.withValues(alpha: 0.3),
+                width: 2,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: AppDimensions.iconSizeL,
               color: isEnabled
                   ? cs.onPrimary
                   : cs.onPrimary.withValues(alpha: 0.3),
-              width: 2,
             ),
-          ),
-          child: Icon(
-            icon,
-            size: AppDimensions.iconSizeL,
-            color:
-                isEnabled ? cs.onPrimary : cs.onPrimary.withValues(alpha: 0.3),
           ),
         ),
       ),
@@ -313,41 +326,44 @@ class _InstructionsPanel extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.spacingLg),
         itemCount: vm.instructions.length,
         itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Step number badge
-                Container(
-                  width: AppDimensions.minTouchTarget,
-                  height: AppDimensions.minTouchTarget,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: cs.surface,
-                  ),
-                  child: Text(
-                    '${index + 1}',
-                    style: AppTextStyles.bodyBold.copyWith(
-                      color: cs.primary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+          final instruction = vm.instructions[index];
+          final stepNumber = index + 1;
+          return Semantics(
+            label: context.l10n.a11yCookingModeStep(stepNumber, instruction),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Step number badge
+                  Container(
+                    width: AppDimensions.minTouchTarget,
+                    height: AppDimensions.minTouchTarget,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: cs.surface,
+                    ),
+                    child: Text(
+                      '$stepNumber',
+                      style: AppTextStyles.contentTitle.copyWith(
+                        color: cs.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: AppDimensions.spacingMd),
-                // Instruction text
-                Expanded(
-                  child: Text(
-                    vm.instructions[index],
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: cs.onPrimary,
-                      fontSize: 18,
-                      height: 1.7,
+                  const SizedBox(width: AppDimensions.spacingMd),
+                  // Instruction text
+                  Expanded(
+                    child: Text(
+                      instruction,
+                      style: AppTextStyles.titleLarge.copyWith(
+                        color: cs.onPrimary,
+                        height: 1.7,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

@@ -170,8 +170,8 @@ class PortionScalerUI {
           onTap: onPressed,
           borderRadius: BorderRadius.zero,
           child: Container(
-            width: 36,
-            height: 36,
+            width: AppDimensions.minTouchTarget,
+            height: AppDimensions.minTouchTarget,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest,

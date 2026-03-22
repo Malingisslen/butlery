@@ -8098,5 +8098,25 @@
   "emailVerificationContinue": "Continue anyway",
   "emailVerificationSuccess": "Email verified!",
   "recipeSelected": "Selected",
-  "recipeNotSelected": "Not selected"
+  "recipeNotSelected": "Not selected",
+  "a11yCookingModeClose": "Close cooking mode",
+  "a11yCookingModeIngredient": "{ingredient}",
+  "@a11yCookingModeIngredient": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yCookingModeStep": "Step {step}: {instruction}",
+  "@a11yCookingModeStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "instruction": {
+        "type": "String"
+      }
+    }
+  }
 }
