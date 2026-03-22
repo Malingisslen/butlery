@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -221,7 +222,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ),
                             child: CachedNetworkImage(
                               imageUrl: recipe.imageUrls.first,
-                              cacheKey: FirebaseUrlUtils.stableCacheKey(recipe.imageUrls.first),
+                              cacheKey: FirebaseUrlUtils.stableCacheKey(
+                                  recipe.imageUrls.first),
                               fit: BoxFit.cover,
                               memCacheWidth: (600 *
                                       MediaQuery.of(context).devicePixelRatio)
@@ -518,12 +520,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     (recipe.portions ?? 1),
                               ),
                               // Dietary/allergen badges (inside title section per mockup)
-                              Builder(
-                                builder: (context) {
-                                  final userService =
-                                      context.watch<UserService>();
-                                  final allergenPrefs =
-                                      userService.allergenPreferences;
+                              Selector<UserService, UserAllergenPreferences>(
+                                selector: (_, svc) => svc.allergenPreferences,
+                                builder: (context, allergenPrefs, _) {
                                   final tagResult = recipe.tagResult;
                                   if (tagResult == null ||
                                       !allergenPrefs.showOnDetail) {
@@ -567,11 +566,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         const SizedBox(height: AppDimensions.spacingMd),
 
                         // Recipe main content
-                        Builder(
-                          builder: (context) {
-                            final userService = context.watch<UserService>();
-                            final allergenPrefs =
-                                userService.allergenPreferences;
+                        Selector<UserService, UserAllergenPreferences>(
+                          selector: (_, svc) => svc.allergenPreferences,
+                          builder: (context, allergenPrefs, _) {
                             return RecipeDetailContent(
                               viewModel: viewModel,
                               scaledIngredients: _actions.scaledIngredients,
