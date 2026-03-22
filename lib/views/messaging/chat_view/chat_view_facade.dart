@@ -38,11 +38,14 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
   late final ChatViewModel _viewModel;
   late final ChatActionHandler _actionHandler;
 
+  late final bool _messagingEnabled;
+
   @override
   void initState() {
     super.initState();
+    _messagingEnabled = ServiceLocator.get<FeatureFlagService>()
+        .isEnabled(FeatureFlags.enableMessaging);
 
-    // Try to get PresenceService (optional dependency)
     PresenceService? presenceService;
     try {
       presenceService = ServiceLocator.get<PresenceService>();
@@ -75,9 +78,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
 
   @override
   Widget build(BuildContext context) {
-    // Kill switch: gate messaging behind feature flag
-    final featureFlags = ServiceLocator.get<FeatureFlagService>();
-    if (!featureFlags.isEnabled(FeatureFlags.enableMessaging)) {
+    if (!_messagingEnabled) {
       return Scaffold(
         appBar: AppBar(title: Text(context.l10n.chatTitle)),
         body: Center(
