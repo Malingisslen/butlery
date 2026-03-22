@@ -67,10 +67,6 @@ class FormValidators {
   static const int minPasswordLength = 8;
 
   /// Regex patterns
-  static final RegExp _urlRegex = RegExp(
-    r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
-  );
-
   static final RegExp _displayNameRegex = RegExp(
     r'^[\p{L}\p{N}\s\-_\.]+$',
     unicode: true,
@@ -137,12 +133,17 @@ class FormValidators {
     };
   }
 
-  /// URL validator
+  /// URL validator — uses Uri.tryParse instead of regex to avoid ReDoS.
   static FormFieldValidator<String> url() {
     return (value) {
       if (value == null || value.isEmpty) return null;
 
-      if (!_urlRegex.hasMatch(value)) {
+      final uri = Uri.tryParse(value);
+      if (uri == null ||
+          !uri.hasScheme ||
+          !['http', 'https'].contains(uri.scheme) ||
+          uri.host.isEmpty ||
+          !uri.host.contains('.')) {
         return AppLocale.current.validationInvalidUrlHint;
       }
 

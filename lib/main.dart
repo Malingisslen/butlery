@@ -815,7 +815,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
       final user = _authService.currentUser;
       if (user != null) {
-        AppLogger.debug('AuthWrapper: User authenticated: ${user.uid.maskedUserId}');
+        AppLogger.debug(
+            'AuthWrapper: User authenticated: ${user.uid.maskedUserId}');
         // Re-process pending deep link when transitioning to authenticated
         if (!_wasAuthenticated) {
           DeepLinkHandler().processPendingDeepLink(context);
