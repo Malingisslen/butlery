@@ -150,7 +150,6 @@ class PersonalTagViewModel extends ChangeNotifier
         return initialize();
       }
 
-      setLoading(false);
       setError(AppLocale.current.errorCouldNotLoadTags);
     }
   }

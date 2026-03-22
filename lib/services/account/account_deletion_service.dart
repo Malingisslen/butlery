@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart'
+    as notif;
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -183,15 +184,6 @@ class AccountDeletionService extends BaseService {
         );
       }
 
-      // Invalidate FCM token at SDK level
-      try {
-        await FirebaseMessaging.instance.deleteToken();
-      } catch (e) {
-        app_logger.AppLogger.warning(
-          '[$_logTag] Failed to delete FCM token from SDK: $e',
-        );
-      }
-
       // Audit log AFTER auth deletion succeeds — no lying audit on failure
       if (createAuditLog) {
         result['auditLogId'] = await _createDeletionAuditLog(
@@ -209,6 +201,15 @@ class AccountDeletionService extends BaseService {
         'collections_deleted': result['deletedCollections'].length,
         'collections_failed': result['failedCollections'].length,
       });
+
+      // Invalidate FCM token at SDK level via NotificationService
+      try {
+        await ServiceLocator.get<notif.NotificationService>().resetForLogout();
+      } catch (e) {
+        app_logger.AppLogger.warning(
+          '[$_logTag] Failed to reset notification service: $e',
+        );
+      }
 
       result['success'] = true;
       if (result['failedCollections'].isNotEmpty) {
