@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -40,7 +41,7 @@ class OnnxLineClassifierService {
   bool _initialized = false;
   bool _initFailed = false;
   bool _isDisposed = false;
-  bool _isRunning = false;
+  Completer<void>? _runCompleter;
   String? _inputIdName;
   String? _attentionMaskName;
   String? _outputName;
@@ -139,7 +140,7 @@ class OnnxLineClassifierService {
 
   Future<List<ClassifiedLine>?> _classifyChunk(List<String> texts) async {
     if (_isDisposed || _session == null || _tokenizer == null) return null;
-    _isRunning = true;
+    _runCompleter = Completer<void>();
     try {
       final tokenResults = texts
           .map((t) => _tokenizer!.tokenizeWords(t.split(RegExp(r'\s+'))))
@@ -199,7 +200,8 @@ class OnnxLineClassifierService {
       AppLogger.warning('$_serviceName: Batch classification failed: $e');
       return null;
     } finally {
-      _isRunning = false;
+      _runCompleter?.complete();
+      _runCompleter = null;
     }
   }
 
@@ -288,9 +290,7 @@ class OnnxLineClassifierService {
   Future<void> dispose() async {
     _isDisposed = true;
     // Wait for any in-flight inference to complete before closing session
-    while (_isRunning) {
-      await Future<void>.delayed(const Duration(milliseconds: 10));
-    }
+    await _runCompleter?.future;
     await _session?.close();
     _session = null;
     _tokenizer = null;
