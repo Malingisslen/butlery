@@ -12,6 +12,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { batchUpdateDocs } from "../shared/batch-update";
+import { Collections } from "../shared/collections";
 import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
@@ -115,7 +116,7 @@ export const onIngredientPropertiesChanged = functions.firestore
     const cascadeOperation = async (): Promise<void> => {
       // Query recipes that use this ingredient
       const recipesSnapshot = await getDb()
-        .collection("recipes")
+        .collection(Collections.recipes)
         .where(
           "core.ingredientsNormalized",
           "array-contains",

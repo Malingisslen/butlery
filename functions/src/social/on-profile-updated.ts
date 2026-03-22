@@ -109,7 +109,10 @@ export const onProfileUpdated = functions
       // Realtime resources — merged owner+editor updates to avoid double-write
       for (const col of [Collections.realtimeRecipes, Collections.realtimeMenus]) {
         steps.push(
-          mergedDualUpdate(db, col, userId, "ownerId", "ownerDisplayName", "lastEditedBy", "lastEditedByDisplayName", newName)
+          mergedDualUpdate(db, col, userId,
+            { queryField: "ownerId", updateField: "ownerDisplayName" },
+            { queryField: "lastEditedBy", updateField: "lastEditedByDisplayName" },
+            newName)
             .catch((e) => { functions.logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
         );
       }
@@ -125,7 +128,10 @@ export const onProfileUpdated = functions
       // Shopping lists — merged owner+activity updates to avoid double-write
       for (const col of [Collections.unifiedShoppingLists, Collections.unifiedSharedShoppingLists]) {
         steps.push(
-          mergedDualUpdate(db, col, userId, "ownerId", "ownerDisplayName", "lastActivityByUserId", "lastActivityByDisplayName", newName)
+          mergedDualUpdate(db, col, userId,
+            { queryField: "ownerId", updateField: "ownerDisplayName" },
+            { queryField: "lastActivityByUserId", updateField: "lastActivityByDisplayName" },
+            newName)
             .catch((e) => { functions.logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
         );
       }
@@ -149,6 +155,11 @@ export const onProfileUpdated = functions
     );
   });
 
+interface DualFieldPair {
+  queryField: string;
+  updateField: string;
+}
+
 /**
  * Fetch docs matching two independent queries on the same collection,
  * merge their update maps by doc ID, and write each doc exactly once.
@@ -158,38 +169,35 @@ async function mergedDualUpdate(
   db: admin.firestore.Firestore,
   collection: string,
   userId: string,
-  primaryField: string,
-  primaryUpdateField: string,
-  secondaryField: string,
-  secondaryUpdateField: string,
+  primary: DualFieldPair,
+  secondary: DualFieldPair,
   newName: string | undefined
 ): Promise<number> {
   const [primarySnap, secondarySnap] = await Promise.all([
-    db.collection(collection).where(primaryField, "==", userId).get(),
-    db.collection(collection).where(secondaryField, "==", userId).get(),
+    db.collection(collection).where(primary.queryField, "==", userId).get(),
+    db.collection(collection).where(secondary.queryField, "==", userId).get(),
   ]);
 
   const merged = new Map<string, { ref: admin.firestore.DocumentReference; updates: Record<string, unknown> }>();
 
   for (const doc of primarySnap.docs) {
-    merged.set(doc.id, { ref: doc.ref, updates: { [primaryUpdateField]: newName } });
+    merged.set(doc.id, { ref: doc.ref, updates: { [primary.updateField]: newName } });
   }
   for (const doc of secondarySnap.docs) {
     const existing = merged.get(doc.id);
     if (existing) {
-      existing.updates[secondaryUpdateField] = newName;
+      existing.updates[secondary.updateField] = newName;
     } else {
-      merged.set(doc.id, { ref: doc.ref, updates: { [secondaryUpdateField]: newName } });
+      merged.set(doc.id, { ref: doc.ref, updates: { [secondary.updateField]: newName } });
     }
   }
 
   if (merged.size === 0) return 0;
 
-  const entries = Array.from(merged.values());
   return batchUpdateDocs(
     null,
     db,
-    (doc) => entries.find((e) => e.ref.path === doc.ref.path)?.updates ?? {},
-    entries.map((e) => e.ref)
+    (doc) => merged.get(doc.ref.id)?.updates ?? {},
+    Array.from(merged.values()).map((e) => e.ref)
   );
 }
