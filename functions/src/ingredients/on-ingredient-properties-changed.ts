@@ -11,6 +11,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
+import { batchUpdateDocs } from "../shared/batch-update";
 import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
@@ -133,34 +134,13 @@ export const onIngredientPropertiesChanged = functions.firestore
         `Found ${recipesSnapshot.size} recipes using "${ingredientName}"`
       );
 
-      // Mark all affected recipes for retagging using batched writes
-      const batchSize = 500;
       const db = getDb();
-      let batch = db.batch();
-      let operationCount = 0;
-      let totalUpdated = 0;
-
-      for (const doc of recipesSnapshot.docs) {
-        batch.update(doc.ref, {
-          "core.tagResult.generatorVersion": "stale-properties",
-        });
-        operationCount++;
-        totalUpdated++;
-
-        if (operationCount >= batchSize) {
-          await batch.commit();
-          functions.logger.info(`Committed batch of ${operationCount} updates`);
-          batch = db.batch();
-          operationCount = 0;
-        }
-      }
-
-      if (operationCount > 0) {
-        await batch.commit();
-        functions.logger.info(
-          `Committed final batch of ${operationCount} updates`
-        );
-      }
+      const totalUpdated = await batchUpdateDocs(
+        null,
+        db,
+        () => ({ "core.tagResult.generatorVersion": "stale-properties" }),
+        recipesSnapshot.docs.map((doc) => doc.ref)
+      );
 
       functions.logger.info(
         `Marked ${totalUpdated} recipes for retagging due to property change for "${ingredientName}"`

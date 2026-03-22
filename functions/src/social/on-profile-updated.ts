@@ -7,20 +7,21 @@
  * shared recipes, shopping lists, and group invitations.
  *
  * Safety: paginated batches (500-op limit), skips if no name/avatar change,
- * uses hashUid for GDPR-safe logging. Steps run in parallel via Promise.allSettled.
+ * uses hashUid for GDPR-safe logging. Steps run in parallel via Promise.all.
  */
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
+import { batchUpdateQuery, batchUpdateDocs } from "../shared/batch-update";
+import { Collections } from "../shared/collections";
 
 const getDb = () => admin.firestore();
-const BATCH_LIMIT = 500;
 
 export const onProfileUpdated = functions
   .runWith({ timeoutSeconds: 540 })
   .region("europe-west1")
-  .firestore.document("public_profiles/{userId}")
+  .firestore.document(`${Collections.publicProfiles}/{userId}`)
   .onUpdate(async (change, context) => {
     const userId = context.params.userId;
     const before = change.before.data();
@@ -57,18 +58,15 @@ export const onProfileUpdated = functions
     if (nameChanged) commentUpdates["authorDisplayName"] = newName;
     if (avatarChanged) commentUpdates["authorAvatarUrl"] = newAvatar;
 
-    // All steps are independent — run in parallel
     const steps: Array<Promise<number>> = [
-      // Messages
       batchUpdateQuery(
-        db.collection("messages").where("senderId", "==", userId),
+        db.collection(Collections.messages).where("senderId", "==", userId),
         messageUpdates,
         db
       ).catch((e) => { functions.logger.error(`Failed to update messages for ${userHash}`, e); return 0; }),
 
-      // Conversations — per-doc update for map-key fields
       batchUpdateDocs(
-        db.collection("conversations").where("participantIds", "array-contains", userId),
+        db.collection(Collections.conversations).where("participantIds", "array-contains", userId),
         db,
         () => {
           const updates: Record<string, unknown> = {};
@@ -78,14 +76,12 @@ export const onProfileUpdated = functions
         }
       ).catch((e) => { functions.logger.error(`Failed to update conversations for ${userHash}`, e); return 0; }),
 
-      // Recipe comments
       batchUpdateQuery(
-        db.collection("recipe_comments").where("authorId", "==", userId),
+        db.collection(Collections.recipeComments).where("authorId", "==", userId),
         commentUpdates,
         db
       ).catch((e) => { functions.logger.error(`Failed to update recipe_comments for ${userHash}`, e); return 0; }),
 
-      // Shared content members (collectionGroup)
       batchUpdateQuery(
         db.collectionGroup("members").where("userId", "==", userId),
         memberUpdates,
@@ -93,59 +89,50 @@ export const onProfileUpdated = functions
       ).catch((e) => { functions.logger.error(`Failed to update members for ${userHash}`, e); return 0; }),
     ];
 
-    // Name-only propagation steps
     if (nameChanged) {
       // Friends subcollections
       steps.push(
         (async () => {
-          const friendsSnapshot = await db.collection("users").doc(userId).collection("friends").get();
+          const friendsSnapshot = await db.collection(Collections.users).doc(userId).collection("friends").get();
           if (friendsSnapshot.empty) return 0;
           return batchUpdateDocs(
             null,
             db,
             () => ({ displayNameLower: newName?.toLowerCase() }),
             friendsSnapshot.docs.map((friendDoc) =>
-              db.collection("users").doc(friendDoc.id).collection("friends").doc(userId)
+              db.collection(Collections.users).doc(friendDoc.id).collection("friends").doc(userId)
             )
           );
         })().catch((e) => { functions.logger.error(`Failed to update friends for ${userHash}`, e); return 0; })
       );
 
-      // Realtime resources (owner + last-editor)
-      for (const col of ["realtime_recipes", "realtime_menus"]) {
+      // Realtime resources — merged owner+editor updates to avoid double-write
+      for (const col of [Collections.realtimeRecipes, Collections.realtimeMenus]) {
         steps.push(
-          Promise.all([
-            batchUpdateQuery(db.collection(col).where("ownerId", "==", userId), { ownerDisplayName: newName }, db),
-            batchUpdateQuery(db.collection(col).where("lastEditedBy", "==", userId), { lastEditedByDisplayName: newName }, db),
-          ]).then(([a, b]) => a + b)
+          mergedDualUpdate(db, col, userId, "ownerId", "ownerDisplayName", "lastEditedBy", "lastEditedByDisplayName", newName)
             .catch((e) => { functions.logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
         );
       }
 
-      // Shared recipes
       steps.push(
         batchUpdateQuery(
-          db.collection("shared_recipes").where("socialData.ownerId", "==", userId),
+          db.collection(Collections.sharedRecipes).where("socialData.ownerId", "==", userId),
           { "socialData.ownerDisplayName": newName },
           db
         ).catch((e) => { functions.logger.error(`Failed to update shared_recipes for ${userHash}`, e); return 0; })
       );
 
-      // Shopping lists (owner + last-activity)
-      for (const col of ["unified_shopping_lists", "unified_shared_shopping_lists"]) {
+      // Shopping lists — merged owner+activity updates to avoid double-write
+      for (const col of [Collections.unifiedShoppingLists, Collections.unifiedSharedShoppingLists]) {
         steps.push(
-          Promise.all([
-            batchUpdateQuery(db.collection(col).where("ownerId", "==", userId), { ownerDisplayName: newName }, db),
-            batchUpdateQuery(db.collection(col).where("lastActivityByUserId", "==", userId), { lastActivityByDisplayName: newName }, db),
-          ]).then(([a, b]) => a + b)
+          mergedDualUpdate(db, col, userId, "ownerId", "ownerDisplayName", "lastActivityByUserId", "lastActivityByDisplayName", newName)
             .catch((e) => { functions.logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
         );
       }
 
-      // Pending group invitations
       steps.push(
         batchUpdateQuery(
-          db.collection("group_invitations")
+          db.collection(Collections.groupInvitations)
             .where("fromUserId", "==", userId)
             .where("status", "==", "pending"),
           { fromUserName: newName },
@@ -163,73 +150,46 @@ export const onProfileUpdated = functions
   });
 
 /**
- * Batch-update all docs matching a query with the same update map.
+ * Fetch docs matching two independent queries on the same collection,
+ * merge their update maps by doc ID, and write each doc exactly once.
+ * Avoids double-write when a doc matches both queries (e.g., owner == last-editor).
  */
-async function batchUpdateQuery(
-  query: admin.firestore.Query,
-  updates: Record<string, unknown>,
-  db: admin.firestore.Firestore
-): Promise<number> {
-  const snapshot = await query.get();
-  if (snapshot.empty) return 0;
-
-  let batch = db.batch();
-  let batchCount = 0;
-  let total = 0;
-
-  for (const doc of snapshot.docs) {
-    batch.update(doc.ref, updates);
-    batchCount++;
-    total++;
-
-    if (batchCount >= BATCH_LIMIT) {
-      await batch.commit();
-      batch = db.batch();
-      batchCount = 0;
-    }
-  }
-
-  if (batchCount > 0) {
-    await batch.commit();
-  }
-
-  return total;
-}
-
-/**
- * Batch-update docs with per-doc update maps, from either a query or explicit refs.
- */
-async function batchUpdateDocs(
-  query: admin.firestore.Query | null,
+async function mergedDualUpdate(
   db: admin.firestore.Firestore,
-  getUpdates: (doc: admin.firestore.DocumentSnapshot) => Record<string, unknown>,
-  refs?: admin.firestore.DocumentReference[]
+  collection: string,
+  userId: string,
+  primaryField: string,
+  primaryUpdateField: string,
+  secondaryField: string,
+  secondaryUpdateField: string,
+  newName: string | undefined
 ): Promise<number> {
-  const docs = refs
-    ? refs.map((ref) => ({ ref } as admin.firestore.DocumentSnapshot))
-    : (await query!.get()).docs;
+  const [primarySnap, secondarySnap] = await Promise.all([
+    db.collection(collection).where(primaryField, "==", userId).get(),
+    db.collection(collection).where(secondaryField, "==", userId).get(),
+  ]);
 
-  if (docs.length === 0) return 0;
+  const merged = new Map<string, { ref: admin.firestore.DocumentReference; updates: Record<string, unknown> }>();
 
-  let batch = db.batch();
-  let batchCount = 0;
-  let total = 0;
-
-  for (const doc of docs) {
-    batch.update(doc.ref, getUpdates(doc));
-    batchCount++;
-    total++;
-
-    if (batchCount >= BATCH_LIMIT) {
-      await batch.commit();
-      batch = db.batch();
-      batchCount = 0;
+  for (const doc of primarySnap.docs) {
+    merged.set(doc.id, { ref: doc.ref, updates: { [primaryUpdateField]: newName } });
+  }
+  for (const doc of secondarySnap.docs) {
+    const existing = merged.get(doc.id);
+    if (existing) {
+      existing.updates[secondaryUpdateField] = newName;
+    } else {
+      merged.set(doc.id, { ref: doc.ref, updates: { [secondaryUpdateField]: newName } });
     }
   }
 
-  if (batchCount > 0) {
-    await batch.commit();
-  }
+  if (merged.size === 0) return 0;
 
-  return total;
+  const entries = Array.from(merged.values());
+  return batchUpdateDocs(
+    null,
+    db,
+    (doc) => entries.find((e) => e.ref.path === doc.ref.path)?.updates ?? {},
+    entries.map((e) => e.ref)
+  );
 }
