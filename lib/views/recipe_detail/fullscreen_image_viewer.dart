@@ -109,8 +109,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                   child: Image.network(
                     widget.imageUrls[index],
                     fit: BoxFit.contain,
-                    cacheWidth: (MediaQuery.of(context).size.width *
-                            MediaQuery.of(context).devicePixelRatio)
+                    cacheWidth: (MediaQuery.sizeOf(context).width *
+                            MediaQuery.devicePixelRatioOf(context))
                         .round(),
                     loadingBuilder: (context, child, progress) {
                       if (progress == null) return child;
