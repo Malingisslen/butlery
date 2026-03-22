@@ -563,9 +563,8 @@ class RecipeCore with JsonSerializableMixin {
           : null,
       ratingCount: utils.SerializationUtils.safeNullableInt(json, 'ratingCount'),
       averageRating: (json['averageRating'] as num?)?.toDouble(),
-      ratingDistribution: json['ratingDistribution'] != null
-          ? Map<int, int>.from(json['ratingDistribution'])
-          : null,
+      ratingDistribution:
+          utils.SerializationUtils.safeIntKeyIntMap(json, 'ratingDistribution'),
       lastRatedAt: utils.SerializationUtils.safeDateTime(json, 'lastRatedAt'),
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
@@ -723,9 +722,8 @@ class RecipeCore with JsonSerializableMixin {
           utils.SerializationUtils.safeNullableInt(data, 'ratingCount'),
       averageRating:
           utils.SerializationUtils.safeNullableDouble(data, 'averageRating'),
-      ratingDistribution: data['ratingDistribution'] != null
-          ? Map<int, int>.from(data['ratingDistribution'] as Map)
-          : null,
+      ratingDistribution:
+          utils.SerializationUtils.safeIntKeyIntMap(data, 'ratingDistribution'),
       lastRatedAt: utils.SerializationUtils.safeDateTime(data, 'lastRatedAt'),
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(data['tagResult']),

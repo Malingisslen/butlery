@@ -345,6 +345,23 @@ class SerializationUtils {
     return null;
   }
 
+  /// Safely parses a map with int keys from Firestore (which stores keys as strings).
+  /// Returns null when the field is absent or not a map.
+  static Map<int, int>? safeIntKeyIntMap(
+      Map<String, dynamic> map, String key) {
+    final value = map[key];
+    if (value == null) return null;
+    if (value is! Map) return null;
+    final result = <int, int>{};
+    for (final entry in value.entries) {
+      final k = int.tryParse(entry.key.toString());
+      if (k != null && entry.value is num) {
+        result[k] = (entry.value as num).toInt();
+      }
+    }
+    return result.isEmpty ? null : result;
+  }
+
   static Map<String, T> convertMapValues<T>(
       Map<String, dynamic> map, T Function(dynamic) converter) {
     final result = <String, T>{};

@@ -88,13 +88,24 @@ class UserBehaviorPattern {
       mealTypePreferences: Map<String, int>.from(
           (json['mealTypePreferences'] as Map?).orEmpty()),
       viewTimePreferences:
-          Map<int, int>.from((json['viewTimePreferences'] as Map?).orEmpty()),
+          _parseIntKeyMap((json['viewTimePreferences'] as Map?).orEmpty()),
       favoriteRecipeIds:
           Set<String>.from((json['favoriteRecipeIds'] as List?).orEmpty()),
       activeFriendIds:
           Set<String>.from((json['activeFriendIds'] as List?).orEmpty()),
     );
   }
+}
+
+Map<int, int> _parseIntKeyMap(Map<dynamic, dynamic> raw) {
+  final result = <int, int>{};
+  for (final entry in raw.entries) {
+    final k = int.tryParse(entry.key.toString());
+    if (k != null && entry.value is num) {
+      result[k] = (entry.value as num).toInt();
+    }
+  }
+  return result;
 }
 
 /// Cache entry with metadata for intelligent eviction
