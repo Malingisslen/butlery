@@ -11,6 +11,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { Collections } from "../shared/collections";
 
 const getDb = () => admin.firestore();
 
@@ -57,13 +58,13 @@ export const sendWeeklyActivityDigest = functions
             await Promise.all([
               db.collection("users").doc(userId).collection("recipes")
                 .where("core.createdAt", ">=", sevenDaysAgo).get(),
-              db.collection("recipe_comments")
+              db.collection(Collections.recipeComments)
                 .where("authorId", "==", userId)
                 .where("createdAt", ">=", sevenDaysAgo).get(),
               db.collection("recipe_ratings")
                 .where("userId", "==", userId)
                 .where("createdAt", ">=", sevenDaysAgo).get(),
-              db.collection("shared_recipes")
+              db.collection(Collections.sharedRecipes)
                 .where("sharedByUserId", "==", userId)
                 .where("sharedAt", ">=", sevenDaysAgo).get(),
             ]);

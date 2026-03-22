@@ -20,6 +20,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { Collections } from "../shared/collections";
 
 const DEFAULT_TTL_DAYS = 90;
 const BATCH_LIMIT = 500;
@@ -27,7 +28,7 @@ const PARENT_CHUNK_SIZE = 100;
 const MAX_EXECUTION_TIME_MS = 8 * 60 * 1000; // 8 minutes (leave 1 min margin)
 
 const PARENT_COLLECTIONS = [
-  "shared_recipes",
+  Collections.sharedRecipes,
   "shared_menus",
   "shared_shopping_lists",
 ];

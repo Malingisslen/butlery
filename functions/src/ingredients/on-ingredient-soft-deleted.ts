@@ -11,6 +11,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
+import { batchUpdateDocs } from "../shared/batch-update";
 
 import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
 
@@ -84,37 +85,13 @@ export const onIngredientSoftDeleted = functions.firestore
         `Found ${recipesSnapshot.size} recipes using "${ingredientName}"`
       );
 
-      // Mark all affected recipes for retagging using batched writes
-      // LOW-6: 500 is the Firestore maximum operations per batch commit.
-      // This is a hard limit from Firebase, not an arbitrary choice.
-      // See: https://firebase.google.com/docs/firestore/manage-data/transactions#batched-writes
-      const batchSize = 500;
       const db = getDb();
-      let batch = db.batch();
-      let operationCount = 0;
-      let totalUpdated = 0;
-
-      for (const doc of recipesSnapshot.docs) {
-        batch.update(doc.ref, {
-          "core.tagResult.generatorVersion": "stale-ingredient",
-        });
-        operationCount++;
-        totalUpdated++;
-
-        // Commit batch if we hit the limit
-        if (operationCount >= batchSize) {
-          await batch.commit();
-          functions.logger.info(`Committed batch of ${operationCount} updates`);
-          batch = db.batch();
-          operationCount = 0;
-        }
-      }
-
-      // Commit remaining operations
-      if (operationCount > 0) {
-        await batch.commit();
-        functions.logger.info(`Committed final batch of ${operationCount} updates`);
-      }
+      const totalUpdated = await batchUpdateDocs(
+        null,
+        db,
+        () => ({ "core.tagResult.generatorVersion": "stale-ingredient" }),
+        recipesSnapshot.docs.map((doc) => doc.ref)
+      );
 
       functions.logger.info(
         `Marked ${totalUpdated} recipes for retagging due to deleted ingredient "${ingredientName}"`

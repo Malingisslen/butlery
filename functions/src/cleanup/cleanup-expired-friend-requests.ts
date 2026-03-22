@@ -8,6 +8,8 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { batchUpdateQuery } from "../shared/batch-update";
+import { Collections } from "../shared/collections";
 
 const db = admin.firestore();
 
@@ -27,49 +29,29 @@ export const cleanupExpiredFriendRequests = functions
     );
 
     try {
-      const expiredRequests = await db
-        .collection("friend_requests")
+      const query = db
+        .collection(Collections.friendRequests)
         .where("status", "==", "pending")
-        .where("sentAt", "<", sevenDaysAgo)
-        .get();
+        .where("sentAt", "<", sevenDaysAgo);
 
-      if (expiredRequests.empty) {
-        functions.logger.info("No expired friend requests found");
-        return;
-      }
-
-      let batch = db.batch();
-      let batchCount = 0;
-      let totalDeleted = 0;
-
-      for (const doc of expiredRequests.docs) {
-        batch.update(doc.ref, {
+      const totalExpired = await batchUpdateQuery(
+        query,
+        {
           status: "expired",
           expiredAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        batchCount++;
-        totalDeleted++;
-
-        if (batchCount >= 500) {
-          await batch.commit();
-          batch = db.batch();
-          batchCount = 0;
-        }
-      }
-
-      if (batchCount > 0) {
-        await batch.commit();
-      }
+        },
+        db
+      );
 
       functions.logger.info(
-        `Expired ${totalDeleted} friend requests older than 7 days`
+        `Expired ${totalExpired} friend requests older than 7 days`
       );
 
       // Log cleanup event
       await db.collection("system_events").add({
         type: "cleanup_expired_friend_requests",
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        details: { expiredCount: totalDeleted },
+        details: { expiredCount: totalExpired },
       });
     } catch (error) {
       functions.logger.error("Failed to cleanup expired friend requests:", error);

@@ -14,6 +14,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { Collections } from "../shared/collections";
 import { withTimeout } from "../shared/with-timeout";
 import { cleanUserFromLearnedAliases } from "../analytics/analyze-corrections";
 
@@ -139,13 +140,13 @@ async function cleanupFriendRequests(userId: string): Promise<number> {
 
   // Requests sent by the deleted user
   const sentRequests = await db
-    .collection("friend_requests")
+    .collection(Collections.friendRequests)
     .where("fromUserId", "==", userId)
     .get();
 
   // Requests received by the deleted user
   const receivedRequests = await db
-    .collection("friend_requests")
+    .collection(Collections.friendRequests)
     .where("toUserId", "==", userId)
     .get();
 
