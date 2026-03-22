@@ -45,7 +45,6 @@ export const onIngredientSoftDeleted = functions.firestore
     }
 
     const ingredientName = after.swedish as string;
-    // CRIT-5: Use Swedish normalization to match Dart-side ingredient lookup
     const ingredientNameNormalized = ingredientName
       ? normalizeSwedish(ingredientName)
       : undefined;
@@ -61,11 +60,8 @@ export const onIngredientSoftDeleted = functions.firestore
       `Ingredient soft-deleted: "${ingredientName}" (${ingredientId})`
     );
 
-    // MED-10: Wrap cascade operation with timeout to prevent hanging on large datasets
     const cascadeOperation = async (): Promise<void> => {
-      // Query recipes that might use this ingredient
-      // CRIT-5: Use Swedish-normalized name to match Dart-side storage
-      // (ingredientsNormalized stores å→a, ä→a, ö→o transformed names)
+      // ingredientsNormalized stores Swedish-normalized names (å→a, ä→a, ö→o)
       const recipesSnapshot = await getDb()
         .collection(Collections.recipes)
         .where(

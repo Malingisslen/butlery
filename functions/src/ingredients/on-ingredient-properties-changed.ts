@@ -97,7 +97,6 @@ export const onIngredientPropertiesChanged = functions.firestore
       return;
     }
 
-    // Log the property change for debugging
     const addedProps = (afterProps || []).filter(
       (p) => !(beforeProps || []).includes(p)
     );

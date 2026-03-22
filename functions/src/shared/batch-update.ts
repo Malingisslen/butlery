@@ -42,18 +42,14 @@ export async function batchUpdateQuery(
 }
 
 /**
- * Batch-update docs with per-doc update maps, from either a query or explicit refs.
+ * Batch-update docs matching a query with per-doc update maps.
  */
 export async function batchUpdateDocs(
-  query: admin.firestore.Query | null,
+  query: admin.firestore.Query,
   db: admin.firestore.Firestore,
-  getUpdates: (doc: admin.firestore.DocumentSnapshot) => Record<string, unknown>,
-  refs?: admin.firestore.DocumentReference[]
+  getUpdates: (doc: admin.firestore.DocumentSnapshot) => Record<string, unknown>
 ): Promise<number> {
-  const docs = refs
-    ? refs.map((ref) => ({ ref } as admin.firestore.DocumentSnapshot))
-    : (await query!.get()).docs;
-
+  const docs = (await query.get()).docs;
   if (docs.length === 0) return 0;
 
   let batch = db.batch();
