@@ -142,14 +142,15 @@ class ImageUploadValidator {
   /// Returns true if the file's actual content matches a supported image format.
   Future<bool> isValidImageContent(XFile imageFile) async {
     try {
-      // Read first 12 bytes for magic-byte detection (enough for WebP RIFF header)
-      final bytes = await imageFile.readAsBytes();
-      if (bytes.length < 12) {
+      // Read only the first 12 bytes (enough for WebP RIFF header)
+      final headerBytes = await imageFile
+          .openRead(0, 12)
+          .fold<List<int>>([], (prev, chunk) => prev..addAll(chunk));
+      if (headerBytes.length < 12) {
         AppLogger.warning('Image file too small for format validation');
         return false;
       }
 
-      final headerBytes = bytes.take(12).toList();
       if (!ImageFormatUtils.isSupportedImage(headerBytes)) {
         AppLogger.warning(
             'Image content does not match any supported format (magic bytes)');

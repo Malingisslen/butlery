@@ -57,21 +57,13 @@ class ShareTargetValidationResult {
 /// Provides static utility methods for social operations with comprehensive error handling and state coordination.
 class SocialContentFeatures {
   /// Loads friends for sharing functionality with comprehensive friend retrieval and social context.
-  /// [service] Friends service instance for friend data retrieval
-  /// Returns list of available friends for sharing functionality.
-  /// Performs friend loading through service coordination with error handling
-  /// and social context management for sharing operations.
-  static Future<List<UserProfile>> loadFriends(dynamic service) async {
+  static Future<List<UserProfile>> loadFriends(
+      UnifiedFriendsService service) async {
     try {
-      if (service is UnifiedFriendsService) {
-        if (!service.isInitialized) {
-          await service.initialize();
-        }
-        return service.friends;
+      if (!service.isInitialized) {
+        await service.initialize();
       }
-      AppLogger.warning(
-          'loadFriends called with unsupported service type: ${service.runtimeType}');
-      return <UserProfile>[];
+      return service.friends;
     } catch (e) {
       AppLogger.error('Failed to load friends for sharing', e);
       return <UserProfile>[];

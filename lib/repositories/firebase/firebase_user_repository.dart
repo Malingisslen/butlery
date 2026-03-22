@@ -640,7 +640,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       FirestoreCollections.realtimeMenus,
     ]) {
       try {
-        // Update ownerDisplayName where user is owner
         final ownerDocs = await firestore
             .collection(col)
             .where('ownerId', isEqualTo: userId)
@@ -664,7 +663,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           opCount = state.count;
         }
 
-        // Update lastEditedByDisplayName where user was last editor but not owner
         final editorDocs = await firestore
             .collection(col)
             .where('lastEditedBy', isEqualTo: userId)
@@ -726,7 +724,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       FirestoreCollections.unifiedSharedShoppingLists,
     ]) {
       try {
-        // Update ownerDisplayName
         final ownerDocs = await firestore
             .collection(col)
             .where('ownerId', isEqualTo: userId)
@@ -749,7 +746,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           opCount = state.count;
         }
 
-        // Update lastActivityByDisplayName where user was last active but not owner
         final activityDocs = await firestore
             .collection(col)
             .where('lastActivityByUserId', isEqualTo: userId)
