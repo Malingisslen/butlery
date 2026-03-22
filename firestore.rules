@@ -1029,7 +1029,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated()
         && request.auth.uid == userId
-        && rateLimitWrite('presence', 2);
+        && rateLimitWrite('presence', 30);
     }
 
     // ========================================

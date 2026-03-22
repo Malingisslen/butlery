@@ -35,6 +35,7 @@ import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/presence_service.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 
 // Firestore repository
@@ -120,6 +121,7 @@ class MessagingModule implements DIModule {
         () => PresenceService(
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<AuthRepository>(),
+          database: FirebaseDatabase.instance,
         ),
         dispose: (s) => s.dispose(),
       );

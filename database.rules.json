@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "presence": {
+      "$userId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}
