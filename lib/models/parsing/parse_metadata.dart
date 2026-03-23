@@ -1,14 +1,6 @@
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 
-ImportSource _safeImportSource(String name) {
-  try {
-    return ImportSource.values.byName(name);
-  } catch (_) {
-    return ImportSource.url;
-  }
-}
-
 /// Source type for recipe import.
 enum ImportSource {
   /// Recipe from a web URL.
@@ -206,7 +198,8 @@ class ParseMetadata {
 
   /// Creates from JSON.
   factory ParseMetadata.fromJson(Map<String, dynamic> json) => ParseMetadata(
-        source: _safeImportSource(json['source']?.toString() ?? 'url'),
+        source: SerializationUtils.safeEnumByName(ImportSource.values,
+            json['source']?.toString() ?? 'url', ImportSource.url),
         domain: json['domain']?.toString(),
         sourceUrl: json['sourceUrl']?.toString(),
         cacheKey: json['cacheKey']?.toString(),

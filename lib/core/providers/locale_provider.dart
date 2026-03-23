@@ -34,7 +34,11 @@ class LocaleProvider extends ChangeNotifier {
   /// Initialize provider - load saved locale preference
   Future<void> initialize() async {
     if (_isInitialized) return;
-
+    // Guard against concurrent initialize() calls
+    if (_initCompleter != null) {
+      await _initCompleter!.future;
+      return;
+    }
     _initCompleter = Completer<void>();
     try {
       final prefs = await SharedPreferences.getInstance();

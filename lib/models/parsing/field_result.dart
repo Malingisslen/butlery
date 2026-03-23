@@ -1,3 +1,5 @@
+import 'package:butlery/core/utils/serialization_utils.dart';
+
 /// Confidence level for a parsed field value.
 enum ParseConfidence {
   /// High confidence - value extracted from structured data (JSON-LD, schema.org)
@@ -26,14 +28,6 @@ extension ParseConfidenceScore on ParseConfidence {
   /// Whether this confidence level indicates the value needs review.
   bool get needsReview =>
       this == ParseConfidence.low || this == ParseConfidence.failed;
-}
-
-ParseConfidence _safeParseConfidence(String name) {
-  try {
-    return ParseConfidence.values.byName(name);
-  } catch (_) {
-    return ParseConfidence.medium;
-  }
 }
 
 /// Result of parsing a single field, with value and confidence tracking.
@@ -146,8 +140,8 @@ class FieldResult<T> {
   ) =>
       FieldResult(
         value: json['value'] != null ? valueConverter(json['value']) : null,
-        confidence:
-            _safeParseConfidence(json['confidence']?.toString() ?? 'medium'),
+        confidence: SerializationUtils.safeEnumByName(ParseConfidence.values,
+            json['confidence']?.toString() ?? 'medium', ParseConfidence.medium),
         failureReason: json['failureReason']?.toString(),
       );
 

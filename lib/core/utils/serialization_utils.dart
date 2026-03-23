@@ -264,6 +264,16 @@ class SerializationUtils {
     }
   }
 
+  /// Safe enum lookup by name with fallback — O(1) via .byName().
+  static T safeEnumByName<T extends Enum>(
+      List<T> values, String name, T defaultValue) {
+    try {
+      return values.byName(name);
+    } catch (_) {
+      return defaultValue;
+    }
+  }
+
   static T? safeNullableEnum<T>(Map<String, dynamic> map, String key,
       List<T> values, String Function(T) enumToString) {
     final value = map[key];
@@ -347,8 +357,7 @@ class SerializationUtils {
 
   /// Safely parses a map with int keys from Firestore (which stores keys as strings).
   /// Returns null when the field is absent or not a map.
-  static Map<int, int>? safeIntKeyIntMap(
-      Map<String, dynamic> map, String key) {
+  static Map<int, int>? safeIntKeyIntMap(Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) return null;
     if (value is! Map) return null;

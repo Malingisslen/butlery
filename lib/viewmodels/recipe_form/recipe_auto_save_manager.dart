@@ -284,20 +284,18 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   /// Uses a Completer lock to serialize concurrent writes and prevent
   /// a second read-modify-write from overwriting the first.
   Future<void> _saveDraftMetadata(DraftMetadata metadata) async {
-    // Wait for any in-progress metadata write to finish
-    if (_metadataWriteLock != null) {
-      await _metadataWriteLock!.future;
-    }
-    _metadataWriteLock = Completer<void>();
+    // Chain on previous write to serialize concurrent access
+    final previous = _metadataWriteLock?.future ?? Future.value();
+    final thisLock = Completer<void>();
+    _metadataWriteLock = thisLock;
+    await previous;
     try {
       final prefs = await SharedPreferences.getInstance();
       final existingMetadata = await _loadAllDraftMetadata();
 
-      // Update or add metadata
       existingMetadata.removeWhere((m) => m.draftId == metadata.draftId);
       existingMetadata.add(metadata);
 
-      // Keep only most recent drafts
       existingMetadata
           .sort((a, b) => b.lastModifiedAt.compareTo(a.lastModifiedAt));
       if (existingMetadata.length > _maxDrafts) {
@@ -312,8 +310,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
           jsonEncode(existingMetadata.map((m) => m.toJson()).toList());
       await prefs.setString(_draftsKey, metadataJson);
     } finally {
-      _metadataWriteLock!.complete();
-      _metadataWriteLock = null;
+      thisLock.complete();
     }
   }
 
@@ -451,6 +448,10 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     _isDisposed = true;
     _autoSaveTimer?.cancel();
     _feedbackTimer?.cancel();
+    // Unblock any waiter before tearing down
+    if (_metadataWriteLock != null && !_metadataWriteLock!.isCompleted) {
+      _metadataWriteLock!.complete();
+    }
     super.dispose();
   }
 }
