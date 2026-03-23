@@ -72,13 +72,12 @@ abstract class ImportBaseViewModel extends BaseViewModel
               result.errorMessage ?? 'Failed to parse recipe from text');
         }
       },
-      errorPrefix: 'Failed to parse recipe',
     );
   }
 
   Future<bool> saveImportedRecipe() async {
     if (_parsedRecipe == null) {
-      setError('No recipe to save');
+      setError(AppLocale.current.errorNoRecipeToSave);
       return false;
     }
 
@@ -89,7 +88,6 @@ abstract class ImportBaseViewModel extends BaseViewModel
           throw Exception(result.errorMessage ?? 'Failed to save recipe');
         }
       },
-      errorPrefix: 'Failed to save recipe',
     );
   }
 
@@ -227,7 +225,7 @@ mixin TextImportMixin on ImportBaseViewModel {
   @override
   Future<void> performImport() async {
     if (!hasValidInput) {
-      setError('Please provide text to import');
+      setError(AppLocale.current.importProvideText);
       return;
     }
 
@@ -287,7 +285,7 @@ mixin UrlImportMixin on ImportBaseViewModel {
 
   Future<void> fetchFromUrl() async {
     if (!canFetch) {
-      setError('Please provide a valid URL');
+      setError(AppLocale.current.importProvideUrl);
       return;
     }
 
@@ -296,7 +294,6 @@ mixin UrlImportMixin on ImportBaseViewModel {
 
     final extractedText = await executeAsync<String>(
       () => fetchContentFromUrl(trimmedUrl),
-      errorPrefix: 'Failed to fetch content from URL',
     );
 
     _extractedText = extractedText;
@@ -306,7 +303,7 @@ mixin UrlImportMixin on ImportBaseViewModel {
   @override
   Future<void> performImport() async {
     if (!hasExtractedText) {
-      setError('No content extracted from URL');
+      setError(AppLocale.current.importNoContent);
       return;
     }
 

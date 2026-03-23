@@ -30,7 +30,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Import REAL app components and E2E-optimized app
-import 'package:butlery/main_e2e_optimized.dart';
+import '../main_e2e_optimized.dart';
 // Collaboration components will be accessed through service integration, not direct imports
 
 /// **INDUSTRY STANDARD MULTI-USER COLLABORATION E2E TESTING SUITE**

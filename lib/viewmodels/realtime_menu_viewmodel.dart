@@ -10,6 +10,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
@@ -353,7 +354,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   void _onServiceStateChanged() {
     final error = _menuService.lastError;
     if (error != null) {
-      _state.setError('Menu service fel: ${error.message}');
+      _state.setError(sanitizeErrorForUser(error));
     }
   }
 

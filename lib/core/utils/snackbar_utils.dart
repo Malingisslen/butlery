@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 
 /// Centralized snackbar utilities for consistent user feedback throughout the application.
 class SnackBarUtils {
@@ -285,62 +286,9 @@ class SnackBarUtils {
   }
 
   /// Convert a technical error/exception to a user-friendly Swedish message.
-  ///
-  /// Categorizes the error by inspecting its type and message content,
-  /// then returns the appropriate localized string.
+  /// Delegates to [sanitizeErrorForUser] for consistent categorization.
   static String userFriendlyMessage(BuildContext context, dynamic error) {
-    final l10n = context.l10n;
-    final errorStr = error.toString().toLowerCase();
-
-    // Network errors
-    if (errorStr.contains('socketexception') ||
-        errorStr.contains('connection refused') ||
-        errorStr.contains('network') ||
-        errorStr.contains('no internet') ||
-        errorStr.contains('connection') && errorStr.contains('failed')) {
-      return l10n.errorNetwork;
-    }
-
-    // Timeout
-    if (errorStr.contains('timeout') || errorStr.contains('timed out')) {
-      return l10n.errorGeneric;
-    }
-
-    // Authentication
-    if (errorStr.contains('unauthenticated') ||
-        errorStr.contains('not authenticated') ||
-        errorStr.contains('sign in') ||
-        errorStr.contains('login') ||
-        errorStr.contains('auth') && errorStr.contains('expired')) {
-      return l10n.errorAuthentication;
-    }
-
-    // Permission
-    if (errorStr.contains('permission') ||
-        errorStr.contains('unauthorized') ||
-        errorStr.contains('forbidden') ||
-        errorStr.contains('access denied')) {
-      return l10n.errorPermissionDenied;
-    }
-
-    // Not found
-    if (errorStr.contains('not found') ||
-        errorStr.contains('not exist') ||
-        errorStr.contains('no document') ||
-        errorStr.contains('404')) {
-      return l10n.errorNotFound;
-    }
-
-    // Server errors
-    if (errorStr.contains('internal server') ||
-        errorStr.contains('500') ||
-        errorStr.contains('503') ||
-        errorStr.contains('server error')) {
-      return l10n.errorServer;
-    }
-
-    // Generic fallback
-    return l10n.errorGeneric;
+    return sanitizeErrorForUser(error);
   }
 
   static void _showSnackBar(

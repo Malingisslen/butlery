@@ -27,6 +27,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
@@ -170,7 +171,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       return invitationId;
     } catch (e) {
       AppLogger.error('Failed to create $contentTypeName invitation: $e');
-      _setError('Failed to create $contentTypeName invitation: $e');
+      _setError(sanitizeErrorForUser(e));
       return null;
     }
   }
@@ -217,7 +218,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     } catch (e) {
       AppLogger.error(
           'Failed to get received $contentTypeName invitations: $e');
-      _setError('Failed to get received $contentTypeName invitations: $e');
+      _setError(sanitizeErrorForUser(e));
       return [];
     }
   }
@@ -262,7 +263,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       return sharedContentId;
     } catch (e) {
       AppLogger.error('Failed to join shared $contentTypeName: $e');
-      _setError('Failed to join shared $contentTypeName: $e');
+      _setError(sanitizeErrorForUser(e));
       return null;
     }
   }
@@ -321,7 +322,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       return sharedContentId; // Return collaborative version ID
     } catch (e) {
       AppLogger.error('Failed to trigger copy-on-write: $e');
-      _setError('Failed to trigger copy-on-write: $e');
+      _setError(sanitizeErrorForUser(e));
       return null;
     }
   }
@@ -362,7 +363,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       return true;
     } catch (e) {
       AppLogger.error('Failed to dismiss shared $contentTypeName: $e');
-      _setError('Failed to dismiss shared $contentTypeName: $e');
+      _setError(sanitizeErrorForUser(e));
       return false;
     }
   }
@@ -383,7 +384,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       return true;
     } catch (e) {
       AppLogger.error('Failed to restore shared $contentTypeName: $e');
-      _setError('Failed to restore shared $contentTypeName: $e');
+      _setError(sanitizeErrorForUser(e));
       return false;
     }
   }

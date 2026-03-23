@@ -296,7 +296,8 @@ class ValidationUtils {
       final result = await validator();
       return syncValidator(result);
     } catch (e) {
-      return AppLocale.current.validationFailedWith('$e');
+      return AppLocale.current
+          .validationFailedWith(AppLocale.current.errorGeneric);
     }
   }
 

@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Mixin for async operations with loading states, error handling, concurrency control, debouncing, caching, and batch processing.
@@ -81,10 +82,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       AppLogger.debug('Operation $operationName completed successfully');
       return result;
     } catch (e) {
-      final errorMessage = errorPrefix != null
-          ? '$errorPrefix: $e'
-          : 'Operation $operationName failed: $e';
-      setError(errorMessage);
+      setError(errorPrefix ?? sanitizeErrorForUser(e));
       AppLogger.error('Operation $operationName failed: $e');
       rethrow;
     } finally {
@@ -265,13 +263,9 @@ mixin AsyncOperationMixin on StateNotifierMixin {
           'Batch operations completed: ${results.length} successes');
       return results;
     } catch (e) {
-      final errorMessage = errorPrefix != null
-          ? '$errorPrefix: $e'
-          : 'Batch operations failed: $e';
-      setError(errorMessage);
+      setError(errorPrefix ?? sanitizeErrorForUser(e));
       rethrow;
     } finally {
-      // Clear all active operations
       for (final operationName in operations.keys) {
         _activeOperations.remove(operationName);
       }
@@ -314,10 +308,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
           'Sequence operations completed: ${results.length} results');
       return results;
     } catch (e) {
-      final errorMessage = errorPrefix != null
-          ? '$errorPrefix: $e'
-          : 'Sequence operations failed: $e';
-      setError(errorMessage);
+      setError(errorPrefix ?? sanitizeErrorForUser(e));
       rethrow;
     }
   }
@@ -442,7 +433,6 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
       'load_data',
       operation,
       forceRefresh: refresh,
-      errorPrefix: 'Failed to load data',
     );
   }
 
@@ -453,7 +443,6 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
     return await executeNamedOperation(
       'save_data',
       operation,
-      errorPrefix: 'Failed to save data',
     );
   }
 
@@ -464,7 +453,6 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
     return await executeNamedOperation(
       'delete_data',
       operation,
-      errorPrefix: 'Failed to delete data',
     );
   }
 
@@ -477,7 +465,6 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
       'search_data',
       operation,
       delay,
-      errorPrefix: 'Search failed',
     );
   }
 
@@ -489,7 +476,6 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
     return await executeNamedOperation(
       'refresh_data',
       operation,
-      errorPrefix: 'Failed to refresh data',
     );
   }
 }

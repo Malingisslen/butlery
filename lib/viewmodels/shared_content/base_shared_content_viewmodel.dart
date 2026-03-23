@@ -28,6 +28,7 @@
 // lib/viewmodels/shared_content/base_shared_content_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -213,7 +214,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       AppLogger.success(
           '✅ Loaded ${_content.length} $contentTypeName(s) (hasMore: $_hasMoreContent)');
     } catch (e) {
-      _setError('Failed to load $contentTypeName content: $e');
+      _setError(sanitizeErrorForUser(e));
       AppLogger.error('Failed to load $contentTypeName content: $e');
     } finally {
       _setLoading(false);
@@ -253,7 +254,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       AppLogger.success(
           '✅ Loaded ${loadedContent.length} more $contentTypeName(s) (total: ${_content.length}, hasMore: $_hasMoreContent)');
     } catch (e) {
-      _setError('Failed to load more $contentTypeName: $e');
+      _setError(sanitizeErrorForUser(e));
       AppLogger.error('Failed to load more $contentTypeName: $e');
     } finally {
       _isLoadingMore = false;
@@ -375,7 +376,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       AppLogger.success('✅ $operationName completed successfully');
       return result;
     } catch (e) {
-      _setError('$operationName failed: $e');
+      _setError(sanitizeErrorForUser(e));
       AppLogger.error('❌ $operationName failed: $e');
       return null;
     } finally {

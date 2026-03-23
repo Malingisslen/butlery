@@ -1,6 +1,7 @@
 /// Base action handler providing standardized action execution with context safety, error handling, loading states, confirmations, and Swedish-localized feedback.
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -380,7 +381,7 @@ mixin ActionStateMixin on BaseActionHandler {
 
       return result;
     } catch (e) {
-      setError(e.toString());
+      setError(sanitizeErrorForUser(e));
       rethrow;
     } finally {
       setLoading(false);

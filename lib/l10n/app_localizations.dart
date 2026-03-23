@@ -14151,6 +14151,30 @@ abstract class AppLocalizations {
   /// **'Inget recept att validera'**
   String get errorNoRecipeToValidate;
 
+  /// No description provided for @errorNoRecipeToSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget recept att spara'**
+  String get errorNoRecipeToSave;
+
+  /// No description provided for @importProvideText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange text att importera'**
+  String get importProvideText;
+
+  /// No description provided for @importProvideUrl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange en giltig URL'**
+  String get importProvideUrl;
+
+  /// No description provided for @importNoContent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget innehåll kunde hämtas från URL:en'**
+  String get importNoContent;
+
   /// No description provided for @errorRecipeTitleRequired.
   ///
   /// In sv, this message translates to:

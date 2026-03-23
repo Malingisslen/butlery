@@ -6,6 +6,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/models/user_profile.dart';
 // Removed unused imports
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -147,7 +148,7 @@ class SocialSharingViewModel extends ChangeNotifier
       final friends = _friendsService.friends; // Using friends getter
       _availableFriends = friends;
       AppLogger.success('✅ Loaded ${friends.length} friends for sharing');
-    }, errorPrefix: 'Failed to load friends');
+    });
   }
 
   /// Refresh friends list
@@ -280,17 +281,15 @@ class SocialSharingViewModel extends ChangeNotifier
         clearFriendSelection();
         clearShareMessage();
       } else {
-        setError(
-            result.errorMessage ?? 'Sharing failed'); // From StateNotifierMixin
+        setError(result.errorMessage ?? AppLocale.current.errorGeneric);
         AppLogger.error('❌ Content sharing failed: ${result.errorMessage}');
       }
 
       return result;
     } catch (e) {
-      final error = 'Sharing failed: $e';
-      setError(error); // From StateNotifierMixin
+      setError(sanitizeErrorForUser(e));
       AppLogger.error('❌ Content sharing failed: $e');
-      final result = SharingResult.failure(error);
+      final result = SharingResult.failure(sanitizeErrorForUser(e));
       _lastSharingResult = result;
       return result;
     } finally {

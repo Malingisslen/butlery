@@ -8145,6 +8145,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorNoRecipeToValidate => 'Inget recept att validera';
 
   @override
+  String get errorNoRecipeToSave => 'Inget recept att spara';
+
+  @override
+  String get importProvideText => 'Ange text att importera';
+
+  @override
+  String get importProvideUrl => 'Ange en giltig URL';
+
+  @override
+  String get importNoContent => 'Inget innehåll kunde hämtas från URL:en';
+
+  @override
   String get errorRecipeTitleRequired => 'Recepttitel krävs';
 
   @override

@@ -88,6 +88,7 @@ dependencies:
   algoliasearch: ^1.46.1     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
   html_unescape: ^2.0.0
   sqlite3: ^2.9.4
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

@@ -40,6 +40,7 @@
 
 import 'dart:async';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -61,9 +62,7 @@ class ShoppingListServiceAdapter {
 
   Future<UnifiedShoppingList?> getShoppingListById(String listId) async {
     try {
-      return _shoppingService.lists
-          .where((l) => l.id == listId)
-          .firstOrNull;
+      return _shoppingService.lists.where((l) => l.id == listId).firstOrNull;
     } catch (e) {
       AppLogger.error('Failed to get shopping list by ID $listId: $e');
       return null;
@@ -303,7 +302,7 @@ class SocialShoppingCoordinator
       return sharedShoppingListId;
     } catch (e) {
       AppLogger.error('Failed to join shared shopping list: $e');
-      setError('Failed to join shared shopping list: $e');
+      setError(sanitizeErrorForUser(e));
       return null;
     }
   }
@@ -416,7 +415,7 @@ class SocialShoppingCoordinator
           .getJoinedShoppingListsForUser(currentUserId);
     } catch (e) {
       AppLogger.error('Failed to get joined shopping lists: $e');
-      setError('Failed to get joined shopping lists: $e');
+      setError(sanitizeErrorForUser(e));
       return [];
     }
   }

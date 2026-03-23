@@ -21,7 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Import REAL app components and E2E-optimized app
-import 'package:butlery/main_e2e_optimized.dart';
+import '../main_e2e_optimized.dart';
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 

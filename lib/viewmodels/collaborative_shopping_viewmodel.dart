@@ -157,7 +157,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   @override
   void clearError() {
     _itemOperationsManager.clearError();
-    setError('');
+    super.clearError();
   }
 
   void _updateActivity(String activity, DateTime time) {

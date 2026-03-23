@@ -1,4 +1,5 @@
 // lib/viewmodels/menu/menu_state_manager.dart
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 import 'package:flutter/foundation.dart';
@@ -88,7 +89,7 @@ class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   void handleOperationError(String operation, dynamic error) {
-    setError('$operation: ${error.toString()}');
+    setError(sanitizeErrorForUser(error));
   }
 
   void clearErrorAfterSuccess() {

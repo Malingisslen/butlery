@@ -1,9 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
+import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
+    if (dart.library.io) 'package:butlery/views/account/data_export_helpers/download_native.dart'
+    if (dart.library.js_interop) 'package:butlery/views/account/data_export_helpers/download_web.dart'
+    as export_helper;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -242,14 +243,16 @@ class DataExportView extends StatelessWidget {
                     label: Text(context.l10n.dataExportSaveFile),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingL),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _handleShare(context, viewModel),
-                    icon: const Icon(Icons.share),
-                    label: Text(context.l10n.commonShare),
+                if (export_helper.canShareFiles) ...[
+                  const SizedBox(width: AppDimensions.spacingL),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _handleShare(context, viewModel),
+                      icon: const Icon(Icons.share),
+                      label: Text(context.l10n.commonShare),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
             const SizedBox(height: AppDimensions.spacingL),
@@ -350,19 +353,14 @@ class DataExportView extends StatelessWidget {
     if (viewModel.exportedData == null) return;
 
     try {
-      // Get downloads directory
-      final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now()
           .toIso8601String()
           .replaceAll(':', '-')
           .split('.')
           .first;
       final fileName = 'butlery_data_export_$timestamp.json';
-      final filePath = '${directory.path}/$fileName';
 
-      // Write file
-      final file = File(filePath);
-      await file.writeAsString(viewModel.exportedData!);
+      await export_helper.downloadJsonFile(viewModel.exportedData!, fileName);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -397,30 +395,23 @@ class DataExportView extends StatelessWidget {
       BuildContext context, DataExportViewModel viewModel) async {
     if (viewModel.exportedData == null) return;
 
-    // Capture l10n before async gap
     final shareSubject = context.l10n.dataExportShareSubject;
     final shareText = context.l10n.dataExportShareText;
 
     try {
-      // Create temporary file
-      final directory = await getTemporaryDirectory();
       final timestamp = DateTime.now()
           .toIso8601String()
           .replaceAll(':', '-')
           .split('.')
           .first;
       final fileName = 'butlery_data_export_$timestamp.json';
-      final filePath = '${directory.path}/$fileName';
 
-      final file = File(filePath);
-      await file.writeAsString(viewModel.exportedData!);
-
-      // Share file
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(filePath)],
+      await export_helper.shareJsonFile(
+        viewModel.exportedData!,
+        fileName,
         subject: shareSubject,
         text: shareText,
-      ));
+      );
     } catch (e) {
       if (context.mounted) {
         final cs = Theme.of(context).colorScheme;

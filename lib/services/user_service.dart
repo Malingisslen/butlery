@@ -1,5 +1,6 @@
 /// User profile service with 30-min caching, social discovery, real-time auth sync, and privacy controls.
 
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -172,7 +173,7 @@ class UserService extends ChangeNotifier
       return results;
     } catch (e, stackTrace) {
       AppLogger.error('Search users failed: $e', stackTrace);
-      _setError('Failed to search users. Please try again.');
+      _setError(sanitizeErrorForUser(e));
       return [];
     } finally {
       _setLoading(false);

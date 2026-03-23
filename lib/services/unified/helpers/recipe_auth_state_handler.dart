@@ -60,7 +60,7 @@ class RecipeAuthStateHandler {
       );
 
       setLoading(true);
-      setError(''); // Clear error
+      setError('');
       notifyListeners();
 
       // Clear existing recipes to prevent showing wrong user's data

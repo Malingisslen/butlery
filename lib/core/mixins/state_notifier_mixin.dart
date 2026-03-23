@@ -34,6 +34,7 @@
 /// ```
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Mixin that provides common state management functionality
@@ -165,9 +166,7 @@ mixin StateNotifierMixin on ChangeNotifier {
       setSuccess();
       return result;
     } catch (e) {
-      final errorMessage =
-          errorPrefix != null ? '$errorPrefix: $e' : e.toString();
-      setError(errorMessage);
+      setError(errorPrefix ?? sanitizeErrorForUser(e));
       rethrow;
     }
   }
@@ -182,9 +181,7 @@ mixin StateNotifierMixin on ChangeNotifier {
       final result = await operation();
       return result;
     } catch (e) {
-      final errorMessage =
-          errorPrefix != null ? '$errorPrefix: $e' : e.toString();
-      setError(errorMessage);
+      setError(errorPrefix ?? sanitizeErrorForUser(e));
       rethrow;
     }
   }
@@ -208,9 +205,7 @@ mixin StateNotifierMixin on ChangeNotifier {
       setSuccess();
       return results;
     } catch (e) {
-      final errorMessage =
-          errorPrefix != null ? '$errorPrefix: $e' : e.toString();
-      setError(errorMessage);
+      setError(errorPrefix ?? sanitizeErrorForUser(e));
       rethrow;
     }
   }
@@ -255,10 +250,7 @@ mixin StateNotifierMixin on ChangeNotifier {
         attempts++;
 
         if (attempts >= maxRetries) {
-          final errorMessage = errorPrefix != null
-              ? '$errorPrefix (after $attempts attempts): $e'
-              : 'After $attempts attempts: $e';
-          setError(errorMessage);
+          setError(errorPrefix ?? sanitizeErrorForUser(e));
           rethrow;
         }
 
@@ -399,9 +391,7 @@ mixin PaginatedStateNotifierMixin on StateNotifierMixin {
 
       return result;
     } catch (e) {
-      final errorMessage =
-          errorPrefix != null ? '$errorPrefix: $e' : e.toString();
-      setError(errorMessage);
+      setError(errorPrefix ?? sanitizeErrorForUser(e));
       rethrow;
     } finally {
       setLoadingMore(false);
