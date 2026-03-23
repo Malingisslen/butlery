@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
@@ -106,7 +107,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
       return StateWidget.noRecipes(
         onAction: () {
           Navigator.pop(context);
-          Navigator.pushNamed(context, '/laggTill');
+          Navigator.pushNamed(context, Routes.laggTill);
         },
       );
     }

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -155,7 +156,7 @@ class VeckomenyDialogs {
       menu: viewModel.menu,
       onListSelected: () {
         Navigator.pop(context);
-        Navigator.pushNamed(context, '/inkopslista');
+        Navigator.pushNamed(context, Routes.inkopslista);
       },
     );
   }

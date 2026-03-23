@@ -175,7 +175,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
         metadata: {
           'consentVersion': consent.consentVersion,
           'purposes': consent.purposes.toMap(),
-          'timestamp': DateTime.now().toIso8601String(),
+          'timestamp': DateTime.now().toUtc().toIso8601String(),
         },
       );
 
@@ -212,7 +212,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
         resourceType: 'user_consent',
         resourceId: userId,
         granted: true,
-        metadata: {'timestamp': DateTime.now().toIso8601String()},
+        metadata: {'timestamp': DateTime.now().toUtc().toIso8601String()},
       );
 
       AppLogger.success('✅ Consent deleted for user ${userId.maskedUserId}');

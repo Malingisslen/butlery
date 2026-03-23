@@ -298,7 +298,6 @@ abstract class BaseSharedContentRepository<T>
     }
   }
 
-
   Future<void> addMember(
     String contentId,
     String userId, {
@@ -320,7 +319,7 @@ abstract class BaseSharedContentRepository<T>
         // V1-QP-001: Use provided displayName or fallback for legacy callers
         displayName: displayName ?? 'Användare',
         avatarUrl: avatarUrl,
-        addedAt: DateTime.now(),
+        addedAt: DateTime.now().toUtc(),
         addedBy: addedBy,
         role: role,
       );

@@ -1,6 +1,7 @@
 // lib/views/social/shared_with_me/shared_content_lists.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -26,7 +27,7 @@ class SharedContentLists {
         subtitle: context.l10n.sharedNoRecipesDescription,
         icon: Icons.restaurant_outlined,
         actionLabel: context.l10n.socialFindFriends,
-        onAction: () => Navigator.pushNamed(context, '/friends'),
+        onAction: () => Navigator.pushNamed(context, Routes.friends),
       );
     }
 
@@ -79,7 +80,7 @@ class SharedContentLists {
         subtitle: context.l10n.sharedNoMenusDescription,
         icon: Icons.calendar_month_outlined,
         actionLabel: context.l10n.socialFindFriends,
-        onAction: () => Navigator.pushNamed(context, '/friends'),
+        onAction: () => Navigator.pushNamed(context, Routes.friends),
       );
     }
 
@@ -132,7 +133,7 @@ class SharedContentLists {
         subtitle: context.l10n.sharedNoShoppingListsDescription,
         icon: Icons.shopping_cart_outlined,
         actionLabel: context.l10n.socialFindFriends,
-        onAction: () => Navigator.pushNamed(context, '/friends'),
+        onAction: () => Navigator.pushNamed(context, Routes.friends),
       );
     }
 

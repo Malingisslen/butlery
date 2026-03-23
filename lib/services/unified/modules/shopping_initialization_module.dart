@@ -69,11 +69,10 @@ class ShoppingInitializationModule {
       lists.clear();
       lists.addAll(loadedLists);
 
-      // ULTRATHINK FIX: Sort lists alphabetically for better user experience
       lists
           .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       AppLogger.info(
-          '✅ ULTRATHINK FIX: Sorted ${loadedLists.length} shopping lists alphabetically');
+          'Sorted ${loadedLists.length} shopping lists alphabetically');
 
       notifyListeners();
       AppLogger.success(
@@ -85,13 +84,13 @@ class ShoppingInitializationModule {
   }
 
   /// Restore the last active list ID from cache, with smart fallback to first available list
-  /// ULTRATHINK FIX: Respects already-set active list to prevent overwriting during navigation
+  /// Respects already-set active list to prevent overwriting during navigation
   Future<void> _restoreActiveList() async {
     try {
-      // ULTRATHINK FIX: Check if active list is already set (e.g., from setActiveList call during navigation)
+      // Check if active list is already set (e.g., from setActiveList during navigation)
       if (getActiveListId() != null) {
         AppLogger.info(
-            '✅ ULTRATHINK FIX: Active list already set to ${getActiveListId()}, skipping restoration to preserve navigation choice',
+            'Active list already set to ${getActiveListId()}, skipping restoration to preserve navigation choice',
             'ShoppingService');
         return;
       }

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -147,7 +148,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             subtitle: context.l10n.friendAddFriendsAndCategoriesFirst,
             icon: Icons.people_outline,
             actionLabel: context.l10n.friendManageFriends,
-            onAction: () => Navigator.pushNamed(context, '/friends'),
+            onAction: () => Navigator.pushNamed(context, Routes.friends),
           );
         }
 

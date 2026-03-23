@@ -6771,7 +6771,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authResetEmailFailed => 'Kunde inte skicka email';
 
   @override
-  String get avatarUnknownUser => 'Okand användare';
+  String get avatarUnknownUser => 'Okänd användare';
 
   @override
   String get commonNow => 'nu';

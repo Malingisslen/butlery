@@ -510,8 +510,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     try {
       _clearImageUploadError();
 
-      // ULTRATHINK FIX: Use existing background upload system instead of blocking Future.wait
-      // This allows immediate completion while uploads continue in background
+      // Use background upload system instead of blocking Future.wait
       for (final xFile in filesToUpload) {
         final file = File(xFile.path);
         await _addPendingImageFromFile(file); // Adds to pending list instantly

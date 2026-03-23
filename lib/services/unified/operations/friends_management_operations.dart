@@ -97,7 +97,7 @@ class FriendsManagementOperations extends BaseService {
       final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
       unawaited(_sendFriendRequestNotification(
         request,
-        currentUserDisplayName ?? 'Unknown User',
+        currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
         recipientDisplayName,
       ));
 
@@ -125,7 +125,7 @@ class FriendsManagementOperations extends BaseService {
         respondedAt: DateTime.now(),
       );
 
-      // ULTRATHINK FIX: Fetch real user profile instead of creating fake one
+      // Fetch real user profile for the friend request sender
       final userProfile = await _userService.getUserProfile(request.fromUserId);
       if (userProfile == null) {
         throw Exception(
@@ -149,10 +149,10 @@ class FriendsManagementOperations extends BaseService {
       // Send notification to the original sender (non-critical)
       unawaited(_sendFriendRequestAcceptedNotification(
         request,
-        _parent.currentUserDisplayName ?? 'Unknown User',
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
       ));
 
-      // ULTRATHINK FIX: Refresh state from Firebase to ensure consistency
+      // Refresh state from Firebase to ensure consistency
       try {
         await _parent.refresh();
         AppLogger.success('✅ State refreshed after friend request acceptance');
@@ -458,7 +458,8 @@ class FriendsManagementOperations extends BaseService {
           currentUserFriends.intersection(targetUserFriendIds).toList();
 
       if (mutualFriendIds.isEmpty) {
-        AppLogger.debug('No mutual friends found with user ${userId.maskedUserId}');
+        AppLogger.debug(
+            'No mutual friends found with user ${userId.maskedUserId}');
         return [];
       }
 

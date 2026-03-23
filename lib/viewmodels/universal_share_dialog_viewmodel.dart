@@ -334,7 +334,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
 
       // Handle collaborative sharing for realtime mode - USE INVITATION SYSTEM
       if (shareMode == ShareMode.realtime) {
-        // ULTRATHINK FIX: Use invitation system with filtered friends
+        // Use invitation system with filtered friends
         final success = await SocialContentFeatures.shareContentWithFriends(
           shoppingList.id,
           'shopping_list',
@@ -359,7 +359,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         }
       } else {
         // Handle traditional copy-based sharing with filtered friends
-        // ULTRATHINK FIX: Use invitation system for copy mode too instead of broken shareListWithFriend
+        // Use invitation system for copy mode (replaces broken shareListWithFriend)
         final success = await SocialContentFeatures.shareContentWithFriends(
           shoppingList.id,
           'shopping_list',

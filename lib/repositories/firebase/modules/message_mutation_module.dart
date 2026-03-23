@@ -141,8 +141,8 @@ class MessageMutationModule {
           },
           lastReadTimestamps: {},
           isGroup: false,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.now().toUtc(),
         );
 
         AppLogger.success(
@@ -166,7 +166,7 @@ class MessageMutationModule {
       // 2. Update conversation with lastMessage (keeping original status)
       final updatedConversation = conversation.copyWith(
         lastMessage: message,
-        updatedAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
       );
       final conversationData = ConversationDto.toFirestore(updatedConversation);
       batch.set(
@@ -287,10 +287,11 @@ class MessageMutationModule {
       await updateMessageStatus(
         messageId: messageId,
         status: MessageStatus.read,
-        timestamp: DateTime.now(),
+        timestamp: DateTime.now().toUtc(),
       );
 
-      AppLogger.debug('Message marked as read: $messageId by ${userId.maskedUserId}');
+      AppLogger.debug(
+          'Message marked as read: $messageId by ${userId.maskedUserId}');
     } catch (e) {
       AppLogger.error('Failed to mark message as read: $messageId', e);
       rethrow;
@@ -321,7 +322,7 @@ class MessageMutationModule {
         );
       }
 
-      final now = DateTime.now();
+      final now = DateTime.now().toUtc();
       final updatedLastReadTimestamps =
           Map<String, DateTime>.from(conversation.lastReadTimestamps);
       updatedLastReadTimestamps[userId] = now;

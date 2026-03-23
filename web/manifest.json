@@ -1,11 +1,11 @@
 {
-    "name": "butlery",
-    "short_name": "butlery",
+    "name": "Butlery",
+    "short_name": "Butlery",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F8F4E8",
+    "theme_color": "#4A7C59",
+    "description": "Din personliga receptsamling",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

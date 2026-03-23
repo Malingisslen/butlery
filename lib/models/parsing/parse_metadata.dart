@@ -1,6 +1,14 @@
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 
+ImportSource _safeImportSource(String name) {
+  try {
+    return ImportSource.values.byName(name);
+  } catch (_) {
+    return ImportSource.url;
+  }
+}
+
 /// Source type for recipe import.
 enum ImportSource {
   /// Recipe from a web URL.
@@ -198,17 +206,19 @@ class ParseMetadata {
 
   /// Creates from JSON.
   factory ParseMetadata.fromJson(Map<String, dynamic> json) => ParseMetadata(
-        source: ImportSource.values.byName(json['source']?.toString() ?? 'url'),
+        source: _safeImportSource(json['source']?.toString() ?? 'url'),
         domain: json['domain']?.toString(),
         sourceUrl: json['sourceUrl']?.toString(),
         cacheKey: json['cacheKey']?.toString(),
         parserVersion: json['parserVersion']?.toString() ?? '1.0',
         timestamp: SerializationUtils.safeRequiredDateTime(json, 'timestamp'),
-        totalParseTime:
-            Duration(milliseconds: SerializationUtils.safeInt(json, 'totalParseTimeMs')),
+        totalParseTime: Duration(
+            milliseconds: SerializationUtils.safeInt(json, 'totalParseTimeMs')),
         tierResults: const [],
-        totalCostSek: SerializationUtils.safeNullableDouble(json, 'totalCostSek'),
-        totalTokensUsed: SerializationUtils.safeNullableInt(json, 'totalTokensUsed'),
+        totalCostSek:
+            SerializationUtils.safeNullableDouble(json, 'totalCostSek'),
+        totalTokensUsed:
+            SerializationUtils.safeNullableInt(json, 'totalTokensUsed'),
       );
 
   @override

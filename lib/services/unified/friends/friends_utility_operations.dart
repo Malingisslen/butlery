@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -193,7 +194,8 @@ class FriendsUtilityOperations {
         final data = doc.data();
         profileMap[doc.id] = UserProfile(
           uid: doc.id,
-          displayName: data['displayName'] ?? 'Unknown User',
+          displayName:
+              data['displayName'] ?? AppLocale.current.displayUnknownUser,
           email: data['email'] ?? '',
           avatarUrl: data['avatarUrl'],
           joinedAt: SerializationUtils.parseDateTimeValue(data['joinedAt']) ??

@@ -37,7 +37,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
       return;
@@ -81,7 +81,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
       return;
@@ -128,7 +128,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
       return;
@@ -176,7 +176,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
       return;
@@ -231,7 +231,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null) return;
 
@@ -268,7 +268,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null || recipe.socialData?.memberPermissions == null) {
       return;
@@ -312,7 +312,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null) return;
 
@@ -349,7 +349,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null) return;
 
@@ -385,7 +385,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null) return;
 
@@ -444,7 +444,7 @@ class RealtimeNotificationModule {
 
     final currentUserId = _parent.currentUserId;
     final currentUserDisplayName =
-        _parent.currentUserDisplayName ?? 'Unknown User';
+        _parent.currentUserDisplayName ?? AppLocale.current.displayUnknownUser;
 
     if (currentUserId == null) return;
 

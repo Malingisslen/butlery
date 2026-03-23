@@ -11706,7 +11706,7 @@ abstract class AppLocalizations {
   /// No description provided for @avatarUnknownUser.
   ///
   /// In sv, this message translates to:
-  /// **'Okand användare'**
+  /// **'Okänd användare'**
   String get avatarUnknownUser;
 
   /// No description provided for @commonNow.

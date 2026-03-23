@@ -79,7 +79,7 @@ class TaggingModule implements DIModule {
       ];
 
   @override
-  int get priority => 25; // After Core (1), before Content (10) is also valid
+  int get priority => 5; // After Core (1), before Content (10)
 
   @override
   Future<void> configureUserScope(GetIt container) async {
@@ -138,7 +138,9 @@ class TaggingModule implements DIModule {
       // UserIngredientRepository, PersonalTagCrudService, PersonalTagSharingService,
       // PersonalTagService: registered in configureUserScope
 
-      // Ingredient lookup service for matching recipe ingredients
+      // IngredientLookupService is registered in app scope but depends on
+      // UserIngredientRepository (user scope). Safe because it's lazy — only
+      // resolves at first access after user login.
       container.registerLazySingleton<IngredientLookupService>(
         () => IngredientLookupService(
           ingredientRepository: container<IngredientRepository>(),

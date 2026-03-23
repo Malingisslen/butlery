@@ -129,8 +129,8 @@ class FirebaseUserIngredientRepository
       final doc = _getUserCollection(userId).doc(ingredient.id);
 
       final withTimestamps = ingredient.copyWith(
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
         status: 'user-defined',
       );
 
@@ -154,7 +154,7 @@ class FirebaseUserIngredientRepository
       final doc = _getUserCollection(userId).doc(ingredient.id);
 
       final withTimestamp = ingredient.copyWith(
-        updatedAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
       );
 
       await doc.update(withTimestamp.toFirestore());

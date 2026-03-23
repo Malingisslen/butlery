@@ -184,7 +184,7 @@ class ConversationParticipantModule {
   }) async {
     if (!_isEnabled) return;
 
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
     final batch = firestore.batch();
 
     // 1. Update in participants subcollection
@@ -220,7 +220,7 @@ class ConversationParticipantModule {
   }) async {
     if (!_isEnabled) return;
 
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
     final batch = firestore.batch();
 
     for (final participantId in participantIds) {
@@ -341,7 +341,8 @@ class ConversationParticipantModule {
     for (final participantId in participantIds) {
       final displayName = displayNames[participantId] ?? 'Unknown';
       final avatarUrl = avatarUrls[participantId];
-      final lastRead = lastReadTimestamps[participantId] ?? DateTime.now();
+      final lastRead =
+          lastReadTimestamps[participantId] ?? DateTime.now().toUtc();
       final role = participantId == ownerId
           ? ParticipantRole.owner
           : ParticipantRole.member;
@@ -352,7 +353,7 @@ class ConversationParticipantModule {
         participantId: participantId,
         displayName: displayName,
         avatarUrl: avatarUrl,
-        joinedAt: DateTime.now(), // Approximate
+        joinedAt: DateTime.now().toUtc(), // Approximate
         lastReadAt: lastRead,
         role: role,
       );
@@ -370,8 +371,8 @@ class ConversationParticipantModule {
         conversationId: conversationId,
         conversationTitle: conversationTitle,
         isGroup: isGroup,
-        lastActivityAt: DateTime.now(),
-        joinedAt: DateTime.now(), // Approximate
+        lastActivityAt: DateTime.now().toUtc(),
+        joinedAt: DateTime.now().toUtc(), // Approximate
       );
 
       final membershipRef = firestore

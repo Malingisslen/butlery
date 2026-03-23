@@ -56,7 +56,7 @@ class _ShoppingListSelectionDialogState
     try {
       await widget.shoppingService.loadLists();
 
-      // ULTRATHINK FIX: Filter lists to only show those the user can edit
+      // Filter lists to only show those the user can edit
       final permissionService = ServiceLocator.get<PermissionService>();
       final editableLists = widget.shoppingService.lists.where((list) {
         return permissionService.canEditShoppingList(list.id);

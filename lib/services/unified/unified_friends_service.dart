@@ -175,7 +175,7 @@ class UnifiedFriendsService extends ChangeNotifier
         } else {
           // User logged out - clear all cached data
           AppLogger.info('🚪 User logged out - clearing friends data');
-          // ULTRATHINK FIX: Ensure clearAllData completes before any subsequent operations
+          // Ensure clearAllData completes before any subsequent operations
           await Future.microtask(() => _stateManager.clearAllData());
           AppLogger.debug('✅ Friends data clearing completed');
         }
@@ -413,10 +413,10 @@ class UnifiedFriendsService extends ChangeNotifier
       await _firebaseSyncOps.updateFriendRequestStatus(request);
 
   /// Sync friend to Firebase
-  /// ⚠️ ULTRATHINK WARNING: This method should NOT be used for friend request acceptance!
-  /// Use FriendRelationshipRepository.addMutualFriends() instead, which properly handles:
-  /// - Atomic operations, counter updates, and consistent field structures
-  /// This method uses different field names and doesn't update friendsCount
+  /// WARNING: Do not use for friend request acceptance.
+  /// Use FriendRelationshipRepository.addMutualFriends() instead, which properly handles
+  /// atomic operations, counter updates, and consistent field structures.
+  /// This method uses different field names and doesn't update friendsCount.
   Future<void> syncFriendToFirebase(UserProfile friend) async =>
       await _firebaseSyncOps.syncFriendToFirebase(friend);
 

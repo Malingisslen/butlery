@@ -68,10 +68,10 @@ class FriendsFirebaseSyncOperations {
   }
 
   /// Sync friend to Firebase
-  /// ⚠️ ULTRATHINK WARNING: This method should NOT be used for friend request acceptance!
-  /// Use FriendRelationshipRepository.addMutualFriends() instead, which properly handles:
-  /// - Atomic operations, counter updates, and consistent field structures
-  /// This method uses different field names and doesn't update friendsCount
+  /// WARNING: Do not use for friend request acceptance.
+  /// Use FriendRelationshipRepository.addMutualFriends() instead, which properly handles
+  /// atomic operations, counter updates, and consistent field structures.
+  /// This method uses different field names and doesn't update friendsCount.
   Future<void> syncFriendToFirebase(UserProfile friend) async {
     try {
       final userId = getCurrentUserId();

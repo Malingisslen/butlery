@@ -80,7 +80,7 @@ class ShoppingRepositoryQueryModule {
           }
 
           AppLogger.info(
-              'ULTRATHINK DEBUG: Loaded collaborative list "${list.name}" with ${list.items.length} items (origin: ${list.collaborativeOrigin ?? "direct"})',
+              'Loaded collaborative list "${list.name}" with ${list.items.length} items (origin: ${list.collaborativeOrigin ?? "direct"})',
               'ShoppingRepository');
 
           // Debug log each item to verify they're loading correctly

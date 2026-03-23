@@ -105,9 +105,8 @@ class SharedShoppingList
       sharedAt: commonFields['sharedAt'] as DateTime,
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
-      engagementCount:
-          SerializationUtils.safeInt(data, 'joinedCount',
-              defaultValue: commonFields['engagementCount'] as int),
+      engagementCount: SerializationUtils.safeInt(data, 'joinedCount',
+          defaultValue: commonFields['engagementCount'] as int),
       dismissalCount: commonFields['dismissalCount'] as int,
       listName: SerializationUtils.safeString(data, 'listName'),
       listDescription: data['listDescription'],
@@ -115,7 +114,7 @@ class SharedShoppingList
       originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
       originalOwnerDisplayName: data['originalOwnerDisplayName'] ??
           data['sharedByDisplayName'] ??
-          'Unknown User',
+          AppLocale.current.displayUnknownUser,
     );
   }
 
@@ -150,7 +149,7 @@ class SharedShoppingList
           data, 'originalOwnerDisplayName',
           defaultValue: SerializationUtils.safeString(
               data, 'sharedByDisplayName',
-              defaultValue: 'Unknown User')),
+              defaultValue: AppLocale.current.displayUnknownUser)),
     );
   }
 
@@ -191,15 +190,16 @@ class SharedShoppingList
       sharedAt: commonFields['sharedAt'] as DateTime,
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
-      engagementCount:
-          SerializationUtils.safeInt(json, 'joinedCount',
-              defaultValue: commonFields['engagementCount'] as int),
+      engagementCount: SerializationUtils.safeInt(json, 'joinedCount',
+          defaultValue: commonFields['engagementCount'] as int),
       dismissalCount: commonFields['dismissalCount'] as int,
       listName: SerializationUtils.safeString(json, 'listName'),
-      listDescription: SerializationUtils.safeNullableString(json, 'listDescription'),
+      listDescription:
+          SerializationUtils.safeNullableString(json, 'listDescription'),
       itemCount: itemCount,
       originalOwnerId: SerializationUtils.safeString(json, 'originalOwnerId'),
-      originalOwnerDisplayName: SerializationUtils.safeString(json, 'originalOwnerDisplayName'),
+      originalOwnerDisplayName:
+          SerializationUtils.safeString(json, 'originalOwnerDisplayName'),
     );
   }
 

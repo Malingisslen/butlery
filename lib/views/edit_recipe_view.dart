@@ -401,6 +401,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onChanged: viewModel.setTitle,
         validator: FormValidators.combine([
           FormValidators.required(context.l10n.recipeTitle),
+          FormValidators.minLength(3, context.l10n.recipeTitle),
           FormValidators.maxLength(100, context.l10n.recipeTitle),
         ]),
       ),

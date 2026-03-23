@@ -31,16 +31,16 @@ class FriendRequest with JsonSerializableMixin {
     this.respondedAt,
     this.message,
     DateTime? expiresAt,
-  })  : sentAt = sentAt ?? DateTime.now(),
-        expiresAt =
-            expiresAt ?? (sentAt ?? DateTime.now()).add(_expiryDuration);
+  })  : sentAt = sentAt ?? DateTime.now().toUtc(),
+        expiresAt = expiresAt ??
+            (sentAt ?? DateTime.now().toUtc()).add(_expiryDuration);
 
   factory FriendRequest.create({
     required String fromUserId,
     required String toUserId,
     String? message,
   }) {
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
     return FriendRequest(
       id: const Uuid().v4(),
       fromUserId: fromUserId,
@@ -67,21 +67,21 @@ class FriendRequest with JsonSerializableMixin {
   FriendRequest accept() {
     return copyWith(
       status: FriendRequestStatus.accepted,
-      respondedAt: DateTime.now(),
+      respondedAt: DateTime.now().toUtc(),
     );
   }
 
   FriendRequest reject() {
     return copyWith(
       status: FriendRequestStatus.rejected,
-      respondedAt: DateTime.now(),
+      respondedAt: DateTime.now().toUtc(),
     );
   }
 
   FriendRequest cancel() {
     return copyWith(
       status: FriendRequestStatus.cancelled,
-      respondedAt: DateTime.now(),
+      respondedAt: DateTime.now().toUtc(),
     );
   }
 
@@ -111,8 +111,8 @@ class FriendRequest with JsonSerializableMixin {
   }
 
   factory FriendRequest.fromMap(String id, Map<String, dynamic> data) {
-    final sentAt =
-        utils.SerializationUtils.safeDateTime(data, 'sentAt') ?? DateTime.now();
+    final sentAt = utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
+        DateTime.now().toUtc();
     return FriendRequest(
       id: id,
       fromUserId: utils.SerializationUtils.safeString(data, 'fromUserId'),

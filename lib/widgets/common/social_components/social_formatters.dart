@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -10,7 +11,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 class SocialFormatters {
   /// Format user display name
   static String formatUserDisplayName(dynamic user) {
-    return user?.displayName ?? user?.email ?? 'Unknown User';
+    return user?.displayName ??
+        user?.email ??
+        AppLocale.current.displayUnknownUser;
   }
 
   /// Check if user is online

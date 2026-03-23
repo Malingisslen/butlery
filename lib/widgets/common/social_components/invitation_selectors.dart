@@ -20,8 +20,7 @@ class InvitationSelectors {
     Widget? emptyWidget,
     ScrollPhysics? physics,
   }) {
-    // ULTRATHINK FIX: Implement concrete widget instead of circular delegation
-    // Use existing components from this class to build the complete selector
+    // Build the complete selector from existing components
 
     if (availableTargets.isEmpty) {
       return emptyWidget ??

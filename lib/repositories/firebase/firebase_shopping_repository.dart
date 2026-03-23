@@ -206,12 +206,12 @@ class FirebaseShoppingRepository
   Future<UnifiedShoppingList> create(UnifiedShoppingList entity) async {
     if (entity.type == ListType.collaborative) {
       AppLogger.info(
-          'ULTRATHINK: Routing collaborative list "${entity.name}" to shared collection',
+          'Routing collaborative list "${entity.name}" to shared collection',
           'ShoppingRepository');
       return await _routingModule.createCollaborativeList(entity);
     } else {
       AppLogger.info(
-          'ULTRATHINK: Routing personal list "${entity.name}" to user collection',
+          'Routing personal list "${entity.name}" to user collection',
           'ShoppingRepository');
       return await super.create(entity);
     }
@@ -222,7 +222,7 @@ class FirebaseShoppingRepository
   Future<UnifiedShoppingList> update(UnifiedShoppingList entity) async {
     if (entity.type == ListType.collaborative) {
       AppLogger.info(
-          'ULTRATHINK: Updating collaborative list "${entity.name}" in shared collection',
+          'Updating collaborative list "${entity.name}" in shared collection',
           'ShoppingRepository');
       return await _routingModule.updateCollaborativeList(entity);
     } else {
@@ -268,8 +268,7 @@ class FirebaseShoppingRepository
     try {
       final collabDoc = await _sharedListsRef.doc(id).get();
       if (collabDoc.exists) {
-        AppLogger.info(
-            'ULTRATHINK: Deleting collaborative list from shared collection',
+        AppLogger.info('Deleting collaborative list from shared collection',
             'ShoppingRepository');
         await _sharedListsRef.doc(id).delete();
         return;
@@ -280,8 +279,8 @@ class FirebaseShoppingRepository
     }
 
     // If not found in collaborative collection, delete from user collection
-    AppLogger.info('ULTRATHINK: Deleting personal list from user collection',
-        'ShoppingRepository');
+    AppLogger.info(
+        'Deleting personal list from user collection', 'ShoppingRepository');
     await super.delete(id);
   }
 

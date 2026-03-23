@@ -38,7 +38,8 @@ class DraftMetadata {
   factory DraftMetadata.fromJson(Map<String, dynamic> json) => DraftMetadata(
         draftId: (json['draftId'] as String?).orEmpty(),
         createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
-        lastModifiedAt: SerializationUtils.safeRequiredDateTime(json, 'lastModifiedAt'),
+        lastModifiedAt:
+            SerializationUtils.safeRequiredDateTime(json, 'lastModifiedAt'),
         title: (json['title'] as String?).orEmpty(),
         fieldCount: (json['fieldCount'] as int?).orZero(),
       );
@@ -68,6 +69,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   bool _hasShownAutoSaveNotice = false;
   DateTime? _lastAutoSaveTime;
   bool _isTemplate = false; // Track if this is a template-based form
+  Completer<void>? _metadataWriteLock;
 
   // Auto-save state for UI feedback
   bool get isAutoSaving => _isAutoSaving;
@@ -278,29 +280,41 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     await prefs.setString(draftKey, jsonData);
   }
 
-  /// Save draft metadata for management
+  /// Save draft metadata for management.
+  /// Uses a Completer lock to serialize concurrent writes and prevent
+  /// a second read-modify-write from overwriting the first.
   Future<void> _saveDraftMetadata(DraftMetadata metadata) async {
-    final prefs = await SharedPreferences.getInstance();
-    final existingMetadata = await _loadAllDraftMetadata();
-
-    // Update or add metadata
-    existingMetadata.removeWhere((m) => m.draftId == metadata.draftId);
-    existingMetadata.add(metadata);
-
-    // Keep only most recent drafts
-    existingMetadata
-        .sort((a, b) => b.lastModifiedAt.compareTo(a.lastModifiedAt));
-    if (existingMetadata.length > _maxDrafts) {
-      final draftsToRemove = existingMetadata.sublist(_maxDrafts);
-      for (final draft in draftsToRemove) {
-        await _deleteDraft(draft.draftId);
-      }
-      existingMetadata.removeRange(_maxDrafts, existingMetadata.length);
+    // Wait for any in-progress metadata write to finish
+    if (_metadataWriteLock != null) {
+      await _metadataWriteLock!.future;
     }
+    _metadataWriteLock = Completer<void>();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final existingMetadata = await _loadAllDraftMetadata();
 
-    final metadataJson =
-        jsonEncode(existingMetadata.map((m) => m.toJson()).toList());
-    await prefs.setString(_draftsKey, metadataJson);
+      // Update or add metadata
+      existingMetadata.removeWhere((m) => m.draftId == metadata.draftId);
+      existingMetadata.add(metadata);
+
+      // Keep only most recent drafts
+      existingMetadata
+          .sort((a, b) => b.lastModifiedAt.compareTo(a.lastModifiedAt));
+      if (existingMetadata.length > _maxDrafts) {
+        final draftsToRemove = existingMetadata.sublist(_maxDrafts);
+        for (final draft in draftsToRemove) {
+          await _deleteDraft(draft.draftId);
+        }
+        existingMetadata.removeRange(_maxDrafts, existingMetadata.length);
+      }
+
+      final metadataJson =
+          jsonEncode(existingMetadata.map((m) => m.toJson()).toList());
+      await prefs.setString(_draftsKey, metadataJson);
+    } finally {
+      _metadataWriteLock!.complete();
+      _metadataWriteLock = null;
+    }
   }
 
   /// Load all draft metadata

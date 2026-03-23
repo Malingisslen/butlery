@@ -75,16 +75,14 @@ class ShoppingItemOperationsModule {
     );
 
     if (list.type == ListType.collaborative) {
-      // ULTRATHINK FIX: Handle collaborative lists - items stored inline in document
-      AppLogger.info(
-          'ULTRATHINK: Adding item to collaborative list (inline storage)',
+      AppLogger.info('Adding item to collaborative list (inline storage)',
           'ShoppingRepository');
 
       final updatedItems = [...list.items, item];
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now(),
-        lastActivityAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
+        lastActivityAt: DateTime.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );
@@ -92,8 +90,7 @@ class ShoppingItemOperationsModule {
       await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
-      AppLogger.info(
-          'ULTRATHINK: Adding item to personal list (subcollection storage)',
+      AppLogger.info('Adding item to personal list (subcollection storage)',
           'ShoppingRepository');
 
       // For personal lists, verify ownership
@@ -147,7 +144,7 @@ class ShoppingItemOperationsModule {
     }
 
     if (list.type == ListType.collaborative) {
-      // ULTRATHINK FIX: Validate collaborative list edit permissions before adding items
+      // Validate collaborative list edit permissions before adding items
       final userPermission = list.memberPermissions[uid];
       final canEdit = userPermission == SharedListPermission.admin ||
           userPermission == SharedListPermission.edit;
@@ -164,14 +161,14 @@ class ShoppingItemOperationsModule {
       }
 
       AppLogger.info(
-          'ULTRATHINK: Adding ${items.length} items to collaborative list (inline storage) - permission validated',
+          'Adding ${items.length} items to collaborative list (inline storage) - permission validated',
           'ShoppingRepository');
 
       final updatedItems = [...list.items, ...items];
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now(),
-        lastActivityAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
+        lastActivityAt: DateTime.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );
@@ -180,7 +177,7 @@ class ShoppingItemOperationsModule {
     } else {
       // Handle personal lists - items stored in subcollection
       AppLogger.info(
-          'ULTRATHINK: Adding ${items.length} items to personal list (subcollection storage)',
+          'Adding ${items.length} items to personal list (subcollection storage)',
           'ShoppingRepository');
 
       // For personal lists, verify ownership
@@ -233,8 +230,8 @@ class ShoppingItemOperationsModule {
       }).toList();
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now(),
-        lastActivityAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
+        lastActivityAt: DateTime.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );
@@ -278,17 +275,15 @@ class ShoppingItemOperationsModule {
     }
 
     if (list.type == ListType.collaborative) {
-      // ULTRATHINK FIX: Handle collaborative lists - items stored inline in document
-      AppLogger.info(
-          'ULTRATHINK: Removing item from collaborative list (inline storage)',
+      AppLogger.info('Removing item from collaborative list (inline storage)',
           'ShoppingRepository');
 
       final updatedItems =
           list.items.where((item) => item.id != itemId).toList();
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now(),
-        lastActivityAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
+        lastActivityAt: DateTime.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );
@@ -296,8 +291,7 @@ class ShoppingItemOperationsModule {
       await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
-      AppLogger.info(
-          'ULTRATHINK: Removing item from personal list (subcollection storage)',
+      AppLogger.info('Removing item from personal list (subcollection storage)',
           'ShoppingRepository');
 
       // For personal lists, verify ownership
@@ -346,8 +340,8 @@ class ShoppingItemOperationsModule {
           list.items.where((item) => !itemIdSet.contains(item.id)).toList();
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now(),
-        lastActivityAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
+        lastActivityAt: DateTime.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );

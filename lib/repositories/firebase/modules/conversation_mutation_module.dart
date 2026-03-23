@@ -64,7 +64,7 @@ class ConversationMutationModule {
       }
 
       // Create conversation directly with deterministic ID
-      final now = DateTime.now();
+      final now = DateTime.now().toUtc();
       final conversation = Conversation(
         id: conversationId,
         participantIds: [user1Id, user2Id],
@@ -184,7 +184,7 @@ class ConversationMutationModule {
       final updatedConversation = conversation.copyWith(
         title: title,
         metadata: metadata,
-        updatedAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
       );
 
       await updateFn(updatedConversation);
@@ -233,7 +233,7 @@ class ConversationMutationModule {
       final updatedLastReadTimestamps = {...conversation.lastReadTimestamps};
 
       // Initialize last read timestamps for new participants
-      final now = DateTime.now();
+      final now = DateTime.now().toUtc();
       for (final participantId in participantIds) {
         updatedLastReadTimestamps[participantId] = now;
       }
@@ -315,7 +315,7 @@ class ConversationMutationModule {
         participantDisplayNames: updatedDisplayNames,
         participantAvatarUrls: updatedAvatarUrls,
         lastReadTimestamps: updatedLastReadTimestamps,
-        updatedAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
       );
 
       await updateFn(updatedConversation);

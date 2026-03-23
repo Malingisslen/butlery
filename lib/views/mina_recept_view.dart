@@ -612,7 +612,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     if (recipes.isEmpty) {
       return viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
           ? StateWidget.noRecipes(
-              onAction: () => Navigator.pushNamed(context, '/laggTill'),
+              onAction: () => Navigator.pushNamed(context, Routes.laggTill),
             )
           : StateWidget.noSearchResults(
               onAction: viewModel.searchQuery.isNotEmpty

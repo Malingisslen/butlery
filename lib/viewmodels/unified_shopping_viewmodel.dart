@@ -251,7 +251,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
       return false;
     }
 
-    // ULTRATHINK PHASE 13A: Enhanced permission checking
+    // Permission check before modifying list
     AppLogger.info(
         'Starting addItem for "${name.trim()}" to list: ${activeList?.name}');
 
@@ -336,7 +336,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   }
 
   Future<bool> removeItem(String itemId) async {
-    // ULTRATHINK FIX: Check permissions before allowing edit operations
     if (!canEditActiveList) {
       AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
       return false;
@@ -368,7 +367,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     double? estimatedPrice,
     int? priority,
   }) async {
-    // ULTRATHINK FIX: Check permissions before allowing edit operations
     if (!canEditActiveList) {
       AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
       return false;
@@ -430,7 +428,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
       return false;
     }
 
-    // ULTRATHINK PHASE 13A FIX: Use correct DI system
     final permissionService = ServiceLocator.get<PermissionService>();
     final canEdit = permissionService.canEditShoppingList(activeList!.id);
 
@@ -444,7 +441,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   bool get canManageActiveList {
     if (activeList == null || currentUserId == null) return false;
 
-    // ULTRATHINK PHASE 13A FIX: Use correct DI system
     return ServiceLocator.get<PermissionService>()
         .canManageShoppingList(activeList!.id);
   }

@@ -114,7 +114,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'source': source,
         if (platform != null) 'platform': platform,
         if (sessionId != null) 'session_id': sessionId,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -133,7 +133,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         if (platform != null) 'platform': platform,
         if (recipeLength != null) 'recipe_length': recipeLength,
         if (sessionId != null) 'session_id': sessionId,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -158,7 +158,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
           error.length > 100 ? 100 : error.length,
         ),
         'url_domain': Uri.tryParse(url)?.host ?? 'invalid_url',
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
 
@@ -175,7 +175,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       parameters: {
         'platform': platform,
         if (reason != null) 'reason': reason,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -190,7 +190,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       parameters: {
         'source': source,
         'has_image': hasImage,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -203,7 +203,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       name: 'recipe_shared',
       parameters: {
         'method': method,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -222,7 +222,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'meal_type': mealType,
         'is_first_time': isFirstTime ? 'true' : 'false',
         if (daysSinceLastCooked != null) 'days_since_last': daysSinceLastCooked,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
 
@@ -239,7 +239,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       parameters: {
         'recipe_count': recipeCount,
         'method': method,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -252,7 +252,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     required DateTime createdAt,
     int? daysSinceCreated,
   }) async {
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
     final actualDaysSinceCreated =
         daysSinceCreated ?? now.difference(createdAt).inDays;
 

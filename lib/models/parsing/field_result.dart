@@ -28,6 +28,14 @@ extension ParseConfidenceScore on ParseConfidence {
       this == ParseConfidence.low || this == ParseConfidence.failed;
 }
 
+ParseConfidence _safeParseConfidence(String name) {
+  try {
+    return ParseConfidence.values.byName(name);
+  } catch (_) {
+    return ParseConfidence.medium;
+  }
+}
+
 /// Result of parsing a single field, with value and confidence tracking.
 ///
 /// This enables smart merging of results from multiple parsing tiers
@@ -138,7 +146,8 @@ class FieldResult<T> {
   ) =>
       FieldResult(
         value: json['value'] != null ? valueConverter(json['value']) : null,
-        confidence: ParseConfidence.values.byName(json['confidence']?.toString() ?? 'medium'),
+        confidence:
+            _safeParseConfidence(json['confidence']?.toString() ?? 'medium'),
         failureReason: json['failureReason']?.toString(),
       );
 

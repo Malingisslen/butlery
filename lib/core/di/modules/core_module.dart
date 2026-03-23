@@ -129,7 +129,10 @@ class CoreModule implements DIModule {
 
       // Shared HTTP client for import pipeline and external API calls.
       // Reusing one client enables HTTP keep-alive connection pooling.
-      container.registerSingleton<http.Client>(http.Client());
+      container.registerSingleton<http.Client>(
+        http.Client(),
+        dispose: (client) => client.close(),
+      );
 
       // LocaleProvider for app language management
       container.registerSingleton<LocaleProvider>(LocaleProvider());

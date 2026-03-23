@@ -1,5 +1,13 @@
 import 'package:butlery/models/parsing/field_result.dart';
 
+ParseConfidence _safeParseConfidence(String name) {
+  try {
+    return ParseConfidence.values.byName(name);
+  } catch (_) {
+    return ParseConfidence.medium;
+  }
+}
+
 /// A parsed ingredient with structured data and confidence tracking.
 ///
 /// This model captures the parsed components of an ingredient line
@@ -128,8 +136,8 @@ class ParsedIngredient {
     return ParsedIngredient(
       name: name,
       originalLine: json['originalLine']?.toString() ?? name,
-      confidence: ParseConfidence.values
-          .byName(json['confidence']?.toString() ?? 'medium'),
+      confidence:
+          _safeParseConfidence(json['confidence']?.toString() ?? 'medium'),
       quantity: json['quantity']?.toString(),
       unit: json['unit']?.toString(),
       size: json['size']?.toString(),

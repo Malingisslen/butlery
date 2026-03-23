@@ -86,7 +86,7 @@ class FriendCategoryMemberModule {
       ownerId: ownerId,
       categoryName: categoryName,
       categoryEmoji: categoryEmoji,
-      addedAt: DateTime.now(),
+      addedAt: DateTime.now().toUtc(),
     );
 
     final membershipRef = _membershipsRef(friendId).doc(categoryId);
@@ -145,7 +145,7 @@ class FriendCategoryMemberModule {
         ownerId: ownerId,
         categoryName: categoryName,
         categoryEmoji: categoryEmoji,
-        addedAt: DateTime.now(),
+        addedAt: DateTime.now().toUtc(),
       );
 
       final membershipRef = _membershipsRef(friendId).doc(categoryId);
@@ -327,7 +327,7 @@ class FriendCategoryMemberModule {
         ownerId: category.ownerId,
         categoryName: category.name,
         categoryEmoji: category.emoji,
-        addedAt: DateTime.now(),
+        addedAt: DateTime.now().toUtc(),
       );
 
       final membershipRef = _membershipsRef(friendId).doc(category.id);

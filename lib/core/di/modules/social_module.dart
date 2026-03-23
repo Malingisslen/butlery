@@ -3,6 +3,7 @@ library;
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/interfaces/di_module.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -127,7 +128,8 @@ class SocialModule implements DIModule {
         getCacheHelper: () => app<JsonCacheHelper>(),
         getCurrentUserId: () => authRepo.currentUserId,
         getCurrentUserDisplayName: () =>
-            userService.currentUserProfile?.displayName ?? 'Unknown User',
+            userService.currentUserProfile?.displayName ??
+            AppLocale.current.displayUnknownUser,
         setError: (error) =>
             AppLogger.error('SocialRecipeCoordinator error: $error'),
         notifyListeners: () {},
@@ -145,7 +147,8 @@ class SocialModule implements DIModule {
       return SocialMenuCoordinator(
         getCurrentUserId: () => authRepo.currentUserId,
         getCurrentUserDisplayName: () =>
-            userService.currentUserProfile?.displayName ?? 'Unknown User',
+            userService.currentUserProfile?.displayName ??
+            AppLocale.current.displayUnknownUser,
         setError: (error) =>
             AppLogger.error('SocialMenuCoordinator error: $error'),
         notifyListeners: () {},
@@ -153,8 +156,8 @@ class SocialModule implements DIModule {
         saveMenu: (Map<String, List<Recipe>> menu) async {
           try {
             final userId = authRepo.currentUserId;
-            final displayName =
-                userService.currentUserProfile?.displayName ?? 'Unknown User';
+            final displayName = userService.currentUserProfile?.displayName ??
+                AppLocale.current.displayUnknownUser;
             if (userId == null) return null;
             final sharedMenu = SharedMenu.create(
               sharedByUserId: userId,
@@ -185,7 +188,8 @@ class SocialModule implements DIModule {
       return SocialShoppingCoordinator(
         getCurrentUserId: () => authRepo.currentUserId,
         getCurrentUserDisplayName: () =>
-            userService.currentUserProfile?.displayName ?? 'Unknown User',
+            userService.currentUserProfile?.displayName ??
+            AppLocale.current.displayUnknownUser,
         setError: (error) =>
             AppLogger.error('SocialShoppingCoordinator error: $error'),
         notifyListeners: () {},

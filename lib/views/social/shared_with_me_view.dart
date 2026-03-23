@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -168,7 +169,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
           subtitle: context.l10n.sharedContentWillAppearHere,
           icon: Icons.share_outlined,
           actionLabel: context.l10n.socialAddFriends,
-          onAction: () => Navigator.pushNamed(context, '/friends'),
+          onAction: () => Navigator.pushNamed(context, Routes.friends),
         ),
       );
     }

@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -138,7 +139,7 @@ class MenuContentWidgets {
               context,
               label: context.l10n.menuChooseManually,
               icon: Icons.list,
-              onPressed: () => Navigator.pushNamed(context, '/'),
+              onPressed: () => Navigator.pushNamed(context, Routes.home),
             ),
           ],
         ),

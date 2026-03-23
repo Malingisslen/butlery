@@ -329,8 +329,7 @@ class _SkrivSjalvReceptViewContentState
               )
             else if (viewModel.hasRecentAutoSave)
               Padding(
-                padding:
-                    const EdgeInsets.only(right: AppDimensions.paddingM),
+                padding: const EdgeInsets.only(right: AppDimensions.paddingM),
                 child: Icon(
                   Icons.cloud_done_outlined,
                   size: AppDimensions.iconSizeM,
@@ -447,6 +446,8 @@ class _SkrivSjalvReceptViewContentState
                           onChanged: viewModel.setTitle,
                           validator: FormValidators.combine([
                             FormValidators.required(context.l10n.recipeTitle),
+                            FormValidators.minLength(
+                                3, context.l10n.recipeTitle),
                             FormValidators.maxLength(
                                 100, context.l10n.recipeTitle),
                           ]),
@@ -642,15 +643,13 @@ class _SkrivSjalvReceptViewContentState
             itemBuilder: (context, index) {
               return Padding(
                 key: ValueKey('${label}_$index'),
-                padding:
-                    const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
                 child: Row(
                   children: [
                     ReorderableDragStartListener(
                       index: index,
                       child: const Padding(
-                        padding:
-                            EdgeInsets.only(right: AppDimensions.spacingS),
+                        padding: EdgeInsets.only(right: AppDimensions.spacingS),
                         child: Icon(Icons.drag_handle,
                             size: AppDimensions.iconSizeM),
                       ),

@@ -5,6 +5,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 
 /// Module handling shopping list template operations.
@@ -264,8 +265,8 @@ class ShoppingTemplateOperationsModule {
       name: listName.trim(),
       description: description?.trim(),
       ownerId: uid,
-      ownerDisplayName:
-          authRepository.currentUser?.displayName ?? 'Unknown User',
+      ownerDisplayName: authRepository.currentUser?.displayName ??
+          AppLocale.current.displayUnknownUser,
       items: items,
     );
 

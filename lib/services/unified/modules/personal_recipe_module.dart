@@ -169,7 +169,7 @@ class PersonalRecipeModule with StreamManagementMixin {
           // Apply personal tag rules (auto-apply based on user-defined rules)
           newRecipe = await _applyPersonalTagRules(newRecipe);
 
-          // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
+          // Optimistic update - save to cache immediately, sync to Firebase in background
           await _saveToCache(newRecipe);
 
           // Increment user's public recipe count
@@ -246,7 +246,7 @@ class PersonalRecipeModule with StreamManagementMixin {
           // Apply personal tag rules (auto-apply based on user-defined rules)
           editedRecipe = await _applyPersonalTagRules(editedRecipe);
 
-          // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
+          // Optimistic update - save to cache immediately, sync to Firebase in background
           await _saveToCache(editedRecipe);
 
           // BUG-003 FIX: On web, await Firebase sync directly

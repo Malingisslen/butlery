@@ -47,8 +47,9 @@ class GroupInvitation with JsonSerializableMixin {
     this.respondedAt,
     this.personalMessage,
     DateTime? expiresAt,
-  })  : sentAt = sentAt ?? DateTime.now(),
-        expiresAt = expiresAt ?? DateTime.now().add(const Duration(days: 7));
+  })  : sentAt = sentAt ?? DateTime.now().toUtc(),
+        expiresAt =
+            expiresAt ?? DateTime.now().toUtc().add(const Duration(days: 7));
 
   /// Factory constructor for creating new group invitations with auto-generated ID.
   /// Creates a new group invitation with automatic ID generation and default timing.
@@ -115,7 +116,7 @@ class GroupInvitation with JsonSerializableMixin {
   GroupInvitation accept() {
     return copyWith(
       status: GroupInvitationStatus.accepted,
-      respondedAt: DateTime.now(),
+      respondedAt: DateTime.now().toUtc(),
     );
   }
 
@@ -126,7 +127,7 @@ class GroupInvitation with JsonSerializableMixin {
   GroupInvitation reject() {
     return copyWith(
       status: GroupInvitationStatus.rejected,
-      respondedAt: DateTime.now(),
+      respondedAt: DateTime.now().toUtc(),
     );
   }
 
@@ -137,7 +138,7 @@ class GroupInvitation with JsonSerializableMixin {
   GroupInvitation cancel() {
     return copyWith(
       status: GroupInvitationStatus.cancelled,
-      respondedAt: DateTime.now(),
+      respondedAt: DateTime.now().toUtc(),
     );
   }
 
@@ -313,12 +314,12 @@ class GroupInvitation with JsonSerializableMixin {
         (e) => e.name,
       ),
       sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
-          DateTime.now(),
+          DateTime.now().toUtc(),
       respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
       personalMessage:
           utils.SerializationUtils.safeNullableString(data, 'personalMessage'),
       expiresAt: utils.SerializationUtils.safeDateTime(data, 'expiresAt') ??
-          DateTime.now().add(const Duration(days: 7)),
+          DateTime.now().toUtc().add(const Duration(days: 7)),
     );
   }
 
@@ -366,12 +367,12 @@ class GroupInvitation with JsonSerializableMixin {
         (e) => e.name,
       ),
       sentAt: utils.SerializationUtils.safeDateTime(json, 'sentAt') ??
-          DateTime.now(),
+          DateTime.now().toUtc(),
       respondedAt: utils.SerializationUtils.safeDateTime(json, 'respondedAt'),
       personalMessage:
           utils.SerializationUtils.safeNullableString(json, 'personalMessage'),
       expiresAt: utils.SerializationUtils.safeDateTime(json, 'expiresAt') ??
-          DateTime.now(),
+          DateTime.now().toUtc(),
     );
   }
 

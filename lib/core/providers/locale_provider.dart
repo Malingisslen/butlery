@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/services/user_service.dart';
@@ -12,6 +14,7 @@ class LocaleProvider extends ChangeNotifier {
 
   Locale _locale = const Locale('sv');
   bool _isInitialized = false;
+  Completer<void>? _initCompleter;
 
   Locale get locale => _locale;
   bool get isInitialized => _isInitialized;
@@ -32,33 +35,44 @@ class LocaleProvider extends ChangeNotifier {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    final savedLocale = prefs.getString(_localeKey);
+    _initCompleter = Completer<void>();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedLocale = prefs.getString(_localeKey);
 
-    if (savedLocale != null && supportedLocales.contains(savedLocale)) {
-      _locale = Locale(savedLocale);
-    } else {
-      // Check UserProfile for preference as fallback
-      try {
-        final userService = ServiceLocator.get<UserService>();
-        final profile = userService.currentUserProfile;
-        if (profile?.preferredLocale != null &&
-            supportedLocales.contains(profile!.preferredLocale)) {
-          _locale = Locale(profile.preferredLocale!);
-          await prefs.setString(_localeKey, profile.preferredLocale!);
+      if (savedLocale != null && supportedLocales.contains(savedLocale)) {
+        _locale = Locale(savedLocale);
+      } else {
+        // Check UserProfile for preference as fallback
+        try {
+          final userService = ServiceLocator.get<UserService>();
+          final profile = userService.currentUserProfile;
+          if (profile?.preferredLocale != null &&
+              supportedLocales.contains(profile!.preferredLocale)) {
+            _locale = Locale(profile.preferredLocale!);
+            await prefs.setString(_localeKey, profile.preferredLocale!);
+          }
+        } catch (_) {
+          // UserService not available yet, use default
         }
-      } catch (_) {
-        // UserService not available yet, use default
       }
-    }
 
-    _isInitialized = true;
-    notifyListeners();
+      _isInitialized = true;
+      notifyListeners();
+    } finally {
+      _initCompleter!.complete();
+    }
   }
 
   /// Set the app locale
   Future<void> setLocale(String localeCode) async {
     if (!supportedLocales.contains(localeCode)) return;
+
+    // Wait for initialization to complete before writing
+    if (_initCompleter != null) {
+      await _initCompleter!.future;
+    }
+
     if (_locale.languageCode == localeCode) return;
 
     _locale = Locale(localeCode);

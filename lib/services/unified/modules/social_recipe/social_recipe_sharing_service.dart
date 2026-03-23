@@ -324,7 +324,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
           memberMap[memberId] = friend.displayName;
         } else {
           // If friend not found, use fallback display name
-          memberMap[memberId] = 'Unknown User';
+          memberMap[memberId] = AppLocale.current.displayUnknownUser;
           AppLogger.warning('Friend $memberId not found in friends list');
         }
       }
