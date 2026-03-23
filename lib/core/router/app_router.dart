@@ -30,6 +30,7 @@ import 'package:butlery/views/receive_share_view.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Settings views
+import 'package:butlery/views/settings/settings_hub_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
@@ -253,6 +254,10 @@ class AppRouter {
           }
           return _buildRoute(CookingModeView(recipe: recipe), settings,
               Routes.getAnimationType(routeName));
+
+        case Routes.settings:
+          return _buildRoute(const SettingsHubView(), settings,
+              RouteAnimationType.slideFromRight);
 
         case Routes.settingsAllergens:
           return _buildRoute(const AllergenPreferencesView(), settings,

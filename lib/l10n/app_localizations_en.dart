@@ -36,6 +36,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonShare => 'Share';
 
   @override
+  String get commonCopyLink => 'Copy link';
+
+  @override
+  String get commonLinkCopied => 'Link copied';
+
+  @override
+  String get commonPaste => 'Paste';
+
+  @override
   String get commonRename => 'Rename';
 
   @override
@@ -1140,6 +1149,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonSettings => 'Settings';
+
+  @override
+  String get settingsSubtitle => 'Allergens, tags, notifications and more';
+
+  @override
+  String get settingsSectionFood => 'Food preferences';
+
+  @override
+  String get settingsSectionNotifications => 'Notifications';
+
+  @override
+  String get settingsSectionAccount => 'Account & security';
+
+  @override
+  String get settingsSectionAbout => 'About';
 
   @override
   String get commonLogout => 'Log out';

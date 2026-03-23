@@ -152,6 +152,24 @@ abstract class AppLocalizations {
   /// **'Dela'**
   String get commonShare;
 
+  /// No description provided for @commonCopyLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera länk'**
+  String get commonCopyLink;
+
+  /// No description provided for @commonLinkCopied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länk kopierad'**
+  String get commonLinkCopied;
+
+  /// No description provided for @commonPaste.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in'**
+  String get commonPaste;
+
   /// No description provided for @commonRename.
   ///
   /// In sv, this message translates to:
@@ -2083,6 +2101,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inställningar'**
   String get commonSettings;
+
+  /// No description provided for @settingsSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener, taggar, aviseringar och mer'**
+  String get settingsSubtitle;
+
+  /// No description provided for @settingsSectionFood.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matpreferenser'**
+  String get settingsSectionFood;
+
+  /// No description provided for @settingsSectionNotifications.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aviseringar'**
+  String get settingsSectionNotifications;
+
+  /// No description provided for @settingsSectionAccount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Konto & säkerhet'**
+  String get settingsSectionAccount;
+
+  /// No description provided for @settingsSectionAbout.
+  ///
+  /// In sv, this message translates to:
+  /// **'Om'**
+  String get settingsSectionAbout;
 
   /// No description provided for @commonLogout.
   ///

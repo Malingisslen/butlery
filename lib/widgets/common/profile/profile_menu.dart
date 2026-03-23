@@ -418,6 +418,13 @@ class _ProfileMenuState extends State<ProfileMenu> {
           ),
           ProfileActions.buildMenuItem(
             context,
+            title: context.l10n.commonSettings,
+            subtitle: context.l10n.settingsSubtitle,
+            icon: Icons.settings,
+            onTap: () => Navigator.pushNamed(context, Routes.settings),
+          ),
+          ProfileActions.buildMenuItem(
+            context,
             title: context.l10n.profileAllergenSettings,
             subtitle: context.l10n.profileAllergenSettingsSubtitle,
             icon: Icons.health_and_safety,

@@ -1,6 +1,7 @@
 // lib/views/social/friends_list/requests_tab.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -115,10 +116,21 @@ class RequestsTab {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          FilledButton.icon(
-            onPressed: () => shareInvitationLink(context, viewModel),
-            icon: const Icon(Icons.share, size: AppDimensions.iconSizeM),
-            label: Text(context.l10n.socialInviteFriends),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FilledButton.icon(
+                onPressed: () => shareInvitationLink(context, viewModel),
+                icon: const Icon(Icons.share, size: AppDimensions.iconSizeM),
+                label: Text(context.l10n.socialInviteFriends),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              IconButton.filled(
+                onPressed: () => copyInvitationLink(context, viewModel),
+                icon: const Icon(Icons.copy, size: AppDimensions.iconSizeM),
+                tooltip: context.l10n.commonCopyLink,
+              ),
+            ],
           ),
         ],
       ),
@@ -144,6 +156,29 @@ class RequestsTab {
         text: url,
         subject: subject,
       ));
+    } catch (e) {
+      if (!context.mounted) return;
+      SnackBarUtils.showError(context, context.l10n.errorGeneric);
+    }
+  }
+
+  /// Generates an invitation link and copies it to clipboard.
+  static Future<void> copyInvitationLink(
+    BuildContext context,
+    FriendsViewModel viewModel,
+  ) async {
+    final userId = viewModel.currentUserId;
+    if (userId == null) return;
+
+    try {
+      final invitationId = const Uuid().v4();
+      final url = DeepLinkService.generateFriendInvitationLink(
+        invitationId: invitationId,
+        fromUserId: userId,
+      );
+      await Clipboard.setData(ClipboardData(text: url));
+      if (!context.mounted) return;
+      SnackBarUtils.showSuccess(context, context.l10n.commonLinkCopied);
     } catch (e) {
       if (!context.mounted) return;
       SnackBarUtils.showError(context, context.l10n.errorGeneric);

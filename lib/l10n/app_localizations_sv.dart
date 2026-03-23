@@ -36,6 +36,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonShare => 'Dela';
 
   @override
+  String get commonCopyLink => 'Kopiera länk';
+
+  @override
+  String get commonLinkCopied => 'Länk kopierad';
+
+  @override
+  String get commonPaste => 'Klistra in';
+
+  @override
   String get commonRename => 'Byt namn';
 
   @override
@@ -1144,6 +1153,21 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get commonSettings => 'Inställningar';
+
+  @override
+  String get settingsSubtitle => 'Allergener, taggar, aviseringar och mer';
+
+  @override
+  String get settingsSectionFood => 'Matpreferenser';
+
+  @override
+  String get settingsSectionNotifications => 'Aviseringar';
+
+  @override
+  String get settingsSectionAccount => 'Konto & säkerhet';
+
+  @override
+  String get settingsSectionAbout => 'Om';
 
   @override
   String get commonLogout => 'Logga ut';

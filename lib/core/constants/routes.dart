@@ -73,6 +73,7 @@ class Routes {
   static const String cookingMode = '/cooking-mode';
 
   // Settings routes
+  static const String settings = '/settings';
   static const String settingsAllergens = '/settings/allergens';
   static const String settingsPersonalTags = '/settings/personal-tags';
   static const String settingsNotifications = '/settings/notifications';

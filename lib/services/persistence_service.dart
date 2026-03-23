@@ -71,6 +71,9 @@ class PersistenceService extends BaseService {
   static const String _lastUpdatedKey = 'butlery_last_updated';
 
   static const String _viewModeKey = 'butlery_view_mode';
+  static const String _sortCriteriaKey = 'butlery_sort_criteria';
+  static const String _sortAscendingKey = 'butlery_sort_ascending';
+  static const String _defaultPortionsKey = 'butlery_default_portions';
 
   /// Provides access to the SharedPreferences instance for cross-platform local storage operations.
   /// This getter manages the SharedPreferences singleton instance providing the underlying
@@ -289,6 +292,57 @@ class PersistenceService extends BaseService {
       await prefs.setBool(_viewModeKey, value);
     } catch (e) {
       AppLogger.error('Failed to save view mode', e, 'Persistence');
+    }
+  }
+
+  Future<String?> getSortCriteria() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getString(_sortCriteriaKey);
+    } catch (e) {
+      AppLogger.error('Failed to load sort criteria', e, 'Persistence');
+      return null;
+    }
+  }
+
+  Future<bool> getSortAscending() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getBool(_sortAscendingKey) ?? true;
+    } catch (e) {
+      AppLogger.error('Failed to load sort direction', e, 'Persistence');
+      return true;
+    }
+  }
+
+  Future<void> setSortPreferences(String criteria, bool ascending) async {
+    try {
+      final prefs = await _prefs;
+      await Future.wait([
+        prefs.setString(_sortCriteriaKey, criteria),
+        prefs.setBool(_sortAscendingKey, ascending),
+      ]);
+    } catch (e) {
+      AppLogger.error('Failed to save sort preferences', e, 'Persistence');
+    }
+  }
+
+  Future<int> getDefaultPortions() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getInt(_defaultPortionsKey) ?? 4;
+    } catch (e) {
+      AppLogger.error('Failed to load default portions', e, 'Persistence');
+      return 4;
+    }
+  }
+
+  Future<void> setDefaultPortions(int portions) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setInt(_defaultPortionsKey, portions);
+    } catch (e) {
+      AppLogger.error('Failed to save default portions', e, 'Persistence');
     }
   }
 

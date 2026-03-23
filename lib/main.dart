@@ -48,6 +48,11 @@ import 'package:butlery/services/theme_service.dart';
 // Memory pressure handling
 import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 
+// Clipboard URL detection
+import 'package:flutter/services.dart';
+import 'package:butlery/services/import/input_detector.dart';
+import 'package:butlery/core/constants/routes.dart' as app_routes;
+
 // Performance optimization - handled by modular system
 
 // All services accessed through DI system - no direct imports needed
@@ -326,6 +331,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   DateTime? _sessionStartTime;
   final LocaleProvider _localeProvider = LocaleProvider();
   ThemeService? _themeService;
+  String? _lastPromptedClipboardUrl;
+  static final _inputDetector = InputDetector();
 
   @override
   void initState() {
@@ -460,15 +467,72 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
 
     if (state == AppLifecycleState.resumed) {
-      // App came to foreground
       _trackAppOpened();
       _sessionTimeoutService?.onAppResumed();
       _resumeCacheManager();
+      _checkClipboardForRecipeUrl();
     } else if (state == AppLifecycleState.paused) {
       // App went to background
       _trackAppBackgrounded();
       _sessionTimeoutService?.onAppPaused();
       _pauseCacheManager();
+    }
+  }
+
+  /// Check clipboard for recipe URLs on app resume.
+  /// Shows a non-intrusive MaterialBanner if a URL is detected.
+  Future<void> _checkClipboardForRecipeUrl() async {
+    try {
+      // Only check if clipboard has strings (avoids iOS permission banner)
+      if (!await Clipboard.hasStrings()) return;
+
+      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+      final text = clipboardData?.text?.trim();
+      if (text == null || text.isEmpty) return;
+
+      // Skip if already prompted for this URL
+      if (text == _lastPromptedClipboardUrl) return;
+
+      final detection = _inputDetector.detect(text);
+      if (!detection.isUrl) return;
+
+      _lastPromptedClipboardUrl = text;
+
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context);
+
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (messenger == null) return;
+
+      messenger.showMaterialBanner(
+        MaterialBanner(
+          content: Text(l10n.importClipboardUrlDetected),
+          leading: const Icon(Icons.link),
+          actions: [
+            TextButton(
+              onPressed: () {
+                messenger.hideCurrentMaterialBanner();
+                if (!mounted) return;
+                Navigator.of(context).pushNamed(
+                  app_routes.Routes.smartImport,
+                  arguments: {'url': text},
+                );
+              },
+              child: Text(l10n.importClipboardUseUrl),
+            ),
+            TextButton(
+              onPressed: () => messenger.hideCurrentMaterialBanner(),
+              child: Text(l10n.commonClose),
+            ),
+          ],
+        ),
+      );
+      // Auto-dismiss after 8 seconds to prevent stale banners
+      Future.delayed(const Duration(seconds: 8), () {
+        if (mounted) messenger.hideCurrentMaterialBanner();
+      });
+    } catch (_) {
+      // Clipboard access failed silently
     }
   }
 

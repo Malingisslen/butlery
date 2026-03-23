@@ -125,16 +125,25 @@ class RecipeListViewModel extends ChangeNotifier {
     _selectionManager.addListener(notifyListeners);
     _recipeService.addListener(_onRecipesChanged);
     _recipeService.initialize();
-    _loadViewModePreference();
+    _loadDisplayPreferences();
   }
 
-  Future<void> _loadViewModePreference() async {
+  Future<void> _loadDisplayPreferences() async {
     try {
       final persistence = ServiceLocator.get<PersistenceService>();
       _isGridView = await persistence.getIsGridView();
+      final savedCriteria = await persistence.getSortCriteria();
+      if (savedCriteria != null) {
+        _sortCriteria = SortCriteria.values.firstWhere(
+          (c) => c.name == savedCriteria,
+          orElse: () => SortCriteria.title,
+        );
+        _sortAscending = await persistence.getSortAscending();
+        _invalidateCache();
+      }
       notifyListeners();
     } catch (_) {
-      // Persistence not available, keep default (list view)
+      // Persistence not available, keep defaults
     }
   }
 
@@ -289,6 +298,12 @@ class RecipeListViewModel extends ChangeNotifier {
     }
     _invalidateCache();
     notifyListeners();
+    try {
+      ServiceLocator.get<PersistenceService>()
+          .setSortPreferences(_sortCriteria.name, _sortAscending);
+    } catch (_) {
+      // PersistenceService not registered yet during early init
+    }
   }
 
   /// Toggles time-based filter with intelligent state management and cache coordination.

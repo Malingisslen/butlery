@@ -1,7 +1,6 @@
 // lib/views/recipe_detail/recipe_detail_content.dart
 //
-// UI Redesign: Converted to tab layout with Description/Tags/Allergens ABOVE tabs,
-// and Ingredienser + Instruktioner (with checkable steps) inside tabs.
+// Ingredients and instructions render inline (no tabs) for immediate visibility.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -17,11 +16,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// Recipe detail content widget with tabbed layout.
-///
-/// **UI Redesign:** Converted to tab-based layout:
-/// - ABOVE TABS: Description, Tags, Allergens, Image Carousel
-/// - TABS: Ingredienser (with PortionScaler) + Instruktioner (with checkable steps)
+/// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
 class RecipeDetailContent extends StatefulWidget {
   final RecipeDetailViewModel viewModel;
   final List<String> scaledIngredients;
@@ -58,24 +53,9 @@ class RecipeDetailContent extends StatefulWidget {
   State<RecipeDetailContent> createState() => _RecipeDetailContentState();
 }
 
-class _RecipeDetailContentState extends State<RecipeDetailContent>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
+class _RecipeDetailContentState extends State<RecipeDetailContent> {
   /// Tracks which instruction steps are completed (local state, not persisted).
   final Set<int> _completedSteps = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   RecipeDetailViewModel get viewModel => widget.viewModel;
   List<String> get scaledIngredients => widget.scaledIngredients;
@@ -94,15 +74,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Description moved to title section (recipe_detail_view.dart)
-
-        // Tags (effective tags: auto-generated + user overrides)
         if (_hasEffectiveTags) ...[
           _buildTags(context),
           const SizedBox(height: AppDimensions.spacingSm),
         ],
-
-        // Personal tags (user-defined categories)
         if (_hasPersonalTags) ...[
           _PersonalTagsSection(
             tagIds: viewModel.recipe.personalTagIds!,
@@ -110,75 +85,58 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
           ),
           const SizedBox(height: AppDimensions.spacingSm),
         ],
-
-        // Allergen badges now rendered in title section (recipe_detail_view.dart)
-
-        // Images
         if (recipe.imageUrls.isNotEmpty) ...[
           _buildImageCarousel(context),
           const SizedBox(height: AppDimensions.spacingMd),
         ],
-
-        // Tabs: Ingredienser + Instruktioner
-        _buildTabbedContent(context),
+        _buildIngredientsSection(context),
+        const SizedBox(height: AppDimensions.spacingMd),
+        _buildInstructionsSection(context),
       ],
     );
   }
 
-  /// Builds the tabbed section with Ingredienser and Instruktioner tabs.
-  Widget _buildTabbedContent(BuildContext context) {
+  /// Ingredients section with section header, portion scaler and structured table.
+  Widget _buildIngredientsSection(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TabBar(
-          controller: _tabController,
-          indicatorColor: cs.primary,
-          indicatorWeight: 3,
-          labelColor: cs.primary,
-          unselectedLabelColor: cs.onSurfaceVariant,
-          labelStyle: AppTextStyles.bodySmall.copyWith(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: cs.primary,
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+          child: Text(
+            context.l10n.recipeIngredients,
+            style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
           ),
-          unselectedLabelStyle: AppTextStyles.bodySmall.copyWith(
-            fontSize: 15,
-            fontWeight: FontWeight.w400,
-            color: cs.onSurfaceVariant,
-          ),
-          tabs: [
-            Tab(text: context.l10n.recipeIngredients),
-            Tab(text: context.l10n.recipeInstructions),
-          ],
         ),
-        Divider(height: 1, color: cs.surfaceContainerHigh),
-        AnimatedSize(
-          duration: AppDimensions.animationDurationMedium,
-          child: _buildTabContent(),
-        ),
+        _buildIngredientsContent(context),
       ],
     );
   }
 
-  Widget _buildTabContent() {
-    // Use AnimatedBuilder to rebuild when tab changes
-    return AnimatedBuilder(
-      animation: _tabController,
-      builder: (context, _) {
-        return IndexedStack(
-          index: _tabController.index,
-          children: [
-            _buildIngredientsTab(context),
-            _buildInstructionsTab(context),
-          ],
-        );
-      },
+  /// Instructions section with section header and checkable steps.
+  Widget _buildInstructionsSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Divider(color: cs.surfaceContainerHigh),
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+          child: Text(
+            context.l10n.recipeInstructions,
+            style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
+          ),
+        ),
+        _buildInstructionsContent(context),
+      ],
     );
   }
 
-  /// Ingredients tab with portion scaler and structured table.
-  Widget _buildIngredientsTab(BuildContext context) {
+  /// Ingredients content with portion scaler and structured table.
+  Widget _buildIngredientsContent(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
@@ -282,7 +240,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
   }
 
   /// Instructions tab with checkable steps.
-  Widget _buildInstructionsTab(BuildContext context) {
+  Widget _buildInstructionsContent(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final instructions = viewModel.recipe.instructions;
     if (instructions.isEmpty) {
