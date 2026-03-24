@@ -3,6 +3,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_member_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_item_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_activity_operations.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -178,9 +182,6 @@ void main() {
       // No need to stub these methods anymore - they have concrete implementations
       // that use the configuration above
 
-      // Create operations under test
-      operations = CollaborativeShoppingOperations(mockParentService);
-
       // Default stub behaviors for parent service methods
       when(() => mockParentService.createCollaborativeList(
             name: any(named: 'name'),
@@ -202,6 +203,39 @@ void main() {
           .thenAnswer((_) async => true);
       when(() => mockParentService.deleteList(any()))
           .thenAnswer((_) async => true);
+
+      // Build operations with typed deps (no _parent back-reference)
+      final lifecycleOps = ListLifecycleOperations(
+        getCollaborativeLists: () => mockParentService.collaborativeLists,
+        getPersonalLists: () => mockParentService.personalLists,
+        createCollaborativeList: mockParentService.createCollaborativeList,
+        deleteList: mockParentService.deleteList,
+        createPersonalList: mockParentService.createPersonalList,
+      );
+
+      final memberOps = ListMemberOperations(
+        getCurrentUserId: () => mockParentService.currentUserId,
+        updateList: mockParentService.updateList,
+        lifecycleOps: lifecycleOps,
+      );
+
+      final itemOps = ListItemOperations(
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getCurrentUserDisplayName: () =>
+            mockParentService.currentUserDisplayName,
+        updateList: mockParentService.updateList,
+        lifecycleOps: lifecycleOps,
+      );
+
+      final activityOps = ListActivityOperations(lifecycleOps);
+
+      // Create operations under test
+      operations = CollaborativeShoppingOperations(
+        lifecycleOps: lifecycleOps,
+        memberOps: memberOps,
+        itemOps: itemOps,
+        activityOps: activityOps,
+      );
     });
 
     tearDown(() async {

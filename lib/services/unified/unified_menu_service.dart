@@ -121,7 +121,9 @@ class UnifiedMenuService extends ChangeNotifier
   CollaborativeMenuOperations _initializeCollaborativeOperations() {
     AppLogger.debug('Initializing collaborative menu operations');
     return CollaborativeMenuOperations(
-        this, ServiceLocator.get<MenuCollaborationRepository>());
+      notifyListeners: triggerNotification,
+      repository: ServiceLocator.get<MenuCollaborationRepository>(),
+    );
   }
 
   /// Initialize the unified menu service

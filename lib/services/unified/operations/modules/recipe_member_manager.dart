@@ -1,21 +1,33 @@
 // lib/services/unified/operations/modules/recipe_member_manager.dart
 
 // ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
+import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 /// Collaborative recipe membership management module
 class RecipeMemberManager {
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
+  final String? Function() _getCurrentUserDisplayName;
+  final List<Recipe> Function() _getRecipes;
+  final Future<bool> Function(Recipe) _updateRecipe;
   final NotificationService? _notificationService;
 
-  RecipeMemberManager(this._parent, this._notificationService);
+  RecipeMemberManager({
+    required String? Function() getCurrentUserId,
+    required String? Function() getCurrentUserDisplayName,
+    required List<Recipe> Function() getRecipes,
+    required Future<bool> Function(Recipe) updateRecipe,
+    required NotificationService? notificationService,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+        _getRecipes = getRecipes,
+        _updateRecipe = updateRecipe,
+        _notificationService = notificationService;
 
   /// Add member to collaborative recipe with specified permission level
   Future<bool> addMember({
@@ -27,7 +39,7 @@ class RecipeMemberManager {
     try {
       permission ??= ResourcePermission.viewer;
       AppLogger.info('Adding member $memberId to recipe $recipeId');
-      final recipe = _parent.recipes
+      final recipe = _getRecipes()
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
       if (recipe == null) {
@@ -63,7 +75,7 @@ class RecipeMemberManager {
         offlineData: recipe.offlineData,
       );
 
-      final success = await _parent.updateRecipe(updatedRecipe);
+      final success = await _updateRecipe(updatedRecipe);
       if (!success) {
         AppLogger.error('Failed to update recipe with new member');
         return false;
@@ -101,7 +113,7 @@ class RecipeMemberManager {
     try {
       AppLogger.info('Removing member $memberId from recipe $recipeId');
 
-      final recipe = _parent.recipes
+      final recipe = _getRecipes()
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
 
@@ -150,7 +162,7 @@ class RecipeMemberManager {
         offlineData: recipe.offlineData,
       );
 
-      final success = await _parent.updateRecipe(updatedRecipe);
+      final success = await _updateRecipe(updatedRecipe);
       if (!success) {
         AppLogger.error('Failed to update recipe after member removal');
         return false;
@@ -187,7 +199,7 @@ class RecipeMemberManager {
       AppLogger.info(
           'Updating permission for member $memberId in recipe $recipeId to ${newPermission.name}');
 
-      final recipe = _parent.recipes
+      final recipe = _getRecipes()
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
 
@@ -243,7 +255,7 @@ class RecipeMemberManager {
         offlineData: recipe.offlineData,
       );
 
-      final success = await _parent.updateRecipe(updatedRecipe);
+      final success = await _updateRecipe(updatedRecipe);
       if (!success) {
         AppLogger.error('Failed to update recipe with new permission');
         return false;
@@ -271,7 +283,7 @@ class RecipeMemberManager {
     try {
       AppLogger.debug('Getting members for recipe $recipeId');
 
-      final recipe = _parent.recipes
+      final recipe = _getRecipes()
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
 
@@ -320,7 +332,7 @@ class RecipeMemberManager {
   /// Check if current user can invite members to recipe
   bool canInviteMembers(String recipeId) {
     try {
-      final recipe = _parent.recipes
+      final recipe = _getRecipes()
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
 
@@ -336,7 +348,7 @@ class RecipeMemberManager {
   /// Get member statistics for a recipe
   Map<String, dynamic> getMemberStatistics(String recipeId) {
     try {
-      final recipe = _parent.recipes
+      final recipe = _getRecipes()
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
 
@@ -375,7 +387,7 @@ class RecipeMemberManager {
     required String newMemberName,
     required ResourcePermission permission,
   }) async {
-    final currentUserName = _parent.currentUserDisplayName ?? '?';
+    final currentUserName = _getCurrentUserDisplayName() ?? '?';
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: _notificationService,
@@ -403,7 +415,7 @@ class RecipeMemberManager {
     required String recipeTitle,
     required String removedMemberId,
   }) async {
-    final currentUserName = _parent.currentUserDisplayName ?? '?';
+    final currentUserName = _getCurrentUserDisplayName() ?? '?';
 
     await NotificationHelper.sendSilentSafely(
       notificationService: _notificationService,
@@ -420,7 +432,7 @@ class RecipeMemberManager {
 
   /// Check if current user can invite members to recipe
   bool _canInviteMembers(Recipe recipe) {
-    final currentUserId = _parent.currentUserId;
+    final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return false;
 
     final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
@@ -438,7 +450,7 @@ class RecipeMemberManager {
 
   /// Check if current user can manage members (add/remove/change permissions)
   bool _canManageMembers(Recipe recipe) {
-    final currentUserId = _parent.currentUserId;
+    final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return false;
 
     final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
@@ -463,7 +475,7 @@ class RecipeMemberManager {
         'recipeId': recipeId,
         'memberId': memberId,
         'action': action,
-        'performedBy': _parent.currentUserId,
+        'performedBy': _getCurrentUserId(),
         'timestamp': DateTime.now().toIso8601String(),
       };
 

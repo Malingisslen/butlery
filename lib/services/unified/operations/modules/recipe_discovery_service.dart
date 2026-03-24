@@ -3,7 +3,6 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/base/base_service.dart';
 
 /// Focused module for social recipe discovery and filtering
@@ -19,9 +18,14 @@ class RecipeDiscoveryService extends BaseService {
   @override
   String get serviceName => 'RecipeDiscoveryService';
 
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
+  final List<Recipe> Function() _getRecipes;
 
-  RecipeDiscoveryService(this._parent);
+  RecipeDiscoveryService({
+    required String? Function() getCurrentUserId,
+    required List<Recipe> Function() getRecipes,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getRecipes = getRecipes;
   Future<List<Recipe>> getCollaborativeRecipes({
     int limit = 50,
     String? startAfter,
@@ -31,14 +35,14 @@ class RecipeDiscoveryService extends BaseService {
     try {
       AppLogger.info('🔍 Getting collaborative recipes for current user');
 
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) {
         AppLogger.warning('⚠️ No current user for collaborative recipes');
         return [];
       }
 
       // Get recipes from parent service and filter for collaborative ones
-      final allRecipes = _parent.recipes;
+      final allRecipes = _getRecipes();
       var collaborativeRecipes = allRecipes.where((recipe) {
         // Must be collaborative
         if (!recipe.isCollaborative) return false;
@@ -102,14 +106,14 @@ class RecipeDiscoveryService extends BaseService {
     try {
       AppLogger.info('🔍 Getting recipes shared with current user');
 
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) {
         AppLogger.warning('⚠️ No current user for shared recipes');
         return [];
       }
 
       // Get recipes from parent service
-      final allRecipes = _parent.recipes;
+      final allRecipes = _getRecipes();
       var sharedRecipes = allRecipes.where((recipe) {
         // Must be collaborative
         if (!recipe.isCollaborative) return false;
@@ -177,14 +181,14 @@ class RecipeDiscoveryService extends BaseService {
     try {
       AppLogger.info('🔍 Getting recipes shared by current user');
 
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) {
         AppLogger.warning('⚠️ No current user for shared recipes');
         return [];
       }
 
       // Get recipes from parent service
-      final allRecipes = _parent.recipes;
+      final allRecipes = _getRecipes();
       var sharedRecipes = allRecipes.where((recipe) {
         // Must be collaborative and owned by current user
         if (!recipe.isCollaborative) return false;
@@ -250,14 +254,14 @@ class RecipeDiscoveryService extends BaseService {
     try {
       AppLogger.info('🔍 Getting recipes by user ${userId.maskedUserId}');
 
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) {
         AppLogger.warning('⚠️ No current user for recipe discovery');
         return [];
       }
 
       // Get recipes from parent service
-      final allRecipes = _parent.recipes;
+      final allRecipes = _getRecipes();
       var userRecipes = allRecipes.where((recipe) {
         // Must be owned by the specified user
         final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
@@ -328,7 +332,7 @@ class RecipeDiscoveryService extends BaseService {
     try {
       AppLogger.info('🔥 Getting trending collaborative recipes');
 
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return [];
 
       // Get all accessible collaborative recipes
@@ -403,14 +407,14 @@ class RecipeDiscoveryService extends BaseService {
     try {
       AppLogger.info('⏰ Getting recently shared recipes');
 
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return [];
 
       final cutoffTime =
           DateTime.now().subtract(timeWindow ?? const Duration(days: 7));
 
       // Get collaborative recipes from parent service
-      final allRecipes = _parent.recipes;
+      final allRecipes = _getRecipes();
       var recentlyShared = allRecipes.where((recipe) {
         if (!recipe.isCollaborative) return false;
 
@@ -447,12 +451,12 @@ class RecipeDiscoveryService extends BaseService {
 
   Map<String, dynamic> getDiscoveryStatistics() {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) {
         return {'error': 'No current user'};
       }
 
-      final allRecipes = _parent.recipes;
+      final allRecipes = _getRecipes();
 
       // Count different types of recipes
       var personalRecipes = 0;
@@ -535,11 +539,11 @@ class RecipeDiscoveryService extends BaseService {
         return [];
       }
 
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return [];
 
       final searchQuery = query.toLowerCase().trim();
-      final allRecipes = _parent.recipes;
+      final allRecipes = _getRecipes();
 
       // Filter accessible recipes
       var searchableRecipes = allRecipes.where((recipe) {

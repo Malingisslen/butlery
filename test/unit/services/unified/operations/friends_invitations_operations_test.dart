@@ -38,8 +38,36 @@ void main() {
         outgoingRequests: [],
       );
 
-      // Create operations instance
-      operations = FriendsInvitationsOperations(mockParentService);
+      // Create operations instance with typed deps from mock
+      operations = FriendsInvitationsOperations(
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getCurrentUserDisplayName: () =>
+            mockParentService.currentUserDisplayName,
+        getAllSentInvitationsInternal: () =>
+            mockParentService.getAllSentInvitationsInternal(),
+        getReceivedGroupInvitationsInternal:
+            mockParentService.getReceivedGroupInvitationsInternal,
+        getSentInvitationByIdInternal:
+            mockParentService.getSentInvitationByIdInternal,
+        addSentInvitationInternal: mockParentService.addSentInvitationInternal,
+        updateSentInvitationInternal:
+            mockParentService.updateSentInvitationInternal,
+        addCategoryInternal: mockParentService.addCategoryInternal,
+        notifyListeners: mockParentService.notifyListenersInternal,
+        friendsRepository: mockParentService.friendsRepositoryInternal,
+        categoryRepository: mockParentService.friendsCategoryRepositoryInternal,
+        sendEmailInvitationInternal:
+            mockParentService.sendEmailInvitationInternal,
+        sendSMSInvitationInternal: mockParentService.sendSMSInvitationInternal,
+        createInvitationLinkInternal:
+            mockParentService.createInvitationLinkInternal,
+        updateInvitationStatusInternal:
+            mockParentService.updateInvitationStatusInternal,
+        getIsLoading: () => mockParentService.isLoading,
+        getHasError: () => mockParentService.hasError,
+        getError: () => mockParentService.error,
+        getCategories: () => mockParentService.categories,
+      );
     });
 
     tearDown(() async {

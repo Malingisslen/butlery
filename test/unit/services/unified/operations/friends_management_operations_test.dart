@@ -5,7 +5,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
+import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
@@ -13,9 +15,14 @@ import '../../../../infrastructure/mocks/production_mocks.dart';
 class MockFirebaseBlockRepository extends Mock
     implements FirebaseBlockRepository {}
 
+class MockFriendRelationshipRepository extends Mock
+    implements FriendRelationshipRepository {}
+
 void main() {
   group('FriendsManagementOperations', () {
     late MockUnifiedFriendsService mockParentService;
+    late MockFriendRelationshipRepository mockRelationshipRepo;
+    late FakeFirebaseFirestore fakeFirestore;
     late FriendsManagementOperations managementOperations;
 
     setUpAll(() async {
@@ -40,6 +47,8 @@ void main() {
     setUp(() async {
       // Create mocks
       mockParentService = MockUnifiedFriendsService();
+      mockRelationshipRepo = MockFriendRelationshipRepository();
+      fakeFirestore = FakeFirebaseFirestore();
 
       // Configure mock state using configuration methods
       mockParentService.setFriendsState(
@@ -49,8 +58,29 @@ void main() {
         isInitialized: true,
       );
 
-      // Create operations instance
-      managementOperations = FriendsManagementOperations(mockParentService);
+      // Create operations instance with named callbacks
+      managementOperations = FriendsManagementOperations(
+        getCurrentUserId: () => 'current_user',
+        getCurrentUserDisplayName: () => 'Test User',
+        getFriends: () => mockParentService.friends,
+        getIncomingRequests: () => mockParentService.incomingRequests,
+        getOutgoingRequests: () => mockParentService.outgoingRequests,
+        getBlockedUsers: () => <String>{},
+        getFirestore: () => fakeFirestore,
+        relationshipRepository: mockRelationshipRepo,
+        addOutgoingRequestInternal:
+            mockParentService.addOutgoingRequestInternal,
+        removeOutgoingRequestInternal:
+            mockParentService.removeOutgoingRequestInternal,
+        removeIncomingRequestInternal:
+            mockParentService.removeIncomingRequestInternal,
+        addFriendInternal: mockParentService.addFriendInternal,
+        removeFriendInternal: mockParentService.removeFriendInternal,
+        syncFriendRequestToFirebase:
+            mockParentService.syncFriendRequestToFirebase,
+        updateFriendRequestStatus: mockParentService.updateFriendRequestStatus,
+        refresh: () => mockParentService.refresh(),
+      );
     });
 
     tearDown(() async {
@@ -189,8 +219,7 @@ void main() {
         when(() => mockParentService.updateFriendRequestStatus(any()))
             .thenAnswer((_) async {});
 
-        final success =
-            await managementOperations.cancelFriendRequest('req_1');
+        final success = await managementOperations.cancelFriendRequest('req_1');
 
         expect(success, isTrue);
         verify(() => mockParentService.removeOutgoingRequestInternal('req_1'))
@@ -218,8 +247,7 @@ void main() {
       setUp(() {
         mockBlockRepo = MockFirebaseBlockRepository();
         TestServiceLocator.registerMock<FirebaseBlockRepository>(mockBlockRepo);
-        when(() => mockBlockRepo.blockUser(any()))
-            .thenAnswer((_) async {});
+        when(() => mockBlockRepo.blockUser(any())).thenAnswer((_) async {});
       });
 
       test('should clean up incoming requests from blocked user', () async {
@@ -237,14 +265,12 @@ void main() {
           outgoingRequests: [],
           isInitialized: true,
         );
-        when(() =>
-                mockParentService.removeIncomingRequestInternal('inc_req_1'))
+        when(() => mockParentService.removeIncomingRequestInternal('inc_req_1'))
             .thenReturn(null);
         when(() => mockParentService.updateFriendRequestStatus(any()))
             .thenAnswer((_) async {});
 
-        final success =
-            await managementOperations.blockUser('blocked_person');
+        final success = await managementOperations.blockUser('blocked_person');
 
         expect(success, isTrue);
         verify(() =>
@@ -270,14 +296,12 @@ void main() {
           outgoingRequests: [outgoingRequest],
           isInitialized: true,
         );
-        when(() =>
-                mockParentService.removeOutgoingRequestInternal('out_req_1'))
+        when(() => mockParentService.removeOutgoingRequestInternal('out_req_1'))
             .thenReturn(null);
         when(() => mockParentService.updateFriendRequestStatus(any()))
             .thenAnswer((_) async {});
 
-        final success =
-            await managementOperations.blockUser('blocked_person');
+        final success = await managementOperations.blockUser('blocked_person');
 
         expect(success, isTrue);
         verify(() =>
@@ -294,8 +318,7 @@ void main() {
           isInitialized: true,
         );
 
-        final success =
-            await managementOperations.blockUser('stranger');
+        final success = await managementOperations.blockUser('stranger');
 
         expect(success, isTrue);
         verify(() => mockBlockRepo.blockUser('stranger')).called(1);
@@ -303,8 +326,7 @@ void main() {
     });
 
     group('Search', () {
-      test('searchFriends filters by display name case-insensitively',
-          () {
+      test('searchFriends filters by display name case-insensitively', () {
         final alice = UserProfile(
           uid: 'alice',
           email: 'alice@example.com',

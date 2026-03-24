@@ -65,7 +65,7 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 /// RealtimeRecipeModule, RecipeCacheModule) with backward-compatible legacy interfaces.
 class UnifiedRecipeService extends ChangeNotifier
     with ErrorHandlingMixin, FirebaseServiceMixin
-    implements NotificationParent {
+    implements NotificationParent, PersonalRecipeDelegate {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
   final RecipeRepository? _recipeRepository;
@@ -302,10 +302,24 @@ class UnifiedRecipeService extends ChangeNotifier
     );
   }
 
+  /// Common dependency getters for operations classes
+  String? Function() get _userIdGetter => () => currentUserId;
+  String? Function() get _displayNameGetter => () => currentUserDisplayName;
+  List<Recipe> Function() get _recipesGetter => () => recipes;
+
   void _initializeLegacyInterfaces() {
     // Initialize legacy interfaces for backward compatibility
     personal = PersonalRecipeOperations(this);
-    realtime = RealtimeRecipeOperations(this);
+    realtime = RealtimeRecipeOperations(
+      getCurrentUserId: _userIdGetter,
+      getCurrentUserDisplayName: _displayNameGetter,
+      getRecipes: _recipesGetter,
+      notificationParent: this,
+      updateRecipeContent: updateRecipeContent,
+      createCollaborativeRecipe: createCollaborativeRecipe,
+      createPersonalRecipe: createPersonalRecipe,
+      deleteRecipe: deleteRecipe,
+    );
 
     // SocialRecipeOperations needs repositories - try immediate initialization or defer
     final initializedSocial = SocialOperationsInitializer.tryInitialize(
@@ -378,6 +392,7 @@ class UnifiedRecipeService extends ChangeNotifier
   }
 
   /// Fetch all user recipes using cursor-based pagination (no cap).
+  @override
   Future<List<Recipe>> fetchAllUserRecipes(String userId) async {
     return await _personalModule.fetchAllUserRecipes(userId);
   }
@@ -567,15 +582,19 @@ class UnifiedRecipeService extends ChangeNotifier
         sourceUrl: sourceUrl,
       );
 
+  @override
   Future<void> saveRecipeRaw(Recipe recipe) async =>
       _personalCrud.saveRecipeRaw(recipe);
 
+  @override
   Future<bool> updateRecipe(Recipe updatedRecipe) async =>
       _personalCrud.updateRecipe(updatedRecipe);
 
+  @override
   Future<bool> deleteRecipe(String recipeId) async =>
       _personalCrud.deleteRecipe(recipeId);
 
+  @override
   Future<bool> markAsCooked(String recipeId) async =>
       _personalCrud.markAsCooked(recipeId);
 
@@ -666,6 +685,7 @@ class UnifiedRecipeService extends ChangeNotifier
     return _realtimeModule.isInRealtimeEditingSession(recipeId);
   }
 
+  @override
   Future<bool> updateRecipeContent({
     required String recipeId,
     String? title,
@@ -699,9 +719,11 @@ class UnifiedRecipeService extends ChangeNotifier
       );
 
   // Ingredient operations (delegated to content helper)
+  @override
   Future<bool> addIngredient(String recipeId, String ingredient) async =>
       _contentOps.addIngredient(recipeId, ingredient);
 
+  @override
   Future<bool> updateIngredient(
     String recipeId,
     int index,
@@ -709,13 +731,16 @@ class UnifiedRecipeService extends ChangeNotifier
   ) async =>
       _contentOps.updateIngredient(recipeId, index, newIngredient);
 
+  @override
   Future<bool> removeIngredient(String recipeId, int index) async =>
       _contentOps.removeIngredient(recipeId, index);
 
   // Instruction operations (delegated to content helper)
+  @override
   Future<bool> addInstruction(String recipeId, String instruction) async =>
       _contentOps.addInstruction(recipeId, instruction);
 
+  @override
   Future<bool> updateInstruction(
     String recipeId,
     int index,
@@ -723,6 +748,7 @@ class UnifiedRecipeService extends ChangeNotifier
   ) async =>
       _contentOps.updateInstruction(recipeId, index, newInstruction);
 
+  @override
   Future<bool> removeInstruction(String recipeId, int index) async =>
       _contentOps.removeInstruction(recipeId, index);
 
@@ -740,6 +766,7 @@ class UnifiedRecipeService extends ChangeNotifier
   }
 
   /// Legacy createRecipe method
+  @override
   Future<String?> createRecipe({
     required String title,
     required String description,

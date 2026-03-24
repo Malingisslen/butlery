@@ -68,7 +68,9 @@ void main() {
 
       final mockMenuCollaborationRepo = MockMenuCollaborationRepository();
       collaborativeOps = CollaborativeMenuOperations(
-          mockParent as UnifiedMenuService, mockMenuCollaborationRepo);
+        notifyListeners: (mockParent as UnifiedMenuService).triggerNotification,
+        repository: mockMenuCollaborationRepo,
+      );
       socialOps = SocialMenuOperations(
         firestore: mockFirestore,
         friendsService: mockFriendsService,
@@ -269,7 +271,10 @@ void main() {
           final mockMenuCollaborationRepo = MockMenuCollaborationRepository();
           mockMenuCollaborationRepo.setRepositoryState(defaultSuccess: false);
           final unauthenticatedOps = CollaborativeMenuOperations(
-              mockParent as UnifiedMenuService, mockMenuCollaborationRepo);
+            notifyListeners:
+                (mockParent as UnifiedMenuService).triggerNotification,
+            repository: mockMenuCollaborationRepo,
+          );
 
           // Act
           final success = await unauthenticatedOps.enableMenuCollaboration(
@@ -619,7 +624,10 @@ void main() {
           final mockMenuCollaborationRepo = MockMenuCollaborationRepository();
           mockMenuCollaborationRepo.setRepositoryState(defaultSuccess: false);
           final unauthenticatedOps = CollaborativeMenuOperations(
-              mockParent as UnifiedMenuService, mockMenuCollaborationRepo);
+            notifyListeners:
+                (mockParent as UnifiedMenuService).triggerNotification,
+            repository: mockMenuCollaborationRepo,
+          );
 
           // Act
           final templateId = await unauthenticatedOps.createMenuTemplate(

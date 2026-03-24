@@ -59,8 +59,14 @@ void main() {
       mockRealtimeSyncService.setConnectionState(true);
 
       // Create editing module instance
-      editingModule =
-          RealtimeEditingModule(mockParentService, mockRealtimeSyncService);
+      editingModule = RealtimeEditingModule(
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getCurrentUserDisplayName: () =>
+            mockParentService.currentUserDisplayName,
+        getRecipes: () => mockParentService.recipes,
+        updateRecipeContent: mockParentService.updateRecipeContent,
+        realtimeSyncService: mockRealtimeSyncService,
+      );
     });
 
     tearDown(() async {
@@ -105,7 +111,13 @@ void main() {
 
       test('should not start editing without realtime service', () async {
         // Arrange
-        editingModule = RealtimeEditingModule(mockParentService, null);
+        editingModule = RealtimeEditingModule(
+          getCurrentUserId: () => mockParentService.currentUserId,
+          getCurrentUserDisplayName: () =>
+              mockParentService.currentUserDisplayName,
+          getRecipes: () => mockParentService.recipes,
+          updateRecipeContent: mockParentService.updateRecipeContent,
+        );
 
         // Act
         final result = await editingModule.startRealtimeEditing('recipe_1');
@@ -161,7 +173,13 @@ void main() {
       test('should fall back to regular edit without realtime service',
           () async {
         // Arrange
-        editingModule = RealtimeEditingModule(mockParentService, null);
+        editingModule = RealtimeEditingModule(
+          getCurrentUserId: () => mockParentService.currentUserId,
+          getCurrentUserDisplayName: () =>
+              mockParentService.currentUserDisplayName,
+          getRecipes: () => mockParentService.recipes,
+          updateRecipeContent: mockParentService.updateRecipeContent,
+        );
         final changes = {'title': 'Updated Title'};
 
         // Act

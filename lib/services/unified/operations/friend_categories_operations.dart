@@ -1,19 +1,64 @@
 // ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
+import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic lists
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/events/group_events.dart';
+import 'package:butlery/services/unified/operations/friends_management_operations.dart';
+import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
 
 /// Friend categories operations handling category CRUD, friend assignment, bulk operations, permissions, and organization analytics.
 class FriendsCategoriesOperations {
-  final UnifiedFriendsService _parent;
+  // Typed dependencies (replaces _parent back-reference)
+  final String? Function() _getCurrentUserId;
+  final List<FriendCategory> Function() _getCategoriesList;
+  final List<UserProfile> Function() _getFriendsList;
+  final Map<String, Set<String>> Function()
+      _getFriendCategoryRelationshipsInternal;
+  final void Function(FriendCategory) _addCategoryInternal;
+  final void Function(String, FriendCategory) _updateCategoryInternalCallback;
+  final void Function(String) _removeCategoryInternal;
+  final void Function(String, String) _addFriendToCategoryInternal;
+  final Future<void> Function(FriendCategory) _syncCategoryToFirebaseInternal;
+  final Future<void> Function(String) _deleteCategoryFromFirebaseInternal;
+  final Future<void> Function() _refresh;
+  final FriendsManagementOperations Function() _getManagement;
+  final FriendsInvitationsOperations Function() _getInvitations;
 
-  FriendsCategoriesOperations(this._parent);
+  FriendsCategoriesOperations({
+    required String? Function() getCurrentUserId,
+    required List<FriendCategory> Function() getCategoriesList,
+    required List<UserProfile> Function() getFriendsList,
+    required Map<String, Set<String>> Function()
+        getFriendCategoryRelationshipsInternal,
+    required void Function(FriendCategory) addCategoryInternal,
+    required void Function(String, FriendCategory) updateCategoryInternal,
+    required void Function(String) removeCategoryInternal,
+    required void Function(String, String) addFriendToCategoryInternal,
+    required Future<void> Function(FriendCategory)
+        syncCategoryToFirebaseInternal,
+    required Future<void> Function(String) deleteCategoryFromFirebaseInternal,
+    required Future<void> Function() refresh,
+    required FriendsManagementOperations Function() getManagement,
+    required FriendsInvitationsOperations Function() getInvitations,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCategoriesList = getCategoriesList,
+        _getFriendsList = getFriendsList,
+        _getFriendCategoryRelationshipsInternal =
+            getFriendCategoryRelationshipsInternal,
+        _addCategoryInternal = addCategoryInternal,
+        _updateCategoryInternalCallback = updateCategoryInternal,
+        _removeCategoryInternal = removeCategoryInternal,
+        _addFriendToCategoryInternal = addFriendToCategoryInternal,
+        _syncCategoryToFirebaseInternal = syncCategoryToFirebaseInternal,
+        _deleteCategoryFromFirebaseInternal =
+            deleteCategoryFromFirebaseInternal,
+        _refresh = refresh,
+        _getManagement = getManagement,
+        _getInvitations = getInvitations;
 
   Future<String?> createCategory({
     required String name,
@@ -27,7 +72,7 @@ class FriendsCategoriesOperations {
       return null;
     }
 
-    final currentUserId = _parent.currentUserId;
+    final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       AppLogger.warning('Cannot create category: User ID not available');
       return null;
@@ -58,8 +103,8 @@ class FriendsCategoriesOperations {
         friendUserIds: [currentUserId], // Add owner as member
       );
 
-      _parent.addCategoryInternal(category);
-      await _parent.syncCategoryToFirebaseInternal(category);
+      _addCategoryInternal(category);
+      await _syncCategoryToFirebaseInternal(category);
 
       // ✅ FIXED: If initial members provided, send invitations instead of directly adding
       // This prevents the "0 invites sent" issue when trying to invite initial members later
@@ -67,7 +112,7 @@ class FriendsCategoriesOperations {
         try {
           int sentCount = 0;
           for (final memberId in initialMemberIds) {
-            final sent = await _parent.invitations.sendGroupInvitationToUser(
+            final sent = await _getInvitations().sendGroupInvitationToUser(
               userId: memberId,
               groupId: categoryId,
             );
@@ -102,20 +147,20 @@ class FriendsCategoriesOperations {
     if (category == null) {
       AppLogger.warning('Category not found: $categoryId');
       // Try refreshing state before giving up
-      await _parent.refresh();
+      await _refresh();
       final refreshedCategory = getCategoryById(categoryId);
       if (refreshedCategory == null) {
         return false;
       }
-      return await _updateCategoryInternal(
+      return await _performCategoryUpdate(
           refreshedCategory, name, description, icon, isPrivate);
     }
 
-    return await _updateCategoryInternal(
+    return await _performCategoryUpdate(
         category, name, description, icon, isPrivate);
   }
 
-  Future<bool> _updateCategoryInternal(
+  Future<bool> _performCategoryUpdate(
     FriendCategory category,
     String? name,
     String? description,
@@ -143,10 +188,10 @@ class FriendsCategoriesOperations {
       );
 
       // Update local state first
-      _parent.updateCategoryInternal(categoryId, updatedCategory);
+      _updateCategoryInternalCallback(categoryId, updatedCategory);
 
       // Sync to Firebase (single call - duplicate was causing false failure)
-      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
+      await _syncCategoryToFirebaseInternal(updatedCategory);
 
       AppLogger.success('Category updated: ${updatedCategory.name}');
       return true;
@@ -171,7 +216,7 @@ class FriendsCategoriesOperations {
     try {
       // Remove all friend-category relationships for this category
       final friendCategoryRelationships =
-          _parent.friendCategoryRelationshipsInternal;
+          _getFriendCategoryRelationshipsInternal();
       for (final friendId in friendCategoryRelationships.keys.toList()) {
         friendCategoryRelationships[friendId]?.remove(categoryId);
         if (friendCategoryRelationships[friendId]?.isEmpty == true) {
@@ -180,10 +225,10 @@ class FriendsCategoriesOperations {
       }
 
       // Delete from Firebase
-      await _parent.deleteCategoryFromFirebaseInternal(categoryId);
+      await _deleteCategoryFromFirebaseInternal(categoryId);
 
       // Use the internal remove method that handles caching and notifications
-      _parent.removeCategoryInternal(categoryId);
+      _removeCategoryInternal(categoryId);
 
       AppLogger.success('✅ Category deleted: ${category.name}');
       return true;
@@ -208,7 +253,7 @@ class FriendsCategoriesOperations {
     AppLogger.info('📋 [ADD_TO_CATEGORY] Found category: ${category.name}');
 
     // ✅ FIXED: Skip friendship check when accepting invitations (users don't need to be friends first)
-    if (!skipFriendshipCheck && !_parent.management.isFriend(friendId)) {
+    if (!skipFriendshipCheck && !_getManagement().isFriend(friendId)) {
       AppLogger.warning('❌ [ADD_TO_CATEGORY] User is not a friend: $friendId');
       return false;
     }
@@ -239,12 +284,12 @@ class FriendsCategoriesOperations {
     }
 
     AppLogger.info('📝 [ADD_TO_CATEGORY] Adding friend to category locally...');
-    _parent.addFriendToCategoryInternal(friendId, categoryId);
+    _addFriendToCategoryInternal(friendId, categoryId);
 
     AppLogger.info('☁️ [ADD_TO_CATEGORY] Syncing to Firebase...');
     final categoryToSync = getCategoryById(categoryId);
     if (categoryToSync != null) {
-      await _parent.syncCategoryToFirebaseInternal(categoryToSync);
+      await _syncCategoryToFirebaseInternal(categoryToSync);
       AppLogger.success(
           '✅ [ADD_TO_CATEGORY] Successfully added friend to category and synced');
     } else {
@@ -277,7 +322,7 @@ class FriendsCategoriesOperations {
     try {
       // Remove from friend-category relationships
       final friendCategoryRelationships =
-          _parent.friendCategoryRelationshipsInternal;
+          _getFriendCategoryRelationshipsInternal();
 
       friendCategoryRelationships[friendId]?.remove(categoryId);
       if (friendCategoryRelationships[friendId]?.isEmpty == true) {
@@ -294,9 +339,9 @@ class FriendsCategoriesOperations {
       );
 
       // Use the internal update method that handles caching and notifications
-      _parent.updateCategoryInternal(categoryId, updatedCategory);
+      _updateCategoryInternalCallback(categoryId, updatedCategory);
 
-      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
+      await _syncCategoryToFirebaseInternal(updatedCategory);
 
       AppLogger.success(
           '✅ Friend removed from category: $friendId -> $categoryId');
@@ -370,32 +415,32 @@ class FriendsCategoriesOperations {
   }
 
   FriendCategory? getCategoryById(String categoryId) {
-    return _parent.categoriesList
+    return _getCategoriesList()
         .where((category) => category.id == categoryId)
         .firstOrNull;
   }
 
   FriendCategory? getCategoryByName(String name) {
-    return _parent.categoriesList
+    return _getCategoriesList()
         .where((category) => category.name.toLowerCase() == name.toLowerCase())
         .firstOrNull;
   }
 
   List<FriendCategory> getAllCategories() {
-    return _parent.categoriesList;
+    return _getCategoriesList();
   }
 
   List<FriendCategory> getOwnedCategories() {
-    return _parent.categoriesList
-        .where((category) => category.ownerId == _parent.currentUserId)
+    return _getCategoriesList()
+        .where((category) => category.ownerId == _getCurrentUserId())
         .toList();
   }
 
   List<FriendCategory> getMemberCategories() {
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
 
-    return _parent.categoriesList
-        .where((category) => category.memberIds.contains(_parent.currentUserId))
+    return _getCategoriesList()
+        .where((category) => category.memberIds.contains(_getCurrentUserId()))
         .toList();
   }
 
@@ -403,13 +448,13 @@ class FriendsCategoriesOperations {
     final category = getCategoryById(categoryId);
     if (category == null) return [];
 
-    return _parent.friendsList
+    return _getFriendsList()
         .where((friend) => category.memberIds.contains(friend.uid))
         .toList();
   }
 
   List<FriendCategory> getCategoriesForFriend(String friendId) {
-    return _parent.categoriesList
+    return _getCategoriesList()
         .where((category) => category.memberIds.contains(friendId))
         .toList();
   }
@@ -417,11 +462,11 @@ class FriendsCategoriesOperations {
   List<UserProfile> getUncategorizedFriends() {
     final categorizedFriendIds = <String>{};
 
-    for (final category in _parent.categoriesList) {
+    for (final category in _getCategoriesList()) {
       categorizedFriendIds.addAll(category.memberIds);
     }
 
-    return _parent.friendsList
+    return _getFriendsList()
         .where((friend) => !categorizedFriendIds.contains(friend.uid))
         .toList();
   }
@@ -432,7 +477,7 @@ class FriendsCategoriesOperations {
   }
 
   bool _categoryNameExists(String name) {
-    return _parent.categoriesList
+    return _getCategoriesList()
         .any((category) => category.name.toLowerCase() == name.toLowerCase());
   }
 
@@ -504,7 +549,7 @@ class FriendsCategoriesOperations {
         '⚠️ Friend category privacy controls are not yet available');
   }
 
-  List<FriendCategory> get categoriesList => _parent.categoriesList;
+  List<FriendCategory> get categoriesList => _getCategoriesList();
 
   Future<void> migrateOwnersAsMembers() async {
     final categories = getAllCategories();
@@ -516,8 +561,8 @@ class FriendsCategoriesOperations {
           updatedAt: DateTime.now(),
         );
 
-        _parent.updateCategoryInternal(category.id, updatedCategory);
-        await _parent.syncCategoryToFirebaseInternal(updatedCategory);
+        _updateCategoryInternalCallback(category.id, updatedCategory);
+        await _syncCategoryToFirebaseInternal(updatedCategory);
       }
     }
   }
@@ -528,6 +573,6 @@ class FriendsCategoriesOperations {
   }
 
   Future<void> refresh() async {
-    await _parent.refresh();
+    await _refresh();
   }
 }

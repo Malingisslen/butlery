@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 // Import focused modules
@@ -23,7 +22,8 @@ import 'package:butlery/services/unified/operations/modules/recipe_permission_he
 /// await ops.addComment(recipeId, content); final stats = await ops.getRecipeStats(recipeId);
 /// ```
 class SocialRecipeOperations {
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
+  final List<Recipe> Function() _getRecipes;
   final RatingsRepository _ratingsRepository;
   final FirestoreRepository _firestoreRepository;
   late final NotificationService? _notificationService;
@@ -35,22 +35,58 @@ class SocialRecipeOperations {
   late final RecipeDiscoveryService _discoveryService;
   late final RecipeSocialStats _socialStats;
   late final RecipePermissionHelper _permissionHelper;
-  SocialRecipeOperations(
-    this._parent, {
+  SocialRecipeOperations({
+    required String? Function() getCurrentUserId,
+    required String? Function() getCurrentUserDisplayName,
+    required List<Recipe> Function() getRecipes,
+    required Future<bool> Function(Recipe) updateRecipe,
+    required CreateCollaborativeRecipeFn createCollaborativeRecipe,
+    required CreatePersonalRecipeFn createPersonalRecipe,
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
-  })  : _ratingsRepository = ratingsRepository,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getRecipes = getRecipes,
+        _ratingsRepository = ratingsRepository,
         _firestoreRepository = firestoreRepository {
     _notificationService = ServiceLocator.tryGet<NotificationService>();
-    _sharingManager = RecipeSharingManager(_parent, _notificationService);
-    _memberManager = RecipeMemberManager(_parent, _notificationService);
-    _commentsManager = RecipeCommentsManager(_parent, _notificationService);
-    _discoveryService = RecipeDiscoveryService(_parent);
-    _socialStats = RecipeSocialStats(_parent, _ratingsRepository,
-        _firestoreRepository, _notificationService);
-    _permissionHelper = RecipePermissionHelper(_parent);
+    _sharingManager = RecipeSharingManager(
+      getCurrentUserId: getCurrentUserId,
+      getCurrentUserDisplayName: getCurrentUserDisplayName,
+      getRecipes: getRecipes,
+      createCollaborativeRecipe: createCollaborativeRecipe,
+      createPersonalRecipe: createPersonalRecipe,
+      notificationService: _notificationService,
+    );
+    _memberManager = RecipeMemberManager(
+      getCurrentUserId: getCurrentUserId,
+      getCurrentUserDisplayName: getCurrentUserDisplayName,
+      getRecipes: getRecipes,
+      updateRecipe: updateRecipe,
+      notificationService: _notificationService,
+    );
+    _commentsManager = RecipeCommentsManager(
+      getCurrentUserId: getCurrentUserId,
+      getCurrentUserDisplayName: getCurrentUserDisplayName,
+      getRecipes: getRecipes,
+      notificationService: _notificationService,
+    );
+    _discoveryService = RecipeDiscoveryService(
+      getCurrentUserId: getCurrentUserId,
+      getRecipes: getRecipes,
+    );
+    _socialStats = RecipeSocialStats(
+      getCurrentUserId: getCurrentUserId,
+      getCurrentUserDisplayName: getCurrentUserDisplayName,
+      getRecipes: getRecipes,
+      ratingsRepository: _ratingsRepository,
+      firestoreRepository: _firestoreRepository,
+      notificationService: _notificationService,
+    );
+    _permissionHelper = RecipePermissionHelper(
+      getCurrentUserId: getCurrentUserId,
+    );
 
-    AppLogger.info('✅ SocialRecipeOperations initialized with focused modules');
+    AppLogger.info('SocialRecipeOperations initialized with focused modules');
   }
   RecipeDiscoveryService get discoveryService => _discoveryService;
   Future<String?> shareRecipe({
@@ -341,7 +377,7 @@ class SocialRecipeOperations {
           'ownerId': recipe.socialData?.ownerId ?? recipe.createdBy,
           'ownerDisplayName': recipe.socialData?.ownerDisplayName ?? 'Unknown',
           'sharedAt': recipe.createdAt.toIso8601String(),
-          'permissions': {_parent.currentUserId!: 'view'}, // Simplified
+          'permissions': {_getCurrentUserId()!: 'view'}, // Simplified
           'recipe': recipe.toJson(),
         };
       }).toList();
@@ -362,7 +398,7 @@ class SocialRecipeOperations {
 
   bool checkLegacyPermission(String recipeId, String userId, String action) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.checkLegacyPermission(recipe, userId, action);
     } catch (e) {
       return false;
@@ -371,7 +407,7 @@ class SocialRecipeOperations {
 
   bool canView(String recipeId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.canViewRecipe(recipe);
     } catch (e) {
       return false;
@@ -380,7 +416,7 @@ class SocialRecipeOperations {
 
   bool canEdit(String recipeId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.canEditRecipe(recipe);
     } catch (e) {
       return false;
@@ -389,7 +425,7 @@ class SocialRecipeOperations {
 
   bool canDelete(String recipeId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.canDeleteRecipe(recipe);
     } catch (e) {
       return false;
@@ -398,7 +434,7 @@ class SocialRecipeOperations {
 
   bool canManageMembers(String recipeId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.canManageMembers(recipe);
     } catch (e) {
       return false;
@@ -407,7 +443,7 @@ class SocialRecipeOperations {
 
   bool canComment(String recipeId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.canCommentOnRecipe(recipe);
     } catch (e) {
       return false;
@@ -416,7 +452,7 @@ class SocialRecipeOperations {
 
   bool canRate(String recipeId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.canRateRecipe(recipe);
     } catch (e) {
       return false;
@@ -425,7 +461,7 @@ class SocialRecipeOperations {
 
   ResourcePermission getUserPermission(String recipeId, String userId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.getUserPermission(recipe, userId);
     } catch (e) {
       return ResourcePermission.read;
@@ -434,7 +470,7 @@ class SocialRecipeOperations {
 
   Map<String, dynamic> getPermissionSummary(String recipeId, String userId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       return _permissionHelper.getPermissionSummary(recipe, userId);
     } catch (e) {
       return {'error': 'Recipe not found'};
@@ -458,9 +494,9 @@ class SocialRecipeOperations {
   void dispose() {
     try {
       _commentsManager.dispose();
-      AppLogger.info('✅ SocialRecipeOperations disposed successfully');
+      AppLogger.info('SocialRecipeOperations disposed successfully');
     } catch (e) {
-      AppLogger.error('❌ Failed to dispose SocialRecipeOperations', e);
+      AppLogger.error('Failed to dispose SocialRecipeOperations', e);
     }
   }
 }

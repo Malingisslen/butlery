@@ -2,9 +2,9 @@
 
 import 'dart:async';
 // ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
+import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -19,7 +19,8 @@ import 'package:butlery/repositories/firebase/firebase_recipe_presence_repositor
 /// - Stream presence changes to UI
 /// ❌ DOES NOT CONTAIN: Watching, editing, collaboration management, notifications
 class PresenceTrackingModule {
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
+  final List<Recipe> Function() _getRecipes;
   final RealtimeSyncService? _realtimeSyncService;
   final FirebaseRecipePresenceRepository _presenceRepository;
 
@@ -36,11 +37,15 @@ class PresenceTrackingModule {
   Timer? _cleanupTimer;
   final Map<String, StreamSubscription<void>> _heartbeatSubscriptions = {};
 
-  PresenceTrackingModule(
-    this._parent,
-    this._realtimeSyncService,
-    this._presenceRepository,
-  ) {
+  PresenceTrackingModule({
+    required String? Function() getCurrentUserId,
+    required List<Recipe> Function() getRecipes,
+    required RealtimeSyncService? realtimeSyncService,
+    required FirebaseRecipePresenceRepository presenceRepository,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getRecipes = getRecipes,
+        _realtimeSyncService = realtimeSyncService,
+        _presenceRepository = presenceRepository {
     _startPresenceCleanup();
   }
 
@@ -146,7 +151,7 @@ class PresenceTrackingModule {
   /// Get users currently viewing/editing the recipe
   Future<List<Map<String, dynamic>>> getRecipePresence(String recipeId) async {
     try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+      final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null || !recipe.isCollaborative) return [];
 
       final presence = <Map<String, dynamic>>[];
@@ -275,7 +280,7 @@ class PresenceTrackingModule {
     _heartbeatSubscriptions[recipeId]?.cancel();
 
     final subscription = Stream.periodic(heartbeatInterval).listen((_) async {
-      if (isUserPresent(recipeId, _parent.currentUserId ?? '')) {
+      if (isUserPresent(recipeId, _getCurrentUserId() ?? '')) {
         await updatePresenceHeartbeat(recipeId);
       }
     });
@@ -305,7 +310,7 @@ class PresenceTrackingModule {
   /// Clear all presence for current user
   Future<void> clearAllPresence() async {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return;
 
       final recipesToClear = <String>[];

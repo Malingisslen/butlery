@@ -46,8 +46,14 @@ void main() {
       mockNotificationService = MockNotificationService();
 
       // Create member manager instance
-      memberManager =
-          RecipeMemberManager(mockParentService, mockNotificationService);
+      memberManager = RecipeMemberManager(
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getCurrentUserDisplayName: () =>
+            mockParentService.currentUserDisplayName,
+        getRecipes: () => mockParentService.recipes,
+        updateRecipe: (recipe) => mockParentService.updateRecipe(recipe),
+        notificationService: mockNotificationService,
+      );
 
       // Create test data
       testCollaborativeRecipe = Recipe(

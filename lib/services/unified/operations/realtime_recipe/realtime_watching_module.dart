@@ -2,11 +2,10 @@
 
 import 'dart:async';
 // ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
+import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
@@ -18,10 +17,14 @@ import 'package:butlery/services/unified/operations/realtime_recipe/shared/realt
 /// - Fallback polling when realtime unavailable
 /// ❌ DOES NOT CONTAIN: Editing, presence, notifications, collaboration management
 class RealtimeWatchingModule {
-  final UnifiedRecipeService _parent;
+  final List<Recipe> Function() _getRecipes;
   final RealtimeSyncService? _realtimeSyncService;
 
-  RealtimeWatchingModule(this._parent, [this._realtimeSyncService]);
+  RealtimeWatchingModule({
+    required List<Recipe> Function() getRecipes,
+    RealtimeSyncService? realtimeSyncService,
+  })  : _getRecipes = getRecipes,
+        _realtimeSyncService = realtimeSyncService;
 
   /// Watch a recipe for real-time updates
   Stream<Recipe> watchRecipe(String recipeId) {
@@ -290,7 +293,7 @@ class RealtimeWatchingModule {
   /// Fallback watching with polling when RealtimeSyncService unavailable
   Stream<Recipe> _watchRecipeWithPolling(String recipeId) {
     return Stream.periodic(const Duration(seconds: 2), (_) {
-      return _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+      return _getRecipes().where((r) => r.id == recipeId).firstOrNull;
     }).where((recipe) => recipe != null).cast<Recipe>();
   }
 
@@ -299,7 +302,7 @@ class RealtimeWatchingModule {
       List<String> recipeIds) {
     return Stream.periodic(const Duration(seconds: 2), (_) {
       return recipeIds
-          .map((id) => _parent.recipes.where((r) => r.id == id).firstOrNull)
+          .map((id) => _getRecipes().where((r) => r.id == id).firstOrNull)
           .where((r) => r != null)
           .cast<Recipe>()
           .toList();

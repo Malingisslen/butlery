@@ -7,7 +7,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 // Focused modules
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
@@ -23,9 +22,10 @@ import 'package:butlery/services/unified/operations/modules/comment_utilities.da
 /// - CommentUtilities: Statistics, permissions, utilities
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
 class RecipeCommentsManager {
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
+  final String? Function() _getCurrentUserDisplayName;
+  final List<Recipe> Function() _getRecipes;
   final NotificationService? _notificationService;
-  // Firebase instance removed - using repository pattern
 
   // Stream controllers for managed streams
   final Map<String, StreamController<List<RecipeComment>>> _commentStreams = {};
@@ -33,12 +33,20 @@ class RecipeCommentsManager {
   // Module instances (only the ones we use as instances)
   late final CommentCrudOperations _crudOperations;
 
-  RecipeCommentsManager(this._parent, this._notificationService) {
+  RecipeCommentsManager({
+    required String? Function() getCurrentUserId,
+    required String? Function() getCurrentUserDisplayName,
+    required List<Recipe> Function() getRecipes,
+    required NotificationService? notificationService,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+        _getRecipes = getRecipes,
+        _notificationService = notificationService {
     _crudOperations = CommentCrudOperations();
   }
-  String? get currentUserId => _parent.currentUserId;
-  String get currentUserDisplayName => _parent.currentUserDisplayName ?? '?';
-  List<Recipe> get recipes => _parent.recipes;
+  String? get currentUserId => _getCurrentUserId();
+  String get currentUserDisplayName => _getCurrentUserDisplayName() ?? '?';
+  List<Recipe> get recipes => _getRecipes();
 
   Recipe? _getRecipe(String recipeId) {
     return recipes.where((r) => r.id == recipeId).firstOrNull;

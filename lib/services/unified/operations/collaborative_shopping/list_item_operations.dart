@@ -1,16 +1,26 @@
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 
 /// Handles collaborative shopping list item operations (add, remove, toggle).
 class ListItemOperations {
-  final UnifiedShoppingService _parent;
+  final String? Function() _getCurrentUserId;
+  final String? Function() _getCurrentUserDisplayName;
+  final Future<bool> Function(UnifiedShoppingList list) _updateList;
   final ListLifecycleOperations _lifecycleOps;
 
-  ListItemOperations(this._parent, this._lifecycleOps);
+  ListItemOperations({
+    required String? Function() getCurrentUserId,
+    required String? Function() getCurrentUserDisplayName,
+    required Future<bool> Function(UnifiedShoppingList list) updateList,
+    required ListLifecycleOperations lifecycleOps,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+        _updateList = updateList,
+        _lifecycleOps = lifecycleOps;
 
   Future<bool> addItem({
     required String listId,
@@ -33,8 +43,8 @@ class ListItemOperations {
       return false;
     }
 
-    final currentUserId = _parent.currentUserId;
-    final currentUserDisplayName = _parent.currentUserDisplayName;
+    final currentUserId = _getCurrentUserId();
+    final currentUserDisplayName = _getCurrentUserDisplayName();
     if (currentUserId == null || currentUserDisplayName == null) {
       AppLogger.error('Cannot add item: User information incomplete');
       return false;
@@ -55,11 +65,11 @@ class ListItemOperations {
 
       final updatedList = list.addItem(
         item,
-        userId: _parent.currentUserId,
-        userDisplayName: _parent.currentUserDisplayName,
+        userId: _getCurrentUserId(),
+        userDisplayName: _getCurrentUserDisplayName(),
       );
 
-      await _parent.updateList(updatedList);
+      await _updateList(updatedList);
 
       AppLogger.success('Added item "$name" to ${list.name}');
       return true;
@@ -87,11 +97,11 @@ class ListItemOperations {
     try {
       final updatedList = list.toggleItemBought(
         itemId,
-        userId: _parent.currentUserId,
-        userDisplayName: _parent.currentUserDisplayName,
+        userId: _getCurrentUserId(),
+        userDisplayName: _getCurrentUserDisplayName(),
       );
 
-      await _parent.updateList(updatedList);
+      await _updateList(updatedList);
 
       AppLogger.success('Toggled item status in ${list.name}');
       return true;
@@ -119,11 +129,11 @@ class ListItemOperations {
     try {
       final updatedList = list.removeItem(
         itemId,
-        userId: _parent.currentUserId,
-        userDisplayName: _parent.currentUserDisplayName,
+        userId: _getCurrentUserId(),
+        userDisplayName: _getCurrentUserDisplayName(),
       );
 
-      await _parent.updateList(updatedList);
+      await _updateList(updatedList);
 
       AppLogger.success('Removed item from ${list.name}');
       return true;

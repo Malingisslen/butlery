@@ -245,9 +245,61 @@ class UnifiedFriendsService extends ChangeNotifier
   }
 
   void _initializeFeatureInterfaces() {
-    _managementOps = FriendsManagementOperations(this);
-    _categoriesOps = FriendsCategoriesOperations(this);
-    _invitationsOps = FriendsInvitationsOperations(this);
+    _managementOps = FriendsManagementOperations(
+      getCurrentUserId: () => currentUserId,
+      getCurrentUserDisplayName: () => currentUserDisplayName,
+      getFriends: () => friends,
+      getIncomingRequests: () => incomingRequests,
+      getOutgoingRequests: () => outgoingRequests,
+      getBlockedUsers: () => blockedUsers,
+      getFirestore: () => firestore,
+      relationshipRepository: _relationshipRepository,
+      addOutgoingRequestInternal: addOutgoingRequestInternal,
+      removeOutgoingRequestInternal: removeOutgoingRequestInternal,
+      removeIncomingRequestInternal: removeIncomingRequestInternal,
+      addFriendInternal: addFriendInternal,
+      removeFriendInternal: removeFriendInternal,
+      syncFriendRequestToFirebase: syncFriendRequestToFirebase,
+      updateFriendRequestStatus: updateFriendRequestStatus,
+      refresh: refresh,
+    );
+    _categoriesOps = FriendsCategoriesOperations(
+      getCurrentUserId: () => currentUserId,
+      getCategoriesList: () => categoriesList,
+      getFriendsList: () => friendsList,
+      getFriendCategoryRelationshipsInternal: () =>
+          friendCategoryRelationshipsInternal,
+      addCategoryInternal: addCategoryInternal,
+      updateCategoryInternal: updateCategoryInternal,
+      removeCategoryInternal: removeCategoryInternal,
+      addFriendToCategoryInternal: addFriendToCategoryInternal,
+      syncCategoryToFirebaseInternal: syncCategoryToFirebaseInternal,
+      deleteCategoryFromFirebaseInternal: deleteCategoryFromFirebaseInternal,
+      refresh: refresh,
+      getManagement: () => _managementOps,
+      getInvitations: () => _invitationsOps,
+    );
+    _invitationsOps = FriendsInvitationsOperations(
+      getCurrentUserId: () => currentUserId,
+      getCurrentUserDisplayName: () => currentUserDisplayName,
+      getAllSentInvitationsInternal: getAllSentInvitationsInternal,
+      getReceivedGroupInvitationsInternal: getReceivedGroupInvitationsInternal,
+      getSentInvitationByIdInternal: getSentInvitationByIdInternal,
+      addSentInvitationInternal: addSentInvitationInternal,
+      updateSentInvitationInternal: updateSentInvitationInternal,
+      addCategoryInternal: addCategoryInternal,
+      notifyListeners: notifyListenersInternal,
+      friendsRepository: _friendsRepository,
+      categoryRepository: _categoryRepository,
+      sendEmailInvitationInternal: sendEmailInvitationInternal,
+      sendSMSInvitationInternal: sendSMSInvitationInternal,
+      createInvitationLinkInternal: createInvitationLinkInternal,
+      updateInvitationStatusInternal: updateInvitationStatusInternal,
+      getIsLoading: () => isLoading,
+      getHasError: () => hasError,
+      getError: () => error,
+      getCategories: () => _categoriesOps,
+    );
     AppLogger.debug('Feature interfaces initialized');
   }
 

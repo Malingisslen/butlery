@@ -41,7 +41,10 @@ void main() {
       mockParentService = MockUnifiedRecipeService();
 
       // Create discovery service instance
-      discoveryService = RecipeDiscoveryService(mockParentService);
+      discoveryService = RecipeDiscoveryService(
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getRecipes: () => mockParentService.recipes,
+      );
 
       // Create test recipes
       testRecipes = [

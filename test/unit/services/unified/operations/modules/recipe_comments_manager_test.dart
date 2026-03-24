@@ -197,8 +197,10 @@ void main() {
           .thenAnswer((_) async => []);
 
       commentsManager = RecipeCommentsManager(
-        mockParent,
-        mockNotificationService,
+        getCurrentUserId: () => mockParent.currentUserId,
+        getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
+        getRecipes: () => mockParent.recipes,
+        notificationService: mockNotificationService,
       );
     });
 
@@ -514,8 +516,10 @@ void main() {
         // successfully disposes the manager after every test
         expect(() {
           final testManager = RecipeCommentsManager(
-            mockParent,
-            mockNotificationService,
+            getCurrentUserId: () => mockParent.currentUserId,
+            getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
+            getRecipes: () => mockParent.recipes,
+            notificationService: mockNotificationService,
           );
           testManager.dispose();
         }, returnsNormally);
@@ -669,8 +673,10 @@ void main() {
       test('should handle null notification service', () async {
         // Arrange
         final managerWithoutNotifications = RecipeCommentsManager(
-          mockParent,
-          null, // No notification service
+          getCurrentUserId: () => mockParent.currentUserId,
+          getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
+          getRecipes: () => mockParent.recipes,
+          notificationService: null,
         );
 
         // Act & Assert - Should handle gracefully

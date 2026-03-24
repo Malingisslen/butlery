@@ -47,7 +47,10 @@ void main() {
         userDisplayName: testUserDisplayName,
       );
 
-      operations = CollaborativeMenuOperations(mockParent, mockRepository);
+      operations = CollaborativeMenuOperations(
+        notifyListeners: mockParent.triggerNotification,
+        repository: mockRepository,
+      );
     }
 
     setUpAll(() async {

@@ -1,10 +1,11 @@
 // lib/services/unified/operations/collaborative_menu_operations.dart
 
+import 'dart:ui';
+
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 
 /// Comprehensive collaborative menu operations providing real-time menu sharing and social cooking collaboration features.
@@ -31,7 +32,7 @@ import 'package:butlery/repositories/interfaces/menu_collaboration_repository.da
 /// - **Activity Logging**: Complete collaboration activity tracking with detailed audit trails
 /// **Usage Examples:**
 /// ```dart
-/// final collaborativeOps = CollaborativeMenuOperations(parentService, firestore);
+/// final collaborativeOps = CollaborativeMenuOperations(notifyListeners: ..., repository: ...);
 /// // Enable collaborative menu editing
 /// await collaborativeOps.enableMenuCollaboration(
 ///   menuId: menuId,
@@ -57,7 +58,7 @@ import 'package:butlery/repositories/interfaces/menu_collaboration_repository.da
 /// ```
 class CollaborativeMenuOperations {
   final MenuCollaborationRepository _repository;
-  final UnifiedMenuService _parent;
+  final VoidCallback _notifyListeners;
 
   // Local caches for UI performance
   final Map<String, List<Map<String, dynamic>>> _menuComments = {};
@@ -66,7 +67,11 @@ class CollaborativeMenuOperations {
   final Map<String, Set<String>> _menuTemplates =
       {}; // userId -> template menu IDs
 
-  CollaborativeMenuOperations(this._parent, this._repository);
+  CollaborativeMenuOperations({
+    required VoidCallback notifyListeners,
+    required MenuCollaborationRepository repository,
+  })  : _notifyListeners = notifyListeners,
+        _repository = repository;
 
   /// Enable real-time collaboration for a menu
   Future<bool> enableMenuCollaboration({
@@ -280,7 +285,7 @@ class CollaborativeMenuOperations {
     _repository.startCollaborationListener(menuId, (menu) {
       AppLogger.debug('Menu $menuId updated in real-time');
       // Notify parent service of menu updates
-      _parent.triggerNotification();
+      _notifyListeners();
     });
   }
 

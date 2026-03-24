@@ -116,9 +116,10 @@ void main() {
 
       // Create presence module instance
       presenceModule = PresenceTrackingModule(
-        mockParentService,
-        mockRealtimeSyncService,
-        mockPresenceRepository,
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getRecipes: () => mockParentService.recipes,
+        realtimeSyncService: mockRealtimeSyncService,
+        presenceRepository: mockPresenceRepository,
       );
     });
 

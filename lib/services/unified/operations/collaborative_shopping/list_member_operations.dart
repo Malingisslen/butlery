@@ -3,15 +3,21 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 
 /// Handles collaborative shopping list member operations (add, remove, permissions).
 class ListMemberOperations {
-  final UnifiedShoppingService _parent;
+  final String? Function() _getCurrentUserId;
+  final Future<bool> Function(UnifiedShoppingList list) _updateList;
   final ListLifecycleOperations _lifecycleOps;
 
-  ListMemberOperations(this._parent, this._lifecycleOps);
+  ListMemberOperations({
+    required String? Function() getCurrentUserId,
+    required Future<bool> Function(UnifiedShoppingList list) updateList,
+    required ListLifecycleOperations lifecycleOps,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _updateList = updateList,
+        _lifecycleOps = lifecycleOps;
 
   Future<bool> addMember({
     required String listId,
@@ -46,7 +52,7 @@ class ListMemberOperations {
         updatedAt: DateTime.now(),
       );
 
-      await _parent.updateList(updatedList);
+      await _updateList(updatedList);
 
       AppLogger.success(
           'Added member ${userDisplayName.maskedName} to ${list.name}');
@@ -67,7 +73,7 @@ class ListMemberOperations {
       return false;
     }
 
-    final isRemovingSelf = _parent.currentUserId == userId;
+    final isRemovingSelf = _getCurrentUserId() == userId;
     if (!isRemovingSelf && !canManageMembers(listId)) {
       AppLogger.error('Cannot remove member: No permission to manage members');
       return false;
@@ -89,7 +95,7 @@ class ListMemberOperations {
         updatedAt: DateTime.now(),
       );
 
-      await _parent.updateList(updatedList);
+      await _updateList(updatedList);
 
       AppLogger.success('Removed member from ${list.name}');
       return true;
@@ -133,7 +139,7 @@ class ListMemberOperations {
         updatedAt: DateTime.now(),
       );
 
-      await _parent.updateList(updatedList);
+      await _updateList(updatedList);
 
       AppLogger.success('Updated member permission in ${list.name}');
       return true;
@@ -166,7 +172,7 @@ class ListMemberOperations {
       return false;
     }
 
-    final currentUserId = _parent.currentUserId;
+    final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       AppLogger.error('Cannot leave list: User not authenticated');
       return false;

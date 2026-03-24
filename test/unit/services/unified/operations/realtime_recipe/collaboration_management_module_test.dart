@@ -78,7 +78,13 @@ void main() {
 
       // Create collaboration module instance
       collaborationModule = CollaborationManagementModule(
-          mockParentService, mockRealtimeSyncService);
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getRecipes: () => mockParentService.recipes,
+        createCollaborativeRecipe: mockParentService.createCollaborativeRecipe,
+        createPersonalRecipe: mockParentService.createPersonalRecipe,
+        deleteRecipe: mockParentService.deleteRecipe,
+        realtimeSyncService: mockRealtimeSyncService,
+      );
     });
 
     tearDown(() async {

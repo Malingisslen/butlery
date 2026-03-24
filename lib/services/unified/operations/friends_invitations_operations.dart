@@ -1,22 +1,98 @@
+import 'dart:ui';
+
 import 'package:collection/collection.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/events/group_events.dart';
+import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
+import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
+import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/operations/modules/invitation_validation_module.dart';
 import 'package:butlery/services/unified/operations/modules/invitation_statistics_module.dart';
 
 /// Friends invitations operations for multi-channel invitation management and tracking.
 /// Handles friend invitation operations including sending, tracking, and analytics.
 class FriendsInvitationsOperations {
-  final UnifiedFriendsService _parent;
+  // Typed dependencies (replaces _parent back-reference)
+  final String? Function() _getCurrentUserId;
+  final String? Function() _getCurrentUserDisplayName;
+  final List<GroupInvitation> Function() _getAllSentInvitationsInternal;
+  final List<GroupInvitation> Function(String)
+      _getReceivedGroupInvitationsInternal;
+  final GroupInvitation? Function(String) _getSentInvitationByIdInternal;
+  final void Function(GroupInvitation) _addSentInvitationInternal;
+  final void Function(String, GroupInvitation) _updateSentInvitationInternal;
+  final void Function(FriendCategory) _addCategoryInternal;
+  final VoidCallback _notifyListeners;
+  final FirebaseFriendsRepository _friendsRepository;
+  final FriendCategoryRepository _categoryRepository;
+  final Future<bool> Function(
+      {required String email,
+      required GroupInvitation invitation}) _sendEmailInvitationInternal;
+  final Future<bool> Function(
+      {required String phoneNumber,
+      required GroupInvitation invitation}) _sendSMSInvitationInternal;
+  final Future<String> Function(String) _createInvitationLinkInternal;
+  final Future<void> Function(String, GroupInvitationStatus)
+      _updateInvitationStatusInternal;
+  final bool Function() _getIsLoading;
+  final bool Function() _getHasError;
+  final String? Function() _getError;
+  final FriendsCategoriesOperations Function() _getCategories;
 
   // Modules
   late final InvitationValidationModule _validation;
   late final InvitationStatisticsModule _statistics;
 
-  FriendsInvitationsOperations(this._parent) {
+  FriendsInvitationsOperations({
+    required String? Function() getCurrentUserId,
+    required String? Function() getCurrentUserDisplayName,
+    required List<GroupInvitation> Function() getAllSentInvitationsInternal,
+    required List<GroupInvitation> Function(String)
+        getReceivedGroupInvitationsInternal,
+    required GroupInvitation? Function(String) getSentInvitationByIdInternal,
+    required void Function(GroupInvitation) addSentInvitationInternal,
+    required void Function(String, GroupInvitation)
+        updateSentInvitationInternal,
+    required void Function(FriendCategory) addCategoryInternal,
+    required VoidCallback notifyListeners,
+    required FirebaseFriendsRepository friendsRepository,
+    required FriendCategoryRepository categoryRepository,
+    required Future<bool> Function(
+            {required String email, required GroupInvitation invitation})
+        sendEmailInvitationInternal,
+    required Future<bool> Function(
+            {required String phoneNumber, required GroupInvitation invitation})
+        sendSMSInvitationInternal,
+    required Future<String> Function(String) createInvitationLinkInternal,
+    required Future<void> Function(String, GroupInvitationStatus)
+        updateInvitationStatusInternal,
+    required bool Function() getIsLoading,
+    required bool Function() getHasError,
+    required String? Function() getError,
+    required FriendsCategoriesOperations Function() getCategories,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+        _getAllSentInvitationsInternal = getAllSentInvitationsInternal,
+        _getReceivedGroupInvitationsInternal =
+            getReceivedGroupInvitationsInternal,
+        _getSentInvitationByIdInternal = getSentInvitationByIdInternal,
+        _addSentInvitationInternal = addSentInvitationInternal,
+        _updateSentInvitationInternal = updateSentInvitationInternal,
+        _addCategoryInternal = addCategoryInternal,
+        _notifyListeners = notifyListeners,
+        _friendsRepository = friendsRepository,
+        _categoryRepository = categoryRepository,
+        _sendEmailInvitationInternal = sendEmailInvitationInternal,
+        _sendSMSInvitationInternal = sendSMSInvitationInternal,
+        _createInvitationLinkInternal = createInvitationLinkInternal,
+        _updateInvitationStatusInternal = updateInvitationStatusInternal,
+        _getIsLoading = getIsLoading,
+        _getHasError = getHasError,
+        _getError = getError,
+        _getCategories = getCategories {
     _validation = InvitationValidationModule();
     _statistics = InvitationStatisticsModule();
   }
@@ -37,7 +113,7 @@ class FriendsInvitationsOperations {
       }
 
       // Get current user info
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) {
         AppLogger.error('Cannot send invitation: User not authenticated');
         return false;
@@ -57,15 +133,14 @@ class FriendsInvitationsOperations {
       }
 
       // Get group information
-      final group = _parent.categories.getCategoryById(groupId);
+      final group = _getCategories().getCategoryById(groupId);
       if (group == null) {
         AppLogger.error('Cannot send invitation: Group $groupId not found');
         return false;
       }
 
       // Get sender name
-      final currentUserDisplayName =
-          _parent.currentUserDisplayName ?? 'Unknown';
+      final currentUserDisplayName = _getCurrentUserDisplayName() ?? 'Unknown';
 
       // Create proper invitation
       final invitation = GroupInvitation(
@@ -80,9 +155,9 @@ class FriendsInvitationsOperations {
         sentAt: DateTime.now(),
       );
 
-      await _parent.friendsRepositoryInternal.saveInvitation(invitation);
-      _parent.addSentInvitationInternal(invitation);
-      _parent.notifyListenersInternal();
+      await _friendsRepository.saveInvitation(invitation);
+      _addSentInvitationInternal(invitation);
+      _notifyListeners();
 
       AppLogger.success(
           'Group invitation sent to user $userId for group "${group.name}"');
@@ -111,8 +186,8 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      final currentUserId = _parent.currentUserId;
-      final currentUserDisplayName = _parent.currentUserDisplayName;
+      final currentUserId = _getCurrentUserId();
+      final currentUserDisplayName = _getCurrentUserDisplayName();
 
       if (!_validation.hasUserInformation(
           currentUserId: currentUserId,
@@ -134,10 +209,10 @@ class FriendsInvitationsOperations {
         sentAt: DateTime.now(),
       );
 
-      _parent.addSentInvitationInternal(invitation);
-      _parent.notifyListenersInternal();
+      _addSentInvitationInternal(invitation);
+      _notifyListeners();
 
-      final emailSent = await _parent.sendEmailInvitationInternal(
+      final emailSent = await _sendEmailInvitationInternal(
         email: email,
         invitation: invitation,
       );
@@ -174,8 +249,8 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      final currentUserId = _parent.currentUserId;
-      final currentUserDisplayName = _parent.currentUserDisplayName;
+      final currentUserId = _getCurrentUserId();
+      final currentUserDisplayName = _getCurrentUserDisplayName();
 
       if (!_validation.hasUserInformation(
           currentUserId: currentUserId,
@@ -197,10 +272,10 @@ class FriendsInvitationsOperations {
         sentAt: DateTime.now(),
       );
 
-      _parent.addSentInvitationInternal(invitation);
-      _parent.notifyListenersInternal();
+      _addSentInvitationInternal(invitation);
+      _notifyListeners();
 
-      final smsSent = await _parent.sendSMSInvitationInternal(
+      final smsSent = await _sendSMSInvitationInternal(
         phoneNumber: phoneNumber,
         invitation: invitation,
       );
@@ -224,8 +299,8 @@ class FriendsInvitationsOperations {
     DateTime? expiresAt,
   }) async {
     try {
-      final currentUserId = _parent.currentUserId;
-      final currentUserDisplayName = _parent.currentUserDisplayName;
+      final currentUserId = _getCurrentUserId();
+      final currentUserDisplayName = _getCurrentUserDisplayName();
 
       if (!_validation.hasUserInformation(
           currentUserId: currentUserId,
@@ -248,10 +323,10 @@ class FriendsInvitationsOperations {
         expiresAt: expiresAt ?? DateTime.now().add(const Duration(days: 7)),
       );
 
-      _parent.addSentInvitationInternal(invitation);
-      _parent.notifyListenersInternal();
+      _addSentInvitationInternal(invitation);
+      _notifyListeners();
 
-      final link = await _parent.createInvitationLinkInternal(invitation.id);
+      final link = await _createInvitationLinkInternal(invitation.id);
 
       AppLogger.success('Invitation link created');
       return link;
@@ -299,7 +374,7 @@ class FriendsInvitationsOperations {
   /// Cancel an invitation
   Future<bool> cancelInvitation(String invitationId) async {
     try {
-      final invitation = _parent.getSentInvitationByIdInternal(invitationId);
+      final invitation = _getSentInvitationByIdInternal(invitationId);
 
       if (invitation == null) {
         AppLogger.error('Invitation not found');
@@ -313,17 +388,17 @@ class FriendsInvitationsOperations {
       }
 
       // Remove from local state (invitation will be deleted from Firebase)
-      _parent.updateSentInvitationInternal(
+      _updateSentInvitationInternal(
         invitationId,
         invitation.copyWith(
           status: GroupInvitationStatus.cancelled,
           respondedAt: DateTime.now(),
         ),
       );
-      _parent.notifyListenersInternal();
+      _notifyListeners();
 
       // Delete from Firebase (Firestore rules block sender updates, but allow delete)
-      await _parent.updateInvitationStatusInternal(
+      await _updateInvitationStatusInternal(
           invitationId, GroupInvitationStatus.cancelled);
 
       AppLogger.success('Invitation cancelled');
@@ -337,7 +412,7 @@ class FriendsInvitationsOperations {
   /// Resend an invitation
   Future<bool> resendInvitation(String invitationId) async {
     try {
-      final invitation = _parent.getSentInvitationByIdInternal(invitationId);
+      final invitation = _getSentInvitationByIdInternal(invitationId);
 
       if (invitation == null) {
         AppLogger.error('Invitation not found');
@@ -354,23 +429,23 @@ class FriendsInvitationsOperations {
         respondedAt: null,
       );
 
-      _parent.updateSentInvitationInternal(invitationId, resentInvitation);
-      _parent.notifyListenersInternal();
+      _updateSentInvitationInternal(invitationId, resentInvitation);
+      _notifyListeners();
 
-      final emailSent = await _parent.sendEmailInvitationInternal(
+      final emailSent = await _sendEmailInvitationInternal(
         email: invitation.toUserId,
         invitation: resentInvitation,
       );
 
       if (emailSent) {
-        await _parent.updateInvitationStatusInternal(
+        await _updateInvitationStatusInternal(
             resentInvitation.id, resentInvitation.status);
         AppLogger.success('Invitation resent');
         return true;
       } else {
         AppLogger.error('Resend failed: Email service not implemented');
-        _parent.updateSentInvitationInternal(invitationId, invitation);
-        _parent.notifyListenersInternal();
+        _updateSentInvitationInternal(invitationId, invitation);
+        _notifyListeners();
         return false;
       }
     } catch (e) {
@@ -382,7 +457,7 @@ class FriendsInvitationsOperations {
   /// Mark invitation as viewed
   Future<bool> markInvitationAsViewed(String invitationId) async {
     try {
-      final invitation = _parent.getSentInvitationByIdInternal(invitationId);
+      final invitation = _getSentInvitationByIdInternal(invitationId);
       if (invitation == null) {
         AppLogger.error('Invitation not found');
         return false;
@@ -393,9 +468,9 @@ class FriendsInvitationsOperations {
         respondedAt: DateTime.now(),
       );
 
-      _parent.updateSentInvitationInternal(invitationId, viewedInvitation);
-      _parent.notifyListenersInternal();
-      await _parent.updateInvitationStatusInternal(
+      _updateSentInvitationInternal(invitationId, viewedInvitation);
+      _notifyListeners();
+      await _updateInvitationStatusInternal(
           viewedInvitation.id, viewedInvitation.status);
 
       AppLogger.success('Invitation marked as viewed');
@@ -408,30 +483,28 @@ class FriendsInvitationsOperations {
 
   /// Get all sent invitations
   List<GroupInvitation> getSentInvitations() {
-    return List.unmodifiable(_parent.getAllSentInvitationsInternal());
+    return List.unmodifiable(_getAllSentInvitationsInternal());
   }
 
   /// Get invitations by status
   List<GroupInvitation> getInvitationsByStatus(GroupInvitationStatus status) {
     return _statistics.getInvitationsByStatus(
-        _parent.getAllSentInvitationsInternal(), status);
+        _getAllSentInvitationsInternal(), status);
   }
 
   /// Get pending invitations
   List<GroupInvitation> getPendingInvitations() {
-    return _statistics
-        .getPendingInvitations(_parent.getAllSentInvitationsInternal());
+    return _statistics.getPendingInvitations(_getAllSentInvitationsInternal());
   }
 
   /// Get expired invitations
   List<GroupInvitation> getExpiredInvitations() {
-    return _statistics
-        .getExpiredInvitations(_parent.getAllSentInvitationsInternal());
+    return _statistics.getExpiredInvitations(_getAllSentInvitationsInternal());
   }
 
   /// Check if invitation exists
   bool hasInvitation({String? email, String? phoneNumber}) {
-    final invitations = _parent.getAllSentInvitationsInternal();
+    final invitations = _getAllSentInvitationsInternal();
     if (email != null) {
       return _validation.hasDuplicateInvitationByEmail(invitations, email);
     }
@@ -445,18 +518,17 @@ class FriendsInvitationsOperations {
   /// Get invitation by ID
   GroupInvitation? getInvitationById(String invitationId) {
     // Search sent invitations
-    final sentInvitation = _parent
-        .getAllSentInvitationsInternal()
+    final sentInvitation = _getAllSentInvitationsInternal()
         .firstWhereOrNull((i) => i.id == invitationId);
 
     if (sentInvitation != null) return sentInvitation;
 
     // Search received invitations
-    final currentUserId = _parent.currentUserId;
+    final currentUserId = _getCurrentUserId();
     if (currentUserId != null) {
-      final receivedInvitation = _parent
-          .getReceivedGroupInvitationsInternal(currentUserId)
-          .firstWhereOrNull((i) => i.id == invitationId);
+      final receivedInvitation =
+          _getReceivedGroupInvitationsInternal(currentUserId)
+              .firstWhereOrNull((i) => i.id == invitationId);
 
       if (receivedInvitation != null) return receivedInvitation;
     }
@@ -467,19 +539,17 @@ class FriendsInvitationsOperations {
   /// Search invitations
   List<GroupInvitation> searchInvitations(String query) {
     return _statistics.searchInvitations(
-        _parent.getAllSentInvitationsInternal(), query);
+        _getAllSentInvitationsInternal(), query);
   }
 
   /// Get invitation statistics
   Map<String, dynamic> getInvitationStats() {
-    return _statistics
-        .getInvitationStats(_parent.getAllSentInvitationsInternal());
+    return _statistics.getInvitationStats(_getAllSentInvitationsInternal());
   }
 
   /// Get invitation performance metrics
   Map<String, dynamic> getInvitationMetrics() {
-    return _statistics
-        .getInvitationMetrics(_parent.getAllSentInvitationsInternal());
+    return _statistics.getInvitationMetrics(_getAllSentInvitationsInternal());
   }
 
   /// Get invitation suggestions from contacts
@@ -508,21 +578,21 @@ class FriendsInvitationsOperations {
 
   List<GroupInvitation> get pendingReceivedInvitations {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) {
         AppLogger.warning('Cannot get received invitations: No current user');
         return [];
       }
-      return _parent.getReceivedGroupInvitationsInternal(currentUserId);
+      return _getReceivedGroupInvitationsInternal(currentUserId);
     } catch (e) {
       AppLogger.error('Error getting pending received invitations', e);
       return [];
     }
   }
 
-  bool get isLoading => _parent.isLoading;
-  bool get hasError => _parent.hasError;
-  String? get error => _parent.error;
+  bool get isLoading => _getIsLoading();
+  bool get hasError => _getHasError();
+  String? get error => _getError();
   Future<void> refresh() async {}
 
   Future<bool> acceptGroupInvitation(String invitationId) async {
@@ -533,19 +603,17 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      var existingGroup =
-          _parent.categories.getCategoryById(invitation.groupId);
+      var existingGroup = _getCategories().getCategoryById(invitation.groupId);
 
       if (existingGroup == null) {
         try {
-          final fetchedGroup =
-              await _parent.friendsCategoryRepositoryInternal.getCategory(
+          final fetchedGroup = await _categoryRepository.getCategory(
             invitation.fromUserId,
             invitation.groupId,
           );
 
           if (fetchedGroup != null) {
-            _parent.addCategoryInternal(fetchedGroup);
+            _addCategoryInternal(fetchedGroup);
             existingGroup = fetchedGroup;
           } else {
             AppLogger.error('Group not found in Firestore');
@@ -557,7 +625,7 @@ class FriendsInvitationsOperations {
         }
       }
 
-      final addedToGroup = await _parent.categories.addFriendToCategory(
+      final addedToGroup = await _getCategories().addFriendToCategory(
         invitation.toUserId,
         invitation.groupId,
         skipFriendshipCheck: true,
@@ -572,9 +640,9 @@ class FriendsInvitationsOperations {
 
       final acceptedInvitation = invitation.accept();
 
-      _parent.updateSentInvitationInternal(invitationId, acceptedInvitation);
-      _parent.notifyListenersInternal();
-      await _parent.updateInvitationStatusInternal(
+      _updateSentInvitationInternal(invitationId, acceptedInvitation);
+      _notifyListeners();
+      await _updateInvitationStatusInternal(
           acceptedInvitation.id, acceptedInvitation.status);
 
       GroupEventBus.memberAdded();
@@ -594,9 +662,9 @@ class FriendsInvitationsOperations {
 
       final rejectedInvitation = invitation.reject();
 
-      _parent.updateSentInvitationInternal(invitationId, rejectedInvitation);
-      _parent.notifyListenersInternal();
-      await _parent.updateInvitationStatusInternal(
+      _updateSentInvitationInternal(invitationId, rejectedInvitation);
+      _notifyListeners();
+      await _updateInvitationStatusInternal(
           rejectedInvitation.id, rejectedInvitation.status);
 
       return true;

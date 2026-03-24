@@ -2,22 +2,23 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/operations/modules/legacy_recipe_ownership_resolver.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Recipe permission checking module handling access validation, user capabilities, legacy compatibility, and permission level determination.
 class RecipePermissionHelper {
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
   final LegacyRecipeOwnershipResolver _legacyResolver;
 
-  RecipePermissionHelper(this._parent)
-      : _legacyResolver = LegacyRecipeOwnershipResolver();
+  RecipePermissionHelper({
+    required String? Function() getCurrentUserId,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _legacyResolver = LegacyRecipeOwnershipResolver();
 
   bool canViewRecipe(Recipe recipe) {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) {
         AppLogger.debug('🔒 No current user - cannot view recipe');
         return false;
@@ -50,7 +51,7 @@ class RecipePermissionHelper {
 
   bool canEditRecipe(Recipe recipe) {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return false;
 
       // Owner can always edit their recipes
@@ -80,7 +81,7 @@ class RecipePermissionHelper {
 
   bool canDeleteRecipe(Recipe recipe) {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return false;
 
       final ownerId = _legacyResolver.determineOwnership(recipe, currentUserId);
@@ -107,7 +108,7 @@ class RecipePermissionHelper {
 
   bool canManageMembers(Recipe recipe) {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return false;
 
       // Only collaborative recipes have members to manage
@@ -130,7 +131,7 @@ class RecipePermissionHelper {
 
   bool canInviteMembers(Recipe recipe) {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return false;
 
       // Only collaborative recipes can have new members invited
@@ -158,7 +159,7 @@ class RecipePermissionHelper {
 
   bool canCommentOnRecipe(Recipe recipe) {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return false;
 
       // Personal recipes: only owner can comment
@@ -185,7 +186,7 @@ class RecipePermissionHelper {
 
   bool canRateRecipe(Recipe recipe) {
     try {
-      final currentUserId = _parent.currentUserId;
+      final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return false;
 
       // Can't rate own recipe

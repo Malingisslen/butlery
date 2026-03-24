@@ -1,49 +1,54 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-/// Specialized personal recipe operations interface providing comprehensive CRUD functionality for individual recipe management.
-/// This operations interface implements sophisticated personal recipe management following Single Responsibility Principle,
-/// handling all aspects of individual recipe operations including creation, modification, deletion, and content management.
-/// It provides comprehensive personal recipe functionality while maintaining clean separation from social features
-/// and collaborative editing concerns for maintainable and testable recipe operations.
-/// **Single Responsibility Focus:**
-/// This interface exclusively handles personal recipe operations:
-/// - **Recipe CRUD Operations**: Complete create, read, update, delete operations for personal recipes
-/// - **Content Management**: Detailed ingredient and instruction management with granular editing capabilities
-/// - **Batch Operations**: Efficient multi-recipe operations for import and bulk management scenarios
-/// - **Legacy Compatibility**: Backward compatibility methods ensuring smooth migration from legacy implementations
-/// **What This Interface Does NOT Handle:**
-/// - Social recipe sharing and collaboration (handled by SocialRecipeOperations)
-/// - Real-time collaborative editing (handled by RealtimeRecipeOperations)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication and permission management (handled by parent services)
-/// **Personal Recipe Features:**
-/// - **Complete CRUD**: Full recipe lifecycle management with validation and error handling
-/// - **Content Editing**: Granular ingredient and instruction management with index-based operations
-/// - **Batch Processing**: Efficient multi-recipe operations for import scenarios and bulk management
-/// - **Result Handling**: Comprehensive operation result handling with success/failure tracking
-/// - **Legacy Support**: Backward compatibility ensuring smooth transition from legacy implementations
-/// **Usage Examples:**
-/// ```dart
-/// final personalOps = PersonalRecipeOperations(parentService);
-/// // Create individual recipe
-/// final result = await personalOps.addUnifiedRecipe(recipe);
-/// // Batch recipe import
-/// final batchResult = await personalOps.addMultipleUnifiedRecipes(recipes);
-/// // Content management
-/// await personalOps.addIngredient(recipeId, '2 dl mjölk');
-/// await personalOps.updateInstruction(recipeId, 0, 'Värm ugnen till 200°C');
-/// // Recipe lifecycle
-/// await personalOps.updateRecipeContent(recipeId, title: 'Nya köttbullar');
-/// await personalOps.markAsCooked(recipeId);
-/// ```
-class PersonalRecipeOperations {
-  final UnifiedRecipeService _parent;
+/// Delegate interface for personal recipe CRUD operations
+abstract class PersonalRecipeDelegate {
+  Future<String?> createRecipe({
+    required String title,
+    required String description,
+    required List<String> ingredients,
+    required List<String> instructions,
+    required List<String> imageUrls,
+    required String mealType,
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? personalTagIds,
+    String? sourceUrl,
+  });
+  Future<List<Recipe>> fetchAllUserRecipes(String userId);
+  Future<void> saveRecipeRaw(Recipe recipe);
+  Future<bool> updateRecipe(Recipe recipe);
+  Future<bool> deleteRecipe(String id);
+  Future<bool> updateRecipeContent({
+    required String recipeId,
+    String? title,
+    String? description,
+    String? mealType,
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? ingredients,
+    List<String>? instructions,
+    List<String>? personalTagIds,
+    String? sourceUrl,
+  });
+  Future<bool> addIngredient(String recipeId, String ingredient);
+  Future<bool> updateIngredient(String recipeId, int index, String ingredient);
+  Future<bool> removeIngredient(String recipeId, int index);
+  Future<bool> addInstruction(String recipeId, String instruction);
+  Future<bool> updateInstruction(
+      String recipeId, int index, String instruction);
+  Future<bool> removeInstruction(String recipeId, int index);
+  Future<bool> markAsCooked(String recipeId);
+}
 
-  PersonalRecipeOperations(this._parent);
+class PersonalRecipeOperations {
+  final PersonalRecipeDelegate _delegate;
+
+  PersonalRecipeOperations(this._delegate);
 
   /// Add unified recipe
   Future<RecipeOperationResult> addUnifiedRecipe(Recipe unifiedRecipe) async {
@@ -119,7 +124,7 @@ class PersonalRecipeOperations {
     }
   }
 
-  // Delegate methods to parent service
+  // Delegate methods
   Future<String?> createRecipe({
     required String title,
     required String description,
@@ -133,7 +138,7 @@ class PersonalRecipeOperations {
     List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
-    return await _parent.createRecipe(
+    return await _delegate.createRecipe(
       title: title,
       description: description,
       ingredients: ingredients,
@@ -149,20 +154,20 @@ class PersonalRecipeOperations {
   }
 
   Future<List<Recipe>> fetchAllUserRecipes(String userId) async {
-    return await _parent.fetchAllUserRecipes(userId);
+    return await _delegate.fetchAllUserRecipes(userId);
   }
 
   Future<void> saveRecipeRaw(Recipe recipe) async {
-    return await _parent.saveRecipeRaw(recipe);
+    return await _delegate.saveRecipeRaw(recipe);
   }
 
   Future<bool> updateRecipe(Recipe recipe) async {
-    return await _parent.updateRecipe(recipe);
+    return await _delegate.updateRecipe(recipe);
   }
 
   // Additional methods needed by ViewModels
   Future<bool> deleteRecipe(String id) async {
-    return await _parent.deleteRecipe(id);
+    return await _delegate.deleteRecipe(id);
   }
 
   Future<bool> updateRecipeContent({
@@ -178,7 +183,7 @@ class PersonalRecipeOperations {
     List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
-    return await _parent.updateRecipeContent(
+    return await _delegate.updateRecipeContent(
       recipeId: recipeId,
       title: title,
       description: description,
@@ -194,33 +199,33 @@ class PersonalRecipeOperations {
   }
 
   Future<bool> addIngredient(String recipeId, String ingredient) async {
-    return await _parent.addIngredient(recipeId, ingredient);
+    return await _delegate.addIngredient(recipeId, ingredient);
   }
 
   Future<bool> updateIngredient(
       String recipeId, int index, String ingredient) async {
-    return await _parent.updateIngredient(recipeId, index, ingredient);
+    return await _delegate.updateIngredient(recipeId, index, ingredient);
   }
 
   Future<bool> removeIngredient(String recipeId, int index) async {
-    return await _parent.removeIngredient(recipeId, index);
+    return await _delegate.removeIngredient(recipeId, index);
   }
 
   Future<bool> addInstruction(String recipeId, String instruction) async {
-    return await _parent.addInstruction(recipeId, instruction);
+    return await _delegate.addInstruction(recipeId, instruction);
   }
 
   Future<bool> updateInstruction(
       String recipeId, int index, String instruction) async {
-    return await _parent.updateInstruction(recipeId, index, instruction);
+    return await _delegate.updateInstruction(recipeId, index, instruction);
   }
 
   Future<bool> removeInstruction(String recipeId, int index) async {
-    return await _parent.removeInstruction(recipeId, index);
+    return await _delegate.removeInstruction(recipeId, index);
   }
 
   Future<bool> markAsCooked(String recipeId) async {
-    return await _parent.markAsCooked(recipeId);
+    return await _delegate.markAsCooked(recipeId);
   }
 
   // Legacy compatibility methods for ViewModel

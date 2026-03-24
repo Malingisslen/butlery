@@ -1,6 +1,6 @@
 import 'dart:async';
 // ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
+import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -12,7 +12,8 @@ import 'package:butlery/services/unified/operations/realtime_recipe/presence_tra
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_diagnostics_helper.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart'
+    show CreateCollaborativeRecipeFn, CreatePersonalRecipeFn;
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -27,7 +28,8 @@ export 'realtime_recipe/realtime_watching_module.dart' show ConnectionStatus;
 class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   @override
   String get serviceName => 'RealtimeRecipeOperations';
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
+  final List<Recipe> Function() _getRecipes;
   final RealtimeSyncService? _realtimeSyncService;
 
   // Focused single-responsibility modules
@@ -37,18 +39,47 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   late final PresenceTrackingModule _presenceModule;
   late final RealtimeNotificationModule _notificationModule;
 
-  RealtimeRecipeOperations(this._parent, [this._realtimeSyncService]) {
+  RealtimeRecipeOperations({
+    required String? Function() getCurrentUserId,
+    required String? Function() getCurrentUserDisplayName,
+    required List<Recipe> Function() getRecipes,
+    required NotificationParent notificationParent,
+    required UpdateRecipeContentFn updateRecipeContent,
+    required CreateCollaborativeRecipeFn createCollaborativeRecipe,
+    required CreatePersonalRecipeFn createPersonalRecipe,
+    required Future<bool> Function(String) deleteRecipe,
+    RealtimeSyncService? realtimeSyncService,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getRecipes = getRecipes,
+        _realtimeSyncService = realtimeSyncService {
     // Initialize focused modules
-    _watchingModule = RealtimeWatchingModule(_parent, _realtimeSyncService);
-    _editingModule = RealtimeEditingModule(_parent, _realtimeSyncService);
-    _collaborationModule =
-        CollaborationManagementModule(_parent, _realtimeSyncService);
-    _presenceModule = PresenceTrackingModule(
-      _parent,
-      _realtimeSyncService,
-      ServiceLocator.get<FirebaseRecipePresenceRepository>(),
+    _watchingModule = RealtimeWatchingModule(
+      getRecipes: getRecipes,
+      realtimeSyncService: realtimeSyncService,
     );
-    _notificationModule = RealtimeNotificationModule(_parent);
+    _editingModule = RealtimeEditingModule(
+      getCurrentUserId: getCurrentUserId,
+      getCurrentUserDisplayName: getCurrentUserDisplayName,
+      getRecipes: getRecipes,
+      updateRecipeContent: updateRecipeContent,
+      realtimeSyncService: realtimeSyncService,
+    );
+    _collaborationModule = CollaborationManagementModule(
+      getCurrentUserId: getCurrentUserId,
+      getRecipes: getRecipes,
+      createCollaborativeRecipe: createCollaborativeRecipe,
+      createPersonalRecipe: createPersonalRecipe,
+      deleteRecipe: deleteRecipe,
+      realtimeSyncService: realtimeSyncService,
+    );
+    _presenceModule = PresenceTrackingModule(
+      getCurrentUserId: getCurrentUserId,
+      getRecipes: getRecipes,
+      realtimeSyncService: realtimeSyncService,
+      presenceRepository:
+          ServiceLocator.get<FirebaseRecipePresenceRepository>(),
+    );
+    _notificationModule = RealtimeNotificationModule(notificationParent);
 
     AppLogger.info(
         'RealtimeRecipeOperations initialized with modular architecture');
@@ -65,7 +96,7 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     if (success) {
       if (beforeNotification != null) await beforeNotification();
       try {
-        final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+        final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
         await notification(recipe);
       } catch (e) {
         // Recipe not found, skip notification
@@ -266,15 +297,14 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
       beforeNotification: () async {
         // Notify the user whose edit was overridden
         try {
-          final recipe =
-              _parent.recipes.firstWhere((r) => r.id == recipeId);
+          final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
           final overriddenUserId = resolution == 'local'
               ? remoteVersion.realtimeData?.lastEditedByUserId
               : resolution == 'remote'
                   ? localVersion.realtimeData?.lastEditedByUserId
                   : null;
           if (overriddenUserId != null &&
-              overriddenUserId != _parent.currentUserId) {
+              overriddenUserId != _getCurrentUserId()) {
             await _notificationModule.sendConflictNotification(
               recipe,
               'Edit conflict resolved using $resolution strategy',
@@ -523,14 +553,14 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   /// Get active editors for recipe (legacy method)
   List<String> getActiveEditors(String recipeId) {
     try {
-      final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
+      final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);
       if (!recipe.isCollaborative) return [];
     } catch (e) {
       return [];
     }
 
     // Get active editors from presence module
-    final currentUserId = _parent.currentUserId;
+    final currentUserId = _getCurrentUserId();
     if (currentUserId != null &&
         _presenceModule.isUserPresent(recipeId, currentUserId)) {
       return [currentUserId];
@@ -554,7 +584,7 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
       hasRealtimeService: _realtimeSyncService != null,
       isConnected: _watchingModule.isConnected,
       moduleStatus: getModuleStatus(),
-      currentUserId: _parent.currentUserId,
+      currentUserId: _getCurrentUserId(),
     );
   }
 

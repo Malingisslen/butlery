@@ -1,12 +1,26 @@
 // lib/services/unified/operations/realtime_recipe/realtime_editing_module.dart
 
 // ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
+import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
+
+typedef UpdateRecipeContentFn = Future<bool> Function({
+  required String recipeId,
+  String? title,
+  String? description,
+  List<String>? ingredients,
+  List<String>? instructions,
+  List<String>? imageUrls,
+  String? mealType,
+  int? portions,
+  int? timeMinutes,
+  double? rating,
+  List<String>? personalTagIds,
+  String? sourceUrl,
+});
 
 /// Realtime recipe editing module
 /// This module handles ONLY real-time editing operations:
@@ -16,15 +30,28 @@ import 'package:butlery/services/unified/operations/realtime_recipe/shared/realt
 /// - Validate editing permissions
 /// ❌ DOES NOT CONTAIN: Watching, presence, notifications, collaboration management
 class RealtimeEditingModule {
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
+  final String? Function() _getCurrentUserDisplayName;
+  final List<Recipe> Function() _getRecipes;
+  final UpdateRecipeContentFn _updateRecipeContent;
   final RealtimeSyncService? _realtimeSyncService;
 
-  RealtimeEditingModule(this._parent, [this._realtimeSyncService]);
+  RealtimeEditingModule({
+    required String? Function() getCurrentUserId,
+    required String? Function() getCurrentUserDisplayName,
+    required List<Recipe> Function() getRecipes,
+    required UpdateRecipeContentFn updateRecipeContent,
+    RealtimeSyncService? realtimeSyncService,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+        _getRecipes = getRecipes,
+        _updateRecipeContent = updateRecipeContent,
+        _realtimeSyncService = realtimeSyncService;
 
   /// Start real-time editing session for recipe
   Future<bool> startRealtimeEditing(String recipeId) async {
     try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+      final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       final validationError =
           RealtimeRecipeUtils.validateRecipeForRealtime(recipe);
       if (validationError != null) {
@@ -33,7 +60,7 @@ class RealtimeEditingModule {
       }
 
       final permissionError = RealtimeRecipeUtils.validateUserPermissions(
-        _parent.currentUserId,
+        _getCurrentUserId(),
         recipeId,
         requireEdit: true,
         requireOwner: false,
@@ -75,7 +102,7 @@ class RealtimeEditingModule {
   bool isInRealtimeEditingMode(String recipeId) {
     // This would check if the recipe is currently being edited in realtime
     // For now, simulate based on recipe type
-    final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+    final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
     return recipe?.isCollaborative == true;
   }
 
@@ -92,14 +119,14 @@ class RealtimeEditingModule {
     }
 
     try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+      final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) {
         AppLogger.error('Recipe not found for realtime edit');
         return false;
       }
 
       final permissionError = RealtimeRecipeUtils.validateUserPermissions(
-        _parent.currentUserId,
+        _getCurrentUserId(),
         recipeId,
         requireEdit: true,
         requireOwner: false,
@@ -117,8 +144,8 @@ class RealtimeEditingModule {
         realtimeRecipe,
         changes,
         editDescription,
-        _parent.currentUserId,
-        _parent.currentUserDisplayName,
+        _getCurrentUserId(),
+        _getCurrentUserDisplayName(),
       );
 
       // Update through realtime sync service (handles conflict resolution)
@@ -139,7 +166,7 @@ class RealtimeEditingModule {
     String? batchDescription,
   }) async {
     try {
-      final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
+      final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) return false;
 
       // Apply all changes as a single batch
@@ -205,8 +232,8 @@ class RealtimeEditingModule {
           resolvedRecipe = RealtimeRecipeUtils.mergeRecipeVersions(
             localVersion,
             remoteVersion,
-            _parent.currentUserId,
-            _parent.currentUserDisplayName,
+            _getCurrentUserId(),
+            _getCurrentUserDisplayName(),
             localActiveField: localActiveField,
           );
           AppLogger.info('Conflict resolved using merge strategy');
@@ -345,7 +372,7 @@ class RealtimeEditingModule {
   Future<bool> _makeRegularEdit(
       String recipeId, Map<String, dynamic> changes) async {
     try {
-      return await _parent.updateRecipeContent(
+      return await _updateRecipeContent(
         recipeId: recipeId,
         title: changes['title'],
         description: changes['description'],
@@ -378,7 +405,7 @@ class RealtimeEditingModule {
   /// Check if user can edit recipe
   bool _canEditRecipe(String recipeId) {
     return RealtimeRecipeUtils.validateUserPermissions(
-          _parent.currentUserId,
+          _getCurrentUserId(),
           recipeId,
           requireEdit: true,
           requireOwner: false,

@@ -1,31 +1,91 @@
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Personal shopping operations interface providing individual shopping list management.
 /// Handles personal list CRUD, item management, recipe integration, import/export, and analytics.
-/// Delegates to UnifiedShoppingService while maintaining clean separation from collaborative features.
+/// Delegates to typed callbacks while maintaining clean separation from collaborative features.
 class PersonalShoppingOperations {
-  final UnifiedShoppingService _parent;
+  final List<UnifiedShoppingList> Function() _getPersonalLists;
+  final UnifiedShoppingList? Function() _getActiveList;
+  final String? Function() _getActiveListId;
+  final Future<String?> Function(String name,
+      {List<UnifiedShoppingItem>? items}) _createPersonalList;
+  final Future<bool> Function(String listId, String newName) _renameList;
+  final Future<bool> Function(String listId) _deleteList;
+  final Future<bool> Function(String listId) _setActiveList;
+  final Future<bool> Function({
+    required String name,
+    double? amount,
+    String? unit,
+    String? category,
+    String? note,
+    double? estimatedPrice,
+    int? priority,
+    String? recipeId,
+    String? recipeName,
+  }) _addItemToActiveList;
+  final Future<bool> Function(UnifiedShoppingList list) _updateList;
+  final Future<bool> Function(String itemId) _toggleItemBought;
+  final Future<bool> Function(String itemId) _removeItemFromActiveList;
+  final Future<bool> Function() _clearBoughtItems;
+  final Future<bool> Function() _uncheckAllItems;
 
-  PersonalShoppingOperations(this._parent);
+  PersonalShoppingOperations({
+    required List<UnifiedShoppingList> Function() getPersonalLists,
+    required UnifiedShoppingList? Function() getActiveList,
+    required String? Function() getActiveListId,
+    required Future<String?> Function(String name,
+            {List<UnifiedShoppingItem>? items})
+        createPersonalList,
+    required Future<bool> Function(String listId, String newName) renameList,
+    required Future<bool> Function(String listId) deleteList,
+    required Future<bool> Function(String listId) setActiveList,
+    required Future<bool> Function({
+      required String name,
+      double? amount,
+      String? unit,
+      String? category,
+      String? note,
+      double? estimatedPrice,
+      int? priority,
+      String? recipeId,
+      String? recipeName,
+    }) addItemToActiveList,
+    required Future<bool> Function(UnifiedShoppingList list) updateList,
+    required Future<bool> Function(String itemId) toggleItemBought,
+    required Future<bool> Function(String itemId) removeItemFromActiveList,
+    required Future<bool> Function() clearBoughtItems,
+    required Future<bool> Function() uncheckAllItems,
+  })  : _getPersonalLists = getPersonalLists,
+        _getActiveList = getActiveList,
+        _getActiveListId = getActiveListId,
+        _createPersonalList = createPersonalList,
+        _renameList = renameList,
+        _deleteList = deleteList,
+        _setActiveList = setActiveList,
+        _addItemToActiveList = addItemToActiveList,
+        _updateList = updateList,
+        _toggleItemBought = toggleItemBought,
+        _removeItemFromActiveList = removeItemFromActiveList,
+        _clearBoughtItems = clearBoughtItems,
+        _uncheckAllItems = uncheckAllItems;
 
   Future<String?> createList(
     String name, {
     List<UnifiedShoppingItem>? items,
   }) async {
-    return await _parent.createPersonalList(name, items: items);
+    return await _createPersonalList(name, items: items);
   }
 
   List<UnifiedShoppingList> getAllLists() {
-    return _parent.personalLists;
+    return _getPersonalLists();
   }
 
   UnifiedShoppingList? getListById(String id) {
     try {
-      return _parent.personalLists.firstWhere((list) => list.id == id);
+      return _getPersonalLists().firstWhere((list) => list.id == id);
     } catch (e) {
       return null;
     }
@@ -38,7 +98,7 @@ class PersonalShoppingOperations {
       return false;
     }
 
-    return await _parent.renameList(listId, newName);
+    return await _renameList(listId, newName);
   }
 
   Future<bool> deleteList(String listId) async {
@@ -54,7 +114,7 @@ class PersonalShoppingOperations {
       return false;
     }
 
-    return await _parent.deleteList(listId);
+    return await _deleteList(listId);
   }
 
   Future<bool> setActiveList(String listId) async {
@@ -64,11 +124,11 @@ class PersonalShoppingOperations {
       return false;
     }
 
-    return await _parent.setActiveList(listId);
+    return await _setActiveList(listId);
   }
 
   UnifiedShoppingList? getActiveList() {
-    final activeList = _parent.activeList;
+    final activeList = _getActiveList();
     return activeList?.isPersonal == true ? activeList : null;
   }
 
@@ -91,10 +151,10 @@ class PersonalShoppingOperations {
       }
 
       // Temporarily set as active for adding item
-      final previousActiveId = _parent.activeListId;
-      await _parent.setActiveList(listId);
+      final previousActiveId = _getActiveListId();
+      await _setActiveList(listId);
 
-      final result = await _parent.addItemToActiveList(
+      final result = await _addItemToActiveList(
         name: name,
         amount: amount,
         unit: unit,
@@ -106,14 +166,14 @@ class PersonalShoppingOperations {
 
       // Restore previous active list
       if (previousActiveId != null) {
-        await _parent.setActiveList(previousActiveId);
+        await _setActiveList(previousActiveId);
       }
 
       return result;
     }
 
     // Add to currently active list
-    return await _parent.addItemToActiveList(
+    return await _addItemToActiveList(
       name: name,
       amount: amount,
       unit: unit,
@@ -176,7 +236,7 @@ class PersonalShoppingOperations {
         list.items.map((i) => i.id == itemId ? updatedItem : i).toList();
     final updatedList = list.copyWith(items: newItems);
 
-    return await _parent.updateList(updatedList);
+    return await _updateList(updatedList);
   }
 
   Future<bool> toggleItemBought(String itemId) async {
@@ -186,7 +246,7 @@ class PersonalShoppingOperations {
       return false;
     }
 
-    return await _parent.toggleItemBought(itemId);
+    return await _toggleItemBought(itemId);
   }
 
   Future<bool> removeItem(String itemId) async {
@@ -196,7 +256,7 @@ class PersonalShoppingOperations {
       return false;
     }
 
-    return await _parent.removeItemFromActiveList(itemId);
+    return await _removeItemFromActiveList(itemId);
   }
 
   Future<bool> clearBoughtItems({String? listId}) async {
@@ -208,20 +268,20 @@ class PersonalShoppingOperations {
       }
 
       // Temporarily set as active for clearing
-      final previousActiveId = _parent.activeListId;
-      await _parent.setActiveList(listId);
+      final previousActiveId = _getActiveListId();
+      await _setActiveList(listId);
 
-      final result = await _parent.clearBoughtItems();
+      final result = await _clearBoughtItems();
 
       // Restore previous active list
       if (previousActiveId != null) {
-        await _parent.setActiveList(previousActiveId);
+        await _setActiveList(previousActiveId);
       }
 
       return result;
     }
 
-    return await _parent.clearBoughtItems();
+    return await _clearBoughtItems();
   }
 
   Future<bool> uncheckAllItems({String? listId}) async {
@@ -233,20 +293,20 @@ class PersonalShoppingOperations {
       }
 
       // Temporarily set as active for unchecking
-      final previousActiveId = _parent.activeListId;
-      await _parent.setActiveList(listId);
+      final previousActiveId = _getActiveListId();
+      await _setActiveList(listId);
 
-      final result = await _parent.uncheckAllItems();
+      final result = await _uncheckAllItems();
 
       // Restore previous active list
       if (previousActiveId != null) {
-        await _parent.setActiveList(previousActiveId);
+        await _setActiveList(previousActiveId);
       }
 
       return result;
     }
 
-    return await _parent.uncheckAllItems();
+    return await _uncheckAllItems();
   }
 
   Map<String, dynamic> getListStats(String listId) {
@@ -441,7 +501,7 @@ class PersonalShoppingOperations {
       }
 
       final updatedList = list.copyWith(items: newItems);
-      await _parent.updateList(updatedList);
+      await _updateList(updatedList);
 
       AppLogger.success('Imported ${itemsToAdd.length} items to ${list.name}');
       return true;

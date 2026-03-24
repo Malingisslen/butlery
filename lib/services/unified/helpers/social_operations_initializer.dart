@@ -5,11 +5,33 @@ import 'dart:async';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart'
+    show CreateCollaborativeRecipeFn, CreatePersonalRecipeFn;
+
+/// Context object bundling the dependency getters that SocialRecipeOperations needs.
+class SocialOpsContext {
+  final String? Function() getCurrentUserId;
+  final String? Function() getCurrentUserDisplayName;
+  final List<Recipe> Function() getRecipes;
+  final Future<bool> Function(Recipe) updateRecipe;
+  final CreateCollaborativeRecipeFn createCollaborativeRecipe;
+  final CreatePersonalRecipeFn createPersonalRecipe;
+
+  const SocialOpsContext({
+    required this.getCurrentUserId,
+    required this.getCurrentUserDisplayName,
+    required this.getRecipes,
+    required this.updateRecipe,
+    required this.createCollaborativeRecipe,
+    required this.createPersonalRecipe,
+  });
+}
 
 /// Helper class for initializing SocialRecipeOperations with fallback and retry logic.
 /// Handles the complex dependency initialization where repositories might not be immediately available.
@@ -28,20 +50,25 @@ class SocialOperationsInitializer {
           providedFirestoreRepo ?? ServiceLocator.tryGet<FirestoreRepository>();
 
       if (ratingsRepo != null && firestoreRepo != null) {
-        AppLogger.info(
-            '✅ SocialRecipeOperations initialized with repositories');
+        final ctx = _contextFrom(parentService);
+        AppLogger.info('SocialRecipeOperations initialized with repositories');
         return SocialRecipeOperations(
-          parentService,
+          getCurrentUserId: ctx.getCurrentUserId,
+          getCurrentUserDisplayName: ctx.getCurrentUserDisplayName,
+          getRecipes: ctx.getRecipes,
+          updateRecipe: ctx.updateRecipe,
+          createCollaborativeRecipe: ctx.createCollaborativeRecipe,
+          createPersonalRecipe: ctx.createPersonalRecipe,
           ratingsRepository: ratingsRepo,
           firestoreRepository: firestoreRepo,
         );
       }
 
       AppLogger.warning(
-          '⚠️ Repositories not yet available for SocialRecipeOperations');
+          'Repositories not yet available for SocialRecipeOperations');
       return null;
     } catch (e) {
-      AppLogger.error('❌ Failed to initialize SocialRecipeOperations: $e');
+      AppLogger.error('Failed to initialize SocialRecipeOperations: $e');
       return null;
     }
   }
@@ -54,7 +81,7 @@ class SocialOperationsInitializer {
     FirestoreRepository? providedFirestoreRepo,
     FirebaseAuthRepository authRepository,
   ) {
-    AppLogger.warning('⚠️ Creating fallback SocialRecipeOperations');
+    AppLogger.warning('Creating fallback SocialRecipeOperations');
 
     final ratingsRepo = providedRatingsRepo ??
         ServiceLocator.tryGet<RatingsRepository>() ??
@@ -64,8 +91,14 @@ class SocialOperationsInitializer {
         ServiceLocator.tryGet<FirestoreRepository>() ??
         FirestoreRepository();
 
+    final ctx = _contextFrom(parentService);
     return SocialRecipeOperations(
-      parentService,
+      getCurrentUserId: ctx.getCurrentUserId,
+      getCurrentUserDisplayName: ctx.getCurrentUserDisplayName,
+      getRecipes: ctx.getRecipes,
+      updateRecipe: ctx.updateRecipe,
+      createCollaborativeRecipe: ctx.createCollaborativeRecipe,
+      createPersonalRecipe: ctx.createPersonalRecipe,
       ratingsRepository: ratingsRepo,
       firestoreRepository: firestoreRepo,
     );
@@ -81,10 +114,16 @@ class SocialOperationsInitializer {
       final firestoreRepo = ServiceLocator.tryGet<FirestoreRepository>();
 
       if (ratingsRepo != null && firestoreRepo != null) {
+        final ctx = _contextFrom(parentService);
         AppLogger.info(
-            '✅ SocialRecipeOperations re-initialized with real repositories');
+            'SocialRecipeOperations re-initialized with real repositories');
         return SocialRecipeOperations(
-          parentService,
+          getCurrentUserId: ctx.getCurrentUserId,
+          getCurrentUserDisplayName: ctx.getCurrentUserDisplayName,
+          getRecipes: ctx.getRecipes,
+          updateRecipe: ctx.updateRecipe,
+          createCollaborativeRecipe: ctx.createCollaborativeRecipe,
+          createPersonalRecipe: ctx.createPersonalRecipe,
           ratingsRepository: ratingsRepo,
           firestoreRepository: firestoreRepo,
         );
@@ -92,7 +131,7 @@ class SocialOperationsInitializer {
 
       return null;
     } catch (e) {
-      AppLogger.error('❌ Failed to reinitialize SocialRecipeOperations: $e');
+      AppLogger.error('Failed to reinitialize SocialRecipeOperations: $e');
       return null;
     }
   }
@@ -113,13 +152,12 @@ class SocialOperationsInitializer {
   }) {
     if (attempt >= _maxRetries) {
       AppLogger.error(
-          '❌ Max social init retries ($_maxRetries) reached, giving up');
+          'Max social init retries ($_maxRetries) reached, giving up');
       return null;
     }
 
     final timer = Timer(delay, () {
-      if (parentService is StateNotifierMixin &&
-          parentService.isDisposed) {
+      if (parentService is StateNotifierMixin && parentService.isDisposed) {
         return;
       }
       final operations = retryWithRealRepositories(parentService);
@@ -135,5 +173,18 @@ class SocialOperationsInitializer {
       }
     });
     return timer;
+  }
+
+  /// Extract context from the parent service (UnifiedRecipeService).
+  /// Uses dynamic to avoid circular imports.
+  static SocialOpsContext _contextFrom(dynamic parent) {
+    return SocialOpsContext(
+      getCurrentUserId: () => parent.currentUserId as String?,
+      getCurrentUserDisplayName: () => parent.currentUserDisplayName as String?,
+      getRecipes: () => parent.recipes as List<Recipe>,
+      updateRecipe: (recipe) => parent.updateRecipe(recipe) as Future<bool>,
+      createCollaborativeRecipe: parent.createCollaborativeRecipe,
+      createPersonalRecipe: parent.createPersonalRecipe,
+    );
   }
 }

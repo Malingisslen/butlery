@@ -43,9 +43,45 @@ void main() {
       // Set default state
       mockParent.setRecipeState(currentUserId: 'test-user-123');
 
-      // Create operations (will initialize its own modules)
+      // Create operations with explicit deps (no _parent back-reference)
       operations = SocialRecipeOperations(
-        mockParent,
+        getCurrentUserId: () => 'test-user-123',
+        getCurrentUserDisplayName: () => 'Test User',
+        getRecipes: () => mockParent.recipes,
+        updateRecipe: (recipe) async => true,
+        createCollaborativeRecipe: ({
+          required String title,
+          required List<String> memberIds,
+          String description = '',
+          List<String> ingredients = const [],
+          List<String> instructions = const [],
+          List<String> imageUrls = const [],
+          String mealType = '',
+          int? portions,
+          int? timeMinutes,
+          double? rating,
+          List<String>? personalTagIds,
+          String? sourceUrl,
+          String? descriptionCollaborative,
+          bool allowGuestViewing = false,
+          bool allowMemberInvites = true,
+          List<String>? categoryIds,
+        }) async =>
+            null,
+        createPersonalRecipe: ({
+          required String title,
+          String description = '',
+          List<String> ingredients = const [],
+          List<String> instructions = const [],
+          List<String> imageUrls = const [],
+          String mealType = '',
+          int? portions,
+          int? timeMinutes,
+          double? rating,
+          List<String>? personalTagIds,
+          String? sourceUrl,
+        }) async =>
+            null,
         ratingsRepository: mockRatingsRepo,
         firestoreRepository: mockFirestoreRepo,
       );

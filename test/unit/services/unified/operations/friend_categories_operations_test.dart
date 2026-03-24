@@ -141,8 +141,27 @@ void main() {
           .thenReturn(null);
       when(() => mockParentService.refresh()).thenAnswer((_) async => {});
 
-      // Create operations instance
-      operations = FriendsCategoriesOperations(mockParentService);
+      // Create operations instance with typed deps from mock
+      operations = FriendsCategoriesOperations(
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getCategoriesList: () => mockParentService.categoriesList,
+        getFriendsList: () => mockParentService.friendsList,
+        getFriendCategoryRelationshipsInternal: () =>
+            mockParentService.friendCategoryRelationshipsInternal,
+        addCategoryInternal: mockParentService.addCategoryInternal,
+        updateCategoryInternal: mockParentService.updateCategoryInternal,
+        removeCategoryInternal: mockParentService.removeCategoryInternal,
+        addFriendToCategoryInternal:
+            mockParentService.addFriendToCategoryInternal,
+        syncCategoryToFirebaseInternal:
+            mockParentService.syncCategoryToFirebaseInternal,
+        deleteCategoryFromFirebaseInternal:
+            mockParentService.deleteCategoryFromFirebaseInternal,
+        refresh: mockParentService.refresh,
+        getManagement: () => mockManagement,
+        getInvitations: () =>
+            mockParentService.invitations as MockFriendsInvitationsOperations,
+      );
     });
 
     tearDown(() async {

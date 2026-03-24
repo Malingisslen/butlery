@@ -17,6 +17,10 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_member_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_item_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_activity_operations.dart';
 import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -102,8 +106,51 @@ class UnifiedShoppingService extends ChangeNotifier
     // This avoids circular dependency with OfflineService during DI setup
 
     // Initialize feature interfaces
-    _personalOps = PersonalShoppingOperations(this);
-    _collaborativeOps = CollaborativeShoppingOperations(this);
+    _personalOps = PersonalShoppingOperations(
+      getPersonalLists: () => personalLists,
+      getActiveList: () => activeList,
+      getActiveListId: () => _activeListId,
+      createPersonalList: createPersonalList,
+      renameList: renameList,
+      deleteList: deleteList,
+      setActiveList: setActiveList,
+      addItemToActiveList: addItemToActiveList,
+      updateList: updateList,
+      toggleItemBought: toggleItemBought,
+      removeItemFromActiveList: removeItemFromActiveList,
+      clearBoughtItems: clearBoughtItems,
+      uncheckAllItems: uncheckAllItems,
+    );
+
+    final lifecycleOps = ListLifecycleOperations(
+      getCollaborativeLists: () => collaborativeLists,
+      getPersonalLists: () => personalLists,
+      createCollaborativeList: createCollaborativeList,
+      deleteList: deleteList,
+      createPersonalList: createPersonalList,
+    );
+
+    final memberOps = ListMemberOperations(
+      getCurrentUserId: () => currentUserId,
+      updateList: updateList,
+      lifecycleOps: lifecycleOps,
+    );
+
+    final itemOps = ListItemOperations(
+      getCurrentUserId: () => currentUserId,
+      getCurrentUserDisplayName: () => currentUserDisplayName,
+      updateList: updateList,
+      lifecycleOps: lifecycleOps,
+    );
+
+    final activityOps = ListActivityOperations(lifecycleOps);
+
+    _collaborativeOps = CollaborativeShoppingOperations(
+      lifecycleOps: lifecycleOps,
+      memberOps: memberOps,
+      itemOps: itemOps,
+      activityOps: activityOps,
+    );
     // Lazy initialize shareOps to avoid circular dependency during DI setup
     // PermissionService will be retrieved when first needed
 

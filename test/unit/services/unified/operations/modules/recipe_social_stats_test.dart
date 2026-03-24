@@ -119,10 +119,13 @@ void main() {
 
       // Create stats instance
       stats = RecipeSocialStats(
-        mockParentService,
-        mockRatingsRepository,
-        mockFirestoreRepository,
-        mockNotificationService,
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getCurrentUserDisplayName: () =>
+            mockParentService.currentUserDisplayName,
+        getRecipes: () => mockParentService.recipes,
+        ratingsRepository: mockRatingsRepository,
+        firestoreRepository: mockFirestoreRepository,
+        notificationService: mockNotificationService,
       );
     });
 

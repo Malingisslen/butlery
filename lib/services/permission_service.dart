@@ -61,7 +61,9 @@ class PermissionService extends BaseService {
   RecipePermissionModule get _recipeModule {
     if (_recipeModuleInstance == null) {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final permissionHelper = RecipePermissionHelper(recipeService);
+      final permissionHelper = RecipePermissionHelper(
+        getCurrentUserId: () => recipeService.currentUserId,
+      );
       _recipeModuleInstance = RecipePermissionModule(
         authRepository: _authRepository,
         recipeRepository: _recipeRepository,

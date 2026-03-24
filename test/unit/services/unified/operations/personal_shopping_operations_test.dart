@@ -68,7 +68,44 @@ void main() {
         lists: [testList],
       );
 
-      operations = PersonalShoppingOperations(mockParent);
+      operations = PersonalShoppingOperations(
+        getPersonalLists: () => mockParent.personalLists,
+        getActiveList: () => mockParent.activeList,
+        getActiveListId: () => mockParent.activeListId,
+        createPersonalList: (name, {items}) =>
+            mockParent.createPersonalList(name, items: items),
+        renameList: (listId, newName) => mockParent.renameList(listId, newName),
+        deleteList: (listId) => mockParent.deleteList(listId),
+        setActiveList: (listId) => mockParent.setActiveList(listId),
+        addItemToActiveList: ({
+          required String name,
+          double? amount,
+          String? unit,
+          String? category,
+          String? note,
+          double? estimatedPrice,
+          int? priority,
+          String? recipeId,
+          String? recipeName,
+        }) =>
+            mockParent.addItemToActiveList(
+          name: name,
+          amount: amount,
+          unit: unit,
+          category: category,
+          note: note,
+          estimatedPrice: estimatedPrice,
+          priority: priority,
+          recipeId: recipeId,
+          recipeName: recipeName,
+        ),
+        updateList: (list) => mockParent.updateList(list),
+        toggleItemBought: (itemId) => mockParent.toggleItemBought(itemId),
+        removeItemFromActiveList: (itemId) =>
+            mockParent.removeItemFromActiveList(itemId),
+        clearBoughtItems: () => mockParent.clearBoughtItems(),
+        uncheckAllItems: () => mockParent.uncheckAllItems(),
+      );
     });
 
     tearDown(() async {
@@ -1164,7 +1201,45 @@ void main() {
             )).thenAnswer((_) async => true);
 
         // Act
-        final operations = PersonalShoppingOperations(mockParent);
+        final operations = PersonalShoppingOperations(
+          getPersonalLists: () => mockParent.personalLists,
+          getActiveList: () => mockParent.activeList,
+          getActiveListId: () => mockParent.activeListId,
+          createPersonalList: (name, {items}) =>
+              mockParent.createPersonalList(name, items: items),
+          renameList: (listId, newName) =>
+              mockParent.renameList(listId, newName),
+          deleteList: (listId) => mockParent.deleteList(listId),
+          setActiveList: (listId) => mockParent.setActiveList(listId),
+          addItemToActiveList: ({
+            required String name,
+            double? amount,
+            String? unit,
+            String? category,
+            String? note,
+            double? estimatedPrice,
+            int? priority,
+            String? recipeId,
+            String? recipeName,
+          }) =>
+              mockParent.addItemToActiveList(
+            name: name,
+            amount: amount,
+            unit: unit,
+            category: category,
+            note: note,
+            estimatedPrice: estimatedPrice,
+            priority: priority,
+            recipeId: recipeId,
+            recipeName: recipeName,
+          ),
+          updateList: (list) => mockParent.updateList(list),
+          toggleItemBought: (itemId) => mockParent.toggleItemBought(itemId),
+          removeItemFromActiveList: (itemId) =>
+              mockParent.removeItemFromActiveList(itemId),
+          clearBoughtItems: () => mockParent.clearBoughtItems(),
+          uncheckAllItems: () => mockParent.uncheckAllItems(),
+        );
         final futures = List.generate(
           10,
           (i) => operations.addItem(

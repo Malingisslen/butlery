@@ -32,7 +32,9 @@ void main() {
       mockParentService = MockUnifiedRecipeService();
 
       // Create helper instance
-      helper = RecipePermissionHelper(mockParentService);
+      helper = RecipePermissionHelper(
+        getCurrentUserId: () => mockParentService.currentUserId,
+      );
 
       // Create test data
       testPersonalRecipe = Recipe(

@@ -1,6 +1,5 @@
 import 'package:butlery/models/unified/unified_shopping_item.dart'; // ShoppingCategory + UnifiedShoppingItem
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_member_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_item_operations.dart';
@@ -8,17 +7,21 @@ import 'package:butlery/services/unified/operations/collaborative_shopping/list_
 
 /// Facade for collaborative shopping operations, delegates to focused modules following Single Responsibility Principle.
 class CollaborativeShoppingOperations {
-  final UnifiedShoppingService _parent;
   late final ListLifecycleOperations lifecycle;
   late final ListMemberOperations members;
   late final ListItemOperations items;
   late final ListActivityOperations activity;
 
-  CollaborativeShoppingOperations(this._parent) {
-    lifecycle = ListLifecycleOperations(_parent);
-    members = ListMemberOperations(_parent, lifecycle);
-    items = ListItemOperations(_parent, lifecycle);
-    activity = ListActivityOperations(lifecycle);
+  CollaborativeShoppingOperations({
+    required ListLifecycleOperations lifecycleOps,
+    required ListMemberOperations memberOps,
+    required ListItemOperations itemOps,
+    required ListActivityOperations activityOps,
+  }) {
+    lifecycle = lifecycleOps;
+    members = memberOps;
+    items = itemOps;
+    activity = activityOps;
   }
 
   // Lifecycle delegation

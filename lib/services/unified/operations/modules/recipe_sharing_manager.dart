@@ -1,17 +1,50 @@
 // lib/services/unified/operations/modules/recipe_sharing_manager.dart
 
 // ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
+import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/models/recipe_unified.dart';
+
+typedef CreateCollaborativeRecipeFn = Future<String?> Function({
+  required String title,
+  required List<String> memberIds,
+  String description,
+  List<String> ingredients,
+  List<String> instructions,
+  List<String> imageUrls,
+  String mealType,
+  int? portions,
+  int? timeMinutes,
+  double? rating,
+  List<String>? personalTagIds,
+  String? sourceUrl,
+  String? descriptionCollaborative,
+  bool allowGuestViewing,
+  bool allowMemberInvites,
+  List<String>? categoryIds,
+});
+
+typedef CreatePersonalRecipeFn = Future<String?> Function({
+  required String title,
+  String description,
+  List<String> ingredients,
+  List<String> instructions,
+  List<String> imageUrls,
+  String mealType,
+  int? portions,
+  int? timeMinutes,
+  double? rating,
+  List<String>? personalTagIds,
+  String? sourceUrl,
+});
 
 /// Focused module for recipe sharing and collaboration setup
 /// This module handles ONLY recipe sharing responsibilities:
@@ -22,15 +55,29 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// - Share metadata and collaboration settings
 /// ❌ DOES NOT CONTAIN: Member management, comments, discovery, ratings, permissions
 class RecipeSharingManager {
-  final UnifiedRecipeService _parent;
+  final String? Function() _getCurrentUserId;
+  final String? Function() _getCurrentUserDisplayName;
+  final List<Recipe> Function() _getRecipes;
+  final CreateCollaborativeRecipeFn _createCollaborativeRecipe;
+  final CreatePersonalRecipeFn _createPersonalRecipe;
   final NotificationService? _notificationService;
   final FirestoreRepository _firestoreRepository;
 
-  RecipeSharingManager(
-    this._parent,
-    this._notificationService, {
+  RecipeSharingManager({
+    required String? Function() getCurrentUserId,
+    required String? Function() getCurrentUserDisplayName,
+    required List<Recipe> Function() getRecipes,
+    required CreateCollaborativeRecipeFn createCollaborativeRecipe,
+    required CreatePersonalRecipeFn createPersonalRecipe,
+    required NotificationService? notificationService,
     FirestoreRepository? firestoreRepository,
-  }) : _firestoreRepository =
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+        _getRecipes = getRecipes,
+        _createCollaborativeRecipe = createCollaborativeRecipe,
+        _createPersonalRecipe = createPersonalRecipe,
+        _notificationService = notificationService,
+        _firestoreRepository =
             firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
   /// Share a personal recipe with other users (convert to collaborative)
@@ -54,12 +101,12 @@ class RecipeSharingManager {
       try {
         // Try personal recipe first
         recipeToShare =
-            _parent.recipes.firstWhere((r) => r.id == recipeId && r.isPersonal);
+            _getRecipes().firstWhere((r) => r.id == recipeId && r.isPersonal);
         AppLogger.info('📋 Found personal recipe: ${recipeToShare.title}');
       } catch (e) {
         // If not personal, try collaborative
         try {
-          recipeToShare = _parent.recipes
+          recipeToShare = _getRecipes()
               .firstWhere((r) => r.id == recipeId && r.isCollaborative);
           isAlreadyCollaborative = true;
           AppLogger.info(
@@ -83,7 +130,7 @@ class RecipeSharingManager {
         AppLogger.success('✅ Collaborative recipe synced to shared collection');
       } else {
         // Create collaborative version for personal recipes
-        finalRecipeId = await _parent.createCollaborativeRecipe(
+        finalRecipeId = await _createCollaborativeRecipe(
               title: recipeToShare.title,
               memberIds: memberIds,
               description: recipeToShare.description,
@@ -148,7 +195,7 @@ class RecipeSharingManager {
       // Find the collaborative recipe
       dynamic collaborativeRecipe;
       try {
-        collaborativeRecipe = _parent.recipes.firstWhere(
+        collaborativeRecipe = _getRecipes().firstWhere(
             (r) => r.id == collaborativeRecipeId && r.isCollaborative);
       } catch (e) {
         AppLogger.error(
@@ -160,7 +207,7 @@ class RecipeSharingManager {
           '📋 Found collaborative recipe: ${collaborativeRecipe.title}');
 
       // Create personal copy with new title if provided
-      final personalRecipeId = await _parent.createPersonalRecipe(
+      final personalRecipeId = await _createPersonalRecipe(
         title: newTitle ?? '${collaborativeRecipe.title} (Min kopia)',
         description: collaborativeRecipe.description,
         ingredients: collaborativeRecipe.ingredients,
@@ -248,8 +295,8 @@ class RecipeSharingManager {
         '📬 Sending sharing notifications to ${memberIds.length} members');
 
     // Get current user display name for notification
-    final currentUserId = _parent.currentUserId;
-    final currentUserName = _parent.currentUserDisplayName ?? '?';
+    final currentUserId = _getCurrentUserId();
+    final currentUserName = _getCurrentUserDisplayName() ?? '?';
 
     // Send notifications to all invited members using safe helper
     await NotificationHelper.sendImmediateSafely(
@@ -278,7 +325,7 @@ class RecipeSharingManager {
     required String recipeTitle,
     required List<String> memberIds,
   }) async {
-    final currentUserName = _parent.currentUserDisplayName ?? '?';
+    final currentUserName = _getCurrentUserDisplayName() ?? '?';
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: _notificationService,
@@ -305,13 +352,13 @@ class RecipeSharingManager {
       dynamic originalRecipe;
       try {
         originalRecipe =
-            _parent.recipes.firstWhere((r) => r.id == recipeId && r.isPersonal);
+            _getRecipes().firstWhere((r) => r.id == recipeId && r.isPersonal);
       } catch (e) {
         AppLogger.error('❌ Cannot duplicate: Recipe not found');
         return null;
       }
 
-      return await _parent.createPersonalRecipe(
+      return await _createPersonalRecipe(
         title: newTitle ?? '${originalRecipe.title} (Kopia)',
         description: originalRecipe.description,
         ingredients: originalRecipe.ingredients,
@@ -404,7 +451,7 @@ class RecipeSharingManager {
       //   'originalId': originalId,
       //   'newId': newId,
       //   'type': conversionType,
-      //   'userId': _parent.currentUserId,
+      //   'userId': _getCurrentUserId(),
       // });
     } catch (e) {
       AppLogger.warning('⚠️ Failed to log recipe conversion: $e');
@@ -414,8 +461,8 @@ class RecipeSharingManager {
   /// Get sharing statistics for current user
   Map<String, dynamic> getSharingStats() {
     try {
-      final userRecipes = _parent.recipes
-          .where((r) => r.createdBy == _parent.currentUserId)
+      final userRecipes = _getRecipes()
+          .where((r) => r.createdBy == _getCurrentUserId())
           .toList();
 
       final personalRecipes = userRecipes.where((r) => r.isPersonal).length;

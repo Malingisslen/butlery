@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -90,7 +91,17 @@ void main() {
       mockRealtimeService.setConnectionState(true);
 
       // Create operations instance
-      operations = RealtimeRecipeOperations(mockParent, mockRealtimeService);
+      operations = RealtimeRecipeOperations(
+        getCurrentUserId: () => 'test-user-123',
+        getCurrentUserDisplayName: () => 'Test User',
+        getRecipes: () => mockParent.recipes,
+        notificationParent: _TestNotificationParent(),
+        updateRecipeContent: _stubUpdateRecipeContent,
+        createCollaborativeRecipe: _stubCreateCollaborativeRecipe,
+        createPersonalRecipe: _stubCreatePersonalRecipe,
+        deleteRecipe: (id) async => true,
+        realtimeSyncService: mockRealtimeService,
+      );
     });
 
     tearDown(() async {
@@ -121,7 +132,16 @@ void main() {
       test('should initialize without realtime service and handle gracefully',
           () {
         // Act
-        final ops = RealtimeRecipeOperations(mockParent, null);
+        final ops = RealtimeRecipeOperations(
+          getCurrentUserId: () => 'test-user',
+          getCurrentUserDisplayName: () => 'Test',
+          getRecipes: () => [],
+          notificationParent: _TestNotificationParent(),
+          updateRecipeContent: _stubUpdateRecipeContent,
+          createCollaborativeRecipe: _stubCreateCollaborativeRecipe,
+          createPersonalRecipe: _stubCreatePersonalRecipe,
+          deleteRecipe: (id) async => true,
+        );
 
         // Assert
         expect(ops, isNotNull);
@@ -508,7 +528,16 @@ void main() {
     group('Error Handling and Edge Cases', () {
       test('should handle null realtime service gracefully', () {
         // Arrange
-        final opsWithoutRealtime = RealtimeRecipeOperations(mockParent, null);
+        final opsWithoutRealtime = RealtimeRecipeOperations(
+          getCurrentUserId: () => 'test-user',
+          getCurrentUserDisplayName: () => 'Test',
+          getRecipes: () => [],
+          notificationParent: _TestNotificationParent(),
+          updateRecipeContent: _stubUpdateRecipeContent,
+          createCollaborativeRecipe: _stubCreateCollaborativeRecipe,
+          createPersonalRecipe: _stubCreatePersonalRecipe,
+          deleteRecipe: (id) async => true,
+        );
 
         // Act & Assert
         expect(opsWithoutRealtime.isConnected, isFalse);
@@ -551,4 +580,62 @@ void main() {
       });
     });
   });
+}
+
+Future<bool> _stubUpdateRecipeContent({
+  required String recipeId,
+  String? title,
+  String? description,
+  List<String>? ingredients,
+  List<String>? instructions,
+  List<String>? imageUrls,
+  String? mealType,
+  int? portions,
+  int? timeMinutes,
+  double? rating,
+  List<String>? personalTagIds,
+  String? sourceUrl,
+}) async =>
+    true;
+
+Future<String?> _stubCreateCollaborativeRecipe({
+  required String title,
+  required List<String> memberIds,
+  String description = '',
+  List<String> ingredients = const [],
+  List<String> instructions = const [],
+  List<String> imageUrls = const [],
+  String mealType = '',
+  int? portions,
+  int? timeMinutes,
+  double? rating,
+  List<String>? personalTagIds,
+  String? sourceUrl,
+  String? descriptionCollaborative,
+  bool allowGuestViewing = false,
+  bool allowMemberInvites = false,
+  List<String>? categoryIds,
+}) async =>
+    null;
+
+Future<String?> _stubCreatePersonalRecipe({
+  required String title,
+  String description = '',
+  List<String> ingredients = const [],
+  List<String> instructions = const [],
+  List<String> imageUrls = const [],
+  String mealType = '',
+  int? portions,
+  int? timeMinutes,
+  double? rating,
+  List<String>? personalTagIds,
+  String? sourceUrl,
+}) async =>
+    null;
+
+class _TestNotificationParent implements NotificationParent {
+  @override
+  String? get currentUserId => 'test-user';
+  @override
+  String? get currentUserDisplayName => 'Test';
 }

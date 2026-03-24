@@ -72,8 +72,10 @@ void main() {
       mockRealtimeSyncService.setConnectionState(true);
 
       // Create watching module instance
-      watchingModule =
-          RealtimeWatchingModule(mockParentService, mockRealtimeSyncService);
+      watchingModule = RealtimeWatchingModule(
+        getRecipes: () => mockParentService.recipes,
+        realtimeSyncService: mockRealtimeSyncService,
+      );
     });
 
     tearDown(() async {
@@ -102,7 +104,9 @@ void main() {
       test('should fall back to polling when realtime service unavailable',
           () async {
         // Arrange
-        watchingModule = RealtimeWatchingModule(mockParentService, null);
+        watchingModule = RealtimeWatchingModule(
+          getRecipes: () => mockParentService.recipes,
+        );
 
         // Act
         final stream = watchingModule.watchRecipe('recipe_1');
@@ -194,7 +198,9 @@ void main() {
 
       test('should fall back to polling for multiple recipes', () async {
         // Arrange
-        watchingModule = RealtimeWatchingModule(mockParentService, null);
+        watchingModule = RealtimeWatchingModule(
+          getRecipes: () => mockParentService.recipes,
+        );
 
         // Act
         final stream = watchingModule.watchMultipleRecipes(['recipe_1']);
@@ -371,7 +377,9 @@ void main() {
 
       test('should report limited capabilities without realtime service', () {
         // Arrange
-        watchingModule = RealtimeWatchingModule(mockParentService, null);
+        watchingModule = RealtimeWatchingModule(
+          getRecipes: () => mockParentService.recipes,
+        );
 
         // Act
         final capabilities = watchingModule.getWatchingCapabilities();

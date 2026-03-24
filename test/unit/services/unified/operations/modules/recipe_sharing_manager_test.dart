@@ -47,8 +47,15 @@ void main() {
       mockNotificationService = MockNotificationService();
 
       // Create sharing manager instance
-      sharingManager =
-          RecipeSharingManager(mockParentService, mockNotificationService);
+      sharingManager = RecipeSharingManager(
+        getCurrentUserId: () => mockParentService.currentUserId,
+        getCurrentUserDisplayName: () =>
+            mockParentService.currentUserDisplayName,
+        getRecipes: () => mockParentService.recipes,
+        createCollaborativeRecipe: mockParentService.createCollaborativeRecipe,
+        createPersonalRecipe: mockParentService.createPersonalRecipe,
+        notificationService: mockNotificationService,
+      );
 
       // Create test data
       testPersonalRecipe = Recipe(
