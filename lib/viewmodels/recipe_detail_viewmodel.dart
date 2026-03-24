@@ -56,6 +56,7 @@
 
 // lib/viewmodels/recipe_detail_viewmodel.dart
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -71,6 +72,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// separation between recipe detail business logic and UI presentation concerns.
 class RecipeDetailViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
+  StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
 
@@ -96,7 +98,8 @@ class RecipeDetailViewModel extends ChangeNotifier
             recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
         _analyticsService =
             analyticsService ?? ServiceLocator.get<AnalyticsService>() {
-    _recipeService.addListener(_onRecipeServiceUpdate);
+    _recipeServiceSubscription =
+        _recipeService.stateStream.listen((_) => _onRecipeServiceUpdate());
 
     _analyticsService.recipe.logRecipeViewed(
       recipeId: recipe.id,
@@ -111,7 +114,7 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// in dynamic recipe detail scenarios with ViewModel creation and disposal.
   @override
   void dispose() {
-    _recipeService.removeListener(_onRecipeServiceUpdate);
+    _recipeServiceSubscription?.cancel();
     super.dispose();
   }
 
@@ -309,8 +312,7 @@ class RecipeDetailViewModel extends ChangeNotifier
         _recipe = _recipe.copyWith(rating: rating);
         notifyListeners();
 
-        final success =
-            await _recipeService.updateRecipe(_recipe);
+        final success = await _recipeService.updateRecipe(_recipe);
         if (!success) {
           // Revert on failure
           _recipe = _recipe.copyWith(rating: previousRating);

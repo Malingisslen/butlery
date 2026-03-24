@@ -4,6 +4,7 @@
 
 // lib/viewmodels/menu_viewmodel.dart
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -26,6 +27,7 @@ import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 
 /// Menu ViewModel with focused modules for generation, storage, and social sharing (MVVM).
 class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
+  StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService;
   final MenuService _menuService;
   final AnalyticsService _analyticsService;
@@ -66,7 +68,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _stateManager.addListener(_onStateChanged);
 
     // Listen to recipe service changes
-    _recipeService.addListener(_onRecipesChanged);
+    _recipeServiceSubscription =
+        _recipeService.stateStream.listen((_) => _onRecipesChanged());
 
     // Load all menus at startup
     _loadAllMenus();
@@ -611,7 +614,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _isDisposed = true;
     _stateManager.removeListener(_onStateChanged);
     _stateManager.dispose();
-    _recipeService.removeListener(_onRecipesChanged);
+    _recipeServiceSubscription?.cancel();
     super.dispose();
   }
 }

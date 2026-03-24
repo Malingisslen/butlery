@@ -3,6 +3,7 @@
 /// maintaining the 500-line file size limit. For advanced operations, access focused
 /// ViewModels directly.
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -19,6 +20,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Streamlined unified recipe ViewModel facade for essential recipe operations.
 class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
+  StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService =
       ServiceLocator.get<UnifiedRecipeService>();
 
@@ -46,7 +48,8 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     _queryViewModel = RecipeQueryViewModel();
 
     // Set up state synchronization
-    _recipeService.addListener(_onServiceUpdate);
+    _recipeServiceSubscription =
+        _recipeService.stateStream.listen((_) => _onServiceUpdate());
     _personalViewModel.addListener(_onServiceUpdate);
     _socialViewModel.addListener(_onServiceUpdate);
     _realtimeViewModel.addListener(_onServiceUpdate);
@@ -257,7 +260,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   @override
   void dispose() {
     // Clean up listeners
-    _recipeService.removeListener(_onServiceUpdate);
+    _recipeServiceSubscription?.cancel();
     _personalViewModel.removeListener(_onServiceUpdate);
     _socialViewModel.removeListener(_onServiceUpdate);
     _realtimeViewModel.removeListener(_onServiceUpdate);

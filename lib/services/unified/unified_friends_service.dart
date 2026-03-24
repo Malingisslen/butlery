@@ -42,6 +42,8 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -98,6 +100,13 @@ class UnifiedFriendsService extends ChangeNotifier
   late final FriendsCategoriesOperations _categoriesOps;
   late final FriendsInvitationsOperations _invitationsOps;
 
+  // Stream-based state (Phase 2)
+  final _stateSubject =
+      BehaviorSubject<FriendsServiceState>.seeded(const FriendsStateLoading());
+
+  Stream<FriendsServiceState> get stateStream => _stateSubject.stream;
+  FriendsServiceState get currentState => _stateSubject.value;
+
   // Constructor
   UnifiedFriendsService({
     required FirestoreRepository firestoreRepository,
@@ -128,6 +137,34 @@ class UnifiedFriendsService extends ChangeNotifier
     AppLogger.info(
         '✅ UnifiedFriendsService facade initialized with modular architecture');
   }
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    _emitState();
+  }
+
+  void _emitState() {
+    if (_stateSubject.isClosed) return;
+    if (!_stateManager.isInitialized) {
+      _stateSubject.add(const FriendsStateLoading());
+      return;
+    }
+    if (_stateManager.hasError && _stateManager.friends.isEmpty) {
+      _stateSubject.add(
+          FriendsStateError(message: _stateManager.error ?? 'Unknown error'));
+      return;
+    }
+    _stateSubject.add(FriendsStateData(
+      friends: _stateManager.friends,
+      incomingRequests: _stateManager.incomingRequests,
+      outgoingRequests: _stateManager.outgoingRequests,
+      categories: _stateManager.categories,
+      receivedInvitations: _stateManager.receivedInvitations,
+      blockedUsers: _stateManager.blockedUsers,
+      error: _stateManager.error,
+    ));
+  }
+
   List<UserProfile> get friends => _stateManager.friends;
   List<FriendRequest> get incomingRequests => _stateManager.incomingRequests;
   List<FriendRequest> get outgoingRequests => _stateManager.outgoingRequests;
@@ -513,11 +550,13 @@ class UnifiedFriendsService extends ChangeNotifier
   /// (the auth listener must survive to handle the next login).
   void resetForLogout() {
     _stateManager.clearAllData();
+    _stateSubject.add(const FriendsStateLoading());
   }
 
   @override
   void dispose() {
     _stateManager.clearAllData();
+    _stateSubject.close();
     disposeStreamResources();
     super.dispose();
   }

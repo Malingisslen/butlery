@@ -15,6 +15,7 @@
 
 // lib/viewmodels/unified_shopping_viewmodel.dart
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -36,6 +37,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedShoppingService _shoppingService =
       ServiceLocator.get<UnifiedShoppingService>();
+  StreamSubscription? _shoppingServiceSubscription;
   late final ShoppingAnalyticsManager _analyticsManager;
   late final ShoppingItemOperationsManager _itemOpsManager;
 
@@ -116,7 +118,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   UnifiedShoppingViewModel() {
     _analyticsManager = ShoppingAnalyticsManager(_shoppingService);
     _itemOpsManager = ShoppingItemOperationsManager();
-    _shoppingService.addListener(_onServiceUpdate);
+    _shoppingServiceSubscription =
+        _shoppingService.stateStream.listen((_) => _onServiceUpdate());
   }
 
   /// Handles state updates from shopping service
@@ -468,7 +471,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
       .exportListAsTextWithCategories(activeList, itemsByCategory);
   @override
   void dispose() {
-    _shoppingService.removeListener(_onServiceUpdate);
+    _shoppingServiceSubscription?.cancel();
     super.dispose();
   }
 

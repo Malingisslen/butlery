@@ -4,6 +4,8 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
@@ -192,6 +194,31 @@ class UnifiedShoppingService extends ChangeNotifier
   String? _activeListId;
   bool _isLoading = false;
   String? _error;
+
+  final _stateSubject = BehaviorSubject<ShoppingServiceState>.seeded(
+      const ShoppingStateLoading());
+
+  Stream<ShoppingServiceState> get stateStream => _stateSubject.stream;
+  ShoppingServiceState get currentState => _stateSubject.value;
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    _emitState();
+  }
+
+  void _emitState() {
+    if (_stateSubject.isClosed) return;
+    if (_error != null && _lists.isEmpty) {
+      _stateSubject.add(ShoppingStateError(message: _error!));
+      return;
+    }
+    _stateSubject.add(ShoppingStateData(
+      lists: _lists,
+      activeListId: _activeListId,
+      error: _error,
+    ));
+  }
 
   // Feature interface getters
   PersonalShoppingOperations get personal => _personalOps;
@@ -473,11 +500,13 @@ class UnifiedShoppingService extends ChangeNotifier
     _lists.clear();
     _activeListId = null;
     _error = null;
+    _stateSubject.add(const ShoppingStateLoading());
   }
 
   @override
   void dispose() {
     stopFirebaseSync();
+    _stateSubject.close();
     super.dispose();
   }
 }

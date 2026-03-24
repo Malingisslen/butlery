@@ -37,6 +37,7 @@ class FriendsViewModel extends ChangeNotifier
   late final FriendsProfileCacheManager _profileCacheManager;
   late final FriendsSelectionManager _selectionManager;
 
+  StreamSubscription? _friendsServiceSubscription;
   bool _isDisposed = false;
   Timer? _debounceTimer;
   bool _isCreatingGroup = false;
@@ -58,7 +59,8 @@ class FriendsViewModel extends ChangeNotifier
     _selectionManager = FriendsSelectionManager();
 
     AppLogger.info('Registering Friends ViewModel service listeners...');
-    _friendsService.addListener(_onFriendsServiceChanged);
+    _friendsServiceSubscription =
+        _friendsService.stateStream.listen((_) => _onFriendsServiceChanged());
     _userService.addListener(_onUserServiceChanged);
     _searchManager.addListener(_onSearchChanged);
     _profileCacheManager.addListener(_onProfileCacheChanged);
@@ -451,7 +453,7 @@ class FriendsViewModel extends ChangeNotifier
     AppLogger.info('🧹 FriendsViewModel.dispose() - Cleaning up resources');
 
     // Remove service listeners
-    _friendsService.removeListener(_onFriendsServiceChanged);
+    _friendsServiceSubscription?.cancel();
     _userService.removeListener(_onUserServiceChanged);
 
     // Remove manager listeners BEFORE disposing managers

@@ -20,6 +20,7 @@ import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
 class RecipeListViewModel extends ChangeNotifier {
+  StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
   final TagEditingService _tagEditingService;
@@ -123,7 +124,8 @@ class RecipeListViewModel extends ChangeNotifier {
       onError: (_) => notifyListeners(),
     );
     _selectionManager.addListener(notifyListeners);
-    _recipeService.addListener(_onRecipesChanged);
+    _recipeServiceSubscription =
+        _recipeService.stateStream.listen((_) => _onRecipesChanged());
     _recipeService.initialize();
     _loadDisplayPreferences();
   }
@@ -782,7 +784,7 @@ class RecipeListViewModel extends ChangeNotifier {
     _deleteManager.dispose();
     _selectionManager.removeListener(notifyListeners);
     _selectionManager.dispose();
-    _recipeService.removeListener(_onRecipesChanged);
+    _recipeServiceSubscription?.cancel();
     super.dispose();
   }
 }

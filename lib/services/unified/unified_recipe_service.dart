@@ -2,6 +2,8 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -115,6 +117,34 @@ class UnifiedRecipeService extends ChangeNotifier
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
+
+  final _stateSubject =
+      BehaviorSubject<RecipeServiceState>.seeded(const RecipeStateLoading());
+
+  Stream<RecipeServiceState> get stateStream => _stateSubject.stream;
+  RecipeServiceState get currentState => _stateSubject.value;
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    _emitState();
+  }
+
+  void _emitState() {
+    if (_stateSubject.isClosed) return;
+    if (!_isInitialized && _error == null) {
+      _stateSubject.add(const RecipeStateLoading());
+      return;
+    }
+    if (_error != null && _recipes.isEmpty) {
+      _stateSubject.add(RecipeStateError(message: _error!));
+      return;
+    }
+    _stateSubject.add(RecipeStateData(
+      recipes: _recipes,
+      error: _error,
+    ));
+  }
 
   // Auth state subscription (stored to prevent garbage collection)
   StreamSubscription<User?>? _authSubscription;
@@ -919,19 +949,16 @@ class UnifiedRecipeService extends ChangeNotifier
       _realtimeModule.dispose();
     }
 
+    _stateSubject.add(const RecipeStateLoading());
     AppLogger.info('UnifiedRecipeService reset for logout');
   }
 
   @override
   void dispose() {
-    // Cancel auth state subscription
     _authSubscription?.cancel();
-
-    // Cancel social operations retry timer
     _socialRetryTimer?.cancel();
-
-    // CRIT-7: Close tagging failure stream
     _taggingFailureController.close();
+    _stateSubject.close();
 
     if (_areModulesInitialized()) {
       _personalModule.cancelPendingRetries();

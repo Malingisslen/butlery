@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -96,6 +98,31 @@ class UnifiedMenuService extends ChangeNotifier
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
+
+  final _stateSubject =
+      BehaviorSubject<MenuServiceState>.seeded(const MenuStateLoading());
+
+  Stream<MenuServiceState> get stateStream => _stateSubject.stream;
+  MenuServiceState get currentState => _stateSubject.value;
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    _emitState();
+  }
+
+  void _emitState() {
+    if (_stateSubject.isClosed) return;
+    if (!_isInitialized && _error == null) {
+      _stateSubject.add(const MenuStateLoading());
+      return;
+    }
+    if (_error != null && _menus.isEmpty) {
+      _stateSubject.add(MenuStateError(message: _error!));
+      return;
+    }
+    _stateSubject.add(MenuStateData(menus: _menus, error: _error));
+  }
 
   /// Get all menus (read-only)
   List<SharedMenu> get menus => List.unmodifiable(_menus);
@@ -628,12 +655,14 @@ class UnifiedMenuService extends ChangeNotifier
     _menus.clear();
     _isInitialized = false;
     _error = null;
+    _stateSubject.add(const MenuStateLoading());
     notifyListeners();
   }
 
   @override
   void dispose() {
     resetForLogout();
+    _stateSubject.close();
     super.dispose();
   }
 }

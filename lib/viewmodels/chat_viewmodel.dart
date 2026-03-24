@@ -27,7 +27,7 @@ class ChatViewModel extends ChangeNotifier
   final PresenceService? _presenceService;
   ContentFilterService? _contentFilter;
   UnifiedFriendsService? _friendsService;
-  VoidCallback? _friendsListener;
+  StreamSubscription? _friendsSubscription;
 
   final String conversationId;
 
@@ -190,16 +190,15 @@ class ChatViewModel extends ChangeNotifier
   void _subscribeFriendshipChanges() {
     if (_friendsService == null || _conversation == null) return;
     if (_conversation!.isGroup) return;
-    if (_friendsListener != null) return; // Already subscribed
+    if (_friendsSubscription != null) return; // Already subscribed
 
-    _friendsListener = () {
+    _friendsSubscription = _friendsService!.stateStream.listen((_) {
       final wasFriend = _isFriendWithOther;
       _checkFriendshipStatus();
       if (wasFriend != _isFriendWithOther) {
         _safeNotifyListeners();
       }
-    };
-    _friendsService!.addListener(_friendsListener!);
+    });
   }
 
   void _loadMessages() {
@@ -554,9 +553,7 @@ class ChatViewModel extends ChangeNotifier
   @override
   void dispose() {
     _isDisposed = true;
-    if (_friendsListener != null) {
-      _friendsService?.removeListener(_friendsListener!);
-    }
+    _friendsSubscription?.cancel();
     _messagesSubscription?.cancel();
     _typingSubscription?.cancel();
     _typingDebounceTimer?.cancel();
