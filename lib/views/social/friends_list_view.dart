@@ -128,8 +128,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       );
     }
 
-    return Consumer2<FriendsViewModel, UnifiedFriendsService>(
-      builder: (context, viewModel, friendsService, child) {
+    return Consumer<FriendsViewModel>(
+      builder: (context, viewModel, child) {
+        final friendsService = context.read<UnifiedFriendsService>();
         // 🎯 UX ENHANCEMENT: Sync local search query with ViewModel
         // When ViewModel clears search (after friend request), clear UI search field
         if (viewModel.searchQuery.isEmpty && _searchQuery.isNotEmpty) {

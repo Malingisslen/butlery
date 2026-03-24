@@ -13,7 +13,7 @@
 /// - Implements facade pattern coordinating specialized friend management modules
 /// - Integrates with [FirestoreRepository] for persistent friend data storage and real-time updates
 /// - Uses [AuthRepository] for user authentication and permission-aware social operations
-/// - Delegates state management to [FriendsStateManager] with ChangeNotifier for reactive UI updates
+/// - Delegates state management to [FriendsStateManager] with BehaviorSubject streams for reactive UI updates
 /// - Coordinates with [PermissionService] for comprehensive social permission validation
 /// **Specialized Operations Coordination:**
 /// This facade coordinates between focused operations modules:

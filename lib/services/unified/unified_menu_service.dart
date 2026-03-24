@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -47,7 +46,7 @@ class MenuImportResult {
 /// It provides a unified API surface that coordinates between specialized modules while maintaining clean separation
 /// of concerns for maintainable and scalable menu management across all application features.
 /// **Architecture Integration:**
-/// - Extends [ChangeNotifier] for reactive UI updates with menu state changes across all modules
+/// - Exposes stateStream for reactive UI updates with menu state changes across all modules
 /// - Uses [ErrorHandlingMixin] for comprehensive error management and graceful degradation strategies
 /// - Implements [FirebaseServiceMixin] for Firebase integration and authentication-aware operations
 /// - Coordinates with MenuService for basic menu generation and management operations

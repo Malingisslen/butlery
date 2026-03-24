@@ -222,7 +222,7 @@ class ContentModule implements DIModule {
       () => UnifiedMenuService(
         firestoreRepository: app<FirestoreRepository>(),
       ),
-      dispose: (s) => s.resetForLogout(),
+      dispose: (s) => s.dispose(),
     );
 
     container.registerLazySingleton<OfflineService>(

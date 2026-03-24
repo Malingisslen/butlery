@@ -124,7 +124,6 @@ mixin FirebaseSyncMixin<T> {
       // Call custom handler if provided
       collection.handler?.call(snapshot);
 
-      // Notify listeners after all changes processed
       onSyncStateChanged();
     } catch (e) {
       AppLogger.error('Error handling snapshot for ${collection.name}: $e');
@@ -195,10 +194,6 @@ mixin FirebaseSyncMixin<T> {
   void removeDocumentListener(String key) {
     _documentListeners[key]?.cancel();
     _documentListeners.remove(key);
-  }
-
-  void disposeSyncResources() {
-    stopFirebaseSync();
   }
 }
 

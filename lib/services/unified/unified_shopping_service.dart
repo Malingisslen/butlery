@@ -504,7 +504,7 @@ class UnifiedShoppingService
   }
 
   void dispose() {
-    disposeSyncResources();
+    stopFirebaseSync();
     _stateSubject.close();
   }
 }

@@ -62,8 +62,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<UnifiedFriendsService, FriendsViewModel>(
-      builder: (context, categoriesService, friendsVM, child) {
+    return Consumer<FriendsViewModel>(
+      builder: (context, friendsVM, child) {
+        final categoriesService = context.read<UnifiedFriendsService>();
         if (categoriesService.isLoading || friendsVM.isLoading) {
           return Center(
             child: Column(
