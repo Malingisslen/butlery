@@ -519,7 +519,7 @@ void main() {
 
         // Verify request was updated to accepted
         final requestDoc = await fakeFirestore
-            .collection('friend_requests')
+            .collection('social_requests')
             .doc(requestId)
             .get();
         expect(requestDoc.exists, isTrue);
@@ -653,7 +653,7 @@ void main() {
         await _seedFriendRequest(
             fakeFirestore, request.id, request.toFirestore());
         final doc = await fakeFirestore
-            .collection('friend_requests')
+            .collection('social_requests')
             .doc(request.id)
             .get();
         final retrieved = FriendRequest.fromMap(doc.id, doc.data()!);
@@ -747,13 +747,16 @@ UserProfile _createUserProfile(String uid) {
   );
 }
 
-/// Seed friend request into fake Firestore
+/// Seed friend request into fake Firestore (social_requests collection)
 Future<void> _seedFriendRequest(
   FakeFirebaseFirestore firestore,
   String requestId,
   Map<String, dynamic> data,
 ) async {
-  await firestore.collection('friend_requests').doc(requestId).set(data);
+  await firestore.collection('social_requests').doc(requestId).set({
+    'type': 'friend',
+    ...data,
+  });
 }
 
 /// Seed friendship into fake Firestore

@@ -48,7 +48,7 @@ class SocialExportManager {
       // Get friend requests sent (paginated)
       final sentRequests = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection(FirestoreCollections.friendRequests)
+            .collection(FirestoreCollections.socialRequests)
             .where('fromUserId', isEqualTo: userId),
         maxDocuments: requestLimit,
       );
@@ -63,7 +63,7 @@ class SocialExportManager {
       // Get friend requests received (paginated)
       final receivedRequests = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection(FirestoreCollections.friendRequests)
+            .collection(FirestoreCollections.socialRequests)
             .where('toUserId', isEqualTo: userId),
         maxDocuments: requestLimit,
       );

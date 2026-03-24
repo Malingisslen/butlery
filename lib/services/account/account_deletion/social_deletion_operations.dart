@@ -76,19 +76,11 @@ class SocialDeletionOperations {
             .collection(FirestoreCollections.userFriendCategories)
             .get(),
         _firestore
-            .collection(FirestoreCollections.friendRequests)
+            .collection(FirestoreCollections.socialRequests)
             .where('fromUserId', isEqualTo: userId)
             .get(),
         _firestore
-            .collection(FirestoreCollections.friendRequests)
-            .where('toUserId', isEqualTo: userId)
-            .get(),
-        _firestore
-            .collection(FirestoreCollections.groupInvitations)
-            .where('fromUserId', isEqualTo: userId)
-            .get(),
-        _firestore
-            .collection(FirestoreCollections.groupInvitations)
+            .collection(FirestoreCollections.socialRequests)
             .where('toUserId', isEqualTo: userId)
             .get(),
       ];

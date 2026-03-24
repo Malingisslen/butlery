@@ -80,7 +80,7 @@ void main() {
 
         // Verify in Firestore
         final requests = await firestore
-            .collection('friend_requests')
+            .collection('social_requests')
             .where('fromUserId', isEqualTo: testUser.uid)
             .where('toUserId', isEqualTo: toUserId)
             .get();
@@ -118,7 +118,8 @@ void main() {
         });
 
         // Create pending request with server timestamp
-        final docRef = await firestore.collection('friend_requests').add({
+        final docRef = await firestore.collection('social_requests').add({
+          'type': 'friend',
           'fromUserId': fromUserId,
           'toUserId': toUserId,
           'status': 'pending',
@@ -163,7 +164,8 @@ void main() {
         });
 
         // Create pending request
-        final docRef = await firestore.collection('friend_requests').add({
+        final docRef = await firestore.collection('social_requests').add({
+          'type': 'friend',
           'fromUserId': fromUserId,
           'toUserId': toUserId,
           'status': 'pending',
@@ -244,7 +246,8 @@ void main() {
         });
 
         // Create pending request
-        final docRef = await firestore.collection('friend_requests').add({
+        final docRef = await firestore.collection('social_requests').add({
+          'type': 'friend',
           'fromUserId': fromUserId,
           'toUserId': toUserId,
           'status': 'pending',
@@ -297,7 +300,7 @@ void main() {
 
         // Create multiple friend requests with server timestamps
         for (int i = 0; i < 5; i++) {
-          await firestore.collection('friend_requests').add({
+          await firestore.collection('social_requests').add({
             'fromUserId': 'user_$i',
             'toUserId': toUserId,
             'status': 'pending',

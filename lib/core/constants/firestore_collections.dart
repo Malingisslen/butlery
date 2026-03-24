@@ -13,8 +13,7 @@ abstract final class FirestoreCollections {
   static const String sharedMenus = 'shared_menus';
   static const String sharedShoppingLists = 'shared_shopping_lists';
   static const String blocks = 'blocks';
-  static const String friendRequests = 'friend_requests';
-  static const String groupInvitations = 'group_invitations';
+  static const String socialRequests = 'social_requests';
   static const String conversations = 'conversations';
   static const String messages = 'messages';
   static const String ingredients = 'ingredients';

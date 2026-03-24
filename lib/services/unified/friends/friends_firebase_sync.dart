@@ -21,7 +21,8 @@ class FriendsFirebaseSyncOperations {
   /// Sync friend request to Firebase
   Future<void> syncFriendRequestToFirebase(FriendRequest request) async {
     try {
-      await firestore.collection(FirestoreCollections.friendRequests).add({
+      await firestore.collection(FirestoreCollections.socialRequests).add({
+        'type': 'friend',
         'fromUserId': request.fromUserId,
         'toUserId': request.toUserId,
         'message': request.message,
@@ -41,7 +42,7 @@ class FriendsFirebaseSyncOperations {
   Future<void> updateFriendRequestStatus(FriendRequest request) async {
     try {
       final querySnapshot = await firestore
-          .collection(FirestoreCollections.friendRequests)
+          .collection(FirestoreCollections.socialRequests)
           .where('fromUserId', isEqualTo: request.fromUserId)
           .where('toUserId', isEqualTo: request.toUserId)
           .limit(1)

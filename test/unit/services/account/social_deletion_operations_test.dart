@@ -35,25 +35,39 @@ void main() {
           .doc('cat1')
           .set({'name': 'Close friends'});
 
-      // Seed friend requests in both directions
+      // Seed social requests (friend requests + group invitations)
       await fakeFirestore
-          .collection(FirestoreCollections.friendRequests)
+          .collection(FirestoreCollections.socialRequests)
           .doc('req-outgoing')
-          .set({'fromUserId': testUserId, 'toUserId': otherUserId});
+          .set({
+        'type': 'friend',
+        'fromUserId': testUserId,
+        'toUserId': otherUserId
+      });
       await fakeFirestore
-          .collection(FirestoreCollections.friendRequests)
+          .collection(FirestoreCollections.socialRequests)
           .doc('req-incoming')
-          .set({'fromUserId': otherUserId, 'toUserId': testUserId});
-
-      // Seed group invitations in both directions
+          .set({
+        'type': 'friend',
+        'fromUserId': otherUserId,
+        'toUserId': testUserId
+      });
       await fakeFirestore
-          .collection(FirestoreCollections.groupInvitations)
+          .collection(FirestoreCollections.socialRequests)
           .doc('inv-outgoing')
-          .set({'fromUserId': testUserId, 'toUserId': otherUserId});
+          .set({
+        'type': 'groupInvitation',
+        'fromUserId': testUserId,
+        'toUserId': otherUserId
+      });
       await fakeFirestore
-          .collection(FirestoreCollections.groupInvitations)
+          .collection(FirestoreCollections.socialRequests)
           .doc('inv-incoming')
-          .set({'fromUserId': otherUserId, 'toUserId': testUserId});
+          .set({
+        'type': 'groupInvitation',
+        'fromUserId': otherUserId,
+        'toUserId': testUserId
+      });
 
       // Act
       final result = await operations.removeFriendConnections(testUserId);
@@ -75,15 +89,10 @@ void main() {
           .get();
       expect(categories.docs, isEmpty);
 
-      final friendRequests = await fakeFirestore
-          .collection(FirestoreCollections.friendRequests)
+      final socialRequests = await fakeFirestore
+          .collection(FirestoreCollections.socialRequests)
           .get();
-      expect(friendRequests.docs, isEmpty);
-
-      final groupInvitations = await fakeFirestore
-          .collection(FirestoreCollections.groupInvitations)
-          .get();
-      expect(groupInvitations.docs, isEmpty);
+      expect(socialRequests.docs, isEmpty);
     });
 
     test('should return true when no friend data exists', () async {
@@ -469,7 +478,7 @@ void main() {
       // Using 460 friend request docs to cross the threshold
       for (var i = 0; i < 460; i++) {
         await fakeFirestore
-            .collection(FirestoreCollections.friendRequests)
+            .collection(FirestoreCollections.socialRequests)
             .doc('req-$i')
             .set({'fromUserId': testUserId, 'toUserId': 'user-$i'});
       }
@@ -481,7 +490,7 @@ void main() {
       expect(result, true);
 
       final remaining = await fakeFirestore
-          .collection(FirestoreCollections.friendRequests)
+          .collection(FirestoreCollections.socialRequests)
           .where('fromUserId', isEqualTo: testUserId)
           .get();
       expect(remaining.docs, isEmpty);

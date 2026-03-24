@@ -11,7 +11,7 @@ service cloud.firestore {
     //   settings, consent
     //
     // Social / shared:
-    //   public_profiles, friend_requests, group_invitations,
+    //   public_profiles, social_requests,
     //   shared_recipes(/members/views/engagements/dismissals/collaborators),
     //   shared_menus(same subs), shared_shopping_lists(same subs + /items),
     //   recipe_comments(/likes), recipe_ratings,
@@ -275,18 +275,13 @@ service cloud.firestore {
         // Group members can read the group they're in
         allow read: if isInList('friendUserIds');
 
-        // S1 fix: get requires membership or pending invitation (not open to any authed user)
-        allow get: if isAuthenticated() && (
-          isInList('friendUserIds') ||
-          request.auth.uid in resource.data.get('pendingInviteUserIds', [])
-        );
+        // get requires membership (pendingInviteUserIds removed — dead field)
+        allow get: if isAuthenticated() && isInList('friendUserIds');
 
-        // Non-owner members and invited users can only modify friendUserIds and updatedAt
-        // (prevents privilege escalation: renaming group, changing owner, removing others)
-        allow update: if isAuthenticated() && (
-          isInList('friendUserIds') ||
-          request.auth.uid in resource.data.get('pendingInviteUserIds', [])
-        ) && request.resource.data.diff(resource.data).affectedKeys()
+        // Non-owner members can only modify friendUserIds and updatedAt
+        allow update: if isAuthenticated()
+          && isInList('friendUserIds')
+          && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['friendUserIds', 'updatedAt'])
         && request.resource.data.friendUserIds.size() <= 200
         && rateLimitWrite('friend_category_member', 5);
@@ -387,65 +382,29 @@ service cloud.firestore {
     }
     
     // ========================================
-    // FRIEND REQUESTS - Between users
+    // SOCIAL REQUESTS - Friend requests + group invitations (unified)
     // ========================================
-    
-    match /friend_requests/{requestId} {
-      // Can read if you're the sender or recipient
+
+    match /social_requests/{requestId} {
       allow read: if isAuthenticated() && (
         request.auth.uid == resource.data.fromUserId ||
         request.auth.uid == resource.data.toUserId
       );
-      
-      // Can create if you're the sender, not blocked by recipient, within rate limit
+
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.fromUserId
         && request.resource.data.status == 'pending'
-        && hasRequiredFields(['fromUserId', 'toUserId', 'status', 'sentAt'])
+        && hasRequiredFields(['type', 'fromUserId', 'toUserId', 'status', 'sentAt'])
         && isNotBlockedBy(request.resource.data.toUserId)
-        && rateLimitWrite('friend_requests', 10);
-      
-      // Can update if you're the recipient (to accept/reject)
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.toUserId
-        && request.resource.data.status in ['accepted', 'rejected']
-        && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'respondedAt']);
-      
-      // Can delete if you're the sender or recipient
-      allow delete: if isAuthenticated() && (
-        request.auth.uid == resource.data.fromUserId ||
-        request.auth.uid == resource.data.toUserId
-      );
-    }
-    
-    // ========================================
-    // GROUP INVITATIONS - For friend categories
-    // ========================================
-    
-    match /group_invitations/{invitationId} {
-      // Can read if you're the sender or recipient
-      allow read: if isAuthenticated() && (
-        request.auth.uid == resource.data.fromUserId ||
-        request.auth.uid == resource.data.toUserId
-      );
-      
-      // Can create if you're the sender, not blocked by recipient, within rate limit
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.fromUserId
-        && request.resource.data.status == 'pending'
-        && hasRequiredFields(['groupId', 'fromUserId', 'toUserId', 'status', 'sentAt'])
-        && isNotBlockedBy(request.resource.data.toUserId)
-        && rateLimitWrite('group_invitations', 10);
-      
-      // Can update if you're the recipient — only status + response/expiry timestamps
+        && rateLimitWrite('social_requests', 10);
+
+      // Recipient can accept/reject/expire
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.toUserId
         && request.resource.data.status in ['accepted', 'rejected', 'expired']
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['status', 'respondedAt', 'expiredAt']);
-      
-      // Can delete if you're the sender or recipient
+
       allow delete: if isAuthenticated() && (
         request.auth.uid == resource.data.fromUserId ||
         request.auth.uid == resource.data.toUserId

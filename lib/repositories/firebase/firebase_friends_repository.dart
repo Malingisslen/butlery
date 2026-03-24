@@ -7,76 +7,25 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/models/social_request.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-// Import focused repositories
-import 'package:butlery/repositories/firebase/friends/friend_request_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
-import 'package:butlery/repositories/firebase/friends/group_invitation_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
-/// Firebase Firestore implementation for comprehensive social friendship management.
-/// This repository implements the [FriendsRepository] interface using a sophisticated
-/// facade pattern that delegates to four specialized repositories, providing complete
-/// social relationship management while maintaining clean separation of concerns and
-/// backward compatibility.
-/// **Facade Architecture:**
-/// Uses the facade pattern to coordinate four focused repositories, eliminating the
-/// complexity of a monolithic friends repository while providing a unified interface:
-/// - **FriendRequestRepository**: Manages friend request lifecycle and operations
-/// - **FriendRelationshipRepository**: Handles mutual friendship management and profiles
-/// - **FriendCategoryRepository**: Organizes friends into custom categories and groups
-/// - **GroupInvitationRepository**: Manages group invitations and cleanup operations
-/// **Social Relationship Features:**
-/// - **Friend Requests**: Complete request lifecycle (send, accept, reject, cancel)
-/// - **Mutual Friendships**: Bidirectional relationship management with consistency
-/// - **Friend Categories**: Custom organization and grouping of friend connections
-/// - **Group Invitations**: Social group invitation system with expiration handling
-/// - **Profile Integration**: Seamless integration with user profiles and social data
-/// - **Real-time Streams**: Live updates for social activities and relationship changes
-/// **Data Consistency:**
-/// Ensures complex social relationships remain synchronized across multiple collections
-/// and operations. Handles concurrent social operations gracefully while maintaining
-/// referential integrity between friend requests, relationships, and categories.
-/// **Performance Optimization:**
-/// - **Focused Queries**: Each repository optimizes queries for its specific domain
-/// - **Batch Operations**: Efficient bulk operations for friend management
-/// - **Stream Management**: Optimized real-time subscriptions for social activities
-/// - **Statistics Aggregation**: Comprehensive social statistics from all repositories
-/// **Privacy and Security:**
-/// Implements comprehensive authorization checks across all social operations,
-/// respects user privacy settings, and provides audit logging for social interactions.
-/// **Usage Examples:**
-/// ```dart
-/// final friendsRepo = FirebaseFriendsRepository(
-///   authRepository: ServiceLocator.get<AuthRepository>(),
-/// );
-/// // Send and manage friend requests
-/// await friendsRepo.sendFriendRequest(targetUserId,
-///   message: 'Let\\'s connect!');
-/// // Accept request and create mutual friendship
-/// await friendsRepo.acceptFriendRequest(requestId);
-/// // Organize friends into categories
-/// final familyCategory = FriendCategory(
-///   name: 'Family',
-///   memberIds: familyFriendIds,
-/// );
-/// await friendsRepo.saveCategory(userId, familyCategory);
-/// // Real-time social updates
-/// friendsRepo.incomingRequestsStream(userId).listen((requests) {
-///   updateFriendRequestsUI(requests);
-/// });
-/// ```
+/// Facade coordinating three focused repositories:
+/// - FirebaseSocialRequestRepository: friend requests + group invitations (unified)
+/// - FriendRelationshipRepository: mutual friendships and profiles
+/// - FriendCategoryRepository: friend groups/categories
 class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     implements FriendsRepository {
-  // Focused repositories
-  late final FriendRequestRepository _friendRequestRepo;
+  late final FirebaseSocialRequestRepository _socialRequestRepo;
   late final FriendRelationshipRepository _friendRelationshipRepo;
   late final FriendCategoryRepository _friendCategoryRepo;
-  late final GroupInvitationRepository _groupInvitationRepo;
 
   FirebaseFriendsRepository({
     super.firestore,
@@ -86,8 +35,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         ) {
-    // Initialize focused repositories
-    _friendRequestRepo = FriendRequestRepository(
+    _socialRequestRepo = FirebaseSocialRequestRepository(
       firestore: firestore,
       authRepository: this.authRepository,
       timestampProvider: timestampProvider,
@@ -102,12 +50,8 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       authRepository: this.authRepository,
       timestampProvider: timestampProvider,
     );
-    _groupInvitationRepo = GroupInvitationRepository(
-      firestore: firestore,
-      authRepository: this.authRepository,
-      timestampProvider: timestampProvider,
-    );
   }
+
   @override
   String get collectionName => FirestoreCollections.publicProfiles;
 
@@ -120,49 +64,61 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   String getId(UserProfile entity) => entity.uid;
+
   @override
   Future<bool> validateCreatePermission(
       String userId, UserProfile entity) async {
-    // Users can only create their own friend relationships
     return userId == entity.uid;
   }
 
   @override
   Future<bool> validateReadPermission(
       String userId, String resourceId, UserProfile? entity) async {
-    // Users can read profiles of their friends
-    // This is validated at a higher level (friend relationship must exist)
     return true;
   }
 
   @override
   Future<bool> validateUpdatePermission(
       String userId, String resourceId, UserProfile entity) async {
-    // Users can only update their own profile in the context of friendships
     return userId == entity.uid;
   }
 
   @override
   Future<bool> validateDeletePermission(
       String userId, String resourceId) async {
-    // Users can only delete their own friend relationships
     return userId == resourceId;
   }
 
-  /// Send a new friend request.
+  // ── Friend request operations (delegated to social request repo) ──
+
   Future<void> sendRequest(FriendRequest request) async {
-    return await _friendRequestRepo.sendRequest(request);
+    final socialRequest = SocialRequest.friendRequest(
+      fromUserId: request.fromUserId,
+      toUserId: request.toUserId,
+      message: request.message,
+    );
+    await _socialRequestRepo.createRequest(socialRequest);
   }
 
   @override
   Future<bool> sendFriendRequest(String toUserId, {String? message}) async {
-    return await _friendRequestRepo.sendFriendRequest(toUserId,
-        message: message);
-  }
+    try {
+      final fromId = requireCurrentUserId();
+      if (fromId == toUserId) return false;
+      final exists =
+          await _socialRequestRepo.friendRequestExists(fromId, toUserId);
+      if (exists) return false;
 
-  /// Update an existing friend request document.
-  Future<void> updateRequest(FriendRequest request) async {
-    return await _friendRequestRepo.updateRequest(request);
+      final request = SocialRequest.friendRequest(
+        fromUserId: fromId,
+        toUserId: toUserId,
+        message: message,
+      );
+      await _socialRequestRepo.createRequest(request);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
@@ -170,16 +126,12 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     try {
       final currentUser = requireCurrentUserId();
       AppLogger.debug(
-          '🤝 Accepting friend request $requestId for user $currentUser');
+          'Accepting friend request $requestId for user $currentUser');
 
-      // Use a single transaction to atomically:
-      // 1. Validate and update the friend request
-      // 2. Create mutual friendships
-      // 3. Update friend counts
+      // Atomic transaction: validate request + create mutual friendships + update counts
       await firestore.runTransaction((transaction) async {
-        // Read the friend request
         final requestRef = firestore
-            .collection(FirestoreCollections.friendRequests)
+            .collection(FirestoreCollections.socialRequests)
             .doc(requestId);
         final requestDoc = await transaction.get(requestRef);
 
@@ -187,21 +139,27 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
           throw Exception('Friend request not found');
         }
 
-        final request = FriendRequest.fromMap(requestId, requestDoc.data()!);
-        AppLogger.debug(
-            '📋 Request details: from=${request.fromUserId}, to=${request.toUserId}, status=${request.status}');
+        final request = SocialRequest.fromMap(requestId, requestDoc.data()!);
 
-        // Verify current user is the recipient
         if (currentUser != request.toUserId) {
           throw Exception('Only the recipient can accept a friend request');
         }
-
-        // Verify request is still pending
-        if (request.status != FriendRequestStatus.pending) {
+        if (request.status != SocialRequestStatus.pending) {
           throw Exception('Friend request is no longer pending');
         }
 
-        // Check if friendship already exists
+        // Read display names for search index
+        final user1ProfileDoc =
+            await transaction.get(collection.doc(request.fromUserId));
+        final user2ProfileDoc =
+            await transaction.get(collection.doc(request.toUserId));
+        final user1Name =
+            (user1ProfileDoc.data()?['displayName'] as String? ?? '')
+                .toLowerCase();
+        final user2Name =
+            (user2ProfileDoc.data()?['displayName'] as String? ?? '')
+                .toLowerCase();
+
         final user1FriendRef = firestore
             .collection(FirestoreCollections.users)
             .doc(request.fromUserId)
@@ -215,110 +173,106 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
         final user1FriendDoc = await transaction.get(user1FriendRef);
         final user2FriendDoc = await transaction.get(user2FriendRef);
-        AppLogger.debug(
-            '🔍 Friendship status: user1Doc.exists=${user1FriendDoc.exists}, user2Doc.exists=${user2FriendDoc.exists}');
 
-        // Update the friend request status
+        // Update request status
         transaction.update(requestRef, {
-          'status': FriendRequestStatus.accepted.name,
+          'status': SocialRequestStatus.accepted.name,
           'respondedAt': timestampProvider.serverTimestamp(),
         });
-        AppLogger.debug('✅ Updated request status to accepted');
 
-        // Create friendship documents for any that don't exist
-        // BUG-011 fix: Changed from AND to individual checks to handle partial states
+        // Create friendship docs with displayNameLower (bug #1 fix)
         int friendsAdded = 0;
         if (!user1FriendDoc.exists) {
-          transaction.set(
-              user1FriendRef, {'addedAt': timestampProvider.serverTimestamp()});
-          AppLogger.debug(
-              '➕ Created friend doc: users/${request.fromUserId}/friends/${request.toUserId}');
+          transaction.set(user1FriendRef, {
+            'addedAt': timestampProvider.serverTimestamp(),
+            'displayNameLower': user2Name,
+          });
           friendsAdded++;
         }
         if (!user2FriendDoc.exists) {
-          transaction.set(
-              user2FriendRef, {'addedAt': timestampProvider.serverTimestamp()});
-          AppLogger.debug(
-              '➕ Created friend doc: users/${request.toUserId}/friends/${request.fromUserId}');
+          transaction.set(user2FriendRef, {
+            'addedAt': timestampProvider.serverTimestamp(),
+            'displayNameLower': user1Name,
+          });
           friendsAdded++;
         }
 
-        // Update friend counts only if we created new friendship documents
-        if (friendsAdded > 0) {
-          final user1Profile = firestore
-              .collection(FirestoreCollections.publicProfiles)
-              .doc(request.fromUserId);
-          final user2Profile = firestore
-              .collection(FirestoreCollections.publicProfiles)
-              .doc(request.toUserId);
-          // Only increment if we added BOTH docs (new friendship)
-          // If only one was added, don't increment (partial recovery)
-          if (friendsAdded == 2) {
-            transaction.update(
-                user1Profile, {'friendsCount': FieldValue.increment(1)});
-            transaction.update(
-                user2Profile, {'friendsCount': FieldValue.increment(1)});
-            AppLogger.debug('📊 Incremented friend counts for both users');
-          }
+        if (friendsAdded == 2) {
+          transaction.update(collection.doc(request.fromUserId),
+              {'friendsCount': FieldValue.increment(1)});
+          transaction.update(collection.doc(request.toUserId),
+              {'friendsCount': FieldValue.increment(1)});
         }
       });
 
       logPermissionCheck(
         userId: currentUser,
-        resource: 'friend_request',
+        resource: 'social_request',
         operation: 'accept',
         granted: true,
         details: 'Request $requestId accepted atomically',
       );
-
-      AppLogger.info('✅ Friend request $requestId accepted successfully');
       return true;
     } catch (e, stackTrace) {
       AppLogger.error(
-          '❌ Failed to accept friend request $requestId: $e', stackTrace);
+          'Failed to accept friend request $requestId: $e', stackTrace);
       return false;
     }
   }
 
   @override
   Future<bool> rejectFriendRequest(String requestId) async {
-    return await _friendRequestRepo.rejectFriendRequest(requestId);
+    try {
+      await _socialRequestRepo.updateRequestStatus(requestId, {
+        'status': SocialRequestStatus.rejected.name,
+        'respondedAt': timestampProvider.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
   Future<bool> cancelFriendRequest(String requestId) async {
-    return await _friendRequestRepo.cancelFriendRequest(requestId);
+    try {
+      // Sender cancellation uses delete (rules only allow recipient to update)
+      await _socialRequestRepo.deleteRequest(requestId);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
-  /// Fetch a friend request by id.
   Future<FriendRequest?> fetchRequest(String requestId) async {
-    return await _friendRequestRepo.fetchRequest(requestId);
+    final sr = await _socialRequestRepo.getRequest(requestId);
+    return sr?.toFriendRequest();
   }
 
   @override
   Future<bool> requestExists(String fromUserId, String toUserId) async {
-    return await _friendRequestRepo.requestExists(fromUserId, toUserId);
+    return await _socialRequestRepo.friendRequestExists(fromUserId, toUserId);
   }
 
   @override
   Future<List<FriendRequest>> getIncomingRequests() async {
-    return await _friendRequestRepo.getIncomingRequests();
+    return await _socialRequestRepo.getIncomingFriendRequests();
   }
 
   @override
   Future<List<FriendRequest>> getSentRequests() async {
-    return await _friendRequestRepo.getSentRequests();
+    return await _socialRequestRepo.getSentFriendRequests();
   }
 
-  /// Stream incoming friend requests for the current user.
   Stream<List<FriendRequest>> incomingRequestsStream(String userId) {
-    return _friendRequestRepo.incomingRequestsStream(userId);
+    return _socialRequestRepo.incomingFriendRequestsStream(userId);
   }
 
-  /// Stream sent friend requests for the current user.
   Stream<List<FriendRequest>> sentRequestsStream(String userId) {
-    return _friendRequestRepo.sentRequestsStream(userId);
+    return _socialRequestRepo.sentFriendRequestsStream(userId);
   }
+
+  // ── Relationship operations (unchanged) ──
 
   @override
   Future<bool> areFriends(String userId1, String userId2) async {
@@ -349,6 +303,8 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
     return await _friendRelationshipRepo.fetchFriendProfiles(userIds);
   }
+
+  // ── Category operations (unchanged) ──
 
   @override
   Future<void> saveCategory(String userId, FriendCategory category) async {
@@ -389,89 +345,128 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     return await _friendCategoryRepo.getCategory(userId, categoryId);
   }
 
+  // ── Group invitation operations (delegated to social request repo) ──
+
   @override
   Stream<List<GroupInvitation>> receivedInvitationsStream(String userId) {
-    return _groupInvitationRepo.receivedInvitationsStream(userId);
+    return _socialRequestRepo.receivedInvitationsStream(userId);
   }
 
   @override
   Stream<List<GroupInvitation>> sentInvitationsStream(String userId) {
-    return _groupInvitationRepo.sentInvitationsStream(userId);
+    return _socialRequestRepo.sentInvitationsStream(userId);
   }
 
   @override
   Future<GroupInvitation?> getInvitation(String invitationId) async {
-    return await _groupInvitationRepo.getInvitation(invitationId);
+    final sr = await _socialRequestRepo.getRequest(invitationId);
+    return sr?.toGroupInvitation();
   }
 
   @override
   Future<void> saveInvitation(GroupInvitation invitation) async {
-    return await _groupInvitationRepo.saveInvitation(invitation);
+    // Preserve the invitation's existing ID
+    final requestWithId = SocialRequest(
+      id: invitation.id,
+      type: SocialRequestType.groupInvitation,
+      fromUserId: invitation.fromUserId,
+      toUserId: invitation.toUserId,
+      message: invitation.personalMessage,
+      groupId: invitation.groupId,
+      groupName: invitation.groupName,
+      groupEmoji: invitation.groupEmoji,
+      fromUserName: invitation.fromUserName,
+      sentAt: invitation.sentAt,
+      expiresAt: invitation.expiresAt,
+    );
+    await _socialRequestRepo.createRequest(requestWithId);
   }
 
   @override
   Future<void> updateInvitation(
       String invitationId, Map<String, dynamic> data) async {
-    return await _groupInvitationRepo.updateInvitation(invitationId, data);
+    await _socialRequestRepo.updateRequestStatus(invitationId, data);
   }
 
   @override
   Future<void> deleteInvitation(String invitationId) async {
-    await _groupInvitationRepo.cancelInvitation(invitationId);
+    await _socialRequestRepo.deleteRequest(invitationId);
   }
 
-  /// Fetch received invitations for a user (one-time fetch)
   Future<List<GroupInvitation>> fetchReceivedInvitations(String userId) async {
-    final stream = _groupInvitationRepo.receivedInvitationsStream(userId);
-    return await stream.first;
+    return await _socialRequestRepo.getReceivedInvitations();
   }
 
-  /// Fetch sent invitations for a user (one-time fetch)
   Future<List<GroupInvitation>> fetchSentInvitations(String userId) async {
-    final stream = _groupInvitationRepo.sentInvitationsStream(userId);
-    return await stream.first;
+    return await _socialRequestRepo.getSentInvitations();
   }
 
   @override
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
       DateTime now) async {
-    return await _groupInvitationRepo.expiredInvitations(now);
+    return await _socialRequestRepo.expiredRequests(now);
   }
 
   @override
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> oldInvitations(
       String userId, DateTime cutoffDate) async {
-    return await _groupInvitationRepo.oldInvitations(userId, cutoffDate);
+    return await _socialRequestRepo.oldRequests(userId, cutoffDate);
   }
 
   @override
   Future<void> deleteDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs) async {
-    return await _groupInvitationRepo.deleteDocuments(refs);
+    return await _socialRequestRepo.deleteDocuments(refs);
   }
 
   @override
   Future<void> updateDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs,
       Map<String, dynamic> data) async {
-    return await _groupInvitationRepo.updateDocuments(refs, data);
+    return await _socialRequestRepo.updateDocuments(refs, data);
   }
 
   @override
   Future<bool> hasPendingInvitation(String groupId, String toUserId) async {
-    return await _groupInvitationRepo.hasPendingInvitation(groupId, toUserId);
+    return await _socialRequestRepo.hasPendingInvitation(groupId, toUserId);
   }
 
-  /// Get comprehensive friend statistics.
+  Future<bool> acceptInvitation(String invitationId) async {
+    try {
+      await _socialRequestRepo.updateRequestStatus(invitationId, {
+        'status': SocialRequestStatus.accepted.name,
+        'respondedAt': timestampProvider.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> rejectInvitation(String invitationId) async {
+    try {
+      await _socialRequestRepo.updateRequestStatus(invitationId, {
+        'status': SocialRequestStatus.rejected.name,
+        'respondedAt': timestampProvider.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ── Statistics ──
+
   Future<Map<String, dynamic>> getComprehensiveFriendStatistics(
       String userId) async {
     final friendStats =
         await _friendRelationshipRepo.getFriendStatistics(userId);
-    final requestStats = await _friendRequestRepo.getRequestStatistics(userId);
+    final requestStats =
+        await _socialRequestRepo.getFriendRequestStatistics(userId);
     final categoryStats =
         await _friendCategoryRepo.getCategoryStatistics(userId);
     final invitationStats =
-        await _groupInvitationRepo.getInvitationStatistics(userId);
+        await _socialRequestRepo.getInvitationStatistics(userId);
 
     return {
       'friends': friendStats,
@@ -481,56 +476,38 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     };
   }
 
-  /// Get friends with profiles for a user.
   Future<List<UserProfile>> getFriendsWithProfiles(String userId) async {
     return await _friendRelationshipRepo.getFriendsWithProfiles(userId);
   }
 
-  /// Get mutual friends between two users.
   Future<List<String>> getMutualFriends(String userId1, String userId2) async {
     return await _friendRelationshipRepo.getMutualFriends(userId1, userId2);
   }
 
-  /// Stream friend profiles for real-time updates.
   Stream<List<UserProfile>> friendProfilesStream(String userId) {
     return _friendRelationshipRepo.friendProfilesStream(userId);
   }
 
-  /// Stream categories for real-time updates.
   Stream<List<FriendCategory>> categoriesStream(String userId) {
     return _friendCategoryRepo.categoriesStream(userId);
   }
 
-  /// Add a friend to a category.
   Future<void> addFriendToCategory(
       String userId, String categoryId, String friendId) async {
     return await _friendCategoryRepo.addFriendToCategory(
         userId, categoryId, friendId);
   }
 
-  /// Remove a friend from a category.
   Future<void> removeFriendFromCategory(
       String userId, String categoryId, String friendId) async {
     return await _friendCategoryRepo.removeFriendFromCategory(
         userId, categoryId, friendId);
   }
 
-  /// Accept a group invitation.
-  Future<bool> acceptInvitation(String invitationId) async {
-    return await _groupInvitationRepo.acceptInvitation(invitationId);
-  }
-
-  /// Reject a group invitation.
-  Future<bool> rejectInvitation(String invitationId) async {
-    return await _groupInvitationRepo.rejectInvitation(invitationId);
-  }
-
-  /// Search friends by name.
   Future<List<UserProfile>> searchFriends(String userId, String query) async {
     return await _friendRelationshipRepo.searchFriends(userId, query);
   }
 
-  /// Search categories by name.
   Future<List<FriendCategory>> searchCategories(
       String userId, String query) async {
     return await _friendCategoryRepo.searchCategories(userId, query);

@@ -774,7 +774,7 @@ void main() {
 
         // Assert
         final requests = await mockFirestoreRepo.firestore
-            .collection('friend_requests')
+            .collection('social_requests')
             .where('fromUserId', isEqualTo: 'test-user-id')
             .get();
 
@@ -795,7 +795,8 @@ void main() {
         );
 
         // Create request in Firebase
-        await mockFirestoreRepo.firestore.collection('friend_requests').add({
+        await mockFirestoreRepo.firestore.collection('social_requests').add({
+          'type': 'friend',
           'fromUserId': request.fromUserId,
           'toUserId': request.toUserId,
           'status': 'pending',
@@ -813,7 +814,7 @@ void main() {
 
         // Assert
         final requests = await mockFirestoreRepo.firestore
-            .collection('friend_requests')
+            .collection('social_requests')
             .where('fromUserId', isEqualTo: 'sender')
             .get();
 

@@ -20,13 +20,6 @@ class FriendCategory {
   final int sortOrder; // For custom ordering
   final bool isDefault; // Built-in categories like "Alla vänner"
 
-  /// Whether this category uses subcollection for members (scalability pattern).
-  /// When true, friendUserIds may be stale and members should be read from subcollection.
-  final bool usesSubcollectionMembers;
-
-  /// Cached member count (source of truth when usesSubcollectionMembers is true).
-  final int? memberCount;
-
   FriendCategory({
     required this.id,
     required this.ownerId,
@@ -38,8 +31,6 @@ class FriendCategory {
     DateTime? updatedAt,
     this.sortOrder = 0,
     this.isDefault = false,
-    this.usesSubcollectionMembers = false,
-    this.memberCount,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
@@ -75,8 +66,6 @@ class FriendCategory {
     DateTime? updatedAt,
     int? sortOrder,
     bool? isDefault,
-    bool? usesSubcollectionMembers,
-    int? memberCount,
   }) {
     return FriendCategory(
       id: id,
@@ -89,9 +78,6 @@ class FriendCategory {
       updatedAt: updatedAt ?? DateTime.now(),
       sortOrder: sortOrder ?? this.sortOrder,
       isDefault: isDefault ?? this.isDefault,
-      usesSubcollectionMembers:
-          usesSubcollectionMembers ?? this.usesSubcollectionMembers,
-      memberCount: memberCount ?? this.memberCount,
     );
   }
 
@@ -131,10 +117,7 @@ class FriendCategory {
     );
   }
 
-  // Getters
-  /// Returns the friend count - from memberCount if using subcollection, otherwise from inline list.
-  int get friendCount =>
-      usesSubcollectionMembers ? (memberCount ?? 0) : friendUserIds.length;
+  int get friendCount => friendUserIds.length;
   bool get isEmpty => friendCount == 0;
   bool get isNotEmpty => friendCount > 0;
 
@@ -182,8 +165,6 @@ class FriendCategory {
       'updatedAt': AppTimestamp.fromDateTime(updatedAt).toFirestore(),
       'sortOrder': sortOrder,
       'isDefault': isDefault,
-      'usesSubcollectionMembers': usesSubcollectionMembers,
-      if (memberCount != null) 'memberCount': memberCount,
     };
   }
 
@@ -202,9 +183,6 @@ class FriendCategory {
           SerializationUtils.parseRequiredDateTimeValue(data['updatedAt']),
       sortOrder: SerializationUtils.safeInt(data, 'sortOrder'),
       isDefault: SerializationUtils.safeBool(data, 'isDefault'),
-      usesSubcollectionMembers:
-          SerializationUtils.safeBool(data, 'usesSubcollectionMembers'),
-      memberCount: SerializationUtils.safeNullableInt(data, 'memberCount'),
     );
   }
 
@@ -221,8 +199,6 @@ class FriendCategory {
       'updatedAt': updatedAt.toIso8601String(),
       'sortOrder': sortOrder,
       'isDefault': isDefault,
-      'usesSubcollectionMembers': usesSubcollectionMembers,
-      if (memberCount != null) 'memberCount': memberCount,
     };
   }
 
@@ -240,9 +216,6 @@ class FriendCategory {
           SerializationUtils.safeDateTime(json, 'updatedAt') ?? DateTime.now(),
       sortOrder: SerializationUtils.safeInt(json, 'sortOrder'),
       isDefault: SerializationUtils.safeBool(json, 'isDefault'),
-      usesSubcollectionMembers:
-          SerializationUtils.safeBool(json, 'usesSubcollectionMembers'),
-      memberCount: SerializationUtils.safeNullableInt(json, 'memberCount'),
     );
   }
 
