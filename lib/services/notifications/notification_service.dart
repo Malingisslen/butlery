@@ -596,6 +596,7 @@ class NotificationService extends BaseService {
     if (!_modulesCreated) return;
 
     try {
+      await _preferenceManager.clearLocalStorage();
       await _tokenManager?.cleanup();
       await _disposeModules();
       AppLogger.info('🔔 NotificationService reset for logout');

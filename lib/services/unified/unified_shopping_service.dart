@@ -193,6 +193,7 @@ class UnifiedShoppingService
   String? _activeListId;
   bool _isLoading = false;
   String? _error;
+  StreamSubscription<List<UnifiedShoppingList>>? _collaborativeStreamSub;
 
   final _stateSubject = BehaviorSubject<ShoppingServiceState>.seeded(
       const ShoppingStateLoading());
@@ -279,10 +280,25 @@ class UnifiedShoppingService
     notifyListeners();
     try {
       await _initialization.initialize();
+      _startCollaborativeStream();
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void _startCollaborativeStream() {
+    _collaborativeStreamSub?.cancel();
+    _collaborativeStreamSub =
+        _shoppingRepository.collaborativeListsStream().listen(
+      (collabLists) {
+        _lists.removeWhere((l) => l.isCollaborative);
+        _lists.addAll(collabLists);
+        notifyListeners();
+      },
+      onError: (e) =>
+          AppLogger.error('Collaborative list stream error', e as Object),
+    );
   }
 
   /// Load lists - alias for initialize for compatibility
@@ -496,6 +512,8 @@ class UnifiedShoppingService
   }
 
   void resetForLogout() {
+    _collaborativeStreamSub?.cancel();
+    _collaborativeStreamSub = null;
     stopFirebaseSync();
     _lists.clear();
     _activeListId = null;
@@ -504,6 +522,7 @@ class UnifiedShoppingService
   }
 
   void dispose() {
+    _collaborativeStreamSub?.cancel();
     stopFirebaseSync();
     _stateSubject.close();
   }

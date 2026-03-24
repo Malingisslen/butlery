@@ -348,6 +348,7 @@ class FirebaseShoppingRepository
       _queryModule.personalListsStream();
 
   /// Fetch collaborative lists where the current user is a member.
+  @override
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() =>
       _queryModule.collaborativeListsStream();
   CollectionReference<Map<String, dynamic>> get _templatesRef =>

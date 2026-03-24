@@ -2,8 +2,11 @@
 
 // lib/viewmodels/collaborative_shopping_viewmodel.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -29,6 +32,8 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   UnifiedShoppingList? _currentList;
   String _lastActivity = '';
   DateTime _lastActivityTime = DateTime.now();
+  StreamSubscription<ShoppingServiceState>? _stateSubscription;
+  bool _isDisposed = false;
 
   CollaborativeShoppingViewModel({
     required this.listId,
@@ -44,6 +49,21 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     _itemOperationsManager.addListener(_onManagerChanged);
 
     _initialize();
+    _stateSubscription =
+        _shoppingService.stateStream.listen(_onServiceStateChanged);
+  }
+
+  void _onServiceStateChanged(ShoppingServiceState state) {
+    if (_isDisposed) return;
+    if (state is ShoppingStateData) {
+      final updated = state.lists
+          .cast<UnifiedShoppingList?>()
+          .firstWhere((l) => l?.id == listId, orElse: () => null);
+      if (updated != null && updated != _currentList) {
+        _currentList = updated;
+        notifyListeners();
+      }
+    }
   }
 
   void _onManagerChanged() {
@@ -167,6 +187,8 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
 
   @override
   void dispose() {
+    _isDisposed = true;
+    _stateSubscription?.cancel();
     _itemOperationsManager.removeListener(_onManagerChanged);
     _itemOperationsManager.dispose();
     AppLogger.info('🗑️ CollaborativeShoppingViewModel disposed');

@@ -39,10 +39,15 @@ class MessagingDeferredModule implements DeferredModule {
     }
 
     // Load messaging view libraries in parallel
-    await Future.wait([
-      conversations.loadLibrary(),
-      chat_view.loadLibrary(),
-    ]);
+    try {
+      await Future.wait([
+        conversations.loadLibrary(),
+        chat_view.loadLibrary(),
+      ]);
+    } on Exception catch (e) {
+      throw StateError(
+          'MessagingDeferredModule: deferred library load failed: $e');
+    }
 
     _isLoaded = true;
   }

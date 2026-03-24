@@ -53,18 +53,23 @@ class SocialDeferredModule implements DeferredModule {
     if (_isLoaded) return;
 
     // Load all social view libraries in parallel
-    await Future.wait([
-      profile_edit.loadLibrary(),
-      friends_list.loadLibrary(),
-      friend_requests.loadLibrary(),
-      shared_with_me.loadLibrary(),
-      collab_shopping.loadLibrary(),
-      menu_preview.loadLibrary(),
-      create_shared_shopping.loadLibrary(),
-      friend_profile.loadLibrary(),
-      shared_shopping_lists.loadLibrary(),
-      group_detail.loadLibrary(),
-    ]);
+    try {
+      await Future.wait([
+        profile_edit.loadLibrary(),
+        friends_list.loadLibrary(),
+        friend_requests.loadLibrary(),
+        shared_with_me.loadLibrary(),
+        collab_shopping.loadLibrary(),
+        menu_preview.loadLibrary(),
+        create_shared_shopping.loadLibrary(),
+        friend_profile.loadLibrary(),
+        shared_shopping_lists.loadLibrary(),
+        group_detail.loadLibrary(),
+      ]);
+    } on Exception catch (e) {
+      throw StateError(
+          'SocialDeferredModule: deferred library load failed: $e');
+    }
 
     _isLoaded = true;
   }

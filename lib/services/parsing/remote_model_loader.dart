@@ -19,11 +19,10 @@ abstract class RemoteModelLoader {
 
   @protected
   FirebaseStorage get storage {
-    assert(
-      _injectedStorage != null,
-      'FirebaseStorage not injected — register via DI',
-    );
-    return _injectedStorage!;
+    if (_injectedStorage == null) {
+      throw StateError('FirebaseStorage not injected — register via DI');
+    }
+    return _injectedStorage;
   }
 
   @protected

@@ -37,13 +37,18 @@ class ExtractionDeferredModule implements DeferredModule {
     if (_isLoaded) return;
 
     // Load all extraction view libraries in parallel
-    await Future.wait([
-      import_url.loadLibrary(),
-      smart_import.loadLibrary(),
-      photo_import.loadLibrary(),
-      file_import.loadLibrary(),
-      arkiv_import.loadLibrary(),
-    ]);
+    try {
+      await Future.wait([
+        import_url.loadLibrary(),
+        smart_import.loadLibrary(),
+        photo_import.loadLibrary(),
+        file_import.loadLibrary(),
+        arkiv_import.loadLibrary(),
+      ]);
+    } on Exception catch (e) {
+      throw StateError(
+          'ExtractionDeferredModule: deferred library load failed: $e');
+    }
 
     _isLoaded = true;
   }

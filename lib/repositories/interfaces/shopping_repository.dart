@@ -4,6 +4,9 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Repository interface for shopping list operations.
 abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
+  /// Stream of collaborative lists for real-time updates from Firestore
+  Stream<List<UnifiedShoppingList>> collaborativeListsStream();
+
   /// Adds a new item to the specified shopping list.
   Future<void> addItem(String listId, UnifiedShoppingItem item);
 
