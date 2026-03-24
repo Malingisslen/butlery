@@ -12,8 +12,7 @@ service cloud.firestore {
     //
     // Social / shared:
     //   public_profiles, social_requests,
-    //   shared_recipes(/members/views/engagements/dismissals/collaborators),
-    //   shared_menus(same subs), shared_shopping_lists(same subs + /items),
+    //   shared_content(/members/views/engagements/dismissals/collaborators/items),
     //   recipe_comments(/likes), recipe_ratings,
     //   recipe_social_stats (server-only)
     //
@@ -160,7 +159,7 @@ service cloud.firestore {
         || get(limitsPath).data.lastWrite + duration.value(seconds, 's') <= request.time;
     }
 
-    // Shared content helpers — used by shared_recipes, shared_menus, shared_shopping_lists
+    // Shared content helpers — used by shared_content collection
     function getDocData(collectionName, docId) {
       return get(/databases/$(database)/documents/$(collectionName)/$(docId)).data;
     }
@@ -412,40 +411,43 @@ service cloud.firestore {
     }
     
     // ========================================
-    // SHARED RECIPES - Shared between users
+    // SHARED CONTENT - Unified collection for shared recipes, menus, shopping lists
+    // Each document has a 'contentType' field: 'recipe' | 'menu' | 'shopping_list'
     // ========================================
 
-    match /shared_recipes/{shareId} {
+    match /shared_content/{contentId} {
       allow list: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
       allow get: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId || isSharedMember('shared_recipes', shareId)
+        request.auth.uid == resource.data.sharedByUserId
+        || isSharedMember('shared_content', contentId)
+        || request.auth.uid in resource.data.sharedToUserIds
       );
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'originalRecipeId', 'sharedAt'])
-        && rateLimitWrite('shared_recipes', 10);
+        && hasRequiredFields(['sharedByUserId', 'contentType', 'sharedAt'])
+        && rateLimitWrite('shared_content', 10);
       allow update: if isAuthenticated()
-        && cannotModify(['sharedByUserId', 'originalRecipeId', 'sharedAt'])
+        && cannotModify(['sharedByUserId', 'contentType', 'sharedAt'])
         && (request.auth.uid == resource.data.sharedByUserId
-            || isSharedMember('shared_recipes', shareId));
+            || isSharedMember('shared_content', contentId));
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
       match /members/{userId} {
         allow read: if isAuthenticated() && (
-          userId == request.auth.uid || isSharedOwner('shared_recipes', shareId) || isSharedMember('shared_recipes', shareId)
+          userId == request.auth.uid || isSharedOwner('shared_content', contentId) || isSharedMember('shared_content', contentId)
         );
         allow create: if isAuthenticated()
-          && isSharedOwner('shared_recipes', shareId)
+          && isSharedOwner('shared_content', contentId)
           && hasRequiredFields(['userId', 'addedBy', 'addedAt']);
         allow delete: if isAuthenticated() && (
-          request.auth.uid == userId || isSharedOwner('shared_recipes', shareId)
+          request.auth.uid == userId || isSharedOwner('shared_content', contentId)
         );
       }
 
       match /views/{userId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_recipes', shareId);
+        allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'viewedAt']);
@@ -453,7 +455,7 @@ service cloud.firestore {
       }
 
       match /engagements/{userId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_recipes', shareId);
+        allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'action', 'engagedAt']);
@@ -461,7 +463,7 @@ service cloud.firestore {
       }
 
       match /dismissals/{userId} {
-        allow read: if isAuthenticated() && (isSharedOwner('shared_recipes', shareId) || request.auth.uid == userId);
+        allow read: if isAuthenticated() && (isSharedOwner('shared_content', contentId) || request.auth.uid == userId);
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId', 'timestamp']);
@@ -470,17 +472,30 @@ service cloud.firestore {
       }
 
       match /collaborators/{userId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_recipes', shareId);
+        allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
         allow create: if isAuthenticated() && (
-          isSharedOwner('shared_recipes', shareId) ||
-          (request.auth.uid == userId && getDocData('shared_recipes', shareId).allowCollaboration == true)
+          isSharedOwner('shared_content', contentId) ||
+          (request.auth.uid == userId && getDocData('shared_content', contentId).allowCollaboration == true)
         ) && hasRequiredFields(['userId', 'joinedAt']);
         allow delete: if isAuthenticated() && (
-          request.auth.uid == userId || isSharedOwner('shared_recipes', shareId)
+          request.auth.uid == userId || isSharedOwner('shared_content', contentId)
         );
       }
+
+      match /items/{itemId} {
+        allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
+        allow create: if isAuthenticated()
+          && hasSharedAccess('shared_content', contentId)
+          && hasRequiredFields(['id', 'name', 'amount', 'unit', 'category', 'bought'])
+          && request.resource.data.id == itemId
+          && request.resource.data.addedByUserId == request.auth.uid;
+        allow update: if isAuthenticated()
+          && hasSharedAccess('shared_content', contentId)
+          && request.resource.data.lastModifiedByUserId == request.auth.uid;
+        allow delete: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
+      }
     }
-    
+
     // ========================================
     // MENUS - User's personal menus (Issue #014 aligned)
     // ========================================
@@ -501,149 +516,6 @@ service cloud.firestore {
 
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
-    }
-
-    // ========================================
-    // SHARED MENUS - Bulk recipe sharing
-    // ========================================
-
-    match /shared_menus/{menuId} {
-      allow list: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
-      allow get: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId || isSharedMember('shared_menus', menuId)
-      );
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'menuSnapshot', 'sharedAt'])
-        && rateLimitWrite('shared_menus', 10);
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId
-        && cannotModify(['sharedByUserId', 'sharedAt']);
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
-
-      match /members/{userId} {
-        allow read: if isAuthenticated() && (
-          userId == request.auth.uid || isSharedOwner('shared_menus', menuId) || isSharedMember('shared_menus', menuId)
-        );
-        allow create: if isAuthenticated()
-          && isSharedOwner('shared_menus', menuId)
-          && hasRequiredFields(['userId', 'addedBy', 'addedAt']);
-        allow delete: if isAuthenticated() && (
-          request.auth.uid == userId || isSharedOwner('shared_menus', menuId)
-        );
-      }
-
-      match /views/{userId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_menus', menuId);
-        allow create: if isAuthenticated()
-          && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'viewedAt']);
-        allow delete: if isAuthenticated() && request.auth.uid == userId;
-      }
-
-      match /engagements/{userId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_menus', menuId);
-        allow create: if isAuthenticated()
-          && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'action', 'engagedAt']);
-        allow delete: if isAuthenticated() && request.auth.uid == userId;
-      }
-
-      match /dismissals/{userId} {
-        allow read: if isAuthenticated() && (isSharedOwner('shared_menus', menuId) || request.auth.uid == userId);
-        allow create: if isAuthenticated()
-          && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'timestamp']);
-        allow delete: if isAuthenticated()
-          && request.auth.uid == userId;
-      }
-
-      match /collaborators/{userId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_menus', menuId);
-        allow create: if isAuthenticated() && (
-          isSharedOwner('shared_menus', menuId) ||
-          (request.auth.uid == userId && getDocData('shared_menus', menuId).allowCollaboration == true)
-        ) && hasRequiredFields(['userId', 'joinedAt']);
-        allow delete: if isAuthenticated() && (
-          request.auth.uid == userId || isSharedOwner('shared_menus', menuId)
-        );
-      }
-    }
-    
-    // ========================================
-    // SHARED SHOPPING LISTS - Collaborative lists
-    // ========================================
-    
-    match /shared_shopping_lists/{listId} {
-      allow read: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.sharedToUserIds
-      );
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.sharedByUserId
-        && request.auth.uid in request.resource.data.sharedToUserIds
-        && hasRequiredFields(['sharedByUserId', 'sharedToUserIds', 'listSnapshot', 'sharedAt'])
-        && rateLimitWrite('shared_shopping_lists', 10);
-      allow update: if isAuthenticated()
-        && cannotModify(['sharedByUserId', 'sharedAt'])
-        && (request.auth.uid == resource.data.sharedByUserId
-            || (request.auth.uid in resource.data.sharedToUserIds
-                && !request.resource.data.diff(resource.data).affectedKeys()
-                   .hasAny(['sharedToUserIds'])));
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
-
-      match /members/{userId} {
-        allow read: if isAuthenticated() && (
-          userId == request.auth.uid || isSharedOwner('shared_shopping_lists', listId) || isSharedMember('shared_shopping_lists', listId)
-        );
-        allow create: if isAuthenticated()
-          && isSharedOwner('shared_shopping_lists', listId)
-          && hasRequiredFields(['userId', 'addedBy', 'addedAt']);
-        allow delete: if isAuthenticated() && (
-          request.auth.uid == userId || isSharedOwner('shared_shopping_lists', listId)
-        );
-      }
-
-      match /views/{userId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_shopping_lists', listId);
-        allow create: if isAuthenticated()
-          && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'viewedAt']);
-        allow delete: if isAuthenticated() && request.auth.uid == userId;
-      }
-
-      match /engagements/{userId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_shopping_lists', listId);
-        allow create: if isAuthenticated()
-          && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'action', 'engagedAt']);
-        allow delete: if isAuthenticated() && request.auth.uid == userId;
-      }
-
-      match /dismissals/{userId} {
-        allow read: if isAuthenticated() && (isSharedOwner('shared_shopping_lists', listId) || request.auth.uid == userId);
-        allow create: if isAuthenticated()
-          && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'timestamp']);
-        allow delete: if isAuthenticated()
-          && request.auth.uid == userId;
-      }
-
-      match /items/{itemId} {
-        allow read: if isAuthenticated() && hasSharedAccess('shared_shopping_lists', listId);
-        allow create: if isAuthenticated()
-          && hasSharedAccess('shared_shopping_lists', listId)
-          && hasRequiredFields(['id', 'name', 'amount', 'unit', 'category', 'bought'])
-          && request.resource.data.id == itemId
-          && request.resource.data.addedByUserId == request.auth.uid;
-        allow update: if isAuthenticated()
-          && hasSharedAccess('shared_shopping_lists', listId)
-          && request.resource.data.lastModifiedByUserId == request.auth.uid;
-        allow delete: if isAuthenticated() && hasSharedAccess('shared_shopping_lists', listId);
-      }
     }
     
     // ========================================
@@ -1171,7 +1043,7 @@ service cloud.firestore {
 
     // Users can read their OWN engagement documents across all collections
     // This enables: firestore.collectionGroup('engagements').where('userId', isEqualTo: currentUserId)
-    // Applies to: shared_recipes/engagements, shared_menus/engagements, shared_shopping_lists/engagements
+    // Applies to: shared_content/engagements (all content types)
     match /{path=**}/engagements/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
     }

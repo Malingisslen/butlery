@@ -55,6 +55,7 @@ class ShoppingSocialShareModule {
 
       // Prepare shared list data for Firebase
       final sharedListData = {
+        'contentType': 'shopping_list',
         'title': listTitle,
         'description': message?.trim(),
         'listData': listData,
@@ -69,7 +70,7 @@ class ShoppingSocialShareModule {
 
       // Create shared list document in Firestore
       final sharedListRef =
-          _firestore.collection(FirestoreCollections.sharedShoppingLists).doc();
+          _firestore.collection(FirestoreCollections.sharedContent).doc();
       await sharedListRef.set(sharedListData);
 
       // Create individual share records for each friend
@@ -238,7 +239,7 @@ class ShoppingSocialShareModule {
         final batchIds =
             sharedListIds.sublist(i, min(i + 10, sharedListIds.length));
         final listDocs = await _firestore
-            .collection(FirestoreCollections.sharedShoppingLists)
+            .collection(FirestoreCollections.sharedContent)
             .where(FieldPath.documentId, whereIn: batchIds)
             .get();
 
@@ -286,7 +287,8 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
-          .collection(FirestoreCollections.sharedShoppingLists)
+          .collection(FirestoreCollections.sharedContent)
+          .where('contentType', isEqualTo: 'shopping_list')
           .where('sharedByUserId', isEqualTo: currentUserId)
           .where('isActive', isEqualTo: true)
           .orderBy('sharedAt', descending: true)
@@ -318,7 +320,7 @@ class ShoppingSocialShareModule {
 
       // Get shared list data
       final listDoc = await _firestore
-          .collection(FirestoreCollections.sharedShoppingLists)
+          .collection(FirestoreCollections.sharedContent)
           .doc(sharedListId)
           .get();
 
@@ -392,7 +394,8 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return {};
 
       final querySnapshot = await _firestore
-          .collection(FirestoreCollections.sharedShoppingLists)
+          .collection(FirestoreCollections.sharedContent)
+          .where('contentType', isEqualTo: 'shopping_list')
           .where('sharedByUserId', isEqualTo: currentUserId)
           .where('isActive', isEqualTo: true)
           .get();

@@ -141,9 +141,7 @@ class AccountDeletionService extends BaseService {
         'messages': () => _socialOps.deleteMessages(userId),
         'shared_content': () => _socialOps.removeFromSharedContent(userId),
         'comments_ratings': () => _socialOps.deleteCommentsAndRatings(userId),
-        'shared_menus': () => _socialOps.deleteSharedMenus(userId),
-        'shared_shopping_lists': () =>
-            _socialOps.deleteSharedShoppingLists(userId),
+        // shared_menus + shared_shopping_lists deleted via removeFromSharedContent (unified shared_content collection)
         'reports': () => _socialOps.deleteUserReports(userId),
         'block_records': () => _deleteBlockRecords(userId),
         'preferences': () => _profileOps.deleteUserPreferences(userId),

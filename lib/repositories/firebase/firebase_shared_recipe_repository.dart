@@ -89,7 +89,10 @@ class FirebaseSharedRecipeRepository
         );
 
   @override
-  String get collectionName => FirestoreCollections.sharedRecipes;
+  String get collectionName => FirestoreCollections.sharedContent;
+
+  @override
+  String get contentType => 'recipe';
   @override
   BaseViewRepository get viewRepository => _viewRepository;
 
@@ -126,7 +129,7 @@ class FirebaseSharedRecipeRepository
   bool get tracksCounts => true;
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
-    return firestore.collection(FirestoreCollections.sharedRecipes);
+    return firestore.collection(FirestoreCollections.sharedContent);
   }
 
   @override

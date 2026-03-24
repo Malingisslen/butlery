@@ -25,7 +25,7 @@ class FirebaseMenuCollaborationRepository
     super.timestampProvider,
   }) : super(authRepository: authRepository ?? FirebaseAuthRepository());
   @override
-  String get collectionName => FirestoreCollections.sharedMenus;
+  String get collectionName => FirestoreCollections.sharedContent;
 
   @override
   SharedMenu fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {

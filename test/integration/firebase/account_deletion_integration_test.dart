@@ -216,7 +216,7 @@ void main() {
         final userId = 'test-user-123';
 
         // Create shared recipe with array field
-        await firestore.collection('shared_recipes').doc('shared-1').set({
+        await firestore.collection('shared_content').doc('shared-1').set({
           'ownerId': 'owner-123',
           'sharedWith': ['user-1', 'user-2', userId],
           'title': 'Shared Recipe',
@@ -232,7 +232,7 @@ void main() {
 
         // Verify user was removed from array
         final sharedDoc =
-            await firestore.collection('shared_recipes').doc('shared-1').get();
+            await firestore.collection('shared_content').doc('shared-1').get();
         expect(sharedDoc.exists, isTrue);
         expect(sharedDoc.data()?['sharedWith'], isNot(contains(userId)));
         expect(sharedDoc.data()?['sharedWith'], contains('user-1'));

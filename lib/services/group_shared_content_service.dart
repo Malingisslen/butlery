@@ -87,18 +87,18 @@ class GroupSharedContentService extends BaseService {
     FriendCategory group,
   ) async {
     return _getSharedContent(
-        group, FirestoreCollections.sharedShoppingLists, 'shopping_list');
+        group, FirestoreCollections.sharedContent, 'shopping_list');
   }
 
   Future<List<SharedContentItem>> getSharedMenus(FriendCategory group) async {
-    return _getSharedContent(group, FirestoreCollections.sharedMenus, 'menu');
+    return _getSharedContent(group, FirestoreCollections.sharedContent, 'menu');
   }
 
   Future<List<SharedContentItem>> getSharedRecipes(
     FriendCategory group,
   ) async {
     return _getSharedContent(
-        group, FirestoreCollections.sharedRecipes, 'recipe');
+        group, FirestoreCollections.sharedContent, 'recipe');
   }
 
   /// Get all shared content for a group (combined)
@@ -124,17 +124,17 @@ class GroupSharedContentService extends BaseService {
     FriendCategory group,
   ) {
     return _streamSharedContent(
-        group, FirestoreCollections.sharedShoppingLists, 'shopping_list');
+        group, FirestoreCollections.sharedContent, 'shopping_list');
   }
 
   Stream<List<SharedContentItem>> streamSharedMenus(FriendCategory group) {
     return _streamSharedContent(
-        group, FirestoreCollections.sharedMenus, 'menu');
+        group, FirestoreCollections.sharedContent, 'menu');
   }
 
   Stream<List<SharedContentItem>> streamSharedRecipes(FriendCategory group) {
     return _streamSharedContent(
-        group, FirestoreCollections.sharedRecipes, 'recipe');
+        group, FirestoreCollections.sharedContent, 'recipe');
   }
 
   // -- Private helpers --
@@ -157,6 +157,7 @@ class GroupSharedContentService extends BaseService {
       // arrayContainsAny supports up to 30 values — sufficient for current group sizes
       final snapshot = await _firestore
           .collection(collection)
+          .where('contentType', isEqualTo: contentType)
           .where('sharedToUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
@@ -190,6 +191,7 @@ class GroupSharedContentService extends BaseService {
 
       return _firestore
           .collection(collection)
+          .where('contentType', isEqualTo: contentType)
           .where('sharedToUserIds', arrayContainsAny: group.allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)

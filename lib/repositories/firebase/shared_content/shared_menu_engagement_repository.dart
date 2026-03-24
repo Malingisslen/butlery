@@ -1,6 +1,6 @@
 /// Engagement tracking repository for shared menus.
 /// Extends BaseEngagementRepository to track when users import shared menus.
-/// Storage: shared_menus/{menuId}/engagements/{userId}
+/// Storage: shared_content/{menuId}/engagements/{userId}
 /// **Use Case**: Track menu imports to personal collection
 /// **GDPR**: Audit logs all import operations (Article 30)
 
@@ -14,7 +14,7 @@ class SharedMenuEngagementRepository extends BaseEngagementRepository {
   });
 
   @override
-  String get parentCollectionName => 'shared_menus';
+  String get parentCollectionName => 'shared_content';
 
   @override
   Future<bool> validateMetadataAccess(String userId, String resourceId) async {

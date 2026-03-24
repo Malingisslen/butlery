@@ -107,7 +107,7 @@ void main() {
         () async {
       // Arrange
       await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection(FirestoreCollections.members)
           .doc('member1')
@@ -115,7 +115,7 @@ void main() {
 
       // Keep another user's membership intact
       await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection(FirestoreCollections.members)
           .doc('member2')
@@ -128,7 +128,7 @@ void main() {
       expect(result, true);
 
       final remainingMembers = await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection(FirestoreCollections.members)
           .get();
@@ -141,21 +141,21 @@ void main() {
         () async {
       // Arrange
       await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection('views')
           .doc('view1')
           .set({'userId': testUserId, 'timestamp': Timestamp.now()});
 
       await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection('engagements')
           .doc('eng1')
           .set({'userId': testUserId});
 
       await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection('dismissals')
           .doc('dis1')
@@ -168,21 +168,21 @@ void main() {
       expect(result, true);
 
       final views = await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection('views')
           .get();
       expect(views.docs, isEmpty);
 
       final engagements = await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection('engagements')
           .get();
       expect(engagements.docs, isEmpty);
 
       final dismissals = await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection('dismissals')
           .get();
@@ -194,7 +194,7 @@ void main() {
         () async {
       // Arrange
       await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe2')
           .set({
         'sharedWith': [testUserId, otherUserId],
@@ -209,7 +209,7 @@ void main() {
       expect(result, true);
 
       final doc = await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe2')
           .get();
       expect(doc.exists, true);
@@ -221,13 +221,13 @@ void main() {
     test('should delete owned shared recipes', () async {
       // Arrange
       await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe3')
           .set({'ownerId': testUserId, 'title': 'My shared recipe'});
 
       // Keep other user's recipe
       await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe4')
           .set({'ownerId': otherUserId, 'title': 'Other recipe'});
 
@@ -238,13 +238,13 @@ void main() {
       expect(result, true);
 
       final owned = await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe3')
           .get();
       expect(owned.exists, false);
 
       final otherRecipe = await fakeFirestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc('recipe4')
           .get();
       expect(otherRecipe.exists, true);
@@ -271,13 +271,13 @@ void main() {
           .doc('rr1')
           .set({'userId': testUserId, 'rating': 5});
       await fakeFirestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
           .doc('menu1')
           .collection(FirestoreCollections.comments)
           .doc('mc1')
           .set({'commentedBy': testUserId, 'text': 'Nice menu'});
       await fakeFirestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
           .doc('menu1')
           .collection(FirestoreCollections.ratings)
           .doc('mr1')
@@ -316,7 +316,7 @@ void main() {
 
       // Menu comments should be hard-deleted (subcollection under shared menus)
       final menuComments = await fakeFirestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
           .doc('menu1')
           .collection(FirestoreCollections.comments)
           .where('commentedBy', isEqualTo: testUserId)
@@ -325,7 +325,7 @@ void main() {
 
       // Menu ratings should be hard-deleted (subcollection under shared menus)
       final menuRatings = await fakeFirestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
           .doc('menu1')
           .collection(FirestoreCollections.ratings)
           .where('ratedBy', isEqualTo: testUserId)
@@ -344,85 +344,6 @@ void main() {
     test('should return true when no comments or ratings exist', () async {
       final result = await operations.deleteCommentsAndRatings(testUserId);
       expect(result, true);
-    });
-  });
-
-  group('deleteSharedMenus', () {
-    test('should remove user from sharedWith and delete owned menus', () async {
-      // Arrange - menu shared with user
-      await fakeFirestore
-          .collection(FirestoreCollections.sharedMenus)
-          .doc('menu1')
-          .set({
-        'sharedWith': [testUserId, otherUserId],
-        'ownerId': 'someone-else',
-      });
-
-      // Menu owned by user
-      await fakeFirestore
-          .collection(FirestoreCollections.sharedMenus)
-          .doc('menu2')
-          .set({'ownerId': testUserId, 'sharedWith': []});
-
-      // Act
-      final result = await operations.deleteSharedMenus(testUserId);
-
-      // Assert
-      expect(result, true);
-
-      final menu1 = await fakeFirestore
-          .collection(FirestoreCollections.sharedMenus)
-          .doc('menu1')
-          .get();
-      expect(menu1.exists, true);
-      final sharedWith = List<String>.from(menu1.data()!['sharedWith']);
-      expect(sharedWith, isNot(contains(testUserId)));
-      expect(sharedWith, contains(otherUserId));
-
-      final menu2 = await fakeFirestore
-          .collection(FirestoreCollections.sharedMenus)
-          .doc('menu2')
-          .get();
-      expect(menu2.exists, false);
-    });
-  });
-
-  group('deleteSharedShoppingLists', () {
-    test('should remove user from sharedWith and delete owned lists', () async {
-      // Arrange
-      await fakeFirestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .doc('list1')
-          .set({
-        'sharedWith': [testUserId, otherUserId],
-        'ownerId': 'someone-else',
-      });
-
-      await fakeFirestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .doc('list2')
-          .set({'ownerId': testUserId, 'sharedWith': []});
-
-      // Act
-      final result = await operations.deleteSharedShoppingLists(testUserId);
-
-      // Assert
-      expect(result, true);
-
-      final list1 = await fakeFirestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .doc('list1')
-          .get();
-      expect(list1.exists, true);
-      final sharedWith = List<String>.from(list1.data()!['sharedWith']);
-      expect(sharedWith, isNot(contains(testUserId)));
-      expect(sharedWith, contains(otherUserId));
-
-      final list2 = await fakeFirestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .doc('list2')
-          .get();
-      expect(list2.exists, false);
     });
   });
 
@@ -468,8 +389,6 @@ void main() {
       expect(await operations.removeFriendConnections(testUserId), true);
       expect(await operations.removeFromSharedContent(testUserId), true);
       expect(await operations.deleteCommentsAndRatings(testUserId), true);
-      expect(await operations.deleteSharedMenus(testUserId), true);
-      expect(await operations.deleteSharedShoppingLists(testUserId), true);
       expect(await operations.deleteUserReports(testUserId), true);
     });
 

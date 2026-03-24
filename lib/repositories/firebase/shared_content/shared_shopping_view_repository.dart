@@ -1,6 +1,6 @@
 /// View status tracking repository for shared shopping lists.
 /// Extends BaseViewRepository to track when users view shared shopping lists.
-/// Storage: shared_shopping_lists/{listId}/views/{userId}
+/// Storage: shared_content/{listId}/views/{userId}
 /// **Use Case**: Mark list as viewed when user opens it
 /// **GDPR**: Audit logs all view operations (Article 30)
 
@@ -14,7 +14,7 @@ class SharedShoppingViewRepository extends BaseViewRepository {
   });
 
   @override
-  String get parentCollectionName => 'shared_shopping_lists';
+  String get parentCollectionName => 'shared_content';
 
   @override
   Future<bool> validateMetadataAccess(String userId, String resourceId) async {

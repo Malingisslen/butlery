@@ -185,7 +185,8 @@ class SocialExportManager {
       // Get recipes shared with user (paginated)
       final sharedRecipes = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection(FirestoreCollections.sharedRecipes)
+            .collection(FirestoreCollections.sharedContent)
+            .where('contentType', isEqualTo: 'recipe')
             .where('sharedWithUserIds', arrayContains: userId),
         maxDocuments: recipeLimit,
       );

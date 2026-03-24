@@ -14,7 +14,7 @@
 ///     super.auditRepository,
 ///   });
 ///   @override
-///   String get parentCollectionName => 'shared_recipes';
+///   String get parentCollectionName => 'shared_content';
 ///   @override
 ///   Future<bool> validateMetadataAccess(String userId, String resourceId) async {
 ///     // User can view metadata if they can read the shared recipe

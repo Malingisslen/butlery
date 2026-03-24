@@ -9,9 +9,7 @@ abstract final class FirestoreCollections {
   static const String recipes = 'recipes';
   static const String menus = 'menus';
   static const String publicProfiles = 'public_profiles';
-  static const String sharedRecipes = 'shared_recipes';
-  static const String sharedMenus = 'shared_menus';
-  static const String sharedShoppingLists = 'shared_shopping_lists';
+  static const String sharedContent = 'shared_content';
   static const String blocks = 'blocks';
   static const String socialRequests = 'social_requests';
   static const String conversations = 'conversations';

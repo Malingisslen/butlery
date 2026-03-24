@@ -68,6 +68,7 @@ class SocialMenuOperations {
 
       // Prepare menu data for Firebase
       final menuData = {
+        'contentType': 'menu',
         'title': menuTitle,
         'description': message?.trim(),
         'menu': menu.map((category, recipes) => MapEntry(
@@ -86,7 +87,7 @@ class SocialMenuOperations {
 
       // Create shared menu document in Firestore
       final sharedMenuRef =
-          _firestore.collection(FirestoreCollections.sharedMenus).doc();
+          _firestore.collection(FirestoreCollections.sharedContent).doc();
       await sharedMenuRef.set(menuData);
 
       // Create individual share records for each friend
@@ -169,7 +170,8 @@ class SocialMenuOperations {
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
+          .where('contentType', isEqualTo: 'menu')
           .where('sharedByUserId', isEqualTo: currentUserId)
           .where('isActive', isEqualTo: true)
           .orderBy('sharedAt', descending: true)
@@ -228,7 +230,7 @@ class SocialMenuOperations {
       for (var i = 0; i < sharedMenuIds.length; i += 30) {
         final chunk = sharedMenuIds.skip(i).take(30).toList();
         final menuQuery = await _firestore
-            .collection(FirestoreCollections.sharedMenus)
+            .collection(FirestoreCollections.sharedContent)
             .where(FieldPath.documentId, whereIn: chunk)
             .get();
 
@@ -276,7 +278,7 @@ class SocialMenuOperations {
 
       // Get shared menu data
       final menuDoc = await _firestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
           .doc(sharedMenuId)
           .get();
 
@@ -350,7 +352,7 @@ class SocialMenuOperations {
 
       // Get shared menu data
       final menuDoc = await _firestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
           .doc(sharedMenuId)
           .get();
 
@@ -413,7 +415,7 @@ class SocialMenuOperations {
 
       // Get shared menu to verify ownership
       final menuDoc = await _firestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
           .doc(sharedMenuId)
           .get();
 
@@ -430,7 +432,7 @@ class SocialMenuOperations {
 
       // Soft delete (mark as inactive)
       await _firestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
           .doc(sharedMenuId)
           .update({
         'isActive': false,
@@ -456,7 +458,8 @@ class SocialMenuOperations {
 
       // Get menus shared by user
       final sharedByMeQuery = await _firestore
-          .collection(FirestoreCollections.sharedMenus)
+          .collection(FirestoreCollections.sharedContent)
+          .where('contentType', isEqualTo: 'menu')
           .where('sharedByUserId', isEqualTo: currentUserId)
           .where('isActive', isEqualTo: true)
           .get();

@@ -1,6 +1,6 @@
 /// View status tracking repository for shared recipes.
 /// Extends BaseViewRepository to track when users view shared recipes.
-/// Storage: shared_recipes/{recipeId}/views/{userId}
+/// Storage: shared_content/{recipeId}/views/{userId}
 /// **Use Case**: Mark recipe as viewed when user opens it
 /// **GDPR**: Audit logs all view operations (Article 30)
 
@@ -14,7 +14,7 @@ class SharedRecipeViewRepository extends BaseViewRepository {
   });
 
   @override
-  String get parentCollectionName => 'shared_recipes';
+  String get parentCollectionName => 'shared_content';
 
   @override
   Future<bool> validateMetadataAccess(String userId, String resourceId) async {

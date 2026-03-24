@@ -186,7 +186,7 @@ class SocialDeletionOperations {
       await batchDeleteDocs(_firestore, memberDocs.docs);
 
       await _deleteOwnedSharedContent(
-          FirestoreCollections.sharedRecipes, userId);
+          FirestoreCollections.sharedContent, userId);
 
       return true;
     } catch (e) {
@@ -256,28 +256,14 @@ class SocialDeletionOperations {
     }
   }
 
-  /// Delete shared menus owned by user.
-  Future<bool> deleteSharedMenus(String userId) async {
-    try {
-      await _deleteOwnedSharedContent(FirestoreCollections.sharedMenus, userId);
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete shared menus', e);
-      return false;
-    }
-  }
-
-  /// Delete shared shopping lists owned by user.
-  Future<bool> deleteSharedShoppingLists(String userId) async {
-    try {
-      await _deleteOwnedSharedContent(
-          FirestoreCollections.sharedShoppingLists, userId);
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete shared shopping lists', e);
-      return false;
-    }
+  /// Delete shared menus and shopping lists owned by user.
+  /// No-op since removeFromSharedContent already deletes all owned content
+  /// from the unified shared_content collection.
+  @Deprecated(
+      'All shared content is now in shared_content collection — handled by removeFromSharedContent')
+  Future<bool> deleteSharedMenusAndShoppingLists(String userId) async {
+    // All content types now live in shared_content — already cleaned up by removeFromSharedContent
+    return true;
   }
 
   /// Delete content reports submitted by user (GDPR — user's own data).

@@ -135,13 +135,13 @@ void main() {
     }) async {
       // Create main document
       await fakeFirestore
-          .collection('shared_shopping_lists')
+          .collection('shared_content')
           .doc(sharedList.id)
           .set(sharedList.toFirestore());
 
       // Create subcollection documents (Issue #014)
       final listRef =
-          fakeFirestore.collection('shared_shopping_lists').doc(sharedList.id);
+          fakeFirestore.collection('shared_content').doc(sharedList.id);
 
       // Seed members subcollection
       if (memberUserIds != null) {
@@ -313,10 +313,8 @@ void main() {
         // Assert
         expect(listId, isNotEmpty);
 
-        final doc = await fakeFirestore
-            .collection('shared_shopping_lists')
-            .doc(listId)
-            .get();
+        final doc =
+            await fakeFirestore.collection('shared_content').doc(listId).get();
         expect(doc.exists, isTrue);
         expect(doc.data()?['sharedByUserId'], testUserId);
         expect(doc.data()?['listName'], 'My Weekly Shopping');
@@ -393,7 +391,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .get();
         expect(doc.exists, isFalse);
@@ -415,7 +413,7 @@ void main() {
 
         // Assert - Check views subcollection (Issue #014)
         final viewDoc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .collection('views')
             .doc(testUserId)
@@ -436,7 +434,7 @@ void main() {
 
         // Assert - Check engagements subcollection (Issue #014)
         final engagementDoc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .collection('engagements')
             .doc(testUserId)
@@ -458,7 +456,7 @@ void main() {
 
         // Assert - Check dismissals subcollection (Issue #014)
         final dismissalDoc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .collection('dismissals')
             .doc(testUserId)
@@ -479,7 +477,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .get();
         final dismissedByUserIds =
@@ -635,7 +633,7 @@ void main() {
 
         // Assert - Verify item in subcollection
         final itemDoc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .collection('items')
             .doc(item.id)
@@ -645,7 +643,7 @@ void main() {
 
         // Assert - Verify itemCount incremented
         final listDoc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .get();
         expect(listDoc.data()?['itemCount'], equals(1));
@@ -664,7 +662,7 @@ void main() {
 
         // Assert - Verify all items in subcollection
         final itemsSnapshot = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .collection('items')
             .get();
@@ -672,7 +670,7 @@ void main() {
 
         // Assert - Verify itemCount updated
         final listDoc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .get();
         expect(listDoc.data()?['itemCount'], equals(3));
@@ -755,7 +753,7 @@ void main() {
 
         // Assert - Verify itemCount decremented
         final listDoc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .get();
         expect(listDoc.data()?['itemCount'], equals(0));
@@ -775,7 +773,7 @@ void main() {
 
         // Assert
         final itemData = (await fakeFirestore
-                .collection('shared_shopping_lists')
+                .collection('shared_content')
                 .doc(testListId)
                 .collection('items')
                 .doc(testItem.id)
@@ -791,7 +789,7 @@ void main() {
 
         // Assert - Metadata cleared
         final updatedData = (await fakeFirestore
-                .collection('shared_shopping_lists')
+                .collection('shared_content')
                 .doc(testListId)
                 .collection('items')
                 .doc(testItem.id)
@@ -828,7 +826,7 @@ void main() {
 
         // Assert - itemCount recalculated
         final listDoc = await fakeFirestore
-            .collection('shared_shopping_lists')
+            .collection('shared_content')
             .doc(testListId)
             .get();
         expect(listDoc.data()?['itemCount'], equals(1));

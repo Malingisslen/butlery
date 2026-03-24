@@ -1,6 +1,6 @@
 /// View status tracking repository for shared menus.
 /// Extends BaseViewRepository to track when users view shared menus.
-/// Storage: shared_menus/{menuId}/views/{userId}
+/// Storage: shared_content/{menuId}/views/{userId}
 /// **Use Case**: Mark menu as viewed when user opens it
 /// **GDPR**: Audit logs all view operations (Article 30)
 
@@ -14,7 +14,7 @@ class SharedMenuViewRepository extends BaseViewRepository {
   });
 
   @override
-  String get parentCollectionName => 'shared_menus';
+  String get parentCollectionName => 'shared_content';
 
   @override
   Future<bool> validateMetadataAccess(String userId, String resourceId) async {

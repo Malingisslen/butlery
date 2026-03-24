@@ -1,6 +1,6 @@
 /// Engagement tracking repository for shared shopping lists.
 /// Extends BaseEngagementRepository to track when users join shared shopping lists.
-/// Storage: shared_shopping_lists/{listId}/engagements/{userId}
+/// Storage: shared_content/{listId}/engagements/{userId}
 /// **Use Case**: Track list joins/imports to personal collection
 /// **GDPR**: Audit logs all join operations (Article 30)
 
@@ -14,7 +14,7 @@ class SharedShoppingEngagementRepository extends BaseEngagementRepository {
   });
 
   @override
-  String get parentCollectionName => 'shared_shopping_lists';
+  String get parentCollectionName => 'shared_content';
 
   @override
   Future<bool> validateMetadataAccess(String userId, String resourceId) async {

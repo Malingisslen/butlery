@@ -56,45 +56,17 @@ class PermissionCacheInvalidator {
       return;
     }
 
-    // Listen to shared recipes
+    // Listen to all shared content (unified collection)
     _subscriptions.add(
       _firestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .where('participantIds', arrayContains: userId)
           .limit(200)
           .snapshots()
           .listen(
-            (snapshot) => _handleDocumentChanges(snapshot, 'shared_recipe'),
+            (snapshot) => _handleDocumentChanges(snapshot, 'shared_content'),
             onError: (e) => AppLogger.warning(
-                'Permission invalidator error (sharedRecipes): $e'),
-          ),
-    );
-
-    // Listen to shared menus
-    _subscriptions.add(
-      _firestore
-          .collection(FirestoreCollections.sharedMenus)
-          .where('participantIds', arrayContains: userId)
-          .limit(200)
-          .snapshots()
-          .listen(
-            (snapshot) => _handleDocumentChanges(snapshot, 'shared_menu'),
-            onError: (e) => AppLogger.warning(
-                'Permission invalidator error (sharedMenus): $e'),
-          ),
-    );
-
-    // Listen to shared shopping lists
-    _subscriptions.add(
-      _firestore
-          .collection(FirestoreCollections.sharedShoppingLists)
-          .where('participantIds', arrayContains: userId)
-          .limit(200)
-          .snapshots()
-          .listen(
-            (snapshot) => _handleDocumentChanges(snapshot, 'shared_shopping'),
-            onError: (e) => AppLogger.warning(
-                'Permission invalidator error (sharedShoppingLists): $e'),
+                'Permission invalidator error (sharedContent): $e'),
           ),
     );
 

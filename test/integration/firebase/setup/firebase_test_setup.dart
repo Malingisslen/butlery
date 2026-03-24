@@ -46,8 +46,6 @@ class FirebaseTestSetup {
     final firestore = FirebaseFirestore.instance;
     await _deleteCollection(firestore, 'users');
     await _deleteCollection(firestore, 'recipes');
-    await _deleteCollection(firestore, 'shared_recipes');
-    await _deleteCollection(firestore, 'shared_menus');
     await _deleteCollection(firestore, 'shared_content');
 
     // Sign out any authenticated users

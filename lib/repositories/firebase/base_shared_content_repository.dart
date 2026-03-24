@@ -22,6 +22,10 @@ abstract class BaseSharedContentRepository<T>
     super.timestampProvider,
   });
 
+  /// Discriminator stored in each document to distinguish content types
+  /// within the shared_content collection (e.g., 'recipe', 'menu', 'shopping_list').
+  String get contentType;
+
   String get contentTypeName;
   String get resourceType;
   List<String> get createRequiredFields;
@@ -120,6 +124,7 @@ abstract class BaseSharedContentRepository<T>
 
       // Create new instance with correct ID
       final entityData = toFirestore(entity);
+      entityData['contentType'] = contentType;
       if (initialSharedToUserIds != null) {
         entityData['sharedToUserIds'] = initialSharedToUserIds;
       }
@@ -640,10 +645,10 @@ abstract class BaseSharedContentRepository<T>
         final parentPath = memberDoc.reference.parent.parent?.path ?? 'unknown';
         final contentId = memberDoc.reference.parent.parent?.id;
         final pathSegments = parentPath.split('/');
-        final isMatchingCollection =
+        final isSharedContentCollection =
             pathSegments.isNotEmpty && pathSegments.first == collectionName;
 
-        if (contentId != null && isMatchingCollection) {
+        if (contentId != null && isSharedContentCollection) {
           contentIds.add(contentId);
         }
       }
@@ -664,7 +669,11 @@ abstract class BaseSharedContentRepository<T>
       for (final batch in batches) {
         final docFutures = batch.map((id) => getCollectionRef().doc(id).get());
         final docs = await Future.wait(docFutures);
-        final validDocs = docs.where((doc) => doc.exists).toList();
+        // Filter by contentType discriminator to return only matching type
+        final validDocs = docs
+            .where((doc) =>
+                doc.exists && doc.data()?['contentType'] == contentType)
+            .toList();
 
         final batchContent = validDocs
             .map((doc) => fromFirestore(doc))

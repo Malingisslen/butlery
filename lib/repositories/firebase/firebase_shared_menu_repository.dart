@@ -89,7 +89,10 @@ class FirebaseSharedMenuRepository
         );
 
   @override
-  String get collectionName => FirestoreCollections.sharedMenus;
+  String get collectionName => FirestoreCollections.sharedContent;
+
+  @override
+  String get contentType => 'menu';
   @override
   BaseViewRepository get viewRepository => _viewRepository;
 
@@ -126,7 +129,7 @@ class FirebaseSharedMenuRepository
   bool get tracksCounts => true;
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
-    return firestore.collection(FirestoreCollections.sharedMenus);
+    return firestore.collection(FirestoreCollections.sharedContent);
   }
 
   @override

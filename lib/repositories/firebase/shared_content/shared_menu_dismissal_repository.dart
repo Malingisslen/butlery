@@ -1,6 +1,6 @@
 /// Dismissal tracking repository for shared menus.
 /// Extends BaseDismissalRepository to track when users dismiss shared menus.
-/// Storage: shared_menus/{menuId}/dismissals/{userId}
+/// Storage: shared_content/{menuId}/dismissals/{userId}
 /// **Use Case**: Hide menu from user's shared content feed
 /// **GDPR**: Audit logs all dismissal operations (Article 30)
 
@@ -14,7 +14,7 @@ class SharedMenuDismissalRepository extends BaseDismissalRepository {
   });
 
   @override
-  String get parentCollectionName => 'shared_menus';
+  String get parentCollectionName => 'shared_content';
 
   @override
   Future<bool> validateMetadataAccess(String userId, String resourceId) async {

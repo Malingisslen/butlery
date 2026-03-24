@@ -1,6 +1,6 @@
 /// Dismissal tracking repository for shared shopping lists.
 /// Extends BaseDismissalRepository to track when users dismiss shared shopping lists.
-/// Storage: shared_shopping_lists/{listId}/dismissals/{userId}
+/// Storage: shared_content/{listId}/dismissals/{userId}
 /// **Use Case**: Hide list from user's shared content feed
 /// **GDPR**: Audit logs all dismissal operations (Article 30)
 
@@ -14,7 +14,7 @@ class SharedShoppingDismissalRepository extends BaseDismissalRepository {
   });
 
   @override
-  String get parentCollectionName => 'shared_shopping_lists';
+  String get parentCollectionName => 'shared_content';
 
   @override
   Future<bool> validateMetadataAccess(String userId, String resourceId) async {

@@ -129,13 +129,13 @@ void main() {
     }) async {
       // Create main document
       await fakeFirestore
-          .collection('shared_menus')
+          .collection('shared_content')
           .doc(sharedMenu.id)
           .set(sharedMenu.toFirestore());
 
       // Create subcollection documents (Issue #014)
       final menuRef =
-          fakeFirestore.collection('shared_menus').doc(sharedMenu.id);
+          fakeFirestore.collection('shared_content').doc(sharedMenu.id);
 
       // Seed members subcollection
       if (memberUserIds != null) {
@@ -196,7 +196,7 @@ void main() {
 
         // Verify members subcollection created (Issue #014)
         final memberDoc = await fakeFirestore
-            .collection('shared_menus')
+            .collection('shared_content')
             .doc(menuId)
             .collection('members')
             .doc(testFriendId)
@@ -290,14 +290,14 @@ void main() {
 
         // Assert - Check main document
         final doc =
-            await fakeFirestore.collection('shared_menus').doc(menuId).get();
+            await fakeFirestore.collection('shared_content').doc(menuId).get();
         expect(doc.exists, isTrue);
         expect(doc.data()?['sharedByUserId'], testUserId);
         expect(doc.data()?['menuTitle'], 'My Weekly Plan');
 
         // Assert - Check members subcollection (Issue #014)
         final membersSnapshot = await fakeFirestore
-            .collection('shared_menus')
+            .collection('shared_content')
             .doc(menuId)
             .collection('members')
             .get();
@@ -373,7 +373,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('shared_menus')
+            .collection('shared_content')
             .doc(testMenuId)
             .get();
         expect(doc.exists, isFalse);
@@ -395,7 +395,7 @@ void main() {
 
         // Assert - Check views subcollection (Issue #014)
         final viewDoc = await fakeFirestore
-            .collection('shared_menus')
+            .collection('shared_content')
             .doc(testMenuId)
             .collection('views')
             .doc(testUserId)
@@ -417,7 +417,7 @@ void main() {
 
         // Assert - Check engagements subcollection (Issue #014)
         final engagementDoc = await fakeFirestore
-            .collection('shared_menus')
+            .collection('shared_content')
             .doc(testMenuId)
             .collection('engagements')
             .doc(testUserId)
@@ -438,7 +438,7 @@ void main() {
 
         // Assert - Check dismissals subcollection (Issue #014)
         final dismissalDoc = await fakeFirestore
-            .collection('shared_menus')
+            .collection('shared_content')
             .doc(testMenuId)
             .collection('dismissals')
             .doc(testUserId)
@@ -459,7 +459,7 @@ void main() {
 
         // Assert - Check dismissals subcollection (Issue #014)
         final dismissalDoc = await fakeFirestore
-            .collection('shared_menus')
+            .collection('shared_content')
             .doc(testMenuId)
             .collection('dismissals')
             .doc(testUserId)

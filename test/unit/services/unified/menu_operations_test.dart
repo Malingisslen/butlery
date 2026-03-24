@@ -139,7 +139,7 @@ void main() {
           final mockDoc = MockDocumentReference<Map<String, dynamic>>();
           final mockSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
 
-          when(() => mockFirestore.collection('shared_menus'))
+          when(() => mockFirestore.collection('shared_content'))
               .thenReturn(mockCollection);
           when(() => mockCollection.doc(any())).thenReturn(mockDoc);
           when(() => mockDoc.update(any())).thenAnswer((_) async {});
@@ -171,7 +171,7 @@ void main() {
           final mockDoc = MockDocumentReference<Map<String, dynamic>>();
           final mockDocSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
 
-          when(() => mockFirestore.collection('shared_menus'))
+          when(() => mockFirestore.collection('shared_content'))
               .thenReturn(mockCollection);
           when(() => mockCollection.doc(any())).thenReturn(mockDoc);
           when(() => mockDoc.get()).thenAnswer((_) async => mockDocSnapshot);
@@ -217,7 +217,7 @@ void main() {
           final mockDoc = MockDocumentReference<Map<String, dynamic>>();
           final mockDocSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
 
-          when(() => mockFirestore.collection('shared_menus'))
+          when(() => mockFirestore.collection('shared_content'))
               .thenReturn(mockCollection);
           when(() => mockCollection.doc(any())).thenReturn(mockDoc);
           when(() => mockDoc.get()).thenAnswer((_) async => mockDocSnapshot);
@@ -304,7 +304,7 @@ void main() {
               MockDocumentReference<Map<String, dynamic>>();
           final mockBatch = MockWriteBatch();
 
-          when(() => mockFirestore.collection('sharedMenus'))
+          when(() => mockFirestore.collection('shared_content'))
               .thenReturn(mockSharedMenusCollection);
           when(() => mockSharedMenusCollection.doc())
               .thenReturn(mockSharedMenuDoc);
@@ -409,7 +409,7 @@ void main() {
               MockDocumentReference<Map<String, dynamic>>();
           final mockBatch = MockWriteBatch();
 
-          when(() => mockFirestore.collection('sharedMenus'))
+          when(() => mockFirestore.collection('shared_content'))
               .thenReturn(mockSharedMenusCollection);
           when(() => mockSharedMenusCollection.doc())
               .thenReturn(mockSharedMenuDoc);

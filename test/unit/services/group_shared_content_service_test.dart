@@ -23,7 +23,7 @@ void main() {
     DateTime? sharedAt,
   }) async {
     await fakeFirestore
-        .collection(FirestoreCollections.sharedRecipes)
+        .collection(FirestoreCollections.sharedContent)
         .doc(id)
         .set({
       'sharedByUserId': sharedByUserId,

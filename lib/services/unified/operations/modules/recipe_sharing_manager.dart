@@ -511,9 +511,10 @@ class RecipeSharingManager {
       final allUserIds = {currentUserId, ...memberIds}.toList();
 
       await _firestoreRepository
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .doc(recipeId)
           .set({
+        'contentType': 'recipe',
         'recipeId': recipeId,
         'title': recipeTitle,
         'description': recipeData.description ?? '',
@@ -531,9 +532,9 @@ class RecipeSharingManager {
       }, SetOptions(merge: true));
 
       AppLogger.debug(
-          '✅ Recipe written to shared_recipes collection for group discovery');
+          '✅ Recipe written to shared_content collection for group discovery');
     } catch (e) {
-      AppLogger.warning('Failed to write to shared_recipes collection: $e');
+      AppLogger.warning('Failed to write to shared_content collection: $e');
       // Don't fail the whole sharing operation if this fails
     }
   }

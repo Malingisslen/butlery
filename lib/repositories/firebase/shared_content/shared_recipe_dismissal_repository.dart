@@ -1,6 +1,6 @@
 /// Dismissal tracking repository for shared recipes.
 /// Extends BaseDismissalRepository to track when users dismiss shared recipes.
-/// Storage: shared_recipes/{recipeId}/dismissals/{userId}
+/// Storage: shared_content/{recipeId}/dismissals/{userId}
 /// **Use Case**: Hide recipe from user's shared content feed
 /// **GDPR**: Audit logs all dismissal operations (Article 30)
 
@@ -14,7 +14,7 @@ class SharedRecipeDismissalRepository extends BaseDismissalRepository {
   });
 
   @override
-  String get parentCollectionName => 'shared_recipes';
+  String get parentCollectionName => 'shared_content';
 
   @override
   Future<bool> validateMetadataAccess(String userId, String resourceId) async {

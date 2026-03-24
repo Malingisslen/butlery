@@ -33,7 +33,8 @@ class FirestoreSearchRepository implements SearchRepository {
       // Firestore doesn't support full-text search
       // Use array-contains-any for tags or basic filtering
       var queryRef = _firestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
+          .where('contentType', isEqualTo: 'recipe')
           .limit(hitsPerPage);
 
       // Apply filters
@@ -193,7 +194,7 @@ class FirestoreSearchRepository implements SearchRepository {
   Future<bool> healthCheck() async {
     try {
       await _firestore
-          .collection(FirestoreCollections.sharedRecipes)
+          .collection(FirestoreCollections.sharedContent)
           .limit(1)
           .get();
       return true;
