@@ -126,7 +126,6 @@ class UnifiedRecipeService extends ChangeNotifier
 
   @override
   void notifyListeners() {
-    super.notifyListeners();
     _emitState();
   }
 

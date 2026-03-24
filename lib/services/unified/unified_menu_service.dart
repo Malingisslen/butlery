@@ -107,7 +107,6 @@ class UnifiedMenuService extends ChangeNotifier
 
   @override
   void notifyListeners() {
-    super.notifyListeners();
     _emitState();
   }
 
