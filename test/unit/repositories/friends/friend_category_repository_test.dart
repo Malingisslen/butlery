@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -45,10 +46,11 @@ void main() {
         isAuthenticated: true,
       );
 
-      // Create repository with fake Firestore
+      // Create repository with fake Firestore and test timestamp provider
       repository = FriendCategoryRepository(
         firestore: fakeFirestore,
         authRepository: mockAuthRepo,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -280,7 +282,7 @@ void main() {
             .get();
         final friendIds = List<String>.from(doc.data()?['friendUserIds'] ?? []);
         expect(friendIds, contains(newFriendId));
-      }, skip: 'Requires FieldValue.arrayUnion support');
+      });
 
       test('should remove friend from category', () async {
         // Arrange
@@ -302,7 +304,7 @@ void main() {
         final friendIds = List<String>.from(doc.data()?['friendUserIds'] ?? []);
         expect(friendIds, isNot(contains(testFriendId)));
         expect(friendIds, contains(testOtherUserId));
-      }, skip: 'Requires FieldValue.arrayRemove support');
+      });
 
       test('should update category members', () async {
         // Arrange
@@ -324,7 +326,7 @@ void main() {
         final friendIds = List<String>.from(doc.data()?['friendUserIds'] ?? []);
         expect(friendIds.length, 3);
         expect(friendIds, containsAll(newMemberIds));
-      }, skip: 'Requires FieldValue support');
+      });
     });
 
     // ===== SEARCH AND QUERY =====

@@ -1327,10 +1327,6 @@ void main() {
         );
       });
 
-      test('should handle presence update failures', () async {
-        // updatePresence doesn't exist in MessagingService yet
-      }, skip: 'updatePresence not implemented');
-
       test('should handle stream cancellation errors', () async {
         // Arrange
         const conversationId = 'conv-cancel';
@@ -1392,10 +1388,6 @@ void main() {
         );
       });
 
-      test('should handle reacting to non-existent message', () async {
-        // addReaction doesn't exist in MessagingService yet
-      }, skip: 'addReaction not implemented');
-
       test('should handle mark as read for invalid conversation', () async {
         // Arrange
         const conversationId = 'invalid-conv';
@@ -1438,10 +1430,6 @@ void main() {
           throwsA(isA<ValidationException>()),
         );
       });
-
-      test('should handle removing reaction that does not exist', () async {
-        // removeReaction doesn't exist in MessagingService yet
-      }, skip: 'removeReaction not implemented');
     });
 
     group('Concurrent Operation Errors', () {

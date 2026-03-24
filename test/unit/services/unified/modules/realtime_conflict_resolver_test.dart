@@ -589,9 +589,9 @@ void main() {
 
         // Assert - timer should be created and edits processed
         expect(conflictResolutionTimers.containsKey(recipeId), isTrue);
-        // Pending edits may be cleared after successful resolution
-        // or may contain edits depending on timing
-        expect(pendingRealtimeEdits[recipeId] ?? [], isA<List>());
+        // Pending edits may be cleared after resolution or contain remaining edits
+        final pendingEdits = pendingRealtimeEdits[recipeId] ?? [];
+        expect(pendingEdits, isA<List<Map<String, dynamic>>>());
       });
 
       test('should merge rapid successive edits correctly', () {

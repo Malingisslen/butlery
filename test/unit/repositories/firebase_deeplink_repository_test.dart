@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_deeplink_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -39,10 +40,11 @@ void main() {
         isAuthenticated: true,
       );
 
-      // Create repository with fake Firestore
+      // Create repository with fake Firestore and test timestamp provider
       repository = FirebaseDeepLinkRepository(
         firestore: fakeFirestore,
         authRepository: mockAuthRepo,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -229,9 +231,7 @@ void main() {
         expect(data['longUrl'], equals(longUrl));
         expect(data['metadata'], equals(metadata));
         expect(data['createdBy'], equals('user-123'));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      });
     });
 
     group('Get Long URL', () {
@@ -295,7 +295,7 @@ void main() {
         expect(data['clickCount'], equals(6));
       },
           skip:
-              'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
+              'FieldValue.increment in update conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
 
       test('should record click history', () async {
         // Arrange
@@ -320,7 +320,7 @@ void main() {
         expect(clicks.docs.first.data()['userId'], equals('user-123'));
       },
           skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+              'trackUrlClick uses FieldValue.increment which conflicts with TestServiceLocator platform bindings');
     });
 
     group('Store Deep Link Metadata', () {
@@ -347,9 +347,7 @@ void main() {
             await fakeFirestore.collection('deep_links').doc(linkId).get();
         final data = doc.data()!;
         expect(data['metadata'], equals(metadata));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      });
 
       test('should create new link document if not exists', () async {
         // Arrange
@@ -369,9 +367,7 @@ void main() {
         final data = doc.data()!;
         expect(data['id'], equals(linkId));
         expect(data['metadata'], equals(metadata));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      });
     });
 
     group('Get Deep Link Metadata', () {
@@ -498,13 +494,6 @@ void main() {
           completes,
         );
       });
-    });
-
-    group('Short Code Generation', () {
-      test('should generate unique short codes', () async {
-        // _generateShortCode is private; short code length is verified
-        // in the "Create Short URL" group (expects 8 characters)
-      }, skip: 'covered by createShortUrl tests above');
     });
   });
 }
