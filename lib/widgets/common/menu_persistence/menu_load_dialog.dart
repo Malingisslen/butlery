@@ -7,16 +7,12 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/menu/menu_template_browser.dart';
 
-/// Bottom sheet for loading a saved menu or template.
-/// Provides two tabs: saved menus and templates.
-/// Templates pre-fill the prompt with category structure when selected.
+/// Bottom sheet for loading a saved menu.
 class LoadMenuBottomSheet extends StatefulWidget {
   final MenuViewModel viewModel;
 
-  /// Called with the prompt string when a template is selected.
-  /// If null, template tab navigates to a separate template browser bottom sheet.
+  /// Unused — kept for API compatibility during cleanup.
   final ValueChanged<String>? onTemplateSelected;
 
   const LoadMenuBottomSheet({
@@ -29,23 +25,14 @@ class LoadMenuBottomSheet extends StatefulWidget {
   State<LoadMenuBottomSheet> createState() => _LoadMenuBottomSheetState();
 }
 
-class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
-    with SingleTickerProviderStateMixin {
+class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   List<dynamic> _savedMenus = [];
   bool _isLoading = false;
-  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _loadSavedMenus();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadSavedMenus() async {
@@ -127,37 +114,13 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
             ),
           ),
 
-          // Tab bar for saved menus vs templates
-          TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(text: context.l10n.menuTemplateSavedMenus),
-              Tab(text: context.l10n.menuTemplateTemplates),
-            ],
-          ),
-
-          // Tab content
+          // Saved menus content
           Flexible(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // Tab 1: Saved menus
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _savedMenus.isEmpty
-                        ? _buildEmptyState()
-                        : _buildMenuList(),
-
-                // Tab 2: Templates
-                MenuTemplateBrowser(
-                  viewModel: widget.viewModel,
-                  onTemplateSelected: (prompt) {
-                    Navigator.pop(context);
-                    widget.onTemplateSelected?.call(prompt);
-                  },
-                ),
-              ],
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _savedMenus.isEmpty
+                    ? _buildEmptyState()
+                    : _buildMenuList(),
           ),
         ],
       ),

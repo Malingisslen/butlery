@@ -13,7 +13,6 @@ import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
-import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -405,91 +404,6 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
           AppLocale.current.errorCouldNotUpdate('meny'), e);
       return false;
     }
-  }
-
-  /// Saves the current menu's category structure as a reusable template.
-  /// Stores only category names and recipe counts, not specific recipes.
-  Future<bool> saveMenuAsTemplate({
-    required String templateName,
-    String? description,
-  }) async {
-    if (!_stateManager.validateMenuForSaving()) {
-      _stateManager.setError(AppLocale.current.errorNoMenuToSaveAsTemplate);
-      return false;
-    }
-
-    try {
-      final menuService = ServiceLocator.get<UnifiedMenuService>();
-      final templateId = await menuService.collaborative.createMenuTemplate(
-        templateName: templateName,
-        menuSnapshot: menu,
-        description: description,
-      );
-
-      if (templateId != null) {
-        AppLogger.success('Menu template saved: $templateName');
-        return true;
-      }
-
-      _stateManager.setError(AppLocale.current.errorCouldNotSaveTemplate);
-      return false;
-    } catch (e) {
-      _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotSaveTemplate, e);
-      return false;
-    }
-  }
-
-  /// Gets user's saved menu templates.
-  Future<List<Map<String, dynamic>>> getUserMenuTemplates() async {
-    try {
-      final menuService = ServiceLocator.get<UnifiedMenuService>();
-      return await menuService.collaborative.getUserMenuTemplates();
-    } catch (e) {
-      _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotLoad('mallar'), e);
-      return [];
-    }
-  }
-
-  /// Deletes a menu template by ID.
-  Future<bool> deleteMenuTemplate(String templateId) async {
-    try {
-      final menuService = ServiceLocator.get<UnifiedMenuService>();
-      return await menuService.collaborative.deleteMenuTemplate(templateId);
-    } catch (e) {
-      _stateManager.handleOperationError(
-          AppLocale.current.errorCouldNotDelete('mall'), e);
-      return false;
-    }
-  }
-
-  /// Builds a prompt string from a template's category structure.
-  /// E.g., "3 Middag, 2 Lunch" from a template with those categories.
-  String buildPromptFromTemplate(Map<String, dynamic> template) {
-    final categories = template['categories'] as List<dynamic>? ?? [];
-    final menuSnapshot = template['menuSnapshot'] as Map<String, dynamic>?;
-
-    if (menuSnapshot != null) {
-      // Build prompt from actual category counts in the snapshot
-      final parts = <String>[];
-      for (final category in categories) {
-        final categoryName = category.toString();
-        final recipes = menuSnapshot[categoryName] as List<dynamic>?;
-        final count = recipes?.length ?? 0;
-        if (count > 0) {
-          parts.add('$count ${categoryName.toLowerCase()}');
-        }
-      }
-      if (parts.isNotEmpty) return parts.join(', ');
-    }
-
-    // Fallback: use totalRecipeCount distributed across categories
-    if (categories.isNotEmpty) {
-      return categories.map((c) => c.toString().toLowerCase()).join(', ');
-    }
-
-    return '';
   }
 
   /// Retrieves available shared menus from social network with comprehensive error handling.

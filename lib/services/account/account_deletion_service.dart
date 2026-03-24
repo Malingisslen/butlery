@@ -153,14 +153,9 @@ class AccountDeletionService extends BaseService {
         'notifications': () => _profileOps.deleteNotifications(userId),
         'notification_analytics': () =>
             _profileOps.deleteNotificationAnalytics(userId),
-        'shared_personal_tags': () =>
-            _socialOps.deleteSharedPersonalTags(userId),
-        'menu_activity': () => _socialOps.deleteMenuActivity(userId),
         'offline_cache': () => _storageOps.clearOfflineData(userId),
         'public_profile': () => _profileOps.deletePublicProfile(userId),
         'realtime_recipes': () => _storageOps.deleteRealtimeRecipes(userId),
-        'realtime_menus': () => _storageOps.deleteRealtimeMenus(userId),
-        'realtime_resources': () => _storageOps.deleteRealtimeResources(userId),
         'presence': () => _storageOps.deletePresence(userId),
         'storage_files': () => _storageOps.deleteUserStorageFiles(userId),
       };

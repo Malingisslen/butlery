@@ -12,14 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
-import 'package:butlery/models/shared_personal_tag.dart';
-import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
@@ -56,7 +51,6 @@ class _PersonalTagsViewContent extends StatefulWidget {
 
 class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   TagSortOrder _sortOrder = TagSortOrder.byUsage;
-  List<SharedPersonalTag> _pendingSharedTags = [];
 
   /// Cached sorted tags per group key (null = ungrouped)
   final Map<String?, List<PersonalTag>> _sortedTagsCache = {};
@@ -71,43 +65,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       if (viewModel.hasTags && !viewModel.isLoadingStats) {
         viewModel.loadTagStatistics();
       }
-      _loadPendingSharedTags();
     });
-  }
-
-  Future<void> _loadPendingSharedTags() async {
-    final authService = ServiceLocator.get<AuthService>();
-    final userId = authService.currentUser?.uid;
-    if (userId == null) return;
-
-    try {
-      final personalTagService = ServiceLocator.get<PersonalTagService>();
-      final tags = await personalTagService.getPendingSharedTags(userId);
-      if (mounted) {
-        setState(() => _pendingSharedTags = tags);
-      }
-    } catch (e) {
-      AppLogger.warning('Failed to load pending shared tags: $e');
-    }
-  }
-
-  Future<void> _importSharedTag(
-      BuildContext context, SharedPersonalTag sharedTag) async {
-    try {
-      final personalTagService = ServiceLocator.get<PersonalTagService>();
-      final result = await personalTagService.importSharedTag(sharedTag.id);
-      if (result != null && context.mounted) {
-        SnackBarUtils.showSuccess(context, context.l10n.tagImportedSuccess);
-        setState(() {
-          _pendingSharedTags.removeWhere((t) => t.id == sharedTag.id);
-        });
-        context.read<PersonalTagViewModel>().initialize();
-      }
-    } catch (e) {
-      if (context.mounted) {
-        SnackBarUtils.showError(context, context.l10n.commonErrorOccurred);
-      }
-    }
   }
 
   void _invalidateSortCache() {
@@ -301,16 +259,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 onRefresh: () async {
                   await viewModel.initialize();
                   await viewModel.loadTagStatistics();
-                  await _loadPendingSharedTags();
                 },
                 child: Builder(
                   builder: (context) {
                     final items = <Widget>[
-                      if (_pendingSharedTags.isNotEmpty)
-                        SharedTagsSection(
-                          pendingSharedTags: _pendingSharedTags,
-                          onImport: _importSharedTag,
-                        ),
                       if (ungroupedTags.isNotEmpty)
                         PersonalTagSection(
                           title: context.l10n.personalTagSectionTags,

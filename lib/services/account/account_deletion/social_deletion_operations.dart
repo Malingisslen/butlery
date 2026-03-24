@@ -53,7 +53,7 @@ class SocialDeletionOperations {
 
       final friendIds = friendsSnapshot.docs.map((d) => d.id).toList();
 
-      // Clean up reverse friend links and categoryMemberships on each friend
+      // Clean up reverse friend links on each friend
       for (final friendId in friendIds) {
         // Remove this user from friend's friends list
         batch.delete(_firestore
@@ -62,25 +62,9 @@ class SocialDeletionOperations {
             .collection(FirestoreCollections.userFriends)
             .doc(userId));
         opCount++;
-        var state = await _commitIfNeeded(batch, opCount);
+        final state = await _commitIfNeeded(batch, opCount);
         batch = state.batch;
         opCount = state.count;
-
-        // Remove categoryMemberships where this user is the owner
-        final memberships = await _firestore
-            .collection(FirestoreCollections.users)
-            .doc(friendId)
-            .collection(FirestoreCollections.userCategoryMemberships)
-            .where('ownerId', isEqualTo: userId)
-            .get();
-
-        for (final doc in memberships.docs) {
-          batch.delete(doc.reference);
-          opCount++;
-          state = await _commitIfNeeded(batch, opCount);
-          batch = state.batch;
-          opCount = state.count;
-        }
       }
 
       // Delete user's own friends list, categories, and requests
@@ -316,40 +300,6 @@ class SocialDeletionOperations {
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete user reports', e);
-      return false;
-    }
-  }
-
-  /// Delete user's shared personal tags.
-  Future<bool> deleteSharedPersonalTags(String userId) async {
-    try {
-      final tags = await _firestore
-          .collection(FirestoreCollections.sharedPersonalTags)
-          .where('sharedByUserId', isEqualTo: userId)
-          .get();
-
-      await batchDeleteDocs(_firestore, tags.docs);
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete shared personal tags', e);
-      return false;
-    }
-  }
-
-  /// Delete user's menu activity records.
-  Future<bool> deleteMenuActivity(String userId) async {
-    try {
-      final activities = await _firestore
-          .collection(FirestoreCollections.menuActivity)
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      await batchDeleteDocs(_firestore, activities.docs);
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete menu activity', e);
       return false;
     }
   }

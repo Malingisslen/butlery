@@ -19,7 +19,9 @@ class ResourceParserModule {
 
   /// Get DocumentReference for a resource
   DocumentReference<Map<String, dynamic>> getResourceDocRef(String resourceId) {
-    return firestoreRepository.realtimeResourceDoc(resourceId);
+    return firestoreRepository.firestore
+        .collection('realtime_resources')
+        .doc(resourceId);
   }
 
   /// Parse resource from Firestore snapshot with type safety

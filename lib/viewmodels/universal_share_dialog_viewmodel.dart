@@ -18,10 +18,6 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/utils/social_content_features.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/tagging/personal_tag_service.dart';
-import 'package:butlery/services/notifications/notification_service.dart';
-import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// PHASE 2: Validation result for sharing operations
@@ -394,10 +390,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     }
   }
 
-  /// Share a personal tag with selected friends by creating a shared snapshot.
-  ///
-  /// The tag is shared as a link-based static snapshot. Recipients receive a
-  /// notification and can import the tag definition into their own collection.
+  /// Stub — personal tag sharing backend was removed.
   Future<bool> sharePersonalTag({
     required String tagId,
     required String tagName,
@@ -405,52 +398,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     List<String>? groupIds,
     String? message,
   }) async {
-    if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
-      _setError(AppLocale.current.errorNoFriendsOrGroupsSelected);
-      return false;
-    }
-
-    _setSharing(true);
-    _clearError();
-
-    try {
-      final personalTagService = ServiceLocator.get<PersonalTagService>();
-      final shareId = await personalTagService.shareTag(
-        tagId,
-        recipientUserIds: friendUserIds,
-      );
-
-      if (shareId == null) {
-        throw Exception(AppLocale.current
-            .errorCouldNotCreate(AppLocale.current.nounShareLink));
-      }
-
-      AppLogger.info(
-        'Personal tag "$tagName" shared with ID: $shareId to ${friendUserIds.length} friends',
-      );
-
-      // Send notification to recipients
-      try {
-        final notificationService = ServiceLocator.get<NotificationService>();
-        final userService = ServiceLocator.get<UserService>();
-        final senderName = userService.currentUserProfile?.displayName ?? '';
-        await notificationService.sendImmediateNotification(
-          targetUserIds: friendUserIds,
-          strategy: NotificationStrategy.tagShared,
-          variables: {'senderName': senderName, 'tagName': tagName},
-          additionalData: {'shareId': shareId, 'type': 'shared_tag'},
-        );
-      } catch (e) {
-        AppLogger.warning('Failed to send tag share notification: $e');
-      }
-
-      return true;
-    } catch (e) {
-      _setError(AppLocale.current.errorCouldNotUpdate('tagg'));
-      return false;
-    } finally {
-      _setSharing(false);
-    }
+    _setError('Taggdelning är inte tillgänglig');
+    return false;
   }
 
   /// Clear any error messages

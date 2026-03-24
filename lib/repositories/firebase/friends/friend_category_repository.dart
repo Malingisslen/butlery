@@ -5,40 +5,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/models/friend_category_member.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
-import 'package:butlery/repositories/firebase/modules/friend_category_member_module.dart';
-import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
-  /// Module for handling subcollection-based members
-  late final FriendCategoryMemberModule? _memberModule;
-
-  /// Creates a friend category repository with dependency injection support.
-  /// [firestore] Optional Firestore instance for testing, defaults to production instance
-  /// [authRepository] Optional authentication repository, defaults to FirebaseAuthRepository
-  /// [featureFlags] Optional feature flag service for subcollection member support
   FriendCategoryRepository({
     super.firestore,
     AuthRepository? authRepository,
-    FeatureFlagService? featureFlags,
     super.timestampProvider,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
-        ) {
-    // Initialize member module if feature flags provided
-    if (featureFlags != null) {
-      _memberModule = FriendCategoryMemberModule(
-        firestore: firestore,
-        featureFlags: featureFlags,
-      );
-    } else {
-      _memberModule = null;
-    }
-  }
+        );
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
       firestore
@@ -458,145 +437,5 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
       granted: true,
       details: 'Categories: ${updates.length}',
     );
-  }
-
-  /// Get member IDs for a category using hybrid access.
-  /// Returns from subcollection if usesSubcollectionMembers, otherwise from inline array.
-  Future<List<String>> getCategoryMemberIds(
-    String userId,
-    String categoryId,
-  ) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return [];
-
-    if (category.usesSubcollectionMembers && _memberModule != null) {
-      return _memberModule.getMemberIds(userId, categoryId);
-    }
-
-    return category.friendUserIds;
-  }
-
-  /// Get full member data for a category.
-  /// Returns from subcollection if usesSubcollectionMembers.
-  Future<List<FriendCategoryMember>> getCategoryMembers(
-    String userId,
-    String categoryId,
-  ) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return [];
-
-    if (category.usesSubcollectionMembers && _memberModule != null) {
-      return _memberModule.getMembers(userId, categoryId);
-    }
-
-    // Convert inline IDs to member objects (limited data)
-    return category.friendUserIds
-        .map((friendId) => FriendCategoryMember(
-              friendId: friendId,
-              categoryId: categoryId,
-              ownerId: userId,
-              addedAt: category.createdAt, // Approximate
-            ))
-        .toList();
-  }
-
-  /// Add friend to category with automatic migration to subcollection if threshold exceeded.
-  Future<void> addFriendToCategoryHybrid({
-    required String userId,
-    required String categoryId,
-    required String friendId,
-    String? displayName,
-    String? avatarUrl,
-  }) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return;
-
-    // Check if already uses subcollection
-    if (category.usesSubcollectionMembers && _memberModule != null) {
-      await _memberModule.addMember(
-        ownerId: userId,
-        categoryId: categoryId,
-        categoryName: category.name,
-        categoryEmoji: category.emoji,
-        friendId: friendId,
-        displayName: displayName,
-        avatarUrl: avatarUrl,
-      );
-      return;
-    }
-
-    // Check if should migrate to subcollection
-    if (_memberModule != null &&
-        _memberModule
-            .shouldUseSubcollection(category.friendUserIds.length + 1)) {
-      AppLogger.info(
-          'Category $categoryId exceeded threshold, migrating to subcollection');
-
-      // Migrate existing members first
-      await _memberModule.migrateToSubcollection(category: category);
-
-      // Add new member to subcollection
-      await _memberModule.addMember(
-        ownerId: userId,
-        categoryId: categoryId,
-        categoryName: category.name,
-        categoryEmoji: category.emoji,
-        friendId: friendId,
-        displayName: displayName,
-        avatarUrl: avatarUrl,
-      );
-      return;
-    }
-
-    // Use inline array (default/legacy behavior)
-    await addFriendToCategory(userId, categoryId, friendId);
-  }
-
-  /// Remove friend from category using hybrid approach.
-  Future<void> removeFriendFromCategoryHybrid({
-    required String userId,
-    required String categoryId,
-    required String friendId,
-  }) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return;
-
-    if (category.usesSubcollectionMembers && _memberModule != null) {
-      await _memberModule.removeMember(
-        ownerId: userId,
-        categoryId: categoryId,
-        friendId: friendId,
-      );
-      return;
-    }
-
-    // Use inline array (default/legacy behavior)
-    await removeFriendFromCategory(userId, categoryId, friendId);
-  }
-
-  /// Delete a category and all its subcollection members.
-  Future<void> deleteCategoryWithMembers(
-      String userId, String categoryId) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return;
-
-    // Delete subcollection members if applicable
-    if (category.usesSubcollectionMembers && _memberModule != null) {
-      await _memberModule.deleteAllMembers(
-        ownerId: userId,
-        categoryId: categoryId,
-      );
-    }
-
-    // Delete the category document
-    await deleteCategory(userId, categoryId);
-  }
-
-  /// Get categories that a friend belongs to (inverse lookup).
-  Future<List<CategoryMembership>> getFriendCategoryMemberships(
-    String friendId,
-  ) async {
-    if (_memberModule == null) return [];
-    return _memberModule.getFriendMemberships(friendId);
   }
 }

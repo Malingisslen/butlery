@@ -75,18 +75,6 @@ class FirestoreRepository {
         .snapshots();
   }
 
-  /// Creates a document reference for real-time collaborative resources.
-  /// Provides convenient access to the real-time resources collection used for
-  /// collaborative features like shared recipe editing, menu planning, and
-  /// real-time synchronization across multiple users.
-  /// [id] The unique identifier for the real-time resource
-  /// Returns a [DocumentReference] for the specified real-time resource
-  DocumentReference<Map<String, dynamic>> realtimeResourceDoc(String id) {
-    return _firestore
-        .collection(FirestoreCollections.realtimeResources)
-        .doc(id);
-  }
-
   /// Generic helpers for document operations.
   Future<DocumentSnapshot<Map<String, dynamic>>> getDocument(
       DocumentReference<Map<String, dynamic>> ref) {

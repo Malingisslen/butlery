@@ -2954,7 +2954,7 @@ class MockMenuCollaborationRepository extends Mock
     return true;
   }
 
-  /// Remove recipe from menu - ✅ FIXED: Named parameters for Phase 4D
+  /// Remove recipe from menu
   @override
   Future<bool> removeRecipeFromMenu({
     required String menuId,
@@ -2962,124 +2962,11 @@ class MockMenuCollaborationRepository extends Mock
     required String recipeId,
     String? reason,
   }) async {
-    // Mock recipe removal from menu
-    return true;
-  }
-
-  /// Rate menu - ✅ FIXED: Named parameters for Phase 4D
-  @override
-  Future<bool> rateMenu({
-    required String menuId,
-    required double rating,
-    String? comment,
-  }) async {
-    // Mock menu rating
-    return true;
-  }
-
-  /// Get menu ratings
-  @override
-  Future<List<Map<String, dynamic>>> getMenuRatings(String menuId) async {
-    return [
-      {
-        'rating': 4.0,
-        'comment': 'Great menu!',
-        'userId': 'user1',
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      },
-      {
-        'rating': 4.5,
-        'comment': 'Love the variety',
-        'userId': 'user2',
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      },
-    ];
-  }
-
-  /// ✅ FIXED: Missing methods for Phase 5A - MenuCollaborationRepository interface completion
-  /// Get menu average rating
-  @override
-  Future<double> getMenuAverageRating(String menuId) async {
-    return 4.2;
-  }
-
-  /// Add comment to menu
-  @override
-  Future<bool> addMenuComment({
-    required String menuId,
-    required String comment,
-    String? replyToCommentId,
-  }) async {
-    // Mock menu comment addition
-    return true;
-  }
-
-  /// Get menu comments stream
-  @override
-  Stream<List<Map<String, dynamic>>> getMenuCommentsStream(String menuId) {
-    return Stream.value([
-      {
-        'id': 'comment-1',
-        'userId': 'user-1',
-        'comment': 'Great menu!',
-        'createdAt': DateTime.now().millisecondsSinceEpoch,
-      }
-    ]);
-  }
-
-  /// Toggle like on menu comment
-  @override
-  Future<bool> toggleCommentLike({
-    required String menuId,
-    required String commentId,
-  }) async {
-    // Mock comment like toggle
     return true;
   }
 
   @override
-  Future<bool> deleteMenuComment({
-    required String menuId,
-    required String commentId,
-  }) async {
-    return true;
-  }
-
-  @override
-  Future<bool> removeMenuRating(String menuId) async {
-    return true;
-  }
-
-  /// Create menu template
-  @override
-  Future<String?> createMenuTemplate({
-    required String templateName,
-    required Map<String, List<Recipe>> menuSnapshot,
-    String? description,
-    List<String>? tags,
-  }) async {
-    // Mock template creation
-    return 'template-id-123';
-  }
-
-  /// Create menu from template
-  @override
-  Future<String?> createMenuFromTemplate({
-    required String templateId,
-    required String menuTitle,
-    List<String>? sharedToUserIds,
-    String? shareMessage,
-    bool enableCollaboration = false,
-  }) async {
-    // Mock menu creation from template
-    return 'menu-id-456';
-  }
-
-  /// Dispose all listeners
-  @override
-  void disposeAllListeners() {
-    // Mock listener disposal
-  }
+  void disposeAllListeners() {}
 }
 
 // ✅ REMOVED: Duplicate MockLegacyNotificationRepository - keeping the complete version

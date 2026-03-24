@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/shared_personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
@@ -11,7 +10,6 @@ import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.d
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
 import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart';
-import 'package:butlery/services/tagging/personal_tag_sharing_service.dart';
 import 'package:butlery/services/tagging/personal_tag_types.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -20,17 +18,15 @@ export 'package:butlery/services/tagging/personal_tag_types.dart';
 
 /// Facade for managing user-defined personal tags, groups, and automation rules.
 ///
-/// Delegates to three focused sub-services:
+/// Delegates to two focused sub-services:
 /// - [PersonalTagCrudService] -- tag/group/rule CRUD and cascade operations
 /// - [PersonalTagRuleEvaluator] -- rule evaluation engine
-/// - [PersonalTagSharingService] -- cross-user tag sharing
 ///
 /// The public API is unchanged from the pre-refactor monolithic service.
 /// Callers interact only with PersonalTagService.
 class PersonalTagService extends BaseService {
   final PersonalTagCrudService _crud;
   final PersonalTagRuleEvaluator _evaluator;
-  final PersonalTagSharingService _sharing;
   final FirebasePersonalTagRepository _tagRepository;
   final FirebasePersonalTagGroupRepository _groupRepository;
 
@@ -42,12 +38,10 @@ class PersonalTagService extends BaseService {
   PersonalTagService({
     required PersonalTagCrudService crudService,
     required PersonalTagRuleEvaluator ruleEvaluator,
-    required PersonalTagSharingService sharingService,
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
   })  : _crud = crudService,
         _evaluator = ruleEvaluator,
-        _sharing = sharingService,
         _tagRepository = tagRepository,
         _groupRepository = groupRepository;
 
@@ -220,24 +214,6 @@ class PersonalTagService extends BaseService {
     return _evaluator.suggestTagsForRecipe(
         recipe, tagRulePairs, allTags, allGroups);
   }
-
-  // -- Sharing (delegated) --
-
-  Future<String?> shareTag(
-    String tagId, {
-    List<String> recipientUserIds = const [],
-  }) =>
-      _sharing.shareTag(tagId, recipientUserIds: recipientUserIds);
-
-  Future<List<SharedPersonalTag>> getPendingSharedTags(String userId) =>
-      _sharing.getPendingSharedTags(userId);
-
-  Future<PersonalTag?> importSharedTag(String shareId) =>
-      _sharing.importSharedTag(
-        shareId,
-        onCacheInvalidated: () =>
-            _crud.clearCache(PersonalTagCrudService.tagsCacheKey),
-      );
 
   // -- Orchestration methods (remain in facade) --
 

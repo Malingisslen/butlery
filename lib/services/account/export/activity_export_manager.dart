@@ -15,7 +15,7 @@ class ActivityExportManager {
   ActivityExportManager({required FirebaseFirestore firestore})
       : _firestore = firestore;
 
-  /// Export user comments and ratings
+  /// Export user recipe comments and ratings
   Future<Map<String, dynamic>> exportCommentsAndRatings(String userId) async {
     try {
       final data = <String, dynamic>{
@@ -25,7 +25,6 @@ class ActivityExportManager {
       final commentLimit = ExportPaginationHelper.getLimitForType('comments');
       final ratingLimit = ExportPaginationHelper.getLimitForType('ratings');
 
-      // Run all 4 independent queries in parallel
       final results = await Future.wait([
         ExportPaginationHelper.paginatedQuery(
           query: _firestore
@@ -39,24 +38,10 @@ class ActivityExportManager {
               .where('userId', isEqualTo: userId),
           maxDocuments: ratingLimit,
         ),
-        ExportPaginationHelper.paginatedQuery(
-          query: _firestore
-              .collectionGroup(FirestoreCollections.comments)
-              .where('commentedBy', isEqualTo: userId),
-          maxDocuments: commentLimit,
-        ),
-        ExportPaginationHelper.paginatedQuery(
-          query: _firestore
-              .collectionGroup(FirestoreCollections.ratings)
-              .where('ratedBy', isEqualTo: userId),
-          maxDocuments: ratingLimit,
-        ),
       ]);
 
       final recipeComments = results[0];
       final recipeRatings = results[1];
-      final menuComments = results[2];
-      final menuRatings = results[3];
 
       for (final doc in recipeComments) {
         data['comments'].add({
@@ -70,22 +55,6 @@ class ActivityExportManager {
         data['ratings'].add({
           'rating_id': doc.id,
           'type': 'recipe',
-          'data': sanitizeForJson(doc.data()),
-        });
-      }
-
-      for (final doc in menuComments) {
-        data['comments'].add({
-          'comment_id': doc.id,
-          'type': 'menu',
-          'data': sanitizeForJson(doc.data()),
-        });
-      }
-
-      for (final doc in menuRatings) {
-        data['ratings'].add({
-          'rating_id': doc.id,
-          'type': 'menu',
           'data': sanitizeForJson(doc.data()),
         });
       }

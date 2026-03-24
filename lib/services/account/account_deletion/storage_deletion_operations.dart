@@ -88,12 +88,6 @@ class StorageDeletionOperations extends BaseStorageRepository {
   Future<bool> deleteRealtimeRecipes(String userId) =>
       _deleteRealtimeCollection(userId, FirestoreCollections.realtimeRecipes);
 
-  Future<bool> deleteRealtimeMenus(String userId) =>
-      _deleteRealtimeCollection(userId, FirestoreCollections.realtimeMenus);
-
-  Future<bool> deleteRealtimeResources(String userId) =>
-      _deleteRealtimeCollection(userId, FirestoreCollections.realtimeResources);
-
   /// Delete presence document for the user
   Future<bool> deletePresence(String userId) async {
     try {

@@ -208,7 +208,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
       // Bug fix: Without this, collaborative menus the user joined don't appear in saved menus
       try {
         final realtimeMenusSnapshot = await _firestore
-            .collection(FirestoreCollections.realtimeMenus)
+            .collection('realtime_menus')
             .where('participantIds', arrayContains: userId)
             .get();
 

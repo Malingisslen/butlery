@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
-import 'package:butlery/models/shared_personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -127,70 +126,6 @@ class PersonalTagTile extends StatelessWidget {
     }
 
     return parts.isEmpty ? context.l10n.personalTagNoUsage : parts.join(' · ');
-  }
-}
-
-/// Section displaying pending shared tags from friends.
-class SharedTagsSection extends StatelessWidget {
-  const SharedTagsSection({
-    super.key,
-    required this.pendingSharedTags,
-    required this.onImport,
-  });
-
-  final List<SharedPersonalTag> pendingSharedTags;
-  final Future<void> Function(BuildContext context, SharedPersonalTag tag)
-      onImport;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: AppDimensions.spacingSm,
-          ),
-          child: Text(
-            context.l10n.sharedWithYou,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: colorScheme.primary,
-            ),
-          ),
-        ),
-        for (final shared in pendingSharedTags)
-          Card(
-            margin: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingLg,
-              vertical: AppDimensions.spacingXs,
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: colorScheme.primary
-                    .withValues(alpha: AppDimensions.opacityLight),
-                child: Icon(Icons.label,
-                    color: colorScheme.primary, size: AppDimensions.iconSizeM),
-              ),
-              title: Text(shared.tagName),
-              subtitle: Text(
-                context.l10n.sharedByName(shared.sharedByDisplayName),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              trailing: FilledButton.tonal(
-                onPressed: () => onImport(context, shared),
-                child: Text(context.l10n.importTag),
-              ),
-            ),
-          ),
-        const SizedBox(height: AppDimensions.spacingMd),
-        const Divider(),
-      ],
-    );
   }
 }
 

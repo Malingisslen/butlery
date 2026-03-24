@@ -31,9 +31,6 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   final _commentController = TextEditingController();
   bool _isLoading = false;
   bool _enableSocialSharing = false;
-  bool _saveAsTemplate = false;
-  final _templateNameController = TextEditingController();
-  final _templateDescriptionController = TextEditingController();
   final List<String> _selectedFriendIds = [];
   final _shareMessageController = TextEditingController();
 
@@ -48,8 +45,6 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
     _nameController.dispose();
     _commentController.dispose();
     _shareMessageController.dispose();
-    _templateNameController.dispose();
-    _templateDescriptionController.dispose();
     super.dispose();
   }
 
@@ -74,14 +69,6 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
                 _buildNameField(),
                 const SizedBox(height: AppDimensions.spacingXl),
                 _buildCommentField(),
-                const SizedBox(height: AppDimensions.spacingXl),
-                _buildSaveAsTemplateToggle(),
-                if (_saveAsTemplate) ...[
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  _buildTemplateNameField(),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  _buildTemplateDescriptionField(),
-                ],
                 const SizedBox(height: AppDimensions.spacingXl),
                 _buildSocialSharingToggle(),
                 if (_enableSocialSharing) ...[
@@ -173,55 +160,6 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         prefixIcon: const Icon(Icons.comment),
       ),
       maxLines: 3,
-      maxLength: 200,
-      enabled: !_isLoading,
-    );
-  }
-
-  Widget _buildSaveAsTemplateToggle() {
-    return SwitchListTile(
-      title: Text(context.l10n.menuTemplateSaveAsTemplate),
-      subtitle: Text(context.l10n.menuTemplateSaveAsTemplateDescription),
-      value: _saveAsTemplate,
-      onChanged: _isLoading
-          ? null
-          : (value) {
-              if (mounted) {
-                setState(() {
-                  _saveAsTemplate = value;
-                });
-              }
-            },
-    );
-  }
-
-  Widget _buildTemplateNameField() {
-    return TextFormField(
-      controller: _templateNameController,
-      decoration: InputDecoration(
-        labelText: context.l10n.menuTemplateName,
-        hintText: context.l10n.menuTemplateNameHint,
-        border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.dashboard_customize),
-      ),
-      validator: _saveAsTemplate
-          ? FormValidators.required(context.l10n.menuTemplateNameRequired)
-          : null,
-      maxLength: 50,
-      enabled: !_isLoading,
-    );
-  }
-
-  Widget _buildTemplateDescriptionField() {
-    return TextFormField(
-      controller: _templateDescriptionController,
-      decoration: InputDecoration(
-        labelText: context.l10n.menuTemplateDescription,
-        hintText: context.l10n.menuTemplateDescriptionHint,
-        border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.description),
-      ),
-      maxLines: 2,
       maxLength: 200,
       enabled: !_isLoading,
     );
@@ -342,21 +280,10 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         shareMessage: _shareMessageController.text,
       );
 
-      // Also save as template if requested
-      if (success && _saveAsTemplate) {
-        await widget.viewModel.saveMenuAsTemplate(
-          templateName: _templateNameController.text.trim(),
-          description: _templateDescriptionController.text.trim(),
-        );
-      }
-
       if (mounted) {
         Navigator.pop(context);
         if (success) {
-          final message = _saveAsTemplate
-              ? context.l10n
-                  .menuTemplateSavedSuccess(_templateNameController.text)
-              : context.l10n.menuSavedSuccess(_nameController.text);
+          final message = context.l10n.menuSavedSuccess(_nameController.text);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(message),

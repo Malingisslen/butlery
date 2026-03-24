@@ -13,7 +13,6 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
 import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart';
-import 'package:butlery/services/tagging/personal_tag_sharing_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -89,14 +88,9 @@ void main() {
       lookupService: mockLookupService,
     );
 
-    final sharingService = PersonalTagSharingService(
-      tagRepository: mockTagRepository,
-    );
-
     service = PersonalTagService(
       crudService: crudService,
       ruleEvaluator: ruleEvaluator,
-      sharingService: sharingService,
       tagRepository: mockTagRepository,
       groupRepository: mockGroupRepository,
     );

@@ -13,7 +13,6 @@ abstract final class FirestoreCollections {
   static const String sharedMenus = 'shared_menus';
   static const String sharedShoppingLists = 'shared_shopping_lists';
   static const String blocks = 'blocks';
-  static const String sharedPersonalTags = 'shared_personal_tags';
   static const String friendRequests = 'friend_requests';
   static const String groupInvitations = 'group_invitations';
   static const String conversations = 'conversations';
@@ -25,15 +24,10 @@ abstract final class FirestoreCollections {
   static const String feedback = 'feedback';
   static const String presence = 'presence';
   static const String realtimeRecipes = 'realtime_recipes';
-  static const String realtimeMenus = 'realtime_menus';
-  static const String realtimeResources = 'realtime_resources';
   static const String recipeComments = 'recipe_comments';
   static const String recipeRatings = 'recipe_ratings';
   static const String recipeSocialStats = 'recipe_social_stats';
-  static const String menuComments = 'menu_comments';
-  static const String menuRatings = 'menu_ratings';
   static const String menuTemplates = 'menu_templates';
-  static const String menuActivity = 'menu_activity';
   static const String userNotifications = 'user_notifications';
   static const String userNotificationPreferences =
       'user_notification_preferences';
@@ -63,7 +57,6 @@ abstract final class FirestoreCollections {
   static const String userShoppingLists = 'shopping_lists';
   static const String userFriends = 'friends';
   static const String userFriendCategories = 'friend_categories';
-  static const String userCategoryMemberships = 'category_memberships';
   static const String userPersonalTags = 'personal_tags';
   static const String userPersonalTagGroups = 'personal_tag_groups';
   static const String userSettings = 'settings';

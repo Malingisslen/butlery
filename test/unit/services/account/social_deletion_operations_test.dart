@@ -262,11 +262,15 @@ void main() {
           .doc('rr1')
           .set({'userId': testUserId, 'rating': 5});
       await fakeFirestore
-          .collection(FirestoreCollections.menuComments)
+          .collection(FirestoreCollections.sharedMenus)
+          .doc('menu1')
+          .collection(FirestoreCollections.comments)
           .doc('mc1')
           .set({'commentedBy': testUserId, 'text': 'Nice menu'});
       await fakeFirestore
-          .collection(FirestoreCollections.menuRatings)
+          .collection(FirestoreCollections.sharedMenus)
+          .doc('menu1')
+          .collection(FirestoreCollections.ratings)
           .doc('mr1')
           .set({'ratedBy': testUserId, 'rating': 4});
 
@@ -301,16 +305,20 @@ void main() {
           .get();
       expect(ratings.docs, isEmpty);
 
-      // Menu comments should be hard-deleted
+      // Menu comments should be hard-deleted (subcollection under shared menus)
       final menuComments = await fakeFirestore
-          .collection(FirestoreCollections.menuComments)
+          .collection(FirestoreCollections.sharedMenus)
+          .doc('menu1')
+          .collection(FirestoreCollections.comments)
           .where('commentedBy', isEqualTo: testUserId)
           .get();
       expect(menuComments.docs, isEmpty);
 
-      // Menu ratings should be hard-deleted
+      // Menu ratings should be hard-deleted (subcollection under shared menus)
       final menuRatings = await fakeFirestore
-          .collection(FirestoreCollections.menuRatings)
+          .collection(FirestoreCollections.sharedMenus)
+          .doc('menu1')
+          .collection(FirestoreCollections.ratings)
           .where('ratedBy', isEqualTo: testUserId)
           .get();
       expect(menuRatings.docs, isEmpty);
