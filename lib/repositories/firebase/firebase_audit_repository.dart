@@ -323,47 +323,4 @@ class FirebaseAuditRepository {
       rethrow;
     }
   }
-
-  /// Delete old audit logs (admin only, for data retention policy).
-  /// NOTE: Only delete logs older than legal retention requirements!
-  /// Most jurisdictions require 1-7 year retention for audit logs.
-  /// **Usage:**
-  /// ```dart
-  /// // Delete logs older than 7 years (2555 days)
-  /// await auditRepository.deleteOldAuditLogs(
-  ///   olderThan: Duration(days: 2555),
-  /// );
-  /// ```
-  Future<int> deleteOldAuditLogs({
-    required Duration olderThan,
-  }) async {
-    try {
-      final cutoffDate = DateTime.now().subtract(olderThan);
-
-      final snapshot = await _collection
-          .where('timestamp', isLessThan: Timestamp.fromDate(cutoffDate))
-          .get();
-
-      if (snapshot.docs.isEmpty) {
-        AppLogger.info('No old audit logs to delete');
-        return 0;
-      }
-
-      // Delete in batch
-      final batch = _firestore.batch();
-      for (final doc in snapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-
-      AppLogger.info(
-        '🗑️ Deleted ${snapshot.docs.length} audit logs older than $cutoffDate',
-      );
-
-      return snapshot.docs.length;
-    } catch (e) {
-      AppLogger.error('Failed to delete old audit logs: $e');
-      rethrow;
-    }
-  }
 }

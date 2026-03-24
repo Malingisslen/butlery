@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
+import 'package:collection/collection.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -33,7 +34,6 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   String _lastActivity = '';
   DateTime _lastActivityTime = DateTime.now();
   StreamSubscription<ShoppingServiceState>? _stateSubscription;
-  bool _isDisposed = false;
 
   CollaborativeShoppingViewModel({
     required this.listId,
@@ -54,12 +54,10 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   }
 
   void _onServiceStateChanged(ShoppingServiceState state) {
-    if (_isDisposed) return;
+    if (isDisposed) return;
     if (state is ShoppingStateData) {
-      final updated = state.lists
-          .cast<UnifiedShoppingList?>()
-          .firstWhere((l) => l?.id == listId, orElse: () => null);
-      if (updated != null && updated != _currentList) {
+      final updated = state.lists.firstWhereOrNull((l) => l.id == listId);
+      if (updated != null) {
         _currentList = updated;
         notifyListeners();
       }
@@ -120,9 +118,8 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     try {
       AppLogger.info('📋 Laddar kollaborativ lista: $listId');
 
-      final targetList = _shoppingService.lists
-          .cast<UnifiedShoppingList?>()
-          .firstWhere((list) => list?.id == listId, orElse: () => null);
+      final targetList =
+          _shoppingService.lists.firstWhereOrNull((list) => list.id == listId);
 
       if (targetList != null) {
         _currentList = targetList;
@@ -187,7 +184,6 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
 
   @override
   void dispose() {
-    _isDisposed = true;
     _stateSubscription?.cancel();
     _itemOperationsManager.removeListener(_onManagerChanged);
     _itemOperationsManager.dispose();

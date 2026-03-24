@@ -179,7 +179,11 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
           .doc(userId)
           .collection(FirestoreCollections.userRateLimits)
           .doc('comments'),
-      {'lastWrite': timestampProvider.serverTimestamp()},
+      {
+        'lastWrite': timestampProvider.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+      },
       SetOptions(merge: true),
     );
 

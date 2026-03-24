@@ -377,7 +377,7 @@ class NotificationPreferenceManager {
     AppLogger.debug('📋 Cleared preference cache for ${_userId.maskedUserId}');
   }
 
-  /// Clear SharedPreferences data for this user (GDPR: remove on logout/deletion)
+  /// GDPR: must be called on logout and account deletion to remove personal data.
   Future<void> clearLocalStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();

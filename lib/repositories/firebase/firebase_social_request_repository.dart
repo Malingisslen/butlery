@@ -96,7 +96,11 @@ class FirebaseSocialRequestRepository
           .doc(currentUser)
           .collection(FirestoreCollections.userRateLimits)
           .doc('social_requests'),
-      {'lastWrite': timestampProvider.serverTimestamp()},
+      {
+        'lastWrite': timestampProvider.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+      },
       SetOptions(merge: true),
     );
     await batch.commit();

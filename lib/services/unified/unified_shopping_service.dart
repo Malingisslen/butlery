@@ -296,8 +296,8 @@ class UnifiedShoppingService
         _lists.addAll(collabLists);
         notifyListeners();
       },
-      onError: (e) =>
-          AppLogger.error('Collaborative list stream error', e as Object),
+      onError: (Object e, StackTrace _) =>
+          AppLogger.error('Collaborative list stream error', e),
     );
   }
 

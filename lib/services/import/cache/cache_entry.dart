@@ -93,6 +93,8 @@ class CacheEntry {
       'extractionMeta': extractionMeta.toMap(),
       'cachedAt': FieldValue.serverTimestamp(),
       'ttlDays': ttlDays,
+      'expireAt':
+          Timestamp.fromDate(DateTime.now().add(Duration(days: ttlDays))),
       'accessCount': accessCount,
       'lastAccessedAt': FieldValue.serverTimestamp(),
     };

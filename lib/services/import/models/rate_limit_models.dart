@@ -5,6 +5,7 @@
 /// - Separate limits for basic imports vs LLM operations
 /// - Cost tracking for LLM operations
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -274,6 +275,8 @@ class UsageLimits {
       'llmCostThisMonth': llmCostThisMonth,
       'llmOperationsThisMonth': llmOperationsThisMonth,
       'monthWindowStart': monthWindowStart,
+      'expireAt':
+          Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
     };
   }
 }

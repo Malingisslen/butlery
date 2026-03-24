@@ -45,6 +45,8 @@ class NotificationAnalyticsManager {
         'type': type.name,
         'status': 'sent',
         'sentAt': FieldValue.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
         'metadata': metadata,
       };
 
@@ -114,6 +116,8 @@ class NotificationAnalyticsManager {
         'userId': _userId,
         'action': 'opened',
         'timestamp': FieldValue.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
         'context': context ?? {},
       };
 
@@ -145,6 +149,8 @@ class NotificationAnalyticsManager {
         'userId': _userId,
         'action': 'dismissed',
         'timestamp': FieldValue.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
         'reason': dismissalReason,
       };
 
@@ -169,6 +175,8 @@ class NotificationAnalyticsManager {
         'action': 'action_taken',
         'actionId': actionId,
         'timestamp': FieldValue.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
         'actionData': actionData ?? {},
       };
 

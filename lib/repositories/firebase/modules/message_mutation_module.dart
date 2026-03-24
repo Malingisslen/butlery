@@ -184,7 +184,11 @@ class MessageMutationModule {
             .doc(message.senderId)
             .collection(FirestoreCollections.userRateLimits)
             .doc('messages'),
-        {'lastWrite': timestampProvider.serverTimestamp()},
+        {
+          'lastWrite': timestampProvider.serverTimestamp(),
+          'expireAt':
+              Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+        },
         SetOptions(merge: true),
       );
 

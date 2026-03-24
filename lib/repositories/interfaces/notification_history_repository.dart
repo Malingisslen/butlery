@@ -14,6 +14,4 @@ abstract class NotificationHistoryRepository {
   Future<void> markNotificationDelivered(String notificationId);
 
   Future<void> markNotificationOpened(String notificationId);
-
-  Future<void> cleanupOldHistory(DateTime olderThan);
 }

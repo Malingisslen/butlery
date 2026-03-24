@@ -85,6 +85,8 @@ class AuditLog {
       'resourceId': resourceId,
       'granted': granted,
       'timestamp': FieldValue.serverTimestamp(),
+      'expireAt':
+          Timestamp.fromDate(DateTime.now().add(const Duration(days: 365))),
       'metadata': metadata,
     };
   }

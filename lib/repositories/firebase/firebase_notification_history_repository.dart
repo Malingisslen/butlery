@@ -69,6 +69,8 @@ class FirebaseNotificationHistoryRepository
         'type': type.name,
         'data': data,
         'sentAt': timestampProvider.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
         'delivered': false,
         'opened': false,
       });
@@ -109,31 +111,6 @@ class FirebaseNotificationHistoryRepository
       });
     } catch (e) {
       AppLogger.warning('Failed to mark notification as opened: $e');
-    }
-  }
-
-  @override
-  Future<void> cleanupOldHistory(DateTime olderThan) async {
-    try {
-      final cutoffTimestamp = Timestamp.fromDate(olderThan);
-      final query = await collection
-          .where('userId', isEqualTo: _userId)
-          .where('sentAt', isLessThan: cutoffTimestamp)
-          .limit(100)
-          .get();
-
-      final batch = firestore.batch();
-      for (final doc in query.docs) {
-        batch.delete(doc.reference);
-      }
-
-      if (query.docs.isNotEmpty) {
-        await batch.commit();
-        AppLogger.info(
-            'Cleaned up ${query.docs.length} old notification history entries');
-      }
-    } catch (e) {
-      AppLogger.error('Failed to cleanup notification history', e);
     }
   }
 }

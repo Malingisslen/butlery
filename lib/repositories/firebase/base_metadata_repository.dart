@@ -97,7 +97,9 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
 
       await getMetadataCollection(resourceId).doc(userId).set({
         'userId': userId,
-        'timestamp': DateTime.now(),
+        'timestamp': FieldValue.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
         ...?additionalData,
       });
 

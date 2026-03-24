@@ -610,6 +610,9 @@ async function main(): Promise<void> {
     batch.update(db.collection("ingredients").doc(id), {
       status: "deleted",
       deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+      expireAt: admin.firestore.Timestamp.fromDate(
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      ),
     });
     batchCount++;
     if (batchCount >= maxBatchSize) {
