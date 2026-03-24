@@ -9,6 +9,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -45,10 +46,11 @@ void main() {
         isAuthenticated: true,
       );
 
-      // Create repository with fake Firestore
+      // Create repository with fake Firestore and test timestamp provider
       repository = FriendRelationshipRepository(
         firestore: fakeFirestore,
         authRepository: mockAuthRepo,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -180,7 +182,9 @@ void main() {
             await repository.areFriends(testFriendId, testUserId);
         expect(areFriends1, isTrue);
         expect(areFriends2, isTrue);
-      }, skip: 'Requires FieldValue.increment support');
+      },
+          skip:
+              'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
 
       test('should remove mutual friends successfully', () async {
         // Arrange
@@ -193,7 +197,9 @@ void main() {
         final areFriends =
             await repository.areFriends(testUserId, testFriendId);
         expect(areFriends, isFalse);
-      }, skip: 'Requires FieldValue.increment support');
+      },
+          skip:
+              'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
 
       test('should remove friend as current user', () async {
         // Arrange
@@ -204,7 +210,9 @@ void main() {
 
         // Assert
         expect(success, isTrue);
-      }, skip: 'Requires FieldValue.increment support');
+      },
+          skip:
+              'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
     });
 
     // ===== FRIEND QUERIES =====

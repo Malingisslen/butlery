@@ -186,60 +186,65 @@ void main() {
     });
 
     group('Send Notification', () {
-      test('should send notification to user successfully', () async {
-        // Arrange
-        const userId = 'user-123';
-        const type = NotificationType.immediate;
-        const title = 'New Friend Request';
-        const body = 'John wants to be your friend';
-        final data = {'requestId': 'req-1'};
+      test(
+        'should send notification to user successfully',
+        () async {
+          // Arrange
+          const userId = 'user-123';
+          const type = NotificationType.immediate;
+          const title = 'New Friend Request';
+          const body = 'John wants to be your friend';
+          final data = {'requestId': 'req-1'};
 
-        // Act
-        await repository.sendNotification(
-          userId: userId,
-          type: type,
-          title: title,
-          body: body,
-          data: data,
-        );
+          // Act
+          await repository.sendNotification(
+            userId: userId,
+            type: type,
+            title: title,
+            body: body,
+            data: data,
+          );
 
-        // Assert
-        final docs = await fakeFirestore.collection('user_notifications').get();
-        expect(docs.docs.length, equals(1));
-        final notificationData = docs.docs.first.data();
-        expect(notificationData['userId'], equals(userId));
-        expect(notificationData['title'], equals(title));
-        expect(notificationData['body'], equals(body));
-        expect(notificationData['data'], equals(data));
-        expect(notificationData['isRead'], isFalse);
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+          // Assert
+          final docs =
+              await fakeFirestore.collection('user_notifications').get();
+          expect(docs.docs.length, equals(1));
+          final notificationData = docs.docs.first.data();
+          expect(notificationData['userId'], equals(userId));
+          expect(notificationData['title'], equals(title));
+          expect(notificationData['body'], equals(body));
+          expect(notificationData['data'], equals(data));
+          expect(notificationData['isRead'], isFalse);
+        },
+      );
     });
 
     group('Send Bulk Notifications', () {
-      test('should send bulk notifications to multiple users', () async {
-        // Arrange
-        final userIds = ['user-1', 'user-2', 'user-3'];
-        const type = NotificationType.batchable;
-        const title = 'New Recipe Shared';
-        const body = 'Someone shared a recipe with you';
+      test(
+        'should send bulk notifications to multiple users',
+        () async {
+          // Arrange
+          final userIds = ['user-1', 'user-2', 'user-3'];
+          const type = NotificationType.batchable;
+          const title = 'New Recipe Shared';
+          const body = 'Someone shared a recipe with you';
 
-        // Act
-        await repository.sendBulkNotifications(
-          userIds: userIds,
-          type: type,
-          title: title,
-          body: body,
-        );
+          // Act
+          await repository.sendBulkNotifications(
+            userIds: userIds,
+            type: type,
+            title: title,
+            body: body,
+          );
 
-        // Assert
-        final docs = await fakeFirestore.collection('user_notifications').get();
-        expect(docs.docs.length, equals(3));
-        expect(docs.docs.every((doc) => doc.data()['title'] == title), isTrue);
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+          // Assert
+          final docs =
+              await fakeFirestore.collection('user_notifications').get();
+          expect(docs.docs.length, equals(3));
+          expect(
+              docs.docs.every((doc) => doc.data()['title'] == title), isTrue);
+        },
+      );
     });
 
     group('Get User Notifications', () {
@@ -315,25 +320,26 @@ void main() {
     });
 
     group('Mark As Read', () {
-      test('should mark notification as read successfully', () async {
-        // Arrange
-        const notificationId = 'notif-1';
-        final notification =
-            _createNotification('user-123', id: notificationId, isRead: false);
-        await _seedNotification(fakeFirestore, notificationId, notification);
+      test(
+        'should mark notification as read successfully',
+        () async {
+          // Arrange
+          const notificationId = 'notif-1';
+          final notification = _createNotification('user-123',
+              id: notificationId, isRead: false);
+          await _seedNotification(fakeFirestore, notificationId, notification);
 
-        // Act
-        await repository.markAsRead(notificationId);
+          // Act
+          await repository.markAsRead(notificationId);
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('user_notifications')
-            .doc(notificationId)
-            .get();
-        expect(doc.data()!['isRead'], isTrue);
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+          // Assert
+          final doc = await fakeFirestore
+              .collection('user_notifications')
+              .doc(notificationId)
+              .get();
+          expect(doc.data()!['isRead'], isTrue);
+        },
+      );
 
       test('should reject marking another user\'s notification as read',
           () async {
@@ -360,28 +366,29 @@ void main() {
     });
 
     group('Mark Multiple As Read', () {
-      test('should mark multiple notifications as read', () async {
-        // Arrange
-        const notificationIds = ['notif-1', 'notif-2', 'notif-3'];
-        for (final id in notificationIds) {
-          await _seedNotification(fakeFirestore, id,
-              _createNotification('user-123', id: id, isRead: false));
-        }
+      test(
+        'should mark multiple notifications as read',
+        () async {
+          // Arrange
+          const notificationIds = ['notif-1', 'notif-2', 'notif-3'];
+          for (final id in notificationIds) {
+            await _seedNotification(fakeFirestore, id,
+                _createNotification('user-123', id: id, isRead: false));
+          }
 
-        // Act
-        await repository.markMultipleAsRead(notificationIds);
+          // Act
+          await repository.markMultipleAsRead(notificationIds);
 
-        // Assert
-        for (final id in notificationIds) {
-          final doc = await fakeFirestore
-              .collection('user_notifications')
-              .doc(id)
-              .get();
-          expect(doc.data()!['isRead'], isTrue);
-        }
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+          // Assert
+          for (final id in notificationIds) {
+            final doc = await fakeFirestore
+                .collection('user_notifications')
+                .doc(id)
+                .get();
+            expect(doc.data()!['isRead'], isTrue);
+          }
+        },
+      );
 
       test('should reject marking another user\'s notifications as read',
           () async {
@@ -401,40 +408,41 @@ void main() {
     });
 
     group('Mark All As Read', () {
-      test('should mark all user notifications as read', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedNotification(fakeFirestore, 'notif-1',
-            _createNotification(userId, id: 'notif-1', isRead: false));
-        await _seedNotification(fakeFirestore, 'notif-2',
-            _createNotification(userId, id: 'notif-2', isRead: false));
-        await _seedNotification(fakeFirestore, 'notif-3',
-            _createNotification('other-user', id: 'notif-3', isRead: false));
+      test(
+        'should mark all user notifications as read',
+        () async {
+          // Arrange
+          const userId = 'user-123';
+          await _seedNotification(fakeFirestore, 'notif-1',
+              _createNotification(userId, id: 'notif-1', isRead: false));
+          await _seedNotification(fakeFirestore, 'notif-2',
+              _createNotification(userId, id: 'notif-2', isRead: false));
+          await _seedNotification(fakeFirestore, 'notif-3',
+              _createNotification('other-user', id: 'notif-3', isRead: false));
 
-        // Act
-        await repository.markAllAsRead(userId);
+          // Act
+          await repository.markAllAsRead(userId);
 
-        // Assert
-        final doc1 = await fakeFirestore
-            .collection('user_notifications')
-            .doc('notif-1')
-            .get();
-        final doc2 = await fakeFirestore
-            .collection('user_notifications')
-            .doc('notif-2')
-            .get();
-        final doc3 = await fakeFirestore
-            .collection('user_notifications')
-            .doc('notif-3')
-            .get();
+          // Assert
+          final doc1 = await fakeFirestore
+              .collection('user_notifications')
+              .doc('notif-1')
+              .get();
+          final doc2 = await fakeFirestore
+              .collection('user_notifications')
+              .doc('notif-2')
+              .get();
+          final doc3 = await fakeFirestore
+              .collection('user_notifications')
+              .doc('notif-3')
+              .get();
 
-        expect(doc1.data()!['isRead'], isTrue); // user-123's notification
-        expect(doc2.data()!['isRead'], isTrue); // user-123's notification
-        expect(doc3.data()!['isRead'],
-            isFalse); // other-user's notification unchanged
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+          expect(doc1.data()!['isRead'], isTrue); // user-123's notification
+          expect(doc2.data()!['isRead'], isTrue); // user-123's notification
+          expect(doc3.data()!['isRead'],
+              isFalse); // other-user's notification unchanged
+        },
+      );
 
       test('should reject marking all notifications for another user',
           () async {

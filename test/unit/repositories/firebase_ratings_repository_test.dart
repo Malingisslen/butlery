@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -41,10 +42,11 @@ void main() {
         isAuthenticated: true,
       );
 
-      // Create repository with fake Firestore
+      // Create repository with fake Firestore and test timestamp provider
       repository = FirebaseRatingsRepository(
         firestore: fakeFirestore,
         authRepository: mockAuthRepo,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -175,9 +177,7 @@ void main() {
         expect(data['userId'], equals('user-123'));
         expect(data['rating'], equals(rating));
         expect(data['review'], equals('Great recipe!'));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      });
 
       test('should reject invalid rating below 1', () async {
         // Act & Assert
@@ -241,9 +241,7 @@ void main() {
         final data = doc.data()!;
         expect(data['rating'], equals(4.5));
         expect(data['review'], equals('Updated review'));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      });
 
       test('should reject invalid rating during update', () async {
         // Arrange

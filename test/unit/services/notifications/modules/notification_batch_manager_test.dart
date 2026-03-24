@@ -230,31 +230,6 @@ void main() {
         expect(capturedBatchKeys.length, equals(2));
         expect(capturedBatchKeys[0], isNot(equals(capturedBatchKeys[1])));
       });
-
-      test('should add batchable notifications and schedule processing',
-          () async {
-        // Arrange
-        final strategy = createTestStrategy(
-          batchWindow: const Duration(seconds: 5),
-        );
-
-        // Act - Add to batch (this internally schedules a timer)
-        final result = await batchManager.addToBatch(
-          targetUserIds: ['user1'],
-          strategy: strategy,
-          variables: {'title': 'Test'},
-        );
-
-        // Assert - Verify the notification was added to batch
-        expect(result, isTrue);
-
-        // Verify the repository was called to add to batch
-        verify(() => mockRepository.addToBatch(
-              batchKey: any(named: 'batchKey'),
-              notification: any(named: 'notification'),
-              batchWindow: any(named: 'batchWindow'),
-            )).called(1);
-      }, skip: 'Timer scheduling is internal implementation detail');
     });
 
     group('Rate Limiting', () {

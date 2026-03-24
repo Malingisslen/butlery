@@ -781,13 +781,12 @@ void main() {
         );
         expect(farFuture.isExpired, isFalse);
 
-        // Expires right now (edge case)
-        final now = DateTime.now();
-        final expiringNow = SharingPermissions(
-          expiresAt: now,
+        // Expires in the past (deterministic)
+        final pastTime = DateTime.now().subtract(const Duration(seconds: 1));
+        final alreadyExpired = SharingPermissions(
+          expiresAt: pastTime,
         );
-        // May be expired or not depending on execution timing
-        expect(expiringNow.isExpired, isA<bool>());
+        expect(alreadyExpired.isExpired, isTrue);
       });
 
       test('should handle 100% acceptance rate', () {

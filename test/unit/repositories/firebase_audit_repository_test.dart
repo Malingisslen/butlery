@@ -36,82 +36,69 @@ void main() {
     });
 
     group('logPermissionCheck - Write Operations', () {
-      // NOTE: These tests are skipped due to FakeFirebaseFirestore limitations
-      // with FieldValue.serverTimestamp(). The repository's logPermissionCheck()
-      // method uses toFirestore() which includes server timestamps.
-      // These operations are tested in integration tests with real Firebase.
+      // NOTE: logPermissionCheck() calls AuditLog.toFirestore() which embeds
+      // FieldValue.serverTimestamp(). The TestServiceLocator registers real
+      // Firebase platform bindings, causing FieldValue operations to throw
+      // 'MethodChannelFieldValue is not a subtype of MockFieldValuePlatform'.
+      // logPermissionCheck catches all errors silently (fire-and-forget).
+      // We test: (1) method completes, (2) model produces correct data shape.
 
-      test('should log granted permission check successfully', () async {
-        // Arrange
-        const userId = 'user-123';
-        const operation = 'read';
-        const resourceType = 'recipe';
-        const resourceId = 'recipe-456';
-        const granted = true;
-
-        // Act
-        await repository.logPermissionCheck(
-          userId: userId,
-          operation: operation,
-          resourceType: resourceType,
-          resourceId: resourceId,
-          granted: granted,
+      test('should complete without throwing for granted check', () async {
+        // Act & Assert - fire-and-forget should never throw
+        await expectLater(
+          repository.logPermissionCheck(
+            userId: 'user-123',
+            operation: 'read',
+            resourceType: 'recipe',
+            resourceId: 'recipe-456',
+            granted: true,
+          ),
+          completes,
         );
+      });
 
-        // Assert - Note: FakeFirebaseFirestore limitation with server timestamps
-        // In real Firebase, this would create a document. Verified in integration tests.
-        // Due to server timestamp issue, document may not be created
-        // This is acceptable as the method is fire-and-forget
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
-
-      test('should log denied permission check successfully', () async {
-        // Arrange
-        const userId = 'user-123';
-        const operation = 'delete';
-        const resourceType = 'recipe';
-        const granted = false;
-
-        // Act
-        await repository.logPermissionCheck(
-          userId: userId,
-          operation: operation,
-          resourceType: resourceType,
-          granted: granted,
+      test('should complete without throwing for denied check', () async {
+        // Act & Assert
+        await expectLater(
+          repository.logPermissionCheck(
+            userId: 'user-123',
+            operation: 'delete',
+            resourceType: 'recipe',
+            granted: false,
+          ),
+          completes,
         );
+      });
 
-        // Assert
-        // Server timestamp limitation - see integration tests
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
-
-      test('should log permission check with metadata', () async {
+      test('should produce correct Firestore data shape with metadata', () {
         // Arrange
-        const userId = 'user-123';
-        const operation = 'write';
-        const resourceType = 'user';
         final metadata = {
           'ip': '192.168.1.1',
           'device': 'iOS',
           'app_version': '1.0.0',
         };
-
-        // Act
-        await repository.logPermissionCheck(
-          userId: userId,
-          operation: operation,
-          resourceType: resourceType,
+        final auditLog = AuditLog(
+          id: '',
+          userId: 'user-123',
+          operation: 'write',
+          resourceType: 'user',
           granted: true,
+          timestamp: DateTime.now(),
           metadata: metadata,
         );
 
+        // Act - verify toFirestore produces correct shape
+        final data = auditLog.toFirestore();
+
         // Assert
-        // Server timestamp limitation - see integration tests
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+        expect(data['userId'], equals('user-123'));
+        expect(data['operation'], equals('write'));
+        expect(data['resourceType'], equals('user'));
+        expect(data['granted'], isTrue);
+        expect(data['metadata'], equals(metadata));
+        // timestamp is FieldValue.serverTimestamp() sentinel
+        expect(data.containsKey('timestamp'), isTrue);
+      });
 
       test('should handle logging failure gracefully without throwing',
           () async {

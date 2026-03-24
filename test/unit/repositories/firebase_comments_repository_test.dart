@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -41,10 +42,11 @@ void main() {
         isAuthenticated: true,
       );
 
-      // Create repository with fake Firestore
+      // Create repository with fake Firestore and test timestamp provider
       repository = FirebaseCommentsRepository(
         firestore: fakeFirestore,
         authRepository: mockAuthRepo,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -175,9 +177,7 @@ void main() {
         expect(result.text, equals(content));
         expect(result.parentCommentId, isNull); // Top-level comment
         expect(result.likesCount, equals(0));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      });
 
       test('should add reply comment successfully', () async {
         // Arrange
@@ -199,7 +199,7 @@ void main() {
         expect(result.parentCommentId, equals(parentCommentId)); // Reply
       },
           skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+              'Reply uses FieldValue.increment on parent replyCount in batch, conflicts with TestServiceLocator platform bindings');
 
       test('should reject empty comment content', () async {
         // Act & Assert
@@ -257,9 +257,7 @@ void main() {
             .doc(commentId)
             .get();
         expect(doc.data()!['text'], equals(newContent));
-      },
-          skip:
-              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      });
 
       test('should reject empty update content', () async {
         // Arrange
@@ -473,7 +471,7 @@ void main() {
         expect(likeDoc.data()!['userId'], equals(userId));
       },
           skip:
-              'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
+              'FieldValue.increment in batch write conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
 
       test('should unlike a comment successfully', () async {
         // Arrange
@@ -503,7 +501,7 @@ void main() {
         expect(likeDoc.exists, isFalse);
       },
           skip:
-              'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
+              'FieldValue.increment in batch write conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
 
       test('should reject user from toggling like as another user', () async {
         // Arrange
