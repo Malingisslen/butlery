@@ -71,7 +71,7 @@ class _CreateSharedShoppingListViewState
         ChangeNotifierProvider.value(
           value: _friendsViewModel,
         ),
-        ChangeNotifierProvider.value(
+        Provider.value(
           value: ServiceLocator.get<UnifiedFriendsService>(),
         ),
       ],

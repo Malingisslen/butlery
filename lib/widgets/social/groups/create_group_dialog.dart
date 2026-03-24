@@ -235,10 +235,10 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       return const SizedBox.shrink();
     }
 
-    return AnimatedBuilder(
-      animation: ServiceLocator.get<UnifiedFriendsService>(),
-      builder: (context, child) {
-        final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    return StreamBuilder(
+      stream: friendsService.stateStream,
+      builder: (context, _) {
         final availableFriends = friendsService.friendsList;
 
         if (availableFriends.isEmpty) {

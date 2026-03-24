@@ -3,7 +3,6 @@
 /// and real-time synchronization with Firebase.
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -54,7 +53,7 @@ class ShoppingFirebaseSync {
 /// // Collaborate
 /// await service.shareList(listId: list.id, userIds: ['friend1']);
 /// ```
-class UnifiedShoppingService extends ChangeNotifier
+class UnifiedShoppingService
     with FirebaseSyncMixin<UnifiedShoppingList>, ErrorHandlingMixin {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
@@ -202,6 +201,8 @@ class UnifiedShoppingService extends ChangeNotifier
   ShoppingServiceState get currentState => _stateSubject.value;
 
   @override
+  void onSyncStateChanged() => notifyListeners();
+
   void notifyListeners() {
     _emitState();
   }
@@ -502,10 +503,8 @@ class UnifiedShoppingService extends ChangeNotifier
     _stateSubject.add(const ShoppingStateLoading());
   }
 
-  @override
   void dispose() {
-    stopFirebaseSync();
+    disposeSyncResources();
     _stateSubject.close();
-    super.dispose();
   }
 }

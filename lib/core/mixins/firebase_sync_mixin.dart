@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase sync mixin for real-time data synchronization
-mixin FirebaseSyncMixin<T> on ChangeNotifier {
+mixin FirebaseSyncMixin<T> {
   // Sync state
   final Map<String, StreamSubscription<QuerySnapshot>> _subscriptions = {};
   final Map<String, StreamSubscription<DocumentSnapshot>> _documentListeners =
@@ -25,6 +24,7 @@ mixin FirebaseSyncMixin<T> on ChangeNotifier {
   List<SyncCollection> get syncCollections;
   String? get currentUserId;
   FirebaseFirestore get firestore;
+  void onSyncStateChanged();
 
   void onAuthStateChanged(String? userId) {
     if (userId != null) {
@@ -125,7 +125,7 @@ mixin FirebaseSyncMixin<T> on ChangeNotifier {
       collection.handler?.call(snapshot);
 
       // Notify listeners after all changes processed
-      notifyListeners();
+      onSyncStateChanged();
     } catch (e) {
       AppLogger.error('Error handling snapshot for ${collection.name}: $e');
     }
@@ -146,7 +146,7 @@ mixin FirebaseSyncMixin<T> on ChangeNotifier {
     if (_pendingSyncIds.isEmpty) return;
 
     _isSyncing = true;
-    notifyListeners();
+    onSyncStateChanged();
 
     try {
       AppLogger.debug(
@@ -162,7 +162,7 @@ mixin FirebaseSyncMixin<T> on ChangeNotifier {
       AppLogger.error('Error processing sync items: $e');
     } finally {
       _isSyncing = false;
-      notifyListeners();
+      onSyncStateChanged();
     }
   }
 
@@ -197,10 +197,8 @@ mixin FirebaseSyncMixin<T> on ChangeNotifier {
     _documentListeners.remove(key);
   }
 
-  @override
-  void dispose() {
+  void disposeSyncResources() {
     stopFirebaseSync();
-    super.dispose();
   }
 }
 

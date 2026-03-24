@@ -35,8 +35,7 @@ class FriendsListView extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(
             value: ServiceLocator.get<FriendsViewModel>()),
-        ChangeNotifierProvider.value(
-            value: ServiceLocator.get<UnifiedFriendsService>()),
+        Provider.value(value: ServiceLocator.get<UnifiedFriendsService>()),
       ],
       child: const _FriendsListViewContent(),
     );

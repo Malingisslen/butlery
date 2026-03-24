@@ -751,9 +751,9 @@ void main() {
       test('should notify listeners when clearing error', () {
         // Arrange
         int notificationCount = 0;
-        service.addListener(() {
-          notificationCount++;
-        });
+        service.stateStream.listen((_) => () {
+              notificationCount++;
+            });
 
         // Act
         service.clearError();

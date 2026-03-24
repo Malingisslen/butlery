@@ -150,8 +150,8 @@ class _RecipeServiceConsumer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-    return ListenableBuilder(
-      listenable: recipeService,
+    return StreamBuilder(
+      stream: recipeService.stateStream,
       builder: (context, _) {
         return builder(context, recipeService, null);
       },

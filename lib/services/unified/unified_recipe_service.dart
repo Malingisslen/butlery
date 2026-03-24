@@ -65,7 +65,7 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 ///
 /// Delegates to specialized modules (PersonalRecipeModule, SocialRecipeModule,
 /// RealtimeRecipeModule, RecipeCacheModule) with backward-compatible legacy interfaces.
-class UnifiedRecipeService extends ChangeNotifier
+class UnifiedRecipeService
     with ErrorHandlingMixin, FirebaseServiceMixin
     implements NotificationParent, PersonalRecipeDelegate {
   final FirebaseFirestore _firestore;
@@ -124,7 +124,6 @@ class UnifiedRecipeService extends ChangeNotifier
   Stream<RecipeServiceState> get stateStream => _stateSubject.stream;
   RecipeServiceState get currentState => _stateSubject.value;
 
-  @override
   void notifyListeners() {
     _emitState();
   }
@@ -952,7 +951,6 @@ class UnifiedRecipeService extends ChangeNotifier
     AppLogger.info('UnifiedRecipeService reset for logout');
   }
 
-  @override
   void dispose() {
     _authSubscription?.cancel();
     _socialRetryTimer?.cancel();
@@ -964,6 +962,5 @@ class UnifiedRecipeService extends ChangeNotifier
       _cacheModule.dispose();
       _realtimeModule.dispose();
     }
-    super.dispose();
   }
 }

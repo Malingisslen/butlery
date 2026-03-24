@@ -146,9 +146,9 @@ void main() {
       test('should setup notification forwarding from state manager', () {
         // Arrange
         int listenerCallCount = 0;
-        friendsService.addListener(() {
-          listenerCallCount++;
-        });
+        friendsService.stateStream.listen((_) => () {
+              listenerCallCount++;
+            });
 
         // Act - Trigger internal notification
         friendsService.notifyListeners();
@@ -286,9 +286,9 @@ void main() {
       test('should support internal notify listeners', () {
         // Arrange
         int listenerCallCount = 0;
-        friendsService.addListener(() {
-          listenerCallCount++;
-        });
+        friendsService.stateStream.listen((_) => () {
+              listenerCallCount++;
+            });
 
         // Act
         friendsService.notifyListenersInternal();
@@ -581,9 +581,9 @@ void main() {
       test('should handle rapid state changes', () {
         // Arrange
         int listenerCallCount = 0;
-        friendsService.addListener(() {
-          listenerCallCount++;
-        });
+        friendsService.stateStream.listen((_) => () {
+              listenerCallCount++;
+            });
 
         // Act - Trigger multiple rapid notifications
         for (int i = 0; i < 100; i++) {
@@ -976,7 +976,9 @@ void main() {
         await mockFirestoreRepo.firestore
             .collection('users')
             .doc('test-user-id')
-            .set({'blockedUsers': ['blocked-user']});
+            .set({
+          'blockedUsers': ['blocked-user']
+        });
         await friendsService.initialize();
 
         // Act

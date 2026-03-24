@@ -19,100 +19,94 @@ class GroupsTab {
     UnifiedFriendsService friendsService, {
     VoidCallback? onCreateGroup,
   }) {
-    return AnimatedBuilder(
-      animation: friendsService,
-      builder: (context, child) {
-        // Only show groups where the current user is a member
-        final groups = friendsService.categories.getMemberCategories();
-        final pendingInvitations =
-            friendsService.invitations.pendingReceivedInvitations;
+    final groups = friendsService.categories.getMemberCategories();
+    final pendingInvitations =
+        friendsService.invitations.pendingReceivedInvitations;
 
-        if (friendsService.isLoading &&
-            groups.isEmpty &&
-            pendingInvitations.isEmpty) {
-          return StateWidget.loading(message: context.l10n.groupLoadingGroups);
-        }
+    if (friendsService.isLoading &&
+        groups.isEmpty &&
+        pendingInvitations.isEmpty) {
+      return StateWidget.loading(message: context.l10n.groupLoadingGroups);
+    }
 
-        return RefreshIndicator(
-          onRefresh: () async {
-            await Future.wait([
-              friendsService.categories.refresh(),
-              friendsService.invitations.refresh(),
-            ]);
-          },
-          child: CustomScrollView(
-            slivers: [
-              // Pending invitations section
-              if (pendingInvitations.isNotEmpty) ...[
-                SliverToBoxAdapter(
-                  child: _buildInvitationsHeader(context, pendingInvitations),
-                ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final invitation = pendingInvitations[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingL,
-                          vertical: AppDimensions.spacingXs,
-                        ),
-                        child: GroupInvitationCard.build(
-                          context,
-                          invitation,
-                          friendsService,
-                        ),
-                      );
-                    },
-                    childCount: pendingInvitations.length,
-                  ),
-                ),
-                // Separator
-                if (groups.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildSeparator(context),
-                  ),
-              ],
-
-              // Existing groups section
-              if (groups.isNotEmpty) ...[
-                SliverToBoxAdapter(
-                  child: _buildGroupsHeader(context, groups),
-                ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final group = groups[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingL,
-                          vertical: AppDimensions.spacingXs,
-                        ),
-                        child: GroupCard.build(context, group),
-                      );
-                    },
-                    childCount: groups.length,
-                  ),
-                ),
-              ],
-
-              // Empty state
-              if (groups.isEmpty && pendingInvitations.isEmpty) ...[
-                SliverFillRemaining(
-                  child: StateWidget.empty(
-                    title: context.l10n.groupNoGroupsYet,
-                    subtitle: context.l10n.groupNoGroupsDescription,
-                    icon: Icons.groups_outlined,
-                    actionLabel: onCreateGroup != null
-                        ? context.l10n.groupCreateGroup
-                        : null,
-                    onAction: onCreateGroup,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        );
+    return RefreshIndicator(
+      onRefresh: () async {
+        await Future.wait([
+          friendsService.categories.refresh(),
+          friendsService.invitations.refresh(),
+        ]);
       },
+      child: CustomScrollView(
+        slivers: [
+          // Pending invitations section
+          if (pendingInvitations.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: _buildInvitationsHeader(context, pendingInvitations),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final invitation = pendingInvitations[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingL,
+                      vertical: AppDimensions.spacingXs,
+                    ),
+                    child: GroupInvitationCard.build(
+                      context,
+                      invitation,
+                      friendsService,
+                    ),
+                  );
+                },
+                childCount: pendingInvitations.length,
+              ),
+            ),
+            // Separator
+            if (groups.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _buildSeparator(context),
+              ),
+          ],
+
+          // Existing groups section
+          if (groups.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: _buildGroupsHeader(context, groups),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final group = groups[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingL,
+                      vertical: AppDimensions.spacingXs,
+                    ),
+                    child: GroupCard.build(context, group),
+                  );
+                },
+                childCount: groups.length,
+              ),
+            ),
+          ],
+
+          // Empty state
+          if (groups.isEmpty && pendingInvitations.isEmpty) ...[
+            SliverFillRemaining(
+              child: StateWidget.empty(
+                title: context.l10n.groupNoGroupsYet,
+                subtitle: context.l10n.groupNoGroupsDescription,
+                icon: Icons.groups_outlined,
+                actionLabel: onCreateGroup != null
+                    ? context.l10n.groupCreateGroup
+                    : null,
+                onAction: onCreateGroup,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 

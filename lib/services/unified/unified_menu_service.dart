@@ -76,8 +76,7 @@ class MenuImportResult {
 ///   collaboratorIds: ['user1', 'user2'],
 /// );
 /// ```
-class UnifiedMenuService extends ChangeNotifier
-    with ErrorHandlingMixin, FirebaseServiceMixin {
+class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   final FirebaseFirestore _firestore;
   final FirestoreRepository _firestoreRepository;
 
@@ -105,7 +104,6 @@ class UnifiedMenuService extends ChangeNotifier
   Stream<MenuServiceState> get stateStream => _stateSubject.stream;
   MenuServiceState get currentState => _stateSubject.value;
 
-  @override
   void notifyListeners() {
     _emitState();
   }
@@ -658,10 +656,8 @@ class UnifiedMenuService extends ChangeNotifier
     notifyListeners();
   }
 
-  @override
   void dispose() {
     resetForLogout();
     _stateSubject.close();
-    super.dispose();
   }
 }

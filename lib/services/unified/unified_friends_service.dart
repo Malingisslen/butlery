@@ -41,7 +41,6 @@
 /// ```
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -80,8 +79,7 @@ import 'package:butlery/services/unified/friends/friends_utility_operations.dart
 /// - FriendsInternalOperations: Provides internal methods for operations classes
 /// - Feature operations: Handle specific business logic
 /// Maintains 100% backward compatibility while providing clean modular architecture.
-class UnifiedFriendsService extends ChangeNotifier
-    with StreamManagementMixin, ErrorHandlingMixin {
+class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
@@ -137,7 +135,6 @@ class UnifiedFriendsService extends ChangeNotifier
     AppLogger.info(
         '✅ UnifiedFriendsService facade initialized with modular architecture');
   }
-  @override
   void notifyListeners() {
     _emitState();
   }
@@ -552,11 +549,9 @@ class UnifiedFriendsService extends ChangeNotifier
     _stateSubject.add(const FriendsStateLoading());
   }
 
-  @override
   void dispose() {
     _stateManager.clearAllData();
     _stateSubject.close();
     disposeStreamResources();
-    super.dispose();
   }
 }

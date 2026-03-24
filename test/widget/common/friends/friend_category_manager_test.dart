@@ -96,7 +96,7 @@ void main() {
         home: Scaffold(
           body: MultiProvider(
             providers: [
-              ChangeNotifierProvider<UnifiedFriendsService>.value(
+              Provider<UnifiedFriendsService>.value(
                 value: mockFriendsService,
               ),
               ChangeNotifierProvider<FriendsViewModel>.value(

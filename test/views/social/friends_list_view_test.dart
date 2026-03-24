@@ -80,8 +80,7 @@ void main() {
         expect(find.byType(MultiProvider), findsOneWidget);
         expect(find.byType(ChangeNotifierProvider<FriendsViewModel>),
             findsOneWidget);
-        expect(find.byType(ChangeNotifierProvider<UnifiedFriendsService>),
-            findsOneWidget);
+        expect(find.byType(Provider<UnifiedFriendsService>), findsOneWidget);
       });
 
       testWidgets('should provide dual ViewModel coordination',
