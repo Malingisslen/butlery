@@ -302,10 +302,18 @@ class UnifiedRecipeService extends ChangeNotifier
     );
   }
 
-  /// Common dependency getters for operations classes
-  String? Function() get _userIdGetter => () => currentUserId;
-  String? Function() get _displayNameGetter => () => currentUserDisplayName;
-  List<Recipe> Function() get _recipesGetter => () => recipes;
+  String? _userIdGetter() => currentUserId;
+  String? _displayNameGetter() => currentUserDisplayName;
+  List<Recipe> _recipesGetter() => recipes;
+
+  SocialOpsContext get _socialContext => SocialOpsContext(
+        getCurrentUserId: _userIdGetter,
+        getCurrentUserDisplayName: _displayNameGetter,
+        getRecipes: _recipesGetter,
+        updateRecipe: updateRecipe,
+        createCollaborativeRecipe: createCollaborativeRecipe,
+        createPersonalRecipe: createPersonalRecipe,
+      );
 
   void _initializeLegacyInterfaces() {
     // Initialize legacy interfaces for backward compatibility
@@ -323,7 +331,7 @@ class UnifiedRecipeService extends ChangeNotifier
 
     // SocialRecipeOperations needs repositories - try immediate initialization or defer
     final initializedSocial = SocialOperationsInitializer.tryInitialize(
-      this,
+      _socialContext,
       _ratingsRepository,
       _firestoreRepository,
     );
@@ -343,7 +351,7 @@ class UnifiedRecipeService extends ChangeNotifier
 
     // Try to initialize with available repositories
     final initialized = SocialOperationsInitializer.tryInitialize(
-      this,
+      _socialContext,
       _ratingsRepository,
       _firestoreRepository,
     );
@@ -354,7 +362,7 @@ class UnifiedRecipeService extends ChangeNotifier
     } else {
       // Create with fallback repositories and schedule retry
       social = SocialOperationsInitializer.initializeWithFallback(
-        this,
+        _socialContext,
         _ratingsRepository,
         _firestoreRepository,
         _authRepository,
@@ -362,7 +370,7 @@ class UnifiedRecipeService extends ChangeNotifier
       _socialInitialized = true;
 
       _socialRetryTimer = SocialOperationsInitializer.scheduleRetry(
-        this,
+        _socialContext,
         (operations) {
           social = operations;
           _socialInitialized = true;

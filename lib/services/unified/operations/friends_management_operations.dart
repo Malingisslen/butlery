@@ -25,7 +25,6 @@ class FriendsManagementOperations extends BaseService {
   @override
   String get serviceName => 'FriendsManagementOperations';
 
-  // Typed dependencies (replaces _parent back-reference)
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
   final List<model.UserProfile> Function() _getFriends;

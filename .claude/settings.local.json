@@ -11,7 +11,8 @@
       "mcp__Claude_Preview__preview_start",
       "mcp__linear__save_comment",
       "mcp__linear__list_projects",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "mcp__plugin_telegram_telegram__reply"
     ]
   }
 }

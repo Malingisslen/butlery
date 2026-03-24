@@ -12,7 +12,6 @@ import 'package:butlery/services/unified/operations/friends_invitations_operatio
 
 /// Friend categories operations handling category CRUD, friend assignment, bulk operations, permissions, and organization analytics.
 class FriendsCategoriesOperations {
-  // Typed dependencies (replaces _parent back-reference)
   final String? Function() _getCurrentUserId;
   final List<FriendCategory> Function() _getCategoriesList;
   final List<UserProfile> Function() _getFriendsList;

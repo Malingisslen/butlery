@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -39,7 +38,7 @@ class SocialOperationsInitializer {
   /// Try to initialize social operations with available repositories.
   /// Returns initialized operations or null if repositories not available.
   static SocialRecipeOperations? tryInitialize(
-    dynamic parentService,
+    SocialOpsContext context,
     RatingsRepository? providedRatingsRepo,
     FirestoreRepository? providedFirestoreRepo,
   ) {
@@ -50,7 +49,7 @@ class SocialOperationsInitializer {
           providedFirestoreRepo ?? ServiceLocator.tryGet<FirestoreRepository>();
 
       if (ratingsRepo != null && firestoreRepo != null) {
-        final ctx = _contextFrom(parentService);
+        final ctx = context;
         AppLogger.info('SocialRecipeOperations initialized with repositories');
         return SocialRecipeOperations(
           getCurrentUserId: ctx.getCurrentUserId,
@@ -76,7 +75,7 @@ class SocialOperationsInitializer {
   /// Initialize with fallback repositories to prevent crashes.
   /// Should be followed by retry to get real repositories.
   static SocialRecipeOperations initializeWithFallback(
-    dynamic parentService,
+    SocialOpsContext context,
     RatingsRepository? providedRatingsRepo,
     FirestoreRepository? providedFirestoreRepo,
     FirebaseAuthRepository authRepository,
@@ -91,7 +90,7 @@ class SocialOperationsInitializer {
         ServiceLocator.tryGet<FirestoreRepository>() ??
         FirestoreRepository();
 
-    final ctx = _contextFrom(parentService);
+    final ctx = context;
     return SocialRecipeOperations(
       getCurrentUserId: ctx.getCurrentUserId,
       getCurrentUserDisplayName: ctx.getCurrentUserDisplayName,
@@ -107,14 +106,14 @@ class SocialOperationsInitializer {
   /// Retry initialization with real repositories from service locator.
   /// Returns new operations instance if successful, null otherwise.
   static SocialRecipeOperations? retryWithRealRepositories(
-    dynamic parentService,
+    SocialOpsContext context,
   ) {
     try {
       final ratingsRepo = ServiceLocator.tryGet<RatingsRepository>();
       final firestoreRepo = ServiceLocator.tryGet<FirestoreRepository>();
 
       if (ratingsRepo != null && firestoreRepo != null) {
-        final ctx = _contextFrom(parentService);
+        final ctx = context;
         AppLogger.info(
             'SocialRecipeOperations re-initialized with real repositories');
         return SocialRecipeOperations(
@@ -144,7 +143,7 @@ class SocialOperationsInitializer {
   /// [onTimerCreated] is called for each subsequent retry timer so
   /// the caller can track the latest pending timer for cancellation.
   static Timer? scheduleRetry(
-    dynamic parentService,
+    SocialOpsContext context,
     void Function(SocialRecipeOperations) onSuccess,
     Duration delay, {
     int attempt = 0,
@@ -157,15 +156,12 @@ class SocialOperationsInitializer {
     }
 
     final timer = Timer(delay, () {
-      if (parentService is StateNotifierMixin && parentService.isDisposed) {
-        return;
-      }
-      final operations = retryWithRealRepositories(parentService);
+      final operations = retryWithRealRepositories(context);
       if (operations != null) {
         onSuccess(operations);
       } else {
         // Retry with exponential backoff using Duration multiplication
-        final nextTimer = scheduleRetry(parentService, onSuccess, delay * 2,
+        final nextTimer = scheduleRetry(context, onSuccess, delay * 2,
             attempt: attempt + 1, onTimerCreated: onTimerCreated);
         if (nextTimer != null) {
           onTimerCreated?.call(nextTimer);
@@ -173,18 +169,5 @@ class SocialOperationsInitializer {
       }
     });
     return timer;
-  }
-
-  /// Extract context from the parent service (UnifiedRecipeService).
-  /// Uses dynamic to avoid circular imports.
-  static SocialOpsContext _contextFrom(dynamic parent) {
-    return SocialOpsContext(
-      getCurrentUserId: () => parent.currentUserId as String?,
-      getCurrentUserDisplayName: () => parent.currentUserDisplayName as String?,
-      getRecipes: () => parent.recipes as List<Recipe>,
-      updateRecipe: (recipe) => parent.updateRecipe(recipe) as Future<bool>,
-      createCollaborativeRecipe: parent.createCollaborativeRecipe,
-      createPersonalRecipe: parent.createPersonalRecipe,
-    );
   }
 }

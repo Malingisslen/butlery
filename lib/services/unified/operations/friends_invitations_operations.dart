@@ -15,7 +15,6 @@ import 'package:butlery/services/unified/operations/modules/invitation_statistic
 /// Friends invitations operations for multi-channel invitation management and tracking.
 /// Handles friend invitation operations including sending, tracking, and analytics.
 class FriendsInvitationsOperations {
-  // Typed dependencies (replaces _parent back-reference)
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
   final List<GroupInvitation> Function() _getAllSentInvitationsInternal;
