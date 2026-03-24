@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:clock/clock.dart';
+import 'package:collection/collection.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/models/notification_batch.dart';
@@ -353,8 +354,7 @@ class NotificationBatchManager {
         ? categoryString.split('.').last
         : categoryString;
     final category = NotificationCategory.values
-        .cast<NotificationCategory?>()
-        .firstWhere((c) => c?.name == categoryName, orElse: () => null);
+        .firstWhereOrNull((c) => c.name == categoryName);
 
     String title;
     String body;
@@ -463,7 +463,8 @@ class NotificationBatchManager {
 
   /// Dispose resources and cleanup
   void dispose() {
-    AppLogger.info('🔔 Disposing NotificationBatchManager for user ${_userId.maskedUserId}');
+    AppLogger.info(
+        '🔔 Disposing NotificationBatchManager for user ${_userId.maskedUserId}');
 
     // Cancel all batch timers
     for (final timer in _batchTimers.values) {

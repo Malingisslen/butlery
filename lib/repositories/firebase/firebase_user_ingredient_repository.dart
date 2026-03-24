@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -75,12 +76,11 @@ class FirebaseUserIngredientRepository
     final all = await getAll(userId);
     final normalized = name.toLowerCase().trim();
 
-    return all.cast<IngredientData?>().firstWhere(
-          (i) =>
-              i!.swedish.toLowerCase().trim() == normalized ||
-              i.english.toLowerCase().trim() == normalized,
-          orElse: () => null,
-        );
+    return all.firstWhereOrNull(
+      (i) =>
+          i.swedish.toLowerCase().trim() == normalized ||
+          i.english.toLowerCase().trim() == normalized,
+    );
   }
 
   @override

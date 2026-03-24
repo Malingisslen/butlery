@@ -82,20 +82,23 @@ class NotificationPreferenceManager {
       AppLogger.info(
           '🔔 Filtering ${userIds.length} users for ${category.name} ${type.name} notification');
 
-      final filteredUsers = <String>[];
-
-      for (final userId in userIds) {
-        final preferenceManager = NotificationPreferenceManager(
-          notificationsRepository: _notificationsRepository,
-          userId: userId,
-        );
-
-        final shouldReceive =
-            await preferenceManager.shouldReceiveNotification(category, type);
-        if (shouldReceive) {
-          filteredUsers.add(userId);
-        }
-      }
+      final results = await Future.wait(
+        userIds.map((userId) async {
+          try {
+            final preferenceManager = NotificationPreferenceManager(
+              notificationsRepository: _notificationsRepository,
+              userId: userId,
+            );
+            final shouldReceive = await preferenceManager
+                .shouldReceiveNotification(category, type);
+            return shouldReceive ? userId : null;
+          } catch (e) {
+            // Default to including user if prefs can't be read
+            return userId;
+          }
+        }),
+      );
+      final filteredUsers = results.whereType<String>().toList();
 
       AppLogger.success(
           '✅ Filtered to ${filteredUsers.length} users who should receive notification');

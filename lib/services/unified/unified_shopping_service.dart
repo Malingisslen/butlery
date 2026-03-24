@@ -228,23 +228,7 @@ class UnifiedShoppingService
 
   /// Compatibility getter for legacy code
   ShoppingShareOperations get sharing => _shareOps;
-  List<UnifiedShoppingList> get lists {
-    // Deduplication safety: Remove duplicates by ID only
-    final seen = <String>{};
-    final deduplicated = _lists.where((list) {
-      // Skip if we've already seen this ID
-      if (seen.contains(list.id)) {
-        AppLogger.warning(
-            'DUPLICATE SAFETY: Removing duplicate list with ID: ${list.id} (${list.name})');
-        return false;
-      }
-
-      seen.add(list.id);
-      return true;
-    }).toList();
-
-    return List.unmodifiable(deduplicated);
-  }
+  List<UnifiedShoppingList> get lists => List.unmodifiable(_lists);
 
   List<UnifiedShoppingList> get personalLists =>
       lists.where((l) => l.isPersonal).toList();

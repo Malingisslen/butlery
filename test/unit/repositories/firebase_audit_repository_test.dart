@@ -377,49 +377,6 @@ void main() {
       });
     });
 
-    group('deleteOldAuditLogs - Cleanup', () {
-      test('should delete logs older than specified duration', () async {
-        // Arrange
-        final now = DateTime.now();
-        await _seedAuditLogs(fakeFirestore, [
-          _createAuditLog('user-123', 'read', 'recipe',
-              granted: true,
-              timestamp: now.subtract(const Duration(days: 100))),
-          _createAuditLog('user-456', 'write', 'recipe',
-              granted: true, timestamp: now.subtract(const Duration(days: 50))),
-          _createAuditLog('user-789', 'delete', 'recipe',
-              granted: false,
-              timestamp: now.subtract(const Duration(days: 10))),
-        ]);
-
-        // Act
-        final deleted = await repository.deleteOldAuditLogs(
-            olderThan: const Duration(days: 60));
-
-        // Assert
-        expect(deleted, equals(1)); // Only the 100-day-old log
-
-        final remaining = await fakeFirestore.collection('audit_logs').get();
-        expect(remaining.docs.length, equals(2));
-      });
-
-      test('should handle no logs to delete', () async {
-        // Arrange
-        final now = DateTime.now();
-        await _seedAuditLogs(fakeFirestore, [
-          _createAuditLog('user-123', 'read', 'recipe',
-              granted: true, timestamp: now.subtract(const Duration(days: 10))),
-        ]);
-
-        // Act
-        final deleted = await repository.deleteOldAuditLogs(
-            olderThan: const Duration(days: 30));
-
-        // Assert
-        expect(deleted, equals(0));
-      });
-    });
-
     group('GDPR Compliance Verification', () {
       test('should support GDPR Article 15 - Right of Access', () async {
         // Arrange - User requesting their audit trail

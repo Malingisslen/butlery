@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
@@ -101,10 +102,9 @@ class FirebasePersonalTagGroupRepository
     final normalizedName = name.trim().toLowerCase();
     final all = await readAll();
 
-    return all.cast<PersonalTagGroup?>().firstWhere(
-          (group) => group!.name.toLowerCase() == normalizedName,
-          orElse: () => null,
-        );
+    return all.firstWhereOrNull(
+      (group) => group.name.toLowerCase() == normalizedName,
+    );
   }
 
   /// Checks if a group name already exists (case-insensitive).
