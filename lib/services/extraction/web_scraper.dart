@@ -4,6 +4,7 @@
 
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:async';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/social_media_extractor.dart';
@@ -56,7 +57,9 @@ class WebScraper {
     if (_headlessWebView != null) {
       try {
         _headlessWebView?.dispose();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.debug('WebView dispose: $e');
+      }
       _headlessWebView = null;
     }
 
@@ -334,7 +337,9 @@ class WebScraper {
     if (_headlessWebView != null) {
       try {
         _headlessWebView?.dispose();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.debug('WebView dispose: $e');
+      }
       _headlessWebView = null;
     }
 

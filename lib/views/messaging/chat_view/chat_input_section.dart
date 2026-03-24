@@ -238,7 +238,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                       onPressed: _handleImagePick,
                       icon: const Icon(Icons.image_outlined),
                       color: context.butleryColors.success,
-                      tooltip: context.l10n.chatSendImage,
+                      tooltip: context.l10n.tooltipAttachImage,
                     ),
 
                     // Poll button
@@ -247,7 +247,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                         onPressed: _handlePollCreate,
                         icon: const Icon(Icons.poll_outlined),
                         color: cs.onSurfaceVariant,
-                        tooltip: context.l10n.pollCreate,
+                        tooltip: context.l10n.tooltipCreatePoll,
                       ),
 
                     // Attachment button
@@ -263,7 +263,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                       ),
                       tooltip: _state.showAttachments
                           ? context.l10n.commonClose
-                          : context.l10n.chatAttachments,
+                          : context.l10n.tooltipAttachFile,
                     ),
 
                     // Text input field
@@ -288,7 +288,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                               ? cs.primary
                               : cs.onSurfaceVariant,
                         ),
-                        tooltip: context.l10n.chatSend,
+                        tooltip: context.l10n.tooltipSendMessage,
                       ),
                     ),
                   ],

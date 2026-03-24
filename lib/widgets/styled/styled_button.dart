@@ -26,6 +26,9 @@ class StyledButton extends StatelessWidget {
   /// Respects user's "Reduce Motion" accessibility setting.
   final bool enablePressAnimation;
 
+  /// Tooltip for icon buttons — shown on long-press and used by screen readers.
+  final String? tooltip;
+
   const StyledButton({
     super.key,
     required this.text,
@@ -38,6 +41,7 @@ class StyledButton extends StatelessWidget {
     this.padding,
     this.semanticLabel,
     this.enablePressAnimation = true,
+    this.tooltip,
   });
 
   /// Primary elevated button
@@ -52,7 +56,8 @@ class StyledButton extends StatelessWidget {
     this.enablePressAnimation = true,
   })  : isDestructive = false,
         height = AppDimensions.buttonHeight,
-        padding = null;
+        padding = null,
+        tooltip = null;
 
   /// Secondary outlined button
   const StyledButton.secondary({
@@ -66,7 +71,8 @@ class StyledButton extends StatelessWidget {
     this.enablePressAnimation = true,
   })  : isDestructive = false,
         height = AppDimensions.buttonHeight,
-        padding = null;
+        padding = null,
+        tooltip = null;
 
   /// Destructive button (delete, remove actions)
   const StyledButton.destructive({
@@ -80,7 +86,8 @@ class StyledButton extends StatelessWidget {
     this.enablePressAnimation = true,
   })  : isDestructive = true,
         height = AppDimensions.buttonHeight,
-        padding = null;
+        padding = null,
+        tooltip = null;
 
   /// Small button for compact spaces
   const StyledButton.small({
@@ -94,7 +101,8 @@ class StyledButton extends StatelessWidget {
   })  : isDestructive = false,
         width = null,
         height = 36.0,
-        padding = null;
+        padding = null,
+        tooltip = null;
 
   /// Icon-only button. [semanticLabel] is required for accessibility.
   const StyledButton.icon({
@@ -105,6 +113,7 @@ class StyledButton extends StatelessWidget {
     this.isLoading = false,
     this.isDestructive = false,
     this.enablePressAnimation = true,
+    this.tooltip,
   })  : text = '',
         width = null,
         height = AppDimensions.buttonHeight,
@@ -207,6 +216,7 @@ class StyledButton extends StatelessWidget {
   Widget _buildIconButton(BuildContext context) {
     return IconButton(
       onPressed: onPressed,
+      tooltip: tooltip,
       style: IconButton.styleFrom(
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -222,6 +232,7 @@ class StyledButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return IconButton(
       onPressed: onPressed,
+      tooltip: tooltip,
       style: IconButton.styleFrom(
         backgroundColor: cs.errorContainer,
         foregroundColor: cs.onErrorContainer,

@@ -170,8 +170,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
                   ? Icons.visibility_off
                   : Icons.visibility),
               tooltip: _obscureCurrentPassword
-                  ? context.l10n.a11yShowPassword
-                  : context.l10n.a11yHidePassword,
+                  ? context.l10n.tooltipShowPassword
+                  : context.l10n.tooltipHidePassword,
               onPressed: () => setState(
                   () => _obscureCurrentPassword = !_obscureCurrentPassword),
             ),
@@ -192,8 +192,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
                   ? Icons.visibility_off
                   : Icons.visibility),
               tooltip: _obscureNewPassword
-                  ? context.l10n.a11yShowPassword
-                  : context.l10n.a11yHidePassword,
+                  ? context.l10n.tooltipShowPassword
+                  : context.l10n.tooltipHidePassword,
               onPressed: () =>
                   setState(() => _obscureNewPassword = !_obscureNewPassword),
             ),
@@ -214,8 +214,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
                   ? Icons.visibility_off
                   : Icons.visibility),
               tooltip: _obscureConfirmPassword
-                  ? context.l10n.a11yShowPassword
-                  : context.l10n.a11yHidePassword,
+                  ? context.l10n.tooltipShowPassword
+                  : context.l10n.tooltipHidePassword,
               onPressed: () => setState(
                   () => _obscureConfirmPassword = !_obscureConfirmPassword),
             ),
@@ -280,8 +280,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
                   ? Icons.visibility_off
                   : Icons.visibility),
               tooltip: _obscureEmailPassword
-                  ? context.l10n.a11yShowPassword
-                  : context.l10n.a11yHidePassword,
+                  ? context.l10n.tooltipShowPassword
+                  : context.l10n.tooltipHidePassword,
               onPressed: () => setState(
                   () => _obscureEmailPassword = !_obscureEmailPassword),
             ),

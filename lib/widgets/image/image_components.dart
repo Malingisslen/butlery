@@ -83,6 +83,7 @@ class ImageComponents {
         if (snapshot.data == true) {
           return Image.file(
             file,
+            semanticLabel: context.l10n.tooltipSelectedImage,
             fit: fit,
             width:
                 dimensions.width == double.infinity ? null : dimensions.width,

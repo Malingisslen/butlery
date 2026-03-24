@@ -11754,4 +11754,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yCookingModeStep(int step, String instruction) {
     return 'Steg $step: $instruction';
   }
+
+  @override
+  String get tooltipShowPassword => 'Visa lösenord';
+
+  @override
+  String get tooltipHidePassword => 'Dölj lösenord';
+
+  @override
+  String get tooltipSendMessage => 'Skicka meddelande';
+
+  @override
+  String get tooltipAttachImage => 'Bifoga bild';
+
+  @override
+  String get tooltipAttachFile => 'Bifoga fil';
+
+  @override
+  String get tooltipCreatePoll => 'Skapa omröstning';
+
+  @override
+  String get tooltipSelectedImage => 'Vald bild';
 }

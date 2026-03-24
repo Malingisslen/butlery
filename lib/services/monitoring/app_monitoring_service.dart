@@ -184,7 +184,9 @@ class AppMonitoringService {
     for (final trace in _activeTraces.values) {
       try {
         await trace.stop();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('Failed to stop performance trace: $e');
+      }
     }
     _activeTraces.clear();
   }

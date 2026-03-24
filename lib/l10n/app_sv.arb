@@ -8083,15 +8083,17 @@
   "allergenCoverageLabel": "{coverage}% täckning",
   "@allergenCoverageLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
   "ingredientDataUnverified": "Viss ingrediensdata är overifierad",
   "recipeStartCookingTooltip": "Börja laga",
   "taggingDegradedWarning": "Allergen- och kostdata kan vara opålitlig",
   "recipeEditTags": "Redigera taggar",
-  "allergenDisclaimer": "Allergeninformation baseras p\u00e5 automatisk analys och \u00e4r endast v\u00e4gledande. Kontrollera alltid originalreceptet och produktf\u00f6rpackningar. Ers\u00e4tter inte medicinsk r\u00e5dgivning.",
-  "allergenToggleSemantics": "V\u00e4xla sp\u00e5rning av {allergen}",
+  "allergenDisclaimer": "Allergeninformation baseras på automatisk analys och är endast vägledande. Kontrollera alltid originalreceptet och produktförpackningar. Ersätter inte medicinsk rådgivning.",
+  "allergenToggleSemantics": "Växla spårning av {allergen}",
   "@allergenToggleSemantics": {
     "placeholders": {
       "allergen": {
@@ -8099,7 +8101,7 @@
       }
     }
   },
-  "dietaryToggleSemantics": "V\u00e4xla kostpreferens {dietary}",
+  "dietaryToggleSemantics": "Växla kostpreferens {dietary}",
   "@dietaryToggleSemantics": {
     "placeholders": {
       "dietary": {
@@ -8117,7 +8119,7 @@
     }
   },
   "emailVerificationResend": "Skicka igen",
-  "emailVerificationContinue": "Forts\u00e4tt \u00e4nd\u00e5",
+  "emailVerificationContinue": "Fortsätt ändå",
   "emailVerificationSuccess": "E-post verifierad!",
   "recipeSelected": "Markerad",
   "recipeNotSelected": "Ej markerad",
@@ -8140,5 +8142,12 @@
         "type": "String"
       }
     }
-  }
+  },
+  "tooltipShowPassword": "Visa lösenord",
+  "tooltipHidePassword": "Dölj lösenord",
+  "tooltipSendMessage": "Skicka meddelande",
+  "tooltipAttachImage": "Bifoga bild",
+  "tooltipAttachFile": "Bifoga fil",
+  "tooltipCreatePoll": "Skapa omröstning",
+  "tooltipSelectedImage": "Vald bild"
 }

@@ -264,6 +264,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   )
                 : Image.asset(
                     imagePath,
+                    semanticLabel: context.l10n.tooltipSelectedImage,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,

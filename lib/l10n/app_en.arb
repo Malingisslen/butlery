@@ -8083,7 +8083,9 @@
   "allergenCoverageLabel": "{coverage}% coverage",
   "@allergenCoverageLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
   "ingredientDataUnverified": "Some ingredient data is unverified",
@@ -8140,5 +8142,12 @@
         "type": "String"
       }
     }
-  }
+  },
+  "tooltipShowPassword": "Show password",
+  "tooltipHidePassword": "Hide password",
+  "tooltipSendMessage": "Send message",
+  "tooltipAttachImage": "Attach image",
+  "tooltipAttachFile": "Attach file",
+  "tooltipCreatePoll": "Create poll",
+  "tooltipSelectedImage": "Selected image"
 }

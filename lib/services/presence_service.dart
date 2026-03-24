@@ -152,7 +152,9 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       await _presenceRef
           ?.set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
       await _presenceRef?.onDisconnect().cancel();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Failed to set offline status on dispose: $e');
+    }
     _presenceRef = null;
   }
 
@@ -168,7 +170,9 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       await _presenceRef
           ?.set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
       await _presenceRef?.onDisconnect().cancel();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('Failed to set offline status on logout: $e');
+    }
     _presenceRef = null;
 
     AppLogger.info('PresenceService reset for logout');

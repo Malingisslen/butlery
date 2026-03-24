@@ -20085,6 +20085,48 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Steg {step}: {instruction}'**
   String a11yCookingModeStep(int step, String instruction);
+
+  /// No description provided for @tooltipShowPassword.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa lösenord'**
+  String get tooltipShowPassword;
+
+  /// No description provided for @tooltipHidePassword.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dölj lösenord'**
+  String get tooltipHidePassword;
+
+  /// No description provided for @tooltipSendMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka meddelande'**
+  String get tooltipSendMessage;
+
+  /// No description provided for @tooltipAttachImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bifoga bild'**
+  String get tooltipAttachImage;
+
+  /// No description provided for @tooltipAttachFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bifoga fil'**
+  String get tooltipAttachFile;
+
+  /// No description provided for @tooltipCreatePoll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa omröstning'**
+  String get tooltipCreatePoll;
+
+  /// No description provided for @tooltipSelectedImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vald bild'**
+  String get tooltipSelectedImage;
 }
 
 class _AppLocalizationsDelegate
