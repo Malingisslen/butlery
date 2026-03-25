@@ -28,7 +28,7 @@ dependencies:
   firebase_performance: ^0.11.0  # For performance monitoring
   firebase_crashlytics: ^5.0.4  # Updated for reporting improvements
   firebase_remote_config: ^6.0.4  # Feature flags and A/B testing
-  flutter_local_notifications: ^20.1.0  # For Android notification channels
+  flutter_local_notifications: ^20.1.0  # For Android notification channels (21.x needs Dart 3.10+)
   device_info_plus: ^12.3.0  # For unique device identification
   freerasp: ^7.4.0  # Root/jailbreak detection + tampering, reverse engineering, Frida detection
 
@@ -57,7 +57,7 @@ dependencies:
   flutter_image_compress: ^2.3.0
 
   # ==================== PLATFORM INFO ====================
-  package_info_plus: ^8.0.0
+  package_info_plus: ^9.0.0
 
   # ==================== UTILITIES ====================
   uuid: ^4.5.3
