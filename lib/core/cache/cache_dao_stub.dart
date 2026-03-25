@@ -24,12 +24,20 @@ class CacheDao {
     return _db ??= await _factory.openDatabase(_dbName);
   }
 
+  Future<void> close() async {
+    await _db?.close();
+    _db = null;
+  }
+
   // JSON cache
 
   String _jsonKey(String boxName, String userId, String key) =>
       '$boxName/$userId/$key';
 
   String _jsonPrefix(String boxName, String userId) => '$boxName/$userId/';
+
+  Filter _keyPrefixFilter(String prefix) =>
+      Filter.custom((record) => (record.key as String).startsWith(prefix));
 
   Future<String?> getJson(String boxName, String userId, String key) async {
     final db = await _database;
@@ -41,11 +49,7 @@ class CacheDao {
   Future<Map<String, String>> getAllJson(String boxName, String userId) async {
     final db = await _database;
     final prefix = _jsonPrefix(boxName, userId);
-    final finder = Finder(
-      filter: Filter.custom((record) {
-        return (record.key as String).startsWith(prefix);
-      }),
-    );
+    final finder = Finder(filter: _keyPrefixFilter(prefix));
     final snapshots = await _jsonStore.find(db, finder: finder);
     return {
       for (final s in snapshots)
@@ -56,11 +60,7 @@ class CacheDao {
   Future<List<String>> getJsonKeys(String boxName, String userId) async {
     final db = await _database;
     final prefix = _jsonPrefix(boxName, userId);
-    final finder = Finder(
-      filter: Filter.custom((record) {
-        return (record.key as String).startsWith(prefix);
-      }),
-    );
+    final finder = Finder(filter: _keyPrefixFilter(prefix));
     final keys = await _jsonStore.findKeys(db, finder: finder);
     return keys.map((k) => k.substring(prefix.length)).toList();
   }
@@ -85,12 +85,13 @@ class CacheDao {
     required Map<String, String> entries,
   }) async {
     final db = await _database;
+    final now = DateTime.now().toIso8601String();
     await db.transaction((txn) async {
       for (final entry in entries.entries) {
         final record = _jsonStore.record(_jsonKey(boxName, userId, entry.key));
         await record.put(txn, {
           'value': entry.value,
-          'cachedAt': DateTime.now().toIso8601String(),
+          'cachedAt': now,
         });
       }
     });
@@ -105,23 +106,14 @@ class CacheDao {
   Future<void> clearJsonBox(String boxName, String userId) async {
     final db = await _database;
     final prefix = _jsonPrefix(boxName, userId);
-    final finder = Finder(
-      filter: Filter.custom((record) {
-        return (record.key as String).startsWith(prefix);
-      }),
-    );
-    await _jsonStore.delete(db, finder: finder);
+    await _jsonStore.delete(db,
+        finder: Finder(filter: _keyPrefixFilter(prefix)));
   }
 
   Future<int> countJsonEntries(String boxName, String userId) async {
     final db = await _database;
     final prefix = _jsonPrefix(boxName, userId);
-    return _jsonStore.count(
-      db,
-      filter: Filter.custom((record) {
-        return (record.key as String).startsWith(prefix);
-      }),
-    );
+    return _jsonStore.count(db, filter: _keyPrefixFilter(prefix));
   }
 
   // Parse cache
@@ -131,14 +123,7 @@ class CacheDao {
     final record = _parseStore.record(cacheKey);
     final snapshot = await record.get(db);
     if (snapshot == null) return null;
-    return ParseCacheEntry(
-      cacheKey: cacheKey,
-      userId: snapshot['userId'] as String,
-      recipeJson: snapshot['recipeJson'] as String,
-      parserVersion: snapshot['parserVersion'] as String,
-      source: snapshot['source'] as String,
-      cachedAt: DateTime.parse(snapshot['cachedAt'] as String),
-    );
+    return ParseCacheEntry._fromMap(cacheKey, snapshot);
   }
 
   Future<void> putParsedRecipe({
@@ -190,14 +175,7 @@ class CacheDao {
     final finder = Finder(filter: Filter.equals('userId', userId));
     final snapshots = await _parseStore.find(db, finder: finder);
     return snapshots
-        .map((s) => ParseCacheEntry(
-              cacheKey: s.key,
-              userId: s.value['userId'] as String,
-              recipeJson: s.value['recipeJson'] as String,
-              parserVersion: s.value['parserVersion'] as String,
-              source: s.value['source'] as String,
-              cachedAt: DateTime.parse(s.value['cachedAt'] as String),
-            ))
+        .map((s) => ParseCacheEntry._fromMap(s.key, s.value))
         .toList();
   }
 
@@ -207,21 +185,17 @@ class CacheDao {
   }
 
   Future<void> enforceParseCacheLimit(String userId, int maxEntries) async {
-    final count = await countParseCacheForUser(userId);
-    if (count <= maxEntries) return;
-
     final db = await _database;
-    final toDelete = count - maxEntries;
-
     final finder = Finder(
       filter: Filter.equals('userId', userId),
       sortOrders: [SortOrder('cachedAt')],
-      limit: toDelete,
     );
-    final oldest = await _parseStore.find(db, finder: finder);
+    final all = await _parseStore.find(db, finder: finder);
+    if (all.length <= maxEntries) return;
 
+    final toDelete = all.sublist(0, all.length - maxEntries);
     await db.transaction((txn) async {
-      for (final entry in oldest) {
+      for (final entry in toDelete) {
         await _parseStore.record(entry.key).delete(txn);
       }
     });
@@ -245,4 +219,14 @@ class ParseCacheEntry {
     required this.source,
     required this.cachedAt,
   });
+
+  factory ParseCacheEntry._fromMap(String key, Map<String, Object?> map) =>
+      ParseCacheEntry(
+        cacheKey: key,
+        userId: map['userId'] as String,
+        recipeJson: map['recipeJson'] as String,
+        parserVersion: map['parserVersion'] as String,
+        source: map['source'] as String,
+        cachedAt: DateTime.parse(map['cachedAt'] as String),
+      );
 }

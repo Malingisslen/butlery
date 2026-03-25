@@ -19,26 +19,9 @@ import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
-// ULTRATHINK FIX: Bridge production ServiceLocator to test mocks
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
 import 'package:butlery/core/di/di_container.dart';
-
-// ============= BRIDGE FOR PRODUCTION SERVICELOCATOR =============
-// ULTRATHINK SUCCESS: Both DIContainer and TestServiceLocator use GetIt.instance!
-// No complex bridging needed - just initialize production ServiceLocator with DIContainer
-
-// ============= MOCKS =============
-// Using centralized mocks from production_mocks.dart for:
-// - MockFirestoreRepository
-// - MockAuthRepository (as MockFirebaseAuthRepository)
-// - MockPermissionService
-// - MockUserService
-
-// All mocks now using centralized implementations from production_mocks.dart:
-// - MockFriendsManagementOperations, MockFriendsCategoriesOperations, MockFriendsInvitationsOperations, MockSocialGroupSharingOperations
-
-// ============= TESTS =============
 
 void main() {
   group('UnifiedFriendsService', () {
@@ -56,18 +39,12 @@ void main() {
       // Initialize TestServiceLocator for each test
       await TestServiceLocator.initialize();
 
-      // ULTRATHINK FIX: Bridge production ServiceLocator to test mocks
-      // This allows production code (FriendsManagementOperations) to access test mocks
-      // BREAKTHROUGH: Both DIContainer and TestServiceLocator use GetIt.instance!
-      // So I just need to initialize production ServiceLocator with the DIContainer
-      // and the test mocks are already available through the shared GetIt.instance
+      // Bridge production ServiceLocator to test mocks via shared GetIt.instance
       final productionContainer = DIContainer();
       prod_locator.ServiceLocator.initialize(productionContainer);
 
-      // Create mocks from centralized system
       mockFirestoreRepo = MockFirestoreRepository();
-      mockAuthRepo =
-          MockFirebaseAuthRepository(); // Using the concrete implementation mock
+      mockAuthRepo = MockFirebaseAuthRepository();
       mockPermissionService = MockPermissionService();
       // mockFirestore = MockFirebaseFirestore(); // Removed - variable was commented out
 
@@ -149,9 +126,9 @@ void main() {
       test('should setup notification forwarding from state manager', () {
         // Arrange
         int listenerCallCount = 0;
-        friendsService.stateStream.listen((_) => () {
-              listenerCallCount++;
-            });
+        friendsService.stateStream.listen((_) {
+          listenerCallCount++;
+        });
 
         // Act - Trigger internal notification
         friendsService.notifyListeners();
@@ -289,9 +266,9 @@ void main() {
       test('should support internal notify listeners', () {
         // Arrange
         int listenerCallCount = 0;
-        friendsService.stateStream.listen((_) => () {
-              listenerCallCount++;
-            });
+        friendsService.stateStream.listen((_) {
+          listenerCallCount++;
+        });
 
         // Act
         friendsService.notifyListenersInternal();
@@ -584,9 +561,9 @@ void main() {
       test('should handle rapid state changes', () {
         // Arrange
         int listenerCallCount = 0;
-        friendsService.stateStream.listen((_) => () {
-              listenerCallCount++;
-            });
+        friendsService.stateStream.listen((_) {
+          listenerCallCount++;
+        });
 
         // Act - Trigger multiple rapid notifications
         for (int i = 0; i < 100; i++) {

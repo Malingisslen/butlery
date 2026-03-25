@@ -18,20 +18,10 @@ import '../../infrastructure/di/test_service_locator.dart';
 class MockMessageReactionsService extends Mock
     implements MessageReactionsService {}
 
-// ============= EXCEPTION CLASSES =============
-
-// Simple exception classes for tests that don't exist in the main codebase
 class NotFoundException implements Exception {
   final String message;
   NotFoundException(this.message);
 }
-
-class TimeoutException implements Exception {
-  final String message;
-  TimeoutException(this.message);
-}
-
-// ============= FAKE MODELS =============
 
 class FakeConversation extends Fake implements Conversation {
   @override
