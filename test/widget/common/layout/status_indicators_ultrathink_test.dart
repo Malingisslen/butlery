@@ -33,7 +33,7 @@ void main() {
     });
 
     Widget createTestWidget(Widget child) {
-      return ChangeNotifierProvider<OfflineService>.value(
+      return Provider<OfflineService>.value(
         value: mockOfflineService,
         child: MaterialApp(
           home: Scaffold(
@@ -486,7 +486,7 @@ void main() {
         mockOfflineService.setOnlineStatus(false);
 
         await tester.pumpWidget(
-          ChangeNotifierProvider<OfflineService>.value(
+          Provider<OfflineService>.value(
             value: mockOfflineService,
             child: MaterialApp(
               theme: ThemeData(

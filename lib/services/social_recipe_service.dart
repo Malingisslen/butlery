@@ -1,7 +1,6 @@
 /// Social recipe sharing service for collaborative cooking and meal planning.
 /// Manages recipe/menu sharing, importing, dismissal, and participant tracking with reactive state management.
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -16,8 +15,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
 
-class SocialRecipeService extends ChangeNotifier
-    with StreamManagementMixin, ErrorHandlingMixin {
+class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   final UserService _userService;
   final UnifiedRecipeService _recipeService;
   final UnifiedShoppingService? _shoppingService;
@@ -72,7 +70,6 @@ class SocialRecipeService extends ChangeNotifier
     try {
       _isLoading = true;
       _error = null;
-      notifyListeners();
 
       await _loadSharedContent();
       AppLogger.info('✅ SocialRecipeService initialized');
@@ -81,7 +78,6 @@ class SocialRecipeService extends ChangeNotifier
       AppLogger.error('❌ SocialRecipeService initialization failed', e);
     } finally {
       _isLoading = false;
-      notifyListeners();
     }
   }
 
@@ -103,7 +99,6 @@ class SocialRecipeService extends ChangeNotifier
 
   Future<void> refresh() async {
     await _loadSharedContent();
-    notifyListeners();
   }
 
   // Get visible shared recipes (already filtered by repository - no dismissed items)
@@ -227,8 +222,7 @@ class SocialRecipeService extends ChangeNotifier
         await _sharedMenuRepository.markAsImportedOrJoined(
             menuId, _permissionService.currentUserId!);
       }
-      AppLogger.success(
-          'Menu imported: $successCount/$totalCount recipes');
+      AppLogger.success('Menu imported: $successCount/$totalCount recipes');
       return true;
     } catch (e) {
       AppLogger.error('Failed to import shared menu', e);
@@ -380,9 +374,7 @@ class SocialRecipeService extends ChangeNotifier
   Future<List<UserProfile>> getShoppingListParticipants(String listId) =>
       _participantResolver.getShoppingListParticipants(listId);
 
-  @override
   void dispose() {
     disposeStreamResources();
-    super.dispose();
   }
 }

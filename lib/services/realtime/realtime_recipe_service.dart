@@ -1,6 +1,5 @@
 // lib/services/realtime/realtime_recipe_service.dart
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -18,8 +17,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Facade for realtime recipe management delegating to RecipeContentOperations (content) and RecipeParticipants (permissions).
 /// Clean API with no complex business logic or direct implementation details.
-class RealtimeRecipeService extends ChangeNotifier
-    with StreamManagementMixin, ErrorHandlingMixin {
+class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   final RealtimeSyncService _syncService;
   final PermissionService _permissionService;
 
@@ -473,7 +471,6 @@ class RealtimeRecipeService extends ChangeNotifier
   /// Set processing state
   void _setProcessing(bool processing) {
     _isProcessing = processing;
-    notifyListeners();
   }
 
   /// Handle error
@@ -491,7 +488,6 @@ class RealtimeRecipeService extends ChangeNotifier
     );
 
     AppLogger.error('🔥 RecipeOperationError: $message', originalError);
-    notifyListeners();
   }
 
   /// Clear error
@@ -502,12 +498,9 @@ class RealtimeRecipeService extends ChangeNotifier
   /// Clear error status (public method)
   void clearError() {
     _clearError();
-    notifyListeners();
   }
 
-  @override
   void dispose() {
     disposeStreamResources();
-    super.dispose();
   }
 }

@@ -11,7 +11,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// - Maintains error state consistency across component boundaries
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Error severity levels for prioritized error handling
@@ -176,7 +175,7 @@ class UnifiedErrorInfo {
 }
 
 /// CRITICAL FIX: Unified error state management coordinator for consistent error handling
-class UnifiedErrorCoordinator extends ChangeNotifier {
+class UnifiedErrorCoordinator {
   // Current error state
   UnifiedErrorInfo? _currentError;
   final List<UnifiedErrorInfo> _errorHistory = [];
@@ -263,8 +262,6 @@ class UnifiedErrorCoordinator extends ChangeNotifier {
       });
     }
 
-    notifyListeners();
-
     AppLogger.info(
         '📱 ERROR_DISPLAY: Showing ${error.severity.name} error: ${error.message}');
   }
@@ -281,8 +278,6 @@ class UnifiedErrorCoordinator extends ChangeNotifier {
 
     _errorDisplayTimer?.cancel();
     _errorClearTimer?.cancel();
-
-    notifyListeners();
   }
 
   /// Clear errors from specific component
@@ -399,12 +394,9 @@ class UnifiedErrorCoordinator extends ChangeNotifier {
     _errorDisplayTimer?.cancel();
     _errorClearTimer?.cancel();
 
-    notifyListeners();
-
     AppLogger.info('🧹 ERROR_COORDINATOR: All errors cleared');
   }
 
-  @override
   void dispose() {
     _disposed = true;
 
@@ -412,7 +404,6 @@ class UnifiedErrorCoordinator extends ChangeNotifier {
     _errorClearTimer?.cancel();
 
     AppLogger.info('🔄 ERROR_COORDINATOR: Disposed');
-    super.dispose();
   }
 }
 

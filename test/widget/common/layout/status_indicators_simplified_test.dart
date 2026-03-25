@@ -33,7 +33,7 @@ void main() {
     });
 
     Widget createTestWidget(Widget child) {
-      return ChangeNotifierProvider<OfflineService>.value(
+      return Provider<OfflineService>.value(
         value: mockOfflineService,
         child: MaterialApp(
           home: Scaffold(

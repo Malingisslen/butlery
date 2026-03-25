@@ -57,8 +57,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// // Cleanup when done
 /// sessionService.dispose();
 /// ```
-class SessionTimeoutService extends ChangeNotifier
-    with ErrorHandlingMixin, StreamManagementMixin {
+class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   /// Authentication service for logout coordination
   final AuthService _authService;
 
@@ -329,12 +328,10 @@ class SessionTimeoutService extends ChangeNotifier
   /// Dispose service and cleanup all resources.
   /// Cancels all active timers to prevent memory leaks.
   /// Should be called when service is no longer needed.
-  @override
   void dispose() {
     AppLogger.debug('SessionTimeoutService: Disposing');
     _cancelTimers();
     _isActive = false;
     _onShowWarning = null;
-    super.dispose();
   }
 }

@@ -298,18 +298,7 @@ void main() {
         expect(offlineService, isA<ChangeNotifier>());
       });
 
-      test('should notify listeners on state changes', () {
-        var notificationCount = 0;
-        offlineService.addListener(() {
-          notificationCount++;
-        });
-
-        // Act
-        offlineService.setCurrentUser('new_user');
-
-        // Assert
-        expect(notificationCount, equals(1));
-      });
+      // ChangeNotifier removed from OfflineService (BUT-23) — no listener tests needed
     });
 
     group('Queue Operations', () {

@@ -388,7 +388,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     if (_isInitializationReady) {
       _initialization.dispose();
     }
-    super.dispose(); // Call ChangeNotifier dispose
+    super.dispose();
   }
 
   /// Close Drift database
