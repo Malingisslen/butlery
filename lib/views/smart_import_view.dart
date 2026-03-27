@@ -19,6 +19,7 @@ import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
 import 'package:butlery/widgets/recipe/duplicate_import_dialog.dart';
@@ -117,6 +118,14 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
+                                // Pending import retry banner
+                                if (viewModel.hasPendingImport &&
+                                    viewModel.isOnline)
+                                  _PendingImportBanner(
+                                    onRetry: viewModel.retryPendingImport,
+                                    onDismiss: viewModel.dismissPendingImport,
+                                  ),
+
                                 // Input section
                                 _InputSection(
                                   controller: _inputController,
@@ -436,6 +445,55 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         'initialRecipe': recipe,
         'isTemplate': true,
       },
+    );
+  }
+}
+
+/// Banner shown when a pending import URL is available and connectivity is restored.
+class _PendingImportBanner extends StatelessWidget {
+  final VoidCallback onRetry;
+  final VoidCallback onDismiss;
+
+  const _PendingImportBanner({
+    required this.onRetry,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      color: cs.primaryContainer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.importPendingRetryPrompt,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: onDismiss,
+                child: Text(context.l10n.importPendingDismiss),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              FilledButton(
+                onPressed: onRetry,
+                child: Text(context.l10n.importPendingRetry),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

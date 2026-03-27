@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -41,7 +42,8 @@ class ImportProgressWidget extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return AnimatedOpacity(
-      duration: AppDimensions.animationDurationMedium,
+      duration: AnimationUtils.getDuration(
+          context, AppDimensions.animationDurationMedium),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
         padding: AppDimensions.paddingSymmetric20x16,
@@ -91,7 +93,8 @@ class ImportProgressWidget extends StatelessWidget {
             if (message.isNotEmpty) ...[
               const SizedBox(height: AppDimensions.paddingM),
               AnimatedSwitcher(
-                duration: AppDimensions.animationDurationMedium,
+                duration: AnimationUtils.getDuration(
+                    context, AppDimensions.animationDurationMedium),
                 child: Text(
                   message,
                   key: ValueKey(message),
@@ -133,7 +136,8 @@ class _StepIndicator extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: AnimationUtils.getDuration(
+              context, const Duration(milliseconds: 250)),
           width: 36,
           height: 36,
           decoration: BoxDecoration(
@@ -202,7 +206,8 @@ class _StepConnector extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.paddingXl),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: AnimationUtils.getDuration(
+            context, const Duration(milliseconds: 250)),
         width: 40,
         height: 2,
         color: isActive ? colorScheme.primary : colorScheme.outlineVariant,

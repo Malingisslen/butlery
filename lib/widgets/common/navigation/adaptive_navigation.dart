@@ -5,6 +5,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/core/utils/accessibility_utils.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
@@ -443,28 +445,30 @@ class ButleryBottomNavigation extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height:
-              56 + AppDimensions.spacingXs, // Standard nav height + indicator
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: items.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              final isSelected = index == currentIndex;
+        child: AccessibilityUtils.clampTextScaling(
+            context: context,
+            child: SizedBox(
+              height: 56 +
+                  AppDimensions.spacingXs, // Standard nav height + indicator
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: items.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  final isSelected = index == currentIndex;
 
-              return Expanded(
-                child: _BottomNavItem(
-                  item: item,
-                  isSelected: isSelected,
-                  onTap: () => onTap(index),
-                  selectedColor: selectedItemColor,
-                  unselectedColor: unselectedItemColor,
-                ),
-              );
-            }).toList(),
-          ),
-        ),
+                  return Expanded(
+                    child: _BottomNavItem(
+                      item: item,
+                      isSelected: isSelected,
+                      onTap: () => onTap(index),
+                      selectedColor: selectedItemColor,
+                      unselectedColor: unselectedItemColor,
+                    ),
+                  );
+                }).toList(),
+              ),
+            )),
       ),
     );
   }
@@ -525,7 +529,8 @@ class _BottomNavItem extends StatelessWidget {
                 const SizedBox(height: AppDimensions.spacingXxs),
                 // Rust indicator bar below text when selected (text width)
                 AnimatedContainer(
-                  duration: AppDimensions.animationDurationFast,
+                  duration: AnimationUtils.getDuration(
+                      context, AppDimensions.animationDurationFast),
                   height: AppDimensions.spacingXxs,
                   width: isSelected ? _getTextWidth(context) : 0,
                   color: isSelected ? cs.secondary : Colors.transparent,

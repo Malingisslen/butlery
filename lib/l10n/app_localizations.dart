@@ -20265,6 +20265,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Taggar'**
   String get statsDistinctTags;
+
+  /// No description provided for @importPendingRetryPrompt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har en väntande import — försök igen?'**
+  String get importPendingRetryPrompt;
+
+  /// No description provided for @importPendingRetry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen'**
+  String get importPendingRetry;
+
+  /// No description provided for @importPendingDismiss.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avfärda'**
+  String get importPendingDismiss;
+
+  /// No description provided for @importSavedForLater.
+  ///
+  /// In sv, this message translates to:
+  /// **'URL sparad — importeras när du är online igen'**
+  String get importSavedForLater;
 }
 
 class _AppLocalizationsDelegate

@@ -9,6 +9,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -196,6 +197,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   final ImageMemoryCacheManager _cacheManager = ImageMemoryCacheManager();
+  bool _reduceMotion = false;
 
   // Loading states
   bool _isLoadingFull = true;
@@ -221,6 +223,15 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
 
     if (widget.enableThumbnail) {
       _thumbnailUrl = _generateThumbnailUrl();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = !AnimationUtils.shouldAnimate(context);
+    if (_reduceMotion) {
+      _fadeController.value = 1.0;
     }
   }
 
@@ -270,7 +281,8 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
         if (widget.enableThumbnail && _thumbnailUrl != null)
           AnimatedOpacity(
             opacity: _isLoadingFull ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 200),
+            duration: AnimationUtils.getDuration(
+                context, const Duration(milliseconds: 200)),
             child: _buildThumbnailLayer(),
           ),
 
@@ -286,7 +298,8 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
         else if (_isLoadingFull && widget.placeholder != null)
           AnimatedOpacity(
             opacity: _isLoadingFull ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 200),
+            duration: AnimationUtils.getDuration(
+                context, const Duration(milliseconds: 200)),
             child: widget.placeholder!,
           ),
       ],
@@ -381,7 +394,11 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               setState(() => _isLoadingFull = false);
-              _fadeController.forward();
+              if (_reduceMotion) {
+                _fadeController.value = 1.0;
+              } else {
+                _fadeController.forward();
+              }
             }
           });
         }

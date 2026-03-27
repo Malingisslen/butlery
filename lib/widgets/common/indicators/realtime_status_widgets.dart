@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -32,7 +33,8 @@ class RealtimeStatusWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedSwitcher(
-              duration: AppDimensions.animationDurationCommon,
+              duration: AnimationUtils.getDuration(
+                  context, AppDimensions.animationDurationCommon),
               child: Text(
                 statusEmoji,
                 key: ValueKey(statusEmoji),
@@ -42,7 +44,8 @@ class RealtimeStatusWidget extends StatelessWidget {
             if (showText) ...[
               const SizedBox(width: AppDimensions.spacingXs),
               AnimatedSwitcher(
-                duration: AppDimensions.animationDurationCommon,
+                duration: AnimationUtils.getDuration(
+                    context, AppDimensions.animationDurationCommon),
                 child: Text(
                   statusDescription,
                   key: ValueKey(statusDescription),

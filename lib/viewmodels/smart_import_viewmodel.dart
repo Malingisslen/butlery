@@ -9,8 +9,11 @@ library;
 
 import 'package:flutter/services.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
@@ -104,11 +107,19 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   String? _clipboardUrl;
   String? _lastPromptedUrl;
 
+  bool _hasPendingImport = false;
+  ConnectivityMonitoringService? _connectivity;
+
+  static const String _pendingImportKey = 'butlery_pending_import_url';
+
   SmartImportViewModel({
     required ImportManager importManager,
     InputDetector? inputDetector,
   })  : _importManager = importManager,
-        _inputDetector = inputDetector ?? InputDetector();
+        _inputDetector = inputDetector ?? InputDetector() {
+    _setupConnectivityListener();
+    _loadPendingImport();
+  }
 
   // Getters
 
@@ -118,6 +129,9 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   SmartImportResult? get lastResult => _lastResult;
   Recipe? get importedRecipe => _importedRecipe;
   String? get clipboardUrl => _clipboardUrl;
+  bool get hasPendingImport => _hasPendingImport;
+
+  bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
 
   /// Whether input is valid for import.
   bool get canImport => _input.trim().isNotEmpty;
@@ -241,6 +255,16 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     _lastResult = null;
     _importedRecipe = null;
 
+    // Pre-check connectivity before starting network-dependent import
+    if (!isOnline && _detection?.isUrl == true) {
+      await _savePendingImportUrl(_input.trim());
+      _setPhase(ImportPhase.error);
+      setError(AppLocale.current.importSavedForLater);
+      final failResult = ImportFailed(AppLocale.current.importErrorNoInternet);
+      _lastResult = failResult;
+      return failResult;
+    }
+
     try {
       // Phase 1: Fetching
       _setPhase(ImportPhase.fetching);
@@ -253,9 +277,16 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       // Execute import via ImportManager
       final result = await _importManager.autoImport(_input.trim());
 
-      // Handle the result
+      await _clearPendingImportUrl();
       return await _handleImportResult(result);
     } catch (e) {
+      final lower = '$e'.toLowerCase();
+      if (lower.contains('network') ||
+          lower.contains('timeout') ||
+          lower.contains('no internet') ||
+          lower.contains('could not reach')) {
+        await _savePendingImportUrl(_input.trim());
+      }
       _setPhase(ImportPhase.error);
       setError(AppLocale.current.errorImportFailed);
       final failResult = ImportFailed('$e');
@@ -452,7 +483,67 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     notifyListeners();
   }
 
-  // Debug
+  // Pending import persistence
+
+  void _setupConnectivityListener() {
+    _connectivity = ServiceLocator.tryGet<ConnectivityMonitoringService>();
+    _connectivity?.addListener(_onConnectivityChanged);
+  }
+
+  void _onConnectivityChanged() {
+    if (isDisposed) return;
+    if (_connectivity!.isConnectedToInternet && _hasPendingImport) {
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadPendingImport() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final url = prefs.getString(_pendingImportKey);
+      if (url != null && url.isNotEmpty) {
+        _hasPendingImport = true;
+        if (_input.isEmpty) {
+          _input = url;
+          _detection = _inputDetector.detect(url);
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to load pending import: $e');
+    }
+  }
+
+  Future<void> _savePendingImportUrl(String url) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_pendingImportKey, url);
+      _hasPendingImport = true;
+      notifyListeners();
+    } catch (e) {
+      AppLogger.warning('Failed to save pending import URL: $e');
+    }
+  }
+
+  Future<void> _clearPendingImportUrl() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_pendingImportKey);
+      _hasPendingImport = false;
+    } catch (e) {
+      AppLogger.warning('Failed to clear pending import URL: $e');
+    }
+  }
+
+  Future<void> retryPendingImport() async {
+    if (!_hasPendingImport || !isOnline) return;
+    await startImport();
+  }
+
+  Future<void> dismissPendingImport() async {
+    await _clearPendingImportUrl();
+    notifyListeners();
+  }
 
   @override
   Map<String, dynamic> get debugState => {
@@ -462,10 +553,13 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
         'detection': _detection?.platform.name,
         'canImport': canImport,
         'isImporting': isImporting,
+        'hasPendingImport': _hasPendingImport,
+        'isOnline': isOnline,
       };
 
   @override
   void dispose() {
+    _connectivity?.removeListener(_onConnectivityChanged);
     _input = '';
     _detection = null;
     _lastResult = null;

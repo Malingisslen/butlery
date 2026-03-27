@@ -11845,4 +11845,18 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get statsDistinctTags => 'Taggar';
+
+  @override
+  String get importPendingRetryPrompt =>
+      'Du har en väntande import — försök igen?';
+
+  @override
+  String get importPendingRetry => 'Försök igen';
+
+  @override
+  String get importPendingDismiss => 'Avfärda';
+
+  @override
+  String get importSavedForLater =>
+      'URL sparad — importeras när du är online igen';
 }

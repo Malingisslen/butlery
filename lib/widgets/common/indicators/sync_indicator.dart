@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
@@ -39,6 +40,7 @@ class _SyncIndicatorState extends State<SyncIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnimation;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -58,6 +60,16 @@ class _SyncIndicatorState extends State<SyncIndicator>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = !AnimationUtils.shouldAnimate(context);
+    if (_reduceMotion && _pulseController.isAnimating) {
+      _pulseController.stop();
+      _pulseController.value = 1.0;
+    }
+  }
+
+  @override
   void didUpdateWidget(SyncIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.hasPendingWrites != widget.hasPendingWrites ||
@@ -67,7 +79,7 @@ class _SyncIndicatorState extends State<SyncIndicator>
   }
 
   void _updateAnimation() {
-    if (_status == SyncStatus.pendingWrites) {
+    if (_status == SyncStatus.pendingWrites && !_reduceMotion) {
       _pulseController.repeat(reverse: true);
     } else {
       _pulseController.stop();
@@ -120,10 +132,7 @@ class _SyncIndicatorState extends State<SyncIndicator>
     final cs = Theme.of(context).colorScheme;
     final (color, icon) = switch (status) {
       SyncStatus.synced => (colors.success, Icons.cloud_done_outlined),
-      SyncStatus.pendingWrites => (
-          colors.warning,
-          Icons.cloud_upload_outlined
-        ),
+      SyncStatus.pendingWrites => (colors.warning, Icons.cloud_upload_outlined),
       SyncStatus.offline => (cs.onSurfaceVariant, Icons.cloud_off_outlined),
     };
 

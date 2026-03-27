@@ -1,6 +1,7 @@
 // lib/widgets/social/collaborative/components/collaborative_live_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -17,44 +18,46 @@ class CollaborativeLiveWidgets {
   }) {
     if (!isVisible) return const SizedBox.shrink();
 
-    return TweenAnimationBuilder<double>(
-      duration: animationDuration,
-      tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
-      builder: (context, opacity, child) {
-        final indicatorColor = color ?? context.butleryColors.warning;
-        return Opacity(
-          opacity: opacity,
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingS,
-              vertical: AppDimensions.spacingXs,
-            ),
-            decoration: BoxDecoration(
-              color: indicatorColor.withValues(
-                  alpha: AppDimensions.opacityVeryLight),
-              borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
-              border: Border.all(
+    return Builder(builder: (context) {
+      return TweenAnimationBuilder<double>(
+        duration: AnimationUtils.getDuration(context, animationDuration),
+        tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
+        builder: (context, opacity, child) {
+          final indicatorColor = color ?? context.butleryColors.warning;
+          return Opacity(
+            opacity: opacity,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingS,
+                vertical: AppDimensions.spacingXs,
+              ),
+              decoration: BoxDecoration(
                 color: indicatorColor.withValues(
-                    alpha: AppDimensions.opacityMediumLight),
+                    alpha: AppDimensions.opacityVeryLight),
+                borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+                border: Border.all(
+                  color: indicatorColor.withValues(
+                      alpha: AppDimensions.opacityMediumLight),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  pulsingDot(indicatorColor),
+                  const SizedBox(width: AppDimensions.spacingXs),
+                  Text(
+                    '$editorName redigerar $editingWhat',
+                    style: AppTextStyles.metadataEmphasized.copyWith(
+                      color: indicatorColor,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                pulsingDot(indicatorColor),
-                const SizedBox(width: AppDimensions.spacingXs),
-                Text(
-                  '$editorName redigerar $editingWhat',
-                  style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: indicatorColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    });
   }
 
   /// Build a pulsing dot animation
@@ -81,6 +84,7 @@ class _PulsingDotState extends State<_PulsingDot>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -92,7 +96,18 @@ class _PulsingDotState extends State<_PulsingDot>
     _animation = Tween<double>(begin: 0.3, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-    _controller.repeat(reverse: true);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = !AnimationUtils.shouldAnimate(context);
+    if (_reduceMotion) {
+      _controller.stop();
+      _controller.value = 1.0;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override

@@ -4,6 +4,7 @@
 /// message composition with attachment handling and typing indicators.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/widgets/messaging/message_input_field.dart';
 import 'package:butlery/widgets/messaging/image_picker_dialog.dart';
@@ -278,7 +279,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
 
                     // Send button
                     AnimatedContainer(
-                      duration: AppDimensions.animationDurationMedium,
+                      duration: AnimationUtils.getDuration(
+                          context, AppDimensions.animationDurationMedium),
                       child: IconButton(
                         onPressed:
                             _state.isComposing ? _handleSendMessage : null,

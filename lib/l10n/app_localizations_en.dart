@@ -11814,4 +11814,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsDistinctTags => 'Tags';
+
+  @override
+  String get importPendingRetryPrompt =>
+      'You have a pending import — retry now?';
+
+  @override
+  String get importPendingRetry => 'Retry';
+
+  @override
+  String get importPendingDismiss => 'Dismiss';
+
+  @override
+  String get importSavedForLater =>
+      'URL saved — will import when you\'re back online';
 }

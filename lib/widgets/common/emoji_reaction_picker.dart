@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 
@@ -94,7 +95,8 @@ class _EmojiButtonState extends State<_EmojiButton> {
         child: GestureDetector(
           onTap: widget.onTap,
           child: AnimatedContainer(
-            duration: AppDimensions.animationDurationFast,
+            duration: AnimationUtils.getDuration(
+                context, AppDimensions.animationDurationFast),
             padding: AppDimensions.paddingAll8,
             decoration: BoxDecoration(
               color: _isHovered

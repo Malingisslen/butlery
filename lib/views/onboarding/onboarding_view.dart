@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -132,7 +133,8 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                   horizontal: AppDimensions.spacingXs,
                 ),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: AnimationUtils.getDuration(
+                      context, const Duration(milliseconds: 200)),
                   width: isActive ? 24 : 8,
                   height: 8,
                   decoration: BoxDecoration(
@@ -158,7 +160,8 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                       onPressed: () {
                         viewModel.previousPage();
                         _pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
+                          duration: AnimationUtils.getDuration(
+                              context, const Duration(milliseconds: 300)),
                           curve: Curves.easeInOut,
                         );
                       },
@@ -226,7 +229,8 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     } else {
       viewModel.nextPage();
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: AnimationUtils.getDuration(
+            context, const Duration(milliseconds: 300)),
         curve: Curves.easeInOut,
       );
     }

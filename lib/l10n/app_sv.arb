@@ -8172,5 +8172,9 @@
   "statsNoMealTypes": "Inga måltidstyper registrerade",
   "statsNoTags": "Inga taggar använda än",
   "statsDistinctMealTypes": "Måltidstyper",
-  "statsDistinctTags": "Taggar"
+  "statsDistinctTags": "Taggar",
+  "importPendingRetryPrompt": "Du har en väntande import — försök igen?",
+  "importPendingRetry": "Försök igen",
+  "importPendingDismiss": "Avfärda",
+  "importSavedForLater": "URL sparad — importeras när du är online igen"
 }

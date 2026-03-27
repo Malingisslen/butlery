@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -167,7 +168,8 @@ class _QuickChip extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
         child: AnimatedContainer(
-          duration: AppDimensions.animationDurationFast,
+          duration: AnimationUtils.getDuration(
+              context, AppDimensions.animationDurationFast),
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,
             vertical: AppDimensions.spacingSm,

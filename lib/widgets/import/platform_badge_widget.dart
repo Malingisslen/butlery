@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/theme/brand_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -34,7 +35,8 @@ class PlatformBadgeWidget extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return AnimatedOpacity(
-      duration: AppDimensions.animationDurationMedium,
+      duration: AnimationUtils.getDuration(
+          context, AppDimensions.animationDurationMedium),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
         padding: AppDimensions.paddingSymmetric12x6,

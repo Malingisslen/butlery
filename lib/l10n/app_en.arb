@@ -8172,5 +8172,9 @@
   "statsNoMealTypes": "No meal types recorded",
   "statsNoTags": "No tags used yet",
   "statsDistinctMealTypes": "Meal Types",
-  "statsDistinctTags": "Tags"
+  "statsDistinctTags": "Tags",
+  "importPendingRetryPrompt": "You have a pending import — retry now?",
+  "importPendingRetry": "Retry",
+  "importPendingDismiss": "Dismiss",
+  "importSavedForLater": "URL saved — will import when you're back online"
 }
