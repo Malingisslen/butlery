@@ -12,6 +12,11 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
+import {
+  getActiveTokensForUser,
+  deactivateStaleTokens,
+  findInvalidTokens,
+} from "../shared/fcm-tokens";
 
 const getDb = () => admin.firestore();
 
@@ -49,70 +54,135 @@ export const sendWeeklyActivityDigest = functions
           const userBatch = usersSnapshot.docs.slice(i, i + USER_BATCH_SIZE);
           let batch = db.batch();
           let batchCount = 0;
+          const usersToNotifyViaPush: Array<{
+            userId: string;
+            newRecipeCount: number;
+            newCommentCount: number;
+            newRatingCount: number;
+            newShareCount: number;
+          }> = [];
 
           for (const userDoc of userBatch) {
-          const userId = userDoc.id;
+            const userId = userDoc.id;
 
-          // Count activity in past 7 days (parallel queries)
-          const [recipesSnapshot, commentsSnapshot, ratingsSnapshot, sharedSnapshot] =
-            await Promise.all([
-              db.collection("users").doc(userId).collection("recipes")
-                .where("core.createdAt", ">=", sevenDaysAgo).get(),
-              db.collection(Collections.recipeComments)
-                .where("authorId", "==", userId)
-                .where("createdAt", ">=", sevenDaysAgo).get(),
-              db.collection("recipe_ratings")
-                .where("userId", "==", userId)
-                .where("createdAt", ">=", sevenDaysAgo).get(),
-              db.collection(Collections.sharedRecipes)
-                .where("sharedByUserId", "==", userId)
-                .where("sharedAt", ">=", sevenDaysAgo).get(),
-            ]);
-          const newRecipeCount = recipesSnapshot.size;
-          const newCommentCount = commentsSnapshot.size;
-          const newRatingCount = ratingsSnapshot.size;
-          const newShareCount = sharedSnapshot.size;
+            // Check user preference — only send to users who opted in
+            const prefsDoc = await db
+              .collection("user_notification_preferences")
+              .doc(userId)
+              .get();
+            const digestFrequency = prefsDoc.exists
+              ? prefsDoc.data()?.digestFrequency ?? "never"
+              : "never";
 
-          if (
-            newRecipeCount === 0 &&
-            newCommentCount === 0 &&
-            newRatingCount === 0 &&
-            newShareCount === 0
-          ) {
-            usersSkipped++;
-            continue;
+            if (digestFrequency === "never") {
+              usersSkipped++;
+              continue;
+            }
+
+            // Count activity in past 7 days (parallel queries)
+            const [recipesSnapshot, commentsSnapshot, ratingsSnapshot, sharedSnapshot] =
+              await Promise.all([
+                db.collection("users").doc(userId).collection("recipes")
+                  .where("core.createdAt", ">=", sevenDaysAgo).get(),
+                db.collection(Collections.recipeComments)
+                  .where("authorId", "==", userId)
+                  .where("createdAt", ">=", sevenDaysAgo).get(),
+                db.collection("recipe_ratings")
+                  .where("userId", "==", userId)
+                  .where("createdAt", ">=", sevenDaysAgo).get(),
+                db.collection(Collections.sharedRecipes)
+                  .where("sharedByUserId", "==", userId)
+                  .where("sharedAt", ">=", sevenDaysAgo).get(),
+              ]);
+            const newRecipeCount = recipesSnapshot.size;
+            const newCommentCount = commentsSnapshot.size;
+            const newRatingCount = ratingsSnapshot.size;
+            const newShareCount = sharedSnapshot.size;
+
+            if (
+              newRecipeCount === 0 &&
+              newCommentCount === 0 &&
+              newRatingCount === 0 &&
+              newShareCount === 0
+            ) {
+              usersSkipped++;
+              continue;
+            }
+
+            const notificationRef = db
+              .collection("users")
+              .doc(userId)
+              .collection("notifications")
+              .doc();
+
+            batch.set(notificationRef, {
+              type: "activity_digest",
+              newRecipeCount,
+              newCommentCount,
+              newRatingCount,
+              newShareCount,
+              period: "weekly",
+              createdAt: now,
+              read: false,
+            });
+
+            batchCount++;
+            usersNotified++;
+            usersToNotifyViaPush.push({
+              userId, newRecipeCount, newCommentCount, newRatingCount, newShareCount,
+            });
+
+            if (batchCount >= BATCH_LIMIT) {
+              await batch.commit();
+              batch = db.batch();
+              batchCount = 0;
+            }
           }
 
-          const notificationRef = db
-            .collection("users")
-            .doc(userId)
-            .collection("notifications")
-            .doc();
-
-          batch.set(notificationRef, {
-            type: "activity_digest",
-            newRecipeCount,
-            newCommentCount,
-            newRatingCount,
-            newShareCount,
-            period: "weekly",
-            createdAt: now,
-            read: false,
-          });
-
-          batchCount++;
-          usersNotified++;
-
-          if (batchCount >= BATCH_LIMIT) {
+          if (batchCount > 0) {
             await batch.commit();
-            batch = db.batch();
-            batchCount = 0;
           }
-        }
 
-        if (batchCount > 0) {
-          await batch.commit();
-        }
+          // Send FCM push notifications for this sub-batch
+          for (const entry of usersToNotifyViaPush) {
+            try {
+              const { tokens, tokenDocIds } = await getActiveTokensForUser(entry.userId);
+              if (tokens.length === 0) continue;
+
+              const totalActivity =
+                entry.newRecipeCount + entry.newCommentCount +
+                entry.newRatingCount + entry.newShareCount;
+
+              const message: admin.messaging.MulticastMessage = {
+                tokens,
+                notification: {
+                  title: "Veckans sammanfattning",
+                  body: `Du hade ${totalActivity} aktivitet${totalActivity !== 1 ? "er" : ""} den här veckan`,
+                },
+                data: { type: "activity_digest" },
+                android: {
+                  priority: "high",
+                  notification: {
+                    channelId: "butlery_notifications",
+                    priority: "high",
+                    defaultSound: true,
+                  },
+                },
+                apns: {
+                  payload: { aps: { sound: "default" } },
+                },
+              };
+
+              const response = await admin.messaging().sendEachForMulticast(message);
+              const invalidTokens = findInvalidTokens(response, tokens);
+              await deactivateStaleTokens(invalidTokens, tokenDocIds, entry.userId);
+            } catch (pushError) {
+              // Don't fail the scheduled job for individual push failures
+              functions.logger.warn(
+                `Failed to send digest push to ${entry.userId}: ${pushError}`
+              );
+            }
+          }
         }
 
         const lastDoc = usersSnapshot.docs[usersSnapshot.docs.length - 1];

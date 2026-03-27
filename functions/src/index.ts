@@ -54,6 +54,10 @@ export { onSuggestionCreated, onSuggestionStatusChanged } from "./ingredients/on
 // Analytics Functions - Ingredient tracking
 export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analytics/track-unmatched-ingredients";
 
+// Analytics Functions - Scheduled engagement
+export { detectLapsedUsers } from "./analytics/detect-lapsed-users";
+export { sendWeeklyActivityDigest } from "./analytics/send-activity-digest";
+
 // Correction Analytics - Alias learning and domain stats
 export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corrections";
 

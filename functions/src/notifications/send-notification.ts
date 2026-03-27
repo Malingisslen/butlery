@@ -15,6 +15,11 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { checkRateLimit } from "../middleware/rate_limiter";
 import { isAllowedUrl } from "../shared/url-safety";
+import {
+  getActiveTokensForUser,
+  deactivateStaleTokens,
+  findInvalidTokens,
+} from "../shared/fcm-tokens";
 
 /**
  * Sanitizes user-provided text by stripping HTML tags.
@@ -135,30 +140,12 @@ export const sendNotification = functions.https.onCall(
     }
 
     try {
-      // Fetch user's FCM tokens from Firestore
-      const tokensSnapshot = await admin
-        .firestore()
-        .collection("user_fcm_tokens")
-        .doc(targetUserId)
-        .get();
-
-      if (!tokensSnapshot.exists) {
-        functions.logger.info(
-          `No FCM tokens found for user ${targetUserId}`
-        );
-        return {
-          success: true,
-          successCount: 0,
-          failureCount: 0,
-        };
-      }
-
-      const tokenData = tokensSnapshot.data();
-      const tokens: string[] = tokenData?.tokens || [];
+      // Fetch user's active FCM tokens (per-device document model)
+      const { tokens, tokenDocIds } = await getActiveTokensForUser(targetUserId);
 
       if (tokens.length === 0) {
         functions.logger.info(
-          `Empty token list for user ${targetUserId}`
+          `No active FCM tokens for user ${targetUserId}`
         );
         return {
           success: true,
@@ -233,46 +220,9 @@ export const sendNotification = functions.https.onCall(
         `Notification sent: ${response.successCount} success, ${response.failureCount} failures`
       );
 
-      // Clean up invalid tokens
-      const invalidTokens: string[] = [];
-      response.responses.forEach((resp, idx) => {
-        if (!resp.success) {
-          const error = resp.error;
-          if (
-            error?.code === "messaging/invalid-registration-token" ||
-            error?.code === "messaging/registration-token-not-registered"
-          ) {
-            invalidTokens.push(tokens[idx]);
-          }
-          functions.logger.warn(
-            `Failed to send to token ${idx}: ${error?.message}`
-          );
-        }
-      });
-
-      // H13: Remove invalid tokens using arrayRemove to prevent race conditions
-      // This atomically removes only the invalid tokens without affecting concurrent additions
-      if (invalidTokens.length > 0) {
-        functions.logger.info(
-          `Removing ${invalidTokens.length} invalid tokens for user ${targetUserId}`
-        );
-
-        try {
-          await admin
-            .firestore()
-            .collection("user_fcm_tokens")
-            .doc(targetUserId)
-            .update({
-              tokens: admin.firestore.FieldValue.arrayRemove(...invalidTokens),
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-        } catch (tokenError) {
-          // H13: Don't fail the notification if token cleanup fails
-          functions.logger.warn(
-            `H13: Failed to remove invalid tokens for ${targetUserId}: ${tokenError}`
-          );
-        }
-      }
+      // Mark stale tokens as inactive in their per-device documents
+      const invalidTokens = findInvalidTokens(response, tokens);
+      await deactivateStaleTokens(invalidTokens, tokenDocIds, targetUserId);
 
       return {
         success: response.failureCount < tokens.length,
@@ -495,22 +445,8 @@ async function sendNotificationInternal(
   }
 
   try {
-    const tokensSnapshot = await admin
-      .firestore()
-      .collection("user_fcm_tokens")
-      .doc(targetUserId)
-      .get();
-
-    if (!tokensSnapshot.exists) {
-      return {
-        success: true,
-        successCount: 0,
-        failureCount: 0,
-      };
-    }
-
-    const tokenData = tokensSnapshot.data();
-    const tokens: string[] = tokenData?.tokens || [];
+    // Fetch user's active FCM tokens (per-device document model)
+    const { tokens, tokenDocIds } = await getActiveTokensForUser(targetUserId);
 
     if (tokens.length === 0) {
       return {
@@ -557,6 +493,10 @@ async function sendNotificationInternal(
     }
 
     const response = await admin.messaging().sendEachForMulticast(message);
+
+    // Mark stale tokens as inactive in their per-device documents
+    const invalidTokens = findInvalidTokens(response, tokens);
+    await deactivateStaleTokens(invalidTokens, tokenDocIds, targetUserId);
 
     return {
       success: response.failureCount < tokens.length,

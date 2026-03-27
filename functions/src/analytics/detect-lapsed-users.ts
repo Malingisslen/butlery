@@ -11,6 +11,11 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import {
+  getActiveTokensForUser,
+  deactivateStaleTokens,
+  findInvalidTokens,
+} from "../shared/fcm-tokens";
 
 const getDb = () => admin.firestore();
 
@@ -81,6 +86,7 @@ export const detectLapsedUsers = functions
         let batch = db.batch();
         let batchCount = 0;
         let thresholdCount = 0;
+        const userIdsToNotify: string[] = [];
 
         for (const userDoc of usersSnapshot.docs) {
           // Write lapsed user event
@@ -111,6 +117,7 @@ export const detectLapsedUsers = functions
           batch.update(eventRef, { notificationSent: true });
           batchCount++;
 
+          userIdsToNotify.push(userDoc.id);
           thresholdCount++;
 
           if (batchCount >= BATCH_LIMIT - 2) {
@@ -125,9 +132,50 @@ export const detectLapsedUsers = functions
           await batch.commit();
         }
 
+        // Send FCM push notifications to lapsed users
+        let pushSuccessCount = 0;
+        for (const userId of userIdsToNotify) {
+          try {
+            const { tokens, tokenDocIds } = await getActiveTokensForUser(userId);
+            if (tokens.length === 0) continue;
+
+            const message: admin.messaging.MulticastMessage = {
+              tokens,
+              notification: {
+                title: "Butlery",
+                body: threshold.message,
+              },
+              data: { type: threshold.type },
+              android: {
+                priority: "high",
+                notification: {
+                  channelId: "butlery_notifications",
+                  priority: "high",
+                  defaultSound: true,
+                },
+              },
+              apns: {
+                payload: { aps: { sound: "default" } },
+              },
+            };
+
+            const response = await admin.messaging().sendEachForMulticast(message);
+            const invalidTokens = findInvalidTokens(response, tokens);
+            await deactivateStaleTokens(invalidTokens, tokenDocIds, userId);
+
+            if (response.successCount > 0) pushSuccessCount++;
+          } catch (pushError) {
+            // Don't fail the scheduled job for individual push failures
+            functions.logger.warn(
+              `Failed to send win-back push to ${userId}: ${pushError}`
+            );
+          }
+        }
+
         totalDetected += thresholdCount;
         functions.logger.info(
-          `Detected ${thresholdCount} users lapsed at ${threshold.days} days`
+          `Detected ${thresholdCount} users lapsed at ${threshold.days} days, ` +
+          `${pushSuccessCount} push notifications delivered`
         );
       }
 
