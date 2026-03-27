@@ -51,8 +51,8 @@ void main() {
         final result = await schemaOrgTier.parseWithTimeout(context);
         final merged = merger.merge([result]);
 
-        // No JSON-LD — SchemaOrg produces no result; skip field assertions
-        if (fixtureKey.contains('WithoutJsonLd')) {
+        // SchemaOrg-only test without JSON-LD — no result expected
+        if (entry['schemaOrgOnly'] == true) {
           return;
         }
 

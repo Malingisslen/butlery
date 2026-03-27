@@ -60,6 +60,8 @@ class LlmTier extends ParsingTier with QualityScoring {
 
   static const tierIdentifier = 'LLM';
   static const _maxTextLength = 15000;
+  static final _horizontalWhitespace = RegExp(r'[ \t]+');
+  static final _excessiveNewlines = RegExp(r'\n{3,}');
 
   @override
   String get tierName => tierIdentifier;
@@ -258,22 +260,19 @@ class LlmTier extends ParsingTier with QualityScoring {
     return _smartTruncate(text);
   }
 
-  /// Strategy 1: Serialize JSON-LD recipe data as compact text for the LLM.
-  /// Even when SchemaOrg tier couldn't fully parse it, the raw data provides
-  /// high-signal context that helps the LLM fill in gaps.
+  /// Reuse JSON-LD even when SchemaOrg couldn't build a full recipe —
+  /// the raw structured data is still higher signal than plain text for the LLM.
   String? _extractFromJsonLd(ParsingContext context) {
     final jsonLd = context.jsonLdData;
     if (jsonLd == null || jsonLd.isEmpty) return null;
 
     try {
-      return const JsonEncoder.withIndent(null).convert(jsonLd);
+      return jsonEncode(jsonLd);
     } catch (_) {
       return null;
     }
   }
 
-  /// Strategy 2: Extract text from recipe-relevant DOM elements,
-  /// removing navigation, comments, sidebars, and ads.
   String? _extractFromDom(ParsingContext context) {
     if (context.parsedDocument is! dom.Document) return null;
     final doc = context.parsedDocument as dom.Document;
@@ -335,41 +334,37 @@ class LlmTier extends ParsingTier with QualityScoring {
     }
 
     final text = clone.text
-        .replaceAll(RegExp(r'[ \t]+'), ' ')
-        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .replaceAll(_horizontalWhitespace, ' ')
+        .replaceAll(_excessiveNewlines, '\n\n')
         .trim();
 
     return text.isEmpty ? null : text;
   }
 
-  /// Strategy 3: Center the truncation window on recipe keyword anchors
+  /// Center the truncation window on recipe keyword anchors
   /// instead of always taking the first 15k chars.
   String _smartTruncate(String text) {
     if (text.length <= _maxTextLength) return text.trim();
 
-    // Look for recipe content anchors
     const anchors = [
-      'Ingredienser',
       'ingredienser',
-      'Ingredients',
       'ingredients',
-      'Instruktioner',
       'instruktioner',
-      'Gör så här',
-      'Tillagning',
+      'gör så här',
+      'tillagning',
     ];
 
+    final lowerText = text.toLowerCase();
     for (final anchor in anchors) {
-      final pos = text.indexOf(anchor);
+      final pos = lowerText.indexOf(anchor);
       if (pos >= 0) {
-        // Center the window around the anchor, biased toward content after it
+        // Bias toward content after the anchor (recipe body follows the header)
         final start = (pos - _maxTextLength ~/ 4).clamp(0, text.length);
         final end = (start + _maxTextLength).clamp(0, text.length);
         return text.substring(start, end).trim();
       }
     }
 
-    // No anchors found — fall back to naive truncation
     return text.substring(0, _maxTextLength).trim();
   }
 

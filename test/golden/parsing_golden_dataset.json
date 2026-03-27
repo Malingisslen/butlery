@@ -17,6 +17,7 @@
     "id": "ica-kladdkaka-no-jsonld",
     "domain": "ica.se",
     "fixture": "IcaTestFixtures.recipeWithoutJsonLd",
+    "schemaOrgOnly": true,
     "expected": {
       "titleContains": "kladdkaka",
       "ingredientCountMin": 5,
