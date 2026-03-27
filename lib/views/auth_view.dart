@@ -550,6 +550,11 @@ class _AuthViewState extends State<AuthView> {
   ) async {
     String emailValue = '';
 
+    // Capture before async gap (showDialog)
+    final messenger = ScaffoldMessenger.of(context);
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+
     final email = await showDialog<String?>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -599,12 +604,6 @@ class _AuthViewState extends State<AuthView> {
 
     if (email == null || !mounted) return;
 
-    // ignore: use_build_context_synchronously
-    final messenger = ScaffoldMessenger.of(context);
-    // ignore: use_build_context_synchronously
-    final theme = Theme.of(context);
-    // ignore: use_build_context_synchronously
-    final l10n = context.l10n;
     final primaryColor = theme.colorScheme.primary
         .withValues(alpha: AppDimensions.opacityVeryDark);
     final errorColor = theme.colorScheme.error;

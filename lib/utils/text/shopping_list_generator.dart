@@ -109,17 +109,6 @@ class ShoppingListGenerator {
           }
         } else if (recipe is Recipe) {
           allIngredients.addAll(recipe.ingredients);
-        } else {
-          // Fallback for other object formats with dynamic property access
-          try {
-            final recipeObj = recipe as dynamic;
-            final ingredients = recipeObj.ingredients as List<String>?;
-            if (ingredients != null) {
-              allIngredients.addAll(ingredients);
-            }
-          } catch (_) {
-            // Gracefully handle parsing errors and continue processing
-          }
         }
       }
     }
@@ -225,8 +214,7 @@ class ShoppingListGenerator {
 
           quantities[key] = (quantities[key] ?? 0.0) + processed.quantity;
           units.putIfAbsent(key, () => processed.unit);
-          displayNames.putIfAbsent(
-              key, () => processed.originalName.trim());
+          displayNames.putIfAbsent(key, () => processed.originalName.trim());
           categories.putIfAbsent(
               key, () => _categorizeIngredient(processed.normalizedName));
         }

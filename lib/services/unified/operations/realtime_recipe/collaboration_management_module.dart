@@ -1,7 +1,5 @@
 // lib/services/unified/operations/realtime_recipe/collaboration_management_module.dart
 
-// ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/recipe_unified.dart';

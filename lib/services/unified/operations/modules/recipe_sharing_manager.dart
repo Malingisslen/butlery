@@ -1,7 +1,5 @@
 // lib/services/unified/operations/modules/recipe_sharing_manager.dart
 
-// ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';

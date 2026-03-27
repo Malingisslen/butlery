@@ -1,7 +1,5 @@
 // lib/widgets/common/profile/utils/result_displayer.dart
 
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -22,12 +20,16 @@ class ResultDisplayer {
     bool closeModal = false,
   }) {
     if (closeModal) {
-      // Close the modal first
+      // Capture context-dependent values before async gap
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final successColor = context.butleryColors.success;
+      final errorColor = Theme.of(context).colorScheme.error;
+
       Navigator.of(context).pop();
 
-      // Use a delay to show the snackbar after the modal closes
       Future.delayed(AppDimensions.animationDurationCommon, () {
-        _showSnackBar(context, success, message);
+        _showSnackBarDirect(
+            scaffoldMessenger, success, message, successColor, errorColor);
       });
     } else {
       _showSnackBar(context, success, message);
@@ -39,12 +41,20 @@ class ResultDisplayer {
     try {
       if (!context.mounted) return;
       final scaffoldMessenger = ScaffoldMessenger.of(context);
-      scaffoldMessenger.showSnackBar(
+      _showSnackBarDirect(scaffoldMessenger, success, message,
+          context.butleryColors.success, Theme.of(context).colorScheme.error);
+    } catch (e) {
+      AppLogger.error('Failed to show result', e);
+    }
+  }
+
+  static void _showSnackBarDirect(ScaffoldMessengerState messenger,
+      bool success, String message, Color successColor, Color errorColor) {
+    try {
+      messenger.showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: success
-              ? context.butleryColors.success
-              : Theme.of(context).colorScheme.error,
+          backgroundColor: success ? successColor : errorColor,
           duration: const Duration(seconds: 4),
         ),
       );

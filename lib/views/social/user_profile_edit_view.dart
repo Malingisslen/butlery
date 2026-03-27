@@ -1,6 +1,6 @@
 // lib/views/social/user_profile_edit_view.dart
 
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use // RadioListTile groupValue/onChanged → RadioGroup migration pending
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

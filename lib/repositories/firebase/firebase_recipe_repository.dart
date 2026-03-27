@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
-import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -65,20 +62,14 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     implements RecipeRepository {
   late final RecipeLegacyValidator _legacyValidator;
 
-  // ignore: use_super_parameters
   FirebaseRecipeRepository({
-    FirebaseFirestore? firestore,
-    required AuthRepository authRepository,
-    FirebaseAuditRepository? auditRepository,
-    TimestampProvider? timestampProvider,
-  }) : super(
-          firestore: firestore,
-          authRepository: authRepository,
-          auditRepository: auditRepository,
-          timestampProvider: timestampProvider,
-        ) {
+    super.firestore,
+    required super.authRepository,
+    super.auditRepository,
+    super.timestampProvider,
+  }) {
     _legacyValidator = RecipeLegacyValidator(
-      firestore: this.firestore,
+      firestore: firestore,
       getUserRecipeDoc: (userId, recipeId) async =>
           getCollectionForUser(userId).doc(recipeId).get(),
       validateOwnership: validateOwnership,

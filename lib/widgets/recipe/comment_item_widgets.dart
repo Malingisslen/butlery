@@ -1,6 +1,7 @@
 // lib/widgets/recipe/comment_item_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
@@ -14,7 +15,7 @@ class CommentItemWidgets {
   /// Build a single comment item with header, content, reactions, and actions.
   static Widget buildCommentItem({
     required BuildContext context,
-    required dynamic comment,
+    required RecipeComment comment,
     required String authorDisplayName,
     required String? authorAvatarUrl,
     required String formattedTime,
@@ -23,12 +24,14 @@ class CommentItemWidgets {
     required VoidCallback? onShowLikes,
     VoidCallback? onDelete,
     bool isOwnComment = false,
+    bool isLiked = false,
     int depth = 0,
     String? currentUserId,
     void Function(String emoji)? onReactionTap,
   }) {
     return _CommentItemContent(
       comment: comment,
+      isLiked: isLiked,
       authorDisplayName: authorDisplayName,
       authorAvatarUrl: authorAvatarUrl,
       formattedTime: formattedTime,
@@ -46,9 +49,9 @@ class CommentItemWidgets {
   /// Build comment with threaded replies.
   static Widget buildCommentWithReplies({
     required BuildContext context,
-    required dynamic comment,
-    required List<dynamic> replies,
-    required Widget Function(dynamic comment, int depth) commentBuilder,
+    required RecipeComment comment,
+    required List<RecipeComment> replies,
+    required Widget Function(RecipeComment comment, int depth) commentBuilder,
     int depth = 0,
     int maxDepth = 3,
   }) {
@@ -159,7 +162,8 @@ class CommentItemWidgets {
 
 /// Stateful widget for comment item to manage reaction picker overlay.
 class _CommentItemContent extends StatefulWidget {
-  final dynamic comment;
+  final RecipeComment comment;
+  final bool isLiked;
   final String authorDisplayName;
   final String? authorAvatarUrl;
   final String formattedTime;
@@ -174,6 +178,7 @@ class _CommentItemContent extends StatefulWidget {
 
   const _CommentItemContent({
     required this.comment,
+    this.isLiked = false,
     required this.authorDisplayName,
     required this.authorAvatarUrl,
     required this.formattedTime,
@@ -303,17 +308,15 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                   ),
                   // Like button
                   Semantics(
-                    label: comment.isLiked
+                    label: widget.isLiked
                         ? context.l10n.a11yUnlikeComment
                         : context.l10n.a11yLikeComment,
                     button: true,
                     child: IconButton(
                       onPressed: widget.onToggleLike,
                       icon: Icon(
-                        comment.isLiked
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: comment.isLiked ? cs.error : cs.onSurfaceVariant,
+                        widget.isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: widget.isLiked ? cs.error : cs.onSurfaceVariant,
                         size: AppDimensions.iconSizeM,
                       ),
                     ),
@@ -334,8 +337,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       onPressed: () => ReportContentDialog.show(
                         context: context,
                         contentType: 'comment',
-                        contentId: '${widget.comment.id}',
-                        contentOwnerId: '${widget.comment.authorId}',
+                        contentId: widget.comment.id,
+                        contentOwnerId: widget.comment.authorId,
                       ),
                       icon: Icon(
                         Icons.flag_outlined,
@@ -357,13 +360,10 @@ class _CommentItemContentState extends State<_CommentItemContent> {
               // Emoji reaction display
               if (widget.currentUserId != null &&
                   widget.onReactionTap != null &&
-                  comment.reactions != null &&
-                  (comment.reactions as Map<String, List<String>>)
-                      .values
-                      .any((list) => list.isNotEmpty)) ...[
+                  comment.reactions.values.any((list) => list.isNotEmpty)) ...[
                 const SizedBox(height: AppDimensions.spacingS),
                 EmojiReactionDisplay(
-                  reactions: comment.reactions as Map<String, List<String>>,
+                  reactions: comment.reactions,
                   currentUserId: widget.currentUserId!,
                   onReactionTap: widget.onReactionTap!,
                 ),

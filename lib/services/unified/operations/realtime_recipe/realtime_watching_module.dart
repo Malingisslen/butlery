@@ -1,8 +1,6 @@
 // lib/services/unified/operations/realtime_recipe/realtime_watching_module.dart
 
 import 'dart:async';
-// ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/core/utils/logger.dart';

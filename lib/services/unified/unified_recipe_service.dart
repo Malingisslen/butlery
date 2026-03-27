@@ -81,6 +81,7 @@ class UnifiedRecipeService
   late final SocialRecipeModule _socialModule;
   late final RealtimeRecipeModule _realtimeModule;
   late final RecipeCacheModule _cacheModule;
+  bool _modulesInitialized = false;
 
   // Legacy feature interfaces (maintained for backward compatibility)
   late final PersonalRecipeOperations personal;
@@ -328,6 +329,8 @@ class UnifiedRecipeService
       setLoading: (loading) => _isLoading = loading,
       notifyListeners: notifyListeners,
     );
+
+    _modulesInitialized = true;
   }
 
   String? _userIdGetter() => currentUserId;
@@ -409,23 +412,7 @@ class UnifiedRecipeService
     }
   }
 
-  // Helper to check if modules are initialized
-  bool _areModulesInitialized() {
-    try {
-      // Access the modules to check if they're initialized
-      // ignore: unnecessary_statements
-      _personalModule;
-      // ignore: unnecessary_statements
-      _socialModule;
-      // ignore: unnecessary_statements
-      _realtimeModule;
-      // ignore: unnecessary_statements
-      _cacheModule;
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
+  bool _areModulesInitialized() => _modulesInitialized;
 
   /// Fetch all user recipes using cursor-based pagination (no cap).
   @override

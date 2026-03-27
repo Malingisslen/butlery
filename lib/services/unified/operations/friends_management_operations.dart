@@ -1,7 +1,5 @@
 import 'dart:async';
 
-// ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic lists
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart' as model;

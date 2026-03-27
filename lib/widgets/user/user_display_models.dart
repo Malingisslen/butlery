@@ -2,7 +2,9 @@
 // Data models, enums, and core data structures for user display components
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -46,14 +48,15 @@ class UserDisplayData {
   });
 
   /// Optimerade factory constructors
-  factory UserDisplayData.fromFirebaseUser(dynamic user) => UserDisplayData(
+  factory UserDisplayData.fromFirebaseUser(firebase_auth.User user) =>
+      UserDisplayData(
         id: user.uid,
         displayName: user.displayName ?? 'Unknown',
         email: user.email,
         imageUrl: user.photoURL,
       );
 
-  factory UserDisplayData.fromUserProfile(dynamic userProfile) =>
+  factory UserDisplayData.fromUserProfile(UserProfile userProfile) =>
       UserDisplayData(
         id: userProfile.uid,
         displayName: userProfile.displayName,

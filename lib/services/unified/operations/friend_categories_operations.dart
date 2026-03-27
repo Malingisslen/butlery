@@ -1,5 +1,3 @@
-// ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic lists
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';

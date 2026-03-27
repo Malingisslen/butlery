@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -234,7 +235,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
-  Widget _buildCommentWithReplies(dynamic comment, SocialRecipeViewModel vm) {
+  Widget _buildCommentWithReplies(
+      RecipeComment comment, SocialRecipeViewModel vm) {
     final replies = vm.getReplies(comment.id);
     final currentUserId = vm.currentUser?.uid;
 
@@ -266,7 +268,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
-  Future<void> _deleteComment(dynamic comment, SocialRecipeViewModel vm) async {
+  Future<void> _deleteComment(
+      RecipeComment comment, SocialRecipeViewModel vm) async {
     final confirmed = await CommonDialogActions.showDeleteConfirmation(
       context: context,
       itemName: comment.text.length > 40
@@ -285,7 +288,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     }
   }
 
-  Future<void> _toggleLike(dynamic comment, SocialRecipeViewModel vm) async {
+  Future<void> _toggleLike(
+      RecipeComment comment, SocialRecipeViewModel vm) async {
     if (vm.currentUser == null) {
       _showMessage(context.l10n.socialMustBeLoggedInToLike, isError: true);
       return;
@@ -300,7 +304,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Future<void> _toggleReaction(
-      dynamic comment, SocialRecipeViewModel vm, String emoji) async {
+      RecipeComment comment, SocialRecipeViewModel vm, String emoji) async {
     if (vm.currentUser == null) return;
     try {
       final success = await CommentReactionsSystem.toggleCommentReaction(
@@ -320,7 +324,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Future<void> _showLikesDialog(
-      dynamic comment, SocialRecipeViewModel vm) async {
+      RecipeComment comment, SocialRecipeViewModel vm) async {
     if (!mounted) return;
 
     // Fetch likers from subcollection

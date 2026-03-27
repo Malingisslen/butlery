@@ -1,8 +1,6 @@
 // lib/services/unified/operations/realtime_recipe/presence_tracking_module.dart
 
 import 'dart:async';
-// ignore: unused_import
-import 'package:collection/collection.dart'; // Needed for .firstOrNull
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/realtime_sync_service.dart';

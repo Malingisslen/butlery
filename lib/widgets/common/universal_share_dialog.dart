@@ -39,7 +39,7 @@ enum ShareMode {
 class UniversalShareDialog extends StatefulWidget {
   // Generisk content - kan vara Recipe, Map<String, List<Recipe>>, eller UnifiedShoppingList
   // For bulk sharing: List<dynamic> with multiple items
-  final dynamic content;
+  final Object content;
   final ShareContentType contentType;
   final String? initialMessage;
   final List<UserProfile>? availableFriends;

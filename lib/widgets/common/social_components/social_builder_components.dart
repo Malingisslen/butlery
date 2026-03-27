@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -259,17 +260,17 @@ class SocialBuilderComponents {
   }
 
   /// Format user display name consistently.
-  static String formatUserDisplayName(dynamic user) {
+  static String formatUserDisplayName(UserProfile? user) {
     return SocialFacade.formatUserDisplayName(user);
   }
 
   /// Check if user is currently online
-  static bool isUserOnline(dynamic user) {
+  static bool isUserOnline(UserProfile? user) {
     return SocialFacade.isUserOnline(user);
   }
 
   /// Get user avatar URL with fallbacks
-  static String? getUserAvatarUrl(dynamic user) {
+  static String? getUserAvatarUrl(UserProfile? user) {
     return SocialFacade.getUserAvatarUrl(user);
   }
 

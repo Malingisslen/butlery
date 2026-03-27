@@ -59,6 +59,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -273,15 +274,10 @@ class RecipeDetailViewModel extends ChangeNotifier
   }
 
   Future<bool> markAsCooked() async {
-    if (wasCookedToday) return false;
-
     return await executeAsync(() async {
       final isFirstTime = _recipe.lastCookedAt == null;
 
-      final updatedRecipe = _recipe.copyWith(
-        lastCookedAt: DateTime.now(),
-        cookCount: _recipe.cookCount + 1,
-      );
+      final updatedRecipe = RecipeOperations.markAsCooked(_recipe);
 
       final success = await _recipeService.updateRecipe(updatedRecipe);
 
