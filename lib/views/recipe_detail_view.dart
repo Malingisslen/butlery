@@ -1,6 +1,7 @@
 // lib/views/recipe_detail_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:provider/provider.dart';
@@ -204,60 +205,64 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ),
                 title: const SizedBox.shrink(),
                 flexibleSpace: FlexibleSpaceBar(
-                  background: recipe.imageUrls.isNotEmpty
-                      ? GestureDetector(
-                          onTap: () => _showFullscreenImage(
-                              context, recipe.imageUrls, 0),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  cs.onSurface.withValues(
-                                      alpha: AppDimensions.opacityMediumLight),
-                                ],
-                              ),
-                            ),
-                            child: CachedNetworkImage(
-                              imageUrl: recipe.imageUrls.first,
-                              cacheKey: FirebaseUrlUtils.stableCacheKey(
-                                  recipe.imageUrls.first),
-                              fit: BoxFit.cover,
-                              memCacheWidth: (600 *
-                                      MediaQuery.of(context).devicePixelRatio)
-                                  .round(),
-                              placeholder: (context, url) => ColoredBox(
-                                color: cs.surfaceContainerHighest,
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
+                  background: Hero(
+                    tag: 'recipe-image-${recipe.id}',
+                    child: recipe.imageUrls.isNotEmpty
+                        ? GestureDetector(
+                            onTap: () => _showFullscreenImage(
+                                context, recipe.imageUrls, 0),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    cs.onSurface.withValues(
+                                        alpha:
+                                            AppDimensions.opacityMediumLight),
+                                  ],
                                 ),
                               ),
-                              errorWidget: (context, url, error) {
-                                return ColoredBox(
+                              child: CachedNetworkImage(
+                                imageUrl: recipe.imageUrls.first,
+                                cacheKey: FirebaseUrlUtils.stableCacheKey(
+                                    recipe.imageUrls.first),
+                                fit: BoxFit.cover,
+                                memCacheWidth: (600 *
+                                        MediaQuery.of(context).devicePixelRatio)
+                                    .round(),
+                                placeholder: (context, url) => ColoredBox(
                                   color: cs.surfaceContainerHighest,
-                                  child: Icon(
-                                    Icons.restaurant,
-                                    size: AppDimensions.iconSizeHero,
-                                    color: cs.onSurfaceVariant,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
                                   ),
-                                );
-                              },
+                                ),
+                                errorWidget: (context, url, error) {
+                                  return ColoredBox(
+                                    color: cs.surfaceContainerHighest,
+                                    child: Icon(
+                                      Icons.restaurant,
+                                      size: AppDimensions.iconSizeHero,
+                                      color: cs.onSurfaceVariant,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          )
+                        : ColoredBox(
+                            color: cs.primaryContainer,
+                            child: Center(
+                              child: VegetableIllustration(
+                                type: VegetableIllustration.randomForRecipe(
+                                    recipe.id),
+                                size: 120,
+                                opacity: 0.85,
+                              ),
                             ),
                           ),
-                        )
-                      : ColoredBox(
-                          color: cs.primaryContainer,
-                          child: Center(
-                            child: VegetableIllustration(
-                              type: VegetableIllustration.randomForRecipe(
-                                  recipe.id),
-                              size: 120,
-                              opacity: 0.85,
-                            ),
-                          ),
-                        ),
+                  ),
                 ),
                 // UI Redesign: Hero action buttons with cream background
                 actions: [
@@ -719,7 +724,10 @@ class _HeroButton extends StatelessWidget {
       color: cs.surface,
       borderRadius: BorderRadius.zero,
       child: InkWell(
-        onTap: onPressed,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onPressed();
+        },
         child: SizedBox(
           width: 40,
           height: 40,

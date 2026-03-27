@@ -257,6 +257,7 @@ class ImageConfig {
   factory ImageConfig.thumbnail({
     ImageSize size = ImageSize.thumbnail,
     BorderRadius? borderRadius,
+    String? heroTag,
   }) {
     return ImageConfig(
       type: ImageType.thumbnail,
@@ -273,6 +274,7 @@ class ImageConfig {
       showImageCounter: false,
       enableHapticFeedback: false,
       maxImages: 1,
+      heroTag: heroTag,
     );
   }
 

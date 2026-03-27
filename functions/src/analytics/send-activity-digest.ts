@@ -12,16 +12,12 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
-import {
-  getActiveTokensForUser,
-  deactivateStaleTokens,
-  findInvalidTokens,
-} from "../shared/fcm-tokens";
+import { sendPushToUser } from "../shared/fcm-tokens";
+import { BATCH_LIMIT } from "../shared/batch-update";
 
 const getDb = () => admin.firestore();
 
 const USER_BATCH_SIZE = 100;
-const BATCH_LIMIT = 500;
 
 export const sendWeeklyActivityDigest = functions
   .region("europe-west1")
@@ -143,45 +139,24 @@ export const sendWeeklyActivityDigest = functions
             await batch.commit();
           }
 
-          // Send FCM push notifications for this sub-batch
-          for (const entry of usersToNotifyViaPush) {
-            try {
-              const { tokens, tokenDocIds } = await getActiveTokensForUser(entry.userId);
-              if (tokens.length === 0) continue;
-
-              const totalActivity =
-                entry.newRecipeCount + entry.newCommentCount +
-                entry.newRatingCount + entry.newShareCount;
-
-              const message: admin.messaging.MulticastMessage = {
-                tokens,
-                notification: {
-                  title: "Veckans sammanfattning",
-                  body: `Du hade ${totalActivity} aktivitet${totalActivity !== 1 ? "er" : ""} den här veckan`,
-                },
-                data: { type: "activity_digest" },
-                android: {
-                  priority: "high",
-                  notification: {
-                    channelId: "butlery_notifications",
-                    priority: "high",
-                    defaultSound: true,
+          // Send FCM push notifications for this sub-batch (concurrent batches of 10)
+          for (let i = 0; i < usersToNotifyViaPush.length; i += 10) {
+            const pushBatch = usersToNotifyViaPush.slice(i, i + 10);
+            await Promise.allSettled(
+              pushBatch.map((entry) => {
+                const totalActivity =
+                  entry.newRecipeCount + entry.newCommentCount +
+                  entry.newRatingCount + entry.newShareCount;
+                return sendPushToUser(
+                  entry.userId,
+                  {
+                    title: "Veckans sammanfattning",
+                    body: `Du hade ${totalActivity} aktivitet${totalActivity !== 1 ? "er" : ""} den här veckan`,
                   },
-                },
-                apns: {
-                  payload: { aps: { sound: "default" } },
-                },
-              };
-
-              const response = await admin.messaging().sendEachForMulticast(message);
-              const invalidTokens = findInvalidTokens(response, tokens);
-              await deactivateStaleTokens(invalidTokens, tokenDocIds, entry.userId);
-            } catch (pushError) {
-              // Don't fail the scheduled job for individual push failures
-              functions.logger.warn(
-                `Failed to send digest push to ${entry.userId}: ${pushError}`
-              );
-            }
+                  { type: "activity_digest" }
+                );
+              })
+            );
           }
         }
 

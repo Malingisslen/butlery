@@ -226,7 +226,11 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       case ImportSucceeded(:final recipe):
         final proceed = await _checkForDuplicates(context, recipe);
         if (proceed && context.mounted) {
-          _navigateToRecipeEditor(context, recipe);
+          _showImportSuccessFeedback(context);
+          await Future.delayed(AppDimensions.animationDurationLong);
+          if (context.mounted) {
+            _navigateToRecipeEditor(context, recipe);
+          }
         }
 
       case ImportNeedsUserHelp():
@@ -425,6 +429,24 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       // If duplicate check fails, let user proceed with import
       return true;
     }
+  }
+
+  void _showImportSuccessFeedback(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    final cs = Theme.of(context).colorScheme;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.check_circle, color: cs.onPrimary),
+            const SizedBox(width: AppDimensions.spacingSm),
+            Expanded(child: Text(context.l10n.importRecipesImported)),
+          ],
+        ),
+        duration: AppDimensions.animationDurationLong * 4,
+        backgroundColor: cs.primary,
+      ),
+    );
   }
 
   void _navigateToRecipeEditor(BuildContext context, Recipe recipe) {

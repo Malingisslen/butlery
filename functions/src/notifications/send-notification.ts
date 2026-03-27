@@ -167,8 +167,8 @@ export const sendNotification = functions.https.onCall(
       // Add notification payload for display notifications
       if (!silent) {
         message.notification = {
-          title: sanitizeText(title) || title!,
-          body: sanitizeText(body) || body!,
+          title: sanitizeText(title) || "Butlery",
+          body: sanitizeText(body) || "",
         };
 
         if (imageUrl && isAllowedUrl(imageUrl)) {

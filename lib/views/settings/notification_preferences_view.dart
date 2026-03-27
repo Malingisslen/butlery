@@ -248,10 +248,6 @@ class _NotificationPreferencesViewState
             value: 'weekly',
             child: Text(l10n.notificationDigestFrequencyWeekly,
                 style: AppTextStyles.titleMedium)),
-        DropdownMenuItem(
-            value: 'daily',
-            child: Text(l10n.notificationDigestFrequencyDaily,
-                style: AppTextStyles.titleMedium)),
       ];
 
   Widget _buildQuietHoursSection() {

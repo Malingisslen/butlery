@@ -10,6 +10,7 @@
 // lib/views/main_views/mina_recept_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 // ViewModel integration for comprehensive state management
@@ -541,6 +542,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         key: Key('recipe-${recipe.id}'),
         direction: DismissDirection.horizontal,
         confirmDismiss: (direction) async {
+          HapticFeedback.mediumImpact();
           if (direction == DismissDirection.endToStart) {
             final confirmed =
                 await CommonDialogActions.showRecipeDeleteConfirmation(

@@ -95,6 +95,45 @@ export async function deactivateStaleTokens(
  * Identifies invalid tokens from an FCM multicast response.
  * Returns tokens that should be deactivated.
  */
+/**
+ * Sends a push notification to all active devices for a user.
+ * Handles token lookup, message construction, delivery, and stale token cleanup.
+ */
+export async function sendPushToUser(
+  userId: string,
+  notification: { title: string; body: string },
+  data?: Record<string, string>
+): Promise<{ successCount: number; failureCount: number }> {
+  const { tokens, tokenDocIds } = await getActiveTokensForUser(userId);
+  if (tokens.length === 0) return { successCount: 0, failureCount: 0 };
+
+  const message: admin.messaging.MulticastMessage = {
+    tokens,
+    notification,
+    data: data || {},
+    android: {
+      priority: "high",
+      notification: {
+        channelId: "butlery_notifications",
+        priority: "high",
+        defaultSound: true,
+      },
+    },
+    apns: {
+      payload: { aps: { sound: "default" } },
+    },
+  };
+
+  const response = await admin.messaging().sendEachForMulticast(message);
+  const invalidTokens = findInvalidTokens(response, tokens);
+  await deactivateStaleTokens(invalidTokens, tokenDocIds, userId);
+  return { successCount: response.successCount, failureCount: response.failureCount };
+}
+
+/**
+ * Identifies invalid tokens from an FCM multicast response.
+ * Returns tokens that should be deactivated.
+ */
 export function findInvalidTokens(
   response: admin.messaging.BatchResponse,
   tokens: string[]

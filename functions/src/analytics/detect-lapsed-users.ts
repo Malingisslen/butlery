@@ -11,17 +11,13 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import {
-  getActiveTokensForUser,
-  deactivateStaleTokens,
-  findInvalidTokens,
-} from "../shared/fcm-tokens";
+import { sendPushToUser } from "../shared/fcm-tokens";
+import { BATCH_LIMIT } from "../shared/batch-update";
 
 const getDb = () => admin.firestore();
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
-const BATCH_LIMIT = 500;
 
 interface LapsedThreshold {
   days: number;
@@ -95,7 +91,7 @@ export const detectLapsedUsers = functions
             userId: userDoc.id,
             daysInactive: threshold.days,
             detectedAt: now,
-            notificationSent: false,
+            notificationSent: true,
           });
           batchCount++;
 
@@ -113,10 +109,6 @@ export const detectLapsedUsers = functions
           });
           batchCount++;
 
-          // Update event to mark notification as sent
-          batch.update(eventRef, { notificationSent: true });
-          batchCount++;
-
           userIdsToNotify.push(userDoc.id);
           thresholdCount++;
 
@@ -132,43 +124,23 @@ export const detectLapsedUsers = functions
           await batch.commit();
         }
 
-        // Send FCM push notifications to lapsed users
+        // Send FCM push notifications to lapsed users (concurrent batches of 10)
         let pushSuccessCount = 0;
-        for (const userId of userIdsToNotify) {
-          try {
-            const { tokens, tokenDocIds } = await getActiveTokensForUser(userId);
-            if (tokens.length === 0) continue;
-
-            const message: admin.messaging.MulticastMessage = {
-              tokens,
-              notification: {
-                title: "Butlery",
-                body: threshold.message,
-              },
-              data: { type: threshold.type },
-              android: {
-                priority: "high",
-                notification: {
-                  channelId: "butlery_notifications",
-                  priority: "high",
-                  defaultSound: true,
-                },
-              },
-              apns: {
-                payload: { aps: { sound: "default" } },
-              },
-            };
-
-            const response = await admin.messaging().sendEachForMulticast(message);
-            const invalidTokens = findInvalidTokens(response, tokens);
-            await deactivateStaleTokens(invalidTokens, tokenDocIds, userId);
-
-            if (response.successCount > 0) pushSuccessCount++;
-          } catch (pushError) {
-            // Don't fail the scheduled job for individual push failures
-            functions.logger.warn(
-              `Failed to send win-back push to ${userId}: ${pushError}`
-            );
+        for (let i = 0; i < userIdsToNotify.length; i += 10) {
+          const batch = userIdsToNotify.slice(i, i + 10);
+          const results = await Promise.allSettled(
+            batch.map((userId) =>
+              sendPushToUser(
+                userId,
+                { title: "Butlery", body: threshold.message },
+                { type: threshold.type }
+              )
+            )
+          );
+          for (const result of results) {
+            if (result.status === "fulfilled" && result.value.successCount > 0) {
+              pushSuccessCount++;
+            }
           }
         }
 

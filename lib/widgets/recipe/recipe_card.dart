@@ -7,6 +7,7 @@ import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
+import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
@@ -292,6 +293,7 @@ class RecipeCard extends StatelessWidget {
                 config: ImageConfig.thumbnail(
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
+                  heroTag: 'recipe-image-${recipe.id}',
                 ),
               )
             // UI Redesign: Random vegetable fallback when no photo
@@ -316,20 +318,23 @@ class RecipeCard extends StatelessWidget {
   Widget _buildFavoriteButton(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isFav = recipe.isFavorite;
-    return SizedBox(
-      width: 32,
-      height: 32,
-      child: IconButton(
-        onPressed: () => onFavoriteToggle?.call(recipe),
-        icon: Icon(
-          isFav ? Icons.favorite : Icons.favorite_border,
-          size: 20,
-          color: isFav ? cs.error : cs.onSurfaceVariant,
+    return AnimatedPressable(
+      pressedScale: 0.85,
+      child: SizedBox(
+        width: 32,
+        height: 32,
+        child: IconButton(
+          onPressed: () => onFavoriteToggle?.call(recipe),
+          icon: Icon(
+            isFav ? Icons.favorite : Icons.favorite_border,
+            size: 20,
+            color: isFav ? cs.error : cs.onSurfaceVariant,
+          ),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          tooltip:
+              isFav ? context.l10n.favoritesRemove : context.l10n.favoritesAdd,
         ),
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-        tooltip:
-            isFav ? context.l10n.favoritesRemove : context.l10n.favoritesAdd,
       ),
     );
   }
