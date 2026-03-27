@@ -9,6 +9,10 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/deep_link_service.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Recipe sharing formats: complete (full details), compact (messaging/social), markdown (documentation/export).
 enum RecipeShareFormat { complete, compact, markdown }
@@ -353,8 +357,9 @@ class ShareService extends BaseService {
     await executeServiceOperation(
       () async {
         final text = getSmartFormat(recipe);
+        final textWithLink = await _appendDeepLink(text, recipe.id);
         await SharePlus.instance.share(ShareParams(
-          text: text,
+          text: textWithLink,
           subject: recipe.title,
         ));
       },
@@ -376,8 +381,9 @@ class ShareService extends BaseService {
           RecipeShareFormat.markdown => formatRecipeMarkdown(recipe),
         };
 
+        final textWithLink = await _appendDeepLink(text, recipe.id);
         await SharePlus.instance.share(ShareParams(
-          text: text,
+          text: textWithLink,
           subject: recipe.title,
         ));
       },
@@ -385,6 +391,23 @@ class ShareService extends BaseService {
       requiresAuth: false,
       requiresNetwork: false,
     );
+  }
+
+  Future<String> _appendDeepLink(String text, String recipeId) async {
+    try {
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      if (userId == null) return text;
+      final longUrl = DeepLinkService.generateRecipeShareLink(
+        recipeId: recipeId,
+        fromUserId: userId,
+      );
+      final url = await DeepLinkService.generateShortUrl(longUrl)
+          .timeout(const Duration(seconds: 3), onTimeout: () => longUrl);
+      return '$text\n\n$url';
+    } catch (e) {
+      AppLogger.warning('Failed to append deep link: $e');
+      return text;
+    }
   }
 
   Future<void> shareShoppingList(List<UnifiedShoppingItem> items) async {

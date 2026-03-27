@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:html/dom.dart' as dom;
+
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
@@ -229,21 +233,150 @@ class LlmTier extends ParsingTier with QualityScoring {
     }
   }
 
-  /// Prepare text for LLM processing.
+  /// Prepare text for LLM processing using a three-strategy cascade:
+  /// 1. JSON-LD from SchemaOrg tier (highest signal, lowest noise)
+  /// 2. DOM-based recipe container extraction (strips navigation/comments)
+  /// 3. Keyword-anchored truncation (centers window on recipe content)
   String _prepareText(ParsingContext context) {
-    var text = context.sanitizedContent;
+    // Strategy 1: Reuse JSON-LD extracted by SchemaOrg tier
+    final jsonLdText = _extractFromJsonLd(context);
+    if (jsonLdText != null && jsonLdText.length >= 200) {
+      return jsonLdText;
+    }
 
-    // If HTML, strip tags
+    // Strategy 2: Extract recipe container from parsed DOM
+    final domText = _extractFromDom(context);
+    if (domText != null && domText.length >= 100) {
+      return _truncate(domText);
+    }
+
+    // Strategy 3: Smart keyword-anchored truncation
+    var text = context.sanitizedContent;
     if (text.contains('<')) {
       text = HtmlSanitizer.stripToPlainText(text);
     }
+    return _smartTruncate(text);
+  }
 
-    // Truncate to fit LLM token budget (~4k tokens at ~3.7 chars/token)
-    if (text.length > _maxTextLength) {
-      text = text.substring(0, _maxTextLength);
+  /// Strategy 1: Serialize JSON-LD recipe data as compact text for the LLM.
+  /// Even when SchemaOrg tier couldn't fully parse it, the raw data provides
+  /// high-signal context that helps the LLM fill in gaps.
+  String? _extractFromJsonLd(ParsingContext context) {
+    final jsonLd = context.jsonLdData;
+    if (jsonLd == null || jsonLd.isEmpty) return null;
+
+    try {
+      return const JsonEncoder.withIndent(null).convert(jsonLd);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Strategy 2: Extract text from recipe-relevant DOM elements,
+  /// removing navigation, comments, sidebars, and ads.
+  String? _extractFromDom(ParsingContext context) {
+    if (context.parsedDocument is! dom.Document) return null;
+    final doc = context.parsedDocument as dom.Document;
+
+    // Find the most recipe-relevant container
+    const recipeSelectors = [
+      '[itemtype*="schema.org/Recipe"]',
+      '[itemtype*="Recipe"]',
+      'article[class*="recipe"]',
+      'div[class*="recipe-content"]',
+      'div[class*="recipe_content"]',
+      'div[id*="recipe"]',
+      'main article',
+      'article',
+      'main',
+      '[role="main"]',
+    ];
+
+    dom.Element? container;
+    for (final selector in recipeSelectors) {
+      try {
+        container = doc.querySelector(selector);
+        if (container != null) break;
+      } catch (_) {
+        continue;
+      }
     }
 
-    return text.trim();
+    container ??= doc.body;
+    if (container == null) return null;
+
+    // Clone to avoid mutating the cached DOM
+    final clone = container.clone(true);
+
+    // Remove noise elements
+    const noiseSelectors = [
+      'nav',
+      'footer',
+      'header',
+      'aside',
+      '[class*="comment"]',
+      '[id*="comment"]',
+      '[class*="sidebar"]',
+      '[class*="related"]',
+      '[class*="newsletter"]',
+      '[class*="social-share"]',
+      '[class*="advertisement"]',
+      '[class*="ad-"]',
+      '[class*="cookie"]',
+      '[class*="modal"]',
+      'script',
+      'style',
+      'noscript',
+    ];
+    for (final sel in noiseSelectors) {
+      try {
+        clone.querySelectorAll(sel).forEach((e) => e.remove());
+      } catch (_) {}
+    }
+
+    final text = clone.text
+        .replaceAll(RegExp(r'[ \t]+'), ' ')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
+
+    return text.isEmpty ? null : text;
+  }
+
+  /// Strategy 3: Center the truncation window on recipe keyword anchors
+  /// instead of always taking the first 15k chars.
+  String _smartTruncate(String text) {
+    if (text.length <= _maxTextLength) return text.trim();
+
+    // Look for recipe content anchors
+    const anchors = [
+      'Ingredienser',
+      'ingredienser',
+      'Ingredients',
+      'ingredients',
+      'Instruktioner',
+      'instruktioner',
+      'Gör så här',
+      'Tillagning',
+    ];
+
+    for (final anchor in anchors) {
+      final pos = text.indexOf(anchor);
+      if (pos >= 0) {
+        // Center the window around the anchor, biased toward content after it
+        final start = (pos - _maxTextLength ~/ 4).clamp(0, text.length);
+        final end = (start + _maxTextLength).clamp(0, text.length);
+        return text.substring(start, end).trim();
+      }
+    }
+
+    // No anchors found — fall back to naive truncation
+    return text.substring(0, _maxTextLength).trim();
+  }
+
+  /// Simple truncation helper.
+  String _truncate(String text) {
+    if (text.length <= _maxTextLength) return text;
+    return text.substring(0, _maxTextLength);
   }
 
   /// Check for suspicious patterns that might indicate injection.

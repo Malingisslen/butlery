@@ -1,0 +1,55 @@
+[
+  {
+    "id": "ica-kottbullar",
+    "domain": "ica.se",
+    "fixture": "IcaTestFixtures.kottbullarComplete",
+    "expected": {
+      "titleContains": "köttbullar",
+      "portions": 4,
+      "ingredientCountMin": 10,
+      "ingredientSubstrings": ["nötfärs", "ägg", "ströbröd", "grädde"],
+      "instructionCountMin": 5,
+      "totalTimeMinutes": 45,
+      "minQuality": 0.65
+    }
+  },
+  {
+    "id": "ica-kladdkaka-no-jsonld",
+    "domain": "ica.se",
+    "fixture": "IcaTestFixtures.recipeWithoutJsonLd",
+    "expected": {
+      "titleContains": "kladdkaka",
+      "ingredientCountMin": 5,
+      "ingredientSubstrings": ["ägg", "socker", "kakao", "smör"],
+      "instructionCountMin": 3,
+      "minQuality": 0.4
+    }
+  },
+  {
+    "id": "ica-artsoppa-swedish-chars",
+    "domain": "ica.se",
+    "fixture": "IcaTestFixtures.recipeWithSwedishChars",
+    "expected": {
+      "titleContains": "ärtsoppa",
+      "portions": 6,
+      "ingredientCountMin": 4,
+      "ingredientSubstrings": ["ärtor", "fläsk"],
+      "instructionCountMin": 2,
+      "totalTimeMinutes": 150,
+      "minQuality": 0.65
+    }
+  },
+  {
+    "id": "arla-chokladbollar",
+    "domain": "arla.se",
+    "fixture": "ArlaTestFixtures.chokladbollarComplete",
+    "expected": {
+      "titleContains": "chokladbollar",
+      "ingredientCountMin": 6,
+      "ingredientSubstrings": ["smör", "havregryn", "kakao"],
+      "instructionCountMin": 3,
+      "totalTimeMinutes": 15,
+      "minQuality": 0.65
+    }
+  }
+]
