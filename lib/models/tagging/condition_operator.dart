@@ -92,45 +92,30 @@ extension ConditionOperatorExtension on ConditionOperator {
   /// Human-readable localized label for UI.
   String get label {
     final l = AppLocale.current;
-    switch (this) {
-      case ConditionOperator.contains:
-        return l.operatorContains;
-      case ConditionOperator.equals:
-        return l.operatorExact;
-      case ConditionOperator.startsWith:
-        return l.operatorStartsWith;
-      case ConditionOperator.notContains:
-        return l.operatorNotContains;
-      case ConditionOperator.notEquals:
-        return l.operatorNotExact;
-      case ConditionOperator.has:
-        return l.operatorHas;
-      case ConditionOperator.notHas:
-        return l.operatorNotHas;
-      case ConditionOperator.lessThan:
-        return l.operatorLessThan;
-      case ConditionOperator.lessThanOrEqual:
-        return l.operatorAtMost;
-      case ConditionOperator.greaterThan:
-        return l.operatorGreaterThan;
-      case ConditionOperator.greaterThanOrEqual:
-        return l.operatorAtLeast;
-      case ConditionOperator.withinDays:
-        return l.operatorWithinDays;
-    }
+    return switch (this) {
+      ConditionOperator.contains => l.operatorContains,
+      ConditionOperator.equals => l.operatorExact,
+      ConditionOperator.startsWith => l.operatorStartsWith,
+      ConditionOperator.notContains => l.operatorNotContains,
+      ConditionOperator.notEquals => l.operatorNotExact,
+      ConditionOperator.has => l.operatorHas,
+      ConditionOperator.notHas => l.operatorNotHas,
+      ConditionOperator.lessThan => l.operatorLessThan,
+      ConditionOperator.lessThanOrEqual => l.operatorAtMost,
+      ConditionOperator.greaterThan => l.operatorGreaterThan,
+      ConditionOperator.greaterThanOrEqual => l.operatorAtLeast,
+      ConditionOperator.withinDays => l.operatorWithinDays,
+    };
   }
 
   /// Returns true if this operator works with numeric values.
-  bool get isNumeric {
-    switch (this) {
-      case ConditionOperator.lessThan:
-      case ConditionOperator.lessThanOrEqual:
-      case ConditionOperator.greaterThan:
-      case ConditionOperator.greaterThanOrEqual:
-      case ConditionOperator.withinDays:
-        return true;
-      default:
-        return false;
-    }
-  }
+  bool get isNumeric => switch (this) {
+        ConditionOperator.lessThan ||
+        ConditionOperator.lessThanOrEqual ||
+        ConditionOperator.greaterThan ||
+        ConditionOperator.greaterThanOrEqual ||
+        ConditionOperator.withinDays =>
+          true,
+        _ => false,
+      };
 }

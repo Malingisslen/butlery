@@ -112,19 +112,13 @@ extension EditModeExtension on EditMode {
   /// Returns Swedish description text appropriate for UI display and user guidance.
   String get description {
     final l = AppLocale.current;
-    switch (this) {
-      case EditMode.owner:
-        return l.editModeOwner;
-      case EditMode.collaborative:
-        return l.editModeCollaborative;
-      case EditMode.readOnlyWithFork:
-        return l.editModeReadOnlyWithFork;
-      case EditMode.noAccess:
-        return l.editModeNoAccess;
-      case EditMode.edit:
-        return l.editModeEdit;
-      case EditMode.view:
-        return l.editModeView;
-    }
+    return switch (this) {
+      EditMode.owner => l.editModeOwner,
+      EditMode.collaborative => l.editModeCollaborative,
+      EditMode.readOnlyWithFork => l.editModeReadOnlyWithFork,
+      EditMode.noAccess => l.editModeNoAccess,
+      EditMode.edit => l.editModeEdit,
+      EditMode.view => l.editModeView,
+    };
   }
 }

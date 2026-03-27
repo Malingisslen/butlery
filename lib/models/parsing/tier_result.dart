@@ -209,30 +209,22 @@ class TierResult {
 /// User-facing Swedish messages for tier failure reasons.
 /// Used by RecipeParserService to surface actionable feedback.
 extension TierFailureReasonMessage on TierFailureReason {
-  String get userMessage {
-    switch (this) {
-      case TierFailureReason.rateLimited:
-        return 'Daglig gräns nådd. Försök igen imorgon.';
-      case TierFailureReason.noData:
-        return 'Kunde inte hitta receptinformation.';
-      case TierFailureReason.invalidResponse:
-        return 'AI-svaret kunde inte tolkas.';
-      case TierFailureReason.schemaValidationFailed:
-        return 'Receptet hade ogiltiga värden.';
-      case TierFailureReason.parseError:
-        return 'Ett tekniskt fel uppstod.';
-      case TierFailureReason.timeout:
-        return 'Tidsgränsen överskreds. Försök igen.';
-      case TierFailureReason.networkError:
-        return 'Nätverksfel. Kontrollera din anslutning.';
-      case TierFailureReason.securityBlocked:
-        return 'Innehållet blockerades av säkerhetsskäl.';
-      case TierFailureReason.inputTooLarge:
-        return 'Texten är för lång för bearbetning.';
-      case TierFailureReason.deadlineExceeded:
-        return 'Bearbetningen tog för lång tid.';
-      case TierFailureReason.skipped:
-        return 'Kunde inte hitta receptinformation.';
-    }
-  }
+  String get userMessage => switch (this) {
+        TierFailureReason.rateLimited =>
+          'Daglig gräns nådd. Försök igen imorgon.',
+        TierFailureReason.noData => 'Kunde inte hitta receptinformation.',
+        TierFailureReason.invalidResponse => 'AI-svaret kunde inte tolkas.',
+        TierFailureReason.schemaValidationFailed =>
+          'Receptet hade ogiltiga värden.',
+        TierFailureReason.parseError => 'Ett tekniskt fel uppstod.',
+        TierFailureReason.timeout => 'Tidsgränsen överskreds. Försök igen.',
+        TierFailureReason.networkError =>
+          'Nätverksfel. Kontrollera din anslutning.',
+        TierFailureReason.securityBlocked =>
+          'Innehållet blockerades av säkerhetsskäl.',
+        TierFailureReason.inputTooLarge =>
+          'Texten är för lång för bearbetning.',
+        TierFailureReason.deadlineExceeded => 'Bearbetningen tog för lång tid.',
+        TierFailureReason.skipped => 'Kunde inte hitta receptinformation.',
+      };
 }

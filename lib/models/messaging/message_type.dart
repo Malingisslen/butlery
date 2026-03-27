@@ -133,24 +133,16 @@ extension MessageTypeExtension on MessageType {
   /// Returns Swedish display name appropriate for UI elements and user communication.
   String get displayName {
     final l = AppLocale.current;
-    switch (this) {
-      case MessageType.text:
-        return l.messageTypeText;
-      case MessageType.recipeShare:
-        return l.messageTypeRecipeShare;
-      case MessageType.menuShare:
-        return l.messageTypeMenuShare;
-      case MessageType.shoppingListShare:
-        return l.messageTypeShoppingListShare;
-      case MessageType.system:
-        return l.messageTypeSystem;
-      case MessageType.image:
-        return l.messageTypeImage;
-      case MessageType.voice:
-        return l.messageTypeVoice;
-      case MessageType.poll:
-        return l.messageTypePoll;
-    }
+    return switch (this) {
+      MessageType.text => l.messageTypeText,
+      MessageType.recipeShare => l.messageTypeRecipeShare,
+      MessageType.menuShare => l.messageTypeMenuShare,
+      MessageType.shoppingListShare => l.messageTypeShoppingListShare,
+      MessageType.system => l.messageTypeSystem,
+      MessageType.image => l.messageTypeImage,
+      MessageType.voice => l.messageTypeVoice,
+      MessageType.poll => l.messageTypePoll,
+    };
   }
 
   /// Gets emoji icon representing the message type for visual identification and UI consistency.
@@ -158,26 +150,16 @@ extension MessageTypeExtension on MessageType {
   /// in message lists, conversation bubbles, and type indicators with culturally appropriate
   /// and universally recognizable symbols for enhanced user interface experience.
   /// Returns emoji icon appropriate for visual message type representation.
-  String get icon {
-    switch (this) {
-      case MessageType.text:
-        return '💬';
-      case MessageType.recipeShare:
-        return '🍽️';
-      case MessageType.menuShare:
-        return '📋';
-      case MessageType.shoppingListShare:
-        return '🛒';
-      case MessageType.system:
-        return 'ℹ️';
-      case MessageType.image:
-        return '📷';
-      case MessageType.voice:
-        return '🎤';
-      case MessageType.poll:
-        return '📊';
-    }
-  }
+  String get icon => switch (this) {
+        MessageType.text => '💬',
+        MessageType.recipeShare => '🍽️',
+        MessageType.menuShare => '📋',
+        MessageType.shoppingListShare => '🛒',
+        MessageType.system => 'ℹ️',
+        MessageType.image => '📷',
+        MessageType.voice => '🎤',
+        MessageType.poll => '📊',
+      };
 }
 
 /// Extension providing Swedish localization and delivery status indicators for MessageStatus enumeration.
@@ -192,18 +174,13 @@ extension MessageStatusExtension on MessageStatus {
   /// Returns Swedish display name appropriate for delivery status communication and UI elements.
   String get displayName {
     final l = AppLocale.current;
-    switch (this) {
-      case MessageStatus.sending:
-        return l.messageStatusSending;
-      case MessageStatus.sent:
-        return l.messageStatusSent;
-      case MessageStatus.delivered:
-        return l.messageStatusDelivered;
-      case MessageStatus.read:
-        return l.messageStatusRead;
-      case MessageStatus.failed:
-        return l.messageStatusFailed;
-    }
+    return switch (this) {
+      MessageStatus.sending => l.messageStatusSending,
+      MessageStatus.sent => l.messageStatusSent,
+      MessageStatus.delivered => l.messageStatusDelivered,
+      MessageStatus.read => l.messageStatusRead,
+      MessageStatus.failed => l.messageStatusFailed,
+    };
   }
 
   /// Gets emoji icon representing the delivery status for visual delivery tracking and UI consistency.
@@ -211,18 +188,11 @@ extension MessageStatusExtension on MessageStatus {
   /// communication of message delivery progression with universally recognized symbols for delivery
   /// confirmation, read receipts, and error indication in messaging interfaces.
   /// Returns emoji icon appropriate for delivery status visualization and user feedback.
-  String get icon {
-    switch (this) {
-      case MessageStatus.sending:
-        return '⏳';
-      case MessageStatus.sent:
-        return '✓';
-      case MessageStatus.delivered:
-        return '✓✓';
-      case MessageStatus.read:
-        return '👁️';
-      case MessageStatus.failed:
-        return '❌';
-    }
-  }
+  String get icon => switch (this) {
+        MessageStatus.sending => '⏳',
+        MessageStatus.sent => '✓',
+        MessageStatus.delivered => '✓✓',
+        MessageStatus.read => '👁️',
+        MessageStatus.failed => '❌',
+      };
 }

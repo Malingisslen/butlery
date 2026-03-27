@@ -97,22 +97,14 @@ enum ResourcePermission {
   /// Provides intuitive permission names for UI display, user communication, and
   /// permission selection interfaces with clear hierarchical understanding.
   /// Returns capitalized permission name suitable for user interface display.
-  String get displayName {
-    switch (this) {
-      case ResourcePermission.viewer:
-        return 'Viewer';
-      case ResourcePermission.editor:
-        return 'Editor';
-      case ResourcePermission.owner:
-        return 'Owner';
-      case ResourcePermission.read:
-        return 'Read';
-      case ResourcePermission.write:
-        return 'Write';
-      case ResourcePermission.admin:
-        return 'Admin';
-    }
-  }
+  String get displayName => switch (this) {
+        ResourcePermission.viewer => 'Viewer',
+        ResourcePermission.editor => 'Editor',
+        ResourcePermission.owner => 'Owner',
+        ResourcePermission.read => 'Read',
+        ResourcePermission.write => 'Write',
+        ResourcePermission.admin => 'Admin',
+      };
 }
 
 /// Comprehensive helper class providing advanced operations for ResourcePermission management and validation.

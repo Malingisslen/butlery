@@ -35,27 +35,19 @@ enum RealtimeResourceType {
   /// Get user-readable name
   String get displayName {
     final l = AppLocale.current;
-    switch (this) {
-      case RealtimeResourceType.recipe:
-        return l.resourceTypeRecipe;
-      case RealtimeResourceType.menu:
-        return l.resourceTypeMenu;
-      case RealtimeResourceType.shoppingList:
-        return l.resourceTypeShoppingList;
-    }
+    return switch (this) {
+      RealtimeResourceType.recipe => l.resourceTypeRecipe,
+      RealtimeResourceType.menu => l.resourceTypeMenu,
+      RealtimeResourceType.shoppingList => l.resourceTypeShoppingList,
+    };
   }
 
   /// Get icon for resource type
-  String get icon {
-    switch (this) {
-      case RealtimeResourceType.recipe:
-        return '🍳';
-      case RealtimeResourceType.menu:
-        return '📋';
-      case RealtimeResourceType.shoppingList:
-        return '🛒';
-    }
-  }
+  String get icon => switch (this) {
+        RealtimeResourceType.recipe => '🍳',
+        RealtimeResourceType.menu => '📋',
+        RealtimeResourceType.shoppingList => '🛒',
+      };
 
   @override
   String toString() => value;
@@ -388,7 +380,8 @@ abstract class RealtimeResource {
       'lastEditedByDisplayName':
           (data['lastEditedByDisplayName'] as String?).orEmpty(),
       'editCount': SerializationUtils.safeInt(data, 'editCount'),
-      'isActive': SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      'isActive':
+          SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
       'metadata': Map<String, dynamic>.from(data['metadata'] ?? {}),
     };
   }

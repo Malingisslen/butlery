@@ -117,14 +117,11 @@ class RecipeChange {
   /// Returns Swedish change descriptions: 'Tillagd', 'Ändrad', 'Borttagen'.
   String get changeTypeText {
     final l = AppLocale.current;
-    switch (type) {
-      case RecipeChangeType.added:
-        return l.changeTypeAdded;
-      case RecipeChangeType.modified:
-        return l.changeTypeModified;
-      case RecipeChangeType.removed:
-        return l.changeTypeRemoved;
-    }
+    return switch (type) {
+      RecipeChangeType.added => l.changeTypeAdded,
+      RecipeChangeType.modified => l.changeTypeModified,
+      RecipeChangeType.removed => l.changeTypeRemoved,
+    };
   }
 
   /// Standard object methods for comparison, debugging, and collection operations.

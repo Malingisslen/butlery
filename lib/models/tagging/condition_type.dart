@@ -82,53 +82,34 @@ extension ConditionTypeExtension on ConditionType {
   /// Human-readable localized label for UI.
   String get label {
     final l = AppLocale.current;
-    switch (this) {
-      case ConditionType.ingredient:
-        return l.conditionTypeIngredient;
-      case ConditionType.property:
-        return l.conditionTypeProperty;
-      case ConditionType.keyword:
-        return l.conditionTypeKeyword;
-      case ConditionType.sourceUrl:
-        return l.conditionTypeSource;
-      case ConditionType.cuisine:
-        return l.conditionTypeCuisine;
-      case ConditionType.dietary:
-        return l.conditionTypeDiet;
-      case ConditionType.time:
-        return l.conditionTypeTime;
-      case ConditionType.rating:
-        return l.conditionTypeRating;
-      case ConditionType.recency:
-        return l.conditionTypeRecent;
-      case ConditionType.ownership:
-        return l.conditionTypeOwnership;
-      case ConditionType.hasImage:
-        return l.conditionTypeHasImage;
-      case ConditionType.completeness:
-        return l.conditionTypeCompleteness;
-    }
+    return switch (this) {
+      ConditionType.ingredient => l.conditionTypeIngredient,
+      ConditionType.property => l.conditionTypeProperty,
+      ConditionType.keyword => l.conditionTypeKeyword,
+      ConditionType.sourceUrl => l.conditionTypeSource,
+      ConditionType.cuisine => l.conditionTypeCuisine,
+      ConditionType.dietary => l.conditionTypeDiet,
+      ConditionType.time => l.conditionTypeTime,
+      ConditionType.rating => l.conditionTypeRating,
+      ConditionType.recency => l.conditionTypeRecent,
+      ConditionType.ownership => l.conditionTypeOwnership,
+      ConditionType.hasImage => l.conditionTypeHasImage,
+      ConditionType.completeness => l.conditionTypeCompleteness,
+    };
   }
 
   /// Returns true if this condition type uses numeric values.
-  bool get isNumeric {
-    switch (this) {
-      case ConditionType.time:
-      case ConditionType.rating:
-      case ConditionType.recency:
-        return true;
-      default:
-        return false;
-    }
-  }
+  bool get isNumeric => switch (this) {
+        ConditionType.time ||
+        ConditionType.rating ||
+        ConditionType.recency =>
+          true,
+        _ => false,
+      };
 
   /// Returns true if this condition type uses boolean values.
-  bool get isBoolean {
-    switch (this) {
-      case ConditionType.hasImage:
-        return true;
-      default:
-        return false;
-    }
-  }
+  bool get isBoolean => switch (this) {
+        ConditionType.hasImage => true,
+        _ => false,
+      };
 }
