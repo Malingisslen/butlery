@@ -426,13 +426,23 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Toggle favorite status on a recipe.
+  /// Toggle favorite status with optimistic UI — instant heart toggle,
+  /// background Firebase sync, rollback on failure.
   Future<void> toggleFavorite(String recipeId) async {
     final recipe = _recipeService.getRecipeById(recipeId);
     if (recipe == null) return;
-    await _recipeService.toggleFavorite(recipeId, !recipe.isFavorite);
+    final newValue = !recipe.isFavorite;
+
+    _recipeService.optimisticUpdate(recipe.copyWith(isFavorite: newValue));
     _invalidateCache();
     notifyListeners();
+
+    final success = await _recipeService.toggleFavorite(recipeId, newValue);
+    if (!success) {
+      _recipeService.optimisticUpdate(recipe.copyWith(isFavorite: !newValue));
+      _invalidateCache();
+      notifyListeners();
+    }
   }
 
   void toggleViewMode() {

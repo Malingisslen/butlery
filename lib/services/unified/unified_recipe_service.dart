@@ -857,6 +857,16 @@ class UnifiedRecipeService
     notifyListeners();
   }
 
+  /// Replace a recipe in the in-memory list without persisting.
+  /// Used for optimistic UI updates with rollback on failure.
+  void optimisticUpdate(Recipe updated) {
+    final index = _recipes.indexWhere((r) => r.id == updated.id);
+    if (index >= 0) {
+      _recipes[index] = updated;
+      notifyListeners();
+    }
+  }
+
   /// Insert recipe at a specific position for ordered restore after undo.
   void optimisticRestoreAt(Recipe recipe, int index) {
     if (index >= 0 && index <= _recipes.length) {

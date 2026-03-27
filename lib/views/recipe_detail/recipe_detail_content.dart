@@ -227,6 +227,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                             ],
                           ),
                         ),
+                        Icon(
+                          Icons.swap_horiz,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.onSurfaceVariant.withValues(
+                              alpha: AppDimensions.opacityMediumLight),
+                        ),
                       ],
                     ),
                   ),

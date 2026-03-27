@@ -398,13 +398,13 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       case ShoppingCategory.spices:
         return bc.categoryDryGoods;
       case ShoppingCategory.canned:
-        return bc.categoryOther;
+        return bc.categoryCanned;
       case ShoppingCategory.drinks:
-        return bc.categoryOther;
+        return bc.categoryDrinks;
       case ShoppingCategory.snacks:
-        return bc.categoryOther;
+        return bc.categorySnacks;
       case ShoppingCategory.cleaning:
-        return bc.categoryOther;
+        return bc.categoryCleaning;
       default:
         return bc.categoryOther;
     }

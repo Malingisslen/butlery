@@ -301,13 +301,17 @@ class RecipeDetailViewModel extends ChangeNotifier
     });
   }
 
-  /// Toggles the favorite status of this recipe.
-  /// Performs optimistic UI update then persists via service.
+  /// Toggles the favorite status with optimistic update and rollback.
   Future<void> toggleFavorite() async {
     final newValue = !_recipe.isFavorite;
     _recipe = _recipe.copyWith(isFavorite: newValue);
     notifyListeners();
-    await _recipeService.toggleFavorite(_recipe.id, newValue);
+
+    final success = await _recipeService.toggleFavorite(_recipe.id, newValue);
+    if (!success) {
+      _recipe = _recipe.copyWith(isFavorite: !newValue);
+      notifyListeners();
+    }
   }
 
   /// Rates this recipe with a 1-5 star value.

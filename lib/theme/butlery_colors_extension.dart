@@ -43,6 +43,10 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     required this.categoryFrozen,
     required this.categoryDryGoods,
     required this.categoryOther,
+    required this.categoryDrinks,
+    required this.categoryCleaning,
+    required this.categorySnacks,
+    required this.categoryCanned,
     // Shared recipe
     required this.sharedRecipeText,
     required this.sharedRecipeIcon,
@@ -88,6 +92,10 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
   final Color categoryFrozen;
   final Color categoryDryGoods;
   final Color categoryOther;
+  final Color categoryDrinks;
+  final Color categoryCleaning;
+  final Color categorySnacks;
+  final Color categoryCanned;
 
   // Shared recipe
   final Color sharedRecipeText;
@@ -130,6 +138,10 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     categoryFrozen: Color(0xFF8BA5B5),
     categoryDryGoods: Color(0xFF9C7A5C),
     categoryOther: Color(0xFF9CA3AF),
+    categoryDrinks: Color(0xFF5B8FA8),
+    categoryCleaning: Color(0xFF5A9C8F),
+    categorySnacks: Color(0xFFD4903C),
+    categoryCanned: Color(0xFF8B7355),
     // Shared recipe
     sharedRecipeText: Color(0xFF9CA3AF),
     sharedRecipeIcon: Color(0xFFD1D5DB),
@@ -172,6 +184,10 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     categoryFrozen: Color(0xFFB0C8D8),
     categoryDryGoods: Color(0xFFC4A080),
     categoryOther: Color(0xFFBDBDBD),
+    categoryDrinks: Color(0xFF82B5CC),
+    categoryCleaning: Color(0xFF7ABCAF),
+    categorySnacks: Color(0xFFE8B56E),
+    categoryCanned: Color(0xFFB09878),
     // Shared recipe
     sharedRecipeText: Color(0xFFBDBDBD),
     sharedRecipeIcon: Color(0xFF757575),
@@ -208,6 +224,10 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     Color? categoryFrozen,
     Color? categoryDryGoods,
     Color? categoryOther,
+    Color? categoryDrinks,
+    Color? categoryCleaning,
+    Color? categorySnacks,
+    Color? categoryCanned,
     Color? sharedRecipeText,
     Color? sharedRecipeIcon,
     Color? sharedRecipeBackground,
@@ -242,6 +262,10 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
       categoryFrozen: categoryFrozen ?? this.categoryFrozen,
       categoryDryGoods: categoryDryGoods ?? this.categoryDryGoods,
       categoryOther: categoryOther ?? this.categoryOther,
+      categoryDrinks: categoryDrinks ?? this.categoryDrinks,
+      categoryCleaning: categoryCleaning ?? this.categoryCleaning,
+      categorySnacks: categorySnacks ?? this.categorySnacks,
+      categoryCanned: categoryCanned ?? this.categoryCanned,
       sharedRecipeText: sharedRecipeText ?? this.sharedRecipeText,
       sharedRecipeIcon: sharedRecipeIcon ?? this.sharedRecipeIcon,
       sharedRecipeBackground:
@@ -295,6 +319,11 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
       categoryDryGoods:
           Color.lerp(categoryDryGoods, other.categoryDryGoods, t)!,
       categoryOther: Color.lerp(categoryOther, other.categoryOther, t)!,
+      categoryDrinks: Color.lerp(categoryDrinks, other.categoryDrinks, t)!,
+      categoryCleaning:
+          Color.lerp(categoryCleaning, other.categoryCleaning, t)!,
+      categorySnacks: Color.lerp(categorySnacks, other.categorySnacks, t)!,
+      categoryCanned: Color.lerp(categoryCanned, other.categoryCanned, t)!,
       sharedRecipeText:
           Color.lerp(sharedRecipeText, other.sharedRecipeText, t)!,
       sharedRecipeIcon:
