@@ -280,11 +280,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       await _clearPendingImportUrl();
       return await _handleImportResult(result);
     } catch (e) {
-      final lower = '$e'.toLowerCase();
-      if (lower.contains('network') ||
-          lower.contains('timeout') ||
-          lower.contains('no internet') ||
-          lower.contains('could not reach')) {
+      if (_isNetworkError('$e')) {
         await _savePendingImportUrl(_input.trim());
       }
       _setPhase(ImportPhase.error);
@@ -450,9 +446,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     if (lower.contains('no recipe found')) {
       return l10n.importErrorNoRecipeFound;
     }
-    if (lower.contains('could not reach') ||
-        lower.contains('network') ||
-        lower.contains('timeout')) {
+    if (_isNetworkError(lower)) {
       return l10n.importErrorCouldNotReachPage;
     }
     if (lower.contains('invalid url')) {
@@ -483,7 +477,13 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     notifyListeners();
   }
 
-  // Pending import persistence
+  static bool _isNetworkError(String error) {
+    final lower = error.toLowerCase();
+    return lower.contains('network') ||
+        lower.contains('timeout') ||
+        lower.contains('no internet') ||
+        lower.contains('could not reach');
+  }
 
   void _setupConnectivityListener() {
     _connectivity = ServiceLocator.tryGet<ConnectivityMonitoringService>();
@@ -492,7 +492,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   void _onConnectivityChanged() {
     if (isDisposed) return;
-    if (_connectivity!.isConnectedToInternet && _hasPendingImport) {
+    if ((_connectivity?.isConnectedToInternet ?? false) && _hasPendingImport) {
       notifyListeners();
     }
   }
@@ -500,6 +500,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   Future<void> _loadPendingImport() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      if (isDisposed) return;
       final url = prefs.getString(_pendingImportKey);
       if (url != null && url.isNotEmpty) {
         _hasPendingImport = true;
@@ -517,9 +518,9 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   Future<void> _savePendingImportUrl(String url) async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      if (isDisposed) return;
       await prefs.setString(_pendingImportKey, url);
       _hasPendingImport = true;
-      notifyListeners();
     } catch (e) {
       AppLogger.warning('Failed to save pending import URL: $e');
     }
@@ -528,6 +529,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   Future<void> _clearPendingImportUrl() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      if (isDisposed) return;
       await prefs.remove(_pendingImportKey);
       _hasPendingImport = false;
     } catch (e) {
@@ -537,6 +539,19 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   Future<void> retryPendingImport() async {
     if (!_hasPendingImport || !isOnline) return;
+    // Read persisted URL directly — _input may have been changed by the user
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (isDisposed) return;
+      final url = prefs.getString(_pendingImportKey);
+      if (url != null && url.isNotEmpty) {
+        _input = url;
+        _detection = _inputDetector.detect(url);
+        notifyListeners();
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to read pending import URL: $e');
+    }
     await startImport();
   }
 

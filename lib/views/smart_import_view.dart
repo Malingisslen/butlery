@@ -449,7 +449,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   }
 }
 
-/// Banner shown when a pending import URL is available and connectivity is restored.
 class _PendingImportBanner extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onDismiss;
