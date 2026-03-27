@@ -275,6 +275,7 @@ class RecipeOperations {
   }) {
     return recipe.copyWith(
       lastCookedAt: DateTime.now(),
+      cookCount: recipe.cookCount + 1,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,
     );

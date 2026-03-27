@@ -19,7 +19,6 @@ import '../../infrastructure/mocks/production_mocks.dart';
 // - MockXFile
 
 // Using local mock patterns that follow centralized architecture
-// TODO: Resolve import issue with centralized mocks in future cleanup
 class MockHttpClient extends Mock implements http.Client {}
 
 // Fake for BaseRequest

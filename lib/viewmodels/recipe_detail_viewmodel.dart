@@ -263,13 +263,25 @@ class RecipeDetailViewModel extends ChangeNotifier
   ///   // Handle cooking mark failure
   /// }
   /// ```
+  bool get wasCookedToday {
+    final last = _recipe.lastCookedAt;
+    if (last == null) return false;
+    final now = DateTime.now();
+    return last.year == now.year &&
+        last.month == now.month &&
+        last.day == now.day;
+  }
+
   Future<bool> markAsCooked() async {
+    if (wasCookedToday) return false;
+
     return await executeAsync(() async {
-      // Check if this is the first time cooking BEFORE updating
       final isFirstTime = _recipe.lastCookedAt == null;
 
-      // Uppdatera receptet med ny lastCookedAt
-      final updatedRecipe = _recipe.copyWith(lastCookedAt: DateTime.now());
+      final updatedRecipe = _recipe.copyWith(
+        lastCookedAt: DateTime.now(),
+        cookCount: _recipe.cookCount + 1,
+      );
 
       final success = await _recipeService.updateRecipe(updatedRecipe);
 
@@ -277,7 +289,6 @@ class RecipeDetailViewModel extends ChangeNotifier
         _recipe = updatedRecipe;
         notifyListeners();
 
-        // Log analytics with correct method
         await _analyticsService.logRecipeCooked(
           recipeId: _recipe.id,
           mealType: _recipe.mealType,

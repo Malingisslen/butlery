@@ -245,8 +245,7 @@ void main() {
           ),
         );
 
-        // ULTRATHINK: Test current behavior - MockPermissionService allows by default
-        // TODO: Enhance MockPermissionService configuration for permission-denied scenarios
+        // MockPermissionService allows by default — permission-denied scenario not yet tested
         expect(find.text('Lägg till'), findsOneWidget);
         expect(find.byIcon(Icons.person_add), findsOneWidget);
       });

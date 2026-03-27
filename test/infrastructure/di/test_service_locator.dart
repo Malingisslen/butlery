@@ -47,9 +47,7 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 // Service imports for Phase 4
 // (ActivityService removed - dead code)
 
-// View testing specific imports
-// TODO: Fix import path - temporarily disabled
-// import '../../views/helpers/mock_view_models.dart';
+// View testing specific imports (mock_view_models.dart not wired up)
 
 // Core interfaces - production ServiceLocator integration removed for E2E simplification
 
@@ -128,23 +126,6 @@ class TestServiceLocator {
           authRepo.setAuthState(userId: null, user: null);
         }
       }
-
-      // Clear recipe repository state
-      // TODO: Fix mock state clearing for repositories
-      // if (ServiceLocator._getIt.isRegistered<RecipeRepository>()) {
-      //   final recipeRepo = ServiceLocator._getIt.get<RecipeRepository>();
-      //   if (recipeRepo is MockRecipeRepository) {
-      //     // Need to check correct parameter names
-      //   }
-      // }
-
-      // Clear user repository state
-      // if (ServiceLocator._getIt.isRegistered<UserRepository>()) {
-      //   final userRepo = ServiceLocator._getIt.get<UserRepository>();
-      //   if (userRepo is MockUserRepository) {
-      //     // Need to check correct parameter names
-      //   }
-      // }
     } catch (e) {
       // Services might not be registered, continue
       debugPrint('Error clearing state: $e');
@@ -566,46 +547,13 @@ class TestServiceLocator {
 
   /// Configure for view testing with enhanced mock capabilities
   static void _configureViewTesting() {
-    // Register testable ViewModels for view testing
-    // final getIt = ServiceLocator._getIt;
-
-    // TODO: Temporarily disabled until import is fixed
-    // Auth testing ViewModels
-    // getIt.registerFactory<TestableAuthViewModel>(
-    //   () => TestableViewModelFactory.createAuthViewModel(),
-    // );
-
-    // Recipe editing ViewModels
-    // getIt.registerFactory<TestableRecipeFormViewModel>(
-    //   () => TestableViewModelFactory.createRecipeFormViewModel(),
-    // );
-
-    // Shopping ViewModels
-    // getIt.registerFactory<TestableUnifiedShoppingViewModel>(
-    //   () => TestableViewModelFactory.createShoppingViewModel(),
-    // );
+    // ViewModel registrations not yet wired (mock_view_models.dart)
   }
 
   /// Configure for collaborative view testing scenarios
   static void _configureCollaborative() {
     _configureAuthenticated(); // Base authenticated state
-
-    // TODO: Temporarily disabled until import is fixed
-    // final getIt = ServiceLocator._getIt;
-
-    // Register collaborative-specific testable ViewModels
-    // getIt.registerFactory<TestableRecipeFormViewModel>(
-    //   () => TestableViewModelFactory.createRecipeFormViewModel(
-    //     isCollaborative: true,
-    //     hasConflicts: true,
-    //   ),
-    // );
-
-    // getIt.registerFactory<TestableUnifiedShoppingViewModel>(
-    //   () => TestableViewModelFactory.createShoppingViewModel(
-    //     isCollaborative: true,
-    //   ),
-    // );
+    // Collaborative ViewModel registrations not yet wired (mock_view_models.dart)
   }
 
   /// Register view-specific mock services

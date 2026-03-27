@@ -85,7 +85,7 @@ void main() {
         print('   ✅ Production UI navigation tested');
         print('   ✅ Form validation with real ViewModels');
         print('');
-      });
+      }, skip: true); // Skeleton — real workflow not yet implemented
 
       testWidgets('🎯 Social Features UI Validation',
           (WidgetTester tester) async {
@@ -99,7 +99,7 @@ void main() {
         print('   ✅ Friend request workflows tested');
         print('   ✅ Sharing dialogs and interactions');
         print('');
-      });
+      }, skip: true); // Skeleton — real workflow not yet implemented
     });
 
     /// **TIER 2: EMULATOR TESTING - Real Firebase Integration (25% coverage)**
@@ -118,7 +118,7 @@ void main() {
         print('   ✅ User registration and login persistence');
         print('   ✅ Auth state management with real services');
         print('');
-      });
+      }, skip: true); // Requires Firebase emulator setup
 
       testWidgets('🔥 Recipe Data Persistence with Firestore Emulator',
           (WidgetTester tester) async {
@@ -132,7 +132,7 @@ void main() {
         print('   ✅ Recipe creation and retrieval tested');
         print('   ✅ Data persistence across app sessions');
         print('');
-      });
+      }, skip: true); // Requires Firebase emulator setup
     });
 
     /// **TIER 3: STAGING TESTING - Production Validation (5% coverage)**
@@ -150,7 +150,7 @@ void main() {
         print('   ✅ External integrations tested');
         print('   ✅ Performance under production conditions');
         print('');
-      }, skip: true); // Skip until staging Firebase is configured
+      }, skip: true); // Requires staging Firebase project
     });
   });
 
@@ -354,13 +354,6 @@ Future<void> _testRealRecipeCreationWorkflow(WidgetTester tester,
   // Real implementation would navigate to EditRecipeView
   expect(find.byType(MaterialApp), findsOneWidget);
 
-  // TODO: Future implementation will test:
-  // 1. Navigate to MinaReceptView (main recipe hub)
-  // 2. Find and tap "Add Recipe" FloatingActionButton
-  // 3. Navigate to recipe creation (EditRecipeView)
-  // 4. Fill recipe form with real form fields
-  // 5. Save recipe and verify it appears in recipe list
-
   print('     ✅ Real app structure supports recipe creation workflow');
 }
 
@@ -375,12 +368,6 @@ Future<void> _testRealSocialFeaturesUI(WidgetTester tester,
 
   expect(find.byType(MaterialApp), findsOneWidget);
 
-  // TODO: Future implementation will test:
-  // 1. Navigate to social features (friends, sharing)
-  // 2. Test friend request workflows
-  // 3. Test recipe sharing functionality
-  // 4. Test collaborative shopping lists
-
   print('     ✅ Real app structure supports social features testing');
 }
 
@@ -393,13 +380,6 @@ Future<void> _testFirebaseAuthenticationIntegration(WidgetTester tester) async {
   await _waitForRealAppReady(tester);
 
   expect(find.byType(MaterialApp), findsOneWidget);
-
-  // TODO: Future implementation requires Firebase emulator setup:
-  // 1. Configure Firebase emulator environment
-  // 2. Create test user via Firebase Auth emulator
-  // 3. Test sign-in with real Firebase credentials
-  // 4. Verify user data persistence in Firestore emulator
-  // 5. Test auth state changes and session management
 
   print(
       '     ⚠️ Firebase emulator integration ready (requires emulator setup)');
@@ -415,13 +395,6 @@ Future<void> _testFirestoreRecipePersistence(WidgetTester tester) async {
 
   expect(find.byType(MaterialApp), findsOneWidget);
 
-  // TODO: Future implementation requires Firestore emulator:
-  // 1. Connect to Firestore emulator
-  // 2. Create recipe documents via real app workflow
-  // 3. Verify recipe data persists across app restarts
-  // 4. Test real-time updates when recipe data changes
-  // 5. Test recipe sharing and collaboration features with Firestore
-
   print(
       '     ⚠️ Firestore persistence testing ready (requires emulator setup)');
 }
@@ -435,13 +408,6 @@ Future<void> _testStagingCriticalPath(WidgetTester tester) async {
   await _waitForRealAppReady(tester);
 
   expect(find.byType(MaterialApp), findsOneWidget);
-
-  // TODO: Future implementation requires staging Firebase project:
-  // 1. Test with staging Firebase project configuration
-  // 2. Verify external integrations (image upload, push notifications)
-  // 3. Test payment/subscription flows if applicable
-  // 4. Validate social features with real network calls
-  // 5. Performance validation under production-like load
 
   print('     ⚠️ Staging environment testing ready (requires staging setup)');
 }

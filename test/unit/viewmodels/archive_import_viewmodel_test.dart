@@ -15,7 +15,6 @@ import '../../infrastructure/mocks/production_mocks.dart';
 // Using centralized MockUnifiedRecipeService from production_mocks.dart
 
 // Using local mock patterns that follow centralized architecture
-// TODO: Resolve import issue with centralized mocks in future cleanup
 class MockPersonalRecipeOperations extends Mock
     implements PersonalRecipeOperations {}
 

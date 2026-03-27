@@ -137,16 +137,32 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       ],
     ));
 
-    // "Lagat idag" as subtle chip (thin border, minimal padding)
+    // "Lagat idag" chip — disabled after first tap per calendar day
+    final cookedToday = widget.viewModel.wasCookedToday;
+    final cookCount = widget.viewModel.recipe.cookCount;
     metadataWidgets.add(
       OutlinedButton.icon(
-        onPressed: () => _markAsCooked(context),
-        icon: const Icon(Icons.check_circle_outline, size: 14),
-        label: Text(context.l10n.recipeCookedToday,
-            style: AppTextStyles.labelSmall),
+        onPressed: cookedToday ? null : () => _markAsCooked(context),
+        icon: Icon(
+          cookedToday ? Icons.check_circle : Icons.check_circle_outline,
+          size: 14,
+        ),
+        label: Text(
+          cookCount > 0
+              ? '${context.l10n.recipeCookedToday} ($cookCount)'
+              : context.l10n.recipeCookedToday,
+          style: AppTextStyles.labelSmall,
+        ),
         style: OutlinedButton.styleFrom(
           foregroundColor: context.butleryColors.success,
-          side: BorderSide(color: context.butleryColors.success, width: 0.5),
+          disabledForegroundColor:
+              context.butleryColors.success.withValues(alpha: 0.5),
+          side: BorderSide(
+            color: cookedToday
+                ? context.butleryColors.success.withValues(alpha: 0.3)
+                : context.butleryColors.success,
+            width: 0.5,
+          ),
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingSm,
             vertical: AppDimensions.spacingXxs,

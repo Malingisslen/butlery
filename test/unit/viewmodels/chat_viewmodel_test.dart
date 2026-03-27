@@ -396,40 +396,6 @@ void main() {
         // Clean up
         vmWithGroup.dispose();
       });
-
-      // TODO: Re-enable when typing indicator feature is re-implemented
-      // test('should track typing users', () {
-      //   // Arrange
-      //   var notificationCount = 0;
-      //   viewModel.addListener(() => notificationCount++);
-      //
-      //   // Act
-      //   viewModel.updateTypingUser('user2', 'Anna');
-      //
-      //   // Assert
-      //   expect(viewModel.typingUserNames, contains('Anna'));
-      //   expect(viewModel.hasTypingUsers, isTrue);
-      //   expect(notificationCount, greaterThan(0));
-      // });
-
-      // test('should filter out current user from typing', () {
-      //   // Arrange & Act
-      //   viewModel.updateTypingUser(testUserId, 'Jag');
-      //
-      //   // Assert
-      //   expect(viewModel.typingUserNames, isEmpty);
-      // });
-
-      // test('should return current typing users', () {
-      //   // Arrange
-      //   viewModel.updateTypingUser('user2', 'Anna');
-      //   viewModel.updateTypingUser('user3', 'Erik');
-      //
-      //   // Act & Assert
-      //   expect(viewModel.currentTypingUsers, hasLength(2));
-      //   expect(viewModel.currentTypingUsers, contains('Anna'));
-      //   expect(viewModel.currentTypingUsers, contains('Erik'));
-      // });
     });
 
     group('Message Operations', () {
@@ -630,33 +596,6 @@ void main() {
         verify(() => mockPresenceService.stopTyping(testConversationId))
             .called(1);
       });
-
-      // TODO: Re-enable when typing indicator feature is re-implemented
-      // test('should clear typing user', () {
-      //   // Arrange
-      //   viewModel.updateTypingUser('user2', 'Anna');
-      //   expect(viewModel.typingUserNames, contains('Anna'));
-      //
-      //   // Act
-      //   viewModel.clearTypingUser('user2', 'Anna');
-      //
-      //   // Assert
-      //   expect(viewModel.typingUserNames, isEmpty);
-      // });
-
-      // test('should auto-clear expired typing users', () async {
-      //   // Arrange
-      //   viewModel.updateTypingUser('user2', 'Anna');
-      //
-      //   // Act - wait for cleanup timer (>5 seconds simulated by advancing time)
-      //   await Future.delayed(const Duration(seconds: 6));
-      //
-      //   // Note: In real test, we'd need to mock the timer or test the logic separately
-      //   // For now, we verify the typing users list behavior
-      //
-      //   // Assert
-      //   expect(viewModel.typingUserNames, isEmpty); // Should be empty after 5 seconds
-      // });
     });
 
     group('Message Stream Handling', () {

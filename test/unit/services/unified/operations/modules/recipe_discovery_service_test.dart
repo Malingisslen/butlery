@@ -793,8 +793,6 @@ void main() {
         // NOTE: Exception testing for getters requires stubbing since we can't
         // configure the mock to throw from a getter. This is an acceptable
         // exception to the "no stubbing concrete getters" rule.
-        // TODO: Consider alternative error testing approaches
-
         // For now, test with empty recipe list instead
         mockParentService.setRecipeState(
           currentUserId: 'user_123',

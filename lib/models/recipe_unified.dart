@@ -165,6 +165,8 @@ class RecipeCore with JsonSerializableMixin {
 
   DateTime? lastCookedAt;
 
+  int cookCount;
+
   /// Normalized ingredient names for search and tagging.
   /// MODUL1 Enhancement: Stores normalized versions of ingredients
   /// with preparation words removed and plural forms normalized.
@@ -295,6 +297,7 @@ class RecipeCore with JsonSerializableMixin {
     this.createdBy,
     this.isPublic = false,
     this.lastCookedAt,
+    this.cookCount = 0,
     this.ingredientsNormalized,
     this.ratingCount,
     this.averageRating,
@@ -349,6 +352,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? createdBy = _sentinel,
     bool? isPublic,
     Object? lastCookedAt = _sentinel,
+    int? cookCount,
     Object? ingredientsNormalized = _sentinel,
     Object? ratingCount = _sentinel,
     Object? averageRating = _sentinel,
@@ -413,6 +417,7 @@ class RecipeCore with JsonSerializableMixin {
       lastCookedAt: lastCookedAt == _sentinel
           ? this.lastCookedAt
           : lastCookedAt as DateTime?,
+      cookCount: cookCount ?? this.cookCount,
       ingredientsNormalized: ingredientsNormalized == _sentinel
           ? this.ingredientsNormalized
           : ingredientsNormalized as List<String>?,
@@ -515,6 +520,7 @@ class RecipeCore with JsonSerializableMixin {
         'isPublic': isPublic,
         'lastCookedAt':
             lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
+        'cookCount': cookCount,
         'ingredientsNormalized': ingredientsNormalized,
         'ratingCount': ratingCount,
         'averageRating': averageRating,
@@ -590,6 +596,7 @@ class RecipeCore with JsonSerializableMixin {
       createdBy: utils.SerializationUtils.safeNullableString(json, 'createdBy'),
       isPublic: utils.SerializationUtils.safeBool(json, 'isPublic'),
       lastCookedAt: utils.SerializationUtils.safeDateTime(json, 'lastCookedAt'),
+      cookCount: utils.SerializationUtils.safeInt(json, 'cookCount'),
       ingredientsNormalized: json['ingredientsNormalized'] != null
           ? List<String>.from(json['ingredientsNormalized'])
           : null,
@@ -746,6 +753,7 @@ class RecipeCore with JsonSerializableMixin {
       isPublic: utils.SerializationUtils.safeBool(data, 'isPublic',
           defaultValue: false),
       lastCookedAt: utils.SerializationUtils.safeDateTime(data, 'lastCookedAt'),
+      cookCount: utils.SerializationUtils.safeInt(data, 'cookCount'),
       ingredientsNormalized:
           utils.SerializationUtils.safeStringList(data, 'ingredientsNormalized')
                   .isNotEmpty
@@ -981,6 +989,7 @@ class Recipe {
   String? get createdBy => core.createdBy;
   bool get isPublic => core.isPublic;
   DateTime? get lastCookedAt => core.lastCookedAt;
+  int get cookCount => core.cookCount;
   bool get isFavorite => core.isFavorite;
 
   // Helper getters
@@ -1203,6 +1212,7 @@ class Recipe {
     Object? createdBy = _sentinel,
     bool? isPublic,
     Object? lastCookedAt = _sentinel,
+    int? cookCount,
     Object? ingredientsNormalized = _sentinel,
     String? lastEditedByUserId,
     String? lastEditedByDisplayName,
@@ -1232,6 +1242,7 @@ class Recipe {
         createdBy: createdBy,
         isPublic: isPublic,
         lastCookedAt: lastCookedAt,
+        cookCount: cookCount,
         ingredientsNormalized: ingredientsNormalized,
         tagOverrides: tagOverrides,
         tagResult: tagResult,
