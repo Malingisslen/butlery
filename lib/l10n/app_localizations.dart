@@ -13233,6 +13233,42 @@ abstract class AppLocalizations {
   /// **'System'**
   String get notificationCategorySystem;
 
+  /// No description provided for @notificationCategoryMessaging.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelanden'**
+  String get notificationCategoryMessaging;
+
+  /// No description provided for @notificationDigestFrequencyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sammanfattningsfrekvens'**
+  String get notificationDigestFrequencyTitle;
+
+  /// No description provided for @notificationDigestFrequencySubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur ofta vill du få en sammanfattning av aktivitet'**
+  String get notificationDigestFrequencySubtitle;
+
+  /// No description provided for @notificationDigestFrequencyNever.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aldrig'**
+  String get notificationDigestFrequencyNever;
+
+  /// No description provided for @notificationDigestFrequencyWeekly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckovis'**
+  String get notificationDigestFrequencyWeekly;
+
+  /// No description provided for @notificationDigestFrequencyDaily.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dagligen'**
+  String get notificationDigestFrequencyDaily;
+
   /// No description provided for @collaborationNoFriends.
   ///
   /// In sv, this message translates to:

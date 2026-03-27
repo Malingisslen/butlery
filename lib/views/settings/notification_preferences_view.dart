@@ -7,6 +7,8 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/views/settings/notification_category_items.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Settings view for notification category toggles and quiet hours.
@@ -102,6 +104,8 @@ class _NotificationPreferencesViewState
                                 const SizedBox(height: AppDimensions.spacingXl),
                                 _buildCategorySection(),
                                 const SizedBox(height: AppDimensions.spacingXl),
+                                _buildDigestFrequencySection(),
+                                const SizedBox(height: AppDimensions.spacingXl),
                                 _buildQuietHoursSection(),
                                 const SizedBox(height: AppDimensions.spacingXl),
                                 _buildSoundVibrationSection(),
@@ -152,12 +156,13 @@ class _NotificationPreferencesViewState
         Text(context.l10n.notificationCategoriesTitle,
             style: AppTextStyles.headlineSmall),
         const SizedBox(height: AppDimensions.spacingMd),
-        ..._buildCategoryItems(context).map((item) => _buildCategoryTile(item)),
+        ...buildNotificationCategoryItems(context)
+            .map((item) => _buildCategoryTile(item)),
       ],
     );
   }
 
-  Widget _buildCategoryTile(_CategoryItem item) {
+  Widget _buildCategoryTile(NotificationCategoryItem item) {
     final cs = Theme.of(context).colorScheme;
     final isEnabled = _preferences.categorySettings[item.category] ?? true;
 
@@ -189,6 +194,65 @@ class _NotificationPreferencesViewState
       ),
     );
   }
+
+  Widget _buildDigestFrequencySection() {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.notificationDigestFrequencyTitle,
+            style: AppTextStyles.headlineSmall),
+        const SizedBox(height: AppDimensions.spacingXs),
+        Text(
+          l10n.notificationDigestFrequencySubtitle,
+          style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+        ),
+        const SizedBox(height: AppDimensions.spacingMd),
+        InputDecorator(
+          decoration: InputDecoration(
+            prefixIcon: Icon(Icons.summarize_outlined,
+                color: cs.primary, size: AppDimensions.iconSizeL),
+            border: const OutlineInputBorder(),
+            contentPadding: AppDimensions.paddingSymmetric16x12,
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _preferences.digestFrequency,
+              isDense: true,
+              isExpanded: true,
+              items: _digestFrequencyItems(l10n),
+              onChanged: _preferences.enabled
+                  ? (value) {
+                      if (value != null) {
+                        _savePreferences(
+                            _copyPreferences(digestFrequency: value));
+                      }
+                    }
+                  : null,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<DropdownMenuItem<String>> _digestFrequencyItems(AppLocalizations l10n) =>
+      [
+        DropdownMenuItem(
+            value: 'never',
+            child: Text(l10n.notificationDigestFrequencyNever,
+                style: AppTextStyles.titleMedium)),
+        DropdownMenuItem(
+            value: 'weekly',
+            child: Text(l10n.notificationDigestFrequencyWeekly,
+                style: AppTextStyles.titleMedium)),
+        DropdownMenuItem(
+            value: 'daily',
+            child: Text(l10n.notificationDigestFrequencyDaily,
+                style: AppTextStyles.titleMedium)),
+      ];
 
   Widget _buildQuietHoursSection() {
     final cs = Theme.of(context).colorScheme;
@@ -428,49 +492,3 @@ class _NotificationPreferencesViewState
     return '$hour:$minute';
   }
 }
-
-/// Internal model for category display configuration.
-class _CategoryItem {
-  final NotificationCategory category;
-  final String label;
-  final IconData icon;
-
-  const _CategoryItem({
-    required this.category,
-    required this.label,
-    required this.icon,
-  });
-}
-
-List<_CategoryItem> _buildCategoryItems(BuildContext context) => [
-      _CategoryItem(
-        category: NotificationCategory.friends,
-        label: context.l10n.notificationCategoryFriends,
-        icon: Icons.people_outline,
-      ),
-      _CategoryItem(
-        category: NotificationCategory.recipes,
-        label: context.l10n.notificationCategoryRecipes,
-        icon: Icons.restaurant_outlined,
-      ),
-      _CategoryItem(
-        category: NotificationCategory.collaboration,
-        label: context.l10n.notificationCategoryCollaboration,
-        icon: Icons.group_work_outlined,
-      ),
-      _CategoryItem(
-        category: NotificationCategory.shopping,
-        label: context.l10n.notificationCategoryShopping,
-        icon: Icons.shopping_cart_outlined,
-      ),
-      _CategoryItem(
-        category: NotificationCategory.social,
-        label: context.l10n.notificationCategorySocial,
-        icon: Icons.forum_outlined,
-      ),
-      _CategoryItem(
-        category: NotificationCategory.system,
-        label: context.l10n.notificationCategorySystem,
-        icon: Icons.settings_outlined,
-      ),
-    ];
