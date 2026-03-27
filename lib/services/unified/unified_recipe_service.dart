@@ -932,6 +932,7 @@ class UnifiedRecipeService
       _personalModule.cancelPendingRetries();
       _cacheModule.dispose();
       _realtimeModule.dispose();
+      _modulesInitialized = false;
     }
 
     _stateSubject.add(const RecipeStateLoading());

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -11,21 +10,16 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// Social formatting utilities for display names, numbers, and time.
 class SocialFormatters {
   /// Format user display name
-  static String formatUserDisplayName(UserProfile? user) {
-    return user?.displayName ??
-        user?.email ??
-        AppLocale.current.displayUnknownUser;
-  }
+  static String formatUserDisplayName(UserProfile? user) =>
+      SocialFacade.formatUserDisplayName(user);
 
   /// Check if user is online
-  static bool isUserOnline(UserProfile? user) {
-    return user?.isOnline ?? false;
-  }
+  static bool isUserOnline(UserProfile? user) =>
+      SocialFacade.isUserOnline(user);
 
   /// Get user avatar URL
-  static String? getUserAvatarUrl(UserProfile? user) {
-    return user?.avatarUrl;
-  }
+  static String? getUserAvatarUrl(UserProfile? user) =>
+      SocialFacade.getUserAvatarUrl(user);
 
   /// Format invitation target display name (delegates to SocialFacade)
   static String formatInvitationTargetDisplayName(InvitationTarget target) {
