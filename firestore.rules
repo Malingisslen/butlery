@@ -883,14 +883,17 @@ service cloud.firestore {
     // FCM TOKENS - Firebase Cloud Messaging tokens
     // ========================================
 
-    match /user_fcm_tokens/{userId} {
-      // Can read only your own token
-      allow read: if isAuthenticated()
-        && request.auth.uid == userId;
+    match /user_fcm_tokens/{tokenDocId} {
+      // Per-device document model: doc ID is {userId}_{deviceId}
+      // The userId field inside the document must match the authenticated user
 
-      // Can write only your own token
+      // Can read only your own token documents
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+
+      // Can create/update only your own token documents
       allow write: if isAuthenticated()
-        && request.auth.uid == userId;
+        && request.resource.data.userId == request.auth.uid;
     }
 
     // ========================================
