@@ -58,7 +58,6 @@ class ImageConfig {
   final int maxImages;
   final String? heroTag;
 
-  /// Generates a stable Hero tag for recipe image transitions.
   static String recipeHeroTag(String recipeId) => 'recipe-image-$recipeId';
 
   final Color? backgroundColor;

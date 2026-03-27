@@ -8155,5 +8155,22 @@
   "tooltipAttachImage": "Bifoga bild",
   "tooltipAttachFile": "Bifoga fil",
   "tooltipCreatePoll": "Skapa omröstning",
-  "tooltipSelectedImage": "Vald bild"
+  "tooltipSelectedImage": "Vald bild",
+  "statsMyStatistics": "Min statistik",
+  "statsRecipeCollection": "Receptsamling",
+  "statsTotalRecipes": "Totalt recept",
+  "statsFavorites": "Favoriter",
+  "statsRecentlyCooked": "Nyligen lagat",
+  "statsWithImages": "Med bilder",
+  "statsPersonalRecipes": "Egna recept",
+  "statsCollaborativeRecipes": "Delade recept",
+  "statsHighRated": "Högt betyg",
+  "statsMealTypes": "Måltidstyper",
+  "statsPopularTags": "Populära taggar",
+  "statsCookingActivity": "Matlagningsaktivitet",
+  "statsTotalCooks": "Totalt antal tillagningar",
+  "statsNoMealTypes": "Inga måltidstyper registrerade",
+  "statsNoTags": "Inga taggar använda än",
+  "statsDistinctMealTypes": "Måltidstyper",
+  "statsDistinctTags": "Taggar"
 }

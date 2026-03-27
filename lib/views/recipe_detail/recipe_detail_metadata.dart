@@ -137,6 +137,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       ],
     ));
 
+    // "Lagat idag" chip — disabled after first tap per calendar day
     final cookedToday = widget.viewModel.wasCookedToday;
     final cookCount = widget.viewModel.recipe.cookCount;
     metadataWidgets.add(

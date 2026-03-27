@@ -20163,6 +20163,108 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vald bild'**
   String get tooltipSelectedImage;
+
+  /// No description provided for @statsMyStatistics.
+  ///
+  /// In sv, this message translates to:
+  /// **'Min statistik'**
+  String get statsMyStatistics;
+
+  /// No description provided for @statsRecipeCollection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptsamling'**
+  String get statsRecipeCollection;
+
+  /// No description provided for @statsTotalRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Totalt recept'**
+  String get statsTotalRecipes;
+
+  /// No description provided for @statsFavorites.
+  ///
+  /// In sv, this message translates to:
+  /// **'Favoriter'**
+  String get statsFavorites;
+
+  /// No description provided for @statsRecentlyCooked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyligen lagat'**
+  String get statsRecentlyCooked;
+
+  /// No description provided for @statsWithImages.
+  ///
+  /// In sv, this message translates to:
+  /// **'Med bilder'**
+  String get statsWithImages;
+
+  /// No description provided for @statsPersonalRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Egna recept'**
+  String get statsPersonalRecipes;
+
+  /// No description provided for @statsCollaborativeRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delade recept'**
+  String get statsCollaborativeRecipes;
+
+  /// No description provided for @statsHighRated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Högt betyg'**
+  String get statsHighRated;
+
+  /// No description provided for @statsMealTypes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Måltidstyper'**
+  String get statsMealTypes;
+
+  /// No description provided for @statsPopularTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Populära taggar'**
+  String get statsPopularTags;
+
+  /// No description provided for @statsCookingActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matlagningsaktivitet'**
+  String get statsCookingActivity;
+
+  /// No description provided for @statsTotalCooks.
+  ///
+  /// In sv, this message translates to:
+  /// **'Totalt antal tillagningar'**
+  String get statsTotalCooks;
+
+  /// No description provided for @statsNoMealTypes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga måltidstyper registrerade'**
+  String get statsNoMealTypes;
+
+  /// No description provided for @statsNoTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga taggar använda än'**
+  String get statsNoTags;
+
+  /// No description provided for @statsDistinctMealTypes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Måltidstyper'**
+  String get statsDistinctMealTypes;
+
+  /// No description provided for @statsDistinctTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggar'**
+  String get statsDistinctTags;
 }
 
 class _AppLocalizationsDelegate

@@ -264,6 +264,7 @@ class RecipeDetailViewModel extends ChangeNotifier
   ///   // Handle cooking mark failure
   /// }
   /// ```
+  /// Whether this recipe was already marked as cooked today.
   bool get wasCookedToday {
     final last = _recipe.lastCookedAt;
     if (last == null) return false;
@@ -274,6 +275,8 @@ class RecipeDetailViewModel extends ChangeNotifier
   }
 
   Future<bool> markAsCooked() async {
+    if (wasCookedToday) return false;
+
     return await executeAsync(() async {
       final isFirstTime = _recipe.lastCookedAt == null;
 
