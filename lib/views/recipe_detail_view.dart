@@ -19,6 +19,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -206,7 +207,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 title: const SizedBox.shrink(),
                 flexibleSpace: FlexibleSpaceBar(
                   background: Hero(
-                    tag: 'recipe-image-${recipe.id}',
+                    tag: ImageConfig.recipeHeroTag(recipe.id),
                     child: recipe.imageUrls.isNotEmpty
                         ? GestureDetector(
                             onTap: () => _showFullscreenImage(

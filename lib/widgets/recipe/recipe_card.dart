@@ -293,7 +293,7 @@ class RecipeCard extends StatelessWidget {
                 config: ImageConfig.thumbnail(
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
-                  heroTag: 'recipe-image-${recipe.id}',
+                  heroTag: ImageConfig.recipeHeroTag(recipe.id),
                 ),
               )
             // UI Redesign: Random vegetable fallback when no photo
