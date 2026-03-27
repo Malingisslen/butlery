@@ -11763,4 +11763,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooltipSelectedImage => 'Selected image';
+
+  @override
+  String get statsMyStatistics => 'My Statistics';
+
+  @override
+  String get statsRecipeCollection => 'Recipe Collection';
+
+  @override
+  String get statsTotalRecipes => 'Total Recipes';
+
+  @override
+  String get statsFavorites => 'Favorites';
+
+  @override
+  String get statsRecentlyCooked => 'Recently Cooked';
+
+  @override
+  String get statsWithImages => 'With Images';
+
+  @override
+  String get statsPersonalRecipes => 'Personal Recipes';
+
+  @override
+  String get statsCollaborativeRecipes => 'Collaborative Recipes';
+
+  @override
+  String get statsHighRated => 'High Rated';
+
+  @override
+  String get statsMealTypes => 'Meal Types';
+
+  @override
+  String get statsPopularTags => 'Popular Tags';
+
+  @override
+  String get statsCookingActivity => 'Cooking Activity';
+
+  @override
+  String get statsTotalCooks => 'Total Cooks';
+
+  @override
+  String get statsNoMealTypes => 'No meal types recorded';
+
+  @override
+  String get statsNoTags => 'No tags used yet';
+
+  @override
+  String get statsDistinctMealTypes => 'Meal Types';
+
+  @override
+  String get statsDistinctTags => 'Tags';
 }

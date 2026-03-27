@@ -8155,5 +8155,22 @@
   "tooltipAttachImage": "Attach image",
   "tooltipAttachFile": "Attach file",
   "tooltipCreatePoll": "Create poll",
-  "tooltipSelectedImage": "Selected image"
+  "tooltipSelectedImage": "Selected image",
+  "statsMyStatistics": "My Statistics",
+  "statsRecipeCollection": "Recipe Collection",
+  "statsTotalRecipes": "Total Recipes",
+  "statsFavorites": "Favorites",
+  "statsRecentlyCooked": "Recently Cooked",
+  "statsWithImages": "With Images",
+  "statsPersonalRecipes": "Personal Recipes",
+  "statsCollaborativeRecipes": "Collaborative Recipes",
+  "statsHighRated": "High Rated",
+  "statsMealTypes": "Meal Types",
+  "statsPopularTags": "Popular Tags",
+  "statsCookingActivity": "Cooking Activity",
+  "statsTotalCooks": "Total Cooks",
+  "statsNoMealTypes": "No meal types recorded",
+  "statsNoTags": "No tags used yet",
+  "statsDistinctMealTypes": "Meal Types",
+  "statsDistinctTags": "Tags"
 }

@@ -403,8 +403,10 @@ class RecipeQueryViewModel extends ChangeNotifier
       'recentlyCookedCount': getRecentlyCookedRecipes().length,
       'editableCount': getEditableRecipes().length,
       'favoriteCount': getFavoriteRecipes().length,
+      'markedFavoriteCount': allRecipes.where((r) => r.isFavorite).length,
       'withImagesCount': getRecipesWithImages().length,
       'highRatedCount': getHighRatedRecipes().length,
+      'totalCooks': allRecipes.fold<int>(0, (sum, r) => sum + r.cookCount),
       'hasCollaborativeFeatures': hasCollaborativeRecipes,
       'hasActiveFilters': hasActiveFilters,
     };

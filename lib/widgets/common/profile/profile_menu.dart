@@ -392,6 +392,13 @@ class _ProfileMenuState extends State<ProfileMenu> {
             icon: Icons.edit,
             onTap: widget.onEditProfile,
           ),
+          ProfileActions.buildMenuItem(
+            context,
+            title: context.l10n.statsMyStatistics,
+            subtitle: context.l10n.statsRecipeCollection,
+            icon: Icons.bar_chart,
+            onTap: () => Navigator.pushNamed(context, Routes.collectionStats),
+          ),
           ProfileActions.buildNotificationMenuItem(
             context,
             title: context.l10n.profileFriendsAndGroups,

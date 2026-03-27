@@ -11794,4 +11794,55 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get tooltipSelectedImage => 'Vald bild';
+
+  @override
+  String get statsMyStatistics => 'Min statistik';
+
+  @override
+  String get statsRecipeCollection => 'Receptsamling';
+
+  @override
+  String get statsTotalRecipes => 'Totalt recept';
+
+  @override
+  String get statsFavorites => 'Favoriter';
+
+  @override
+  String get statsRecentlyCooked => 'Nyligen lagat';
+
+  @override
+  String get statsWithImages => 'Med bilder';
+
+  @override
+  String get statsPersonalRecipes => 'Egna recept';
+
+  @override
+  String get statsCollaborativeRecipes => 'Delade recept';
+
+  @override
+  String get statsHighRated => 'Högt betyg';
+
+  @override
+  String get statsMealTypes => 'Måltidstyper';
+
+  @override
+  String get statsPopularTags => 'Populära taggar';
+
+  @override
+  String get statsCookingActivity => 'Matlagningsaktivitet';
+
+  @override
+  String get statsTotalCooks => 'Totalt antal tillagningar';
+
+  @override
+  String get statsNoMealTypes => 'Inga måltidstyper registrerade';
+
+  @override
+  String get statsNoTags => 'Inga taggar använda än';
+
+  @override
+  String get statsDistinctMealTypes => 'Måltidstyper';
+
+  @override
+  String get statsDistinctTags => 'Taggar';
 }

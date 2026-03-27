@@ -78,6 +78,7 @@ class Routes {
   static const String settingsPersonalTags = '/settings/personal-tags';
   static const String settingsNotifications = '/settings/notifications';
   static const String settingsAccountSecurity = '/settings/account-security';
+  static const String collectionStats = '/settings/collection-stats';
 
   // Legal routes
   static const String termsOfService = '/legal/terms';
@@ -124,6 +125,7 @@ class Routes {
     settingsPersonalTags,
     settingsNotifications,
     settingsAccountSecurity,
+    collectionStats,
     faq,
   };
 
@@ -161,6 +163,7 @@ class Routes {
     settingsPersonalTags,
     settingsNotifications,
     settingsAccountSecurity,
+    collectionStats,
     faq,
   };
 
@@ -251,6 +254,7 @@ class Routes {
     settingsPersonalTags,
     settingsNotifications,
     settingsAccountSecurity,
+    collectionStats,
 
     // Legal
     termsOfService,
