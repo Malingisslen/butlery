@@ -7625,6 +7625,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationCategorySystem => 'System';
 
   @override
+  String get notificationCategoryMessaging => 'Messages';
+
+  @override
+  String get notificationDigestFrequencyTitle => 'Digest frequency';
+
+  @override
+  String get notificationDigestFrequencySubtitle =>
+      'How often you want a summary of activity';
+
+  @override
+  String get notificationDigestFrequencyNever => 'Never';
+
+  @override
+  String get notificationDigestFrequencyWeekly => 'Weekly';
+
+  @override
+  String get notificationDigestFrequencyDaily => 'Daily';
+
+  @override
   String get collaborationNoFriends =>
       'You have no friends to collaborate with';
 

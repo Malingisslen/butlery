@@ -7643,6 +7643,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String get notificationCategorySystem => 'System';
 
   @override
+  String get notificationCategoryMessaging => 'Meddelanden';
+
+  @override
+  String get notificationDigestFrequencyTitle => 'Sammanfattningsfrekvens';
+
+  @override
+  String get notificationDigestFrequencySubtitle =>
+      'Hur ofta vill du få en sammanfattning av aktivitet';
+
+  @override
+  String get notificationDigestFrequencyNever => 'Aldrig';
+
+  @override
+  String get notificationDigestFrequencyWeekly => 'Veckovis';
+
+  @override
+  String get notificationDigestFrequencyDaily => 'Dagligen';
+
+  @override
   String get collaborationNoFriends => 'Du har inga vänner att samarbeta med';
 
   @override

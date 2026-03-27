@@ -42,6 +42,7 @@ class NotificationPreferences {
         NotificationCategory.recipes: true, // Recipe sharing is core feature
         NotificationCategory.collaboration: true, // Real-time collaboration
         NotificationCategory.shopping: false, // Shopping updates can be noisy
+        NotificationCategory.messaging: true, // DM notifications are important
         NotificationCategory.social: false, // Activity feeds are optional
         NotificationCategory.system: true, // System notifications needed
       },
