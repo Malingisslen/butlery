@@ -1,6 +1,5 @@
 // lib/services/unified/operations/modules/recipe_social_stats.dart
 
-import 'package:collection/collection.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart'
     hide RatingStatistics;
 import 'package:butlery/repositories/firestore_repository.dart';

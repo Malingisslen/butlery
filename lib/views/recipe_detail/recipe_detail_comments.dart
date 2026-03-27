@@ -256,6 +256,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           onReply: () => vm.setReplyTo(c.id),
           onToggleLike: () => _toggleLike(c, vm),
           onShowLikes: c.likeCount > 0 ? () => _showLikesDialog(c, vm) : null,
+          isLiked: vm.hasLikedComment(c.id),
           isOwnComment: isOwn,
           onDelete: isOwn ? () => _deleteComment(c, vm) : null,
           depth: depth,

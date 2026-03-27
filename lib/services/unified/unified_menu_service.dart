@@ -1,7 +1,6 @@
 // lib/services/unified/unified_menu_service.dart
 
 import 'dart:async';
-import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
