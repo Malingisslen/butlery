@@ -2267,6 +2267,7 @@
     }
   },
   "importFieldsNeedReview": "{count} fält kan behöva justeras",
+  "importFieldsNeedReviewPrefix": "Kontrollera",
   "@importFieldsNeedReview": {
     "placeholders": {
       "count": {
@@ -3065,6 +3066,7 @@
   "importClipboardUseUrl": "Använd",
   "importPasteLinkOrText": "Klistra in länk eller text här...",
   "importPasteText": "Klistra in text",
+  "importAddManually": "Lägg till manuellt",
   "importPhotoDescription": "Ta bild av ett recept eller välj från galleriet för att importera text automatiskt",
   "importPhotoImport": "Fotoimport",
   "importProceedToEdit": "Gå vidare till redigera",
