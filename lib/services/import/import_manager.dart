@@ -215,6 +215,16 @@ class ImportManager {
         // TikTok pipeline failed, continue with other strategies
       }
 
+      final instagramPipeline = _instagramPipeline;
+      if (instagramPipeline != null && instagramPipeline.canHandle(input)) {
+        final result =
+            await _parseWithStrategy(instagramPipeline, input, options);
+        if (result.isSuccess || result.needsAssistance) {
+          await _saveToCacheIfUrl(input, result);
+          return result;
+        }
+      }
+
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
         final result =
             await _parseWithStrategy(preferredStrategy, input, options);

@@ -85,6 +85,7 @@ import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 
 // TikTok import pipeline
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
+import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
 
 // Recipe parser services (tier-based architecture)
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
@@ -169,6 +170,7 @@ class ContentModule implements DIModule {
         YouTubeImportStrategy,
         // TikTok import pipeline
         TikTokPipeline,
+        InstagramPipeline,
         // Recipe parser services
         SiteConfigRepository,
         RecipeParserService,
@@ -335,6 +337,12 @@ class ContentModule implements DIModule {
         () => TikTokPipeline(
           llmService: container<LlmEnhancementService>(),
           client: container<http.Client>(),
+        ),
+      );
+
+      container.registerLazySingleton<InstagramPipeline>(
+        () => InstagramPipeline(
+          llmService: container<LlmEnhancementService>(),
         ),
       );
 
@@ -581,6 +589,7 @@ class ContentModule implements DIModule {
         'YouTubeTranscriptService': container<YouTubeTranscriptService>(),
         'YouTubeImportStrategy': container<YouTubeImportStrategy>(),
         'TikTokPipeline': container<TikTokPipeline>(),
+        'InstagramPipeline': container<InstagramPipeline>(),
         'SiteConfigRepository': container<SiteConfigRepository>(),
         'RecipeParserService': container<RecipeParserService>(),
         'IngredientSubstitutionService':

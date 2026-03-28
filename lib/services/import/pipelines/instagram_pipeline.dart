@@ -70,17 +70,18 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
     // Tier 1: Extract caption via WebScraper + InstagramContentExtractor
     String? captionText;
     String? thumbnailUrl;
+    final scraper = WebScraper();
     try {
-      final scraper = WebScraper();
       final result = await scraper.performExtraction(
         input,
         SourcePlatform.instagram,
       );
       captionText = result.extractedText;
       thumbnailUrl = result.metadata['thumbnailUrl'] as String?;
-      scraper.dispose();
     } catch (e) {
       AppLogger.warning('InstagramPipeline: WebScraper extraction failed: $e');
+    } finally {
+      scraper.dispose();
     }
 
     if (captionText == null || captionText.trim().isEmpty) {
@@ -126,7 +127,7 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
         extractedText: captionText,
         suggestedTitle: _extractTitleFromCaption(captionText),
         thumbnailUrl: thumbnailUrl,
-        message: AppLocale.current.importErrorRateLimited,
+        message: AppLocale.current.importErrorAiQuotaExhausted,
         partialData: {'postUrl': input},
       );
     }

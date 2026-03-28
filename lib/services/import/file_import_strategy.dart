@@ -512,28 +512,31 @@ class FileImportStrategy extends ImportStrategy {
     return [];
   }
 
+  static String _jsonValueToString(dynamic v) {
+    if (v == null) return '';
+    if (v is List) return v.map((e) => '$e').join('\n');
+    return '$v';
+  }
+
   ImportResult _importFromPaprika(Uint8List bytes) {
     final archive = ZipDecoder().decodeBytes(bytes);
-    final recipes = <Recipe>[];
 
     for (final file in archive.files) {
       if (!file.isFile || file.content == null) continue;
       try {
-        final decompressed =
-            GZipDecoder().decodeBytes(file.content as List<int>);
+        final raw = file.content;
+        if (raw is! List<int>) continue;
+        final decompressed = GZipDecoder().decodeBytes(raw);
         final json =
             jsonDecode(utf8.decode(decompressed)) as Map<String, dynamic>;
         final recipe = _createRecipeFromPaprikaJson(json);
-        if (recipe != null) recipes.add(recipe);
+        if (recipe != null) return ImportResult.success(recipe);
       } catch (e) {
         AppLogger.warning('Skipping Paprika entry ${file.name}: $e');
       }
     }
 
-    if (recipes.isEmpty) {
-      return ImportResult.failure('No recipes found in Paprika file');
-    }
-    return ImportResult.success(recipes.first);
+    return ImportResult.failure('No recipes found in Paprika file');
   }
 
   Recipe? _createRecipeFromPaprikaJson(Map<String, dynamic> json) {
@@ -571,7 +574,8 @@ class FileImportStrategy extends ImportStrategy {
     final items = decoded is List ? decoded : [decoded];
     for (final item in items) {
       if (item is! Map<String, dynamic>) continue;
-      final data = item.map((k, v) => MapEntry(k.toLowerCase(), '$v'));
+      final data =
+          item.map((k, v) => MapEntry(k.toLowerCase(), _jsonValueToString(v)));
       final recipe = _createRecipeFromData(data);
       if (recipe != null) recipes.add(recipe);
     }
