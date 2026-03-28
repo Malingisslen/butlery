@@ -35,6 +35,7 @@ import 'package:butlery/views/settings/allergen_preferences_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
 import 'package:butlery/views/settings/collection_stats_view.dart';
+import 'package:butlery/views/lagg_till_recept_view.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 
 // Cooking mode
@@ -155,8 +156,8 @@ class AppRouter {
               Routes.getAnimationType(routeName));
 
         case Routes.laggTill:
-          return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 3),
-              settings, Routes.getAnimationType(routeName));
+          return _buildRoute(const LaggTillReceptView(), settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.skrivSjalv:
           // Handle arguments for template or initial recipe

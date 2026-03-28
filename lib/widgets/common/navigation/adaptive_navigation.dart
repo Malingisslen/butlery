@@ -423,7 +423,7 @@ class ButleryBottomNavigation extends StatelessWidget {
     this.unselectedItemColor,
   });
 
-  final int currentIndex;
+  final int? currentIndex;
   final List<AdaptiveNavigationItem> items;
   final ValueChanged<int> onTap;
 
@@ -455,7 +455,8 @@ class ButleryBottomNavigation extends StatelessWidget {
                 children: items.asMap().entries.map((entry) {
                   final index = entry.key;
                   final item = entry.value;
-                  final isSelected = index == currentIndex;
+                  final isSelected =
+                      currentIndex != null && index == currentIndex;
 
                   return Expanded(
                     child: _BottomNavItem(

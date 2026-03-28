@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/views/unified_shopping_view.dart';
-import 'package:butlery/views/lagg_till_recept_view.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_header.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
@@ -37,7 +39,7 @@ class LayoutScaffolds {
     PreferredSizeWidget? appBar,
     Widget? floatingActionButton,
     bool showBottomNav = false,
-    int bottomNavIndex = 0,
+    int? bottomNavIndex,
   }) {
     return _SimpleLayout(
       body: body,
@@ -69,12 +71,12 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
   late int _selectedIndex;
 
   /// Lazily built tab views — only created when first selected.
-  final List<Widget?> _tabs = List.filled(4, null);
+  final List<Widget?> _tabs = List.filled(3, null);
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialIndex;
+    _selectedIndex = widget.initialIndex.clamp(0, 2);
   }
 
   Widget _buildTab(int index) {
@@ -82,10 +84,155 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
       0 => const MinaReceptView(),
       1 => const VeckomenyView(),
       2 => const UnifiedShoppingView(),
-      3 => const LaggTillReceptView(),
       _ => const SizedBox.shrink(),
     };
     return _tabs[index]!;
+  }
+
+  void _showAddRecipeModal(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (modalContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              // Standard Material drag handle (40×4, fully rounded)
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+                decoration: BoxDecoration(
+                  color: cs.onSurfaceVariant
+                      .withValues(alpha: AppDimensions.opacityMediumLight),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                context.l10n.addRecipeTitle,
+                style: AppTextStyles.titleMedium,
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+              // 2×2 button grid — same layout as LaggTillReceptView
+              _buildModalGrid(context, modalContext, cs),
+              const SizedBox(height: AppDimensions.spacingMd),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModalGrid(
+      BuildContext rootContext, BuildContext modalContext, ColorScheme cs) {
+    const buttonSize = 140.0;
+    const spacing = AppDimensions.spacingMd;
+
+    void navigate(String route) {
+      Navigator.of(modalContext).pop();
+      Navigator.of(rootContext).pushNamed(route);
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _modalButton(
+              rootContext,
+              label: rootContext.l10n.recipeImportLink,
+              icon: Icons.link,
+              color: cs.secondary,
+              size: buttonSize,
+              onTap: () => navigate('/smartImport'),
+            ),
+            const SizedBox(width: spacing),
+            _modalButton(
+              rootContext,
+              label: rootContext.l10n.recipeWriteManually,
+              icon: Icons.edit,
+              color: cs.primary,
+              size: buttonSize,
+              onTap: () => navigate('/skrivSjalv'),
+            ),
+          ],
+        ),
+        const SizedBox(height: spacing),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _modalButton(
+              rootContext,
+              label: rootContext.l10n.recipeFromImage,
+              icon: Icons.image,
+              color: cs.primary,
+              size: buttonSize,
+              onTap: () => navigate('/photoImport'),
+            ),
+            const SizedBox(width: spacing),
+            _modalButton(
+              rootContext,
+              label: rootContext.l10n.recipeFromArchive,
+              icon: Icons.archive,
+              color: cs.secondary,
+              size: buttonSize,
+              onTap: () => navigate('/importFranArkiv'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _modalButton(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required Color color,
+    required double size,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Material(
+        color: color,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: AppDimensions.iconSizeXl,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                Text(
+                  label,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -102,11 +249,16 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
         items: ButleryAdaptiveNavigation.getNavigationItems(context),
         appBar: widget.appBar,
         onNavigationChanged: (index) {
+          // "+" button opens modal instead of switching tabs
+          if (index == 3) {
+            _showAddRecipeModal(context);
+            return;
+          }
           setState(() => _selectedIndex = index);
         },
         body: IndexedStack(
           index: _selectedIndex,
-          children: List.generate(4, _buildTab),
+          children: List.generate(3, _buildTab),
         ),
       ),
     );
@@ -122,7 +274,7 @@ class _SimpleLayout extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final Widget? floatingActionButton;
   final bool showBottomNav;
-  final int bottomNavIndex;
+  final int? bottomNavIndex;
 
   const _SimpleLayout({
     required this.body,
@@ -131,7 +283,7 @@ class _SimpleLayout extends StatelessWidget {
     this.appBar,
     this.floatingActionButton,
     this.showBottomNav = false,
-    this.bottomNavIndex = 0,
+    this.bottomNavIndex,
   });
 
   @override

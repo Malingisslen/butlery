@@ -131,7 +131,6 @@ class Routes {
 
   /// Routes using slide-from-bottom animation
   static const Set<String> bottomSlideRoutes = {
-    laggTill,
     importViaUrl,
     photoImport,
     skrivSjalv,

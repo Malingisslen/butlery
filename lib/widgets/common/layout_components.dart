@@ -39,7 +39,7 @@ class LayoutComponents {
       appBar: appBar,
       floatingActionButton: floatingActionButton,
       showBottomNav: true,
-      bottomNavIndex: currentIndex ?? 0,
+      bottomNavIndex: currentIndex,
     );
   }
 
