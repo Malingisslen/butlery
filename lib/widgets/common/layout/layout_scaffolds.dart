@@ -8,6 +8,7 @@ import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/views/unified_shopping_view.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -100,8 +101,7 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag handle
-              // Standard Material drag handle (40×4, fully rounded)
+              // Material drag handle — rounded exception to square design
               Container(
                 width: 40,
                 height: 4,
@@ -117,7 +117,6 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
                 style: AppTextStyles.titleMedium,
               ),
               const SizedBox(height: AppDimensions.spacingL),
-              // 2×2 button grid — same layout as LaggTillReceptView
               _buildModalGrid(context, modalContext, cs),
               const SizedBox(height: AppDimensions.spacingMd),
             ],
@@ -129,7 +128,6 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
 
   Widget _buildModalGrid(
       BuildContext rootContext, BuildContext modalContext, ColorScheme cs) {
-    const buttonSize = 140.0;
     const spacing = AppDimensions.spacingMd;
 
     void navigate(String route) {
@@ -137,60 +135,60 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
       Navigator.of(rootContext).pushNamed(route);
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+    // Responsive sizing — mirrors LaggTillReceptView pattern
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final buttonSize =
+            ((constraints.maxWidth - spacing) / 2).clamp(120.0, 160.0);
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _modalButton(
-              rootContext,
-              label: rootContext.l10n.recipeImportLink,
-              icon: Icons.link,
-              color: cs.secondary,
-              size: buttonSize,
-              onTap: () => navigate('/smartImport'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _modalButton(cs,
+                    label: rootContext.l10n.recipeImportLink,
+                    icon: Icons.link,
+                    color: cs.secondary,
+                    size: buttonSize,
+                    onTap: () => navigate(Routes.smartImport)),
+                const SizedBox(width: spacing),
+                _modalButton(cs,
+                    label: rootContext.l10n.recipeWriteManually,
+                    icon: Icons.edit,
+                    color: cs.primary,
+                    size: buttonSize,
+                    onTap: () => navigate(Routes.skrivSjalv)),
+              ],
             ),
-            const SizedBox(width: spacing),
-            _modalButton(
-              rootContext,
-              label: rootContext.l10n.recipeWriteManually,
-              icon: Icons.edit,
-              color: cs.primary,
-              size: buttonSize,
-              onTap: () => navigate('/skrivSjalv'),
+            const SizedBox(height: spacing),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _modalButton(cs,
+                    label: rootContext.l10n.recipeFromImage,
+                    icon: Icons.image,
+                    color: cs.primary,
+                    size: buttonSize,
+                    onTap: () => navigate(Routes.photoImport)),
+                const SizedBox(width: spacing),
+                _modalButton(cs,
+                    label: rootContext.l10n.recipeFromArchive,
+                    icon: Icons.archive,
+                    color: cs.secondary,
+                    size: buttonSize,
+                    onTap: () => navigate(Routes.importFranArkiv)),
+              ],
             ),
           ],
-        ),
-        const SizedBox(height: spacing),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _modalButton(
-              rootContext,
-              label: rootContext.l10n.recipeFromImage,
-              icon: Icons.image,
-              color: cs.primary,
-              size: buttonSize,
-              onTap: () => navigate('/photoImport'),
-            ),
-            const SizedBox(width: spacing),
-            _modalButton(
-              rootContext,
-              label: rootContext.l10n.recipeFromArchive,
-              icon: Icons.archive,
-              color: cs.secondary,
-              size: buttonSize,
-              onTap: () => navigate('/importFranArkiv'),
-            ),
-          ],
-        ),
-      ],
+        );
+      },
     );
   }
 
   Widget _modalButton(
-    BuildContext context, {
+    ColorScheme cs, {
     required String label,
     required IconData icon,
     required Color color,
@@ -211,16 +209,12 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  icon,
-                  size: AppDimensions.iconSizeXl,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
+                Icon(icon, size: AppDimensions.iconSizeXl, color: cs.onPrimary),
                 const SizedBox(height: AppDimensions.spacingSm),
                 Text(
                   label,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
+                    color: cs.onPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,

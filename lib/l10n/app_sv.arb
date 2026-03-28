@@ -8176,5 +8176,7 @@
   "importPendingRetryPrompt": "Du har en väntande import — försök igen?",
   "importPendingRetry": "Försök igen",
   "importPendingDismiss": "Avfärda",
-  "importSavedForLater": "URL sparad — importeras när du är online igen"
+  "importSavedForLater": "URL sparad — importeras när du är online igen",
+  "seasonalInSeasonNow": "I säsong just nu",
+  "seasonalForgottenFavorites": "Glömda favoriter"
 }

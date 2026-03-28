@@ -5,6 +5,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -476,13 +477,29 @@ class RecipeQueryViewModel extends ChangeNotifier
     return cookingCounts;
   }
 
+  List<Recipe> getInSeasonRecipes({int limit = 10}) {
+    final season = SeasonUtils.currentSeasonTag();
+    return allRecipes
+        .where((r) => r.tagResult?.tags.contains(season) ?? false)
+        .take(limit)
+        .toList();
+  }
+
+  List<Recipe> getForgottenFavorites({int daysNotCooked = 90, int limit = 10}) {
+    final cutoff = DateTime.now().subtract(Duration(days: daysNotCooked));
+    return allRecipes
+        .where((r) =>
+            r.isFavorite &&
+            r.lastCookedAt != null &&
+            r.lastCookedAt!.isBefore(cutoff))
+        .toList()
+      ..sort((a, b) => a.lastCookedAt!.compareTo(b.lastCookedAt!));
+  }
+
   @override
   void dispose() {
-    // Cancel all timers and debounced operations
-    cancelAllOperations(); // From AsyncOperationMixin
-    // Cancel all stream subscriptions
-    disposeStreamResources(); // From StreamManagementMixin
-    // Dispose of resources
+    cancelAllOperations();
+    disposeStreamResources();
     super.dispose();
   }
 }
