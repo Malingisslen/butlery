@@ -11865,4 +11865,20 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get seasonalForgottenFavorites => 'Glömda favoriter';
+
+  @override
+  String get cookingModePreviousStep => 'Föregående steg';
+
+  @override
+  String get cookingModeNextStep => 'Nästa steg';
+
+  @override
+  String cookingModeStepOf(int current, int total) {
+    return 'Steg $current av $total';
+  }
+
+  @override
+  String cookingModeStepAnnounce(int step, String instruction) {
+    return 'Steg $step: $instruction';
+  }
 }

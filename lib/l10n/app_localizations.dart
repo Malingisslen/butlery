@@ -20301,6 +20301,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Glömda favoriter'**
   String get seasonalForgottenFavorites;
+
+  /// No description provided for @cookingModePreviousStep.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föregående steg'**
+  String get cookingModePreviousStep;
+
+  /// No description provided for @cookingModeNextStep.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nästa steg'**
+  String get cookingModeNextStep;
+
+  /// No description provided for @cookingModeStepOf.
+  ///
+  /// In sv, this message translates to:
+  /// **'Steg {current} av {total}'**
+  String cookingModeStepOf(int current, int total);
+
+  /// No description provided for @cookingModeStepAnnounce.
+  ///
+  /// In sv, this message translates to:
+  /// **'Steg {step}: {instruction}'**
+  String cookingModeStepAnnounce(int step, String instruction);
 }
 
 class _AppLocalizationsDelegate

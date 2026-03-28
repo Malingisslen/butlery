@@ -11834,4 +11834,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seasonalForgottenFavorites => 'Forgotten Favorites';
+
+  @override
+  String get cookingModePreviousStep => 'Previous step';
+
+  @override
+  String get cookingModeNextStep => 'Next step';
+
+  @override
+  String cookingModeStepOf(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String cookingModeStepAnnounce(int step, String instruction) {
+    return 'Step $step: $instruction';
+  }
 }

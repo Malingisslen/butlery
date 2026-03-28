@@ -8178,5 +8178,21 @@
   "importPendingDismiss": "Avfärda",
   "importSavedForLater": "URL sparad — importeras när du är online igen",
   "seasonalInSeasonNow": "I säsong just nu",
-  "seasonalForgottenFavorites": "Glömda favoriter"
+  "seasonalForgottenFavorites": "Glömda favoriter",
+  "cookingModePreviousStep": "Föregående steg",
+  "cookingModeNextStep": "Nästa steg",
+  "cookingModeStepOf": "Steg {current} av {total}",
+  "@cookingModeStepOf": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "cookingModeStepAnnounce": "Steg {step}: {instruction}",
+  "@cookingModeStepAnnounce": {
+    "placeholders": {
+      "step": {"type": "int"},
+      "instruction": {"type": "String"}
+    }
+  }
 }

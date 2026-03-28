@@ -8178,5 +8178,21 @@
   "importPendingDismiss": "Dismiss",
   "importSavedForLater": "URL saved — will import when you're back online",
   "seasonalInSeasonNow": "In Season Now",
-  "seasonalForgottenFavorites": "Forgotten Favorites"
+  "seasonalForgottenFavorites": "Forgotten Favorites",
+  "cookingModePreviousStep": "Previous step",
+  "cookingModeNextStep": "Next step",
+  "cookingModeStepOf": "Step {current} of {total}",
+  "@cookingModeStepOf": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "cookingModeStepAnnounce": "Step {step}: {instruction}",
+  "@cookingModeStepAnnounce": {
+    "placeholders": {
+      "step": {"type": "int"},
+      "instruction": {"type": "String"}
+    }
+  }
 }

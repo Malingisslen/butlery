@@ -10,6 +10,7 @@ class CookingModeViewModel extends ChangeNotifier {
 
   late int _currentPortions;
   late List<String> _scaledIngredients;
+  int _currentStepIndex = 0;
 
   CookingModeViewModel({required this.recipe}) {
     _currentPortions = recipe.portions ?? 1;
@@ -23,6 +24,29 @@ class CookingModeViewModel extends ChangeNotifier {
   List<String> get scaledIngredients => _scaledIngredients;
   List<String> get instructions => recipe.instructions;
   String get title => recipe.title;
+
+  int get currentStepIndex => _currentStepIndex;
+  int get totalSteps => recipe.instructions.length;
+  bool get hasNextStep => _currentStepIndex < totalSteps - 1;
+  bool get hasPreviousStep => _currentStepIndex > 0;
+
+  void nextStep() {
+    if (!hasNextStep) return;
+    _currentStepIndex++;
+    notifyListeners();
+  }
+
+  void previousStep() {
+    if (!hasPreviousStep) return;
+    _currentStepIndex--;
+    notifyListeners();
+  }
+
+  void goToStep(int index) {
+    if (index < 0 || index >= totalSteps) return;
+    _currentStepIndex = index;
+    notifyListeners();
+  }
 
   static const int minPortions = 1;
   static const int maxPortions = 50;

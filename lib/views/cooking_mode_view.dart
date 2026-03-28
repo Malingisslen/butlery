@@ -1,6 +1,7 @@
 // lib/views/cooking_mode_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -32,7 +33,7 @@ class _CookingModeViewState extends State<CookingModeView> {
     ]);
     WakelockPlus.enable();
     // Hide system UI for immersive cooking experience
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
   @override
@@ -310,63 +311,203 @@ class _IngredientsPanel extends StatelessWidget {
   }
 }
 
-/// Right panel displaying numbered cooking instructions.
-class _InstructionsPanel extends StatelessWidget {
+/// Right panel with step navigation and active step highlighting.
+class _InstructionsPanel extends StatefulWidget {
   final CookingModeViewModel vm;
 
   const _InstructionsPanel({required this.vm});
 
   @override
+  State<_InstructionsPanel> createState() => _InstructionsPanelState();
+}
+
+class _InstructionsPanelState extends State<_InstructionsPanel> {
+  final ScrollController _scrollController = ScrollController();
+  int _lastStepIndex = 0;
+
+  CookingModeViewModel get vm => widget.vm;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToCurrentStep() {
+    if (_lastStepIndex == vm.currentStepIndex) return;
+    _lastStepIndex = vm.currentStepIndex;
+
+    final targetOffset = vm.currentStepIndex * 100.0;
+    _scrollController.animateTo(
+      targetOffset,
+      duration: AppDimensions.animationDurationCommon,
+      curve: Curves.easeInOut,
+    );
+
+    SemanticsService.announce(
+      context.l10n.cookingModeStepAnnounce(
+        vm.currentStepIndex + 1,
+        vm.instructions[vm.currentStepIndex],
+      ),
+      TextDirection.ltr,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scrollToCurrentStep();
+    });
+
     return ColoredBox(
       color: cs.primary.withValues(alpha: 0.8),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
-        itemCount: vm.instructions.length,
-        itemBuilder: (context, index) {
-          final instruction = vm.instructions[index];
-          final stepNumber = index + 1;
-          return Semantics(
-            label: context.l10n.a11yCookingModeStep(stepNumber, instruction),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Step number badge
-                  Container(
-                    width: AppDimensions.minTouchTarget,
-                    height: AppDimensions.minTouchTarget,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: cs.surface,
-                    ),
-                    child: Text(
-                      '$stepNumber',
-                      style: AppTextStyles.contentTitle.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.w700,
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              itemCount: vm.instructions.length,
+              itemBuilder: (context, index) {
+                final instruction = vm.instructions[index];
+                final stepNumber = index + 1;
+                final isActive = index == vm.currentStepIndex;
+
+                return Semantics(
+                  label:
+                      context.l10n.a11yCookingModeStep(stepNumber, instruction),
+                  child: GestureDetector(
+                    onTap: () => vm.goToStep(index),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          bottom: AppDimensions.spacingLg),
+                      child: Opacity(
+                        opacity: isActive ? 1.0 : 0.4,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: AppDimensions.minTouchTarget,
+                              height: AppDimensions.minTouchTarget,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? cs.surface
+                                    : cs.surface.withValues(alpha: 0.6),
+                              ),
+                              child: Text(
+                                '$stepNumber',
+                                style: AppTextStyles.contentTitle.copyWith(
+                                  color: cs.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppDimensions.spacingMd),
+                            Expanded(
+                              child: Text(
+                                instruction,
+                                style: AppTextStyles.titleLarge.copyWith(
+                                  color: cs.onPrimary,
+                                  height: 1.7,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingMd),
-                  // Instruction text
-                  Expanded(
-                    child: Text(
-                      instruction,
-                      style: AppTextStyles.titleLarge.copyWith(
-                        color: cs.onPrimary,
-                        height: 1.7,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
+          ),
+          _StepNavigation(vm: vm),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepNavigation extends StatelessWidget {
+  final CookingModeViewModel vm;
+
+  const _StepNavigation({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingSm,
+      ),
+      color: cs.primary,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _NavButton(
+            icon: Icons.arrow_back,
+            label: context.l10n.cookingModePreviousStep,
+            onPressed: vm.hasPreviousStep ? vm.previousStep : null,
+          ),
+          Text(
+            context.l10n
+                .cookingModeStepOf(vm.currentStepIndex + 1, vm.totalSteps),
+            style: AppTextStyles.titleMedium.copyWith(color: cs.onPrimary),
+          ),
+          _NavButton(
+            icon: Icons.arrow_forward,
+            label: context.l10n.cookingModeNextStep,
+            onPressed: vm.hasNextStep ? vm.nextStep : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+
+  const _NavButton({
+    required this.icon,
+    required this.label,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final enabled = onPressed != null;
+
+    return Semantics(
+      label: label,
+      button: true,
+      enabled: enabled,
+      child: GestureDetector(
+        onTap: enabled
+            ? () {
+                HapticFeedback.lightImpact();
+                onPressed!();
+              }
+            : null,
+        child: SizedBox(
+          width: AppDimensions.minTouchTarget,
+          height: AppDimensions.minTouchTarget,
+          child: Icon(
+            icon,
+            color: enabled
+                ? cs.onPrimary
+                : cs.onPrimary.withValues(alpha: AppDimensions.opacityLight),
+            size: AppDimensions.iconSizeL,
+          ),
+        ),
       ),
     );
   }
