@@ -6,9 +6,10 @@
 /// 3. Review and edit recipe details
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/widgets/import/ingredient_line_detector.dart';
 
 /// Step in the assisted import wizard.
@@ -24,7 +25,7 @@ enum AssistedImportStep {
 }
 
 /// ViewModel for the assisted import dialog.
-class AssistedImportViewModel extends ChangeNotifier {
+class AssistedImportViewModel extends BaseViewModel {
   /// Current wizard step.
   AssistedImportStep _currentStep = AssistedImportStep.selectIngredients;
   AssistedImportStep get currentStep => _currentStep;
@@ -40,6 +41,9 @@ class AssistedImportViewModel extends ChangeNotifier {
 
   /// Pre-detected ingredient line indices.
   late final Set<int> likelyIngredientIndices;
+
+  /// Pre-detected instruction line indices (scored, garbage-filtered).
+  late final Set<int> likelyInstructionIndices;
 
   /// User selections.
   Set<int> _selectedIngredientIndices = {};
@@ -92,8 +96,29 @@ class AssistedImportViewModel extends ChangeNotifier {
           IngredientLineDetector.detectFromLines(lines).toSet();
     }
 
+    likelyInstructionIndices = _detectLikelyInstructions();
+
     // Set initial title
     _title = suggestedTitle ?? '';
+  }
+
+  /// Whether the user has made any selections that would be lost on cancel.
+  bool get hasSelections =>
+      _selectedIngredientIndices.isNotEmpty ||
+      _selectedInstructionIndices.isNotEmpty;
+
+  Set<int> _detectLikelyInstructions() {
+    final result = <int>{};
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      if (line.isEmpty) continue;
+      if (likelyIngredientIndices.contains(i)) continue;
+      if (RecipeSectionDetector.isGarbage(line)) continue;
+      if (RecipeSectionDetector.instructionScore(line) >= 2) {
+        result.add(i);
+      }
+    }
+    return result;
   }
 
   bool get canProceed {
@@ -103,9 +128,7 @@ class AssistedImportViewModel extends ChangeNotifier {
       case AssistedImportStep.selectInstructions:
         return _selectedInstructionIndices.isNotEmpty;
       case AssistedImportStep.reviewEdit:
-        return _title.isNotEmpty &&
-            _editedIngredients.isNotEmpty &&
-            _editedInstructions.isNotEmpty;
+        return isValidForSave;
     }
   }
 
@@ -170,15 +193,6 @@ class AssistedImportViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> get availableInstructionLines {
-    return lines
-        .asMap()
-        .entries
-        .where((e) => !_selectedIngredientIndices.contains(e.key))
-        .map((e) => e.value)
-        .toList();
-  }
-
   void setTitle(String value) {
     _title = value.trim();
     notifyListeners();
@@ -212,8 +226,9 @@ class AssistedImportViewModel extends ChangeNotifier {
   }
 
   void addIngredient(String value) {
-    if (value.trim().isNotEmpty) {
-      _editedIngredients.add(value.trim());
+    final trimmed = value.trim();
+    if (trimmed.isNotEmpty) {
+      _editedIngredients.add(trimmed);
       notifyListeners();
     }
   }
@@ -233,8 +248,9 @@ class AssistedImportViewModel extends ChangeNotifier {
   }
 
   void addInstruction(String value) {
-    if (value.trim().isNotEmpty) {
-      _editedInstructions.add(value.trim());
+    final trimmed = value.trim();
+    if (trimmed.isNotEmpty) {
+      _editedInstructions.add(trimmed);
       notifyListeners();
     }
   }
@@ -249,19 +265,17 @@ class AssistedImportViewModel extends ChangeNotifier {
   void _buildEditableLists() {
     final sortedIngredientIndices = _selectedIngredientIndices.toList()..sort();
     _editedIngredients = sortedIngredientIndices
-        .map((i) => lines[i].trim())
+        .map((i) => lines[i])
         .where((line) => line.isNotEmpty)
         .toList();
 
     final sortedInstructionIndices = _selectedInstructionIndices.toList()
       ..sort();
     _editedInstructions = sortedInstructionIndices
-        .map((i) => lines[i].trim())
+        .map((i) => lines[i])
         .where((line) => line.isNotEmpty)
+        .map(_cleanInstructionLine)
         .toList();
-
-    _editedInstructions =
-        _editedInstructions.map(_cleanInstructionLine).toList();
   }
 
   String _cleanInstructionLine(String line) {
@@ -272,11 +286,15 @@ class AssistedImportViewModel extends ChangeNotifier {
   }
 
   Recipe buildRecipe() {
-    final ingredients =
-        _editedIngredients.where((i) => i.trim().isNotEmpty).toList();
+    final ingredients = _editedIngredients
+        .map((i) => i.trim())
+        .where((i) => i.isNotEmpty)
+        .toList();
 
-    final instructions =
-        _editedInstructions.where((i) => i.trim().isNotEmpty).toList();
+    final instructions = _editedInstructions
+        .map((i) => i.trim())
+        .where((i) => i.isNotEmpty)
+        .toList();
 
     return Recipe.personal(
       title: _title,

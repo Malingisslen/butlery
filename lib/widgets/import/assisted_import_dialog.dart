@@ -22,7 +22,10 @@ import 'package:butlery/widgets/import/components/import_dialog_header.dart';
 import 'package:butlery/widgets/import/components/step_progress_indicator.dart';
 import 'package:butlery/widgets/import/components/import_dialog_footer.dart';
 import 'package:butlery/widgets/import/components/editable_list_builder.dart';
+import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/image/simple_image_widget.dart';
+import 'package:butlery/widgets/image/image_config.dart';
 
 /// Show the assisted import dialog.
 ///
@@ -37,7 +40,7 @@ Future<Recipe?> showAssistedImportDialog({
 }) {
   return showDialog<Recipe>(
     context: context,
-    barrierDismissible: false,
+    barrierDismissible: true,
     builder: (context) => AssistedImportDialog(
       extractedText: extractedText,
       suggestedTitle: suggestedTitle,
@@ -97,36 +100,45 @@ class _AssistedImportDialogContent extends StatelessWidget {
         ? mediaQuery.size.height * 0.9
         : mediaQuery.size.height * 0.85;
 
-    return Dialog(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: dialogWidth.clamp(300, 700),
-          maxHeight: dialogHeight.clamp(400, 800),
-        ),
-        child: Column(
-          children: [
-            ImportDialogHeader(
-              currentStep: viewModel.currentStep,
-              onClose: () => _showCancelConfirmation(context),
-            ),
-            StepProgressIndicator(
-              currentStep: viewModel.stepNumber,
-              totalSteps: viewModel.totalSteps,
-            ),
-            Expanded(
-              child: _buildContent(context, viewModel),
-            ),
-            ImportDialogFooter(
-              validationError: viewModel.validateCurrentStep(),
-              canGoBack: viewModel.canGoBack,
-              canProceed: viewModel.canProceed,
-              currentStep: viewModel.currentStep,
-              onBack: viewModel.previousStep,
-              onCancel: () => _showCancelConfirmation(context),
-              onNext: viewModel.nextStep,
-              onSave: () => _saveRecipe(context, viewModel),
-            ),
-          ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleCancel(context, viewModel);
+      },
+      child: Dialog(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: dialogWidth.clamp(300, 700),
+            maxHeight: dialogHeight.clamp(400, 800),
+          ),
+          child: Column(
+            children: [
+              ImportDialogHeader(
+                currentStep: viewModel.currentStep,
+                onClose: () => _handleCancel(context, viewModel),
+              ),
+              StepProgressIndicator(
+                currentStep: viewModel.stepNumber,
+                totalSteps: viewModel.totalSteps,
+              ),
+              if (viewModel.thumbnailUrl != null)
+                _ThumbnailBanner(url: viewModel.thumbnailUrl!),
+              Expanded(
+                child: _buildContent(context, viewModel),
+              ),
+              ImportDialogFooter(
+                validationError: viewModel.validateCurrentStep(),
+                canGoBack: viewModel.canGoBack,
+                canProceed: viewModel.canProceed,
+                currentStep: viewModel.currentStep,
+                onBack: viewModel.previousStep,
+                onCancel: () => _handleCancel(context, viewModel),
+                onNext: viewModel.nextStep,
+                onSave: () => _saveRecipe(context, viewModel),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -144,29 +156,25 @@ class _AssistedImportDialogContent extends StatelessWidget {
     }
   }
 
-  void _showCancelConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.importCancelTitle),
-        content: Text(
-          context.l10n.importCancelMessage,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(context.l10n.commonContinue),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close confirmation
-              Navigator.of(context).pop(); // Close dialog
-            },
-            child: Text(context.l10n.importCancelConfirm),
-          ),
-        ],
-      ),
+  void _handleCancel(BuildContext context, AssistedImportViewModel viewModel) {
+    if (viewModel.hasSelections) {
+      _showCancelConfirmation(context);
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _showCancelConfirmation(BuildContext context) async {
+    final confirmed = await DialogFactory.showConfirmation(
+      context,
+      title: context.l10n.importCancelTitle,
+      message: context.l10n.importCancelMessage,
+      confirmText: context.l10n.importCancelConfirm,
+      cancelText: context.l10n.commonContinue,
     );
+    if (confirmed == true && context.mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   void _saveRecipe(BuildContext context, AssistedImportViewModel viewModel) {
@@ -201,15 +209,8 @@ class _InstructionSelectionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Detect likely instruction lines (excluding already selected ingredients)
-    final likelyInstructions = viewModel.lines
-        .asMap()
-        .entries
-        .where((e) =>
-            !viewModel.selectedIngredientIndices.contains(e.key) &&
-            e.value.trim().length > 20)
-        .map((e) => e.key)
-        .toSet();
+    final likelyInstructions = viewModel.likelyInstructionIndices
+        .difference(viewModel.selectedIngredientIndices);
 
     return TextLineSelector(
       lines: viewModel.lines,
@@ -359,6 +360,30 @@ class _ReviewEditStep extends StatelessWidget {
             showNumbers: true,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ThumbnailBanner extends StatelessWidget {
+  final String url;
+  const _ThumbnailBanner({required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingSm,
+      ),
+      child: SizedBox(
+        height: AppDimensions.imageHeightMedium,
+        width: double.infinity,
+        child: SimpleImageWidget(
+          imageUrl: url,
+          fit: BoxFit.cover,
+          config: ImageConfig.thumbnail(),
+        ),
       ),
     );
   }
