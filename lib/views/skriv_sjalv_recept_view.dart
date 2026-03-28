@@ -444,6 +444,8 @@ class _SkrivSjalvReceptViewContentState
                           label: context.l10n.recipeTitle,
                           textInputAction: TextInputAction.next,
                           onChanged: viewModel.setTitle,
+                          showWarning: viewModel.fieldsNeedingImprovement
+                              .contains('title'),
                           validator: FormValidators.combine([
                             FormValidators.required(context.l10n.recipeTitle),
                             FormValidators.minLength(
@@ -475,6 +477,8 @@ class _SkrivSjalvReceptViewContentState
                           textInputAction: TextInputAction.next,
                           onChanged: (value) =>
                               viewModel.setPortions(int.tryParse(value)),
+                          showWarning: viewModel.fieldsNeedingImprovement
+                              .contains('portions'),
                           validator: FormValidators.portions(),
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
@@ -487,6 +491,8 @@ class _SkrivSjalvReceptViewContentState
                           textInputAction: TextInputAction.next,
                           onChanged: (value) =>
                               viewModel.setTimeMinutes(int.tryParse(value)),
+                          showWarning: viewModel.fieldsNeedingImprovement
+                              .contains('totalTime'),
                           validator: FormValidators.cookingTime(),
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
@@ -731,6 +737,16 @@ class _SkrivSjalvReceptViewContentState
     );
   }
 
+  String _localizeFieldName(BuildContext context, String field) =>
+      switch (field) {
+        'title' => context.l10n.recipeTitle,
+        'ingredients' => context.l10n.recipeIngredients,
+        'instructions' => context.l10n.recipeInstructions,
+        'portions' => context.l10n.recipePortions,
+        'totalTime' => context.l10n.recipeTimeMinutes,
+        _ => field,
+      };
+
   Widget _buildQualityWarningBanner(
     BuildContext context,
     RecipeFormViewModel viewModel,
@@ -784,7 +800,7 @@ class _SkrivSjalvReceptViewContentState
             if (fields.isNotEmpty) ...[
               const SizedBox(height: AppDimensions.spacingS),
               Text(
-                context.l10n.importFieldsNeedReview(fields.length),
+                '${context.l10n.importFieldsNeedReviewPrefix}: ${fields.map((f) => _localizeFieldName(context, f)).join(', ')}',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: colors.onWarningContainer.withValues(alpha: 0.7),
                 ),

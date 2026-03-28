@@ -3614,6 +3614,9 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get importFieldsNeedReviewPrefix => 'Kontrollera';
+
+  @override
   String menuCardMoreRecipes(int count) {
     return '+ $count fler recept';
   }
@@ -4820,6 +4823,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get importPasteText => 'Klistra in text';
+
+  @override
+  String get importAddManually => 'Lägg till manuellt';
 
   @override
   String get importPhotoDescription =>

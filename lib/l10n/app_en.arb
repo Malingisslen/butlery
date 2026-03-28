@@ -2267,6 +2267,7 @@
     }
   },
   "importFieldsNeedReview": "{count} field(s) may need adjustment",
+  "importFieldsNeedReviewPrefix": "Review",
   "@importFieldsNeedReview": {
     "placeholders": {
       "count": {
@@ -3065,6 +3066,7 @@
   "importClipboardUseUrl": "Use",
   "importPasteLinkOrText": "Paste link or text here...",
   "importPasteText": "Paste text",
+  "importAddManually": "Add manually",
   "importPhotoDescription": "Take a picture of a recipe or choose from gallery to import text automatically",
   "importPhotoImport": "Photo import",
   "importProceedToEdit": "Proceed to edit",

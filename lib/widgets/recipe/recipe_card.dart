@@ -296,11 +296,13 @@ class RecipeCard extends StatelessWidget {
                   heroTag: ImageConfig.recipeHeroTag(recipe.id),
                 ),
               )
-            // UI Redesign: Random vegetable fallback when no photo
-            : VegetableIllustration(
-                type: VegetableIllustration.randomForRecipe(recipe.id),
-                size: imageSize * 0.7,
-                opacity: 0.8,
+            : Hero(
+                tag: ImageConfig.recipeHeroTag(recipe.id),
+                child: VegetableIllustration(
+                  type: VegetableIllustration.randomForRecipe(recipe.id),
+                  size: imageSize * 0.7,
+                  opacity: 0.8,
+                ),
               ),
       ),
     );

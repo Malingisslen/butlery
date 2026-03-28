@@ -6333,6 +6333,12 @@ abstract class AppLocalizations {
   /// **'{count} fält kan behöva justeras'**
   String importFieldsNeedReview(int count);
 
+  /// No description provided for @importFieldsNeedReviewPrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollera'**
+  String get importFieldsNeedReviewPrefix;
+
   /// No description provided for @menuCardMoreRecipes.
   ///
   /// In sv, this message translates to:
@@ -8426,6 +8432,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Klistra in text'**
   String get importPasteText;
+
+  /// No description provided for @importAddManually.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till manuellt'**
+  String get importAddManually;
 
   /// No description provided for @importPhotoDescription.
   ///

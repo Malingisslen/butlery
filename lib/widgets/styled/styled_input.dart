@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
 /// Provides consistent input styling patterns used throughout the app
@@ -36,6 +37,9 @@ class StyledInput extends StatelessWidget {
   /// Falls back to [label] or [hint] if not provided.
   final String? semanticLabel;
 
+  /// Amber warning border for fields that may need review (e.g. low-confidence AI parse).
+  final bool showWarning;
+
   const StyledInput({
     super.key,
     this.label,
@@ -62,6 +66,7 @@ class StyledInput extends StatelessWidget {
     this.focusNode,
     this.autofillHints,
     this.semanticLabel,
+    this.showWarning = false,
   });
 
   /// Standard text input
@@ -90,7 +95,8 @@ class StyledInput extends StatelessWidget {
         keyboardType = TextInputType.text,
         textInputAction = TextInputAction.next,
         inputFormatters = null,
-        contentPadding = null;
+        contentPadding = null,
+        showWarning = false;
 
   /// Password input with configurable obscured text
   const StyledInput.password({
@@ -118,7 +124,8 @@ class StyledInput extends StatelessWidget {
         inputFormatters = null,
         prefixIcon = const Icon(Icons.lock_outline),
         contentPadding = null,
-        autofillHints = const [AutofillHints.password];
+        autofillHints = const [AutofillHints.password],
+        showWarning = false;
 
   /// Email input with validation
   const StyledInput.email({
@@ -146,7 +153,8 @@ class StyledInput extends StatelessWidget {
         prefixIcon = const Icon(Icons.email),
         suffixIcon = null,
         contentPadding = null,
-        autofillHints = const [AutofillHints.email];
+        autofillHints = const [AutofillHints.email],
+        showWarning = false;
 
   /// Phone number input
   const StyledInput.phone({
@@ -174,7 +182,8 @@ class StyledInput extends StatelessWidget {
         prefixIcon = const Icon(Icons.phone),
         suffixIcon = null,
         contentPadding = null,
-        autofillHints = const [AutofillHints.telephoneNumber];
+        autofillHints = const [AutofillHints.telephoneNumber],
+        showWarning = false;
 
   /// Multi-line text input
   const StyledInput.multiline({
@@ -202,7 +211,8 @@ class StyledInput extends StatelessWidget {
         prefixIcon = null,
         suffixIcon = null,
         contentPadding = null,
-        autofillHints = null;
+        autofillHints = null,
+        showWarning = false;
 
   /// Number input
   const StyledInput.number({
@@ -230,7 +240,8 @@ class StyledInput extends StatelessWidget {
         prefixIcon = null,
         suffixIcon = null,
         contentPadding = null,
-        autofillHints = null;
+        autofillHints = null,
+        showWarning = false;
 
   /// Search input
   const StyledInput.search({
@@ -258,7 +269,8 @@ class StyledInput extends StatelessWidget {
         validator = null,
         prefixIcon = const Icon(Icons.search),
         contentPadding = null,
-        autofillHints = null;
+        autofillHints = null,
+        showWarning = false;
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +320,7 @@ class StyledInput extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: cs.outline,
+            color: showWarning ? context.butleryColors.warning : cs.outline,
             width: AppDimensions.borderWidthStandard,
           ),
         ),

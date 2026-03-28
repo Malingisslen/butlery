@@ -3608,6 +3608,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get importFieldsNeedReviewPrefix => 'Review';
+
+  @override
   String menuCardMoreRecipes(int count) {
     return '+ $count more recipes';
   }
@@ -4813,6 +4816,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importPasteText => 'Paste text';
+
+  @override
+  String get importAddManually => 'Add manually';
 
   @override
   String get importPhotoDescription =>

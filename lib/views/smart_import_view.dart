@@ -165,6 +165,9 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                   _ErrorMessage(
                                     message: viewModel.error!,
                                     colorScheme: colorScheme,
+                                    onPasteText: () => _handlePaste(viewModel),
+                                    onManualAdd: () => Navigator.pushNamed(
+                                        context, Routes.skrivSjalv),
                                   ),
                                 ],
 
@@ -566,10 +569,14 @@ class _InputSection extends StatelessWidget {
 class _ErrorMessage extends StatelessWidget {
   final String message;
   final ColorScheme colorScheme;
+  final VoidCallback? onPasteText;
+  final VoidCallback? onManualAdd;
 
   const _ErrorMessage({
     required this.message,
     required this.colorScheme,
+    this.onPasteText,
+    this.onManualAdd,
   });
 
   @override
@@ -582,22 +589,48 @@ class _ErrorMessage extends StatelessWidget {
         color: colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.error_outline,
-            color: colorScheme.onErrorContainer,
-            size: AppDimensions.iconSizeM,
-          ),
-          const SizedBox(width: AppDimensions.spacingL),
-          Expanded(
-            child: Text(
-              message,
-              style: theme.textTheme.bodyMedium?.copyWith(
+          Row(
+            children: [
+              Icon(
+                Icons.error_outline,
                 color: colorScheme.onErrorContainer,
+                size: AppDimensions.iconSizeM,
               ),
-            ),
+              const SizedBox(width: AppDimensions.spacingL),
+              Expanded(
+                child: Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            ],
           ),
+          if (onPasteText != null || onManualAdd != null) ...[
+            const SizedBox(height: AppDimensions.spacingMd),
+            Wrap(
+              spacing: AppDimensions.spacingSm,
+              children: [
+                if (onPasteText != null)
+                  TextButton.icon(
+                    onPressed: onPasteText,
+                    icon: const Icon(Icons.content_paste,
+                        size: AppDimensions.iconSizeS),
+                    label: Text(context.l10n.importPasteText),
+                  ),
+                if (onManualAdd != null)
+                  TextButton.icon(
+                    onPressed: onManualAdd,
+                    icon: const Icon(Icons.edit, size: AppDimensions.iconSizeS),
+                    label: Text(context.l10n.importAddManually),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );
