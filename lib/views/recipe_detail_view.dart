@@ -55,10 +55,12 @@ enum _MenuAction {
 /// - Fullscreen image viewing
 class RecipeDetailView extends StatefulWidget {
   final Recipe recipe;
+  final bool scrollToComments;
 
   const RecipeDetailView({
     super.key,
     required this.recipe,
+    this.scrollToComments = false,
   });
 
   @override
@@ -94,15 +96,22 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
           value: ServiceLocator.get<UserService>(),
         ),
       ],
-      child: _RecipeDetailViewContent(recipe: widget.recipe),
+      child: _RecipeDetailViewContent(
+        recipe: widget.recipe,
+        scrollToComments: widget.scrollToComments,
+      ),
     );
   }
 }
 
 class _RecipeDetailViewContent extends StatefulWidget {
   final Recipe recipe;
+  final bool scrollToComments;
 
-  const _RecipeDetailViewContent({required this.recipe});
+  const _RecipeDetailViewContent({
+    required this.recipe,
+    this.scrollToComments = false,
+  });
 
   @override
   State<_RecipeDetailViewContent> createState() =>
@@ -612,6 +621,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         // Recipe comments
                         RecipeDetailComments(
                           recipe: recipe,
+                          initiallyExpanded: widget.scrollToComments,
                           onCommentPosted: () {
                             setState(() {});
                           },

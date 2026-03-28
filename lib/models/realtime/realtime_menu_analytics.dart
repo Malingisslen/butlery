@@ -4,6 +4,7 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 
 /// Comprehensive realtime menu analytics with advanced search, filtering, and intelligent insights for collaborative meal planning.
 /// Provides complete analytical capabilities for menu data including multi-criteria search, nutritional analysis,
@@ -199,9 +200,27 @@ class RealtimeMenuAnalytics {
     return distribution;
   }
 
-  /// Get difficulty distribution (simplified)
+  /// Get difficulty distribution based on cooking time as proxy.
   static Map<String, int> getDifficultyDistribution(RealtimeMenuData data) {
-    return {'Lätt': data.allUniqueRecipes.length}; // Simplified
+    final distribution = <String, int>{};
+
+    for (final recipe in data.allUniqueRecipes) {
+      final time = recipe.core.timeMinutes ?? 0;
+      String category;
+      if (time <= 15) {
+        category = 'Lätt';
+      } else if (time <= 30) {
+        category = 'Medel';
+      } else if (time <= 60) {
+        category = 'Avancerad';
+      } else {
+        category = 'Expert';
+      }
+
+      distribution[category] = (distribution[category] ?? 0) + 1;
+    }
+
+    return distribution;
   }
 
   /// Get rating distribution
@@ -263,8 +282,44 @@ class RealtimeMenuAnalytics {
     return sorted.take(limit).map((e) => e.key).toList();
   }
 
-  /// Get healthiness score (simplified)
+  /// Healthiness score (0.0-1.0) based on dietary variety, vegetable balance,
+  /// and allergen-free diversity across the menu.
   static double getHealthinessScore(RealtimeMenuData data) {
-    return 0.75; // Simplified placeholder
+    final recipes = data.allUniqueRecipes;
+    if (recipes.isEmpty) return 0.0;
+
+    final recipesWithTags = recipes.where((r) => r.tagResult != null).toList();
+    if (recipesWithTags.isEmpty) return 0.5;
+
+    // Sub-score A: Dietary variety (weight 0.4)
+    // Count distinct dietary categories with at least one FREE recipe
+    final dietaryKeys = <String>{};
+    for (final recipe in recipesWithTags) {
+      for (final entry in recipe.tagResult!.dietaryStatus.entries) {
+        if (entry.value == TriState.free) dietaryKeys.add(entry.key);
+      }
+    }
+    final dietaryScore = (dietaryKeys.length / 4.0).clamp(0.0, 1.0);
+
+    // Sub-score B: Vegetarian balance (weight 0.35)
+    // Ideal is ~40% vegetarian recipes
+    final vegCount = recipesWithTags
+        .where((r) => r.tagResult!.dietaryStatus['vegetarisk'] == TriState.free)
+        .length;
+    final vegRatio = vegCount / recipesWithTags.length;
+    final balanceScore = (1.0 - (vegRatio - 0.4).abs() * 2.0).clamp(0.0, 1.0);
+
+    // Sub-score C: Allergen-free diversity (weight 0.25)
+    // Count distinct allergens that at least one recipe is free from
+    final freeAllergens = <String>{};
+    for (final recipe in recipesWithTags) {
+      for (final entry in recipe.tagResult!.allergenStatus.entries) {
+        if (entry.value == TriState.free) freeAllergens.add(entry.key);
+      }
+    }
+    final allergenScore = (freeAllergens.length / 5.0).clamp(0.0, 1.0);
+
+    return (dietaryScore * 0.4 + balanceScore * 0.35 + allergenScore * 0.25)
+        .clamp(0.0, 1.0);
   }
 }

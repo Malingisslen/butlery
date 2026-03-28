@@ -456,6 +456,7 @@ class MockSocialRecipeViewModel extends Mock implements SocialRecipeViewModel {
   @override
   bool get isLoadingComments => _isLoadingComments;
 
+  @override
   int get commentCount => _commentCount;
 
   bool get isDisposed => _isDisposed;

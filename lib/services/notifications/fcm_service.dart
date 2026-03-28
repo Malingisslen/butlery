@@ -404,8 +404,7 @@ class FCMService with ErrorHandlingMixin {
 
       switch (notificationType) {
         case NotificationPayloadType.friendRequest:
-          navigator.pushNamed(Routes.friends,
-              arguments: {'tab': 'requests'});
+          navigator.pushNamed(Routes.friends, arguments: {'tab': 'requests'});
           break;
         case NotificationPayloadType.recipeShared:
           await _navigateToSharedRecipe(navigator, data);
@@ -414,7 +413,8 @@ class FCMService with ErrorHandlingMixin {
           await _navigateToCollaboration(navigator, data);
           break;
         case NotificationPayloadType.recipeComment:
-          await _navigateToSharedRecipe(navigator, data);
+          await _navigateToSharedRecipe(navigator, data,
+              scrollToComments: true);
           break;
         default:
           AppLogger.warning(
@@ -437,16 +437,20 @@ class FCMService with ErrorHandlingMixin {
     );
   }
 
-  /// Navigate to shared recipe screen
+  /// Navigate to recipe detail, optionally with comments auto-expanded.
   static Future<void> _navigateToSharedRecipe(
-      NavigatorState navigator, Map<String, dynamic> data) async {
+      NavigatorState navigator, Map<String, dynamic> data,
+      {bool scrollToComments = false}) async {
     final recipeId = data['recipeId'] as String?;
     if (recipeId == null) return;
 
     final recipeRepo = ServiceLocator.get<RecipeRepository>();
     final recipe = await recipeRepo.read(recipeId);
     if (recipe != null) {
-      navigator.pushNamed(Routes.receptDetalj, arguments: recipe);
+      final arguments = scrollToComments
+          ? <String, dynamic>{'recipe': recipe, 'scrollToComments': true}
+          : recipe;
+      navigator.pushNamed(Routes.receptDetalj, arguments: arguments);
     }
   }
 

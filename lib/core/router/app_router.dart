@@ -200,11 +200,24 @@ class AppRouter {
               Routes.getAnimationType(routeName));
 
         case Routes.receptDetalj:
-          final recipe = settings.arguments as Recipe?;
+          final arguments = settings.arguments;
+          Recipe? recipe;
+          bool scrollToComments = false;
+          if (arguments is Recipe) {
+            recipe = arguments;
+          } else if (arguments is Map<String, dynamic>) {
+            recipe = arguments['recipe'] as Recipe?;
+            scrollToComments = arguments['scrollToComments'] as bool? ?? false;
+          }
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for detail view');
           }
-          return _buildRoute(RecipeDetailView(recipe: recipe), settings,
+          return _buildRoute(
+              RecipeDetailView(
+                recipe: recipe,
+                scrollToComments: scrollToComments,
+              ),
+              settings,
               Routes.getAnimationType(routeName));
 
         case Routes.redigeraRecept:

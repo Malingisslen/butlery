@@ -24,6 +24,7 @@ class SocialCommentsManager extends ChangeNotifier {
   String? _replyToCommentId;
 
   List<RecipeComment> _comments = [];
+  int? _commentCount;
 
   StreamSubscription<List<RecipeComment>>? _commentStreamSubscription;
   String? _watchedRecipeId;
@@ -45,6 +46,7 @@ class SocialCommentsManager extends ChangeNotifier {
   }
 
   bool get hasComments => _comments.isNotEmpty;
+  int? get commentCount => _commentCount;
   bool get isLoadingComments => _isLoadingComments;
   String? get commentsError => _commentsError;
   bool get isPostingComment => _isPostingComment;
@@ -67,6 +69,7 @@ class SocialCommentsManager extends ChangeNotifier {
       final recipeComments =
           await _recipeService.social.getComments(recipeId: recipeId);
       _comments = _filterBlockedUsers(recipeComments);
+      _commentCount = _comments.length;
       AppLogger.info('Comments refreshed successfully for recipe: $recipeId');
     } catch (e) {
       _commentsError = AppLocale.current.errorCouldNotLoad('kommentarer');
@@ -74,6 +77,17 @@ class SocialCommentsManager extends ChangeNotifier {
     } finally {
       _isLoadingComments = false;
       _safeNotify();
+    }
+  }
+
+  /// Lightweight count-only fetch using Firestore aggregation.
+  Future<void> fetchCommentCount(String recipeId) async {
+    try {
+      final stats = await _recipeService.social.getCommentStatistics(recipeId);
+      _commentCount = stats['total_comments'] as int? ?? 0;
+      _safeNotify();
+    } catch (e) {
+      AppLogger.warning('Failed to fetch comment count: $e');
     }
   }
 

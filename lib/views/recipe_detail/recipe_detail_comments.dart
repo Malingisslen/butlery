@@ -23,11 +23,13 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 class RecipeDetailComments extends StatefulWidget {
   final Recipe recipe;
   final VoidCallback? onCommentPosted;
+  final bool initiallyExpanded;
 
   const RecipeDetailComments({
     super.key,
     required this.recipe,
     this.onCommentPosted,
+    this.initiallyExpanded = false,
   });
 
   @override
@@ -42,6 +44,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   @override
   void initState() {
     super.initState();
+    _isExpanded = widget.initiallyExpanded;
     WidgetsBinding.instance.addPostFrameCallback((_) => _initializeComments());
   }
 
@@ -51,7 +54,13 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
     final vm = Provider.of<SocialRecipeViewModel>(context, listen: false);
     await vm.initialize();
-    await vm.refreshComments(widget.recipe.id);
+    if (_isExpanded) {
+      await vm.refreshComments(widget.recipe.id);
+      if (mounted) vm.startWatchingComments(widget.recipe.id);
+    } else {
+      // Collapsed: only fetch count for header badge, skip full comment load
+      await vm.fetchCommentCount(widget.recipe.id);
+    }
   }
 
   @override
@@ -120,10 +129,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 children: [
                   Text(context.l10n.socialComments,
                       style: AppTextStyles.titleMedium),
-                  if (vm.comments.isNotEmpty) ...[
+                  if ((vm.commentCount ?? 0) > 0) ...[
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
-                      context.l10n.socialCommentsCount(vm.comments.length),
+                      context.l10n.socialCommentsCount(vm.commentCount!),
                       style: AppTextStyles.titleMedium,
                     ),
                   ],

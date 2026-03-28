@@ -47,6 +47,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   // State accessors - delegate to comment manager
   bool get hasComments => _commentsManager.hasComments;
+  int? get commentCount => _commentsManager.commentCount;
   bool get isLoadingComments => _commentsManager.isLoadingComments;
   String? get commentsError => _commentsManager.commentsError;
   bool get isPostingComment => _commentsManager.isPostingComment;
@@ -62,6 +63,10 @@ class SocialRecipeViewModel extends ChangeNotifier {
   // Comment operations - delegate to comment manager
   Future<void> refreshComments(String recipeId) async {
     await _commentsManager.refreshComments(recipeId);
+  }
+
+  Future<void> fetchCommentCount(String recipeId) async {
+    await _commentsManager.fetchCommentCount(recipeId);
   }
 
   void startWatchingComments(String recipeId) {

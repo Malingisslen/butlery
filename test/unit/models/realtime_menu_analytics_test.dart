@@ -308,8 +308,13 @@ void main() {
         final distribution =
             RealtimeMenuAnalytics.getDifficultyDistribution(testMenuData);
 
-        // Simplified implementation always returns total count as 'Lätt'
-        expect(distribution['Lätt'], equals(5));
+        // quickRecipe: 10min=Lätt, highRated: 20min=Medel,
+        // lowRated: 25min=Medel, mediumRecipe: 45min=Avancerad,
+        // longRecipe: 120min=Expert
+        expect(distribution['Lätt'], equals(1));
+        expect(distribution['Medel'], equals(2));
+        expect(distribution['Avancerad'], equals(1));
+        expect(distribution['Expert'], equals(1));
       });
 
       test('should get rating distribution', () {
@@ -368,11 +373,22 @@ void main() {
     });
 
     group('Other Analytics', () {
-      test('should get healthiness score', () {
+      test('should return 0.5 when no recipes have tag data', () {
         final score = RealtimeMenuAnalytics.getHealthinessScore(testMenuData);
 
-        expect(score,
-            equals(0.75)); // Simplified implementation returns fixed value
+        // Test recipes from RecipeFactory have no tagResult → neutral 0.5
+        expect(score, equals(0.5));
+      });
+
+      test('should return 0.0 for empty menu', () {
+        final emptyData = RealtimeMenuData(
+          menuTitle: 'Empty',
+          createdForDate: DateTime.now(),
+          menuSnapshot: {},
+        );
+        final score = RealtimeMenuAnalytics.getHealthinessScore(emptyData);
+
+        expect(score, equals(0.0));
       });
     });
 
