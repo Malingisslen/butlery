@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 
 // ViewModel integration for comprehensive state management
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
+import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -38,6 +39,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/widgets/recipe/recipe_shelf.dart';
 
 // Service integration for functionality and data management
 import 'package:butlery/services/search_service.dart';
@@ -65,16 +67,19 @@ class MinaReceptView extends StatefulWidget {
 
 class _MinaReceptViewState extends State<MinaReceptView> {
   late final RecipeListViewModel _recipeListViewModel;
+  late final RecipeQueryViewModel _queryViewModel;
 
   @override
   void initState() {
     super.initState();
     _recipeListViewModel = ServiceLocator.get<RecipeListViewModel>();
+    _queryViewModel = RecipeQueryViewModel();
   }
 
   @override
   void dispose() {
     _recipeListViewModel.dispose();
+    _queryViewModel.dispose();
     super.dispose();
   }
 
@@ -100,6 +105,9 @@ class _MinaReceptViewState extends State<MinaReceptView> {
         // Personal tags for filtering (singleton from DI)
         ChangeNotifierProvider<PersonalTagViewModel>.value(
           value: ServiceLocator.get<PersonalTagViewModel>(),
+        ),
+        ChangeNotifierProvider<RecipeQueryViewModel>.value(
+          value: _queryViewModel,
         ),
       ],
       child: const _MinaReceptViewContent(),
@@ -469,6 +477,27 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
+  void _navigateToRecipe(Recipe recipe) {
+    Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
+  }
+
+  Widget _buildDiscoveryShelves(RecipeQueryViewModel queryVm) {
+    return Column(
+      children: [
+        RecipeShelf(
+          title: context.l10n.seasonalInSeasonNow,
+          recipes: queryVm.getInSeasonRecipes(),
+          onRecipeTap: _navigateToRecipe,
+        ),
+        RecipeShelf(
+          title: context.l10n.seasonalForgottenFavorites,
+          recipes: queryVm.getForgottenFavorites(),
+          onRecipeTap: _navigateToRecipe,
+        ),
+      ],
+    );
+  }
+
   Widget _buildRecipeCard(
     RecipeListViewModel viewModel,
     Recipe recipe,
@@ -640,6 +669,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       },
       child: Column(
         children: [
+          if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters)
+            _buildDiscoveryShelves(context.read<RecipeQueryViewModel>()),
           Expanded(
             child: viewModel.isGridView
                 ? GridView.builder(

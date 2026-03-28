@@ -8176,5 +8176,7 @@
   "importPendingRetryPrompt": "You have a pending import — retry now?",
   "importPendingRetry": "Retry",
   "importPendingDismiss": "Dismiss",
-  "importSavedForLater": "URL saved — will import when you're back online"
+  "importSavedForLater": "URL saved — will import when you're back online",
+  "seasonalInSeasonNow": "In Season Now",
+  "seasonalForgottenFavorites": "Forgotten Favorites"
 }

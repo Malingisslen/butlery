@@ -20289,6 +20289,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'URL sparad — importeras när du är online igen'**
   String get importSavedForLater;
+
+  /// No description provided for @seasonalInSeasonNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'I säsong just nu'**
+  String get seasonalInSeasonNow;
+
+  /// No description provided for @seasonalForgottenFavorites.
+  ///
+  /// In sv, this message translates to:
+  /// **'Glömda favoriter'**
+  String get seasonalForgottenFavorites;
 }
 
 class _AppLocalizationsDelegate

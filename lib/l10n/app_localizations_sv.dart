@@ -11859,4 +11859,10 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get importSavedForLater =>
       'URL sparad — importeras när du är online igen';
+
+  @override
+  String get seasonalInSeasonNow => 'I säsong just nu';
+
+  @override
+  String get seasonalForgottenFavorites => 'Glömda favoriter';
 }

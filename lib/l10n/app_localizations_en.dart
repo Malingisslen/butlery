@@ -11828,4 +11828,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get importSavedForLater =>
       'URL saved — will import when you\'re back online';
+
+  @override
+  String get seasonalInSeasonNow => 'In Season Now';
+
+  @override
+  String get seasonalForgottenFavorites => 'Forgotten Favorites';
 }
