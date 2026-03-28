@@ -3539,6 +3539,22 @@
   "sortCookCount": "Antal tillagningar",
   "sortNewest": "Nyaste",
   "shuffleRecipes": "Slumpa",
+  "importPreviewTitle": "Förhandsgranska import",
+  "importSelectAll": "Markera alla",
+  "importDeselectAll": "Avmarkera alla",
+  "importSelectedCount": "Importera ({count})",
+  "@importSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importPreviewSubtitle": "{ingredients} ingredienser · {steps} steg",
+  "@importPreviewSubtitle": {
+    "placeholders": {
+      "ingredients": { "type": "int" },
+      "steps": { "type": "int" }
+    }
+  },
   "stateAddRecipes": "Lägg till recept",
   "stateCreateWeeklyMenu": "Skapa veckomeny",
   "stateGenerateMenu": "Generera meny",

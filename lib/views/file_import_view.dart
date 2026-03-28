@@ -10,6 +10,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/widgets/import/batch_import_preview.dart';
 
 /// Consolidated state class for FileImportView to reduce setState calls
 class FileImportState {
@@ -64,9 +66,9 @@ class _FileImportViewState extends State<FileImportView> {
 
     try {
       // Import multiple recipes from file
-      final recipes = await _fileImportStrategy.importMultiple();
+      final parsedRecipes = await _fileImportStrategy.importMultiple();
 
-      if (recipes.isEmpty) {
+      if (parsedRecipes.isEmpty) {
         if (!mounted) return;
         setState(() {
           _state = _state.copyWith(
@@ -78,17 +80,34 @@ class _FileImportViewState extends State<FileImportView> {
       }
 
       if (!mounted) return;
+
+      // Show preview for user to select which recipes to import
+      setState(() {
+        _state = _state.copyWith(isLoading: false);
+      });
+      final selectedRecipes = await Navigator.push<List<Recipe>>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BatchImportPreview(recipes: parsedRecipes),
+        ),
+      );
+      if (!mounted || selectedRecipes == null || selectedRecipes.isEmpty) {
+        return;
+      }
+
       setState(() {
         _state = _state.copyWith(
-          statusMessage: context.l10n.importImportingRecipes(recipes.length),
+          isLoading: true,
+          statusMessage:
+              context.l10n.importImportingRecipes(selectedRecipes.length),
         );
       });
 
       // Get recipe service
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
-      // Import each recipe
-      for (final recipe in recipes) {
+      // Import selected recipes
+      for (final recipe in selectedRecipes) {
         try {
           await recipeService.createPersonalRecipe(
             title: recipe.title,

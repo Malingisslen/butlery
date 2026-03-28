@@ -3539,6 +3539,22 @@
   "sortCookCount": "Times cooked",
   "sortNewest": "Newest",
   "shuffleRecipes": "Shuffle",
+  "importPreviewTitle": "Preview import",
+  "importSelectAll": "Select all",
+  "importDeselectAll": "Deselect all",
+  "importSelectedCount": "Import ({count})",
+  "@importSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importPreviewSubtitle": "{ingredients} ingredients · {steps} steps",
+  "@importPreviewSubtitle": {
+    "placeholders": {
+      "ingredients": { "type": "int" },
+      "steps": { "type": "int" }
+    }
+  },
   "stateAddRecipes": "Add recipes",
   "stateCreateWeeklyMenu": "Create weekly menu",
   "stateGenerateMenu": "Generate menu",

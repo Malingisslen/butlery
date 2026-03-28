@@ -6648,7 +6648,7 @@ abstract class AppLocalizations {
   /// No description provided for @importSelectedCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} valda'**
+  /// **'Importera ({count})'**
   String importSelectedCount(int count);
 
   /// No description provided for @importStep.
@@ -9650,6 +9650,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Slumpa'**
   String get shuffleRecipes;
+
+  /// No description provided for @importPreviewTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förhandsgranska import'**
+  String get importPreviewTitle;
+
+  /// No description provided for @importSelectAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla'**
+  String get importSelectAll;
+
+  /// No description provided for @importDeselectAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avmarkera alla'**
+  String get importDeselectAll;
+
+  /// No description provided for @importPreviewSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{ingredients} ingredienser · {steps} steg'**
+  String importPreviewSubtitle(int ingredients, int steps);
 
   /// No description provided for @stateAddRecipes.
   ///
