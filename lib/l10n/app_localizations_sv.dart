@@ -5518,6 +5518,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get sortTitle => 'Titel';
 
   @override
+  String get sortLastCooked => 'Senast lagad';
+
+  @override
+  String get sortCookCount => 'Antal tillagningar';
+
+  @override
+  String get sortNewest => 'Nyaste';
+
+  @override
+  String get shuffleRecipes => 'Slumpa';
+
+  @override
   String get stateAddRecipes => 'Lägg till recept';
 
   @override

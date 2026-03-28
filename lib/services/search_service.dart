@@ -195,6 +195,37 @@ class SearchService extends BaseService {
               : b.mealType.compareTo(a.mealType),
         );
         break;
+
+      case SortCriteria.lastCooked:
+        sorted.sort((a, b) {
+          final dateA = a.lastCookedAt;
+          final dateB = b.lastCookedAt;
+          if (dateA == null && dateB == null) return 0;
+          if (dateA == null) return 1;
+          if (dateB == null) return -1;
+          return ascending ? dateA.compareTo(dateB) : dateB.compareTo(dateA);
+        });
+        break;
+
+      case SortCriteria.cookCount:
+        sorted.sort((a, b) {
+          return ascending
+              ? a.cookCount.compareTo(b.cookCount)
+              : b.cookCount.compareTo(a.cookCount);
+        });
+        break;
+
+      case SortCriteria.newest:
+        sorted.sort((a, b) {
+          return ascending
+              ? a.createdAt.compareTo(b.createdAt)
+              : b.createdAt.compareTo(a.createdAt);
+        });
+        break;
+
+      case SortCriteria.random:
+        sorted.shuffle();
+        break;
     }
 
     return sorted;
@@ -383,20 +414,15 @@ class SearchService extends BaseService {
 /// final alphabetical = searchService.sortRecipes(recipes, SortCriteria.title);
 /// ```
 enum SortCriteria {
-  /// Alphabetical sorting by recipe name for browsing and organization.
   title,
-
-  /// Cooking time sorting for meal planning and time-constrained cooking.
   time,
-
-  /// Quality-based sorting for discovering highly-rated recipes.
   rating,
-
-  /// Serving size sorting for meal planning and group cooking.
   portions,
-
-  /// Category-based sorting for meal organization and discovery.
   mealType,
+  lastCooked,
+  cookCount,
+  newest,
+  random,
 }
 
 /// Comprehensive search parameters container for complex search operations and state management.

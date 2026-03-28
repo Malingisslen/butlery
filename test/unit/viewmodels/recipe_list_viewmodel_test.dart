@@ -98,9 +98,32 @@ void main() {
             case SortCriteria.mealType:
               comparison = a.mealType.compareTo(b.mealType);
               break;
+            case SortCriteria.lastCooked:
+              final dateA = a.lastCookedAt;
+              final dateB = b.lastCookedAt;
+              if (dateA == null && dateB == null) {
+                comparison = 0;
+              } else if (dateA == null) {
+                comparison = 1;
+              } else if (dateB == null) {
+                comparison = -1;
+              } else {
+                comparison = dateA.compareTo(dateB);
+              }
+              break;
+            case SortCriteria.cookCount:
+              comparison = a.cookCount.compareTo(b.cookCount);
+              break;
+            case SortCriteria.newest:
+              comparison = a.createdAt.compareTo(b.createdAt);
+              break;
+            case SortCriteria.random:
+              comparison = 0;
+              break;
           }
           return ascending ? comparison : -comparison;
         });
+        if (criteria == SortCriteria.random) sorted.shuffle();
         return sorted;
       });
 

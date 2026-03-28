@@ -5512,6 +5512,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortTitle => 'Title';
 
   @override
+  String get sortLastCooked => 'Last cooked';
+
+  @override
+  String get sortCookCount => 'Times cooked';
+
+  @override
+  String get sortNewest => 'Newest';
+
+  @override
+  String get shuffleRecipes => 'Shuffle';
+
+  @override
   String get stateAddRecipes => 'Add recipes';
 
   @override

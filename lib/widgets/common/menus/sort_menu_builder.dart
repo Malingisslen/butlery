@@ -20,6 +20,14 @@ class SortMenuBuilder {
           Icons.star, currentSort, sortAscending),
       _buildItem(context, SortCriteria.mealType, context.l10n.sortMealType,
           Icons.restaurant, currentSort, sortAscending),
+      _buildItem(context, SortCriteria.lastCooked, context.l10n.sortLastCooked,
+          Icons.history, currentSort, sortAscending),
+      _buildItem(context, SortCriteria.cookCount, context.l10n.sortCookCount,
+          Icons.repeat, currentSort, sortAscending),
+      _buildItem(context, SortCriteria.newest, context.l10n.sortNewest,
+          Icons.schedule, currentSort, sortAscending),
+      _buildItem(context, SortCriteria.random, context.l10n.shuffleRecipes,
+          Icons.shuffle, currentSort, sortAscending),
     ];
   }
 

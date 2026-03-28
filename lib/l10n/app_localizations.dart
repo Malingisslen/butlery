@@ -9627,6 +9627,30 @@ abstract class AppLocalizations {
   /// **'Titel'**
   String get sortTitle;
 
+  /// No description provided for @sortLastCooked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senast lagad'**
+  String get sortLastCooked;
+
+  /// No description provided for @sortCookCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Antal tillagningar'**
+  String get sortCookCount;
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyaste'**
+  String get sortNewest;
+
+  /// No description provided for @shuffleRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slumpa'**
+  String get shuffleRecipes;
+
   /// No description provided for @stateAddRecipes.
   ///
   /// In sv, this message translates to:
