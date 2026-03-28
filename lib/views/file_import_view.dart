@@ -92,6 +92,11 @@ class _FileImportViewState extends State<FileImportView> {
         ),
       );
       if (!mounted || selectedRecipes == null || selectedRecipes.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _state = const FileImportState();
+          });
+        }
         return;
       }
 

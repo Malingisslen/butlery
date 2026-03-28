@@ -3542,8 +3542,8 @@
   "importPreviewTitle": "Förhandsgranska import",
   "importSelectAll": "Markera alla",
   "importDeselectAll": "Avmarkera alla",
-  "importSelectedCount": "Importera ({count})",
-  "@importSelectedCount": {
+  "importConfirmButton": "Importera ({count})",
+  "@importConfirmButton": {
     "placeholders": {
       "count": { "type": "int" }
     }

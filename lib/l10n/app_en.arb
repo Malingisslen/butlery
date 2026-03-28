@@ -3542,8 +3542,8 @@
   "importPreviewTitle": "Preview import",
   "importSelectAll": "Select all",
   "importDeselectAll": "Deselect all",
-  "importSelectedCount": "Import ({count})",
-  "@importSelectedCount": {
+  "importConfirmButton": "Import ({count})",
+  "@importConfirmButton": {
     "placeholders": {
       "count": { "type": "int" }
     }

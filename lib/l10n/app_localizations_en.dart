@@ -3802,7 +3802,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importSelectedCount(int count) {
-    return 'Import ($count)';
+    return '$count selected';
   }
 
   @override
@@ -5531,6 +5531,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importDeselectAll => 'Deselect all';
+
+  @override
+  String importConfirmButton(int count) {
+    return 'Import ($count)';
+  }
 
   @override
   String importPreviewSubtitle(int ingredients, int steps) {

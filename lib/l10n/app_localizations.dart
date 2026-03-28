@@ -6648,7 +6648,7 @@ abstract class AppLocalizations {
   /// No description provided for @importSelectedCount.
   ///
   /// In sv, this message translates to:
-  /// **'Importera ({count})'**
+  /// **'{count} valda'**
   String importSelectedCount(int count);
 
   /// No description provided for @importStep.
@@ -9668,6 +9668,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Avmarkera alla'**
   String get importDeselectAll;
+
+  /// No description provided for @importConfirmButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera ({count})'**
+  String importConfirmButton(int count);
 
   /// No description provided for @importPreviewSubtitle.
   ///

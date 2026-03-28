@@ -16,13 +16,12 @@ class BatchImportPreview extends StatefulWidget {
 }
 
 class _BatchImportPreviewState extends State<BatchImportPreview> {
-  late final Set<int> _selectedIndices;
+  final Set<int> _selectedIndices = {};
 
   @override
   void initState() {
     super.initState();
-    _selectedIndices =
-        Set<int>.from(List.generate(widget.recipes.length, (i) => i));
+    _selectedIndices.addAll(Iterable<int>.generate(widget.recipes.length));
   }
 
   bool get _allSelected => _selectedIndices.length == widget.recipes.length;
@@ -32,7 +31,7 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
       if (_allSelected) {
         _selectedIndices.clear();
       } else {
-        _selectedIndices.addAll(List.generate(widget.recipes.length, (i) => i));
+        _selectedIndices.addAll(Iterable<int>.generate(widget.recipes.length));
       }
     });
   }
@@ -110,7 +109,7 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
             onPressed: _selectedIndices.isEmpty ? null : _confirm,
             icon: const Icon(Icons.file_download),
             label:
-                Text(context.l10n.importSelectedCount(_selectedIndices.length)),
+                Text(context.l10n.importConfirmButton(_selectedIndices.length)),
           ),
         ),
       ),
