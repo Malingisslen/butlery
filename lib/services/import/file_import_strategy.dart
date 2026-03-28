@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:archive/archive.dart';
 import 'package:csv/csv.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
@@ -55,7 +56,7 @@ class FileImportStrategy extends ImportStrategy {
     try {
       final result = await _contentProvider.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['csv', 'xlsx', 'xls'],
+        allowedExtensions: ['csv', 'xlsx', 'xls', 'paprikarecipes', 'json'],
         withData: true,
       );
 
@@ -93,6 +94,10 @@ class FileImportStrategy extends ImportStrategy {
         recipe = await _importFromCsv(content);
       } else if (extension == 'xlsx' || extension == 'xls') {
         recipe = await _importFromExcel(content);
+      } else if (extension == 'paprikarecipes') {
+        return _importFromPaprika(content);
+      } else if (extension == 'json') {
+        return _importFromJson(content);
       } else {
         return ImportResult.failure('Unsupported file format: $extension');
       }
@@ -114,7 +119,7 @@ class FileImportStrategy extends ImportStrategy {
     try {
       final result = await _contentProvider.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['csv', 'xlsx', 'xls'],
+        allowedExtensions: ['csv', 'xlsx', 'xls', 'paprikarecipes', 'json'],
         withData: true,
       );
 
@@ -505,5 +510,75 @@ class FileImportStrategy extends ImportStrategy {
       return [imageUrl];
     }
     return [];
+  }
+
+  ImportResult _importFromPaprika(Uint8List bytes) {
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final recipes = <Recipe>[];
+
+    for (final file in archive.files) {
+      if (!file.isFile || file.content == null) continue;
+      try {
+        final decompressed =
+            GZipDecoder().decodeBytes(file.content as List<int>);
+        final json =
+            jsonDecode(utf8.decode(decompressed)) as Map<String, dynamic>;
+        final recipe = _createRecipeFromPaprikaJson(json);
+        if (recipe != null) recipes.add(recipe);
+      } catch (e) {
+        AppLogger.warning('Skipping Paprika entry ${file.name}: $e');
+      }
+    }
+
+    if (recipes.isEmpty) {
+      return ImportResult.failure('No recipes found in Paprika file');
+    }
+    return ImportResult.success(recipes.first);
+  }
+
+  Recipe? _createRecipeFromPaprikaJson(Map<String, dynamic> json) {
+    final name = json['name'] as String?;
+    if (name == null || name.isEmpty) return null;
+
+    final ingredientLines = (json['ingredients'] as String? ?? '')
+        .split('\n')
+        .where((l) => l.trim().isNotEmpty)
+        .toList();
+    final directionLines = (json['directions'] as String? ?? '')
+        .split('\n')
+        .where((l) => l.trim().isNotEmpty)
+        .toList();
+
+    return _createRecipeFromData({
+      'title': name,
+      'description': json['description'] as String? ?? '',
+      'ingredients': ingredientLines.join('\n'),
+      'instructions': directionLines.join('\n'),
+      'source':
+          json['source_url'] as String? ?? json['source'] as String? ?? '',
+      'rating': '${json['rating'] ?? ''}',
+      'servings': json['servings'] as String? ?? '',
+      'time': json['total_time'] as String? ?? '',
+      'mealtype':
+          (json['categories'] as List?)?.firstOrNull as String? ?? 'Middag',
+    });
+  }
+
+  ImportResult _importFromJson(Uint8List bytes) {
+    final decoded = jsonDecode(utf8.decode(bytes));
+    final recipes = <Recipe>[];
+
+    final items = decoded is List ? decoded : [decoded];
+    for (final item in items) {
+      if (item is! Map<String, dynamic>) continue;
+      final data = item.map((k, v) => MapEntry(k.toLowerCase(), '$v'));
+      final recipe = _createRecipeFromData(data);
+      if (recipe != null) recipes.add(recipe);
+    }
+
+    if (recipes.isEmpty) {
+      return ImportResult.failure('No recipes found in JSON file');
+    }
+    return ImportResult.success(recipes.first);
   }
 }

@@ -90,6 +90,7 @@ dependencies:
   sqlite3: ^2.9.4
   web: ^1.1.1
   sembast_web: ^2.4.2
+  archive: ^3.6.1
 
 dev_dependencies:
   flutter_test:

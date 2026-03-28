@@ -13,6 +13,7 @@ import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
 import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
+import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
 import 'package:butlery/services/import/cache/global_recipe_cache.dart';
 import 'package:butlery/services/import/cache/cache_entry.dart';
 import 'package:butlery/services/import/cache/url_normalizer.dart';
@@ -78,6 +79,15 @@ class ImportManager {
       return ServiceLocator.get<TikTokPipeline>();
     } catch (e) {
       AppLogger.debug('ImportManager: TikTokPipeline not available: $e');
+      return null;
+    }
+  }
+
+  InstagramPipeline? get _instagramPipeline {
+    try {
+      return ServiceLocator.get<InstagramPipeline>();
+    } catch (e) {
+      AppLogger.debug('ImportManager: InstagramPipeline not available: $e');
       return null;
     }
   }
