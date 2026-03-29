@@ -36,6 +36,7 @@ import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
 import 'package:butlery/views/settings/collection_stats_view.dart';
 import 'package:butlery/views/lagg_till_recept_view.dart';
+import 'package:butlery/views/quick_capture_view.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 
 // Cooking mode
@@ -157,6 +158,10 @@ class AppRouter {
 
         case Routes.laggTill:
           return _buildRoute(const LaggTillReceptView(), settings,
+              Routes.getAnimationType(routeName));
+
+        case Routes.quickCapture:
+          return _buildRoute(const QuickCaptureView(), settings,
               Routes.getAnimationType(routeName));
 
         case Routes.skrivSjalv:

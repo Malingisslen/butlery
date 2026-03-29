@@ -1035,6 +1035,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeCreateCopy => 'Create copy';
 
   @override
+  String recipeDuplicateTitle(String title) {
+    return '$title (Copy)';
+  }
+
+  @override
   String get recipeCreateShoppingList => 'Create shopping list';
 
   @override
@@ -11887,4 +11892,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String cookingModeStepAnnounce(int step, String instruction) {
     return 'Step $step: $instruction';
   }
+
+  @override
+  String get quickCaptureTitle => 'Quick save recipe';
+
+  @override
+  String get quickCaptureSave => 'Save';
+
+  @override
+  String get quickCaptureSaved => 'Recipe saved!';
+
+  @override
+  String get quickCaptureEditAction => 'Edit';
+
+  @override
+  String get quickCaptureTitleHint => 'What\'s the recipe called?';
 }

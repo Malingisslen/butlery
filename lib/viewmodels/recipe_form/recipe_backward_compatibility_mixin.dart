@@ -257,6 +257,26 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// Function getter for removing tag
   Function(int) get removeTagFunc => (int index) => removeTag(index);
 
+  /// Apply portion scaling — updates ingredient controllers and portions in state.
+  void scaleIngredientsToPortions(
+      int newPortions, List<String> scaledIngredients) {
+    state.setPortions(newPortions);
+
+    final controllers = state.ingredientsManager.controllers;
+    int scaledIndex = 0;
+    for (int i = 0;
+        i < controllers.length && scaledIndex < scaledIngredients.length;
+        i++) {
+      if (controllers[i].text.trim().isNotEmpty) {
+        state.ingredientsManager.updateAt(i, scaledIngredients[scaledIndex]);
+        scaledIndex++;
+      }
+    }
+
+    notifyListeners();
+    coordinator.syncToCollaborative(isCollaborative: isCollaborative);
+  }
+
   /// Show image picker dialog - must be implemented by class
   Future<void> showImagePickerDialog(BuildContext context);
 

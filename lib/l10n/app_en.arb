@@ -637,6 +637,14 @@
   },
   "offlineShowingLocal": "Offline mode - showing local recipes",
   "recipeCreateCopy": "Create copy",
+  "recipeDuplicateTitle": "{title} (Copy)",
+  "@recipeDuplicateTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "recipeCreateShoppingList": "Create shopping list",
   "recipeUpdateTags": "Update tags",
   "recipeViewSource": "View source",
@@ -8216,5 +8224,10 @@
       "step": {"type": "int"},
       "instruction": {"type": "String"}
     }
-  }
+  },
+  "quickCaptureTitle": "Quick save recipe",
+  "quickCaptureSave": "Save",
+  "quickCaptureSaved": "Recipe saved!",
+  "quickCaptureEditAction": "Edit",
+  "quickCaptureTitleHint": "What's the recipe called?"
 }

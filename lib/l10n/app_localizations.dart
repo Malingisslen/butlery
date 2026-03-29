@@ -1886,6 +1886,12 @@ abstract class AppLocalizations {
   /// **'Skapa kopia'**
   String get recipeCreateCopy;
 
+  /// No description provided for @recipeDuplicateTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} (Kopia)'**
+  String recipeDuplicateTitle(String title);
+
   /// No description provided for @recipeCreateShoppingList.
   ///
   /// In sv, this message translates to:
@@ -20391,6 +20397,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Steg {step}: {instruction}'**
   String cookingModeStepAnnounce(int step, String instruction);
+
+  /// No description provided for @quickCaptureTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabbspara recept'**
+  String get quickCaptureTitle;
+
+  /// No description provided for @quickCaptureSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara'**
+  String get quickCaptureSave;
+
+  /// No description provided for @quickCaptureSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept sparat!'**
+  String get quickCaptureSaved;
+
+  /// No description provided for @quickCaptureEditAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera'**
+  String get quickCaptureEditAction;
+
+  /// No description provided for @quickCaptureTitleHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad heter receptet?'**
+  String get quickCaptureTitleHint;
 }
 
 class _AppLocalizationsDelegate

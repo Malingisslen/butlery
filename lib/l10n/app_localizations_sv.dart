@@ -1039,6 +1039,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeCreateCopy => 'Skapa kopia';
 
   @override
+  String recipeDuplicateTitle(String title) {
+    return '$title (Kopia)';
+  }
+
+  @override
   String get recipeCreateShoppingList => 'Skapa inköpslista';
 
   @override
@@ -11918,4 +11923,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String cookingModeStepAnnounce(int step, String instruction) {
     return 'Steg $step: $instruction';
   }
+
+  @override
+  String get quickCaptureTitle => 'Snabbspara recept';
+
+  @override
+  String get quickCaptureSave => 'Spara';
+
+  @override
+  String get quickCaptureSaved => 'Recept sparat!';
+
+  @override
+  String get quickCaptureEditAction => 'Redigera';
+
+  @override
+  String get quickCaptureTitleHint => 'Vad heter receptet?';
 }

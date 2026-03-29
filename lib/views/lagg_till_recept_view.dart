@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe addition view with simplified 2x2 grid of import options.
@@ -48,7 +49,18 @@ class LaggTillReceptView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: AppDimensions.spacingSm),
-                  // UI Redesign: 2x2 grid with 4 simplified options
+                  // Quick capture — full-width entry point
+                  FilledButton.icon(
+                    onPressed: () => _navigate(context, Routes.quickCapture),
+                    icon: const Icon(Icons.flash_on),
+                    label: Text(context.l10n.quickCaptureTitle),
+                    style: FilledButton.styleFrom(
+                      minimumSize:
+                          const Size.fromHeight(AppDimensions.buttonHeight),
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingMd),
+                  // 2x2 grid with 4 import options
                   Expanded(
                     child: _buildButtonGrid(context),
                   ),

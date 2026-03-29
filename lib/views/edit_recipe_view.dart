@@ -43,6 +43,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
+import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -443,6 +444,24 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         validator: FormValidators.cookingTime(),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
+
+      // Portion scaler — scale ingredients when portions change.
+      // Uses immutable original recipe data as base to prevent compounding
+      // rounding errors on repeated scaling.
+      if (viewModel.portions != null &&
+          viewModel.portions! > 0 &&
+          widget.recipe.core.portions != null &&
+          widget.recipe.core.portions! > 0)
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingXl),
+          child: PortionScaler(
+            originalPortions: widget.recipe.core.portions!,
+            originalIngredients: widget.recipe.ingredients
+                .where((i) => i.trim().isNotEmpty)
+                .toList(),
+            onPortionChanged: viewModel.scaleIngredientsToPortions,
+          ),
+        ),
 
       // Ingredients dynamic list
       DynamicListBuilder(

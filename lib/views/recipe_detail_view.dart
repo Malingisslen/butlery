@@ -671,10 +671,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       case _MenuAction.edit:
         _actions.editRecipe(context);
       case _MenuAction.fork:
-        Navigator.pushNamed(context, Routes.redigeraRecept,
-            arguments: recipe.copyWith(
-              title: '${recipe.title} (Copy)',
-            ));
+        Navigator.pushNamed(context, Routes.skrivSjalv, arguments: {
+          'initialRecipe': recipe.copyWith(
+            title: context.l10n.recipeDuplicateTitle(recipe.title),
+          ),
+          'isTemplate': true,
+        });
       case _MenuAction.generateShoppingList:
         await _actions.generateShoppingListFromRecipe(context);
       case _MenuAction.reTag:

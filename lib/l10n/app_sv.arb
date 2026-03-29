@@ -637,6 +637,14 @@
   },
   "offlineShowingLocal": "Offline-läge - visar lokala recept",
   "recipeCreateCopy": "Skapa kopia",
+  "recipeDuplicateTitle": "{title} (Kopia)",
+  "@recipeDuplicateTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "recipeCreateShoppingList": "Skapa inköpslista",
   "recipeUpdateTags": "Uppdatera taggar",
   "recipeViewSource": "Visa källa",
@@ -8216,5 +8224,10 @@
       "step": {"type": "int"},
       "instruction": {"type": "String"}
     }
-  }
+  },
+  "quickCaptureTitle": "Snabbspara recept",
+  "quickCaptureSave": "Spara",
+  "quickCaptureSaved": "Recept sparat!",
+  "quickCaptureEditAction": "Redigera",
+  "quickCaptureTitleHint": "Vad heter receptet?"
 }

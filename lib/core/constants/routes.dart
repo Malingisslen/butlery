@@ -20,6 +20,9 @@ class Routes {
   /// Photo import route
   static const String photoImport = '/photoImport';
 
+  /// Quick capture route (title-only recipe save)
+  static const String quickCapture = '/quickCapture';
+
   /// Manual recipe creation route
   static const String skrivSjalv = '/skrivSjalv';
 
@@ -98,6 +101,7 @@ class Routes {
     laggTill,
     importViaUrl,
     photoImport,
+    quickCapture,
     skrivSjalv,
     franSocialaMedier,
     importFranArkiv,
@@ -133,6 +137,7 @@ class Routes {
   static const Set<String> bottomSlideRoutes = {
     importViaUrl,
     photoImport,
+    quickCapture,
     skrivSjalv,
     franSocialaMedier,
     importFranArkiv,
@@ -216,6 +221,7 @@ class Routes {
     laggTill,
     importViaUrl,
     photoImport,
+    quickCapture,
     skrivSjalv,
     franSocialaMedier,
     importFranArkiv,
@@ -282,6 +288,7 @@ class Routes {
       laggTill,
       importViaUrl,
       photoImport,
+      quickCapture,
       skrivSjalv,
       franSocialaMedier,
       importFranArkiv,
