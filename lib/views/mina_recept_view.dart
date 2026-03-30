@@ -372,6 +372,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final viewModel = context.watch<RecipeListViewModel>();
     final isOnline = context
         .select<offline_service.OfflineService, bool>((svc) => svc.isOnline);
+    final allergenPrefs = context.select<UserService, UserAllergenPreferences>(
+        (svc) => svc.allergenPreferences);
     final personalTags = context.watch<PersonalTagViewModel>().tags;
     final recipeCount = viewModel.recipes.length;
 
@@ -457,7 +459,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               ),
             ),
           ],
-          Expanded(child: _buildContent(viewModel, isOnline)),
+          Expanded(child: _buildContent(viewModel, isOnline, allergenPrefs)),
         ],
       )),
     );
@@ -501,9 +503,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   Widget _buildRecipeCard(
     RecipeListViewModel viewModel,
     Recipe recipe,
+    UserAllergenPreferences allergenPrefs,
   ) {
-    final allergenPrefs = context.select<UserService, UserAllergenPreferences>(
-        (svc) => svc.allergenPreferences);
     final isSelected = viewModel.selectedIds.contains(recipe.id);
     final cs = Theme.of(context).colorScheme;
 
@@ -618,6 +619,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   Widget _buildContent(
     RecipeListViewModel viewModel,
     bool isOnline,
+    UserAllergenPreferences allergenPrefs,
   ) {
     if (viewModel.isLoading) {
       return Column(
@@ -688,8 +690,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                       childAspectRatio: 0.75,
                     ),
                     itemCount: recipes.length,
-                    itemBuilder: (context, index) =>
-                        _buildRecipeCard(viewModel, recipes[index]),
+                    itemBuilder: (context, index) => _buildRecipeCard(
+                        viewModel, recipes[index], allergenPrefs),
                   )
                 : LayoutComponents.responsiveListGrid(
                     items: recipes,
@@ -701,7 +703,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     gridChildAspectRatio: 0.75,
                     animate: true,
                     itemBuilder: (context, recipe) =>
-                        _buildRecipeCard(viewModel, recipe),
+                        _buildRecipeCard(viewModel, recipe, allergenPrefs),
                   ),
           ),
           if (viewModel.canLoadMore)
