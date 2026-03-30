@@ -108,6 +108,7 @@ library;
 
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -147,6 +148,7 @@ class DIContainer {
   final GetIt _container = GetIt.instance;
   final List<DIModule> _modules = [];
   final Map<Type, DIModule> _modulesByType = {};
+  final Set<DIModule> _deferredModules = {};
   bool _isInitialized = false;
 
   /// Get the underlying GetIt instance.
@@ -219,6 +221,17 @@ class DIContainer {
         await _configureModule(module);
       }
 
+      // Step 2.5: Restore user scope if Firebase session is persisted.
+      // Many services were moved to user scope but initialize() still needs
+      // them. Pushing the scope here — after configure, before initialize —
+      // ensures all registrations are available.
+      if (FirebaseAuth.instance.currentUser != null) {
+        await pushUserScope();
+        if (kDebugMode) {
+          AppLogger.info('🔑 User session scope restored at boot');
+        }
+      }
+
       // Step 3: Initialize modules in parallel dependency tiers
       final tiers = _buildDependencyTiers(sortedModules);
       for (final tier in tiers) {
@@ -230,20 +243,21 @@ class DIContainer {
       }
 
       // Step 4: Validate all modules are healthy
-      final healthReport = await checkHealth();
-      if (!healthReport.isHealthy) {
-        throw DIModuleException(
-          'DIContainer',
-          'initialization',
-          'Health check failed: ${healthReport.unhealthyServices.map((s) => s.serviceName).join(', ')}',
-        );
+      if (hasUserScope) {
+        final healthReport = await checkHealth();
+        if (!healthReport.isHealthy) {
+          throw DIModuleException(
+            'DIContainer',
+            'initialization',
+            'Health check failed: ${healthReport.unhealthyServices.map((s) => s.serviceName).join(', ')}',
+          );
+        }
       }
 
       _isInitialized = true;
 
       if (kDebugMode) {
-        AppLogger.success(
-            '✅ DIContainer initialization complete - ${healthReport.healthyCount} services healthy');
+        AppLogger.success('✅ DIContainer initialization complete');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -300,6 +314,31 @@ class DIContainer {
       },
     );
     AppLogger.info('User session scope pushed');
+
+    // Initialize modules that were deferred at boot due to missing user scope.
+    // Fire-and-forget — don't block the login flow.
+    if (_deferredModules.isNotEmpty) {
+      final deferred = List<DIModule>.from(_deferredModules);
+      _deferredModules.clear();
+      _initializeDeferredModules(deferred);
+    }
+  }
+
+  /// Initialize deferred modules in the background after user scope is pushed.
+  Future<void> _initializeDeferredModules(List<DIModule> deferred) async {
+    for (final module in deferred) {
+      try {
+        await module.initialize();
+        if (kDebugMode) {
+          AppLogger.success('✅ Deferred module initialized: ${module.name}');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          AppLogger.warning(
+              '⚠️ Post-login init warning for ${module.name}: $e');
+        }
+      }
+    }
   }
 
   /// Pop the user-session scope. Called on logout.
@@ -369,12 +408,19 @@ class DIContainer {
         AppLogger.success('✅ Module initialized: ${module.name}');
       }
     } catch (e) {
-      throw DIModuleException(
-        module.name,
-        'initialization',
-        'Failed to initialize module',
-        e,
-      );
+      if (!hasUserScope) {
+        _deferredModules.add(module);
+        if (kDebugMode) {
+          AppLogger.warning('⏳ Module ${module.name} deferred (no user scope)');
+        }
+      } else {
+        throw DIModuleException(
+          module.name,
+          'initialization',
+          'Failed to initialize module',
+          e,
+        );
+      }
     }
   }
 

@@ -91,13 +91,7 @@ class SocialModule implements DIModule {
   Future<void> configureUserScope(GetIt container) async {
     final app = GetIt.instance;
 
-    container.registerLazySingleton<UserService>(
-      () => UserService(
-        repository: app<UserRepository>(),
-        authRepository: app<AuthRepository>(),
-      ),
-      dispose: (s) => s.resetForLogout(),
-    );
+    // UserService is in app scope (needed by AuthWrapper before login)
 
     container.registerLazySingleton<UnifiedFriendsService>(
       () => UnifiedFriendsService(
@@ -220,7 +214,15 @@ class SocialModule implements DIModule {
             FirebaseUserRepository(authRepository: container<AuthRepository>()),
       );
 
-      // UserService, UnifiedFriendsService, SocialRecipeService,
+      // UserService in app scope — needed by AuthWrapper before login
+      container.registerLazySingleton<UserService>(
+        () => UserService(
+          repository: container<UserRepository>(),
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      // UnifiedFriendsService, SocialRecipeService,
       // coordinators, SocialMenuOperations: registered in configureUserScope
 
       container.registerLazySingleton<FriendsRepository>(
