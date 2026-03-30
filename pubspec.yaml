@@ -38,12 +38,12 @@ dependencies:
 
   # ==================== LOCAL STORAGE ====================
   shared_preferences: ^2.3.2
-  drift: ^2.12.0               # Modern SQL-based local storage
-  sqlcipher_flutter_libs: ^0.6.4  # Encrypted SQLite for Drift (replaces sqlite3_flutter_libs)
+  drift: ^2.31.0               # Modern SQL-based local storage
+  sqlcipher_flutter_libs: ^0.7.0+eol  # Encrypted SQLite for Drift (replaces sqlite3_flutter_libs)
   flutter_secure_storage: ^10.0.0  # Platform-secure storage for sensitive data
 
   # ==================== NAVIGATION & UI ====================
-  wakelock_plus: ^1.2.8  # Keep screen awake during cooking mode
+  wakelock_plus: ^1.5.1  # Keep screen awake during cooking mode
 
   # ==================== NETWORKING ====================
   http: ^1.2.2
@@ -77,7 +77,7 @@ dependencies:
   flutter_inappwebview: ^6.1.5
   csv: ^6.0.0                 # For CSV file parsing (7.x needs Dart 3.10+)
   excel: ^4.0.6               # For Excel file parsing
-  flutter_onnxruntime: ^1.5.1  # On-device BERT NER inference (MIT licensed)
+  flutter_onnxruntime: ^1.6.4  # On-device BERT NER inference (MIT licensed)
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.6.1
@@ -89,7 +89,7 @@ dependencies:
   html_unescape: ^2.0.0
   sqlite3: ^2.9.4
   web: ^1.1.1
-  sembast_web: ^2.4.2
+  sembast_web: ^2.4.4+1
   archive: ^3.6.1
 
 dev_dependencies:
@@ -105,7 +105,7 @@ dev_dependencies:
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.4
-  build_runner: ^2.7.1  # Downgraded for drift_dev compatibility
+  build_runner: ^2.13.1  # Downgraded for drift_dev compatibility
   drift_dev: ^2.12.0    # Code generator for Drift database (compatible version)
   
   # ==================== FIREBASE MOCKING ====================
@@ -121,7 +121,7 @@ dev_dependencies:
   patrol: ^4.0.1
   
   # ==================== CODE QUALITY ====================
-  very_good_analysis: ^10.0.0
+  very_good_analysis: ^10.2.0
 
   # ==================== PERFORMANCE & ACCESSIBILITY ====================
   flutter_driver:
@@ -131,7 +131,7 @@ dev_dependencies:
   # analyzer provided by test package - let pub determine compatible version
   cli_util: ^0.4.0  # For CLI utilities
   meta: ^1.11.0  # For annotations
-  sembast: ^3.8.5+2
+  sembast: ^3.8.6
 
 flutter:
   generate: true
