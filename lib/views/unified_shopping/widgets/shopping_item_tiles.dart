@@ -13,14 +13,69 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// **UI Redesign:** Uses square checkboxes (22px, 2px green border)
 /// instead of circular checkboxes.
 class ShoppingItemTiles {
+  /// Builds a draggable item tile with long-press drag + optional category menu.
+  static Widget buildDraggableItemTile(
+    BuildContext context,
+    UnifiedShoppingItem item,
+    bool isCompleted,
+    Function(UnifiedShoppingItem) onItemTap,
+    Function(UnifiedShoppingItem) onEditItem,
+    Function(UnifiedShoppingItem) onDeleteItem, {
+    VoidCallback? onMoveToCategory,
+  }) {
+    if (isCompleted) {
+      return buildItemTile(
+        context, item, isCompleted, onItemTap, onEditItem, onDeleteItem,
+        onMoveToCategory: onMoveToCategory,
+      );
+    }
+
+    final cs = Theme.of(context).colorScheme;
+
+    return LongPressDraggable<UnifiedShoppingItem>(
+      data: item,
+      feedback: Material(
+        elevation: 4,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.8,
+          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            border: Border.all(color: cs.primary, width: 2),
+          ),
+          child: Text(
+            item.displayText,
+            style: AppTextStyles.contentTitle.copyWith(color: cs.onSurface),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+      childWhenDragging: Opacity(
+        opacity: 0.3,
+        child: buildItemTile(
+          context, item, isCompleted, onItemTap, onEditItem, onDeleteItem,
+          onMoveToCategory: onMoveToCategory,
+        ),
+      ),
+      child: buildItemTile(
+        context, item, isCompleted, onItemTap, onEditItem, onDeleteItem,
+        onMoveToCategory: onMoveToCategory,
+      ),
+    );
+  }
+
   static Widget buildItemTile(
     BuildContext context,
     UnifiedShoppingItem item,
     bool isCompleted,
     Function(UnifiedShoppingItem) onItemTap,
     Function(UnifiedShoppingItem) onEditItem,
-    Function(UnifiedShoppingItem) onDeleteItem,
-  ) {
+    Function(UnifiedShoppingItem) onDeleteItem, {
+    VoidCallback? onMoveToCategory,
+  }) {
     final cs = Theme.of(context).colorScheme;
 
     return RepaintBoundary(
@@ -130,6 +185,23 @@ class ShoppingItemTiles {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // Move to category button
+                        if (onMoveToCategory != null && !isCompleted)
+                          IconButton(
+                            icon: Icon(
+                              Icons.drive_file_move_outline,
+                              size: AppDimensions.iconSizeS,
+                              color: cs.onSurfaceVariant,
+                            ),
+                            onPressed: onMoveToCategory,
+                            tooltip: context.l10n.shoppingMoveToCategory,
+                            padding:
+                                const EdgeInsets.all(AppDimensions.spacingM),
+                            constraints: const BoxConstraints(
+                                minWidth: AppDimensions.minTouchTarget,
+                                minHeight: AppDimensions.minTouchTarget),
+                          ),
+
                         // Edit button
                         Semantics(
                           label: context.l10n.a11yEditItem(item.name),

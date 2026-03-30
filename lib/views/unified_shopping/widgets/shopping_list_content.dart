@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/theme_constants.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
+import 'package:butlery/views/unified_shopping/widgets/category_picker_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main content area for shopping list.
@@ -67,6 +69,8 @@ class ShoppingListContentWidget extends StatefulWidget {
 
 class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   final Set<String> _collapsedCategories = {};
+  String? _dragOverCategory;
+  bool _showEmptyCategories = false;
 
   /// Cached categorized pending items — invalidated when items change
   Map<String, List<UnifiedShoppingItem>>? _pendingByCategory;
@@ -129,9 +133,21 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       }
     }
     _pendingByCategory = pendingMap;
-    _pendingSortedKeys = pendingMap.keys.toList()..sort();
+    // Sort by ViewModel category order instead of alphabetical
+    final categoryOrder = widget.viewModel.categoryOrder;
+    _pendingSortedKeys = pendingMap.keys.toList()
+      ..sort((a, b) {
+        final ai = categoryOrder.indexOf(a);
+        final bi = categoryOrder.indexOf(b);
+        return (ai == -1 ? 999 : ai).compareTo(bi == -1 ? 999 : bi);
+      });
     _completedByCategory = completedMap;
-    _completedSortedKeys = completedMap.keys.toList()..sort();
+    _completedSortedKeys = completedMap.keys.toList()
+      ..sort((a, b) {
+        final ai = categoryOrder.indexOf(a);
+        final bi = categoryOrder.indexOf(b);
+        return (ai == -1 ? 999 : ai).compareTo(bi == -1 ? 999 : bi);
+      });
   }
 
   @override
@@ -220,6 +236,12 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final completedKeys = _completedSortedKeys!;
     final completedMap = _completedByCategory!;
 
+    // Determine which categories have no pending items (for empty drop targets)
+    final allCategories = viewModel.categoryOrder;
+    final emptyCategories = allCategories
+        .where((cat) => !pendingKeys.contains(cat))
+        .toList();
+
     final widgets = <Widget>[
       // Pending items by category
       ...pendingKeys.map((key) {
@@ -231,6 +253,12 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           progress: categoryProgress[key],
         );
       }),
+
+      // Empty categories toggle (collapsed by default)
+      if (emptyCategories.isNotEmpty) ...[
+        const SizedBox(height: AppDimensions.spacingSm),
+        _buildEmptyCategoriesToggle(context, emptyCategories),
+      ],
 
       // Completed items section
       if (viewModel.boughtItems > 0) ...[
@@ -267,15 +295,32 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final cs = Theme.of(context).colorScheme;
     final categoryColor = isCompleted
         ? cs.onSurfaceVariant
-        : _getCategoryColor(context, category);
+        : getCategoryColor(context, category);
 
     final isCollapsed = _collapsedCategories.contains(category);
+    final isDragOver = _dragOverCategory == category;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Tappable category header with collapse/expand
-        GestureDetector(
+        // Category header: tappable + drag target for item drops
+        DragTarget<UnifiedShoppingItem>(
+          onWillAcceptWithDetails: (details) {
+            if (details.data.category == category) return false;
+            setState(() => _dragOverCategory = category);
+            return true;
+          },
+          onLeave: (_) {
+            setState(() {
+              if (_dragOverCategory == category) _dragOverCategory = null;
+            });
+          },
+          onAcceptWithDetails: (details) {
+            setState(() => _dragOverCategory = null);
+            widget.viewModel.moveItemToCategory(details.data.id, category);
+          },
+          builder: (context, candidateData, rejectedData) {
+            return GestureDetector(
           onTap: () {
             setState(() {
               if (isCollapsed) {
@@ -285,7 +330,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               }
             });
           },
-          child: Container(
+          child: AnimatedContainer(
+            duration: ThemeConstants.durationFast,
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingMd,
@@ -295,6 +341,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             decoration: BoxDecoration(
               color: categoryColor,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              border: isDragOver
+                  ? Border.all(color: cs.onPrimary, width: 2)
+                  : null,
             ),
             child: Column(
               children: [
@@ -360,17 +409,22 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               ],
             ),
           ),
+        );
+          },
         ),
 
         // Items in category (hidden when collapsed)
         if (!isCollapsed)
-          ...items.map((item) => ShoppingItemTiles.buildItemTile(
+          ...items.map((item) => ShoppingItemTiles.buildDraggableItemTile(
                 context,
                 item,
                 isCompleted,
                 widget.onItemTap,
                 widget.onEditItem,
                 widget.onDeleteItem,
+                onMoveToCategory: widget.viewModel.canEditActiveList
+                    ? () => _showCategoryPicker(context, item)
+                    : null,
               )),
 
         const SizedBox(height: AppDimensions.spacingMd),
@@ -378,8 +432,140 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     );
   }
 
-  /// Get category-specific color from ButleryColors.
-  static Color _getCategoryColor(BuildContext context, String category) {
+  void _showCategoryPicker(
+    BuildContext context,
+    UnifiedShoppingItem item,
+  ) async {
+    final selected = await CategoryPickerSheet.show(
+      context,
+      currentCategory: item.category,
+    );
+    if (selected != null && context.mounted) {
+      await widget.viewModel.moveItemToCategory(item.id, selected);
+      if (context.mounted) {
+        final displayName = _categoryDisplayName(context, selected);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.shoppingItemMoved(displayName)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildEmptyCategoriesToggle(
+    BuildContext context,
+    List<String> emptyCategories,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() {
+            _showEmptyCategories = !_showEmptyCategories;
+          }),
+          child: Row(
+            children: [
+              Icon(
+                _showEmptyCategories
+                    ? Icons.expand_less
+                    : Icons.expand_more,
+                color: cs.onSurfaceVariant,
+                size: AppDimensions.iconSizeM,
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Text(
+                context.l10n.shoppingOtherCategories,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_showEmptyCategories) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          ...emptyCategories.map((category) => _buildEmptyCategoryDropTarget(
+                context,
+                category,
+              )),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildEmptyCategoryDropTarget(
+    BuildContext context,
+    String category,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final categoryColor = getCategoryColor(context, category);
+    final isDragOver = _dragOverCategory == category;
+
+    return DragTarget<UnifiedShoppingItem>(
+      onWillAcceptWithDetails: (details) {
+        if (details.data.category == category) return false;
+        setState(() => _dragOverCategory = category);
+        return true;
+      },
+      onLeave: (_) {
+        setState(() {
+          if (_dragOverCategory == category) _dragOverCategory = null;
+        });
+      },
+      onAcceptWithDetails: (details) {
+        setState(() => _dragOverCategory = null);
+        widget.viewModel.moveItemToCategory(details.data.id, category);
+      },
+      builder: (context, candidateData, rejectedData) {
+        return AnimatedContainer(
+          duration: ThemeConstants.durationFast,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
+          ),
+          margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+          decoration: BoxDecoration(
+            color: isDragOver
+                ? categoryColor.withValues(alpha: 0.3)
+                : cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            border: Border.all(
+              color: isDragOver ? categoryColor : cs.outlineVariant,
+              width: isDragOver ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: categoryColor,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Text(
+                _categoryDisplayName(context, category),
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Get category-specific color from ButleryColors (public for reuse).
+  static Color getCategoryColor(BuildContext context, String category) {
     final bc = context.butleryColors;
     switch (category) {
       case ShoppingCategory.meatFish:

@@ -26,6 +26,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
+import 'package:butlery/views/unified_shopping/widgets/category_order_sheet.dart';
 
 // UI Redesign header component
 import 'package:butlery/widgets/common/main_view_header.dart';
@@ -107,6 +108,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                       () => _showDeleteListConfirmation(viewModel),
                       onConvertList: _canConvertActiveList(viewModel)
                           ? () => _convertActiveList(viewModel)
+                          : null,
+                      onSortCategories: viewModel.activeList != null
+                          ? () => _showCategoryOrderSheet(viewModel)
                           : null,
                     ),
 
@@ -434,6 +438,19 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
 
   void _showSuccessSnackBar(String message) {
     SnackBarUtils.showSuccess(context, message);
+  }
+
+  void _showCategoryOrderSheet(UnifiedShoppingViewModel viewModel) {
+    CategoryOrderSheet.show(
+      context,
+      currentOrder: viewModel.categoryOrder,
+      onSave: (order) async {
+        await viewModel.saveCategoryOrder(order);
+      },
+      onReset: () async {
+        await viewModel.resetListCategoryOrder();
+      },
+    );
   }
 
   /// Comprehensive resource disposal with proper lifecycle management and cleanup coordination.

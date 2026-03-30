@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/shopping_category_mapper.dart';
+import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 
 /// Shopping item management module for all item operations.
 class ShoppingItemManagementModule {
@@ -14,12 +15,14 @@ class ShoppingItemManagementModule {
   final List<UnifiedShoppingList> lists;
   final String? Function() getActiveListId;
   final void Function() notifyListeners;
+  final ShoppingCategoryPreferencesModule Function() getCategoryPreferences;
 
   ShoppingItemManagementModule({
     required this.repository,
     required this.lists,
     required this.getActiveListId,
     required this.notifyListeners,
+    required this.getCategoryPreferences,
   });
 
   UnifiedShoppingList? get activeList {
@@ -323,8 +326,13 @@ class ShoppingItemManagementModule {
     }
   }
 
-  /// Attempt to auto-categorize an item name via IngredientLookupService.
+  /// Attempt to auto-categorize: user override → ingredient lookup → default
   Future<String> _autoCategorize(String name) async {
+    // Check user's per-item category override first
+    final prefs = getCategoryPreferences();
+    final userOverride = prefs.getUserCategoryOverride(name);
+    if (userOverride != null) return userOverride;
+
     try {
       final lookupService = ServiceLocator.get<IngredientLookupService>();
       final result = await lookupService.lookupFromRaw([name]);

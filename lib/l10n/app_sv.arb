@@ -4069,6 +4069,20 @@
   "shoppingShareWithFriends": "Dela med vänner",
   "shoppingTemplateList": "Mall",
   "shoppingUncheckAll": "Avmarkera alla",
+  "shoppingMoveToCategory": "Flytta till kategori",
+  "shoppingSortCategories": "Sortera kategorier",
+  "shoppingCategoryOrderTitle": "Kategoriordning",
+  "shoppingResetOrder": "Återställ",
+  "shoppingSaveOrder": "Spara ordning",
+  "shoppingOtherCategories": "Övriga kategorier",
+  "shoppingDragToMove": "Håll för att flytta",
+  "shoppingCategorySaved": "Kategoriordning sparad",
+  "shoppingItemMoved": "Flyttade till {category}",
+  "@shoppingItemMoved": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
   "shoppingUnitHint": "Enhet...",
   "shoppingUnknownUser": "Okänd användare",
   "shoppingWhatHappensWhenSharing": "Vad händer när du delar?",

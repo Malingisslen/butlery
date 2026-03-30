@@ -78,6 +78,18 @@ class ShoppingCategory {
   static const String spices = 'spices';
   static const String canned = 'canned';
   static const String dryGoods = 'dry_goods';
+
+  /// All valid category constants for iteration
+  static const List<String> all = [
+    fruitVeg, dairy, meatFish, breadGrain, dryGoods,
+    canned, pantry, spices, frozen, drinks, snacks, cleaning, other,
+  ];
+
+  /// Default category order based on typical Swedish grocery store layout
+  static const List<String> defaultStoreOrder = [
+    fruitVeg, dairy, meatFish, breadGrain, dryGoods,
+    canned, pantry, spices, frozen, drinks, snacks, cleaning, other,
+  ];
 }
 
 /// Comprehensive unified shopping item with dual-mode support and collaborative features.

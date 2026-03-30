@@ -46,6 +46,7 @@ abstract final class FirestoreCollections {
   static const String ingredientSubstitutions = 'ingredient_substitutions';
 
   static const String shoppingListTemplates = 'shopping_list_templates';
+  static const String categoryOverrides = 'category_overrides';
   static const String globalRecipeCache = 'globalRecipeCache';
 
   // ── User subcollections (under users/{userId}/) ──
@@ -62,6 +63,8 @@ abstract final class FirestoreCollections {
   static const String userRateLimits = 'rate_limits';
   static const String userSharedMenus = 'user_shared_menus';
   static const String userSharedShoppingLists = 'user_shared_shopping_lists';
+  static const String categoryPreferences = 'category_preferences';
+  static const String listCategoryOrders = 'list_category_orders';
 
   // ── Shared content subcollections ──
 

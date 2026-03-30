@@ -20,6 +20,7 @@ class ShoppingListHeader {
     VoidCallback onRenameList,
     VoidCallback onDeleteList, {
     VoidCallback? onConvertList,
+    VoidCallback? onSortCategories,
   }) {
     final cs = Theme.of(context).colorScheme;
 
@@ -40,7 +41,8 @@ class ShoppingListHeader {
           if (viewModel.activeList != null) ...[
             const SizedBox(height: AppDimensions.spacingM),
             _buildListActions(
-                context, viewModel, onClearCompleted, onUncheckAll),
+                context, viewModel, onClearCompleted, onUncheckAll,
+                onSortCategories: onSortCategories),
           ],
         ],
       ),
@@ -181,14 +183,38 @@ class ShoppingListHeader {
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
     VoidCallback onClearCompleted,
-    VoidCallback onUncheckAll,
-  ) {
+    VoidCallback onUncheckAll, {
+    VoidCallback? onSortCategories,
+  }) {
     final cs = Theme.of(context).colorScheme;
 
     if (viewModel.activeList == null) return const SizedBox.shrink();
 
     return Row(
       children: [
+        // Sort categories button
+        if (onSortCategories != null)
+          OutlinedButton.icon(
+            onPressed: onSortCategories,
+            style: OutlinedButton.styleFrom(
+              padding: AppDimensions.paddingVertical8,
+              side: BorderSide(
+                  color: cs.onSurfaceVariant
+                      .withValues(alpha: AppDimensions.opacityHalf)),
+            ),
+            icon: Icon(Icons.sort,
+                size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+            label: Text(
+              context.l10n.shoppingSortCategories,
+              style: AppTextStyles.metadataEmphasized.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+
+        if (onSortCategories != null && viewModel.boughtItems > 0)
+          const SizedBox(width: AppDimensions.spacingSm),
+
         // Clear completed items
         if (viewModel.boughtItems > 0)
           Expanded(
