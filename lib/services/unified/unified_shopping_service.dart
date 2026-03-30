@@ -30,6 +30,8 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/unified/modules/shopping_initialization_module.dart';
 import 'package:butlery/services/unified/modules/shopping_list_management_module.dart';
 import 'package:butlery/services/unified/modules/shopping_item_management_module.dart';
+import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
+import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 
 /// Stub firebase sync implementation
 class ShoppingFirebaseSync {
@@ -90,6 +92,7 @@ class UnifiedShoppingService
   late final ShoppingInitializationModule _initialization;
   late final ShoppingListManagementModule _listManagement;
   late final ShoppingItemManagementModule _itemManagement;
+  late final ShoppingCategoryPreferencesModule _categoryPreferences;
   late final ShoppingFirebaseSync _firebaseSync;
 
   UnifiedShoppingService({
@@ -183,6 +186,11 @@ class UnifiedShoppingService
       lists: _lists,
       getActiveListId: () => _activeListId,
       notifyListeners: notifyListeners,
+      getCategoryPreferences: () => _categoryPreferences,
+    );
+
+    _categoryPreferences = ShoppingCategoryPreferencesModule(
+      repository: ServiceLocator.get<CategoryPreferencesRepository>(),
     );
 
     _firebaseSync = ShoppingFirebaseSync();
@@ -225,6 +233,8 @@ class UnifiedShoppingService
   PersonalShoppingOperations get personal => _personalOps;
   CollaborativeShoppingOperations get collaborative => _collaborativeOps;
   ShoppingShareOperations get share => _shareOps;
+  ShoppingCategoryPreferencesModule get categoryPreferences =>
+      _categoryPreferences;
 
   /// Compatibility getter for legacy code
   ShoppingShareOperations get sharing => _shareOps;
@@ -263,7 +273,10 @@ class UnifiedShoppingService
     _isLoading = true;
     notifyListeners();
     try {
-      await _initialization.initialize();
+      await Future.wait([
+        _initialization.initialize(),
+        _categoryPreferences.load(),
+      ]);
       _startCollaborativeStream();
     } finally {
       _isLoading = false;
@@ -502,6 +515,7 @@ class UnifiedShoppingService
     _lists.clear();
     _activeListId = null;
     _error = null;
+    _categoryPreferences.reset();
     _stateSubject.add(const ShoppingStateLoading());
   }
 

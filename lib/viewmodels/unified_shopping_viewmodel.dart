@@ -412,6 +412,63 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     });
   }
 
+  // ── Category management ──
+
+  /// Effective category order for the active list
+  List<String> get categoryOrder {
+    return _shoppingService.categoryPreferences
+        .getEffectiveCategoryOrder(activeList?.id);
+  }
+
+  /// Move an item to a different category (updates item + saves user override)
+  Future<bool> moveItemToCategory(String itemId, String newCategory) async {
+    if (!canEditActiveList) return false;
+
+    final result = await _shoppingService.updateItemInActiveList(
+      itemId: itemId,
+      category: newCategory,
+    );
+    if (result) {
+      final item = items.where((i) => i.id == itemId).firstOrNull;
+      if (item != null) {
+        _shoppingService.categoryPreferences
+            .setItemCategory(item.name, newCategory);
+      }
+    }
+    return result;
+  }
+
+  /// Save category order for the active list
+  Future<void> saveCategoryOrder(List<String> order) async {
+    if (activeList == null) return;
+    await _shoppingService.categoryPreferences
+        .saveListCategoryOrder(activeList!.id, order);
+    notifyListeners();
+  }
+
+  /// Save user's default category order
+  Future<void> saveDefaultCategoryOrder(List<String> order) async {
+    await _shoppingService.categoryPreferences
+        .saveDefaultCategoryOrder(order);
+    notifyListeners();
+  }
+
+  /// Reset active list's category order to user default
+  Future<void> resetListCategoryOrder() async {
+    if (activeList == null) return;
+    await _shoppingService.categoryPreferences
+        .resetListCategoryOrder(activeList!.id);
+    notifyListeners();
+  }
+
+  /// Load list-specific category order (call when switching lists)
+  Future<void> loadCategoryOrderForActiveList() async {
+    if (activeList == null) return;
+    await _shoppingService.categoryPreferences
+        .loadListCategoryOrder(activeList!.id);
+    notifyListeners();
+  }
+
   /// Group items by category for UI rendering
   Map<String, List<UnifiedShoppingItem>> get itemsByCategory =>
       _itemOpsManager.groupItemsByCategory(items);

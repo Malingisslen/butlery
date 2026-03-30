@@ -1,15 +1,14 @@
-// lib/views/unified_shopping/widgets/shopping_list_content.dart
-//
-// UI Redesign: Color-coded category headers with collapse/expand and progress
-
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/theme/theme_constants.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
+import 'package:butlery/views/unified_shopping/widgets/category_picker_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main content area for shopping list.
@@ -67,6 +66,8 @@ class ShoppingListContentWidget extends StatefulWidget {
 
 class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   final Set<String> _collapsedCategories = {};
+  String? _dragOverCategory;
+  bool _showEmptyCategories = false;
 
   /// Cached categorized pending items — invalidated when items change
   Map<String, List<UnifiedShoppingItem>>? _pendingByCategory;
@@ -79,9 +80,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   /// Cached category progress
   Map<String, ({int total, int completed})>? _categoryProgressCache;
 
-  /// Last items snapshot for cache invalidation
-  int _lastItemCount = -1;
-  int _lastCompletedCount = -1;
+  /// Cache invalidation keys
+  int _lastItemsHash = 0;
+  List<String>? _lastCategoryOrder;
 
   void _invalidateCaches() {
     _pendingByCategory = null;
@@ -89,19 +90,24 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     _completedByCategory = null;
     _completedSortedKeys = null;
     _categoryProgressCache = null;
-    _lastItemCount = -1;
-    _lastCompletedCount = -1;
+    _lastItemsHash = 0;
+    _lastCategoryOrder = null;
   }
 
   void _ensureCaches(UnifiedShoppingViewModel viewModel) {
     final items = viewModel.items;
-    final completedCount = items.where((i) => i.isCompleted).length;
-    if (items.length == _lastItemCount &&
-        completedCount == _lastCompletedCount) {
-      return;
-    }
-    _lastItemCount = items.length;
-    _lastCompletedCount = completedCount;
+    final categoryOrder = viewModel.categoryOrder;
+
+    // Hash that captures item count, categories, and completion state
+    final itemsHash = Object.hashAll(
+      items.map((i) => Object.hash(i.id, i.category, i.isCompleted)),
+    );
+    final orderChanged = _lastCategoryOrder == null ||
+        !listEquals(_lastCategoryOrder, categoryOrder);
+
+    if (itemsHash == _lastItemsHash && !orderChanged) return;
+    _lastItemsHash = itemsHash;
+    _lastCategoryOrder = List.of(categoryOrder);
 
     // Compute category progress
     final progress = <String, ({int total, int completed})>{};
@@ -129,9 +135,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       }
     }
     _pendingByCategory = pendingMap;
-    _pendingSortedKeys = pendingMap.keys.toList()..sort();
+    final compare = ShoppingCategory.orderComparator(categoryOrder);
+    _pendingSortedKeys = pendingMap.keys.toList()..sort(compare);
     _completedByCategory = completedMap;
-    _completedSortedKeys = completedMap.keys.toList()..sort();
+    _completedSortedKeys = completedMap.keys.toList()..sort(compare);
   }
 
   @override
@@ -139,40 +146,6 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.viewModel != widget.viewModel) {
       _invalidateCaches();
-    }
-  }
-
-  /// Translate language-neutral category constant to localized display name.
-  String _categoryDisplayName(BuildContext context, String category) {
-    switch (category) {
-      case ShoppingCategory.fruitVeg:
-        return context.l10n.categoryFruitVeg;
-      case ShoppingCategory.dairy:
-        return context.l10n.categoryDairy;
-      case ShoppingCategory.meatFish:
-        return context.l10n.categoryMeatFish;
-      case ShoppingCategory.breadGrain:
-        return context.l10n.categoryBread;
-      case ShoppingCategory.pantry:
-        return context.l10n.categoryPantry;
-      case ShoppingCategory.frozen:
-        return context.l10n.categoryFrozen;
-      case ShoppingCategory.drinks:
-        return context.l10n.categoryBeverage;
-      case ShoppingCategory.snacks:
-        return context.l10n.categorySnacks;
-      case ShoppingCategory.cleaning:
-        return context.l10n.categoryHygiene;
-      case ShoppingCategory.spices:
-        return context.l10n.categorySpices;
-      case ShoppingCategory.canned:
-        return context.l10n.categoryCanned;
-      case ShoppingCategory.dryGoods:
-        return context.l10n.categoryDryGoods;
-      case ShoppingCategory.other:
-        return context.l10n.categoryOther;
-      default:
-        return category;
     }
   }
 
@@ -220,6 +193,12 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final completedKeys = _completedSortedKeys!;
     final completedMap = _completedByCategory!;
 
+    // Determine which categories have no pending items (for empty drop targets)
+    final allCategories = viewModel.categoryOrder;
+    final emptyCategories = allCategories
+        .where((cat) => !pendingKeys.contains(cat))
+        .toList();
+
     final widgets = <Widget>[
       // Pending items by category
       ...pendingKeys.map((key) {
@@ -231,6 +210,12 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           progress: categoryProgress[key],
         );
       }),
+
+      // Empty categories toggle (collapsed by default)
+      if (emptyCategories.isNotEmpty) ...[
+        const SizedBox(height: AppDimensions.spacingSm),
+        _buildEmptyCategoriesToggle(context, emptyCategories),
+      ],
 
       // Completed items section
       if (viewModel.boughtItems > 0) ...[
@@ -267,15 +252,32 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final cs = Theme.of(context).colorScheme;
     final categoryColor = isCompleted
         ? cs.onSurfaceVariant
-        : _getCategoryColor(context, category);
+        : getCategoryColor(context, category);
 
     final isCollapsed = _collapsedCategories.contains(category);
+    final isDragOver = _dragOverCategory == category;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Tappable category header with collapse/expand
-        GestureDetector(
+        // Category header: tappable + drag target for item drops
+        DragTarget<UnifiedShoppingItem>(
+          onWillAcceptWithDetails: (details) {
+            if (details.data.category == category) return false;
+            setState(() => _dragOverCategory = category);
+            return true;
+          },
+          onLeave: (_) {
+            setState(() {
+              if (_dragOverCategory == category) _dragOverCategory = null;
+            });
+          },
+          onAcceptWithDetails: (details) {
+            setState(() => _dragOverCategory = null);
+            _handleItemDrop(details.data.id, category);
+          },
+          builder: (context, candidateData, rejectedData) {
+            return GestureDetector(
           onTap: () {
             setState(() {
               if (isCollapsed) {
@@ -285,7 +287,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               }
             });
           },
-          child: Container(
+          child: AnimatedContainer(
+            duration: ThemeConstants.durationFast,
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingMd,
@@ -295,6 +298,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             decoration: BoxDecoration(
               color: categoryColor,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              border: isDragOver
+                  ? Border.all(color: cs.onPrimary, width: 2)
+                  : null,
             ),
             child: Column(
               children: [
@@ -309,7 +315,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
-                        _categoryDisplayName(context, category).toUpperCase(),
+                        ShoppingCategory.displayName(category).toUpperCase(),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: cs.onPrimary,
                           fontWeight: FontWeight.w700,
@@ -360,17 +366,22 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               ],
             ),
           ),
+        );
+          },
         ),
 
         // Items in category (hidden when collapsed)
         if (!isCollapsed)
-          ...items.map((item) => ShoppingItemTiles.buildItemTile(
+          ...items.map((item) => ShoppingItemTiles.buildDraggableItemTile(
                 context,
                 item,
                 isCompleted,
                 widget.onItemTap,
                 widget.onEditItem,
                 widget.onDeleteItem,
+                onMoveToCategory: widget.viewModel.canEditActiveList
+                    ? () => _showCategoryPicker(context, item)
+                    : null,
               )),
 
         const SizedBox(height: AppDimensions.spacingMd),
@@ -378,8 +389,153 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     );
   }
 
-  /// Get category-specific color from ButleryColors.
-  static Color _getCategoryColor(BuildContext context, String category) {
+  Future<void> _handleItemDrop(String itemId, String category) async {
+    final moved = await widget.viewModel.moveItemToCategory(itemId, category);
+    if (moved && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.shoppingItemMoved(
+              ShoppingCategory.displayName(category))),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showCategoryPicker(
+    BuildContext context,
+    UnifiedShoppingItem item,
+  ) async {
+    final selected = await CategoryPickerSheet.show(
+      context,
+      currentCategory: item.category,
+    );
+    if (selected != null && context.mounted) {
+      await widget.viewModel.moveItemToCategory(item.id, selected);
+      if (context.mounted) {
+        final displayName = ShoppingCategory.displayName(selected);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.shoppingItemMoved(displayName)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildEmptyCategoriesToggle(
+    BuildContext context,
+    List<String> emptyCategories,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => setState(() {
+            _showEmptyCategories = !_showEmptyCategories;
+          }),
+          child: Row(
+            children: [
+              Icon(
+                _showEmptyCategories
+                    ? Icons.expand_less
+                    : Icons.expand_more,
+                color: cs.onSurfaceVariant,
+                size: AppDimensions.iconSizeM,
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Text(
+                context.l10n.shoppingOtherCategories,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_showEmptyCategories) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          ...emptyCategories.map((category) => _buildEmptyCategoryDropTarget(
+                context,
+                category,
+              )),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildEmptyCategoryDropTarget(
+    BuildContext context,
+    String category,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final categoryColor = getCategoryColor(context, category);
+    final isDragOver = _dragOverCategory == category;
+
+    return DragTarget<UnifiedShoppingItem>(
+      onWillAcceptWithDetails: (details) {
+        if (details.data.category == category) return false;
+        setState(() => _dragOverCategory = category);
+        return true;
+      },
+      onLeave: (_) {
+        setState(() {
+          if (_dragOverCategory == category) _dragOverCategory = null;
+        });
+      },
+      onAcceptWithDetails: (details) {
+        setState(() => _dragOverCategory = null);
+        _handleItemDrop(details.data.id, category);
+      },
+      builder: (context, candidateData, rejectedData) {
+        return AnimatedContainer(
+          duration: ThemeConstants.durationFast,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
+          ),
+          margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+          decoration: BoxDecoration(
+            color: isDragOver
+                ? categoryColor.withValues(alpha: 0.3)
+                : cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            border: Border.all(
+              color: isDragOver ? categoryColor : cs.outlineVariant,
+              width: isDragOver ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: categoryColor,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Text(
+                ShoppingCategory.displayName(category),
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Get category-specific color from ButleryColors (public for reuse).
+  static Color getCategoryColor(BuildContext context, String category) {
     final bc = context.butleryColors;
     switch (category) {
       case ShoppingCategory.meatFish:

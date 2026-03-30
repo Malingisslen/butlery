@@ -6372,6 +6372,35 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingUncheckAll => 'Avmarkera alla';
 
   @override
+  String get shoppingMoveToCategory => 'Flytta till kategori';
+
+  @override
+  String get shoppingSortCategories => 'Sortera kategorier';
+
+  @override
+  String get shoppingCategoryOrderTitle => 'Kategoriordning';
+
+  @override
+  String get shoppingResetOrder => 'Återställ';
+
+  @override
+  String get shoppingSaveOrder => 'Spara ordning';
+
+  @override
+  String get shoppingOtherCategories => 'Övriga kategorier';
+
+  @override
+  String get shoppingDragToMove => 'Håll för att flytta';
+
+  @override
+  String get shoppingCategorySaved => 'Kategoriordning sparad';
+
+  @override
+  String shoppingItemMoved(String category) {
+    return 'Flyttade till $category';
+  }
+
+  @override
   String get shoppingUnitHint => 'Enhet...';
 
   @override

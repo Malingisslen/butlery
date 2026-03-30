@@ -12,6 +12,8 @@ import 'package:butlery/repositories/interfaces/menu_collaboration_repository.da
 import 'package:butlery/repositories/firebase/firebase_menu_collaboration_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
+import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_category_preferences_repository.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
@@ -37,6 +39,7 @@ class CollaborationModule implements DIModule {
         UnifiedShoppingService,
         MenuCollaborationRepository,
         ShoppingRepository,
+        CategoryPreferencesRepository,
       ];
 
   @override
@@ -89,6 +92,12 @@ class CollaborationModule implements DIModule {
 
       container.registerLazySingleton<ShoppingRepository>(
         () => FirebaseShoppingRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      container.registerLazySingleton<CategoryPreferencesRepository>(
+        () => FirebaseCategoryPreferencesRepository(
           authRepository: container<AuthRepository>(),
         ),
       );

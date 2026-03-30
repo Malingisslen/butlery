@@ -11121,6 +11121,60 @@ abstract class AppLocalizations {
   /// **'Avmarkera alla'**
   String get shoppingUncheckAll;
 
+  /// No description provided for @shoppingMoveToCategory.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flytta till kategori'**
+  String get shoppingMoveToCategory;
+
+  /// No description provided for @shoppingSortCategories.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sortera kategorier'**
+  String get shoppingSortCategories;
+
+  /// No description provided for @shoppingCategoryOrderTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kategoriordning'**
+  String get shoppingCategoryOrderTitle;
+
+  /// No description provided for @shoppingResetOrder.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ'**
+  String get shoppingResetOrder;
+
+  /// No description provided for @shoppingSaveOrder.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara ordning'**
+  String get shoppingSaveOrder;
+
+  /// No description provided for @shoppingOtherCategories.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övriga kategorier'**
+  String get shoppingOtherCategories;
+
+  /// No description provided for @shoppingDragToMove.
+  ///
+  /// In sv, this message translates to:
+  /// **'Håll för att flytta'**
+  String get shoppingDragToMove;
+
+  /// No description provided for @shoppingCategorySaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kategoriordning sparad'**
+  String get shoppingCategorySaved;
+
+  /// No description provided for @shoppingItemMoved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flyttade till {category}'**
+  String shoppingItemMoved(String category);
+
   /// No description provided for @shoppingUnitHint.
   ///
   /// In sv, this message translates to:

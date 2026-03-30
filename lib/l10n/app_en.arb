@@ -4069,6 +4069,20 @@
   "shoppingShareWithFriends": "Share with friends",
   "shoppingTemplateList": "Template",
   "shoppingUncheckAll": "Uncheck all",
+  "shoppingMoveToCategory": "Move to category",
+  "shoppingSortCategories": "Sort categories",
+  "shoppingCategoryOrderTitle": "Category order",
+  "shoppingResetOrder": "Reset",
+  "shoppingSaveOrder": "Save order",
+  "shoppingOtherCategories": "Other categories",
+  "shoppingDragToMove": "Hold to move",
+  "shoppingCategorySaved": "Category order saved",
+  "shoppingItemMoved": "Moved to {category}",
+  "@shoppingItemMoved": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
   "shoppingUnitHint": "Unit...",
   "shoppingUnknownUser": "Unknown user",
   "shoppingWhatHappensWhenSharing": "What happens when you share?",

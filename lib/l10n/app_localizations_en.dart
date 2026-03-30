@@ -6363,6 +6363,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingUncheckAll => 'Uncheck all';
 
   @override
+  String get shoppingMoveToCategory => 'Move to category';
+
+  @override
+  String get shoppingSortCategories => 'Sort categories';
+
+  @override
+  String get shoppingCategoryOrderTitle => 'Category order';
+
+  @override
+  String get shoppingResetOrder => 'Reset';
+
+  @override
+  String get shoppingSaveOrder => 'Save order';
+
+  @override
+  String get shoppingOtherCategories => 'Other categories';
+
+  @override
+  String get shoppingDragToMove => 'Hold to move';
+
+  @override
+  String get shoppingCategorySaved => 'Category order saved';
+
+  @override
+  String shoppingItemMoved(String category) {
+    return 'Moved to $category';
+  }
+
+  @override
   String get shoppingUnitHint => 'Unit...';
 
   @override
