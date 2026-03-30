@@ -29,39 +29,6 @@ class CategoryPickerSheet extends StatelessWidget {
     );
   }
 
-  String _categoryDisplayName(BuildContext context, String category) {
-    switch (category) {
-      case ShoppingCategory.fruitVeg:
-        return context.l10n.categoryFruitVeg;
-      case ShoppingCategory.dairy:
-        return context.l10n.categoryDairy;
-      case ShoppingCategory.meatFish:
-        return context.l10n.categoryMeatFish;
-      case ShoppingCategory.breadGrain:
-        return context.l10n.categoryBread;
-      case ShoppingCategory.pantry:
-        return context.l10n.categoryPantry;
-      case ShoppingCategory.frozen:
-        return context.l10n.categoryFrozen;
-      case ShoppingCategory.drinks:
-        return context.l10n.categoryBeverage;
-      case ShoppingCategory.snacks:
-        return context.l10n.categorySnacks;
-      case ShoppingCategory.cleaning:
-        return context.l10n.categoryHygiene;
-      case ShoppingCategory.spices:
-        return context.l10n.categorySpices;
-      case ShoppingCategory.canned:
-        return context.l10n.categoryCanned;
-      case ShoppingCategory.dryGoods:
-        return context.l10n.categoryDryGoods;
-      case ShoppingCategory.other:
-        return context.l10n.categoryOther;
-      default:
-        return category;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -98,7 +65,7 @@ class CategoryPickerSheet extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    _categoryDisplayName(context, category),
+                    ShoppingCategory.displayName(category),
                     style: AppTextStyles.contentTitle.copyWith(
                       fontWeight:
                           isSelected ? FontWeight.w700 : FontWeight.w400,

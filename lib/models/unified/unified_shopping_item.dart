@@ -60,6 +60,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Language-neutral shopping category constants for Firestore storage.
 /// Display labels should use l10n: AppLocale.current.shoppingCat* or context.l10n.shoppingCat*
@@ -85,11 +86,56 @@ class ShoppingCategory {
     canned, pantry, spices, frozen, drinks, snacks, cleaning, other,
   ];
 
-  /// Default category order based on typical Swedish grocery store layout
-  static const List<String> defaultStoreOrder = [
-    fruitVeg, dairy, meatFish, breadGrain, dryGoods,
-    canned, pantry, spices, frozen, drinks, snacks, cleaning, other,
-  ];
+  /// Default category order based on typical Swedish grocery store layout.
+  /// Currently matches [all] — separate constant so store-specific layouts
+  /// can diverge without affecting iteration logic.
+  static const List<String> defaultStoreOrder = all;
+
+  /// Localized display name for a category constant.
+  /// Uses AppLocale.current so it works both with and without BuildContext.
+  static String displayName(String category) {
+    final l = AppLocale.current;
+    switch (category) {
+      case fruitVeg:
+        return l.categoryFruitVeg;
+      case dairy:
+        return l.categoryDairy;
+      case meatFish:
+        return l.categoryMeatFish;
+      case breadGrain:
+        return l.categoryBread;
+      case pantry:
+        return l.categoryPantry;
+      case frozen:
+        return l.categoryFrozen;
+      case drinks:
+        return l.categoryBeverage;
+      case snacks:
+        return l.categorySnacks;
+      case cleaning:
+        return l.categoryHygiene;
+      case spices:
+        return l.categorySpices;
+      case canned:
+        return l.categoryCanned;
+      case dryGoods:
+        return l.categoryDryGoods;
+      case other:
+        return l.categoryOther;
+      default:
+        return category;
+    }
+  }
+
+  /// Sort comparator that orders categories by a given order list.
+  /// Unknown categories sort to the end.
+  static int Function(String, String) orderComparator(List<String> order) {
+    return (a, b) {
+      final ai = order.indexOf(a);
+      final bi = order.indexOf(b);
+      return (ai == -1 ? 999 : ai).compareTo(bi == -1 ? 999 : bi);
+    };
+  }
 }
 
 /// Comprehensive unified shopping item with dual-mode support and collaborative features.

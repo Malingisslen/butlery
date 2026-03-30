@@ -1,7 +1,4 @@
-// lib/views/unified_shopping/widgets/shopping_list_content.dart
-//
-// UI Redesign: Color-coded category headers with collapse/expand and progress
-
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -83,9 +80,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   /// Cached category progress
   Map<String, ({int total, int completed})>? _categoryProgressCache;
 
-  /// Last items snapshot for cache invalidation
-  int _lastItemCount = -1;
-  int _lastCompletedCount = -1;
+  /// Cache invalidation keys
+  int _lastItemsHash = 0;
+  List<String>? _lastCategoryOrder;
 
   void _invalidateCaches() {
     _pendingByCategory = null;
@@ -93,19 +90,24 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     _completedByCategory = null;
     _completedSortedKeys = null;
     _categoryProgressCache = null;
-    _lastItemCount = -1;
-    _lastCompletedCount = -1;
+    _lastItemsHash = 0;
+    _lastCategoryOrder = null;
   }
 
   void _ensureCaches(UnifiedShoppingViewModel viewModel) {
     final items = viewModel.items;
-    final completedCount = items.where((i) => i.isCompleted).length;
-    if (items.length == _lastItemCount &&
-        completedCount == _lastCompletedCount) {
-      return;
-    }
-    _lastItemCount = items.length;
-    _lastCompletedCount = completedCount;
+    final categoryOrder = viewModel.categoryOrder;
+
+    // Hash that captures item count, categories, and completion state
+    final itemsHash = Object.hashAll(
+      items.map((i) => Object.hash(i.id, i.category, i.isCompleted)),
+    );
+    final orderChanged = _lastCategoryOrder == null ||
+        !listEquals(_lastCategoryOrder, categoryOrder);
+
+    if (itemsHash == _lastItemsHash && !orderChanged) return;
+    _lastItemsHash = itemsHash;
+    _lastCategoryOrder = List.of(categoryOrder);
 
     // Compute category progress
     final progress = <String, ({int total, int completed})>{};
@@ -133,21 +135,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       }
     }
     _pendingByCategory = pendingMap;
-    // Sort by ViewModel category order instead of alphabetical
-    final categoryOrder = widget.viewModel.categoryOrder;
-    _pendingSortedKeys = pendingMap.keys.toList()
-      ..sort((a, b) {
-        final ai = categoryOrder.indexOf(a);
-        final bi = categoryOrder.indexOf(b);
-        return (ai == -1 ? 999 : ai).compareTo(bi == -1 ? 999 : bi);
-      });
+    final compare = ShoppingCategory.orderComparator(categoryOrder);
+    _pendingSortedKeys = pendingMap.keys.toList()..sort(compare);
     _completedByCategory = completedMap;
-    _completedSortedKeys = completedMap.keys.toList()
-      ..sort((a, b) {
-        final ai = categoryOrder.indexOf(a);
-        final bi = categoryOrder.indexOf(b);
-        return (ai == -1 ? 999 : ai).compareTo(bi == -1 ? 999 : bi);
-      });
+    _completedSortedKeys = completedMap.keys.toList()..sort(compare);
   }
 
   @override
@@ -155,40 +146,6 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.viewModel != widget.viewModel) {
       _invalidateCaches();
-    }
-  }
-
-  /// Translate language-neutral category constant to localized display name.
-  String _categoryDisplayName(BuildContext context, String category) {
-    switch (category) {
-      case ShoppingCategory.fruitVeg:
-        return context.l10n.categoryFruitVeg;
-      case ShoppingCategory.dairy:
-        return context.l10n.categoryDairy;
-      case ShoppingCategory.meatFish:
-        return context.l10n.categoryMeatFish;
-      case ShoppingCategory.breadGrain:
-        return context.l10n.categoryBread;
-      case ShoppingCategory.pantry:
-        return context.l10n.categoryPantry;
-      case ShoppingCategory.frozen:
-        return context.l10n.categoryFrozen;
-      case ShoppingCategory.drinks:
-        return context.l10n.categoryBeverage;
-      case ShoppingCategory.snacks:
-        return context.l10n.categorySnacks;
-      case ShoppingCategory.cleaning:
-        return context.l10n.categoryHygiene;
-      case ShoppingCategory.spices:
-        return context.l10n.categorySpices;
-      case ShoppingCategory.canned:
-        return context.l10n.categoryCanned;
-      case ShoppingCategory.dryGoods:
-        return context.l10n.categoryDryGoods;
-      case ShoppingCategory.other:
-        return context.l10n.categoryOther;
-      default:
-        return category;
     }
   }
 
@@ -315,9 +272,19 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               if (_dragOverCategory == category) _dragOverCategory = null;
             });
           },
-          onAcceptWithDetails: (details) {
+          onAcceptWithDetails: (details) async {
             setState(() => _dragOverCategory = null);
-            widget.viewModel.moveItemToCategory(details.data.id, category);
+            final moved = await widget.viewModel
+                .moveItemToCategory(details.data.id, category);
+            if (moved && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(context.l10n.shoppingItemMoved(
+                      ShoppingCategory.displayName(category))),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
           },
           builder: (context, candidateData, rejectedData) {
             return GestureDetector(
@@ -358,7 +325,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
-                        _categoryDisplayName(context, category).toUpperCase(),
+                        ShoppingCategory.displayName(category).toUpperCase(),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: cs.onPrimary,
                           fontWeight: FontWeight.w700,
@@ -432,7 +399,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     );
   }
 
-  void _showCategoryPicker(
+  Future<void> _showCategoryPicker(
     BuildContext context,
     UnifiedShoppingItem item,
   ) async {
@@ -443,7 +410,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     if (selected != null && context.mounted) {
       await widget.viewModel.moveItemToCategory(item.id, selected);
       if (context.mounted) {
-        final displayName = _categoryDisplayName(context, selected);
+        final displayName = ShoppingCategory.displayName(selected);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.shoppingItemMoved(displayName)),
@@ -516,9 +483,19 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           if (_dragOverCategory == category) _dragOverCategory = null;
         });
       },
-      onAcceptWithDetails: (details) {
+      onAcceptWithDetails: (details) async {
         setState(() => _dragOverCategory = null);
-        widget.viewModel.moveItemToCategory(details.data.id, category);
+        final moved = await widget.viewModel
+            .moveItemToCategory(details.data.id, category);
+        if (moved && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.shoppingItemMoved(
+                  ShoppingCategory.displayName(category))),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
       },
       builder: (context, candidateData, rejectedData) {
         return AnimatedContainer(
@@ -552,7 +529,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
-                _categoryDisplayName(context, category),
+                ShoppingCategory.displayName(category),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: cs.onSurfaceVariant,
                 ),

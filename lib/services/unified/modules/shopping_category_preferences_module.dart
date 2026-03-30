@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 import 'package:butlery/models/category_preferences.dart';
 import 'package:butlery/models/list_category_order.dart';
@@ -42,8 +43,7 @@ class ShoppingCategoryPreferencesModule {
 
     try {
       await _repository.savePreferences(_preferences!);
-      // Fire-and-forget global tracking
-      _repository.recordGlobalOverride(itemName, category);
+      unawaited(_repository.recordGlobalOverride(itemName, category));
     } catch (e, st) {
       AppLogger.error('Failed to save item category override: $e', st);
     }

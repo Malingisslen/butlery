@@ -48,42 +48,8 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
   void initState() {
     super.initState();
     _order = List.from(widget.currentOrder);
-    // Ensure all categories are represented
     for (final cat in ShoppingCategory.all) {
       if (!_order.contains(cat)) _order.add(cat);
-    }
-  }
-
-  String _categoryDisplayName(BuildContext context, String category) {
-    switch (category) {
-      case ShoppingCategory.fruitVeg:
-        return context.l10n.categoryFruitVeg;
-      case ShoppingCategory.dairy:
-        return context.l10n.categoryDairy;
-      case ShoppingCategory.meatFish:
-        return context.l10n.categoryMeatFish;
-      case ShoppingCategory.breadGrain:
-        return context.l10n.categoryBread;
-      case ShoppingCategory.pantry:
-        return context.l10n.categoryPantry;
-      case ShoppingCategory.frozen:
-        return context.l10n.categoryFrozen;
-      case ShoppingCategory.drinks:
-        return context.l10n.categoryBeverage;
-      case ShoppingCategory.snacks:
-        return context.l10n.categorySnacks;
-      case ShoppingCategory.cleaning:
-        return context.l10n.categoryHygiene;
-      case ShoppingCategory.spices:
-        return context.l10n.categorySpices;
-      case ShoppingCategory.canned:
-        return context.l10n.categoryCanned;
-      case ShoppingCategory.dryGoods:
-        return context.l10n.categoryDryGoods;
-      case ShoppingCategory.other:
-        return context.l10n.categoryOther;
-      default:
-        return category;
     }
   }
 
@@ -99,7 +65,6 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
       builder: (context, scrollController) {
         return Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: Row(
@@ -122,8 +87,6 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
                 ],
               ),
             ),
-
-            // Reorderable list
             Expanded(
               child: ReorderableListView.builder(
                 scrollController: scrollController,
@@ -140,17 +103,11 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
                   final color = ShoppingListContentWidget.getCategoryColor(
                       context, category);
                   return _buildCategoryTile(
-                    context,
-                    cs,
-                    category,
-                    color,
-                    index,
+                    context, cs, category, color, index,
                   );
                 },
               ),
             ),
-
-            // Save button
             Padding(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               child: SizedBox(
@@ -198,7 +155,7 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
           ),
         ),
         title: Text(
-          _categoryDisplayName(context, category),
+          ShoppingCategory.displayName(category),
           style: AppTextStyles.contentTitle,
         ),
         trailing: ReorderableDragStartListener(

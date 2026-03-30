@@ -241,7 +241,6 @@ class ShoppingListHeader {
             viewModel.totalItems > viewModel.boughtItems)
           const SizedBox(width: AppDimensions.spacingSm),
 
-        // Avbocka alla artiklar
         if (viewModel.boughtItems > 0)
           Expanded(
             child: OutlinedButton.icon(
