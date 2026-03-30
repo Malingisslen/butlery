@@ -272,19 +272,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               if (_dragOverCategory == category) _dragOverCategory = null;
             });
           },
-          onAcceptWithDetails: (details) async {
+          onAcceptWithDetails: (details) {
             setState(() => _dragOverCategory = null);
-            final moved = await widget.viewModel
-                .moveItemToCategory(details.data.id, category);
-            if (moved && mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(context.l10n.shoppingItemMoved(
-                      ShoppingCategory.displayName(category))),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            }
+            _handleItemDrop(details.data.id, category);
           },
           builder: (context, candidateData, rejectedData) {
             return GestureDetector(
@@ -399,6 +389,19 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     );
   }
 
+  Future<void> _handleItemDrop(String itemId, String category) async {
+    final moved = await widget.viewModel.moveItemToCategory(itemId, category);
+    if (moved && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.shoppingItemMoved(
+              ShoppingCategory.displayName(category))),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   Future<void> _showCategoryPicker(
     BuildContext context,
     UnifiedShoppingItem item,
@@ -483,19 +486,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           if (_dragOverCategory == category) _dragOverCategory = null;
         });
       },
-      onAcceptWithDetails: (details) async {
+      onAcceptWithDetails: (details) {
         setState(() => _dragOverCategory = null);
-        final moved = await widget.viewModel
-            .moveItemToCategory(details.data.id, category);
-        if (moved && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.shoppingItemMoved(
-                  ShoppingCategory.displayName(category))),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
+        _handleItemDrop(details.data.id, category);
       },
       builder: (context, candidateData, rejectedData) {
         return AnimatedContainer(
