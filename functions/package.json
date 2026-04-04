@@ -9,27 +9,27 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "sync-ingredients": "npx ts-node src/admin/sync-ingredients.ts",
-    "sync-ingredients:dry-run": "npx ts-node src/admin/sync-ingredients.ts --dry-run --verbose",
-    "export-ingredients": "npx ts-node src/admin/export-ingredients.ts",
-    "seed-tag-configs": "npx ts-node src/admin/seed-tag-configs.ts",
-    "test:parity": "npx ts-node src/__tests__/normalization-parity.test.ts",
-    "reset-user-data": "npx ts-node src/admin/reset-user-data.ts",
-    "reset-user-data:dry-run": "npx ts-node src/admin/reset-user-data.ts --dry-run"
+    "sync-ingredients": "ts-node src/admin/sync-ingredients.ts",
+    "sync-ingredients:dry-run": "ts-node src/admin/sync-ingredients.ts --dry-run --verbose",
+    "export-ingredients": "ts-node src/admin/export-ingredients.ts",
+    "seed-tag-configs": "ts-node src/admin/seed-tag-configs.ts",
+    "test:parity": "ts-node src/__tests__/normalization-parity.test.ts",
+    "reset-user-data": "ts-node src/admin/reset-user-data.ts",
+    "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run"
   },
   "engines": {
     "node": "20"
   },
   "main": "lib/index.js",
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "firebase-admin": "^12.0.0",
-    "firebase-functions": "^4.5.0"
+    "@google/generative-ai": "0.24.1",
+    "firebase-admin": "12.7.0",
+    "firebase-functions": "4.9.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.0"
+    "@types/node": "20.19.24",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.3"
   },
   "private": true
 }

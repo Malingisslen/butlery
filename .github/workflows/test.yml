@@ -76,7 +76,7 @@ jobs:
       # Install Firebase CLI
       - name: Install Firebase CLI
         run: |
-          npm install -g firebase-tools
+          npm install -g firebase-tools@15.13.0
           firebase --version
       
       - run: flutter pub get
