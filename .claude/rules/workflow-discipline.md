@@ -23,7 +23,7 @@
 - `flutter analyze` passes
 - Relevant tests pass
 - Diff behavior vs main if relevant
-- Ask: "Would a staff engineer approve this?"
+- Ask: "Would a staff engineer approve this — including approving 'I'm stuck' as an honest answer?"
 - For layout/UI bugs: test the fix in Chrome before declaring done
 - If first fix fails: STOP guessing. Find 3 similar working views, compare their layout pattern to the broken view, then fix based on the working pattern.
 

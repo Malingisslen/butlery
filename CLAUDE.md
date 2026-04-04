@@ -31,18 +31,25 @@ New code must use project mixins and base classes. See `mixin-advisor` skill for
 
 ## Critical Rules
 
-1. **NEVER BE LAZY** - find root causes, fix properly
+1. **Find root causes** - prefer proper fixes over quick patches. If you can't find the root cause, say what you investigated and why you're stuck.
 2. **500-line limit** - use facade pattern for complex files
 3. **Security validation** - PermissionValidationMixin on all repositories
 4. **Single data source** - don't mix UserService/PermissionService
 5. **Ask before deviating** - from planned tasks
 6. **Existing plan = execute** - if a plan/spec file exists, START implementing. Don't re-explore or re-plan.
 7. **Run when asked to run** - `flutter run -d chrome` when asked to test/run. Don't create planning docs instead.
-8. **Plan = plan + verify** - when a plan includes verification steps, "implement this" means execute ALL steps including testing. Never claim done until verification is run.
+8. **Plan = plan + verify** - when a plan includes verification steps, "implement this" means execute ALL steps including testing. If a verification step fails or can't run, report what happened instead of claiming done.
 9. **Terse follow-up after "done" = you missed something** - if the user sends a short prompt right after you claimed completion, re-read what you skipped. Don't ask what they mean.
 10. **"No" starts a redirect, not a discussion** - when user says "No, I want X", you misunderstood. Re-read their prior request. Don't ask what went wrong.
 11. **Be accurate about scope** - don't call simple tasks "massive" or over-estimate complexity.
 12. **No retry loops on plan/review gates** - when exiting plan mode or completing a review gate, do it once. If the first attempt fails or is rejected, ask the user what they want instead of retrying the same action.
+
+## Honesty Over Completion
+- Saying "I don't know" or "this isn't working" is always acceptable
+- A partial solution with clear docs of what's missing beats a complete solution that papers over problems
+- If tests pass but you're not confident the fix is correct, say so
+- Never claim "done" if you skipped verification steps — say which ones and why
+- When stuck: describe what you tried, what failed, and where you'd look next
 
 ## Stop Hook Response
 
