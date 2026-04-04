@@ -90,6 +90,32 @@ class TaggingModule implements DIModule {
       },
     );
 
+    // IngredientLookupService depends on UserIngredientRepository (user-scoped)
+    // so it must also live in user scope to avoid GetIt resolution failures at boot.
+    container.registerLazySingleton<IngredientLookupService>(
+      () => IngredientLookupService(
+        ingredientRepository: app<IngredientRepository>(),
+        userIngredientRepository: container<UserIngredientRepository>(),
+      ),
+    );
+
+    // TaggingService depends on IngredientLookupService + UserIngredientRepository
+    container.registerLazySingleton<TaggingService>(
+      () => TaggingService(
+        lookupService: container<IngredientLookupService>(),
+        tagConfigService: app<TagConfigService>(),
+        userIngredientRepository: container<UserIngredientRepository>(),
+        eventsTracker: app<TaggingEventsTracker>(),
+      ),
+    );
+
+    // PersonalTagRuleEvaluator depends on IngredientLookupService (user-scoped)
+    container.registerLazySingleton<PersonalTagRuleEvaluator>(
+      () => PersonalTagRuleEvaluator(
+        lookupService: container<IngredientLookupService>(),
+      ),
+    );
+
     container.registerLazySingleton<PersonalTagCrudService>(
       () => PersonalTagCrudService(
         tagRepository: app<FirebasePersonalTagRepository>(),
@@ -100,7 +126,7 @@ class TaggingModule implements DIModule {
     container.registerLazySingleton<PersonalTagService>(
       () => PersonalTagService(
         crudService: container<PersonalTagCrudService>(),
-        ruleEvaluator: app<PersonalTagRuleEvaluator>(),
+        ruleEvaluator: container<PersonalTagRuleEvaluator>(),
         tagRepository: app<FirebasePersonalTagRepository>(),
         groupRepository: app<FirebasePersonalTagGroupRepository>(),
       ),
@@ -123,33 +149,13 @@ class TaggingModule implements DIModule {
         () => FirebaseIngredientRepository(),
       );
 
-      // User-scoped ingredient repository for custom ingredients
-      // UserIngredientRepository, PersonalTagCrudService, PersonalTagSharingService,
-      // PersonalTagService: registered in configureUserScope
+      // IngredientLookupService, TaggingService, PersonalTagRuleEvaluator,
+      // UserIngredientRepository, PersonalTagCrudService, PersonalTagService:
+      // registered in configureUserScope (depend on user-scoped deps)
 
-      // IngredientLookupService is registered in app scope but depends on
-      // UserIngredientRepository (user scope). Safe because it's lazy — only
-      // resolves at first access after user login.
-      container.registerLazySingleton<IngredientLookupService>(
-        () => IngredientLookupService(
-          ingredientRepository: container<IngredientRepository>(),
-          userIngredientRepository: container<UserIngredientRepository>(),
-        ),
-      );
-
-      // Tagging analytics tracker
+      // Tagging analytics tracker (app-scoped, no user dep)
       container.registerLazySingleton<TaggingEventsTracker>(
         () => TaggingEventsTracker(container<AnalyticsRepository>()),
-      );
-
-      // Main tagging service orchestrator
-      container.registerLazySingleton<TaggingService>(
-        () => TaggingService(
-          lookupService: container<IngredientLookupService>(),
-          tagConfigService: container<TagConfigService>(),
-          userIngredientRepository: container<UserIngredientRepository>(),
-          eventsTracker: container<TaggingEventsTracker>(),
-        ),
       );
 
       // Personal tag repository for user-defined tags
@@ -169,14 +175,6 @@ class TaggingModule implements DIModule {
       // Tag editing service for user-driven tag overrides
       container.registerLazySingleton<TagEditingService>(
         () => TagEditingService(),
-      );
-
-      // Personal tag sub-services (registered before facade)
-
-      container.registerLazySingleton<PersonalTagRuleEvaluator>(
-        () => PersonalTagRuleEvaluator(
-          lookupService: container<IngredientLookupService>(),
-        ),
       );
 
       // Tag resolution service - unified tag data for recipes
@@ -204,13 +202,17 @@ class TaggingModule implements DIModule {
       final tagConfigService = container<TagConfigService>();
       await tagConfigService.initialize();
 
-      // Initialize TaggingService (which initializes IngredientLookupService)
-      final taggingService = container<TaggingService>();
-      await taggingService.initialize();
+      // TaggingService, PersonalTagService etc. are user-scoped.
+      // Only initialize them if user scope is active (persisted session).
+      if (container.isRegistered<TaggingService>()) {
+        final taggingService = container<TaggingService>();
+        await taggingService.initialize();
+      }
 
-      // Initialize PersonalTagService
-      final personalTagService = container<PersonalTagService>();
-      await personalTagService.initialize();
+      if (container.isRegistered<PersonalTagService>()) {
+        final personalTagService = container<PersonalTagService>();
+        await personalTagService.initialize();
+      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -226,22 +228,31 @@ class TaggingModule implements DIModule {
     try {
       final container = GetIt.instance;
 
+      // App-scoped services (always available)
       final services = <String, dynamic>{
         'TagConfigService': container<TagConfigService>(),
         'IngredientRepository': container<IngredientRepository>(),
-        'UserIngredientRepository': container<UserIngredientRepository>(),
-        'IngredientLookupService': container<IngredientLookupService>(),
-        'TaggingService': container<TaggingService>(),
         'FirebasePersonalTagRepository':
             container<FirebasePersonalTagRepository>(),
         'FirebasePersonalTagGroupRepository':
             container<FirebasePersonalTagGroupRepository>(),
-        'PersonalTagCrudService': container<PersonalTagCrudService>(),
-        'PersonalTagRuleEvaluator': container<PersonalTagRuleEvaluator>(),
-        'PersonalTagService': container<PersonalTagService>(),
         'TagEditingService': container<TagEditingService>(),
         'TagResolutionService': container<TagResolutionService>(),
       };
+
+      // User-scoped services (only available after login)
+      if (container.isRegistered<UserIngredientRepository>()) {
+        services['UserIngredientRepository'] =
+            container<UserIngredientRepository>();
+        services['IngredientLookupService'] =
+            container<IngredientLookupService>();
+        services['TaggingService'] = container<TaggingService>();
+        services['PersonalTagCrudService'] =
+            container<PersonalTagCrudService>();
+        services['PersonalTagRuleEvaluator'] =
+            container<PersonalTagRuleEvaluator>();
+        services['PersonalTagService'] = container<PersonalTagService>();
+      }
 
       for (final entry in services.entries) {
         final service = entry.value;

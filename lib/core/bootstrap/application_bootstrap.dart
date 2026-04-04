@@ -431,6 +431,16 @@ class ApplicationBootstrap {
 
   /// Perform final validation after all initialization is complete.
   Future<void> _validateInitialization() async {
+    // Skip full health check when no user scope is active (cold start).
+    // Many services are user-scoped and cannot be resolved until login.
+    // The DIContainer already gates its own health check the same way.
+    if (!_diContainer.hasUserScope) {
+      if (kDebugMode) {
+        AppLogger.info('🔍 Skipping full validation (no user session scope)');
+      }
+      return;
+    }
+
     if (kDebugMode) {
       AppLogger.info('🔍 Performing final validation...');
     }

@@ -179,31 +179,31 @@ class MessagingModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // MessagingService doesn't require explicit initialization in current implementation
-      // but we validate it's accessible and functional
-      final messagingService = container<MessagingService>();
-      messagingService.toString(); // Basic validation
-
-      // Validate messaging repository
+      // Validate app-scoped services
       final messagingRepository = container<MessagingRepository>();
-      messagingRepository.toString(); // Basic validation
-
-      // Initialize PresenceService for online/offline tracking
-      final presenceService = container<PresenceService>();
-      await presenceService.initialize();
-
-      // Initialize NotificationService (non-critical — guarded so startup continues)
-      try {
-        final notificationService = container<NotificationService>();
-        await notificationService.initialize();
-      } catch (e) {
-        // NotificationService initialization may fail (e.g. FCM not available on web)
-        // but should not block app startup
-      }
-
-      // Validate MessageReactionsService is accessible
+      messagingRepository.toString();
       final reactionsService = container<MessageReactionsService>();
       reactionsService.toString();
+
+      // User-scoped services — only initialize if available (persisted session)
+      if (container.isRegistered<MessagingService>()) {
+        container<MessagingService>().toString();
+      }
+
+      if (container.isRegistered<PresenceService>()) {
+        final presenceService = container<PresenceService>();
+        await presenceService.initialize();
+      }
+
+      if (container.isRegistered<NotificationService>()) {
+        try {
+          final notificationService = container<NotificationService>();
+          await notificationService.initialize();
+        } catch (e) {
+          // NotificationService initialization may fail (e.g. FCM not available on web)
+          // but should not block app startup
+        }
+      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -219,18 +219,25 @@ class MessagingModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // Check that all messaging services are registered and accessible
+      // App-scoped services (always available)
       final services = <String, dynamic>{
         'MessagingRepository': container<MessagingRepository>(),
-        'MessagingService': container<MessagingService>(),
         'MessageReactionsService': container<MessageReactionsService>(),
-        'PresenceService': container<PresenceService>(),
       };
 
-      // Include NotificationsRepository if it was registered by this module
+      // User-scoped services (only after login)
+      if (container.isRegistered<MessagingService>()) {
+        services['MessagingService'] = container<MessagingService>();
+      }
+      if (container.isRegistered<PresenceService>()) {
+        services['PresenceService'] = container<PresenceService>();
+      }
       if (container.isRegistered<NotificationsRepository>()) {
         services['NotificationsRepository'] =
             container<NotificationsRepository>();
+      }
+      if (container.isRegistered<NotificationService>()) {
+        services['NotificationService'] = container<NotificationService>();
       }
 
       // Perform health checks on services that support it

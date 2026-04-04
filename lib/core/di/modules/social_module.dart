@@ -354,12 +354,11 @@ class SocialModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // Check that all social services are registered and accessible
+      // App-scoped services (always available)
       final services = <String, dynamic>{
         'UserRepository': container<UserRepository>(),
         'UserService': container<UserService>(),
         'FriendsRepository': container<FriendsRepository>(),
-        'UnifiedFriendsService': container<UnifiedFriendsService>(),
         'CommentsRepository': container<CommentsRepository>(),
         'RatingsRepository': container<RatingsRepository>(),
         'DeepLinkRepository': container<DeepLinkRepository>(),
@@ -369,6 +368,11 @@ class SocialModule implements DIModule {
             container<ConnectivityMonitoringService>(),
         'GroupSharedContentService': container<GroupSharedContentService>(),
       };
+
+      // User-scoped services (only after login)
+      if (container.isRegistered<UnifiedFriendsService>()) {
+        services['UnifiedFriendsService'] = container<UnifiedFriendsService>();
+      }
 
       // Perform health checks on services that support it
       for (final entry in services.entries) {

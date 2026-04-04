@@ -59,6 +59,37 @@ class ShoppingListContentWidget extends StatefulWidget {
     required this.onAddItem,
   });
 
+  /// Get category-specific color from ButleryColors (public for reuse).
+  static Color getCategoryColor(BuildContext context, String category) {
+    final bc = context.butleryColors;
+    switch (category) {
+      case ShoppingCategory.meatFish:
+        return bc.categoryMeatFish;
+      case ShoppingCategory.dairy:
+        return bc.categoryDairy;
+      case ShoppingCategory.fruitVeg:
+        return bc.categoryVegetables;
+      case ShoppingCategory.breadGrain:
+        return bc.categoryBreadGrains;
+      case ShoppingCategory.frozen:
+        return bc.categoryFrozen;
+      case ShoppingCategory.pantry:
+      case ShoppingCategory.dryGoods:
+      case ShoppingCategory.spices:
+        return bc.categoryDryGoods;
+      case ShoppingCategory.canned:
+        return bc.categoryCanned;
+      case ShoppingCategory.drinks:
+        return bc.categoryDrinks;
+      case ShoppingCategory.snacks:
+        return bc.categorySnacks;
+      case ShoppingCategory.cleaning:
+        return bc.categoryCleaning;
+      default:
+        return bc.categoryOther;
+    }
+  }
+
   @override
   State<ShoppingListContentWidget> createState() =>
       _ShoppingListContentWidgetState();
@@ -195,9 +226,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
     // Determine which categories have no pending items (for empty drop targets)
     final allCategories = viewModel.categoryOrder;
-    final emptyCategories = allCategories
-        .where((cat) => !pendingKeys.contains(cat))
-        .toList();
+    final emptyCategories =
+        allCategories.where((cat) => !pendingKeys.contains(cat)).toList();
 
     final widgets = <Widget>[
       // Pending items by category
@@ -252,7 +282,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final cs = Theme.of(context).colorScheme;
     final categoryColor = isCompleted
         ? cs.onSurfaceVariant
-        : getCategoryColor(context, category);
+        : ShoppingListContentWidget.getCategoryColor(context, category);
 
     final isCollapsed = _collapsedCategories.contains(category);
     final isDragOver = _dragOverCategory == category;
@@ -278,95 +308,97 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           },
           builder: (context, candidateData, rejectedData) {
             return GestureDetector(
-          onTap: () {
-            setState(() {
-              if (isCollapsed) {
-                _collapsedCategories.remove(category);
-              } else {
-                _collapsedCategories.add(category);
-              }
-            });
-          },
-          child: AnimatedContainer(
-            duration: ThemeConstants.durationFast,
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
-            ),
-            margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-            decoration: BoxDecoration(
-              color: categoryColor,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-              border: isDragOver
-                  ? Border.all(color: cs.onPrimary, width: 2)
-                  : null,
-            ),
-            child: Column(
-              children: [
-                Row(
+              onTap: () {
+                setState(() {
+                  if (isCollapsed) {
+                    _collapsedCategories.remove(category);
+                  } else {
+                    _collapsedCategories.add(category);
+                  }
+                });
+              },
+              child: AnimatedContainer(
+                duration: ThemeConstants.durationFast,
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingMd,
+                  vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+                ),
+                margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+                decoration: BoxDecoration(
+                  color: categoryColor,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                  border: isDragOver
+                      ? Border.all(color: cs.onPrimary, width: 2)
+                      : null,
+                ),
+                child: Column(
                   children: [
-                    // Chevron icon
-                    Icon(
-                      isCollapsed ? Icons.expand_more : Icons.expand_less,
-                      color: cs.onPrimary,
-                      size: AppDimensions.iconSizeM,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Text(
-                        ShoppingCategory.displayName(category).toUpperCase(),
-                        style: AppTextStyles.labelMedium.copyWith(
+                    Row(
+                      children: [
+                        // Chevron icon
+                        Icon(
+                          isCollapsed ? Icons.expand_more : Icons.expand_less,
                           color: cs.onPrimary,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2,
+                          size: AppDimensions.iconSizeM,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: AppDimensions.spacingSm),
+                        Expanded(
+                          child: Text(
+                            ShoppingCategory.displayName(category)
+                                .toUpperCase(),
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: cs.onPrimary,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // Progress badge: X/Y format
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppDimensions.spacingSm,
+                            vertical: AppDimensions.spacingXxs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: cs.onPrimary.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusS),
+                          ),
+                          child: Text(
+                            progress != null
+                                ? '${progress.completed}/${progress.total}'
+                                : '${items.length}',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: cs.onPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    // Progress badge: X/Y format
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingSm,
-                        vertical: AppDimensions.spacingXxs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: cs.onPrimary.withValues(alpha: 0.2),
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadiusS),
-                      ),
-                      child: Text(
-                        progress != null
-                            ? '${progress.completed}/${progress.total}'
-                            : '${items.length}',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: cs.onPrimary,
-                          fontWeight: FontWeight.w600,
+                    // Progress indicator
+                    if (progress != null && progress.total > 0) ...[
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: LinearProgressIndicator(
+                          value: progress.completed / progress.total,
+                          minHeight: 3,
+                          backgroundColor: cs.onPrimary.withValues(alpha: 0.2),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            cs.onPrimary.withValues(alpha: 0.7),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
-                // Progress indicator
-                if (progress != null && progress.total > 0) ...[
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
-                    child: LinearProgressIndicator(
-                      value: progress.completed / progress.total,
-                      minHeight: 3,
-                      backgroundColor: cs.onPrimary.withValues(alpha: 0.2),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        cs.onPrimary.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
+              ),
+            );
           },
         ),
 
@@ -394,8 +426,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     if (moved && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.l10n.shoppingItemMoved(
-              ShoppingCategory.displayName(category))),
+          content: Text(context.l10n
+              .shoppingItemMoved(ShoppingCategory.displayName(category))),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -440,9 +472,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           child: Row(
             children: [
               Icon(
-                _showEmptyCategories
-                    ? Icons.expand_less
-                    : Icons.expand_more,
+                _showEmptyCategories ? Icons.expand_less : Icons.expand_more,
                 color: cs.onSurfaceVariant,
                 size: AppDimensions.iconSizeM,
               ),
@@ -472,7 +502,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     String category,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final categoryColor = getCategoryColor(context, category);
+    final categoryColor =
+        ShoppingListContentWidget.getCategoryColor(context, category);
     final isDragOver = _dragOverCategory == category;
 
     return DragTarget<UnifiedShoppingItem>(
@@ -532,38 +563,6 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         );
       },
     );
-  }
-
-  /// Get category-specific color from ButleryColors (public for reuse).
-  static Color getCategoryColor(BuildContext context, String category) {
-    final bc = context.butleryColors;
-    switch (category) {
-      case ShoppingCategory.meatFish:
-        return bc.categoryMeatFish;
-      case ShoppingCategory.dairy:
-        return bc.categoryDairy;
-      case ShoppingCategory.fruitVeg:
-        return bc.categoryVegetables;
-      case ShoppingCategory.breadGrain:
-        return bc.categoryBreadGrains;
-      case ShoppingCategory.frozen:
-        return bc.categoryFrozen;
-      case ShoppingCategory.pantry:
-      case ShoppingCategory.dryGoods:
-        return bc.categoryDryGoods;
-      case ShoppingCategory.spices:
-        return bc.categoryDryGoods;
-      case ShoppingCategory.canned:
-        return bc.categoryCanned;
-      case ShoppingCategory.drinks:
-        return bc.categoryDrinks;
-      case ShoppingCategory.snacks:
-        return bc.categorySnacks;
-      case ShoppingCategory.cleaning:
-        return bc.categoryCleaning;
-      default:
-        return bc.categoryOther;
-    }
   }
 
   Widget _buildCompletedItemsHeader(

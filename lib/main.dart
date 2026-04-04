@@ -98,25 +98,25 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
-  // CRITICAL: Initialize Flutter bindings in the ROOT zone.
-  // Moving this inside runZonedGuarded causes silent render failure on web.
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Limit image cache to prevent unbounded memory growth
-  PaintingBinding.instance.imageCache.maximumSize = 100;
-  PaintingBinding.instance.imageCache.maximumSizeBytes =
-      50 * 1024 * 1024; // 50 MB
-
-  // Set up error handlers early (before any async work)
-  if (kIsWeb) {
-    FlutterError.onError = (errorDetails) {
-      FlutterError.presentError(errorDetails);
-    };
-  }
-
-  // Wrap Firebase init and runApp in runZonedGuarded to catch async errors
+  // Wrap everything in runZonedGuarded so the binding and runApp share the
+  // same zone. Splitting them (binding in root, runApp in child) causes a
+  // "Zone mismatch" assertion on Flutter web in debug mode.
   runZonedGuarded(
     () async {
+      WidgetsFlutterBinding.ensureInitialized();
+
+      // Limit image cache to prevent unbounded memory growth
+      PaintingBinding.instance.imageCache.maximumSize = 100;
+      PaintingBinding.instance.imageCache.maximumSizeBytes =
+          50 * 1024 * 1024; // 50 MB
+
+      // Set up error handlers early (before any async work)
+      if (kIsWeb) {
+        FlutterError.onError = (errorDetails) {
+          FlutterError.presentError(errorDetails);
+        };
+      }
+
       try {
         // Initialize Firebase with configuration from compile-time --dart-define
         await Firebase.initializeApp(

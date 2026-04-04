@@ -106,12 +106,15 @@
 /// monitoring and error handling for production-grade service reliability and dependency management.
 library;
 
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/offline_service.dart';
 
 /// Comprehensive dependency injection container that orchestrates modular service management for the Butlery application.
 /// This class manages the complete DI lifecycle including module registration, dependency resolution, service health
@@ -315,12 +318,49 @@ class DIContainer {
     );
     AppLogger.info('User session scope pushed');
 
-    // Initialize modules that were deferred at boot due to missing user scope.
-    // Fire-and-forget — don't block the login flow.
+    // Initialize deferred modules (ones that failed at cold start).
     if (_deferredModules.isNotEmpty) {
       final deferred = List<DIModule>.from(_deferredModules);
       _deferredModules.clear();
-      _initializeDeferredModules(deferred);
+      await _initializeDeferredModules(deferred);
+    }
+
+    // Re-initialize modules only after boot is complete (post-login).
+    // During boot, the normal Step 3 init handles everything since user
+    // scope is already pushed before _initializeModule runs.
+    if (_isInitialized) {
+      // OfflineService.database is needed by many lazy singletons
+      // (JsonCacheHelper → SocialMenuCoordinator → SharedContentCoordinator).
+      // Initialize it eagerly so they don't throw on first-access resolution.
+      final container = GetIt.instance;
+      if (container.isRegistered<OfflineService>()) {
+        try {
+          await container<OfflineService>().initialize();
+        } catch (e) {
+          AppLogger.warning('Eager OfflineService init failed: $e');
+        }
+      }
+      // Fire-and-forget the rest — don't block login flow.
+      unawaited(_initializeUserScopedServices());
+    }
+  }
+
+  /// Re-run module initialization after login so user-scoped services
+  /// (registered in configureUserScope) get initialized.
+  /// Modules with only app-scoped init will no-op via their idempotency guards.
+  Future<void> _initializeUserScopedServices() async {
+    for (final module in _modules) {
+      try {
+        await module.initialize().timeout(
+          const Duration(seconds: 5),
+          onTimeout: () {
+            AppLogger.warning(
+                '⏱️ ${module.name} init timed out (5s) — skipping');
+          },
+        );
+      } catch (e) {
+        AppLogger.warning('Post-login init for ${module.name}: $e');
+      }
     }
   }
 
@@ -465,14 +505,17 @@ class DIContainer {
       sorted.add(module);
     }
 
-    // Process all modules
-    for (final module in _modules) {
+    // Process modules in priority order so that within the same dependency
+    // tier, lower-priority-number modules come first in the topological sort.
+    final byPriority = List<DIModule>.from(_modules)
+      ..sort((a, b) => a.priority.compareTo(b.priority));
+    for (final module in byPriority) {
       processModule(module);
     }
 
-    // Sort by priority within dependency groups
-    sorted.sort((a, b) => a.priority.compareTo(b.priority));
-
+    // Do NOT re-sort after topological ordering — that would break the
+    // dependency-first guarantee. The priority is already respected because
+    // we iterated modules in priority order above.
     return sorted;
   }
 

@@ -136,17 +136,24 @@ class CollaborationModule implements DIModule {
     try {
       final container = GetIt.instance;
 
+      // App-scoped services (always available)
       final services = <String, dynamic>{
-        'RealtimeSyncService': container<RealtimeSyncService>(),
-        'UnifiedShoppingService': container<UnifiedShoppingService>(),
         'PermissionService': container<PermissionService>(),
       };
 
-      try {
+      // User-scoped services (only after login)
+      if (container.isRegistered<RealtimeSyncService>()) {
+        services['RealtimeSyncService'] = container<RealtimeSyncService>();
+      }
+      if (container.isRegistered<UnifiedShoppingService>()) {
+        services['UnifiedShoppingService'] =
+            container<UnifiedShoppingService>();
+      }
+      if (container.isRegistered<RealtimeMenuService>()) {
         services['RealtimeMenuService'] = container<RealtimeMenuService>();
+      }
+      if (container.isRegistered<RealtimeRecipeService>()) {
         services['RealtimeRecipeService'] = container<RealtimeRecipeService>();
-      } catch (_) {
-        // Lazy singletons may not be accessible yet
       }
 
       for (final entry in services.entries) {

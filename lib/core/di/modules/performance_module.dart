@@ -50,6 +50,17 @@ class PerformanceModule implements DIModule {
 
   @override
   Future<void> configureUserScope(GetIt container) async {
+    final app = GetIt.instance;
+
+    // JsonCacheHelper depends on OfflineService (user-scoped)
+    container.registerLazySingleton<JsonCacheHelper>(() {
+      final offlineService = app<OfflineService>();
+      return JsonCacheHelper(
+        'unified_recipes_cache',
+        offlineService.database.cacheDao,
+      );
+    });
+
     container.registerLazySingleton<IntelligentCacheManager>(
       () => IntelligentCacheManager(),
       dispose: (s) => s.clearCache(),
@@ -57,7 +68,7 @@ class PerformanceModule implements DIModule {
 
     container.registerLazySingleton<PermissionCacheService>(
       () => PermissionCacheService(
-        featureFlags: GetIt.instance.get<FeatureFlagService>(),
+        featureFlags: app<FeatureFlagService>(),
       ),
       dispose: (s) => s.invalidateAll(),
     );
@@ -66,14 +77,7 @@ class PerformanceModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     try {
-      // JSON cache helper (lazy singleton - uses CacheDao from OfflineService)
-      container.registerLazySingleton<JsonCacheHelper>(() {
-        final offlineService = container<OfflineService>();
-        return JsonCacheHelper(
-          'unified_recipes_cache',
-          offlineService.database.cacheDao,
-        );
-      });
+      // JsonCacheHelper: registered in configureUserScope (depends on OfflineService)
 
       // Performance monitoring service
       container.registerLazySingleton<PerformanceMonitoringService>(
@@ -122,15 +126,25 @@ class PerformanceModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // Check that all performance services are registered and accessible
+      // App-scoped services (always available)
       final services = <String, dynamic>{
-        'JsonCacheHelper': container<JsonCacheHelper>(),
-        'IntelligentCacheManager': container<IntelligentCacheManager>(),
         'PerformanceMonitoringService':
             container<PerformanceMonitoringService>(),
         'AppMonitoringService': container<AppMonitoringService>(),
-        'PermissionCacheService': container<PermissionCacheService>(),
       };
+
+      // User-scoped services (only after login)
+      if (container.isRegistered<JsonCacheHelper>()) {
+        services['JsonCacheHelper'] = container<JsonCacheHelper>();
+      }
+      if (container.isRegistered<IntelligentCacheManager>()) {
+        services['IntelligentCacheManager'] =
+            container<IntelligentCacheManager>();
+      }
+      if (container.isRegistered<PermissionCacheService>()) {
+        services['PermissionCacheService'] =
+            container<PermissionCacheService>();
+      }
 
       // Basic validation - services are not null
       for (final entry in services.entries) {

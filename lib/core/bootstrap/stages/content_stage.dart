@@ -85,8 +85,14 @@ class ContentStage implements BootstrapStage {
   /// processing up to 100 recipes per session in batches of 10.
   Future<void> _initializeRetaggingScheduler() async {
     try {
-      final taggingService = ServiceLocator.get<TaggingService>();
-      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      // TaggingService and UnifiedRecipeService are user-scoped.
+      // On cold start (no persisted session) they won't be available yet.
+      final taggingService = ServiceLocator.tryGet<TaggingService>();
+      final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
+      if (taggingService == null || recipeService == null) {
+        AppLogger.info('📅 RetaggingScheduler skipped (no user session yet)');
+        return;
+      }
 
       _retaggingScheduler = RetaggingScheduler(
         taggingService: taggingService,

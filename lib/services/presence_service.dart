@@ -86,6 +86,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
   final auth_repo.AuthRepository _authRepository;
   final FirebaseDatabase _database;
 
+  bool _isInitialized = false;
   Timer? _typingCleanupTimer;
   final Map<String, Timer> _typingDebounceTimers = {};
   DatabaseReference? _presenceRef;
@@ -106,10 +107,20 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
   @override
   Future<void> initialize() async {
+    if (_isInitialized) return;
+
     try {
       final currentUser = _authRepository.currentUser;
       if (currentUser == null) {
         AppLogger.warning('Cannot initialize presence: No authenticated user');
+        return;
+      }
+
+      // Skip RTDB if no databaseURL is configured — calling ref() would
+      // trigger a Firebase JS SDK fatal() that logs to console even though
+      // Dart catches the exception.
+      if (_database.app.options.databaseURL == null) {
+        AppLogger.warning('RTDB not configured — presence tracking disabled');
         return;
       }
 
@@ -132,6 +143,7 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       // Start typing cleanup timer (Firestore)
       _startTypingCleanup();
 
+      _isInitialized = true;
       AppLogger.success('Presence tracking initialized (RTDB + onDisconnect)');
     } catch (e) {
       AppLogger.error('Failed to initialize presence', e);

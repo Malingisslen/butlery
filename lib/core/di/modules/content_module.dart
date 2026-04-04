@@ -234,6 +234,59 @@ class ContentModule implements DIModule {
       ),
       dispose: (s) => s.resetForLogout(),
     );
+
+    // LLM service for recipe extraction (depends on ConsentService — user-scoped)
+    container.registerLazySingleton<LlmService>(
+      () => LlmService(
+        rateLimiter: app<ImportRateLimiter>(),
+        consentService: container<ConsentService>(),
+      ),
+    );
+
+    // LLM enhancement service for import pipeline integration
+    container.registerLazySingleton<LlmEnhancementService>(
+      () => LlmEnhancementService(
+        llmService: container<LlmService>(),
+        rateLimiter: app<ImportRateLimiter>(),
+      ),
+    );
+
+    // YouTube import strategy for video recipe imports
+    container.registerLazySingleton<YouTubeImportStrategy>(
+      () => YouTubeImportStrategy(
+        transcriptService: app<YouTubeTranscriptService>(),
+        llmService: container<LlmEnhancementService>(),
+      ),
+    );
+
+    // TikTok import pipeline for TikTok video recipe imports
+    container.registerLazySingleton<TikTokPipeline>(
+      () => TikTokPipeline(
+        llmService: container<LlmEnhancementService>(),
+        client: app<http.Client>(),
+      ),
+    );
+
+    container.registerLazySingleton<InstagramPipeline>(
+      () => InstagramPipeline(
+        llmService: container<LlmEnhancementService>(),
+      ),
+    );
+
+    // Recipe parser service — depends on LlmService (user-scoped)
+    container.registerLazySingleton<RecipeParserService>(
+      () {
+        final authRepo = app<auth.AuthRepository>() as FirebaseAuthRepository;
+        return RecipeParserService(
+          getCurrentUserId: () => authRepo.currentUser?.uid ?? 'anonymous',
+          siteConfigRepository: app<SiteConfigRepository>(),
+          llmService: container<LlmService>(),
+          ingredientStrategy: app<IngredientParsingStrategy>(),
+          neuralLineClassifier: app<NeuralLineClassifier>(),
+        );
+      },
+      dispose: (s) => s.close(),
+    );
   }
 
   @override
@@ -301,48 +354,14 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // LLM service for recipe extraction (Mistral AI via Cloud Functions)
-      container.registerLazySingleton<LlmService>(
-        () => LlmService(
-          rateLimiter: container<ImportRateLimiter>(),
-          consentService: container<ConsentService>(),
-        ),
-      );
-
-      // LLM enhancement service for import pipeline integration
-      container.registerLazySingleton<LlmEnhancementService>(
-        () => LlmEnhancementService(
-          llmService: container<LlmService>(),
-          rateLimiter: container<ImportRateLimiter>(),
-        ),
-      );
+      // LlmService, LlmEnhancementService, YouTubeImportStrategy,
+      // TikTokPipeline, InstagramPipeline: registered in configureUserScope
+      // (depend on ConsentService which is user-scoped)
 
       // YouTube transcript service for fetching video transcripts
       container.registerLazySingleton<YouTubeTranscriptService>(
         () => YouTubeTranscriptService(
           client: container<http.Client>(),
-        ),
-      );
-
-      // YouTube import strategy for video recipe imports
-      container.registerLazySingleton<YouTubeImportStrategy>(
-        () => YouTubeImportStrategy(
-          transcriptService: container<YouTubeTranscriptService>(),
-          llmService: container<LlmEnhancementService>(),
-        ),
-      );
-
-      // TikTok import pipeline for TikTok video recipe imports
-      container.registerLazySingleton<TikTokPipeline>(
-        () => TikTokPipeline(
-          llmService: container<LlmEnhancementService>(),
-          client: container<http.Client>(),
-        ),
-      );
-
-      container.registerLazySingleton<InstagramPipeline>(
-        () => InstagramPipeline(
-          llmService: container<LlmEnhancementService>(),
         ),
       );
 
@@ -400,22 +419,8 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // Recipe parser service with tier-based architecture
-      // Provides quality-based parsing with Swedish text support
-      container.registerLazySingleton<RecipeParserService>(
-        () {
-          final authRepo =
-              container<auth.AuthRepository>() as FirebaseAuthRepository;
-          return RecipeParserService(
-            getCurrentUserId: () => authRepo.currentUser?.uid ?? 'anonymous',
-            siteConfigRepository: container<SiteConfigRepository>(),
-            llmService: container<LlmService>(),
-            ingredientStrategy: container<IngredientParsingStrategy>(),
-            neuralLineClassifier: container<NeuralLineClassifier>(),
-          );
-        },
-        dispose: (s) => s.close(),
-      );
+      // RecipeParserService: registered in configureUserScope
+      // (depends on LlmService → ConsentService, both user-scoped)
 
       // Ingredient registry — enriches static KnownIngredients from Firestore
       container.registerLazySingleton<IngredientRegistryService>(
@@ -519,22 +524,26 @@ class ContentModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // Initialize OfflineService FIRST - other services depend on its database
-      final offlineService = container<OfflineService>();
-      await offlineService.initialize();
+      // User-scoped services — only initialize if user session is active
+      if (container.isRegistered<OfflineService>()) {
+        // Initialize OfflineService FIRST - other services depend on its database
+        final offlineService = container<OfflineService>();
+        await offlineService.initialize();
 
-      // Initialize UnifiedRecipeService (depends on OfflineService.database)
-      final unifiedRecipeService = container<UnifiedRecipeService>();
-      await unifiedRecipeService.initialize();
+        // Initialize UnifiedRecipeService (depends on OfflineService.database)
+        final unifiedRecipeService = container<UnifiedRecipeService>();
+        await unifiedRecipeService.initialize();
 
-      // Initialize UnifiedMenuService and RecipeParserService in parallel
-      // (both are independent after OfflineService + UnifiedRecipeService)
-      await Future.wait([
-        container<UnifiedMenuService>().initialize(),
-        container<RecipeParserService>().init(),
-      ]);
+        // UnifiedMenuService and RecipeParserService are independent after
+        // OfflineService + UnifiedRecipeService — initialize in parallel.
+        await Future.wait([
+          container<UnifiedMenuService>().initialize(),
+          if (container.isRegistered<RecipeParserService>())
+            container<RecipeParserService>().init(),
+        ]);
+      }
 
-      // Validate other services are accessible (no explicit initialization needed)
+      // Validate app-scoped services are accessible
       final services = [
         container<MenuService>(),
         container<SearchService>(),
@@ -545,7 +554,6 @@ class ContentModule implements DIModule {
       ];
 
       for (final service in services) {
-        // Basic validation - service is accessible
         service.toString();
       }
 
@@ -566,17 +574,14 @@ class ContentModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // Check that all content services are registered and accessible
+      // App-scoped services (always available)
       final services = <String, dynamic>{
         'RecipeRepository': container<RecipeRepository>(),
-        'UnifiedRecipeService': container<UnifiedRecipeService>(),
-        'ImportManager': container<ImportManager>(),
         'MenuService': container<MenuService>(),
         'SearchService': container<SearchService>(),
         'ShareService': container<ShareService>(),
         'StorageService': container<StorageService>(),
         'ImagePickerService': container<ImagePickerService>(),
-        'OfflineService': container<OfflineService>(),
         'CollaborativeRecipeRepository':
             container<CollaborativeRecipeRepository>(),
         'BackupService': container<BackupService>(),
@@ -584,17 +589,26 @@ class ContentModule implements DIModule {
         'ExtractionManager': container<ExtractionManager>(),
         'GlobalRecipeCache': container<GlobalRecipeCache>(),
         'ImportRateLimiter': container<ImportRateLimiter>(),
-        'LlmService': container<LlmService>(),
-        'LlmEnhancementService': container<LlmEnhancementService>(),
-        'YouTubeTranscriptService': container<YouTubeTranscriptService>(),
-        'YouTubeImportStrategy': container<YouTubeImportStrategy>(),
-        'TikTokPipeline': container<TikTokPipeline>(),
-        'InstagramPipeline': container<InstagramPipeline>(),
         'SiteConfigRepository': container<SiteConfigRepository>(),
-        'RecipeParserService': container<RecipeParserService>(),
         'IngredientSubstitutionService':
             container<IngredientSubstitutionService>(),
       };
+
+      // User-scoped services (only after login)
+      if (container.isRegistered<UnifiedRecipeService>()) {
+        services['UnifiedRecipeService'] = container<UnifiedRecipeService>();
+        services['ImportManager'] = container<ImportManager>();
+        services['OfflineService'] = container<OfflineService>();
+        // LLM + parser services depend on ConsentService (user-scoped)
+        services['RecipeParserService'] = container<RecipeParserService>();
+        services['LlmService'] = container<LlmService>();
+        services['LlmEnhancementService'] = container<LlmEnhancementService>();
+        services['YouTubeTranscriptService'] =
+            container<YouTubeTranscriptService>();
+        services['YouTubeImportStrategy'] = container<YouTubeImportStrategy>();
+        services['TikTokPipeline'] = container<TikTokPipeline>();
+        services['InstagramPipeline'] = container<InstagramPipeline>();
+      }
 
       // Perform health checks on services that support it
       for (final entry in services.entries) {
