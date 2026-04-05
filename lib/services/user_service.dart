@@ -61,6 +61,14 @@ class UserService extends ChangeNotifier
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
 
+  /// Display name with Firebase Auth fallback for pre-profile-load state.
+  String? get currentDisplayName {
+    final profileName = _currentUserProfile?.displayName;
+    if (profileName != null && profileName.isNotEmpty) return profileName;
+    final authName = _authRepository.currentUser?.displayName;
+    return (authName != null && authName.isNotEmpty) ? authName : null;
+  }
+
   /// Get user's allergen preferences, returns defaults if not set.
   UserAllergenPreferences get allergenPreferences =>
       _currentUserProfile?.allergenPreferences ??

@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -211,12 +212,12 @@ class AvatarImageWidget extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: Text(
-          initials,
-          style: AppTextStyles.headlineMedium.copyWith(
-            color: cs.surfaceContainerHighest,
+        child: UserAvatarWidgets.initialsOrFallback(
+          initials: initials,
+          fontSize: _getFontSize(dimensions.width),
+          color: cs.surfaceContainerHighest,
+          baseStyle: AppTextStyles.headlineMedium.copyWith(
             fontWeight: FontWeight.w600,
-            fontSize: _getFontSize(dimensions.width),
           ),
         ),
       ),
@@ -224,24 +225,8 @@ class AvatarImageWidget extends StatelessWidget {
   }
 
   /// Get initials from display name or email
-  String _getInitials() {
-    if (displayName != null && displayName!.trim().isNotEmpty) {
-      final words = displayName!
-          .trim()
-          .split(' ')
-          .where((word) => word.isNotEmpty)
-          .toList();
-      if (words.length >= 2) {
-        return (words[0][0] + words[1][0]).toUpperCase();
-      } else {
-        return words[0][0].toUpperCase();
-      }
-    } else if (email != null && email!.isNotEmpty) {
-      return email![0].toUpperCase();
-    } else {
-      return '?';
-    }
-  }
+  String _getInitials() =>
+      UserAvatarWidgets.getInitials(displayName ?? email ?? '');
 
   /// Get font size based on avatar size
   double _getFontSize(double avatarSize) {

@@ -83,8 +83,13 @@ fi
 
 # Gather lessons if they exist
 RECENT_LESSONS=""
+LESSONS_STALENESS=""
 if [ -f "$PROJECT_DIR/tasks/lessons.md" ]; then
   RECENT_LESSONS=$(tail -30 "$PROJECT_DIR/tasks/lessons.md")
+  LESSON_COUNT=$(grep -c '^### ' "$PROJECT_DIR/tasks/lessons.md" 2>/dev/null || echo "0")
+  if [ "$LESSON_COUNT" -eq 0 ]; then
+    LESSONS_STALENESS="WARNING: tasks/lessons.md has zero entries. If ANY user corrections occurred this session, add them NOW before context is lost. (CLAUDE.md rule 13)"
+  fi
 fi
 
 # Write checkpoint
@@ -122,6 +127,8 @@ ${TASK_STATE}
 
 ## Recent Lessons
 ${RECENT_LESSONS:-No recent lessons.}
+
+${LESSONS_STALENESS}
 CHECKPOINT
 
 exit 0

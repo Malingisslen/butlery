@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
@@ -185,7 +186,7 @@ class ParticipantListWidget extends StatelessWidget {
   Widget _buildSimpleAvatar(
       BuildContext context, String displayName, double size) {
     final cs = Theme.of(context).colorScheme;
-    final initials = _getInitials(displayName);
+    final initials = UserAvatarWidgets.getInitials(displayName);
     return Container(
       width: size,
       height: size,
@@ -194,27 +195,12 @@ class ParticipantListWidget extends StatelessWidget {
         color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
       ),
       child: Center(
-        child: Text(
-          initials,
-          style: AppTextStyles.bodyLargeBold.copyWith(
-            fontSize: size * 0.4,
-            color: cs.primary,
-          ),
+        child: UserAvatarWidgets.initialsOrFallback(
+          initials: initials,
+          fontSize: size * 0.4,
+          color: cs.primary,
         ),
       ),
     );
-  }
-
-  String _getInitials(String name) {
-    if (name.isEmpty) return '?';
-    final words = name.trim().split(RegExp(r'\s+'));
-    if (words.length == 1) {
-      final word = words[0];
-      return word.length >= 2
-          ? '${word[0]}${word[1]}'.toUpperCase()
-          : word[0].toUpperCase();
-    } else {
-      return '${words[0][0]}${words[1][0]}'.toUpperCase();
-    }
   }
 }

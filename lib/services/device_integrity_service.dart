@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:freerasp/freerasp.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -17,6 +18,12 @@ class DeviceIntegrityService {
   /// Initialize the service and start monitoring.
   Future<void> initialize() async {
     if (_isInitialized) return;
+
+    if (kIsWeb) {
+      AppLogger.info('Device integrity: skipped on web (not supported)');
+      _isInitialized = true;
+      return;
+    }
 
     try {
       final config = TalsecConfig(

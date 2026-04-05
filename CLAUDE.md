@@ -43,6 +43,7 @@ New code must use project mixins and base classes. See `mixin-advisor` skill for
 10. **"No" starts a redirect, not a discussion** - when user says "No, I want X", you misunderstood. Re-read their prior request. Don't ask what went wrong.
 11. **Be accurate about scope** - don't call simple tasks "massive" or over-estimate complexity.
 12. **No retry loops on plan/review gates** - when exiting plan mode or completing a review gate, do it once. If the first attempt fails or is rejected, ask the user what they want instead of retrying the same action.
+13. **Learn from corrections** - when the user corrects you ("no", "wrong", redirects, terse follow-up after "done"), IMMEDIATELY add an entry to `tasks/lessons.md` before doing anything else. Format: `### [Category] Title` + Date, Trigger, Rule, Example. Non-negotiable.
 
 ## Honesty Over Completion
 - Saying "I don't know" or "this isn't working" is always acceptable

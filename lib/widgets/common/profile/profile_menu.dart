@@ -8,6 +8,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
+import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -338,7 +339,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   /// Initials avatar - UI Redesign: Surface bg, primary text, sharp corners
   Widget _buildInitialsAvatar(BuildContext context, double size) {
     final cs = Theme.of(context).colorScheme;
-    final initials = _getInitials(widget.displayName);
+    final initials = UserAvatarWidgets.getInitials(widget.displayName);
     return Container(
       width: size,
       height: size,
@@ -348,29 +349,16 @@ class _ProfileMenuState extends State<ProfileMenu> {
         color: cs.surface,
       ),
       child: Center(
-        child: Text(
-          initials,
-          style: AppTextStyles.headerTitle.copyWith(
-            color: cs.primary,
-            fontSize: size * 0.36,
+        child: UserAvatarWidgets.initialsOrFallback(
+          initials: initials,
+          fontSize: size * 0.36,
+          color: cs.primary,
+          baseStyle: AppTextStyles.headerTitle.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
     );
-  }
-
-  /// Get initials from name
-  String _getInitials(String name) {
-    if (name.isEmpty) return '?';
-
-    final words = name.trim().split(' ');
-    if (words.length == 1) {
-      return words[0].substring(0, 1).toUpperCase();
-    }
-
-    return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'
-        .toUpperCase();
   }
 
   /// Social section

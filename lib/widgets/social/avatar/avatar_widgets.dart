@@ -11,6 +11,13 @@ export '../../user/user_display_widgets.dart' show ImageSize, UserDisplayData;
 /// This module provides all avatar-related widgets with a consistent API
 /// that works with UserProfile objects or individual parameters.
 class AvatarWidgets {
+  /// Resolves display name from user profile or explicit parameter,
+  /// handling empty strings from pre-profile-load state.
+  static String _effectiveDisplayName(UserProfile? user, String? displayName) =>
+      (user?.displayName.isNotEmpty == true ? user!.displayName : null) ??
+      displayName ??
+      '?';
+
   /// Build user avatar - MAIN METHOD that replaces UserDisplayWidgets.avatar()
   static Widget avatar({
     UserProfile? user,
@@ -27,7 +34,7 @@ class AvatarWidgets {
     bool clickable = false,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName = user?.displayName ?? displayName ?? '?';
+    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
     final effectiveIsOnline = user?.isOnline ?? isOnline;
 
     return UserDisplayWidgets.avatar(
@@ -55,7 +62,7 @@ class AvatarWidgets {
     double? borderWidth,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName = user?.displayName ?? displayName ?? '?';
+    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
 
     return UserDisplayWidgets.editableAvatar(
       imageUrl: effectiveImageUrl,
@@ -75,7 +82,7 @@ class AvatarWidgets {
     int? maxLines,
     TextOverflow? overflow,
   }) {
-    final effectiveDisplayName = user?.displayName ?? displayName ?? '?';
+    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
 
     return UserDisplayWidgets.userName(
       displayName: effectiveDisplayName,
@@ -94,7 +101,7 @@ class AvatarWidgets {
     TextStyle? nameStyle,
     TextStyle? emailStyle,
   }) {
-    final effectiveDisplayName = user?.displayName ?? displayName ?? '?';
+    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
     final effectiveEmail = user?.email ?? email;
 
     return UserDisplayWidgets.userInfo(
@@ -120,7 +127,7 @@ class AvatarWidgets {
     EdgeInsets? padding,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName = user?.displayName ?? displayName ?? '?';
+    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
     final effectiveEmail = user?.email ?? email;
     final effectiveSubtitle = subtitle;
     final effectiveIsOnline = user?.isOnline ?? false;
@@ -159,7 +166,7 @@ class AvatarWidgets {
     bool isOnline = false,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName = user?.displayName ?? displayName ?? '?';
+    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
     final effectiveEmail = user?.email ?? email;
     final effectiveSubtitle = subtitle;
     final effectiveDescription = description;
@@ -197,7 +204,7 @@ class AvatarWidgets {
     Color? backgroundColor,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName = user?.displayName ?? displayName ?? '?';
+    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
     final effectiveEmail = user?.email ?? email;
     final effectiveSubtitle = subtitle;
     final effectiveIsOnline = user?.isOnline ?? isOnline;

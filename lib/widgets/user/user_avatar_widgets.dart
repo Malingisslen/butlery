@@ -216,13 +216,11 @@ class UserAvatarWidgets {
         color: backgroundColor,
       ),
       child: Center(
-        child: Text(
-          initials,
-          style: AppTextStyles.bodyLargeBold.copyWith(
-            fontSize: fontSize,
-            color: textColor,
-            letterSpacing: 0.5,
-          ),
+        child: initialsOrFallback(
+          initials: initials,
+          fontSize: fontSize,
+          color: textColor,
+          baseStyle: AppTextStyles.bodyLargeBold.copyWith(letterSpacing: 0.5),
         ),
       ),
     );
@@ -242,11 +240,17 @@ class UserAvatarWidgets {
     };
   }
 
+  /// Sentinel value returned by [getInitials] when no name is available.
+  static const unknownInitials = '?';
+
+  static final _whitespaceRegex = RegExp(r'\s+');
+
   /// Optimerad initials generation
   static String getInitials(String name) {
-    if (name.isEmpty) return '?';
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return unknownInitials;
 
-    final words = name.trim().split(RegExp(r'\s+'));
+    final words = trimmed.split(_whitespaceRegex);
 
     if (words.length == 1) {
       final word = words[0];
@@ -256,5 +260,24 @@ class UserAvatarWidgets {
     } else {
       return '${words[0][0]}${words[1][0]}'.toUpperCase();
     }
+  }
+
+  /// Returns initials text or a person icon fallback when name is unknown.
+  static Widget initialsOrFallback({
+    required String initials,
+    required double fontSize,
+    required Color color,
+    TextStyle? baseStyle,
+  }) {
+    if (initials == unknownInitials) {
+      return Icon(Icons.person, size: fontSize * 1.5, color: color);
+    }
+    return Text(
+      initials,
+      style: (baseStyle ?? AppTextStyles.bodyLargeBold).copyWith(
+        fontSize: fontSize,
+        color: color,
+      ),
+    );
   }
 }

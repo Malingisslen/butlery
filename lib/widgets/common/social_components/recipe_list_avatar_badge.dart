@@ -33,6 +33,7 @@ class RecipeListAvatarBadge extends StatelessWidget {
             // UI Redesign: No status indicator per interview decision
             SocialAvatarComponents.avatar(
               user: userService.currentUserProfile,
+              displayName: userService.currentDisplayName,
               size: ImageSize.medium,
               showOnlineStatus: false,
               onTap: () => _showProfileMenu(context, userService),
@@ -80,8 +81,7 @@ class RecipeListAvatarBadge extends StatelessWidget {
     LayoutComponents.showProfileMenu(
       context,
       userImageUrl: userService.currentUserProfile?.avatarUrl,
-      displayName: userService.currentUserProfile?.displayName ??
-          context.l10n.commonUser,
+      displayName: userService.currentDisplayName ?? context.l10n.commonUser,
       email: userService.currentUserProfile?.email,
       onEditProfile: () => Navigator.pushNamed(context, Routes.profileEdit),
       onViewFriends: () => Navigator.pushNamed(context, Routes.friends),

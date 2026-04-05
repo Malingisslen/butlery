@@ -54,6 +54,15 @@
             "command": "bash .claude/hooks/inject-checkpoint.sh"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/setup-morning-brief.sh"
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -123,6 +132,10 @@
           {
             "type": "command",
             "command": "bash -c 'read -r JSON; FILE=$(echo \"$JSON\" | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get(\\\"tool_input\\\",{}).get(\\\"file_path\\\",\\\"\\\") or d.get(\\\"tool_response\\\",{}).get(\\\"filePath\\\",\\\"\\\"))\"); if [[ \"$FILE\" == *.dart ]]; then dart format \"$FILE\" 2>/dev/null || true; fi'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/safety-skill-trigger.sh"
           }
         ]
       }
