@@ -142,7 +142,9 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   void _emitState() {
     if (_stateSubject.isClosed) return;
     if (!_stateManager.isInitialized) {
-      _stateSubject.add(const FriendsStateLoading());
+      if (_stateManager.isLoading) {
+        _stateSubject.add(const FriendsStateLoading());
+      }
       return;
     }
     if (_stateManager.hasError && _stateManager.friends.isEmpty) {

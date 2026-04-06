@@ -22,12 +22,6 @@ class RequestsTab {
     BuildContext context,
     FriendsViewModel viewModel,
   ) {
-    if (viewModel.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
     return RefreshIndicator(
       onRefresh: () async {
         await viewModel.refresh();

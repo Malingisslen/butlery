@@ -87,17 +87,24 @@ class FriendsStateManager extends ChangeNotifier {
         _loadCategories(currentUserId),
         _loadGroupInvitations(currentUserId),
         _loadBlockedUsers(currentUserId),
-      ]);
+      ]).timeout(const Duration(seconds: 10));
 
       _setupRealtimeListeners(currentUserId);
 
       _isInitialized = true;
       _isLoading = false;
-    } catch (e, stackTrace) {
-      _error = 'Failed to load friends data: $e';
+    } on TimeoutException {
+      // Proceed with whatever data loaded — individual methods catch their own errors
+      _isInitialized = true;
       _isLoading = false;
+      AppLogger.warning(
+          'FriendsStateManager init timed out, proceeding with partial data');
+    } catch (e, stackTrace) {
+      _isInitialized = true;
+      _isLoading = false;
+      _error = 'Failed to load friends data: $e';
       AppLogger.error(
-          '❌ Failed to initialize FriendsStateManager: $e', stackTrace);
+          'Failed to initialize FriendsStateManager: $e', stackTrace);
     }
 
     notifyListeners();
