@@ -71,8 +71,8 @@ import 'package:butlery/core/l10n/app_locale.dart';
 // Views
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
-import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Beta feedback
 import 'package:butlery/widgets/common/feedback_fab.dart';
@@ -130,6 +130,34 @@ Future<void> main() async {
             persistenceEnabled: true,
             cacheSizeBytes: 100 * 1024 * 1024, // 100 MB
           );
+
+          // On web, detect and recover from corrupted IndexedDB persistence.
+          // Firestore JS SDK 12.x has a known bug where IndexedDB state machine
+          // gets stuck after unclean shutdown, causing INTERNAL ASSERTION FAILED.
+          if (kIsWeb) {
+            try {
+              await FirebaseFirestore.instance
+                  .collection('_health')
+                  .doc('_')
+                  .get()
+                  .timeout(const Duration(seconds: 5));
+            } catch (healthError) {
+              final msg = healthError.toString();
+              if (msg.contains('INTERNAL ASSERTION') ||
+                  msg.contains('Unexpected state')) {
+                AppLogger.warning(
+                  'Firestore web persistence corrupted — clearing IndexedDB',
+                );
+                await FirebaseFirestore.instance.terminate();
+                await FirebaseFirestore.instance.clearPersistence();
+                FirebaseFirestore.instance.settings = const Settings(
+                  persistenceEnabled: true,
+                  cacheSizeBytes: 100 * 1024 * 1024,
+                );
+              }
+              // permission-denied on non-existent doc is expected — ignore
+            }
+          }
         } catch (e) {
           // Settings already applied (e.g. hot restart)
         }
@@ -945,7 +973,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
       AppLogger.debug(
         'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid}',
       );
-      return MinaReceptView(key: ValueKey(user.uid));
+      return KeyedSubtree(
+        key: ValueKey(user.uid),
+        child: LayoutScaffolds.mainMenu(),
+      );
     }
 
     AppLogger.debug('AuthWrapper: No user logged in, showing auth view');

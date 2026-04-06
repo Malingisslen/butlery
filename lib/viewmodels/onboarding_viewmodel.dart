@@ -22,7 +22,8 @@ class OnboardingViewModel extends ChangeNotifier {
   Set<String> get selectedDietaryPrefs =>
       Set.unmodifiable(_selectedDietaryPrefs);
   bool get isCompleting => _isCompleting;
-  bool get isLastPage => _currentPage == 3;
+  static const int _lastPageIndex = 3;
+  bool get isLastPage => _currentPage == _lastPageIndex;
   bool get isFirstPage => _currentPage == 0;
 
   void setPage(int page) {
@@ -39,7 +40,7 @@ class OnboardingViewModel extends ChangeNotifier {
   }
 
   void nextPage() {
-    if (_currentPage < 3) {
+    if (_currentPage < _lastPageIndex) {
       _currentPage++;
       notifyListeners();
     }
@@ -93,12 +94,16 @@ class OnboardingViewModel extends ChangeNotifier {
                   trackedDietary: _selectedDietaryPrefs,
                 )
               : null;
-      await userService.completeOnboardingWithPreferences(prefs);
+      final isSkip = _currentPage < _lastPageIndex;
+      await userService.completeOnboardingWithPreferences(
+        prefs,
+        onboardingSkippedAt: isSkip ? DateTime.now() : null,
+      );
 
       // Seed starter recipes for new users (fire-and-forget, never blocks onboarding)
       _seedStarterRecipes();
 
-      if (_currentPage < 3) {
+      if (isSkip) {
         _analytics?.logEvent(
           name: 'onboarding_skipped',
           parameters: {'skipped_at_page': _currentPage},

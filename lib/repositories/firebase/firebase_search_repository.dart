@@ -194,7 +194,7 @@ class FirestoreSearchRepository implements SearchRepository {
   Future<bool> healthCheck() async {
     try {
       await _firestore
-          .collection(FirestoreCollections.sharedContent)
+          .collection(FirestoreCollections.connectivityTest)
           .limit(1)
           .get();
       return true;

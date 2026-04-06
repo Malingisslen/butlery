@@ -11,6 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
@@ -128,6 +129,7 @@ class RecipeListViewModel extends ChangeNotifier {
         _recipeService.stateStream.listen((_) => _onRecipesChanged());
     _recipeService.initialize();
     _loadDisplayPreferences();
+    _loadOnboardingBannerState();
   }
 
   Future<void> _loadDisplayPreferences() async {
@@ -783,6 +785,33 @@ class RecipeListViewModel extends ChangeNotifier {
   void _onRecipesChanged() {
     _invalidateCache();
     notifyListeners();
+  }
+
+  // Onboarding skip banner state
+  static const _bannerDismissedKey = 'butlery_onboarding_banner_dismissed';
+  bool _showOnboardingBanner = false;
+
+  bool get showOnboardingBanner => _showOnboardingBanner;
+
+  void dismissOnboardingBanner() {
+    _showOnboardingBanner = false;
+    notifyListeners();
+    try {
+      ServiceLocator.get<PersistenceService>()
+          .setBool(_bannerDismissedKey, true);
+    } catch (_) {}
+  }
+
+  Future<void> _loadOnboardingBannerState() async {
+    try {
+      final persistence = ServiceLocator.get<PersistenceService>();
+      final dismissed = await persistence.getBool(_bannerDismissedKey) ?? false;
+      if (dismissed) return;
+      final profile = ServiceLocator.get<UserService>().currentUserProfile;
+      _showOnboardingBanner =
+          profile != null && profile.onboardingSkippedAt != null;
+      if (_showOnboardingBanner) notifyListeners();
+    } catch (_) {}
   }
 
   /// Performs comprehensive ViewModel disposal with service listener cleanup and memory management.

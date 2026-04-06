@@ -25,6 +25,7 @@ class UserProfile with JsonSerializableMixin {
   final String? preferredLocale;
   final UserAllergenPreferences? allergenPreferences;
   final bool hasCompletedOnboarding;
+  final DateTime? onboardingSkippedAt;
 
   UserProfile({
     required this.uid,
@@ -44,6 +45,7 @@ class UserProfile with JsonSerializableMixin {
     this.preferredLocale,
     this.allergenPreferences,
     this.hasCompletedOnboarding = false,
+    this.onboardingSkippedAt,
   });
 
   static const _sentinel = Object();
@@ -65,6 +67,7 @@ class UserProfile with JsonSerializableMixin {
     Object? preferredLocale = _sentinel,
     Object? allergenPreferences = _sentinel,
     bool? hasCompletedOnboarding,
+    Object? onboardingSkippedAt = _sentinel,
   }) {
     return UserProfile(
       uid: uid,
@@ -91,6 +94,9 @@ class UserProfile with JsonSerializableMixin {
           : allergenPreferences as UserAllergenPreferences?,
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
+      onboardingSkippedAt: onboardingSkippedAt == _sentinel
+          ? this.onboardingSkippedAt
+          : onboardingSkippedAt as DateTime?,
     );
   }
 
@@ -192,6 +198,9 @@ class UserProfile with JsonSerializableMixin {
       'preferredLocale': preferredLocale,
       'allergenPreferences': allergenPreferences?.toFirestore(),
       'hasCompletedOnboarding': hasCompletedOnboarding,
+      'onboardingSkippedAt': onboardingSkippedAt != null
+          ? AppTimestamp.fromDateTime(onboardingSkippedAt!).toFirestore()
+          : null,
     };
   }
 
@@ -220,6 +229,9 @@ class UserProfile with JsonSerializableMixin {
       // Allergen preferences
       'allergenPreferences': allergenPreferences?.toFirestore(),
       'hasCompletedOnboarding': hasCompletedOnboarding,
+      'onboardingSkippedAt': onboardingSkippedAt != null
+          ? serializeDateTime(onboardingSkippedAt!)
+          : null,
     };
   }
 
@@ -258,6 +270,8 @@ class UserProfile with JsonSerializableMixin {
           : null,
       hasCompletedOnboarding:
           utils.SerializationUtils.safeBool(data, 'hasCompletedOnboarding'),
+      onboardingSkippedAt:
+          utils.SerializationUtils.safeDateTime(data, 'onboardingSkippedAt'),
     );
   }
 
@@ -295,6 +309,8 @@ class UserProfile with JsonSerializableMixin {
           : null,
       hasCompletedOnboarding:
           utils.SerializationUtils.safeBool(json, 'hasCompletedOnboarding'),
+      onboardingSkippedAt: utils.SerializationUtils.parseDateTimeValue(
+          json['onboardingSkippedAt']),
     );
   }
 

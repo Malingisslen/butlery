@@ -131,11 +131,18 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
       // Register disconnect handler BEFORE setting online — if the process
       // dies between these two calls, onDisconnect is already in place.
+      // Timeout prevents hanging boot on flaky networks (BUG-043 RC2).
       await _presenceRef!
           .onDisconnect()
-          .set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
+          .set({'status': 'offline', 'lastSeen': ServerValue.timestamp})
+          .timeout(const Duration(seconds: 5), onTimeout: () {
+        AppLogger.warning('RTDB onDisconnect timed out (5s)');
+      });
       await _presenceRef!
-          .set({'status': 'online', 'lastSeen': ServerValue.timestamp});
+          .set({'status': 'online', 'lastSeen': ServerValue.timestamp})
+          .timeout(const Duration(seconds: 5), onTimeout: () {
+        AppLogger.warning('RTDB presence set timed out (5s)');
+      });
 
       // Register lifecycle observer for graceful backgrounding
       WidgetsBinding.instance.addObserver(this);

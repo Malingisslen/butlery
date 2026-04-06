@@ -432,7 +432,12 @@ class DIContainer {
         AppLogger.info('⚡ Initializing module: ${module.name}');
       }
 
-      await module.initialize();
+      await module.initialize().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          AppLogger.warning('${module.name} init timed out (10s) during boot');
+        },
+      );
 
       // Perform health check
       final isHealthy = await module.healthCheck();

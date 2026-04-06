@@ -334,11 +334,14 @@ class SocialModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // UserService + UnifiedFriendsService are user-scoped — initialized on login, not here
-
       // Validate app-scoped services are accessible
       container<DeepLinkService>();
       container<ConnectivityMonitoringService>();
+
+      // UserService is app-scoped — initialize it so it subscribes to auth
+      // state and loads the profile. Without this, returning users with
+      // persisted Firebase sessions get a permanent spinner (BUG-043).
+      await container<UserService>().initialize();
     } catch (e) {
       throw DIModuleException(
         name,

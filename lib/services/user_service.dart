@@ -47,6 +47,7 @@ class UserService extends ChangeNotifier
 
   // State
   bool _isLoading = false;
+  bool _isInitialized = false;
   String? _error;
 
   // Constants
@@ -76,6 +77,8 @@ class UserService extends ChangeNotifier
 
   /// Initialize service och ladda current user profile
   Future<void> initialize() async {
+    if (_isInitialized) return;
+    _isInitialized = true;
     AppLogger.info('🔄 Initialiserar UserService...');
 
     // Listen to auth state changes with StreamManagementMixin
@@ -407,6 +410,7 @@ class UserService extends ChangeNotifier
   }
 
   void resetForLogout() {
+    _isInitialized = false;
     _currentUserProfile = null;
     _profileCache.clear();
     _cacheTimestamps.clear();
@@ -552,8 +556,12 @@ class UserService extends ChangeNotifier
   }
 
   /// Complete onboarding with preferences in a single atomic write.
+  /// When [onboardingSkippedAt] is provided, it records that the user skipped
+  /// onboarding rather than completing all steps.
   Future<void> completeOnboardingWithPreferences(
-      UserAllergenPreferences? preferences) async {
+    UserAllergenPreferences? preferences, {
+    DateTime? onboardingSkippedAt,
+  }) async {
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) {
       throw StateError('No current user for onboarding completion');
@@ -563,6 +571,7 @@ class UserService extends ChangeNotifier
       allergenPreferences:
           preferences ?? _currentUserProfile!.allergenPreferences,
       hasCompletedOnboarding: true,
+      onboardingSkippedAt: onboardingSkippedAt,
     );
     await _repository.saveProfile(updated);
 

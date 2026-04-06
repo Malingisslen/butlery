@@ -7922,6 +7922,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingDietaryPescetarianDesc => 'Fish but no meat';
 
   @override
+  String get onboardingDietaryGlutenFree => 'Gluten-free';
+
+  @override
+  String get onboardingDietaryLactoseFree => 'Lactose-free';
+
+  @override
+  String get onboardingDietaryHalal => 'Halal';
+
+  @override
+  String get onboardingDietaryKosher => 'Kosher';
+
+  @override
+  String get onboardingDietaryGlutenFreeDesc =>
+      'No gluten-containing ingredients';
+
+  @override
+  String get onboardingDietaryLactoseFreeDesc =>
+      'No dairy products with lactose';
+
+  @override
+  String get onboardingDietaryHalalDesc => 'Follows halal food guidelines';
+
+  @override
+  String get onboardingDietaryKosherDesc => 'Follows kosher food guidelines';
+
+  @override
+  String get onboardingSkippedBanner =>
+      'You skipped the introduction. Want to set up allergens and dietary preferences?';
+
+  @override
+  String get onboardingSkippedBannerAction => 'Open settings';
+
+  @override
   String get onboardingImportTitle => 'Import your first recipe';
 
   @override
@@ -11796,12 +11829,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailVerificationSuccess => 'Email verified!';
 
   @override
-  String get recipeSelected => 'Selected';
-
-  @override
-  String get recipeNotSelected => 'Not selected';
-
-  @override
   String get a11yCookingModeClose => 'Close cooking mode';
 
   @override
@@ -11936,4 +11963,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickCaptureTitleHint => 'What\'s the recipe called?';
+
+  @override
+  String get a11ySwipeEditAction => 'Edit recipe';
+
+  @override
+  String get a11ySwipeDeleteAction => 'Delete recipe';
+
+  @override
+  String a11yRecipeSelected(String title) {
+    return '$title, selected';
+  }
+
+  @override
+  String a11yRecipeNotSelected(String title) {
+    return '$title, not selected';
+  }
+
+  @override
+  String get recipeImproveTitle => 'Improve this recipe';
+
+  @override
+  String get recipeImproveMissingTitle => 'Title';
+
+  @override
+  String get recipeImproveMissingIngredients => 'Ingredients';
+
+  @override
+  String get recipeImproveMissingInstructions => 'Instructions';
+
+  @override
+  String get recipeImproveMissingPortions => 'Servings';
+
+  @override
+  String get recipeImproveMissingTime => 'Cooking time';
+
+  @override
+  String get recipeImproveMissingImage => 'Photo';
+
+  @override
+  String recipeCompleteness(int score) {
+    return '$score% complete';
+  }
+
+  @override
+  String recipeCompletenessA11y(int score) {
+    return 'Recipe is $score percent complete';
+  }
+
+  @override
+  String get pwaInstallPrompt =>
+      'Install Butlery on your home screen for quicker access';
+
+  @override
+  String get pwaInstallAction => 'Install';
 }

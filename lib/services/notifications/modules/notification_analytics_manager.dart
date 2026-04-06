@@ -3,7 +3,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:get_it/get_it.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Notification analytics with delivery tracking and engagement metrics.
 /// Follows SRP - handles only analytics (not FCM, content, preferences, or batching).
@@ -25,7 +26,7 @@ class NotificationAnalyticsManager {
 
   NotificationAnalyticsManager({
     required String userId,
-  })  : _firestore = GetIt.instance<FirebaseFirestore>(),
+  })  : _firestore = ServiceLocator.get<FirestoreRepository>().firestore,
         _userId = userId;
 
   /// Record notification sent (call after FCM send attempt)

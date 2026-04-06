@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
@@ -583,6 +584,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
                         const SizedBox(height: AppDimensions.spacingMd),
 
+                        // Completeness improvement banner
+                        if (recipe.completenessScore < incompleteThreshold)
+                          _buildCompletenessBanner(context, recipe),
+
                         // Recipe main content
                         Selector<UserService, UserAllergenPreferences>(
                           selector: (_, svc) => svc.allergenPreferences,
@@ -639,6 +644,66 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCompletenessBanner(BuildContext context, Recipe recipe) {
+    final cs = Theme.of(context).colorScheme;
+    final missing = recipe.missingFields;
+    final missingLabels = missing.map((f) => switch (f) {
+          RecipeField.title => context.l10n.recipeImproveMissingTitle,
+          RecipeField.ingredients =>
+            context.l10n.recipeImproveMissingIngredients,
+          RecipeField.instructions =>
+            context.l10n.recipeImproveMissingInstructions,
+          RecipeField.portions => context.l10n.recipeImproveMissingPortions,
+          RecipeField.time => context.l10n.recipeImproveMissingTime,
+          RecipeField.image => context.l10n.recipeImproveMissingImage,
+        });
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      decoration: BoxDecoration(
+        color: cs.primaryContainer,
+        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.tips_and_updates_outlined,
+                  size: 18, color: cs.primary),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Text(
+                context.l10n.recipeImproveTitle,
+                style: AppTextStyles.titleSmall.copyWith(
+                  color: cs.onPrimaryContainer,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Text(
+            missingLabels.join(', '),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: cs.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => Navigator.pushNamed(
+                context,
+                Routes.redigeraRecept,
+                arguments: recipe,
+              ),
+              child: Text(context.l10n.commonEdit),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

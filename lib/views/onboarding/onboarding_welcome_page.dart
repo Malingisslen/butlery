@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 
 class OnboardingWelcomePage extends StatelessWidget {
   const OnboardingWelcomePage({super.key});
@@ -16,18 +17,10 @@ class OnboardingWelcomePage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // App icon
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: cs.primary,
-            ),
-            child: Icon(
-              Icons.restaurant_menu,
-              size: 64,
-              color: cs.surfaceContainerHighest,
-            ),
+          // App illustration
+          const VegetableIllustration(
+            type: VegetableType.broccoli,
+            size: 120,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           Text(

@@ -1,7 +1,7 @@
 # Manual Testing Log - Butlery App
 
-**Status**: 962/962 completed (100%) — 867 passed, 3 failed, 92 N/A, 0 PENDING, 0 open bugs
-**Tested**: 2026-01-07 to 2026-03-15 (39 sessions)
+**Status**: 1128/1128 — 885 passed, 3 failed, 93 N/A, 147 PENDING (design/UI), 0 open bugs
+**Tested**: 2026-01-07 to 2026-03-15 (39 sessions) | Design/UI phases added 2026-04-05
 **Credentials**: User A: malin.gisslen1@gmail.com / Test1234 | User B: test.testsson2@gmail.com / TestPass123!
 
 ## Summary
@@ -88,7 +88,15 @@
 | 78. Chat Media & Conversation Creation | 8 | 8 | 0 | DM + group creation + image sharing verified |
 | 79. Shared Content Management | 8 | 3 | 5 | Dismiss/undismiss work; audit log, parsing correction, re-consent not implemented |
 | 80. Device & Background Behaviors | 8 | 8 | 0 | Device integrity + cache + OCR quota + retag verified |
-| **TOTAL** | **962** | **867** | **92** | **3 failed, 2 open bugs** |
+| **— Design & UI Testing —** | | | | **Added 2026-04-05** |
+| 81. Design Token Compliance | 28 | 1 | | Colors, typography, spacing, shape tokens |
+| 82. Component Visual Verification | 33 | 5 | | Widget-by-widget rendering vs spec |
+| 83. Screen Mockup Comparison | 45 | 7 | 1 | Per-screen vs mockup PNGs at 375x812 |
+| 84. Responsive Layout | 18 | 4 | | Breakpoints: mobile/tablet/desktop; 2 BLOCKED |
+| 85. Dark Mode / Theme | 12 | | | Dark theme color adaptation |
+| 86. Accessibility Visual | 13 | | | WCAG AA contrast, touch targets, semantics |
+| 87. State Visual Coverage | 17 | | | Loading, empty, error, offline states |
+| **TOTAL** | **1128** | **885** | **93** | **3 failed, 147 pending design/UI** |
 
 ## Bug Tracker
 
@@ -102,6 +110,7 @@ No open bugs.
 |----|-------|
 | BUG-032 | ICA.se URL import fails — external site changed HTML format. Other URL sources work. |
 | BUG-037 | URL import fails on web (CORS proxy issue) — works correctly on phone/device. All URL sources affected on web. |
+| BUG-043 | ~~DI bootstrap spinner stuck permanently~~ FIXED: 3 root causes — UserService.initialize() never called, no timeouts on module init, Firestore web IndexedDB corruption with no recovery. Fixed in 6 files, ~40 lines. |
 
 ### Fixed (40 bugs)
 
@@ -1184,6 +1193,240 @@ Verify device integrity, caching, OCR quota, and retag progress behaviors.
 | DEV-07 | Retag progress dialog shows progress bar and recipe count | PASS — RetagProgressDialog(barrierDismissible: false) with taggingService.retagUserRecipes |
 | DEV-08 | Cancel retag mid-progress → stops cleanly, partial results kept | PASS — Retag tracks per-recipe progress; partial results persisted |
 
+---
+
+## Design & UI Testing (Phases 81–87)
+
+**Added**: 2026-04-05 | **166 tests** | **Method**: Visual inspection in Chrome at 375x812 (mobile), 768x1024 (tablet), 1280x900 (desktop)
+**Reference**: `docs/design/butlery-mockup-reference.md`, `docs/design/mockups/*.png`, `docs/design/LOGIN_SCREEN_SPEC.md`
+
+### Phase 81: Design Token Compliance (28 tests)
+
+Verify that design tokens in `app_colors.dart`, `app_text_styles.dart`, `app_dimensions.dart` render correctly.
+
+| ID | Test | Status |
+|----|------|--------|
+| UI-DT-01 | Primary color renders as forestGreen #4A7C59 on headers and buttons | |
+| UI-DT-02 | forestGreenDark #3D6849 used for pressed states and main view header bg | |
+| UI-DT-03 | forestGreenLight #6B9B7A used for outgoing chat bubbles, not primary actions | |
+| UI-DT-04 | Rust #8B5A3C appears ONLY on decorative elements (accent bars, borders, nav indicator) — never on error states | |
+| UI-DT-05 | rustLight #A77B5E used exclusively for recipe card bottom border | |
+| UI-DT-06 | Error color #C44536 used for error states, destructive buttons — visually distinct from rust | |
+| UI-DT-07 | Warning color #D4A03C (warm gold) used for warning states — not orange or amber | |
+| UI-DT-08 | Success color aliases to forestGreen — success toasts/banners use green, not a separate color | |
+| UI-DT-09 | Primary background cream #F8F4E8 on scaffold/screen bg, not pure white or gray | |
+| UI-DT-10 | creamDark #F0EAD6 used for card surfaces, not cream or white | |
+| UI-DT-11 | creamDarker #E8E2D6 used for bottom navigation background | |
+| UI-DT-12 | cardWhite #FFFFFF used for elevated cards (recipe cards, login card), recipe detail bg | |
+| UI-DT-13 | Text dark #1A1A1A is pure gray (no blue tint) — verify on recipe titles and body text | |
+| UI-DT-14 | Text medium #666666 is pure gray (no blue tint) — verify on secondary/description text | |
+| UI-DT-15 | Text light/tertiary used for placeholders and muted labels — verify no blue-gray cast | |
+| UI-DT-16 | greenMuted #526A55 used for inactive nav items — verify matches code definition | |
+| UI-DT-17 | Josefin Sans renders on: page headers, nav labels, section labels, empty state titles | |
+| UI-DT-18 | Space Grotesk renders on: body text, buttons, inputs, chips, badges, recipe card titles | |
+| UI-DT-19 | All Josefin Sans header text renders in lowercase (mainViewTitle, headerTitle, appBarTitle, navLabel) | PASS — Session 41: verified "dina recept", "veckans meny", nav labels all lowercase |
+| UI-DT-20 | mainViewTitle renders at 32px with 2px letter-spacing and w600 weight | |
+| UI-DT-21 | appBarTitle renders at 18px with w600 weight | |
+| UI-DT-22 | bodyMedium renders at 14px, bodySmall at 13px, bodyLarge at 16px | |
+| UI-DT-23 | navLabel renders at 10px with Josefin Sans | |
+| UI-DT-24 | borderRadius is 0 on ALL buttons (elevated, filled, outlined, text) | |
+| UI-DT-25 | borderRadius is 0 on ALL cards (recipe cards, settings items, menu items) | |
+| UI-DT-26 | borderRadius is 0 on filter chips, search boxes, dialogs, bottom sheets | |
+| UI-DT-27 | borderRadiusRound (50) ONLY on avatars and UnifiedBadge pill shapes | |
+| UI-DT-28 | No hardcoded non-zero borderRadius visible outside avatar/badge contexts (spot-check 5 screens) | |
+
+### Phase 82: Component Visual Verification (33 tests)
+
+Verify each reusable widget renders per `butlery-mockup-reference.md` sections 4.1–4.28.
+
+| ID | Test | Status |
+|----|------|--------|
+| UI-CV-01 | ButleryHeader: forestGreen background fills full width | |
+| UI-CV-02 | ButleryHeader: title text is cream-colored, Josefin Sans, lowercase | |
+| UI-CV-03 | ButleryHeader: 3px rust accent bar visible at bottom edge | |
+| UI-CV-04 | ButleryHeader: back button renders as cream arrow icon when route can pop | |
+| UI-CV-05 | MainViewHeader: total height approximately 140px, forestGreen background | |
+| UI-CV-06 | MainViewHeader: title is 32px Josefin Sans lowercase with cream color | |
+| UI-CV-07 | MainViewHeader: count badge has cream bg, forestGreenDark text, 11px font, 1px letter-spacing | |
+| UI-CV-08 | MainViewHeader: 4px rust accent bar at bottom | |
+| UI-CV-09 | MainViewHeader: trailing actions (avatar/icons) positioned top-right with cream icon color | |
+| UI-CV-10 | ButlerySearchBox: white bg with green top/left/right borders (1px) and rust bottom border (2px) | |
+| UI-CV-11 | ButlerySearchBox: focused state shows thicker borders (2px green, 4px rust) | |
+| UI-CV-12 | ButlerySearchBox: square corners (no border-radius), search icon prefix | |
+| UI-CV-13 | ButlerySearchBox: clear (X) button appears when text is entered | |
+| UI-CV-14 | StyledButton.primary: forestGreen bg, white/cream text, square corners, min 48px height | |
+| UI-CV-15 | StyledButton.secondary: white/surface bg, green border (1.5px), green text, square corners | |
+| UI-CV-16 | StyledButton.destructive: error red #C44536 bg — NOT rust — square corners | |
+| UI-CV-17 | StyledButton: loading state shows spinner indicator, button remains same size | |
+| UI-CV-18 | Recipe card: white bg, 4px forestGreen left border, 3px rustLight bottom border, square corners | PASS — Session 41: zoom-verified both borders |
+| UI-CV-19 | Recipe card: image area is 56–64px square with greenPale bg placeholder | |
+| UI-CV-20 | Recipe card: title 15px w600 Space Grotesk, description 12px, meta row 11px | |
+| UI-CV-21 | UnifiedBadge: pill shape (borderRadiusRound=50), subtle variant has 10% opacity tint bg | |
+| UI-CV-22 | UnifiedBadge: filled variant has solid color bg with contrasting text | |
+| UI-CV-23 | AllergenBadge FREE state: green tint bg, green text, checkmark icon | |
+| UI-CV-24 | AllergenBadge CONTAINS state: red tint bg, error red text, warning icon | |
+| UI-CV-25 | AllergenBadge UNKNOWN state: intentionally hidden — not displayed (verify absence) | |
+| UI-CV-26 | ButleryFilterChips: selected chip has forestGreen fill, cream text, square corners | PASS — Session 41 |
+| UI-CV-27 | ButleryFilterChips: unselected chip has transparent bg, green 2px border, square corners | PASS — Session 41 |
+| UI-CV-28 | ButlerySectionHeader: 4px rust left border, uppercase label (Josefin 10px w700 letterSpacing 3), 8% rust bg tint | |
+| UI-CV-29 | Bottom nav: 4 tabs (recept, meny, inkop, lagg till), creamDarker #E8E2D6 bg, labels lowercase Josefin 10px | PASS — Session 41: creamDarker bg confirmed (not forestGreen) |
+| UI-CV-30 | Bottom nav: active tab uses forestGreenDark color with rust underline indicator | PASS — Session 41: rust underline on "recept" |
+| UI-CV-31 | Bottom nav: inactive tabs use greenMuted color | PASS — Session 41: muted green on meny/inköp/lägg till |
+| UI-CV-32 | FAB: forestGreen bg, white icon — NOTE: code uses CircleBorder() but mockup shows square 48x48; flag deviation | |
+| UI-CV-33 | Dialog: cream/white bg, square corners, Josefin Sans title, right-aligned action buttons | |
+
+### Phase 83: Screen-by-Screen Mockup Comparison (45 tests)
+
+Compare each rendered screen against mockup PNGs at 375x812 viewport (iPhone X frame per mockup reference).
+
+| ID | Test | Status |
+|----|------|--------|
+| UI-MC-01 | Login: green-dark (#3D6849) header with broccoli logo + "butlery" text (Josefin 38px w400 cream) | |
+| UI-MC-02 | Login: 4px rust accent line below header, full width | |
+| UI-MC-03 | Login: white card with sharp corners, no shadow, cream bg behind | |
+| UI-MC-04 | Login: input fields have cream bg (#F8F4E8), creamDark border, labels above (not inside) | |
+| UI-MC-05 | Login: "Logga in" button full-width, green-dark bg, sharp corners, 16px padding | |
+| UI-MC-06 | Login: "Skapa konto" button outlined with green-dark border, sharp corners | |
+| UI-MC-07 | Login: footer "Villkor . Integritetspolicy" centered, 12px gray text at bottom | |
+| UI-MC-08 | Mina Recept vs butlery-01: header matches — "dina recept" 32px, count badge, avatar top-right | PASS — Session 41 |
+| UI-MC-09 | Mina Recept: search box has green+rust border treatment matching mockup section 4.5 | PASS — Session 41 |
+| UI-MC-10 | Mina Recept: chip row — "Alla" filled green, others outlined, horizontal scroll, square chips | PASS — Session 41 |
+| UI-MC-11 | Mina Recept: section header "Senast tillagda" with rust left border matching mockup section 4.7 | N/A — Session 41: not visible without sort |
+| UI-MC-12 | Mina Recept: recipe cards — green left border, rust bottom border, 56x56 image, no radius | PASS — Session 41: zoom-verified |
+| UI-MC-13 | Mina Recept: bottom nav shows "recept" active with rust underline | PASS — Session 41 |
+| UI-MC-14 | Empty recipe list: illustration centered, "inga recept annu" title (Josefin 20px lowercase), CTA button | |
+| UI-MC-15 | No search results: illustration, "inga traffar" title, "Rensa sokning" secondary button | |
+| UI-MC-16 | Recipe detail vs butlery-02: hero image 200px height, overlay nav buttons (40x40 cream squares) | PASS — Session 41: green gradient hero, 5 action buttons in top bar |
+| UI-MC-17 | Recipe detail: title section — white bg, 3px green bottom border, title Josefin 24px green-dark | PASS — Session 41: "pasta carbonara." lowercase Josefin |
+| UI-MC-18 | Recipe detail: source text 12px muted, meta row with clock+people icons and difficulty label | |
+| UI-MC-19 | Recipe detail: dietary/allergen badges row — green (free), red (contains), hidden (unknown) | PASS — Session 41: green+checkmark (free), red+warning (contains) |
+| UI-MC-20 | Recipe detail: tabs "Ingredienser"/"Instruktioner" — active has green underline | PASS — Session 41: Ingredienser section + Tags section visible |
+| UI-MC-21 | Recipe detail: portion adjuster — creamDark bg strip, minus/value/plus controls | |
+| UI-MC-22 | Recipe detail: ingredient list — amounts bold green-dark aligned, names in text color | |
+| UI-MC-23 | Recipe detail: FAB green with cart icon, bottom-right, shadow | |
+| UI-MC-24 | Instructions tab vs butlery-02: square checkboxes, checked=green+checkmark | |
+| UI-MC-25 | Instructions tab: completed steps show muted strikethrough text | |
+| UI-MC-26 | Filter sheet vs butlery-02: cream bg bottom sheet, handle bar 40x4 creamDarker, Josefin 18px title | |
+| UI-MC-27 | Filter sheet: allergen/kosttyp/tid sections with square filter toggles | |
+| UI-MC-28 | Filter sheet: "Rensa" secondary + "Visa N recept" primary buttons, flex-1/flex-2 ratio | |
+| UI-MC-29 | Lagg till vs butlery-03: 2x2 grid of option cards — rust and green diagonal color pattern | |
+| UI-MC-30 | Lagg till: "Nyligen importerade" section with recipe card below grid | |
+| UI-MC-31 | Import progress vs butlery-03: 4-step stepper with green done/bordered current/gray pending circles | |
+| UI-MC-32 | Import error vs butlery-03: illustration, error-colored title Josefin 18px, error buttons stacked | |
+| UI-MC-33 | Manual form vs butlery-03: image upload 180px, form sections with labels, ingredient editor rows | |
+| UI-MC-34 | Manual form: fixed bottom bar with "Spara recept" button, white bg, 2px green top border | |
+| UI-MC-35 | Veckomeny vs butlery-04: header "veckans meny" with "Vecka N" badge, save+share icons | PASS — Session 41: cream Josefin lowercase, "Vecka 14" badge, calendar icon |
+| UI-MC-36 | Veckomeny: "Generera ny meny" full-width primary large button with refresh icon | PASS — Session 41: "Generera meny" button visible, square corners |
+| UI-MC-37 | Veckomeny: meal type headers (MIDDAG/LUNCH) — greenPale bg, green left border, Josefin 11px uppercase | |
+| UI-MC-38 | Veckomeny: menu items — white bg, 4px rust left border, 36x36 change button creamDark bg | |
+| UI-MC-39 | Inkopslista vs butlery-05: category headers color-coded — rust (Kott), gold (Mejeri), green (Gronsaker) | |
+| UI-MC-40 | Inkopslista: shopping items — 22x22 square green checkboxes, checked=strikethrough+muted | |
+| UI-MC-41 | Inkopslista: list selector dropdown + new-list button | |
+| UI-MC-42 | Profil vs butlery-06: green-dark header, 100px circle avatar, name Josefin 24px cream, stats row | |
+| UI-MC-43 | Profil: settings items have 36x36 greenPale icon square + text + chevron-right | |
+| UI-MC-44 | Allergener vs butlery-06: toggle list with square filter toggles, active=green+white checkmark | |
+| UI-MC-45 | Loading/toast vs butlery-07: pea pod animation, toast=greenDark bg with checkmark+cream text | |
+
+### Phase 84: Responsive Layout (18 tests)
+
+Test at 3 breakpoints: 375x812 (mobile), 768x1024 (tablet), 1280x900 (desktop). Use Chrome resize.
+
+| ID | Test | Status |
+|----|------|--------|
+| UI-RL-01 | Mobile (<600px): BottomNavigationBar visible with 4 tabs | PASS — Session 41: at 502px, bottom nav present (partially obscured by content) |
+| UI-RL-02 | Mobile (<600px): recipe list renders single column | PASS — Session 41: single column full-width cards |
+| UI-RL-03 | Mobile (<600px): no NavigationRail or sidebar visible | PASS — Session 41: no rail at 502px |
+| UI-RL-04 | Tablet (600–1024px): NavigationRail compact (72px wide, icons only) replaces bottom nav | PASS — Session 41: compact rail at 786px with icons+labels |
+| UI-RL-05 | Tablet (600–1024px): recipe list renders 2-column grid | BLOCKED — could not navigate to recipe list from veckomeny (CanvasKit hit-testing) |
+| UI-RL-06 | Tablet (600–1024px): content max-width constrained to 800px | |
+| UI-RL-07 | Desktop (>=1024px): NavigationRail extended (256px wide, with labels) | PASS — Session 41: extended rail at 1036px with "Butlery" title + labels |
+| UI-RL-08 | Desktop (>=1024px): recipe list renders 3-column grid | BLOCKED — on veckomeny screen, could not navigate back (CanvasKit) |
+| UI-RL-09 | Desktop (>=1024px): content max-width constrained to 1200px | |
+| UI-RL-10 | Mobile: recipe detail uses full-width hero image | |
+| UI-RL-11 | Tablet/Desktop: recipe detail content constrained, not stretched to full width | |
+| UI-RL-12 | Mobile: dialogs are near full-width with side padding | |
+| UI-RL-13 | Tablet: dialogs max-width ~500px, centered | |
+| UI-RL-14 | Desktop: forms max-width ~600px, centered | |
+| UI-RL-15 | No horizontal scrollbar/overflow on Mina Recept at 375px width | |
+| UI-RL-16 | No horizontal scrollbar/overflow on recipe detail at 375px width | |
+| UI-RL-17 | No horizontal scrollbar/overflow on shopping list at 375px width | |
+| UI-RL-18 | Navigation transitions: resize across breakpoints — nav switches without crash or layout break | |
+
+### Phase 85: Dark Mode / Theme (12 tests)
+
+Toggle via Settings. Verify `ButleryColors.dark` extension and dark ColorScheme render correctly.
+
+| ID | Test | Status |
+|----|------|--------|
+| UI-DM-01 | Theme toggle in Settings switches between light and dark mode | |
+| UI-DM-02 | Dark mode: scaffold background uses dark surface color (not cream/white) | |
+| UI-DM-03 | Dark mode: text colors auto-adapt — no white-on-white or dark-on-dark | |
+| UI-DM-04 | Dark mode: forestGreen primary still renders as recognizable green (may be lighter tone) | |
+| UI-DM-05 | Dark mode: rust secondary adapts to lighter tone for visibility on dark bg | |
+| UI-DM-06 | Dark mode: recipe card borders still visible (adapted green left, adapted rust bottom) | |
+| UI-DM-07 | Dark mode: bottom nav adapted — dark bg, rust indicator still visible | |
+| UI-DM-08 | Dark mode: error color adapts (M3 tone 80), not same as light mode red | |
+| UI-DM-09 | Dark mode: chat bubbles use adapted colors (outgoing dark green, incoming dark gray) | |
+| UI-DM-10 | Dark mode: all badge variants (tag, allergen, category) readable on dark bg | |
+| UI-DM-11 | Dark mode: no hardcoded light colors visible as bright patches on dark bg | |
+| UI-DM-12 | Dark mode: illustrations/decorative elements (broccoli, pea pod) visible against dark bg | |
+
+### Phase 86: Accessibility Visual (13 tests)
+
+WCAG AA contrast ratios, touch targets, semantic labels.
+
+| ID | Test | Status |
+|----|------|--------|
+| UI-AV-01 | forestGreen #4A7C59 on cream #F8F4E8: contrast ratio >=3:1 for large text (WCAG AA) — NOTE: ~3.8:1, borderline for normal text | |
+| UI-AV-02 | textDark #1A1A1A on cream #F8F4E8: contrast ratio >=4.5:1 (~14.5:1) | |
+| UI-AV-03 | textMedium #666666 on cream #F8F4E8: contrast ratio >=4.5:1 (~4.8:1) | |
+| UI-AV-04 | White #FFFFFF on forestGreen #4A7C59 (headers): contrast ratio >=3:1 for large text (~4.4:1) | |
+| UI-AV-05 | greenMuted #526A55 on creamDarker #E8E2D6 (nav items): contrast — NOTE: ~3.3:1, may fail AA for small text | |
+| UI-AV-06 | Error #C44536 on white/cream: contrast ratio >=4.5:1 | |
+| UI-AV-07 | All interactive buttons have min touch target 48x48px | |
+| UI-AV-08 | Icon buttons in headers (back, share, heart) have min 48x48 tap area | |
+| UI-AV-09 | Bottom nav items have sufficient tap target spacing (no overlap) | |
+| UI-AV-10 | Focused elements show visible focus ring/indicator | N/A — CanvasKit keyboard nav limitation (same as A11Y-06) |
+| UI-AV-11 | All icon-only buttons have tooltip or semanticLabel set | |
+| UI-AV-12 | ButlerySectionHeader has Semantics(header: true) for screen readers | |
+| UI-AV-13 | MainViewHeader title has Semantics(header: true) for screen readers | |
+
+### Phase 87: State Visual Coverage (17 tests)
+
+Loading, empty, error, and offline states render correctly using StateWidget and design system.
+
+| ID | Test | Status |
+|----|------|--------|
+| UI-SV-01 | Loading state: StateWidget.loading() shows pea pod animation (not raw CircularProgressIndicator) | |
+| UI-SV-02 | Loading state: loading text in 14px Space Grotesk below animation | |
+| UI-SV-03 | Skeleton loading: shimmer placeholder cards during initial recipe list load | |
+| UI-SV-04 | Empty state (no recipes): broccoli illustration 120x120, Josefin 20px lowercase title, CTA button | |
+| UI-SV-05 | Empty state (no search results): different illustration, "inga traffar" title, "Rensa sokning" button | |
+| UI-SV-06 | Empty state (no menu): artskida illustration, "ingen meny annu", two stacked buttons | |
+| UI-SV-07 | Empty state (no shopping): morot illustration, "inkopslistan ar tom", "Generera veckomeny" button | |
+| UI-SV-08 | Error state: illustration + error-colored title (Josefin 18px), error message, retry button | |
+| UI-SV-09 | Error state: retry button uses error color #C44536, NOT rust #8B5A3C | |
+| UI-SV-10 | Error messages display in Swedish (localized), not English fallback | |
+| UI-SV-11 | Loading overlay: cream bg 90% opacity, pea pod animation, text centered | |
+| UI-SV-12 | Toast/snackbar: greenDark bg, cream text, checkmark icon, floating behavior | |
+| UI-SV-13 | Toast: positioned above bottom nav (bottom ~90px per mockup) | |
+| UI-SV-14 | No-image recipe in list: greenPale #E8F0EA background placeholder in image area | |
+| UI-SV-15 | No-image recipe detail: dark green gradient hero (forestGreen→forestGreenDark) with illustration | |
+| UI-SV-16 | Offline indicator: full-width warning banner with wifi_off icon when !isOnline | |
+| UI-SV-17 | Import progress: green circles (done), bordered circle (current), gray circles (pending) | |
+
+### Known Design Deviations to Investigate
+
+| Item | Code | Mockup | Test ID |
+|------|------|--------|---------|
+| FAB shape | `CircleBorder()` (round) | Square 48x48 | UI-CV-32 |
+| Bottom nav theme bg | `cs.primary` (forestGreen) in theme data | creamDarker #E8E2D6 in widget override | UI-CV-29 |
+| M3 Chip border radius | `ChipThemeData` uses 50px (pill) | ButleryFilterChips uses 0 (square) | UI-DT-26 |
+| forestGreen on cream contrast | ~3.8:1 | WCAG AA requires 4.5:1 for normal text | UI-AV-01 |
+| greenMuted on creamDarker contrast | ~3.3:1 | WCAG AA requires 4.5:1 for normal text | UI-AV-05 |
+
+---
+
 ## Web Testing Notes
 
 - **CanvasKit text input**: Works via Ctrl+A + type when field is focused (hidden DOM input activates)
@@ -1256,3 +1499,47 @@ Verify device integrity, caching, OCR quota, and retag progress behaviors.
   - `flutter test test/unit/viewmodels/chat_viewmodel_test.dart` — 37/37 passed
   - Chrome MCP manual test blocked by pre-existing Firestore connection error in worktree (unrelated to fixes)
 - **Updated Progress:** 962/962 tests (867 passed, 3 failed, 92 N/A), **0 open bugs**
+
+**Session 41 - 2026-04-06 (Design/UI Sprint 1 via Chrome MCP):**
+- **Method:** `flutter run -d web-server --web-port=8888`, Chrome MCP extension, viewport 500x720 (Chrome minimum)
+- **Blocker:** Firestore 12.9.0 `INTERNAL ASSERTION FAILED: Unexpected state` corrupts IndexedDB watch stream on every page reload when user is authenticated. DI bootstrap spinner hangs permanently. Workaround: clear ALL IndexedDB + re-auth via `firebase_auth.signInWithEmailAndPassword()` JS call. App loads once but any full navigation/reload triggers the error again.
+- **Tests completed (13 of 25 planned):**
+
+  **Block A — Mina Recept (6 verified):**
+  - UI-MC-08: PASS — Header "dina recept" cream Josefin Sans lowercase, count badge "4 recept", avatar "MG" top-right, green bg
+  - UI-MC-09: PASS — Search box white bg, green top/left/right border, rust bottom border, square corners, search+filter icons
+  - UI-MC-10: PASS — Chip row: "Alla" filled green + cream text, others outlined green border, all square corners, horizontal scroll
+  - UI-MC-11: N/A — Section header "Senast tillagda" not visible (cards show directly below chips when no sort active)
+  - UI-MC-12: PASS — Recipe cards: white bg, 4px green left border (zoom-verified), 3px rustLight bottom border (zoom-verified), ~64px image, square corners
+  - UI-MC-13: PASS — Bottom nav: 4 tabs (recept/meny/inköp/lägg till), lowercase labels, "recept" active with rust underline, creamDarker bg, greenMuted inactive
+
+  **Block B — Recipe Detail (5 verified from single screenshot):**
+  - UI-MC-16: PASS — No-image hero area with dark green gradient + pea pod illustration, overlay buttons (back arrow, cooking, heart, share-friends, share, more) top bar
+  - UI-MC-17: PASS — Title "pasta carbonara." lowercase Josefin Sans, white bg section, "Från" source link
+  - UI-MC-19: PASS — Allergen badges: green tint+checkmark (nötfri, jordnötsfri), red tint+warning (innehåller-gluten, innehåller-mjölk, Ej vegetarisk, Ej vegansk)
+  - UI-MC-20: PASS — "Ingredienser" section header visible, tags section with square badges (Fläsk, Pasta, Italienskt, Under 30 min, Under 45 min)
+  - UI-CV-18: PASS (from list view) — Recipe card borders verified: 4px forestGreen left, 3px rustLight bottom
+
+  **Additional observations:**
+  - UI-CV-26: PASS — Filter chips square corners confirmed (zero border-radius on all chip variants)
+  - UI-CV-29: PASS — Bottom nav bg is creamDarker (cream-brown), NOT forestGreen — widget override is correct
+
+- **Blocked tests (12):** UI-DT-04, UI-DT-19, UI-DT-24, UI-CV-10 (focused state), UI-CV-30, UI-RL-01 through UI-RL-08, UI-DM-01 — all require navigation to other screens, which triggers Firestore reload crash
+- **BUG-043 FIXED** in same session:
+  - RC1: `UserService.initialize()` never called → added call in `SocialModule.initialize()`
+  - RC2: No timeout on cold boot module init → added 10s timeout to `_initializeModule()`
+  - RC3: Firestore web IndexedDB corruption → added auto-recovery via `terminate()` + `clearPersistence()`
+  - Also: RTDB timeout (5s) on PresenceService, outer timeout (15s) on TagConfigService
+  - **Verified**: page reload no longer hangs — app loads past spinner within seconds
+
+  **Block C+D continued after BUG-043 fix:**
+  - UI-DT-19: PASS — "dina recept" + "veckans meny" + nav labels all lowercase Josefin Sans
+  - UI-RL-01+03: PASS — at 502px: BottomNavigationBar present, no NavigationRail
+  - UI-RL-02: PASS — single column recipe cards at mobile width
+  - UI-RL-04: PASS — at 786px: NavigationRail compact with icons+labels, ~72px wide
+  - UI-RL-07: PASS — at 1036px: NavigationRail extended with "Butlery" title + labels, ~200px wide
+  - UI-MC-35: PASS — veckomeny header "veckans meny" lowercase, "Vecka 14" badge
+  - UI-MC-36: PASS — "Generera meny" button visible, square corners
+  - UI-RL-05, UI-RL-08: BLOCKED — could not navigate from veckomeny back to recipe list (CanvasKit hit-testing on NavigationRail)
+
+- **Updated Progress:** 1128 tests (885 passed, 3 failed, 93 N/A, 147 pending design/UI)

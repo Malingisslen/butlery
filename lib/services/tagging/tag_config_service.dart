@@ -99,8 +99,11 @@ class TagConfigService extends BaseService {
     AppLogger.info('Initializing TagConfigService...', serviceName);
 
     try {
-      // Try to load from Firebase
-      _memoryCache = await _loadFromFirebaseWithRetry();
+      // Try to load from Firebase (outer timeout prevents boot hang on slow network)
+      _memoryCache = await _loadFromFirebaseWithRetry().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw Exception('Firebase config load timed out (15s)'),
+      );
       _taggingAvailable = true;
       AppLogger.info(
         'Loaded config from Firebase (version: ${_memoryCache!.combinedVersion})',

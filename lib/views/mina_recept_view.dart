@@ -10,6 +10,7 @@
 // lib/views/main_views/mina_recept_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -553,8 +554,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             child: Semantics(
               selected: isSelected,
               label: isSelected
-                  ? context.l10n.recipeSelected
-                  : context.l10n.recipeNotSelected,
+                  ? context.l10n.a11yRecipeSelected(recipe.title)
+                  : context.l10n.a11yRecipeNotSelected(recipe.title),
               child: Icon(
                 isSelected ? Icons.check_circle : Icons.circle_outlined,
                 color: isSelected ? cs.primary : cs.outline,
@@ -568,12 +569,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     // Swipe gestures only in normal mode
     if (!viewModel.isSelectionMode) {
-      card = Dismissible(
-        key: Key('recipe-${recipe.id}'),
-        direction: DismissDirection.horizontal,
-        confirmDismiss: (direction) async {
-          HapticFeedback.mediumImpact();
-          if (direction == DismissDirection.endToStart) {
+      card = Semantics(
+        customSemanticsActions: {
+          CustomSemanticsAction(
+            label: context.l10n.a11ySwipeEditAction,
+          ): () => Navigator.pushNamed(
+                context,
+                Routes.redigeraRecept,
+                arguments: recipe,
+              ),
+          CustomSemanticsAction(
+            label: context.l10n.a11ySwipeDeleteAction,
+          ): () async {
             final confirmed =
                 await CommonDialogActions.showRecipeDeleteConfirmation(
               context: context,
@@ -582,38 +589,97 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             if (confirmed == true) {
               _handleDeleteWithUndo(viewModel, recipe);
             }
-            return false;
-          } else if (direction == DismissDirection.startToEnd) {
-            Navigator.pushNamed(
-              context,
-              Routes.redigeraRecept,
-              arguments: recipe,
-            );
-            return false;
-          }
-          return false;
+          },
         },
-        background: Container(
-          alignment: AlignmentDirectional.centerStart,
-          padding:
-              const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
-          color: cs.primary,
-          child: Icon(Icons.edit,
-              color: cs.onPrimary, size: AppDimensions.iconSize28),
+        child: Dismissible(
+          key: Key('recipe-${recipe.id}'),
+          direction: DismissDirection.horizontal,
+          confirmDismiss: (direction) async {
+            HapticFeedback.mediumImpact();
+            if (direction == DismissDirection.endToStart) {
+              final confirmed =
+                  await CommonDialogActions.showRecipeDeleteConfirmation(
+                context: context,
+                recipeName: recipe.title,
+              );
+              if (confirmed == true) {
+                _handleDeleteWithUndo(viewModel, recipe);
+              }
+              return false;
+            } else if (direction == DismissDirection.startToEnd) {
+              Navigator.pushNamed(
+                context,
+                Routes.redigeraRecept,
+                arguments: recipe,
+              );
+              return false;
+            }
+            return false;
+          },
+          background: ExcludeSemantics(
+            child: Container(
+              alignment: AlignmentDirectional.centerStart,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingLg),
+              color: cs.primary,
+              child: Icon(Icons.edit,
+                  color: cs.onPrimary, size: AppDimensions.iconSize28),
+            ),
+          ),
+          secondaryBackground: ExcludeSemantics(
+            child: Container(
+              alignment: AlignmentDirectional.centerEnd,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingLg),
+              color: cs.error,
+              child: Icon(Icons.delete,
+                  color: cs.onError, size: AppDimensions.iconSize28),
+            ),
+          ),
+          child: card,
         ),
-        secondaryBackground: Container(
-          alignment: AlignmentDirectional.centerEnd,
-          padding:
-              const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
-          color: cs.error,
-          child: Icon(Icons.delete,
-              color: cs.onError, size: AppDimensions.iconSize28),
-        ),
-        child: card,
       );
     }
 
     return card;
+  }
+
+  Widget _buildOnboardingBanner(RecipeListViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+    return Dismissible(
+      key: const Key('onboarding-banner'),
+      direction: DismissDirection.horizontal,
+      onDismissed: (_) => viewModel.dismissOnboardingBanner(),
+      child: Container(
+        margin: AppDimensions.responsiveContentPadding(context),
+        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        decoration: BoxDecoration(
+          color: cs.primaryContainer,
+          border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, color: cs.primary),
+            const SizedBox(width: AppDimensions.spacingSm),
+            Expanded(
+              child: Text(
+                context.l10n.onboardingSkippedBanner,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: cs.onPrimaryContainer,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                viewModel.dismissOnboardingBanner();
+                Navigator.pushNamed(context, Routes.settingsAllergens);
+              },
+              child: Text(context.l10n.onboardingSkippedBannerAction),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildContent(
@@ -671,6 +737,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       },
       child: Column(
         children: [
+          if (viewModel.showOnboardingBanner) _buildOnboardingBanner(viewModel),
           if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters)
             _buildDiscoveryShelves(context.read<RecipeQueryViewModel>()),
           Expanded(

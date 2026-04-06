@@ -8,6 +8,41 @@
     "description": "Din personliga receptsamling",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
+    "id": "butlery-pwa",
+    "categories": ["food"],
+    "share_target": {
+        "action": "/share-target",
+        "method": "GET",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
+    "shortcuts": [
+        {
+            "name": "Lägg till recept",
+            "short_name": "Lägg till",
+            "url": "/laggTill",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Inköpslista",
+            "short_name": "Handla",
+            "url": "/inkopslista",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
     "icons": [
         {
             "src": "icons/Icon-192.png",

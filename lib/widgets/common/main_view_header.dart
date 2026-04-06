@@ -101,20 +101,23 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
                             // Count badge
                             if (countBadge != null) ...[
                               const SizedBox(height: AppDimensions.spacingXs),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.spacingSm,
-                                  vertical: AppDimensions.spacingXxs,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: cs.surface,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                                child: Text(
-                                  countBadge!,
-                                  style:
-                                      AppTextStyles.headerCountBadge.copyWith(
-                                    color: cs.onPrimaryContainer,
+                              Semantics(
+                                liveRegion: true,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppDimensions.spacingSm,
+                                    vertical: AppDimensions.spacingXxs,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: cs.surface,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                  child: Text(
+                                    countBadge!,
+                                    style:
+                                        AppTextStyles.headerCountBadge.copyWith(
+                                      color: cs.onPrimaryContainer,
+                                    ),
                                   ),
                                 ),
                               ),

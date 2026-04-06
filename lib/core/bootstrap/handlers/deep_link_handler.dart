@@ -48,7 +48,21 @@ class DeepLinkHandler {
       if (kIsWeb) {
         // On web, read the browser URL for deep link parameters
         final uri = Uri.base;
-        if (uri.path.length > 1 || uri.queryParameters.isNotEmpty) {
+        // Handle web share target: shared content arrives as query params
+        final sharedUrl = uri.queryParameters['url'];
+        final sharedText = uri.queryParameters['text'];
+        if (sharedUrl != null && sharedUrl.isNotEmpty) {
+          _pendingDeepLink =
+              'butlery://import?url=${Uri.encodeComponent(sharedUrl)}';
+        } else if (sharedText != null && sharedText.isNotEmpty) {
+          // Text might contain a URL
+          final urlMatch =
+              RegExp(r'https?://[^\s<>"{}|\\^`\[\]]+').firstMatch(sharedText);
+          if (urlMatch != null) {
+            _pendingDeepLink =
+                'butlery://import?url=${Uri.encodeComponent(urlMatch.group(0)!)}';
+          }
+        } else if (uri.path.length > 1 || uri.queryParameters.isNotEmpty) {
           _pendingDeepLink = uri.toString();
         }
         _isInitialized = true;
@@ -127,6 +141,9 @@ class DeepLinkHandler {
         await _handleMenuLink(params, context);
       } else if (path.startsWith('/shopping')) {
         await _handleShoppingLink(params, context);
+      } else if (path.startsWith('/import') ||
+          (uri.scheme == 'butlery' && uri.host == 'import')) {
+        _handleImportLink(params, context);
       }
     } catch (e) {
       // Silently handle deep link processing errors
@@ -255,6 +272,17 @@ class DeepLinkHandler {
       } catch (e) {
         AppLogger.warning('Failed to pre-load social module for deep link: $e');
       }
+    }
+  }
+
+  /// Handle import link from web share target — navigate to add recipe with URL pre-filled.
+  void _handleImportLink(
+    Map<String, String> params,
+    BuildContext context,
+  ) {
+    final url = params['url'];
+    if (url != null && url.isNotEmpty) {
+      Navigator.of(context).pushNamed(Routes.laggTill, arguments: url);
     }
   }
 

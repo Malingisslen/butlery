@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -206,6 +207,12 @@ class RecipeCard extends StatelessWidget {
         if (_showUntaggedIndicator) ...[
           const SizedBox(height: AppDimensions.spacingSm),
           _buildUntaggedIndicator(context),
+        ],
+        // Completeness indicator for incomplete recipes
+        if (recipe.completenessScore case final score
+            when score < incompleteThreshold) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          _buildCompletenessIndicator(context, score),
         ],
         // Tags (effective tags: auto-generated + user overrides)
         if (showTags && _hasEffectiveTags) ...[
@@ -604,6 +611,32 @@ class RecipeCard extends StatelessWidget {
               style: AppTextStyles.labelSmall.copyWith(
                 color: hasFailed ? cs.error : context.butleryColors.warning,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompletenessIndicator(BuildContext context, double rawScore) {
+    final cs = Theme.of(context).colorScheme;
+    final score = (rawScore * 100).round();
+    return Semantics(
+      label: context.l10n.recipeCompletenessA11y(score),
+      child: Container(
+        padding: AppDimensions.paddingSymmetric4x8,
+        decoration: BoxDecoration(
+          color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.pie_chart_outline, size: 14, color: cs.outline),
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              context.l10n.recipeCompleteness(score),
+              style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
             ),
           ],
         ),

@@ -13773,6 +13773,66 @@ abstract class AppLocalizations {
   /// **'Fisk men inget kott'**
   String get onboardingDietaryPescetarianDesc;
 
+  /// No description provided for @onboardingDietaryGlutenFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Glutenfri'**
+  String get onboardingDietaryGlutenFree;
+
+  /// No description provided for @onboardingDietaryLactoseFree.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laktosfri'**
+  String get onboardingDietaryLactoseFree;
+
+  /// No description provided for @onboardingDietaryHalal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Halalanpassad'**
+  String get onboardingDietaryHalal;
+
+  /// No description provided for @onboardingDietaryKosher.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kosheranpassad'**
+  String get onboardingDietaryKosher;
+
+  /// No description provided for @onboardingDietaryGlutenFreeDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga gluteninnehållande ingredienser'**
+  String get onboardingDietaryGlutenFreeDesc;
+
+  /// No description provided for @onboardingDietaryLactoseFreeDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga mejeriprodukter med laktos'**
+  String get onboardingDietaryLactoseFreeDesc;
+
+  /// No description provided for @onboardingDietaryHalalDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Följer halalregler för mat'**
+  String get onboardingDietaryHalalDesc;
+
+  /// No description provided for @onboardingDietaryKosherDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Följer kosherregler för mat'**
+  String get onboardingDietaryKosherDesc;
+
+  /// No description provided for @onboardingSkippedBanner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du hoppade över introduktionen. Vill du ställa in allergener och kostpreferenser?'**
+  String get onboardingSkippedBanner;
+
+  /// No description provided for @onboardingSkippedBannerAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna inställningar'**
+  String get onboardingSkippedBannerAction;
+
   /// No description provided for @onboardingImportTitle.
   ///
   /// In sv, this message translates to:
@@ -20218,18 +20278,6 @@ abstract class AppLocalizations {
   /// **'E-post verifierad!'**
   String get emailVerificationSuccess;
 
-  /// No description provided for @recipeSelected.
-  ///
-  /// In sv, this message translates to:
-  /// **'Markerad'**
-  String get recipeSelected;
-
-  /// No description provided for @recipeNotSelected.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ej markerad'**
-  String get recipeNotSelected;
-
   /// No description provided for @a11yCookingModeClose.
   ///
   /// In sv, this message translates to:
@@ -20481,6 +20529,96 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vad heter receptet?'**
   String get quickCaptureTitleHint;
+
+  /// No description provided for @a11ySwipeEditAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera recept'**
+  String get a11ySwipeEditAction;
+
+  /// No description provided for @a11ySwipeDeleteAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort recept'**
+  String get a11ySwipeDeleteAction;
+
+  /// No description provided for @a11yRecipeSelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title}, markerad'**
+  String a11yRecipeSelected(String title);
+
+  /// No description provided for @a11yRecipeNotSelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title}, ej markerad'**
+  String a11yRecipeNotSelected(String title);
+
+  /// No description provided for @recipeImproveTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förbättra detta recept'**
+  String get recipeImproveTitle;
+
+  /// No description provided for @recipeImproveMissingTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Titel'**
+  String get recipeImproveMissingTitle;
+
+  /// No description provided for @recipeImproveMissingIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get recipeImproveMissingIngredients;
+
+  /// No description provided for @recipeImproveMissingInstructions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktioner'**
+  String get recipeImproveMissingInstructions;
+
+  /// No description provided for @recipeImproveMissingPortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner'**
+  String get recipeImproveMissingPortions;
+
+  /// No description provided for @recipeImproveMissingTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillagningstid'**
+  String get recipeImproveMissingTime;
+
+  /// No description provided for @recipeImproveMissingImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild'**
+  String get recipeImproveMissingImage;
+
+  /// No description provided for @recipeCompleteness.
+  ///
+  /// In sv, this message translates to:
+  /// **'{score}% komplett'**
+  String recipeCompleteness(int score);
+
+  /// No description provided for @recipeCompletenessA11y.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är {score} procent komplett'**
+  String recipeCompletenessA11y(int score);
+
+  /// No description provided for @pwaInstallPrompt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Installera Butlery på din hemskärm för snabbare åtkomst'**
+  String get pwaInstallPrompt;
+
+  /// No description provided for @pwaInstallAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Installera'**
+  String get pwaInstallAction;
 }
 
 class _AppLocalizationsDelegate

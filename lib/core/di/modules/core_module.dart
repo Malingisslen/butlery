@@ -53,6 +53,9 @@ import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/feedback/interaction_logger.dart';
 import 'package:butlery/services/feedback/feedback_service.dart';
 
+// PWA
+import 'package:butlery/services/pwa_install_service.dart';
+
 // Firebase dependencies
 
 /// Core module providing foundational application services.
@@ -237,6 +240,11 @@ class CoreModule implements DIModule {
       // Device integrity service for root/jailbreak detection
       container.registerLazySingleton<DeviceIntegrityService>(
         () => DeviceIntegrityService(),
+      );
+
+      // PWA install service (web only, lazy)
+      container.registerLazySingleton<PwaInstallService>(
+        () => PwaInstallService(),
       );
 
       // Beta feedback services

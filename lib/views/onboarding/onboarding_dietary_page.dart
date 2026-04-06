@@ -14,6 +14,10 @@ class OnboardingDietaryPage extends StatelessWidget {
     'vegetarisk': Icons.eco,
     'vegansk': Icons.spa,
     'pescetarian': Icons.set_meal,
+    'glutenfri': Icons.no_food,
+    'laktosfri': Icons.water_drop_outlined,
+    'halalanpassad': Icons.verified,
+    'kosheranpassad': Icons.star_outline,
   };
 
   static String _dietaryLabel(BuildContext context, String key) {
@@ -22,6 +26,10 @@ class OnboardingDietaryPage extends StatelessWidget {
       'vegetarisk' => l10n.onboardingDietaryVegetarian,
       'vegansk' => l10n.onboardingDietaryVegan,
       'pescetarian' => l10n.onboardingDietaryPescetarian,
+      'glutenfri' => l10n.onboardingDietaryGlutenFree,
+      'laktosfri' => l10n.onboardingDietaryLactoseFree,
+      'halalanpassad' => l10n.onboardingDietaryHalal,
+      'kosheranpassad' => l10n.onboardingDietaryKosher,
       _ => key,
     };
   }
@@ -32,6 +40,10 @@ class OnboardingDietaryPage extends StatelessWidget {
       'vegetarisk' => l10n.onboardingDietaryVegetarianDesc,
       'vegansk' => l10n.onboardingDietaryVeganDesc,
       'pescetarian' => l10n.onboardingDietaryPescetarianDesc,
+      'glutenfri' => l10n.onboardingDietaryGlutenFreeDesc,
+      'laktosfri' => l10n.onboardingDietaryLactoseFreeDesc,
+      'halalanpassad' => l10n.onboardingDietaryHalalDesc,
+      'kosheranpassad' => l10n.onboardingDietaryKosherDesc,
       _ => '',
     };
   }

@@ -7940,6 +7940,39 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingDietaryPescetarianDesc => 'Fisk men inget kott';
 
   @override
+  String get onboardingDietaryGlutenFree => 'Glutenfri';
+
+  @override
+  String get onboardingDietaryLactoseFree => 'Laktosfri';
+
+  @override
+  String get onboardingDietaryHalal => 'Halalanpassad';
+
+  @override
+  String get onboardingDietaryKosher => 'Kosheranpassad';
+
+  @override
+  String get onboardingDietaryGlutenFreeDesc =>
+      'Inga gluteninnehållande ingredienser';
+
+  @override
+  String get onboardingDietaryLactoseFreeDesc =>
+      'Inga mejeriprodukter med laktos';
+
+  @override
+  String get onboardingDietaryHalalDesc => 'Följer halalregler för mat';
+
+  @override
+  String get onboardingDietaryKosherDesc => 'Följer kosherregler för mat';
+
+  @override
+  String get onboardingSkippedBanner =>
+      'Du hoppade över introduktionen. Vill du ställa in allergener och kostpreferenser?';
+
+  @override
+  String get onboardingSkippedBannerAction => 'Öppna inställningar';
+
+  @override
   String get onboardingImportTitle => 'Importera ditt forsta recept';
 
   @override
@@ -11827,12 +11860,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get emailVerificationSuccess => 'E-post verifierad!';
 
   @override
-  String get recipeSelected => 'Markerad';
-
-  @override
-  String get recipeNotSelected => 'Ej markerad';
-
-  @override
   String get a11yCookingModeClose => 'Stäng tillagningsläge';
 
   @override
@@ -11967,4 +11994,58 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get quickCaptureTitleHint => 'Vad heter receptet?';
+
+  @override
+  String get a11ySwipeEditAction => 'Redigera recept';
+
+  @override
+  String get a11ySwipeDeleteAction => 'Ta bort recept';
+
+  @override
+  String a11yRecipeSelected(String title) {
+    return '$title, markerad';
+  }
+
+  @override
+  String a11yRecipeNotSelected(String title) {
+    return '$title, ej markerad';
+  }
+
+  @override
+  String get recipeImproveTitle => 'Förbättra detta recept';
+
+  @override
+  String get recipeImproveMissingTitle => 'Titel';
+
+  @override
+  String get recipeImproveMissingIngredients => 'Ingredienser';
+
+  @override
+  String get recipeImproveMissingInstructions => 'Instruktioner';
+
+  @override
+  String get recipeImproveMissingPortions => 'Portioner';
+
+  @override
+  String get recipeImproveMissingTime => 'Tillagningstid';
+
+  @override
+  String get recipeImproveMissingImage => 'Bild';
+
+  @override
+  String recipeCompleteness(int score) {
+    return '$score% komplett';
+  }
+
+  @override
+  String recipeCompletenessA11y(int score) {
+    return 'Receptet är $score procent komplett';
+  }
+
+  @override
+  String get pwaInstallPrompt =>
+      'Installera Butlery på din hemskärm för snabbare åtkomst';
+
+  @override
+  String get pwaInstallAction => 'Installera';
 }

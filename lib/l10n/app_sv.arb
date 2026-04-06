@@ -5257,6 +5257,16 @@
   "onboardingDietaryVegetarianDesc": "Inga kott- eller fiskprodukter",
   "onboardingDietaryVeganDesc": "Inga animaliska produkter",
   "onboardingDietaryPescetarianDesc": "Fisk men inget kott",
+  "onboardingDietaryGlutenFree": "Glutenfri",
+  "onboardingDietaryLactoseFree": "Laktosfri",
+  "onboardingDietaryHalal": "Halalanpassad",
+  "onboardingDietaryKosher": "Kosheranpassad",
+  "onboardingDietaryGlutenFreeDesc": "Inga gluteninnehållande ingredienser",
+  "onboardingDietaryLactoseFreeDesc": "Inga mejeriprodukter med laktos",
+  "onboardingDietaryHalalDesc": "Följer halalregler för mat",
+  "onboardingDietaryKosherDesc": "Följer kosherregler för mat",
+  "onboardingSkippedBanner": "Du hoppade över introduktionen. Vill du ställa in allergener och kostpreferenser?",
+  "onboardingSkippedBannerAction": "Öppna inställningar",
   "onboardingImportTitle": "Importera ditt forsta recept",
   "onboardingImportDescription": "Kom igang snabbt genom att importera ett recept fran webben eller ett foto.",
   "onboardingImportUrlTitle": "Fran en webbadress",
@@ -8171,8 +8181,6 @@
   "emailVerificationResend": "Skicka igen",
   "emailVerificationContinue": "Fortsätt ändå",
   "emailVerificationSuccess": "E-post verifierad!",
-  "recipeSelected": "Markerad",
-  "recipeNotSelected": "Ej markerad",
   "a11yCookingModeClose": "Stäng tillagningsläge",
   "a11yCookingModeIngredient": "{ingredient}",
   "@a11yCookingModeIngredient": {
@@ -8243,5 +8251,40 @@
   "quickCaptureSave": "Spara",
   "quickCaptureSaved": "Recept sparat!",
   "quickCaptureEditAction": "Redigera",
-  "quickCaptureTitleHint": "Vad heter receptet?"
+  "quickCaptureTitleHint": "Vad heter receptet?",
+  "a11ySwipeEditAction": "Redigera recept",
+  "a11ySwipeDeleteAction": "Ta bort recept",
+  "a11yRecipeSelected": "{title}, markerad",
+  "@a11yRecipeSelected": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "a11yRecipeNotSelected": "{title}, ej markerad",
+  "@a11yRecipeNotSelected": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "recipeImproveTitle": "Förbättra detta recept",
+  "recipeImproveMissingTitle": "Titel",
+  "recipeImproveMissingIngredients": "Ingredienser",
+  "recipeImproveMissingInstructions": "Instruktioner",
+  "recipeImproveMissingPortions": "Portioner",
+  "recipeImproveMissingTime": "Tillagningstid",
+  "recipeImproveMissingImage": "Bild",
+  "recipeCompleteness": "{score}% komplett",
+  "@recipeCompleteness": {
+    "placeholders": {
+      "score": { "type": "int" }
+    }
+  },
+  "recipeCompletenessA11y": "Receptet är {score} procent komplett",
+  "@recipeCompletenessA11y": {
+    "placeholders": {
+      "score": { "type": "int" }
+    }
+  },
+  "pwaInstallPrompt": "Installera Butlery på din hemskärm för snabbare åtkomst",
+  "pwaInstallAction": "Installera"
 }

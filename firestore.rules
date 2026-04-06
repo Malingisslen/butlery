@@ -547,6 +547,34 @@ service cloud.firestore {
     }
 
     // ========================================
+    // REALTIME MENUS - Collaborative menu editing
+    // ========================================
+
+    match /realtime_menus/{menuId} {
+      allow read: if isAuthenticated()
+        && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds);
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.ownerId
+        && request.auth.uid in request.resource.data.participantIds
+        && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'createdAt']);
+
+      allow update: if isAuthenticated()
+        && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds)
+        && cannotModify(['ownerId', 'createdAt']);
+
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.ownerId;
+
+      match /presence/{userId} {
+        allow read: if isAuthenticated() && isRealtimeParticipant('realtime_menus', menuId);
+        allow write: if isAuthenticated()
+          && request.auth.uid == userId
+          && isRealtimeParticipant('realtime_menus', menuId);
+      }
+    }
+
+    // ========================================
     // RECIPE PRESENCE - Real-time presence tracking for recipe viewing
     // ========================================
     // Note: This is separate from realtime_recipes/presence which is for collaborative editing.
@@ -703,30 +731,30 @@ service cloud.firestore {
     // ========================================
     
     match /unified_shared_shopping_lists/{listId} {
-      // Can read if you're the owner or a collaborator
+      // Can read if you're the owner or a member (key in memberPermissions map)
       allow read: if isAuthenticated() && (
         request.auth.uid == resource.data.ownerId ||
-        request.auth.uid in resource.data.collaborators
+        request.auth.uid in resource.data.memberPermissions
       );
-      
-      // Can create if you're the owner and adding yourself as collaborator
-      allow create: if isAuthenticated() 
+
+      // Can create if you're the owner
+      allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.ownerId
-        && request.auth.uid in request.resource.data.collaborators
-        && hasRequiredFields(['ownerId', 'collaborators', 'items', 'createdAt']);
-      
-      // Can update if you're a collaborator (for real-time collaboration)
+        && request.auth.uid in request.resource.data.memberPermissions
+        && hasRequiredFields(['ownerId', 'memberPermissions', 'items', 'createdAt']);
+
+      // Can update if you're a member (for real-time collaboration)
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.ownerId ||
-        (request.auth.uid in resource.data.collaborators
+        (request.auth.uid in resource.data.memberPermissions
          && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['ownerId', 'collaborators', 'createdAt']))
+            .hasAny(['ownerId', 'memberPermissions', 'createdAt']))
       );
-      
+
       // Can delete if you're the owner
-      allow delete: if isAuthenticated() 
+      allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.ownerId;
-        
+
     }
     
     // ========================================
@@ -1042,6 +1070,13 @@ service cloud.firestore {
     // members have a 'userId' field (friend_category members use 'friendId' instead).
     match /{path=**}/members/{memberId} {
       allow read, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Users can read friend_categories they belong to across all users.
+    // This enables: firestore.collectionGroup('friend_categories').where('friendUserIds', arrayContains: uid)
+    match /{path=**}/friend_categories/{categoryId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid in resource.data.friendUserIds;
     }
 
     // Users can read their OWN engagement documents across all collections

@@ -31,40 +31,13 @@ class SiteConfigRepository {
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection(FirestoreCollections.siteConfigs);
 
-  /// Ensure configs exist for known recipe sites.
+  /// Ensure default configs are available (uses built-in fallbacks).
   ///
-  /// Reads all default config docs in parallel, then batch-writes any missing
-  /// ones. Skips entirely if already called this session.
+  /// Client-side writes to site_configs are blocked by security rules.
+  /// Missing configs fall back to built-in defaults via [getConfig].
   Future<void> ensureDefaultConfigs() async {
     if (_defaultsEnsured) return;
-
-    try {
-      final docs = await Future.wait(
-        _defaultConfigs.map((c) => _collection.doc(c.domain).get()),
-      );
-
-      final missing = <SiteConfig>[];
-      for (var i = 0; i < docs.length; i++) {
-        if (!docs[i].exists) {
-          missing.add(_defaultConfigs[i]);
-        }
-      }
-
-      if (missing.isNotEmpty) {
-        final batch = _firestore.batch();
-        for (final config in missing) {
-          batch.set(_collection.doc(config.domain), config.toFirestore());
-        }
-        await batch.commit();
-        AppLogger.debug(
-            'SiteConfigRepository: Added ${missing.length} missing configs');
-      }
-
-      _defaultsEnsured = true;
-    } catch (e) {
-      AppLogger.warning(
-          'SiteConfigRepository: Failed to ensure default configs: $e');
-    }
+    _defaultsEnsured = true;
   }
 
   static final _defaultConfigs = [

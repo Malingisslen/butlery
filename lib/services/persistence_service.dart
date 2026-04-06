@@ -346,6 +346,44 @@ class PersistenceService extends BaseService {
     }
   }
 
+  Future<bool?> getBool(String key) async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getBool(key);
+    } catch (e) {
+      AppLogger.warning('Failed to get bool "$key": $e');
+      return null;
+    }
+  }
+
+  Future<void> setBool(String key, bool value) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setBool(key, value);
+    } catch (e) {
+      AppLogger.warning('Failed to set bool "$key": $e');
+    }
+  }
+
+  Future<int?> getInt(String key) async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getInt(key);
+    } catch (e) {
+      AppLogger.warning('Failed to get int "$key": $e');
+      return null;
+    }
+  }
+
+  Future<void> setInt(String key, int value) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setInt(key, value);
+    } catch (e) {
+      AppLogger.warning('Failed to set int "$key": $e');
+    }
+  }
+
   /// Gets storage statistics for debugging
   Future<Map<String, dynamic>> getStorageInfo() async {
     try {

@@ -33,6 +33,26 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <script>
+    // PWA install prompt — store the deferred event for later use from Dart
+    window.deferredPwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      window.deferredPwaPrompt = e;
+    });
+
+    // Handle web share target: redirect query params so Flutter picks them up
+    if (location.pathname === '/share-target') {
+      var params = new URLSearchParams(location.search);
+      var url = params.get('url') || '';
+      var text = params.get('text') || '';
+      // Redirect to root with share params so Flutter deep link handler can read them
+      var redirect = './?';
+      if (url) redirect += 'url=' + encodeURIComponent(url) + '&';
+      if (text) redirect += 'text=' + encodeURIComponent(text);
+      location.replace(redirect);
+    }
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
