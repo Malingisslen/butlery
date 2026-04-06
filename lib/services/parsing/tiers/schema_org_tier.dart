@@ -380,12 +380,12 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   FieldResult<String> _extractCuisine(Map<String, dynamic> data) {
     final cuisine = data['recipeCuisine'];
     if (cuisine is String && cuisine.trim().isNotEmpty) {
-      return FieldResult.success(_sanitizeString(cuisine.trim(), 500));
+      return FieldResult.success(_sanitizeString(cuisine.trim(), 100));
     }
     if (cuisine is List && cuisine.isNotEmpty) {
       final first = cuisine.first;
       if (first is String && first.trim().isNotEmpty) {
-        return FieldResult.success(_sanitizeString(first.trim(), 500));
+        return FieldResult.success(_sanitizeString(first.trim(), 100));
       }
     }
     return FieldResult.failed('No cuisine in schema.org data');
@@ -394,12 +394,12 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   FieldResult<String> _extractCategory(Map<String, dynamic> data) {
     final category = data['recipeCategory'];
     if (category is String && category.trim().isNotEmpty) {
-      return FieldResult.success(_sanitizeString(category.trim(), 500));
+      return FieldResult.success(_sanitizeString(category.trim(), 100));
     }
     if (category is List && category.isNotEmpty) {
       final first = category.first;
       if (first is String && first.trim().isNotEmpty) {
-        return FieldResult.success(_sanitizeString(first.trim(), 500));
+        return FieldResult.success(_sanitizeString(first.trim(), 100));
       }
     }
     return FieldResult.failed('No category in schema.org data');
@@ -409,7 +409,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     // Schema.org doesn't have a standard difficulty field, but some sites use it
     final difficulty = data['difficulty'] ?? data['proficiencyLevel'];
     if (difficulty is String && difficulty.trim().isNotEmpty) {
-      return FieldResult.success(_sanitizeString(difficulty.trim(), 500));
+      return FieldResult.success(_sanitizeString(difficulty.trim(), 100));
     }
     return FieldResult.failed('No difficulty in schema.org data');
   }

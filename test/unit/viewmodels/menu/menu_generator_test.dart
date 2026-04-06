@@ -385,10 +385,12 @@ void main() {
       final suggestions = menuGenerator.getGenerationSuggestions();
 
       expect(suggestions, isNotEmpty);
-      expect(suggestions, hasLength(8));
+      expect(suggestions, hasLength(10));
       expect(suggestions, contains('Vegetarisk veckomeny för 2 personer'));
       expect(suggestions, contains('Snabba middagar för hela veckan'));
       expect(suggestions, contains('Familjevänlig veckomeny'));
+      expect(suggestions, contains('Veckomeny från favoriter'));
+      expect(suggestions, contains('Meny med senaste recept'));
     });
 
     test('should validate optimal prompts correctly', () {
@@ -867,6 +869,202 @@ void main() {
       final availableIds = available.map((r) => r.id).toSet();
       // Tolerant mode: FREE and UNKNOWN pass, CONTAINS still rejected
       expect(availableIds, equals({'all_free', 'one_unknown'}));
+    });
+  });
+
+  group('MenuGenerator - SwapResult and Smart Swap', () {
+    TagResult makeTagResult({
+      Set<String>? tags,
+      Map<String, TriState>? dietary,
+      Map<String, TriState>? allergen,
+    }) {
+      return TagResult(
+        tags: tags ?? {},
+        allergenStatus: allergen ?? {},
+        dietaryStatus: dietary ?? {},
+        coverage: 1.0,
+        generatedAt: DateTime.now(),
+      );
+    }
+
+    Recipe recipeWith(
+      String id, {
+      String mealType = 'Middag',
+      Set<String>? tags,
+      DateTime? lastCookedAt,
+      bool isFavorite = false,
+    }) {
+      final base = RecipeFactory.build(
+        id: id,
+        title: id,
+        mealType: mealType,
+        lastCookedAt: lastCookedAt,
+      );
+      return Recipe(
+        core: base.core.copyWith(
+          tagResult: makeTagResult(tags: tags),
+          isFavorite: isFavorite,
+        ),
+        type: base.type,
+      );
+    }
+
+    test('should return SwapResult with alternatives count', () {
+      final current = recipeWith('current', mealType: 'Middag');
+      final alt1 = recipeWith('alt1', mealType: 'Middag');
+      final alt2 = recipeWith('alt2', mealType: 'Middag');
+      final alt3 = recipeWith('alt3', mealType: 'Middag');
+
+      mockRecipeService.setRecipeState(
+        recipes: [current, alt1, alt2, alt3],
+        isInitialized: true,
+      );
+
+      final result = menuGenerator.swapSingleRecipe(
+        current,
+        'Middag',
+        {
+          'Middag': [current]
+        },
+      );
+
+      expect(result.recipe, isNotNull);
+      expect(result.recipe!.id, isNot('current'));
+      // 3 alternatives total, picked 1, so 2 remaining
+      expect(result.alternativesRemaining, equals(2));
+      expect(result.exhaustedMessage, isNull);
+    });
+
+    test('should return exhausted message when no alternatives', () {
+      final current = recipeWith('current', mealType: 'Middag');
+
+      mockRecipeService.setRecipeState(
+        recipes: [current],
+        isInitialized: true,
+      );
+
+      final result = menuGenerator.swapSingleRecipe(
+        current,
+        'Middag',
+        {
+          'Middag': [current]
+        },
+      );
+
+      expect(result.recipe, isNull);
+      expect(result.alternativesRemaining, equals(0));
+      expect(result.exhaustedMessage, isNotNull);
+      expect(result.exhaustedMessage, contains('alternativ'));
+    });
+
+    test('should prefer same cuisine when useSmartSwap is true', () {
+      menuGenerator.useSmartSwap = true;
+
+      final current =
+          recipeWith('current', mealType: 'Middag', tags: {'italiensk'});
+      final sameCuisine =
+          recipeWith('same_cuisine', mealType: 'Middag', tags: {'italiensk'});
+      final diffCuisine =
+          recipeWith('diff_cuisine', mealType: 'Middag', tags: {'thailändsk'});
+
+      mockRecipeService.setRecipeState(
+        recipes: [current, sameCuisine, diffCuisine],
+        isInitialized: true,
+      );
+
+      // Run multiple times to confirm consistency
+      var sameCuisineCount = 0;
+      for (var i = 0; i < 20; i++) {
+        final result = menuGenerator.swapSingleRecipe(
+          current,
+          'Middag',
+          {
+            'Middag': [current]
+          },
+        );
+        if (result.recipe?.id == 'same_cuisine') sameCuisineCount++;
+      }
+
+      // With +3 score for same cuisine, it should be picked most of the time
+      expect(sameCuisineCount, greaterThan(15));
+    });
+
+    test('should pick randomly when useSmartSwap is false', () {
+      menuGenerator.useSmartSwap = false;
+
+      final current =
+          recipeWith('current', mealType: 'Middag', tags: {'italiensk'});
+      final alt1 = recipeWith('alt1', mealType: 'Middag', tags: {'italiensk'});
+      final alt2 = recipeWith('alt2', mealType: 'Middag', tags: {'thailändsk'});
+
+      mockRecipeService.setRecipeState(
+        recipes: [current, alt1, alt2],
+        isInitialized: true,
+      );
+
+      // Run multiple times - should get both alternatives
+      final picked = <String>{};
+      for (var i = 0; i < 30; i++) {
+        final result = menuGenerator.swapSingleRecipe(
+          current,
+          'Middag',
+          {
+            'Middag': [current]
+          },
+        );
+        if (result.recipe != null) picked.add(result.recipe!.id);
+      }
+
+      expect(picked, contains('alt1'));
+      expect(picked, contains('alt2'));
+
+      // Reset
+      menuGenerator.useSmartSwap = true;
+    });
+
+    test('should not swap to recipes already in menu', () {
+      final current = recipeWith('current', mealType: 'Middag');
+      final inMenu = recipeWith('in_menu', mealType: 'Middag');
+      final available = recipeWith('available', mealType: 'Middag');
+
+      mockRecipeService.setRecipeState(
+        recipes: [current, inMenu, available],
+        isInitialized: true,
+      );
+
+      final result = menuGenerator.swapSingleRecipe(
+        current,
+        'Middag',
+        {
+          'Middag': [current, inMenu]
+        },
+      );
+
+      expect(result.recipe, isNotNull);
+      expect(result.recipe!.id, equals('available'));
+      expect(result.alternativesRemaining, equals(0));
+    });
+  });
+
+  group('MenuGenerator - Prompt Keyword Filtering', () {
+    test('should detect favoriter keyword in prompts', () {
+      expect(
+        menuGenerator.isPromptOptimal('veckomeny med favoriter'),
+        isTrue,
+      );
+    });
+
+    test('should detect senaste keyword in prompts', () {
+      expect(
+        menuGenerator.isPromptOptimal('meny med senaste recept'),
+        isTrue,
+      );
+    });
+
+    test('suggestions should include favorites and recent', () {
+      final suggestions = menuGenerator.getGenerationSuggestions();
+      expect(suggestions, contains('Veckomeny från favoriter'));
+      expect(suggestions, contains('Meny med senaste recept'));
     });
   });
 }

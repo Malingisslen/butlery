@@ -5,8 +5,23 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/tagging/config/cuisine_config.dart';
+import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+
+/// Result of a recipe swap operation, including alternatives info.
+class SwapResult {
+  final Recipe? recipe;
+  final int alternativesRemaining;
+  final String? exhaustedMessage;
+
+  const SwapResult({
+    this.recipe,
+    required this.alternativesRemaining,
+    this.exhaustedMessage,
+  });
+}
 
 /// Focused module for menu generation
 /// This module handles ONLY menu generation:
@@ -27,12 +42,16 @@ class MenuGenerator {
   /// Whether to filter out recipes that don't match user's dietary preferences.
   bool filterByDietary;
 
+  /// Whether to use smart swap (cuisine/category/season scoring) vs random.
+  bool useSmartSwap;
+
   MenuGenerator({
     required MenuService menuService,
     required UnifiedRecipeService recipeService,
     required UserService userService,
     this.filterByAllergens = true,
     this.filterByDietary = true,
+    this.useSmartSwap = true,
   })  : _menuService = menuService,
         _recipeService = recipeService,
         _userService = userService;
@@ -115,7 +134,12 @@ class MenuGenerator {
     }
   }
 
-  /// Generate complete menu from prompt
+  /// Generate complete menu from prompt.
+  ///
+  /// Supports keyword filtering:
+  /// - "favoriter" / "favourites" -> prefer favorites
+  /// - "senaste" / "recent" -> prefer recently cooked (last 30 days)
+  /// Falls back to full pool with boost if filtered pool is too small.
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
       String prompt) async {
     await ensureRecipeServiceInitialized();
@@ -126,9 +150,11 @@ class MenuGenerator {
       throw Exception(AppLocale.current.errorNoRecipesAvailable);
     }
 
+    final pool = _applyPromptKeywordFilter(prompt, availableRecipes);
+
     final generatedMenu = await _menuService.generateMenuFromPrompt(
       prompt,
-      availableRecipes,
+      pool,
     );
 
     if (generatedMenu.isEmpty) {
@@ -138,6 +164,42 @@ class MenuGenerator {
     }
 
     return generatedMenu;
+  }
+
+  /// Filters or boosts recipes based on prompt keywords.
+  ///
+  /// Returns filtered pool if large enough (>= 3), otherwise returns
+  /// full pool so generation can still proceed.
+  static const _minFilteredPoolSize = 3;
+
+  List<Recipe> _applyPromptKeywordFilter(String prompt, List<Recipe> recipes) {
+    final lower = prompt.toLowerCase();
+
+    final wantsFavorites =
+        lower.contains('favoriter') || lower.contains('favourites');
+    final wantsRecent = lower.contains('senaste') || lower.contains('recent');
+
+    if (!wantsFavorites && !wantsRecent) return recipes;
+
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+    List<Recipe> filtered;
+    if (wantsFavorites) {
+      filtered = recipes.where((r) => r.isFavorite).toList();
+    } else {
+      filtered = recipes
+          .where((r) =>
+              r.lastCookedAt != null && r.lastCookedAt!.isAfter(thirtyDaysAgo))
+          .toList();
+    }
+
+    if (filtered.length >= _minFilteredPoolSize) return filtered;
+
+    // Pool too small — fall back to full pool
+    AppLogger.info(
+        'Filtered pool too small (${filtered.length}), using full pool');
+    return recipes;
   }
 
   /// Regenerate specific menu section
@@ -161,17 +223,20 @@ class MenuGenerator {
     return null;
   }
 
-  /// UI Redesign: Swap a single recipe with another matching the same category.
-  /// Finds a random recipe from available recipes that:
-  /// - Matches the same meal type (category)
-  /// - Is not already in the current menu
-  /// - Has similar characteristics to the original
-  Recipe? swapSingleRecipe(
+  // Delegate to CuisineConfig.allTags for cuisine tag lookup
+
+  /// Swap a single recipe with the best-scoring alternative.
+  ///
+  /// When [useSmartSwap] is true, candidates are scored:
+  /// - +3 same cuisine tag as [currentRecipe]
+  /// - +2 same category tag (mealType match)
+  /// - +1 seasonal match
+  /// Ties are broken randomly. Returns [SwapResult] with alternatives count.
+  SwapResult swapSingleRecipe(
     Recipe currentRecipe,
     String category,
     Map<String, List<Recipe>> currentMenu,
   ) {
-    // Get all recipe IDs currently in the menu to avoid duplicates
     final currentMenuRecipeIds = <String>{};
     for (final recipes in currentMenu.values) {
       for (final recipe in recipes) {
@@ -179,21 +244,53 @@ class MenuGenerator {
       }
     }
 
-    // Find eligible recipes that match the category and aren't in the menu
-    final eligibleRecipes = availableRecipes.where((recipe) {
-      // Skip if already in menu
-      if (currentMenuRecipeIds.contains(recipe.id)) return false;
+    final eligibleRecipes = _filterEligibleForSwap(
+      availableRecipes,
+      currentMenuRecipeIds,
+      category,
+    );
 
-      // Match by meal type or category-appropriate recipes
+    if (eligibleRecipes.isEmpty) {
+      AppLogger.warning(
+          'No eligible recipes found for swap in category: $category');
+      return SwapResult(
+        recipe: null,
+        alternativesRemaining: 0,
+        exhaustedMessage: AppLocale.current.menuSwapExhausted,
+      );
+    }
+
+    final Recipe chosen;
+    if (useSmartSwap) {
+      chosen = _scoreAndPickBest(eligibleRecipes, currentRecipe);
+    } else {
+      eligibleRecipes.shuffle();
+      chosen = eligibleRecipes.first;
+    }
+
+    return SwapResult(
+      recipe: chosen,
+      alternativesRemaining: eligibleRecipes.length - 1,
+    );
+  }
+
+  /// Filters recipes eligible for swap: matches category, not in menu.
+  List<Recipe> _filterEligibleForSwap(
+    List<Recipe> pool,
+    Set<String> excludeIds,
+    String category,
+  ) {
+    return pool.where((recipe) {
+      if (excludeIds.contains(recipe.id)) return false;
+
       final categoryLower = category.toLowerCase();
       final mealTypeLower = recipe.mealType.toLowerCase();
 
-      // Check if meal type matches category
       if (categoryLower.contains('middag') ||
           categoryLower.contains('dinner')) {
         return mealTypeLower.contains('middag') ||
             mealTypeLower.contains('dinner') ||
-            mealTypeLower.isEmpty; // Include uncategorized recipes
+            mealTypeLower.isEmpty;
       }
       if (categoryLower.contains('lunch')) {
         return mealTypeLower.contains('lunch') || mealTypeLower.isEmpty;
@@ -205,20 +302,51 @@ class MenuGenerator {
             mealTypeLower.isEmpty;
       }
 
-      // Default: include if meal type matches or is empty
       return mealTypeLower == categoryLower || mealTypeLower.isEmpty;
     }).toList();
+  }
 
-    if (eligibleRecipes.isEmpty) {
-      AppLogger.warning(
-          'No eligible recipes found for swap in category: $category');
-      return null;
+  /// Scores candidates and picks the highest. Ties are broken randomly.
+  Recipe _scoreAndPickBest(List<Recipe> candidates, Recipe current) {
+    final seasonTag = SeasonUtils.currentSeasonTag();
+    final currentCuisine = _extractCuisine(current);
+    final currentCategory = current.mealType.toLowerCase();
+
+    var bestScore = -1;
+    final bestCandidates = <Recipe>[];
+
+    for (final candidate in candidates) {
+      var score = 0;
+
+      // +3 same cuisine
+      if (currentCuisine != null) {
+        final candidateCuisine = _extractCuisine(candidate);
+        if (candidateCuisine == currentCuisine) score += 3;
+      }
+
+      // +2 same category
+      if (candidate.mealType.toLowerCase() == currentCategory) score += 2;
+
+      // +1 seasonal match
+      final tags = candidate.tagResult?.tags;
+      if (tags != null && tags.contains(seasonTag)) score += 1;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestCandidates
+          ..clear()
+          ..add(candidate);
+      } else if (score == bestScore) {
+        bestCandidates.add(candidate);
+      }
     }
 
-    // Shuffle and return a random recipe
-    eligibleRecipes.shuffle();
-    return eligibleRecipes.first;
+    bestCandidates.shuffle();
+    return bestCandidates.first;
   }
+
+  static String? _extractCuisine(Recipe recipe) =>
+      CuisineConfig.extractCuisineTag(recipe);
 
   /// Validate menu generation prerequisites
   void validateGenerationPrerequisites(String prompt) {
@@ -272,6 +400,8 @@ class MenuGenerator {
       AppLocale.current.menuSuggestionBudget,
       AppLocale.current.menuSuggestionItalian,
       AppLocale.current.menuSuggestionAsian,
+      AppLocale.current.menuSuggestionFavorites,
+      AppLocale.current.menuSuggestionRecent,
     ];
   }
 
@@ -294,7 +424,9 @@ class MenuGenerator {
       'snabb',
       'hälsosam',
       'budget',
-      'tema'
+      'tema',
+      'favoriter',
+      'senaste',
     ];
 
     final hasGoodKeywords =

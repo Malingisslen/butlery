@@ -10176,6 +10176,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importPhaseError => 'Ett fel uppstod';
 
   @override
+  String importElapsedSeconds(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
   String shoppingSharingSummary(String friendNames) {
     return 'Dela med: $friendNames';
   }
@@ -12097,4 +12102,88 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get pwaInstallAction => 'Installera';
+
+  @override
+  String duplicateMergeSimilarity(int percent) {
+    return '$percent% likhet';
+  }
+
+  @override
+  String get duplicateMergeExisting => 'Befintligt';
+
+  @override
+  String get duplicateMergeNew => 'Nytt';
+
+  @override
+  String get duplicateMergeTitle => 'Dubblettrecept hittat';
+
+  @override
+  String get duplicateMergeFieldTitle => 'Titel';
+
+  @override
+  String get duplicateMergeFieldTime => 'Tid';
+
+  @override
+  String get duplicateMergeFieldPortions => 'Portioner';
+
+  @override
+  String get duplicateMergeFieldIngredients => 'Ingredienser';
+
+  @override
+  String get duplicateMergeFieldSteps => 'Steg';
+
+  @override
+  String get duplicateMergeFieldSource => 'Källa';
+
+  @override
+  String get duplicateMergeFieldImage => 'Bild';
+
+  @override
+  String get duplicateMergeKeepExisting => 'Behåll befintligt';
+
+  @override
+  String get duplicateMergeReplaceWithNew => 'Ersätt med nytt';
+
+  @override
+  String get duplicateMergeSaveAsNew => 'Spara som nytt';
+
+  @override
+  String get duplicateMergeBestFields => 'Slå ihop bästa fält';
+
+  @override
+  String get duplicateMergeSuccess => 'Receptet har sammanfogats';
+
+  @override
+  String get duplicateMergeNoTime => 'Ingen tid';
+
+  @override
+  String duplicateMergeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String duplicateMergeItemCount(int count) {
+    return '$count st';
+  }
+
+  @override
+  String get duplicateMergeNoSource => 'Ingen källa';
+
+  @override
+  String get duplicateMergeNoImage => 'Ingen bild';
+
+  @override
+  String menuSwapAlternatives(int count) {
+    return '$count alternativ kvar';
+  }
+
+  @override
+  String get menuSwapExhausted =>
+      'Inga fler alternativ som matchar dina preferenser';
+
+  @override
+  String get menuSuggestionFavorites => 'Veckomeny från favoriter';
+
+  @override
+  String get menuSuggestionRecent => 'Meny med senaste recept';
 }

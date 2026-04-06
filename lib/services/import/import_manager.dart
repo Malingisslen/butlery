@@ -170,8 +170,12 @@ class ImportManager {
     String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
+    void Function(String phase)? onProgress,
   }) async {
     try {
+      // Phase: fetching — cache check and strategy selection
+      onProgress?.call('fetching');
+
       final cacheResult = await _checkCacheForUrl(input);
       if (cacheResult != null) {
         return cacheResult;
@@ -179,11 +183,14 @@ class ImportManager {
 
       final youtubeStrategy = _youtubeStrategy;
       if (youtubeStrategy != null && youtubeStrategy.canHandle(input)) {
+        // Phase: analyzing — about to parse via YouTube strategy
+        onProgress?.call('analyzing');
         final result =
             await _parseWithStrategy(youtubeStrategy, input, options);
 
         // Handle all YouTube results - don't fall back to WebScraper for YouTube URLs
         if (result.isSuccess || result.needsAssistance) {
+          onProgress?.call('creating');
           await _saveToCacheIfUrl(input, result);
           return result;
         }
@@ -207,8 +214,10 @@ class ImportManager {
 
       final tiktokPipeline = _tiktokPipeline;
       if (tiktokPipeline != null && tiktokPipeline.canHandle(input)) {
+        onProgress?.call('analyzing');
         final result = await _parseWithStrategy(tiktokPipeline, input, options);
         if (result.isSuccess || result.needsAssistance) {
+          onProgress?.call('creating');
           await _saveToCacheIfUrl(input, result);
           return result;
         }
@@ -217,19 +226,22 @@ class ImportManager {
 
       final instagramPipeline = _instagramPipeline;
       if (instagramPipeline != null && instagramPipeline.canHandle(input)) {
+        onProgress?.call('analyzing');
         final result =
             await _parseWithStrategy(instagramPipeline, input, options);
         if (result.isSuccess || result.needsAssistance) {
+          onProgress?.call('creating');
           await _saveToCacheIfUrl(input, result);
           return result;
         }
       }
 
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
+        onProgress?.call('analyzing');
         final result =
             await _parseWithStrategy(preferredStrategy, input, options);
         if (result.isSuccess) {
-          // Save to cache on success
+          onProgress?.call('creating');
           await _saveToCacheIfUrl(input, result);
           return result;
         }
@@ -237,9 +249,10 @@ class ImportManager {
 
       for (final strategy in _strategies) {
         if (strategy.canHandle(input)) {
+          onProgress?.call('analyzing');
           final result = await _parseWithStrategy(strategy, input, options);
           if (result.isSuccess) {
-            // Save to cache on success
+            onProgress?.call('creating');
             await _saveToCacheIfUrl(input, result);
             return result;
           }

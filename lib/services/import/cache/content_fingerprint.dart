@@ -91,6 +91,18 @@ class ContentFingerprint {
     'äkta',
   };
 
+  // Pre-compiled RegExp patterns for normalization hot paths
+  static final _punctuationRe = RegExp(r'[^\wåäö\s]');
+  static final _multiSpaceRe = RegExp(r'\s+');
+  static final _leadingNumbersRe = RegExp(r'^\s*\d+[\s,./]*\d*\s*');
+  static final _approximateWordsRe =
+      RegExp(r'\b(ca|cirka|ungefär|about|approximately)\b');
+  static final _parentheticalRe = RegExp(r'\([^)]*\)');
+  static final _allUnitsRe = RegExp(
+    '\\b(${_units.join('|')})\\b',
+    caseSensitive: false,
+  );
+
   /// Generate a content fingerprint for a recipe.
   ///
   /// Returns a 16-character hash string.
@@ -155,11 +167,10 @@ class ContentFingerprint {
 
   /// Extract significant keywords from title.
   List<String> _extractTitleKeywords(String title) {
-    // Normalize: lowercase, remove punctuation, split on whitespace
     final normalized = title
         .toLowerCase()
-        .replaceAll(RegExp(r'[^\wåäö\s]'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAll(_punctuationRe, ' ')
+        .replaceAll(_multiSpaceRe, ' ')
         .trim();
 
     final words = normalized.split(' ');
@@ -180,31 +191,11 @@ class ContentFingerprint {
   String _normalizeIngredient(String ingredient) {
     var normalized = ingredient.toLowerCase().trim();
 
-    // Remove leading numbers and fractions (e.g., "2", "1/2", "2.5")
-    normalized = normalized.replaceAll(
-      RegExp(r'^\s*\d+[\s,./]*\d*\s*'),
-      '',
-    );
-
-    // Remove "ca", "cirka", "ungefär" (Swedish approximate words)
-    normalized = normalized.replaceAll(
-      RegExp(r'\b(ca|cirka|ungefär|about|approximately)\b'),
-      '',
-    );
-
-    // Remove units
-    for (final unit in _units) {
-      normalized = normalized.replaceAll(
-        RegExp('\\b$unit\\b', caseSensitive: false),
-        '',
-      );
-    }
-
-    // Remove parenthetical content (often contains optional info)
-    normalized = normalized.replaceAll(RegExp(r'\([^)]*\)'), '');
-
-    // Normalize whitespace and trim
-    normalized = normalized.replaceAll(RegExp(r'\s+'), ' ').trim();
+    normalized = normalized.replaceAll(_leadingNumbersRe, '');
+    normalized = normalized.replaceAll(_approximateWordsRe, '');
+    normalized = normalized.replaceAll(_allUnitsRe, '');
+    normalized = normalized.replaceAll(_parentheticalRe, '');
+    normalized = normalized.replaceAll(_multiSpaceRe, ' ').trim();
 
     // If result is too short, it's probably not useful
     if (normalized.length < 2) {
@@ -226,10 +217,10 @@ class ContentFingerprint {
     return [];
   }
 
-  /// Calculate similarity score between two fingerprints.
+  /// Calculate similarity score between two fingerprints (hash-based).
   ///
   /// Returns 1.0 for exact match, 0.0 for no similarity.
-  /// Can be used for fuzzy matching if needed.
+  /// For fuzzy comparison use [ingredientSimilarity] instead.
   double similarity(String? fingerprint1, String? fingerprint2) {
     if (fingerprint1 == null || fingerprint2 == null) {
       return 0.0;
@@ -237,7 +228,69 @@ class ContentFingerprint {
     if (fingerprint1 == fingerprint2) {
       return 1.0;
     }
-    // Currently only exact matching; could add Hamming distance if needed
     return 0.0;
+  }
+
+  /// Compute Jaccard similarity between two ingredient lists.
+  ///
+  /// Normalizes ingredients, builds sets, and returns |A ∩ B| / |A ∪ B|.
+  /// Returns 0.0 if either list is empty.
+  double ingredientSimilarity(
+    List<String> ingredientsA,
+    List<String> ingredientsB,
+  ) {
+    if (ingredientsA.isEmpty || ingredientsB.isEmpty) {
+      return 0.0;
+    }
+
+    final setA = ingredientsA
+        .map(_normalizeIngredient)
+        .where((i) => i.isNotEmpty)
+        .toSet();
+    final setB = ingredientsB
+        .map(_normalizeIngredient)
+        .where((i) => i.isNotEmpty)
+        .toSet();
+
+    if (setA.isEmpty || setB.isEmpty) {
+      return 0.0;
+    }
+
+    final intersection = setA.intersection(setB).length;
+    final union = setA.union(setB).length;
+
+    return intersection / union;
+  }
+
+  /// Compute overall recipe similarity combining title and ingredients.
+  ///
+  /// Weights: 30% title keyword overlap + 70% ingredient Jaccard.
+  /// Returns a value between 0.0 and 1.0.
+  double recipeSimilarity({
+    required String titleA,
+    required List<String> ingredientsA,
+    required String titleB,
+    required List<String> ingredientsB,
+  }) {
+    final titleScore = _titleSimilarity(titleA, titleB);
+    final ingredientScore = ingredientSimilarity(ingredientsA, ingredientsB);
+    const titleWeight = 0.3;
+    const ingredientWeight = 0.7;
+    return titleScore * titleWeight + ingredientScore * ingredientWeight;
+  }
+
+  /// Jaccard similarity on title keywords.
+  double _titleSimilarity(String titleA, String titleB) {
+    final keywordsA = _extractTitleKeywords(titleA).toSet();
+    final keywordsB = _extractTitleKeywords(titleB).toSet();
+
+    if (keywordsA.isEmpty || keywordsB.isEmpty) {
+      return 0.0;
+    }
+
+    final intersection = keywordsA.intersection(keywordsB).length;
+    final union = keywordsA.union(keywordsB).length;
+
+    return intersection / union;
   }
 }

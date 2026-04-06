@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -784,6 +785,182 @@ void main() {
             expect(result['Frukost']?.length, equals(1));
           }
         });
+      });
+    });
+
+    group('Weighted Selection', () {
+      Recipe recipeWithCookedAt(
+        String id,
+        DateTime? lastCookedAt, {
+        String mealType = 'Middag',
+        Set<String>? tags,
+      }) {
+        final base = RecipeFactory.build(
+          id: id,
+          title: id,
+          mealType: mealType,
+          lastCookedAt: lastCookedAt,
+        );
+        final tagResult = tags != null
+            ? TagResult(
+                tags: tags,
+                allergenStatus: {},
+                dietaryStatus: {},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              )
+            : null;
+        return Recipe(
+          core: base.core.copyWith(
+            tagResult: tagResult,
+          ),
+          type: base.type,
+        );
+      }
+
+      test('should prefer never-cooked recipes over recently-cooked', () async {
+        // Never-cooked = weight 90, recently cooked = weight ~1-2
+        final neverCooked =
+            recipeWithCookedAt('never', null, mealType: 'Middag');
+        final justCooked = recipeWithCookedAt(
+          'just',
+          DateTime.now().subtract(const Duration(hours: 1)),
+          mealType: 'Middag',
+        );
+
+        final recipes = [neverCooked, justCooked];
+        var neverCount = 0;
+
+        for (var i = 0; i < 50; i++) {
+          final menu = await menuService.generateMenuFromPrompt(
+            'en middag',
+            recipes,
+          );
+          if (menu['Middag']?.first.id == 'never') neverCount++;
+        }
+
+        // Never-cooked should be picked significantly more often
+        expect(neverCount, greaterThan(35),
+            reason: 'Never-cooked should be heavily preferred');
+      });
+
+      test('should give season boost to seasonal recipes', () async {
+        // Both never cooked (weight 90 base), but one has season tag
+        // Season boost = 1.5x, so seasonal = 135, non-seasonal = 90
+        final currentMonth = DateTime.now().month;
+        String seasonTag;
+        if (currentMonth >= 3 && currentMonth <= 5) {
+          seasonTag = 'vår';
+        } else if (currentMonth >= 6 && currentMonth <= 8) {
+          seasonTag = 'sommar';
+        } else if (currentMonth >= 9 && currentMonth <= 11) {
+          seasonTag = 'höst';
+        } else {
+          seasonTag = 'vinter';
+        }
+
+        final seasonal = recipeWithCookedAt(
+          'seasonal',
+          null,
+          mealType: 'Middag',
+          tags: {seasonTag},
+        );
+        final nonSeasonal = recipeWithCookedAt(
+          'non_seasonal',
+          null,
+          mealType: 'Middag',
+          tags: {'not_a_season'},
+        );
+
+        final recipes = [seasonal, nonSeasonal];
+        var seasonalCount = 0;
+
+        for (var i = 0; i < 100; i++) {
+          final menu = await menuService.generateMenuFromPrompt(
+            'en middag',
+            recipes,
+          );
+          if (menu['Middag']?.first.id == 'seasonal') seasonalCount++;
+        }
+
+        // Seasonal should be picked more often (1.5x weight advantage)
+        expect(seasonalCount, greaterThan(50),
+            reason: 'Seasonal recipes should be preferred');
+      });
+
+      test('should enforce cuisine diversity (max 2 per cuisine)', () async {
+        // Create 5 Italian recipes, 3 Thai, and 2 Swedish for diverse pool
+        final italianRecipes = List.generate(
+          5,
+          (i) => recipeWithCookedAt(
+            'ita_$i',
+            null,
+            mealType: 'Middag',
+            tags: {'italiensk'},
+          ),
+        );
+        final thaiRecipes = List.generate(
+          3,
+          (i) => recipeWithCookedAt(
+            'thai_$i',
+            null,
+            mealType: 'Middag',
+            tags: {'thailändsk'},
+          ),
+        );
+        final swedishRecipes = List.generate(
+          2,
+          (i) => recipeWithCookedAt(
+            'sv_$i',
+            null,
+            mealType: 'Middag',
+            tags: {'svensk'},
+          ),
+        );
+
+        final recipes = [...italianRecipes, ...thaiRecipes, ...swedishRecipes];
+
+        // Single run to verify diversity works
+        final menu = await menuService.generateMenuFromPrompt(
+          'fem middagar',
+          recipes,
+        );
+
+        final dinners = menu['Middag'] ?? [];
+        expect(dinners.length, equals(5));
+
+        final cuisineCounts = <String, int>{};
+        for (final r in dinners) {
+          final tags = r.tagResult?.tags;
+          if (tags == null) continue;
+          for (final tag in tags) {
+            if ({'italiensk', 'thailändsk', 'svensk'}.contains(tag)) {
+              cuisineCounts[tag] = (cuisineCounts[tag] ?? 0) + 1;
+            }
+          }
+        }
+
+        // Should not have more than 2 of any single cuisine
+        for (final entry in cuisineCounts.entries) {
+          expect(entry.value, lessThanOrEqualTo(2),
+              reason: '${entry.key} should have max 2, got ${entry.value}. '
+                  'Dinners: ${dinners.map((r) => r.id).join(", ")}');
+        }
+      });
+
+      test('should still work with no cuisine tags', () async {
+        // All recipes without cuisine tags — should not crash
+        final recipesNoTags = List.generate(
+          5,
+          (i) => recipeWithCookedAt('r_$i', null, mealType: 'Middag'),
+        );
+
+        final menu = await menuService.generateMenuFromPrompt(
+          'tre middagar',
+          recipesNoTags,
+        );
+
+        expect(menu['Middag']?.length, equals(3));
       });
     });
   });

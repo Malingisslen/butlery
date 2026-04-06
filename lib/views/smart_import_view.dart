@@ -22,8 +22,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
-import 'package:butlery/widgets/recipe/duplicate_import_dialog.dart';
+import 'package:butlery/widgets/recipe/duplicate_merge_sheet.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/services/import/cache/content_fingerprint.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -154,6 +155,9 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                     message: viewModel.progressMessage,
                                     isLoading: viewModel.isImporting,
                                     isVisible: true,
+                                    elapsed: viewModel.isImporting
+                                        ? viewModel.elapsed
+                                        : null,
                                   ),
                                 ],
 
@@ -391,47 +395,130 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     }
   }
 
-  /// Check for duplicate recipes by source URL or title before proceeding.
-  /// Returns true if import should proceed, false if cancelled.
+  // Minimum Jaccard similarity to flag as potential duplicate
+  static const _contentDuplicateThreshold = 0.6;
+
+  // URL/title matches are at least this similar by definition
+  static const _exactMatchMinScore = 0.8;
+
+  /// Check for duplicate recipes by source URL, title, or content similarity.
+  /// Returns true if import should proceed, false if cancelled/handled.
   Future<bool> _checkForDuplicates(
     BuildContext context,
     Recipe recipe,
   ) async {
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final fingerprinter = ContentFingerprint();
 
       // Check by source URL first (most reliable match)
       final sourceUrl = recipe.sourceUrl;
       List<Recipe> matches = [];
+      double matchScore = 1.0;
+
       if (sourceUrl != null && sourceUrl.isNotEmpty) {
         matches = await recipeService.findBySourceUrl(sourceUrl);
       }
 
-      // Fall back to title match if no URL match found
+      // Fall back to title match
       if (matches.isEmpty && recipe.title.isNotEmpty) {
         matches = await recipeService.findByTitle(recipe.title);
       }
 
+      // Fall back to content fingerprint similarity
+      if (matches.isEmpty && recipe.ingredients.isNotEmpty) {
+        final allRecipes = recipeService.recipes;
+
+        Recipe? bestMatch;
+        double bestScore = 0.0;
+
+        for (final existing in allRecipes) {
+          if (existing.ingredients.isEmpty) continue;
+          final score = fingerprinter.recipeSimilarity(
+            titleA: recipe.title,
+            ingredientsA: recipe.ingredients,
+            titleB: existing.title,
+            ingredientsB: existing.ingredients,
+          );
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatch = existing;
+          }
+        }
+
+        if (bestMatch != null && bestScore >= _contentDuplicateThreshold) {
+          matches = [bestMatch];
+          matchScore = bestScore;
+        }
+      }
+
       if (matches.isEmpty || !context.mounted) return true;
 
-      final choice = await showDuplicateImportDialog(
+      // Compute similarity for display if not already set
+      if (matchScore == 1.0 && matches.first.ingredients.isNotEmpty) {
+        matchScore = fingerprinter.recipeSimilarity(
+          titleA: recipe.title,
+          ingredientsA: recipe.ingredients,
+          titleB: matches.first.title,
+          ingredientsB: matches.first.ingredients,
+        );
+        if (matchScore < _exactMatchMinScore) matchScore = _exactMatchMinScore;
+      }
+
+      final result = await showDuplicateMergeSheet(
         context: context,
         existingRecipe: matches.first,
+        newRecipe: recipe,
+        similarityScore: matchScore,
       );
 
-      if (!context.mounted) return false;
+      if (!context.mounted || result == null) return false;
 
-      switch (choice) {
-        case DuplicateImportChoice.viewExisting:
+      switch (result.choice) {
+        case DuplicateMergeChoice.keepExisting:
           Navigator.of(context).pushReplacementNamed(
             Routes.receptDetalj,
             arguments: matches.first.id,
           );
           return false;
-        case DuplicateImportChoice.importAnyway:
+
+        case DuplicateMergeChoice.replaceWithNew:
+          // Replace existing recipe content with new recipe data
+          final merged = matches.first.copyWith(
+            title: recipe.title,
+            description: recipe.description,
+            ingredients: recipe.ingredients,
+            instructions: recipe.instructions,
+            timeMinutes: recipe.timeMinutes,
+            portions: recipe.portions,
+            imageUrls: recipe.imageUrls,
+            sourceUrl: recipe.sourceUrl,
+          );
+          await recipeService.updateRecipe(merged);
+          if (context.mounted) {
+            SnackBarUtils.showSuccess(
+                context, context.l10n.duplicateMergeSuccess);
+            Navigator.of(context).pushReplacementNamed(
+              Routes.receptDetalj,
+              arguments: matches.first.id,
+            );
+          }
+          return false;
+
+        case DuplicateMergeChoice.saveAsNew:
           return true;
-        case DuplicateImportChoice.cancel:
-        case null:
+
+        case DuplicateMergeChoice.mergeBestFields:
+          final merged = result.buildMergedRecipe();
+          await recipeService.updateRecipe(merged);
+          if (context.mounted) {
+            SnackBarUtils.showSuccess(
+                context, context.l10n.duplicateMergeSuccess);
+            Navigator.of(context).pushReplacementNamed(
+              Routes.receptDetalj,
+              arguments: matches.first.id,
+            );
+          }
           return false;
       }
     } catch (_) {

@@ -24,13 +24,24 @@ class ImportProgressWidget extends StatelessWidget {
   /// Whether to show the widget (hidden when step is 0 and not loading).
   final bool isVisible;
 
+  /// Elapsed time since import started. Shown next to the message when non-null and > 0.
+  final Duration? elapsed;
+
   const ImportProgressWidget({
     super.key,
     required this.currentStep,
     required this.message,
     this.isLoading = false,
     this.isVisible = true,
+    this.elapsed,
   });
+
+  /// Builds message with elapsed time suffix using l10n.
+  String _buildDisplayMessage(BuildContext context) {
+    if (elapsed == null || elapsed!.inSeconds < 1) return message;
+    final elapsedText = context.l10n.importElapsedSeconds(elapsed!.inSeconds);
+    return '$message ($elapsedText)';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,15 +100,15 @@ class ImportProgressWidget extends StatelessWidget {
               ],
             ),
 
-            // Progress message
+            // Progress message with optional elapsed time
             if (message.isNotEmpty) ...[
               const SizedBox(height: AppDimensions.paddingM),
               AnimatedSwitcher(
                 duration: AnimationUtils.getDuration(
                     context, AppDimensions.animationDurationMedium),
                 child: Text(
-                  message,
-                  key: ValueKey(message),
+                  _buildDisplayMessage(context),
+                  key: ValueKey('$message-${elapsed?.inSeconds ?? 0}'),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

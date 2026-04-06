@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
+import 'package:butlery/viewmodels/import_progress_tracker.dart';
 
 class MockImportManager extends Mock implements ImportManager {}
 
@@ -149,6 +150,99 @@ void main() {
       viewModel.clearClipboardSuggestion();
 
       expect(notified, isTrue);
+    });
+  });
+
+  group('elapsed timer', () {
+    test('elapsed is Duration.zero before import', () {
+      expect(viewModel.elapsed, Duration.zero);
+    });
+
+    test('elapsed getter is available on viewModel', () {
+      // Verifies the getter exists and returns a Duration
+      expect(viewModel.elapsed, isA<Duration>());
+    });
+  });
+
+  group('ImportProgressTracker', () {
+    late ImportProgressTracker tracker;
+    late int notifyCount;
+    late List<ImportPhase> phaseChanges;
+
+    setUp(() {
+      notifyCount = 0;
+      phaseChanges = [];
+      tracker = ImportProgressTracker(
+        notifyListeners: () => notifyCount++,
+        setPhase: (phase) => phaseChanges.add(phase),
+        isDisposed: () => false,
+      );
+    });
+
+    tearDown(() {
+      tracker.dispose();
+    });
+
+    test('elapsed is Duration.zero before start', () {
+      expect(tracker.elapsed, Duration.zero);
+      expect(tracker.isRunning, isFalse);
+    });
+
+    test('start begins tracking', () {
+      tracker.start();
+      expect(tracker.isRunning, isTrue);
+    });
+
+    test('stop ends tracking', () {
+      tracker.start();
+      tracker.stop();
+      expect(tracker.isRunning, isFalse);
+    });
+
+    test('reset clears elapsed and stops', () {
+      tracker.start();
+      tracker.reset();
+      expect(tracker.isRunning, isFalse);
+      expect(tracker.elapsed, Duration.zero);
+    });
+
+    test('onProgress maps fetching to ImportPhase.fetching', () {
+      tracker.onProgress('fetching');
+      expect(phaseChanges, [ImportPhase.fetching]);
+    });
+
+    test('onProgress maps analyzing to ImportPhase.analyzing', () {
+      tracker.onProgress('analyzing');
+      expect(phaseChanges, [ImportPhase.analyzing]);
+    });
+
+    test('onProgress maps creating to ImportPhase.creating', () {
+      tracker.onProgress('creating');
+      expect(phaseChanges, [ImportPhase.creating]);
+    });
+
+    test('onProgress maps unknown string to ImportPhase.analyzing', () {
+      tracker.onProgress('unknown_phase');
+      expect(phaseChanges, [ImportPhase.analyzing]);
+    });
+
+    test('onProgress skips when disposed', () {
+      final disposedTracker = ImportProgressTracker(
+        notifyListeners: () {},
+        setPhase: (phase) => phaseChanges.add(phase),
+        isDisposed: () => true,
+      );
+      disposedTracker.onProgress('fetching');
+      expect(phaseChanges, isEmpty);
+      disposedTracker.dispose();
+    });
+
+    test('dispose cancels timer without error', () {
+      tracker.start();
+      expect(tracker.isRunning, isTrue);
+      tracker.dispose();
+      // After dispose, the timer is cancelled
+      // (no way to check timer directly, but no error thrown)
     });
   });
 }

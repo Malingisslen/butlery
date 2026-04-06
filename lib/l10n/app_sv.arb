@@ -6750,6 +6750,14 @@
   "importPhaseComplete": "Klar!",
   "importPhaseNeedsHelp": "Behöver din hjälp",
   "importPhaseError": "Ett fel uppstod",
+  "importElapsedSeconds": "{seconds}s",
+  "@importElapsedSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "shoppingSharingSummary": "Dela med: {friendNames}",
   "@shoppingSharingSummary": {
     "placeholders": {
@@ -8312,5 +8320,51 @@
     }
   },
   "pwaInstallPrompt": "Installera Butlery på din hemskärm för snabbare åtkomst",
-  "pwaInstallAction": "Installera"
+  "pwaInstallAction": "Installera",
+
+  "duplicateMergeSimilarity": "{percent}% likhet",
+  "@duplicateMergeSimilarity": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "duplicateMergeExisting": "Befintligt",
+  "duplicateMergeNew": "Nytt",
+  "duplicateMergeTitle": "Dubblettrecept hittat",
+  "duplicateMergeFieldTitle": "Titel",
+  "duplicateMergeFieldTime": "Tid",
+  "duplicateMergeFieldPortions": "Portioner",
+  "duplicateMergeFieldIngredients": "Ingredienser",
+  "duplicateMergeFieldSteps": "Steg",
+  "duplicateMergeFieldSource": "Källa",
+  "duplicateMergeFieldImage": "Bild",
+  "duplicateMergeKeepExisting": "Behåll befintligt",
+  "duplicateMergeReplaceWithNew": "Ersätt med nytt",
+  "duplicateMergeSaveAsNew": "Spara som nytt",
+  "duplicateMergeBestFields": "Slå ihop bästa fält",
+  "duplicateMergeSuccess": "Receptet har sammanfogats",
+  "duplicateMergeNoTime": "Ingen tid",
+  "duplicateMergeMinutes": "{minutes} min",
+  "@duplicateMergeMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "duplicateMergeItemCount": "{count} st",
+  "@duplicateMergeItemCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "duplicateMergeNoSource": "Ingen källa",
+  "duplicateMergeNoImage": "Ingen bild",
+  "menuSwapAlternatives": "{count} alternativ kvar",
+  "@menuSwapAlternatives": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "menuSwapExhausted": "Inga fler alternativ som matchar dina preferenser",
+  "menuSuggestionFavorites": "Veckomeny från favoriter",
+  "menuSuggestionRecent": "Meny med senaste recept"
 }

@@ -146,16 +146,57 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       );
     }
 
-    // DIAGNOSTIC: Minimal body to test if taps work at all
-    return LayoutComponents.mainMenu(
-      currentIndex: null,
-      title: context.l10n.socialFriendsAndGroups,
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () => debugPrint('TAP WORKS'),
-          child: const Text('Test tap'),
-        ),
-      ),
+    // DIAGNOSTIC Step 4: Full layout structure with placeholder tab content
+    return Consumer<FriendsViewModel>(
+      builder: (context, viewModel, child) {
+        return LayoutComponents.mainMenu(
+          currentIndex: null,
+          title: context.l10n.socialFriendsAndGroups,
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: double.infinity,
+                    tablet: 700,
+                    desktop: 800,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    LayoutComponents.offlineIndicator(),
+                    ColoredBox(
+                      color: Theme.of(context).colorScheme.surface,
+                      child: TabBar(
+                        controller: _tabController,
+                        isScrollable: false,
+                        tabAlignment: TabAlignment.fill,
+                        tabs: const [
+                          Tab(text: 'Vänner'),
+                          Tab(text: 'Grupper'),
+                          Tab(text: 'Hitta'),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: IndexedStack(
+                        index: _currentTabIndex,
+                        children: [
+                          _buildFriendsTab(viewModel),
+                          _buildGroupsTab(
+                              context.read<UnifiedFriendsService>(), viewModel),
+                          _buildDiscoveryTab(viewModel),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
 
     // ignore: dead_code

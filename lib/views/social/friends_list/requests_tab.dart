@@ -22,44 +22,38 @@ class RequestsTab {
     BuildContext context,
     FriendsViewModel viewModel,
   ) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        await viewModel.refresh();
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppDimensions.spacingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Discovery encouragement section
-            _buildDiscoverySection(context, viewModel),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Discovery encouragement section
+          _buildDiscoverySection(context, viewModel),
 
+          const SizedBox(height: AppDimensions.spacingXl),
+
+          // Incoming requests section
+          if (viewModel.incomingRequests.isNotEmpty) ...[
+            _buildIncomingRequestsSection(context, viewModel),
             const SizedBox(height: AppDimensions.spacingXl),
-
-            // Incoming requests section
-            if (viewModel.incomingRequests.isNotEmpty) ...[
-              _buildIncomingRequestsSection(context, viewModel),
-              const SizedBox(height: AppDimensions.spacingXl),
-            ],
-
-            // Sent requests section
-            if (viewModel.sentRequests.isNotEmpty) ...[
-              _buildSentRequestsSection(context, viewModel),
-            ],
-
-            // Empty state when no requests
-            if (viewModel.incomingRequests.isEmpty &&
-                viewModel.sentRequests.isEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingXl),
-              StateWidget.empty(
-                title: context.l10n.socialNoFriendRequests,
-                subtitle: context.l10n.socialNoFriendRequestsDescription,
-                icon: Icons.search,
-              ),
-            ],
           ],
-        ),
+
+          // Sent requests section
+          if (viewModel.sentRequests.isNotEmpty) ...[
+            _buildSentRequestsSection(context, viewModel),
+          ],
+
+          // Empty state when no requests
+          if (viewModel.incomingRequests.isEmpty &&
+              viewModel.sentRequests.isEmpty) ...[
+            const SizedBox(height: AppDimensions.spacingXl),
+            StateWidget.empty(
+              title: context.l10n.socialNoFriendRequests,
+              subtitle: context.l10n.socialNoFriendRequestsDescription,
+              icon: Icons.search,
+            ),
+          ],
+        ],
       ),
     );
   }

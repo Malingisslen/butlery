@@ -18,6 +18,7 @@ import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/viewmodels/import_progress_tracker.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Import phases for the state machine.
@@ -110,6 +111,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   bool _hasPendingImport = false;
   ConnectivityMonitoringService? _connectivity;
 
+  late final ImportProgressTracker _progressTracker;
+
   static const String _pendingImportKey = 'butlery_pending_import_url';
 
   SmartImportViewModel({
@@ -117,6 +120,11 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     InputDetector? inputDetector,
   })  : _importManager = importManager,
         _inputDetector = inputDetector ?? InputDetector() {
+    _progressTracker = ImportProgressTracker(
+      notifyListeners: notifyListeners,
+      setPhase: _setPhase,
+      isDisposed: () => isDisposed,
+    );
     _setupConnectivityListener();
     _loadPendingImport();
   }
@@ -132,6 +140,9 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   bool get hasPendingImport => _hasPendingImport;
 
   bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
+
+  /// Elapsed time since import started. Duration.zero when idle.
+  Duration get elapsed => _progressTracker.elapsed;
 
   /// Whether input is valid for import.
   bool get canImport => _input.trim().isNotEmpty;
@@ -265,17 +276,17 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       return failResult;
     }
 
+    _progressTracker.start();
     try {
-      // Phase 1: Fetching
+      // Initial phase — real transitions driven by ImportManager onProgress
       _setPhase(ImportPhase.fetching);
       _lastStepBeforeError = 1;
 
-      // Phase 2: Analyzing
-      _setPhase(ImportPhase.analyzing);
-      _lastStepBeforeError = 2;
-
-      // Execute import via ImportManager
-      final result = await _importManager.autoImport(_input.trim());
+      // Execute import via ImportManager with real phase callbacks
+      final result = await _importManager.autoImport(
+        _input.trim(),
+        onProgress: _progressTracker.onProgress,
+      );
 
       await _clearPendingImportUrl();
       return await _handleImportResult(result);
@@ -288,6 +299,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       final failResult = ImportFailed('$e');
       _lastResult = failResult;
       return failResult;
+    } finally {
+      _progressTracker.stop();
     }
   }
 
@@ -394,17 +407,16 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     clearError();
     _lastResult = null;
 
+    _progressTracker.start();
     try {
       _setPhase(ImportPhase.fetching);
       _lastStepBeforeError = 1;
 
-      _setPhase(ImportPhase.analyzing);
-      _lastStepBeforeError = 2;
-
-      // Execute import with skipLlm option
+      // Execute import with skipLlm option and real phase callbacks
       final result = await _importManager.autoImport(
         _input.trim(),
         options: {'skipLlm': true},
+        onProgress: _progressTracker.onProgress,
       );
 
       return await _handleImportResult(result);
@@ -414,6 +426,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       final failResult = ImportFailed('$e');
       _lastResult = failResult;
       return failResult;
+    } finally {
+      _progressTracker.stop();
     }
   }
 
@@ -474,6 +488,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   void _setPhase(ImportPhase phase) {
     if (isDisposed) return;
     _phase = phase;
+    // Keep _lastStepBeforeError in sync with phase transitions from onProgress
+    if (phase == ImportPhase.fetching) _lastStepBeforeError = 1;
+    if (phase == ImportPhase.analyzing) _lastStepBeforeError = 2;
+    if (phase == ImportPhase.creating) _lastStepBeforeError = 3;
     notifyListeners();
   }
 
@@ -574,6 +592,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   @override
   void dispose() {
+    _progressTracker.dispose();
     _connectivity?.removeListener(_onConnectivityChanged);
     _input = '';
     _detection = null;

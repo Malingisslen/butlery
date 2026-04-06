@@ -17547,6 +17547,12 @@ abstract class AppLocalizations {
   /// **'Ett fel uppstod'**
   String get importPhaseError;
 
+  /// No description provided for @importElapsedSeconds.
+  ///
+  /// In sv, this message translates to:
+  /// **'{seconds}s'**
+  String importElapsedSeconds(int seconds);
+
   /// No description provided for @shoppingSharingSummary.
   ///
   /// In sv, this message translates to:
@@ -20697,6 +20703,156 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Installera'**
   String get pwaInstallAction;
+
+  /// No description provided for @duplicateMergeSimilarity.
+  ///
+  /// In sv, this message translates to:
+  /// **'{percent}% likhet'**
+  String duplicateMergeSimilarity(int percent);
+
+  /// No description provided for @duplicateMergeExisting.
+  ///
+  /// In sv, this message translates to:
+  /// **'Befintligt'**
+  String get duplicateMergeExisting;
+
+  /// No description provided for @duplicateMergeNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nytt'**
+  String get duplicateMergeNew;
+
+  /// No description provided for @duplicateMergeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dubblettrecept hittat'**
+  String get duplicateMergeTitle;
+
+  /// No description provided for @duplicateMergeFieldTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Titel'**
+  String get duplicateMergeFieldTitle;
+
+  /// No description provided for @duplicateMergeFieldTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tid'**
+  String get duplicateMergeFieldTime;
+
+  /// No description provided for @duplicateMergeFieldPortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner'**
+  String get duplicateMergeFieldPortions;
+
+  /// No description provided for @duplicateMergeFieldIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get duplicateMergeFieldIngredients;
+
+  /// No description provided for @duplicateMergeFieldSteps.
+  ///
+  /// In sv, this message translates to:
+  /// **'Steg'**
+  String get duplicateMergeFieldSteps;
+
+  /// No description provided for @duplicateMergeFieldSource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Källa'**
+  String get duplicateMergeFieldSource;
+
+  /// No description provided for @duplicateMergeFieldImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild'**
+  String get duplicateMergeFieldImage;
+
+  /// No description provided for @duplicateMergeKeepExisting.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll befintligt'**
+  String get duplicateMergeKeepExisting;
+
+  /// No description provided for @duplicateMergeReplaceWithNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ersätt med nytt'**
+  String get duplicateMergeReplaceWithNew;
+
+  /// No description provided for @duplicateMergeSaveAsNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som nytt'**
+  String get duplicateMergeSaveAsNew;
+
+  /// No description provided for @duplicateMergeBestFields.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop bästa fält'**
+  String get duplicateMergeBestFields;
+
+  /// No description provided for @duplicateMergeSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet har sammanfogats'**
+  String get duplicateMergeSuccess;
+
+  /// No description provided for @duplicateMergeNoTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen tid'**
+  String get duplicateMergeNoTime;
+
+  /// No description provided for @duplicateMergeMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} min'**
+  String duplicateMergeMinutes(int minutes);
+
+  /// No description provided for @duplicateMergeItemCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} st'**
+  String duplicateMergeItemCount(int count);
+
+  /// No description provided for @duplicateMergeNoSource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen källa'**
+  String get duplicateMergeNoSource;
+
+  /// No description provided for @duplicateMergeNoImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen bild'**
+  String get duplicateMergeNoImage;
+
+  /// No description provided for @menuSwapAlternatives.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} alternativ kvar'**
+  String menuSwapAlternatives(int count);
+
+  /// No description provided for @menuSwapExhausted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga fler alternativ som matchar dina preferenser'**
+  String get menuSwapExhausted;
+
+  /// No description provided for @menuSuggestionFavorites.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckomeny från favoriter'**
+  String get menuSuggestionFavorites;
+
+  /// No description provided for @menuSuggestionRecent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meny med senaste recept'**
+  String get menuSuggestionRecent;
 }
 
 class _AppLocalizationsDelegate

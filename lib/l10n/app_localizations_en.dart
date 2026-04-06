@@ -10145,6 +10145,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importPhaseError => 'An error occurred';
 
   @override
+  String importElapsedSeconds(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
   String shoppingSharingSummary(String friendNames) {
     return 'Share with: $friendNames';
   }
@@ -12066,4 +12071,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pwaInstallAction => 'Install';
+
+  @override
+  String duplicateMergeSimilarity(int percent) {
+    return '$percent% similar';
+  }
+
+  @override
+  String get duplicateMergeExisting => 'Existing';
+
+  @override
+  String get duplicateMergeNew => 'New';
+
+  @override
+  String get duplicateMergeTitle => 'Duplicate recipe found';
+
+  @override
+  String get duplicateMergeFieldTitle => 'Title';
+
+  @override
+  String get duplicateMergeFieldTime => 'Time';
+
+  @override
+  String get duplicateMergeFieldPortions => 'Portions';
+
+  @override
+  String get duplicateMergeFieldIngredients => 'Ingredients';
+
+  @override
+  String get duplicateMergeFieldSteps => 'Steps';
+
+  @override
+  String get duplicateMergeFieldSource => 'Source';
+
+  @override
+  String get duplicateMergeFieldImage => 'Image';
+
+  @override
+  String get duplicateMergeKeepExisting => 'Keep existing';
+
+  @override
+  String get duplicateMergeReplaceWithNew => 'Replace with new';
+
+  @override
+  String get duplicateMergeSaveAsNew => 'Save as new';
+
+  @override
+  String get duplicateMergeBestFields => 'Merge best fields';
+
+  @override
+  String get duplicateMergeSuccess => 'Recipe has been merged';
+
+  @override
+  String get duplicateMergeNoTime => 'No time';
+
+  @override
+  String duplicateMergeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String duplicateMergeItemCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get duplicateMergeNoSource => 'No source';
+
+  @override
+  String get duplicateMergeNoImage => 'No image';
+
+  @override
+  String menuSwapAlternatives(int count) {
+    return '$count alternatives left';
+  }
+
+  @override
+  String get menuSwapExhausted =>
+      'No more alternatives matching your preferences';
+
+  @override
+  String get menuSuggestionFavorites => 'Weekly menu from favorites';
+
+  @override
+  String get menuSuggestionRecent => 'Menu with recent recipes';
 }

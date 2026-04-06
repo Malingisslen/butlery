@@ -181,27 +181,35 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
-  /// UI Redesign: Swaps a single recipe with another matching the category.
-  /// Returns true if swap was successful, false if no suitable replacement found.
-  Future<bool> swapRecipe(Recipe recipe, String category) async {
-    if (!hasMenu) return false;
+  /// Swaps a single recipe with the best-scoring alternative.
+  /// Returns a [SwapResult] with the replacement and alternatives count.
+  /// When no replacement is found, [SwapResult.recipe] is null and
+  /// [SwapResult.exhaustedMessage] contains an informative message.
+  Future<SwapResult> swapRecipe(Recipe recipe, String category) async {
+    if (!hasMenu) {
+      return SwapResult(
+        recipe: null,
+        alternativesRemaining: 0,
+        exhaustedMessage: AppLocale.current.errorNoMoreRecipesForSwap,
+      );
+    }
 
-    final newRecipe = _generator.swapSingleRecipe(recipe, category, menu);
-    if (newRecipe == null) {
-      _stateManager.setError(AppLocale.current.errorNoMoreRecipesForSwap);
-      return false;
+    final result = _generator.swapSingleRecipe(recipe, category, menu);
+    if (result.recipe == null) {
+      _stateManager.setError(result.exhaustedMessage ??
+          AppLocale.current.errorNoMoreRecipesForSwap);
+      return result;
     }
 
     // Update the menu with the swapped recipe
     final updatedRecipes = List<Recipe>.from(menu[category] ?? []);
     final index = updatedRecipes.indexWhere((r) => r.id == recipe.id);
     if (index != -1) {
-      updatedRecipes[index] = newRecipe;
+      updatedRecipes[index] = result.recipe!;
       _stateManager.updateMenuSection(category, updatedRecipes);
-      return true;
     }
 
-    return false;
+    return result;
   }
 
   /// Clears current menu state for new generation or menu reset operations.

@@ -465,13 +465,24 @@ class _MenuRecipeCard extends StatelessWidget {
                     onTap: viewModel.isGenerating
                         ? null
                         : () async {
-                            final success =
+                            final result =
                                 await viewModel.swapRecipe(recipe, category);
-                            if (!success && context.mounted) {
+                            if (result.recipe == null && context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(context.l10n.menuNoMoreRecipes),
+                                  content: Text(result.exhaustedMessage ??
+                                      context.l10n.menuNoMoreRecipes),
                                   backgroundColor: cs.secondary,
+                                ),
+                              );
+                            } else if (result.recipe != null &&
+                                context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(context.l10n
+                                      .menuSwapAlternatives(
+                                          result.alternativesRemaining)),
+                                  duration: const Duration(seconds: 2),
                                 ),
                               );
                             }

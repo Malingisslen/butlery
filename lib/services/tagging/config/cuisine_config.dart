@@ -83,6 +83,21 @@ class CuisineEntry {
 class CuisineConfig {
   CuisineConfig._();
 
+  /// All known cuisine tag strings, cached for fast lookup.
+  static final Set<String> allTags = {
+    for (final c in cuisines) c.tag,
+  };
+
+  /// Extracts the first cuisine tag from a recipe's tag set, or null.
+  static String? extractCuisineTag(Recipe recipe) {
+    final tags = recipe.tagResult?.tags;
+    if (tags == null) return null;
+    for (final tag in tags) {
+      if (allTags.contains(tag)) return tag;
+    }
+    return null;
+  }
+
   /// All cuisine entries.
   static const List<CuisineEntry> cuisines = [
     // Swedish/Nordic
