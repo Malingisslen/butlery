@@ -1892,6 +1892,12 @@ abstract class AppLocalizations {
   /// **'{title} (Kopia)'**
   String recipeDuplicateTitle(String title);
 
+  /// No description provided for @recipePrint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv ut'**
+  String get recipePrint;
+
   /// No description provided for @recipeCreateShoppingList.
   ///
   /// In sv, this message translates to:

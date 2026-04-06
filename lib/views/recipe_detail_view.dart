@@ -1,5 +1,6 @@
 // lib/views/recipe_detail_view.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -32,6 +33,7 @@ import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/services/recipe_print_service.dart' as print_service;
 
 /// Menu actions for the recipe detail overflow menu.
 enum _MenuAction {
@@ -43,6 +45,7 @@ enum _MenuAction {
   delete,
   toggleCollaboration,
   source,
+  printRecipe,
   report,
 }
 
@@ -446,6 +449,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ],
                               ),
                             ),
+                          if (kIsWeb)
+                            PopupMenuItem(
+                              value: _MenuAction.printRecipe,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.print_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(context.l10n.recipePrint),
+                                ],
+                              ),
+                            ),
                           PopupMenuItem(
                             value: _MenuAction.report,
                             child: Row(
@@ -718,6 +734,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     }
   }
 
+  Future<void> _printRecipe(Recipe recipe) async {
+    await print_service.printRecipeHtml(recipe);
+  }
+
   void _showFullscreenImage(
       BuildContext context, List<String> imageUrls, int initialIndex) {
     Navigator.of(context).push(
@@ -770,6 +790,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
           _actions.handleSourceUrlClick(context, recipe.sourceUrl!);
         }
+      case _MenuAction.printRecipe:
+        _printRecipe(recipe);
       case _MenuAction.report:
         ReportContentDialog.show(
           context: context,

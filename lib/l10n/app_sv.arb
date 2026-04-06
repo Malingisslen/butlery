@@ -645,6 +645,7 @@
       }
     }
   },
+  "recipePrint": "Skriv ut recept",
   "recipeCreateShoppingList": "Skapa inköpslista",
   "recipeUpdateTags": "Uppdatera taggar",
   "recipeViewSource": "Visa källa",
@@ -8255,6 +8256,7 @@
   "emptyStateNewUserWithPrefs": "Vi har dina kostpreferenser redo. Importera ditt första recept så filtrerar vi åt dig!",
   "emptyStateImportAction": "Importera från länk",
   "emptyStateOtherOptions": "Fler alternativ",
+  "recipePrint": "Skriv ut",
   "cookingModePreviousStep": "Föregående steg",
   "cookingModeNextStep": "Nästa steg",
   "cookingModeStepOf": "Steg {current} av {total}",

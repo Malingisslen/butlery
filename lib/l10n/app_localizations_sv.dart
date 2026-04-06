@@ -1044,6 +1044,9 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get recipePrint => 'Skriv ut';
+
+  @override
   String get recipeCreateShoppingList => 'Skapa inköpslista';
 
   @override

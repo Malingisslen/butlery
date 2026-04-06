@@ -645,6 +645,7 @@
       }
     }
   },
+  "recipePrint": "Print recipe",
   "recipeCreateShoppingList": "Create shopping list",
   "recipeUpdateTags": "Update tags",
   "recipeViewSource": "View source",
@@ -8255,6 +8256,7 @@
   "emptyStateNewUserWithPrefs": "Your dietary preferences are ready. Import your first recipe and we'll filter for you!",
   "emptyStateImportAction": "Import from link",
   "emptyStateOtherOptions": "More options",
+  "recipePrint": "Print",
   "cookingModePreviousStep": "Previous step",
   "cookingModeNextStep": "Next step",
   "cookingModeStepOf": "Step {current} of {total}",
@@ -8310,10 +8312,5 @@
     }
   },
   "pwaInstallPrompt": "Install Butlery on your home screen for quicker access",
-  "pwaInstallAction": "Install",
-  "emptyStateNewUserTitle": "Welcome to Butlery!",
-  "emptyStateNewUserDescription": "Import your first recipe from a URL or add it manually.",
-  "emptyStateNewUserWithPrefs": "We have your dietary preferences ready. Import your first recipe and we'll filter for you!",
-  "emptyStateImportAction": "Import from link",
-  "emptyStateOtherOptions": "More options"
+  "pwaInstallAction": "Install"
 }

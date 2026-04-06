@@ -1040,6 +1040,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get recipePrint => 'Print';
+
+  @override
   String get recipeCreateShoppingList => 'Create shopping list';
 
   @override
@@ -11967,11 +11970,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emptyStateNewUserDescription =>
-      'Import your first recipe from a URL or add it manually.';
+      'Import your first recipe from a link or add it manually.';
 
   @override
   String get emptyStateNewUserWithPrefs =>
-      'We have your dietary preferences ready. Import your first recipe and we\'ll filter for you!';
+      'Your dietary preferences are ready. Import your first recipe and we\'ll filter for you!';
 
   @override
   String get emptyStateImportAction => 'Import from link';
