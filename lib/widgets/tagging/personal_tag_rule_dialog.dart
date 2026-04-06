@@ -708,6 +708,8 @@ class _ConditionRow extends StatelessWidget {
         return context.l10n.ruleHintRating;
       case ConditionType.recency:
         return context.l10n.ruleHintRecency;
+      case ConditionType.cookedRecency:
+        return context.l10n.ruleHintRecency;
       case ConditionType.ownership:
         return context.l10n.ruleHintOwnership;
       case ConditionType.hasImage:

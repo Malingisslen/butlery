@@ -29,6 +29,9 @@ enum ConditionType {
   /// Match against recipe age (days since added).
   recency,
 
+  /// Match against days since last cooked (null = never cooked = max days).
+  cookedRecency,
+
   /// Match against recipe ownership/collaboration status.
   /// Values: 'mine', 'shared', 'collaborative', 'public'
   ownership,
@@ -67,6 +70,9 @@ extension ConditionTypeExtension on ConditionType {
         return ConditionType.rating;
       case 'recency':
         return ConditionType.recency;
+      case 'cookedrecency':
+      case 'cooked_recency':
+        return ConditionType.cookedRecency;
       case 'ownership':
         return ConditionType.ownership;
       case 'hasimage':
@@ -92,6 +98,7 @@ extension ConditionTypeExtension on ConditionType {
       ConditionType.time => l.conditionTypeTime,
       ConditionType.rating => l.conditionTypeRating,
       ConditionType.recency => l.conditionTypeRecent,
+      ConditionType.cookedRecency => l.conditionTypeCookedRecency,
       ConditionType.ownership => l.conditionTypeOwnership,
       ConditionType.hasImage => l.conditionTypeHasImage,
       ConditionType.completeness => l.conditionTypeCompleteness,
@@ -102,7 +109,8 @@ extension ConditionTypeExtension on ConditionType {
   bool get isNumeric => switch (this) {
         ConditionType.time ||
         ConditionType.rating ||
-        ConditionType.recency =>
+        ConditionType.recency ||
+        ConditionType.cookedRecency =>
           true,
         _ => false,
       };

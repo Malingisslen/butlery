@@ -168,6 +168,8 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
         return context.l10n.ruleHintRating;
       case ConditionType.recency:
         return context.l10n.ruleHintRecencyShort;
+      case ConditionType.cookedRecency:
+        return context.l10n.ruleHintRecencyShort;
       case ConditionType.ownership:
         return context.l10n.ruleHintOwnership;
       case ConditionType.hasImage:

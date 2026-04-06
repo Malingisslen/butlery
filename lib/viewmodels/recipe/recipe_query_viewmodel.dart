@@ -496,6 +496,16 @@ class RecipeQueryViewModel extends ChangeNotifier
       ..sort((a, b) => a.lastCookedAt!.compareTo(b.lastCookedAt!));
   }
 
+  /// Recipes never cooked and older than [minDays] days, scored by age.
+  List<Recipe> getDormantRecipes({int minDays = 60, int limit = 5}) {
+    final cutoff = DateTime.now().subtract(Duration(days: minDays));
+    final dormant = allRecipes
+        .where((r) => r.lastCookedAt == null && r.createdAt.isBefore(cutoff))
+        .toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return dormant.take(limit).toList();
+  }
+
   @override
   void dispose() {
     cancelAllOperations();

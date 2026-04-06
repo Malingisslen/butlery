@@ -16749,6 +16749,12 @@ abstract class AppLocalizations {
   /// **'Nyligen'**
   String get conditionTypeRecent;
 
+  /// No description provided for @conditionTypeCookedRecency.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senast lagad'**
+  String get conditionTypeCookedRecency;
+
   /// No description provided for @conditionTypeOwnership.
   ///
   /// In sv, this message translates to:
@@ -20475,6 +20481,72 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Glömda favoriter'**
   String get seasonalForgottenFavorites;
+
+  /// No description provided for @seasonalBannerSpring.
+  ///
+  /// In sv, this message translates to:
+  /// **'Våren är här! {count} av dina recept passar nu'**
+  String seasonalBannerSpring(int count);
+
+  /// No description provided for @seasonalBannerSummer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sommaren är här! {count} av dina recept passar nu'**
+  String seasonalBannerSummer(int count);
+
+  /// No description provided for @seasonalBannerAutumn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hösten är här! {count} av dina recept passar nu'**
+  String seasonalBannerAutumn(int count);
+
+  /// No description provided for @seasonalBannerWinter.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vintern är här! {count} av dina recept passar nu'**
+  String seasonalBannerWinter(int count);
+
+  /// No description provided for @seasonalBannerAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa'**
+  String get seasonalBannerAction;
+
+  /// No description provided for @dormantRecipesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Prova något du sparat'**
+  String get dormantRecipesTitle;
+
+  /// No description provided for @emptyStateNewUserTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välkommen till Butlery!'**
+  String get emptyStateNewUserTitle;
+
+  /// No description provided for @emptyStateNewUserDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera ditt första recept från en webbadress eller lägg till det manuellt.'**
+  String get emptyStateNewUserDescription;
+
+  /// No description provided for @emptyStateNewUserWithPrefs.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har dina kostpreferenser redo. Importera ditt första recept så filtrerar vi åt dig!'**
+  String get emptyStateNewUserWithPrefs;
+
+  /// No description provided for @emptyStateImportAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera från länk'**
+  String get emptyStateImportAction;
+
+  /// No description provided for @emptyStateOtherOptions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler alternativ'**
+  String get emptyStateOtherOptions;
 
   /// No description provided for @cookingModePreviousStep.
   ///

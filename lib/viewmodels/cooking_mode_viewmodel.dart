@@ -3,8 +3,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
+import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
-/// ViewModel for cooking mode — manages portion scaling and ingredient state.
+/// ViewModel for cooking mode — manages portion scaling, step tracking, and font scale.
 class CookingModeViewModel extends ChangeNotifier {
   final Recipe recipe;
 
@@ -12,9 +14,36 @@ class CookingModeViewModel extends ChangeNotifier {
   late List<String> _scaledIngredients;
   int _currentStepIndex = 0;
 
+  static const _fontScaleKey = 'butlery_cooking_font_scale';
+  static const List<double> fontScaleOptions = [1.0, 1.25, 1.5];
+  double _fontScale = 1.0;
+  double get fontScale => _fontScale;
+
   CookingModeViewModel({required this.recipe}) {
     _currentPortions = recipe.portions ?? 1;
     _scaledIngredients = List.from(recipe.ingredients);
+    _loadFontScale();
+  }
+
+  Future<void> _loadFontScale() async {
+    try {
+      final persistence = ServiceLocator.get<PersistenceService>();
+      final saved = await persistence.getInt(_fontScaleKey);
+      if (saved != null && saved >= 0 && saved < fontScaleOptions.length) {
+        _fontScale = fontScaleOptions[saved];
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
+  void cycleFontScale() {
+    final currentIndex = fontScaleOptions.indexOf(_fontScale);
+    final nextIndex = (currentIndex + 1) % fontScaleOptions.length;
+    _fontScale = fontScaleOptions[nextIndex];
+    notifyListeners();
+    try {
+      ServiceLocator.get<PersistenceService>().setInt(_fontScaleKey, nextIndex);
+    } catch (_) {}
   }
 
   int get currentPortions => _currentPortions;

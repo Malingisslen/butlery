@@ -102,6 +102,8 @@ class RuleCondition {
         return _evaluateRating(recipe);
       case ConditionType.recency:
         return _evaluateRecency(recipe);
+      case ConditionType.cookedRecency:
+        return _evaluateCookedRecency(recipe);
       case ConditionType.ownership:
         return _evaluateOwnership(recipe, currentUserId);
       case ConditionType.hasImage:
@@ -230,6 +232,22 @@ class RuleCondition {
 
     return _matchNumericOperator(
         daysSinceCreated.toDouble(), numericValue.toDouble());
+  }
+
+  /// Evaluates days since last cooked. Never-cooked recipes use max int.
+  bool _evaluateCookedRecency(Recipe recipe) {
+    final lastCooked = recipe.core.lastCookedAt;
+    // Never cooked = treat as infinitely old for greaterThan comparisons
+    final daysSinceCooked = lastCooked == null
+        ? 999999
+        : DateTime.now().difference(lastCooked).inDays;
+
+    if (operator == ConditionOperator.withinDays) {
+      return daysSinceCooked <= numericValue;
+    }
+
+    return _matchNumericOperator(
+        daysSinceCooked.toDouble(), numericValue.toDouble());
   }
 
   /// Evaluates ownership condition.

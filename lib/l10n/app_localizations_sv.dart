@@ -9682,6 +9682,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get conditionTypeRecent => 'Nyligen';
 
   @override
+  String get conditionTypeCookedRecency => 'Senast lagad';
+
+  @override
   String get conditionTypeOwnership => 'Ägarskap';
 
   @override
@@ -11963,6 +11966,49 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get seasonalForgottenFavorites => 'Glömda favoriter';
+
+  @override
+  String seasonalBannerSpring(int count) {
+    return 'Våren är här! $count av dina recept passar nu';
+  }
+
+  @override
+  String seasonalBannerSummer(int count) {
+    return 'Sommaren är här! $count av dina recept passar nu';
+  }
+
+  @override
+  String seasonalBannerAutumn(int count) {
+    return 'Hösten är här! $count av dina recept passar nu';
+  }
+
+  @override
+  String seasonalBannerWinter(int count) {
+    return 'Vintern är här! $count av dina recept passar nu';
+  }
+
+  @override
+  String get seasonalBannerAction => 'Visa';
+
+  @override
+  String get dormantRecipesTitle => 'Prova något du sparat';
+
+  @override
+  String get emptyStateNewUserTitle => 'Välkommen till Butlery!';
+
+  @override
+  String get emptyStateNewUserDescription =>
+      'Importera ditt första recept från en webbadress eller lägg till det manuellt.';
+
+  @override
+  String get emptyStateNewUserWithPrefs =>
+      'Vi har dina kostpreferenser redo. Importera ditt första recept så filtrerar vi åt dig!';
+
+  @override
+  String get emptyStateImportAction => 'Importera från länk';
+
+  @override
+  String get emptyStateOtherOptions => 'Fler alternativ';
 
   @override
   String get cookingModePreviousStep => 'Föregående steg';

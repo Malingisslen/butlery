@@ -9653,6 +9653,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conditionTypeRecent => 'Recent';
 
   @override
+  String get conditionTypeCookedRecency => 'Last cooked';
+
+  @override
   String get conditionTypeOwnership => 'Ownership';
 
   @override
@@ -11932,6 +11935,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seasonalForgottenFavorites => 'Forgotten Favorites';
+
+  @override
+  String seasonalBannerSpring(int count) {
+    return 'Spring is here! $count of your recipes are in season';
+  }
+
+  @override
+  String seasonalBannerSummer(int count) {
+    return 'Summer is here! $count of your recipes are in season';
+  }
+
+  @override
+  String seasonalBannerAutumn(int count) {
+    return 'Autumn is here! $count of your recipes are in season';
+  }
+
+  @override
+  String seasonalBannerWinter(int count) {
+    return 'Winter is here! $count of your recipes are in season';
+  }
+
+  @override
+  String get seasonalBannerAction => 'Show';
+
+  @override
+  String get dormantRecipesTitle => 'Try something you saved';
+
+  @override
+  String get emptyStateNewUserTitle => 'Welcome to Butlery!';
+
+  @override
+  String get emptyStateNewUserDescription =>
+      'Import your first recipe from a URL or add it manually.';
+
+  @override
+  String get emptyStateNewUserWithPrefs =>
+      'We have your dietary preferences ready. Import your first recipe and we\'ll filter for you!';
+
+  @override
+  String get emptyStateImportAction => 'Import from link';
+
+  @override
+  String get emptyStateOtherOptions => 'More options';
 
   @override
   String get cookingModePreviousStep => 'Previous step';

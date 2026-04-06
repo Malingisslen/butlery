@@ -125,6 +125,28 @@ class _CookingModeContent extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          // Font size toggle
+          Material(
+            color: cs.surface,
+            borderRadius: BorderRadius.zero,
+            child: InkWell(
+              onTap: () => vm.cycleFontScale(),
+              child: SizedBox(
+                width: AppDimensions.minTouchTarget,
+                height: AppDimensions.minTouchTarget,
+                child: Center(
+                  child: Text(
+                    'A${vm.fontScale == 1.0 ? '' : vm.fontScale == 1.25 ? '+' : '++'}',
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingXs),
           // Close button
           Semantics(
             label: context.l10n.a11yCookingModeClose,

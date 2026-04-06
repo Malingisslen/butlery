@@ -6279,6 +6279,7 @@
   "conditionTypeTime": "Time",
   "conditionTypeRating": "Rating",
   "conditionTypeRecent": "Recent",
+  "conditionTypeCookedRecency": "Last cooked",
   "conditionTypeOwnership": "Ownership",
   "conditionTypeHasImage": "Has image",
   "conditionTypeCompleteness": "Completeness",
@@ -8231,6 +8232,29 @@
   "importSavedForLater": "URL saved — will import when you're back online",
   "seasonalInSeasonNow": "In Season Now",
   "seasonalForgottenFavorites": "Forgotten Favorites",
+  "seasonalBannerSpring": "Spring is here! {count} of your recipes are in season",
+  "@seasonalBannerSpring": {
+    "placeholders": { "count": {"type": "int"} }
+  },
+  "seasonalBannerSummer": "Summer is here! {count} of your recipes are in season",
+  "@seasonalBannerSummer": {
+    "placeholders": { "count": {"type": "int"} }
+  },
+  "seasonalBannerAutumn": "Autumn is here! {count} of your recipes are in season",
+  "@seasonalBannerAutumn": {
+    "placeholders": { "count": {"type": "int"} }
+  },
+  "seasonalBannerWinter": "Winter is here! {count} of your recipes are in season",
+  "@seasonalBannerWinter": {
+    "placeholders": { "count": {"type": "int"} }
+  },
+  "seasonalBannerAction": "Show",
+  "dormantRecipesTitle": "Try something you saved",
+  "emptyStateNewUserTitle": "Welcome to Butlery!",
+  "emptyStateNewUserDescription": "Import your first recipe from a link or add it manually.",
+  "emptyStateNewUserWithPrefs": "Your dietary preferences are ready. Import your first recipe and we'll filter for you!",
+  "emptyStateImportAction": "Import from link",
+  "emptyStateOtherOptions": "More options",
   "cookingModePreviousStep": "Previous step",
   "cookingModeNextStep": "Next step",
   "cookingModeStepOf": "Step {current} of {total}",
@@ -8286,5 +8310,10 @@
     }
   },
   "pwaInstallPrompt": "Install Butlery on your home screen for quicker access",
-  "pwaInstallAction": "Install"
+  "pwaInstallAction": "Install",
+  "emptyStateNewUserTitle": "Welcome to Butlery!",
+  "emptyStateNewUserDescription": "Import your first recipe from a URL or add it manually.",
+  "emptyStateNewUserWithPrefs": "We have your dietary preferences ready. Import your first recipe and we'll filter for you!",
+  "emptyStateImportAction": "Import from link",
+  "emptyStateOtherOptions": "More options"
 }

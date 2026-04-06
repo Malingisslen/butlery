@@ -6300,6 +6300,7 @@
   "conditionTypeTime": "Tid",
   "conditionTypeRating": "Betyg",
   "conditionTypeRecent": "Nyligen",
+  "conditionTypeCookedRecency": "Senast lagad",
   "conditionTypeOwnership": "Ägarskap",
   "conditionTypeHasImage": "Har bild",
   "conditionTypeCompleteness": "Fullständighet",
@@ -8231,6 +8232,29 @@
   "importSavedForLater": "URL sparad — importeras när du är online igen",
   "seasonalInSeasonNow": "I säsong just nu",
   "seasonalForgottenFavorites": "Glömda favoriter",
+  "seasonalBannerSpring": "Våren är här! {count} av dina recept passar nu",
+  "@seasonalBannerSpring": {
+    "placeholders": { "count": {"type": "int"} }
+  },
+  "seasonalBannerSummer": "Sommaren är här! {count} av dina recept passar nu",
+  "@seasonalBannerSummer": {
+    "placeholders": { "count": {"type": "int"} }
+  },
+  "seasonalBannerAutumn": "Hösten är här! {count} av dina recept passar nu",
+  "@seasonalBannerAutumn": {
+    "placeholders": { "count": {"type": "int"} }
+  },
+  "seasonalBannerWinter": "Vintern är här! {count} av dina recept passar nu",
+  "@seasonalBannerWinter": {
+    "placeholders": { "count": {"type": "int"} }
+  },
+  "seasonalBannerAction": "Visa",
+  "dormantRecipesTitle": "Prova något du sparat",
+  "emptyStateNewUserTitle": "Välkommen till Butlery!",
+  "emptyStateNewUserDescription": "Importera ditt första recept från en webbadress eller lägg till det manuellt.",
+  "emptyStateNewUserWithPrefs": "Vi har dina kostpreferenser redo. Importera ditt första recept så filtrerar vi åt dig!",
+  "emptyStateImportAction": "Importera från länk",
+  "emptyStateOtherOptions": "Fler alternativ",
   "cookingModePreviousStep": "Föregående steg",
   "cookingModeNextStep": "Nästa steg",
   "cookingModeStepOf": "Steg {current} av {total}",

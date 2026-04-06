@@ -54,6 +54,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 // Core services and utilities
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/core/utils/season_utils.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -485,11 +487,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 
   Widget _buildDiscoveryShelves(RecipeQueryViewModel queryVm) {
+    final inSeason = queryVm.getInSeasonRecipes();
     return Column(
       children: [
+        if (inSeason.length >= 2) _buildSeasonalBanner(inSeason.length),
         RecipeShelf(
           title: context.l10n.seasonalInSeasonNow,
-          recipes: queryVm.getInSeasonRecipes(),
+          recipes: inSeason,
+          onRecipeTap: _navigateToRecipe,
+        ),
+        RecipeShelf(
+          title: context.l10n.dormantRecipesTitle,
+          recipes: queryVm.getDormantRecipes(),
           onRecipeTap: _navigateToRecipe,
         ),
         RecipeShelf(
@@ -498,6 +507,42 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           onRecipeTap: _navigateToRecipe,
         ),
       ],
+    );
+  }
+
+  Widget _buildSeasonalBanner(int count) {
+    final cs = Theme.of(context).colorScheme;
+    final season = SeasonUtils.currentSeasonTag();
+    final message = switch (season) {
+      'vår' => context.l10n.seasonalBannerSpring(count),
+      'sommar' => context.l10n.seasonalBannerSummer(count),
+      'höst' => context.l10n.seasonalBannerAutumn(count),
+      _ => context.l10n.seasonalBannerWinter(count),
+    };
+    return Container(
+      margin: AppDimensions.responsiveContentPadding(context),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingM,
+        vertical: AppDimensions.paddingS,
+      ),
+      decoration: BoxDecoration(
+        color: cs.primaryContainer,
+        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.eco, color: cs.primary, size: 20),
+          const SizedBox(width: AppDimensions.spacingSm),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onPrimaryContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -644,6 +689,70 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     return card;
   }
 
+  Widget _buildEmptyState() {
+    final userService = context.read<UserService>();
+    final profile = userService.currentUserProfile;
+    final isNewUser = profile != null &&
+        DateTime.now().difference(profile.joinedAt).inDays < 7;
+
+    if (!isNewUser) {
+      return StateWidget.noRecipes(
+        onAction: () => Navigator.pushNamed(context, Routes.laggTill),
+      );
+    }
+
+    final cs = Theme.of(context).colorScheme;
+    final hasPrefs = profile.allergenPreferences != null &&
+        (profile.allergenPreferences!.trackedAllergens.isNotEmpty ||
+            profile.allergenPreferences!.trackedDietary.isNotEmpty);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.paddingXl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const VegetableIllustration(
+              type: VegetableType.broccoli,
+              size: 100,
+            ),
+            const SizedBox(height: AppDimensions.spacingLg),
+            Text(
+              context.l10n.emptyStateNewUserTitle,
+              style: AppTextStyles.headlineMedium.copyWith(color: cs.primary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.spacingSm),
+            Text(
+              hasPrefs
+                  ? context.l10n.emptyStateNewUserWithPrefs
+                  : context.l10n.emptyStateNewUserDescription,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.spacingXl),
+            SizedBox(
+              width: double.infinity,
+              child: ActionButtons.primaryButton(
+                context,
+                label: context.l10n.emptyStateImportAction,
+                onPressed: () =>
+                    Navigator.pushNamed(context, Routes.smartImport),
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingSm),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, Routes.laggTill),
+              child: Text(context.l10n.emptyStateOtherOptions),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildOnboardingBanner(RecipeListViewModel viewModel) {
     final cs = Theme.of(context).colorScheme;
     return Dismissible(
@@ -710,9 +819,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     if (recipes.isEmpty) {
       return viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
-          ? StateWidget.noRecipes(
-              onAction: () => Navigator.pushNamed(context, Routes.laggTill),
-            )
+          ? _buildEmptyState()
           : StateWidget.noSearchResults(
               onAction: viewModel.searchQuery.isNotEmpty
                   ? () => viewModel.updateSearch('')

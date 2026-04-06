@@ -1,6 +1,6 @@
 # Manual Testing Log - Butlery App
 
-**Status**: 1128/1128 — 885 passed, 3 failed, 93 N/A, 147 PENDING (design/UI), 0 open bugs
+**Status**: 1128/1128 — 900 passed, 4 failed, 93 N/A, 131 PENDING (design/UI), 2 open bugs
 **Tested**: 2026-01-07 to 2026-03-15 (39 sessions) | Design/UI phases added 2026-04-05
 **Credentials**: User A: malin.gisslen1@gmail.com / Test1234 | User B: test.testsson2@gmail.com / TestPass123!
 
@@ -89,14 +89,14 @@
 | 79. Shared Content Management | 8 | 3 | 5 | Dismiss/undismiss work; audit log, parsing correction, re-consent not implemented |
 | 80. Device & Background Behaviors | 8 | 8 | 0 | Device integrity + cache + OCR quota + retag verified |
 | **— Design & UI Testing —** | | | | **Added 2026-04-05** |
-| 81. Design Token Compliance | 28 | 1 | | Colors, typography, spacing, shape tokens |
+| 81. Design Token Compliance | 28 | 2 | | Colors, typography, spacing, shape tokens |
 | 82. Component Visual Verification | 33 | 5 | | Widget-by-widget rendering vs spec |
-| 83. Screen Mockup Comparison | 45 | 7 | 1 | Per-screen vs mockup PNGs at 375x812 |
+| 83. Screen Mockup Comparison | 45 | 9 | 1 | Per-screen vs mockup PNGs at 375x812 |
 | 84. Responsive Layout | 18 | 4 | | Breakpoints: mobile/tablet/desktop; 2 BLOCKED |
-| 85. Dark Mode / Theme | 12 | | | Dark theme color adaptation |
+| 85. Dark Mode / Theme | 12 | 10 | | 1 FAIL: BUG-045 error snackbar color |
 | 86. Accessibility Visual | 13 | | | WCAG AA contrast, touch targets, semantics |
-| 87. State Visual Coverage | 17 | | | Loading, empty, error, offline states |
-| **TOTAL** | **1128** | **885** | **93** | **3 failed, 147 pending design/UI** |
+| 87. State Visual Coverage | 17 | 2 | | Loading, empty, error, offline states |
+| **TOTAL** | **1128** | **900** | **93** | **4 failed, 131 pending design/UI** |
 
 ## Bug Tracker
 
@@ -111,6 +111,8 @@ No open bugs.
 | BUG-032 | ICA.se URL import fails — external site changed HTML format. Other URL sources work. |
 | BUG-037 | URL import fails on web (CORS proxy issue) — works correctly on phone/device. All URL sources affected on web. |
 | BUG-043 | ~~DI bootstrap spinner stuck permanently~~ FIXED: 3 root causes — UserService.initialize() never called, no timeouts on module init, Firestore web IndexedDB corruption with no recovery. Fixed in 6 files, ~40 lines. |
+| BUG-044 | Profile edit triggers onboarding re-show. Saving profile in UserProfileEditView → AuthWrapper rebuilds → `hasCompletedOnboarding` reads as false → onboarding wizard shown. Clicking "Hoppa over" fails with "Ett fel uppstod" because `_currentUserProfile` is null at that point. Workaround: reload page. |
+| BUG-045 | Error snackbar in onboarding uses raw `SnackBar` (beige in dark mode) instead of `SnackBarUtils.showError()`. Error messages should use the themed error styling with adapted error color (#FFB4AB in dark mode). Affects `onboarding_view.dart:255`. |
 
 ### Fixed (40 bugs)
 
@@ -1229,7 +1231,7 @@ Verify that design tokens in `app_colors.dart`, `app_text_styles.dart`, `app_dim
 | UI-DT-21 | appBarTitle renders at 18px with w600 weight | |
 | UI-DT-22 | bodyMedium renders at 14px, bodySmall at 13px, bodyLarge at 16px | |
 | UI-DT-23 | navLabel renders at 10px with Josefin Sans | |
-| UI-DT-24 | borderRadius is 0 on ALL buttons (elevated, filled, outlined, text) | |
+| UI-DT-24 | borderRadius is 0 on ALL buttons (elevated, filled, outlined, text) | PASS — Session 41: verified on Generera meny, Skapa ny inköps, filter chips, lägg till grid cards |
 | UI-DT-25 | borderRadius is 0 on ALL cards (recipe cards, settings items, menu items) | |
 | UI-DT-26 | borderRadius is 0 on filter chips, search boxes, dialogs, bottom sheets | |
 | UI-DT-27 | borderRadiusRound (50) ONLY on avatars and UnifiedBadge pill shapes | |
@@ -1309,7 +1311,7 @@ Compare each rendered screen against mockup PNGs at 375x812 viewport (iPhone X f
 | UI-MC-26 | Filter sheet vs butlery-02: cream bg bottom sheet, handle bar 40x4 creamDarker, Josefin 18px title | |
 | UI-MC-27 | Filter sheet: allergen/kosttyp/tid sections with square filter toggles | |
 | UI-MC-28 | Filter sheet: "Rensa" secondary + "Visa N recept" primary buttons, flex-1/flex-2 ratio | |
-| UI-MC-29 | Lagg till vs butlery-03: 2x2 grid of option cards — rust and green diagonal color pattern | |
+| UI-MC-29 | Lagg till vs butlery-03: 2x2 grid of option cards — rust and green diagonal color pattern | PASS — Session 41: rust-green/green-rust diagonal, square corners, icons |
 | UI-MC-30 | Lagg till: "Nyligen importerade" section with recipe card below grid | |
 | UI-MC-31 | Import progress vs butlery-03: 4-step stepper with green done/bordered current/gray pending circles | |
 | UI-MC-32 | Import error vs butlery-03: illustration, error-colored title Josefin 18px, error buttons stacked | |
@@ -1358,18 +1360,18 @@ Toggle via Settings. Verify `ButleryColors.dark` extension and dark ColorScheme 
 
 | ID | Test | Status |
 |----|------|--------|
-| UI-DM-01 | Theme toggle in Settings switches between light and dark mode | |
-| UI-DM-02 | Dark mode: scaffold background uses dark surface color (not cream/white) | |
-| UI-DM-03 | Dark mode: text colors auto-adapt — no white-on-white or dark-on-dark | |
-| UI-DM-04 | Dark mode: forestGreen primary still renders as recognizable green (may be lighter tone) | |
-| UI-DM-05 | Dark mode: rust secondary adapts to lighter tone for visibility on dark bg | |
-| UI-DM-06 | Dark mode: recipe card borders still visible (adapted green left, adapted rust bottom) | |
-| UI-DM-07 | Dark mode: bottom nav adapted — dark bg, rust indicator still visible | |
-| UI-DM-08 | Dark mode: error color adapts (M3 tone 80), not same as light mode red | |
+| UI-DM-01 | Theme toggle in Settings switches between light and dark mode | PASS — Session 41 |
+| UI-DM-02 | Dark mode: scaffold background uses dark surface color (not cream/white) | PASS — Session 41: dark gray/near-black surface |
+| UI-DM-03 | Dark mode: text colors auto-adapt — no white-on-white or dark-on-dark | PASS — Session 41: light cream text on dark bg |
+| UI-DM-04 | Dark mode: forestGreen primary still renders as recognizable green (may be lighter tone) | PASS — Session 41: header is lighter mint/sage green |
+| UI-DM-05 | Dark mode: rust secondary adapts to lighter tone for visibility on dark bg | PASS — Session 41: avatar shows peach/salmon adapted rust |
+| UI-DM-06 | Dark mode: recipe card borders still visible (adapted green left, adapted rust bottom) | PASS — Session 41: both borders visible |
+| UI-DM-07 | Dark mode: bottom nav adapted — dark bg, rust indicator still visible | PASS — Session 41: visible on veckomeny screen |
+| UI-DM-08 | Dark mode: error color adapts (M3 tone 80), not same as light mode red | FAIL — BUG-045: onboarding error snackbar uses raw SnackBar (beige), not SnackBarUtils.showError() |
 | UI-DM-09 | Dark mode: chat bubbles use adapted colors (outgoing dark green, incoming dark gray) | |
-| UI-DM-10 | Dark mode: all badge variants (tag, allergen, category) readable on dark bg | |
-| UI-DM-11 | Dark mode: no hardcoded light colors visible as bright patches on dark bg | |
-| UI-DM-12 | Dark mode: illustrations/decorative elements (broccoli, pea pod) visible against dark bg | |
+| UI-DM-10 | Dark mode: all badge variants (tag, allergen, category) readable on dark bg | PASS — Session 41: tag badges readable (dark bg, light text) |
+| UI-DM-11 | Dark mode: no hardcoded light colors visible as bright patches on dark bg | PASS — Session 41: no bright patches |
+| UI-DM-12 | Dark mode: illustrations/decorative elements (broccoli, pea pod) visible against dark bg | PASS — Session 41: broccoli + pea pod visible on onboarding + list |
 
 ### Phase 86: Accessibility Visual (13 tests)
 
@@ -1402,8 +1404,8 @@ Loading, empty, error, and offline states render correctly using StateWidget and
 | UI-SV-03 | Skeleton loading: shimmer placeholder cards during initial recipe list load | |
 | UI-SV-04 | Empty state (no recipes): broccoli illustration 120x120, Josefin 20px lowercase title, CTA button | |
 | UI-SV-05 | Empty state (no search results): different illustration, "inga traffar" title, "Rensa sokning" button | |
-| UI-SV-06 | Empty state (no menu): artskida illustration, "ingen meny annu", two stacked buttons | |
-| UI-SV-07 | Empty state (no shopping): morot illustration, "inkopslistan ar tom", "Generera veckomeny" button | |
+| UI-SV-06 | Empty state (no menu): artskida illustration, "ingen meny annu", two stacked buttons | PASS — Session 41: pea pod illustration, "Ingen meny genererad ännu", two "Generera meny" buttons |
+| UI-SV-07 | Empty state (no shopping): morot illustration, "inkopslistan ar tom", "Generera veckomeny" button | PASS — Session 41: carrot illustration, "Ingen meny att skapa inköpslista från", "Skapa ny inköps..." button |
 | UI-SV-08 | Error state: illustration + error-colored title (Josefin 18px), error message, retry button | |
 | UI-SV-09 | Error state: retry button uses error color #C44536, NOT rust #8B5A3C | |
 | UI-SV-10 | Error messages display in Swedish (localized), not English fallback | |
