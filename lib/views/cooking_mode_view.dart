@@ -407,37 +407,59 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                           bottom: AppDimensions.spacingLg),
                       child: Opacity(
                         opacity: isActive ? 1.0 : 0.4,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: AppDimensions.minTouchTarget,
-                              height: AppDimensions.minTouchTarget,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isActive
-                                    ? cs.surface
-                                    : cs.surface.withValues(alpha: 0.6),
-                              ),
-                              child: Text(
-                                '$stepNumber',
-                                style: AppTextStyles.contentTitle.copyWith(
-                                  color: cs.primary,
-                                  fontWeight: FontWeight.w700,
+                        child: Container(
+                          decoration: isActive
+                              ? BoxDecoration(
+                                  border: Border(
+                                    left: BorderSide(
+                                      color: cs.surface,
+                                      width: 3,
+                                    ),
+                                  ),
+                                )
+                              : null,
+                          padding: isActive
+                              ? const EdgeInsets.only(
+                                  left: AppDimensions.spacingSm)
+                              : null,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: AppDimensions.minTouchTarget,
+                                height: AppDimensions.minTouchTarget,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? cs.surface
+                                      : cs.surface.withValues(alpha: 0.6),
+                                ),
+                                child: Text(
+                                  '$stepNumber',
+                                  style: AppTextStyles.contentTitle.copyWith(
+                                    color: cs.primary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize:
+                                        AppTextStyles.contentTitle.fontSize! *
+                                            vm.fontScale,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: AppDimensions.spacingMd),
-                            Expanded(
-                              child: Text(
-                                instruction,
-                                style: AppTextStyles.titleLarge.copyWith(
-                                  color: cs.onPrimary,
-                                  height: 1.7,
+                              const SizedBox(width: AppDimensions.spacingMd),
+                              Expanded(
+                                child: Text(
+                                  instruction,
+                                  style: AppTextStyles.titleLarge.copyWith(
+                                    color: cs.onPrimary,
+                                    height: 1.7,
+                                    fontSize:
+                                        AppTextStyles.titleLarge.fontSize! *
+                                            vm.fontScale,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
