@@ -120,7 +120,11 @@ class UserService extends ChangeNotifier
       _setLoading(true);
       _clearError();
 
-      final existingProfile = await _repository.fetchProfile(user.uid);
+      // Prefer in-memory profile to avoid re-fetching, which can silently lose
+      // hasCompletedOnboarding if the private settings sub-doc fetch fails (BUG-044).
+      // Tradeoff: won't pick up changes made on other devices since last load.
+      final existingProfile =
+          _currentUserProfile ?? await _repository.fetchProfile(user.uid);
 
       UserProfile profile;
       if (existingProfile != null) {

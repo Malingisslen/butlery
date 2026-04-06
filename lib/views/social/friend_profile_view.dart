@@ -36,8 +36,21 @@ class FriendProfileView extends StatefulWidget {
 
 class _FriendProfileViewState extends State<FriendProfileView> {
   bool _isStartingConversation = false;
+  late final FriendsViewModel _friendsViewModel;
 
   UserProfile get friend => widget.friend;
+
+  @override
+  void initState() {
+    super.initState();
+    _friendsViewModel = ServiceLocator.get<FriendsViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _friendsViewModel.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,113 +108,118 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                 LayoutComponents.offlineIndicator(),
                 Expanded(
                   child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                child: Column(
-                  children: [
-                    // Avatar and basic info
-                    Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.paddingL),
                       child: Column(
                         children: [
-                          UserDisplayWidgets.avatar(
-                            imageUrl: friend.avatarUrl,
-                            displayName: friend.displayName,
-                            size: ImageSize.extraLarge,
+                          // Avatar and basic info
+                          Center(
+                            child: Column(
+                              children: [
+                                UserDisplayWidgets.avatar(
+                                  imageUrl: friend.avatarUrl,
+                                  displayName: friend.displayName,
+                                  size: ImageSize.extraLarge,
+                                ),
+                                const SizedBox(height: AppDimensions.spacingL),
+                                Text(
+                                  friend.displayName,
+                                  style: AppTextStyles.headlineMedium,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: AppDimensions.spacingL),
-                          Text(
-                            friend.displayName,
-                            style: AppTextStyles.headlineMedium,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
 
-                    const SizedBox(height: AppDimensions.spacingL),
-
-                    // Statistik kort
-                    CardContent.standard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.socialStatistics,
-                            style: AppTextStyles.titleBold,
-                          ),
                           const SizedBox(height: AppDimensions.spacingL),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+
+                          // Statistik kort
+                          CardContent.standard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  context.l10n.socialStatistics,
+                                  style: AppTextStyles.titleBold,
+                                ),
+                                const SizedBox(height: AppDimensions.spacingL),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildStatItem(
+                                      context,
+                                      context.l10n.socialFriends,
+                                      '${friend.friendsCount}',
+                                      Icons.people,
+                                    ),
+                                    _buildStatItem(
+                                      context,
+                                      context.l10n.socialRecipes,
+                                      '${friend.publicRecipeCount}',
+                                      Icons.restaurant_menu,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: AppDimensions.spacingL),
+
+                          // Action buttons
+                          Column(
                             children: [
-                              _buildStatItem(
-                                context,
-                                context.l10n.socialFriends,
-                                '${friend.friendsCount}',
-                                Icons.people,
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: OutlinedButton.icon(
+                                      onPressed: _isStartingConversation
+                                          ? null
+                                          : () => _startConversation(context),
+                                      icon: _isStartingConversation
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2),
+                                            )
+                                          : const Icon(Icons.message),
+                                      label:
+                                          Text(context.l10n.socialSendMessage),
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppDimensions.spacingL),
+                                  Flexible(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () =>
+                                          _showRecipeSelection(context),
+                                      icon: const Icon(Icons.share),
+                                      label:
+                                          Text(context.l10n.socialShareRecipe),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              _buildStatItem(
-                                context,
-                                context.l10n.socialRecipes,
-                                '${friend.publicRecipeCount}',
-                                Icons.restaurant_menu,
+                              const SizedBox(height: AppDimensions.spacingM),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () =>
+                                      _showRemoveFriendDialog(context),
+                                  style: ComponentThemes.deleteButtonStyle(
+                                      Theme.of(context).colorScheme),
+                                  icon: const Icon(Icons.person_remove),
+                                  label: Text(context.l10n.socialRemoveFriend),
+                                ),
                               ),
                             ],
                           ),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: AppDimensions.spacingL),
-
-                    // Action buttons
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: OutlinedButton.icon(
-                                onPressed: _isStartingConversation
-                                    ? null
-                                    : () => _startConversation(context),
-                                icon: _isStartingConversation
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2),
-                                      )
-                                    : const Icon(Icons.message),
-                                label: Text(context.l10n.socialSendMessage),
-                              ),
-                            ),
-                            const SizedBox(width: AppDimensions.spacingL),
-                            Flexible(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _showRecipeSelection(context),
-                                icon: const Icon(Icons.share),
-                                label: Text(context.l10n.socialShareRecipe),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppDimensions.spacingM),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showRemoveFriendDialog(context),
-                            style: ComponentThemes.deleteButtonStyle(
-                                Theme.of(context).colorScheme),
-                            icon: const Icon(Icons.person_remove),
-                            label: Text(context.l10n.socialRemoveFriend),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
                 ),
               ],
             ),
@@ -264,8 +282,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
     );
 
     if (shouldRemove == true && context.mounted) {
-      final viewModel = ServiceLocator.get<FriendsViewModel>();
-      final success = await viewModel.removeFriend(friend.uid);
+      final success = await _friendsViewModel.removeFriend(friend.uid);
       if (success && context.mounted) {
         SnackBarUtils.showSuccess(
           context,

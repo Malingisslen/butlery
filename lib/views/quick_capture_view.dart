@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -125,22 +126,17 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
 
     if (recipe != null) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.quickCaptureSaved),
-          action: SnackBarAction(
-            label: context.l10n.quickCaptureEditAction,
-            onPressed: () {
-              Navigator.pushNamed(context, Routes.redigeraRecept,
-                  arguments: recipe);
-            },
-          ),
-        ),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.quickCaptureSaved,
+        actionLabel: context.l10n.quickCaptureEditAction,
+        onAction: () {
+          Navigator.pushNamed(context, Routes.redigeraRecept,
+              arguments: recipe);
+        },
       );
     } else if (vm.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.error!)),
-      );
+      SnackBarUtils.showError(context, vm.error!);
     }
   }
 }

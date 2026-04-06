@@ -16,7 +16,6 @@ import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -417,20 +416,13 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           TextButton(
             onPressed: () async {
               Navigator.of(dialogContext).pop();
-              final messenger = ScaffoldMessenger.of(context);
               final success = await vm.leaveGroup(conversation.id);
               if (mounted) {
                 if (success) {
-                  messenger.showSnackBar(
-                    SnackBar(content: Text(l10n.messagingLeftGroup)),
-                  );
+                  SnackBarUtils.showSuccess(context, l10n.messagingLeftGroup);
                 } else {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.messagingCouldNotLeaveGroup('')),
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                    ),
-                  );
+                  SnackBarUtils.showError(
+                      context, l10n.messagingCouldNotLeaveGroup(''));
                 }
               }
             },
@@ -458,25 +450,16 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           TextButton(
             onPressed: () async {
               Navigator.of(dialogContext).pop();
-              final messenger = ScaffoldMessenger.of(context);
               final success = await vm.deleteConversation(conversation.id);
               if (mounted) {
                 if (success) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.messagingConversationDeleted(
-                          conversation.title ?? '')),
-                      backgroundColor: context.butleryColors.success,
-                    ),
-                  );
+                  SnackBarUtils.showSuccess(
+                      context,
+                      l10n.messagingConversationDeleted(
+                          conversation.title ?? ''));
                 } else {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content:
-                          Text(l10n.messagingCouldNotDeleteConversation('')),
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                    ),
-                  );
+                  SnackBarUtils.showError(
+                      context, l10n.messagingCouldNotDeleteConversation(''));
                 }
               }
             },
@@ -523,15 +506,12 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         arguments: profile,
       );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.messagingCouldNotShowProfile(
+      if (context.mounted) {
+        SnackBarUtils.showError(
+            context,
+            l10n.messagingCouldNotShowProfile(
               SnackBarUtils.userFriendlyMessage(context, e),
-            )),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+            ));
       }
     }
   }

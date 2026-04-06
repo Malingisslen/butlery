@@ -8,6 +8,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Shows sharing status for a recipe the user owns.
@@ -167,20 +168,15 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
 
       if (!context.mounted) return;
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.recipeSharingStopAllSuccess)),
-        );
+        SnackBarUtils.showSuccess(
+            context, context.l10n.recipeSharingStopAllSuccess);
         onSharingChanged();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.commonUnknownError)),
-        );
+        SnackBarUtils.showError(context, context.l10n.commonUnknownError);
       }
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.commonUnknownError)),
-      );
+      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
     }
   }
 
@@ -205,22 +201,15 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
 
       if (!context.mounted) return;
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text(context.l10n.recipeSharingRevokeSuccess(displayName))),
-        );
+        SnackBarUtils.showSuccess(
+            context, context.l10n.recipeSharingRevokeSuccess(displayName));
         onSharingChanged();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.commonUnknownError)),
-        );
+        SnackBarUtils.showError(context, context.l10n.commonUnknownError);
       }
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.commonUnknownError)),
-      );
+      SnackBarUtils.showError(context, context.l10n.commonUnknownError);
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
@@ -776,9 +777,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             viewModel.updateRecipe(updated);
           } catch (e) {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(context.l10n.commonErrorOccurred)),
-              );
+              SnackBarUtils.showError(
+                  context, context.l10n.commonErrorOccurred);
             }
           }
         }

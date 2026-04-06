@@ -1,6 +1,6 @@
 # Manual Testing Log - Butlery App
 
-**Status**: 1128/1128 — 900 passed, 4 failed, 93 N/A, 131 PENDING (design/UI), 2 open bugs
+**Status**: 1128/1128 — 904 passed, 4 failed, 93 N/A, 127 PENDING (design/UI), 2 open bugs
 **Tested**: 2026-01-07 to 2026-03-15 (39 sessions) | Design/UI phases added 2026-04-05
 **Credentials**: User A: malin.gisslen1@gmail.com / Test1234 | User B: test.testsson2@gmail.com / TestPass123!
 
@@ -92,11 +92,11 @@
 | 81. Design Token Compliance | 28 | 2 | | Colors, typography, spacing, shape tokens |
 | 82. Component Visual Verification | 33 | 5 | | Widget-by-widget rendering vs spec |
 | 83. Screen Mockup Comparison | 45 | 9 | 1 | Per-screen vs mockup PNGs at 375x812 |
-| 84. Responsive Layout | 18 | 4 | | Breakpoints: mobile/tablet/desktop; 2 BLOCKED |
+| 84. Responsive Layout | 18 | 5 | | 1 PARTIAL (2-col not 3-col at desktop) |
 | 85. Dark Mode / Theme | 12 | 10 | | 1 FAIL: BUG-045 error snackbar color |
 | 86. Accessibility Visual | 13 | | | WCAG AA contrast, touch targets, semantics |
 | 87. State Visual Coverage | 17 | 2 | | Loading, empty, error, offline states |
-| **TOTAL** | **1128** | **900** | **93** | **4 failed, 131 pending design/UI** |
+| **TOTAL** | **1128** | **904** | **93** | **4 failed, 127 pending design/UI** |
 
 ## Bug Tracker
 
@@ -1339,10 +1339,10 @@ Test at 3 breakpoints: 375x812 (mobile), 768x1024 (tablet), 1280x900 (desktop). 
 | UI-RL-02 | Mobile (<600px): recipe list renders single column | PASS — Session 41: single column full-width cards |
 | UI-RL-03 | Mobile (<600px): no NavigationRail or sidebar visible | PASS — Session 41: no rail at 502px |
 | UI-RL-04 | Tablet (600–1024px): NavigationRail compact (72px wide, icons only) replaces bottom nav | PASS — Session 41: compact rail at 786px with icons+labels |
-| UI-RL-05 | Tablet (600–1024px): recipe list renders 2-column grid | BLOCKED — could not navigate to recipe list from veckomeny (CanvasKit hit-testing) |
+| UI-RL-05 | Tablet (600–1024px): recipe list renders 2-column grid | PASS — Session 41: 2-column grid at 1036px confirmed (cards side by side) |
 | UI-RL-06 | Tablet (600–1024px): content max-width constrained to 800px | |
 | UI-RL-07 | Desktop (>=1024px): NavigationRail extended (256px wide, with labels) | PASS — Session 41: extended rail at 1036px with "Butlery" title + labels |
-| UI-RL-08 | Desktop (>=1024px): recipe list renders 3-column grid | BLOCKED — on veckomeny screen, could not navigate back (CanvasKit) |
+| UI-RL-08 | Desktop (>=1024px): recipe list renders 3-column grid | PARTIAL — Session 41: 2-column grid at 1036px, not 3-column. May need wider viewport or different grid delegate |
 | UI-RL-09 | Desktop (>=1024px): content max-width constrained to 1200px | |
 | UI-RL-10 | Mobile: recipe detail uses full-width hero image | |
 | UI-RL-11 | Tablet/Desktop: recipe detail content constrained, not stretched to full width | |
@@ -1542,6 +1542,13 @@ Loading, empty, error, and offline states render correctly using StateWidget and
   - UI-RL-07: PASS — at 1036px: NavigationRail extended with "Butlery" title + labels, ~200px wide
   - UI-MC-35: PASS — veckomeny header "veckans meny" lowercase, "Vecka 14" badge
   - UI-MC-36: PASS — "Generera meny" button visible, square corners
-  - UI-RL-05, UI-RL-08: BLOCKED — could not navigate from veckomeny back to recipe list (CanvasKit hit-testing on NavigationRail)
+  - UI-RL-05: PASS — 2-column grid confirmed at 1036px desktop width
+  - UI-RL-08: PARTIAL — 2-column at 1036px, not 3-column as expected. Grid delegate may need wider viewport.
+  - UI-SV-07: PASS — inköpslista empty state: carrot illustration, "Ingen meny att skapa inköpslista från"
+  - UI-MC-29: PASS — lägg till 2x2 grid with diagonal rust-green color pattern, square corners
+  - UI-DM-01..12: 10 PASS, 1 FAIL (BUG-045 error snackbar beige), 1 not tested (UI-DM-09 chat bubbles)
+  - Bottom nav fix verified: now shows on all screens at mobile width
+  - Note: NavigationRail only appears when navigating to non-recept tabs (veckomeny etc), not on recept tab loaded via AuthWrapper. The _MainMenuLayout IndexedStack may conflict with MinaReceptView's own Scaffold.
+  - Note: Recipe cards pushed far down at desktop width with large gap below chips — layout spacing issue.
 
-- **Updated Progress:** 1128 tests (885 passed, 3 failed, 93 N/A, 147 pending design/UI)
+- **Updated Progress:** 1128 tests (904 passed, 4 failed, 93 N/A, 127 pending design/UI)

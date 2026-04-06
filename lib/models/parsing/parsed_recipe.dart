@@ -1,3 +1,4 @@
+import 'package:butlery/models/nutrition_info.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -22,6 +23,24 @@ class ParsedRecipe {
   /// Total cooking time.
   final FieldResult<Duration> totalTime;
 
+  /// Separate prep time.
+  final FieldResult<Duration> prepTime;
+
+  /// Separate cook time.
+  final FieldResult<Duration> cookTime;
+
+  /// Extracted cuisine (e.g., "Italian", "Thai").
+  final FieldResult<String> cuisine;
+
+  /// Meal category (maps to mealType).
+  final FieldResult<String> category;
+
+  /// Difficulty level.
+  final FieldResult<String> difficulty;
+
+  /// Structured nutrition data.
+  final FieldResult<NutritionInfo> nutrition;
+
   /// Parsing metadata.
   final ParseMetadata metadata;
 
@@ -37,6 +56,12 @@ class ParsedRecipe {
     required this.ingredients,
     required this.instructions,
     required this.totalTime,
+    this.prepTime = const FieldResult(confidence: ParseConfidence.failed),
+    this.cookTime = const FieldResult(confidence: ParseConfidence.failed),
+    this.cuisine = const FieldResult(confidence: ParseConfidence.failed),
+    this.category = const FieldResult(confidence: ParseConfidence.failed),
+    this.difficulty = const FieldResult(confidence: ParseConfidence.failed),
+    this.nutrition = const FieldResult(confidence: ParseConfidence.failed),
     required this.metadata,
     this.imageUrl,
     this.description,
@@ -116,6 +141,12 @@ class ParsedRecipe {
     FieldResult<List<ParsedIngredient>>? ingredients,
     FieldResult<List<String>>? instructions,
     FieldResult<Duration>? totalTime,
+    FieldResult<Duration>? prepTime,
+    FieldResult<Duration>? cookTime,
+    FieldResult<String>? cuisine,
+    FieldResult<String>? category,
+    FieldResult<String>? difficulty,
+    FieldResult<NutritionInfo>? nutrition,
     ParseMetadata? metadata,
     String? imageUrl,
     String? description,
@@ -126,6 +157,12 @@ class ParsedRecipe {
         ingredients: ingredients ?? this.ingredients,
         instructions: instructions ?? this.instructions,
         totalTime: totalTime ?? this.totalTime,
+        prepTime: prepTime ?? this.prepTime,
+        cookTime: cookTime ?? this.cookTime,
+        cuisine: cuisine ?? this.cuisine,
+        category: category ?? this.category,
+        difficulty: difficulty ?? this.difficulty,
+        nutrition: nutrition ?? this.nutrition,
         metadata: metadata ?? this.metadata,
         imageUrl: imageUrl ?? this.imageUrl,
         description: description ?? this.description,
@@ -139,6 +176,14 @@ class ParsedRecipe {
           'ingredients': ingredients.value!.map((i) => i.originalLine).toList(),
         if (instructions.hasValue) 'instructions': instructions.value,
         if (totalTime.hasValue) 'timeMinutes': totalTime.value!.inMinutes,
+        if (prepTime.hasValue)
+          'prepTimeMinutes': prepTime.value!.inMinutes,
+        if (cookTime.hasValue)
+          'cookTimeMinutes': cookTime.value!.inMinutes,
+        if (cuisine.hasValue) 'cuisine': cuisine.value,
+        if (category.hasValue) 'mealType': category.value,
+        if (difficulty.hasValue) 'difficulty': difficulty.value,
+        if (nutrition.hasValue) 'nutritionInfo': nutrition.value!.toJson(),
         if (imageUrl != null) 'imageUrl': imageUrl,
         if (description != null) 'description': description,
         'parseMetadata': metadata.toJson(),
@@ -155,6 +200,12 @@ class ParsedRecipe {
         'totalTime': totalTime.toJson(
           (duration) => duration.inMinutes,
         ),
+        'prepTime': prepTime.toJson((d) => d.inMinutes),
+        'cookTime': cookTime.toJson((d) => d.inMinutes),
+        'cuisine': cuisine.toJson(),
+        'category': category.toJson(),
+        'difficulty': difficulty.toJson(),
+        'nutrition': nutrition.toJson((n) => n.toJson()),
         'metadata': metadata.toJson(),
         if (imageUrl != null) 'imageUrl': imageUrl,
         if (description != null) 'description': description,
@@ -184,6 +235,31 @@ class ParsedRecipe {
         totalTime: FieldResult.fromJson(
           json['totalTime'] as Map<String, dynamic>? ?? {},
           (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+        ),
+        prepTime: FieldResult.fromJson(
+          json['prepTime'] as Map<String, dynamic>? ?? {},
+          (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+        ),
+        cookTime: FieldResult.fromJson(
+          json['cookTime'] as Map<String, dynamic>? ?? {},
+          (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+        ),
+        cuisine: FieldResult.fromJson(
+          json['cuisine'] as Map<String, dynamic>? ?? {},
+          (v) => v.toString(),
+        ),
+        category: FieldResult.fromJson(
+          json['category'] as Map<String, dynamic>? ?? {},
+          (v) => v.toString(),
+        ),
+        difficulty: FieldResult.fromJson(
+          json['difficulty'] as Map<String, dynamic>? ?? {},
+          (v) => v.toString(),
+        ),
+        nutrition: FieldResult.fromJson(
+          json['nutrition'] as Map<String, dynamic>? ?? {},
+          (v) => NutritionInfo.fromJson(
+              v is Map<String, dynamic> ? v : Map<String, dynamic>.from(v as Map)),
         ),
         metadata: ParseMetadata.fromJson(
           json['metadata'] as Map<String, dynamic>? ?? {},

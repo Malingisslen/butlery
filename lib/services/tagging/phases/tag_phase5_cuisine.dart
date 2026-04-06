@@ -63,8 +63,19 @@ class TagPhase5Cuisine {
   }
 
   /// Core cuisine detection using Firebase config with static fallback.
+  /// If Schema.org provides an explicit cuisine, use it as a strong signal.
   Set<String> _detectCuisines(Recipe recipe, IngredientLookupResult lookup) {
     final tags = <String>{};
+
+    // Schema.org cuisine is a strong signal — use it directly if available
+    final schemaCuisine = recipe.cuisine;
+    if (schemaCuisine != null && schemaCuisine.isNotEmpty) {
+      final matched = _matchSchemaCuisineToTag(schemaCuisine);
+      if (matched != null) {
+        tags.add(matched);
+        return tags;
+      }
+    }
 
     // Use Firebase cuisine entries if available
     final firebaseCuisines = _firebaseConfig?.cuisines.enabledEntries;
@@ -92,6 +103,27 @@ class TagPhase5Cuisine {
     }
 
     return tags;
+  }
+
+  /// Map a Schema.org cuisine string (e.g., "Italian", "Thai") to a known tag.
+  String? _matchSchemaCuisineToTag(String schemaCuisine) {
+    final lower = schemaCuisine.toLowerCase();
+    // Check Firebase config first
+    final firebaseCuisines = _firebaseConfig?.cuisines.enabledEntries;
+    if (firebaseCuisines != null) {
+      for (final c in firebaseCuisines) {
+        if (c.titleKeywords.any((kw) => lower.contains(kw.toLowerCase()))) {
+          return c.getTag('sv');
+        }
+      }
+    }
+    // Fallback to static config
+    for (final c in CuisineConfig.cuisines) {
+      if (c.titleKeywords.any((kw) => lower.contains(kw.toLowerCase()))) {
+        return c.tag;
+      }
+    }
+    return null;
   }
 
   /// Matches a recipe against a Firebase cuisine entry, respecting matchMode.

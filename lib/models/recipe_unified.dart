@@ -14,6 +14,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
+import 'package:butlery/models/nutrition_info.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 
@@ -232,6 +233,21 @@ class RecipeCore with JsonSerializableMixin {
   /// Simple boolean flag for quick filtering in recipe list.
   bool isFavorite;
 
+  /// Preparation time in minutes (separate from cooking time).
+  int? prepTimeMinutes;
+
+  /// Active cooking time in minutes (separate from prep time).
+  int? cookTimeMinutes;
+
+  /// Cuisine type extracted from Schema.org or auto-tagging (e.g., "Italian").
+  String? cuisine;
+
+  /// Recipe difficulty level if available from source.
+  String? difficulty;
+
+  /// Structured nutrition data from Schema.org NutritionInformation.
+  NutritionInfo? nutritionInfo;
+
   /// In-memory status of data integrity verification.
   /// Set during deserialization based on checksum validation.
   /// Not persisted to Firestore - tracked silently for analytics.
@@ -308,6 +324,11 @@ class RecipeCore with JsonSerializableMixin {
     this.tagOverrides,
     this.personalTagVersion,
     this.isFavorite = false,
+    this.prepTimeMinutes,
+    this.cookTimeMinutes,
+    this.cuisine,
+    this.difficulty,
+    this.nutritionInfo,
     this.dataIntegrityStatus = DataIntegrityStatus.unverified,
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
@@ -363,6 +384,11 @@ class RecipeCore with JsonSerializableMixin {
     Object? tagOverrides = _sentinel,
     Object? personalTagVersion = _sentinel,
     bool? isFavorite,
+    Object? prepTimeMinutes = _sentinel,
+    Object? cookTimeMinutes = _sentinel,
+    Object? cuisine = _sentinel,
+    Object? difficulty = _sentinel,
+    Object? nutritionInfo = _sentinel,
     DataIntegrityStatus? dataIntegrityStatus,
   }) {
     final newTitle = title ?? this.title;
@@ -442,6 +468,18 @@ class RecipeCore with JsonSerializableMixin {
           ? this.personalTagVersion
           : personalTagVersion as int?,
       isFavorite: isFavorite ?? this.isFavorite,
+      prepTimeMinutes: prepTimeMinutes == _sentinel
+          ? this.prepTimeMinutes
+          : prepTimeMinutes as int?,
+      cookTimeMinutes: cookTimeMinutes == _sentinel
+          ? this.cookTimeMinutes
+          : cookTimeMinutes as int?,
+      cuisine: cuisine == _sentinel ? this.cuisine : cuisine as String?,
+      difficulty:
+          difficulty == _sentinel ? this.difficulty : difficulty as String?,
+      nutritionInfo: nutritionInfo == _sentinel
+          ? this.nutritionInfo
+          : nutritionInfo as NutritionInfo?,
       dataIntegrityStatus: newIntegrityStatus,
     );
   }
@@ -453,6 +491,17 @@ class RecipeCore with JsonSerializableMixin {
   String get cookTimeText => timeMinutes != null
       ? AppLocale.current.recipeCookTimeMinutes(timeMinutes!)
       : '–';
+
+  /// Display text for prep time, or null if not available.
+  String? get prepTimeText =>
+      prepTimeMinutes != null ? '$prepTimeMinutes min prep' : null;
+
+  /// Display text for active cooking time, or null if not available.
+  String? get activeCookTimeText =>
+      cookTimeMinutes != null ? '$cookTimeMinutes min tillagning' : null;
+
+  /// Whether separate prep/cook times are available.
+  bool get hasSplitTime => prepTimeMinutes != null || cookTimeMinutes != null;
 
   String? get lastCookedText {
     if (lastCookedAt == null) return null;
@@ -496,6 +545,11 @@ class RecipeCore with JsonSerializableMixin {
         'tagOverrides': tagOverrides?.toJson(),
         'personalTagVersion': personalTagVersion,
         'isFavorite': isFavorite,
+        'prepTimeMinutes': prepTimeMinutes,
+        'cookTimeMinutes': cookTimeMinutes,
+        'cuisine': cuisine,
+        'difficulty': difficulty,
+        'nutritionInfo': nutritionInfo?.toJson(),
       };
 
   Map<String, dynamic> toFirestore() => {
@@ -532,6 +586,11 @@ class RecipeCore with JsonSerializableMixin {
         'tagOverrides': tagOverrides?.toJson(),
         'personalTagVersion': personalTagVersion,
         'isFavorite': isFavorite,
+        'prepTimeMinutes': prepTimeMinutes,
+        'cookTimeMinutes': cookTimeMinutes,
+        'cuisine': cuisine,
+        'difficulty': difficulty,
+        'nutritionInfo': nutritionInfo?.toFirestore(),
       };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
@@ -612,6 +671,17 @@ class RecipeCore with JsonSerializableMixin {
       personalTagVersion:
           utils.SerializationUtils.safeNullableInt(json, 'personalTagVersion'),
       isFavorite: utils.SerializationUtils.safeBool(json, 'isFavorite'),
+      prepTimeMinutes:
+          utils.SerializationUtils.safeNullableInt(json, 'prepTimeMinutes'),
+      cookTimeMinutes:
+          utils.SerializationUtils.safeNullableInt(json, 'cookTimeMinutes'),
+      cuisine: utils.SerializationUtils.safeNullableString(json, 'cuisine'),
+      difficulty:
+          utils.SerializationUtils.safeNullableString(json, 'difficulty'),
+      nutritionInfo: json['nutritionInfo'] != null
+          ? NutritionInfo.fromJson(
+              json['nutritionInfo'] as Map<String, dynamic>)
+          : null,
       dataIntegrityStatus: integrityStatus,
     );
   }
@@ -774,8 +844,30 @@ class RecipeCore with JsonSerializableMixin {
           utils.SerializationUtils.safeNullableInt(data, 'personalTagVersion'),
       isFavorite: utils.SerializationUtils.safeBool(data, 'isFavorite',
           defaultValue: false),
+      prepTimeMinutes:
+          utils.SerializationUtils.safeNullableInt(data, 'prepTimeMinutes'),
+      cookTimeMinutes:
+          utils.SerializationUtils.safeNullableInt(data, 'cookTimeMinutes'),
+      cuisine: utils.SerializationUtils.safeNullableString(data, 'cuisine'),
+      difficulty:
+          utils.SerializationUtils.safeNullableString(data, 'difficulty'),
+      nutritionInfo: _parseNutritionInfo(data['nutritionInfo']),
       dataIntegrityStatus: integrityStatus,
     );
+  }
+
+  /// Safely parses NutritionInfo from dynamic value.
+  static NutritionInfo? _parseNutritionInfo(dynamic value) {
+    if (value == null) return null;
+    try {
+      if (value is Map<String, dynamic>) {
+        return NutritionInfo.fromJson(value);
+      }
+      if (value is Map) {
+        return NutritionInfo.fromJson(Map<String, dynamic>.from(value));
+      }
+    } catch (_) {}
+    return null;
   }
 
   factory RecipeCore.fromFirestore(DocumentSnapshot doc) {
@@ -991,12 +1083,20 @@ class Recipe {
   DateTime? get lastCookedAt => core.lastCookedAt;
   int get cookCount => core.cookCount;
   bool get isFavorite => core.isFavorite;
+  int? get prepTimeMinutes => core.prepTimeMinutes;
+  int? get cookTimeMinutes => core.cookTimeMinutes;
+  String? get cuisine => core.cuisine;
+  String? get difficulty => core.difficulty;
+  NutritionInfo? get nutritionInfo => core.nutritionInfo;
 
   // Helper getters
   bool get hasImages => core.hasImages;
   String? get primaryImageUrl => core.primaryImageUrl;
   String? get displayThumbnailUrl => core.displayThumbnailUrl;
   String get cookTimeText => core.cookTimeText;
+  String? get prepTimeText => core.prepTimeText;
+  String? get activeCookTimeText => core.activeCookTimeText;
+  bool get hasSplitTime => core.hasSplitTime;
   String? get lastCookedText => core.lastCookedText;
   TagResult? get tagResult => core.tagResult;
   TagOverrides? get tagOverrides => core.tagOverrides;

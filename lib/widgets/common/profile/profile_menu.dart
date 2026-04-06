@@ -66,10 +66,12 @@ class _ProfileMenuState extends State<ProfileMenu> {
   int _friendsCount = 0;
   int _recipesCount = 0;
   int _menusCount = 0;
+  late final FriendsViewModel _friendsViewModel;
 
   @override
   void initState() {
     super.initState();
+    _friendsViewModel = ServiceLocator.get<FriendsViewModel>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProfileStats();
       _loadNotificationCounts();
@@ -100,8 +102,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
     if (!mounted) return;
 
     try {
-      final friendsViewModel = ServiceLocator.get<FriendsViewModel>();
-      await friendsViewModel.refresh();
+      await _friendsViewModel.refresh();
 
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       final groupInvitations =
@@ -120,12 +121,11 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
       if (mounted) {
         setState(() {
-          _pendingRequestsCount = friendsViewModel.pendingRequestsCount;
+          _pendingRequestsCount = _friendsViewModel.pendingRequestsCount;
           _pendingGroupInvitationsCount = groupInvitations;
           _sharedItemsCount = newSharedItems;
           _unreadMessagesCount = unreadMessages;
-          // Update friends count with fresh data from viewmodel
-          _friendsCount = friendsViewModel.friendsCount;
+          _friendsCount = _friendsViewModel.friendsCount;
         });
       }
     } catch (e) {
@@ -462,9 +462,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
   @override
   void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions
-    // Dispose of resources
+    _friendsViewModel.dispose();
     super.dispose();
   }
 }

@@ -5,6 +5,7 @@ import 'package:butlery/views/settings/mfa_settings_view.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 class AccountSecurityView extends StatefulWidget {
   const AccountSecurityView({super.key});
@@ -62,16 +63,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       _currentPasswordController.clear();
       _newPasswordController.clear();
       _confirmPasswordController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.accountSecurityPasswordChanged)),
-      );
+      SnackBarUtils.showSuccess(
+          context, context.l10n.accountSecurityPasswordChanged);
     } else if (_viewModel.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_viewModel.error!),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showError(context, _viewModel.error!);
     }
   }
 
@@ -86,18 +81,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
     if (success) {
       _emailPasswordController.clear();
       _newEmailController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.accountSecurityEmailVerificationSent),
-        ),
-      );
+      SnackBarUtils.showSuccess(
+          context, context.l10n.accountSecurityEmailVerificationSent);
     } else if (_viewModel.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_viewModel.error!),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showError(context, _viewModel.error!);
     }
   }
 

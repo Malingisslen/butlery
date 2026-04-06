@@ -1,5 +1,6 @@
 import 'package:html_unescape/html_unescape.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/models/nutrition_info.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Extracts Recipe objects from schema.org JSON-LD data.
@@ -20,12 +21,16 @@ class SchemaOrgRecipeExtractor {
         instructions: extractInstructions(data),
         portions: extractYield(data),
         timeMinutes: extractTime(data),
-        mealType: 'Middag',
+        mealType: extractCategory(data) ?? 'Middag',
         imageUrls: extractImages(data),
         sourceUrl: sourceUrl,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         createdBy: '',
+        prepTimeMinutes: parseDuration(data['prepTime']),
+        cookTimeMinutes: parseDuration(data['cookTime']),
+        cuisine: extractCuisine(data),
+        nutritionInfo: extractNutrition(data),
       ),
       type: RecipeType.personal,
     );
@@ -159,6 +164,44 @@ class SchemaOrgRecipeExtractor {
     }
 
     return totalMinutes > 0 ? totalMinutes : null;
+  }
+
+  static String? extractCuisine(Map<String, dynamic> data) {
+    final cuisine = data['recipeCuisine'];
+    if (cuisine is String && cuisine.trim().isNotEmpty) {
+      return _unescape.convert(cuisine.trim());
+    }
+    if (cuisine is List && cuisine.isNotEmpty) {
+      final first = cuisine.first;
+      if (first is String && first.trim().isNotEmpty) {
+        return _unescape.convert(first.trim());
+      }
+    }
+    return null;
+  }
+
+  static String? extractCategory(Map<String, dynamic> data) {
+    final category = data['recipeCategory'];
+    if (category is String && category.trim().isNotEmpty) {
+      return _unescape.convert(category.trim());
+    }
+    if (category is List && category.isNotEmpty) {
+      final first = category.first;
+      if (first is String && first.trim().isNotEmpty) {
+        return _unescape.convert(first.trim());
+      }
+    }
+    return null;
+  }
+
+  static NutritionInfo? extractNutrition(Map<String, dynamic> data) {
+    final nutrition = data['nutrition'];
+    if (nutrition is Map) {
+      final info =
+          NutritionInfo.fromSchemaOrg(Map<String, dynamic>.from(nutrition));
+      return info.isEmpty ? null : info;
+    }
+    return null;
   }
 
   static List<String> extractImages(Map<String, dynamic> data) {

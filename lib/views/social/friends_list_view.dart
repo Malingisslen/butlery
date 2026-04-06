@@ -26,15 +26,33 @@ import 'package:butlery/views/social/friends_list/groups_tab.dart';
 import 'package:butlery/views/social/friends_list/group_search_tab.dart';
 
 /// Friends and groups management view with tabs for friends, groups, and discovery.
-class FriendsListView extends StatelessWidget {
+class FriendsListView extends StatefulWidget {
   const FriendsListView({super.key});
+
+  @override
+  State<FriendsListView> createState() => _FriendsListViewState();
+}
+
+class _FriendsListViewState extends State<FriendsListView> {
+  late final FriendsViewModel _vm;
+
+  @override
+  void initState() {
+    super.initState();
+    _vm = ServiceLocator.get<FriendsViewModel>();
+  }
+
+  @override
+  void dispose() {
+    _vm.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(
-            value: ServiceLocator.get<FriendsViewModel>()),
+        ChangeNotifierProvider<FriendsViewModel>.value(value: _vm),
         Provider.value(value: ServiceLocator.get<UnifiedFriendsService>()),
       ],
       child: const _FriendsListViewContent(),
@@ -128,11 +146,22 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       );
     }
 
+    // DIAGNOSTIC: Minimal body to test if taps work at all
+    return LayoutComponents.mainMenu(
+      currentIndex: null,
+      title: context.l10n.socialFriendsAndGroups,
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () => debugPrint('TAP WORKS'),
+          child: const Text('Test tap'),
+        ),
+      ),
+    );
+
+    // ignore: dead_code
     return Consumer<FriendsViewModel>(
       builder: (context, viewModel, child) {
         final friendsService = context.read<UnifiedFriendsService>();
-        // 🎯 UX ENHANCEMENT: Sync local search query with ViewModel
-        // When ViewModel clears search (after friend request), clear UI search field
         if (viewModel.searchQuery.isEmpty && _searchQuery.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {

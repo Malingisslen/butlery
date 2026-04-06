@@ -1,5 +1,6 @@
 import 'package:html_unescape/html_unescape.dart';
 
+import 'package:butlery/models/nutrition_info.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
@@ -112,6 +113,14 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
 
     // Extract time
     final totalTime = _extractTotalTime(data);
+    final prepTime = _extractPrepTime(data);
+    final cookTime = _extractCookTime(data);
+
+    // Extract new Schema.org fields
+    final cuisine = _extractCuisine(data);
+    final category = _extractCategory(data);
+    final difficulty = _extractDifficulty(data);
+    final nutrition = _extractNutrition(data);
 
     // Extract image
     final imageUrl = _extractImageUrl(data);
@@ -136,6 +145,12 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       ingredients: ingredients,
       instructions: instructions,
       totalTime: totalTime,
+      prepTime: prepTime,
+      cookTime: cookTime,
+      cuisine: cuisine,
+      category: category,
+      difficulty: difficulty,
+      nutrition: nutrition,
       metadata: metadata,
       imageUrl: imageUrl,
       description: description,
@@ -338,6 +353,91 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       minutes: minutes,
       seconds: seconds,
     );
+  }
+
+  FieldResult<Duration> _extractPrepTime(Map<String, dynamic> data) {
+    final prepTime = data['prepTime'];
+    if (prepTime is String) {
+      final duration = _parseIsoDuration(prepTime);
+      if (duration != null && duration.inMinutes > 0) {
+        return FieldResult.success(duration);
+      }
+    }
+    return FieldResult.failed('No prep time in schema.org data');
+  }
+
+  FieldResult<Duration> _extractCookTime(Map<String, dynamic> data) {
+    final cookTime = data['cookTime'];
+    if (cookTime is String) {
+      final duration = _parseIsoDuration(cookTime);
+      if (duration != null && duration.inMinutes > 0) {
+        return FieldResult.success(duration);
+      }
+    }
+    return FieldResult.failed('No cook time in schema.org data');
+  }
+
+  FieldResult<String> _extractCuisine(Map<String, dynamic> data) {
+    final cuisine = data['recipeCuisine'];
+    if (cuisine is String && cuisine.trim().isNotEmpty) {
+      return FieldResult.success(_sanitizeString(cuisine.trim(), 500));
+    }
+    if (cuisine is List && cuisine.isNotEmpty) {
+      final first = cuisine.first;
+      if (first is String && first.trim().isNotEmpty) {
+        return FieldResult.success(_sanitizeString(first.trim(), 500));
+      }
+    }
+    return FieldResult.failed('No cuisine in schema.org data');
+  }
+
+  FieldResult<String> _extractCategory(Map<String, dynamic> data) {
+    final category = data['recipeCategory'];
+    if (category is String && category.trim().isNotEmpty) {
+      return FieldResult.success(_sanitizeString(category.trim(), 500));
+    }
+    if (category is List && category.isNotEmpty) {
+      final first = category.first;
+      if (first is String && first.trim().isNotEmpty) {
+        return FieldResult.success(_sanitizeString(first.trim(), 500));
+      }
+    }
+    return FieldResult.failed('No category in schema.org data');
+  }
+
+  FieldResult<String> _extractDifficulty(Map<String, dynamic> data) {
+    // Schema.org doesn't have a standard difficulty field, but some sites use it
+    final difficulty = data['difficulty'] ?? data['proficiencyLevel'];
+    if (difficulty is String && difficulty.trim().isNotEmpty) {
+      return FieldResult.success(_sanitizeString(difficulty.trim(), 500));
+    }
+    return FieldResult.failed('No difficulty in schema.org data');
+  }
+
+  FieldResult<NutritionInfo> _extractNutrition(Map<String, dynamic> data) {
+    final nutrition = data['nutrition'];
+    if (nutrition is Map<String, dynamic>) {
+      final info = NutritionInfo.fromSchemaOrg(nutrition);
+      if (!info.isEmpty) {
+        return FieldResult.success(info);
+      }
+    }
+    if (nutrition is Map) {
+      final info =
+          NutritionInfo.fromSchemaOrg(Map<String, dynamic>.from(nutrition));
+      if (!info.isEmpty) {
+        return FieldResult.success(info);
+      }
+    }
+    return FieldResult.failed('No nutrition in schema.org data');
+  }
+
+  /// Sanitize external string: unescape HTML entities, strip tags, cap length.
+  String _sanitizeString(String input, int maxLength) {
+    var s = _unescape.convert(input);
+    // Strip HTML tags
+    s = s.replaceAll(RegExp(r'<[^>]*>'), '');
+    return s.length > maxLength ? s.substring(0, maxLength) : s;
   }
 
   String? _extractImageUrl(Map<String, dynamic> data) {

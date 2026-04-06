@@ -71,18 +71,21 @@ class MinaReceptView extends StatefulWidget {
 class _MinaReceptViewState extends State<MinaReceptView> {
   late final RecipeListViewModel _recipeListViewModel;
   late final RecipeQueryViewModel _queryViewModel;
+  late final FriendsViewModel _friendsViewModel;
 
   @override
   void initState() {
     super.initState();
     _recipeListViewModel = ServiceLocator.get<RecipeListViewModel>();
     _queryViewModel = RecipeQueryViewModel();
+    _friendsViewModel = ServiceLocator.get<FriendsViewModel>();
   }
 
   @override
   void dispose() {
     _recipeListViewModel.dispose();
     _queryViewModel.dispose();
+    _friendsViewModel.dispose();
     super.dispose();
   }
 
@@ -97,8 +100,8 @@ class _MinaReceptViewState extends State<MinaReceptView> {
         // User profile and authentication service
         ChangeNotifierProvider.value(value: ServiceLocator.get<UserService>()),
         // Social relationship and friend management
-        ChangeNotifierProvider.value(
-            value: ServiceLocator.get<FriendsViewModel>()),
+        ChangeNotifierProvider<FriendsViewModel>.value(
+            value: _friendsViewModel),
         // Shared content and notification management (modular coordinator)
         ChangeNotifierProvider.value(
             value: ServiceLocator.get<SharedContentCoordinatorViewModel>()),
