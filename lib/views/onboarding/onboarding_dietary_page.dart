@@ -58,7 +58,7 @@ class OnboardingDietaryPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingMd),
           Text(
             context.l10n.onboardingDietaryTitle,
             style: AppTextStyles.headlineMedium.copyWith(
