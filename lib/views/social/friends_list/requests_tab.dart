@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/friend_request.dart';
+// ignore: unused_import
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -22,43 +23,30 @@ class RequestsTab {
     BuildContext context,
     FriendsViewModel viewModel,
   ) {
-    return SingleChildScrollView(
+    // DIAGNOSTIC: Just the share buttons from discovery section
+    return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Discovery encouragement section
-          _buildDiscoverySection(context, viewModel),
-
-          const SizedBox(height: AppDimensions.spacingXl),
-
-          // Incoming requests section
-          if (viewModel.incomingRequests.isNotEmpty) ...[
-            _buildIncomingRequestsSection(context, viewModel),
-            const SizedBox(height: AppDimensions.spacingXl),
-          ],
-
-          // Sent requests section
-          if (viewModel.sentRequests.isNotEmpty) ...[
-            _buildSentRequestsSection(context, viewModel),
-          ],
-
-          // Empty state when no requests
-          if (viewModel.incomingRequests.isEmpty &&
-              viewModel.sentRequests.isEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingXl),
-            StateWidget.empty(
-              title: context.l10n.socialNoFriendRequests,
-              subtitle: context.l10n.socialNoFriendRequestsDescription,
-              icon: Icons.search,
-            ),
-          ],
+          FilledButton.icon(
+            onPressed: () => shareInvitationLink(context, viewModel),
+            icon: const Icon(Icons.share, size: AppDimensions.iconSizeM),
+            label: Text(context.l10n.socialInviteFriends),
+          ),
+          const SizedBox(width: AppDimensions.spacingSm),
+          IconButton.filled(
+            onPressed: () => copyInvitationLink(context, viewModel),
+            icon: const Icon(Icons.copy, size: AppDimensions.iconSizeM),
+            tooltip: context.l10n.commonCopyLink,
+          ),
         ],
       ),
     );
   }
 
   /// Build discovery encouragement section
+  // ignore: unused_element
   static Widget _buildDiscoverySection(
     BuildContext context,
     FriendsViewModel viewModel,
@@ -174,6 +162,7 @@ class RequestsTab {
   }
 
   /// Build incoming requests section
+  // ignore: unused_element
   static Widget _buildIncomingRequestsSection(
     BuildContext context,
     FriendsViewModel viewModel,
@@ -223,6 +212,7 @@ class RequestsTab {
   }
 
   /// Build sent requests section
+  // ignore: unused_element
   static Widget _buildSentRequestsSection(
     BuildContext context,
     FriendsViewModel viewModel,
