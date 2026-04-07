@@ -1072,7 +1072,11 @@ class MockUnifiedFriendsService extends Mock
     if (friends != null) _friends = friends;
     if (incomingRequests != null) _incomingRequests = incomingRequests;
     if (outgoingRequests != null) _outgoingRequests = outgoingRequests;
-    if (blockedUsers != null) _blockedUsers = blockedUsers;
+    if (blockedUsers != null) {
+      _blockedUsers
+        ..clear()
+        ..addAll(blockedUsers);
+    }
     if (categoriesList != null) {
       _categories = categoriesList; // ⭐ ADDED: Store categories state
     }
@@ -2143,7 +2147,7 @@ class MockFriendsManagementOperations extends Mock
   List<UserProfile> _friends = [];
   List<FriendRequest> _incomingRequests = [];
   List<FriendRequest> _outgoingRequests = [];
-  Set<String> _blockedUsers = {};
+  final Set<String> _blockedUsers = {};
 
   /// Configure mock state for tests - adds missing setManagementState method
   void setManagementState({
@@ -2155,7 +2159,11 @@ class MockFriendsManagementOperations extends Mock
     if (friends != null) _friends = friends;
     if (incomingRequests != null) _incomingRequests = incomingRequests;
     if (outgoingRequests != null) _outgoingRequests = outgoingRequests;
-    if (blockedUsers != null) _blockedUsers = blockedUsers;
+    if (blockedUsers != null) {
+      _blockedUsers
+        ..clear()
+        ..addAll(blockedUsers);
+    }
   }
 
   @override
