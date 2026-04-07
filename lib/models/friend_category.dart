@@ -19,6 +19,7 @@ class FriendCategory {
   final DateTime updatedAt;
   final int sortOrder; // For custom ordering
   final bool isDefault; // Built-in categories like "Alla vänner"
+  final bool isHousehold; // Household group for allergen aggregation
 
   FriendCategory({
     required this.id,
@@ -31,6 +32,7 @@ class FriendCategory {
     DateTime? updatedAt,
     this.sortOrder = 0,
     this.isDefault = false,
+    this.isHousehold = false,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
@@ -43,6 +45,7 @@ class FriendCategory {
     List<String>? friendUserIds,
     int? sortOrder,
     bool isDefault = false,
+    bool isHousehold = false,
   }) {
     return FriendCategory(
       id: const Uuid().v4(),
@@ -53,6 +56,7 @@ class FriendCategory {
       friendUserIds: friendUserIds ?? [],
       sortOrder: sortOrder ?? 0,
       isDefault: isDefault,
+      isHousehold: isHousehold,
     );
   }
 
@@ -66,6 +70,7 @@ class FriendCategory {
     DateTime? updatedAt,
     int? sortOrder,
     bool? isDefault,
+    bool? isHousehold,
   }) {
     return FriendCategory(
       id: id,
@@ -78,6 +83,7 @@ class FriendCategory {
       updatedAt: updatedAt ?? DateTime.now(),
       sortOrder: sortOrder ?? this.sortOrder,
       isDefault: isDefault ?? this.isDefault,
+      isHousehold: isHousehold ?? this.isHousehold,
     );
   }
 
@@ -165,6 +171,7 @@ class FriendCategory {
       'updatedAt': AppTimestamp.fromDateTime(updatedAt).toFirestore(),
       'sortOrder': sortOrder,
       'isDefault': isDefault,
+      'isHousehold': isHousehold,
     };
   }
 
@@ -183,6 +190,7 @@ class FriendCategory {
           SerializationUtils.parseRequiredDateTimeValue(data['updatedAt']),
       sortOrder: SerializationUtils.safeInt(data, 'sortOrder'),
       isDefault: SerializationUtils.safeBool(data, 'isDefault'),
+      isHousehold: SerializationUtils.safeBool(data, 'isHousehold'),
     );
   }
 
@@ -199,6 +207,7 @@ class FriendCategory {
       'updatedAt': updatedAt.toIso8601String(),
       'sortOrder': sortOrder,
       'isDefault': isDefault,
+      'isHousehold': isHousehold,
     };
   }
 
@@ -216,6 +225,7 @@ class FriendCategory {
           SerializationUtils.safeDateTime(json, 'updatedAt') ?? DateTime.now(),
       sortOrder: SerializationUtils.safeInt(json, 'sortOrder'),
       isDefault: SerializationUtils.safeBool(json, 'isDefault'),
+      isHousehold: SerializationUtils.safeBool(json, 'isHousehold'),
     );
   }
 

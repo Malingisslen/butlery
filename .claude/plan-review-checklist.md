@@ -45,6 +45,8 @@ The theme system is the single source of truth for all visual properties. Read t
 - Using state builder widgets for loading/error/data patterns
 - Using theme component classes for input decoration, cards, navigation, chips
 
+**HTML preview template sync** — If this plan changes theme tokens (colors, spacing, fonts, border radius), also update `docs/design/previews/_butlery-template.html` CSS custom properties to match. The template mirrors the Flutter theme for HTML previews.
+
 ## 2. Architecture & Layers
 
 **MVVM compliance** — Each layer only talks to the layer below it:
@@ -128,7 +130,18 @@ The theme system is the single source of truth for all visual properties. Read t
 
 **Duplication** — Is any proposed code duplicating functionality that already exists? Check widgets/common/, core/mixins/, core/utils/.
 
-## 9. Scope & Simplicity
+## 9. Visual Previews
+
+**ASCII wireframes in plan** — If the plan creates new views or significantly changes existing ones, does it include ASCII wireframes showing the layout? Plans that describe UI in text only ("add a card with a button") are insufficient — show the structure visually.
+
+**Preview tier selection** — For each UI change, is the right preview tier identified?
+- ASCII wireframe in plan file: structural layout decisions
+- HTML preview before implementation: full-screen designs, color/typography, responsive layouts
+- No preview needed: bug fixes, backend changes, minor tweaks
+
+**Design decisions resolved** — Are visual choices (layout, component placement, hierarchy) resolved in the plan, or deferred to implementation? Prefer resolving during planning using ASCII mockups or AskUserQuestion with preview options.
+
+## 10. Scope & Simplicity
 
 **Minimal** — Is every proposed file, abstraction, and feature necessary for THIS task? No future-proofing, no "while we're at it" additions.
 

@@ -572,4 +572,33 @@ class FriendsCategoriesOperations {
   Future<void> refresh() async {
     await _refresh();
   }
+
+  /// Toggle household status on a category.
+  /// Only one category can be household at a time.
+  Future<bool> toggleHousehold(String categoryId, bool isHousehold) async {
+    final category = getCategoryById(categoryId);
+    if (category == null) return false;
+    if (!_canEditCategory(category)) return false;
+
+    try {
+      // If setting to household, clear any existing household first
+      if (isHousehold) {
+        for (final c in _getCategoriesList()) {
+          if (c.isHousehold && c.id != categoryId) {
+            final cleared = c.copyWith(isHousehold: false);
+            _updateCategoryInternalCallback(c.id, cleared);
+            await _syncCategoryToFirebaseInternal(cleared);
+          }
+        }
+      }
+
+      final updated = category.copyWith(isHousehold: isHousehold);
+      _updateCategoryInternalCallback(categoryId, updated);
+      await _syncCategoryToFirebaseInternal(updated);
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to toggle household: $e');
+      return false;
+    }
+  }
 }

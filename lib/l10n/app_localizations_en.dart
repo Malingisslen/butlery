@@ -4393,6 +4393,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get indicatorBackOnline => 'Back online';
 
   @override
+  String get householdLabel => 'Household';
+
+  @override
+  String get householdToggle => 'Mark as household';
+
+  @override
+  String get householdToggleDescription =>
+      'Household allergens are combined for menu planning';
+
+  @override
+  String get householdAlreadyExists =>
+      'You already have a household. The current one will be removed first.';
+
+  @override
+  String get householdAllergenInfo =>
+      'Menu planning filters based on all members\' allergens';
+
+  @override
+  String get menuUseHouseholdAllergens => 'Filter by household allergens';
+
+  @override
+  String get menuVoteTitle => 'Vote on recipe';
+
+  @override
+  String get menuVoteSuggestAlternative => 'Suggest alternative';
+
+  @override
+  String get menuVoteCastVote => 'Vote';
+
+  @override
+  String get menuVoteResolved => 'Vote resolved';
+
+  @override
+  String get menuVoteDeadline => 'Voting deadline';
+
+  @override
+  String menuVoteWinner(Object recipeName) {
+    return 'Winner: $recipeName';
+  }
+
+  @override
+  String menuVoteCount(Object count) {
+    return '$count votes';
+  }
+
+  @override
+  String get menuVoteExpired => 'Voting has expired';
+
+  @override
+  String get menuVoteNoAlternatives => 'No suggestions yet';
+
+  @override
   String get invitationCheckConnectionAndRetry =>
       'Check your internet connection and try again.';
 

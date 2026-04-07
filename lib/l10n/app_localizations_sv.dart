@@ -4400,6 +4400,58 @@ class AppLocalizationsSv extends AppLocalizations {
   String get indicatorBackOnline => 'Ansluten igen';
 
   @override
+  String get householdLabel => 'Hushåll';
+
+  @override
+  String get householdToggle => 'Markera som hushåll';
+
+  @override
+  String get householdToggleDescription =>
+      'Hushållets allergier sammanställs för menyplanering';
+
+  @override
+  String get householdAlreadyExists =>
+      'Du har redan ett hushåll. Det nuvarande tas bort först.';
+
+  @override
+  String get householdAllergenInfo =>
+      'Menyplanering filtrerar baserat på alla medlemmars allergier';
+
+  @override
+  String get menuUseHouseholdAllergens => 'Filtrera efter hushållets allergier';
+
+  @override
+  String get menuVoteTitle => 'Rösta om recept';
+
+  @override
+  String get menuVoteSuggestAlternative => 'Föreslå alternativ';
+
+  @override
+  String get menuVoteCastVote => 'Rösta';
+
+  @override
+  String get menuVoteResolved => 'Omröstning avgjord';
+
+  @override
+  String get menuVoteDeadline => 'Sista dag att rösta';
+
+  @override
+  String menuVoteWinner(Object recipeName) {
+    return 'Vinnare: $recipeName';
+  }
+
+  @override
+  String menuVoteCount(Object count) {
+    return '$count röster';
+  }
+
+  @override
+  String get menuVoteExpired => 'Omröstningen har gått ut';
+
+  @override
+  String get menuVoteNoAlternatives => 'Inga förslag ännu';
+
+  @override
   String get invitationCheckConnectionAndRetry =>
       'Kontrollera din internetanslutning och försök igen.';
 

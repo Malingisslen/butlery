@@ -35,6 +35,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/household_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
@@ -82,6 +83,7 @@ class SocialModule implements DIModule {
         ReportService,
         ContentFilterService,
         FirebaseBlockRepository,
+        HouseholdService,
       ];
 
   @override
@@ -99,6 +101,10 @@ class SocialModule implements DIModule {
         authRepository: app<AuthRepository>(),
       ),
       dispose: (s) => s.dispose(),
+    );
+
+    container.registerLazySingleton<HouseholdService>(
+      () => HouseholdService(),
     );
 
     container.registerLazySingleton<SocialRecipeService>(

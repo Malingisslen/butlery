@@ -27,5 +27,10 @@ $ARGUMENTS = description of what to preview (e.g., "cooking mode landscape split
 - Suffix: `-preview` for single designs, `-comparison` for A/B options
 
 ## After Approval
-- Delete the preview file (it's a throwaway design sketch)
-- Proceed with Flutter implementation using the approved design
+If the preview represents a new or significantly changed screen:
+1. Screenshot the HTML preview via Chrome MCP (capture the phone frame at 375x812)
+2. Save the screenshot to `docs/design/mockups/butlery-{NN}-{screen-name}.png` (continue sequence from existing mockups)
+3. Delete the preview HTML file
+4. Proceed with Flutter implementation using the approved design
+
+For minor component previews, just delete the file and proceed.

@@ -924,12 +924,6 @@ class MockUnifiedRecipeService extends Mock
   @override
   Stream<RecipeServiceState> get stateStream => _stateController.stream;
 
-  @override
-  void dispose() {
-    _stateController.close();
-    super.dispose();
-  }
-
   // Configuration state
   List<Recipe> _recipes = [];
   bool _isInitialized = false;
@@ -959,6 +953,19 @@ class MockUnifiedRecipeService extends Mock
     _isSyncing = isSyncing;
     if (personalOperations != null) _personalOperations = personalOperations;
   }
+
+  final _mockSocial = MockSocialRecipeOperations();
+  final _mockRealtime = MockRealtimeRecipeOperations();
+
+  @override
+  SocialRecipeOperations get social => _socialOperations ?? _mockSocial;
+
+  @override
+  RealtimeRecipeOperations get realtime =>
+      _realtimeOperations ?? _mockRealtime;
+
+  MockSocialRecipeOperations get mockSocial => _mockSocial;
+  MockRealtimeRecipeOperations get mockRealtime => _mockRealtime;
 
   @override
   List<Recipe> get recipes => List.unmodifiable(_recipes);
@@ -1324,7 +1331,13 @@ class MockUserService extends Mock implements UserService {
     return _users[userId];
   }
 
-  // Methods left without implementation to allow stubbing
+  @override
+  Future<List<UserProfile>> getUserProfiles(List<String> userIds) async {
+    return userIds
+        .where((id) => _users.containsKey(id))
+        .map((id) => _users[id]!)
+        .toList();
+  }
 }
 
 /// Mock implementation of PersonalTagService

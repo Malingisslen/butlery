@@ -9,6 +9,9 @@ import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/household_service.dart';
 
 /// Result of a recipe swap operation, including alternatives info.
 class SwapResult {
@@ -45,6 +48,9 @@ class MenuGenerator {
   /// Whether to use smart swap (cuisine/category/season scoring) vs random.
   bool useSmartSwap;
 
+  /// Whether to use aggregated household allergens instead of single-user.
+  bool useHouseholdAllergens = false;
+
   MenuGenerator({
     required MenuService menuService,
     required UnifiedRecipeService recipeService,
@@ -68,6 +74,75 @@ class MenuGenerator {
       recipes = _filterByDietaryPreferences(recipes);
     }
     return recipes;
+  }
+
+  /// Async version of availableRecipes that supports household allergen aggregation.
+  Future<List<Recipe>> getAvailableRecipesAsync() async {
+    if (!_recipeService.isInitialized) return [];
+
+    var recipes = _recipeService.recipes;
+
+    if (useHouseholdAllergens) {
+      final householdService = ServiceLocator.tryGet<HouseholdService>();
+      if (householdService != null && householdService.hasHousehold) {
+        final prefs = await householdService.getAggregatedAllergenPreferences();
+        if (filterByAllergens) {
+          recipes = _filterByPrefs(recipes, prefs, allergens: true);
+        }
+        if (filterByDietary) {
+          recipes = _filterByPrefs(recipes, prefs, allergens: false);
+        }
+        return recipes;
+      }
+    }
+
+    // Fall back to single-user filtering
+    if (filterByAllergens) {
+      recipes = _filterByAllergenPreferences(recipes);
+    }
+    if (filterByDietary) {
+      recipes = _filterByDietaryPreferences(recipes);
+    }
+    return recipes;
+  }
+
+  /// Filter recipes using explicit prefs (for household aggregation).
+  List<Recipe> _filterByPrefs(
+    List<Recipe> recipes,
+    UserAllergenPreferences prefs, {
+    required bool allergens,
+  }) {
+    if (allergens) {
+      if (!prefs.hasTrackedAllergens) return recipes;
+      final tracked = prefs.trackedAllergens;
+      final includeUnknown = prefs.includeUnknownInMenu;
+      return recipes.where((recipe) {
+        final tagResult = recipe.tagResult;
+        if (tagResult == null) return includeUnknown;
+        for (final allergen in tracked) {
+          final status = tagResult.getAllergenStatus(allergen);
+          if (status == TriState.contains) return false;
+          if (!includeUnknown && status == TriState.unknown) return false;
+        }
+        return true;
+      }).toList();
+    } else {
+      if (!prefs.hasTrackedDietary) return recipes;
+      final tracked = prefs.trackedDietary;
+      final includeUnknown = prefs.includeUnknownInMenu;
+      return recipes.where((recipe) {
+        final tagResult = recipe.tagResult;
+        if (tagResult == null) return includeUnknown;
+        for (final dietary in tracked) {
+          final status = tagResult.getDietaryStatus(dietary);
+          if (status != TriState.free) {
+            if (status == TriState.contains) return false;
+            if (!includeUnknown && status == TriState.unknown) return false;
+          }
+        }
+        return true;
+      }).toList();
+    }
   }
 
   /// Filters out recipes that CONTAIN any of the user's tracked allergens.

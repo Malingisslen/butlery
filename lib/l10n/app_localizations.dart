@@ -7683,6 +7683,96 @@ abstract class AppLocalizations {
   /// **'Ansluten igen'**
   String get indicatorBackOnline;
 
+  /// No description provided for @householdLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushåll'**
+  String get householdLabel;
+
+  /// No description provided for @householdToggle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera som hushåll'**
+  String get householdToggle;
+
+  /// No description provided for @householdToggleDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållets allergier sammanställs för menyplanering'**
+  String get householdToggleDescription;
+
+  /// No description provided for @householdAlreadyExists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har redan ett hushåll. Det nuvarande tas bort först.'**
+  String get householdAlreadyExists;
+
+  /// No description provided for @householdAllergenInfo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Menyplanering filtrerar baserat på alla medlemmars allergier'**
+  String get householdAllergenInfo;
+
+  /// No description provided for @menuUseHouseholdAllergens.
+  ///
+  /// In sv, this message translates to:
+  /// **'Filtrera efter hushållets allergier'**
+  String get menuUseHouseholdAllergens;
+
+  /// No description provided for @menuVoteTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rösta om recept'**
+  String get menuVoteTitle;
+
+  /// No description provided for @menuVoteSuggestAlternative.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå alternativ'**
+  String get menuVoteSuggestAlternative;
+
+  /// No description provided for @menuVoteCastVote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rösta'**
+  String get menuVoteCastVote;
+
+  /// No description provided for @menuVoteResolved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstning avgjord'**
+  String get menuVoteResolved;
+
+  /// No description provided for @menuVoteDeadline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sista dag att rösta'**
+  String get menuVoteDeadline;
+
+  /// No description provided for @menuVoteWinner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vinnare: {recipeName}'**
+  String menuVoteWinner(Object recipeName);
+
+  /// No description provided for @menuVoteCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} röster'**
+  String menuVoteCount(Object count);
+
+  /// No description provided for @menuVoteExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstningen har gått ut'**
+  String get menuVoteExpired;
+
+  /// No description provided for @menuVoteNoAlternatives.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga förslag ännu'**
+  String get menuVoteNoAlternatives;
+
   /// No description provided for @invitationCheckConnectionAndRetry.
   ///
   /// In sv, this message translates to:

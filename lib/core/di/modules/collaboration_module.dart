@@ -22,6 +22,9 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
 import 'package:butlery/core/di/modules/social_module.dart';
+import 'package:butlery/repositories/interfaces/menu_voting_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_menu_voting_repository.dart';
+import 'package:butlery/services/menu_voting_service.dart';
 
 /// Provides real-time collaborative services for recipes, menus, and shopping lists.
 class CollaborationModule implements DIModule {
@@ -40,6 +43,8 @@ class CollaborationModule implements DIModule {
         MenuCollaborationRepository,
         ShoppingRepository,
         CategoryPreferencesRepository,
+        MenuVotingRepository,
+        MenuVotingService,
       ];
 
   @override
@@ -55,6 +60,16 @@ class CollaborationModule implements DIModule {
         firestoreRepository: app<FirestoreRepository>(),
         authRepository: app<AuthRepository>(),
       ),
+    );
+
+    container.registerLazySingleton<MenuVotingRepository>(
+      () => FirebaseMenuVotingRepository(
+        authRepository: app<AuthRepository>(),
+      ),
+    );
+
+    container.registerLazySingleton<MenuVotingService>(
+      () => MenuVotingService(),
     );
 
     container.registerLazySingleton<UnifiedShoppingService>(
