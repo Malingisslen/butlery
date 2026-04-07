@@ -958,11 +958,10 @@ class MockUnifiedRecipeService extends Mock
   final _mockRealtime = MockRealtimeRecipeOperations();
 
   @override
-  SocialRecipeOperations get social => _socialOperations ?? _mockSocial;
+  SocialRecipeOperations get social => _mockSocial;
 
   @override
-  RealtimeRecipeOperations get realtime =>
-      _realtimeOperations ?? _mockRealtime;
+  RealtimeRecipeOperations get realtime => _mockRealtime;
 
   MockSocialRecipeOperations get mockSocial => _mockSocial;
   MockRealtimeRecipeOperations get mockRealtime => _mockRealtime;

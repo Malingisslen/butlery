@@ -60,6 +60,7 @@ void main() {
       registerFallbackValue(RecipeFactory.build());
       registerFallbackValue(RecipeType.personal);
       registerFallbackValue(<String>[]);
+      registerFallbackValue(<String, String>{});
 
       // Bridge production ServiceLocator to test GetIt instance
       final testDIContainer = DIContainer();
@@ -119,10 +120,29 @@ void main() {
           .thenAnswer((_) async => true);
       when(() => mockPersonalOps.deleteRecipe(any()))
           .thenAnswer((_) async => true);
-      // RecipeOperationResult methods exist in recipe_types.dart
-      // Legacy operations don't exist in PersonalRecipeOperations
-      // Removed collaborative, social, realtime and query operations setup
-      // These mock classes don't exist in production_mocks.dart
+
+      // Collaborative recipe creation
+      when(() => mockRecipeService.createCollaborativeRecipe(
+            title: any(named: 'title'),
+            memberIds: any(named: 'memberIds'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            imageUrls: any(named: 'imageUrls'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+            descriptionCollaborative: any(named: 'descriptionCollaborative'),
+            allowGuestViewing: any(named: 'allowGuestViewing'),
+            allowMemberInvites: any(named: 'allowMemberInvites'),
+            categoryIds: any(named: 'categoryIds'),
+          )).thenAnswer((_) async => testRecipeId);
+
+      // Social and Realtime — MockSocialRecipeOperations and
+      // MockRealtimeRecipeOperations already have default implementations
 
       // Register mocks
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);

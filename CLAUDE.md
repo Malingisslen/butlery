@@ -52,6 +52,17 @@ New code must use project mixins and base classes. See `mixin-advisor` skill for
 - Never claim "done" if you skipped verification steps — say which ones and why
 - When stuck: describe what you tried, what failed, and where you'd look next
 
+## Testing Philosophy
+
+Tests exist to verify **intended behavior**, not to be green.
+
+1. **Intention first** — before writing or fixing a test, articulate what behavior it proves. If you can't state the intention in one sentence, the test is unfocused.
+2. **A failing test might be right** — when a test fails, ask "is the test correct?" before asking "how do I make it pass?" The test may be catching a real bug.
+3. **Never weaken to green** — don't remove assertions, broaden matchers, or increase tolerances just to make a test pass. If the assertion is wrong, understand why first.
+4. **Don't mock the subject** — mock dependencies, not the thing you're testing. A test that mocks away the behavior it claims to verify proves nothing.
+5. **Meaningful > comprehensive** — one test that verifies a critical user-facing behavior is worth more than ten tests that check getter return values.
+6. **Test the contract, not the implementation** — test what a function promises (inputs → outputs, side effects), not how it does it internally. Implementation changes shouldn't break tests unless behavior changed.
+
 ## Stop Hook Response
 
 När stop hook blockerar med en `reason`:

@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butlery Component Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Import all component styles from the template */
+:root {
+  --green: #4A7C59;
+  --green-dark: #3D6849;
+  --green-light: #5A8F6A;
+  --green-pale: #E8F0EA;
+  --green-muted: #7A9A80;
+  --rust: #8B5A3C;
+  --rust-light: #A67B5B;
+  --leather: #6B4A2C;
+  --cream: #F8F4E8;
+  --cream-dark: #E8E2D6;
+  --cream-darker: #D8D2C6;
+  --white: #FFFFFF;
+  --charcoal: #2C2C2C;
+  --text: #1A1A1A;
+  --text-light: #666666;
+  --text-muted: #999999;
+  --error: #C44536;
+  --warning: #D4A03C;
+  --success: var(--green);
+  --font-display: 'Josefin Sans', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --radius: 0px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--cream);
+  padding: 32px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Library-specific styles */
+.lib-header {
+  background: var(--green-dark);
+  padding: 24px 32px;
+  border-bottom: 4px solid var(--rust);
+  margin: -32px -32px 32px;
+}
+.lib-header h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--cream);
+  letter-spacing: 4px;
+  text-transform: lowercase;
+}
+.lib-header p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+}
+
+.lib-section {
+  margin-bottom: 48px;
+}
+.lib-section-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--rust);
+  border-left: 3px solid var(--rust);
+  padding-left: 12px;
+  margin-bottom: 20px;
+}
+.lib-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.lib-item {
+  flex: 1;
+  min-width: 280px;
+}
+.lib-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.lib-class {
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+  color: var(--green);
+  background: var(--green-pale);
+  padding: 2px 6px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+.lib-demo {
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  padding: 16px;
+  position: relative;
+}
+.lib-demo-dark {
+  background: #9A8F82;
+  padding: 16px;
+}
+
+/* Component styles (from template) */
+.page-header {
+  background: var(--green-dark);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.page-header-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--cream);
+  letter-spacing: 2px;
+  text-transform: lowercase;
+  line-height: 1.1;
+}
+.page-header .count-badge {
+  background: var(--cream);
+  color: var(--green-dark);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  margin-left: 12px;
+}
+.page-header .avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--rust);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+.header-left { display: flex; align-items: center; }
+
+.simple-header {
+  background: var(--green-dark);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  border-bottom: 3px solid var(--rust);
+}
+.simple-header-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--cream);
+  letter-spacing: 1px;
+  text-transform: lowercase;
+}
+.back-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) 0 var(--space-sm);
+  border-left: 3px solid var(--rust);
+  padding-left: var(--space-md);
+}
+.section-header-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.section-header-count {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.search-box {
+  background: var(--white);
+  border: 2px solid var(--green);
+  border-bottom: 3px solid var(--rust);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.search-box input {
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  flex: 1;
+  background: transparent;
+}
+
+.recipe-card {
+  background: var(--white);
+  border-left: 4px solid var(--green);
+  border-bottom: 3px solid var(--rust-light);
+  padding: var(--space-md);
+  display: flex;
+  gap: var(--space-md);
+}
+.recipe-card-img {
+  width: 64px;
+  height: 64px;
+  background: var(--green-pale);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green-muted);
+  font-size: 24px;
+}
+.recipe-card-content { flex: 1; min-width: 0; }
+.recipe-card-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.recipe-card-desc { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
+.recipe-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.menu-card {
+  background: var(--white);
+  border-left: 4px solid var(--rust);
+  padding: var(--space-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.menu-card-title { font-size: 15px; font-weight: 600; }
+.menu-card-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.menu-card-action {
+  width: 36px;
+  height: 36px;
+  background: var(--cream-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  min-height: 48px;
+}
+.btn-primary { background: var(--green); color: var(--cream); }
+.btn-secondary { background: transparent; color: var(--green); border: 2px solid var(--green); }
+.btn-destructive { background: var(--error); color: var(--cream); }
+.btn-full { width: 100%; }
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge-free { background: rgba(74,124,89,0.12); color: var(--green); }
+.badge-contains { background: rgba(196,69,54,0.1); color: var(--error); }
+.badge-unknown { background: rgba(102,102,102,0.1); color: var(--text-light); }
+.rating-badge {
+  background: rgba(74,124,89,0.12);
+  border: 1px solid rgba(74,124,89,0.25);
+  color: var(--green);
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border: 1px solid var(--green);
+  color: var(--green);
+  background: transparent;
+  display: inline-block;
+}
+.chip.active { background: var(--green); color: var(--cream); }
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: var(--space-xs);
+  display: block;
+}
+.form-input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: 15px;
+  border: 1px solid var(--cream-dark);
+  background: var(--white);
+  outline: none;
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--cream-darker);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.checkbox.checked {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+  font-size: 14px;
+}
+
+.portion-adjuster {
+  background: var(--cream-dark);
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+.portion-btn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: var(--green-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.portion-value {
+  padding: 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.bottom-nav {
+  background: var(--cream-dark);
+  display: flex;
+  padding: var(--space-sm) 0 var(--space-md);
+  border-top: 1px solid var(--cream-darker);
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: lowercase;
+  color: var(--green-muted);
+  position: relative;
+  padding-top: 6px;
+}
+.nav-item.active { color: var(--green-dark); }
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--rust);
+}
+.nav-icon { font-size: 20px; }
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid var(--cream-dark);
+}
+.tab {
+  flex: 1;
+  padding: var(--space-md);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  position: relative;
+}
+.tab.active { color: var(--green); }
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--green);
+}
+
+.fab {
+  width: 48px;
+  height: 48px;
+  background: var(--green);
+  color: var(--cream);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.dialog {
+  background: var(--cream);
+  max-width: 340px;
+  padding: var(--space-2xl);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.dialog-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--space-lg);
+}
+
+.sheet {
+  background: var(--cream);
+  padding: var(--space-lg) var(--space-lg) var(--space-2xl);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
+}
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--cream-darker);
+  margin: 0 auto var(--space-md);
+}
+.sheet-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.category-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  justify-content: space-between;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-3xl) var(--space-2xl);
+  text-align: center;
+}
+.empty-state-icon {
+  width: 120px;
+  height: 120px;
+  background: var(--green-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  margin-bottom: var(--space-xl);
+  color: var(--green-muted);
+}
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: lowercase;
+  margin-bottom: var(--space-sm);
+}
+.empty-state-desc {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.5;
+  margin-bottom: var(--space-xl);
+}
+
+.strikethrough { text-decoration: line-through; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="lib-header">
+  <h1>butlery components</h1>
+  <p>Complete component library &mdash; every building block in the Butlery design system</p>
+</div>
+
+<!-- ==================== HEADERS ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">headers</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Page Header</div>
+      <div class="lib-class">.page-header</div>
+      <div class="lib-demo" style="padding:0">
+        <div class="page-header">
+          <div class="header-left">
+            <span class="page-header-title">dina recept</span>
+            <span class="count-badge">48 recept</span>
+          </div>
+          <div class="avatar">ML</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Simple Header (with back button)</div>
+      <div class="lib-class">.simple-header</div>
+      <div class="lib-demo" style="padding:0">
+        <div class="simple-header">
+          <div class="back-btn">&#8592;</div>
+          <span class="simple-header-title">nytt recept</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Section Header</div>
+      <div class="lib-class">.section-header</div>
+      <div class="lib-demo">
+        <div class="section-header">
+          <span class="section-header-title">senast tillagda</span>
+          <span class="section-header-count">5 recept</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SEARCH ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">search</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Search Box</div>
+      <div class="lib-class">.search-box</div>
+      <div class="lib-demo">
+        <div class="search-box">
+          <span style="color:var(--green)">&#128269;</span>
+          <input type="text" placeholder="sök bland recepten...">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CARDS ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">cards</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Recipe Card</div>
+      <div class="lib-class">.recipe-card</div>
+      <div class="lib-demo">
+        <div class="recipe-card">
+          <div class="recipe-card-img">&#127835;</div>
+          <div class="recipe-card-content">
+            <div class="recipe-card-title">Pasta Carbonara</div>
+            <div class="recipe-card-desc">Klassisk italiensk pasta med ägg och pancetta</div>
+            <div class="recipe-card-meta">
+              <span>&#9201; 30 min</span>
+              <span>&#128101; 4</span>
+              <span class="rating-badge">&#9733; 4.2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Menu Item Card</div>
+      <div class="lib-class">.menu-card</div>
+      <div class="lib-demo">
+        <div class="menu-card">
+          <div>
+            <div class="menu-card-title">Kycklingpasta med gräddsås</div>
+            <div class="menu-card-meta">&#9201; 35 min &middot; &#128101; 4 portioner</div>
+          </div>
+          <div class="menu-card-action">&#8635;</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Empty State</div>
+      <div class="lib-class">.empty-state</div>
+      <div class="lib-demo">
+        <div class="empty-state">
+          <div class="empty-state-icon">&#129382;</div>
+          <div class="empty-state-title">inga recept ännu</div>
+          <div class="empty-state-desc">Lägg till ditt första recept för att komma igång</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== BUTTONS ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">buttons</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Primary</div>
+      <div class="lib-class">.btn .btn-primary</div>
+      <div class="lib-demo">
+        <button class="btn btn-primary">Spara recept</button>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">Secondary</div>
+      <div class="lib-class">.btn .btn-secondary</div>
+      <div class="lib-demo">
+        <button class="btn btn-secondary">Rensa sökning</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Destructive</div>
+      <div class="lib-class">.btn .btn-destructive</div>
+      <div class="lib-demo">
+        <button class="btn btn-destructive">Ta bort recept</button>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">Full Width</div>
+      <div class="lib-class">.btn .btn-primary .btn-full</div>
+      <div class="lib-demo">
+        <button class="btn btn-primary btn-full">Generera ny meny</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">FAB (Floating Action Button)</div>
+      <div class="lib-class">.fab</div>
+      <div class="lib-demo">
+        <div class="fab">&#128722;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== BADGES ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">badges</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Allergen / Dietary Badges</div>
+      <div class="lib-class">.badge .badge-free / .badge-contains / .badge-unknown</div>
+      <div class="lib-demo" style="display:flex; gap:8px; flex-wrap:wrap">
+        <span class="badge badge-free">&#10003; Glutenfri</span>
+        <span class="badge badge-free">&#10003; Laktosfri</span>
+        <span class="badge badge-contains">&#9888; Nötter</span>
+        <span class="badge badge-contains">&#9888; Ägg</span>
+        <span class="badge badge-unknown">? Gluten</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Rating Badge</div>
+      <div class="lib-class">.rating-badge</div>
+      <div class="lib-demo">
+        <span class="rating-badge">&#9733; 4.2 (12)</span>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">Count Badge</div>
+      <div class="lib-class">.count-badge</div>
+      <div class="lib-demo" style="background:var(--green-dark)">
+        <span class="count-badge" style="background:var(--cream);color:var(--green-dark);font-size:11px;font-weight:600;letter-spacing:1px;padding:4px 10px">48 recept</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CHIPS ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">chips</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Filter Chips</div>
+      <div class="lib-class">.chip / .chip.active</div>
+      <div class="lib-demo" style="display:flex; gap:8px">
+        <span class="chip active">Alla</span>
+        <span class="chip">Favoriter</span>
+        <span class="chip">Under 30 min</span>
+        <span class="chip">Vegetariskt</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FORM ELEMENTS ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">form elements</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Text Input</div>
+      <div class="lib-class">.form-label + .form-input</div>
+      <div class="lib-demo">
+        <label class="form-label">Titel *</label>
+        <input class="form-input" type="text" placeholder="Receptets namn">
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">Portion Adjuster</div>
+      <div class="lib-class">.portion-adjuster</div>
+      <div class="lib-demo">
+        <span style="font-size:13px;margin-right:8px">Portioner:</span>
+        <div class="portion-adjuster">
+          <button class="portion-btn">&minus;</button>
+          <span class="portion-value">4</span>
+          <button class="portion-btn">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Checkboxes</div>
+      <div class="lib-class">.checkbox / .checkbox.checked</div>
+      <div class="lib-demo" style="display:flex; gap:16px; align-items:center">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="checkbox checked">&#10003;</div>
+          <span>Checked</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="checkbox"></div>
+          <span>Unchecked</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== NAVIGATION ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">navigation</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Bottom Navigation Bar</div>
+      <div class="lib-class">.bottom-nav .nav-item</div>
+      <div class="lib-demo" style="padding:0">
+        <div class="bottom-nav">
+          <div class="nav-item active">
+            <span class="nav-icon">&#128214;</span>
+            <span>recept</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#128197;</span>
+            <span>meny</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#128722;</span>
+            <span>inköp</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">&#10133;</span>
+            <span>lägg till</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Tabs</div>
+      <div class="lib-class">.tabs .tab</div>
+      <div class="lib-demo" style="padding:0">
+        <div class="tabs">
+          <div class="tab active">Ingredienser</div>
+          <div class="tab">Instruktioner</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== LISTS ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">lists</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Category Header</div>
+      <div class="lib-class">.category-header</div>
+      <div class="lib-demo" style="padding:0">
+        <div class="category-header" style="background:var(--rust);color:var(--cream)">
+          <span>Kött &amp; fisk</span><span>3</span>
+        </div>
+        <div class="category-header" style="background:var(--warning);color:var(--text)">
+          <span>Mejeri</span><span>3</span>
+        </div>
+        <div class="category-header" style="background:var(--green);color:var(--cream)">
+          <span>Grönsaker</span><span>4</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">List Items with Checkboxes</div>
+      <div class="lib-class">.list-item + .checkbox</div>
+      <div class="lib-demo">
+        <div class="list-item">
+          <div class="checkbox"></div>
+          <span>400g kycklingfilé</span>
+        </div>
+        <div class="list-item">
+          <div class="checkbox checked">&#10003;</div>
+          <span class="strikethrough">2 dl grädde</span>
+        </div>
+        <div class="list-item">
+          <div class="checkbox"></div>
+          <span>1 gul lök</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== OVERLAYS ==================== -->
+<div class="lib-section">
+  <div class="lib-section-title">overlays</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Dialog</div>
+      <div class="lib-class">.dialog</div>
+      <div class="lib-demo" style="background:rgba(0,0,0,0.3);padding:24px;display:flex;justify-content:center">
+        <div class="dialog">
+          <div class="dialog-title">Ta bort recept?</div>
+          <p style="font-size:14px;color:var(--text-light);line-height:1.5;margin-bottom:20px">Är du säker på att du vill ta bort detta recept? Det går inte att ångra.</p>
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <button class="btn btn-secondary" style="padding:8px 16px;min-height:40px">Avbryt</button>
+            <button class="btn btn-destructive" style="padding:8px 16px;min-height:40px">Ta bort</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Bottom Sheet</div>
+      <div class="lib-class">.sheet</div>
+      <div class="lib-demo" style="padding:0">
+        <div class="sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-title">Filtrera recept</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+            <span class="chip active">Glutenfri</span>
+            <span class="chip">Laktosfri</span>
+            <span class="chip active">Nötfri</span>
+            <span class="chip">Äggfri</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <button class="btn btn-secondary" style="flex:1;padding:8px">Rensa</button>
+            <button class="btn btn-primary" style="flex:2;padding:8px">Visa 12 recept</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

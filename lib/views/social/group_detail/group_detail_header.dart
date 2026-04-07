@@ -10,7 +10,13 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// GroupDetailHeader - Group header component
 /// Displays group information, avatar, and basic details.
 class GroupDetailHeader {
-  static Widget build(BuildContext context, FriendCategory group) {
+  static Widget build(
+    BuildContext context,
+    FriendCategory group, {
+    bool isAdmin = false,
+    bool isHousehold = false,
+    ValueChanged<bool>? onToggleHousehold,
+  }) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
@@ -100,6 +106,33 @@ class GroupDetailHeader {
               ],
             ),
           ),
+
+          // Household toggle (admin only)
+          if (isAdmin && onToggleHousehold != null) ...[
+            const SizedBox(height: AppDimensions.spacingL),
+            SwitchListTile(
+              value: isHousehold,
+              onChanged: onToggleHousehold,
+              title: Text(
+                context.l10n.householdToggle,
+                style: AppTextStyles.titleMedium,
+              ),
+              subtitle: Text(
+                context.l10n.householdToggleDescription,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              secondary: Icon(
+                Icons.home,
+                color: isHousehold
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                size: AppDimensions.iconSizeL,
+              ),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ],
         ],
       ),
     );

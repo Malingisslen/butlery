@@ -101,6 +101,8 @@ The theme system is the single source of truth for all visual properties. Read t
 
 ## 6. Testing
 
+**Test intention** — Does each proposed test verify a specific behavior? Can you state in one sentence what breaks if the test fails? Tests that exist only for coverage or that mock away the thing they claim to test don't count.
+
 **Test scenarios** — Are specific test cases identified (not just "add tests")? What scenarios need coverage?
 
 **Test patterns** — Does the plan reference the project's test templates and setup patterns? Common gotchas:

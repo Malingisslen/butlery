@@ -14,6 +14,20 @@ When invoked:
 4. Use templates from `/test/templates/` when creating new tests
 5. Write or update tests immediately
 
+## Testing Philosophy
+
+Your primary job is to verify that tests prove **intended behavior**, not just exist for coverage.
+
+Before writing or updating any test:
+1. State what behavior this test verifies — one sentence
+2. Confirm the test would fail if that behavior broke
+3. Confirm the test wouldn't break from a harmless refactor
+
+When analyzing a failing test:
+1. First determine if the test's intention is correct
+2. If the test is right and production code is wrong → flag as a bug, don't "fix" the test
+3. If the test's intention is outdated (behavior intentionally changed) → update the test to match new intent, with a clear test name reflecting the new behavior
+
 ## Test File Mapping
 
 **Production -> Test Location:**

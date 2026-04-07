@@ -17,6 +17,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/household_service.dart';
 
 // Focused modules
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
@@ -85,6 +86,19 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   int get totalRecipeCount => _stateManager.totalRecipeCount;
   List<Recipe> get availableRecipes => _generator.availableRecipes;
   bool get hasAvailableRecipes => _generator.hasAvailableRecipes;
+
+  /// Whether the user has a household group configured.
+  bool get hasHousehold {
+    final service = ServiceLocator.tryGet<HouseholdService>();
+    return service?.hasHousehold ?? false;
+  }
+
+  /// Whether menu generation should use household allergens.
+  bool get useHouseholdAllergens => _generator.useHouseholdAllergens;
+  set useHouseholdAllergens(bool value) {
+    _generator.useHouseholdAllergens = value;
+    notifyListeners();
+  }
 
   /// Generates menu from AI prompt
   /// - Menu state update with generated content

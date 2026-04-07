@@ -113,7 +113,13 @@ class _GroupDetailViewState extends State<GroupDetailView>
   }
 
   Widget _buildGroupHeader(FriendCategory group) {
-    return GroupDetailHeader.build(context, group);
+    return GroupDetailHeader.build(
+      context,
+      group,
+      isAdmin: _viewModel.isAdmin,
+      isHousehold: _viewModel.isHousehold,
+      onToggleHousehold: (value) => _viewModel.toggleHousehold(value),
+    );
   }
 
   void _handleMenuAction(String action, FriendCategory group) {

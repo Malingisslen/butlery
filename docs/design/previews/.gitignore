@@ -1,6 +1,8 @@
 # Ignore all preview files (they're ephemeral design sketches)
 *
 
-# Keep the template and gitignore
+# Keep permanent files
 !.gitignore
 !_butlery-template.html
+!_butlery-components.html
+!_butlery-mermaid.html

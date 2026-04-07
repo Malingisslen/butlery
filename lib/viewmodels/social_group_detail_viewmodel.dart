@@ -106,6 +106,18 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     return _permissionService.isGroupAdmin(_group!.id);
   }
 
+  /// Whether this group is marked as the user's household.
+  bool get isHousehold => _group?.isHousehold ?? false;
+
+  /// Toggle household status. Only one group can be household at a time.
+  Future<void> toggleHousehold(bool value) async {
+    if (_group == null) return;
+    await executeAsync(() async {
+      await _friendsService.categories.toggleHousehold(_group!.id, value);
+      await loadGroupData();
+    });
+  }
+
   /// Whether current user can edit this group.
   bool get canEditGroup {
     if (_group == null) return false;

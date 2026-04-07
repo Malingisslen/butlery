@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butlery Flow Diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;600&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --green: #4A7C59;
+  --green-dark: #3D6849;
+  --green-pale: #E8F0EA;
+  --rust: #8B5A3C;
+  --cream: #F8F4E8;
+  --cream-dark: #E8E2D6;
+  --white: #FFFFFF;
+  --text: #1A1A1A;
+  --text-light: #666666;
+  --font-display: 'Josefin Sans', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--cream);
+  min-height: 100vh;
+}
+
+.header {
+  background: var(--green-dark);
+  padding: 24px 32px;
+  border-bottom: 4px solid var(--rust);
+}
+.header h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--cream);
+  letter-spacing: 3px;
+  text-transform: lowercase;
+}
+.header p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+}
+
+.diagram-container {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 32px;
+}
+
+.diagram-section {
+  background: var(--white);
+  padding: 24px;
+  margin-bottom: 32px;
+  border-left: 4px solid var(--green);
+}
+
+.diagram-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 16px;
+  padding-left: 12px;
+  border-left: 3px solid var(--rust);
+}
+
+.mermaid {
+  display: flex;
+  justify-content: center;
+}
+</style>
+<script>
+  // Butlery-themed Mermaid configuration
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      // Node colors
+      primaryColor: '#E8F0EA',       // green-pale
+      primaryTextColor: '#1A1A1A',   // text
+      primaryBorderColor: '#4A7C59', // green
+      // Secondary
+      secondaryColor: '#F8F4E8',     // cream
+      secondaryTextColor: '#1A1A1A',
+      secondaryBorderColor: '#8B5A3C', // rust
+      // Tertiary
+      tertiaryColor: '#E8E2D6',      // cream-dark
+      tertiaryTextColor: '#1A1A1A',
+      tertiaryBorderColor: '#D8D2C6',
+      // Lines
+      lineColor: '#7A9A80',          // green-muted
+      // Text
+      textColor: '#1A1A1A',
+      // Background
+      mainBkg: '#E8F0EA',
+      nodeBorder: '#4A7C59',
+      // Fonts
+      fontFamily: 'Space Grotesk, sans-serif',
+      fontSize: '13px',
+      // Flowchart specific
+      clusterBkg: '#F8F4E8',
+      clusterBorder: '#8B5A3C',
+      edgeLabelBackground: '#F8F4E8',
+      // State diagram
+      labelColor: '#1A1A1A',
+      altBackground: '#E8F0EA',
+      // Sequence diagram
+      actorBkg: '#3D6849',
+      actorTextColor: '#F8F4E8',
+      actorBorder: '#4A7C59',
+      activationBorderColor: '#4A7C59',
+      activationBkgColor: '#E8F0EA',
+      signalColor: '#1A1A1A',
+      noteBkgColor: '#F8F4E8',
+      noteBorderColor: '#8B5A3C',
+      noteTextColor: '#1A1A1A',
+    }
+  });
+</script>
+</head>
+<body>
+
+<div class="header">
+  <h1>butlery flow diagram</h1>
+  <p>Navigation and data flow diagrams with Butlery styling</p>
+</div>
+
+<div class="diagram-container">
+
+  <!--
+    HOW TO USE THIS TEMPLATE:
+    1. Copy this file and rename it (e.g., cooking-mode-flow.html)
+    2. Replace the Mermaid diagram code below with your own
+    3. Open in browser — Mermaid renders automatically
+    4. Supported diagram types: flowchart, sequence, state, class, er, gantt
+    5. Full syntax: https://mermaid.js.org/syntax/flowchart.html
+  -->
+
+  <!-- EXAMPLE: App Navigation Flow -->
+  <div class="diagram-title">app navigation</div>
+  <div class="diagram-section">
+    <pre class="mermaid">
+flowchart TD
+    subgraph BottomNav["Bottom Navigation"]
+        R["recept"]
+        M["meny"]
+        I["inköp"]
+        A["lägg till"]
+    end
+
+    R --> RL["Receptlista"]
+    RL --> RD["Receptdetalj"]
+    RD --> RI["Instruktioner"]
+    RD --> RF["Filter ↕"]
+    RL --> RF
+
+    M --> VM["Veckomeny"]
+    VM --> GM["Generera meny"]
+    VM --> RD
+
+    I --> IL["Inköpslista"]
+    IL --> AI["Lägg till vara ↕"]
+
+    A --> AO["Lägg till recept"]
+    AO --> IMP["Importera länk"]
+    AO --> MAN["Skriv manuellt"]
+    AO --> FOT["Från bild"]
+
+    style BottomNav fill:#E8E2D6,stroke:#8B5A3C,stroke-width:2px
+    style R fill:#3D6849,color:#F8F4E8,stroke:#4A7C59
+    style M fill:#E8F0EA,stroke:#4A7C59
+    style I fill:#E8F0EA,stroke:#4A7C59
+    style A fill:#E8F0EA,stroke:#4A7C59
+    </pre>
+  </div>
+
+  <!-- EXAMPLE: Recipe Import State -->
+  <div class="diagram-title">recipe import flow</div>
+  <div class="diagram-section">
+    <pre class="mermaid">
+stateDiagram-v2
+    [*] --> EnterURL: User pastes URL
+    EnterURL --> Fetching: Submit
+    Fetching --> Parsing: Success
+    Fetching --> Error: Failed
+    Parsing --> Analyzing: Ingredients found
+    Parsing --> Error: Parse failed
+    Analyzing --> Saving: Allergens tagged
+    Saving --> Done: Saved
+    Saving --> Error: Save failed
+    Error --> EnterURL: Retry
+    Error --> ManualEntry: Write manually
+    Done --> [*]
+    </pre>
+  </div>
+
+  <!-- EXAMPLE: Data Flow -->
+  <div class="diagram-title">mvvm data flow</div>
+  <div class="diagram-section">
+    <pre class="mermaid">
+flowchart LR
+    V["View<br/>(Widget)"] -->|"watches"| VM["ViewModel<br/>(ChangeNotifier)"]
+    VM -->|"calls"| S["Service<br/>(Business Logic)"]
+    S -->|"reads/writes"| R["Repository<br/>(Data Access)"]
+    R -->|"CRUD"| F["Firebase<br/>(Firestore)"]
+
+    V -.->|"Provider.of"| VM
+    VM -.->|"ServiceLocator"| S
+    S -.->|"Constructor DI"| R
+
+    style V fill:#E8F0EA,stroke:#4A7C59,stroke-width:2px
+    style VM fill:#E8F0EA,stroke:#4A7C59,stroke-width:2px
+    style S fill:#F8F4E8,stroke:#8B5A3C,stroke-width:2px
+    style R fill:#F8F4E8,stroke:#8B5A3C,stroke-width:2px
+    style F fill:#E8E2D6,stroke:#D8D2C6,stroke-width:2px
+    </pre>
+  </div>
+
+</div>
+
+</body>
+</html>

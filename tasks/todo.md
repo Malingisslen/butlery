@@ -22,11 +22,11 @@
 
 ### Part 3: ViewModels + UI
 
-- [ ] **3A. Household toggle in group detail** — VM + header widget. (BUT-256)
-- [ ] **3B. Household allergen toggle in menu generation** — MenuViewModel. (BUT-256)
-- [ ] **3C. Create MenuVotingViewModel** — `lib/viewmodels/menu_voting_viewmodel.dart`. (BUT-239)
-- [ ] **3D. Create vote card widget** — `lib/widgets/menu/menu_vote_card.dart`. (BUT-239)
-- [ ] **3E. Create suggest-alternative sheet** — `lib/widgets/menu/suggest_alternative_sheet.dart`. (BUT-239)
+- [x] **3A. Household toggle in group detail** — VM + header widget. (BUT-256)
+- [x] **3B. Household allergen toggle in menu generation** — MenuViewModel. (BUT-256)
+- [x] **3C. Create MenuVotingViewModel** — `lib/viewmodels/menu_voting_viewmodel.dart`. (BUT-239)
+- [x] **3D. Create vote card widget** — `lib/widgets/menu/menu_vote_card.dart`. (BUT-239)
+- [x] **3E. Create suggest-alternative sheet** — `lib/widgets/menu/suggest_alternative_sheet.dart`. (BUT-239)
 - [ ] **3F. Wire voting into realtime menu view** — Menu slot button + vote card. (BUT-239)
 
 ### Post-Sprint
