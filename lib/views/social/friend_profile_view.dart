@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/navigation_components.dart';
@@ -150,17 +151,15 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
                                   children: [
-                                    _buildStatItem(
-                                      context,
-                                      context.l10n.socialFriends,
-                                      '${friend.friendsCount}',
-                                      Icons.people,
+                                    StatItemWidget(
+                                      label: context.l10n.socialFriends,
+                                      value: '${friend.friendsCount}',
+                                      icon: Icons.people,
                                     ),
-                                    _buildStatItem(
-                                      context,
-                                      context.l10n.socialRecipes,
-                                      '${friend.publicRecipeCount}',
-                                      Icons.restaurant_menu,
+                                    StatItemWidget(
+                                      label: context.l10n.socialRecipes,
+                                      value: '${friend.publicRecipeCount}',
+                                      icon: Icons.restaurant_menu,
                                     ),
                                   ],
                                 ),
@@ -311,36 +310,5 @@ class _FriendProfileViewState extends State<FriendProfileView> {
         Navigator.of(context).pop(); // Go back to friends list
       }
     }
-  }
-
-  Widget _buildStatItem(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon,
-  ) {
-    final cs = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: cs.primary,
-          size: AppDimensions.iconSizeXl,
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Text(
-          value,
-          style: AppTextStyles.headlineMedium.copyWith(
-            color: cs.primary,
-          ),
-        ),
-        Text(
-          label,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: cs.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
   }
 }

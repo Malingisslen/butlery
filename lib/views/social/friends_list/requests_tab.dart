@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/deep_link_service.dart';
@@ -20,26 +22,226 @@ class RequestsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const _DiscoverySection(),
-          Selector<FriendsViewModel, bool>(
+          const SizedBox(height: AppDimensions.spacingXl),
+          // Request sections — rebuild only when request lists change
+          Selector<FriendsViewModel,
+              ({List<FriendRequest> incoming, List<FriendRequest> sent})>(
             selector: (_, vm) =>
-                vm.incomingRequests.isEmpty && vm.sentRequests.isEmpty,
-            builder: (context, noRequests, _) {
-              if (!noRequests) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingXl),
-                child: StateWidget.empty(
-                  title: context.l10n.socialNoFriendRequests,
-                  subtitle: context.l10n.socialNoFriendRequestsDescription,
-                  icon: Icons.search,
-                ),
+                (incoming: vm.incomingRequests, sent: vm.sentRequests),
+            shouldRebuild: (prev, next) =>
+                prev.incoming.length != next.incoming.length ||
+                prev.sent.length != next.sent.length,
+            builder: (context, requests, _) {
+              final vm = context.read<FriendsViewModel>();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (requests.incoming.isNotEmpty) ...[
+                    _buildIncomingRequestsSection(
+                        context, vm, requests.incoming),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                  ],
+                  if (requests.sent.isNotEmpty) ...[
+                    _buildSentRequestsSection(context, vm, requests.sent),
+                  ],
+                  if (requests.incoming.isEmpty && requests.sent.isEmpty) ...[
+                    StateWidget.empty(
+                      title: context.l10n.socialNoFriendRequests,
+                      subtitle: context.l10n.socialNoFriendRequestsDescription,
+                      icon: Icons.search,
+                    ),
+                  ],
+                ],
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildIncomingRequestsSection(
+    BuildContext context,
+    FriendsViewModel viewModel,
+    List<FriendRequest> requests,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.inbox,
+              size: AppDimensions.iconSizeM,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            Text(
+              context.l10n.socialIncomingRequests,
+              style: AppTextStyles.titleMedium,
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingS,
+                vertical: AppDimensions.paddingS,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusS),
+              ),
+              child: Text(
+                '${requests.length}',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        ...requests.map((request) => Padding(
+              padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              child: FriendRequestCard.build(context, request, viewModel),
+            )),
+      ],
+    );
+  }
+
+  static Widget _buildSentRequestsSection(
+    BuildContext context,
+    FriendsViewModel viewModel,
+    List<FriendRequest> requests,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.outbox,
+              size: AppDimensions.iconSizeM,
+              color: cs.onSurfaceVariant,
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            Text(
+              context.l10n.socialSentRequests,
+              style: AppTextStyles.titleMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingS,
+                vertical: AppDimensions.paddingS,
+              ),
+              decoration: BoxDecoration(
+                color: cs.onSurfaceVariant,
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusS),
+              ),
+              child: Text(
+                '${requests.length}',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: cs.surfaceContainerHighest,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        ...requests.map((request) => Padding(
+              padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              child: _buildSentRequestCard(context, request, viewModel),
+            )),
+      ],
+    );
+  }
+
+  static Widget _buildSentRequestCard(
+    BuildContext context,
+    FriendRequest request,
+    FriendsViewModel viewModel,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(
+          color: cs.outline,
+          width: AppDimensions.borderWidthThin,
+        ),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius25),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerLow,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person,
+                size: AppDimensions.iconSizeL,
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingM),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  viewModel.getDisplayNameForUser(request.toUserId),
+                  style: AppTextStyles.titleSmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  context.l10n.socialWaitingForResponse,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            width: 80,
+            child: OutlinedButton(
+              onPressed: () async {
+                await viewModel.cancelSentRequest(request.id);
+              },
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: cs.onSurfaceVariant),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingS,
+                  vertical: AppDimensions.paddingS,
+                ),
+              ),
+              child: Text(
+                context.l10n.commonCancel,
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -103,15 +305,13 @@ class _DiscoverySection extends StatelessWidget {
         color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-          color:
-              cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
           width: AppDimensions.borderWidthThin,
         ),
       ),
       child: Column(
         children: [
-          Icon(Icons.search,
-              size: AppDimensions.iconSizeXl, color: cs.primary),
+          Icon(Icons.search, size: AppDimensions.iconSizeXl, color: cs.primary),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
             context.l10n.socialFindNewFriends,
@@ -129,13 +329,17 @@ class _DiscoverySection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Override theme's minimumSize(width: infinity) — buttons in
+              // a Row can't both be full-width, causes layout crash.
               FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, AppDimensions.minTouchTarget),
+                ),
                 onPressed: () {
                   final vm = context.read<FriendsViewModel>();
                   RequestsTab.shareInvitationLink(context, vm);
                 },
-                icon:
-                    const Icon(Icons.share, size: AppDimensions.iconSizeM),
+                icon: const Icon(Icons.share, size: AppDimensions.iconSizeM),
                 label: Text(context.l10n.socialInviteFriends),
               ),
               const SizedBox(width: AppDimensions.spacingSm),

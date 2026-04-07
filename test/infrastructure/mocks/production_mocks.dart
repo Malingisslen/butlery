@@ -47,6 +47,11 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/trackers/recipe_events_tracker.dart';
+import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
+import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart';
+import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
+import 'package:butlery/services/analytics/trackers/import_events_tracker.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
@@ -1023,8 +1028,7 @@ class MockUnifiedFriendsService extends Mock
     with ChangeNotifier
     implements UnifiedFriendsService {
   // Stream for stateStream — seeded with loading state like production
-  final _stateController =
-      StreamController<FriendsServiceState>.broadcast();
+  final _stateController = StreamController<FriendsServiceState>.broadcast();
 
   @override
   Stream<FriendsServiceState> get stateStream => _stateController.stream;
@@ -1033,6 +1037,7 @@ class MockUnifiedFriendsService extends Mock
   List<UserProfile> _friends = [];
   List<FriendRequest> _incomingRequests = [];
   List<FriendRequest> _outgoingRequests = [];
+  final Set<String> _blockedUsers = {};
   List<FriendCategory> _categories = []; // ⭐ ADDED: Missing categories state
   MockFriendsManagementOperations?
       _management; // ⭐ ADDED: Missing management operations
@@ -1050,6 +1055,7 @@ class MockUnifiedFriendsService extends Mock
     List<FriendRequest>? outgoingRequests,
     List<FriendCategory>?
         categoriesList, // ⭐ ADDED: Missing categoriesList parameter
+    Set<String>? blockedUsers,
     MockFriendsManagementOperations?
         management, // ⭐ ADDED: Missing management parameter
     MockFriendCategoriesOperations?
@@ -1066,6 +1072,7 @@ class MockUnifiedFriendsService extends Mock
     if (friends != null) _friends = friends;
     if (incomingRequests != null) _incomingRequests = incomingRequests;
     if (outgoingRequests != null) _outgoingRequests = outgoingRequests;
+    if (blockedUsers != null) _blockedUsers = blockedUsers;
     if (categoriesList != null) {
       _categories = categoriesList; // ⭐ ADDED: Store categories state
     }
@@ -1098,6 +1105,9 @@ class MockUnifiedFriendsService extends Mock
   @override
   List<FriendCategory> get categoriesList =>
       List.unmodifiable(_categories); // ⭐ ADDED: Missing categoriesList getter
+
+  @override
+  Set<String> get blockedUsers => Set.unmodifiable(_blockedUsers);
 
   /// Get management operations ⭐ FIXED: Return proper interface type
   @override
@@ -1341,12 +1351,54 @@ class MockOfflineService extends Mock implements OfflineService {
   // Methods left without implementation to allow stubbing
 }
 
+// All tracker methods return Future<void>. If a tracker adds a non-void
+// return type, this mock will cause a TypeError — add an explicit override.
+class _NoOpFutureMock extends Fake {
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    if (invocation.isMethod) return Future<void>.value();
+    return super.noSuchMethod(invocation);
+  }
+}
+
+class MockRecipeEventsTracker extends _NoOpFutureMock
+    implements RecipeEventsTracker {}
+
+class MockMenuEventsTracker extends _NoOpFutureMock
+    implements MenuEventsTracker {}
+
+class MockShoppingEventsTracker extends _NoOpFutureMock
+    implements ShoppingEventsTracker {}
+
+class MockSocialEventsTracker extends _NoOpFutureMock
+    implements SocialEventsTracker {}
+
+class MockImportEventsTracker extends _NoOpFutureMock
+    implements ImportEventsTracker {}
+
 /// Mock implementation of AnalyticsService
 class MockAnalyticsService extends Mock implements AnalyticsService {
   // Configuration state
   bool _isInitialized = false;
   String? _currentUserId;
   Map<String, dynamic> _userProperties = {};
+
+  final _recipe = MockRecipeEventsTracker();
+  final _menu = MockMenuEventsTracker();
+  final _shopping = MockShoppingEventsTracker();
+  final _social = MockSocialEventsTracker();
+  final _import = MockImportEventsTracker();
+
+  @override
+  RecipeEventsTracker get recipe => _recipe;
+  @override
+  MenuEventsTracker get menu => _menu;
+  @override
+  ShoppingEventsTracker get shopping => _shopping;
+  @override
+  SocialEventsTracker get social => _social;
+  @override
+  ImportEventsTracker get import => _import;
 
   void setAnalyticsState({
     bool isInitialized = false,
@@ -2105,6 +2157,49 @@ class MockFriendsManagementOperations extends Mock
     if (outgoingRequests != null) _outgoingRequests = outgoingRequests;
     if (blockedUsers != null) _blockedUsers = blockedUsers;
   }
+
+  @override
+  Future<bool> sendFriendRequest(String recipientId, {String? message}) async =>
+      true;
+  @override
+  Future<bool> acceptFriendRequest(String requestId) async => true;
+  @override
+  Future<bool> rejectFriendRequest(String requestId) async => true;
+  @override
+  Future<bool> cancelFriendRequest(String requestId) async => true;
+  @override
+  Future<bool> removeFriend(String friendId) async => true;
+  @override
+  Future<bool> blockUser(String userId) async => true;
+  @override
+  Future<bool> unblockUser(String userId) async => true;
+  @override
+  bool isFriend(String userId) =>
+      _friends.any((friend) => friend.uid == userId);
+  @override
+  bool hasOutgoingRequest(String userId) =>
+      _outgoingRequests.any((request) => request.toUserId == userId);
+  @override
+  bool hasIncomingRequest(String userId) =>
+      _incomingRequests.any((request) => request.fromUserId == userId);
+  @override
+  bool isBlocked(String userId) => _blockedUsers.contains(userId);
+  @override
+  Future<List<UserProfile>> searchUsers(String query) async => [];
+  @override
+  Future<List<UserProfile>> getMutualFriends(String userId) async => [];
+  @override
+  List<String> getBlockedUsers() => _blockedUsers.toList();
+  @override
+  int getIncomingRequestCount() => _incomingRequests.length;
+  @override
+  Map<String, dynamic> getFriendStats() => {
+        'totalFriends': _friends.length,
+        'onlineFriends': 0,
+        'incomingRequests': _incomingRequests.length,
+        'outgoingRequests': _outgoingRequests.length,
+        'blockedUsers': _blockedUsers.length
+      };
 }
 
 class MockFriendCategoriesOperations extends Mock

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -131,27 +132,36 @@ class CategoryDisplayWidgets {
             Row(
               children: [
                 Expanded(
-                  child: _StatItem(
+                  child: StatItemWidget(
                     icon: Icons.category,
                     label: context.l10n.friendCategories,
                     value: categories.length.toString(),
                     color: Theme.of(context).colorScheme.primary,
+                    iconSize: AppDimensions.iconSizeL,
+                    valueStyle: AppTextStyles.titleBold,
+                    labelStyle: AppTextStyles.bodySmall,
                   ),
                 ),
                 Expanded(
-                  child: _StatItem(
+                  child: StatItemWidget(
                     icon: Icons.people,
                     label: context.l10n.friendTotalMembers,
                     value: totalMembers.toString(),
                     color: context.butleryColors.success,
+                    iconSize: AppDimensions.iconSizeL,
+                    valueStyle: AppTextStyles.titleBold,
+                    labelStyle: AppTextStyles.bodySmall,
                   ),
                 ),
                 Expanded(
-                  child: _StatItem(
+                  child: StatItemWidget(
                     icon: Icons.analytics,
                     label: context.l10n.friendAverage,
                     value: averageSize.toString(),
                     color: context.butleryColors.warning,
+                    iconSize: AppDimensions.iconSizeL,
+                    valueStyle: AppTextStyles.titleBold,
+                    labelStyle: AppTextStyles.bodySmall,
                   ),
                 ),
               ],
@@ -382,49 +392,6 @@ class CategoryDisplayWidgets {
           ],
         ],
       ),
-    );
-  }
-}
-
-/// Helper widget for displaying statistics
-class _StatItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: color,
-          size: AppDimensions.iconSizeL,
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Text(
-          value,
-          style: AppTextStyles.titleBold.copyWith(
-            color: color,
-          ),
-        ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 }

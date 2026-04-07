@@ -44,7 +44,7 @@ class SearchResultCard {
       case FriendshipStatus.requestReceived:
         return _buildAcceptRequestButton(context, user, viewModel);
       case FriendshipStatus.blocked:
-        return _buildBlockedButton(context);
+        return _buildBlockedButton(context, user, viewModel);
     }
   }
 
@@ -94,14 +94,63 @@ class SearchResultCard {
     );
   }
 
-  /// Build disabled button for blocked users
-  static Widget _buildBlockedButton(BuildContext context) {
+  /// Build unblock button for blocked users
+  static Widget _buildBlockedButton(
+    BuildContext context,
+    UserProfile user,
+    FriendsViewModel viewModel,
+  ) {
     return ActionButtons.outlinedButton(
       context,
-      label: context.l10n.socialBlocked,
+      label: context.l10n.blockedUsersUnblock,
       icon: Icons.block,
-      onPressed: null, // Disabled
+      onPressed: () => _handleUnblockUser(context, user, viewModel),
     );
+  }
+
+  /// Handles unblocking a user with confirmation dialog
+  static Future<void> _handleUnblockUser(
+    BuildContext context,
+    UserProfile user,
+    FriendsViewModel viewModel,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.l10n.blockedUsersUnblockTitle),
+        content:
+            Text(context.l10n.blockedUsersUnblockMessage(user.displayName)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: Text(context.l10n.blockedUsersUnblock),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await viewModel.unblockUser(user.uid);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success
+                ? context.l10n.socialUserUnblocked(user.displayName)
+                : context.l10n.socialCouldNotUnblockUser),
+            backgroundColor: success
+                ? context.butleryColors.success
+                : Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 
   /// Handles sending friend request with proper feedback

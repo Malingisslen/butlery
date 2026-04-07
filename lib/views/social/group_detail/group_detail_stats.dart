@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -20,53 +21,30 @@ class GroupDetailStats {
       child: Row(
         children: [
           Expanded(
-            child: _buildStatItem(
-              context: context,
+            child: StatItemWidget(
               icon: Icons.people,
-              title: context.l10n.groupMembers,
+              label: context.l10n.groupMembers,
               value: '${members.length}',
               color: Theme.of(context).colorScheme.primary,
+              iconSize: AppDimensions.iconSizeAction,
+              valueStyle: AppTextStyles.titleBold,
+              labelStyle: AppTextStyles.bodySmall,
             ),
           ),
           const SizedBox(width: AppDimensions.spacingL),
           Expanded(
-            child: _buildStatItem(
-              context: context,
+            child: StatItemWidget(
               icon: Icons.calendar_today,
-              title: context.l10n.groupDaysActive,
+              label: context.l10n.groupDaysActive,
               value: _calculateDaysActive(group.createdAt),
               color: Theme.of(context).colorScheme.secondary,
+              iconSize: AppDimensions.iconSizeAction,
+              valueStyle: AppTextStyles.titleBold,
+              labelStyle: AppTextStyles.bodySmall,
             ),
           ),
         ],
       ),
-    );
-  }
-
-  static Widget _buildStatItem({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: AppDimensions.iconSizeAction),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Text(
-          value,
-          style: AppTextStyles.titleBold.copyWith(
-            color: color,
-          ),
-        ),
-        Text(
-          title,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
     );
   }
 

@@ -10,6 +10,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart'
     show RecipeOperationResult;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_insights.dart';
 
 // Import focused ViewModels
 import 'package:butlery/viewmodels/recipe/personal_recipe_viewmodel.dart';
@@ -246,7 +247,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Get recipe insights and statistics
-  Map<String, dynamic> get recipeInsights {
+  RecipeInsights get recipeInsights {
     return _queryViewModel.recipeInsights;
   }
 

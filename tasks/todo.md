@@ -10,9 +10,14 @@
 
 - [x] **B1. Enhance collection health dashboard** — Completeness stats in RecipeQueryViewModel, distribution bar + quick-fix entry points in CollectionStatsView. (BUT-242)
 
+### Agent C: Social Polish
+
+- [x] **C1. Enrich friend cards with subtitle** — `friends_list_cards.dart`: bio or last-active fallback. (BUT-272)
+- [x] **C2. Fix shared-with-me empty state** — `shared_with_me_view.dart`: explain sharing + "Dela ett recept" CTA. (BUT-271)
+
 ### Post-Sprint
 
-- [ ] Run `dart analyze --fatal-infos`
+- [x] Run `dart analyze --fatal-infos`
 - [ ] Run relevant unit tests
 - [ ] Commit, push, PR, merge
 - [ ] Update Linear ticket states

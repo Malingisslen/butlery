@@ -285,6 +285,14 @@ void main() {
         expect(result, isTrue);
       });
 
+      test('should unblock user', () async {
+        // Act
+        final result = await viewModel.unblockUser('blocked-user-123');
+
+        // Assert
+        expect(result, isTrue);
+      });
+
       test('should cancel sent request', () async {
         // Arrange - use state-based configuration (ultrathink gold standard)
         mockManagement.setManagementState(friends: []);
@@ -652,6 +660,27 @@ void main() {
         // Act & Assert
         expect(viewModel.getFriendshipStatus(testFriendId),
             equals(FriendshipStatus.requestReceived));
+      });
+
+      test('should detect blocked user status', () {
+        // Arrange
+        mockFriendsService.setFriendsState(
+          friends: [],
+          incomingRequests: [],
+          outgoingRequests: [],
+          categoriesList: [],
+          blockedUsers: {'blocked-user-123'},
+          isLoading: false,
+          error: null,
+          isInitialized: true,
+          management: mockManagement,
+        );
+
+        // Act & Assert
+        expect(viewModel.getFriendshipStatus('blocked-user-123'),
+            equals(FriendshipStatus.blocked));
+        expect(viewModel.getFriendshipStatus('non-blocked-user'),
+            equals(FriendshipStatus.none));
       });
 
       test('should check if can send friend request', () {

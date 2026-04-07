@@ -209,6 +209,15 @@ class FriendsViewModel extends ChangeNotifier
     return success;
   }
 
+  /// Unblock a user
+  Future<bool> unblockUser(String userId) async {
+    final success = await _friendsService.management.unblockUser(userId);
+    if (success) {
+      notifyListeners();
+    }
+    return success;
+  }
+
   /// Accept incoming friend request
   Future<bool> acceptFriendRequest(String requestId) async {
     // Find the request to get sender ID for analytics
@@ -333,6 +342,11 @@ class FriendsViewModel extends ChangeNotifier
     if (_friendsService.incomingRequests
         .any((request) => request.fromUserId == userId)) {
       return FriendshipStatus.requestReceived;
+    }
+
+    // Check if user is blocked
+    if (_friendsService.blockedUsers.contains(userId)) {
+      return FriendshipStatus.blocked;
     }
 
     return FriendshipStatus.none;

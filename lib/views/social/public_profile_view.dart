@@ -8,6 +8,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -236,58 +237,24 @@ class _ProfileStats extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _StatItem(
+              StatItemWidget(
                 label: context.l10n.socialFriends,
                 value: '${profile.friendsCount}',
                 icon: Icons.people,
                 color: cs.primary,
-                textColor: cs.onSurfaceVariant,
+                labelColor: cs.onSurfaceVariant,
               ),
-              _StatItem(
+              StatItemWidget(
                 label: context.l10n.publicProfilePublicRecipes,
                 value: '${profile.publicRecipeCount}',
                 icon: Icons.restaurant_menu,
                 color: cs.primary,
-                textColor: cs.onSurfaceVariant,
+                labelColor: cs.onSurfaceVariant,
               ),
             ],
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final Color textColor;
-
-  const _StatItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: AppDimensions.iconSizeXl),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Text(
-          value,
-          style: AppTextStyles.headlineMedium.copyWith(color: color),
-        ),
-        Text(
-          label,
-          style: AppTextStyles.bodyMedium.copyWith(color: textColor),
-        ),
-      ],
     );
   }
 }

@@ -14,6 +14,7 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
+import 'package:butlery/models/recipe/recipe_insights.dart';
 
 /// Recipe Query ViewModel
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
@@ -394,35 +395,29 @@ class RecipeQueryViewModel extends ChangeNotifier
     return allRecipes.map((recipe) => recipe.type).toSet().toList();
   }
 
-  Map<String, dynamic> get recipeInsights {
-    return {
-      'totalRecipes': allRecipes.length,
-      'personalRecipes': personalRecipes.length,
-      'collaborativeRecipes': collaborativeRecipes.length,
-      'filteredRecipes': filteredRecipes.length,
-      'mealTypes': usedMealTypes.length,
-      'tags': usedTags.length,
-      'recentlyCookedCount': getRecentlyCookedRecipes().length,
-      'editableCount': getEditableRecipes().length,
-      'favoriteCount': getFavoriteRecipes().length,
-      'markedFavoriteCount': allRecipes.where((r) => r.isFavorite).length,
-      'withImagesCount': getRecipesWithImages().length,
-      'highRatedCount': getHighRatedRecipes().length,
-      'totalCooks': allRecipes.fold<int>(0, (sum, r) => sum + r.cookCount),
-      'hasCollaborativeFeatures': hasCollaborativeRecipes,
-      'hasActiveFilters': hasActiveFilters,
-      'withoutPhotoCount': allRecipes.where((r) => r.imageUrls.isEmpty).length,
-      'withoutTimeCount': allRecipes
-          .where((r) => r.timeMinutes == null || r.timeMinutes! <= 0)
+  RecipeInsights get recipeInsights {
+    return RecipeInsights(
+      totalRecipes: allRecipes.length,
+      personalRecipes: personalRecipes.length,
+      collaborativeRecipes: collaborativeRecipes.length,
+      mealTypes: usedMealTypes.length,
+      tags: usedTags.length,
+      recentlyCookedCount: getRecentlyCookedRecipes().length,
+      favoriteCount: allRecipes.where((r) => r.isFavorite).length,
+      withImagesCount: getRecipesWithImages().length,
+      highRatedCount: getHighRatedRecipes().length,
+      totalCooks: allRecipes.fold<int>(0, (sum, r) => sum + r.cookCount),
+      withoutPhotoCount: allRecipes
+          .where((r) => r.missingFields.contains(RecipeField.image))
           .length,
-      'withoutPortionsCount': allRecipes
-          .where((r) => r.portions == null || r.portions! <= 0)
+      withoutTimeCount: allRecipes
+          .where((r) => r.missingFields.contains(RecipeField.time))
           .length,
-      'incompleteCount': allRecipes
+      incompleteCount: allRecipes
           .where((r) => r.completenessScore < incompleteThreshold)
           .length,
-      'completenessDistribution': _computeCompletenessDistribution(),
-    };
+      completenessDistribution: _computeCompletenessDistribution(),
+    );
   }
 
   List<MapEntry<String, int>> getMostUsedMealTypes() {

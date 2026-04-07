@@ -4,7 +4,8 @@ import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
-// RecipeMember and recipe_stats don't exist - removed
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -59,6 +60,10 @@ void main() {
       registerFallbackValue(RecipeFactory.build());
       registerFallbackValue(RecipeType.personal);
       registerFallbackValue(<String>[]);
+
+      // Bridge production ServiceLocator to test GetIt instance
+      final testDIContainer = DIContainer();
+      production.ServiceLocator.initialize(testDIContainer);
     });
 
     setUp(() async {
@@ -106,7 +111,7 @@ void main() {
             portions: any(named: 'portions'),
             timeMinutes: any(named: 'timeMinutes'),
             rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTags'),
+            personalTagIds: any(named: 'personalTagIds'),
             sourceUrl: any(named: 'sourceUrl'),
           )).thenAnswer((_) async => testRecipeId);
 
@@ -234,7 +239,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenThrow(Exception('Creation failed'));
 
@@ -549,7 +554,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenThrow(Exception('Legacy failed'));
 
@@ -658,8 +663,8 @@ void main() {
         // Act - query operations not available
         final insights = viewModel.recipeInsights;
 
-        // Assert - will return empty map since query mock doesn't exist
-        expect(insights, isEmpty);
+        // Assert - returns zero counts since query mock has no recipes
+        expect(insights.totalRecipes, equals(0));
       });
     });
 

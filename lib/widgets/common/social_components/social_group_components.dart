@@ -4,6 +4,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
@@ -330,20 +331,24 @@ class SocialGroupComponents {
             Row(
               children: [
                 Expanded(
-                  child: _buildStatItem(
-                    context,
+                  child: StatItemWidget(
                     icon: Icons.category,
                     value: totalCategories.toString(),
                     label: context.l10n.socialCategories,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    valueStyle: AppTextStyles.titleBold,
+                    labelStyle: AppTextStyles.labelSmall,
                   ),
                 ),
                 if (showTotalMembers)
                   Expanded(
-                    child: _buildStatItem(
-                      context,
+                    child: StatItemWidget(
                       icon: Icons.people,
                       value: totalMembers.toString(),
                       label: context.l10n.socialTotalMembers,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      valueStyle: AppTextStyles.titleBold,
+                      labelStyle: AppTextStyles.labelSmall,
                     ),
                   ),
               ],
@@ -355,20 +360,24 @@ class SocialGroupComponents {
                 children: [
                   if (showAverageSize)
                     Expanded(
-                      child: _buildStatItem(
-                        context,
+                      child: StatItemWidget(
                         icon: Icons.analytics,
                         value: averageSize.toStringAsFixed(1),
                         label: context.l10n.socialAveragePerCategory,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        valueStyle: AppTextStyles.titleBold,
+                        labelStyle: AppTextStyles.labelSmall,
                       ),
                     ),
                   if (showLargestCategory && largestCategory != null)
                     Expanded(
-                      child: _buildStatItem(
-                        context,
+                      child: StatItemWidget(
                         icon: Icons.star,
                         value: largestCategory.name,
                         label: context.l10n.socialLargestCategory,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        valueStyle: AppTextStyles.titleBold,
+                        labelStyle: AppTextStyles.labelSmall,
                       ),
                     ),
                 ],
@@ -377,32 +386,6 @@ class SocialGroupComponents {
           ],
         ),
       ),
-    );
-  }
-
-  /// Build statistic item helper
-  static Widget _buildStatItem(
-    BuildContext context, {
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    return Column(
-      children: [
-        Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Text(
-          value,
-          style: AppTextStyles.titleBold,
-        ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 

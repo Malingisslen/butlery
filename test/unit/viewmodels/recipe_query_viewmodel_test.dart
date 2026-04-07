@@ -534,12 +534,10 @@ void main() {
       test('should provide recipe insights', () {
         final insights = viewModel.recipeInsights;
 
-        expect(insights['totalRecipes'], equals(5));
-        expect(insights['personalRecipes'], equals(3));
-        expect(insights['collaborativeRecipes'], equals(2));
-        expect(insights['mealTypes'], equals(3));
-        expect(insights['hasCollaborativeFeatures'], isTrue);
-        expect(insights['hasActiveFilters'], isFalse);
+        expect(insights.totalRecipes, equals(5));
+        expect(insights.personalRecipes, equals(3));
+        expect(insights.collaborativeRecipes, equals(2));
+        expect(insights.mealTypes, equals(3));
       });
 
       test('should get most used meal types', () {
@@ -577,19 +575,17 @@ void main() {
         final insights = viewModel.recipeInsights;
 
         // All default factory recipes have empty imageUrls except personalRecipe2
-        expect(insights['withoutPhotoCount'], equals(4));
+        expect(insights.withoutPhotoCount, equals(4));
         // All have timeMinutes: 30
-        expect(insights['withoutTimeCount'], equals(0));
-        // All have portions: 4
-        expect(insights['withoutPortionsCount'], equals(0));
+        expect(insights.withoutTimeCount, equals(0));
         // 4 recipes at 0.65 score (< 0.7 threshold), 1 at 0.70 (not incomplete)
-        expect(insights['incompleteCount'], equals(4));
-        expect(insights['completenessDistribution'], isA<Map<String, int>>());
+        expect(insights.incompleteCount, equals(4));
+        expect(insights.completenessDistribution, isA<Map<String, int>>());
       });
 
       test('should compute completeness distribution buckets', () {
         final insights = viewModel.recipeInsights;
-        final dist = insights['completenessDistribution'] as Map<String, int>;
+        final dist = insights.completenessDistribution;
 
         // All 5 recipes score 0.65 or 0.70 -> all in '50-75%' bucket
         expect(dist['0-25%'], equals(0));
@@ -626,8 +622,8 @@ void main() {
         mockRecipeService.setRecipeState(recipes: [completeRecipe]);
 
         final insights = viewModel.recipeInsights;
-        expect(insights['incompleteCount'], equals(0));
-        expect(insights['withoutPhotoCount'], equals(0));
+        expect(insights.incompleteCount, equals(0));
+        expect(insights.withoutPhotoCount, equals(0));
 
         final incomplete = viewModel.getIncompleteRecipes();
         expect(incomplete, isEmpty);
