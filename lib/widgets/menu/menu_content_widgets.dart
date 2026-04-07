@@ -13,6 +13,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/realtime/menu_slot_vote.dart';
+import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
+import 'package:butlery/widgets/menu/menu_vote_card.dart';
+import 'package:butlery/widgets/menu/suggest_alternative_sheet.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Widget builders for the Veckomeny (weekly menu) view content.
 ///
@@ -108,6 +114,7 @@ class MenuContentWidgets {
   static Widget buildMenuContent(
     BuildContext context, {
     required MenuViewModel viewModel,
+    MenuVotingViewModel? votingViewModel,
     VoidCallback? onRetry,
   }) {
     // UI Redesign: Show inline error if there's an error
@@ -156,6 +163,7 @@ class MenuContentWidgets {
             viewModel: viewModel,
             category: entry.key,
             recipes: entry.value,
+            votingViewModel: votingViewModel,
           ),
           const Divider(),
         ],
@@ -226,6 +234,7 @@ class MenuContentWidgets {
     required MenuViewModel viewModel,
     required String category,
     required List<Recipe> recipes,
+    MenuVotingViewModel? votingViewModel,
   }) {
     final cs = Theme.of(context).colorScheme;
 
@@ -297,20 +306,41 @@ class MenuContentWidgets {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingSm),
-        // Recipe cards with swap button
-        for (final recipe in recipes)
+        // Recipe cards with swap + vote buttons
+        for (int i = 0; i < recipes.length; i++) ...[
           _MenuRecipeCard(
-            recipe: recipe,
+            recipe: recipes[i],
             category: category,
             viewModel: viewModel,
+            votingViewModel: votingViewModel,
+            slotIndex: i,
             onTap: () {
               Navigator.pushNamed(
                 context,
                 '/receptDetalj',
-                arguments: recipe,
+                arguments: recipes[i],
               );
             },
           ),
+          // Show vote card if active vote exists for this slot
+          if (votingViewModel case final vvm?) ...[
+            Builder(builder: (context) {
+              final vote = vvm.getVoteForSlot(category, i);
+              if (vote == null) return const SizedBox.shrink();
+              final userId =
+                  ServiceLocator.get<PermissionService>().currentUserId ?? '';
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                child: MenuVoteCard(
+                  vote: vote,
+                  currentUserId: userId,
+                  onVote: (optionId) => vvm.castVote(vote.id, optionId),
+                  onResolve: () => vvm.resolveVote(vote.id),
+                ),
+              );
+            }),
+          ],
+        ],
       ],
     );
   }
@@ -404,12 +434,16 @@ class _MenuRecipeCard extends StatelessWidget {
     required this.category,
     required this.viewModel,
     required this.onTap,
+    this.votingViewModel,
+    this.slotIndex = 0,
   });
 
   final Recipe recipe;
   final String category;
   final MenuViewModel viewModel;
   final VoidCallback onTap;
+  final MenuVotingViewModel? votingViewModel;
+  final int slotIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -457,6 +491,60 @@ class _MenuRecipeCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
+                // Vote button (collaborative menus only)
+                if (votingViewModel != null) ...[
+                  Material(
+                    color: cs.surface,
+                    borderRadius: BorderRadius.zero,
+                    child: InkWell(
+                      onTap: () async {
+                        final selectedRecipe =
+                            await SuggestAlternativeSheet.show(
+                          context,
+                          availableRecipes: viewModel.availableRecipes,
+                          excludeRecipeIds: [recipe.id],
+                        );
+                        if (selectedRecipe != null) {
+                          final userId = ServiceLocator.get<PermissionService>()
+                                  .currentUserId ??
+                              '';
+                          final currentOption = VoteOption(
+                            id: recipe.id,
+                            recipeId: recipe.id,
+                            recipeName: recipe.title,
+                            recipeImageUrl: recipe.imageUrls.isNotEmpty
+                                ? recipe.imageUrls.first
+                                : null,
+                            suggestedByUserId: userId,
+                          );
+                          final newOption = VoteOption(
+                            id: selectedRecipe.id,
+                            recipeId: selectedRecipe.id,
+                            recipeName: selectedRecipe.title,
+                            recipeImageUrl: selectedRecipe.imageUrls.isNotEmpty
+                                ? selectedRecipe.imageUrls.first
+                                : null,
+                            suggestedByUserId: userId,
+                          );
+                          votingViewModel!.createVote(
+                            category: category,
+                            slotIndex: slotIndex,
+                            alternatives: [currentOption, newOption],
+                          );
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                        child: Icon(
+                          Icons.how_to_vote,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingXxs),
+                ],
                 // Swap button
                 Material(
                   color: cs.surface,

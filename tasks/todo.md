@@ -27,7 +27,7 @@
 - [x] **3C. Create MenuVotingViewModel** — `lib/viewmodels/menu_voting_viewmodel.dart`. (BUT-239)
 - [x] **3D. Create vote card widget** — `lib/widgets/menu/menu_vote_card.dart`. (BUT-239)
 - [x] **3E. Create suggest-alternative sheet** — `lib/widgets/menu/suggest_alternative_sheet.dart`. (BUT-239)
-- [ ] **3F. Wire voting into realtime menu view** — Menu slot button + vote card. (BUT-239)
+- [x] **3F. Wire voting into realtime menu view** — Menu slot button + vote card. (BUT-239)
 
 ### Post-Sprint
 
