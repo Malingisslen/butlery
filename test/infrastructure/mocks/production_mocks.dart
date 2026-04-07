@@ -1018,11 +1018,34 @@ class MockUnifiedRecipeService extends Mock
     return _recipes.where((r) => r.id == id).firstOrNull;
   }
 
-  @override
-  void clearError() {
-    _error = null;
-    notifyListeners();
+  // clearError left to Mock — tests can stub/verify via mocktail
+
+  bool _collaborativeShouldSucceed = false;
+
+  void setCollaborativeState({bool? shouldSucceed}) {
+    if (shouldSucceed != null) _collaborativeShouldSucceed = shouldSucceed;
   }
+
+  @override
+  Future<String?> createCollaborativeRecipe({
+    required String title,
+    required List<String> memberIds,
+    String description = '',
+    List<String> ingredients = const [],
+    List<String> instructions = const [],
+    List<String> imageUrls = const [],
+    String mealType = 'Lunch',
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? personalTagIds,
+    String? sourceUrl,
+    String? descriptionCollaborative,
+    bool allowGuestViewing = false,
+    bool allowMemberInvites = true,
+    List<String>? categoryIds,
+  }) async =>
+      _collaborativeShouldSucceed ? 'collab-$title' : null;
 
   @override
   Map<String, dynamic> getServiceStatus() {
@@ -1891,6 +1914,12 @@ class MockTimer extends Mock implements Timer {}
 /// Mock implementation of SocialRecipeOperations - COMPREHENSIVE INTERFACE
 class MockSocialRecipeOperations extends Mock
     implements SocialRecipeOperations {
+  bool _shouldSucceed = true;
+
+  void setSocialState({bool? shouldSucceed}) {
+    if (shouldSucceed != null) _shouldSucceed = shouldSucceed;
+  }
+
   // ===== RECIPE SHARING =====
 
   @override
@@ -1902,12 +1931,12 @@ class MockSocialRecipeOperations extends Mock
           bool allowGuestViewing = false,
           bool allowMemberInvites = true,
           List<String>? categoryIds}) async =>
-      'shared-$recipeId';
+      _shouldSucceed ? 'shared-$recipeId' : null;
 
   @override
   Future<String?> makeRecipePersonal(
           {required String collaborativeRecipeId, String? newTitle}) async =>
-      'personal-$collaborativeRecipeId';
+      _shouldSucceed ? 'personal-$collaborativeRecipeId' : null;
 
   @override
   Future<String?> duplicateAndShareRecipe(
@@ -2773,11 +2802,17 @@ class MockRealtimeRecipeOperations extends Mock
           List<String> recipeIds) =>
       Stream.value({});
 
-  @override
-  bool get isConnected => true;
+  bool _connected = false;
+
+  void setRealtimeState({bool? connected}) {
+    if (connected != null) _connected = connected;
+  }
 
   @override
-  Stream<bool> get connectionStream => Stream.value(true);
+  bool get isConnected => _connected;
+
+  @override
+  Stream<bool> get connectionStream => Stream.value(_connected);
 
   @override
   Future<bool> waitForConnection(

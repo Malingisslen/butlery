@@ -141,6 +141,11 @@ The theme system is the single source of truth for all visual properties. Read t
 - HTML preview before implementation: full-screen designs, color/typography, responsive layouts
 - No preview needed: bug fixes, backend changes, minor tweaks
 
+**Component library check** — If the plan creates new reusable widgets or modifies existing ones:
+- Are the new widgets added to `_butlery-components.html`?
+- Are modified widgets updated in the library to reflect visual changes?
+- Does the plan reference existing components from the library instead of creating duplicates?
+
 **Design decisions resolved** — Are visual choices (layout, component placement, hierarchy) resolved in the plan, or deferred to implementation? Prefer resolving during planning using ASCII mockups or AskUserQuestion with preview options.
 
 ## 10. Scope & Simplicity

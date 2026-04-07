@@ -8,7 +8,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Import all component styles from the template */
+/* ============================================================
+   BUTLERY COMPONENT LIBRARY
+   Source of truth: lib/widgets/ (Flutter widget files)
+   Sync: When widgets change visually, update this file to match.
+   ============================================================ */
 :root {
   --green: #4A7C59;
   --green-dark: #3D6849;
@@ -29,617 +33,506 @@
   --error: #C44536;
   --warning: #D4A03C;
   --success: var(--green);
+  --info: #4A6FA5;
   --font-display: 'Josefin Sans', sans-serif;
   --font-body: 'Space Grotesk', sans-serif;
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 12px;
-  --space-lg: 16px;
-  --space-xl: 20px;
-  --space-2xl: 24px;
-  --space-3xl: 32px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px;
+  --space-xl: 20px; --space-2xl: 24px; --space-3xl: 32px;
   --radius: 0px;
 }
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); color: var(--text); background: var(--cream); }
 
-body {
-  font-family: var(--font-body);
-  color: var(--text);
-  background: var(--cream);
-  padding: 32px;
-  max-width: 960px;
-  margin: 0 auto;
-}
+/* Library layout */
+.lib-header { background: var(--green-dark); padding: 24px 32px; border-bottom: 4px solid var(--rust); }
+.lib-header h1 { font-family: var(--font-display); font-size: 32px; font-weight: 300; color: var(--cream); letter-spacing: 4px; text-transform: lowercase; }
+.lib-header p { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+.lib-nav { background: var(--white); border-bottom: 1px solid var(--cream-dark); padding: 12px 32px; display: flex; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 10; }
+.lib-nav a { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--green-dark); text-decoration: none; padding: 4px 10px; border: 1px solid var(--green); }
+.lib-nav a:hover { background: var(--green-pale); }
+.lib-body { max-width: 1100px; margin: 0 auto; padding: 32px; }
+.lib-section { margin-bottom: 48px; }
+.lib-section-title { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--rust); border-left: 3px solid var(--rust); padding-left: 12px; margin-bottom: 20px; }
+.lib-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.lib-item { flex: 1; min-width: 280px; }
+.lib-item-full { width: 100%; margin-bottom: 16px; }
+.lib-label { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.lib-class { font-family: 'Consolas', monospace; font-size: 11px; color: var(--green); background: var(--green-pale); padding: 2px 6px; display: inline-block; margin-bottom: 8px; }
+.lib-demo { background: var(--white); border: 1px solid var(--cream-dark); padding: 16px; position: relative; overflow: hidden; }
+.lib-demo-dark { background: #9A8F82; padding: 16px; }
+.lib-note { font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: 4px; }
 
-/* Library-specific styles */
-.lib-header {
-  background: var(--green-dark);
-  padding: 24px 32px;
-  border-bottom: 4px solid var(--rust);
-  margin: -32px -32px 32px;
-}
-.lib-header h1 {
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 300;
-  color: var(--cream);
-  letter-spacing: 4px;
-  text-transform: lowercase;
-}
-.lib-header p {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5);
-  margin-top: 4px;
-}
+/* ======================== COMPONENT STYLES ======================== */
 
-.lib-section {
-  margin-bottom: 48px;
-}
-.lib-section-title {
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--rust);
-  border-left: 3px solid var(--rust);
-  padding-left: 12px;
-  margin-bottom: 20px;
-}
-.lib-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.lib-item {
-  flex: 1;
-  min-width: 280px;
-}
-.lib-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.lib-class {
-  font-family: 'Consolas', monospace;
-  font-size: 11px;
-  color: var(--green);
-  background: var(--green-pale);
-  padding: 2px 6px;
-  display: inline-block;
-  margin-bottom: 8px;
-}
-.lib-demo {
-  background: var(--white);
-  border: 1px solid var(--cream-dark);
-  padding: 16px;
-  position: relative;
-}
-.lib-demo-dark {
-  background: #9A8F82;
-  padding: 16px;
-}
+/* Styled Buttons */
+.styled-btn { font-family: var(--font-body); font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 12px 24px; font-size: 14px; }
+.styled-btn-primary { background: var(--green); color: var(--cream); }
+.styled-btn-secondary { background: transparent; color: var(--green); border: 2px solid var(--green); }
+.styled-btn-destructive { background: var(--error); color: white; }
+.styled-btn-small { min-height: 36px; padding: 8px 16px; font-size: 13px; }
+.styled-btn-icon { width: 48px; height: 48px; padding: 0; font-size: 20px; }
 
-/* Component styles (from template) */
-.page-header {
-  background: var(--green-dark);
-  padding: var(--space-lg) var(--space-lg) var(--space-md);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.page-header-title {
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 600;
-  color: var(--cream);
-  letter-spacing: 2px;
-  text-transform: lowercase;
-  line-height: 1.1;
-}
-.page-header .count-badge {
-  background: var(--cream);
-  color: var(--green-dark);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  padding: 4px 10px;
-  margin-left: 12px;
-}
-.page-header .avatar {
-  width: 36px;
-  height: 36px;
-  background: var(--rust);
-  color: var(--cream);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-}
+/* Styled Cards */
+.styled-card { background: var(--white); padding: 16px; }
+.styled-card-standard { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.styled-card-elevated { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.styled-card-outlined { border: 1px solid var(--cream-darker); box-shadow: none; }
+.styled-card-selection { border: 2px solid var(--green); box-shadow: 0 2px 8px rgba(74,124,89,0.2); }
+.styled-card-recipe { padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+/* Styled Inputs */
+.styled-input { width: 100%; padding: 12px 16px; font-family: var(--font-body); font-size: 15px; border: 1px solid var(--cream-dark); background: var(--white); outline: none; }
+.styled-input:focus { border-color: var(--green); }
+.styled-input-warning { border-color: var(--warning); border-width: 2px; }
+.styled-input-error { border-color: var(--error); }
+.form-field-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); margin-bottom: 4px; display: block; }
+.form-field-required { color: var(--error); }
+.form-field-helper { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.form-field-error-text { font-size: 12px; color: var(--error); margin-top: 4px; }
+
+/* Headers */
+.page-header { background: var(--green-dark); padding: 16px 16px 12px; display: flex; align-items: center; justify-content: space-between; }
+.page-header-title { font-family: var(--font-display); font-size: 32px; font-weight: 600; color: var(--cream); letter-spacing: 2px; text-transform: lowercase; line-height: 1.1; }
 .header-left { display: flex; align-items: center; }
+.count-badge { background: var(--cream); color: var(--green-dark); font-size: 11px; font-weight: 600; letter-spacing: 1px; padding: 4px 10px; margin-left: 12px; }
+.avatar { width: 36px; height: 36px; background: var(--rust); color: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+.simple-header { background: var(--green-dark); padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 3px solid var(--rust); }
+.simple-header-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--cream); letter-spacing: 1px; text-transform: lowercase; }
+.back-btn { width: 32px; height: 32px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.section-header { display: flex; align-items: center; gap: 8px; padding: 12px 0 8px; border-left: 3px solid var(--rust); padding-left: 12px; }
+.section-header-title { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+.section-header-count { font-size: 11px; color: var(--text-muted); }
+.bottom-action-bar { background: var(--white); border-top: 1px solid var(--cream-dark); padding: 16px; display: flex; justify-content: flex-end; gap: 12px; }
 
-.simple-header {
-  background: var(--green-dark);
-  padding: var(--space-md) var(--space-lg);
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  border-bottom: 3px solid var(--rust);
-}
-.simple-header-title {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--cream);
-  letter-spacing: 1px;
-  text-transform: lowercase;
-}
-.back-btn {
-  width: 32px;
-  height: 32px;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: var(--cream);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
+/* State Widgets */
+.empty-state { display: flex; flex-direction: column; align-items: center; padding: 32px 24px; text-align: center; }
+.empty-state-icon { width: 100px; height: 100px; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 16px; color: var(--green-muted); }
+.empty-state-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: 1px; text-transform: lowercase; margin-bottom: 8px; }
+.empty-state-desc { font-size: 14px; color: var(--text-light); line-height: 1.5; margin-bottom: 16px; }
+.skeleton-box { background: linear-gradient(90deg, var(--cream-dark) 25%, var(--cream-darker) 50%, var(--cream-dark) 75%); height: 16px; }
 
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-md) 0 var(--space-sm);
-  border-left: 3px solid var(--rust);
-  padding-left: var(--space-md);
-}
-.section-header-title {
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-}
-.section-header-count {
-  font-size: 11px;
-  color: var(--text-muted);
-}
+/* Indicators & Badges */
+.status-badge { display: inline-flex; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; background: var(--green); color: white; }
+.notification-badge { width: 20px; height: 20px; background: var(--error); color: white; border: 2px solid white; border-radius: 50%; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.circular-icon-badge { width: 40px; height: 40px; background: var(--green); color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
+.admin-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(74,124,89,0.1); color: var(--green); font-size: 12px; font-weight: 500; }
+.member-count-badge { width: 32px; height: 32px; background: var(--cream-dark); border: 1px solid var(--cream-darker); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text-light); }
+.sync-indicator { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; font-size: 12px; }
+.sync-pending { background: rgba(212,160,60,0.1); color: var(--warning); }
+.sync-offline { background: var(--cream-dark); color: var(--text-muted); }
+.edit-indicator { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(74,124,89,0.08); font-size: 13px; color: var(--green-dark); }
+.edit-indicator-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; }
+.realtime-banner { padding: 12px 16px; background: rgba(196,69,54,0.08); border-left: 4px solid var(--error); display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text); }
+.status-indicator { width: 28px; height: 28px; background: rgba(74,124,89,0.1); display: inline-flex; align-items: center; justify-content: center; font-size: 14px; color: var(--green); }
 
-.search-box {
-  background: var(--white);
-  border: 2px solid var(--green);
-  border-bottom: 3px solid var(--rust);
-  padding: var(--space-sm) var(--space-md);
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-.search-box input {
-  border: none;
-  outline: none;
-  font-family: var(--font-body);
-  font-size: 14px;
-  flex: 1;
-  background: transparent;
-}
-
-.recipe-card {
-  background: var(--white);
-  border-left: 4px solid var(--green);
-  border-bottom: 3px solid var(--rust-light);
-  padding: var(--space-md);
-  display: flex;
-  gap: var(--space-md);
-}
-.recipe-card-img {
-  width: 64px;
-  height: 64px;
-  background: var(--green-pale);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--green-muted);
-  font-size: 24px;
-}
-.recipe-card-content { flex: 1; min-width: 0; }
-.recipe-card-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
-.recipe-card-desc { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
-.recipe-card-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.menu-card {
-  background: var(--white);
-  border-left: 4px solid var(--rust);
-  padding: var(--space-md);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.menu-card-title { font-size: 15px; font-weight: 600; }
-.menu-card-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-.menu-card-action {
-  width: 36px;
-  height: 36px;
-  background: var(--cream-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--green);
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.btn {
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px 24px;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  min-height: 48px;
-}
-.btn-primary { background: var(--green); color: var(--cream); }
-.btn-secondary { background: transparent; color: var(--green); border: 2px solid var(--green); }
-.btn-destructive { background: var(--error); color: var(--cream); }
-.btn-full { width: 100%; }
-
-.badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
+/* Allergen/Dietary Badges */
+.badge { font-size: 11px; font-weight: 600; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px; }
 .badge-free { background: rgba(74,124,89,0.12); color: var(--green); }
 .badge-contains { background: rgba(196,69,54,0.1); color: var(--error); }
 .badge-unknown { background: rgba(102,102,102,0.1); color: var(--text-light); }
-.rating-badge {
-  background: rgba(74,124,89,0.12);
-  border: 1px solid rgba(74,124,89,0.25);
-  color: var(--green);
-  padding: 2px 8px;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
+.rating-badge { background: rgba(74,124,89,0.12); border: 1px solid rgba(74,124,89,0.25); color: var(--green); padding: 2px 8px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
 
-.chip {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border: 1px solid var(--green);
-  color: var(--green);
-  background: transparent;
-  display: inline-block;
-}
+/* Buttons (ActionButtons) */
+.square-btn { width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; }
+.square-btn-rust { background: var(--rust); color: var(--cream); }
+.square-btn-green { background: var(--green); color: var(--cream); }
+.fab { width: 48px; height: 48px; background: var(--green); color: var(--cream); display: inline-flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.overlay-btn { width: 32px; height: 32px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+
+/* Content Cards */
+.recipe-card { background: var(--white); border-left: 4px solid var(--green); border-bottom: 3px solid var(--rust-light); padding: 12px; display: flex; gap: 12px; }
+.recipe-card-img { width: 64px; height: 64px; background: var(--green-pale); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--green-muted); font-size: 24px; }
+.recipe-card-content { flex: 1; min-width: 0; }
+.recipe-card-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.recipe-card-desc { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
+.recipe-card-meta { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-muted); }
+
+.friend-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--white); border: 1px solid var(--cream-dark); }
+.friend-avatar { width: 48px; height: 48px; background: var(--green-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: var(--green-dark); }
+.friend-avatar-sm { width: 32px; height: 32px; font-size: 12px; }
+.friend-info { flex: 1; }
+.friend-name { font-size: 15px; font-weight: 600; }
+.friend-meta { font-size: 12px; color: var(--text-muted); }
+.online-dot { width: 10px; height: 10px; background: var(--green); border: 2px solid white; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
+
+.menu-card { background: var(--white); border-left: 4px solid var(--rust); padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+.menu-card-info { flex: 1; }
+.menu-card-title { font-size: 15px; font-weight: 600; }
+.menu-card-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.menu-card-action { width: 36px; height: 36px; background: var(--cream-dark); display: flex; align-items: center; justify-content: center; color: var(--green); font-size: 16px; }
+
+.shopping-card { background: var(--white); border: 1px solid var(--cream-dark); padding: 12px; }
+.shopping-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.completion-pill { display: inline-flex; padding: 2px 8px; font-size: 11px; font-weight: 600; background: rgba(74,124,89,0.12); color: var(--green); }
+.sharing-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font-size: 11px; color: var(--text-muted); background: var(--cream-dark); }
+
+/* Search & Filter */
+.search-box { background: var(--white); border: 2px solid var(--green); border-bottom: 4px solid var(--rust); padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
+.search-box input { border: none; outline: none; font-family: var(--font-body); font-size: 14px; flex: 1; background: transparent; }
+.chip { font-size: 12px; font-weight: 600; padding: 6px 14px; border: 1px solid var(--green); color: var(--green); background: transparent; display: inline-block; }
 .chip.active { background: var(--green); color: var(--cream); }
+.filter-toggle { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); position: relative; }
+.filter-toggle.has-filters { color: var(--green); }
+.filter-dot { width: 8px; height: 8px; background: var(--rust); border-radius: 50%; position: absolute; top: 4px; right: 4px; }
+.filter-status { padding: 8px 12px; background: var(--green-pale); display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--green-dark); }
+.tag-chip-include { border-color: var(--green); color: var(--green); padding: 4px 10px; font-size: 12px; font-weight: 600; border: 1px solid; display: inline-block; }
+.tag-chip-exclude { border-color: var(--error); color: var(--error); padding: 4px 10px; font-size: 12px; font-weight: 600; border: 1px solid; display: inline-block; }
 
-.form-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--text-light);
-  margin-bottom: var(--space-xs);
-  display: block;
-}
-.form-input {
-  width: 100%;
-  padding: var(--space-sm) var(--space-md);
-  font-family: var(--font-body);
-  font-size: 15px;
-  border: 1px solid var(--cream-dark);
-  background: var(--white);
-  outline: none;
-}
-
-.checkbox {
-  width: 22px;
-  height: 22px;
-  border: 2px solid var(--cream-darker);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.checkbox.checked {
-  background: var(--green);
-  border-color: var(--green);
-  color: white;
-  font-size: 14px;
-}
-
-.portion-adjuster {
-  background: var(--cream-dark);
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-}
-.portion-btn {
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: none;
-  font-size: 18px;
-  color: var(--green-dark);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.portion-value {
-  padding: 0 12px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.bottom-nav {
-  background: var(--cream-dark);
-  display: flex;
-  padding: var(--space-sm) 0 var(--space-md);
-  border-top: 1px solid var(--cream-darker);
-}
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 1px;
-  text-transform: lowercase;
-  color: var(--green-muted);
-  position: relative;
-  padding-top: 6px;
-}
+/* Navigation */
+.bottom-nav { background: var(--cream-dark); display: flex; padding: 8px 0 12px; border-top: 1px solid var(--cream-darker); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--font-display); font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: lowercase; color: var(--green-muted); position: relative; padding-top: 6px; }
 .nav-item.active { color: var(--green-dark); }
-.nav-item.active::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 25%;
-  right: 25%;
-  height: 2px;
-  background: var(--rust);
-}
+.nav-item.active::after { content: ''; position: absolute; top: 0; left: 25%; right: 25%; height: 2px; background: var(--rust); }
 .nav-icon { font-size: 20px; }
-
-.tabs {
-  display: flex;
-  border-bottom: 2px solid var(--cream-dark);
-}
-.tab {
-  flex: 1;
-  padding: var(--space-md);
-  text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  position: relative;
-}
+.tabs { display: flex; border-bottom: 2px solid var(--cream-dark); }
+.tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-muted); position: relative; }
 .tab.active { color: var(--green); }
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--green);
-}
+.tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--green); }
 
-.fab {
-  width: 48px;
-  height: 48px;
-  background: var(--green);
-  color: var(--cream);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+/* Layout containers */
+.bordered-container { border: 1px solid var(--cream-darker); padding: 16px; }
+.category-header-bar { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 8px 12px; display: flex; justify-content: space-between; }
 
-.dialog {
-  background: var(--cream);
-  max-width: 340px;
-  padding: var(--space-2xl);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-}
-.dialog-title {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: var(--space-lg);
-}
+/* Scaffolds (miniature) */
+.scaffold-mini { width: 140px; height: 240px; background: var(--cream); border: 1px solid var(--cream-darker); display: flex; flex-direction: column; overflow: hidden; font-size: 9px; }
+.scaffold-mini-header { background: var(--green-dark); color: var(--cream); padding: 6px 8px; font-family: var(--font-display); font-size: 10px; font-weight: 600; text-transform: lowercase; border-bottom: 2px solid var(--rust); }
+.scaffold-mini-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px; text-align: center; color: var(--text-muted); }
+.scaffold-mini-footer { background: var(--white); border-top: 1px solid var(--cream-dark); padding: 6px 8px; }
 
-.sheet {
-  background: var(--cream);
-  padding: var(--space-lg) var(--space-lg) var(--space-2xl);
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
-}
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  background: var(--cream-darker);
-  margin: 0 auto var(--space-md);
-}
-.sheet-title {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: var(--space-lg);
-}
+/* Messaging */
+.msg-bubble { max-width: 70%; padding: 10px 14px; font-size: 14px; line-height: 1.4; margin-bottom: 8px; }
+.msg-own { background: var(--green); color: white; margin-left: auto; }
+.msg-other { background: var(--cream-dark); color: var(--text); }
+.msg-system { text-align: center; font-size: 12px; color: var(--text-muted); padding: 8px; }
+.reply-preview { border-left: 3px solid rgba(255,255,255,0.4); padding-left: 8px; margin-bottom: 6px; font-size: 12px; opacity: 0.8; }
+.reply-preview-other { border-left-color: var(--green); }
+.conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--cream-dark); }
+.conversation-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: var(--green-dark); flex-shrink: 0; }
+.conversation-content { flex: 1; min-width: 0; }
+.conversation-name { font-size: 15px; font-weight: 600; }
+.conversation-preview { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conversation-time { font-size: 11px; color: var(--text-muted); }
+.unread-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
+.typing-dots { display: inline-flex; gap: 3px; }
+.typing-dot { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; }
+.reply-banner { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--cream); border-left: 4px solid var(--green); }
+.reply-banner-text { flex: 1; font-size: 13px; }
+.reply-banner-name { font-weight: 600; color: var(--green); }
+.poll-option { padding: 8px 12px; margin-bottom: 4px; position: relative; border: 1px solid var(--cream-dark); }
+.poll-fill { position: absolute; top: 0; left: 0; bottom: 0; background: rgba(74,124,89,0.1); }
+.poll-text { position: relative; font-size: 14px; display: flex; justify-content: space-between; }
 
-.list-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md) 0;
-  border-bottom: 1px solid var(--cream-dark);
-}
+/* Social/Collaborative */
+.avatar-stack { display: flex; }
+.avatar-stack > * { margin-left: -8px; border: 2px solid white; }
+.avatar-stack > *:first-child { margin-left: 0; }
+.shared-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 13px; }
+.shared-header-name { font-weight: 600; }
+.shared-header-time { color: var(--text-muted); font-size: 11px; margin-left: auto; }
+.collab-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(74,124,89,0.08); font-size: 11px; font-weight: 600; color: var(--green); }
+.emoji-avatar { width: 48px; height: 48px; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 24px; }
 
-.category-header {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: var(--space-sm) var(--space-md);
-  display: flex;
-  justify-content: space-between;
-}
+/* Profile/Branding */
+.stat-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.stat-value { font-size: 24px; font-weight: 600; color: var(--green-dark); }
+.stat-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+.app-logo { width: 60px; height: 60px; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.app-logo-large { width: 100px; height: 100px; font-size: 40px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--space-3xl) var(--space-2xl);
-  text-align: center;
-}
-.empty-state-icon {
-  width: 120px;
-  height: 120px;
-  background: var(--green-pale);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  margin-bottom: var(--space-xl);
-  color: var(--green-muted);
-}
-.empty-state-title {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: lowercase;
-  margin-bottom: var(--space-sm);
-}
-.empty-state-desc {
-  font-size: 14px;
-  color: var(--text-light);
-  line-height: 1.5;
-  margin-bottom: var(--space-xl);
-}
+/* Import */
+.step-progress { display: flex; align-items: center; gap: 0; }
+.step-dot { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+.step-done { background: var(--green); color: white; }
+.step-active { border: 2px solid var(--green); background: var(--green-pale); color: var(--green-dark); }
+.step-pending { border: 2px solid var(--cream-darker); background: var(--white); color: var(--text-muted); }
+.step-line { width: 24px; height: 2px; }
+.step-line-done { background: var(--green); }
+.step-line-pending { background: var(--cream-darker); }
 
-.strikethrough { text-decoration: line-through; color: var(--text-muted); }
+/* Share Dialog */
+.share-mode-card { border: 2px solid var(--cream-darker); padding: 12px; display: flex; gap: 12px; align-items: flex-start; }
+.share-mode-card.selected { border-color: var(--green); background: var(--green-pale); }
+.radio { width: 20px; height: 20px; border: 2px solid var(--cream-darker); border-radius: 50%; flex-shrink: 0; }
+.radio.selected { border-color: var(--green); background: var(--green); }
+
+/* Checkbox */
+.checkbox { width: 22px; height: 22px; border: 2px solid var(--cream-darker); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.checkbox.checked { background: var(--green); border-color: var(--green); color: white; font-size: 14px; }
 </style>
 </head>
 <body>
 
 <div class="lib-header">
   <h1>butlery components</h1>
-  <p>Complete component library &mdash; every building block in the Butlery design system</p>
+  <p>Complete widget library &mdash; every visual building block mapped to Flutter classes</p>
 </div>
 
-<!-- ==================== HEADERS ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">headers</div>
+<nav class="lib-nav">
+  <a href="#styled-core">Styled Core</a>
+  <a href="#headers">Headers</a>
+  <a href="#states">State Widgets</a>
+  <a href="#indicators">Indicators</a>
+  <a href="#buttons">Buttons</a>
+  <a href="#content-cards">Content Cards</a>
+  <a href="#search-filter">Search &amp; Filter</a>
+  <a href="#navigation">Navigation</a>
+  <a href="#scaffolds">Scaffolds</a>
+  <a href="#recipe">Recipe</a>
+  <a href="#messaging">Messaging</a>
+  <a href="#social">Social</a>
+  <a href="#profile">Profile</a>
+  <a href="#import">Import</a>
+  <a href="#share">Share Dialog</a>
+</nav>
+
+<div class="lib-body">
+
+<!-- ==================== 1. STYLED CORE ==================== -->
+<div class="lib-section" id="styled-core">
+  <div class="lib-section-title">1. styled core &mdash; widgets/styled/</div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">StyledButton variants</div>
+    <div class="lib-class">StyledButton.primary / .secondary / .destructive / .small / .icon</div>
+    <div class="lib-demo" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <button class="styled-btn styled-btn-primary">Spara recept</button>
+      <button class="styled-btn styled-btn-secondary">Rensa</button>
+      <button class="styled-btn styled-btn-destructive">Ta bort</button>
+      <button class="styled-btn styled-btn-primary styled-btn-small">Liten</button>
+      <button class="styled-btn styled-btn-primary styled-btn-icon">&#128722;</button>
+    </div>
+  </div>
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Page Header</div>
-      <div class="lib-class">.page-header</div>
-      <div class="lib-demo" style="padding:0">
-        <div class="page-header">
-          <div class="header-left">
-            <span class="page-header-title">dina recept</span>
-            <span class="count-badge">48 recept</span>
-          </div>
-          <div class="avatar">ML</div>
+      <div class="lib-label">StyledCard.standard</div>
+      <div class="lib-class">StyledCard.standard</div>
+      <div class="lib-demo"><div class="styled-card styled-card-standard" style="padding:12px">Standard card content</div></div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">StyledCard.elevated</div>
+      <div class="lib-class">StyledCard.elevated</div>
+      <div class="lib-demo"><div class="styled-card styled-card-elevated" style="padding:12px">Elevated card content</div></div>
+    </div>
+  </div>
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">StyledCard.outlined</div>
+      <div class="lib-class">StyledCard.outlined</div>
+      <div class="lib-demo"><div class="styled-card styled-card-outlined" style="padding:12px">Outlined card content</div></div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">StyledCard.selection (selected)</div>
+      <div class="lib-class">StyledCard.selection(isSelected: true)</div>
+      <div class="lib-demo"><div class="styled-card styled-card-selection" style="padding:12px">Selected card content</div></div>
+    </div>
+  </div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">StyledInput variants</div>
+    <div class="lib-class">StyledInput.text / .search / .multiline</div>
+    <div class="lib-demo" style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <span class="form-field-label">Titel <span class="form-field-required">*</span></span>
+        <input class="styled-input" type="text" placeholder="Receptets namn">
+        <span class="form-field-helper">Max 100 tecken</span>
+      </div>
+      <div>
+        <span class="form-field-label">Sök</span>
+        <input class="styled-input" type="text" placeholder="&#128269; Sök bland recepten...">
+      </div>
+      <div>
+        <span class="form-field-label">Varning (AI-parsed)</span>
+        <input class="styled-input styled-input-warning" type="text" value="500g kycklingfilé">
+        <span class="form-field-helper" style="color:var(--warning)">Låg konfidens &mdash; kontrollera</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. HEADERS ==================== -->
+<div class="lib-section" id="headers">
+  <div class="lib-section-title">2. headers &mdash; widgets/common/</div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">ButleryHeader (page header)</div>
+    <div class="lib-class">ButleryHeader</div>
+    <div class="lib-demo" style="padding:0">
+      <div class="page-header">
+        <div class="header-left">
+          <span class="page-header-title">dina recept</span>
+          <span class="count-badge">48 recept</span>
         </div>
+        <div class="avatar">ML</div>
       </div>
     </div>
   </div>
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Simple Header (with back button)</div>
-      <div class="lib-class">.simple-header</div>
-      <div class="lib-demo" style="padding:0">
-        <div class="simple-header">
-          <div class="back-btn">&#8592;</div>
-          <span class="simple-header-title">nytt recept</span>
-        </div>
-      </div>
+      <div class="lib-label">Simple Header (with back)</div>
+      <div class="lib-class">ButleryHeader (with leading)</div>
+      <div class="lib-demo" style="padding:0"><div class="simple-header"><div class="back-btn">&#8592;</div><span class="simple-header-title">nytt recept</span></div></div>
     </div>
-  </div>
-
-  <div class="lib-row">
     <div class="lib-item">
       <div class="lib-label">Section Header</div>
-      <div class="lib-class">.section-header</div>
-      <div class="lib-demo">
-        <div class="section-header">
-          <span class="section-header-title">senast tillagda</span>
-          <span class="section-header-count">5 recept</span>
-        </div>
+      <div class="lib-class">(used inline, not a widget)</div>
+      <div class="lib-demo"><div class="section-header"><span class="section-header-title">senast tillagda</span><span class="section-header-count">5 recept</span></div></div>
+    </div>
+  </div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">BottomActionBar</div>
+    <div class="lib-class">BottomActionBar</div>
+    <div class="lib-demo" style="padding:0">
+      <div class="bottom-action-bar">
+        <button class="styled-btn styled-btn-secondary styled-btn-small">Avbryt</button>
+        <button class="styled-btn styled-btn-primary styled-btn-small">Spara</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== SEARCH ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">search</div>
+<!-- ==================== 3. STATE WIDGETS ==================== -->
+<div class="lib-section" id="states">
+  <div class="lib-section-title">3. state widgets &mdash; widgets/common/state/</div>
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Search Box</div>
-      <div class="lib-class">.search-box</div>
+      <div class="lib-label">Empty: No recipes</div>
+      <div class="lib-class">StateWidget.noRecipes</div>
       <div class="lib-demo">
-        <div class="search-box">
-          <span style="color:var(--green)">&#128269;</span>
-          <input type="text" placeholder="sök bland recepten...">
-        </div>
+        <div class="empty-state"><div class="empty-state-icon">&#129382;</div><div class="empty-state-title">inga recept ännu</div><div class="empty-state-desc">Lägg till ditt första recept</div><button class="styled-btn styled-btn-primary" style="width:100%">Lägg till recept</button></div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">Empty: No search results</div>
+      <div class="lib-class">StateWidget.noSearchResults</div>
+      <div class="lib-demo">
+        <div class="empty-state"><div class="empty-state-icon">&#127812;</div><div class="empty-state-title">inga träffar</div><div class="empty-state-desc">Försök med andra sökord</div><button class="styled-btn styled-btn-secondary">Rensa sökning</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Error state</div>
+      <div class="lib-class">StateWidget.error</div>
+      <div class="lib-demo">
+        <div class="empty-state"><div class="empty-state-icon" style="background:rgba(196,69,54,0.1);color:var(--error)">&#129361;</div><div class="empty-state-title" style="color:var(--error)">något gick fel</div><div class="empty-state-desc">Kunde inte ladda data</div><button class="styled-btn styled-btn-primary">Försök igen</button></div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">Skeleton loading</div>
+      <div class="lib-class">SkeletonComponents.skeletonBox</div>
+      <div class="lib-demo" style="display:flex;flex-direction:column;gap:8px">
+        <div class="skeleton-box" style="width:60%;height:20px"></div>
+        <div class="skeleton-box" style="width:100%;height:14px"></div>
+        <div class="skeleton-box" style="width:80%;height:14px"></div>
+        <div class="skeleton-box" style="width:100%;height:64px;margin-top:8px"></div>
+        <div class="skeleton-box" style="width:100%;height:64px"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== CARDS ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">cards</div>
+<!-- ==================== 4. INDICATORS ==================== -->
+<div class="lib-section" id="indicators">
+  <div class="lib-section-title">4. indicators &amp; badges &mdash; widgets/common/indicators/</div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">All badge types</div>
+    <div class="lib-demo" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <span class="status-badge">DELAD MENY</span>
+      <span class="status-badge" style="background:var(--rust)">NYA</span>
+      <span class="notification-badge">3</span>
+      <span class="notification-badge" style="font-size:8px">99+</span>
+      <span class="circular-icon-badge">&#10133;</span>
+      <span class="admin-badge">&#9881; Du är admin</span>
+      <span class="member-count-badge">+4</span>
+      <span class="status-indicator">&#128279;</span>
+    </div>
+    <div class="lib-class">StatusBadge / NotificationBadge / CircularIconBadge / AdminBadge / MemberCountBadge / StatusIndicator</div>
+  </div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">Allergen &amp; dietary badges</div>
+    <div class="lib-demo" style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="badge badge-free">&#10003; Glutenfri</span>
+      <span class="badge badge-free">&#10003; Laktosfri</span>
+      <span class="badge badge-contains">&#9888; Nötter</span>
+      <span class="badge badge-contains">&#9888; Ägg</span>
+      <span class="badge badge-unknown">? Gluten</span>
+      <span class="rating-badge">&#9733; 4.2 (12)</span>
+    </div>
+  </div>
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Recipe Card</div>
-      <div class="lib-class">.recipe-card</div>
+      <div class="lib-label">SyncIndicator</div>
+      <div class="lib-class">SyncIndicator</div>
+      <div class="lib-demo" style="display:flex;gap:12px;flex-wrap:wrap">
+        <span class="sync-indicator sync-pending">&#9729; Synkar...</span>
+        <span class="sync-indicator sync-offline">&#9729; Offline</span>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">EditIndicatorWidget</div>
+      <div class="lib-class">EditIndicatorWidget</div>
       <div class="lib-demo">
-        <div class="recipe-card">
-          <div class="recipe-card-img">&#127835;</div>
-          <div class="recipe-card-content">
-            <div class="recipe-card-title">Pasta Carbonara</div>
-            <div class="recipe-card-desc">Klassisk italiensk pasta med ägg och pancetta</div>
-            <div class="recipe-card-meta">
-              <span>&#9201; 30 min</span>
-              <span>&#128101; 4</span>
-              <span class="rating-badge">&#9733; 4.2</span>
-            </div>
-          </div>
+        <span class="edit-indicator"><span class="edit-indicator-dot"></span> Anna redigerar ingredienser</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">RealtimeStatusBanner (offline)</div>
+    <div class="lib-class">RealtimeStatusBanner</div>
+    <div class="lib-demo" style="padding:0">
+      <div class="realtime-banner">&#128268; <strong>Offline</strong> &mdash; Ändringar sparas när anslutningen återställs <button class="styled-btn styled-btn-small styled-btn-secondary" style="min-height:32px;padding:4px 12px;margin-left:auto">Försök igen</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 5. BUTTONS ==================== -->
+<div class="lib-section" id="buttons">
+  <div class="lib-section-title">5. buttons &mdash; widgets/common/buttons/</div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Square buttons (add recipe grid)</div>
+      <div class="lib-class">ActionButtons.squareButton</div>
+      <div class="lib-demo" style="display:flex;gap:8px">
+        <div class="square-btn square-btn-rust">&#128279;<br>Importera länk</div>
+        <div class="square-btn square-btn-green">&#10133;<br>Skriv manuellt</div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">FAB + Overlay button</div>
+      <div class="lib-class">FloatingActionButtonWidget / OverlayButton</div>
+      <div class="lib-demo" style="display:flex;gap:16px;align-items:center">
+        <div class="fab">&#128722;</div>
+        <div class="fab" style="width:48px;height:48px">&#9993;</div>
+        <div style="background:var(--green-pale);width:80px;height:80px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px;position:relative"><div class="overlay-btn" style="position:absolute;top:4px;right:4px">&#10005;</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 6. CONTENT CARDS ==================== -->
+<div class="lib-section" id="content-cards">
+  <div class="lib-section-title">6. content cards &mdash; widgets/common/content_cards/ + widgets/recipe/</div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">RecipeCard.detailed</div>
+    <div class="lib-class">RecipeCard(style: .detailed)</div>
+    <div class="lib-demo">
+      <div class="recipe-card">
+        <div class="recipe-card-img">&#127835;</div>
+        <div class="recipe-card-content">
+          <div class="recipe-card-title">Pasta Carbonara</div>
+          <div class="recipe-card-desc">Klassisk italiensk pasta med ägg och pancetta</div>
+          <div class="recipe-card-meta"><span>&#9201; 30 min</span><span>&#128101; 4</span><span class="rating-badge">&#9733; 4.2</span></div>
         </div>
       </div>
     </div>
@@ -647,210 +540,102 @@ body {
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Menu Item Card</div>
-      <div class="lib-class">.menu-card</div>
+      <div class="lib-label">FriendCard.detailed</div>
+      <div class="lib-class">FriendCard(style: .detailed)</div>
+      <div class="lib-demo">
+        <div class="friend-card">
+          <div class="friend-avatar" style="position:relative">AL<div class="online-dot"></div></div>
+          <div class="friend-info"><div class="friend-name">Anna Lindström</div><div class="friend-meta">anna@example.com</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">FriendRequestCard</div>
+      <div class="lib-class">FriendRequestCard</div>
+      <div class="lib-demo">
+        <div class="friend-card" style="flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px"><div class="friend-avatar friend-avatar-sm">EK</div><div><div class="friend-name" style="font-size:14px">Erik Karlsson</div><div class="friend-meta">vill bli vän</div></div></div>
+          <div style="display:flex;gap:8px"><button class="styled-btn styled-btn-primary styled-btn-small" style="flex:1">Acceptera</button><button class="styled-btn styled-btn-secondary styled-btn-small" style="flex:1">Avböj</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">MenuCard</div>
+      <div class="lib-class">MenuCard(style: .detailed)</div>
       <div class="lib-demo">
         <div class="menu-card">
-          <div>
-            <div class="menu-card-title">Kycklingpasta med gräddsås</div>
-            <div class="menu-card-meta">&#9201; 35 min &middot; &#128101; 4 portioner</div>
-          </div>
+          <div class="menu-card-info"><div class="menu-card-title">Kycklingpasta med gräddsås</div><div class="menu-card-meta">&#9201; 35 min &middot; &#128101; 4 portioner</div></div>
           <div class="menu-card-action">&#8635;</div>
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Empty State</div>
-      <div class="lib-class">.empty-state</div>
+      <div class="lib-label">ShoppingListCard</div>
+      <div class="lib-class">ShoppingListCard(style: .detailed)</div>
       <div class="lib-demo">
-        <div class="empty-state">
-          <div class="empty-state-icon">&#129382;</div>
-          <div class="empty-state-title">inga recept ännu</div>
-          <div class="empty-state-desc">Lägg till ditt första recept för att komma igång</div>
+        <div class="shopping-card">
+          <div class="shopping-card-header"><span style="font-size:16px">&#128722;</span><strong>Veckans inköp</strong><span class="completion-pill">75%</span><span class="sharing-pill">&#128101; 2</span></div>
+          <div style="font-size:13px;color:var(--text-light)">12 varor &middot; 9 klara</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== BUTTONS ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">buttons</div>
+<!-- ==================== 7. SEARCH & FILTER ==================== -->
+<div class="lib-section" id="search-filter">
+  <div class="lib-section-title">7. search &amp; filter &mdash; widgets/common/search_filter/</div>
 
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">Primary</div>
-      <div class="lib-class">.btn .btn-primary</div>
-      <div class="lib-demo">
-        <button class="btn btn-primary">Spara recept</button>
-      </div>
-    </div>
-    <div class="lib-item">
-      <div class="lib-label">Secondary</div>
-      <div class="lib-class">.btn .btn-secondary</div>
-      <div class="lib-demo">
-        <button class="btn btn-secondary">Rensa sökning</button>
-      </div>
+  <div class="lib-item-full">
+    <div class="lib-label">SearchInputWidget (green+rust border)</div>
+    <div class="lib-class">SearchInputWidget</div>
+    <div class="lib-demo">
+      <div class="search-box"><span style="color:var(--green)">&#128269;</span><input type="text" placeholder="sök bland recepten..."></div>
     </div>
   </div>
 
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">Destructive</div>
-      <div class="lib-class">.btn .btn-destructive</div>
-      <div class="lib-demo">
-        <button class="btn btn-destructive">Ta bort recept</button>
-      </div>
-    </div>
-    <div class="lib-item">
-      <div class="lib-label">Full Width</div>
-      <div class="lib-class">.btn .btn-primary .btn-full</div>
-      <div class="lib-demo">
-        <button class="btn btn-primary btn-full">Generera ny meny</button>
-      </div>
+  <div class="lib-item-full">
+    <div class="lib-label">QuickFilterChips</div>
+    <div class="lib-class">QuickFilterChips</div>
+    <div class="lib-demo" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="chip active">Alla</span>
+      <span class="chip">Favoriter</span>
+      <span class="chip">Under 30 min</span>
+      <span class="chip">Vegetariskt</span>
+      <span class="filter-toggle has-filters" style="margin-left:auto">&#9776;<span class="filter-dot"></span></span>
     </div>
   </div>
 
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">FAB (Floating Action Button)</div>
-      <div class="lib-class">.fab</div>
-      <div class="lib-demo">
-        <div class="fab">&#128722;</div>
+  <div class="lib-item-full">
+    <div class="lib-label">FilterStatusChip + PersonalTagFilterChips</div>
+    <div class="lib-class">FilterStatusChip / PersonalTagFilterChipsWidget</div>
+    <div class="lib-demo" style="display:flex;flex-direction:column;gap:8px">
+      <div class="filter-status">&#9776; Filter: Under 30 min &bull; Vegetariskt &mdash; <strong>12 valda</strong></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="tag-chip-include">&#10003; Favoriter</span>
+        <span class="tag-chip-include">&#10003; Vardagsmat</span>
+        <span class="tag-chip-exclude">&#10005; Nötfritt</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== BADGES ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">badges</div>
+<!-- ==================== 8. NAVIGATION ==================== -->
+<div class="lib-section" id="navigation">
+  <div class="lib-section-title">8. navigation &amp; layout</div>
 
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">Allergen / Dietary Badges</div>
-      <div class="lib-class">.badge .badge-free / .badge-contains / .badge-unknown</div>
-      <div class="lib-demo" style="display:flex; gap:8px; flex-wrap:wrap">
-        <span class="badge badge-free">&#10003; Glutenfri</span>
-        <span class="badge badge-free">&#10003; Laktosfri</span>
-        <span class="badge badge-contains">&#9888; Nötter</span>
-        <span class="badge badge-contains">&#9888; Ägg</span>
-        <span class="badge badge-unknown">? Gluten</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">Rating Badge</div>
-      <div class="lib-class">.rating-badge</div>
-      <div class="lib-demo">
-        <span class="rating-badge">&#9733; 4.2 (12)</span>
-      </div>
-    </div>
-    <div class="lib-item">
-      <div class="lib-label">Count Badge</div>
-      <div class="lib-class">.count-badge</div>
-      <div class="lib-demo" style="background:var(--green-dark)">
-        <span class="count-badge" style="background:var(--cream);color:var(--green-dark);font-size:11px;font-weight:600;letter-spacing:1px;padding:4px 10px">48 recept</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== CHIPS ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">chips</div>
-
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">Filter Chips</div>
-      <div class="lib-class">.chip / .chip.active</div>
-      <div class="lib-demo" style="display:flex; gap:8px">
-        <span class="chip active">Alla</span>
-        <span class="chip">Favoriter</span>
-        <span class="chip">Under 30 min</span>
-        <span class="chip">Vegetariskt</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== FORM ELEMENTS ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">form elements</div>
-
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">Text Input</div>
-      <div class="lib-class">.form-label + .form-input</div>
-      <div class="lib-demo">
-        <label class="form-label">Titel *</label>
-        <input class="form-input" type="text" placeholder="Receptets namn">
-      </div>
-    </div>
-    <div class="lib-item">
-      <div class="lib-label">Portion Adjuster</div>
-      <div class="lib-class">.portion-adjuster</div>
-      <div class="lib-demo">
-        <span style="font-size:13px;margin-right:8px">Portioner:</span>
-        <div class="portion-adjuster">
-          <button class="portion-btn">&minus;</button>
-          <span class="portion-value">4</span>
-          <button class="portion-btn">+</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">Checkboxes</div>
-      <div class="lib-class">.checkbox / .checkbox.checked</div>
-      <div class="lib-demo" style="display:flex; gap:16px; align-items:center">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="checkbox checked">&#10003;</div>
-          <span>Checked</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="checkbox"></div>
-          <span>Unchecked</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== NAVIGATION ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">navigation</div>
-
-  <div class="lib-row">
-    <div class="lib-item">
-      <div class="lib-label">Bottom Navigation Bar</div>
-      <div class="lib-class">.bottom-nav .nav-item</div>
-      <div class="lib-demo" style="padding:0">
-        <div class="bottom-nav">
-          <div class="nav-item active">
-            <span class="nav-icon">&#128214;</span>
-            <span>recept</span>
-          </div>
-          <div class="nav-item">
-            <span class="nav-icon">&#128197;</span>
-            <span>meny</span>
-          </div>
-          <div class="nav-item">
-            <span class="nav-icon">&#128722;</span>
-            <span>inköp</span>
-          </div>
-          <div class="nav-item">
-            <span class="nav-icon">&#10133;</span>
-            <span>lägg till</span>
-          </div>
-        </div>
+  <div class="lib-item-full">
+    <div class="lib-label">Bottom Navigation Bar</div>
+    <div class="lib-class">BottomNavBar (custom)</div>
+    <div class="lib-demo" style="padding:0">
+      <div class="bottom-nav">
+        <div class="nav-item active"><span class="nav-icon">&#128214;</span><span>recept</span></div>
+        <div class="nav-item"><span class="nav-icon">&#128197;</span><span>meny</span></div>
+        <div class="nav-item"><span class="nav-icon">&#128722;</span><span>inköp</span></div>
+        <div class="nav-item"><span class="nav-icon">&#10133;</span><span>lägg till</span></div>
       </div>
     </div>
   </div>
@@ -858,34 +643,121 @@ body {
   <div class="lib-row">
     <div class="lib-item">
       <div class="lib-label">Tabs</div>
-      <div class="lib-class">.tabs .tab</div>
+      <div class="lib-class">TabBar (themed)</div>
+      <div class="lib-demo" style="padding:0"><div class="tabs"><div class="tab active">Ingredienser</div><div class="tab">Instruktioner</div></div></div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">CategoryHeader</div>
+      <div class="lib-class">CategoryHeader</div>
       <div class="lib-demo" style="padding:0">
-        <div class="tabs">
-          <div class="tab active">Ingredienser</div>
-          <div class="tab">Instruktioner</div>
+        <div class="category-header-bar" style="background:var(--rust);color:var(--cream)"><span>Kött &amp; fisk</span><span>3</span></div>
+        <div class="category-header-bar" style="background:var(--warning);color:var(--text)"><span>Mejeri</span><span>3</span></div>
+        <div class="category-header-bar" style="background:var(--green);color:var(--cream)"><span>Grönsaker</span><span>4</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-row">
+    <div class="lib-item">
+      <div class="lib-label">Checkbox</div>
+      <div class="lib-class">(themed Checkbox)</div>
+      <div class="lib-demo" style="display:flex;gap:16px;align-items:center">
+        <div style="display:flex;align-items:center;gap:8px"><div class="checkbox checked">&#10003;</div><span>Checked</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="checkbox"></div><span>Unchecked</span></div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">BorderedContainer</div>
+      <div class="lib-class">BorderedContainer</div>
+      <div class="lib-demo"><div class="bordered-container">Content inside bordered container</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 9. SCAFFOLDS ==================== -->
+<div class="lib-section" id="scaffolds">
+  <div class="lib-section-title">9. scaffolds &mdash; widgets/common/scaffolds/</div>
+
+  <div class="lib-item-full">
+    <div class="lib-demo" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;background:var(--cream-dark);padding:24px">
+      <div>
+        <div class="lib-label" style="text-align:center">BaseScaffold</div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header">skärm</div><div class="scaffold-mini-body">Content area</div></div>
+      </div>
+      <div>
+        <div class="lib-label" style="text-align:center">LoadingScaffold</div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header">laddar</div><div class="scaffold-mini-body" style="font-size:24px">&#9203;</div></div>
+      </div>
+      <div>
+        <div class="lib-label" style="text-align:center">ErrorScaffold</div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header">fel</div><div class="scaffold-mini-body" style="color:var(--error)">&#9888;<br>Något gick fel<br><span style="font-size:8px;color:var(--green)">[Försök igen]</span></div></div>
+      </div>
+      <div>
+        <div class="lib-label" style="text-align:center">EmptyStateScaffold</div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header">tom</div><div class="scaffold-mini-body">&#129382;<br>Tomt här<br><span style="font-size:8px;color:var(--green)">[Lägg till]</span></div></div>
+      </div>
+      <div>
+        <div class="lib-label" style="text-align:center">FormScaffold</div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header">formulär</div><div class="scaffold-mini-body" style="flex-direction:column;gap:4px;font-size:8px"><div style="background:var(--cream-dark);width:90%;height:8px"></div><div style="background:var(--cream-dark);width:90%;height:8px"></div><div style="background:var(--cream-dark);width:90%;height:16px"></div></div><div class="scaffold-mini-footer" style="text-align:right;font-size:8px;color:var(--green)">Spara</div></div>
+      </div>
+      <div>
+        <div class="lib-label" style="text-align:center">ListScaffold</div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header">lista</div><div class="scaffold-mini-body" style="flex-direction:column;gap:3px;align-items:stretch;padding:4px"><div style="background:var(--white);height:14px;border-left:2px solid var(--green)"></div><div style="background:var(--white);height:14px;border-left:2px solid var(--green)"></div><div style="background:var(--white);height:14px;border-left:2px solid var(--green)"></div></div></div>
+      </div>
+      <div>
+        <div class="lib-label" style="text-align:center">TabbedScaffold</div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header" style="border-bottom:none">flikar</div><div style="display:flex;border-bottom:2px solid var(--cream-dark);font-size:8px"><div style="flex:1;text-align:center;padding:3px;color:var(--green);border-bottom:2px solid var(--green)">Tab 1</div><div style="flex:1;text-align:center;padding:3px;color:var(--text-muted)">Tab 2</div></div><div class="scaffold-mini-body">Tab content</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 10. RECIPE ==================== -->
+<div class="lib-section" id="recipe">
+  <div class="lib-section-title">10. recipe components &mdash; widgets/recipe/</div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">CommentItemWidget</div>
+    <div class="lib-class">CommentItemWidget</div>
+    <div class="lib-demo">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div class="friend-avatar friend-avatar-sm">AL</div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between"><span style="font-size:13px;font-weight:600">Anna L</span><span style="font-size:11px;color:var(--text-muted)">2 tim sedan</span></div>
+          <p style="font-size:14px;margin-top:4px">Jättegod! Jag la till lite chili också &#127798;</p>
+          <div style="display:flex;gap:12px;margin-top:4px;font-size:12px;color:var(--text-muted)"><span>&#10084; 3</span><span style="color:var(--green)">Svara</span></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== LISTS ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">lists</div>
+<!-- ==================== 11. MESSAGING ==================== -->
+<div class="lib-section" id="messaging">
+  <div class="lib-section-title">11. messaging &mdash; widgets/messaging/</div>
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Category Header</div>
-      <div class="lib-class">.category-header</div>
+      <div class="lib-label">MessageBubble (own + other + reply)</div>
+      <div class="lib-class">MessageBubble</div>
+      <div class="lib-demo" style="display:flex;flex-direction:column;gap:4px">
+        <div class="msg-other">Hej! Ska vi laga pasta ikväll?</div>
+        <div class="msg-own"><div class="reply-preview">Hej! Ska vi laga pasta...</div>Absolut! Jag har köpt pancetta</div>
+        <div class="msg-system">Anna gick med i gruppen</div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">ConversationListItem</div>
+      <div class="lib-class">ConversationListItem</div>
       <div class="lib-demo" style="padding:0">
-        <div class="category-header" style="background:var(--rust);color:var(--cream)">
-          <span>Kött &amp; fisk</span><span>3</span>
+        <div class="conversation-item">
+          <div class="conversation-avatar">AL</div>
+          <div class="conversation-content"><div style="display:flex;justify-content:space-between"><span class="conversation-name">Anna Lindström</span><span class="conversation-time">14:32</span></div><div class="conversation-preview">Jättegod pasta! Ska vi göra den igen?</div></div>
+          <div class="unread-dot"></div>
         </div>
-        <div class="category-header" style="background:var(--warning);color:var(--text)">
-          <span>Mejeri</span><span>3</span>
-        </div>
-        <div class="category-header" style="background:var(--green);color:var(--cream)">
-          <span>Grönsaker</span><span>4</span>
+        <div class="conversation-item">
+          <div class="conversation-avatar" style="background:var(--cream-dark);color:var(--text-muted)">&#128101;</div>
+          <div class="conversation-content"><div style="display:flex;justify-content:space-between"><span class="conversation-name" style="font-weight:400">Familjen</span><span class="conversation-time">igår</span></div><div class="conversation-preview">Erik: Köp mjölk på vägen hem</div></div>
         </div>
       </div>
     </div>
@@ -893,70 +765,149 @@ body {
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">List Items with Checkboxes</div>
-      <div class="lib-class">.list-item + .checkbox</div>
+      <div class="lib-label">TypingIndicator + ReplyBanner</div>
+      <div class="lib-class">TypingIndicator / ReplyBanner</div>
+      <div class="lib-demo" style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px"><div class="friend-avatar friend-avatar-sm">AL</div><div class="msg-other" style="margin:0;padding:6px 12px;font-size:13px">Anna skriver <span class="typing-dots"><span class="typing-dot"></span><span class="typing-dot" style="opacity:0.6"></span><span class="typing-dot" style="opacity:0.3"></span></span></div></div>
+        <div class="reply-banner"><span>&#8617;</span><div class="reply-banner-text"><span class="reply-banner-name">Anna</span><br>Jättegod pasta! Ska vi göra den igen?</div><span style="cursor:pointer;color:var(--text-muted)">&#10005;</span></div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">PollMessageWidget</div>
+      <div class="lib-class">PollMessageWidget</div>
       <div class="lib-demo">
-        <div class="list-item">
-          <div class="checkbox"></div>
-          <span>400g kycklingfilé</span>
-        </div>
-        <div class="list-item">
-          <div class="checkbox checked">&#10003;</div>
-          <span class="strikethrough">2 dl grädde</span>
-        </div>
-        <div class="list-item">
-          <div class="checkbox"></div>
-          <span>1 gul lök</span>
+        <div style="background:var(--cream-dark);padding:12px">
+          <div style="font-weight:600;margin-bottom:8px">Vad ska vi laga imorgon?</div>
+          <div class="poll-option" style="position:relative"><div class="poll-fill" style="width:60%"></div><div class="poll-text"><span>&#10003; Pasta Carbonara</span><span>3</span></div></div>
+          <div class="poll-option" style="position:relative"><div class="poll-fill" style="width:40%"></div><div class="poll-text"><span>Morotssoppa</span><span>2</span></div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">5 röster</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== OVERLAYS ==================== -->
-<div class="lib-section">
-  <div class="lib-section-title">overlays</div>
+<!-- ==================== 12. SOCIAL ==================== -->
+<div class="lib-section" id="social">
+  <div class="lib-section-title">12. social &amp; collaborative &mdash; widgets/social/</div>
 
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Dialog</div>
-      <div class="lib-class">.dialog</div>
-      <div class="lib-demo" style="background:rgba(0,0,0,0.3);padding:24px;display:flex;justify-content:center">
-        <div class="dialog">
-          <div class="dialog-title">Ta bort recept?</div>
-          <p style="font-size:14px;color:var(--text-light);line-height:1.5;margin-bottom:20px">Är du säker på att du vill ta bort detta recept? Det går inte att ångra.</p>
-          <div style="display:flex;gap:12px;justify-content:flex-end">
-            <button class="btn btn-secondary" style="padding:8px 16px;min-height:40px">Avbryt</button>
-            <button class="btn btn-destructive" style="padding:8px 16px;min-height:40px">Ta bort</button>
-          </div>
+      <div class="lib-label">Avatar variants + online dot</div>
+      <div class="lib-class">AvatarWidgets / SocialAvatarComponents</div>
+      <div class="lib-demo" style="display:flex;gap:12px;align-items:center">
+        <div class="friend-avatar friend-avatar-sm" style="position:relative;width:24px;height:24px;font-size:10px">AL</div>
+        <div class="friend-avatar friend-avatar-sm" style="position:relative">AL<div class="online-dot" style="width:8px;height:8px"></div></div>
+        <div class="friend-avatar" style="position:relative">AL<div class="online-dot"></div></div>
+        <div class="friend-avatar" style="width:64px;height:64px;font-size:22px;position:relative">AL<div class="online-dot" style="width:12px;height:12px"></div></div>
+        <div class="emoji-avatar">&#127835;</div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">Avatar stack (overlapping)</div>
+      <div class="lib-class">collaborativeParticipants</div>
+      <div class="lib-demo" style="display:flex;align-items:center;gap:12px">
+        <div class="avatar-stack">
+          <div class="friend-avatar friend-avatar-sm">AL</div>
+          <div class="friend-avatar friend-avatar-sm" style="background:var(--rust)">EK</div>
+          <div class="friend-avatar friend-avatar-sm" style="background:var(--green-dark)">MG</div>
+          <div class="member-count-badge" style="width:32px;height:32px;margin-left:-8px;border:2px solid white">+2</div>
         </div>
       </div>
     </div>
   </div>
 
+  <div class="lib-item-full">
+    <div class="lib-label">SharedCardHeader + CollaborativeIndicators</div>
+    <div class="lib-class">SharedCardHeader / CollaborativeIndicators</div>
+    <div class="lib-demo" style="display:flex;flex-direction:column;gap:8px">
+      <div class="shared-header" style="border-bottom:1px solid var(--cream-dark)"><div class="friend-avatar friend-avatar-sm">AL</div><span>Delat av <span class="shared-header-name">Anna L</span></span><span class="shared-header-time">2 tim sedan</span><span class="unread-dot" style="width:8px;height:8px"></span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="collab-badge">&#128101; Delad</span><span class="edit-indicator"><span class="edit-indicator-dot"></span>Anna redigerar</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 13. PROFILE ==================== -->
+<div class="lib-section" id="profile">
+  <div class="lib-section-title">13. profile &amp; branding</div>
+
   <div class="lib-row">
     <div class="lib-item">
-      <div class="lib-label">Bottom Sheet</div>
-      <div class="lib-class">.sheet</div>
-      <div class="lib-demo" style="padding:0">
-        <div class="sheet">
-          <div class="sheet-handle"></div>
-          <div class="sheet-title">Filtrera recept</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-            <span class="chip active">Glutenfri</span>
-            <span class="chip">Laktosfri</span>
-            <span class="chip active">Nötfri</span>
-            <span class="chip">Äggfri</span>
-          </div>
-          <div style="display:flex;gap:12px">
-            <button class="btn btn-secondary" style="flex:1;padding:8px">Rensa</button>
-            <button class="btn btn-primary" style="flex:2;padding:8px">Visa 12 recept</button>
-          </div>
-        </div>
+      <div class="lib-label">StatItemWidget</div>
+      <div class="lib-class">StatItemWidget</div>
+      <div class="lib-demo" style="display:flex;gap:32px;justify-content:center">
+        <div class="stat-item"><span style="font-size:16px">&#128214;</span><span class="stat-value">48</span><span class="stat-label">recept</span></div>
+        <div class="stat-item"><span style="font-size:16px">&#128197;</span><span class="stat-value">12</span><span class="stat-label">menyer</span></div>
+        <div class="stat-item"><span style="font-size:16px">&#128101;</span><span class="stat-value">7</span><span class="stat-label">vänner</span></div>
+      </div>
+    </div>
+    <div class="lib-item">
+      <div class="lib-label">AppLogo + AppBranding</div>
+      <div class="lib-class">AppLogo / AppBranding</div>
+      <div class="lib-demo" style="display:flex;gap:24px;align-items:center;justify-content:center">
+        <div class="app-logo">&#127860;</div>
+        <div class="app-logo app-logo-large">&#127860;</div>
+        <div style="text-align:center"><div class="app-logo" style="margin:0 auto 8px">&#127860;</div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;letter-spacing:4px;text-transform:lowercase;color:var(--green-dark)">butlery</div></div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- ==================== 14. IMPORT ==================== -->
+<div class="lib-section" id="import">
+  <div class="lib-section-title">14. import flow &mdash; widgets/import/</div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">StepProgressIndicator</div>
+    <div class="lib-class">StepProgressIndicator</div>
+    <div class="lib-demo" style="display:flex;justify-content:center">
+      <div class="step-progress">
+        <div class="step-dot step-done">&#10003;</div>
+        <div class="step-line step-line-done"></div>
+        <div class="step-dot step-done">&#10003;</div>
+        <div class="step-line step-line-done"></div>
+        <div class="step-dot step-active">3</div>
+        <div class="step-line step-line-pending"></div>
+        <div class="step-dot step-pending">4</div>
+      </div>
+    </div>
+    <div class="lib-note">Steps: Hämtar recept → Läser ingredienser → Analyserar allergener → Sparar</div>
+  </div>
+</div>
+
+<!-- ==================== 15. SHARE DIALOG ==================== -->
+<div class="lib-section" id="share">
+  <div class="lib-section-title">15. share dialog &mdash; widgets/common/share_dialog/</div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">ShareModeSelection</div>
+    <div class="lib-class">ShareModeSelection</div>
+    <div class="lib-demo" style="display:flex;gap:12px">
+      <div class="share-mode-card selected" style="flex:1">
+        <div class="radio selected"></div>
+        <div><div style="font-weight:600;font-size:14px">Statisk kopia</div><div style="font-size:12px;color:var(--text-light);margin-top:4px">Mottagaren får en egen kopia</div></div>
+      </div>
+      <div class="share-mode-card" style="flex:1">
+        <div class="radio"></div>
+        <div><div style="font-weight:600;font-size:14px">Realtidsdelning</div><div style="font-size:12px;color:var(--text-light);margin-top:4px">Alla ser samma version</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-item-full">
+    <div class="lib-label">ShareTargetSelection</div>
+    <div class="lib-class">ShareTargetSelection</div>
+    <div class="lib-demo">
+      <input class="styled-input" type="text" placeholder="&#128269; Sök vänner..." style="margin-bottom:8px">
+      <div class="bordered-container" style="max-height:120px;overflow-y:auto">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cream-dark)"><div class="checkbox checked">&#10003;</div><div class="friend-avatar friend-avatar-sm">AL</div><div><div style="font-size:14px;font-weight:500">Anna Lindström</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cream-dark)"><div class="checkbox"></div><div class="friend-avatar friend-avatar-sm" style="background:var(--rust)">EK</div><div><div style="font-size:14px;font-weight:500">Erik Karlsson</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0"><div class="checkbox"></div><div class="friend-avatar friend-avatar-sm" style="background:var(--green-dark)">MG</div><div><div style="font-size:14px;font-weight:500">Maria Gustafsson</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /lib-body -->
 </body>
 </html>

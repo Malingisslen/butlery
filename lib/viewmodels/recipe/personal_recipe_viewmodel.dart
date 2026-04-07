@@ -73,11 +73,16 @@ class PersonalRecipeViewModel extends ChangeNotifier
   Future<bool> updatePersonalRecipe(Recipe recipe) async {
     if (!recipe.isPersonal) return false;
 
-    final result = await _recipeService.personal.updateRecipe(recipe);
-    if (result) {
-      AppLogger.info('✅ Updated personal recipe: ${recipe.core.title}');
+    try {
+      final result = await _recipeService.personal.updateRecipe(recipe);
+      if (result) {
+        AppLogger.info('✅ Updated personal recipe: ${recipe.core.title}');
+      }
+      return result;
+    } catch (e) {
+      AppLogger.error('❌ Failed to update personal recipe: $e');
+      return false;
     }
-    return result;
   }
 
   Future<bool> deletePersonalRecipe(String recipeId) async {

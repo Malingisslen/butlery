@@ -72,6 +72,31 @@ The HTML template (`_butlery-template.html`) hardcodes CSS custom properties tha
 - Minor style tweaks (color, font size)
 - Changes the user has already approved via mockup PNG
 
+## Widget Component Library
+
+The component library (`_butlery-components.html`) catalogs every reusable visual widget.
+
+### When Creating a New Widget
+1. Add its HTML equivalent to `_butlery-components.html` in the appropriate section
+2. Include all variants (named constructors, style enums)
+3. Show the CSS class name and Flutter class name
+4. Get approval on the visual before writing Dart code
+
+### When Modifying an Existing Widget
+1. Check if the widget is in the component library
+2. If the visual appearance changes, update the HTML to match
+3. If adding new variants, add them to the library
+
+### When Building a New View
+1. Read `_butlery-components.html` to see what building blocks exist
+2. Compose the view from existing components before creating new ones
+3. If a needed component doesn't exist, add it to the library first
+
+### Component Library as Source of Truth
+- Every branded/reusable visual widget must be in the library
+- The library shows what components LOOK LIKE — Flutter code shows how they WORK
+- When the user asks "what widgets do we have?", reference the library
+
 ## HTML Preview File Naming
 - `{view-name}-preview.html` for new views
 - `{view-name}-comparison.html` for A/B options

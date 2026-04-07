@@ -210,15 +210,19 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   }
 
   Future<RecipeOperationResult> deleteRecipeById(String id) async {
-    final success = await _recipeService.deleteRecipe(id);
-    return success
-        ? RecipeOperationResult.success('Recipe deleted successfully')
-        : RecipeOperationResult.failure('Failed to delete recipe');
+    try {
+      final success = await _recipeService.deleteRecipe(id);
+      return success
+          ? RecipeOperationResult.success('Recipe deleted successfully')
+          : RecipeOperationResult.failure('Failed to delete recipe');
+    } catch (e) {
+      return RecipeOperationResult.failure('$e');
+    }
   }
 
   /// Refresh all recipe data
   Future<void> refresh() async {
-    await _recipeService.initialize();
+    await _recipeService.refresh();
   }
 
   /// Get recipe by ID from unified collection
