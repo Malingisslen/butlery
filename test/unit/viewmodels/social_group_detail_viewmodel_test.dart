@@ -66,7 +66,7 @@ void main() {
     late MockUnifiedFriendsService mockFriendsService;
     late MockUserService mockUserService;
     late MockPermissionService mockPermissionService;
-    late MockFriendCategoriesOperations mockCategoriesOps;
+    late MockFriendsCategoriesOperations mockCategoriesOps;
 
     // Test data
     const testGroupId = 'test_group_123';
@@ -102,7 +102,7 @@ void main() {
       mockFriendsService = MockUnifiedFriendsService();
       mockUserService = MockUserService();
       mockPermissionService = MockPermissionService();
-      mockCategoriesOps = MockFriendCategoriesOperations();
+      mockCategoriesOps = MockFriendsCategoriesOperations();
 
       // Setup default mock behaviors
       when(() => mockFriendsService.categories).thenReturn(mockCategoriesOps);

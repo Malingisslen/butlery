@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butlery Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BUTLERY DESIGN TEMPLATE
+   Source: docs/design/butlery-mockup-reference.md
+   Usage: Clone this file for each preview. Delete after approval.
+   ============================================================ */
+
+:root {
+  /* Brand Colors */
+  --green: #4A7C59;
+  --green-dark: #3D6849;
+  --green-light: #5A8F6A;
+  --green-pale: #E8F0EA;
+  --green-muted: #7A9A80;
+  --rust: #8B5A3C;
+  --rust-light: #A67B5B;
+  --leather: #6B4A2C;
+  --cream: #F8F4E8;
+  --cream-dark: #E8E2D6;
+  --cream-darker: #D8D2C6;
+  --white: #FFFFFF;
+  --charcoal: #2C2C2C;
+
+  /* Text Colors */
+  --text: #1A1A1A;
+  --text-light: #666666;
+  --text-muted: #999999;
+
+  /* Status Colors */
+  --error: #C44536;
+  --warning: #D4A03C;
+  --success: var(--green);
+
+  /* Fonts */
+  --font-display: 'Josefin Sans', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+
+  /* Border radius — SQUARE design language */
+  --radius: 0px;
+  --radius-circle: 50%;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background: #9A8F82;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+/* ---- PHONE FRAME ---- */
+.phone-frame {
+  width: 375px;
+  height: 812px;
+  background: var(--cream);
+  border-radius: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ---- SIDE-BY-SIDE (A/B comparison) ---- */
+.comparison {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+.comparison .phone-frame { flex-shrink: 0; }
+.comparison-label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ---- RESPONSIVE WRAPPER (multi-breakpoint) ---- */
+.responsive-row {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+.responsive-frame {
+  background: var(--cream);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.responsive-frame.phone { width: 375px; height: 812px; }
+.responsive-frame.tablet { width: 768px; height: 1024px; }
+.responsive-frame.desktop { width: 1200px; height: 800px; }
+
+/* ---- PAGE HEADER ---- */
+.page-header {
+  background: var(--green-dark);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.page-header-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--cream);
+  letter-spacing: 2px;
+  text-transform: lowercase;
+  line-height: 1.1;
+}
+.page-header .count-badge {
+  background: var(--cream);
+  color: var(--green-dark);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  margin-left: 12px;
+}
+.page-header .avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--rust);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+/* ---- SIMPLE HEADER (form/detail) ---- */
+.simple-header {
+  background: var(--green-dark);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  border-bottom: 3px solid var(--rust);
+}
+.simple-header-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--cream);
+  letter-spacing: 1px;
+  text-transform: lowercase;
+}
+.back-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* ---- SEARCH BOX ---- */
+.search-box {
+  margin: var(--space-md) var(--space-lg);
+  background: var(--white);
+  border: 2px solid var(--green);
+  border-bottom: 3px solid var(--rust);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.search-box input {
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  flex: 1;
+  background: transparent;
+}
+.search-box .search-icon {
+  color: var(--green);
+  font-size: 16px;
+}
+
+/* ---- SCROLLABLE CONTENT ---- */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-lg) var(--space-lg);
+}
+
+/* ---- CHIP ROW ---- */
+.chip-row {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  overflow-x: auto;
+}
+.chip {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  white-space: nowrap;
+  border: 1px solid var(--green);
+  color: var(--green);
+  background: transparent;
+  cursor: pointer;
+}
+.chip.active {
+  background: var(--green);
+  color: var(--cream);
+}
+
+/* ---- SECTION HEADER ---- */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) 0 var(--space-sm);
+  border-left: 3px solid var(--rust);
+  padding-left: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+.section-header-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.section-header-count {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ---- RECIPE CARD ---- */
+.recipe-card {
+  background: var(--white);
+  border-left: 4px solid var(--green);
+  border-bottom: 3px solid var(--rust-light);
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  gap: var(--space-md);
+}
+.recipe-card-img {
+  width: 64px;
+  height: 64px;
+  background: var(--green-pale);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green-muted);
+  font-size: 24px;
+}
+.recipe-card-content { flex: 1; min-width: 0; }
+.recipe-card-title {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.recipe-card-desc {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+.recipe-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.rating-badge {
+  background: rgba(74,124,89,0.12);
+  border: 1px solid rgba(74,124,89,0.25);
+  color: var(--green);
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---- BUTTONS ---- */
+.btn {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  min-height: 48px;
+}
+.btn-primary {
+  background: var(--green);
+  color: var(--cream);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--green);
+  border: 2px solid var(--green);
+}
+.btn-destructive {
+  background: var(--error);
+  color: var(--cream);
+}
+.btn-full { width: 100%; }
+
+/* ---- BADGE ---- */
+.badge {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge-free {
+  background: rgba(74,124,89,0.12);
+  color: var(--green);
+}
+.badge-contains {
+  background: rgba(196,69,54,0.1);
+  color: var(--error);
+}
+.badge-unknown {
+  background: rgba(102,102,102,0.1);
+  color: var(--text-light);
+}
+
+/* ---- BOTTOM NAV ---- */
+.bottom-nav {
+  background: var(--cream-dark);
+  display: flex;
+  padding: var(--space-sm) 0 var(--space-md);
+  border-top: 1px solid var(--cream-darker);
+  flex-shrink: 0;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: lowercase;
+  color: var(--green-muted);
+  cursor: pointer;
+  position: relative;
+  padding-top: 6px;
+}
+.nav-item.active {
+  color: var(--green-dark);
+}
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--rust);
+}
+.nav-icon {
+  font-size: 20px;
+}
+
+/* ---- EMPTY STATE ---- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl) var(--space-2xl);
+  text-align: center;
+  flex: 1;
+}
+.empty-state-icon {
+  width: 120px;
+  height: 120px;
+  background: var(--green-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  margin-bottom: var(--space-xl);
+  color: var(--green-muted);
+}
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: lowercase;
+  color: var(--text);
+  margin-bottom: var(--space-sm);
+}
+.empty-state-desc {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.5;
+  margin-bottom: var(--space-xl);
+  max-width: 280px;
+}
+
+/* ---- FORM ELEMENTS ---- */
+.form-group {
+  margin-bottom: var(--space-lg);
+}
+.form-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: var(--space-xs);
+  display: block;
+}
+.form-input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: 15px;
+  border: 1px solid var(--cream-dark);
+  background: var(--white);
+  outline: none;
+}
+.form-input:focus {
+  border-color: var(--green);
+}
+
+/* ---- DIALOG ---- */
+.dialog-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.dialog {
+  background: var(--cream);
+  max-width: 340px;
+  width: calc(100% - 48px);
+  padding: var(--space-2xl);
+}
+.dialog-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--space-lg);
+}
+
+/* ---- BOTTOM SHEET ---- */
+.sheet-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: flex-end;
+  z-index: 10;
+}
+.sheet {
+  background: var(--cream);
+  width: 100%;
+  max-height: 75%;
+  padding: var(--space-lg) var(--space-lg) var(--space-2xl);
+}
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--cream-darker);
+  margin: 0 auto var(--space-md);
+}
+.sheet-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+/* ---- FAB ---- */
+.fab {
+  position: absolute;
+  bottom: 72px;
+  right: var(--space-lg);
+  width: 48px;
+  height: 48px;
+  background: var(--green);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  cursor: pointer;
+  z-index: 5;
+}
+
+/* ---- TABS ---- */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid var(--cream-dark);
+}
+.tab {
+  flex: 1;
+  padding: var(--space-md);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+}
+.tab.active {
+  color: var(--green);
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--green);
+}
+
+/* ---- TOGGLE/CHECKBOX ---- */
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--cream-darker);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.checkbox.checked {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+}
+
+/* ---- LIST ITEMS ---- */
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+/* ---- CATEGORY HEADER ---- */
+.category-header {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ---- UTILITY ---- */
+.text-muted { color: var(--text-muted); }
+.text-light { color: var(--text-light); }
+.text-sm { font-size: 12px; }
+.text-xs { font-size: 11px; }
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.gap-sm { gap: var(--space-sm); }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+.w-full { width: 100%; }
+.text-center { text-align: center; }
+.strikethrough { text-decoration: line-through; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- EXAMPLE: Delete everything below and build your preview -->
+
+<div class="phone-frame">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <span class="page-header-title">dina recept</span>
+      <span class="count-badge">12 recept</span>
+    </div>
+    <div class="avatar">ML</div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-box">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" placeholder="sök bland recepten...">
+  </div>
+
+  <!-- Chips -->
+  <div class="chip-row">
+    <span class="chip active">Alla</span>
+    <span class="chip">Favoriter</span>
+    <span class="chip">Under 30 min</span>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="section-header">
+      <span class="section-header-title">senast tillagda</span>
+      <span class="section-header-count">3 recept</span>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-card-img">&#127835;</div>
+      <div class="recipe-card-content">
+        <div class="recipe-card-title">Pasta Carbonara</div>
+        <div class="recipe-card-desc">Klassisk italiensk pasta med ägg och pancetta</div>
+        <div class="recipe-card-meta">
+          <span>&#9201; 30 min</span>
+          <span>&#128101; 4</span>
+          <span class="rating-badge">&#9733; 4.2</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-card-img">&#129367;</div>
+      <div class="recipe-card-content">
+        <div class="recipe-card-title">Morotssoppa</div>
+        <div class="recipe-card-desc">Krämig soppa med ingefära</div>
+        <div class="recipe-card-meta">
+          <span>&#9201; 45 min</span>
+          <span>&#128101; 6</span>
+          <span class="rating-badge">&#9733; 4.8</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <span class="nav-icon">&#128214;</span>
+      <span>recept</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">&#128197;</span>
+      <span>meny</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">&#128722;</span>
+      <span>inköp</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">&#10133;</span>
+      <span>lägg till</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

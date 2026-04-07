@@ -919,6 +919,17 @@ class MockFirebaseAuthRepository extends Mock
 class MockUnifiedRecipeService extends Mock
     with ChangeNotifier
     implements UnifiedRecipeService {
+  final _stateController = StreamController<RecipeServiceState>.broadcast();
+
+  @override
+  Stream<RecipeServiceState> get stateStream => _stateController.stream;
+
+  @override
+  void dispose() {
+    _stateController.close();
+    super.dispose();
+  }
+
   // Configuration state
   List<Recipe> _recipes = [];
   bool _isInitialized = false;
@@ -1041,7 +1052,7 @@ class MockUnifiedFriendsService extends Mock
   List<FriendCategory> _categories = []; // ⭐ ADDED: Missing categories state
   MockFriendsManagementOperations?
       _management; // ⭐ ADDED: Missing management operations
-  MockFriendCategoriesOperations?
+  MockFriendsCategoriesOperations?
       _categoriesOps; // ⭐ ADDED: Missing categories operations
   MockFriendsInvitationsOperations?
       _invitationsOps; // ⭐ ADDED: Missing invitations operations
@@ -1058,7 +1069,7 @@ class MockUnifiedFriendsService extends Mock
     Set<String>? blockedUsers,
     MockFriendsManagementOperations?
         management, // ⭐ ADDED: Missing management parameter
-    MockFriendCategoriesOperations?
+    MockFriendsCategoriesOperations?
         categories, // ⭐ ADDED: Missing categories operations parameter
     MockFriendsInvitationsOperations?
         invitations, // ⭐ ADDED: Missing invitations operations parameter
@@ -1121,7 +1132,7 @@ class MockUnifiedFriendsService extends Mock
   /// Get categories operations ⭐ FIXED: Return stored instance instead of creating new one
   @override
   FriendsCategoriesOperations get categories =>
-      _categoriesOps ?? MockFriendCategoriesOperations();
+      _categoriesOps ?? MockFriendsCategoriesOperations();
 
   /// Get invitations operations ⭐ ADDED: Return stored instance instead of creating new one
   @override
@@ -1416,7 +1427,12 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
 
   bool get isInitialized => _isInitialized;
 
-  // Methods left without implementation to allow stubbing
+  // Analytics methods called by ViewModels — return no-op futures
+  @override
+  Future<void> logFriendRequestSent(
+      {required String recipientId, String? source}) async {}
+  @override
+  Future<void> logFriendRequestAccepted({required String senderId}) async {}
 }
 
 // ============= IMPORT STRATEGY MOCKS =============
@@ -2148,13 +2164,16 @@ class MockFriendsManagementOperations extends Mock
   List<FriendRequest> _incomingRequests = [];
   List<FriendRequest> _outgoingRequests = [];
   final Set<String> _blockedUsers = {};
+  bool _shouldSucceed = true;
+  List<UserProfile> _mutualFriends = [];
 
-  /// Configure mock state for tests - adds missing setManagementState method
   void setManagementState({
     List<UserProfile>? friends,
     List<FriendRequest>? incomingRequests,
     List<FriendRequest>? outgoingRequests,
     Set<String>? blockedUsers,
+    bool? shouldSucceed,
+    List<UserProfile>? mutualFriends,
   }) {
     if (friends != null) _friends = friends;
     if (incomingRequests != null) _incomingRequests = incomingRequests;
@@ -2164,23 +2183,25 @@ class MockFriendsManagementOperations extends Mock
         ..clear()
         ..addAll(blockedUsers);
     }
+    if (shouldSucceed != null) _shouldSucceed = shouldSucceed;
+    if (mutualFriends != null) _mutualFriends = mutualFriends;
   }
 
   @override
   Future<bool> sendFriendRequest(String recipientId, {String? message}) async =>
-      true;
+      _shouldSucceed;
   @override
-  Future<bool> acceptFriendRequest(String requestId) async => true;
+  Future<bool> acceptFriendRequest(String requestId) async => _shouldSucceed;
   @override
-  Future<bool> rejectFriendRequest(String requestId) async => true;
+  Future<bool> rejectFriendRequest(String requestId) async => _shouldSucceed;
   @override
-  Future<bool> cancelFriendRequest(String requestId) async => true;
+  Future<bool> cancelFriendRequest(String requestId) async => _shouldSucceed;
   @override
-  Future<bool> removeFriend(String friendId) async => true;
+  Future<bool> removeFriend(String friendId) async => _shouldSucceed;
   @override
-  Future<bool> blockUser(String userId) async => true;
+  Future<bool> blockUser(String userId) async => _shouldSucceed;
   @override
-  Future<bool> unblockUser(String userId) async => true;
+  Future<bool> unblockUser(String userId) async => _shouldSucceed;
   @override
   bool isFriend(String userId) =>
       _friends.any((friend) => friend.uid == userId);
@@ -2195,7 +2216,8 @@ class MockFriendsManagementOperations extends Mock
   @override
   Future<List<UserProfile>> searchUsers(String query) async => [];
   @override
-  Future<List<UserProfile>> getMutualFriends(String userId) async => [];
+  Future<List<UserProfile>> getMutualFriends(String userId) async =>
+      _mutualFriends;
   @override
   List<String> getBlockedUsers() => _blockedUsers.toList();
   @override
@@ -2209,9 +2231,6 @@ class MockFriendsManagementOperations extends Mock
         'blockedUsers': _blockedUsers.length
       };
 }
-
-class MockFriendCategoriesOperations extends Mock
-    implements FriendsCategoriesOperations {}
 
 class MockFriendsInvitationsOperations extends Mock
     implements FriendsInvitationsOperations {
@@ -2362,23 +2381,40 @@ class MockFriendsCategoriesOperations extends Mock
   List<UserProfile>? _categoryFriends;
   FriendCategory? _categoryByName;
   List<FriendCategory> _friendCategories = [];
+  Map<String, List<UserProfile>> _friendsByCategory = {};
 
-  /// Configure mock state for tests - ⭐ FIXED: Missing state configuration method
+  /// Configure mock state for tests
   void setCategoriesState({
     bool shouldSucceed = true,
     String? createdCategoryId,
     List<UserProfile>? categoryFriends,
     FriendCategory? categoryByName,
     List<FriendCategory>? friendCategories,
+    // Aliases used by some tests
+    List<FriendCategory>? categories,
+    Map<String, List<UserProfile>>? friendsByCategory,
   }) {
     _shouldSucceed = shouldSucceed;
     _createdCategoryId = createdCategoryId;
     _categoryFriends = categoryFriends;
     _categoryByName = categoryByName;
-    _friendCategories = friendCategories ?? [];
+    _friendCategories = friendCategories ?? categories ?? [];
+    if (friendsByCategory != null) _friendsByCategory = friendsByCategory;
   }
 
-  /// Get category by ID - ⭐ FIXED: Missing production method
+  @override
+  Future<String?> createCategory({
+    required String name,
+    String? description,
+    String? icon,
+    bool? isPrivate,
+    List<String>? initialMemberIds,
+  }) async =>
+      _shouldSucceed ? (_createdCategoryId ?? 'mock-category-id') : null;
+
+  @override
+  Future<void> refresh() async {}
+
   @override
   FriendCategory? getCategoryById(String categoryId) {
     try {
@@ -2390,16 +2426,33 @@ class MockFriendsCategoriesOperations extends Mock
     }
   }
 
+  @override
+  List<UserProfile> getFriendsInCategory(String categoryId) =>
+      _friendsByCategory[categoryId] ?? [];
+
+  @override
+  List<FriendCategory> getCategoriesForFriend(String friendId) =>
+      _friendCategories
+          .where((c) => c.friendUserIds.contains(friendId))
+          .toList();
+
+  @override
+  FriendCategory? getCategoryByName(String name) =>
+      _friendCategories.where((c) => c.name == name).firstOrNull;
+
+  @override
+  List<FriendCategory> getMemberCategories() => _friendCategories;
+
   // Getters for configured state (tests can access)
   bool get shouldSucceed => _shouldSucceed;
   String? get createdCategoryId => _createdCategoryId;
   List<UserProfile>? get categoryFriends => _categoryFriends;
-  FriendCategory? get categoryByName => _categoryByName;
   List<FriendCategory> get friendCategories =>
       List.unmodifiable(_friendCategories);
-
-  // All other methods left without implementation to allow stubbing with when()
 }
+
+/// Alias for backwards compatibility (old name without 's')
+typedef MockFriendCategoriesOperations = MockFriendsCategoriesOperations;
 
 /// Mock for UnifiedMenuService (Tier 2 - 2 errors)
 class MockUnifiedMenuService extends Mock implements UnifiedMenuService {}

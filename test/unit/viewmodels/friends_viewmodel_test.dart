@@ -66,6 +66,7 @@ void main() {
     );
 
     setUpAll(() async {
+      TestWidgetsFlutterBinding.ensureInitialized();
       await BaseUnitTest.setupUnit();
     });
 
@@ -101,6 +102,7 @@ void main() {
         error: null,
         isInitialized: true,
         management: mockManagement,
+        categories: mockCategories,
       );
 
       // Configure operations using state-based approach (ultrathink gold standard)
@@ -221,8 +223,9 @@ void main() {
       });
 
       test('should handle friend removal failure', () async {
-        // Arrange - configure failure state (ultrathink gold standard)
-        mockManagement.setManagementState(friends: []);
+        // Arrange - configure failure state
+        mockManagement.setManagementState(
+            friends: [], shouldSucceed: false);
 
         // Act
         final result = await viewModel.removeFriend(testFriendId);
@@ -264,7 +267,12 @@ void main() {
       });
 
       test('should accept friend request', () async {
-        // Arrange - use state-based configuration (ultrathink gold standard)
+        // Arrange — service needs the request so VM can look it up by ID
+        mockFriendsService.setFriendsState(
+          incomingRequests: [testFriendRequest],
+          isInitialized: true,
+          management: mockManagement,
+        );
         mockManagement.setManagementState(friends: []);
 
         // Act
@@ -422,23 +430,25 @@ void main() {
       });
 
       test('should handle group creation failure', () async {
-        // Arrange - configure failure state (ultrathink gold standard)
-        mockCategories.setCategoriesState(
-          shouldSucceed: false,
-        );
+        // Arrange
+        mockCategories.setCategoriesState(shouldSucceed: false);
 
-        // Act
-        final result = await viewModel.createGroup(name: 'Test Group');
-
-        // Assert
-        expect(result, isFalse);
+        // Act & Assert — createGroup throws when category creation returns null
+        var threw = false;
+        try {
+          await viewModel.createGroup(name: 'Test Group');
+        } catch (_) {
+          threw = true;
+        }
+        expect(threw, isTrue);
+        expect(viewModel.isCreatingGroup, isFalse);
       });
 
       test('should get friends in group', () {
-        // Arrange - use state-based configuration (ultrathink gold standard)
+        // Arrange
         mockCategories.setCategoriesState(
           shouldSucceed: true,
-          categoryFriends: [testFriendProfile],
+          friendsByCategory: {testGroupId: [testFriendProfile]},
         );
 
         // Act
@@ -450,21 +460,14 @@ void main() {
       });
 
       test('should check group name availability', () {
-        // Arrange - test existing name
+        // Arrange — add a category so getCategoryByName can find it
         mockCategories.setCategoriesState(
-          shouldSucceed: true,
-          categoryByName: testGroup,
+          categories: [testGroup],
         );
 
         // Act & Assert - existing name
         final notAvailable = viewModel.isGroupNameAvailable('Best Friends');
         expect(notAvailable, isFalse); // Name already exists
-
-        // Arrange - test new name
-        mockCategories.setCategoriesState(
-          shouldSucceed: true,
-          categoryByName: null,
-        );
 
         // Act & Assert - new name
         final available = viewModel.isGroupNameAvailable('New Group');
@@ -507,10 +510,9 @@ void main() {
       });
 
       test('should get groups for specific friend', () {
-        // Arrange - use state-based configuration (ultrathink gold standard)
+        // Arrange — testGroup.friendUserIds contains testFriendId
         mockCategories.setCategoriesState(
-          shouldSucceed: true,
-          friendCategories: [testGroup],
+          categories: [testGroup],
         );
 
         // Act
@@ -701,11 +703,12 @@ void main() {
 
     group('Mutual Friends', () {
       test('should get mutual friends with another user', () async {
-        // Arrange - use state-based configuration (ultrathink gold standard)
+        // Arrange
         mockManagement.setManagementState(
           friends: [],
           incomingRequests: [],
           outgoingRequests: [],
+          mutualFriends: [testFriendProfile],
         );
 
         // Act

@@ -1,0 +1,6 @@
+# Ignore all preview files (they're ephemeral design sketches)
+*
+
+# Keep the template and gitignore
+!.gitignore
+!_butlery-template.html

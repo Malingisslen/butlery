@@ -67,7 +67,7 @@ void main() {
   group('CreateGroupViewModel', () {
     late CreateGroupViewModel viewModel;
     late MockUnifiedFriendsService mockFriendsService;
-    late MockFriendCategoriesOperations mockCategoriesOps;
+    late MockFriendsCategoriesOperations mockCategoriesOps;
     late MockFriendsManagementOperations mockManagementOps;
     late MockFriendsInvitationsOperations mockInvitationsOps;
 
@@ -107,7 +107,7 @@ void main() {
 
       // Create centralized mocks
       mockFriendsService = MockUnifiedFriendsService();
-      mockCategoriesOps = MockFriendCategoriesOperations();
+      mockCategoriesOps = MockFriendsCategoriesOperations();
       mockManagementOps = MockFriendsManagementOperations();
       mockInvitationsOps = MockFriendsInvitationsOperations();
 
