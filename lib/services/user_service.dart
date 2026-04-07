@@ -109,6 +109,9 @@ class UserService extends ChangeNotifier
     String? avatarUrl,
     bool? isSearchable,
     bool? allowEmailSearch,
+    CookingSkillLevel? cookingSkillLevel,
+    List<String>? cuisineAffinities,
+    String? bio,
   }) async {
     final user = _authRepository.currentUser;
     if (user == null) {
@@ -128,6 +131,8 @@ class UserService extends ChangeNotifier
 
       UserProfile profile;
       if (existingProfile != null) {
+        // Only pass cooking identity fields when caller provides them,
+        // so other callers (auto-creation, social handler) don't wipe them.
         profile = existingProfile.copyWith(
           displayName: displayName,
           avatarUrl: avatarUrl,
@@ -135,6 +140,15 @@ class UserService extends ChangeNotifier
           allowEmailSearch: allowEmailSearch,
           lastActiveAt: DateTime.now(),
         );
+        if (cookingSkillLevel != null) {
+          profile = profile.copyWith(cookingSkillLevel: cookingSkillLevel);
+        }
+        if (cuisineAffinities != null) {
+          profile = profile.copyWith(cuisineAffinities: cuisineAffinities);
+        }
+        if (bio != null) {
+          profile = profile.copyWith(bio: bio);
+        }
       } else {
         final now = DateTime.now();
         profile = UserProfile(
@@ -149,6 +163,9 @@ class UserService extends ChangeNotifier
           joinedAt: now,
           lastActiveAt: now,
           isOnline: true,
+          cookingSkillLevel: cookingSkillLevel,
+          cuisineAffinities: cuisineAffinities,
+          bio: bio,
         );
       }
 

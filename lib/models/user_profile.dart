@@ -6,6 +6,22 @@ import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 
+/// Cooking skill level for user profile.
+enum CookingSkillLevel {
+  beginner,
+  intermediate,
+  advanced;
+
+  /// Parse from string, returning null for unknown values.
+  static CookingSkillLevel? tryParse(String? value) {
+    if (value == null) return null;
+    return CookingSkillLevel.values.cast<CookingSkillLevel?>().firstWhere(
+          (e) => e!.name == value,
+          orElse: () => null,
+        );
+  }
+}
+
 /// User profile with social features, privacy settings, and notifications.
 class UserProfile with JsonSerializableMixin {
   final String uid;
@@ -26,6 +42,9 @@ class UserProfile with JsonSerializableMixin {
   final UserAllergenPreferences? allergenPreferences;
   final bool hasCompletedOnboarding;
   final DateTime? onboardingSkippedAt;
+  final CookingSkillLevel? cookingSkillLevel;
+  final List<String>? cuisineAffinities;
+  final String? bio;
 
   UserProfile({
     required this.uid,
@@ -46,6 +65,9 @@ class UserProfile with JsonSerializableMixin {
     this.allergenPreferences,
     this.hasCompletedOnboarding = false,
     this.onboardingSkippedAt,
+    this.cookingSkillLevel,
+    this.cuisineAffinities,
+    this.bio,
   });
 
   static const _sentinel = Object();
@@ -68,6 +90,9 @@ class UserProfile with JsonSerializableMixin {
     Object? allergenPreferences = _sentinel,
     bool? hasCompletedOnboarding,
     Object? onboardingSkippedAt = _sentinel,
+    Object? cookingSkillLevel = _sentinel,
+    Object? cuisineAffinities = _sentinel,
+    Object? bio = _sentinel,
   }) {
     return UserProfile(
       uid: uid,
@@ -97,6 +122,13 @@ class UserProfile with JsonSerializableMixin {
       onboardingSkippedAt: onboardingSkippedAt == _sentinel
           ? this.onboardingSkippedAt
           : onboardingSkippedAt as DateTime?,
+      cookingSkillLevel: cookingSkillLevel == _sentinel
+          ? this.cookingSkillLevel
+          : cookingSkillLevel as CookingSkillLevel?,
+      cuisineAffinities: cuisineAffinities == _sentinel
+          ? this.cuisineAffinities
+          : cuisineAffinities as List<String>?,
+      bio: bio == _sentinel ? this.bio : bio as String?,
     );
   }
 
@@ -184,6 +216,8 @@ class UserProfile with JsonSerializableMixin {
       'joinedAt': AppTimestamp.fromDateTime(joinedAt).toFirestore(),
       'lastActiveAt': AppTimestamp.fromDateTime(lastActiveAt).toFirestore(),
       'isOnline': isOnline,
+      'cookingSkillLevel': cookingSkillLevel?.name,
+      'cuisineAffinities': cuisineAffinities,
     };
   }
 
@@ -201,6 +235,7 @@ class UserProfile with JsonSerializableMixin {
       'onboardingSkippedAt': onboardingSkippedAt != null
           ? AppTimestamp.fromDateTime(onboardingSkippedAt!).toFirestore()
           : null,
+      'bio': bio,
     };
   }
 
@@ -232,6 +267,9 @@ class UserProfile with JsonSerializableMixin {
       'onboardingSkippedAt': onboardingSkippedAt != null
           ? serializeDateTime(onboardingSkippedAt!)
           : null,
+      'cookingSkillLevel': cookingSkillLevel?.name,
+      'cuisineAffinities': cuisineAffinities,
+      'bio': bio,
     };
   }
 
@@ -272,6 +310,13 @@ class UserProfile with JsonSerializableMixin {
           utils.SerializationUtils.safeBool(data, 'hasCompletedOnboarding'),
       onboardingSkippedAt:
           utils.SerializationUtils.safeDateTime(data, 'onboardingSkippedAt'),
+      cookingSkillLevel: CookingSkillLevel.tryParse(
+          utils.SerializationUtils.safeNullableString(
+              data, 'cookingSkillLevel')),
+      cuisineAffinities: data.containsKey('cuisineAffinities')
+          ? utils.SerializationUtils.safeStringList(data, 'cuisineAffinities')
+          : null,
+      bio: utils.SerializationUtils.safeNullableString(data, 'bio'),
     );
   }
 
@@ -311,6 +356,13 @@ class UserProfile with JsonSerializableMixin {
           utils.SerializationUtils.safeBool(json, 'hasCompletedOnboarding'),
       onboardingSkippedAt: utils.SerializationUtils.parseDateTimeValue(
           json['onboardingSkippedAt']),
+      cookingSkillLevel: CookingSkillLevel.tryParse(
+          utils.SerializationUtils.safeNullableString(
+              json, 'cookingSkillLevel')),
+      cuisineAffinities: json.containsKey('cuisineAffinities')
+          ? utils.SerializationUtils.safeStringList(json, 'cuisineAffinities')
+          : null,
+      bio: utils.SerializationUtils.safeNullableString(json, 'bio'),
     );
   }
 

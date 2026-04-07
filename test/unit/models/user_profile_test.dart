@@ -97,6 +97,39 @@ void main() {
         expect(profile.fcmToken, isNull);
         expect(profile.fcmTokenUpdatedAt, isNull);
       });
+
+      test('should create UserProfile with cooking identity fields', () {
+        final profile = UserProfile(
+          uid: 'cook_user',
+          displayName: 'Chef Anna',
+          email: 'anna@example.com',
+          joinedAt: testDate,
+          lastActiveAt: testDate,
+          cookingSkillLevel: CookingSkillLevel.intermediate,
+          cuisineAffinities: ['italiensk', 'svensk', 'japansk'],
+          bio: 'Matlagare med passion',
+        );
+
+        expect(
+            profile.cookingSkillLevel, equals(CookingSkillLevel.intermediate));
+        expect(profile.cuisineAffinities,
+            equals(['italiensk', 'svensk', 'japansk']));
+        expect(profile.bio, equals('Matlagare med passion'));
+      });
+
+      test('should default cooking identity fields to null', () {
+        final profile = UserProfile(
+          uid: 'basic_user',
+          displayName: 'Basic',
+          email: 'basic@example.com',
+          joinedAt: testDate,
+          lastActiveAt: testDate,
+        );
+
+        expect(profile.cookingSkillLevel, isNull);
+        expect(profile.cuisineAffinities, isNull);
+        expect(profile.bio, isNull);
+      });
     });
 
     group('copyWith', () {
@@ -130,6 +163,42 @@ void main() {
         expect(copy.publicRecipeCount, equals(testProfile.publicRecipeCount));
         expect(copy.friendsCount, equals(testProfile.friendsCount));
         expect(copy.fcmToken, equals(testProfile.fcmToken));
+      });
+
+      test('should copyWith cooking identity fields', () {
+        final updated = testProfile.copyWith(
+          cookingSkillLevel: CookingSkillLevel.advanced,
+          cuisineAffinities: ['mexikansk', 'koreansk'],
+          bio: 'Passionerad hobbykock',
+        );
+
+        expect(updated.cookingSkillLevel, equals(CookingSkillLevel.advanced));
+        expect(updated.cuisineAffinities, equals(['mexikansk', 'koreansk']));
+        expect(updated.bio, equals('Passionerad hobbykock'));
+        // Original unchanged
+        expect(testProfile.cookingSkillLevel, isNull);
+        expect(testProfile.cuisineAffinities, isNull);
+        expect(testProfile.bio, isNull);
+      });
+
+      test('should copyWith cooking identity fields to null via sentinel', () {
+        final withFields = testProfile.copyWith(
+          cookingSkillLevel: CookingSkillLevel.beginner,
+          cuisineAffinities: ['svensk'],
+          bio: 'Test bio',
+        );
+        expect(
+            withFields.cookingSkillLevel, equals(CookingSkillLevel.beginner));
+
+        // Set back to null
+        final cleared = withFields.copyWith(
+          cookingSkillLevel: null,
+          cuisineAffinities: null,
+          bio: null,
+        );
+        expect(cleared.cookingSkillLevel, isNull);
+        expect(cleared.cuisineAffinities, isNull);
+        expect(cleared.bio, isNull);
       });
 
       test('should update FCM token fields', () {
@@ -436,6 +505,33 @@ void main() {
         expect(firestore.containsKey('uid'), isFalse);
       });
 
+      test('should include cooking identity in correct serialization targets',
+          () {
+        final profile = testProfile.copyWith(
+          cookingSkillLevel: CookingSkillLevel.intermediate,
+          cuisineAffinities: ['italiensk', 'svensk'],
+          bio: 'Min matbio',
+        );
+
+        // Firestore (public) should contain skill + cuisines
+        final firestore = profile.toFirestore();
+        expect(firestore['cookingSkillLevel'], equals('intermediate'));
+        expect(firestore['cuisineAffinities'], equals(['italiensk', 'svensk']));
+        expect(firestore.containsKey('bio'), isFalse);
+
+        // Private settings should contain bio
+        final privateSettings = profile.toPrivateSettings();
+        expect(privateSettings['bio'], equals('Min matbio'));
+        expect(privateSettings.containsKey('cookingSkillLevel'), isFalse);
+        expect(privateSettings.containsKey('cuisineAffinities'), isFalse);
+
+        // JSON should contain all three
+        final json = profile.toJson();
+        expect(json['cookingSkillLevel'], equals('intermediate'));
+        expect(json['cuisineAffinities'], equals(['italiensk', 'svensk']));
+        expect(json['bio'], equals('Min matbio'));
+      });
+
       test('should deserialize from Firestore map', () {
         // Arrange
         final firestoreData = {
@@ -579,6 +675,71 @@ void main() {
         expect(profile.friendsCount, equals(0)); // Default 0
         expect(profile.isOnline, isFalse); // Default false
         expect(profile.notificationsEnabled, isTrue); // Default true
+        // Cooking identity fields default to null (backward compat)
+        expect(profile.cookingSkillLevel, isNull);
+        expect(profile.cuisineAffinities, isNull);
+        expect(profile.bio, isNull);
+      });
+
+      test('should round-trip cooking identity fields through JSON', () {
+        final profile = testProfile.copyWith(
+          cookingSkillLevel: CookingSkillLevel.beginner,
+          cuisineAffinities: ['thailändsk', 'indisk', 'japansk'],
+          bio: 'Gillar att experimentera',
+        );
+
+        final json = profile.toJson();
+        final deserialized = UserProfile.fromJson(json);
+
+        expect(
+            deserialized.cookingSkillLevel, equals(CookingSkillLevel.beginner));
+        expect(deserialized.cuisineAffinities,
+            equals(['thailändsk', 'indisk', 'japansk']));
+        expect(deserialized.bio, equals('Gillar att experimentera'));
+      });
+
+      test('should round-trip cooking identity fields through fromMap', () {
+        final data = {
+          'displayName': 'Test',
+          'email': 'test@test.com',
+          'joinedAt': testDate,
+          'lastActiveAt': testDate,
+          'cookingSkillLevel': 'advanced',
+          'cuisineAffinities': ['svensk', 'fransk'],
+          'bio': 'Erfaren kock',
+        };
+
+        final profile = UserProfile.fromMap('uid_test', data);
+
+        expect(profile.cookingSkillLevel, equals(CookingSkillLevel.advanced));
+        expect(profile.cuisineAffinities, equals(['svensk', 'fransk']));
+        expect(profile.bio, equals('Erfaren kock'));
+      });
+
+      test('should handle empty cuisineAffinities list distinctly from missing',
+          () {
+        // With explicit empty list
+        final dataWithEmpty = {
+          'uid': 'test',
+          'displayName': 'Test',
+          'email': 'test@test.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+          'cuisineAffinities': <String>[],
+        };
+        final withEmpty = UserProfile.fromJson(dataWithEmpty);
+        expect(withEmpty.cuisineAffinities, equals([]));
+
+        // Without key at all
+        final dataWithout = {
+          'uid': 'test',
+          'displayName': 'Test',
+          'email': 'test@test.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+        };
+        final without = UserProfile.fromJson(dataWithout);
+        expect(without.cuisineAffinities, isNull);
       });
     });
   });

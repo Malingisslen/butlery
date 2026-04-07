@@ -5101,6 +5101,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAvatarUploaded => 'Avatar uploaded!';
 
   @override
+  String get profileBio => 'Bio';
+
+  @override
+  String get profileBioHint =>
+      'Describe yourself as a cook (max 160 characters)';
+
+  @override
   String get profileChangeAvatar => 'Change avatar';
 
   @override
@@ -5108,6 +5115,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileCouldNotUploadAvatar => 'Could not upload avatar';
+
+  @override
+  String get profileCookingIdentity => 'Cooking identity';
+
+  @override
+  String get profileCookingSkill => 'Skill level';
+
+  @override
+  String get profileCookingSkillAdvanced => 'Advanced';
+
+  @override
+  String get profileCookingSkillBeginner => 'Beginner';
+
+  @override
+  String get profileCookingSkillIntermediate => 'Intermediate';
+
+  @override
+  String get profileCuisineAffinities => 'Favorite cuisines';
+
+  @override
+  String get profileCuisineAffinitiesHint => 'Choose up to 5 cuisines';
+
+  @override
+  String get profileCuisineAffinitiesMax => 'Maximum 5 cuisines selected';
 
   @override
   String get profileDisplayName => 'Display name';

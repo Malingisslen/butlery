@@ -1,17 +1,17 @@
 # Sprint Backlog
 
-## Sprint: Smart Import + Menu Intelligence — 2026-04-06
+## Sprint: Tech Debt + UX Polish — 2026-04-06
 
-### Agent A: Import Pipeline
+### Agent A: Drift/Offline Infrastructure
 
-- [x] **A1. Extract richer Schema.org data** — RecipeCore new fields, NutritionInfo model, SchemaOrgTier extraction, legacy extractor parity, cuisine→tagging wire-up, input sanitization. (BUT-208)
-- [x] **A2. Upgrade duplicate detection to side-by-side merge** — Jaccard similarity in ContentFingerprint, DuplicateMergeSheet, enhanced _checkForDuplicates, merge logic. (BUT-241)
-- [x] **A3. Honest import progress with elapsed timer** — onProgress callback in ImportManager, ImportProgressTracker helper, elapsed timer display. (BUT-247)
+- [x] **A1. Verify & regenerate Drift codegen** — `.g.dart` files verified in sync, analyze clean. (BUT-289)
+- [x] **A2. Fix offline/Drift test mocks** — Tests analyze clean, offline tests pass. (BUT-288)
 
-### Agent B: Menu Intelligence
+### Agent B: User Experience
 
-- [x] **B1. Weighted + seasonal menu generation** — Weighted selection by lastCookedAt, season boost, cuisine diversity, favorites/recent keyword support, suggestion chips. (BUT-204)
-- [x] **B2. Dietary-aware menu swap with alternatives count** — useSmartSwap toggle, cuisine-aware scoring, SwapResult with alternatives count, updated callers. (BUT-270)
+- [x] **B1. Tablet-optimized recipe detail layout** — Two-column layout on tablet/desktop, responsive expandedHeight. New file: `recipe_detail_tablet_content.dart` (329 lines). (BUT-253)
+- [x] **B2. Rich cooking identity profile** — cookingSkillLevel, cuisineAffinities, bio on UserProfile. Profile edit UI with SegmentedButton + FilterChips + StyledInput. 11 l10n keys, 19 new tests. (BUT-218)
+- [x] **B3. Shopping list check-off animations** — ShoppingItemTile StatefulWidget with scale pulse, color transition, icon crossfade. 32 tests passing. (BUT-212)
 
 ### Post-Sprint
 
@@ -24,6 +24,14 @@
 ---
 
 ## Archive: Previous Sprints
+
+### Sprint: Smart Import + Menu Intelligence (completed 2026-04-06)
+
+- [x] A1 Schema.org extraction (BUT-208)
+- [x] A2 duplicate detection merge (BUT-241)
+- [x] A3 import progress timer (BUT-247)
+- [x] B1 weighted menu generation (BUT-204)
+- [x] B2 smart menu swap (BUT-270)
 
 ### Sprint: Recipe Discovery + Cooking Experience (completed 2026-04-06)
 
@@ -42,9 +50,3 @@
 - [x] B2 screen reader accessibility (BUT-233)
 - [x] B3 PWA share target + install (BUT-225)
 - [x] B4 recipe completeness badge (BUT-240)
-
-### Earlier Sprints (completed 2026-03-20)
-
-- Sprint 2: BUT-21 — Firestore Performance → PR #122 merged
-- Sprint 3: BUT-132 — Cloud Functions Performance → PR #123 merged
-- Sprint 4: BUT-136 — App Lifecycle → PR #124 merged

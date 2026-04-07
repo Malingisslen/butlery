@@ -27,6 +27,9 @@ class UserProfileFactory {
     String? fcmToken,
     DateTime? fcmTokenUpdatedAt,
     bool notificationsEnabled = true,
+    CookingSkillLevel? cookingSkillLevel,
+    List<String>? cuisineAffinities,
+    String? bio,
   }) {
     return UserProfile(
       uid: uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
@@ -43,6 +46,9 @@ class UserProfileFactory {
       fcmToken: fcmToken,
       fcmTokenUpdatedAt: fcmTokenUpdatedAt,
       notificationsEnabled: notificationsEnabled,
+      cookingSkillLevel: cookingSkillLevel,
+      cuisineAffinities: cuisineAffinities,
+      bio: bio,
     );
   }
 

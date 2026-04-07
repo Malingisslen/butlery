@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/friend_request.dart';
-// ignore: unused_import
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -23,30 +22,78 @@ class RequestsTab {
     BuildContext context,
     FriendsViewModel viewModel,
   ) {
-    // DIAGNOSTIC: Just the share buttons from discovery section
-    return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+    // DIAGNOSTIC: Full styles + decoration, single button (no Row/IconButton)
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .primary
+            .withValues(alpha: AppDimensions.opacityVeryLight),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(
+          color: Theme.of(context)
+              .colorScheme
+              .primary
+              .withValues(alpha: AppDimensions.opacityMediumLight),
+          width: AppDimensions.borderWidthThin,
+        ),
+      ),
+      child: Column(
         children: [
+          Icon(Icons.search,
+              size: AppDimensions.iconSizeXl,
+              color: Theme.of(context).colorScheme.primary),
+          const SizedBox(height: AppDimensions.spacingM),
+          Text(context.l10n.socialFindNewFriends,
+              style: AppTextStyles.headlineSmall
+                  .copyWith(color: Theme.of(context).colorScheme.primary),
+              textAlign: TextAlign.center),
+          const SizedBox(height: AppDimensions.spacingS),
+          Text(context.l10n.socialFindNewFriendsDescription,
+              style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              textAlign: TextAlign.center),
+          const SizedBox(height: AppDimensions.spacingM),
           FilledButton.icon(
             onPressed: () => shareInvitationLink(context, viewModel),
             icon: const Icon(Icons.share, size: AppDimensions.iconSizeM),
             label: Text(context.l10n.socialInviteFriends),
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
-          IconButton.filled(
-            onPressed: () => copyInvitationLink(context, viewModel),
-            icon: const Icon(Icons.copy, size: AppDimensions.iconSizeM),
-            tooltip: context.l10n.commonCopyLink,
-          ),
+        ],
+      ),
+    );
+    // ignore: dead_code
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDiscoverySection(context, viewModel),
+          const SizedBox(height: AppDimensions.spacingXl),
+          if (viewModel.incomingRequests.isNotEmpty) ...[
+            _buildIncomingRequestsSection(context, viewModel),
+            const SizedBox(height: AppDimensions.spacingXl),
+          ],
+          if (viewModel.sentRequests.isNotEmpty) ...[
+            _buildSentRequestsSection(context, viewModel),
+          ],
+          if (viewModel.incomingRequests.isEmpty &&
+              viewModel.sentRequests.isEmpty) ...[
+            const SizedBox(height: AppDimensions.spacingXl),
+            StateWidget.empty(
+              title: context.l10n.socialNoFriendRequests,
+              subtitle: context.l10n.socialNoFriendRequestsDescription,
+              icon: Icons.search,
+            ),
+          ],
         ],
       ),
     );
   }
 
   /// Build discovery encouragement section
-  // ignore: unused_element
   static Widget _buildDiscoverySection(
     BuildContext context,
     FriendsViewModel viewModel,
@@ -162,7 +209,6 @@ class RequestsTab {
   }
 
   /// Build incoming requests section
-  // ignore: unused_element
   static Widget _buildIncomingRequestsSection(
     BuildContext context,
     FriendsViewModel viewModel,
@@ -212,7 +258,6 @@ class RequestsTab {
   }
 
   /// Build sent requests section
-  // ignore: unused_element
   static Widget _buildSentRequestsSection(
     BuildContext context,
     FriendsViewModel viewModel,

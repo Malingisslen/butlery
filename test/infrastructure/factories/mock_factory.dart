@@ -16,6 +16,7 @@ import '../mocks/widget_mocks.dart' as widget;
 
 // Import models for stubbing
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/models/user_profile.dart';
 
 // Import interfaces that factory methods return
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -25,7 +26,6 @@ import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 
 // Import models
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
@@ -585,6 +585,9 @@ class MockFactory {
     String? displayNameError,
     bool hasProfile = true,
     bool isFormValid = true,
+    CookingSkillLevel? cookingSkillLevel,
+    List<String>? cuisineAffinities,
+    String? bio,
   }) {
     final mock = widget.MockUserProfileViewModel();
     mock.setUserProfileState(
@@ -598,6 +601,9 @@ class MockFactory {
       displayNameError: displayNameError,
       hasProfile: hasProfile,
       isFormValid: isFormValid,
+      cookingSkillLevel: cookingSkillLevel,
+      cuisineAffinities: cuisineAffinities,
+      bio: bio,
     );
     return mock;
   }

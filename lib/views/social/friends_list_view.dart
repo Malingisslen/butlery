@@ -8,13 +8,10 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
@@ -117,6 +114,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     super.dispose();
   }
 
+  // ignore: unused_element
   void _onSearchChanged(String query) {
     if (mounted) {
       setState(() {
@@ -146,72 +144,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       );
     }
 
-    // DIAGNOSTIC Step 4: Full layout structure with placeholder tab content
-    return Consumer<FriendsViewModel>(
-      builder: (context, viewModel, child) {
-        return LayoutComponents.mainMenu(
-          currentIndex: null,
-          title: context.l10n.socialFriendsAndGroups,
-          body: SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: double.infinity,
-                    tablet: 700,
-                    desktop: 800,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    LayoutComponents.offlineIndicator(),
-                    ColoredBox(
-                      color: Theme.of(context).colorScheme.surface,
-                      child: TabBar(
-                        controller: _tabController,
-                        isScrollable: false,
-                        tabAlignment: TabAlignment.fill,
-                        tabs: const [
-                          Tab(text: 'Vänner'),
-                          Tab(text: 'Grupper'),
-                          Tab(text: 'Hitta'),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: IndexedStack(
-                        index: _currentTabIndex,
-                        children: [
-                          _buildFriendsTab(viewModel),
-                          _buildGroupsTab(
-                              context.read<UnifiedFriendsService>(), viewModel),
-                          _buildDiscoveryTab(viewModel),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-
-    // ignore: dead_code
     return Consumer<FriendsViewModel>(
       builder: (context, viewModel, child) {
         final friendsService = context.read<UnifiedFriendsService>();
-        if (viewModel.searchQuery.isEmpty && _searchQuery.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              setState(() {
-                _searchQuery = '';
-              });
-            }
-          });
-        }
 
         return LayoutComponents.mainMenu(
           currentIndex: null,
@@ -249,109 +184,24 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                             text: context.l10n.socialFriends,
                           ),
                           Tab(
-                            icon: Badge(
-                              isLabelVisible: friendsService.invitations
-                                  .pendingReceivedInvitations.isNotEmpty,
-                              label: Text(
-                                  '${friendsService.invitations.pendingReceivedInvitations.length}'),
-                              child: const Icon(Icons.groups),
-                            ),
+                            icon: const Icon(Icons.groups),
                             text: context.l10n.socialGroups,
                           ),
                           Tab(
-                            icon: Badge(
-                              isLabelVisible:
-                                  viewModel.incomingRequests.isNotEmpty,
-                              label:
-                                  Text('${viewModel.incomingRequests.length}'),
-                              child: const Icon(Icons.search),
-                            ),
+                            icon: const Icon(Icons.search),
                             text: context.l10n.socialFindFriends,
                           ),
                         ],
                       ),
                     ),
-                    // Error display
-                    if (viewModel.hasError) ...[
-                      const SizedBox(height: AppDimensions.spacingL),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingL),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(AppDimensions.paddingL),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .error
-                                .withValues(
-                                    alpha: AppDimensions.opacityVeryLight),
-                            borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusM),
-                            border: Border.all(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .error
-                                    .withValues(
-                                        alpha:
-                                            AppDimensions.opacityMediumLight)),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline,
-                                  color: Theme.of(context).colorScheme.error),
-                              const SizedBox(width: AppDimensions.spacingS),
-                              Expanded(
-                                child: Text(
-                                  viewModel.error!,
-                                  style: AppTextStyles.bodyMediumError,
-                                ),
-                              ),
-                              ActionButtons.secondaryButton(
-                                context,
-                                label: context.l10n.commonClose,
-                                onPressed: viewModel.clearError,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.spacingL),
-                    ],
-
-                    // Search functionality for groups and friend discovery tabs
-                    if (_currentTabIndex == 1)
-                      SearchFilterWidget.searchOnly(
-                        searchQuery: _searchQuery,
-                        onSearchChanged: _onSearchChanged,
-                        searchHint: context.l10n.socialSearchGroups,
-                        autofocus: false,
-                        padding: const EdgeInsets.all(AppDimensions.spacingL),
-                        showStats: true,
-                        resultCount: viewModel.searchResults.length,
-                      ),
-                    if (_currentTabIndex == 2)
-                      SearchFilterWidget.searchOnly(
-                        searchQuery: _searchQuery,
-                        onSearchChanged: _onSearchChanged,
-                        searchHint: context.l10n.socialSearchNewFriends,
-                        autofocus: false,
-                        padding: const EdgeInsets.all(AppDimensions.spacingL),
-                        showStats: true,
-                        resultCount: viewModel.searchResults.length,
-                      ),
-
-                    // Tab content
+                    // Tab content — only build the active tab
                     Expanded(
-                      child: IndexedStack(
-                        index: _currentTabIndex,
-                        children: [
-                          _buildFriendsTab(viewModel), // Friends
-                          _buildGroupsTab(friendsService,
-                              viewModel), // Grupper (with search)
-                          _buildDiscoveryTab(viewModel), // Find Friends
-                        ],
-                      ),
+                      child: switch (_currentTabIndex) {
+                        0 => _buildFriendsTab(viewModel),
+                        1 => _buildGroupsTab(friendsService, viewModel),
+                        2 => _buildDiscoveryTab(viewModel),
+                        _ => const SizedBox.shrink(),
+                      },
                     ),
                   ],
                 ),
@@ -360,23 +210,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           ),
           floatingActionButton: _currentTabIndex == 1
               ? FloatingActionButton(
-                  onPressed: () => _showCreateGroupDialog(viewModel),
-                  tooltip: context.l10n.groupCreateGroup,
-                  child: const Stack(
-                    children: [
-                      Center(
-                        child: Icon(
-                          Icons.groups,
-                          size: AppDimensions.iconSizeL,
-                        ),
-                      ),
-                      Positioned(
-                        top: AppDimensions.spacingXs,
-                        right: AppDimensions.spacingXs,
-                        child: CircularIconBadge.add(),
-                      ),
-                    ],
-                  ),
+                  onPressed: () {},
+                  child: const Icon(Icons.add),
                 )
               : null,
         );

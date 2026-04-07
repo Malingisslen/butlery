@@ -5107,6 +5107,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileAvatarUploaded => 'Avatar uppladdad!';
 
   @override
+  String get profileBio => 'Beskrivning';
+
+  @override
+  String get profileBioHint => 'Beskriv dig som matlagare (max 160 tecken)';
+
+  @override
   String get profileChangeAvatar => 'Ändra avatar';
 
   @override
@@ -5114,6 +5120,30 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileCouldNotUploadAvatar => 'Kunde inte ladda upp avatar';
+
+  @override
+  String get profileCookingIdentity => 'Matlagningsidentitet';
+
+  @override
+  String get profileCookingSkill => 'Kunskapsnivå';
+
+  @override
+  String get profileCookingSkillAdvanced => 'Avancerad';
+
+  @override
+  String get profileCookingSkillBeginner => 'Nybörjare';
+
+  @override
+  String get profileCookingSkillIntermediate => 'Erfaren';
+
+  @override
+  String get profileCuisineAffinities => 'Favoritkök';
+
+  @override
+  String get profileCuisineAffinitiesHint => 'Välj upp till 5 kök';
+
+  @override
+  String get profileCuisineAffinitiesMax => 'Max 5 kök valda';
 
   @override
   String get profileDisplayName => 'Visningsnamn';

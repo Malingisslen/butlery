@@ -62,6 +62,9 @@ class SerializationHelper {
       'fcmToken': 'test_fcm_token_123',
       'fcmTokenUpdatedAt': '2024-01-01T10:00:00Z',
       'notificationsEnabled': true,
+      'cookingSkillLevel': 'intermediate',
+      'cuisineAffinities': ['italiensk', 'svensk'],
+      'bio': 'Gillar att laga mat',
     };
   }
 

@@ -11,14 +11,14 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
-import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
-import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
+import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_sharing_status.dart';
-import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
+import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
+import 'package:butlery/views/recipe_detail/recipe_detail_tablet_content.dart';
+import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
@@ -28,10 +28,8 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
@@ -204,7 +202,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               // App bar with recipe title and actions
               // UI Redesign: Hero buttons are solid cream squares with green icons
               SliverAppBar(
-                expandedHeight: 200.0,
+                expandedHeight: Breakpoints.isMobile(context)
+                    ? 200.0
+                    : MediaQuery.of(context).size.height * 0.3,
                 floating: false,
                 pinned: true,
                 backgroundColor: cs.surface,
@@ -224,8 +224,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     tag: ImageConfig.recipeHeroTag(recipe.id),
                     child: recipe.imageUrls.isNotEmpty
                         ? GestureDetector(
-                            onTap: () => _showFullscreenImage(
-                                context, recipe.imageUrls, 0),
+                            onTap: () =>
+                                RecipeDetailSharedWidgets.showFullscreenImage(
+                                    context, recipe.imageUrls, 0),
                             child: DecoratedBox(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -484,178 +485,22 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ],
               ),
 
-              // Recipe content - RESPONSIVE: Center and constrain on large screens
+              // Recipe content — tablet uses two-column layout, mobile single-column
               SliverToBoxAdapter(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: LayoutComponents.valueFor(
-                        context: context,
-                        mobile: double.infinity,
-                        tablet: 800,
-                        desktop: 900,
+                child: Breakpoints.isMobile(context)
+                    ? _buildMobileContent(
+                        context, viewModel, recipe, bottomPadding, cs)
+                    : Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1200),
+                          child: RecipeDetailTabletContent(
+                            recipe: recipe,
+                            viewModel: viewModel,
+                            scrollToComments: widget.scrollToComments,
+                            actions: _actions,
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title section: white bg + green border-bottom per mockup
-                        Container(
-                          width: double.infinity,
-                          padding:
-                              AppDimensions.responsiveContentPadding(context),
-                          decoration: BoxDecoration(
-                            color: cs.surfaceContainerHighest,
-                            border: Border(
-                              bottom: BorderSide(
-                                color: cs.secondary,
-                                width: 3,
-                              ),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Recipe title (lowercase per mockup)
-                              Text(
-                                recipe.title.toLowerCase(),
-                                style: AppTextStyles.titleLarge.copyWith(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w600,
-                                  color: cs.primary,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                              if (recipe.sourceUrl != null &&
-                                  recipe.sourceUrl!.isNotEmpty) ...[
-                                const SizedBox(height: AppDimensions.spacingXs),
-                                Semantics(
-                                  link: true,
-                                  child: GestureDetector(
-                                    onTap: () => _launchSourceUrl(
-                                        context, recipe.sourceUrl!),
-                                    child: Text(
-                                      context.l10n.recipeSourceFrom(
-                                          Uri.tryParse(recipe.sourceUrl!)
-                                                  ?.host ??
-                                              recipe.sourceUrl!),
-                                      style: AppTextStyles.bodyMedium.copyWith(
-                                        color: cs.onSurfaceVariant,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: AppDimensions.spacingSm),
-                              // Recipe metadata
-                              RecipeDetailMetadata(
-                                viewModel: viewModel,
-                                currentPortions: _actions.currentPortions,
-                                isScaled: _actions.currentPortions !=
-                                    (recipe.portions ?? 1),
-                              ),
-                              // Dietary/allergen badges (inside title section per mockup)
-                              Selector<UserService, UserAllergenPreferences>(
-                                selector: (_, svc) => svc.allergenPreferences,
-                                builder: (context, allergenPrefs, _) {
-                                  final tagResult = recipe.tagResult;
-                                  if (tagResult == null ||
-                                      !allergenPrefs.showOnDetail) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: AppDimensions.spacingSm),
-                                    child: TagResultDisplay(
-                                      tagResult: tagResult,
-                                      userAllergenPrefs:
-                                          allergenPrefs.trackedAllergens,
-                                      userDietaryPrefs:
-                                          allergenPrefs.trackedDietary,
-                                      showCoverage: tagResult.coverage < 1.0,
-                                      isDegraded: ServiceLocator.tryGet<
-                                                  TaggingService>()
-                                              ?.isInDegradedMode ??
-                                          false,
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              // Description (inside title section, above green divider)
-                              if (recipe.description.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: AppDimensions.spacingSm),
-                                  child: Text(
-                                    recipe.description,
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color: cs.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: AppDimensions.spacingMd),
-
-                        // Completeness improvement banner
-                        if (recipe.completenessScore < incompleteThreshold)
-                          _buildCompletenessBanner(context, recipe),
-
-                        // Recipe main content
-                        Selector<UserService, UserAllergenPreferences>(
-                          selector: (_, svc) => svc.allergenPreferences,
-                          builder: (context, allergenPrefs, _) {
-                            return RecipeDetailContent(
-                              viewModel: viewModel,
-                              scaledIngredients: _actions.scaledIngredients,
-                              currentPortions: _actions.currentPortions,
-                              onPortionChanged: (portions, ingredients) {
-                                setState(() {
-                                  _actions.onPortionChanged(
-                                      portions, ingredients);
-                                });
-                              },
-                              onImageTap: (imageUrls, index) =>
-                                  _showFullscreenImage(
-                                      context, imageUrls, index),
-                              userAllergenPrefs: allergenPrefs.showOnDetail
-                                  ? allergenPrefs.trackedAllergens
-                                  : null,
-                              userDietaryPrefs: allergenPrefs.showOnDetail
-                                  ? allergenPrefs.trackedDietary
-                                  : null,
-                              showCoverage: allergenPrefs.showCoverage,
-                            );
-                          },
-                        ),
-                        // Sharing status panel (owner only)
-                        RecipeDetailSharingStatus(
-                          recipe: recipe,
-                          onSharingChanged: () => setState(() {}),
-                        ),
-
-                        const SizedBox(height: AppDimensions.spacingMd),
-
-                        // Recipe comments
-                        RecipeDetailComments(
-                          recipe: recipe,
-                          initiallyExpanded: widget.scrollToComments,
-                          onCommentPosted: () {
-                            setState(() {});
-                          },
-                        ),
-
-                        // Bottom padding for safe area
-                        SizedBox(
-                            height: bottomPadding + AppDimensions.spacingXl),
-                      ],
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
@@ -664,91 +509,81 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  Widget _buildCompletenessBanner(BuildContext context, Recipe recipe) {
-    final cs = Theme.of(context).colorScheme;
-    final missing = recipe.missingFields;
-    final missingLabels = missing.map((f) => switch (f) {
-          RecipeField.title => context.l10n.recipeImproveMissingTitle,
-          RecipeField.ingredients =>
-            context.l10n.recipeImproveMissingIngredients,
-          RecipeField.instructions =>
-            context.l10n.recipeImproveMissingInstructions,
-          RecipeField.portions => context.l10n.recipeImproveMissingPortions,
-          RecipeField.time => context.l10n.recipeImproveMissingTime,
-          RecipeField.image => context.l10n.recipeImproveMissingImage,
-        });
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
-      decoration: BoxDecoration(
-        color: cs.primaryContainer,
-        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.tips_and_updates_outlined,
-                  size: 18, color: cs.primary),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Text(
-                context.l10n.recipeImproveTitle,
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: cs.onPrimaryContainer,
-                ),
-              ),
-            ],
+  /// Mobile single-column content layout (original layout, extracted for readability).
+  Widget _buildMobileContent(
+    BuildContext context,
+    RecipeDetailViewModel viewModel,
+    Recipe recipe,
+    double bottomPadding,
+    ColorScheme cs,
+  ) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: LayoutComponents.valueFor(
+            context: context,
+            mobile: double.infinity,
+            tablet: 800,
+            desktop: 900,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          Text(
-            missingLabels.join(', '),
-            style: AppTextStyles.bodySmall.copyWith(
-              color: cs.onPrimaryContainer,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RecipeDetailSharedWidgets.buildTitleSection(
+              context: context,
+              recipe: recipe,
+              viewModel: viewModel,
+              actions: _actions,
             ),
-          ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () => Navigator.pushNamed(
-                context,
-                Routes.redigeraRecept,
-                arguments: recipe,
-              ),
-              child: Text(context.l10n.commonEdit),
+            const SizedBox(height: AppDimensions.spacingMd),
+            if (recipe.completenessScore < incompleteThreshold)
+              RecipeDetailSharedWidgets.buildCompletenessBanner(
+                  context, recipe),
+            Selector<UserService, UserAllergenPreferences>(
+              selector: (_, svc) => svc.allergenPreferences,
+              builder: (context, allergenPrefs, _) {
+                return RecipeDetailContent(
+                  viewModel: viewModel,
+                  scaledIngredients: _actions.scaledIngredients,
+                  currentPortions: _actions.currentPortions,
+                  onPortionChanged: (portions, ingredients) {
+                    setState(() {
+                      _actions.onPortionChanged(portions, ingredients);
+                    });
+                  },
+                  onImageTap: (imageUrls, index) =>
+                      RecipeDetailSharedWidgets.showFullscreenImage(
+                          context, imageUrls, index),
+                  userAllergenPrefs: allergenPrefs.showOnDetail
+                      ? allergenPrefs.trackedAllergens
+                      : null,
+                  userDietaryPrefs: allergenPrefs.showOnDetail
+                      ? allergenPrefs.trackedDietary
+                      : null,
+                  showCoverage: allergenPrefs.showCoverage,
+                );
+              },
             ),
-          ),
-        ],
+            RecipeDetailSharingStatus(
+              recipe: recipe,
+              onSharingChanged: () => setState(() {}),
+            ),
+            const SizedBox(height: AppDimensions.spacingMd),
+            RecipeDetailComments(
+              recipe: recipe,
+              initiallyExpanded: widget.scrollToComments,
+              onCommentPosted: () => setState(() {}),
+            ),
+            SizedBox(height: bottomPadding + AppDimensions.spacingXl),
+          ],
+        ),
       ),
     );
-  }
-
-  Future<void> _launchSourceUrl(BuildContext context, String url) async {
-    try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (_) {
-      // Silently fail — URL is best-effort
-    }
   }
 
   Future<void> _printRecipe(Recipe recipe) async {
     await print_service.printRecipeHtml(recipe);
-  }
-
-  void _showFullscreenImage(
-      BuildContext context, List<String> imageUrls, int initialIndex) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => FullscreenImageViewer(
-          imageUrls: imageUrls,
-          initialIndex: initialIndex,
-        ),
-      ),
-    );
   }
 
   Future<void> _handleMenuAction(BuildContext context, _MenuAction action,

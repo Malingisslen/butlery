@@ -8919,6 +8919,18 @@ abstract class AppLocalizations {
   /// **'Avatar uppladdad!'**
   String get profileAvatarUploaded;
 
+  /// No description provided for @profileBio.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskrivning'**
+  String get profileBio;
+
+  /// No description provided for @profileBioHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskriv dig som matlagare (max 160 tecken)'**
+  String get profileBioHint;
+
   /// No description provided for @profileChangeAvatar.
   ///
   /// In sv, this message translates to:
@@ -8936,6 +8948,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte ladda upp avatar'**
   String get profileCouldNotUploadAvatar;
+
+  /// No description provided for @profileCookingIdentity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matlagningsidentitet'**
+  String get profileCookingIdentity;
+
+  /// No description provided for @profileCookingSkill.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunskapsnivå'**
+  String get profileCookingSkill;
+
+  /// No description provided for @profileCookingSkillAdvanced.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avancerad'**
+  String get profileCookingSkillAdvanced;
+
+  /// No description provided for @profileCookingSkillBeginner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nybörjare'**
+  String get profileCookingSkillBeginner;
+
+  /// No description provided for @profileCookingSkillIntermediate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Erfaren'**
+  String get profileCookingSkillIntermediate;
+
+  /// No description provided for @profileCuisineAffinities.
+  ///
+  /// In sv, this message translates to:
+  /// **'Favoritkök'**
+  String get profileCuisineAffinities;
+
+  /// No description provided for @profileCuisineAffinitiesHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj upp till 5 kök'**
+  String get profileCuisineAffinitiesHint;
+
+  /// No description provided for @profileCuisineAffinitiesMax.
+  ///
+  /// In sv, this message translates to:
+  /// **'Max 5 kök valda'**
+  String get profileCuisineAffinitiesMax;
 
   /// No description provided for @profileDisplayName.
   ///

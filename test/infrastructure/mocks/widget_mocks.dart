@@ -247,6 +247,9 @@ class MockUserProfileViewModel extends MockBaseViewModel
   String? _error;
   bool _hasProfile = true;
   bool _isFormValid = true;
+  CookingSkillLevel? _cookingSkillLevel;
+  List<String> _cuisineAffinities = [];
+  String _bio = '';
 
   // UserProfileViewModel interface implementation
 
@@ -261,6 +264,15 @@ class MockUserProfileViewModel extends MockBaseViewModel
 
   @override
   bool get allowEmailSearch => _allowEmailSearch;
+
+  @override
+  CookingSkillLevel? get cookingSkillLevel => _cookingSkillLevel;
+
+  @override
+  List<String> get cuisineAffinities => List.unmodifiable(_cuisineAffinities);
+
+  @override
+  String get bio => _bio;
 
   @override
   bool get isLoading => _isLoading;
@@ -313,6 +325,33 @@ class MockUserProfileViewModel extends MockBaseViewModel
   }
 
   @override
+  void updateCookingSkillLevel(CookingSkillLevel? value) {
+    _cookingSkillLevel = value;
+    _hasUnsavedChanges = true;
+    notifyListeners();
+  }
+
+  @override
+  bool toggleCuisineAffinity(String cuisine) {
+    if (_cuisineAffinities.contains(cuisine)) {
+      _cuisineAffinities.remove(cuisine);
+    } else {
+      if (_cuisineAffinities.length >= 5) return false;
+      _cuisineAffinities.add(cuisine);
+    }
+    _hasUnsavedChanges = true;
+    notifyListeners();
+    return true;
+  }
+
+  @override
+  void updateBio(String value) {
+    _bio = value.trim();
+    _hasUnsavedChanges = true;
+    notifyListeners();
+  }
+
+  @override
   Future<bool> uploadAvatar() async {
     _isUploadingAvatar = true;
     notifyListeners();
@@ -356,6 +395,9 @@ class MockUserProfileViewModel extends MockBaseViewModel
     _hasUnsavedChanges = false;
     _displayNameError = null;
     _error = null;
+    _cookingSkillLevel = null;
+    _cuisineAffinities = [];
+    _bio = '';
     notifyListeners();
   }
 
@@ -396,6 +438,9 @@ class MockUserProfileViewModel extends MockBaseViewModel
     String? displayNameError,
     bool? hasProfile,
     bool? isFormValid,
+    CookingSkillLevel? cookingSkillLevel,
+    List<String>? cuisineAffinities,
+    String? bio,
   }) {
     if (profile != null) _userProfile = profile;
     if (isLoading != null) _isLoading = isLoading;
@@ -409,6 +454,9 @@ class MockUserProfileViewModel extends MockBaseViewModel
     if (displayNameError != null) _displayNameError = displayNameError;
     if (hasProfile != null) _hasProfile = hasProfile;
     if (isFormValid != null) _isFormValid = isFormValid;
+    if (cookingSkillLevel != null) _cookingSkillLevel = cookingSkillLevel;
+    if (cuisineAffinities != null) _cuisineAffinities = cuisineAffinities;
+    if (bio != null) _bio = bio;
     notifyListeners();
   }
 }
