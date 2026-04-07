@@ -7,6 +7,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/models/recipe/recipe_completeness.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -570,6 +571,66 @@ void main() {
         expect(
             frequency['Middag'], equals(2)); // personalRecipe2 and recentRecipe
         expect(frequency['Frukost'], equals(1)); // personalRecipe1
+      });
+
+      test('should include completeness stats in insights', () {
+        final insights = viewModel.recipeInsights;
+
+        // All default factory recipes have empty imageUrls except personalRecipe2
+        expect(insights['withoutPhotoCount'], equals(4));
+        // All have timeMinutes: 30
+        expect(insights['withoutTimeCount'], equals(0));
+        // All have portions: 4
+        expect(insights['withoutPortionsCount'], equals(0));
+        // 4 recipes at 0.65 score (< 0.7 threshold), 1 at 0.70 (not incomplete)
+        expect(insights['incompleteCount'], equals(4));
+        expect(insights['completenessDistribution'], isA<Map<String, int>>());
+      });
+
+      test('should compute completeness distribution buckets', () {
+        final insights = viewModel.recipeInsights;
+        final dist = insights['completenessDistribution'] as Map<String, int>;
+
+        // All 5 recipes score 0.65 or 0.70 -> all in '50-75%' bucket
+        expect(dist['0-25%'], equals(0));
+        expect(dist['25-50%'], equals(0));
+        expect(dist['50-75%'], equals(5));
+        expect(dist['75-100%'], equals(0));
+      });
+
+      test('should return incomplete recipes sorted by score ascending', () {
+        final incomplete = viewModel.getIncompleteRecipes();
+
+        expect(incomplete.length, equals(4));
+        // All incomplete recipes have the same score (0.65), so order is stable
+        for (final recipe in incomplete) {
+          expect(recipe.completenessScore, lessThan(0.7));
+        }
+      });
+
+      test('should respect limit on getIncompleteRecipes', () {
+        final incomplete = viewModel.getIncompleteRecipes(limit: 2);
+        expect(incomplete.length, equals(2));
+      });
+
+      test('should handle fully complete recipes', () {
+        final completeRecipe = RecipeFactory.build(
+          id: 'complete_1',
+          title: 'Complete Recipe',
+          ingredients: ['a', 'b', 'c'],
+          instructions: ['step 1', 'step 2'],
+          imageUrls: ['img.jpg'],
+          portions: 4,
+          timeMinutes: 30,
+        );
+        mockRecipeService.setRecipeState(recipes: [completeRecipe]);
+
+        final insights = viewModel.recipeInsights;
+        expect(insights['incompleteCount'], equals(0));
+        expect(insights['withoutPhotoCount'], equals(0));
+
+        final incomplete = viewModel.getIncompleteRecipes();
+        expect(incomplete, isEmpty);
       });
     });
 

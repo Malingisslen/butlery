@@ -20913,6 +20913,66 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Meny med senaste recept'**
   String get menuSuggestionRecent;
+
+  /// No description provided for @publicProfileTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profil'**
+  String get publicProfileTitle;
+
+  /// No description provided for @publicProfileEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Denna användare har inga publika recept'**
+  String get publicProfileEmpty;
+
+  /// No description provided for @publicProfileError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen hittades inte'**
+  String get publicProfileError;
+
+  /// No description provided for @publicProfileShareButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela profil'**
+  String get publicProfileShareButton;
+
+  /// No description provided for @publicProfilePublicRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Publika recept'**
+  String get publicProfilePublicRecipes;
+
+  /// No description provided for @statsCompleteness.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptkvalitet'**
+  String get statsCompleteness;
+
+  /// No description provided for @statsWithoutPhoto.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utan foto'**
+  String get statsWithoutPhoto;
+
+  /// No description provided for @statsWithoutTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utan tid'**
+  String get statsWithoutTime;
+
+  /// No description provided for @statsIncomplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ofullständiga'**
+  String get statsIncomplete;
+
+  /// No description provided for @statsAllComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept är kompletta!'**
+  String get statsAllComplete;
 }
 
 class _AppLocalizationsDelegate

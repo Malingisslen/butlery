@@ -8376,5 +8376,15 @@
   },
   "menuSwapExhausted": "No more alternatives matching your preferences",
   "menuSuggestionFavorites": "Weekly menu from favorites",
-  "menuSuggestionRecent": "Menu with recent recipes"
+  "menuSuggestionRecent": "Menu with recent recipes",
+  "publicProfileTitle": "Profile",
+  "publicProfileEmpty": "This user has no public recipes",
+  "publicProfileError": "Profile not found",
+  "publicProfileShareButton": "Share profile",
+  "publicProfilePublicRecipes": "Public recipes",
+  "statsCompleteness": "Recipe Quality",
+  "statsWithoutPhoto": "No photo",
+  "statsWithoutTime": "No time",
+  "statsIncomplete": "Incomplete",
+  "statsAllComplete": "All recipes are complete!"
 }

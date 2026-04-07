@@ -13,6 +13,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/models/recipe/recipe_completeness.dart';
 
 /// Recipe Query ViewModel
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
@@ -410,6 +411,17 @@ class RecipeQueryViewModel extends ChangeNotifier
       'totalCooks': allRecipes.fold<int>(0, (sum, r) => sum + r.cookCount),
       'hasCollaborativeFeatures': hasCollaborativeRecipes,
       'hasActiveFilters': hasActiveFilters,
+      'withoutPhotoCount': allRecipes.where((r) => r.imageUrls.isEmpty).length,
+      'withoutTimeCount': allRecipes
+          .where((r) => r.timeMinutes == null || r.timeMinutes! <= 0)
+          .length,
+      'withoutPortionsCount': allRecipes
+          .where((r) => r.portions == null || r.portions! <= 0)
+          .length,
+      'incompleteCount': allRecipes
+          .where((r) => r.completenessScore < incompleteThreshold)
+          .length,
+      'completenessDistribution': _computeCompletenessDistribution(),
     };
   }
 
@@ -504,6 +516,36 @@ class RecipeQueryViewModel extends ChangeNotifier
         .toList()
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return dormant.take(limit).toList();
+  }
+
+  Map<String, int> _computeCompletenessDistribution() {
+    final buckets = <String, int>{
+      '0-25%': 0,
+      '25-50%': 0,
+      '50-75%': 0,
+      '75-100%': 0,
+    };
+    for (final recipe in allRecipes) {
+      final score = recipe.completenessScore;
+      if (score < 0.25) {
+        buckets['0-25%'] = buckets['0-25%']! + 1;
+      } else if (score < 0.50) {
+        buckets['25-50%'] = buckets['25-50%']! + 1;
+      } else if (score < 0.75) {
+        buckets['50-75%'] = buckets['50-75%']! + 1;
+      } else {
+        buckets['75-100%'] = buckets['75-100%']! + 1;
+      }
+    }
+    return buckets;
+  }
+
+  List<Recipe> getIncompleteRecipes({int limit = 10}) {
+    final incomplete = allRecipes
+        .where((r) => r.completenessScore < incompleteThreshold)
+        .toList()
+      ..sort((a, b) => a.completenessScore.compareTo(b.completenessScore));
+    return incomplete.take(limit).toList();
   }
 
   @override

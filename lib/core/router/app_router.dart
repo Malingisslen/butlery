@@ -314,7 +314,13 @@ class AppRouter {
         default:
           // Deep link paths are handled by DeepLinkHandler before router —
           // gracefully fall back to home if they reach here
-          const deepLinkPaths = ['/recipe', '/invite', '/menu', '/shopping'];
+          const deepLinkPaths = [
+            '/recipe',
+            '/invite',
+            '/menu',
+            '/shopping',
+            '/profile'
+          ];
           if (deepLinkPaths.any((p) => routeName.startsWith(p))) {
             return _buildRoute(
                 LayoutScaffolds.mainMenu(), settings, RouteAnimationType.fade);

@@ -141,6 +141,8 @@ class DeepLinkHandler {
         await _handleMenuLink(params, context);
       } else if (path.startsWith('/shopping')) {
         await _handleShoppingLink(params, context);
+      } else if (path.startsWith('/profile')) {
+        _handleProfileLink(params, context);
       } else if (path.startsWith('/import') ||
           (uri.scheme == 'butlery' && uri.host == 'import')) {
         _handleImportLink(params, context);
@@ -271,6 +273,20 @@ class DeepLinkHandler {
         await DeferredModuleLoader.ensureLoaded('social');
       } catch (e) {
         AppLogger.warning('Failed to pre-load social module for deep link: $e');
+      }
+    }
+  }
+
+  /// Handle public profile deep link — navigate to public profile view.
+  void _handleProfileLink(
+    Map<String, String> params,
+    BuildContext context,
+  ) {
+    final userId = params['id'];
+    if (userId != null && _isValidFirestoreId(userId)) {
+      if (context.mounted) {
+        Navigator.of(context)
+            .pushNamed(Routes.publicProfile, arguments: userId);
       }
     }
   }

@@ -65,6 +65,7 @@ class Routes {
   static const String menuPreview = '/menu-preview';
   static const String createSharedShopping = '/create-shared-shopping';
   static const String friendProfile = '/friend-profile';
+  static const String publicProfile = '/public-profile';
   static const String sharedShoppingLists = '/shared-shopping-lists';
   static const String groupDetail = '/group-detail';
 
@@ -120,6 +121,7 @@ class Routes {
     menuPreview,
     createSharedShopping,
     friendProfile,
+    publicProfile,
     sharedShoppingLists,
     groupDetail,
     messages,
@@ -158,6 +160,7 @@ class Routes {
     menuPreview,
     createSharedShopping,
     friendProfile,
+    publicProfile,
     sharedShoppingLists,
     groupDetail,
     messages,
@@ -247,6 +250,7 @@ class Routes {
     menuPreview,
     createSharedShopping,
     friendProfile,
+    publicProfile,
     sharedShoppingLists,
     groupDetail,
 

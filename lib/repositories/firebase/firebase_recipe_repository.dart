@@ -680,6 +680,27 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
+  Future<List<Recipe>> fetchPublicUserRecipes(String userId,
+      {int limit = 50}) async {
+    return await FirebasePerformanceService.traceFirebaseQuery(
+      (trace) async {
+        final snap = await getCollectionForUser(userId)
+            .where('isPublic', isEqualTo: true)
+            .orderBy('core.updatedAt', descending: true)
+            .limit(limit)
+            .get();
+
+        final recipes = snap.docs.map(fromFirestore).toList();
+        trace.putAttribute('user_id', userId);
+        trace.setMetric('limit', limit);
+        return recipes;
+      },
+      collection: 'recipes',
+      resultCount: null,
+    );
+  }
+
+  @override
   Future<List<Recipe>> fetchAllUserRecipes(
     String userId, {
     int batchSize = 500,

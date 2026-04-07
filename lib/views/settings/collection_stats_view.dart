@@ -5,6 +5,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 class CollectionStatsView extends StatefulWidget {
   const CollectionStatsView({super.key});
@@ -89,6 +92,16 @@ class _CollectionStatsContent extends StatelessWidget {
                   tags: insights['tags'] as int,
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),
+                _SectionHeader(title: context.l10n.statsCompleteness),
+                _CompletenessSection(
+                  withoutPhoto: insights['withoutPhotoCount'] as int,
+                  withoutTime: insights['withoutTimeCount'] as int,
+                  incompleteCount: insights['incompleteCount'] as int,
+                  distribution:
+                      insights['completenessDistribution'] as Map<String, int>,
+                  incompleteRecipes: vm.getIncompleteRecipes(),
+                ),
+                const SizedBox(height: AppDimensions.spacingXl),
               ],
             ),
           ),
@@ -114,89 +127,37 @@ class _HeroBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
+    final l10n = context.l10n;
+    Widget card(IconData icon, int value, String label) => Expanded(
+          child: Column(children: [
+            Icon(icon, color: cs.surface, size: AppDimensions.iconSizeM),
+            const SizedBox(height: AppDimensions.spacingXs),
+            Text('$value',
+                style: AppTextStyles.headlineBold.copyWith(color: cs.surface)),
+            Text(label,
+                style: AppTextStyles.labelSmall
+                    .copyWith(color: cs.surface.withValues(alpha: 0.8)),
+                textAlign: TextAlign.center),
+          ]),
+        );
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       color: cs.primary,
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.menu_book,
-                  value: totalRecipes,
-                  label: context.l10n.statsTotalRecipes,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacingMd),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.favorite,
-                  value: favorites,
-                  label: context.l10n.statsFavorites,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingMd),
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.local_fire_department,
-                  value: recentlyCooked,
-                  label: context.l10n.statsRecentlyCooked,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacingMd),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.camera_alt,
-                  value: withImages,
-                  label: context.l10n.statsWithImages,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final int value;
-  final String label;
-
-  const _StatCard({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Column(
-      children: [
-        Icon(icon, color: cs.surface, size: AppDimensions.iconSizeM),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Text(
-          '$value',
-          style: AppTextStyles.headlineBold.copyWith(color: cs.surface),
-        ),
-        Text(
-          label,
-          style: AppTextStyles.labelSmall.copyWith(
-            color: cs.surface.withValues(alpha: 0.8),
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+      child: Column(children: [
+        Row(children: [
+          card(Icons.menu_book, totalRecipes, l10n.statsTotalRecipes),
+          const SizedBox(width: AppDimensions.spacingMd),
+          card(Icons.favorite, favorites, l10n.statsFavorites),
+        ]),
+        const SizedBox(height: AppDimensions.spacingMd),
+        Row(children: [
+          card(Icons.local_fire_department, recentlyCooked,
+              l10n.statsRecentlyCooked),
+          const SizedBox(width: AppDimensions.spacingMd),
+          card(Icons.camera_alt, withImages, l10n.statsWithImages),
+        ]),
+      ]),
     );
   }
 }
@@ -378,6 +339,106 @@ class _CookingSummary extends StatelessWidget {
             value: tags,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CompletenessSection extends StatelessWidget {
+  final int withoutPhoto;
+  final int withoutTime;
+  final int incompleteCount;
+  final Map<String, int> distribution;
+  final List<Recipe> incompleteRecipes;
+
+  const _CompletenessSection({
+    required this.withoutPhoto,
+    required this.withoutTime,
+    required this.incompleteCount,
+    required this.distribution,
+    required this.incompleteRecipes,
+  });
+
+  static const _segmentDefs = [
+    ('0-25%', AppColors.error),
+    ('25-50%', AppColors.warning),
+    ('50-75%', AppColors.primaryContainer),
+    ('75-100%', AppColors.success),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _StatRow(label: l10n.statsWithoutPhoto, value: withoutPhoto),
+          _StatRow(label: l10n.statsWithoutTime, value: withoutTime),
+          _StatRow(label: l10n.statsIncomplete, value: incompleteCount),
+          const SizedBox(height: AppDimensions.spacingMd),
+          _buildDistributionBar(),
+          const SizedBox(height: AppDimensions.spacingMd),
+          if (incompleteRecipes.isEmpty)
+            StateWidget.empty(title: l10n.statsAllComplete)
+          else
+            _buildQuickFixChips(cs),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDistributionBar() {
+    final total = distribution.values.fold<int>(0, (sum, v) => sum + v);
+    if (total == 0) return const SizedBox.shrink();
+    final segments =
+        _segmentDefs.map((d) => (d.$1, distribution[d.$1] ?? 0, d.$2)).toList();
+    return Column(children: [
+      SizedBox(
+        height: AppDimensions.spacingMd + AppDimensions.spacingXs,
+        child: Row(children: [
+          for (final (_, count, color) in segments)
+            if (count > 0)
+              Expanded(
+                  flex: count,
+                  child:
+                      ColoredBox(color: color, child: const SizedBox.expand())),
+        ]),
+      ),
+      const SizedBox(height: AppDimensions.spacingXs),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          for (final (label, count, color) in segments)
+            Text('$label: $count',
+                style: AppTextStyles.labelSmall.copyWith(color: color)),
+        ],
+      ),
+    ]);
+  }
+
+  Widget _buildQuickFixChips(ColorScheme cs) {
+    return SizedBox(
+      height: AppDimensions.spacingXl + AppDimensions.spacingSm,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: incompleteRecipes.length,
+        separatorBuilder: (_, __) =>
+            const SizedBox(width: AppDimensions.spacingSm),
+        itemBuilder: (context, index) {
+          final recipe = incompleteRecipes[index];
+          return ActionChip(
+            label: Text(recipe.title,
+                style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface)),
+            backgroundColor: cs.errorContainer,
+            side: BorderSide.none,
+            shape: const RoundedRectangleBorder(),
+            onPressed: () => Navigator.pushNamed(context, Routes.redigeraRecept,
+                arguments: recipe),
+          );
+        },
       ),
     );
   }

@@ -33,6 +33,10 @@ abstract class RecipeRepository extends Repository<Recipe>
   /// Fetch recipes for a specific user with optional limit.
   Future<List<Recipe>> fetchUserRecipes(String userId, {int limit = 50});
 
+  /// Fetch only public recipes for a specific user.
+  /// Used for public profile views where only isPublic == true recipes are shown.
+  Future<List<Recipe>> fetchPublicUserRecipes(String userId, {int limit = 50});
+
   /// Fetch all recipes for a user using cursor-based pagination.
   /// Unlike [fetchUserRecipes], this has no hard limit and will fetch
   /// all recipes in batches. Use for batch operations like statistics.

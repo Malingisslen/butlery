@@ -25,6 +25,8 @@ import 'package:butlery/views/social/shared_shopping_lists_view.dart'
     deferred as shared_shopping_lists;
 import 'package:butlery/views/social/group_detail_view.dart'
     deferred as group_detail;
+import 'package:butlery/views/social/public_profile_view.dart'
+    deferred as public_profile;
 
 /// Deferred module for social/friends related views
 /// This module defers loading of all social views (~52 files, 2-3MB)
@@ -44,6 +46,7 @@ class SocialDeferredModule implements DeferredModule {
         Routes.menuPreview,
         Routes.createSharedShopping,
         Routes.friendProfile,
+        Routes.publicProfile,
         Routes.sharedShoppingLists,
         Routes.groupDetail,
       };
@@ -63,6 +66,7 @@ class SocialDeferredModule implements DeferredModule {
         menu_preview.loadLibrary(),
         create_shared_shopping.loadLibrary(),
         friend_profile.loadLibrary(),
+        public_profile.loadLibrary(),
         shared_shopping_lists.loadLibrary(),
         group_detail.loadLibrary(),
       ]);
@@ -113,6 +117,13 @@ class SocialDeferredModule implements DeferredModule {
           throw ArgumentError('User profile argument missing');
         }
         return friend_profile.FriendProfileView(friend: userProfile);
+
+      case Routes.publicProfile:
+        final userId = settings.arguments as String?;
+        if (userId == null) {
+          throw ArgumentError('User ID argument missing for public profile');
+        }
+        return public_profile.PublicProfileView(userId: userId);
 
       case Routes.sharedShoppingLists:
         return shared_shopping_lists.SharedShoppingListsView();

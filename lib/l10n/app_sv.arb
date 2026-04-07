@@ -8376,5 +8376,15 @@
   },
   "menuSwapExhausted": "Inga fler alternativ som matchar dina preferenser",
   "menuSuggestionFavorites": "Veckomeny från favoriter",
-  "menuSuggestionRecent": "Meny med senaste recept"
+  "menuSuggestionRecent": "Meny med senaste recept",
+  "publicProfileTitle": "Profil",
+  "publicProfileEmpty": "Denna användare har inga publika recept",
+  "publicProfileError": "Profilen hittades inte",
+  "publicProfileShareButton": "Dela profil",
+  "publicProfilePublicRecipes": "Publika recept",
+  "statsCompleteness": "Receptkvalitet",
+  "statsWithoutPhoto": "Utan foto",
+  "statsWithoutTime": "Utan tid",
+  "statsIncomplete": "Ofullständiga",
+  "statsAllComplete": "Alla recept är kompletta!"
 }

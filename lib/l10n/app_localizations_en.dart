@@ -12186,4 +12186,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuSuggestionRecent => 'Menu with recent recipes';
+
+  @override
+  String get publicProfileTitle => 'Profile';
+
+  @override
+  String get publicProfileEmpty => 'This user has no public recipes';
+
+  @override
+  String get publicProfileError => 'Profile not found';
+
+  @override
+  String get publicProfileShareButton => 'Share profile';
+
+  @override
+  String get publicProfilePublicRecipes => 'Public recipes';
+
+  @override
+  String get statsCompleteness => 'Recipe Quality';
+
+  @override
+  String get statsWithoutPhoto => 'No photo';
+
+  @override
+  String get statsWithoutTime => 'No time';
+
+  @override
+  String get statsIncomplete => 'Incomplete';
+
+  @override
+  String get statsAllComplete => 'All recipes are complete!';
 }

@@ -12216,4 +12216,34 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuSuggestionRecent => 'Meny med senaste recept';
+
+  @override
+  String get publicProfileTitle => 'Profil';
+
+  @override
+  String get publicProfileEmpty => 'Denna användare har inga publika recept';
+
+  @override
+  String get publicProfileError => 'Profilen hittades inte';
+
+  @override
+  String get publicProfileShareButton => 'Dela profil';
+
+  @override
+  String get publicProfilePublicRecipes => 'Publika recept';
+
+  @override
+  String get statsCompleteness => 'Receptkvalitet';
+
+  @override
+  String get statsWithoutPhoto => 'Utan foto';
+
+  @override
+  String get statsWithoutTime => 'Utan tid';
+
+  @override
+  String get statsIncomplete => 'Ofullständiga';
+
+  @override
+  String get statsAllComplete => 'Alla recept är kompletta!';
 }

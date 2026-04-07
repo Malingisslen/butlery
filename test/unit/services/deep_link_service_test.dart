@@ -36,6 +36,10 @@ Future<void> processTestDeepLink(
         if (deepLinkData.id != null) {
           navigateToRoute('/shopping/${deepLinkData.id}?shared=true');
         }
+      case DeepLinkType.profileShare:
+        if (deepLinkData.id != null) {
+          navigateToRoute('/public-profile/${deepLinkData.id}');
+        }
     }
   } catch (e) {
     // Handle gracefully, matching original behavior
@@ -579,8 +583,7 @@ void main() {
         // Act & Assert
         // Static method doesn't properly use DI, so metadata capture is limited
         await expectLater(
-          DeepLinkService.generateShortUrl(
-              'https://butlery.app/recipe?id=123'),
+          DeepLinkService.generateShortUrl('https://butlery.app/recipe?id=123'),
           completes,
         );
       });
@@ -982,7 +985,7 @@ void main() {
           // Navigation happens but the view should handle non-existent recipe
         });
 
-        test('should handle user profile not found', () async {
+        test('should parse profile deep link', () async {
           // Arrange
           final link = 'https://butlery.app/profile?id=deleted_user';
 
@@ -990,8 +993,9 @@ void main() {
           final data = DeepLinkService.parseDeepLink(link);
 
           // Assert
-          // Unknown path type should return null
-          expect(data, isNull);
+          expect(data, isNotNull);
+          expect(data!.type, equals(DeepLinkType.profileShare));
+          expect(data.id, equals('deleted_user'));
         });
 
         test('should handle menu ID not found', () async {

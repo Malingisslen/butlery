@@ -20,6 +20,8 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/services/deep_link_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
 class FriendProfileView extends StatefulWidget {
@@ -206,6 +208,16 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                               SizedBox(
                                 width: double.infinity,
                                 child: OutlinedButton.icon(
+                                  onPressed: () => _shareProfile(context),
+                                  icon: const Icon(Icons.link),
+                                  label: Text(
+                                      context.l10n.publicProfileShareButton),
+                                ),
+                              ),
+                              const SizedBox(height: AppDimensions.spacingM),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
                                   onPressed: () =>
                                       _showRemoveFriendDialog(context),
                                   style: ComponentThemes.deleteButtonStyle(
@@ -272,6 +284,14 @@ class _FriendProfileViewState extends State<FriendProfileView> {
         setState(() => _isStartingConversation = false);
       }
     }
+  }
+
+  Future<void> _shareProfile(BuildContext context) async {
+    final profileUrl = DeepLinkService.generateProfileLink(friend.uid);
+    await SharePlus.instance.share(ShareParams(
+      text: profileUrl,
+      subject: friend.displayName,
+    ));
   }
 
   Future<void> _showRemoveFriendDialog(BuildContext context) async {

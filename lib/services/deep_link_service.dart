@@ -68,6 +68,7 @@ class DeepLinkService extends BaseService {
   static const String _recipePath = '/recipe';
   static const String _menuPath = '/menu';
   static const String _shoppingPath = '/shopping';
+  static const String _profilePath = '/profile';
 
   DeepLinkService({required DeepLinkRepository deepLinkRepository})
       : _deepLinkRepository = deepLinkRepository;
@@ -163,6 +164,14 @@ class DeepLinkService extends BaseService {
     return _buildUrl(_shoppingPath, params);
   }
 
+  /// Generate a deep link for a user's public profile
+  static String generateProfileLink(String userId) {
+    final params = <String, String>{
+      'id': userId,
+    };
+    return _buildUrl(_profilePath, params);
+  }
+
   /// Parse a deep link and extract information
   static DeepLinkData? parseDeepLink(String url) {
     try {
@@ -223,6 +232,11 @@ class DeepLinkService extends BaseService {
           timestamp: params['timestamp'] != null
               ? int.tryParse(params['timestamp']!)
               : null,
+        );
+      } else if (path.startsWith(_profilePath)) {
+        return DeepLinkData(
+          type: DeepLinkType.profileShare,
+          id: params['id'],
         );
       }
 
@@ -420,6 +434,11 @@ class DeepLinkService extends BaseService {
             navigateToRoute('/shopping/${deepLinkData.id}?shared=true');
           }
           break;
+        case DeepLinkType.profileShare:
+          if (deepLinkData.id != null) {
+            navigateToRoute('/public-profile/${deepLinkData.id}');
+          }
+          break;
       }
 
       AppLogger.info('Deep link handled successfully: ${deepLinkData.type}');
@@ -524,4 +543,5 @@ enum DeepLinkType {
   recipeShare,
   menuShare,
   shoppingListShare,
+  profileShare,
 }
