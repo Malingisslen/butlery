@@ -2809,6 +2809,7 @@
   "importTryAdjustFilters": "Prova att justera sökning eller filter",
   "importViaUrl": "Import via URL",
   "indicatorOfflineMode": "Offline-läge - Ändringar sparas lokalt",
+  "indicatorBackOnline": "Ansluten igen",
   "invitationCheckConnectionAndRetry": "Kontrollera din internetanslutning och försök igen.",
   "invitationCurrentItem": "Aktuell: {item}",
   "@invitationCurrentItem": {

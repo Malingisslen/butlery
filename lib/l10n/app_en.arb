@@ -2809,6 +2809,7 @@
   "importTryAdjustFilters": "Try adjusting search or filters",
   "importViaUrl": "Import via URL",
   "indicatorOfflineMode": "Offline mode - Changes saved locally",
+  "indicatorBackOnline": "Back online",
   "invitationCheckConnectionAndRetry": "Check your internet connection and try again.",
   "invitationCurrentItem": "Current: {item}",
   "@invitationCurrentItem": {

@@ -4397,6 +4397,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get indicatorOfflineMode => 'Offline-läge - Ändringar sparas lokalt';
 
   @override
+  String get indicatorBackOnline => 'Ansluten igen';
+
+  @override
   String get invitationCheckConnectionAndRetry =>
       'Kontrollera din internetanslutning och försök igen.';
 

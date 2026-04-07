@@ -1,6 +1,26 @@
 # Sprint Backlog
 
-## Sprint: Share & Discover — 2026-04-07
+## Sprint: Bug Cleanup + Loading Polish — 2026-04-07
+
+### Agent A: debugger — Close Stale Bugs
+
+- [x] **A1. Verify and close 5 stale bug tickets** — BUT-292, BUT-293, BUT-294, BUT-295, BUT-296 all closed in Linear.
+
+### Agent C: performance-optimizer — Loading Polish
+
+- [x] **C1. Shimmer sweep on skeleton screens** — Already existed in `skeleton_components.dart`. No changes needed. (BUT-244)
+- [x] **C2. Animated offline banner** — `status_indicators.dart`: AnimatedSwitcher + SizeTransition + "back online" confirmation. (BUT-244)
+
+### Post-Sprint
+
+- [x] Run `dart analyze --fatal-infos`
+- [ ] Run relevant unit tests
+- [ ] Commit, push, PR, merge
+- [ ] Update Linear ticket states
+
+---
+
+## Archive: Sprint Share & Discover (completed 2026-04-07)
 
 ### Agent A: Social Discovery
 

@@ -4390,6 +4390,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get indicatorOfflineMode => 'Offline mode - Changes saved locally';
 
   @override
+  String get indicatorBackOnline => 'Back online';
+
+  @override
   String get invitationCheckConnectionAndRetry =>
       'Check your internet connection and try again.';
 

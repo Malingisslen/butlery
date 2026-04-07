@@ -7677,6 +7677,12 @@ abstract class AppLocalizations {
   /// **'Offline-läge - Ändringar sparas lokalt'**
   String get indicatorOfflineMode;
 
+  /// No description provided for @indicatorBackOnline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ansluten igen'**
+  String get indicatorBackOnline;
+
   /// No description provided for @invitationCheckConnectionAndRetry.
   ///
   /// In sv, this message translates to:

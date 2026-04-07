@@ -29,10 +29,10 @@ class StatusIndicators {
   }
 }
 
-/// Offline indicator widget that shows when the app is offline.
+/// Offline indicator with animated transitions and "back online" confirmation.
 /// Uses ServiceLocator to access OfflineService directly so it works in any
 /// route without requiring a ChangeNotifierProvider ancestor.
-class OfflineIndicator extends StatelessWidget {
+class OfflineIndicator extends StatefulWidget {
   final String? message;
   final Color? backgroundColor;
 
@@ -43,42 +43,103 @@ class OfflineIndicator extends StatelessWidget {
   });
 
   @override
+  State<OfflineIndicator> createState() => _OfflineIndicatorState();
+}
+
+class _OfflineIndicatorState extends State<OfflineIndicator> {
+  late final OfflineService _offlineService;
+  bool _wasOffline = false;
+  bool _showBackOnline = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _offlineService = ServiceLocator.get<OfflineService>();
+    _offlineService.addListener(_onConnectivityChanged);
+    _wasOffline = !_offlineService.isOnline;
+  }
+
+  @override
+  void dispose() {
+    _offlineService.removeListener(_onConnectivityChanged);
+    super.dispose();
+  }
+
+  void _onConnectivityChanged() {
+    final isOnline = _offlineService.isOnline;
+    if (isOnline && _wasOffline) {
+      // Went from offline → online: show confirmation briefly
+      if (mounted) {
+        setState(() => _showBackOnline = true);
+        Future.delayed(AppDimensions.snackbarDuration, () {
+          if (mounted) setState(() => _showBackOnline = false);
+        });
+      }
+    }
+    _wasOffline = !isOnline;
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final offlineService = ServiceLocator.get<OfflineService>();
+    final isOffline = !_offlineService.isOnline;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.surfaceContainerHighest;
 
-    return ListenableBuilder(
-      listenable: offlineService,
-      builder: (context, child) {
-        if (offlineService.isOnline) {
-          return const SizedBox.shrink();
-        }
+    Widget? banner;
+    if (isOffline) {
+      banner = Container(
+        key: const ValueKey('offline'),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingL,
+          vertical: AppDimensions.spacingS,
+        ),
+        color: widget.backgroundColor ?? context.butleryColors.warning,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi_off,
+                color: textColor, size: AppDimensions.iconSizeM),
+            const SizedBox(width: AppDimensions.spacingM),
+            Text(
+              widget.message ?? context.l10n.indicatorOfflineMode,
+              style: AppTextStyles.contentTitle.copyWith(color: textColor),
+            ),
+          ],
+        ),
+      );
+    } else if (_showBackOnline) {
+      banner = Container(
+        key: const ValueKey('online'),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingL,
+          vertical: AppDimensions.spacingS,
+        ),
+        color: context.butleryColors.success,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi, color: textColor, size: AppDimensions.iconSizeM),
+            const SizedBox(width: AppDimensions.spacingM),
+            Text(
+              context.l10n.indicatorBackOnline,
+              style: AppTextStyles.contentTitle.copyWith(color: textColor),
+            ),
+          ],
+        ),
+      );
+    }
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingL,
-            vertical: AppDimensions.spacingS,
-          ),
-          color: backgroundColor ?? context.butleryColors.warning,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.wifi_off,
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Text(
-                message ?? context.l10n.indicatorOfflineMode,
-                style: AppTextStyles.contentTitle.copyWith(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+    return AnimatedSwitcher(
+      duration: AppDimensions.animationDurationCommon,
+      transitionBuilder: (child, animation) => SizeTransition(
+        sizeFactor: animation,
+        axisAlignment: -1.0,
+        child: child,
+      ),
+      child: banner ?? const SizedBox.shrink(),
     );
   }
 }
