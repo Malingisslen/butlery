@@ -4,11 +4,11 @@
 
 ### Agent A: Social Discovery
 
-- [ ] **A1. Add shareable public recipe collection** — PublicProfileView + PublicProfileViewModel, deep link /profile route, share button on friend profile, fetchPublicUserRecipes repository method. (BUT-219)
+- [x] **A1. Add shareable public recipe collection** — PublicProfileView + PublicProfileViewModel, deep link /profile route, share button on friend profile, fetchPublicUserRecipes repository method. (BUT-219)
 
 ### Agent B: Recipe Intelligence
 
-- [ ] **B1. Enhance collection health dashboard** — Completeness stats in RecipeQueryViewModel, distribution bar + quick-fix entry points in CollectionStatsView. (BUT-242)
+- [x] **B1. Enhance collection health dashboard** — Completeness stats in RecipeQueryViewModel, distribution bar + quick-fix entry points in CollectionStatsView. (BUT-242)
 
 ### Post-Sprint
 
