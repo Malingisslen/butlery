@@ -13,15 +13,20 @@ import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.da
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
 
 class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   final UserService _userService;
   final UnifiedRecipeService _recipeService;
-  final UnifiedShoppingService? _shoppingService;
   final PermissionService _permissionService;
   final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   final FirebaseSharedMenuRepository _sharedMenuRepository;
+
+  /// Resolved lazily to avoid cross-module dependency ordering issues
+  /// (UnifiedShoppingService lives in CollaborationModule)
+  UnifiedShoppingService? get _shoppingService =>
+      ServiceLocator.tryGet<UnifiedShoppingService>();
 
   // Modules
   late final SocialParticipantResolverModule _participantResolver;
@@ -38,10 +43,8 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     required PermissionService permissionService,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FirebaseSharedMenuRepository sharedMenuRepository,
-    UnifiedShoppingService? shoppingService,
   })  : _userService = userService,
         _recipeService = recipeService,
-        _shoppingService = shoppingService,
         _permissionService = permissionService,
         _sharedRecipeRepository = sharedRecipeRepository,
         _sharedMenuRepository = sharedMenuRepository {
@@ -51,7 +54,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       getSharedMenus: () => _sharedMenus,
       sharedRecipeRepository: _sharedRecipeRepository,
       sharedMenuRepository: _sharedMenuRepository,
-      shoppingService: _shoppingService,
+      getShoppingService: () => _shoppingService,
     );
   }
 
@@ -336,15 +339,14 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   /// Check if shopping list is shared by user
   Future<bool> isShoppingListSharedByUser(String listId, String userId) async {
     try {
-      // If shopping service not available, return false
-      if (_shoppingService == null) {
+      final shoppingService = _shoppingService;
+      if (shoppingService == null) {
         AppLogger.warning(
             'Shopping service not available - cannot check sharing status');
         return false;
       }
 
-      // Get all collaborative shopping lists
-      final collaborativeLists = _shoppingService.collaborative.getAllLists();
+      final collaborativeLists = shoppingService.collaborative.getAllLists();
       final list = collaborativeLists.where((l) => l.id == listId).firstOrNull;
 
       if (list == null) {

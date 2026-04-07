@@ -62,9 +62,9 @@ class StorageDeletionOperations extends BaseStorageRepository {
         '[$_logTag] Failed to delete user storage files',
         e,
       );
-      // Return true to allow account deletion to continue even if storage deletion fails
-      // This prevents orphaned accounts if storage deletion has issues
-      return true;
+      // Report failure honestly — the caller's _runDeletionStep adds this to
+      // failedCollections and the audit log records gdprCompliant: false
+      return false;
     }
   }
 

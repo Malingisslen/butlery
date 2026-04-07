@@ -11,18 +11,22 @@ import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 class HttpContentFetcher {
   static const _fetchTimeout = Duration(seconds: 10);
   static const _maxResponseBytes = 5 * 1024 * 1024; // 5 MB
+  static const _allowedSchemes = {'http', 'https'};
   static const _userAgent =
       'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) '
       'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1';
 
   final http.Client? _httpClient;
   final WebScraper Function()? _webScraperFactory;
+  final Future<List<InternetAddress>> Function(String host) _dnsLookup;
 
   HttpContentFetcher({
     http.Client? httpClient,
     WebScraper Function()? webScraperFactory,
+    Future<List<InternetAddress>> Function(String host)? dnsLookup,
   })  : _httpClient = httpClient,
-        _webScraperFactory = webScraperFactory;
+        _webScraperFactory = webScraperFactory,
+        _dnsLookup = dnsLookup ?? InternetAddress.lookup;
 
   /// Returns true if the host should be blocked (private/internal addresses).
   static bool isBlockedHost(String host) {
@@ -49,6 +53,16 @@ class HttpContentFetcher {
 
     if (addr.type == InternetAddressType.IPv6) {
       final bytes = addr.rawAddress;
+
+      // IPv4-mapped IPv6 (::ffff:x.x.x.x) — check the embedded IPv4
+      if (bytes.length == 16 &&
+          bytes.sublist(0, 10).every((b) => b == 0) &&
+          bytes[10] == 0xFF &&
+          bytes[11] == 0xFF) {
+        final ipv4Str = '${bytes[12]}.${bytes[13]}.${bytes[14]}.${bytes[15]}';
+        return isBlockedHost(ipv4Str);
+      }
+
       // ::1 loopback
       if (bytes.every((b) => b == 0) ||
           (bytes.sublist(0, 15).every((b) => b == 0) && bytes[15] == 1)) {
@@ -72,9 +86,33 @@ class HttpContentFetcher {
   Future<String?> fetchHtmlWithTimeout(String url) async {
     try {
       final uri = Uri.parse(url);
+
+      if (!_allowedSchemes.contains(uri.scheme.toLowerCase())) {
+        AppLogger.warning(
+            'HttpContentFetcher: Blocked non-HTTP scheme: ${uri.scheme}');
+        return null;
+      }
+
       if (isBlockedHost(uri.host)) {
         AppLogger.warning(
             'HttpContentFetcher: Blocked request to private/internal host: ${uri.host}');
+        return null;
+      }
+
+      // DNS rebinding protection: resolve hostname and check resolved IPs
+      try {
+        final addresses = await _dnsLookup(uri.host);
+        for (final addr in addresses) {
+          if (isBlockedHost(addr.address)) {
+            AppLogger.warning('HttpContentFetcher: DNS resolved to blocked IP '
+                '${addr.address} for host ${uri.host}');
+            return null;
+          }
+        }
+      } catch (e) {
+        // DNS resolution failure — block the request (fail-closed)
+        AppLogger.warning(
+            'HttpContentFetcher: DNS resolution failed for ${uri.host}: $e');
         return null;
       }
 

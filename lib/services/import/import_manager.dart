@@ -18,6 +18,8 @@ import 'package:butlery/services/import/cache/global_recipe_cache.dart';
 import 'package:butlery/services/import/cache/cache_entry.dart';
 import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
+import 'package:butlery/services/import/import_rate_limiter.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:http/http.dart' as http;
@@ -88,6 +90,16 @@ class ImportManager {
       return ServiceLocator.get<InstagramPipeline>();
     } catch (e) {
       AppLogger.debug('ImportManager: InstagramPipeline not available: $e');
+      return null;
+    }
+  }
+
+  /// Get the rate limiter (lazy initialization with graceful fallback)
+  ImportRateLimiter? get _rateLimiter {
+    try {
+      return ServiceLocator.get<ImportRateLimiter>();
+    } catch (e) {
+      AppLogger.debug('ImportManager: ImportRateLimiter not available: $e');
       return null;
     }
   }
@@ -173,6 +185,19 @@ class ImportManager {
     void Function(String phase)? onProgress,
   }) async {
     try {
+      // Rate limit check for basic imports
+      final rateLimiter = _rateLimiter;
+      final operation = ImportOperation.basic('auto');
+      if (rateLimiter != null) {
+        final limitResult = await rateLimiter.checkLimit(operation);
+        if (!limitResult.isAllowed) {
+          return ImportManagerResult.failure(
+            'Importgräns nådd. Försök igen senare.',
+            strategy: 'rate_limited',
+          );
+        }
+      }
+
       // Phase: fetching — cache check and strategy selection
       onProgress?.call('fetching');
 
@@ -269,6 +294,15 @@ class ImportManager {
         'Import manager error: $e',
         availableStrategies: _strategies.map((s) => s.strategyName).toList(),
       );
+    }
+  }
+
+  /// Record successful import usage for rate limiting.
+  Future<void> _recordImportUsage(String sourceType) async {
+    try {
+      await _rateLimiter?.recordUsage(ImportOperation.basic(sourceType));
+    } catch (e) {
+      AppLogger.debug('ImportManager: Failed to record import usage: $e');
     }
   }
 
@@ -659,11 +693,14 @@ class ImportManager {
     }
   }
 
-  /// Save successful import result to cache if input is a URL.
+  /// Save successful import result to cache if input is a URL, and record usage.
   Future<void> _saveToCacheIfUrl(
     String input,
     ImportManagerResult result,
   ) async {
+    final sourceType = _sourceTypeFromStrategy(result.strategy);
+    await _recordImportUsage(sourceType);
+
     final cache = _globalCache;
     final normalizer = _normalizer;
 
@@ -687,9 +724,6 @@ class ImportManager {
 
     try {
       final recipeData = result.recipe!.toJson();
-
-      // Determine source type based on strategy
-      final sourceType = _sourceTypeFromStrategy(result.strategy);
 
       // Create extraction metadata
       final extractionMeta = ExtractionMeta(

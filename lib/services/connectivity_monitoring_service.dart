@@ -8,24 +8,14 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Monitors internet and Firebase connectivity with real-time status updates.
+///
+/// Singleton lifecycle managed by GetIt (registerLazySingleton in SocialModule).
+/// Do NOT use a manual singleton pattern here — it races with GetIt.
 class ConnectivityMonitoringService extends ChangeNotifier
     with StreamManagementMixin, ErrorHandlingMixin {
   final ConnectivityRepository _connectivityRepository;
 
-  static ConnectivityMonitoringService? _instance;
-
-  factory ConnectivityMonitoringService({
-    ConnectivityRepository? connectivityRepository,
-  }) {
-    if (connectivityRepository != null) {
-      _instance = ConnectivityMonitoringService._internal(
-        connectivityRepository,
-      );
-    }
-    return _instance!;
-  }
-
-  ConnectivityMonitoringService._internal(this._connectivityRepository);
+  ConnectivityMonitoringService(this._connectivityRepository);
 
   bool _isConnectedToInternet = true;
   bool _isConnectedToFirebase = true;

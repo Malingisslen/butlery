@@ -28,6 +28,8 @@ class AuthService extends ChangeNotifier
   User? _currentUser;
   StreamSubscription<User?>? _authStateSubscription;
 
+  bool _sessionExpired = false; // ignore: prefer_final_fields
+
   User? get currentUser => _currentUser;
   String? get currentUserDisplayName => _currentUser?.displayName;
   String? get currentUserEmail => _currentUser?.email;
@@ -36,6 +38,9 @@ class AuthService extends ChangeNotifier
   bool get isAuthenticated => _currentUser != null;
   bool get isEmailVerified => _currentUser?.emailVerified ?? false;
   String? get currentUserId => _authRepository.currentUserId;
+
+  /// True when a token refresh failed due to revocation — signals VMs to show re-auth prompt.
+  bool get sessionExpired => _sessionExpired;
 
   AuthService({
     auth_repo.AuthRepository? authRepository,
@@ -85,6 +90,7 @@ class AuthService extends ChangeNotifier
         }
 
         setLoading(false);
+        _sessionExpired = false;
         await DIContainer().pushUserScope();
         await _analyticsService.logSignUp(method: 'email');
         return true;
@@ -138,6 +144,7 @@ class AuthService extends ChangeNotifier
         return false;
       }
 
+      _sessionExpired = false;
       await DIContainer().pushUserScope();
       await _analyticsService.logLogin(method: 'email');
       return true;
@@ -212,6 +219,29 @@ class AuthService extends ChangeNotifier
       clearError();
       notifyListeners();
       AppLogger.info('Force sign out completed');
+    }
+  }
+
+  /// Force-refresh the Firebase ID token. If the refresh token is revoked
+  /// or the account is disabled, triggers sign-out and sets [sessionExpired].
+  Future<bool> refreshSession() async {
+    if (_currentUser == null) return false;
+    try {
+      await _currentUser!.getIdToken(true);
+      _currentUser = _authRepository.currentUser;
+      return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-token-expired' || e.code == 'user-disabled') {
+        _sessionExpired = true;
+        notifyListeners();
+        await forceSignOut();
+      } else {
+        _handleAuthError(e);
+      }
+      return false;
+    } catch (e) {
+      AppLogger.warning('Token refresh failed: $e');
+      return false;
     }
   }
 

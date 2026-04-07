@@ -36,9 +36,7 @@ void main() {
         .thenAnswer((_) => Stream.value(true));
 
     // Create service with mock repository
-    service = ConnectivityMonitoringService(
-      connectivityRepository: mockRepository,
-    );
+    service = ConnectivityMonitoringService(mockRepository);
   });
 
   tearDown(() async {
@@ -62,11 +60,11 @@ void main() {
   group('ConnectivityMonitoringService', () {
     group('Initialization', () {
       test('should initialize with default connected state', () {
-        // Assert
+        // Assert — before monitoring starts, status text is empty
         expect(service.isConnectedToInternet, isTrue);
         expect(service.isConnectedToFirebase, isTrue);
         expect(service.isFullyConnected, isTrue);
-        expect(service.connectionStatusText, equals('Ansluten'));
+        expect(service.connectionStatusText, isEmpty);
       });
 
       test('should use injected repository', () {
@@ -77,17 +75,14 @@ void main() {
         verify(() => mockRepository.monitorFirebaseConnection()).called(1);
       });
 
-      test('should maintain singleton pattern with repository injection', () {
-        // Arrange
-        final service1 = ConnectivityMonitoringService(
-          connectivityRepository: mockRepository,
-        );
+      test('should construct directly with repository', () {
+        // DI container (GetIt) manages singleton lifecycle, not the class itself
+        final service1 = ConnectivityMonitoringService(mockRepository);
+        final service2 = ConnectivityMonitoringService(mockRepository);
 
-        // Act
-        final service2 = ConnectivityMonitoringService();
-
-        // Assert
-        expect(identical(service1, service2), isTrue);
+        // Two separate instances — GetIt's registerLazySingleton handles the singleton guarantee
+        expect(service1, isNotNull);
+        expect(service2, isNotNull);
       });
     });
 

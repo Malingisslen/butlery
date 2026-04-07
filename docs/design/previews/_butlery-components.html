@@ -7,7 +7,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
 <style>
+/* Material Icons helpers */
+.mi { font-family: 'Material Icons'; font-weight: normal; font-style: normal; display: inline-block; line-height: 1; text-transform: none; letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; vertical-align: middle; font-size: 20px; }
+.mi-outlined { font-family: 'Material Icons Outlined'; font-weight: normal; font-style: normal; display: inline-block; line-height: 1; text-transform: none; letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; vertical-align: middle; font-size: 20px; }
+.mi-sm { font-size: 16px; }
+.mi-lg { font-size: 24px; }
 /* ============================================================
    BUTLERY COMPONENT LIBRARY
    Source of truth: lib/widgets/ (Flutter widget files)
@@ -16,20 +22,21 @@
 :root {
   --green: #4A7C59;
   --green-dark: #3D6849;
-  --green-light: #5A8F6A;
+  --green-light: #6B9B7A;
   --green-pale: #E8F0EA;
-  --green-muted: #7A9A80;
+  --green-muted: #526A55;
   --rust: #8B5A3C;
-  --rust-light: #A67B5B;
+  --rust-light: #A77B5E;
   --leather: #6B4A2C;
   --cream: #F8F4E8;
+  --cream-light: #F0EAD6;
   --cream-dark: #E8E2D6;
   --cream-darker: #D8D2C6;
   --white: #FFFFFF;
   --charcoal: #2C2C2C;
   --text: #1A1A1A;
   --text-light: #666666;
-  --text-muted: #999999;
+  --text-muted: #767676;
   --error: #C44536;
   --warning: #D4A03C;
   --success: var(--green);
@@ -140,8 +147,10 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 .overlay-btn { width: 32px; height: 32px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
 
 /* Content Cards */
-.recipe-card { background: var(--white); border-left: 4px solid var(--green); border-bottom: 3px solid var(--rust-light); padding: 12px; display: flex; gap: 12px; }
-.recipe-card-img { width: 64px; height: 64px; background: var(--green-pale); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--green-muted); font-size: 24px; }
+.recipe-card { background: var(--white); border-left: 4px solid var(--green); border-bottom: 3px solid var(--rust-light); padding: 16px; margin-bottom: 12px; display: flex; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.recipe-card-img { width: 80px; height: 80px; background: transparent; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--green-muted); font-size: 24px; }
+.recipe-card-img img { width: 80px; height: 80px; object-fit: contain; }
+.recipe-tag { font-size: 11px; padding: 2px 6px; border: 1px solid var(--cream-dark); color: var(--text-muted); }
 .recipe-card-content { flex: 1; min-width: 0; }
 .recipe-card-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
 .recipe-card-desc { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
@@ -358,12 +367,15 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-label">ButleryHeader (page header)</div>
     <div class="lib-class">ButleryHeader</div>
     <div class="lib-demo" style="padding:0">
-      <div class="page-header">
-        <div class="header-left">
-          <span class="page-header-title">dina recept</span>
-          <span class="count-badge">48 recept</span>
+      <div class="page-header" style="flex-direction:column;align-items:flex-start;gap:4px;position:relative">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <span class="page-header-title">dina<br>recept</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:20px;color:var(--cream);opacity:0.8">&#9638;&#9638;</span>
+            <div class="avatar">MA</div>
+          </div>
         </div>
-        <div class="avatar">ML</div>
+        <span class="count-badge" style="background:transparent;border:1px solid rgba(255,255,255,0.4);color:var(--cream);font-size:12px;padding:2px 10px">4 recept</span>
       </div>
     </div>
   </div>
@@ -458,11 +470,11 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
   <div class="lib-item-full">
     <div class="lib-label">Allergen &amp; dietary badges</div>
     <div class="lib-demo" style="display:flex;gap:8px;flex-wrap:wrap">
-      <span class="badge badge-free">&#10003; Glutenfri</span>
-      <span class="badge badge-free">&#10003; Laktosfri</span>
-      <span class="badge badge-contains">&#9888; Nötter</span>
-      <span class="badge badge-contains">&#9888; Ägg</span>
-      <span class="badge badge-unknown">? Gluten</span>
+      <span class="badge badge-free" style="border:1px solid rgba(74,124,89,0.3)">&#10003; nötfri</span>
+      <span class="badge badge-free" style="border:1px solid rgba(74,124,89,0.3)">&#10003; jordnötsfri</span>
+      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)">&#9888; innehåller-gluten</span>
+      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)">&#9888; innehåller-mjölk</span>
+      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)">&#9888; Ej vegetarisk</span>
       <span class="rating-badge">&#9733; 4.2 (12)</span>
     </div>
   </div>
@@ -511,8 +523,8 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-label">FAB + Overlay button</div>
       <div class="lib-class">FloatingActionButtonWidget / OverlayButton</div>
       <div class="lib-demo" style="display:flex;gap:16px;align-items:center">
-        <div class="fab">&#128722;</div>
-        <div class="fab" style="width:48px;height:48px">&#9993;</div>
+        <div class="fab"><span class="mi" style="color:var(--cream)">shopping_cart</span></div>
+        <div class="fab" style="width:48px;height:48px"><span class="mi" style="color:var(--cream)">mail</span></div>
         <div style="background:var(--green-pale);width:80px;height:80px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px;position:relative"><div class="overlay-btn" style="position:absolute;top:4px;right:4px">&#10005;</div></div>
       </div>
     </div>
@@ -528,11 +540,17 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-class">RecipeCard(style: .detailed)</div>
     <div class="lib-demo">
       <div class="recipe-card">
-        <div class="recipe-card-img">&#127835;</div>
-        <div class="recipe-card-content">
-          <div class="recipe-card-title">Pasta Carbonara</div>
-          <div class="recipe-card-desc">Klassisk italiensk pasta med ägg och pancetta</div>
-          <div class="recipe-card-meta"><span>&#9201; 30 min</span><span>&#128101; 4</span><span class="rating-badge">&#9733; 4.2</span></div>
+        <div class="recipe-card-img"><img src="../../../assets/illustrations/broccoli.png" style="width:64px;height:64px;object-fit:contain" alt="broccoli"></div>
+        <div class="recipe-card-content" style="position:relative">
+          <div class="recipe-card-title">Kycklinggryta med paprika</div>
+          <div style="font-size:13px;color:var(--text-light)">Portioner: 4</div>
+          <div class="recipe-card-meta">45 min &middot; 4 port</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">
+            <span class="recipe-tag">Kyckling</span>
+            <span class="recipe-tag">Gryta</span>
+            <span class="recipe-tag">Under 45 min</span>
+          </div>
+          <span class="mi-outlined" style="position:absolute;top:0;right:0;font-size:22px;color:var(--text-muted)">favorite_border</span>
         </div>
       </div>
     </div>
@@ -593,7 +611,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-label">SearchInputWidget (green+rust border)</div>
     <div class="lib-class">SearchInputWidget</div>
     <div class="lib-demo">
-      <div class="search-box"><span style="color:var(--green)">&#128269;</span><input type="text" placeholder="sök bland recepten..."></div>
+      <div class="search-box"><span class="mi" style="color:var(--green)">search</span><input type="text" placeholder="sök bland recepten..."><span class="mi-outlined" style="color:var(--text-muted)">tune</span></div>
     </div>
   </div>
 
@@ -632,10 +650,10 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-class">BottomNavBar (custom)</div>
     <div class="lib-demo" style="padding:0">
       <div class="bottom-nav">
-        <div class="nav-item active"><span class="nav-icon">&#128214;</span><span>recept</span></div>
-        <div class="nav-item"><span class="nav-icon">&#128197;</span><span>meny</span></div>
-        <div class="nav-item"><span class="nav-icon">&#128722;</span><span>inköp</span></div>
-        <div class="nav-item"><span class="nav-icon">&#10133;</span><span>lägg till</span></div>
+        <div class="nav-item active"><span class="mi nav-icon">grid_view</span><span>recept</span></div>
+        <div class="nav-item"><span class="mi-outlined nav-icon">calendar_today</span><span>meny</span></div>
+        <div class="nav-item"><span class="mi-outlined nav-icon">shopping_cart</span><span>inköp</span></div>
+        <div class="nav-item"><span class="mi nav-icon">add</span><span>lägg till</span></div>
       </div>
     </div>
   </div>

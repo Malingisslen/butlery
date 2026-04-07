@@ -114,9 +114,6 @@ class SocialModule implements DIModule {
         permissionService: app<PermissionService>(),
         sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
         sharedMenuRepository: app<FirebaseSharedMenuRepository>(),
-        shoppingService: container.isRegistered<UnifiedShoppingService>()
-            ? container<UnifiedShoppingService>()
-            : null,
       ),
     );
 
@@ -314,7 +311,7 @@ class SocialModule implements DIModule {
 
       container.registerLazySingleton<ConnectivityMonitoringService>(
         () => ConnectivityMonitoringService(
-          connectivityRepository: container<ConnectivityRepository>(),
+          container<ConnectivityRepository>(),
         ),
       );
 

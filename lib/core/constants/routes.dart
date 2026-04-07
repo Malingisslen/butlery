@@ -127,6 +127,7 @@ class Routes {
     messages,
     chat,
     cookingMode,
+    settings,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
@@ -166,6 +167,7 @@ class Routes {
     messages,
     chat,
     cookingMode,
+    settings,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
@@ -259,6 +261,7 @@ class Routes {
     chat,
 
     // Settings
+    settings,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,

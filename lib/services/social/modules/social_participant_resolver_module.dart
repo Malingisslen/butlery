@@ -15,7 +15,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// Note (V1-QP-001): Uses denormalized member info from subcollection to avoid N+1 queries.
 class SocialParticipantResolverModule {
   final UserService userService;
-  final UnifiedShoppingService? shoppingService;
+  final UnifiedShoppingService? Function() getShoppingService;
   final List<SharedRecipe> Function() getSharedRecipes;
   final List<SharedMenu> Function() getSharedMenus;
   final FirebaseSharedRecipeRepository sharedRecipeRepository;
@@ -27,7 +27,7 @@ class SocialParticipantResolverModule {
     required this.getSharedMenus,
     required this.sharedRecipeRepository,
     required this.sharedMenuRepository,
-    this.shoppingService,
+    required this.getShoppingService,
   });
 
   /// Get recipe participants using denormalized member info (avoids N+1 lookups)
@@ -106,6 +106,7 @@ class SocialParticipantResolverModule {
   Future<List<UserProfile>> getShoppingListParticipants(String listId) async {
     try {
       // If shopping service not available, return empty list
+      final shoppingService = getShoppingService();
       if (shoppingService == null) {
         AppLogger.warning(
             'Shopping service not available for participant resolution');
@@ -113,7 +114,7 @@ class SocialParticipantResolverModule {
       }
 
       // Get collaborative shopping lists
-      final collaborativeLists = shoppingService!.collaborative.getAllLists();
+      final collaborativeLists = shoppingService.collaborative.getAllLists();
       final list = collaborativeLists.where((l) => l.id == listId).firstOrNull;
 
       if (list == null) {

@@ -167,12 +167,6 @@ class FriendsManagementOperations extends BaseService {
         throw Exception('Friend request not found');
       }
 
-      // Update request status
-      final acceptedRequest = request.copyWith(
-        status: FriendRequestStatus.accepted,
-        respondedAt: DateTime.now(),
-      );
-
       // Fetch real user profile for the friend request sender
       final userProfile = await _userService.getUserProfile(request.fromUserId);
       if (userProfile == null) {
@@ -183,16 +177,28 @@ class FriendsManagementOperations extends BaseService {
 
       final friend = userProfile;
 
-      // Update local state
-      _addFriendInternal(friend);
-      _removeIncomingRequestInternal(requestId);
+      // Resolve the request document reference for atomic update
+      final requestQuery = await _getFirestore()
+          .collection(FirestoreCollections.socialRequests)
+          .where('fromUserId', isEqualTo: request.fromUserId)
+          .where('toUserId', isEqualTo: request.toUserId)
+          .limit(1)
+          .get();
 
-      // Add mutual friends with counter updates using relationship repository
-      await _relationshipRepository.addMutualFriends(
+      if (requestQuery.docs.isEmpty) {
+        throw Exception('Friend request document not found in Firestore');
+      }
+
+      // Atomic: creates mutual friendship + marks request accepted in one transaction
+      await _relationshipRepository.acceptFriendAtomically(
         _getCurrentUserId()!,
         request.fromUserId,
+        requestDocRef: requestQuery.docs.first.reference,
       );
-      await _updateFriendRequestStatus(acceptedRequest);
+
+      // Update local state AFTER successful transaction
+      _addFriendInternal(friend);
+      _removeIncomingRequestInternal(requestId);
 
       // Send notification to the original sender (non-critical)
       unawaited(_sendFriendRequestAcceptedNotification(

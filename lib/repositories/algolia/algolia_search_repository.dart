@@ -148,6 +148,11 @@ class AlgoliaSearchRepository implements SearchRepository {
 
   @override
   Future<void> indexRecipe(Recipe recipe, {required String ownerId}) async {
+    if (recipe.isPersonal) {
+      await removeRecipe(recipe.id);
+      return;
+    }
+
     try {
       await _searchClient.saveObject(
         indexName: _recipesIndex,
@@ -295,10 +300,9 @@ class AlgoliaSearchRepository implements SearchRepository {
       'rating': recipe.rating,
       'mealType': recipe.mealType,
       'tags': recipe.personalTagIds ?? [],
-      'ingredients': recipe.ingredients,
       'ownerId': ownerId,
       'ownerDisplayName': '', // Should be set by caller with user data
-      'isPublic': true,
+      'isPublic': !recipe.isPersonal,
       'createdAt': recipe.createdAt.millisecondsSinceEpoch,
       'updatedAt': recipe.updatedAt.millisecondsSinceEpoch,
     };

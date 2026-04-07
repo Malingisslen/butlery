@@ -22,10 +22,10 @@
 /// - **Count Maintenance**: Automatic friend count updates for profile statistics
 /// - **Optimized Queries**: Efficient Firestore queries with proper indexing for scalability
 
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -135,59 +135,94 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   /// when the same friendship is being created from multiple sources simultaneously.
   /// Stores `displayNameLower` on each friend doc to enable server-side prefix search.
   Future<void> addMutualFriends(String userId1, String userId2) async {
-    // Read both profiles outside the transaction to get display names
-    final user1ProfileDoc = await collection.doc(userId1).get();
-    final user2ProfileDoc = await collection.doc(userId2).get();
-    final user1Name =
-        (user1ProfileDoc.data()?['displayName'] as String? ?? '')
-            .toLowerCase();
-    final user2Name =
-        (user2ProfileDoc.data()?['displayName'] as String? ?? '')
-            .toLowerCase();
+    final (user1Name, user2Name) = await _fetchDisplayNames(userId1, userId2);
 
     await firestore.runTransaction((transaction) async {
-      final user1FriendRef = _userFriendsRef(userId1).doc(userId2);
-      final user2FriendRef = _userFriendsRef(userId2).doc(userId1);
-
-      // Read both friendship documents to check if they already exist
-      final user1FriendDoc = await transaction.get(user1FriendRef);
-      final user2FriendDoc = await transaction.get(user2FriendRef);
-
-      // BUG-011 fix: Changed from OR to AND - only skip if BOTH docs exist
-      // This handles partial friendship states where only one side was created
-      if (user1FriendDoc.exists && user2FriendDoc.exists) {
-        return;
-      }
-
-      // Create friend documents for whichever side doesn't exist yet
-      // Each friend doc stores the OTHER user's displayNameLower for prefix search
-      int docsCreated = 0;
-      if (!user1FriendDoc.exists) {
-        transaction.set(user1FriendRef, {
-          'addedAt': timestampProvider.serverTimestamp(),
-          'displayNameLower': user2Name,
-        });
-        docsCreated++;
-      }
-      if (!user2FriendDoc.exists) {
-        transaction.set(user2FriendRef, {
-          'addedAt': timestampProvider.serverTimestamp(),
-          'displayNameLower': user1Name,
-        });
-        docsCreated++;
-      }
-
-      // Only update friend counts if we created both documents (new friendship)
-      // If only one was created, don't increment (partial recovery scenario)
-      if (docsCreated == 2) {
-        final user1Profile = collection.doc(userId1);
-        final user2Profile = collection.doc(userId2);
-        transaction
-            .update(user1Profile, {'friendsCount': FieldValue.increment(1)});
-        transaction
-            .update(user2Profile, {'friendsCount': FieldValue.increment(1)});
-      }
+      await _writeMutualFriendDocs(
+          transaction, userId1, userId2, user1Name, user2Name);
     });
+  }
+
+  /// Accept a friend request atomically: creates mutual friendship AND marks
+  /// the request as accepted in a single Firestore transaction.
+  ///
+  /// [requestDocRef] must be resolved before calling (query by fromUserId/toUserId).
+  Future<void> acceptFriendAtomically(
+    String userId1,
+    String userId2, {
+    required DocumentReference requestDocRef,
+  }) async {
+    final (user1Name, user2Name) = await _fetchDisplayNames(userId1, userId2);
+
+    await firestore.runTransaction((transaction) async {
+      await _writeMutualFriendDocs(
+          transaction, userId1, userId2, user1Name, user2Name);
+
+      transaction.update(requestDocRef, {
+        'status': FriendRequestStatus.accepted.name,
+        'respondedAt': timestampProvider.serverTimestamp(),
+      });
+    });
+  }
+
+  /// Fetch lowercased display names for two users concurrently.
+  Future<(String, String)> _fetchDisplayNames(
+      String userId1, String userId2) async {
+    final results = await Future.wait([
+      collection.doc(userId1).get(),
+      collection.doc(userId2).get(),
+    ]);
+    final user1Name =
+        (results[0].data()?['displayName'] as String? ?? '').toLowerCase();
+    final user2Name =
+        (results[1].data()?['displayName'] as String? ?? '').toLowerCase();
+    return (user1Name, user2Name);
+  }
+
+  /// Shared transaction body: creates friend docs + increments counts.
+  /// BUG-011: skips if both sides already exist (partial recovery handled).
+  Future<void> _writeMutualFriendDocs(
+    Transaction transaction,
+    String userId1,
+    String userId2,
+    String user1Name,
+    String user2Name,
+  ) async {
+    final user1FriendRef = _userFriendsRef(userId1).doc(userId2);
+    final user2FriendRef = _userFriendsRef(userId2).doc(userId1);
+
+    final user1FriendDoc = await transaction.get(user1FriendRef);
+    final user2FriendDoc = await transaction.get(user2FriendRef);
+
+    // BUG-011 fix: only skip if BOTH docs exist (handles partial state)
+    if (user1FriendDoc.exists && user2FriendDoc.exists) {
+      return;
+    }
+
+    int docsCreated = 0;
+    if (!user1FriendDoc.exists) {
+      transaction.set(user1FriendRef, {
+        'addedAt': timestampProvider.serverTimestamp(),
+        'displayNameLower': user2Name,
+      });
+      docsCreated++;
+    }
+    if (!user2FriendDoc.exists) {
+      transaction.set(user2FriendRef, {
+        'addedAt': timestampProvider.serverTimestamp(),
+        'displayNameLower': user1Name,
+      });
+      docsCreated++;
+    }
+
+    if (docsCreated == 2) {
+      final user1Profile = collection.doc(userId1);
+      final user2Profile = collection.doc(userId2);
+      transaction
+          .update(user1Profile, {'friendsCount': FieldValue.increment(1)});
+      transaction
+          .update(user2Profile, {'friendsCount': FieldValue.increment(1)});
+    }
   }
 
   /// Remove users from each other's friends collections and update counts.
@@ -245,8 +280,7 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     final futures = <Future<QuerySnapshot<Map<String, dynamic>>>>[];
     for (var i = 0; i < userIds.length; i += batchSize) {
       final batch = userIds.skip(i).take(batchSize).toList();
-      futures.add(
-          collection.where(FieldPath.documentId, whereIn: batch).get());
+      futures.add(collection.where(FieldPath.documentId, whereIn: batch).get());
     }
     final snapshots = await Future.wait(futures);
     return snapshots
@@ -305,10 +339,7 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   /// friend lists. At 1000 friends the snapshot payload is ~50-100KB which is acceptable
   /// for real-time listeners. Users exceeding 1000 friends will see a truncation warning.
   Stream<List<String>> friendIdsStream(String userId) {
-    return _userFriendsRef(userId)
-        .limit(1000)
-        .snapshots()
-        .map((snapshot) {
+    return _userFriendsRef(userId).limit(1000).snapshots().map((snapshot) {
       if (snapshot.docs.length == 1000) {
         AppLogger.warning(
             'friendIdsStream for user $userId hit 1000-doc limit — results are truncated');
@@ -372,8 +403,7 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     final normalizedQuery = query.toLowerCase();
 
     final snapshot = await _userFriendsRef(userId)
-        .where('displayNameLower',
-            isGreaterThanOrEqualTo: normalizedQuery)
+        .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
         .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
         .limit(20)
         .get();
