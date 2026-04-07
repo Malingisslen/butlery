@@ -166,10 +166,10 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
       return SliverFillRemaining(
         child: StateWidget.empty(
           title: context.l10n.sharedNoContentYet,
-          subtitle: context.l10n.sharedContentWillAppearHere,
+          subtitle: context.l10n.sharedEmptyStateExplanation,
           icon: Icons.share_outlined,
-          actionLabel: context.l10n.socialAddFriends,
-          onAction: () => Navigator.pushNamed(context, Routes.friends),
+          actionLabel: context.l10n.sharedShareFirstRecipe,
+          onAction: () => Navigator.pushNamed(context, Routes.home),
         ),
       );
     }

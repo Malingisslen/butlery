@@ -5,6 +5,7 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -39,6 +40,7 @@ class FriendsViewModel extends ChangeNotifier
 
   StreamSubscription? _friendsServiceSubscription;
   bool _isDisposed = false;
+  bool _notifyScheduled = false;
   Timer? _debounceTimer;
   bool _isCreatingGroup = false;
   String? _groupCreationError;
@@ -71,6 +73,20 @@ class FriendsViewModel extends ChangeNotifier
     Future.delayed(Duration.zero, () {
       if (!_isDisposed) {
         _loadUserProfilesForRequests();
+      }
+    });
+  }
+
+  // Coalesce rapid-fire notifications into max 1 per frame to prevent
+  // Consumer rebuild saturation that freezes the UI on Android.
+  @override
+  void notifyListeners() {
+    if (_isDisposed || _notifyScheduled) return;
+    _notifyScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _notifyScheduled = false;
+      if (!_isDisposed) {
+        super.notifyListeners();
       }
     });
   }
@@ -466,9 +482,10 @@ class FriendsViewModel extends ChangeNotifier
     _profileCacheManager.dispose();
     _selectionManager.dispose();
 
-    // Clean up timer
+    // Clean up timer and scheduled notification
     _debounceTimer?.cancel();
     _debounceTimer = null;
+    _notifyScheduled = false;
 
     super.dispose();
   }

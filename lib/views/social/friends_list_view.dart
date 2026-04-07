@@ -144,78 +144,78 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       );
     }
 
-    return Consumer<FriendsViewModel>(
-      builder: (context, viewModel, child) {
-        final friendsService = context.read<UnifiedFriendsService>();
-
-        return LayoutComponents.mainMenu(
-          currentIndex: null,
-          title: context.l10n.socialFriendsAndGroups,
-          body: SafeArea(
-            // ✅ RESPONSIVE: Center and constrain content on large screens
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: double.infinity,
-                    tablet: 700,
-                    desktop: 800,
+    return LayoutComponents.mainMenu(
+      currentIndex: null,
+      title: context.l10n.socialFriendsAndGroups,
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: Column(
+              children: [
+                LayoutComponents.offlineIndicator(),
+                // TabBar — static, outside Consumer to avoid unnecessary rebuilds
+                ColoredBox(
+                  color: Theme.of(context).colorScheme.surface,
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: false,
+                    tabAlignment: TabAlignment.fill,
+                    labelColor: Theme.of(context).colorScheme.primary,
+                    unselectedLabelColor:
+                        Theme.of(context).colorScheme.onSurfaceVariant,
+                    indicatorColor: Theme.of(context).colorScheme.primary,
+                    indicatorWeight: AppDimensions.borderWidthThick,
+                    tabs: [
+                      Tab(
+                        icon: const Icon(Icons.people),
+                        text: context.l10n.socialFriends,
+                      ),
+                      Tab(
+                        icon: const Icon(Icons.groups),
+                        text: context.l10n.socialGroups,
+                      ),
+                      Tab(
+                        icon: const Icon(Icons.search),
+                        text: context.l10n.socialFindFriends,
+                      ),
+                    ],
                   ),
                 ),
-                child: Column(
-                  children: [
-                    LayoutComponents.offlineIndicator(),
-                    // TabBar with proper styling
-                    ColoredBox(
-                      color: Theme.of(context).colorScheme.surface,
-                      child: TabBar(
-                        controller: _tabController,
-                        isScrollable: false, // Center the tabs
-                        tabAlignment: TabAlignment.fill, // Fill available space
-                        labelColor: Theme.of(context).colorScheme.primary,
-                        unselectedLabelColor:
-                            Theme.of(context).colorScheme.onSurfaceVariant,
-                        indicatorColor: Theme.of(context).colorScheme.primary,
-                        indicatorWeight: AppDimensions.borderWidthThick,
-                        tabs: [
-                          Tab(
-                            icon: const Icon(Icons.people),
-                            text: context.l10n.socialFriends,
-                          ),
-                          Tab(
-                            icon: const Icon(Icons.groups),
-                            text: context.l10n.socialGroups,
-                          ),
-                          Tab(
-                            icon: const Icon(Icons.search),
-                            text: context.l10n.socialFindFriends,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Tab content — only build the active tab
-                    Expanded(
-                      child: switch (_currentTabIndex) {
+                // Tab content — only this rebuilds on ViewModel changes
+                Expanded(
+                  child: Consumer<FriendsViewModel>(
+                    builder: (context, viewModel, _) {
+                      final friendsService =
+                          context.read<UnifiedFriendsService>();
+                      return switch (_currentTabIndex) {
                         0 => _buildFriendsTab(viewModel),
                         1 => _buildGroupsTab(friendsService, viewModel),
                         2 => _buildDiscoveryTab(viewModel),
                         _ => const SizedBox.shrink(),
-                      },
-                    ),
-                  ],
+                      };
+                    },
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-          floatingActionButton: _currentTabIndex == 1
-              ? FloatingActionButton(
-                  onPressed: () {},
-                  child: const Icon(Icons.add),
-                )
-              : null,
-        );
-      },
+        ),
+      ),
+      floatingActionButton: _currentTabIndex == 1
+          ? FloatingActionButton(
+              onPressed: () {},
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 
@@ -227,7 +227,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   Widget _buildDiscoveryTab(FriendsViewModel viewModel) {
     // Friend discovery hub with search and requests
     return _searchQuery.isEmpty
-        ? RequestsTab.build(context, viewModel)
+        ? const RequestsTab()
         : SearchTab.build(context, viewModel, _searchQuery,
             isGroupsSearch: false);
   }

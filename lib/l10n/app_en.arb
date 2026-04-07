@@ -3494,6 +3494,8 @@
   "sharedHideFromList": "Hide from my list",
   "sharedLoadingContent": "Loading shared content...",
   "sharedNoContentYet": "No shared recipes yet",
+  "sharedEmptyStateExplanation": "When you or your friends share recipes and menus, they'll appear here. Try sharing a recipe!",
+  "sharedShareFirstRecipe": "Share a recipe",
   "socialAddFriends": "Add friends",
   "taggingAnalyzingIngredients": "Analyzing ingredients...",
   "taggingCouldNotAnalyze": "Could not analyze recipe",

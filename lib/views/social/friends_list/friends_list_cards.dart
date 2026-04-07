@@ -47,6 +47,14 @@ class FriendCard {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        subtitle: Text(
+          friend.bio?.isNotEmpty == true ? friend.bio! : friend.lastActiveText,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }

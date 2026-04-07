@@ -3494,6 +3494,8 @@
   "sharedHideFromList": "Dölj från min lista",
   "sharedLoadingContent": "Laddar delat innehåll...",
   "sharedNoContentYet": "Inga delade recept än",
+  "sharedEmptyStateExplanation": "När du eller dina vänner delar recept och menyer visas de här. Prova att dela ett recept!",
+  "sharedShareFirstRecipe": "Dela ett recept",
   "socialAddFriends": "Lägg till vänner",
   "taggingAnalyzingIngredients": "Analyserar ingredienser...",
   "taggingCouldNotAnalyze": "Kunde inte analysera recept",

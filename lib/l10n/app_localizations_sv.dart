@@ -5479,6 +5479,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get sharedNoContentYet => 'Inga delade recept än';
 
   @override
+  String get sharedEmptyStateExplanation =>
+      'När du eller dina vänner delar recept och menyer visas de här. Prova att dela ett recept!';
+
+  @override
+  String get sharedShareFirstRecipe => 'Dela ett recept';
+
+  @override
   String get socialAddFriends => 'Lägg till vänner';
 
   @override

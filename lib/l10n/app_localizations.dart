@@ -9567,6 +9567,18 @@ abstract class AppLocalizations {
   /// **'Inga delade recept än'**
   String get sharedNoContentYet;
 
+  /// No description provided for @sharedEmptyStateExplanation.
+  ///
+  /// In sv, this message translates to:
+  /// **'När du eller dina vänner delar recept och menyer visas de här. Prova att dela ett recept!'**
+  String get sharedEmptyStateExplanation;
+
+  /// No description provided for @sharedShareFirstRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela ett recept'**
+  String get sharedShareFirstRecipe;
+
   /// No description provided for @socialAddFriends.
   ///
   /// In sv, this message translates to:

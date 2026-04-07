@@ -39,6 +39,7 @@ import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -1021,6 +1022,13 @@ class MockUnifiedRecipeService extends Mock
 class MockUnifiedFriendsService extends Mock
     with ChangeNotifier
     implements UnifiedFriendsService {
+  // Stream for stateStream — seeded with loading state like production
+  final _stateController =
+      StreamController<FriendsServiceState>.broadcast();
+
+  @override
+  Stream<FriendsServiceState> get stateStream => _stateController.stream;
+
   // Configuration state
   List<UserProfile> _friends = [];
   List<FriendRequest> _incomingRequests = [];

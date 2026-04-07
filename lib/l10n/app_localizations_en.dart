@@ -5474,6 +5474,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sharedNoContentYet => 'No shared recipes yet';
 
   @override
+  String get sharedEmptyStateExplanation =>
+      'When you or your friends share recipes and menus, they\'ll appear here. Try sharing a recipe!';
+
+  @override
+  String get sharedShareFirstRecipe => 'Share a recipe';
+
+  @override
   String get socialAddFriends => 'Add friends';
 
   @override
