@@ -22,6 +22,10 @@ void main() {
   late Recipe recipe2;
   late Recipe recipe3;
 
+  setUpAll(() {
+    registerFallbackValue(RecipeFactory.build(id: 'fallback'));
+  });
+
   setUp(() {
     mockRecipeService = MockUnifiedRecipeService();
     invalidateCacheCalls = [];
@@ -36,6 +40,15 @@ void main() {
       recipes: [recipe1, recipe2, recipe3],
       isInitialized: true,
     );
+
+    // Stub methods left to mocktail on MockUnifiedRecipeService.
+    // getRecipeById has a concrete implementation, so no stub needed.
+    when(() => mockRecipeService.optimisticRemoveWithIndex(any()))
+        .thenReturn(0);
+    when(() => mockRecipeService.optimisticRestoreAt(any(), any()))
+        .thenReturn(null);
+    when(() => mockRecipeService.deleteRecipe(any()))
+        .thenAnswer((_) async => true);
 
     manager = RecipeDeleteManager(
       recipeService: mockRecipeService,
@@ -67,7 +80,6 @@ void main() {
         expect(manager.hasPendingDeletes, true);
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
-        verify(() => mockRecipeService.getRecipeById('r1')).called(1);
         verify(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
             .called(1);
       });
@@ -127,7 +139,7 @@ void main() {
     test('should restore recipe at original index when undone', () {
       // Behavior: "Undo" puts the recipe back exactly where it was
       when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
+          .thenReturn(2);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
@@ -138,7 +150,9 @@ void main() {
 
         expect(manager.hasPendingDeletes, false);
         verify(() => mockRecipeService.optimisticRestoreAt(
-            any(that: isA<Recipe>()), 0)).called(1);
+              any(that: isA<Recipe>()),
+              2,
+            )).called(1);
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
 
@@ -153,7 +167,10 @@ void main() {
         manager.undoDeleteById('nonexistent');
 
         expect(invalidateCacheCalls, isEmpty);
-        verifyNever(() => mockRecipeService.optimisticRestoreAt(any(), any()));
+        verifyNever(() => mockRecipeService.optimisticRestoreAt(
+              any(that: isA<Recipe>()),
+              any(),
+            ));
       });
     });
   });
@@ -176,7 +193,7 @@ void main() {
 
         manager.undoLastDelete();
 
-        // r2 was deleted last, so it should be restored
+        // r2 was deleted last, so it should be restored at index 1
         verify(() => mockRecipeService.optimisticRestoreAt(
               any(that: isA<Recipe>()),
               1,
@@ -262,7 +279,7 @@ void main() {
   });
 
   group('RecipeDeleteManager - Undo Bulk Delete', () {
-    test('should restore all bulk-deleted recipes in reverse order', () {
+    test('should restore all bulk-deleted recipes', () {
       // Behavior: Undo bulk restores recipes back to their original positions
       when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
           .thenReturn(0);
@@ -278,7 +295,9 @@ void main() {
 
         expect(manager.hasPendingDeletes, false);
         verify(() => mockRecipeService.optimisticRestoreAt(
-            any(that: isA<Recipe>()), any())).called(2);
+              any(that: isA<Recipe>()),
+              any(),
+            )).called(2);
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
 
@@ -313,7 +332,9 @@ void main() {
 
         expect(manager.hasPendingDeletes, false);
         verify(() => mockRecipeService.optimisticRestoreAt(
-            any(that: isA<Recipe>()), any())).called(2);
+              any(that: isA<Recipe>()),
+              any(),
+            )).called(2);
 
         // No commits after cancel
         async.elapse(const Duration(seconds: 10));
@@ -334,7 +355,9 @@ void main() {
 
         expect(manager.hasPendingDeletes, false);
         verify(() => mockRecipeService.optimisticRestoreAt(
-            any(that: isA<Recipe>()), any())).called(1);
+              any(that: isA<Recipe>()),
+              any(),
+            )).called(1);
 
         // Timer was cancelled — no commit
         async.elapse(const Duration(seconds: 10));
@@ -363,7 +386,9 @@ void main() {
         async.flushMicrotasks();
 
         verify(() => mockRecipeService.optimisticRestoreAt(
-            any(that: isA<Recipe>()), 0)).called(1);
+              any(that: isA<Recipe>()),
+              0,
+            )).called(1);
         expect(errorCalls, ['r1']);
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);

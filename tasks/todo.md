@@ -42,14 +42,14 @@
 
 ### Agent C: testing-specialist — Test Coverage
 
-- [ ] **C1. Add tests for priority untested VMs** — 8 VMs with most user-facing logic. (BUT-299)
+- [x] **C1. Add tests for 8 priority untested VMs** — 127 tests total: account_security (24), profile (21), recipe_delete_manager (17), cooking_mode (22), recipe_selection_manager (9), menu_voting (18), shopping_permission_manager (8), public_profile (8). (BUT-299)
 
 ### Post-Sprint Steps
 
-- [ ] Run `dart analyze --fatal-infos`
-- [ ] Run relevant unit tests
+- [x] Run `dart analyze --fatal-infos`
+- [x] Run relevant unit tests (232 tests passing: 127 new + 105 fixed)
 - [ ] Commit, push, PR, merge
-- [ ] Update Linear ticket states
+- [x] Update Linear ticket states (BUT-303, BUT-306, BUT-299 → Done, BUT-265 → Duplicate)
 
 ---
 
