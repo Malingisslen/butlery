@@ -30,7 +30,7 @@ dependencies:
   firebase_remote_config: ^6.0.4  # Feature flags and A/B testing
   flutter_local_notifications: ^20.1.0  # For Android notification channels (21.x needs Dart 3.10+)
   device_info_plus: ^12.4.0  # For unique device identification
-  freerasp: ^7.5.0  # Root/jailbreak detection + tampering, reverse engineering, Frida detection
+  freerasp: ^7.5.1  # Root/jailbreak detection + tampering, reverse engineering, Frida detection
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2
@@ -38,7 +38,7 @@ dependencies:
 
   # ==================== LOCAL STORAGE ====================
   shared_preferences: ^2.3.2
-  drift: ^2.29.0               # Modern SQL-based local storage
+  drift: ^2.29.0               # Blocked: 2.32.x needs newer SDK
   sqlcipher_flutter_libs: ^0.6.4  # Encrypted SQLite for Drift (replaces sqlite3_flutter_libs)
   flutter_secure_storage: ^10.0.0  # Platform-secure storage for sensitive data
 
@@ -51,7 +51,7 @@ dependencies:
 
   # ==================== IMAGE HANDLING ====================
   image_picker: ^1.1.2
-  image_cropper: ^11.0.0
+  image_cropper: ^12.0.0
   cached_network_image: ^3.4.1
   permission_handler: ^12.0.1
   flutter_image_compress: ^2.3.0
@@ -68,16 +68,16 @@ dependencies:
   clock: ^1.1.1  # For testable time-dependent code
   share_plus: ^12.0.2        # För utgående sharing (skicka till andra appar)
   path_provider: ^2.1.4
-  file_picker: ^10.3.3
+  file_picker: ^10.3.3            # Blocked: 11.x has breaking API changes (static methods, PlatformFile removed)
   path: ^1.9.0
   crypto: ^3.0.5             # För OCR service image hashing och caching
 
   # ==================== PARSING & PROCESSING ====================
   html: ^0.15.4
   flutter_inappwebview: ^6.1.5
-  csv: ^6.0.0                 # For CSV file parsing (7.x needs Dart 3.10+)
+  csv: ^6.0.0                 # Blocked: 7.x/8.x needs Dart 3.10+
   excel: ^4.0.6               # For Excel file parsing
-  flutter_onnxruntime: ^1.6.3  # On-device BERT NER inference (MIT licensed)
+  flutter_onnxruntime: ^1.6.4  # On-device BERT NER inference (MIT licensed)
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.6.1

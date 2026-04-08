@@ -60,18 +60,15 @@ class SocialGroupComponents {
     );
   }
 
-  /// Show create group dialog.
-  static Future<bool?> showCreateGroupDialog({
+  /// Show create group dialog. Returns the created [FriendCategory] or null.
+  static Future<FriendCategory?> showCreateGroupDialog({
     required BuildContext context,
-    List<String>? preselectedMemberIds,
     String? initialGroupName,
-    Function(String groupName, List<String> memberIds)? onGroupCreated,
   }) {
     return SocialFacade.showCreateGroupDialog(
       context,
       initialName: initialGroupName,
-      onSuccess: onGroupCreated != null ? () => onGroupCreated('', []) : null,
-    ).then((result) => result != null);
+    );
   }
 
   /// Show edit group dialog

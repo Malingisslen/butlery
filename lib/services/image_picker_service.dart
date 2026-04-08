@@ -103,7 +103,13 @@ class ImagePickerService extends BaseService {
   /// - Graceful handling of permission denials and user cancellations
   /// - File system validation with detailed diagnostic information
   /// - Integration with StorageService for advanced image validation
-  Future<File?> pickImage(ImageSource source, {bool enableCrop = false}) async {
+  Future<File?> pickImage(
+    ImageSource source, {
+    bool enableCrop = false,
+    double? maxWidth,
+    double? maxHeight,
+    int? imageQuality,
+  }) async {
     try {
       AppLogger.debug(
           '🔍 IMAGE_PICKER: Starting image selection from: ${source.name}');
@@ -126,9 +132,9 @@ class ImagePickerService extends BaseService {
       AppLogger.info('📱 Calling image picker...');
       final XFile? pickedFile = await _imagePickerProvider.pickImage(
         source: source,
-        maxWidth: 2400,
-        maxHeight: 2400,
-        imageQuality: 90,
+        maxWidth: maxWidth ?? 2400,
+        maxHeight: maxHeight ?? 2400,
+        imageQuality: imageQuality ?? 90,
       );
 
       if (pickedFile == null) {

@@ -3276,6 +3276,7 @@
   "profileAvatarUploaded": "Avatar uploaded!",
   "profileBio": "Bio",
   "profileBioHint": "Describe yourself as a cook (max 160 characters)",
+  "profileNoBio": "No bio yet",
   "profileChangeAvatar": "Change avatar",
   "profileCouldNotSave": "Could not save profile",
   "profileCouldNotUploadAvatar": "Could not upload avatar",

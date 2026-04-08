@@ -168,27 +168,44 @@ class RatingStatistics {
           .where('recipeId', isEqualTo: recipeId)
           .get();
 
+      final batch = firestore.batch();
+      final recipeRef = firestore.collection('recipes').doc(recipeId);
+
       if (ratingsSnapshot.docs.isEmpty) {
-        await firestore
-            .collection(_socialStatsCollection)
-            .doc(recipeId)
-            .delete();
+        batch
+            .delete(firestore.collection(_socialStatsCollection).doc(recipeId));
+        batch.update(recipeRef, {
+          'ratingCount': 0,
+          'averageRating': null,
+          'ratingDistribution': FieldValue.delete(),
+        });
+        await batch.commit();
         return;
       }
 
       final ratings = ratingsSnapshot.docs.map((doc) => doc.data()).toList();
       final stats = calculateRatingStatistics(ratings);
 
-      await firestore.collection(_socialStatsCollection).doc(recipeId).set({
-        'recipeId': recipeId,
+      batch.set(
+        firestore.collection(_socialStatsCollection).doc(recipeId),
+        {
+          'recipeId': recipeId,
+          'ratingCount': stats['count'],
+          'averageRating': stats['average'],
+          'ratingDistribution': stats['distribution'],
+          'reviewCount': stats['review_count'],
+          'lastUpdated': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+      batch.update(recipeRef, {
         'ratingCount': stats['count'],
         'averageRating': stats['average'],
         'ratingDistribution': stats['distribution'],
-        'reviewCount': stats['review_count'],
-        'lastUpdated': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      });
+      await batch.commit();
 
-      AppLogger.debug('Updated rating aggregate');
+      AppLogger.debug('Updated rating aggregate + recipe denormalized fields');
     } catch (e) {
       AppLogger.error('Failed to update rating aggregate', e);
       rethrow;

@@ -22,6 +22,7 @@ import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/services/deep_link_service.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
@@ -135,6 +136,23 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                             ),
                           ),
 
+                          const SizedBox(height: AppDimensions.spacingM),
+
+                          // Bio section
+                          Text(
+                            friend.bio?.isNotEmpty == true
+                                ? friend.bio!
+                                : context.l10n.profileNoBio,
+                            style: friend.bio?.isNotEmpty == true
+                                ? AppTextStyles.bodyMedium
+                                : AppTextStyles.bodyMedium.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                            textAlign: TextAlign.center,
+                          ),
+
                           const SizedBox(height: AppDimensions.spacingL),
 
                           // Statistik kort
@@ -166,6 +184,24 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                               ],
                             ),
                           ),
+
+                          // View public recipes button
+                          if (friend.publicRecipeCount > 0) ...[
+                            const SizedBox(height: AppDimensions.spacingM),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  Routes.publicProfile,
+                                  arguments: friend.uid,
+                                ),
+                                icon: const Icon(Icons.restaurant_menu),
+                                label: Text(
+                                    context.l10n.publicProfilePublicRecipes),
+                              ),
+                            ),
+                          ],
 
                           const SizedBox(height: AppDimensions.spacingL),
 

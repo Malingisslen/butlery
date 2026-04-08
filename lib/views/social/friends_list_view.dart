@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 // Import focused components
 import 'package:butlery/views/social/friends_list/friends_tab.dart';
@@ -356,17 +357,18 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
     try {
-      final result = await SocialGroupComponents.showCreateGroupDialog(
+      final createdGroup = await SocialGroupComponents.showCreateGroupDialog(
         context: context,
       );
 
-      // ✅ FIX: Dialog returns bool? - true on success, false/null on cancel
-      if (result == true && mounted) {
+      if (createdGroup != null && mounted) {
         SnackBarUtils.showSuccess(context, context.l10n.groupCreatedSuccess);
         if (mounted) {
-          setState(() {
-            _currentTabIndex = 1;
-          });
+          Navigator.pushNamed(
+            context,
+            Routes.groupDetail,
+            arguments: createdGroup.id,
+          );
         }
       }
     } catch (e) {

@@ -33,6 +33,9 @@ class XFileUploadHandler {
   }) : _uploadService =
             uploadService ?? ServiceLocator.get<ImageUploadService>();
 
+  /// Unmodifiable view of pending XFiles for state queries
+  Map<String, XFile> get pendingXFiles => Map.unmodifiable(_pendingXFiles);
+
   /// Get pending XFile by path
   XFile? getPendingXFile(String path) => _pendingXFiles[path];
 

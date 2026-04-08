@@ -8,9 +8,11 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 
-/// Simple dialog for selecting a shopping list to share with a group
-class GroupShoppingListSelectionDialog extends StatelessWidget {
+/// Dialog for selecting a shopping list to share with a group.
+/// Initializes the shopping service and handles loading/error/empty states.
+class GroupShoppingListSelectionDialog extends StatefulWidget {
   final String groupName;
 
   const GroupShoppingListSelectionDialog({
@@ -19,36 +21,65 @@ class GroupShoppingListSelectionDialog extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-    final lists = shoppingService
-        .personalLists; // Only show personal lists (not already collaborative)
+  State<GroupShoppingListSelectionDialog> createState() =>
+      _GroupShoppingListSelectionDialogState();
+}
 
+class _GroupShoppingListSelectionDialogState
+    extends State<GroupShoppingListSelectionDialog> {
+  late final UnifiedShoppingService _shoppingService;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+    _initializeShoppingService();
+  }
+
+  Future<void> _initializeShoppingService() async {
+    if (!mounted) return;
+
+    try {
+      if (!_shoppingService.isInitialized) {
+        AppLogger.debug(
+            '[ShoppingListDialog] Initializing shopping service...');
+        await _shoppingService.initialize();
+      } else {
+        AppLogger.debug(
+            '[ShoppingListDialog] Service already initialized, refreshing...');
+        await _shoppingService.loadLists();
+      }
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('[ShoppingListDialog] Initialization failed', e);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = context.l10n.errorCouldNotLoad('inköpslistor');
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        context.l10n.dialogShareShoppingListWith(groupName),
+        context.l10n.dialogShareShoppingListWith(widget.groupName),
         style: AppTextStyles.headlineSmall,
       ),
       contentPadding: EdgeInsets.zero,
       content: SizedBox(
         width: double.maxFinite,
         height: MediaQuery.of(context).size.height * 0.5,
-        child: lists.isEmpty
-            ? StateWidget.empty(
-                title: context.l10n.dialogNoShoppingLists,
-                subtitle: context.l10n.dialogNoShoppingListsToShare,
-                icon: Icons.shopping_cart,
-              )
-            : ListView.builder(
-                itemCount: lists.length,
-                itemBuilder: (context, index) {
-                  final list = lists[index];
-                  return _ShoppingListItem(
-                    list: list,
-                    onTap: () => Navigator.pop(context, list),
-                  );
-                },
-              ),
+        child: _buildContent(),
       ),
       actions: [
         TextButton(
@@ -57,6 +88,59 @@ class GroupShoppingListSelectionDialog extends StatelessWidget {
               Text(context.l10n.commonCancel, style: AppTextStyles.labelLarge),
         ),
       ],
+    );
+  }
+
+  Widget _buildContent() {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: AppDimensions.spacingM),
+            Text(
+              context.l10n.shoppingLoadingLists,
+              style: AppTextStyles.bodyMedium,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return StateWidget.error(
+        message: _error!,
+        actionLabel: context.l10n.commonRetry,
+        onAction: () {
+          setState(() {
+            _isLoading = true;
+            _error = null;
+          });
+          _initializeShoppingService();
+        },
+      );
+    }
+
+    final lists = _shoppingService.personalLists;
+
+    if (lists.isEmpty) {
+      return StateWidget.empty(
+        title: context.l10n.dialogNoShoppingLists,
+        subtitle: context.l10n.dialogNoShoppingListsToShare,
+        icon: Icons.shopping_cart,
+      );
+    }
+
+    return ListView.builder(
+      itemCount: lists.length,
+      itemBuilder: (context, index) {
+        final list = lists[index];
+        return _ShoppingListItem(
+          list: list,
+          onTap: () => Navigator.pop(context, list),
+        );
+      },
     );
   }
 }

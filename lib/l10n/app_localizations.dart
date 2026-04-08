@@ -9027,6 +9027,12 @@ abstract class AppLocalizations {
   /// **'Beskriv dig som matlagare (max 160 tecken)'**
   String get profileBioHint;
 
+  /// No description provided for @profileNoBio.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen beskrivning ännu'**
+  String get profileNoBio;
+
   /// No description provided for @profileChangeAvatar.
   ///
   /// In sv, this message translates to:

@@ -60,6 +60,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       _focusNode.requestFocus();
 
       // Auto-check clipboard for recipe URLs

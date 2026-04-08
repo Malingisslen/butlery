@@ -18,17 +18,10 @@ else
   PY_CMD=""
 fi
 
-# Extract session_id from stdin JSON
+# Extract session_id from stdin JSON (uses helper for Windows backslash safety)
 SESSION_ID=""
 if [ -n "$PY_CMD" ]; then
-  SESSION_ID=$($PY_CMD -c "
-import json, sys
-try:
-    data = json.loads(sys.stdin.read())
-    print(data.get('session_id', ''))
-except:
-    print('')
-" <<< "$INPUT" 2>/dev/null || echo "")
+  SESSION_ID=$(echo "$INPUT" | $PY_CMD .claude/hooks/parse_hook_json.py session_id 2>/dev/null || echo "")
 fi
 
 # Load session manifest (built by track-session-files.sh)

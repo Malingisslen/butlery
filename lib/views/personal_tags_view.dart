@@ -55,11 +55,12 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   /// Cached sorted tags per group key (null = ungrouped)
   final Map<String?, List<PersonalTag>> _sortedTagsCache = {};
   TagSortOrder? _lastSortOrder;
-  int _lastTagCount = -1;
+  int _lastTagHash = 0;
 
   @override
   void initState() {
     super.initState();
+    _invalidateSortCache();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<PersonalTagViewModel>();
       if (viewModel.hasTags && !viewModel.isLoadingStats) {
@@ -72,13 +73,16 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     _sortedTagsCache.clear();
   }
 
+  int _computeTagHash(List<PersonalTag> tags) => Object.hashAll(
+      tags.map((t) => Object.hash(t.id, t.name, t.groupId, t.sortOrder)));
+
   List<PersonalTag> _sortTags(
       List<PersonalTag> tags, PersonalTagViewModel vm, String? groupId) {
-    // Invalidate if sort order or viewmodel identity changed
-    if (_lastSortOrder != _sortOrder || vm.tags.length != _lastTagCount) {
+    final currentHash = _computeTagHash(vm.tags);
+    if (_lastSortOrder != _sortOrder || currentHash != _lastTagHash) {
       _invalidateSortCache();
       _lastSortOrder = _sortOrder;
-      _lastTagCount = vm.tags.length;
+      _lastTagHash = currentHash;
     }
 
     final cached = _sortedTagsCache[groupId];
@@ -247,50 +251,50 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         _sortTags(viewModel.getTagsForGroup(null), viewModel, null);
 
     return SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final contentWidth =
-              constraints.maxWidth > 700 ? 700.0 : constraints.maxWidth;
-          return Align(
-            alignment: Alignment.topCenter,
-            child: SizedBox(
-              width: contentWidth,
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await viewModel.initialize();
-                  await viewModel.loadTagStatistics();
-                },
-                child: Builder(
-                  builder: (context) {
-                    final items = <Widget>[
-                      if (ungroupedTags.isNotEmpty)
-                        PersonalTagSection(
-                          title: context.l10n.personalTagSectionTags,
-                          tags: ungroupedTags,
-                          viewModel: viewModel,
-                        ),
-                      for (final group in groups)
-                        PersonalTagGroupSection(
-                          key: ValueKey(group.id),
-                          group: group,
-                          tags: _sortTags(viewModel.getTagsForGroup(group.id),
-                              viewModel, group.id),
-                          viewModel: viewModel,
-                        ),
-                      const SizedBox(height: AppDimensions.spacingXxl),
-                    ];
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.spacingMd),
-                      itemCount: items.length,
-                      itemBuilder: (context, index) => items[index],
-                    );
-                  },
-                ),
-              ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: LayoutComponents.valueFor(
+              context: context,
+              mobile: double.infinity,
+              tablet: 700,
+              desktop: 800,
             ),
-          );
-        },
+          ),
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await viewModel.initialize();
+              await viewModel.loadTagStatistics();
+            },
+            child: Builder(
+              builder: (context) {
+                final items = <Widget>[
+                  if (ungroupedTags.isNotEmpty)
+                    PersonalTagSection(
+                      title: context.l10n.personalTagSectionTags,
+                      tags: ungroupedTags,
+                      viewModel: viewModel,
+                    ),
+                  for (final group in groups)
+                    PersonalTagGroupSection(
+                      key: ValueKey(group.id),
+                      group: group,
+                      tags: _sortTags(viewModel.getTagsForGroup(group.id),
+                          viewModel, group.id),
+                      viewModel: viewModel,
+                    ),
+                  const SizedBox(height: AppDimensions.spacingXxl),
+                ];
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.spacingMd),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) => items[index],
+                );
+              },
+            ),
+          ),
+        ),
       ),
     );
   }

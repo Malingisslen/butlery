@@ -327,8 +327,12 @@ void main() {
         when(() => mockFile.path).thenReturn('/test/path/image.jpg');
         when(() => mockFile.readAsBytes())
             .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
-        when(() => mockImagePickerService.pickImage(ImageSource.gallery))
-            .thenAnswer((_) async => mockFile);
+        when(() => mockImagePickerService.pickImage(
+              ImageSource.gallery,
+              maxWidth: any(named: 'maxWidth'),
+              maxHeight: any(named: 'maxHeight'),
+              imageQuality: any(named: 'imageQuality'),
+            )).thenAnswer((_) async => mockFile);
         when(() => mockImageUploadService.uploadImageFromBytes(
                   bytes: any(named: 'bytes'),
                   userId: any(named: 'userId'),
@@ -345,8 +349,12 @@ void main() {
             viewModel.avatarUrl, equals('https://example.com/new-avatar.jpg'));
         expect(viewModel.hasUnsavedChanges, isTrue);
         expect(viewModel.isUploadingAvatar, isFalse);
-        verify(() => mockImagePickerService.pickImage(ImageSource.gallery))
-            .called(1);
+        verify(() => mockImagePickerService.pickImage(
+              ImageSource.gallery,
+              maxWidth: any(named: 'maxWidth'),
+              maxHeight: any(named: 'maxHeight'),
+              imageQuality: any(named: 'imageQuality'),
+            )).called(1);
         verify(() => mockImageUploadService.uploadImageFromBytes(
               bytes: any(named: 'bytes'),
               userId: testUserId,
@@ -356,8 +364,12 @@ void main() {
       });
 
       test('should handle cancelled image selection', () async {
-        when(() => mockImagePickerService.pickImage(ImageSource.gallery))
-            .thenAnswer((_) async => null);
+        when(() => mockImagePickerService.pickImage(
+              ImageSource.gallery,
+              maxWidth: any(named: 'maxWidth'),
+              maxHeight: any(named: 'maxHeight'),
+              imageQuality: any(named: 'imageQuality'),
+            )).thenAnswer((_) async => null);
 
         final result = await viewModel.uploadAvatar();
 
@@ -372,8 +384,12 @@ void main() {
         when(() => mockFile.path).thenReturn('/test/path/image.jpg');
         when(() => mockFile.readAsBytes())
             .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
-        when(() => mockImagePickerService.pickImage(ImageSource.gallery))
-            .thenAnswer((_) async => mockFile);
+        when(() => mockImagePickerService.pickImage(
+              ImageSource.gallery,
+              maxWidth: any(named: 'maxWidth'),
+              maxHeight: any(named: 'maxHeight'),
+              imageQuality: any(named: 'imageQuality'),
+            )).thenAnswer((_) async => mockFile);
         when(() => mockImageUploadService.uploadImageFromBytes(
                   bytes: any(named: 'bytes'),
                   userId: any(named: 'userId'),
@@ -427,8 +443,12 @@ void main() {
         when(() => mockFile.path).thenReturn('/test/path/image.jpg');
         when(() => mockFile.readAsBytes())
             .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
-        when(() => mockImagePickerService.pickImage(ImageSource.gallery))
-            .thenAnswer((_) async {
+        when(() => mockImagePickerService.pickImage(
+              ImageSource.gallery,
+              maxWidth: any(named: 'maxWidth'),
+              maxHeight: any(named: 'maxHeight'),
+              imageQuality: any(named: 'imageQuality'),
+            )).thenAnswer((_) async {
           // Check loading state during operation
           expect(viewModel.isUploadingAvatar, isTrue);
           expect(viewModel.isLoading, isTrue);

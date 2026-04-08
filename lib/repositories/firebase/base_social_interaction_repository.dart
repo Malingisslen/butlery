@@ -87,62 +87,6 @@ abstract class BaseSocialInteractionRepository
     }
   }
 
-  /// Add a rating to content.
-  /// [resourceId] ID of the content being rated
-  /// [value] Rating value (e.g., 1-5 stars)
-  /// [comment] Optional review comment
-  /// [cachedCountField] Optional field name for cached rating count in parent document
-  /// [cachedAverageField] Optional field name for cached average rating in parent document
-  /// **Security**: Validates metadata access and enforces self-annotation
-  /// **Audit**: Logs rating operation to FirebaseAuditRepository
-  /// **Use Case**: User rates recipe with 4 stars and optional review text
-  /// **Note**: Subclasses should call updateCachedRatingStatistics() after this
-  Future<void> addRating(
-    String resourceId, {
-    required double value,
-    String? comment,
-  }) async {
-    final userId = requireCurrentUserId();
-    await addMetadata(
-      resourceId,
-      userId,
-      additionalData: {
-        'interactionType': 'rating',
-        'value': value,
-        if (comment != null) 'comment': comment,
-      },
-    );
-  }
-
-  /// Update a rating for content.
-  /// [resourceId] ID of the content being rated
-  /// [value] New rating value
-  /// [comment] Optional new review comment
-  /// **Security**: Validates metadata access and enforces self-modification
-  /// **Use Case**: User updates their 3-star rating to 5 stars
-  /// **Note**: This removes and re-adds the rating (Firestore limitation)
-  Future<void> updateRating(
-    String resourceId, {
-    required double value,
-    String? comment,
-  }) async {
-    final userId = requireCurrentUserId();
-
-    // Remove existing rating
-    await removeMetadata(resourceId, userId);
-
-    // Add new rating
-    await addMetadata(
-      resourceId,
-      userId,
-      additionalData: {
-        'interactionType': 'rating',
-        'value': value,
-        if (comment != null) 'comment': comment,
-      },
-    );
-  }
-
   /// Check if the current user has liked the content.
   /// [resourceId] ID of the content to check
   /// Returns true if the current user has liked the content, false otherwise
@@ -213,34 +157,5 @@ abstract class BaseSocialInteractionRepository
     );
 
     return total / ratings.length;
-  }
-
-  /// Update cached rating statistics in parent document.
-  /// [resourceId] ID of the content
-  /// [averageField] Field name for average rating (default: 'averageRating')
-  /// [countField] Field name for rating count (default: 'ratingsCount')
-  /// **Use Case**: Update parent document after rating added/updated/removed
-  /// **Note**: Call this after addRating(), updateRating(), or removeMetadata()
-  Future<void> updateCachedRatingStatistics(
-    String resourceId, {
-    String averageField = 'averageRating',
-    String countField = 'ratingsCount',
-  }) async {
-    final ratings = await getInteractionsByType(resourceId, 'rating');
-
-    if (ratings.isEmpty) {
-      await updateParentField(resourceId, averageField, 0.0);
-      await updateParentField(resourceId, countField, 0);
-      return;
-    }
-
-    final total = ratings.fold<double>(
-      0.0,
-      (acc, rating) => acc + (rating.value ?? 0.0),
-    );
-    final average = total / ratings.length;
-
-    await updateParentField(resourceId, averageField, average);
-    await updateParentField(resourceId, countField, ratings.length);
   }
 }

@@ -5163,6 +5163,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Describe yourself as a cook (max 160 characters)';
 
   @override
+  String get profileNoBio => 'No bio yet';
+
+  @override
   String get profileChangeAvatar => 'Change avatar';
 
   @override

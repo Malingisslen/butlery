@@ -3276,6 +3276,7 @@
   "profileAvatarUploaded": "Avatar uppladdad!",
   "profileBio": "Beskrivning",
   "profileBioHint": "Beskriv dig som matlagare (max 160 tecken)",
+  "profileNoBio": "Ingen beskrivning ännu",
   "profileChangeAvatar": "Ändra avatar",
   "profileCouldNotSave": "Kunde inte spara profil",
   "profileCouldNotUploadAvatar": "Kunde inte ladda upp avatar",

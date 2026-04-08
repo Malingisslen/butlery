@@ -1,5 +1,58 @@
 # Sprint Backlog
 
+## Sprint: Social & Stability Blitz — 2026-04-08
+
+### Agent A: debugger — Social Reliability
+
+- [x] **A1. Fix group stub features** — Auto-navigate after group creation, shopping list dialog init, target selection dialog. (BUT-345)
+- [x] **A2. Fix FriendProfileView dead ends** — Added bio section, public recipes button, proper navigation. (BUT-341)
+- [x] **A3. Fix optimistic updates without rollback** — Moved Firebase calls before local state in reject/cancel/remove operations. (BUT-314)
+- [x] **A4. Fix recipe rating/comment data integrity** — Synced denormalized rating fields, removed dead code. (BUT-323)
+
+### Agent B: debugger — Import & Recipe Bugs
+
+- [x] **B1. Fix clipboard URL detection + UIModule crash** — Added `hasStrings()` guard, `mounted` check, `allowReassignment` for hot restart. (BUT-337)
+- [x] **B2. Fix tablet personal tags + ConnectionMonitor** — Responsive layout via `LayoutComponents.valueFor`, fixed `statusConnected` copy-paste error, cache invalidation by tag hash. (BUT-324)
+
+### Agent C: flutter-developer — Dependency Maintenance
+
+- [x] **C1. Update discontinued deps** — `image_cropper` ^12.0.0, `freerasp` ^7.5.1. Blocked: drift/csv/sqlite3/archive/build_runner need SDK bump. (BUT-300)
+- [x] **C2. Update major deps** — `flutter_onnxruntime` ^1.6.4. Blocked: `file_picker` v11 has breaking API changes. (BUT-301)
+
+### Post-Sprint Steps
+- [x] Run `dart analyze --fatal-infos`
+- [ ] Run relevant unit tests
+- [ ] Commit, push, PR, merge
+- [ ] Update Linear ticket states
+
+---
+
+## Sprint: Tech Debt Consolidation — 2026-04-08
+
+### Agent A: flutter-developer — Refactor + Performance
+
+- [x] **A1. Refactor RecipeImageManager** — Delegated XFile ops to XFileUploadHandler, removed ~100 lines of duplicated upload/status logic. (BUT-303)
+- [x] **A2. Optimize avatar compression** — Added optional dimension params to pickImage(), avatar now uses 400x400/85% instead of 2400x2400/90%. (BUT-306)
+- [x] **A3. Fix addUploadedImageUrl max-image guard** — Added missing canAddMoreImages check (production bug caught by tests). (BUT-303)
+
+### Agent B: debugger — Test Fixes
+
+- [x] **B1. Fix recipe_image_manager_test** — 0/58 → 57/57: added MockImageUploadService, fixed mock wiring, error string expectations, notification debouncing, FakeXFile.length(). (BUT-303)
+- [x] **B2. Fix user_profile_viewmodel_test** — Updated pickImage mock stubs for new optional params. 48/48 passing. (BUT-306)
+
+### Agent C: testing-specialist — Test Coverage
+
+- [ ] **C1. Add tests for priority untested VMs** — 8 VMs with most user-facing logic. (BUT-299)
+
+### Post-Sprint Steps
+
+- [ ] Run `dart analyze --fatal-infos`
+- [ ] Run relevant unit tests
+- [ ] Commit, push, PR, merge
+- [ ] Update Linear ticket states
+
+---
+
 ## Sprint: Bug Stability — 2026-04-08
 
 ### Agent A: debugger — Build Blockers & Backend Stability

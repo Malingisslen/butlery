@@ -241,11 +241,9 @@ class FriendsManagementOperations extends BaseService {
         respondedAt: DateTime.now(),
       );
 
-      // Remove from local state
-      _removeIncomingRequestInternal(requestId);
-
-      // Update in Firebase
+      // Firebase first — local list.remove can't throw
       await _updateFriendRequestStatus(rejectedRequest);
+      _removeIncomingRequestInternal(requestId);
 
       AppLogger.success('Friend request rejected from ${request.fromUserId}');
       return true;
@@ -272,11 +270,8 @@ class FriendsManagementOperations extends BaseService {
         respondedAt: DateTime.now(),
       );
 
-      // Remove from local state
-      _removeOutgoingRequestInternal(requestId);
-
-      // Update in Firebase
       await _updateFriendRequestStatus(cancelledRequest);
+      _removeOutgoingRequestInternal(requestId);
 
       AppLogger.success('Friend request cancelled to ${request.toUserId}');
       return true;
@@ -296,14 +291,11 @@ class FriendsManagementOperations extends BaseService {
         throw Exception('Friend not found');
       }
 
-      // Remove from local state
-      _removeFriendInternal(friendId);
-
-      // Remove mutual friends with counter updates using relationship repository
       await _relationshipRepository.removeMutualFriends(
         _getCurrentUserId()!,
         friendId,
       );
+      _removeFriendInternal(friendId);
 
       AppLogger.success('Removed friend: ${friend.displayName.maskedName}');
       return true;

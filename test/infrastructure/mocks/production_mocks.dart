@@ -2099,9 +2099,6 @@ class MockSocialRecipeOperations extends Mock
   Future<List<Map<String, dynamic>>> getLegacySharedRecipes() async => [];
 
   @override
-  Future<void> markSharedRecipeAsViewed(String recipeId) async {}
-
-  @override
   bool checkLegacyPermission(String recipeId, String userId, String action) =>
       true;
 

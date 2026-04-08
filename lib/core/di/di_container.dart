@@ -205,6 +205,12 @@ class DIContainer {
       return;
     }
 
+    // Allow re-registration during hot restart to prevent
+    // "already registered" crashes when modules re-configure.
+    if (kDebugMode) {
+      _container.allowReassignment = true;
+    }
+
     if (kDebugMode) {
       AppLogger.info(
           '🚀 Initializing DIContainer with ${_modules.length} modules...');

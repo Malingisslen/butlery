@@ -633,11 +633,6 @@ void main() {
         expect(legacyRecipes, isA<List<Map<String, dynamic>>>());
       });
 
-      test('should mark shared recipe as viewed', () async {
-        // Act & Assert - just verify it doesn't throw
-        await operations.markSharedRecipeAsViewed('recipe-123');
-      });
-
       test('should check legacy permission compatibility', () {
         // Arrange
         final recipe = RecipeBuilder().withId('recipe-123').build();

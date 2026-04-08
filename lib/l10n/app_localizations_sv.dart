@@ -5168,6 +5168,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileBioHint => 'Beskriv dig som matlagare (max 160 tecken)';
 
   @override
+  String get profileNoBio => 'Ingen beskrivning ännu';
+
+  @override
   String get profileChangeAvatar => 'Ändra avatar';
 
   @override

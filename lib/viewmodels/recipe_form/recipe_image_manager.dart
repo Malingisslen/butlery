@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -20,6 +19,7 @@ import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_val
 import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_notification_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_coordinator.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/upload_queue_summary_calculator.dart';
+import 'package:butlery/viewmodels/recipe_form/image_management/xfile_upload_handler.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 // Re-export ImageDisplayInfo for backwards compatibility
@@ -37,6 +37,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   late final ImageUploadValidator _validator;
   late final ImageUploadNotificationManager _notificationManager;
   late final ImageUploadCoordinator _coordinator;
+  late final XFileUploadHandler _xfileHandler;
 
   bool _disposed = false;
   bool get disposed => _disposed;
@@ -54,10 +55,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
   //Comprehensive state tracking to prevent race conditions
   final Map<String, ImageUploadStatus> _imageStates = {};
-
-  //Store XFile references for blob URL handling
-  final Map<String, XFile> _pendingXFiles =
-      {}; // Maps blob URL paths to XFile objects
 
   String? _temporaryRecipeId; // Temporary ID for immediate uploads
 
@@ -82,6 +79,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Initialize specialized managers
     _validator = ImageUploadValidator();
     _notificationManager = ImageUploadNotificationManager();
+    _xfileHandler = XFileUploadHandler(uploadService: _uploadService);
     _coordinator = ImageUploadCoordinator(
       storageService: _storageService,
       notifyListeners: _safeNotifyListeners,
@@ -231,6 +229,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
   /// Add uploaded URL after successful upload
   void addUploadedImageUrl(String imageUrl) {
+    if (!canAddMoreImages) return;
     if (!_imageStates.containsKey(imageUrl)) {
       _imageStates[imageUrl] = ImageUploadStatus(
         url: imageUrl,
@@ -609,27 +608,19 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  /// Process single XFile with proper web blob URL handling
+  /// Process single XFile with proper web blob URL handling.
+  /// Delegates platform detection to XFileUploadHandler.
   Future<void> _processSingleXFile(XFile xFile) async {
-    AppLogger.info('ðŸ–¼ï¸ WEB_FIX: Processing XFile: ${xFile.path}');
-
-    // Check if this is a web blob URL (needs special handling)
-    if (xFile.path.startsWith('blob:')) {
-      AppLogger.info(
-          'ðŸŒ WEB_FIX: Blob URL detected, using XFile directly for display');
-
-      // For web blob URLs, we can't create a File object
-      // Instead, add the XFile path directly for display
+    final result = await _xfileHandler.processSingleXFile(xFile);
+    if (result.isBlobUrl) {
       await _addPendingImageFromXFile(xFile);
     } else {
-      // Mobile platform - normal file path, create File object
-      AppLogger.info('ðŸ“± MOBILE: Normal file path, creating File object');
-      final file = File(xFile.path);
-      await _addPendingImageFromFile(file);
+      await _addPendingImageFromFile(result.file!);
     }
   }
 
-  /// Add XFile to pending list for web blob URL handling
+  /// Add XFile to pending list for web blob URL handling.
+  /// Delegates validation and status creation to XFileUploadHandler.
   Future<void> _addPendingImageFromXFile(XFile xFile) async {
     if (!canAddMoreImages) {
       _setImageUploadError(AppLocale.current.errorGeneric);
@@ -638,16 +629,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     final filePath = xFile.path;
 
-    // Validate file size for web
-    try {
-      final fileSize = await xFile.length();
-      const maxSizeInBytes = UploadConstants.maxRecipeImageBytes;
-      if (fileSize > maxSizeInBytes) {
-        _setImageUploadError(AppLocale.current.errorGeneric);
-        return;
-      }
-    } catch (e) {
-      AppLogger.error('ðŸŒ WEB_FIX: Could not validate file size: $e');
+    // Validate file size via handler
+    final sizeError = await _xfileHandler.validateXFileSize(xFile);
+    if (sizeError != null) {
+      _setImageUploadError(AppLocale.current.errorGeneric);
+      return;
     }
 
     // Validate magic bytes match a supported image format
@@ -656,21 +642,14 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       return;
     }
 
-    // Store XFile reference for later upload
-    _pendingXFiles[filePath] = xFile;
-
-    // Initialize comprehensive state tracking as pending
-    _imageStates[filePath] = const ImageUploadStatus(
-      // Note: No File object for blob URLs, path will be used for display
-      state: ImageUploadState.pending,
-      progress: 0.0,
-    );
+    // Create pending status (handler stores XFile reference internally)
+    _imageStates[filePath] = _xfileHandler.createPendingXFileStatus(xFile);
 
     // Trigger immediate UI update
     _clearImageUploadError();
     _notifyImmediately();
 
-    AppLogger.info('ðŸŒ WEB_FIX: Blob URL image added for display: $filePath');
+    AppLogger.info('WEB_FIX: Blob URL image added for display: $filePath');
 
     // Start background upload immediately with XFile
     final recipeId = _getTemporaryRecipeId();
@@ -804,149 +783,73 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     });
   }
 
-  /// Start background upload for XFile (web blob URL handling)
+  /// Start background upload for XFile (web blob URL handling).
+  /// Delegates status creation and upload to XFileUploadHandler.
   void _startBackgroundUploadForXFile(XFile xFile, String recipeId) {
     final filePath = xFile.path;
 
     // Don't upload if already uploading
     final currentState = _imageStates[filePath];
     if (currentState?.isActive == true) {
-      AppLogger.info('ðŸ”„ Already uploading XFile: $filePath');
+      AppLogger.info('Already uploading XFile: $filePath');
       return;
     }
 
-    AppLogger.info(
-        'ðŸŒ WEB_FIX: Starting background upload for XFile: $filePath');
+    AppLogger.info('WEB_FIX: Starting background upload for XFile: $filePath');
 
-    // Get file size for progress tracking (async for XFile)
-    xFile.length().then((fileSize) {
-      final startTime = DateTime.now();
-
-      // Update comprehensive state tracking with enhanced details
-      _imageStates[filePath] = ImageUploadStatus(
-        // Note: No File object for blob URLs
-        state: ImageUploadState.uploading,
-        progress: 0.0,
-        totalBytes: fileSize,
-        uploadStartTime: startTime,
-        retryAttempts: currentState?.retryAttempts ?? 0,
-        maxRetryAttempts: currentState?.maxRetryAttempts ?? 3,
-      );
-
+    // Create uploading status via handler (async for file size)
+    _xfileHandler
+        .createUploadingXFileStatus(
+      xFile,
+      retryAttempts: currentState?.retryAttempts ?? 0,
+      maxRetryAttempts: currentState?.maxRetryAttempts ?? 3,
+    )
+        .then((uploadingStatus) {
+      _imageStates[filePath] = uploadingStatus;
       notifyListeners();
 
-      // Start upload with XFile handling for web
-      _uploadXFileWithWebSupport(xFile, recipeId).then((uploadedUrl) {
-        //Always update state first, even if disposed/cancelled
-        // This prevents the spinner from getting stuck
+      // Upload via handler
+      _xfileHandler.uploadXFile(xFile, recipeId).then((uploadedUrl) {
+        // Always update state first, even if disposed/cancelled
         if (uploadedUrl != null) {
           AppLogger.info(
-              'âœ… Background XFile upload completed: $filePath -> $uploadedUrl');
-
-          // Update comprehensive state to completed
-          _imageStates.remove(filePath); // Remove blob URL path key
-          _pendingXFiles.remove(filePath); // Clean up XFile reference
-          _imageStates[uploadedUrl] = ImageUploadStatus(
-            url: uploadedUrl,
-            state: ImageUploadState.completed,
-            progress: 1.0,
-            totalBytes: fileSize,
-            bytesTransferred: fileSize,
+              'Background XFile upload completed: $filePath -> $uploadedUrl');
+          _imageStates.remove(filePath);
+          _xfileHandler.removePendingXFile(filePath);
+          _imageStates[uploadedUrl] = _xfileHandler.createCompletedXFileStatus(
+            uploadedUrl,
+            totalBytes: uploadingStatus.totalBytes,
           );
         } else {
-          AppLogger.error('âŒ Background XFile upload failed: $filePath');
-          _handleXFileUploadFailure(filePath, xFile, 'Upload failed', null);
+          AppLogger.error('Background XFile upload failed: $filePath');
+          _imageStates[filePath] = _xfileHandler.createFailedXFileStatus(
+            'Upload failed',
+            progress: _imageStates[filePath]?.progress ?? 0.0,
+          );
+          _setImageUploadError(AppLocale.current.errorGeneric);
         }
 
-        // Only notify listeners if not disposed (notifications can be skipped, state update cannot)
         if (!_disposed && !_uploadsCanceled) {
           notifyListeners();
           _checkAndTriggerCompletionEvents();
-        } else {
-          AppLogger.info(
-              '📦 XFile upload completed but manager disposed/cancelled, skipping notifications: $filePath');
         }
       }).catchError((error) {
-        //Always update state first, even if disposed/cancelled
-        AppLogger.error(
-            '💥 Background XFile upload error: $filePath -> $error');
-        _handleXFileUploadFailure(filePath, xFile, 'Upload error', error);
+        AppLogger.error('Background XFile upload error: $filePath -> $error');
+        _imageStates[filePath] = _xfileHandler.createFailedXFileStatus(
+          'Upload error',
+          progress: _imageStates[filePath]?.progress ?? 0.0,
+        );
+        _setImageUploadError(AppLocale.current.errorGeneric);
 
-        // Only notify listeners if not disposed
         if (!_disposed && !_uploadsCanceled) {
           notifyListeners();
           _checkAndTriggerCompletionEvents();
-        } else {
-          AppLogger.info(
-              '📦 XFile upload error but manager disposed/cancelled, skipping notifications: $filePath');
         }
       });
     }).catchError((error) {
-      AppLogger.error('ðŸ’¥ Could not get XFile size: $filePath -> $error');
+      AppLogger.error('Could not get XFile size: $filePath -> $error');
       _setImageUploadError(AppLocale.current.errorGeneric);
     });
-  }
-
-  /// Upload XFile with web platform support (handles blob URLs)
-  ///For web blob URLs, convert to File first then use ImageUploadService
-  Future<String?> _uploadXFileWithWebSupport(
-      XFile xFile, String recipeId) async {
-    try {
-      AppLogger.info(
-          'ðŸŒ WEB_FIX: Uploading XFile with web support: ${xFile.path}');
-
-      // Get authenticated user ID
-      final userId =
-          ServiceLocator.get<permission.PermissionService>().currentUserId;
-      if (userId == null) {
-        throw Exception('No authenticated user');
-      }
-
-      // Web: blob URLs can't be read by dart:io File — use XFile.readAsBytes()
-      if (kIsWeb || xFile.path.startsWith('blob:')) {
-        final bytes = await xFile.readAsBytes();
-        final result = await _uploadService.uploadImageFromBytes(
-          bytes: bytes,
-          userId: userId,
-          fileName: xFile.name,
-        );
-        AppLogger.info('🌐 WEB_FIX: Web upload result: ${result.url}');
-        return result.success ? result.url : null;
-      }
-
-      // Mobile: use File-based upload
-      final file = File(xFile.path);
-      final result = await _uploadService.uploadImage(
-        file: file,
-        userId: userId,
-      );
-
-      AppLogger.info('ðŸŒ WEB_FIX: Upload result: ${result.url}');
-      return result.success ? result.url : null;
-    } catch (e) {
-      AppLogger.error('ðŸŒ WEB_FIX: Upload failed: $e');
-      return null;
-    }
-  }
-
-  /// Handle XFile upload failure
-  ///Simplified - ImageUploadService handles error classification and retry logic
-  void _handleXFileUploadFailure(
-      String filePath, XFile xFile, String errorMessage, dynamic error) {
-    final currentStatus = _imageStates[filePath];
-
-    final failedStatus = ImageUploadStatus(
-      // Note: No File object for XFile blob URLs
-      state: ImageUploadState.failed,
-      error: errorMessage,
-      errorOccurredAt: DateTime.now(),
-      progress: currentStatus?.progress ?? 0.0,
-    );
-
-    _imageStates[filePath] = failedStatus;
-    _setImageUploadError(AppLocale.current.errorGeneric);
-
-    AppLogger.error('âŒ XFile upload failed: $filePath - $errorMessage');
   }
 
   /// Retry all failed uploads that can be retried

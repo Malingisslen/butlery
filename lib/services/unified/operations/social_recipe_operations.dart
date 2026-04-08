@@ -387,15 +387,6 @@ class SocialRecipeOperations {
     }
   }
 
-  Future<void> markSharedRecipeAsViewed(String recipeId) async {
-    try {
-      // This would update view tracking
-      AppLogger.info('Marking recipe $recipeId as viewed');
-    } catch (e) {
-      AppLogger.error('Failed to mark recipe as viewed', e);
-    }
-  }
-
   bool checkLegacyPermission(String recipeId, String userId, String action) {
     try {
       final recipe = _getRecipes().firstWhere((r) => r.id == recipeId);

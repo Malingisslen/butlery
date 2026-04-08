@@ -145,7 +145,7 @@ class ConnectionMonitor {
       case ConnectionStatus.connecting:
         return AppLocale.current.statusConnecting;
       case ConnectionStatus.connected:
-        return AppLocale.current.statusConnecting;
+        return AppLocale.current.statusConnected;
       case ConnectionStatus.disconnected:
         return AppLocale.current.errorNoInternetConnection;
       case ConnectionStatus.reconnecting:

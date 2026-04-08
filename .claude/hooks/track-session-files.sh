@@ -18,45 +18,34 @@ else
   exit 0
 fi
 
-RESULT=$($PY_CMD -c "
-import json, sys, os, re
+# Extract fields using Windows-safe JSON helper
+HELPER=".claude/hooks/parse_hook_json.py"
+FIELDS=$(echo "$INPUT" | $PY_CMD "$HELPER" session_id tool_input.file_path tool_response.filePath cwd 2>/dev/null) || exit 0
 
-data = json.loads(sys.stdin.read())
-session_id = data.get('session_id', '')
-file_path = (data.get('tool_input', {}).get('file_path', '')
-             or data.get('tool_response', {}).get('filePath', ''))
+SESSION_ID=$(echo "$FIELDS" | sed -n '1p')
+FILE_PATH_1=$(echo "$FIELDS" | sed -n '2p')
+FILE_PATH_2=$(echo "$FIELDS" | sed -n '3p')
+CWD_RAW=$(echo "$FIELDS" | sed -n '4p')
 
-if not session_id or not file_path:
-    sys.exit(0)
+FILE_PATH="${FILE_PATH_1:-$FILE_PATH_2}"
+[ -z "$SESSION_ID" ] || [ -z "$FILE_PATH" ] && exit 0
 
 # Normalize to repo-relative forward-slash path
-fp = file_path.replace('\\\\', '/')
-
-cwd = data.get('cwd', os.getcwd()).replace('\\\\', '/')
+REL_PATH=$($PY_CMD -c "
+import sys, os, re
+fp = sys.argv[1].replace('\\\\', '/')
+cwd = (sys.argv[2] or os.getcwd()).replace('\\\\', '/')
 cwd = cwd.rstrip('/')
-
-def normalize_drive(p):
-    # /c/... -> C:/...
+def norm(p):
     m = re.match(r'^/([a-zA-Z])/(.*)', p)
-    if m:
-        return m.group(1).upper() + ':/' + m.group(2)
-    # c:/... -> C:/...
+    if m: return m.group(1).upper() + ':/' + m.group(2)
     m = re.match(r'^([a-zA-Z]):/(.*)', p)
-    if m:
-        return m.group(1).upper() + ':/' + m.group(2)
+    if m: return m.group(1).upper() + ':/' + m.group(2)
     return p
-
-fp = normalize_drive(fp)
-cwd = normalize_drive(cwd)
-
-if fp.startswith(cwd + '/'):
-    fp = fp[len(cwd) + 1:]
-
-print(f'{session_id}\n{fp}')
-" <<< "$INPUT" 2>/dev/null) || exit 0
-
-SESSION_ID=$(echo "$RESULT" | head -1)
-REL_PATH=$(echo "$RESULT" | tail -1)
+fp, cwd = norm(fp), norm(cwd)
+if fp.startswith(cwd + '/'): fp = fp[len(cwd)+1:]
+print(fp)
+" "$FILE_PATH" "$CWD_RAW" 2>/dev/null) || exit 0
 
 [ -z "$SESSION_ID" ] || [ -z "$REL_PATH" ] && exit 0
 

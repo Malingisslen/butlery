@@ -146,8 +146,12 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
       AppLogger.debug('VIEWMODEL: Starting avatar upload');
 
       AppLogger.debug('VIEWMODEL: Calling image picker service');
-      final imageFile =
-          await _imagePickerService.pickImage(ImageSource.gallery);
+      final imageFile = await _imagePickerService.pickImage(
+        ImageSource.gallery,
+        maxWidth: 400,
+        maxHeight: 400,
+        imageQuality: 85,
+      );
 
       if (imageFile == null) {
         AppLogger.info('VIEWMODEL: No image selected (user cancelled)');

@@ -5,6 +5,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/edit_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/delete_group_dialog.dart';
@@ -88,7 +90,7 @@ class GroupDialogs {
   }
 }
 
-/// Temporary replacement for InvitationTargetInputs.showTargetSelectionDialog
+/// Target selection dialog with selectable list of [InvitationTarget]s.
 Future<List<InvitationTarget>?> _showTargetSelectionDialog(
   BuildContext context, {
   required List<InvitationTarget> availableTargets,
@@ -96,23 +98,73 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
   required String title,
   bool allowMultiple = true,
 }) async {
-  // Simple placeholder implementation
+  final selected = Set<String>.from(
+    initialSelection.map((t) => t.targetId),
+  );
+
   return showDialog<List<InvitationTarget>>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content:
-          const Text('Target selection dialog - simplified implementation'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, null),
-          child: Text(context.l10n.commonCancel),
+    builder: (_) => StatefulBuilder(
+      builder: (context, setDialogState) => AlertDialog(
+        title: Text(title),
+        contentPadding: EdgeInsets.zero,
+        content: SizedBox(
+          width: double.maxFinite,
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: availableTargets.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
+                    child: Text(
+                      context.l10n.socialNoFriendsYet,
+                      style: AppTextStyles.bodyMedium,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: availableTargets.length,
+                  itemBuilder: (context, index) {
+                    final target = availableTargets[index];
+                    final isSelected = selected.contains(target.targetId);
+                    return CheckboxListTile(
+                      value: isSelected,
+                      onChanged: (checked) {
+                        setDialogState(() {
+                          if (checked == true) {
+                            if (!allowMultiple) selected.clear();
+                            selected.add(target.targetId);
+                          } else {
+                            selected.remove(target.targetId);
+                          }
+                        });
+                      },
+                      title: Text(
+                        target.displayName,
+                        style: AppTextStyles.titleSmall,
+                      ),
+                      secondary: target.type == InvitationTargetType.group
+                          ? const Icon(Icons.group)
+                          : const Icon(Icons.person),
+                    );
+                  },
+                ),
         ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, initialSelection),
-          child: const Text('OK'),
-        ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, null),
+            child: Text(context.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final result = availableTargets
+                  .where((t) => selected.contains(t.targetId))
+                  .toList();
+              Navigator.pop(context, result);
+            },
+            child: Text(context.l10n.commonDone),
+          ),
+        ],
+      ),
     ),
   );
 }

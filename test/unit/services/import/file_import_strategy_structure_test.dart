@@ -33,7 +33,6 @@ library;
 
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:file_picker/file_picker.dart';
 
 // Production imports
@@ -43,9 +42,6 @@ import 'package:butlery/services/import/file_import_strategy.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
-
-// Mock for FilePicker - keep local as it's specific to file import tests
-class MockFilePicker extends Mock implements FilePicker {}
 
 // Using MockPlatformFile and MockFilePickerResult from production_mocks.dart
 // Note: The production mocks don't have constructor-based configuration,

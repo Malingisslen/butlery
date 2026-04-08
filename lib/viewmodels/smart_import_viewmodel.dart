@@ -198,6 +198,12 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   /// Check clipboard for a recipe URL. Called once when the import view opens.
   Future<void> checkClipboardForUrl() async {
     try {
+      // Guard: check if clipboard has text before calling getData.
+      // On iOS, getData() without this guard triggers the system permission
+      // banner; if denied, subsequent calls silently return null.
+      final hasContent = await Clipboard.hasStrings();
+      if (isDisposed || !hasContent) return;
+
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       if (isDisposed) return;
       final text = clipboardData?.text?.trim();
@@ -212,7 +218,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       _lastPromptedUrl = text;
       notifyListeners();
     } catch (e) {
-      AppLogger.debug('Clipboard check failed: $e');
+      AppLogger.warning('Clipboard check failed: $e');
     }
   }
 
