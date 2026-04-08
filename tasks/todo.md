@@ -1,57 +1,49 @@
 # Sprint Backlog
 
-## Sprint: Security Hardening — 2026-04-08
+## Sprint: Security Hardening Part 2 — 2026-04-08
 
-### Agent A: firebase-backend-security — Auth & Permission Fixes
+### 1. Permissions (BUT-329)
 
-- [x] **A1. Fix auth route gaps** — `lib/core/constants/routes.dart`: added `settings` to `authenticatedRoutes`, `allRoutes`, `rightSlideRoutes`. (BUT-334)
-- [x] **A2. Add proactive token refresh** — `lib/services/auth_service.dart`: `refreshSession()` + `sessionExpired` flag. (BUT-315)
-- [x] **A3. Fix non-atomic friend acceptance** — `lib/repositories/firebase/friends/friend_relationship_repository.dart` + `lib/services/unified/operations/friends_management_operations.dart`: `acceptFriendAtomically` single transaction. (BUT-310)
+- [x] **1A. Fix menu permission domain** — `realtime_participant_manager.dart`: canEditRecipe→canEditMenu (3 one-liners). (BUT-329)
+- [x] **1B. Fix shopping join permissions** — `shared_shopping_list.dart` + `social_shopping_coordinator.dart`: added shoppingListId field, wired addMember. (BUT-329)
 
-### Agent B: firebase-backend-security — Data Protection & GDPR
+### 2. Stub Cleanup (BUT-328)
 
-- [x] **B1. Fix SSRF DNS rebinding bypass** — `lib/services/import/fetchers/http_content_fetcher.dart`: post-DNS-resolve IP check + scheme validation + injectable DNS resolver. (BUT-325)
-- [x] **B2. Fix basic import rate limiter** — `lib/services/import/import_manager.dart`: wired `ImportRateLimiter` for `checkLimit` + `recordUsage`. (BUT-326)
-- [x] **B3. Fix Algolia indexing private recipes** — `lib/repositories/algolia/algolia_search_repository.dart`: personal → removeRecipe, `isPublic` from recipe.type, removed ingredients from search doc. (BUT-330)
-- [x] **B4. Fix GDPR deletion false-success** — `lib/services/account/account_deletion/storage_deletion_operations.dart`: catch block returns `false`. (BUT-316)
+- [x] **2A. Wire clearCompleted** — `collaborative_shopping_viewmodel.dart` + `collaborative_shopping_actions.dart`: VM delegate + real service call. (BUT-328)
+- [x] **2C. Remove Settings/Members stubs** — `collaborative_shopping_actions.dart`: removed menu items + methods. (BUT-328)
+- [x] **2D. Wire share actions** — `collaborative_shopping_actions.dart`: Clipboard, SharePlus, mailto with error handling. (BUT-328)
 
-### Agent C: debugger — Stability
+### 3. Recipe Detail Fixes (BUT-321)
 
-- [x] **C1. Fix SocialModule eager dependency** — `lib/core/di/modules/social_module.dart` + `lib/services/social_recipe_service.dart`: lazy shopping service resolution via ServiceLocator.tryGet. (BUT-333)
-- [x] **C2. Fix ConnectivityMonitoringService singleton crash** — `lib/services/connectivity_monitoring_service.dart`: removed manual singleton, simple constructor. (BUT-318)
+- [x] **3A. Fix snackbar no-op** — 4 handler files + `recipe_detail_actions.dart`: handlers call SnackBarUtils directly. (BUT-321)
+- [x] **3B. Wire comment likes** — `social_engagement_manager.dart` + `social_recipe_viewmodel.dart`: CommentLikesSystem persistence + optimistic rollback. (BUT-321)
 
 ### Post-Sprint
 
 - [x] Run `dart analyze --fatal-infos`
 - [ ] Run relevant unit tests
-- [ ] Commit, push, PR, merge
+- [x] Commit, push
 - [ ] Update Linear ticket states
 
 ---
 
-## Archive: Sprint Household + Menu Voting (completed 2026-04-08)
+## Archive: Sprint Security Hardening (completed 2026-04-08)
 
-### Part 1: Household Model + Allergen Aggregation
-
-- [x] **1A. Add `isHousehold` to FriendCategory** (BUT-256)
-- [x] **1B. Create HouseholdService** (BUT-256)
-- [x] **1C. Wire MenuGenerator for household allergens** (BUT-256)
-- [x] **1D. Add toggleHousehold operation** (BUT-256)
-- [x] **1E. Register HouseholdService in DI** (BUT-256)
-- [x] **1F. Household l10n strings** (BUT-256)
-
-### Part 2: Menu Voting Backend
-
-- [x] **2A-F. Menu voting model, repo, service, DI, l10n** (BUT-239)
-
-### Part 3: ViewModels + UI
-
-- [x] **3A-F. Household toggle, allergen toggle, voting VM, vote card, suggest-alternative sheet, realtime wiring** (BUT-256, BUT-239)
+- [x] A1. Fix auth route gaps (BUT-334)
+- [x] A2. Add proactive token refresh (BUT-315)
+- [x] A3. Fix non-atomic friend acceptance (BUT-310)
+- [x] B1. Fix SSRF DNS rebinding bypass (BUT-325)
+- [x] B2. Fix basic import rate limiter (BUT-326)
+- [x] B3. Fix Algolia indexing private recipes (BUT-330)
+- [x] B4. Fix GDPR deletion false-success (BUT-316)
+- [x] C1. Fix SocialModule eager dependency (BUT-333)
+- [x] C2. Fix ConnectivityMonitoringService singleton crash (BUT-318)
 
 ---
 
 ## Archive: Previous Sprints
 
+- Household + Menu Voting (2026-04-08): BUT-256, BUT-239
 - Bug Cleanup + Loading Polish (2026-04-07): BUT-292-296, BUT-244
 - Share & Discover (2026-04-07): BUT-219, BUT-242, BUT-272, BUT-271
 - Tech Debt + UX Polish (2026-04-07): BUT-289, BUT-288, BUT-253, BUT-218, BUT-212
