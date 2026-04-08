@@ -9,6 +9,7 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
@@ -34,6 +35,9 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockRecipeRepository extends Mock implements RecipeRepository {}
 
+class MockFirebaseRecipeRepository extends Mock
+    implements FirebaseRecipeRepository {}
+
 class MockWriteBatch extends Mock implements WriteBatch {}
 
 void main() {
@@ -42,7 +46,7 @@ void main() {
   late MockFirebasePersonalTagGroupRepository mockGroupRepository;
   late MockIngredientLookupService mockLookupService;
   late MockAuthRepository mockAuthRepository;
-  late MockRecipeRepository mockRecipeRepository;
+  late MockFirebaseRecipeRepository mockRecipeRepository;
 
   setUpAll(() async {
     // Register fallback values for mocktail
@@ -57,7 +61,7 @@ void main() {
     mockGroupRepository = MockFirebasePersonalTagGroupRepository();
     mockLookupService = MockIngredientLookupService();
     mockAuthRepository = MockAuthRepository();
-    mockRecipeRepository = MockRecipeRepository();
+    mockRecipeRepository = MockFirebaseRecipeRepository();
 
     // Reset and reinitialize GetIt with mock repositories
     final getIt = GetIt.instance;
@@ -910,69 +914,78 @@ void main() {
       });
     });
 
-    group('deleteTag - cascade to recipes', () {
-      test('should cascade delete to recipes using tag ID', () async {
-        // Arrange
-        when(() => mockTagRepository.delete('tag-1')).thenAnswer((_) async {});
-        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .thenAnswer((_) async => 5);
+    group('deleteTag - atomic batch cascade', () {
+      late MockWriteBatch mockBatch;
 
-        // Act
-        await service.deleteTag('tag-1');
-
-        // Assert: Tag was deleted and cascade used tag ID
-        verify(() => mockTagRepository.delete('tag-1')).called(1);
-        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .called(1);
+      setUp(() {
+        mockBatch = MockWriteBatch();
+        when(() => mockTagRepository.newWriteBatch()).thenReturn(mockBatch);
+        when(() => mockBatch.commit()).thenAnswer((_) async {});
+        registerFallbackValue(mockBatch);
       });
 
-      test('should not cascade when tag is not found before deletion',
+      test('should atomically cascade delete and remove tag in one batch',
           () async {
-        // Arrange: Tag not found (read returns null)
-        when(() => mockTagRepository.read('tag-1'))
-            .thenAnswer((_) async => null);
-        when(() => mockTagRepository.delete('tag-1')).thenAnswer((_) async {});
-        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .thenAnswer((_) async => 0);
+        when(() => mockRecipeRepository.addRemovePersonalTagFromRecipesToBatch(
+            any(), 'tag-1')).thenAnswer((_) async => 5);
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
+            .thenReturn(null);
 
-        // Act
         await service.deleteTag('tag-1');
 
-        // Assert: Delete proceeds and cascade uses tag ID
-        verify(() => mockTagRepository.delete('tag-1')).called(1);
-        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+        verify(() => mockRecipeRepository
+                .addRemovePersonalTagFromRecipesToBatch(mockBatch, 'tag-1'))
             .called(1);
+        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
+            .called(1);
+        verify(() => mockBatch.commit()).called(1);
       });
 
-      test('should handle cascade affecting zero recipes', () async {
-        // Arrange
-        when(() => mockTagRepository.delete('tag-1')).thenAnswer((_) async {});
-        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .thenAnswer((_) async => 0);
-
-        // Act
-        await service.deleteTag('tag-1');
-
-        // Assert: Both operations were called using tag ID
-        verify(() => mockTagRepository.delete('tag-1')).called(1);
-        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .called(1);
-      });
-
-      test('should cascade delete before removing tag from repository',
+      test('should commit batch even when cascade affects zero recipes',
           () async {
-        // Arrange: Verifies cascade happens then delete proceeds
-        when(() => mockTagRepository.delete('tag-1')).thenAnswer((_) async {});
-        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
-            .thenAnswer((_) async => 1);
+        when(() => mockRecipeRepository.addRemovePersonalTagFromRecipesToBatch(
+            any(), 'tag-1')).thenAnswer((_) async => 0);
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
+            .thenReturn(null);
 
-        // Act
         await service.deleteTag('tag-1');
 
-        // Assert: Cascade and delete both called using tag ID
-        verify(() => mockTagRepository.delete('tag-1')).called(1);
-        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+        verify(() => mockBatch.commit()).called(1);
+      });
+
+      test('should still delete tag when recipe repo is unavailable', () async {
+        // Re-register GetIt without recipe repository to simulate unavailability
+        final getIt = GetIt.instance;
+        getIt.unregister<RecipeRepository>();
+
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
+            .thenReturn(null);
+
+        await service.deleteTag('tag-1');
+
+        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
             .called(1);
+        verify(() => mockBatch.commit()).called(1);
+
+        // Re-register for other tests
+        getIt.registerSingleton<RecipeRepository>(mockRecipeRepository);
+      });
+
+      test('should add both cascade and delete to the same batch', () async {
+        when(() => mockRecipeRepository.addRemovePersonalTagFromRecipesToBatch(
+            any(), 'tag-1')).thenAnswer((_) async => 1);
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
+            .thenReturn(null);
+
+        await service.deleteTag('tag-1');
+
+        // Both operations use the same batch instance
+        verify(() => mockRecipeRepository
+                .addRemovePersonalTagFromRecipesToBatch(mockBatch, 'tag-1'))
+            .called(1);
+        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
+            .called(1);
+        verify(() => mockBatch.commit()).called(1);
       });
     });
 

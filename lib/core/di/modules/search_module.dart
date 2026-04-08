@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/algolia/algolia_search_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_search_repository.dart';
@@ -38,15 +39,13 @@ class SearchModule implements DIModule {
   @override
   Future<void> configureUserScope(GetIt container) async {}
 
+  _DelegatingSearchRepository? _proxy;
+
   @override
   Future<void> configure(GetIt container) async {
     try {
-      // Always register Firestore search as the default provider.
-      // Feature flags (Remote Config) are not yet fetched at configure() time,
-      // so we defer the Algolia swap to initialize().
-      container.registerLazySingleton<SearchRepository>(
-        () => FirestoreSearchRepository(),
-      );
+      _proxy = _DelegatingSearchRepository(FirestoreSearchRepository());
+      container.registerLazySingleton<SearchRepository>(() => _proxy!);
       AppLogger.info(
           'SearchModule: Registered default Firestore search provider');
     } catch (e) {
@@ -64,8 +63,6 @@ class SearchModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // Now that Remote Config has been fetched, check the feature flag
-      // and swap to Algolia if enabled and credentials are available.
       final featureFlags = container.isRegistered<FeatureFlagService>()
           ? container<FeatureFlagService>()
           : null;
@@ -78,13 +75,9 @@ class SearchModule implements DIModule {
         const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
 
         if (appId.isNotEmpty && apiKey.isNotEmpty) {
-          // Unregister default Firestore provider and register Algolia
-          container.unregister<SearchRepository>();
-          container.registerLazySingleton<SearchRepository>(
-            () => AlgoliaSearchRepository(
-              appId: appId,
-              apiKey: apiKey,
-            ),
+          _proxy!.delegate = AlgoliaSearchRepository(
+            appId: appId,
+            apiKey: apiKey,
           );
           AppLogger.info(
               'SearchModule: Switched to Algolia search provider (feature flag)');
@@ -94,7 +87,6 @@ class SearchModule implements DIModule {
         }
       }
 
-      // Perform health check on whichever provider is active
       final searchRepository = container<SearchRepository>();
       final isHealthy = await searchRepository.healthCheck();
       if (!isHealthy) {
@@ -130,4 +122,46 @@ class SearchModule implements DIModule {
 /// Search module factory for easy instantiation.
 class SearchModuleFactory {
   static SearchModule create() => SearchModule();
+}
+
+class _DelegatingSearchRepository implements SearchRepository {
+  SearchRepository delegate;
+  _DelegatingSearchRepository(this.delegate);
+
+  @override
+  Future<SearchResult<RecipeSearchHit>> searchRecipes(String query,
+          {SearchFilters? filters, int page = 0, int hitsPerPage = 20}) =>
+      delegate.searchRecipes(query,
+          filters: filters, page: page, hitsPerPage: hitsPerPage);
+
+  @override
+  Future<SearchResult<UserSearchHit>> searchUsers(String query,
+          {int page = 0, int hitsPerPage = 20}) =>
+      delegate.searchUsers(query, page: page, hitsPerPage: hitsPerPage);
+
+  @override
+  Future<void> indexRecipe(Recipe recipe, {required String ownerId}) =>
+      delegate.indexRecipe(recipe, ownerId: ownerId);
+
+  @override
+  Future<void> removeRecipe(String recipeId) => delegate.removeRecipe(recipeId);
+
+  @override
+  Future<void> indexUser(UserSearchData user) => delegate.indexUser(user);
+
+  @override
+  Future<void> removeUser(String userId) => delegate.removeUser(userId);
+
+  @override
+  Future<void> batchIndexRecipes(List<Recipe> recipes,
+          {required String ownerId}) =>
+      delegate.batchIndexRecipes(recipes, ownerId: ownerId);
+
+  @override
+  Future<List<String>> getSuggestions(String partial,
+          {String index = 'recipes', int limit = 5}) =>
+      delegate.getSuggestions(partial, index: index, limit: limit);
+
+  @override
+  Future<bool> healthCheck() => delegate.healthCheck();
 }

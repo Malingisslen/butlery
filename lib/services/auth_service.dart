@@ -15,6 +15,8 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:get_it/get_it.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
 class AuthService extends ChangeNotifier
@@ -189,6 +191,7 @@ class AuthService extends ChangeNotifier
   /// Logout for session timeout - tracks separately for security monitoring.
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {
+      _clearConsentCacheIfAvailable();
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
@@ -209,6 +212,7 @@ class AuthService extends ChangeNotifier
 
   Future<void> forceSignOut() async {
     try {
+      _clearConsentCacheIfAvailable();
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
@@ -356,6 +360,16 @@ class AuthService extends ChangeNotifier
   void _handleAuthError(FirebaseAuthException e) {
     AppLogger.error('Firebase Auth Error Code: ${e.code}');
     setError(mapAuthErrorToMessage(e));
+  }
+
+  /// Clear consent cache before user scope disposal to prevent stale state
+  void _clearConsentCacheIfAvailable() {
+    try {
+      final consent = GetIt.instance.get<ConsentService>();
+      consent.clearConsentCache();
+    } catch (_) {
+      // ConsentService may not be registered or scope already gone
+    }
   }
 
   @override

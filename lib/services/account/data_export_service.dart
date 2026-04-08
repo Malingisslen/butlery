@@ -111,7 +111,41 @@ class DataExportService extends BaseService {
       'notifications': await _preferencesManager.exportNotifications(userId),
       'notification_preferences':
           await _preferencesManager.exportNotificationPreferences(userId),
+      // Additional collections (GDPR completeness)
+      'blocks': await _socialManager.exportBlocks(userId),
+      'conversation_memberships':
+          await _socialManager.exportConversationMemberships(userId),
+      'feedback': await _activityManager.exportFeedback(userId),
+      'fcm_tokens': await _preferencesManager.exportFcmTokens(userId),
+      'category_preferences':
+          await _preferencesManager.exportCategoryPreferences(userId),
     };
+
+    // Aggregate truncation flags into metadata
+    final truncatedCollections = <String>[];
+    for (final entry in exportData.entries) {
+      if (entry.key == 'export_metadata') continue;
+      final value = entry.value;
+      if (value['truncated'] == true) {
+        truncatedCollections.add(entry.key);
+      }
+      // Check nested maps (e.g., messages with per-conversation truncation)
+      for (final nested in value.values) {
+        if (nested is Map && nested['messages_truncated'] == true) {
+          if (!truncatedCollections.contains(entry.key)) {
+            truncatedCollections.add(entry.key);
+          }
+        }
+      }
+    }
+    if (truncatedCollections.isNotEmpty) {
+      (exportData['export_metadata']
+              as Map<String, dynamic>)['truncated_collections'] =
+          truncatedCollections;
+      (exportData['export_metadata']
+              as Map<String, dynamic>)['data_completeness'] =
+          'Some collections were truncated due to size limits: ${truncatedCollections.join(', ')}';
+    }
 
     // Convert to pretty-printed JSON
     final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);

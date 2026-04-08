@@ -225,4 +225,50 @@ class SocialExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// Export blocked users (both directions)
+  Future<Map<String, dynamic>> exportBlocks(String userId) async {
+    try {
+      final outgoing = await _firestore
+          .collection(FirestoreCollections.blocks)
+          .where('blockerId', isEqualTo: userId)
+          .get();
+
+      final incoming = await _firestore
+          .collection(FirestoreCollections.blocks)
+          .where('blockedUserId', isEqualTo: userId)
+          .get();
+
+      return {
+        'outgoing_blocks':
+            outgoing.docs.map((d) => sanitizeForJson(d.data())).toList(),
+        'incoming_blocks':
+            incoming.docs.map((d) => sanitizeForJson(d.data())).toList(),
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export blocks', e);
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Export conversation memberships
+  Future<Map<String, dynamic>> exportConversationMemberships(
+      String userId) async {
+    try {
+      final memberships = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('conversation_memberships')
+          .get();
+
+      return {
+        'memberships':
+            memberships.docs.map((d) => sanitizeForJson(d.data())).toList(),
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export conversation memberships', e);
+      return {'error': e.toString()};
+    }
+  }
 }

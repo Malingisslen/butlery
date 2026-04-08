@@ -287,14 +287,16 @@ class RealtimeMenuOperations {
     }, currentRecipes);
 
     try {
-      // Remove recipes one by one from end to beginning
+      // Compute final list locally and write once (atomic)
+      final updated = List<Recipe>.from(currentRecipes);
       for (final index in sortedIndices) {
-        await _menuService.removeRecipeFromCategory(
-          resourceId: menuId,
-          categoryName: categoryName,
-          recipeIndex: index,
-        );
+        updated.removeAt(index);
       }
+      await _menuService.updateWholeCategory(
+        resourceId: menuId,
+        categoryName: categoryName,
+        recipes: updated,
+      );
 
       AppLogger.success(
           '✅ ${indices.length} recipes removed from $categoryName');

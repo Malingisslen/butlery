@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -5,6 +7,7 @@ import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -21,6 +24,9 @@ class PersonalTagCrudService extends BaseService {
   static const String tagsCacheKey = 'personal_tags';
   static const String groupsCacheKey = 'personal_groups';
 
+  /// Serializes createTag calls to prevent TOCTOU race on name uniqueness.
+  Completer<void>? _createTagLock;
+
   PersonalTagCrudService({
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
@@ -33,32 +39,43 @@ class PersonalTagCrudService extends BaseService {
   // -- Tag CRUD --
 
   Future<PersonalTag?> createTag(PersonalTag tag) async {
-    return await executeServiceOperation(
-      () async {
-        final nameValidation = PersonalTag.validateName(tag.name);
-        if (nameValidation != null) {
-          throw ArgumentError(nameValidation);
-        }
+    // Serialize concurrent creates to prevent duplicate names (TOCTOU)
+    while (_createTagLock != null) {
+      await _createTagLock!.future;
+    }
+    _createTagLock = Completer<void>();
 
-        if (await _tagRepository.nameExists(tag.name)) {
-          throw ArgumentError(AppLocale.current.errorTagNameExists(tag.name));
-        }
-
-        if (tag.groupId != null) {
-          final group = await _groupRepository.read(tag.groupId!);
-          if (group == null) {
-            throw ArgumentError(AppLocale.current.errorGroupDoesNotExist);
+    try {
+      return await executeServiceOperation(
+        () async {
+          final nameValidation = PersonalTag.validateName(tag.name);
+          if (nameValidation != null) {
+            throw ArgumentError(nameValidation);
           }
-        }
 
-        await _tagRepository.create(tag);
-        clearCache(tagsCacheKey);
-        AppLogger.info('Created personal tag: ${tag.name}');
-        return tag;
-      },
-      operationName: 'Create personal tag',
-      requiresAuth: true,
-    );
+          if (await _tagRepository.nameExists(tag.name)) {
+            throw ArgumentError(AppLocale.current.errorTagNameExists(tag.name));
+          }
+
+          if (tag.groupId != null) {
+            final group = await _groupRepository.read(tag.groupId!);
+            if (group == null) {
+              throw ArgumentError(AppLocale.current.errorGroupDoesNotExist);
+            }
+          }
+
+          await _tagRepository.create(tag);
+          clearCache(tagsCacheKey);
+          AppLogger.info('Created personal tag: ${tag.name}');
+          return tag;
+        },
+        operationName: 'Create personal tag',
+        requiresAuth: true,
+      );
+    } finally {
+      _createTagLock!.complete();
+      _createTagLock = null;
+    }
   }
 
   Future<PersonalTag?> getTag(String tagId) async {
@@ -136,17 +153,26 @@ class PersonalTagCrudService extends BaseService {
   Future<void> deleteTag(String tagId) async {
     await executeServiceOperation(
       () async {
-        final recipeRepo = _getRecipeRepository();
+        final batch = _tagRepository.newWriteBatch();
+
+        final recipeRepo = _getFirebaseRecipeRepository();
+        int cascadeCount = 0;
         if (recipeRepo != null) {
-          final count = await recipeRepo.removePersonalTagFromRecipes(tagId);
-          if (count > 0) {
-            AppLogger.info(
-              'Cascaded tag deletion "$tagId" from $count recipes',
-            );
-          }
+          cascadeCount =
+              await recipeRepo.addRemovePersonalTagFromRecipesToBatch(
+            batch,
+            tagId,
+          );
         }
 
-        await _tagRepository.delete(tagId);
+        _tagRepository.addDeleteToBatch(batch, tagId);
+        await batch.commit();
+
+        if (cascadeCount > 0) {
+          AppLogger.info(
+            'Atomically deleted tag "$tagId" and cascaded to $cascadeCount recipes',
+          );
+        }
 
         clearCache(tagsCacheKey);
         AppLogger.info('Deleted personal tag: $tagId');
@@ -474,5 +500,10 @@ class PersonalTagCrudService extends BaseService {
       );
       return null;
     }
+  }
+
+  FirebaseRecipeRepository? _getFirebaseRecipeRepository() {
+    final repo = _getRecipeRepository();
+    return repo is FirebaseRecipeRepository ? repo : null;
   }
 }

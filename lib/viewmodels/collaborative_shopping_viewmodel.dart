@@ -118,8 +118,15 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     try {
       AppLogger.info('📋 Laddar kollaborativ lista: $listId');
 
-      final targetList =
+      var targetList =
           _shoppingService.lists.firstWhereOrNull((list) => list.id == listId);
+
+      // If not in memory, try loading from service first
+      if (targetList == null) {
+        await _shoppingService.loadLists();
+        targetList = _shoppingService.lists
+            .firstWhereOrNull((list) => list.id == listId);
+      }
 
       if (targetList != null) {
         _currentList = targetList;

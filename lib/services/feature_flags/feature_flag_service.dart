@@ -151,8 +151,13 @@ class FeatureFlagService {
     if (percentage <= 0) return false;
     if (percentage >= 100) return true;
 
-    // Stable hash based on flag + userId
-    final hash = '${flag}_$userId'.hashCode.abs();
+    // Deterministic FNV-1a hash — stable across platforms and VM runs
+    final key = '${flag}_$userId';
+    var hash = 0x811c9dc5;
+    for (var i = 0; i < key.length; i++) {
+      hash ^= key.codeUnitAt(i);
+      hash = (hash * 0x01000193) & 0xFFFFFFFF;
+    }
     final result = (hash % 100) < percentage;
 
     // P8-19: Log feature flag assignment as user property

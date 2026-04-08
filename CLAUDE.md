@@ -72,6 +72,8 @@ När stop hook blockerar med en `reason`:
 - Om reason nämner "tests" → kör tester och fixa fel
 - Försök sedan stoppa igen
 
+The stop hook is session-aware: it only blocks on errors in files THIS session modified. Errors in files modified by another parallel session are ignored — do NOT attempt to fix them.
+
 ## Agent Usage Rules
 
 ### Tier 1: Strongly Recommended

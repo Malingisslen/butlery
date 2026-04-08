@@ -91,18 +91,23 @@ void main() {
         final jsonString = await service.exportUserData();
         final data = json.decode(jsonString) as Map<String, dynamic>;
 
+        // Core user data
         expect(data['profile'], isNotNull);
         expect(data['recipes'], isNotNull);
+        expect(data['menus'], isNotNull);
+        expect(data['shopping_lists'], isNotNull);
+        expect(data['personal_tags'], isNotNull);
+        // Social data
         expect(data['friends'], isNotNull);
         expect(data['messages'], isNotNull);
-        expect(data['shopping_lists'], isNotNull);
-        expect(data['menus'], isNotNull);
-        expect(data['comments_and_ratings'], isNotNull);
-        expect(data['activity_history'], isNotNull);
         expect(data['shared_content'], isNotNull);
-        expect(data['preferences'], isNotNull);
+        // Activity
+        expect(data['comments_and_ratings'], isNotNull);
+        // GDPR compliance
         expect(data['audit_logs'], isNotNull);
         expect(data['consent_records'], isNotNull);
+        // Preferences
+        expect(data['preferences'], isNotNull);
         expect(data['notifications'], isNotNull);
         expect(data['notification_preferences'], isNotNull);
       });

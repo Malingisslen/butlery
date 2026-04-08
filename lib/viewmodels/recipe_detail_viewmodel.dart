@@ -114,6 +114,11 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// to prevent memory leaks and ensure proper ViewModel lifecycle management
   /// in dynamic recipe detail scenarios with ViewModel creation and disposal.
   @override
+  void notifyListeners() {
+    if (!isDisposed) super.notifyListeners();
+  }
+
+  @override
   void dispose() {
     _recipeServiceSubscription?.cancel();
     super.dispose();

@@ -11933,6 +11933,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailVerificationSuccess => 'Email verified!';
 
   @override
+  String get a11yCookingModeFontScale => 'Change text size';
+
+  @override
   String get a11yCookingModeClose => 'Close cooking mode';
 
   @override

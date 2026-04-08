@@ -8219,6 +8219,7 @@
   "emailVerificationResend": "Skicka igen",
   "emailVerificationContinue": "Fortsätt ändå",
   "emailVerificationSuccess": "E-post verifierad!",
+  "a11yCookingModeFontScale": "Ändra textstorlek",
   "a11yCookingModeClose": "Stäng tillagningsläge",
   "a11yCookingModeIngredient": "{ingredient}",
   "@a11yCookingModeIngredient": {

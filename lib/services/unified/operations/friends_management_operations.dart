@@ -223,13 +223,16 @@ class FriendsManagementOperations extends BaseService {
   }
 
   Future<bool> rejectFriendRequest(String requestId) async {
-    try {
+    if (ValidationUtils.isNullOrEmpty(requestId)) {
+      return false;
+    }
+
+    final result = await executeServiceOperation(() async {
       final request =
           _getIncomingRequests().where((r) => r.id == requestId).firstOrNull;
 
       if (request == null) {
-        AppLogger.error('Friend request not found');
-        return false;
+        throw Exception('Friend request not found');
       }
 
       // Update request status
@@ -246,20 +249,21 @@ class FriendsManagementOperations extends BaseService {
 
       AppLogger.success('Friend request rejected from ${request.fromUserId}');
       return true;
-    } catch (e) {
-      AppLogger.error('Failed to reject friend request', e);
-      return false;
-    }
+    }, operationName: 'Reject Friend Request');
+    return result == true;
   }
 
   Future<bool> cancelFriendRequest(String requestId) async {
-    try {
+    if (ValidationUtils.isNullOrEmpty(requestId)) {
+      return false;
+    }
+
+    final result = await executeServiceOperation(() async {
       final request =
           _getOutgoingRequests().where((r) => r.id == requestId).firstOrNull;
 
       if (request == null) {
-        AppLogger.error('Friend request not found');
-        return false;
+        throw Exception('Friend request not found');
       }
 
       // Update request status
@@ -276,19 +280,20 @@ class FriendsManagementOperations extends BaseService {
 
       AppLogger.success('Friend request cancelled to ${request.toUserId}');
       return true;
-    } catch (e) {
-      AppLogger.error('Failed to cancel friend request', e);
-      return false;
-    }
+    }, operationName: 'Cancel Friend Request');
+    return result == true;
   }
 
   Future<bool> removeFriend(String friendId) async {
-    try {
+    if (ValidationUtils.isNullOrEmpty(friendId)) {
+      return false;
+    }
+
+    final result = await executeServiceOperation(() async {
       final friend = _getFriends().where((f) => f.uid == friendId).firstOrNull;
 
       if (friend == null) {
-        AppLogger.error('Friend not found');
-        return false;
+        throw Exception('Friend not found');
       }
 
       // Remove from local state
@@ -302,10 +307,8 @@ class FriendsManagementOperations extends BaseService {
 
       AppLogger.success('Removed friend: ${friend.displayName.maskedName}');
       return true;
-    } catch (e) {
-      AppLogger.error('Failed to remove friend', e);
-      return false;
-    }
+    }, operationName: 'Remove Friend');
+    return result == true;
   }
 
   Future<bool> blockUser(String userId) async {
@@ -414,6 +417,13 @@ class FriendsManagementOperations extends BaseService {
           .where((user) => !currentFriendIds.contains(user.uid))
           .toList();
       combinedResults.addAll(newUsers);
+
+      // Defense-in-depth: filter out current user even though the repository
+      // layer should already exclude them from search results.
+      final currentUserId = _getCurrentUserId();
+      if (currentUserId != null) {
+        combinedResults.removeWhere((user) => user.uid == currentUserId);
+      }
 
       AppLogger.info(
         'Search returned ${currentFriends.length} current friends and ${newUsers.length} new users',

@@ -406,6 +406,11 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   }
 
   @override
+  void notifyListeners() {
+    if (!_isDisposed) super.notifyListeners();
+  }
+
+  @override
   void dispose() {
     _isDisposed = true;
     AppLogger.info('🗑️ RealtimeMenuViewModel disposing...');

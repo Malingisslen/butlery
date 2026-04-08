@@ -136,6 +136,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/safety-skill-trigger.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/track-session-files.sh"
           }
         ]
       }

@@ -272,7 +272,12 @@ class LlmService extends BaseService {
     }
 
     try {
-      final callable = _functions.httpsCallable(functionName);
+      final callable = _functions.httpsCallable(
+        functionName,
+        options: HttpsCallableOptions(
+          timeout: const Duration(seconds: 60),
+        ),
+      );
       final result = await callable.call<Map<String, dynamic>>(requestJson);
       final response = parseResponse(result.data);
 

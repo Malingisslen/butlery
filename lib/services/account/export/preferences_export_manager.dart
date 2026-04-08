@@ -125,7 +125,8 @@ class PreferencesExportManager {
       }
 
       return {
-        'preferences': prefsDoc.exists ? sanitizeForJson(prefsDoc.data()) : null,
+        'preferences':
+            prefsDoc.exists ? sanitizeForJson(prefsDoc.data()) : null,
         'preferences_exist': prefsDoc.exists,
         'fcm_token_registered': fcmDoc.exists,
         'fcm_token_updated_at': fcmTokenUpdatedAt,
@@ -138,6 +139,61 @@ class PreferencesExportManager {
         'error': e.toString(),
         'note': 'Notification preferences may not be available',
       };
+    }
+  }
+
+  /// Export FCM token metadata (token value redacted for security)
+  Future<Map<String, dynamic>> exportFcmTokens(String userId) async {
+    try {
+      final tokens = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('fcm_tokens')
+          .get();
+
+      return {
+        'tokens': tokens.docs.map((d) {
+          final data = sanitizeForJson(d.data());
+          // Redact actual token value, keep metadata
+          if (data.containsKey('token') && data['token'] is String) {
+            final token = data['token'] as String;
+            data['token'] =
+                '${token.substring(0, 10.clamp(0, token.length))}...[redacted]';
+          }
+          return data;
+        }).toList(),
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export FCM tokens', e);
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Export shopping category preferences and list category orders
+  Future<Map<String, dynamic>> exportCategoryPreferences(String userId) async {
+    try {
+      final catPrefs = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('category_preferences')
+          .get();
+
+      final listOrders = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('list_category_orders')
+          .get();
+
+      return {
+        'category_preferences':
+            catPrefs.docs.map((d) => sanitizeForJson(d.data())).toList(),
+        'list_category_orders':
+            listOrders.docs.map((d) => sanitizeForJson(d.data())).toList(),
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export category preferences', e);
+      return {'error': e.toString()};
     }
   }
 }

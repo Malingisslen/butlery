@@ -90,7 +90,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
       if (success) {
         await onListRefresh();
         onActivityUpdate(
-          item.bought
+          !item.bought
               ? AppLocale.current.shoppingItemMarkedComplete
               : AppLocale.current.shoppingItemMarkedIncomplete,
           DateTime.now(),

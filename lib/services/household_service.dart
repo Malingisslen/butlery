@@ -2,8 +2,7 @@
 
 // lib/services/household_service.dart
 
-import 'package:butlery/core/base/base_service.dart'
-    hide UserService, UserProfile;
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';

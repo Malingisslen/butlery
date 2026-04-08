@@ -97,6 +97,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   late OfflineInitialization _initialization;
   late OfflineUserStorage _userStorage;
   late OfflineSyncManager _syncManager;
+  bool _isDisposed = false;
 
   // User-specific storage state
   String? _currentUserId;
@@ -382,11 +383,20 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     return result;
   }
 
+  @override
+  void notifyListeners() {
+    if (!_isDisposed) super.notifyListeners();
+  }
+
   /// Clean up resources
   @override
   void dispose() {
+    _isDisposed = true;
     if (_isInitializationReady) {
       _initialization.dispose();
+    }
+    if (_isSyncManagerReady) {
+      _syncManager.dispose();
     }
     super.dispose();
   }

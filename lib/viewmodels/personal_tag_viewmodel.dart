@@ -114,10 +114,29 @@ class PersonalTagViewModel extends ChangeNotifier
   static const _maxRetryAttempts = 3;
   static const _initialRetryDelay = Duration(seconds: 1);
   int _retryAttempts = 0;
+  Completer<void>? _initCompleter;
 
   /// Loads all tags and groups and starts watching for updates.
   /// Automatically retries with exponential backoff on failure.
+  /// Concurrent callers await the in-flight initialization instead of
+  /// starting a parallel one (which would bypass maxRetryAttempts).
   Future<void> initialize() async {
+    if (_initCompleter != null) {
+      return _initCompleter!.future;
+    }
+    _initCompleter = Completer<void>();
+
+    try {
+      await _doInitialize();
+      _initCompleter!.complete();
+    } catch (e) {
+      _initCompleter!.completeError(e);
+    } finally {
+      _initCompleter = null;
+    }
+  }
+
+  Future<void> _doInitialize() async {
     setLoading(true);
     clearError();
 
@@ -144,10 +163,9 @@ class PersonalTagViewModel extends ChangeNotifier
           'Retrying PersonalTagViewModel init in ${delay.inSeconds}s '
           '(attempt $_retryAttempts/$_maxRetryAttempts)',
         );
-        // Loading stays true during retry delay — no flicker
         await Future.delayed(delay);
         if (isDisposed) return;
-        return initialize();
+        return _doInitialize();
       }
 
       setError(AppLocale.current.errorCouldNotLoadTags);

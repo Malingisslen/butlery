@@ -21,6 +21,7 @@ import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
 class RecipeListViewModel extends ChangeNotifier {
+  bool _isDisposed = false;
   StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
@@ -819,7 +820,13 @@ class RecipeListViewModel extends ChangeNotifier {
   /// to prevent memory leaks and ensure proper ViewModel lifecycle management
   /// in dynamic recipe list scenarios with ViewModel creation and disposal.
   @override
+  void notifyListeners() {
+    if (!_isDisposed) super.notifyListeners();
+  }
+
+  @override
   void dispose() {
+    _isDisposed = true;
     _searchDebounceTimer?.cancel();
     _deleteManager.dispose();
     _selectionManager.removeListener(notifyListeners);

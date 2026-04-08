@@ -259,6 +259,14 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     return tagsInGroup.length;
   }
 
+  /// Adds a tag delete operation to an external batch without committing.
+  /// Use this for atomic tag deletion with cascade.
+  void addDeleteToBatch(WriteBatch batch, String tagId) {
+    requireCurrentUserId();
+    final ref = getCollectionRef();
+    batch.delete(ref.doc(tagId));
+  }
+
   /// #7: Creates a new WriteBatch for atomic cross-repository operations.
   WriteBatch newWriteBatch() => firestore.batch();
 }

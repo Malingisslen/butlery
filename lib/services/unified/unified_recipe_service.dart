@@ -119,13 +119,25 @@ class UnifiedRecipeService
   bool _isLoading = false;
   String? _error;
 
+  // Cached unmodifiable views — invalidated on every _recipes mutation
+  List<Recipe>? _cachedUnmodifiable;
+  List<Recipe>? _cachedPersonal;
+  List<Recipe>? _cachedCollaborative;
+
   final _stateSubject =
       BehaviorSubject<RecipeServiceState>.seeded(const RecipeStateLoading());
 
   Stream<RecipeServiceState> get stateStream => _stateSubject.stream;
   RecipeServiceState get currentState => _stateSubject.value;
 
+  void _invalidateListCaches() {
+    _cachedUnmodifiable = null;
+    _cachedPersonal = null;
+    _cachedCollaborative = null;
+  }
+
   void notifyListeners() {
+    _invalidateListCaches();
     _emitState();
   }
 
@@ -420,11 +432,12 @@ class UnifiedRecipeService
     return await _personalModule.fetchAllUserRecipes(userId);
   }
 
-  List<Recipe> get recipes => List.unmodifiable(_recipes);
+  List<Recipe> get recipes =>
+      _cachedUnmodifiable ??= List.unmodifiable(_recipes);
   List<Recipe> get personalRecipes =>
-      recipes.where((r) => r.isPersonal).toList();
+      _cachedPersonal ??= recipes.where((r) => r.isPersonal).toList();
   List<Recipe> get collaborativeRecipes =>
-      recipes.where((r) => r.isCollaborative).toList();
+      _cachedCollaborative ??= recipes.where((r) => r.isCollaborative).toList();
 
   bool get hasRecipes => _recipes.isNotEmpty;
   bool get isInitialized => _isInitialized;
@@ -932,6 +945,7 @@ class UnifiedRecipeService
 
     // Clear recipe state
     _recipes.clear();
+    _invalidateListCaches();
     _isInitialized = false;
     _isLoading = false;
     _error = null;

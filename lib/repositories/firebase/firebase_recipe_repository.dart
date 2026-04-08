@@ -553,6 +553,45 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     }
   }
 
+  /// Adds remove-personal-tag operations to an external batch without committing.
+  /// Queries for affected recipes, then adds update operations to [batch].
+  /// Returns the number of recipe updates added.
+  /// Caller is responsible for committing the batch and respecting the 500-op limit.
+  Future<int> addRemovePersonalTagFromRecipesToBatch(
+    WriteBatch batch,
+    String tagId,
+  ) async {
+    if (tagId.isEmpty) return 0;
+    final userId = currentUserId;
+    if (userId == null) return 0;
+
+    final snap = await getCollectionForUser(userId)
+        .where('core.personalTagIds', arrayContains: tagId)
+        .get();
+
+    if (snap.docs.isEmpty) return 0;
+
+    for (final doc in snap.docs) {
+      final data = doc.data();
+      final coreData = data['core'] as Map<String, dynamic>? ?? {};
+      final personalTags = coreData['personalTags'] as List?;
+
+      final updates = <String, dynamic>{
+        'core.personalTagIds': FieldValue.arrayRemove([tagId]),
+      };
+
+      if (personalTags != null) {
+        updates['core.personalTags'] = personalTags
+            .where((entry) => entry is Map && entry['tagId'] != tagId)
+            .toList();
+      }
+
+      batch.update(doc.reference, updates);
+    }
+
+    return snap.docs.length;
+  }
+
   @override
   Future<List<Recipe>> findBySourceUrl(String url) async {
     if (url.isEmpty) return [];

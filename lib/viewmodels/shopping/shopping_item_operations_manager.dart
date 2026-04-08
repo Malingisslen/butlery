@@ -60,7 +60,7 @@ class ShoppingItemOperationsManager {
   static String categoryFromIngredientGroup(String group) =>
       ShoppingCategoryMapper.categoryFromIngredientGroup(group);
 
-  /// Bulk add items from recipe ingredients
+  /// Bulk add items from recipe ingredients, merging duplicates by name.
   Future<bool> addItemsFromRecipe(
     List<Map<String, dynamic>> ingredientData,
     Future<bool> Function({
@@ -68,14 +68,43 @@ class ShoppingItemOperationsManager {
       required double amount,
       required String unit,
       required String category,
-    }) addItemCallback,
-  ) async {
+    }) addItemCallback, {
+    List<dynamic>? existingItems,
+    Future<bool> Function({
+      required String itemId,
+      required double newAmount,
+    })? updateItemCallback,
+  }) async {
     for (final ingredient in ingredientData) {
+      final name = ingredient['name'] as String;
+      final amount = (ingredient['amount'] as num).toDouble();
+      final unit = ingredient['unit'] as String? ?? '';
+      final category =
+          ingredient['category'] as String? ?? ShoppingCategory.other;
+
+      // Check for existing item with same name (case-insensitive)
+      if (existingItems != null && updateItemCallback != null) {
+        final normalizedName = name.trim().toLowerCase();
+        final existing = existingItems.cast<dynamic>().where((item) {
+          final itemName = (item.name as String?)?.trim().toLowerCase() ?? '';
+          return itemName == normalizedName;
+        }).toList();
+
+        if (existing.isNotEmpty) {
+          final existingItem = existing.first;
+          await updateItemCallback(
+            itemId: existingItem.id as String,
+            newAmount: (existingItem.amount as num).toDouble() + amount,
+          );
+          continue;
+        }
+      }
+
       await addItemCallback(
-        name: ingredient['name'] as String,
-        amount: (ingredient['amount'] as num).toDouble(),
-        unit: ingredient['unit'] as String? ?? '',
-        category: ingredient['category'] as String? ?? ShoppingCategory.other,
+        name: name,
+        amount: amount,
+        unit: unit,
+        category: category,
       );
     }
     return true;

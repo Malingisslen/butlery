@@ -69,4 +69,23 @@ class ActivityExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// Export user feedback submissions
+  Future<Map<String, dynamic>> exportFeedback(String userId) async {
+    try {
+      final feedback = await _firestore
+          .collection(FirestoreCollections.feedback)
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      return {
+        'submissions':
+            feedback.docs.map((d) => sanitizeForJson(d.data())).toList(),
+        'total': feedback.docs.length,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export feedback', e);
+      return {'error': e.toString()};
+    }
+  }
 }

@@ -320,4 +320,12 @@ class OfflineSyncManager {
     );
     AppLogger.debug('📋 Queued tagging operation for recipe: $recipeId');
   }
+
+  void dispose() {
+    if (_syncLock != null && !_syncLock!.isCompleted) {
+      _syncLock!.complete();
+    }
+    _syncLock = null;
+    _isSyncing = false;
+  }
 }

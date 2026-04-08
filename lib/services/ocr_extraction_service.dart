@@ -316,7 +316,9 @@ class OCRExtractionService extends BaseService {
       },
     );
 
-    _cacheResult(imageHash, failureResult);
+    // Don't cache failures — they may be transient (network issues,
+    // temporary provider outages) and caching them for 24h would
+    // prevent successful retries.
     return failureResult;
   }
 

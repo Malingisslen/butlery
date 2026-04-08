@@ -8219,6 +8219,7 @@
   "emailVerificationResend": "Send again",
   "emailVerificationContinue": "Continue anyway",
   "emailVerificationSuccess": "Email verified!",
+  "a11yCookingModeFontScale": "Change text size",
   "a11yCookingModeClose": "Close cooking mode",
   "a11yCookingModeIngredient": "{ingredient}",
   "@a11yCookingModeIngredient": {

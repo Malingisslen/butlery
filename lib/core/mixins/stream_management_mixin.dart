@@ -240,7 +240,7 @@ mixin StreamManagementMixin {
   /// Check if named subscription exists and is active
   bool hasActiveSubscription(String name) {
     final subscription = _namedSubscriptions[name];
-    return subscription != null && !_subscriptions.contains(subscription);
+    return subscription != null && _subscriptions.contains(subscription);
   }
 
   /// Add timer to management registry
@@ -504,15 +504,10 @@ mixin StreamManagementMixin {
           '${_controllers.length} controllers not cleaned up after disposal');
     }
 
-    // Check for inactive subscriptions still in registry
-    final inactiveSubscriptions = _subscriptions.where((sub) {
-      try {
-        return sub.isPaused &&
-            !sub.isPaused; // This will throw if subscription is cancelled
-      } catch (e) {
-        return true; // Subscription is cancelled but still in registry
-      }
-    }).length;
+    // Check for cancelled subscriptions still in registry
+    final inactiveSubscriptions = _subscriptions
+        .where((sub) => !_namedSubscriptions.containsValue(sub))
+        .length;
 
     if (inactiveSubscriptions > 0) {
       warnings.add('$inactiveSubscriptions inactive subscriptions in registry');

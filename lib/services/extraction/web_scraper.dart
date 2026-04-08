@@ -18,6 +18,7 @@ import 'package:butlery/services/extraction/extractors/social_platform_content_e
 class WebScraper {
   HeadlessInAppWebView? _headlessWebView;
   bool _isDisposed = false;
+  Completer<void>? _pendingCleanup;
 
   static const Duration _extractionTimeout = Duration(seconds: 15);
 
@@ -52,7 +53,13 @@ class WebScraper {
     String url,
     pd.SourcePlatform platform,
   ) async {
-    // Reset disposed state to allow reuse after previous extraction
+    // Wait for any pending cleanup from a previous extraction to complete
+    // before resetting state — prevents race where _safeCleanup sets
+    // _isDisposed=true after we already reset it to false.
+    if (_pendingCleanup != null && !_pendingCleanup!.isCompleted) {
+      await _pendingCleanup!.future;
+    }
+
     _isDisposed = false;
     if (_headlessWebView != null) {
       try {
@@ -304,10 +311,13 @@ class WebScraper {
         'Chrome/120.0.0.0 Safari/537.36';
   }
 
-  /// Safe cleanup of WebView
+  /// Safe cleanup of WebView, tracked via [_pendingCleanup] so
+  /// subsequent extractions can await completion before reusing.
   void _safeCleanup() {
     if (!_isDisposed) {
       _isDisposed = true;
+      final cleanupCompleter = Completer<void>();
+      _pendingCleanup = cleanupCompleter;
 
       if (_headlessWebView != null) {
         try {
@@ -323,7 +333,10 @@ class WebScraper {
           } catch (e) {
             // Ignore dispose errors
           }
+          cleanupCompleter.complete();
         });
+      } else {
+        cleanupCompleter.complete();
       }
     }
   }

@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:get_it/get_it.dart';
 
-import 'package:butlery/core/base/base_service.dart' hide AuthRepository;
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/feedback_entry.dart';

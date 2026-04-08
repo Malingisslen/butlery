@@ -84,15 +84,16 @@ class DebouncedSyncOperations {
   }) async {
     if (pendingSyncIds.isEmpty || currentUserId == null) return;
 
-    final recipesToSync = List<String>.from(pendingSyncIds);
-    pendingSyncIds.clear();
+    // Snapshot IDs and remove only those from the set, preserving any IDs
+    // added concurrently after the snapshot.
+    final recipesToSync = Set<String>.of(pendingSyncIds);
+    pendingSyncIds.removeAll(recipesToSync);
 
     AppLogger.debug(
         'Syncing ${recipesToSync.length} pending recipes to Firebase');
 
     final failedIds = <String>[];
 
-    // Sync each recipe individually to track per-recipe failures
     await Future.wait(
       recipesToSync.map((recipeId) async {
         try {
@@ -102,20 +103,21 @@ class DebouncedSyncOperations {
             currentUserId: currentUserId,
           );
         } catch (e) {
-          AppLogger.error('❌ Error syncing recipe $recipeId: $e');
+          AppLogger.error('Error syncing recipe $recipeId: $e');
           failedIds.add(recipeId);
         }
       }),
     );
 
     if (failedIds.isEmpty) {
-      AppLogger.success(
-          '✅ Successfully synced ${recipesToSync.length} recipes');
+      AppLogger.success('Successfully synced ${recipesToSync.length} recipes');
     } else {
       AppLogger.warning(
-          '⚠️ ${failedIds.length}/${recipesToSync.length} recipes failed to sync');
-      // Only re-add the ones that actually failed
-      pendingSyncIds.addAll(failedIds);
+          '${failedIds.length}/${recipesToSync.length} recipes failed to sync');
+      // Only re-add IDs that truly failed and aren't already re-queued
+      for (final id in failedIds) {
+        pendingSyncIds.add(id);
+      }
     }
   }
 

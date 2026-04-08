@@ -1,29 +1,71 @@
 # Sprint Backlog
 
-## Sprint: Security Hardening Part 2 — 2026-04-08
+## Sprint: Bug Stability — 2026-04-08
 
-### 1. Permissions (BUT-329)
+### Agent A: debugger — Build Blockers & Backend Stability
 
-- [x] **1A. Fix menu permission domain** — `realtime_participant_manager.dart`: canEditRecipe→canEditMenu (3 one-liners). (BUT-329)
-- [x] **1B. Fix shopping join permissions** — `shared_shopping_list.dart` + `social_shopping_coordinator.dart`: added shoppingListId field, wired addMember. (BUT-329)
+- [x] **A1. Fix ambiguous import in household_service** — `lib/core/base/base_service.dart`: removed orphaned abstract stubs causing conflicts. (BUT-308)
+- [x] **A2. Fix hasActiveSubscription always returning false** — `lib/core/mixins/stream_management_mixin.dart`: flipped inverted condition + fixed tautological check. (BUT-320)
+- [x] **A3. Fix FeatureFlagService hash instability + SearchModule timing** — FNV-1a hash, delegating proxy, fromUserId in deep links. (BUT-335)
+- [x] **A4. Fix notifyListeners after dispose across ViewModels** — Added disposal guards to RecipeListVM, RecipeDetailVM, RealtimeMenuVM, OfflineService. (BUT-319)
 
-### 2. Stub Cleanup (BUT-328)
+### Agent B: debugger — Data Integrity
 
-- [x] **2A. Wire clearCompleted** — `collaborative_shopping_viewmodel.dart` + `collaborative_shopping_actions.dart`: VM delegate + real service call. (BUT-328)
-- [x] **2C. Remove Settings/Members stubs** — `collaborative_shopping_actions.dart`: removed menu items + methods. (BUT-328)
-- [x] **2D. Wire share actions** — `collaborative_shopping_actions.dart`: Clipboard, SharePlus, mailto with error handling. (BUT-328)
+- [x] **B1. Fix shopping data integrity** — Toggle label inversion, atomic multi-remove, dedup, retry on _loadList. (BUT-336)
+- [x] **B2. Fix tagging race conditions** — Batch deleteTag, snapshot pendingSyncIds, Completer-guarded init, createTag mutex. (BUT-331)
 
-### 3. Recipe Detail Fixes (BUT-321)
+### Agent C: firebase-backend-security — GDPR Compliance
 
-- [x] **3A. Fix snackbar no-op** — 4 handler files + `recipe_detail_actions.dart`: handlers call SnackBarUtils directly. (BUT-321)
-- [x] **3B. Wire comment likes** — `social_engagement_manager.dart` + `social_recipe_viewmodel.dart`: CommentLikesSystem persistence + optimistic rollback. (BUT-321)
+- [x] **C1. Fix GDPR export gaps** — Added 5 missing collections, truncation surfacing, consent cache clearing on logout. (BUT-317)
+- [x] **C2. Fix data export broken on web platform** — Increased URL revocation delay from 0 to 10 seconds. (BUT-297)
 
-### Post-Sprint
+### Post-Sprint Steps
 
 - [x] Run `dart analyze --fatal-infos`
 - [ ] Run relevant unit tests
-- [x] Commit, push
+- [ ] Commit, push, PR, merge
 - [ ] Update Linear ticket states
+
+## Sprint: Hardening H2 — 2026-04-08
+
+### Agent A: firebase-backend-security — GDPR + Security Tests
+
+- [x] **A1. Fix data export web error handling** — `download_web.dart`: wrapped blob/anchor in try/catch. (BUT-297)
+- [x] **A2. Fix security service test assertions** — `account_deletion_service_test.dart`, `data_export_service_test.dart`: fixed 3 failing assertions (audit ID format, static mock state, missing export section). (BUT-298)
+
+### Agent B: debugger — Social Bugs Cluster
+
+- [x] **B1. Add self-exposure guard in friend search** — `friends_management_operations.dart`: defensive removeWhere for current user after combining results. (BUT-313)
+- [x] **B2. Fix silent error suppression in friend operations** — `friends_management_operations.dart`: refactored rejectFriendRequest, cancelFriendRequest, removeFriend to use executeServiceOperation(). (BUT-311)
+- [x] **B3. Remove dead FriendsViewModel code** — `friends_viewmodel.dart`: removed unused _debounceTimer, simplified _onFriendsServiceChanged by removing Future.delayed wrapper. (BUT-312)
+
+### Agent C: performance-optimizer — Performance + Resource Leaks
+
+- [x] **C1. Cache recipe list getters** — `unified_recipe_service.dart`: added ??= cached fields for recipes/personalRecipes/collaborativeRecipes, invalidated in notifyListeners(). (BUT-332)
+- [x] **C2. Fix import resource leaks** — `web_scraper.dart`: Completer-based cleanup race fix. `ocr_extraction_service.dart`: removed failure caching. (BUT-327)
+
+### Agent D: flutter-developer — Cooking Mode UX
+
+- [x] **D1. Fix cooking mode scroll, lifecycle, accessibility** — `cooking_mode_view.dart`: GlobalKeys + Scrollable.ensureVisible(), listener pattern instead of build-time callback, l10n semantic labels. (BUT-322)
+
+### Post-Sprint Steps
+
+- [x] Run `dart analyze --fatal-infos`
+- [x] Run relevant unit tests (31/31 security, 42/42 friends VM)
+- [ ] Commit, push, PR, merge
+- [ ] Update Linear ticket states
+
+---
+
+## Archive: Sprint Security Hardening Part 2 (completed 2026-04-08)
+
+- [x] 1A. Fix menu permission domain (BUT-329)
+- [x] 1B. Fix shopping join permissions (BUT-329)
+- [x] 2A. Wire clearCompleted (BUT-328)
+- [x] 2C. Remove Settings/Members stubs (BUT-328)
+- [x] 2D. Wire share actions (BUT-328)
+- [x] 3A. Fix snackbar no-op (BUT-321)
+- [x] 3B. Wire comment likes (BUT-321)
 
 ---
 

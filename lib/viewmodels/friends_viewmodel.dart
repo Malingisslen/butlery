@@ -41,7 +41,6 @@ class FriendsViewModel extends ChangeNotifier
   StreamSubscription? _friendsServiceSubscription;
   bool _isDisposed = false;
   bool _notifyScheduled = false;
-  Timer? _debounceTimer;
   bool _isCreatingGroup = false;
   String? _groupCreationError;
 
@@ -437,12 +436,7 @@ class FriendsViewModel extends ChangeNotifier
 
   void _onFriendsServiceChanged() {
     if (!_isDisposed) {
-      Future.delayed(Duration.zero, () {
-        if (!_isDisposed) {
-          loadUserProfilesForRequests();
-          notifyListeners();
-        }
-      });
+      loadUserProfilesForRequests();
     }
   }
 
@@ -496,9 +490,6 @@ class FriendsViewModel extends ChangeNotifier
     _profileCacheManager.dispose();
     _selectionManager.dispose();
 
-    // Clean up timer and scheduled notification
-    _debounceTimer?.cancel();
-    _debounceTimer = null;
     _notifyScheduled = false;
 
     super.dispose();

@@ -97,6 +97,7 @@ class DeepLinkService extends BaseService {
     final params = <String, String>{
       'id': invitationId,
       'type': 'friend',
+      'from': fromUserId,
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
@@ -116,6 +117,7 @@ class DeepLinkService extends BaseService {
     final params = <String, String>{
       'id': recipeId,
       'type': 'recipe',
+      'from': fromUserId,
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
@@ -135,6 +137,7 @@ class DeepLinkService extends BaseService {
     final params = <String, String>{
       'id': menuId,
       'type': 'menu',
+      'from': fromUserId,
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 
@@ -154,6 +157,7 @@ class DeepLinkService extends BaseService {
     final params = <String, String>{
       'id': listId,
       'type': 'shopping',
+      'from': fromUserId,
       'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
     };
 

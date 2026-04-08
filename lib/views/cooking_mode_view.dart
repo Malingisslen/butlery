@@ -126,20 +126,24 @@ class _CookingModeContent extends StatelessWidget {
             ),
           ),
           // Font size toggle
-          Material(
-            color: cs.surface,
-            borderRadius: BorderRadius.zero,
-            child: InkWell(
-              onTap: () => vm.cycleFontScale(),
-              child: SizedBox(
-                width: AppDimensions.minTouchTarget,
-                height: AppDimensions.minTouchTarget,
-                child: Center(
-                  child: Text(
-                    'A${vm.fontScale == 1.0 ? '' : vm.fontScale == 1.25 ? '+' : '++'}',
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: cs.primary,
-                      fontWeight: FontWeight.w700,
+          Semantics(
+            label: context.l10n.a11yCookingModeFontScale,
+            button: true,
+            child: Material(
+              color: cs.surface,
+              borderRadius: BorderRadius.zero,
+              child: InkWell(
+                onTap: () => vm.cycleFontScale(),
+                child: SizedBox(
+                  width: AppDimensions.minTouchTarget,
+                  height: AppDimensions.minTouchTarget,
+                  child: Center(
+                    child: Text(
+                      'A${vm.fontScale == 1.0 ? '' : vm.fontScale == 1.25 ? '+' : '++'}',
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: cs.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -345,31 +349,55 @@ class _InstructionsPanel extends StatefulWidget {
 
 class _InstructionsPanelState extends State<_InstructionsPanel> {
   final ScrollController _scrollController = ScrollController();
+  late List<GlobalKey> _stepKeys;
   int _lastStepIndex = 0;
 
   CookingModeViewModel get vm => widget.vm;
 
   @override
+  void initState() {
+    super.initState();
+    _stepKeys = List.generate(vm.instructions.length, (_) => GlobalKey());
+    vm.addListener(_onViewModelChanged);
+  }
+
+  @override
   void dispose() {
+    vm.removeListener(_onViewModelChanged);
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _scrollToCurrentStep() {
-    if (_lastStepIndex == vm.currentStepIndex) return;
-    _lastStepIndex = vm.currentStepIndex;
+  void _onViewModelChanged() {
+    if (!mounted) return;
+    if (_lastStepIndex != vm.currentStepIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scrollToCurrentStep();
+      });
+    }
+  }
 
-    final targetOffset = vm.currentStepIndex * 100.0;
-    _scrollController.animateTo(
-      targetOffset,
-      duration: AppDimensions.animationDurationCommon,
-      curve: Curves.easeInOut,
-    );
+  void _scrollToCurrentStep() {
+    final index = vm.currentStepIndex;
+    if (_lastStepIndex == index) return;
+    _lastStepIndex = index;
+
+    if (index < _stepKeys.length) {
+      final stepContext = _stepKeys[index].currentContext;
+      if (stepContext != null) {
+        Scrollable.ensureVisible(
+          stepContext,
+          alignment: 0.3,
+          duration: AppDimensions.animationDurationCommon,
+          curve: Curves.easeInOut,
+        );
+      }
+    }
 
     SemanticsService.announce(
       context.l10n.cookingModeStepAnnounce(
-        vm.currentStepIndex + 1,
-        vm.instructions[vm.currentStepIndex],
+        index + 1,
+        vm.instructions[index],
       ),
       TextDirection.ltr,
     );
@@ -378,10 +406,6 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _scrollToCurrentStep();
-    });
 
     return ColoredBox(
       color: cs.primary.withValues(alpha: 0.8),
@@ -397,68 +421,71 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                 final stepNumber = index + 1;
                 final isActive = index == vm.currentStepIndex;
 
-                return Semantics(
-                  label:
-                      context.l10n.a11yCookingModeStep(stepNumber, instruction),
-                  child: GestureDetector(
-                    onTap: () => vm.goToStep(index),
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          bottom: AppDimensions.spacingLg),
-                      child: Opacity(
-                        opacity: isActive ? 1.0 : 0.4,
-                        child: Container(
-                          decoration: isActive
-                              ? BoxDecoration(
-                                  border: Border(
-                                    left: BorderSide(
-                                      color: cs.surface,
-                                      width: 3,
+                return KeyedSubtree(
+                  key: _stepKeys[index],
+                  child: Semantics(
+                    label: context.l10n
+                        .a11yCookingModeStep(stepNumber, instruction),
+                    child: GestureDetector(
+                      onTap: () => vm.goToStep(index),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            bottom: AppDimensions.spacingLg),
+                        child: Opacity(
+                          opacity: isActive ? 1.0 : 0.4,
+                          child: Container(
+                            decoration: isActive
+                                ? BoxDecoration(
+                                    border: Border(
+                                      left: BorderSide(
+                                        color: cs.surface,
+                                        width: 3,
+                                      ),
+                                    ),
+                                  )
+                                : null,
+                            padding: isActive
+                                ? const EdgeInsets.only(
+                                    left: AppDimensions.spacingSm)
+                                : null,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: AppDimensions.minTouchTarget,
+                                  height: AppDimensions.minTouchTarget,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? cs.surface
+                                        : cs.surface.withValues(alpha: 0.6),
+                                  ),
+                                  child: Text(
+                                    '$stepNumber',
+                                    style: AppTextStyles.contentTitle.copyWith(
+                                      color: cs.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize:
+                                          AppTextStyles.contentTitle.fontSize! *
+                                              vm.fontScale,
                                     ),
                                   ),
-                                )
-                              : null,
-                          padding: isActive
-                              ? const EdgeInsets.only(
-                                  left: AppDimensions.spacingSm)
-                              : null,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: AppDimensions.minTouchTarget,
-                                height: AppDimensions.minTouchTarget,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? cs.surface
-                                      : cs.surface.withValues(alpha: 0.6),
                                 ),
-                                child: Text(
-                                  '$stepNumber',
-                                  style: AppTextStyles.contentTitle.copyWith(
-                                    color: cs.primary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize:
-                                        AppTextStyles.contentTitle.fontSize! *
-                                            vm.fontScale,
+                                const SizedBox(width: AppDimensions.spacingMd),
+                                Expanded(
+                                  child: Text(
+                                    instruction,
+                                    style: AppTextStyles.titleLarge.copyWith(
+                                      color: cs.onPrimary,
+                                      height: 1.7,
+                                      fontSize:
+                                          AppTextStyles.titleLarge.fontSize! *
+                                              vm.fontScale,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: AppDimensions.spacingMd),
-                              Expanded(
-                                child: Text(
-                                  instruction,
-                                  style: AppTextStyles.titleLarge.copyWith(
-                                    color: cs.onPrimary,
-                                    height: 1.7,
-                                    fontSize:
-                                        AppTextStyles.titleLarge.fontSize! *
-                                            vm.fontScale,
-                                  ),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),

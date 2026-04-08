@@ -371,30 +371,3 @@ extension StringExtensions on String {
     return '${this[0].toUpperCase()}${substring(1)}';
   }
 }
-
-// These would typically be imported from their respective files
-
-abstract class UserService {
-  Future<UserProfile?> getUserProfile(String userId);
-}
-
-abstract class NotificationService {
-  Future<bool> sendNotification({
-    required String title,
-    required String message,
-    String? userId,
-    Map<String, dynamic>? data,
-  });
-}
-
-abstract class AuthRepository {
-  String? get currentUserId;
-}
-
-abstract class ConnectivityService {
-  Future<bool> hasConnection();
-}
-
-abstract class UserProfile {
-  // User profile model
-}

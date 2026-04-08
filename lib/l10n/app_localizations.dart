@@ -20464,6 +20464,12 @@ abstract class AppLocalizations {
   /// **'E-post verifierad!'**
   String get emailVerificationSuccess;
 
+  /// No description provided for @a11yCookingModeFontScale.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra textstorlek'**
+  String get a11yCookingModeFontScale;
+
   /// No description provided for @a11yCookingModeClose.
   ///
   /// In sv, this message translates to:

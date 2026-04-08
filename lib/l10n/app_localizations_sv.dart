@@ -11963,6 +11963,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get emailVerificationSuccess => 'E-post verifierad!';
 
   @override
+  String get a11yCookingModeFontScale => 'Ändra textstorlek';
+
+  @override
   String get a11yCookingModeClose => 'Stäng tillagningsläge';
 
   @override
