@@ -1,6 +1,9 @@
 // lib/views/social/collaborative_shopping/collaborative_shopping_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/base/base_action_handler.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -57,24 +60,12 @@ class CollaborativeShoppingActions extends BaseActionHandler
       onSelected: onMenuAction,
       tooltip: context.l10n.collaborativeMoreActions,
       itemBuilder: (context) => [
-        _buildPopupMenuItem(
-          value: 'settings',
-          icon: Icons.settings,
-          label: context.l10n.collaborativeSettings,
-        ),
-        _buildPopupMenuItem(
-          value: 'members',
-          icon: Icons.group,
-          label: context.l10n.collaborativeManageMembers,
-        ),
-        if (viewModel.canEdit) ...[
-          const PopupMenuDivider(),
+        if (viewModel.canEdit)
           _buildPopupMenuItem(
             value: 'clear_completed',
             icon: Icons.clear_all,
             label: context.l10n.collaborativeClearCompleted,
           ),
-        ],
       ],
     );
   }
@@ -194,26 +185,12 @@ class CollaborativeShoppingActions extends BaseActionHandler
     if (!validateContext(context)) return;
 
     switch (action) {
-      case 'settings':
-        await _showSettings(context);
-        break;
-      case 'members':
-        await _showMembers(context);
-        break;
       case 'clear_completed':
         await _clearCompletedItems(context);
         break;
       default:
         onMenuAction(action);
     }
-  }
-
-  Future<void> _showSettings(BuildContext context) async {
-    showInfoMessage(context, context.l10n.collaborativeSettingsComingSoon);
-  }
-
-  Future<void> _showMembers(BuildContext context) async {
-    showInfoMessage(context, context.l10n.collaborativeMembersComingSoon);
   }
 
   /// Clear completed items using BaseActionHandler
@@ -230,9 +207,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     await executeWithConfirmation(
       context: context,
       action: () async {
-        // In real implementation, this would call viewModel.clearCompletedItems()
-        await Future.delayed(AppDimensions.animationDurationLong);
-        return true;
+        return await viewModel.clearCompletedItems();
       },
       confirmationTitle: context.l10n.collaborativeClearCompletedConfirm,
       confirmationMessage: context.l10n
@@ -311,12 +286,14 @@ class CollaborativeShoppingActions extends BaseActionHandler
     );
   }
 
+  String get _shareUrl =>
+      'https://butlery.app/shopping?id=${Uri.encodeComponent(viewModel.listId)}';
+
   Future<void> _copyShareLink(BuildContext context) async {
     await executeAction(
       context: context,
       action: () async {
-        // In real implementation, copy link to clipboard
-        await Future.delayed(AppDimensions.animationDurationMedium);
+        await Clipboard.setData(ClipboardData(text: _shareUrl));
         return true;
       },
       successMessage: context.l10n.collaborativeLinkCopied,
@@ -328,12 +305,33 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   Future<void> _shareViaMessage(BuildContext context) async {
-    showInfoMessage(
-        context, context.l10n.collaborativeMessageSharingComingSoon);
+    await executeAction(
+      context: context,
+      action: () async {
+        await SharePlus.instance.share(ShareParams(text: _shareUrl));
+        return true;
+      },
+      errorMessage: context.l10n.errorGeneric,
+      metadata: {'list_id': viewModel.listId, 'action': 'share_via_message'},
+    );
   }
 
   Future<void> _shareViaEmail(BuildContext context) async {
-    showInfoMessage(context, context.l10n.collaborativeEmailSharingComingSoon);
+    await executeAction(
+      context: context,
+      action: () async {
+        final uri = Uri(
+          scheme: 'mailto',
+          queryParameters: {
+            'subject': viewModel.listTitle,
+            'body': _shareUrl,
+          },
+        );
+        return await launchUrl(uri);
+      },
+      errorMessage: context.l10n.errorGeneric,
+      metadata: {'list_id': viewModel.listId, 'action': 'share_via_email'},
+    );
   }
 
   bool shouldShowAddItemSection() {
@@ -366,9 +364,6 @@ class CollaborativeShoppingActions extends BaseActionHandler
     switch (action) {
       case 'clear_completed':
         return viewModel.canEdit && viewModel.completedItemsList.isNotEmpty;
-      case 'settings':
-      case 'members':
-        return true;
       default:
         return false;
     }

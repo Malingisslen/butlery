@@ -36,18 +36,17 @@ class RealtimeParticipantManager {
 
   /// Check if current user can edit menu
   bool canEdit(String menuId) {
-    return _permissionService.canEditRecipe(menuId);
+    return _permissionService.canEditMenu(menuId);
   }
 
   /// Check if current user can manage participants
   bool canManageParticipants(String menuId) {
-    return _permissionService.canInviteToRecipe(menuId);
+    return _permissionService.canEditMenu(menuId);
   }
 
   /// Check if current user can delete menu
   bool canDeleteMenu(String menuId) {
-    // Assuming owner or admin rights needed for deletion
-    return _permissionService.canInviteToRecipe(menuId);
+    return _permissionService.canEditMenu(menuId);
   }
 
   /// Add participant to menu

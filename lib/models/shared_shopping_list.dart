@@ -20,6 +20,10 @@ class SharedShoppingList
   final String originalOwnerId;
   final String originalOwnerDisplayName;
 
+  /// The ID of the UnifiedShoppingList this share refers to.
+  /// Nullable for backward compat with pre-existing Firestore documents.
+  final String? shoppingListId;
+
   SharedShoppingList({
     required super.id,
     required super.sharedByUserId,
@@ -34,6 +38,7 @@ class SharedShoppingList
     required this.itemCount,
     required this.originalOwnerId,
     required this.originalOwnerDisplayName,
+    this.shoppingListId,
   }) : super(sharedAt: sharedAt ?? DateTime.now());
 
   @override
@@ -72,6 +77,7 @@ class SharedShoppingList
     required String shareMessage,
     required String listName,
     String? listDescription,
+    String? shoppingListId,
     @Deprecated('Items stored in subcollection')
     List<UnifiedShoppingItem>? listItems,
     int? itemCount,
@@ -86,6 +92,7 @@ class SharedShoppingList
       itemCount: itemCount ?? listItems?.length ?? 0,
       originalOwnerId: sharedByUserId,
       originalOwnerDisplayName: sharedByDisplayName,
+      shoppingListId: shoppingListId,
     );
   }
 
@@ -115,6 +122,7 @@ class SharedShoppingList
       originalOwnerDisplayName: data['originalOwnerDisplayName'] ??
           data['sharedByDisplayName'] ??
           AppLocale.current.displayUnknownUser,
+      shoppingListId: data['shoppingListId'] as String?,
     );
   }
 
@@ -150,6 +158,8 @@ class SharedShoppingList
           defaultValue: SerializationUtils.safeString(
               data, 'sharedByDisplayName',
               defaultValue: AppLocale.current.displayUnknownUser)),
+      shoppingListId:
+          SerializationUtils.safeNullableString(data, 'shoppingListId'),
     );
   }
 
@@ -162,6 +172,7 @@ class SharedShoppingList
       'originalOwnerId': originalOwnerId,
       'originalOwnerDisplayName': originalOwnerDisplayName,
       'joinedCount': joinCount,
+      if (shoppingListId != null) 'shoppingListId': shoppingListId,
     };
   }
 
@@ -174,6 +185,7 @@ class SharedShoppingList
       'originalOwnerId': originalOwnerId,
       'originalOwnerDisplayName': originalOwnerDisplayName,
       'joinedCount': joinCount,
+      if (shoppingListId != null) 'shoppingListId': shoppingListId,
     };
   }
 
@@ -200,6 +212,8 @@ class SharedShoppingList
       originalOwnerId: SerializationUtils.safeString(json, 'originalOwnerId'),
       originalOwnerDisplayName:
           SerializationUtils.safeString(json, 'originalOwnerDisplayName'),
+      shoppingListId:
+          SerializationUtils.safeNullableString(json, 'shoppingListId'),
     );
   }
 
@@ -239,6 +253,7 @@ class SharedShoppingList
     int? itemCount,
     String? originalOwnerId,
     String? originalOwnerDisplayName,
+    String? shoppingListId,
   }) {
     return SharedShoppingList(
       id: id ?? this.id,
@@ -255,6 +270,7 @@ class SharedShoppingList
       originalOwnerId: originalOwnerId ?? this.originalOwnerId,
       originalOwnerDisplayName:
           originalOwnerDisplayName ?? this.originalOwnerDisplayName,
+      shoppingListId: shoppingListId ?? this.shoppingListId,
     );
   }
 

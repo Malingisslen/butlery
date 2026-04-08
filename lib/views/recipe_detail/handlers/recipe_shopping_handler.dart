@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -24,8 +23,6 @@ class RecipeShoppingHandler {
   static Future<void> showAddToCartConfirmation(
     BuildContext context, {
     required int currentPortions,
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
   }) async {
     if (!context.mounted) return;
 
@@ -39,10 +36,8 @@ class RecipeShoppingHandler {
     );
 
     if (shoppingItems.isEmpty) {
-      showSnackBar(
-        context.l10n.shoppingNoIngredientsToAdd,
-        backgroundColor: context.butleryColors.warning,
-      );
+      SnackBarUtils.showWarning(
+          context, context.l10n.shoppingNoIngredientsToAdd);
       return;
     }
 
@@ -120,7 +115,6 @@ class RecipeShoppingHandler {
     await generateShoppingListFromRecipe(
       context,
       currentPortions: currentPortions,
-      showSnackBar: showSnackBar,
     );
   }
 
@@ -143,8 +137,6 @@ class RecipeShoppingHandler {
   static Future<void> generateShoppingListFromRecipe(
     BuildContext context, {
     required int currentPortions,
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
   }) async {
     if (!context.mounted) return;
 
@@ -162,10 +154,8 @@ class RecipeShoppingHandler {
 
       if (shoppingItems.isEmpty) {
         if (!context.mounted) return;
-        showSnackBar(
-          context.l10n.shoppingNoIngredientsToAdd,
-          backgroundColor: context.butleryColors.warning,
-        );
+        SnackBarUtils.showWarning(
+            context, context.l10n.shoppingNoIngredientsToAdd);
         return;
       }
 
@@ -200,10 +190,8 @@ class RecipeShoppingHandler {
 
       if (targetListId == null) {
         if (context.mounted) {
-          showSnackBar(
-            context.l10n.shoppingCouldNotCreateOrSelectList,
-            backgroundColor: Theme.of(context).colorScheme.error,
-          );
+          SnackBarUtils.showError(
+              context, context.l10n.shoppingCouldNotCreateOrSelectList);
         }
         return;
       }
@@ -217,10 +205,8 @@ class RecipeShoppingHandler {
       final permissionService = ServiceLocator.get<PermissionService>();
       if (!permissionService.canEditShoppingList(targetListId)) {
         if (context.mounted) {
-          showSnackBar(
-            context.l10n.shoppingNoEditPermission,
-            backgroundColor: Theme.of(context).colorScheme.error,
-          );
+          SnackBarUtils.showError(
+              context, context.l10n.shoppingNoEditPermission);
         }
         return;
       }
@@ -259,26 +245,22 @@ class RecipeShoppingHandler {
           Navigator.pushNamed(context, Routes.inkopslista);
         }
       } else {
-        showSnackBar(
-          context.l10n.shoppingCouldNotAddIngredients,
-          backgroundColor: Theme.of(context).colorScheme.error,
-        );
+        SnackBarUtils.showError(
+            context, context.l10n.shoppingCouldNotAddIngredients);
       }
     } catch (e) {
       if (!context.mounted) return;
 
       // Handle specific permission errors with clear Swedish messages
       if (e is PermissionDeniedException) {
-        showSnackBar(
-          context.l10n.shoppingNoEditPermissionShared,
-          backgroundColor: Theme.of(context).colorScheme.error,
-        );
+        SnackBarUtils.showError(
+            context, context.l10n.shoppingNoEditPermissionShared);
       } else {
-        showSnackBar(
+        SnackBarUtils.showError(
+          context,
           context.l10n.errorOccurredWithDetails(
             SnackBarUtils.userFriendlyMessage(context, e),
           ),
-          backgroundColor: Theme.of(context).colorScheme.error,
         );
       }
     }

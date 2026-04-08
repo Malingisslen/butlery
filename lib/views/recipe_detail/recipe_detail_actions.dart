@@ -11,6 +11,7 @@ import 'package:butlery/views/recipe_detail/handlers/recipe_shopping_handler.dar
 import 'package:butlery/views/recipe_detail/handlers/recipe_tagging_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_personal_tag_handler.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Recipe detail actions facade
 /// **SRP Compliance:** This facade coordinates action handlers and manages view state.
@@ -29,14 +30,6 @@ class RecipeDetailActions {
   bool get isCommentsExpanded => _isCommentsExpanded;
   int get currentPortions => _currentPortions;
 
-  // SAFETY/HELPER METHODS
-
-  /// Show snackbar safely with context check
-  void _showSnackBar(
-    String message, {
-    Color? backgroundColor,
-  }) {}
-
   /// Initialize actions with recipe data
   void initializeActions(BuildContext context) {
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -52,7 +45,6 @@ class RecipeDetailActions {
     await RecipeManagementHandler.deleteRecipe(
       context,
       onSuccess: () {},
-      showSnackBar: _showSnackBar,
       popNavigation: () {
         if (context.mounted) {
           Navigator.pop(context);
@@ -63,26 +55,17 @@ class RecipeDetailActions {
 
   /// Share recipe functionality
   Future<void> shareRecipe(BuildContext context) async {
-    await RecipeManagementHandler.shareRecipe(
-      context,
-      showSnackBar: _showSnackBar,
-    );
+    await RecipeManagementHandler.shareRecipe(context);
   }
 
   /// Mark recipe as cooked
   Future<void> markAsCooked(BuildContext context) async {
-    await RecipeManagementHandler.markAsCooked(
-      context,
-      showSnackBar: _showSnackBar,
-    );
+    await RecipeManagementHandler.markAsCooked(context);
   }
 
   /// Edit recipe
   Future<void> editRecipe(BuildContext context) async {
-    await RecipeManagementHandler.editRecipe(
-      context,
-      showSnackBar: _showSnackBar,
-    );
+    await RecipeManagementHandler.editRecipe(context);
   }
 
   /// Show social sharing dialog
@@ -100,16 +83,12 @@ class RecipeDetailActions {
       context,
       commentText: commentText,
       recipeId: recipeId,
-      showSnackBar: _showSnackBar,
     );
   }
 
   /// Create user profile if missing
   Future<void> createUserProfile(BuildContext context) async {
-    await RecipeSocialHandler.createUserProfile(
-      context,
-      showSnackBar: _showSnackBar,
-    );
+    await RecipeSocialHandler.createUserProfile(context);
   }
 
   /// Generate shopping list from recipe
@@ -117,7 +96,6 @@ class RecipeDetailActions {
     await RecipeShoppingHandler.generateShoppingListFromRecipe(
       context,
       currentPortions: _currentPortions,
-      showSnackBar: _showSnackBar,
     );
   }
 
@@ -127,24 +105,17 @@ class RecipeDetailActions {
     await RecipeShoppingHandler.showAddToCartConfirmation(
       context,
       currentPortions: _currentPortions,
-      showSnackBar: _showSnackBar,
     );
   }
 
   /// Toggle collaborative editing on a recipe
   Future<void> toggleCollaboration(BuildContext context) async {
-    await RecipeManagementHandler.toggleCollaboration(
-      context,
-      showSnackBar: _showSnackBar,
-    );
+    await RecipeManagementHandler.toggleCollaboration(context);
   }
 
   /// Re-tag recipe with new allergen and dietary analysis
   Future<void> retagRecipe(BuildContext context) async {
-    await RecipeTaggingHandler.retagRecipe(
-      context,
-      showSnackBar: _showSnackBar,
-    );
+    await RecipeTaggingHandler.retagRecipe(context);
   }
 
   /// Quick add/remove personal tags
@@ -183,13 +154,11 @@ class RecipeDetailActions {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (!context.mounted) return;
-        _showSnackBar(context.l10n.errorCouldNotOpenLink,
-            backgroundColor: Theme.of(context).colorScheme.error);
+        SnackBarUtils.showError(context, context.l10n.errorCouldNotOpenLink);
       }
     } catch (e) {
       if (!context.mounted) return;
-      _showSnackBar(context.l10n.errorInvalidLink,
-          backgroundColor: Theme.of(context).colorScheme.error);
+      SnackBarUtils.showError(context, context.l10n.errorInvalidLink);
     }
   }
 

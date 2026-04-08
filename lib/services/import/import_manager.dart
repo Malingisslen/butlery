@@ -21,7 +21,6 @@ import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
-import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:http/http.dart' as http;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -493,54 +492,16 @@ class ImportManager {
   }
 
   /// Save imported recipe using PersonalRecipeOperations.
-  /// Automatically generates tags for the recipe before saving.
+  /// Tagging is handled by PersonalRecipeModule._applyTagging on save —
+  /// no need to tag here (the result would be dropped by addUnifiedRecipe's
+  /// parameter decomposition anyway).
   Future<ImportManagerResult> saveImportedRecipe(Recipe recipe) async {
     try {
-      // Auto-generate tags for imported recipe
-      Recipe recipeToSave = recipe;
-      final taggingService = _taggingService;
-
-      if (taggingService != null &&
-          (recipe.tagResult == null || recipe.tagResult!.isPartial)) {
-        AppLogger.info('🏷️ Auto-tagging imported recipe: ${recipe.title}');
-
-        final tagResult = await taggingService.generateTags(recipe);
-
-        if (tagResult != null) {
-          // Create new Recipe with updated core containing tagResult
-          recipeToSave = Recipe(
-            core: recipe.core.copyWith(tagResult: tagResult),
-            type: recipe.type,
-            socialData: recipe.socialData,
-            realtimeData: recipe.realtimeData,
-            offlineData: recipe.offlineData,
-          );
-          AppLogger.success(
-            '✅ Generated ${tagResult.tags.length} tags '
-            '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
-          );
-        } else {
-          // CRIT-1: Mark recipe as needing retagging instead of saving without marker
-          AppLogger.warning('⚠️ Tagging returned null for: ${recipe.title}');
-          recipeToSave = Recipe(
-            core: recipe.core.copyWith(
-              tagResult:
-                  TagResult.failed(reason: 'Tagging service returned null'),
-            ),
-            type: recipe.type,
-            socialData: recipe.socialData,
-            realtimeData: recipe.realtimeData,
-            offlineData: recipe.offlineData,
-          );
-        }
-      }
-
-      final saveResult =
-          await _personalOperations.addUnifiedRecipe(recipeToSave);
+      final saveResult = await _personalOperations.addUnifiedRecipe(recipe);
 
       if (saveResult.isSuccess) {
         return ImportManagerResult.success(
-          recipeToSave,
+          recipe,
           strategy: 'direct_save',
         );
       } else {

@@ -160,6 +160,10 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     );
   }
 
+  Future<bool> clearCompletedItems() async {
+    return await _shoppingService.clearCompletedItems();
+  }
+
   // UI display helpers - delegate to display manager
   Color getStatusColor(ColorScheme cs, ButleryColors butleryColors) =>
       _displayManager.getStatusColor(cs, butleryColors, hasData, statusText);

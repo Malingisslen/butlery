@@ -73,12 +73,14 @@ class IngredientLookupService extends BaseService {
     final matched = <IngredientData>[];
     final unmatched = <String>[];
 
-    for (final name in normalizedNames) {
-      final ingredient = await _findIngredient(name, userId: userId);
-      if (ingredient != null) {
-        matched.add(ingredient);
+    final results = await Future.wait(
+      normalizedNames.map((name) => _findIngredient(name, userId: userId)),
+    );
+    for (var i = 0; i < normalizedNames.length; i++) {
+      if (results[i] != null) {
+        matched.add(results[i]!);
       } else {
-        unmatched.add(name);
+        unmatched.add(normalizedNames[i]);
       }
     }
 

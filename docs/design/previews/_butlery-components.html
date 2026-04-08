@@ -10,8 +10,8 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
 <style>
 /* Material Icons helpers */
-.mi { font-family: 'Material Icons'; font-weight: normal; font-style: normal; display: inline-block; line-height: 1; text-transform: none; letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; vertical-align: middle; font-size: 20px; }
-.mi-outlined { font-family: 'Material Icons Outlined'; font-weight: normal; font-style: normal; display: inline-block; line-height: 1; text-transform: none; letter-spacing: normal; word-wrap: normal; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; vertical-align: middle; font-size: 20px; }
+.mi { font-family: 'Material Icons' !important; font-weight: normal !important; font-style: normal !important; display: inline-block; line-height: 1; text-transform: none !important; letter-spacing: normal !important; word-wrap: normal; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; vertical-align: middle; font-size: 20px; }
+.mi-outlined { font-family: 'Material Icons Outlined' !important; font-weight: normal !important; font-style: normal !important; display: inline-block; line-height: 1; text-transform: none !important; letter-spacing: normal !important; word-wrap: normal; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; vertical-align: middle; font-size: 20px; }
 .mi-sm { font-size: 16px; }
 .mi-lg { font-size: 24px; }
 /* ============================================================
@@ -73,16 +73,16 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 
 /* Styled Buttons */
 .styled-btn { font-family: var(--font-body); font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 12px 24px; font-size: 14px; }
-.styled-btn-primary { background: var(--green); color: var(--cream); }
-.styled-btn-secondary { background: transparent; color: var(--green); border: 2px solid var(--green); }
+.styled-btn-primary { background: var(--green); color: var(--white); }
+.styled-btn-secondary { background: transparent; color: var(--green); border: 1.5px solid var(--green); }
 .styled-btn-destructive { background: var(--error); color: white; }
 .styled-btn-small { min-height: 36px; padding: 8px 16px; font-size: 13px; }
 .styled-btn-icon { width: 48px; height: 48px; padding: 0; font-size: 20px; }
 
 /* Styled Cards */
 .styled-card { background: var(--white); padding: 16px; }
-.styled-card-standard { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.styled-card-elevated { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.styled-card-standard { box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.styled-card-elevated { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
 .styled-card-outlined { border: 1px solid var(--cream-darker); box-shadow: none; }
 .styled-card-selection { border: 2px solid var(--green); box-shadow: 0 2px 8px rgba(74,124,89,0.2); }
 .styled-card-recipe { padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -147,10 +147,10 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 .overlay-btn { width: 32px; height: 32px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
 
 /* Content Cards */
-.recipe-card { background: var(--white); border-left: 4px solid var(--green); border-bottom: 3px solid var(--rust-light); padding: 16px; margin-bottom: 12px; display: flex; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-.recipe-card-img { width: 80px; height: 80px; background: transparent; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--green-muted); font-size: 24px; }
-.recipe-card-img img { width: 80px; height: 80px; object-fit: contain; }
-.recipe-tag { font-size: 11px; padding: 2px 6px; border: 1px solid var(--cream-dark); color: var(--text-muted); }
+.recipe-card { background: var(--white); border-left: 4px solid var(--green); border-bottom: 3px solid var(--rust-light); padding: 14px 16px; margin: 0 0 8px; display: flex; gap: 16px; }
+.recipe-card-img { width: 64px; height: 64px; background: var(--cream); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--green-muted); font-size: 24px; }
+.recipe-card-img img { width: 64px; height: 64px; object-fit: contain; }
+.recipe-tag { font-family: var(--font-body); font-size: 11px; font-weight: 500; padding: 2px 6px; border: 1px solid var(--cream-dark); color: var(--text-muted); background: var(--cream); }
 .recipe-card-content { flex: 1; min-width: 0; }
 .recipe-card-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
 .recipe-card-desc { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
@@ -178,8 +178,8 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
 /* Search & Filter */
 .search-box { background: var(--white); border: 2px solid var(--green); border-bottom: 4px solid var(--rust); padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
 .search-box input { border: none; outline: none; font-family: var(--font-body); font-size: 14px; flex: 1; background: transparent; }
-.chip { font-size: 12px; font-weight: 600; padding: 6px 14px; border: 1px solid var(--green); color: var(--green); background: transparent; display: inline-block; }
-.chip.active { background: var(--green); color: var(--cream); }
+.chip { font-size: 12px; font-weight: 600; padding: 6px 14px; border: 1px solid var(--cream-darker); color: var(--text); background: var(--white); display: inline-block; }
+.chip.active { background: var(--green); color: var(--white); border-color: var(--green); }
 .filter-toggle { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); position: relative; }
 .filter-toggle.has-filters { color: var(--green); }
 .filter-dot { width: 8px; height: 8px; background: var(--rust); border-radius: 50%; position: absolute; top: 4px; right: 4px; }
@@ -308,7 +308,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <button class="styled-btn styled-btn-secondary">Rensa</button>
       <button class="styled-btn styled-btn-destructive">Ta bort</button>
       <button class="styled-btn styled-btn-primary styled-btn-small">Liten</button>
-      <button class="styled-btn styled-btn-primary styled-btn-icon">&#128722;</button>
+      <button class="styled-btn styled-btn-primary styled-btn-icon"><span class="mi">shopping_cart</span></button>
     </div>
   </div>
 
@@ -348,7 +348,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       </div>
       <div>
         <span class="form-field-label">Sök</span>
-        <input class="styled-input" type="text" placeholder="&#128269; Sök bland recepten...">
+        <input class="styled-input" type="text" placeholder="Sök bland recepten...">
       </div>
       <div>
         <span class="form-field-label">Varning (AI-parsed)</span>
@@ -371,7 +371,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
           <span class="page-header-title">dina<br>recept</span>
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:20px;color:var(--cream);opacity:0.8">&#9638;&#9638;</span>
+            <span class="mi" style="color:var(--cream);opacity:0.8;font-size:24px">grid_view</span>
             <div class="avatar">MA</div>
           </div>
         </div>
@@ -384,7 +384,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-item">
       <div class="lib-label">Simple Header (with back)</div>
       <div class="lib-class">ButleryHeader (with leading)</div>
-      <div class="lib-demo" style="padding:0"><div class="simple-header"><div class="back-btn">&#8592;</div><span class="simple-header-title">nytt recept</span></div></div>
+      <div class="lib-demo" style="padding:0"><div class="simple-header"><div class="back-btn"><span class="mi" style="font-size:18px;color:var(--cream)">arrow_back</span></div><span class="simple-header-title">nytt recept</span></div></div>
     </div>
     <div class="lib-item">
       <div class="lib-label">Section Header</div>
@@ -414,14 +414,14 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-label">Empty: No recipes</div>
       <div class="lib-class">StateWidget.noRecipes</div>
       <div class="lib-demo">
-        <div class="empty-state"><div class="empty-state-icon">&#129382;</div><div class="empty-state-title">inga recept ännu</div><div class="empty-state-desc">Lägg till ditt första recept</div><button class="styled-btn styled-btn-primary" style="width:100%">Lägg till recept</button></div>
+        <div class="empty-state"><div class="empty-state-icon"><img src="../../../assets/illustrations/broccoli.png" style="width:80px;height:80px;object-fit:contain"></div><div class="empty-state-title">inga recept ännu</div><div class="empty-state-desc">Lägg till ditt första recept</div><button class="styled-btn styled-btn-primary" style="width:100%">Lägg till recept</button></div>
       </div>
     </div>
     <div class="lib-item">
       <div class="lib-label">Empty: No search results</div>
       <div class="lib-class">StateWidget.noSearchResults</div>
       <div class="lib-demo">
-        <div class="empty-state"><div class="empty-state-icon">&#127812;</div><div class="empty-state-title">inga träffar</div><div class="empty-state-desc">Försök med andra sökord</div><button class="styled-btn styled-btn-secondary">Rensa sökning</button></div>
+        <div class="empty-state"><div class="empty-state-icon"><img src="../../../assets/illustrations/champinjon.PNG" style="width:80px;height:80px;object-fit:contain"></div><div class="empty-state-title">inga träffar</div><div class="empty-state-desc">Försök med andra sökord</div><button class="styled-btn styled-btn-secondary">Rensa sökning</button></div>
       </div>
     </div>
   </div>
@@ -431,7 +431,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-label">Error state</div>
       <div class="lib-class">StateWidget.error</div>
       <div class="lib-demo">
-        <div class="empty-state"><div class="empty-state-icon" style="background:rgba(196,69,54,0.1);color:var(--error)">&#129361;</div><div class="empty-state-title" style="color:var(--error)">något gick fel</div><div class="empty-state-desc">Kunde inte ladda data</div><button class="styled-btn styled-btn-primary">Försök igen</button></div>
+        <div class="empty-state"><div class="empty-state-icon" style="background:rgba(196,69,54,0.1)"><img src="../../../assets/illustrations/rodlok.PNG" style="width:80px;height:80px;object-fit:contain"></div><div class="empty-state-title" style="color:var(--error)">något gick fel</div><div class="empty-state-desc">Kunde inte ladda data</div><button class="styled-btn styled-btn-primary">Försök igen</button></div>
       </div>
     </div>
     <div class="lib-item">
@@ -459,10 +459,10 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <span class="status-badge" style="background:var(--rust)">NYA</span>
       <span class="notification-badge">3</span>
       <span class="notification-badge" style="font-size:8px">99+</span>
-      <span class="circular-icon-badge">&#10133;</span>
-      <span class="admin-badge">&#9881; Du är admin</span>
+      <span class="circular-icon-badge"><span class="mi" style="color:white">add</span></span>
+      <span class="admin-badge"><span class="mi-sm mi-outlined">admin_panel_settings</span> Du är admin</span>
       <span class="member-count-badge">+4</span>
-      <span class="status-indicator">&#128279;</span>
+      <span class="status-indicator"><span class="mi-sm">link</span></span>
     </div>
     <div class="lib-class">StatusBadge / NotificationBadge / CircularIconBadge / AdminBadge / MemberCountBadge / StatusIndicator</div>
   </div>
@@ -470,12 +470,12 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
   <div class="lib-item-full">
     <div class="lib-label">Allergen &amp; dietary badges</div>
     <div class="lib-demo" style="display:flex;gap:8px;flex-wrap:wrap">
-      <span class="badge badge-free" style="border:1px solid rgba(74,124,89,0.3)">&#10003; nötfri</span>
-      <span class="badge badge-free" style="border:1px solid rgba(74,124,89,0.3)">&#10003; jordnötsfri</span>
-      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)">&#9888; innehåller-gluten</span>
-      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)">&#9888; innehåller-mjölk</span>
-      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)">&#9888; Ej vegetarisk</span>
-      <span class="rating-badge">&#9733; 4.2 (12)</span>
+      <span class="badge badge-free" style="border:1px solid rgba(74,124,89,0.3)"><span class="mi-sm mi-outlined" style="color:var(--green)">check_circle</span> nötfri</span>
+      <span class="badge badge-free" style="border:1px solid rgba(74,124,89,0.3)"><span class="mi-sm mi-outlined" style="color:var(--green)">check_circle</span> jordnötsfri</span>
+      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)"><span class="mi-sm" style="color:var(--error)">warning</span> innehåller-gluten</span>
+      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)"><span class="mi-sm" style="color:var(--error)">warning</span> innehåller-mjölk</span>
+      <span class="badge badge-contains" style="border:1px solid rgba(196,69,54,0.3)"><span class="mi-sm" style="color:var(--error)">warning</span> Ej vegetarisk</span>
+      <span class="rating-badge"><span class="mi-sm" style="color:var(--green)">star</span> 4.2 (12)</span>
     </div>
   </div>
 
@@ -484,8 +484,8 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-label">SyncIndicator</div>
       <div class="lib-class">SyncIndicator</div>
       <div class="lib-demo" style="display:flex;gap:12px;flex-wrap:wrap">
-        <span class="sync-indicator sync-pending">&#9729; Synkar...</span>
-        <span class="sync-indicator sync-offline">&#9729; Offline</span>
+        <span class="sync-indicator sync-pending"><span class="mi-sm mi-outlined">cloud_sync</span> Synkar...</span>
+        <span class="sync-indicator sync-offline"><span class="mi-sm mi-outlined">cloud_off</span> Offline</span>
       </div>
     </div>
     <div class="lib-item">
@@ -501,7 +501,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-label">RealtimeStatusBanner (offline)</div>
     <div class="lib-class">RealtimeStatusBanner</div>
     <div class="lib-demo" style="padding:0">
-      <div class="realtime-banner">&#128268; <strong>Offline</strong> &mdash; Ändringar sparas när anslutningen återställs <button class="styled-btn styled-btn-small styled-btn-secondary" style="min-height:32px;padding:4px 12px;margin-left:auto">Försök igen</button></div>
+      <div class="realtime-banner"><span class="mi" style="color:var(--error)">wifi_off</span> <strong>Offline</strong> &mdash; Ändringar sparas när anslutningen återställs <button class="styled-btn styled-btn-small styled-btn-secondary" style="min-height:32px;padding:4px 12px;margin-left:auto">Försök igen</button></div>
     </div>
   </div>
 </div>
@@ -515,8 +515,8 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-label">Square buttons (add recipe grid)</div>
       <div class="lib-class">ActionButtons.squareButton</div>
       <div class="lib-demo" style="display:flex;gap:8px">
-        <div class="square-btn square-btn-rust">&#128279;<br>Importera länk</div>
-        <div class="square-btn square-btn-green">&#10133;<br>Skriv manuellt</div>
+        <div class="square-btn square-btn-rust"><span class="mi" style="color:var(--cream)">link</span><br>Importera länk</div>
+        <div class="square-btn square-btn-green"><span class="mi" style="color:var(--cream)">add</span><br>Skriv manuellt</div>
       </div>
     </div>
     <div class="lib-item">
@@ -525,7 +525,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-demo" style="display:flex;gap:16px;align-items:center">
         <div class="fab"><span class="mi" style="color:var(--cream)">shopping_cart</span></div>
         <div class="fab" style="width:48px;height:48px"><span class="mi" style="color:var(--cream)">mail</span></div>
-        <div style="background:var(--green-pale);width:80px;height:80px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px;position:relative"><div class="overlay-btn" style="position:absolute;top:4px;right:4px">&#10005;</div></div>
+        <div style="background:var(--green-pale);width:80px;height:80px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px;position:relative"><div class="overlay-btn" style="position:absolute;top:4px;right:4px"><span class="mi-sm">clear</span></div></div>
       </div>
     </div>
   </div>
@@ -585,8 +585,8 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-class">MenuCard(style: .detailed)</div>
       <div class="lib-demo">
         <div class="menu-card">
-          <div class="menu-card-info"><div class="menu-card-title">Kycklingpasta med gräddsås</div><div class="menu-card-meta">&#9201; 35 min &middot; &#128101; 4 portioner</div></div>
-          <div class="menu-card-action">&#8635;</div>
+          <div class="menu-card-info"><div class="menu-card-title">Kycklingpasta med gräddsås</div><div class="menu-card-meta"><span class="mi-sm mi-outlined">schedule</span> 35 min &middot; <span class="mi-sm mi-outlined">people</span> 4 portioner</div></div>
+          <div class="menu-card-action"><span class="mi" style="color:var(--green)">refresh</span></div>
         </div>
       </div>
     </div>
@@ -595,7 +595,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-class">ShoppingListCard(style: .detailed)</div>
       <div class="lib-demo">
         <div class="shopping-card">
-          <div class="shopping-card-header"><span style="font-size:16px">&#128722;</span><strong>Veckans inköp</strong><span class="completion-pill">75%</span><span class="sharing-pill">&#128101; 2</span></div>
+          <div class="shopping-card-header"><span class="mi" style="color:var(--green)">shopping_cart</span><strong>Veckans inköp</strong><span class="completion-pill">75%</span><span class="sharing-pill"><span class="mi-sm">people</span> 2</span></div>
           <div style="font-size:13px;color:var(--text-light)">12 varor &middot; 9 klara</div>
         </div>
       </div>
@@ -623,7 +623,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <span class="chip">Favoriter</span>
       <span class="chip">Under 30 min</span>
       <span class="chip">Vegetariskt</span>
-      <span class="filter-toggle has-filters" style="margin-left:auto">&#9776;<span class="filter-dot"></span></span>
+      <span class="filter-toggle has-filters" style="margin-left:auto"><span class="mi-outlined">tune</span><span class="filter-dot"></span></span>
     </div>
   </div>
 
@@ -631,11 +631,11 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-label">FilterStatusChip + PersonalTagFilterChips</div>
     <div class="lib-class">FilterStatusChip / PersonalTagFilterChipsWidget</div>
     <div class="lib-demo" style="display:flex;flex-direction:column;gap:8px">
-      <div class="filter-status">&#9776; Filter: Under 30 min &bull; Vegetariskt &mdash; <strong>12 valda</strong></div>
+      <div class="filter-status"><span class="mi-sm mi-outlined">tune</span> Filter: Under 30 min &bull; Vegetariskt &mdash; <strong>12 valda</strong></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <span class="tag-chip-include">&#10003; Favoriter</span>
-        <span class="tag-chip-include">&#10003; Vardagsmat</span>
-        <span class="tag-chip-exclude">&#10005; Nötfritt</span>
+        <span class="tag-chip-include"><span class="mi-sm">check</span> Favoriter</span>
+        <span class="tag-chip-include"><span class="mi-sm">check</span> Vardagsmat</span>
+        <span class="tag-chip-exclude"><span class="mi-sm">close</span> Nötfritt</span>
       </div>
     </div>
   </div>
@@ -680,7 +680,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-label">Checkbox</div>
       <div class="lib-class">(themed Checkbox)</div>
       <div class="lib-demo" style="display:flex;gap:16px;align-items:center">
-        <div style="display:flex;align-items:center;gap:8px"><div class="checkbox checked">&#10003;</div><span>Checked</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="checkbox checked"><span class="mi-sm" style="color:white">check</span></div><span>Checked</span></div>
         <div style="display:flex;align-items:center;gap:8px"><div class="checkbox"></div><span>Unchecked</span></div>
       </div>
     </div>
@@ -704,7 +704,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       </div>
       <div>
         <div class="lib-label" style="text-align:center">LoadingScaffold</div>
-        <div class="scaffold-mini"><div class="scaffold-mini-header">laddar</div><div class="scaffold-mini-body" style="font-size:24px">&#9203;</div></div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header">laddar</div><div class="scaffold-mini-body" style="font-size:24px;color:var(--green)">&#8987;</div></div>
       </div>
       <div>
         <div class="lib-label" style="text-align:center">ErrorScaffold</div>
@@ -712,7 +712,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       </div>
       <div>
         <div class="lib-label" style="text-align:center">EmptyStateScaffold</div>
-        <div class="scaffold-mini"><div class="scaffold-mini-header">tom</div><div class="scaffold-mini-body">&#129382;<br>Tomt här<br><span style="font-size:8px;color:var(--green)">[Lägg till]</span></div></div>
+        <div class="scaffold-mini"><div class="scaffold-mini-header">tom</div><div class="scaffold-mini-body" style="color:var(--green-muted)">&#9744;<br>Tomt här<br><span style="font-size:8px;color:var(--green)">[Lägg till]</span></div></div>
       </div>
       <div>
         <div class="lib-label" style="text-align:center">FormScaffold</div>
@@ -743,7 +743,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
         <div style="flex:1">
           <div style="display:flex;justify-content:space-between"><span style="font-size:13px;font-weight:600">Anna L</span><span style="font-size:11px;color:var(--text-muted)">2 tim sedan</span></div>
           <p style="font-size:14px;margin-top:4px">Jättegod! Jag la till lite chili också &#127798;</p>
-          <div style="display:flex;gap:12px;margin-top:4px;font-size:12px;color:var(--text-muted)"><span>&#10084; 3</span><span style="color:var(--green)">Svara</span></div>
+          <div style="display:flex;gap:12px;margin-top:4px;font-size:12px;color:var(--text-muted)"><span><span class="mi-sm mi-outlined">favorite</span> 3</span><span style="color:var(--green)">Svara</span></div>
         </div>
       </div>
     </div>
@@ -774,7 +774,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
           <div class="unread-dot"></div>
         </div>
         <div class="conversation-item">
-          <div class="conversation-avatar" style="background:var(--cream-dark);color:var(--text-muted)">&#128101;</div>
+          <div class="conversation-avatar" style="background:var(--cream-dark);color:var(--text-muted)"><span class="mi">group</span></div>
           <div class="conversation-content"><div style="display:flex;justify-content:space-between"><span class="conversation-name" style="font-weight:400">Familjen</span><span class="conversation-time">igår</span></div><div class="conversation-preview">Erik: Köp mjölk på vägen hem</div></div>
         </div>
       </div>
@@ -787,7 +787,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-class">TypingIndicator / ReplyBanner</div>
       <div class="lib-demo" style="display:flex;flex-direction:column;gap:8px">
         <div style="display:flex;align-items:center;gap:8px"><div class="friend-avatar friend-avatar-sm">AL</div><div class="msg-other" style="margin:0;padding:6px 12px;font-size:13px">Anna skriver <span class="typing-dots"><span class="typing-dot"></span><span class="typing-dot" style="opacity:0.6"></span><span class="typing-dot" style="opacity:0.3"></span></span></div></div>
-        <div class="reply-banner"><span>&#8617;</span><div class="reply-banner-text"><span class="reply-banner-name">Anna</span><br>Jättegod pasta! Ska vi göra den igen?</div><span style="cursor:pointer;color:var(--text-muted)">&#10005;</span></div>
+        <div class="reply-banner"><span class="mi-sm mi-outlined" style="color:var(--green)">reply</span><div class="reply-banner-text"><span class="reply-banner-name">Anna</span><br>Jättegod pasta! Ska vi göra den igen?</div><span class="mi-sm" style="cursor:pointer;color:var(--text-muted)">close</span></div>
       </div>
     </div>
     <div class="lib-item">
@@ -796,7 +796,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-demo">
         <div style="background:var(--cream-dark);padding:12px">
           <div style="font-weight:600;margin-bottom:8px">Vad ska vi laga imorgon?</div>
-          <div class="poll-option" style="position:relative"><div class="poll-fill" style="width:60%"></div><div class="poll-text"><span>&#10003; Pasta Carbonara</span><span>3</span></div></div>
+          <div class="poll-option" style="position:relative"><div class="poll-fill" style="width:60%"></div><div class="poll-text"><span><span class="mi-sm">check</span> Pasta Carbonara</span><span>3</span></div></div>
           <div class="poll-option" style="position:relative"><div class="poll-fill" style="width:40%"></div><div class="poll-text"><span>Morotssoppa</span><span>2</span></div></div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:4px">5 röster</div>
         </div>
@@ -840,7 +840,7 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-class">SharedCardHeader / CollaborativeIndicators</div>
     <div class="lib-demo" style="display:flex;flex-direction:column;gap:8px">
       <div class="shared-header" style="border-bottom:1px solid var(--cream-dark)"><div class="friend-avatar friend-avatar-sm">AL</div><span>Delat av <span class="shared-header-name">Anna L</span></span><span class="shared-header-time">2 tim sedan</span><span class="unread-dot" style="width:8px;height:8px"></span></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="collab-badge">&#128101; Delad</span><span class="edit-indicator"><span class="edit-indicator-dot"></span>Anna redigerar</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="collab-badge"><span class="mi-sm">people</span> Delad</span><span class="edit-indicator"><span class="edit-indicator-dot"></span>Anna redigerar</span></div>
     </div>
   </div>
 </div>
@@ -854,18 +854,18 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
       <div class="lib-label">StatItemWidget</div>
       <div class="lib-class">StatItemWidget</div>
       <div class="lib-demo" style="display:flex;gap:32px;justify-content:center">
-        <div class="stat-item"><span style="font-size:16px">&#128214;</span><span class="stat-value">48</span><span class="stat-label">recept</span></div>
-        <div class="stat-item"><span style="font-size:16px">&#128197;</span><span class="stat-value">12</span><span class="stat-label">menyer</span></div>
-        <div class="stat-item"><span style="font-size:16px">&#128101;</span><span class="stat-value">7</span><span class="stat-label">vänner</span></div>
+        <div class="stat-item"><span class="mi-outlined mi-lg" style="color:var(--green)">book</span><span class="stat-value">48</span><span class="stat-label">recept</span></div>
+        <div class="stat-item"><span class="mi-outlined mi-lg" style="color:var(--green)">calendar_today</span><span class="stat-value">12</span><span class="stat-label">menyer</span></div>
+        <div class="stat-item"><span class="mi-outlined mi-lg" style="color:var(--green)">people</span><span class="stat-value">7</span><span class="stat-label">vänner</span></div>
       </div>
     </div>
     <div class="lib-item">
       <div class="lib-label">AppLogo + AppBranding</div>
       <div class="lib-class">AppLogo / AppBranding</div>
       <div class="lib-demo" style="display:flex;gap:24px;align-items:center;justify-content:center">
-        <div class="app-logo">&#127860;</div>
-        <div class="app-logo app-logo-large">&#127860;</div>
-        <div style="text-align:center"><div class="app-logo" style="margin:0 auto 8px">&#127860;</div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;letter-spacing:4px;text-transform:lowercase;color:var(--green-dark)">butlery</div></div>
+        <div class="app-logo"><span class="mi" style="color:white">restaurant_menu</span></div>
+        <div class="app-logo app-logo-large"><span class="mi" style="color:white">restaurant_menu</span></div>
+        <div style="text-align:center"><div class="app-logo" style="margin:0 auto 8px"><span class="mi" style="color:white">restaurant_menu</span></div><div style="font-family:var(--font-display);font-size:24px;font-weight:300;letter-spacing:4px;text-transform:lowercase;color:var(--green-dark)">butlery</div></div>
       </div>
     </div>
   </div>
@@ -880,9 +880,9 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-class">StepProgressIndicator</div>
     <div class="lib-demo" style="display:flex;justify-content:center">
       <div class="step-progress">
-        <div class="step-dot step-done">&#10003;</div>
+        <div class="step-dot step-done"><span class="mi-sm" style="color:white">check</span></div>
         <div class="step-line step-line-done"></div>
-        <div class="step-dot step-done">&#10003;</div>
+        <div class="step-dot step-done"><span class="mi-sm" style="color:white">check</span></div>
         <div class="step-line step-line-done"></div>
         <div class="step-dot step-active">3</div>
         <div class="step-line step-line-pending"></div>
@@ -916,9 +916,9 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
     <div class="lib-label">ShareTargetSelection</div>
     <div class="lib-class">ShareTargetSelection</div>
     <div class="lib-demo">
-      <input class="styled-input" type="text" placeholder="&#128269; Sök vänner..." style="margin-bottom:8px">
+      <input class="styled-input" type="text" placeholder="Sök vänner..." style="margin-bottom:8px">
       <div class="bordered-container" style="max-height:120px;overflow-y:auto">
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cream-dark)"><div class="checkbox checked">&#10003;</div><div class="friend-avatar friend-avatar-sm">AL</div><div><div style="font-size:14px;font-weight:500">Anna Lindström</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cream-dark)"><div class="checkbox checked"><span class="mi-sm" style="color:white">check</span></div><div class="friend-avatar friend-avatar-sm">AL</div><div><div style="font-size:14px;font-weight:500">Anna Lindström</div></div></div>
         <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--cream-dark)"><div class="checkbox"></div><div class="friend-avatar friend-avatar-sm" style="background:var(--rust)">EK</div><div><div style="font-size:14px;font-weight:500">Erik Karlsson</div></div></div>
         <div style="display:flex;align-items:center;gap:8px;padding:8px 0"><div class="checkbox"></div><div class="friend-avatar friend-avatar-sm" style="background:var(--green-dark)">MG</div><div><div style="font-size:14px;font-weight:500">Maria Gustafsson</div></div></div>
       </div>

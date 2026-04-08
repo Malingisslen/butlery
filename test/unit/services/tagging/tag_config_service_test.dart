@@ -19,7 +19,7 @@ void main() {
     int propertiesVersion = 1,
     int displayVersion = 1,
   }) async {
-    final collection = firestore.collection('tagConfigs');
+    final collection = firestore.collection('tag_configs');
 
     await collection.doc('allergens').set({
       'schemaVersion': 1,
@@ -119,7 +119,14 @@ void main() {
   setUp(() {
     fakeFirestore = FakeFirebaseFirestore();
     SharedPreferences.setMockInitialValues({});
-    service = TagConfigService(firestore: fakeFirestore);
+    service = TagConfigService(
+      firestore: fakeFirestore,
+      initialRetryDelay: Duration.zero,
+    );
+  });
+
+  tearDown(() {
+    SharedPreferences.setMockInitialValues({});
   });
 
   group('TagConfigService', () {
@@ -139,12 +146,14 @@ void main() {
       test('Firebase fails, cache exists — falls back to cache', () async {
         // First: seed and initialize to populate the cache
         await seedFirestoreConfigs(fakeFirestore);
-        final warmupService = TagConfigService(firestore: fakeFirestore);
+        final warmupService = TagConfigService(
+            firestore: fakeFirestore, initialRetryDelay: Duration.zero);
         await warmupService.initialize();
 
         // Now create a new service with an empty Firestore (simulates failure)
         final emptyFirestore = FakeFirebaseFirestore();
-        final freshService = TagConfigService(firestore: emptyFirestore);
+        final freshService = TagConfigService(
+            firestore: emptyFirestore, initialRetryDelay: Duration.zero);
         await freshService.initialize();
 
         expect(freshService.isInitialized, isTrue);
@@ -196,7 +205,7 @@ void main() {
 
         // Change version
         await fakeFirestore
-            .collection('tagConfigs')
+            .collection('tag_configs')
             .doc('allergens')
             .update({'version': 5});
         await service.refreshIfNeeded();
@@ -276,7 +285,8 @@ void main() {
 
         // Create new service with empty Firestore — should load from cache
         final emptyFirestore = FakeFirebaseFirestore();
-        final freshService = TagConfigService(firestore: emptyFirestore);
+        final freshService = TagConfigService(
+            firestore: emptyFirestore, initialRetryDelay: Duration.zero);
         await freshService.initialize();
 
         expect(freshService.config.combinedVersion, originalVersion);
@@ -307,7 +317,7 @@ void main() {
 
         // Update data
         await fakeFirestore
-            .collection('tagConfigs')
+            .collection('tag_configs')
             .doc('allergens')
             .update({'version': 99});
 
@@ -323,7 +333,8 @@ void main() {
 
         // Create a service pointing to empty Firestore
         final emptyFirestore = FakeFirebaseFirestore();
-        final freshService = TagConfigService(firestore: emptyFirestore);
+        final freshService = TagConfigService(
+            firestore: emptyFirestore, initialRetryDelay: Duration.zero);
         await freshService.initialize(); // initializes from cache
 
         // forceRefresh on empty Firestore should throw
@@ -357,7 +368,7 @@ void main() {
     group('config validation', () {
       test('validation errors are logged but config is still usable', () async {
         // Create config with invalid property reference
-        final collection = fakeFirestore.collection('tagConfigs');
+        final collection = fakeFirestore.collection('tag_configs');
         await collection.doc('allergens').set({
           'schemaVersion': 1,
           'version': 1,

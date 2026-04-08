@@ -6,8 +6,8 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -54,8 +54,6 @@ class RecipeSocialHandler {
     BuildContext context, {
     required String commentText,
     required String recipeId,
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
   }) async {
     if (!context.mounted || commentText.trim().isEmpty) return;
 
@@ -65,10 +63,8 @@ class RecipeSocialHandler {
     final currentUserId = authService.currentUserId;
 
     if (currentUserId == null) {
-      showSnackBar(
-        context.l10n.socialMustBeLoggedInToComment,
-        backgroundColor: Theme.of(context).colorScheme.error,
-      );
+      SnackBarUtils.showError(
+          context, context.l10n.socialMustBeLoggedInToComment);
       return;
     }
 
@@ -77,10 +73,8 @@ class RecipeSocialHandler {
       final userProfile = await userService.getUserProfile(currentUserId);
       if (userProfile == null) {
         if (context.mounted) {
-          showSnackBar(
-            context.l10n.socialCouldNotFetchUserData,
-            backgroundColor: Theme.of(context).colorScheme.error,
-          );
+          SnackBarUtils.showError(
+              context, context.l10n.socialCouldNotFetchUserData);
         }
         return;
       }
@@ -89,21 +83,15 @@ class RecipeSocialHandler {
       await socialViewModel.postComment(recipeId);
       if (!context.mounted) return;
 
-      showSnackBar(context.l10n.socialCommentPosted,
-          backgroundColor: context.butleryColors.success);
+      SnackBarUtils.showSuccess(context, context.l10n.socialCommentPosted);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar(context.l10n.socialCouldNotPostComment,
-          backgroundColor: Theme.of(context).colorScheme.error);
+      SnackBarUtils.showError(context, context.l10n.socialCouldNotPostComment);
     }
   }
 
   /// Create user profile if missing
-  static Future<void> createUserProfile(
-    BuildContext context, {
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
-  }) async {
+  static Future<void> createUserProfile(BuildContext context) async {
     if (!context.mounted) return;
 
     final authService = ServiceLocator.get<AuthService>();
@@ -123,12 +111,11 @@ class RecipeSocialHandler {
         allowEmailSearch: false,
       );
       if (!context.mounted) return;
-      showSnackBar(context.l10n.socialUserProfileCreated,
-          backgroundColor: context.butleryColors.success);
+      SnackBarUtils.showSuccess(context, context.l10n.socialUserProfileCreated);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar(context.l10n.socialCouldNotCreateProfile,
-          backgroundColor: Theme.of(context).colorScheme.error);
+      SnackBarUtils.showError(
+          context, context.l10n.socialCouldNotCreateProfile);
     }
   }
 }

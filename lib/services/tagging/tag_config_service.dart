@@ -14,6 +14,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -50,9 +51,9 @@ class TagConfigService extends BaseService {
   static const String _cacheKey = 'tag_config_cache';
   static const String _versionKey = 'tag_config_version';
   static const int _maxRetries = 3;
-  static const Duration _initialRetryDelay = Duration(milliseconds: 500);
 
   final FirebaseFirestore _firestore;
+  final Duration _initialRetryDelay;
 
   /// In-memory cache for the current session.
   FirebaseTagConfig? _memoryCache;
@@ -65,7 +66,10 @@ class TagConfigService extends BaseService {
 
   TagConfigService({
     required FirebaseFirestore firestore,
-  }) : _firestore = firestore;
+    @visibleForTesting
+    Duration initialRetryDelay = const Duration(milliseconds: 500),
+  })  : _firestore = firestore,
+        _initialRetryDelay = initialRetryDelay;
 
   @override
   String get serviceName => 'TagConfigService';
@@ -102,7 +106,8 @@ class TagConfigService extends BaseService {
       // Try to load from Firebase (outer timeout prevents boot hang on slow network)
       _memoryCache = await _loadFromFirebaseWithRetry().timeout(
         const Duration(seconds: 15),
-        onTimeout: () => throw Exception('Firebase config load timed out (15s)'),
+        onTimeout: () =>
+            throw Exception('Firebase config load timed out (15s)'),
       );
       _taggingAvailable = true;
       AppLogger.info(

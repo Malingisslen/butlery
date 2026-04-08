@@ -153,6 +153,7 @@ class SocialShoppingCoordinator
       listName: contentSnapshot.name,
       itemCount: contentSnapshot.items.length,
       listDescription: contentSnapshot.description,
+      shoppingListId: originalContentId,
     );
   }
 
@@ -290,12 +291,25 @@ class SocialShoppingCoordinator
         return null;
       }
 
-      // Mark as joined in SharedShoppingList
+      // Mark as joined in SharedShoppingList (analytics tracking)
       await _sharedShoppingRepository.markAsJoined(
           sharedShoppingListId, currentUserId);
 
-      // For shopping lists, joining means becoming a collaborator on the original list
-      // The actual collaborative list management is handled by UnifiedShoppingService
+      // Add the joining user to the original list's memberPermissions
+      final listId = sharedList.shoppingListId;
+      if (listId != null) {
+        final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+        await shoppingService.collaborative.addMember(
+          listId: listId,
+          userId: currentUserId,
+          userDisplayName:
+              currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
+        );
+      } else {
+        AppLogger.warning('SharedShoppingList missing shoppingListId — '
+            'member permissions not updated (pre-migration data)');
+      }
+
       AppLogger.success('✅ Successfully joined shopping list collaboration');
       notifyStateChanged();
 

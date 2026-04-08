@@ -7,7 +7,6 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -19,10 +18,8 @@ class RecipeTaggingHandler {
   /// Re-tag recipe with confirmation dialog.
   /// Generates new tags from ingredients and updates the recipe.
   static Future<void> retagRecipe(
-    BuildContext context, {
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
-  }) async {
+    BuildContext context,
+  ) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -87,10 +84,7 @@ class RecipeTaggingHandler {
       closeDialog();
 
       if (tagResult == null) {
-        showSnackBar(
-          context.l10n.taggingCouldNotAnalyze,
-          backgroundColor: Theme.of(context).colorScheme.error,
-        );
+        SnackBarUtils.showError(context, context.l10n.taggingCouldNotAnalyze);
         return;
       }
 
@@ -113,18 +107,18 @@ class RecipeTaggingHandler {
 
       // Show success with tag summary
       final coverage = (tagResult.coverage * 100).toInt();
-      showSnackBar(
+      SnackBarUtils.showSuccess(
+        context,
         context.l10n.taggingTagsGenerated(tagResult.tags.length, coverage),
-        backgroundColor: context.butleryColors.success,
       );
     } catch (e) {
       closeDialog();
       if (!context.mounted) return;
-      showSnackBar(
+      SnackBarUtils.showError(
+        context,
         context.l10n.taggingError(
           SnackBarUtils.userFriendlyMessage(context, e),
         ),
-        backgroundColor: Theme.of(context).colorScheme.error,
       );
     }
   }

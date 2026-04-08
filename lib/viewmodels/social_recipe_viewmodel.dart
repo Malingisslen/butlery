@@ -63,6 +63,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
   // Comment operations - delegate to comment manager
   Future<void> refreshComments(String recipeId) async {
     await _commentsManager.refreshComments(recipeId);
+    final commentIds = comments.map((c) => c.id).toList();
+    await _engagementManager.loadLikeStatus(commentIds);
   }
 
   Future<void> fetchCommentCount(String recipeId) async {

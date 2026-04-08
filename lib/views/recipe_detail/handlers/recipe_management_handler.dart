@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -20,8 +20,6 @@ class RecipeManagementHandler {
   static Future<void> deleteRecipe(
     BuildContext context, {
     required VoidCallback onSuccess,
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
     required VoidCallback popNavigation,
   }) async {
     if (!context.mounted) return;
@@ -38,22 +36,16 @@ class RecipeManagementHandler {
       if (!context.mounted) return;
       if (success) {
         popNavigation();
-        showSnackBar(context.l10n.recipeDeleted,
-            backgroundColor: context.butleryColors.success);
+        SnackBarUtils.showSuccess(context, context.l10n.recipeDeleted);
         onSuccess();
       } else {
-        showSnackBar(context.l10n.recipeCouldNotDelete,
-            backgroundColor: Theme.of(context).colorScheme.error);
+        SnackBarUtils.showError(context, context.l10n.recipeCouldNotDelete);
       }
     }
   }
 
   /// Navigate to edit recipe view
-  static Future<void> editRecipe(
-    BuildContext context, {
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
-  }) async {
+  static Future<void> editRecipe(BuildContext context) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -66,17 +58,12 @@ class RecipeManagementHandler {
       );
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar(context.l10n.recipeCouldNotOpenEditor,
-          backgroundColor: Theme.of(context).colorScheme.error);
+      SnackBarUtils.showError(context, context.l10n.recipeCouldNotOpenEditor);
     }
   }
 
   /// Mark recipe as cooked
-  static Future<void> markAsCooked(
-    BuildContext context, {
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
-  }) async {
+  static Future<void> markAsCooked(BuildContext context) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -84,21 +71,15 @@ class RecipeManagementHandler {
     try {
       await viewModel.markAsCooked();
       if (!context.mounted) return;
-      showSnackBar(context.l10n.recipeMarkedAsCooked,
-          backgroundColor: context.butleryColors.success);
+      SnackBarUtils.showSuccess(context, context.l10n.recipeMarkedAsCooked);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar(context.l10n.recipeCouldNotMarkAsCooked,
-          backgroundColor: Theme.of(context).colorScheme.error);
+      SnackBarUtils.showError(context, context.l10n.recipeCouldNotMarkAsCooked);
     }
   }
 
   /// Share recipe via share service
-  static Future<void> shareRecipe(
-    BuildContext context, {
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
-  }) async {
+  static Future<void> shareRecipe(BuildContext context) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
@@ -107,51 +88,38 @@ class RecipeManagementHandler {
     try {
       await shareService.shareRecipe(viewModel.recipe);
       if (!context.mounted) return;
-      showSnackBar(context.l10n.recipeShared,
-          backgroundColor: context.butleryColors.success);
+      SnackBarUtils.showSuccess(context, context.l10n.recipeShared);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar(context.l10n.recipeCouldNotShare,
-          backgroundColor: Theme.of(context).colorScheme.error);
+      SnackBarUtils.showError(context, context.l10n.recipeCouldNotShare);
     }
   }
 
   /// Toggle collaborative editing on a recipe.
   /// Shows enable dialog (friend picker) or disable confirmation based on current state.
-  static Future<void> toggleCollaboration(
-    BuildContext context, {
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
-  }) async {
+  static Future<void> toggleCollaboration(BuildContext context) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
     final recipe = viewModel.recipe;
 
     if (recipe.isCollaborative) {
-      await _confirmDisableCollaboration(context, recipe,
-          showSnackBar: showSnackBar);
+      await _confirmDisableCollaboration(context, recipe);
     } else {
-      await _showEnableCollaborationDialog(context, recipe,
-          showSnackBar: showSnackBar);
+      await _showEnableCollaborationDialog(context, recipe);
     }
   }
 
   /// Show dialog to select friends as collaborators, then enable collaboration
   static Future<void> _showEnableCollaborationDialog(
     BuildContext context,
-    Recipe recipe, {
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
-  }) async {
+    Recipe recipe,
+  ) async {
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
     final friends = friendsService.friendsList;
 
     if (friends.isEmpty) {
-      showSnackBar(
-        context.l10n.collaborationNoFriends,
-        backgroundColor: Theme.of(context).colorScheme.error,
-      );
+      SnackBarUtils.showError(context, context.l10n.collaborationNoFriends);
       return;
     }
 
@@ -213,15 +181,10 @@ class RecipeManagementHandler {
 
       if (!context.mounted) return;
       if (success) {
-        showSnackBar(
-          context.l10n.collaborationEnabled,
-          backgroundColor: context.butleryColors.success,
-        );
+        SnackBarUtils.showSuccess(context, context.l10n.collaborationEnabled);
       } else {
-        showSnackBar(
-          context.l10n.collaborationCouldNotEnable,
-          backgroundColor: Theme.of(context).colorScheme.error,
-        );
+        SnackBarUtils.showError(
+            context, context.l10n.collaborationCouldNotEnable);
       }
     }
   }
@@ -229,10 +192,8 @@ class RecipeManagementHandler {
   /// Show confirmation dialog and disable collaboration
   static Future<void> _confirmDisableCollaboration(
     BuildContext context,
-    Recipe recipe, {
-    required void Function(String message, {Color? backgroundColor})
-        showSnackBar,
-  }) async {
+    Recipe recipe,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -259,15 +220,11 @@ class RecipeManagementHandler {
 
       if (!context.mounted) return;
       if (success) {
-        showSnackBar(
-          context.l10n.collaborationDeactivated,
-          backgroundColor: context.butleryColors.success,
-        );
+        SnackBarUtils.showSuccess(
+            context, context.l10n.collaborationDeactivated);
       } else {
-        showSnackBar(
-          context.l10n.collaborationCouldNotDeactivate,
-          backgroundColor: Theme.of(context).colorScheme.error,
-        );
+        SnackBarUtils.showError(
+            context, context.l10n.collaborationCouldNotDeactivate);
       }
     }
   }
