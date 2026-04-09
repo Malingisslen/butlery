@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/notification_history_entry.dart';
@@ -12,7 +14,7 @@ class NotificationsViewModel extends BaseViewModel {
   bool _hasMore = true;
   bool _isLoadingMore = false;
 
-  List<NotificationHistoryEntry> get entries => _entries;
+  List<NotificationHistoryEntry> get entries => List.unmodifiable(_entries);
   bool get hasMore => _hasMore;
   bool get isLoadingMore => _isLoadingMore;
   bool get isEmpty => _entries.isEmpty && !isLoading;
@@ -73,7 +75,11 @@ class NotificationsViewModel extends BaseViewModel {
     );
     notifyListeners();
 
-    // Fire-and-forget — failure is low-stakes (notification appears unread on next load)
-    _notificationService.markHistoryNotificationOpened(notificationId);
+    unawaited(
+      _notificationService
+          .markHistoryNotificationOpened(notificationId)
+          .catchError((e) =>
+              AppLogger.warning('Failed to mark notification opened: $e')),
+    );
   }
 }

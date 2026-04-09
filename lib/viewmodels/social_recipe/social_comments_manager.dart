@@ -226,6 +226,7 @@ class SocialCommentsManager extends ChangeNotifier {
       _commentsError = AppLocale.current.commentEditError;
       AppLogger.error('Failed to edit comment $commentId: $e');
       _safeNotify();
+      rethrow;
     }
   }
 
