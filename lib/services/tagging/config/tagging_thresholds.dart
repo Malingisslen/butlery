@@ -25,6 +25,9 @@ class TaggingThresholds {
   /// Minimum vegetable count for "grönsaksrik" tag.
   static const int veggieRichCount = 3;
 
+  /// Minimum spice group count for "kryddrik" tag.
+  static const int spiceRichCount = 3;
+
   /// Maximum ingredients for "enkel" (easy) difficulty.
   static const int easyMaxIngredients = 6;
 

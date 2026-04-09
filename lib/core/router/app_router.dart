@@ -42,6 +42,9 @@ import 'package:butlery/views/personal_tags_view.dart';
 // Cooking mode
 import 'package:butlery/views/cooking_mode_view.dart';
 
+// Notifications
+import 'package:butlery/views/notifications/notifications_view.dart';
+
 // Legal
 import 'package:butlery/views/legal/terms_of_service_view.dart';
 import 'package:butlery/views/legal/community_guidelines_view.dart';
@@ -273,6 +276,10 @@ class AppRouter {
             return _errorRoute('Recipe argument missing for cooking mode');
           }
           return _buildRoute(CookingModeView(recipe: recipe), settings,
+              Routes.getAnimationType(routeName));
+
+        case Routes.notifications:
+          return _buildRoute(const NotificationsView(), settings,
               Routes.getAnimationType(routeName));
 
         case Routes.settings:

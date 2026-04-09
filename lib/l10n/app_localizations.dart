@@ -21093,6 +21093,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Alla recept är kompletta!'**
   String get statsAllComplete;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aviseringar'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga aviseringar än'**
+  String get notificationsEmpty;
+
+  /// No description provided for @notificationsErrorLoad.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda aviseringar'**
+  String get notificationsErrorLoad;
+
+  /// No description provided for @allergenIncludeUnknownTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa okänd allergenstatus'**
+  String get allergenIncludeUnknownTitle;
+
+  /// No description provided for @allergenIncludeUnknownSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkludera recept med okänd allergenstatus i menyförslag'**
+  String get allergenIncludeUnknownSubtitle;
+
+  /// No description provided for @tagDecisionWhyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför denna tagg?'**
+  String get tagDecisionWhyTitle;
+
+  /// No description provided for @tagDecisionReason.
+  ///
+  /// In sv, this message translates to:
+  /// **'Orsak'**
+  String get tagDecisionReason;
+
+  /// No description provided for @tagDecisionIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get tagDecisionIngredients;
 }
 
 class _AppLocalizationsDelegate

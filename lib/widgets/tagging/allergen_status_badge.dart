@@ -38,6 +38,10 @@ class AllergenStatusBadge extends StatelessWidget {
   /// When provided and status is UNKNOWN, appends "(X% täckning)" to the label.
   final int? coveragePercent;
 
+  /// Optional callback to show tag decision audit trail.
+  /// Only rendered on standard (non-compact) badges.
+  final VoidCallback? onInfoTap;
+
   const AllergenStatusBadge({
     super.key,
     required this.allergen,
@@ -46,6 +50,7 @@ class AllergenStatusBadge extends StatelessWidget {
     this.showLabel = true,
     this.label,
     this.coveragePercent,
+    this.onInfoTap,
   });
 
   @override
@@ -68,6 +73,7 @@ class AllergenStatusBadge extends StatelessWidget {
       icon: icon,
       semanticLabel: semanticLabel,
       label: showLabel ? displayLabel : null,
+      onInfoTap: onInfoTap,
     );
   }
 
@@ -141,12 +147,14 @@ class _StandardBadge extends StatelessWidget {
   final IconData icon;
   final String? label;
   final String semanticLabel;
+  final VoidCallback? onInfoTap;
 
   const _StandardBadge({
     required this.color,
     required this.icon,
     required this.semanticLabel,
     this.label,
+    this.onInfoTap,
   });
 
   @override
@@ -159,9 +167,7 @@ class _StandardBadge extends StatelessWidget {
           vertical: AppDimensions.spacing6,
         ),
         decoration: BoxDecoration(
-          // Light tinted background (10-12% opacity)
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-          // Full rectangular border on all sides per mockup
           border: Border.all(
             color: color,
             width: 1.5,
@@ -184,6 +190,17 @@ class _StandardBadge extends StatelessWidget {
                   style: AppTextStyles.metadataEmphasized.copyWith(
                     color: color,
                   ),
+                ),
+              ),
+            ],
+            if (onInfoTap != null) ...[
+              const SizedBox(width: AppDimensions.spacing6),
+              GestureDetector(
+                onTap: onInfoTap,
+                child: Icon(
+                  Icons.info_outline,
+                  size: AppDimensions.iconSize14,
+                  color: color,
                 ),
               ),
             ],

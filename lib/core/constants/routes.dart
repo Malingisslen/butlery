@@ -76,6 +76,9 @@ class Routes {
   // Cooking mode
   static const String cookingMode = '/cooking-mode';
 
+  // Notifications
+  static const String notifications = '/notifications';
+
   // Settings routes
   static const String settings = '/settings';
   static const String settingsAllergens = '/settings/allergens';
@@ -127,6 +130,7 @@ class Routes {
     messages,
     chat,
     cookingMode,
+    notifications,
     settings,
     settingsAllergens,
     settingsPersonalTags,
@@ -167,6 +171,7 @@ class Routes {
     messages,
     chat,
     cookingMode,
+    notifications,
     settings,
     settingsAllergens,
     settingsPersonalTags,
@@ -242,6 +247,9 @@ class Routes {
 
     // Cooking
     cookingMode,
+
+    // Notifications
+    notifications,
 
     // Social features
     profileEdit,

@@ -29,6 +29,10 @@ class DietaryStatusBadge extends StatelessWidget {
   /// Optional custom label override.
   final String? label;
 
+  /// Optional callback to show tag decision audit trail.
+  /// Only rendered on standard (non-compact) badges.
+  final VoidCallback? onInfoTap;
+
   const DietaryStatusBadge({
     super.key,
     required this.diet,
@@ -36,6 +40,7 @@ class DietaryStatusBadge extends StatelessWidget {
     this.compact = false,
     this.showLabel = true,
     this.label,
+    this.onInfoTap,
   });
 
   @override
@@ -58,6 +63,7 @@ class DietaryStatusBadge extends StatelessWidget {
       icon: icon,
       semanticLabel: semanticLabel,
       label: showLabel ? displayLabel : null,
+      onInfoTap: onInfoTap,
     );
   }
 
@@ -112,12 +118,14 @@ class _StandardBadge extends StatelessWidget {
   final IconData icon;
   final String? label;
   final String semanticLabel;
+  final VoidCallback? onInfoTap;
 
   const _StandardBadge({
     required this.color,
     required this.icon,
     required this.semanticLabel,
     this.label,
+    this.onInfoTap,
   });
 
   @override
@@ -150,6 +158,17 @@ class _StandardBadge extends StatelessWidget {
                   style: AppTextStyles.metadataEmphasized.copyWith(
                     color: color,
                   ),
+                ),
+              ),
+            ],
+            if (onInfoTap != null) ...[
+              const SizedBox(width: AppDimensions.spacing6),
+              GestureDetector(
+                onTap: onInfoTap,
+                child: Icon(
+                  Icons.info_outline,
+                  size: AppDimensions.iconSize14,
+                  color: color,
                 ),
               ),
             ],

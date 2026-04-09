@@ -12314,4 +12314,29 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get statsAllComplete => 'Alla recept är kompletta!';
+
+  @override
+  String get notificationsTitle => 'Aviseringar';
+
+  @override
+  String get notificationsEmpty => 'Inga aviseringar än';
+
+  @override
+  String get notificationsErrorLoad => 'Kunde inte ladda aviseringar';
+
+  @override
+  String get allergenIncludeUnknownTitle => 'Visa okänd allergenstatus';
+
+  @override
+  String get allergenIncludeUnknownSubtitle =>
+      'Inkludera recept med okänd allergenstatus i menyförslag';
+
+  @override
+  String get tagDecisionWhyTitle => 'Varför denna tagg?';
+
+  @override
+  String get tagDecisionReason => 'Orsak';
+
+  @override
+  String get tagDecisionIngredients => 'Ingredienser';
 }

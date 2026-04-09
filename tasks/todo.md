@@ -1,23 +1,18 @@
 # Sprint Backlog
 
-## Sprint: Social & Stability Blitz — 2026-04-08
+## Sprint: Feature & Polish — 2026-04-09
 
-### Agent A: debugger — Social Reliability
+### Agent A: flutter-developer — Notification Inbox
 
-- [x] **A1. Fix group stub features** — Auto-navigate after group creation, shopping list dialog init, target selection dialog. (BUT-345)
-- [x] **A2. Fix FriendProfileView dead ends** — Added bio section, public recipes button, proper navigation. (BUT-341)
-- [x] **A3. Fix optimistic updates without rollback** — Moved Firebase calls before local state in reject/cancel/remove operations. (BUT-314)
-- [x] **A4. Fix recipe rating/comment data integrity** — Synced denormalized rating fields, removed dead code. (BUT-323)
+- [x] **A1. Add NotificationHistoryEntry model + repo/service getHistory** — `notification_history_entry.dart` (new), `notification_history_repository.dart`, `firebase_notification_history_repository.dart`, `notification_service.dart`. (BUT-348)
+- [x] **A2. Add NotificationsViewModel** — `notifications_viewmodel.dart` (new). (BUT-348)
+- [x] **A3. Add NotificationsView + route + DI** — `notifications_view.dart` (new), `routes.dart`, `app_router.dart`, l10n. (BUT-348)
 
-### Agent B: debugger — Import & Recipe Bugs
+### Agent B: flutter-developer — Quick Wins
 
-- [x] **B1. Fix clipboard URL detection + UIModule crash** — Added `hasStrings()` guard, `mounted` check, `allowReassignment` for hot restart. (BUT-337)
-- [x] **B2. Fix tablet personal tags + ConnectionMonitor** — Responsive layout via `LayoutComponents.valueFor`, fixed `statusConnected` copy-paste error, cache invalidation by tag hash. (BUT-324)
-
-### Agent C: flutter-developer — Dependency Maintenance
-
-- [x] **C1. Update discontinued deps** — `image_cropper` ^12.0.0, `freerasp` ^7.5.1. Blocked: drift/csv/sqlite3/archive/build_runner need SDK bump. (BUT-300)
-- [x] **C2. Update major deps** — `flutter_onnxruntime` ^1.6.4. Blocked: `file_picker` v11 has breaking API changes. (BUT-301)
+- [x] **B1. Add UNKNOWN allergen toggle** — `allergen_preferences_view.dart`, `allergen_preferences_viewmodel.dart`, l10n. (BUT-355)
+- [x] **B2. Add TagDecision audit trail UI** — `allergen_status_badge.dart`, `dietary_status_badge.dart`, `tag_result_display.dart`, l10n. (BUT-352)
+- [x] **B3. Wire tag thresholds to Remote Config** — `feature_flag_service.dart`, `tagging_thresholds.dart`, `tag_phase3_complex.dart`, `tag_generator.dart`. (BUT-353)
 
 ### Post-Sprint Steps
 - [x] Run `dart analyze --fatal-infos`
@@ -27,117 +22,32 @@
 
 ---
 
-## Sprint: Tech Debt Consolidation — 2026-04-08
+## Archive: Sprint Social & Stability Blitz (completed 2026-04-08)
 
-### Agent A: flutter-developer — Refactor + Performance
+- [x] A1-A4: Social reliability (BUT-345, BUT-341, BUT-314, BUT-323)
+- [x] B1-B2: Import & recipe bugs (BUT-337, BUT-324)
+- [x] C1-C2: Dependency maintenance (BUT-300, BUT-301)
 
-- [x] **A1. Refactor RecipeImageManager** — Delegated XFile ops to XFileUploadHandler, removed ~100 lines of duplicated upload/status logic. (BUT-303)
-- [x] **A2. Optimize avatar compression** — Added optional dimension params to pickImage(), avatar now uses 400x400/85% instead of 2400x2400/90%. (BUT-306)
-- [x] **A3. Fix addUploadedImageUrl max-image guard** — Added missing canAddMoreImages check (production bug caught by tests). (BUT-303)
+## Archive: Sprint Tech Debt Consolidation (completed 2026-04-08)
 
-### Agent B: debugger — Test Fixes
+- [x] A1-A3: Refactor + performance (BUT-303, BUT-306)
+- [x] B1-B2: Test fixes (BUT-303, BUT-306)
+- [x] C1: Test coverage — 127 new tests (BUT-299)
 
-- [x] **B1. Fix recipe_image_manager_test** — 0/58 → 57/57: added MockImageUploadService, fixed mock wiring, error string expectations, notification debouncing, FakeXFile.length(). (BUT-303)
-- [x] **B2. Fix user_profile_viewmodel_test** — Updated pickImage mock stubs for new optional params. 48/48 passing. (BUT-306)
+## Archive: Sprint Bug Stability + Hardening H2 (completed 2026-04-08)
 
-### Agent C: testing-specialist — Test Coverage
-
-- [x] **C1. Add tests for 8 priority untested VMs** — 127 tests total: account_security (24), profile (21), recipe_delete_manager (17), cooking_mode (22), recipe_selection_manager (9), menu_voting (18), shopping_permission_manager (8), public_profile (8). (BUT-299)
-
-### Post-Sprint Steps
-
-- [x] Run `dart analyze --fatal-infos`
-- [x] Run relevant unit tests (232 tests passing: 127 new + 105 fixed)
-- [ ] Commit, push, PR, merge
-- [x] Update Linear ticket states (BUT-303, BUT-306, BUT-299 → Done, BUT-265 → Duplicate)
-
----
-
-## Sprint: Bug Stability — 2026-04-08
-
-### Agent A: debugger — Build Blockers & Backend Stability
-
-- [x] **A1. Fix ambiguous import in household_service** — `lib/core/base/base_service.dart`: removed orphaned abstract stubs causing conflicts. (BUT-308)
-- [x] **A2. Fix hasActiveSubscription always returning false** — `lib/core/mixins/stream_management_mixin.dart`: flipped inverted condition + fixed tautological check. (BUT-320)
-- [x] **A3. Fix FeatureFlagService hash instability + SearchModule timing** — FNV-1a hash, delegating proxy, fromUserId in deep links. (BUT-335)
-- [x] **A4. Fix notifyListeners after dispose across ViewModels** — Added disposal guards to RecipeListVM, RecipeDetailVM, RealtimeMenuVM, OfflineService. (BUT-319)
-
-### Agent B: debugger — Data Integrity
-
-- [x] **B1. Fix shopping data integrity** — Toggle label inversion, atomic multi-remove, dedup, retry on _loadList. (BUT-336)
-- [x] **B2. Fix tagging race conditions** — Batch deleteTag, snapshot pendingSyncIds, Completer-guarded init, createTag mutex. (BUT-331)
-
-### Agent C: firebase-backend-security — GDPR Compliance
-
-- [x] **C1. Fix GDPR export gaps** — Added 5 missing collections, truncation surfacing, consent cache clearing on logout. (BUT-317)
-- [x] **C2. Fix data export broken on web platform** — Increased URL revocation delay from 0 to 10 seconds. (BUT-297)
-
-### Post-Sprint Steps
-
-- [x] Run `dart analyze --fatal-infos`
-- [ ] Run relevant unit tests
-- [ ] Commit, push, PR, merge
-- [ ] Update Linear ticket states
-
-## Sprint: Hardening H2 — 2026-04-08
-
-### Agent A: firebase-backend-security — GDPR + Security Tests
-
-- [x] **A1. Fix data export web error handling** — `download_web.dart`: wrapped blob/anchor in try/catch. (BUT-297)
-- [x] **A2. Fix security service test assertions** — `account_deletion_service_test.dart`, `data_export_service_test.dart`: fixed 3 failing assertions (audit ID format, static mock state, missing export section). (BUT-298)
-
-### Agent B: debugger — Social Bugs Cluster
-
-- [x] **B1. Add self-exposure guard in friend search** — `friends_management_operations.dart`: defensive removeWhere for current user after combining results. (BUT-313)
-- [x] **B2. Fix silent error suppression in friend operations** — `friends_management_operations.dart`: refactored rejectFriendRequest, cancelFriendRequest, removeFriend to use executeServiceOperation(). (BUT-311)
-- [x] **B3. Remove dead FriendsViewModel code** — `friends_viewmodel.dart`: removed unused _debounceTimer, simplified _onFriendsServiceChanged by removing Future.delayed wrapper. (BUT-312)
-
-### Agent C: performance-optimizer — Performance + Resource Leaks
-
-- [x] **C1. Cache recipe list getters** — `unified_recipe_service.dart`: added ??= cached fields for recipes/personalRecipes/collaborativeRecipes, invalidated in notifyListeners(). (BUT-332)
-- [x] **C2. Fix import resource leaks** — `web_scraper.dart`: Completer-based cleanup race fix. `ocr_extraction_service.dart`: removed failure caching. (BUT-327)
-
-### Agent D: flutter-developer — Cooking Mode UX
-
-- [x] **D1. Fix cooking mode scroll, lifecycle, accessibility** — `cooking_mode_view.dart`: GlobalKeys + Scrollable.ensureVisible(), listener pattern instead of build-time callback, l10n semantic labels. (BUT-322)
-
-### Post-Sprint Steps
-
-- [x] Run `dart analyze --fatal-infos`
-- [x] Run relevant unit tests (31/31 security, 42/42 friends VM)
-- [ ] Commit, push, PR, merge
-- [ ] Update Linear ticket states
-
----
-
-## Archive: Sprint Security Hardening Part 2 (completed 2026-04-08)
-
-- [x] 1A. Fix menu permission domain (BUT-329)
-- [x] 1B. Fix shopping join permissions (BUT-329)
-- [x] 2A. Wire clearCompleted (BUT-328)
-- [x] 2C. Remove Settings/Members stubs (BUT-328)
-- [x] 2D. Wire share actions (BUT-328)
-- [x] 3A. Fix snackbar no-op (BUT-321)
-- [x] 3B. Wire comment likes (BUT-321)
-
----
-
-## Archive: Sprint Security Hardening (completed 2026-04-08)
-
-- [x] A1. Fix auth route gaps (BUT-334)
-- [x] A2. Add proactive token refresh (BUT-315)
-- [x] A3. Fix non-atomic friend acceptance (BUT-310)
-- [x] B1. Fix SSRF DNS rebinding bypass (BUT-325)
-- [x] B2. Fix basic import rate limiter (BUT-326)
-- [x] B3. Fix Algolia indexing private recipes (BUT-330)
-- [x] B4. Fix GDPR deletion false-success (BUT-316)
-- [x] C1. Fix SocialModule eager dependency (BUT-333)
-- [x] C2. Fix ConnectivityMonitoringService singleton crash (BUT-318)
-
----
+- [x] A1-A4: Build blockers & backend stability (BUT-308, BUT-320, BUT-335, BUT-319)
+- [x] B1-B2: Data integrity (BUT-336, BUT-331)
+- [x] C1-C2: GDPR compliance (BUT-317, BUT-297)
+- [x] D1: Cooking mode UX (BUT-322)
+- [x] H2 A1-A2: GDPR + security tests (BUT-297, BUT-298)
+- [x] H2 B1-B3: Social bugs (BUT-313, BUT-311, BUT-312)
+- [x] H2 C1-C2: Performance + resource leaks (BUT-332, BUT-327)
 
 ## Archive: Previous Sprints
 
+- Security Hardening Part 2 (2026-04-08): BUT-329, BUT-328, BUT-321
+- Security Hardening (2026-04-08): BUT-334, BUT-315, BUT-310, BUT-325, BUT-326, BUT-330, BUT-316, BUT-333, BUT-318
 - Household + Menu Voting (2026-04-08): BUT-256, BUT-239
 - Bug Cleanup + Loading Polish (2026-04-07): BUT-292-296, BUT-244
 - Share & Discover (2026-04-07): BUT-219, BUT-242, BUT-272, BUT-271

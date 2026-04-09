@@ -1,0 +1,80 @@
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/notification_history_entry.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
+
+/// ViewModel for the in-app notification inbox.
+class NotificationsViewModel extends BaseViewModel {
+  final NotificationService _notificationService;
+
+  List<NotificationHistoryEntry> _entries = [];
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
+  List<NotificationHistoryEntry> get entries => _entries;
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
+  bool get isEmpty => _entries.isEmpty && !isLoading;
+
+  NotificationsViewModel({NotificationService? notificationService})
+      : _notificationService =
+            notificationService ?? ServiceLocator.get<NotificationService>();
+
+  /// Loads the first page of notification history.
+  Future<void> loadHistory() async {
+    await executeAsyncVoid(() async {
+      final results =
+          await _notificationService.getNotificationHistory(limit: 20);
+      _entries = results;
+      _hasMore = results.length == 20;
+    });
+  }
+
+  /// Loads the next page of notifications.
+  Future<void> loadMore() async {
+    if (_isLoadingMore || !_hasMore || _entries.isEmpty) return;
+
+    _isLoadingMore = true;
+    notifyListeners();
+
+    try {
+      final results = await _notificationService.getNotificationHistory(
+        limit: 20,
+        before: _entries.last.sentAt,
+      );
+      _entries = [..._entries, ...results];
+      _hasMore = results.length == 20;
+    } catch (e) {
+      AppLogger.warning('Failed to load more notifications: $e');
+    } finally {
+      _isLoadingMore = false;
+      notifyListeners();
+    }
+  }
+
+  /// Pull-to-refresh: reloads from the beginning.
+  Future<void> refresh() async {
+    _entries = [];
+    _hasMore = true;
+    notifyListeners();
+    await loadHistory();
+  }
+
+  /// Marks a notification as opened with optimistic local update.
+  void markAsOpened(String notificationId) {
+    final index =
+        _entries.indexWhere((e) => e.notificationId == notificationId);
+    if (index == -1) return;
+
+    _entries = List.of(_entries);
+    _entries[index] = _entries[index].copyWith(
+      opened: true,
+      openedAt: DateTime.now(),
+    );
+    notifyListeners();
+
+    // Fire-and-forget — failure is low-stakes (notification appears unread on next load)
+    _notificationService.markHistoryNotificationOpened(notificationId);
+  }
+}

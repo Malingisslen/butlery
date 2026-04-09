@@ -57,32 +57,32 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildAllergenSection(context, viewModel),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  _buildDietarySection(context, viewModel),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  _buildDisplaySection(context, viewModel),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  _buildActionsSection(context, viewModel),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  _buildRetagSection(context),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingS),
-                    child: AllergenDisclaimer(),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAllergenSection(context, viewModel),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildDietarySection(context, viewModel),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildDisplaySection(context, viewModel),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildActionsSection(context, viewModel),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildRetagSection(context),
+                      const SizedBox(height: AppDimensions.spacingL),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.paddingS),
+                        child: AllergenDisclaimer(),
+                      ),
+                      if (viewModel.hasError) ...[
+                        const SizedBox(height: AppDimensions.spacingL),
+                        _buildErrorMessage(context, viewModel.error!),
+                      ],
+                    ],
                   ),
-                  if (viewModel.hasError) ...[
-                    const SizedBox(height: AppDimensions.spacingL),
-                    _buildErrorMessage(context, viewModel.error!),
-                  ],
-                ],
+                ),
               ),
             ),
-          ),
-        ),
     );
   }
 
@@ -264,6 +264,22 @@ class _AllergenPreferencesContent extends StatelessWidget {
               subtitle: Text(context.l10n.allergenDisplayCoverageSubtitle),
               value: viewModel.showCoverage,
               onChanged: viewModel.setShowCoverage,
+              activeTrackColor:
+                  cs.primary.withValues(alpha: AppDimensions.opacityHalf),
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return cs.primary;
+                }
+                return null;
+              }),
+              contentPadding: EdgeInsets.zero,
+            ),
+            const Divider(),
+            SwitchListTile(
+              title: Text(context.l10n.allergenIncludeUnknownTitle),
+              subtitle: Text(context.l10n.allergenIncludeUnknownSubtitle),
+              value: viewModel.includeUnknownInMenu,
+              onChanged: viewModel.setIncludeUnknownInMenu,
               activeTrackColor:
                   cs.primary.withValues(alpha: AppDimensions.opacityHalf),
               thumbColor: WidgetStateProperty.resolveWith((states) {

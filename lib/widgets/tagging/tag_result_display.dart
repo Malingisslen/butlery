@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -122,22 +123,88 @@ class TagResultDisplay extends StatelessWidget {
         // Allergen badges
         ...allergens.map((allergen) {
           final status = tagResult.getAllergenStatus(allergen);
+          final decision = tagResult.getAllergenDecision(allergen);
           return AllergenStatusBadge(
             allergen: allergen,
             status: status,
             compact: compact,
+            onInfoTap: decision != null && !compact
+                ? () => _showDecisionSheet(context, decision)
+                : null,
           );
         }),
         // Dietary badges
         ...diets.map((diet) {
           final status = tagResult.getDietaryStatus(diet);
+          final decision = tagResult.getDietaryDecision(diet);
           return DietaryStatusBadge(
             diet: diet,
             status: status,
             compact: compact,
+            onInfoTap: decision != null && !compact
+                ? () => _showDecisionSheet(context, decision)
+                : null,
           );
         }),
       ],
+    );
+  }
+
+  static void _showDecisionSheet(BuildContext context, TagDecision decision) {
+    final cs = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.l10n.tagDecisionWhyTitle,
+              style: AppTextStyles.titleMedium,
+            ),
+            const SizedBox(height: AppDimensions.spacingL),
+            Text(
+              context.l10n.tagDecisionReason,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingXs),
+            Text(
+              decision.reason,
+              style: AppTextStyles.bodyMedium,
+            ),
+            if (decision.triggeringIngredients != null &&
+                decision.triggeringIngredients!.isNotEmpty) ...[
+              const SizedBox(height: AppDimensions.spacingL),
+              Text(
+                context.l10n.tagDecisionIngredients,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingXs),
+              ...decision.triggeringIngredients!.map(
+                (ingredient) => Padding(
+                  padding: const EdgeInsets.only(
+                    left: AppDimensions.paddingM,
+                    bottom: AppDimensions.spacingXs,
+                  ),
+                  child: Row(
+                    children: [
+                      Text('·  ', style: AppTextStyles.bodyMedium),
+                      Text(ingredient, style: AppTextStyles.bodyMedium),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+        ),
+      ),
     );
   }
 

@@ -8406,5 +8406,16 @@
   "statsWithoutPhoto": "Utan foto",
   "statsWithoutTime": "Utan tid",
   "statsIncomplete": "Ofullständiga",
-  "statsAllComplete": "Alla recept är kompletta!"
+  "statsAllComplete": "Alla recept är kompletta!",
+
+  "notificationsTitle": "Aviseringar",
+  "notificationsEmpty": "Inga aviseringar än",
+  "notificationsErrorLoad": "Kunde inte ladda aviseringar",
+
+  "allergenIncludeUnknownTitle": "Visa okänd allergenstatus",
+  "allergenIncludeUnknownSubtitle": "Inkludera recept med okänd allergenstatus i menyförslag",
+
+  "tagDecisionWhyTitle": "Varför denna tagg?",
+  "tagDecisionReason": "Orsak",
+  "tagDecisionIngredients": "Ingredienser"
 }

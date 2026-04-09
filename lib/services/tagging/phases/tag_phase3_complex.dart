@@ -13,13 +13,23 @@ import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 /// - Practical tags (kid-friendly, freezer-friendly, batch-cooking)
 /// - Sustainability tags (klimatsmart, budgetvänlig) [Sprint 2]
 class TagPhase3Complex {
-  // MED-4: Use centralized thresholds from TaggingThresholds instead of
-  // duplicating values here. These aliases are kept for local readability.
-  static int get _easyMaxIngredients => TaggingThresholds.easyMaxIngredients;
-  static int get _easyMaxMinutes => TaggingThresholds.easyMaxMinutes;
-  static int get _advancedMinIngredients =>
-      TaggingThresholds.advancedMinIngredients;
-  static int get _advancedMinMinutes => TaggingThresholds.advancedMinMinutes;
+  final int easyMaxIngredients;
+  final int easyMaxMinutes;
+  final int advancedMinIngredients;
+  final int advancedMinMinutes;
+  final double highProteinRatio;
+  final int spiceRichCount;
+  final int veggieRichCount;
+
+  TagPhase3Complex({
+    this.easyMaxIngredients = TaggingThresholds.easyMaxIngredients,
+    this.easyMaxMinutes = TaggingThresholds.easyMaxMinutes,
+    this.advancedMinIngredients = TaggingThresholds.advancedMinIngredients,
+    this.advancedMinMinutes = TaggingThresholds.advancedMinMinutes,
+    this.highProteinRatio = TaggingThresholds.highProteinRatio,
+    this.spiceRichCount = TaggingThresholds.spiceRichCount,
+    this.veggieRichCount = TaggingThresholds.veggieRichCount,
+  });
 
   /// Calculates Phase 3 tags.
   Phase3Result calculate(Phase1Result p1, Phase2Result p2, Recipe recipe) {
@@ -67,14 +77,14 @@ class TagPhase3Complex {
     final hasAdvancedTechniques = _hasAdvancedTechniques(recipe);
 
     // L2: Use named constants for difficulty thresholds
-    if (ingredientCount <= _easyMaxIngredients &&
-        time <= _easyMaxMinutes &&
+    if (ingredientCount <= easyMaxIngredients &&
+        time <= easyMaxMinutes &&
         !hasAdvancedTechniques) {
       return 'enkel';
     }
 
-    if (ingredientCount > _advancedMinIngredients ||
-        time > _advancedMinMinutes ||
+    if (ingredientCount > advancedMinIngredients ||
+        time > advancedMinMinutes ||
         hasAdvancedTechniques) {
       return 'avancerad';
     }
@@ -125,7 +135,8 @@ class TagPhase3Complex {
     return advancedKeywords.any((k) {
       // Word boundary matching to avoid false positives
       // (e.g., "emulsionsmaskinen" should not match "emulsion")
-      final pattern = RegExp('(?:^|[\\s,\\.])${RegExp.escape(k)}(?=[\\s,\\.]|\$)');
+      final pattern =
+          RegExp('(?:^|[\\s,\\.])${RegExp.escape(k)}(?=[\\s,\\.]|\$)');
       return pattern.hasMatch(instructions);
     });
   }
@@ -235,9 +246,8 @@ class TagPhase3Complex {
     if (proteinIngredients.isEmpty) return false;
     if (totalMatched == 0) return false;
 
-    // MED-5: Use centralized threshold instead of hardcoded value
     final proteinRatio = proteinIngredients.length / totalMatched;
-    return proteinRatio > TaggingThresholds.highProteinRatio;
+    return proteinRatio > highProteinRatio;
   }
 
   bool _isHighFiber(Phase1Result p1) {
@@ -250,12 +260,12 @@ class TagPhase3Complex {
 
   bool _isVeggieRich(Phase1Result p1) {
     final veggieCount = p1.lookup.getIngredientsInGroup('vegetable').length;
-    return veggieCount >= 3;
+    return veggieCount >= veggieRichCount;
   }
 
   bool _isSpiceRich(Phase1Result p1) {
     final spiceCount = p1.lookup.getIngredientsInGroup('spice').length;
-    return spiceCount >= 3;
+    return spiceCount >= spiceRichCount;
   }
 
   bool _isKidFriendly(Phase1Result p1, Phase2Result p2) {

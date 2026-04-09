@@ -12284,4 +12284,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsAllComplete => 'All recipes are complete!';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get notificationsEmpty => 'No notifications yet';
+
+  @override
+  String get notificationsErrorLoad => 'Could not load notifications';
+
+  @override
+  String get allergenIncludeUnknownTitle => 'Show unknown allergen status';
+
+  @override
+  String get allergenIncludeUnknownSubtitle =>
+      'Include recipes with unknown allergen status in menu suggestions';
+
+  @override
+  String get tagDecisionWhyTitle => 'Why this tag?';
+
+  @override
+  String get tagDecisionReason => 'Reason';
+
+  @override
+  String get tagDecisionIngredients => 'Ingredients';
 }

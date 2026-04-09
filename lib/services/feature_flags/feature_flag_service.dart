@@ -6,6 +6,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
 
 /// Feature flag service using Firebase Remote Config.
 /// Enables gradual rollouts, A/B testing, and kill switches without code deploys.
@@ -53,6 +54,16 @@ class FeatureFlagService {
 
     // Gradual Rollout Flags
     'new_search_rollout_percentage': 0,
+
+    // Tagging Thresholds (BUT-353) — single source of truth in TaggingThresholds
+    'tag_easy_max_ingredients': TaggingThresholds.easyMaxIngredients,
+    'tag_easy_max_minutes': TaggingThresholds.easyMaxMinutes,
+    'tag_advanced_min_ingredients': TaggingThresholds.advancedMinIngredients,
+    'tag_advanced_min_minutes': TaggingThresholds.advancedMinMinutes,
+    'tag_high_protein_ratio': TaggingThresholds.highProteinRatio,
+    'tag_season_threshold': 2,
+    'tag_spice_rich_count': TaggingThresholds.spiceRichCount,
+    'tag_veggie_rich_count': TaggingThresholds.veggieRichCount,
   };
 
   /// Initialize the feature flag service.
@@ -246,4 +257,14 @@ abstract final class FeatureFlags {
 
   // Gradual Rollout Flags
   static const newSearchRolloutPercentage = 'new_search_rollout_percentage';
+
+  // Tagging Thresholds
+  static const tagEasyMaxIngredients = 'tag_easy_max_ingredients';
+  static const tagEasyMaxMinutes = 'tag_easy_max_minutes';
+  static const tagAdvancedMinIngredients = 'tag_advanced_min_ingredients';
+  static const tagAdvancedMinMinutes = 'tag_advanced_min_minutes';
+  static const tagHighProteinRatio = 'tag_high_protein_ratio';
+  static const tagSeasonThreshold = 'tag_season_threshold';
+  static const tagSpiceRichCount = 'tag_spice_rich_count';
+  static const tagVeggieRichCount = 'tag_veggie_rich_count';
 }

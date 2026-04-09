@@ -27,6 +27,7 @@ class AllergenPreferencesViewModel extends BaseViewModel {
   bool get showOnCards => _preferences.showOnCards;
   bool get showOnDetail => _preferences.showOnDetail;
   bool get showCoverage => _preferences.showCoverage;
+  bool get includeUnknownInMenu => _preferences.includeUnknownInMenu;
 
   /// Checks if an allergen is being tracked.
   bool isAllergenTracked(String key) =>
@@ -75,6 +76,13 @@ class AllergenPreferencesViewModel extends BaseViewModel {
   /// Updates the show coverage setting.
   void setShowCoverage(bool value) {
     _preferences = _preferences.copyWith(showCoverage: value);
+    _hasChanges = true;
+    notifyListeners();
+  }
+
+  /// Updates whether unknown allergen status is included in menu suggestions.
+  void setIncludeUnknownInMenu(bool value) {
+    _preferences = _preferences.copyWith(includeUnknownInMenu: value);
     _hasChanges = true;
     notifyListeners();
   }

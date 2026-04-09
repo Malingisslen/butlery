@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/models/notification_history_entry.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -111,6 +112,33 @@ class FirebaseNotificationHistoryRepository
       });
     } catch (e) {
       AppLogger.warning('Failed to mark notification as opened: $e');
+    }
+  }
+
+  @override
+  Future<List<NotificationHistoryEntry>> getHistory(
+    String userId, {
+    int limit = 20,
+    DateTime? before,
+  }) async {
+    try {
+      Query<Map<String, dynamic>> query = collection
+          .where('userId', isEqualTo: userId)
+          .orderBy('sentAt', descending: true)
+          .limit(limit);
+
+      if (before != null) {
+        query = query.where('sentAt', isLessThan: Timestamp.fromDate(before));
+      }
+
+      final snapshot = await query.get();
+      return snapshot.docs
+          .map((doc) => NotificationHistoryEntry.fromFirestore(
+              {'id': doc.id, ...doc.data()}))
+          .toList();
+    } catch (e) {
+      AppLogger.error('Failed to fetch notification history', e);
+      return [];
     }
   }
 }

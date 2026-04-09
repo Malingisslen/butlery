@@ -1,8 +1,10 @@
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
@@ -42,9 +44,32 @@ class TagGenerator {
     TagPhase5Cuisine? phase5,
   })  : _phase1 = phase1 ?? TagPhase1Base(firebaseConfig: firebaseConfig),
         _phase2 = phase2 ?? TagPhase2Derived(),
-        _phase3 = phase3 ?? TagPhase3Complex(),
-        _phase4 = phase4 ?? TagPhase4Mood(),
+        _phase3 = phase3 ?? _createPhase3(),
+        _phase4 = phase4 ?? _createPhase4(),
         _phase5 = phase5 ?? TagPhase5Cuisine(firebaseConfig: firebaseConfig);
+
+  static TagPhase3Complex _createPhase3() {
+    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    if (flags == null) return TagPhase3Complex();
+    return TagPhase3Complex(
+      easyMaxIngredients: flags.getInt(FeatureFlags.tagEasyMaxIngredients),
+      easyMaxMinutes: flags.getInt(FeatureFlags.tagEasyMaxMinutes),
+      advancedMinIngredients:
+          flags.getInt(FeatureFlags.tagAdvancedMinIngredients),
+      advancedMinMinutes: flags.getInt(FeatureFlags.tagAdvancedMinMinutes),
+      highProteinRatio: flags.getDouble(FeatureFlags.tagHighProteinRatio),
+      spiceRichCount: flags.getInt(FeatureFlags.tagSpiceRichCount),
+      veggieRichCount: flags.getInt(FeatureFlags.tagVeggieRichCount),
+    );
+  }
+
+  static TagPhase4Mood _createPhase4() {
+    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    if (flags == null) return TagPhase4Mood();
+    return TagPhase4Mood(
+      seasonThreshold: flags.getInt(FeatureFlags.tagSeasonThreshold),
+    );
+  }
 
   /// Generates tags for a recipe given its ingredient lookup result.
   ///
