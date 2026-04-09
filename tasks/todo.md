@@ -18,10 +18,10 @@
 - [x] **C1. Accept or refactor 9 files exceeding 500-line limit** — review each file, refactor where beneficial, accept with rationale where appropriate. (BUT-302)
 
 ### Post-Sprint Steps
-- [ ] Run `dart analyze --fatal-infos`
-- [ ] Run relevant unit tests
-- [ ] Commit, push, PR, merge
-- [ ] Update Linear ticket states
+- [x] Run `dart analyze --fatal-infos`
+- [x] Run relevant unit tests (from previous sprint — no new test files for UI additions)
+- [x] Commit, push, PR, merge (9e688fd on main)
+- [x] Update Linear ticket states (BUT-342, BUT-343, BUT-305, BUT-304, BUT-346, BUT-302 → Done)
 
 ---
 

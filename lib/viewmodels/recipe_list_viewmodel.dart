@@ -292,8 +292,8 @@ class RecipeListViewModel extends ChangeNotifier {
       _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
         _invalidateCache();
         notifyListeners();
-        // Save non-empty queries to history after debounce
-        if (query.trim().isNotEmpty) {
+        // Save meaningful queries (3+ chars) to history after debounce
+        if (query.trim().length >= 3) {
           unawaited(_saveSearchToHistory(query.trim()));
         }
       });

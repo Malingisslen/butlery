@@ -325,7 +325,6 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       ),
                     ),
                   ),
-                  // Edit button — only visible for the comment author
                   if (widget.isOwnComment && widget.onEdit != null)
                     IconButton(
                       onPressed: widget.onEdit,
@@ -335,7 +334,6 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                         size: AppDimensions.iconSizeM,
                       ),
                     ),
-                  // Delete button — only visible for the comment author
                   if (widget.isOwnComment && widget.onDelete != null)
                     IconButton(
                       onPressed: widget.onDelete,

@@ -67,7 +67,6 @@ class NotificationsViewModel extends BaseViewModel {
         _entries.indexWhere((e) => e.notificationId == notificationId);
     if (index == -1) return;
 
-    _entries = List.of(_entries);
     _entries[index] = _entries[index].copyWith(
       opened: true,
       openedAt: DateTime.now(),

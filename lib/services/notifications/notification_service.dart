@@ -595,22 +595,12 @@ class NotificationService extends BaseService {
     int limit = 20,
     DateTime? before,
   }) async {
-    try {
-      return await _historyRepository.getHistory(_userId,
-          limit: limit, before: before);
-    } catch (e) {
-      AppLogger.error('Failed to fetch notification history', e);
-      return [];
-    }
+    return _historyRepository.getHistory(_userId, limit: limit, before: before);
   }
 
   /// Marks a notification as opened in history.
   Future<void> markHistoryNotificationOpened(String notificationId) async {
-    try {
-      await _historyRepository.markNotificationOpened(notificationId);
-    } catch (e) {
-      AppLogger.warning('Failed to mark notification opened: $e');
-    }
+    await _historyRepository.markNotificationOpened(notificationId);
   }
 
   /// Reset state for logout. Allows re-initialization for a new user session.

@@ -289,15 +289,21 @@ class _ReplyButton extends StatefulWidget {
 }
 
 class _ReplyButtonState extends State<_ReplyButton> {
+  late final MessagingService _messagingService;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _messagingService = ServiceLocator.get<MessagingService>();
+  }
 
   Future<void> _startConversation() async {
     if (_isLoading) return;
     setState(() => _isLoading = true);
 
     try {
-      final messagingService = ServiceLocator.get<MessagingService>();
-      final conversationId = await messagingService.startDirectConversation(
+      final conversationId = await _messagingService.startDirectConversation(
         otherUserId: widget.sharedRecipe.sharedByUserId,
         otherUserDisplayName: widget.sharedRecipe.sharedByDisplayName,
       );

@@ -1,7 +1,5 @@
 // lib/viewmodels/recipe/recipe_query_viewmodel.dart
 
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -17,7 +15,6 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/models/recipe/recipe_insights.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// Recipe Query ViewModel
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
@@ -38,12 +35,6 @@ class RecipeQueryViewModel extends ChangeNotifier
       ServiceLocator.tryGet<AnalyticsService>();
 
   String get serviceName => 'RecipeQueryViewModel';
-
-  // Search history
-  static const _searchHistoryKey = 'butlery_search_history';
-  static const _maxHistoryEntries = 10;
-  List<String> _searchHistory = [];
-  List<String> get searchHistory => List.unmodifiable(_searchHistory);
 
   // Current filter state
   String _searchQuery = '';
@@ -126,8 +117,6 @@ class RecipeQueryViewModel extends ChangeNotifier
             resultsCount: filteredRecipes.length,
             filtersApplied: hasActiveFilters ? _activeFilterNames : null,
           );
-          // Save to search history after debounce settles
-          unawaited(saveSearchToHistory(query));
         }
       },
       const Duration(milliseconds: 300),
@@ -146,43 +135,6 @@ class RecipeQueryViewModel extends ChangeNotifier
     _searchQuery = '';
     _invalidateCache();
     notifyListeners();
-  }
-
-  /// Load search history from SharedPreferences.
-  Future<void> loadSearchHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    _searchHistory = prefs.getStringList(_searchHistoryKey) ?? [];
-    notifyListeners();
-  }
-
-  /// Save a search query to history. Called when user submits a search.
-  Future<void> saveSearchToHistory(String query) async {
-    final trimmed = query.trim();
-    if (trimmed.isEmpty) return;
-    _searchHistory.remove(trimmed);
-    _searchHistory.insert(0, trimmed);
-    if (_searchHistory.length > _maxHistoryEntries) {
-      _searchHistory = _searchHistory.sublist(0, _maxHistoryEntries);
-    }
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_searchHistoryKey, _searchHistory);
-  }
-
-  /// Remove a single entry from search history.
-  Future<void> removeFromSearchHistory(String query) async {
-    _searchHistory.remove(query);
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_searchHistoryKey, _searchHistory);
-  }
-
-  /// Clear all search history.
-  Future<void> clearSearchHistory() async {
-    _searchHistory.clear();
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_searchHistoryKey);
   }
 
   /// Invalidate the filtered results cache
