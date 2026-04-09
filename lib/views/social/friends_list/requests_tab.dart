@@ -254,6 +254,15 @@ class RequestsTab extends StatelessWidget {
   ) async {
     final userId = viewModel.currentUserId;
     if (userId == null) return;
+    await shareInvitationLinkForUser(context, userId);
+  }
+
+  /// Shares an invitation link for a given userId.
+  /// Reusable from any context without requiring a FriendsViewModel.
+  static Future<void> shareInvitationLinkForUser(
+    BuildContext context,
+    String userId,
+  ) async {
     final subject = context.l10n.socialInviteSubject;
     try {
       final invitationId = const Uuid().v4();

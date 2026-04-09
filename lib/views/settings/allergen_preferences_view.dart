@@ -227,72 +227,61 @@ class _AllergenPreferencesContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            SwitchListTile(
-              title: Text(context.l10n.allergenDisplayOnCardsTitle),
-              subtitle: Text(context.l10n.allergenDisplayOnCardsSubtitle),
+            _buildSettingsSwitch(
+              cs: cs,
+              title: context.l10n.allergenDisplayOnCardsTitle,
+              subtitle: context.l10n.allergenDisplayOnCardsSubtitle,
               value: viewModel.showOnCards,
               onChanged: viewModel.setShowOnCards,
-              activeTrackColor:
-                  cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-              thumbColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return cs.primary;
-                }
-                return null;
-              }),
-              contentPadding: EdgeInsets.zero,
             ),
             const Divider(),
-            SwitchListTile(
-              title: Text(context.l10n.allergenDisplayOnDetailTitle),
-              subtitle: Text(context.l10n.allergenDisplayOnDetailSubtitle),
+            _buildSettingsSwitch(
+              cs: cs,
+              title: context.l10n.allergenDisplayOnDetailTitle,
+              subtitle: context.l10n.allergenDisplayOnDetailSubtitle,
               value: viewModel.showOnDetail,
               onChanged: viewModel.setShowOnDetail,
-              activeTrackColor:
-                  cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-              thumbColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return cs.primary;
-                }
-                return null;
-              }),
-              contentPadding: EdgeInsets.zero,
             ),
             const Divider(),
-            SwitchListTile(
-              title: Text(context.l10n.allergenDisplayCoverageTitle),
-              subtitle: Text(context.l10n.allergenDisplayCoverageSubtitle),
+            _buildSettingsSwitch(
+              cs: cs,
+              title: context.l10n.allergenDisplayCoverageTitle,
+              subtitle: context.l10n.allergenDisplayCoverageSubtitle,
               value: viewModel.showCoverage,
               onChanged: viewModel.setShowCoverage,
-              activeTrackColor:
-                  cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-              thumbColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return cs.primary;
-                }
-                return null;
-              }),
-              contentPadding: EdgeInsets.zero,
             ),
             const Divider(),
-            SwitchListTile(
-              title: Text(context.l10n.allergenIncludeUnknownTitle),
-              subtitle: Text(context.l10n.allergenIncludeUnknownSubtitle),
+            _buildSettingsSwitch(
+              cs: cs,
+              title: context.l10n.allergenIncludeUnknownTitle,
+              subtitle: context.l10n.allergenIncludeUnknownSubtitle,
               value: viewModel.includeUnknownInMenu,
               onChanged: viewModel.setIncludeUnknownInMenu,
-              activeTrackColor:
-                  cs.primary.withValues(alpha: AppDimensions.opacityHalf),
-              thumbColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return cs.primary;
-                }
-                return null;
-              }),
-              contentPadding: EdgeInsets.zero,
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSettingsSwitch({
+    required ColorScheme cs,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      title: Text(title),
+      subtitle: Text(subtitle),
+      value: value,
+      onChanged: onChanged,
+      activeTrackColor: cs.primary.withValues(alpha: AppDimensions.opacityHalf),
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return cs.primary;
+        return null;
+      }),
+      contentPadding: EdgeInsets.zero,
     );
   }
 
