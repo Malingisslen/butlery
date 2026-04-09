@@ -54,12 +54,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
     final vm = Provider.of<SocialRecipeViewModel>(context, listen: false);
     await vm.initialize();
-    if (_isExpanded) {
-      await vm.refreshComments(widget.recipe.id);
-      if (mounted) vm.startWatchingComments(widget.recipe.id);
-    } else {
-      // Collapsed: only fetch count for header badge, skip full comment load
-      await vm.fetchCommentCount(widget.recipe.id);
+    // Always load comments for header preview snippet
+    await vm.refreshComments(widget.recipe.id);
+    if (_isExpanded && mounted) {
+      vm.startWatchingComments(widget.recipe.id);
     }
   }
 
@@ -134,6 +132,18 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     Text(
                       context.l10n.socialCommentsCount(vm.commentCount!),
                       style: AppTextStyles.titleMedium,
+                    ),
+                  ],
+                  // Preview snippet when collapsed
+                  if (!_isExpanded && vm.topLevelComments.isNotEmpty) ...[
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      vm.topLevelComments.first.text,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ],
@@ -268,6 +278,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           isLiked: vm.hasLikedComment(c.id),
           isOwnComment: isOwn,
           onDelete: isOwn ? () => _deleteComment(c, vm) : null,
+          onEdit: isOwn ? () => _editComment(c, vm) : null,
           depth: depth,
           currentUserId: currentUserId,
           onReactionTap: currentUserId != null
@@ -295,6 +306,48 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     } catch (e) {
       if (!mounted) return;
       _showMessage(context.l10n.commentDeleteError, isError: true);
+    }
+  }
+
+  Future<void> _editComment(
+      RecipeComment comment, SocialRecipeViewModel vm) async {
+    final controller = TextEditingController(text: comment.text);
+    final newText = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.l10n.commentEditHint),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 4,
+          decoration: InputDecoration(
+            hintText: context.l10n.commentEditHint,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(context.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: Text(context.l10n.commonSave),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (newText == null || newText.isEmpty || newText == comment.text) return;
+    if (!mounted) return;
+
+    try {
+      await vm.editComment(widget.recipe.id, comment.id, newText);
+      if (mounted) {
+        _showMessage(context.l10n.commentEdited);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage(context.l10n.commentEditError, isError: true);
     }
   }
 

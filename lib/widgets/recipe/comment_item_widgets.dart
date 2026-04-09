@@ -23,6 +23,7 @@ class CommentItemWidgets {
     required VoidCallback onToggleLike,
     required VoidCallback? onShowLikes,
     VoidCallback? onDelete,
+    VoidCallback? onEdit,
     bool isOwnComment = false,
     bool isLiked = false,
     int depth = 0,
@@ -39,6 +40,7 @@ class CommentItemWidgets {
       onToggleLike: onToggleLike,
       onShowLikes: onShowLikes,
       onDelete: onDelete,
+      onEdit: onEdit,
       isOwnComment: isOwnComment,
       depth: depth,
       currentUserId: currentUserId,
@@ -171,6 +173,7 @@ class _CommentItemContent extends StatefulWidget {
   final VoidCallback onToggleLike;
   final VoidCallback? onShowLikes;
   final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
   final bool isOwnComment;
   final int depth;
   final String? currentUserId;
@@ -186,6 +189,7 @@ class _CommentItemContent extends StatefulWidget {
     required this.onToggleLike,
     required this.onShowLikes,
     this.onDelete,
+    this.onEdit,
     this.isOwnComment = false,
     this.depth = 0,
     this.currentUserId,
@@ -321,6 +325,16 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       ),
                     ),
                   ),
+                  // Edit button — only visible for the comment author
+                  if (widget.isOwnComment && widget.onEdit != null)
+                    IconButton(
+                      onPressed: widget.onEdit,
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: cs.onSurfaceVariant,
+                        size: AppDimensions.iconSizeM,
+                      ),
+                    ),
                   // Delete button — only visible for the comment author
                   if (widget.isOwnComment && widget.onDelete != null)
                     IconButton(
@@ -357,16 +371,40 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                 style: AppTextStyles.bodyLarge,
               ),
 
-              // Emoji reaction display
+              // Emoji reaction display or hint
               if (widget.currentUserId != null &&
-                  widget.onReactionTap != null &&
-                  comment.reactions.values.any((list) => list.isNotEmpty)) ...[
-                const SizedBox(height: AppDimensions.spacingS),
-                EmojiReactionDisplay(
-                  reactions: comment.reactions,
-                  currentUserId: widget.currentUserId!,
-                  onReactionTap: widget.onReactionTap!,
-                ),
+                  widget.onReactionTap != null) ...[
+                if (comment.reactions.values
+                    .any((list) => list.isNotEmpty)) ...[
+                  const SizedBox(height: AppDimensions.spacingS),
+                  EmojiReactionDisplay(
+                    reactions: comment.reactions,
+                    currentUserId: widget.currentUserId!,
+                    onReactionTap: widget.onReactionTap!,
+                  ),
+                ] else ...[
+                  const SizedBox(height: AppDimensions.spacingS),
+                  GestureDetector(
+                    onTap: _showReactionPicker,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.add_reaction_outlined,
+                          size: AppDimensions.iconSizeS,
+                          color: cs.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(
+                          context.l10n.commentReact,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
 
               // Like count (tappable to show who liked)

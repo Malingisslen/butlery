@@ -11,6 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -26,6 +27,12 @@ class RecipeListViewModel extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
   final TagEditingService _tagEditingService;
+
+  // Search history
+  static const _searchHistoryKey = 'butlery_search_history';
+  static const _maxHistoryEntries = 10;
+  List<String> _searchHistory = [];
+  List<String> get searchHistory => List.unmodifiable(_searchHistory);
 
   // State
   String _searchQuery = '';
@@ -285,8 +292,37 @@ class RecipeListViewModel extends ChangeNotifier {
       _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
         _invalidateCache();
         notifyListeners();
+        // Save non-empty queries to history after debounce
+        if (query.trim().isNotEmpty) {
+          unawaited(_saveSearchToHistory(query.trim()));
+        }
       });
     }
+  }
+
+  /// Load search history from SharedPreferences.
+  Future<void> loadSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    _searchHistory = prefs.getStringList(_searchHistoryKey) ?? [];
+    notifyListeners();
+  }
+
+  Future<void> _saveSearchToHistory(String query) async {
+    _searchHistory.remove(query);
+    _searchHistory.insert(0, query);
+    if (_searchHistory.length > _maxHistoryEntries) {
+      _searchHistory = _searchHistory.sublist(0, _maxHistoryEntries);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_searchHistoryKey, _searchHistory);
+  }
+
+  /// Remove a single entry from search history.
+  Future<void> removeFromSearchHistory(String query) async {
+    _searchHistory.remove(query);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_searchHistoryKey, _searchHistory);
   }
 
   /// Updates sorting criteria with intelligent toggle functionality and performance optimization.

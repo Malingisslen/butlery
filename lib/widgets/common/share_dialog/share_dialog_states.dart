@@ -1,8 +1,14 @@
 // lib/widgets/common/share_dialog/share_dialog_states.dart
 
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:uuid/uuid.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/services/deep_link_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -50,6 +56,36 @@ class ShareDialogStates {
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingLg,
+                vertical: AppDimensions.spacingL,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          OutlinedButton.icon(
+            onPressed: () async {
+              final userId =
+                  ServiceLocator.get<PermissionService>().currentUserId;
+              if (userId == null) return;
+              try {
+                final invitationId = const Uuid().v4();
+                final url = DeepLinkService.generateFriendInvitationLink(
+                  invitationId: invitationId,
+                  fromUserId: userId,
+                );
+                await SharePlus.instance.share(ShareParams(
+                    text: url, subject: context.l10n.socialInviteSubject));
+              } catch (e) {
+                if (!context.mounted) return;
+                SnackBarUtils.showError(context, context.l10n.errorGeneric);
+              }
+            },
+            icon: const Icon(Icons.share),
+            label: Text(context.l10n.socialInviteFriends),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              side: BorderSide(color: Theme.of(context).colorScheme.outline),
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingLg,
                 vertical: AppDimensions.spacingL,

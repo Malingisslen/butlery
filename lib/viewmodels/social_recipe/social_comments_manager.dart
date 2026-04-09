@@ -209,6 +209,26 @@ class SocialCommentsManager extends ChangeNotifier {
     }
   }
 
+  Future<void> editComment(
+      String recipeId, String commentId, String newContent) async {
+    try {
+      final success = await _recipeService.social.editComment(
+        commentId: commentId,
+        newContent: newContent,
+      );
+      if (success) {
+        await refreshComments(recipeId);
+        AppLogger.info('Comment edited successfully: $commentId');
+      } else {
+        throw Exception('Service returned false for comment edit');
+      }
+    } catch (e) {
+      _commentsError = AppLocale.current.commentEditError;
+      AppLogger.error('Failed to edit comment $commentId: $e');
+      _safeNotify();
+    }
+  }
+
   List<RecipeComment> getReplies(String parentCommentId) {
     return _comments
         .where((comment) => comment.parentCommentId == parentCommentId)

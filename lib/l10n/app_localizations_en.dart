@@ -1018,6 +1018,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchClearSearch => 'Clear search';
 
   @override
+  String get searchRecentSearches => 'Recent searches';
+
+  @override
   String get searchClearFilters => 'Clear filters';
 
   @override
@@ -6138,6 +6141,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sharedImported => 'Imported';
+
+  @override
+  String get sharedReplyToSender => 'Reply';
 
   @override
   String get sharedImportFailed => 'Import failed';
@@ -11578,6 +11584,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commentDeleteError => 'Could not delete the comment';
+
+  @override
+  String get commentEditHint => 'Edit your comment';
+
+  @override
+  String get commentEditError => 'Could not update the comment';
+
+  @override
+  String get commentEdited => 'Comment updated';
+
+  @override
+  String get commentReact => 'React';
 
   @override
   String get reactionUpdateError => 'Could not update reaction';

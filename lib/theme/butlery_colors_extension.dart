@@ -152,7 +152,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
   static const dark = ButleryColors(
     // Chat: brighter outgoing, darker incoming
     chatBubbleOutgoing: Color(0xFF3D6849), // forestGreenDark
-    chatBubbleIncoming: Color(0xFF2C2C2C), // dark surface
+    chatBubbleIncoming: Color(0xFF2D271F), // warm dark brown
     chatTextOutgoing: Color(0xFFFFFFFF),
     chatTextIncoming: Color(0xFFE0E0E0),
     // Status: lighter tones on dark (M3 tone 80 pattern)
@@ -191,7 +191,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     // Shared recipe
     sharedRecipeText: Color(0xFFBDBDBD),
     sharedRecipeIcon: Color(0xFF757575),
-    sharedRecipeBackground: Color(0xFF2C2C2C),
+    sharedRecipeBackground: Color(0xFF2D271F), // warm dark brown
   );
 
   @override

@@ -146,6 +146,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         _safeLoadRecipeData();
         // Initialize personal tags now that user is authenticated
         context.read<PersonalTagViewModel>().initialize();
+        // Load search history for recent search chips
+        context.read<RecipeListViewModel>().loadSearchHistory();
       }
     });
   }
@@ -443,6 +445,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   ),
                 );
               },
+              searchHistory: viewModel.searchHistory,
+              onHistoryTap: (query) => viewModel.updateSearch(query),
+              onHistoryRemove: viewModel.removeFromSearchHistory,
               showFilters: _showFilters,
               onToggleFilters: () =>
                   setState(() => _showFilters = !_showFilters),

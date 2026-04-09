@@ -2,14 +2,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
-import 'package:butlery/models/shared_recipe.dart';
-import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
-import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/social/shared_card_header.dart';
 
 /// SharedRecipeCard - Card for displaying shared recipes
@@ -265,7 +269,64 @@ class SharedRecipeCard {
             compact: true,
           ),
         ),
+        const SizedBox(width: AppDimensions.spacingS),
+        Expanded(
+          child: _ReplyButton(sharedRecipe: sharedRecipe),
+        ),
       ],
+    );
+  }
+}
+
+/// Stateful reply button — needs loading state for async conversation creation.
+class _ReplyButton extends StatefulWidget {
+  final SharedRecipe sharedRecipe;
+
+  const _ReplyButton({required this.sharedRecipe});
+
+  @override
+  State<_ReplyButton> createState() => _ReplyButtonState();
+}
+
+class _ReplyButtonState extends State<_ReplyButton> {
+  bool _isLoading = false;
+
+  Future<void> _startConversation() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final messagingService = ServiceLocator.get<MessagingService>();
+      final conversationId = await messagingService.startDirectConversation(
+        otherUserId: widget.sharedRecipe.sharedByUserId,
+        otherUserDisplayName: widget.sharedRecipe.sharedByDisplayName,
+      );
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ChatViewFacade(conversationId: conversationId),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      SnackBarUtils.showError(
+        context,
+        context.l10n.socialCouldNotStartConversation(e.toString()),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SocialBuilderComponents.socialActionButton(
+      text: context.l10n.sharedReplyToSender,
+      onPressed: _startConversation,
+      icon: _isLoading ? null : Icons.reply,
+      loading: _isLoading,
+      outlined: true,
+      compact: true,
     );
   }
 }

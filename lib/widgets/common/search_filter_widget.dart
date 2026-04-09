@@ -1,8 +1,10 @@
 // lib/widgets/common/search_filter_widget.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 // Focused Components
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
@@ -62,6 +64,11 @@ class SearchFilterWidget extends StatefulWidget {
   final int? resultCount;
   final bool showStats;
 
+  // Search history (OPTIONAL)
+  final List<String>? searchHistory;
+  final Function(String)? onHistoryTap;
+  final Function(String)? onHistoryRemove;
+
   // Search-only mode settings
   final bool searchOnly;
   final bool autofocus;
@@ -102,6 +109,11 @@ class SearchFilterWidget extends StatefulWidget {
     // Results (optional)
     this.resultCount,
     this.showStats = true,
+
+    // Search history (optional)
+    this.searchHistory,
+    this.onHistoryTap,
+    this.onHistoryRemove,
 
     // Search-only mode
     this.searchOnly = false,
@@ -235,6 +247,12 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
         // Search bar section
         _buildSearchSection(context),
 
+        // Search history chips (show when search is empty and history exists)
+        if (_searchController.text.isEmpty &&
+            widget.searchHistory != null &&
+            widget.searchHistory!.isNotEmpty)
+          _buildSearchHistoryChips(context),
+
         // Filter section with animation (only if filters are provided)
         if (_hasFilters()) _buildFilterSection(context),
 
@@ -308,6 +326,48 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
       hasActiveFilters: widget.hasActiveFilters ?? false,
       resultCount: widget.resultCount,
       activeFilterCount: _getActiveFilterCount(),
+    );
+  }
+
+  /// Recent search history chips
+  Widget _buildSearchHistoryChips(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.searchRecentSearches,
+            style: AppTextStyles.labelMedium.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingXs),
+          Wrap(
+            spacing: AppDimensions.spacingXs,
+            runSpacing: AppDimensions.spacingXs,
+            children: widget.searchHistory!.map((query) {
+              return InputChip(
+                label: Text(query, style: AppTextStyles.bodySmall),
+                onPressed: () {
+                  _searchController.text = query;
+                  widget.onHistoryTap?.call(query);
+                },
+                onDeleted: widget.onHistoryRemove != null
+                    ? () => widget.onHistoryRemove!(query)
+                    : null,
+                deleteIconColor: cs.onSurfaceVariant,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+        ],
+      ),
     );
   }
 

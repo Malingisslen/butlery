@@ -1,24 +1,36 @@
 # Sprint Backlog
 
-## Sprint: Feature & Polish — 2026-04-09
+## Sprint: Social Polish & Tech Debt — 2026-04-09
 
-### Agent A: flutter-developer — Notification Inbox
+### Agent A: flutter-developer — Social UX Quick Wins
 
-- [x] **A1. Add NotificationHistoryEntry model + repo/service getHistory** — `notification_history_entry.dart` (new), `notification_history_repository.dart`, `firebase_notification_history_repository.dart`, `notification_service.dart`. (BUT-348)
-- [x] **A2. Add NotificationsViewModel** — `notifications_viewmodel.dart` (new). (BUT-348)
-- [x] **A3. Add NotificationsView + route + DI** — `notifications_view.dart` (new), `routes.dart`, `app_router.dart`, l10n. (BUT-348)
+- [x] **A1. Fix share dialog dead end** — `share_dialog_states.dart`: add inline "Bjud in vänner" CTA when no friends. (BUT-342)
+- [x] **A2. Add reply shortcut on shared recipe cards** — `shared_recipe_card.dart`: add quick-reply action that opens conversation with sender. (BUT-343)
+- [x] **A3. Improve comment engagement** — `comments_section.dart`: inline preview of latest comment, edit capability, reaction hint icon. (BUT-305)
 
-### Agent B: flutter-developer — Quick Wins
+### Agent B: flutter-developer — Search & Theme Polish
 
-- [x] **B1. Add UNKNOWN allergen toggle** — `allergen_preferences_view.dart`, `allergen_preferences_viewmodel.dart`, l10n. (BUT-355)
-- [x] **B2. Add TagDecision audit trail UI** — `allergen_status_badge.dart`, `dietary_status_badge.dart`, `tag_result_display.dart`, l10n. (BUT-352)
-- [x] **B3. Wire tag thresholds to Remote Config** — `feature_flag_service.dart`, `tagging_thresholds.dart`, `tag_phase3_complex.dart`, `tag_generator.dart`. (BUT-353)
+- [x] **B1. Add search history + Algolia highlights** — `recipe_query_viewmodel.dart`, search widgets: persist recent queries, render `highlightedTitle`/`highlightedDescription`. (BUT-304)
+- [x] **B2. Handcraft warm dark color scheme** — `butlery_colors.dart`, theme files: replace auto-generated cold dark with warm dark brown (#1A1611). (BUT-346)
+
+### Agent C: code-reviewer — Tech Debt
+
+- [x] **C1. Accept or refactor 9 files exceeding 500-line limit** — review each file, refactor where beneficial, accept with rationale where appropriate. (BUT-302)
 
 ### Post-Sprint Steps
-- [x] Run `dart analyze --fatal-infos`
+- [ ] Run `dart analyze --fatal-infos`
 - [ ] Run relevant unit tests
 - [ ] Commit, push, PR, merge
 - [ ] Update Linear ticket states
+
+---
+
+## Archive: Sprint Feature & Polish (completed 2026-04-09)
+
+- [x] A1-A3: Notification inbox (BUT-348)
+- [x] B1: UNKNOWN allergen toggle (BUT-355)
+- [x] B2: TagDecision audit trail UI (BUT-352)
+- [x] B3: Tag thresholds → Remote Config (BUT-353)
 
 ---
 

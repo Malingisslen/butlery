@@ -1856,6 +1856,12 @@ abstract class AppLocalizations {
   /// **'Rensa sökning'**
   String get searchClearSearch;
 
+  /// No description provided for @searchRecentSearches.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senaste sökningar'**
+  String get searchRecentSearches;
+
   /// No description provided for @searchClearFilters.
   ///
   /// In sv, this message translates to:
@@ -10736,6 +10742,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Importerad'**
   String get sharedImported;
+
+  /// No description provided for @sharedReplyToSender.
+  ///
+  /// In sv, this message translates to:
+  /// **'Svara'**
+  String get sharedReplyToSender;
 
   /// No description provided for @sharedImportFailed.
   ///
@@ -19833,6 +19845,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte ta bort kommentaren'**
   String get commentDeleteError;
+
+  /// No description provided for @commentEditHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera din kommentar'**
+  String get commentEditHint;
+
+  /// No description provided for @commentEditError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera kommentaren'**
+  String get commentEditError;
+
+  /// No description provided for @commentEdited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar uppdaterad'**
+  String get commentEdited;
+
+  /// No description provided for @commentReact.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reagera'**
+  String get commentReact;
 
   /// No description provided for @reactionUpdateError.
   ///

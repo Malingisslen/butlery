@@ -1022,6 +1022,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get searchClearSearch => 'Rensa sökning';
 
   @override
+  String get searchRecentSearches => 'Senaste sökningar';
+
+  @override
   String get searchClearFilters => 'Rensa filter';
 
   @override
@@ -6146,6 +6149,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sharedImported => 'Importerad';
+
+  @override
+  String get sharedReplyToSender => 'Svara';
 
   @override
   String get sharedImportFailed => 'Import misslyckades';
@@ -11608,6 +11614,18 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get commentDeleteError => 'Kunde inte ta bort kommentaren';
+
+  @override
+  String get commentEditHint => 'Redigera din kommentar';
+
+  @override
+  String get commentEditError => 'Kunde inte uppdatera kommentaren';
+
+  @override
+  String get commentEdited => 'Kommentar uppdaterad';
+
+  @override
+  String get commentReact => 'Reagera';
 
   @override
   String get reactionUpdateError => 'Kunde inte uppdatera reaktion';

@@ -99,6 +99,11 @@ class SocialRecipeViewModel extends ChangeNotifier {
     await _commentsManager.deleteComment(recipeId, commentId);
   }
 
+  Future<void> editComment(
+      String recipeId, String commentId, String newContent) async {
+    await _commentsManager.editComment(recipeId, commentId, newContent);
+  }
+
   List<RecipeComment> getReplies(String parentCommentId) {
     return _commentsManager.getReplies(parentCommentId);
   }

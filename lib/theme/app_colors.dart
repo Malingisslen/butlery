@@ -234,6 +234,16 @@ class AppColors {
       brightness: Brightness.dark,
     );
     return base.copyWith(
+      // Warm dark surfaces — brown-tinted instead of cold auto-generated greens
+      surface: const Color(0xFF1A1611), // warm dark brown
+      onSurface: const Color(0xFFEDE0D4), // warm off-white
+      surfaceContainerLowest: const Color(0xFF12100C),
+      surfaceContainerLow: const Color(0xFF1E1A14),
+      surfaceContainer: const Color(0xFF231E17),
+      surfaceContainerHigh: const Color(0xFF2D271F),
+      surfaceContainerHighest: const Color(0xFF383127),
+      inverseSurface: const Color(0xFFEDE0D4),
+      onInverseSurface: const Color(0xFF1A1611),
       // Override secondary toward rust (seed ignores this)
       secondary: const Color(0xFFD4A88A), // rust tone 80
       onSecondary: const Color(0xFF3D2517),

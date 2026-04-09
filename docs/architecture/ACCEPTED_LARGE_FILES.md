@@ -1,6 +1,6 @@
 # Accepted Large Files
 
-**Last Updated**: March 2026 (full audit)
+**Last Updated**: April 2026 (sprint audit: 8 files accepted)
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
@@ -8,7 +8,7 @@ Files intentionally exceeding the 500-line guideline. Review this list before pr
 
 - **29 files refactored** across 8 batches (latest: personal_tag_rule.dart decomposition)
 - **8,879 lines reduced** total
-- **108 files currently >500 lines** in lib/ (documented below with reasons)
+- **116 files currently >500 lines** in lib/ (documented below with reasons)
 
 ## Generated / Data Files
 
@@ -105,6 +105,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `search_service.dart` | 505 | Recipe/content search service |
 | `social_recipe_operations.dart` | 502 | Social recipe sharing/rating ops |
 | `notification_service.dart` | 629 | Push notification dispatch |
+| `share_service.dart` | 520 | Multi-content type sharing — recipes, menus, shopping lists |
 
 ## Entry Points
 
@@ -145,6 +146,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `mina_recept_view.dart` | 687 | Main recipe list screen |
 | `recipe_card.dart` | 674 | Recipe list card widget |
 | `adaptive_icon.dart` | 652 | Platform-adaptive icon widget |
+| `di_container.dart` | 569 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 640 | DI registrations for content layer |
 | `edit_recipe_view.dart` | 639 | Recipe editing screen |
 | `user_profile_edit_view.dart` | 634 | User profile editing screen |
@@ -177,6 +179,12 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `social_collaborative_components.dart` | 504 | Collaborative social UI components |
 | `menu_preview_view.dart` | 504 | Shared menu preview screen |
 | `chat_action_handler.dart` | 503 | Chat action handling |
+| `smart_import_viewmodel.dart` | 611 | Smart import pipeline VM — delegates to ImportManager |
+| `shopping_list_content.dart` | 604 | Shopping list UI — drag/reorder, categories, collaborative |
+| `cooking_mode_view.dart` | 585 | Full cooking mode screen — timer, steps, landscape layout |
+| `unified_shopping_viewmodel.dart` | 557 | Shopping list VM — personal + collaborative, sync |
+| `recipe_query_viewmodel.dart` | 600 | Recipe search/filter/sort VM with history |
+| `menu_content_widgets.dart` | 597 | Menu display widgets — recipe slots, voting, actions |
 
 ## Categories
 
