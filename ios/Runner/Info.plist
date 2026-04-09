@@ -55,7 +55,7 @@
 	<string>Butlery behöver tillgång till bildgalleriet för att spara bilder av recept</string>
 
 	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
+	<true/>
 
 	<!-- Deep Link Configuration -->
 	<key>CFBundleURLTypes</key>

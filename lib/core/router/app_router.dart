@@ -47,6 +47,7 @@ import 'package:butlery/views/notifications/notifications_view.dart';
 
 // Legal
 import 'package:butlery/views/legal/terms_of_service_view.dart';
+import 'package:butlery/views/legal/privacy_policy_view.dart';
 import 'package:butlery/views/legal/community_guidelines_view.dart';
 
 // Help
@@ -308,6 +309,10 @@ class AppRouter {
 
         case Routes.termsOfService:
           return _buildRoute(const TermsOfServiceView(), settings,
+              RouteAnimationType.slideFromRight);
+
+        case Routes.privacyPolicy:
+          return _buildRoute(const PrivacyPolicyView(), settings,
               RouteAnimationType.slideFromRight);
 
         case Routes.communityGuidelines:

@@ -255,15 +255,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel.analytics,
           viewModel.setAnalytics,
         ),
-        const SizedBox(height: AppDimensions.spacingL),
-        _buildConsentToggle(
-          viewModel,
-          context.l10n.consentMarketing,
-          context.l10n.consentMarketingDescription,
-          Icons.mail_rounded,
-          viewModel.marketing,
-          viewModel.setMarketing,
-        ),
+        // Marketing toggle hidden — no marketing system implemented yet.
+        // Field preserved in model for Firestore backwards compatibility.
         const SizedBox(height: AppDimensions.spacingL),
         _buildConsentToggle(
           viewModel,

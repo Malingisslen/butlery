@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 21, 2025
-**Version:** 1.0.0
+**Last updated:** April 9, 2026
+**Version:** 1.1.0
 
 ---
 
@@ -45,7 +45,6 @@ We collect the following types of personal data when you use Butlery:
 
 ### 3.3 Information from third parties
 
-- **Authentication:** If you log in via Google or Apple, we receive basic profile information
 - **Imported recipes:** Recipes you import from external websites
 
 ---
@@ -122,14 +121,21 @@ We share your personal data with the following third parties:
 - **Transfer:** USA (EU-US Data Privacy Framework)
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
-**Mistral AI (Mistral AI SAS, France)**
+**Google Gemini API (Google LLC, USA)**
 - **Purpose:** AI-based recipe extraction and structuring (OCR and text analysis)
 - **Legal basis:** Consent (AI processing requires explicit consent)
-- **Transfer:** Within EU/EEA (France)
-- **Policy:** [https://mistral.ai/privacy](https://mistral.ai/privacy)
+- **Transfer:** USA (EU-US Data Privacy Framework). Processing initiated from EU servers (Belgium).
+- **Policy:** [https://ai.google.dev/terms](https://ai.google.dev/terms)
+- **Note:** Images submitted for OCR processing may contain personal information visible in the photograph. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
 
-**Algolia (Algolia Inc., USA/EU)**
-- **Purpose:** Search indexing and recipe search
+**OCR.space (a]o Software GmbH, Austria/EU)**
+- **Purpose:** Optical character recognition for recipe photo import
+- **Legal basis:** Consent (AI processing requires explicit consent)
+- **Transfer:** Within EU/EEA
+- **Policy:** [https://ocr.space/privacypolicy](https://ocr.space/privacypolicy)
+
+**Algolia (Algolia Inc., USA/EU)** *(currently inactive — available via feature flag)*
+- **Purpose:** Search indexing and recipe search (when enabled)
 - **Legal basis:** Legitimate interest (necessary for the service's search functionality)
 - **Transfer:** EU data center (France), with USA backup under EU-US Data Privacy Framework
 - **Policy:** [https://www.algolia.com/policies/privacy/](https://www.algolia.com/policies/privacy/)
@@ -152,7 +158,7 @@ We may share information if:
 
 ## 7. Data transfers outside EU/EEA
 
-Some of our service providers (Google Firebase, Google Analytics) are located in the USA. We ensure that:
+Some of our service providers (Google Firebase, Google Analytics, Google Gemini API) are located in the USA. We ensure that:
 
 - Transfers are made according to the EU-US Data Privacy Framework
 - Appropriate safeguards are in place
@@ -168,11 +174,11 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Recipes and menus | Until you delete them or the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
 | Analytics data | 14 months (Google Analytics standard) | Consent |
-| Consent logs | 3 years after termination | GDPR requirement (accountability) |
+| Consent logs | Until account deletion (retained for accountability) | GDPR requirement (Art. 7.1) |
 | Security logs | 90 days | Legitimate interest |
-| Deleted accounts | 30 days (backup retention) | Technical necessity |
+| Deletion audit logs | 180 days | GDPR accountability |
 
-After the storage period, data is automatically deleted or anonymized.
+After the storage period, data is automatically deleted or anonymized. Account deletion is immediate and irreversible.
 
 ---
 
@@ -226,7 +232,7 @@ We take appropriate technical and organizational measures to protect your person
 
 ### 10.1 Technical measures
 
-- Password encryption (bcrypt)
+- Industry-standard password hashing (Firebase Auth)
 - HTTPS/TLS encryption during transfer
 - Encryption of data at rest (Firebase)
 - Secure authentication (Firebase Auth)
@@ -249,20 +255,15 @@ If a data breach occurs, we will:
 
 ---
 
-## 11. Cookies and similar technologies
+## 11. Local storage and similar technologies
 
-### 11.1 Necessary cookies (always active)
+Butlery is a mobile application and does not use browser cookies. Instead, we use:
 
-- **Authentication:** Keep you logged in
-- **Security:** Prevent CSRF attacks
-- **Preferences:** Save basic settings
+- **Authentication tokens:** Secure tokens managed by Firebase Auth to keep you logged in
+- **Encrypted local database:** Your recipes and data are cached locally using AES-256 encrypted storage (SQLCipher) for offline access
+- **Secure storage:** Sensitive data (encryption keys) is stored in platform-provided secure storage (iOS Keychain / Android Keystore)
 
-### 11.2 Optional cookies (require consent)
-
-- **Analytics:** Google Analytics for usage statistics
-- **Functionality:** Save advanced preferences
-
-You can manage cookie consent in: **Profile > Account Management > Manage consents**
+You can manage data processing consent in: **Profile > Account Management > Manage consents**
 
 ---
 
@@ -284,11 +285,11 @@ We may update this policy when:
 - Our data processing changes
 
 For significant changes:
-- We will notify you via email
 - We will show a notification in the app
+- We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 21, 2025
+**Last change:** April 9, 2026
 **Version history:** Available upon request
 
 ---

@@ -93,6 +93,7 @@ import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -261,7 +262,8 @@ Future<void> _enableCollectionIfConsented() async {
     if (!bootstrap.isInitialized) return;
 
     final consentService = bootstrap.container.get<ConsentService>();
-    final hasConsent = await consentService.hasConsent('analytics');
+    final hasConsent =
+        await consentService.hasConsent(ConsentPurpose.analytics);
 
     await Future.wait([
       FirebaseCrashlytics.instance

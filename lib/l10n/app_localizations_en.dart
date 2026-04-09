@@ -11865,6 +11865,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'You must confirm your age to create an account';
 
   @override
+  String get authTermsAcceptPrefix => 'I accept the ';
+
+  @override
+  String get authTermsAcceptMiddle => ' and ';
+
+  @override
+  String get authTermsAcceptRequired =>
+      'You must accept the terms to create an account';
+
+  @override
   String get reportContent => 'Report';
 
   @override

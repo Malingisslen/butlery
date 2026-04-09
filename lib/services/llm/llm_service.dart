@@ -1,4 +1,4 @@
-/// LLM service for recipe extraction using Mistral AI via Cloud Functions.
+/// LLM service for recipe extraction using Google Gemini via Cloud Functions.
 ///
 /// This service provides:
 /// - Text-to-recipe extraction (structureRecipe)
@@ -19,11 +19,12 @@ import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Service for LLM-based recipe extraction.
 ///
-/// Uses Firebase Cloud Functions to call Mistral AI securely.
+/// Uses Firebase Cloud Functions to call Google Gemini securely.
 /// API keys are stored in Firebase Secrets, never exposed to client.
 class LlmService extends BaseService {
   @override
@@ -37,7 +38,7 @@ class LlmService extends BaseService {
   static const _region = 'europe-west1';
 
   /// Consent purpose key for AI processing (GDPR Art. 5(1)(b))
-  static const _consentPurpose = 'aiProcessing';
+  static const _consentPurpose = ConsentPurpose.aiProcessing;
 
   LlmService({
     required ImportRateLimiter rateLimiter,

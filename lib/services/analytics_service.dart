@@ -7,6 +7,7 @@
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/analytics/trackers/trackers.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
@@ -70,15 +71,8 @@ class AnalyticsService extends BaseService {
   }
 
   Future<bool> _hasAnalyticsConsent() async {
-    if (_consentService == null) return false;
-    try {
-      return await _consentService!.hasConsent('analytics');
-    } catch (e) {
-      app_logger.AppLogger.warning(
-        '[AnalyticsService] Failed to check consent, defaulting to false: $e',
-      );
-      return false;
-    }
+    return ConsentService.checkSafely(_consentService, ConsentPurpose.analytics,
+        logTag: 'AnalyticsService');
   }
 
   @override

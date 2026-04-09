@@ -27,7 +27,7 @@ Verify Linear MCP is connected (test `list_issues`). If not: "Linear MCP not con
 Before any subcommand, gather these three inputs in parallel:
 
 ### Input 1: Linear Backlog
-Fetch open issues via Linear MCP `list_issues` (states: Backlog, Todo, In Progress, Triage).
+Fetch open issues via Linear MCP `list_issues` using `team: "Butlery"` (NOT `project`) for each state: Backlog, Todo, In Progress, Triage.
 For each issue extract: ID, title, priority, state, labels (type + area), due date.
 
 ### Input 2: Current Sprint Status

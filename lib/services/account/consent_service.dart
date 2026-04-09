@@ -106,30 +106,10 @@ class ConsentService extends BaseService {
   }
 
   /// Check if user has granted consent for a specific purpose
-  Future<bool> hasConsent(String purpose) async {
+  Future<bool> hasConsent(ConsentPurpose purpose) async {
     final consent = await getUserConsent();
     if (consent == null) return false;
-
-    switch (purpose) {
-      case 'analytics':
-        return consent.purposes.analytics;
-      case 'marketing':
-        return consent.purposes.marketing;
-      case 'socialFeatures':
-        return consent.purposes.socialFeatures;
-      case 'pushNotifications':
-        return consent.purposes.pushNotifications;
-      case 'essentialServices':
-        return consent.purposes.essentialServices;
-      case 'dataProcessing':
-        return consent.purposes.dataProcessing;
-      case 'aiProcessing':
-        return consent.purposes.aiProcessing;
-      default:
-        app_logger.AppLogger.warning(
-            '[$_logTag] Unknown consent purpose: $purpose');
-        return false;
-    }
+    return consent.purposes[purpose];
   }
 
   /// Check if user needs to renew consent (version changed)
@@ -216,4 +196,21 @@ class ConsentService extends BaseService {
 
   /// Get current consent version
   String get currentConsentVersion => _currentConsentVersion;
+
+  /// Fail-closed consent check for callers that hold a nullable ConsentService.
+  /// Returns false if service is null, consent is missing, or any error occurs.
+  static Future<bool> checkSafely(
+    ConsentService? service,
+    ConsentPurpose purpose, {
+    String logTag = 'ConsentCheck',
+  }) async {
+    if (service == null) return false;
+    try {
+      return await service.hasConsent(purpose);
+    } catch (e) {
+      app_logger.AppLogger.warning(
+          '[$logTag] Failed to check ${purpose.name} consent, denying: $e');
+      return false;
+    }
+  }
 }

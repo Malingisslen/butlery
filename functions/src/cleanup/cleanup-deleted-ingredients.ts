@@ -19,7 +19,7 @@ const BATCH_SIZE = 500; // Firestore batch limit
  * Weekly cleanup of soft-deleted ingredients
  *
  * Schedule: 0 4 * * 1 (Weekly on Monday at 4 AM UTC)
- * Region: europe-west1 (Stockholm)
+ * Region: europe-west1 (Belgium)
  *
  * Actions:
  * 1. Find ingredients with status='deleted' older than grace period

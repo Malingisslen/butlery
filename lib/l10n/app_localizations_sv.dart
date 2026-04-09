@@ -11895,6 +11895,16 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du måste bekräfta din ålder för att skapa ett konto';
 
   @override
+  String get authTermsAcceptPrefix => 'Jag accepterar ';
+
+  @override
+  String get authTermsAcceptMiddle => ' och ';
+
+  @override
+  String get authTermsAcceptRequired =>
+      'Du måste acceptera villkoren för att skapa ett konto';
+
+  @override
   String get reportContent => 'Rapportera';
 
   @override

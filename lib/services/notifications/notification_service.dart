@@ -12,6 +12,8 @@ import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/modules/notification_content_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_preference_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_offline_manager.dart';
@@ -150,10 +152,11 @@ class NotificationService extends BaseService {
         AppLogger.info(
             '🔔 Initializing NotificationService coordinator for user: $_userId');
 
-        // Initialize FCM service
+        // Initialize FCM service (consent-gated for permissions/token)
         await FCMService.initialize(
           onMessageReceived: _handleForegroundMessage,
           onMessageOpenedApp: _handleMessageOpened,
+          consentService: ServiceLocator.tryGet<ConsentService>(),
         );
 
         // Initialize FCM token manager (may be null if Firebase unavailable)

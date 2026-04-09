@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 21 oktober 2025
-**Version:** 1.0.0
+**Senast uppdaterad:** 9 april 2026
+**Version:** 1.1.0
 
 ---
 
@@ -45,7 +45,6 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 
 ### 3.3 Information från tredje part
 
-- **Autentisering:** Om du loggar in via Google eller Apple får vi grundläggande profilinformation
 - **Importerade recept:** Recept du importerar från externa webbplatser
 
 ---
@@ -122,14 +121,21 @@ Vi delar dina personuppgifter med följande tredje parter:
 - **Överföring:** USA (EU-USA Data Privacy Framework)
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
-**Mistral AI (Mistral AI SAS, Frankrike)**
+**Google Gemini API (Google LLC, USA)**
 - **Syfte:** AI-baserad receptextrahering och strukturering (OCR och textanalys)
 - **Rättslig grund:** Samtycke (AI-bearbetning kräver uttryckligt samtycke)
-- **Överföring:** Inom EU/EES (Frankrike)
-- **Policy:** [https://mistral.ai/privacy](https://mistral.ai/privacy)
+- **Överföring:** USA (EU-USA Data Privacy Framework). Bearbetning initieras från EU-servrar (Belgien).
+- **Policy:** [https://ai.google.dev/terms](https://ai.google.dev/terms)
+- **Obs:** Bilder som skickas för OCR-bearbetning kan innehålla personuppgifter som syns i fotografiet. Text rensas från kända PII-mönster före bearbetning; bilder kan inte rensas.
 
-**Algolia (Algolia Inc., USA/EU)**
-- **Syfte:** Sökindexering och receptsökning
+**OCR.space (a]o Software GmbH, Österrike/EU)**
+- **Syfte:** Optisk teckenigenkänning för receptfotoimport
+- **Rättslig grund:** Samtycke (AI-bearbetning kräver uttryckligt samtycke)
+- **Överföring:** Inom EU/EES
+- **Policy:** [https://ocr.space/privacypolicy](https://ocr.space/privacypolicy)
+
+**Algolia (Algolia Inc., USA/EU)** *(för närvarande inaktiv — tillgänglig via funktionsflagga)*
+- **Syfte:** Sökindexering och receptsökning (när aktiverad)
 - **Rättslig grund:** Berättigat intresse (nödvändigt för tjänstens sökfunktion)
 - **Överföring:** EU-datacenter (Frankrike), med USA-backup under EU-USA Data Privacy Framework
 - **Policy:** [https://www.algolia.com/policies/privacy/](https://www.algolia.com/policies/privacy/)
@@ -152,7 +158,7 @@ Vi kan dela information om:
 
 ## 7. Dataöverföringar utanför EU/EES
 
-Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är belägna i USA. Vi säkerställer att:
+Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics, Google Gemini API) är belägna i USA. Vi säkerställer att:
 
 - Överföringar sker enligt EU-USA Data Privacy Framework
 - Lämpliga skyddsåtgärder finns på plats
@@ -168,11 +174,11 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
 | Meddelanden | Tills du eller mottagaren raderar dem | Fullgörande av avtal |
 | Analyticsdata | 14 månader (Google Analytics standard) | Samtycke |
-| Samtycksloggar | 3 år efter upphörande | GDPR-krav (ansvarsskyldighet) |
+| Samtycksloggar | Tills kontot raderas (bevaras för ansvarsskyldighet) | GDPR-krav (Art. 7.1) |
 | Säkerhetsloggar | 90 dagar | Berättigat intresse |
-| Raderade konton | 30 dagar (backup retention) | Teknisk nödvändighet |
+| Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
 
-Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt.
+Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig.
 
 ---
 
@@ -216,7 +222,7 @@ Du har följande rättigheter enligt GDPR:
 - **Sverige:** Integritetsskyddsmyndigheten (IMY)
   [https://www.imy.se](https://www.imy.se)
   E-post: imy@imy.se
-  Telefon: 08-657 61 00
+  Telefon: +46 8-657 61 00
 
 ---
 
@@ -226,7 +232,7 @@ Vi vidtar lämpliga tekniska och organisatoriska åtgärder för att skydda dina
 
 ### 10.1 Tekniska åtgärder
 
-- ✅ Kryptering av lösenord (bcrypt)
+- ✅ Branschstandard lösenordshashning (Firebase Auth)
 - ✅ HTTPS/TLS-kryptering vid överföring
 - ✅ Kryptering av data i vila (Firebase)
 - ✅ Säker autentisering (Firebase Auth)
@@ -249,20 +255,15 @@ Om ett dataintrång inträffar kommer vi:
 
 ---
 
-## 11. Cookies och liknande teknologier
+## 11. Lokal lagring och liknande teknologier
 
-### 11.1 Nödvändiga cookies (alltid aktivt)
+Butlery är en mobilapplikation och använder inte webbläsarcookies. Istället använder vi:
 
-- **Autentisering:** Hålla dig inloggad
-- **Säkerhet:** Förhindra CSRF-attacker
-- **Preferenser:** Spara grundläggande inställningar
+- **Autentiseringstoken:** Säkra token hanterade av Firebase Auth för att hålla dig inloggad
+- **Krypterad lokal databas:** Dina recept och data cachas lokalt med AES-256-krypterad lagring (SQLCipher) för offlineåtkomst
+- **Säker lagring:** Känslig data (krypteringsnycklar) lagras i plattformens säkra lagring (iOS Keychain / Android Keystore)
 
-### 11.2 Valfria cookies (kräver samtycke)
-
-- **Analytics:** Google Analytics för användningsstatistik
-- **Funktionalitet:** Spara avancerade preferenser
-
-Du kan hantera cookiesamtycke i: **Profil → Kontohantering → Hantera samtycken**
+Du kan hantera samtycke för databehandling i: **Profil → Kontohantering → Hantera samtycken**
 
 ---
 
@@ -284,11 +285,11 @@ Vi kan uppdatera denna policy när:
 - Vår databehandling ändras
 
 Vid väsentliga ändringar:
-- 📧 Vi meddelar dig via e-post
 - 🔔 Vi visar en notifikation i appen
+- 📱 Vi meddelar dig via push-notis (om aktiverad)
 - ✅ Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 21 oktober 2025
+**Senaste ändring:** 9 april 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

@@ -1,6 +1,6 @@
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/services/account/consent_service.dart';
-import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/models/account/user_consent.dart';
 
 /// Base class for analytics event trackers providing GDPR consent checking
 abstract class BaseTracker {
@@ -17,18 +17,8 @@ abstract class BaseTracker {
   /// Check if user has granted analytics consent
   /// Returns false if consent not yet configured (privacy-by-default, GDPR Art.25)
   Future<bool> hasAnalyticsConsent() async {
-    if (_consentService == null) {
-      return false;
-    }
-
-    try {
-      return await _consentService!.hasConsent('analytics');
-    } catch (e) {
-      app_logger.AppLogger.warning(
-        '[BaseTracker] Failed to check consent, defaulting to false: $e',
-      );
-      return false;
-    }
+    return ConsentService.checkSafely(_consentService, ConsentPurpose.analytics,
+        logTag: 'BaseTracker');
   }
 
   /// Log generic event through repository

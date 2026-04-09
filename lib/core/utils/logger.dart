@@ -416,7 +416,7 @@ class AppLogger {
   /// **Usage Examples:**
   /// ```dart
   /// AppLogger.analytics('cache_hit', {'domain': 'example.com', 'ageInDays': 5});
-  /// AppLogger.analytics('llm_extraction_success', {'tier': 3, 'model': 'pixtral'});
+  /// AppLogger.analytics('llm_extraction_success', {'tier': 3, 'model': 'gemini'});
   /// ```
   static void analytics(String eventName, [Map<String, dynamic>? data]) {
     final dataStr = data != null ? ' $data' : '';

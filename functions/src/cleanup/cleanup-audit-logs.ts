@@ -40,7 +40,7 @@ const MINIMUM_RETENTION_DAYS = 30; // Safety minimum
  * Weekly cleanup of old audit logs
  *
  * Schedule: 0 3 * * 0 (Weekly on Sunday at 3 AM UTC)
- * Region: europe-west1 (Stockholm) - same region as main functions
+ * Region: europe-west1 (Belgium) - same region as main functions
  *
  * Batch processing:
  * - Queries logs older than retention period

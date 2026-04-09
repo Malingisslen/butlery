@@ -256,7 +256,7 @@ void main() {
             .thenAnswer((_) async => testUserConsent);
 
         // Act
-        final result = await service.hasConsent('analytics');
+        final result = await service.hasConsent(ConsentPurpose.analytics);
 
         // Assert
         expect(result, isTrue);
@@ -268,7 +268,7 @@ void main() {
             .thenAnswer((_) async => testUserConsent);
 
         // Act
-        final result = await service.hasConsent('marketing');
+        final result = await service.hasConsent(ConsentPurpose.marketing);
 
         // Assert
         expect(result, isFalse);
@@ -280,7 +280,7 @@ void main() {
             .thenAnswer((_) async => testUserConsent);
 
         // Act
-        final result = await service.hasConsent('socialFeatures');
+        final result = await service.hasConsent(ConsentPurpose.socialFeatures);
 
         // Assert
         expect(result, isTrue);
@@ -292,7 +292,8 @@ void main() {
             .thenAnswer((_) async => testUserConsent);
 
         // Act
-        final result = await service.hasConsent('pushNotifications');
+        final result =
+            await service.hasConsent(ConsentPurpose.pushNotifications);
 
         // Assert
         expect(result, isFalse);
@@ -304,7 +305,8 @@ void main() {
             .thenAnswer((_) async => testUserConsent);
 
         // Act
-        final result = await service.hasConsent('essentialServices');
+        final result =
+            await service.hasConsent(ConsentPurpose.essentialServices);
 
         // Assert
         expect(result, isTrue);
@@ -316,22 +318,10 @@ void main() {
             .thenAnswer((_) async => testUserConsent);
 
         // Act
-        final result = await service.hasConsent('dataProcessing');
+        final result = await service.hasConsent(ConsentPurpose.dataProcessing);
 
         // Assert
         expect(result, isTrue);
-      });
-
-      test('should return false for unknown consent purpose', () async {
-        // Arrange
-        when(() => mockConsentRepository.getUserConsent(testUserId))
-            .thenAnswer((_) async => testUserConsent);
-
-        // Act
-        final result = await service.hasConsent('unknownPurpose');
-
-        // Assert
-        expect(result, isFalse);
       });
 
       test('should return false when no consent exists', () async {
@@ -340,7 +330,7 @@ void main() {
             .thenAnswer((_) async => null);
 
         // Act
-        final result = await service.hasConsent('analytics');
+        final result = await service.hasConsent(ConsentPurpose.analytics);
 
         // Assert
         expect(result, isFalse);
@@ -594,12 +584,14 @@ void main() {
             .thenAnswer((_) async => testUserConsent);
 
         // Act & Assert - Check all 6 purposes
-        expect(await service.hasConsent('essentialServices'), isTrue);
-        expect(await service.hasConsent('dataProcessing'), isTrue);
-        expect(await service.hasConsent('analytics'), isTrue);
-        expect(await service.hasConsent('marketing'), isFalse);
-        expect(await service.hasConsent('socialFeatures'), isTrue);
-        expect(await service.hasConsent('pushNotifications'), isFalse);
+        expect(
+            await service.hasConsent(ConsentPurpose.essentialServices), isTrue);
+        expect(await service.hasConsent(ConsentPurpose.dataProcessing), isTrue);
+        expect(await service.hasConsent(ConsentPurpose.analytics), isTrue);
+        expect(await service.hasConsent(ConsentPurpose.marketing), isFalse);
+        expect(await service.hasConsent(ConsentPurpose.socialFeatures), isTrue);
+        expect(await service.hasConsent(ConsentPurpose.pushNotifications),
+            isFalse);
       });
 
       test('should maintain audit trail via repository', () async {

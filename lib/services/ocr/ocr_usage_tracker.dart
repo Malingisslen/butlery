@@ -1,6 +1,6 @@
 // lib/services/ocr/ocr_usage_tracker.dart
 
-/// Tracks AI vision (Pixtral) and LLM API usage for cost monitoring and rate limiting.
+/// Tracks OCR provider usage for cost monitoring and rate limiting.
 class OCRUsageTracker {
   final DateTime Function()? _timeProvider;
 
@@ -10,18 +10,19 @@ class OCRUsageTracker {
   DateTime? _lastRequestDate;
   DateTime? _monthStartDate;
   final Map<String, int> _providerUsage = {
-    'pixtral_vision': 0,
-    'mistral_text': 0,
+    'ocr_space': 0,
+    'google_vision': 0,
+    'tesseract': 0,
     'cache_hits': 0,
   };
 
   // Usage limits — based on Cloud Function pricing
-  static const int freeMonthlyLimit = 500; // Pixtral Cloud Function calls
+  static const int freeMonthlyLimit = 500;
   static const double _warningThreshold = 0.8; // 80% of limit
 
-  // Cost per call in USD
-  static const double _pixtralCostPerCall = 0.05;
-  static const double _mistralTextCostPerCall = 0.01;
+  // Cost per call in USD (tesseract is free, on-device)
+  static const double _ocrSpaceCostPerCall = 0.01;
+  static const double _googleVisionCostPerCall = 0.05;
 
   OCRUsageTracker({DateTime Function()? timeProvider})
       : _timeProvider = timeProvider {
@@ -78,10 +79,10 @@ class OCRUsageTracker {
 
   /// Estimate monthly cost based on current usage.
   double _estimateMonthlyCost() {
-    final pixtralCalls = _providerUsage['pixtral_vision'] ?? 0;
-    final textCalls = _providerUsage['mistral_text'] ?? 0;
-    return (pixtralCalls * _pixtralCostPerCall) +
-        (textCalls * _mistralTextCostPerCall);
+    final ocrCalls = _providerUsage['ocr_space'] ?? 0;
+    final visionCalls = _providerUsage['google_vision'] ?? 0;
+    return (ocrCalls * _ocrSpaceCostPerCall) +
+        (visionCalls * _googleVisionCostPerCall);
   }
 
   /// Get usage warnings.

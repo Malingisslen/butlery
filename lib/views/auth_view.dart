@@ -12,9 +12,10 @@ import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/views/legal/privacy_policy_view.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:flutter/gestures.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -32,16 +33,23 @@ class _AuthViewState extends State<AuthView> {
   final _passwordFocus = FocusNode();
   final _nameFocus = FocusNode();
   bool _ageConfirmed = false;
+  bool _termsAccepted = false;
   late final AuthViewModel _viewModel;
+  late final TapGestureRecognizer _tosRecognizer;
+  late final TapGestureRecognizer _privacyRecognizer;
 
   @override
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<AuthViewModel>();
+    _tosRecognizer = TapGestureRecognizer()..onTap = _navigateToTerms;
+    _privacyRecognizer = TapGestureRecognizer()..onTap = _navigateToPrivacy;
   }
 
   @override
   void dispose() {
+    _tosRecognizer.dispose();
+    _privacyRecognizer.dispose();
     _viewModel.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -315,6 +323,55 @@ class _AuthViewState extends State<AuthView> {
                     ),
                   ],
                 ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                // Terms acceptance (registration only)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Checkbox(
+                        value: _termsAccepted,
+                        onChanged: viewModel.isLoading
+                            ? null
+                            : (value) =>
+                                setState(() => _termsAccepted = value ?? false),
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          style: AppTextStyles.bodySmall
+                              .copyWith(color: cs.onSurface),
+                          children: [
+                            TextSpan(text: context.l10n.authTermsAcceptPrefix),
+                            TextSpan(
+                              text: context.l10n.authTermsOfService,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: cs.onPrimaryContainer,
+                                decoration: TextDecoration.underline,
+                                decorationColor: cs.onPrimaryContainer,
+                              ),
+                              recognizer: _tosRecognizer,
+                            ),
+                            TextSpan(text: context.l10n.authTermsAcceptMiddle),
+                            TextSpan(
+                              text: context.l10n.profilePrivacyPolicy,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: cs.onPrimaryContainer,
+                                decoration: TextDecoration.underline,
+                                decorationColor: cs.onPrimaryContainer,
+                              ),
+                              recognizer: _privacyRecognizer,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
 
               const SizedBox(height: AppDimensions.spacingLg),
@@ -442,6 +499,12 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
+  void _navigateToTerms() =>
+      Navigator.pushNamed(context, Routes.termsOfService);
+
+  void _navigateToPrivacy() =>
+      Navigator.pushNamed(context, Routes.privacyPolicy);
+
   Widget _buildFooter() {
     final cs = Theme.of(context).colorScheme;
 
@@ -475,12 +538,7 @@ class _AuthViewState extends State<AuthView> {
             Semantics(
               link: true,
               child: InkWell(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PrivacyPolicyView(),
-                  ),
-                ),
+                onTap: () => Navigator.pushNamed(context, Routes.privacyPolicy),
                 child: Text(
                   context.l10n.profilePrivacyPolicy,
                   style: AppTextStyles.labelMedium.copyWith(
@@ -506,12 +564,14 @@ class _AuthViewState extends State<AuthView> {
 
     // Age confirmation required for registration
     if (!viewModel.isLoginMode && !_ageConfirmed) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.authAgeConfirmationRequired),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      SnackBarUtils.showWarning(
+          context, context.l10n.authAgeConfirmationRequired);
+      return;
+    }
+
+    // Terms acceptance required for registration
+    if (!viewModel.isLoginMode && !_termsAccepted) {
+      SnackBarUtils.showWarning(context, context.l10n.authTermsAcceptRequired);
       return;
     }
 

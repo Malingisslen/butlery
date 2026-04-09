@@ -63,11 +63,15 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/models/account/user_consent.dart';
 
 /// Firebase Cloud Messaging service for push notifications with deep linking.
 ///
 /// Uses static pattern for app-wide FCM functionality. ErrorHandlingMixin is
 /// available via [_errorHandler] for consistent error classification and logging.
+/// Permission requests and token registration are gated behind the
+/// pushNotifications consent purpose (GDPR Art. 6.1.a).
 class FCMService with ErrorHandlingMixin {
   // Static instance for accessing ErrorHandlingMixin methods from static context
   static final FCMService _errorHandler = FCMService._();
@@ -76,6 +80,7 @@ class FCMService with ErrorHandlingMixin {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static String? _currentToken;
   static bool _isInitialized = false;
+  static ConsentService? _consentService;
 
   // Callbacks for handling different notification scenarios
   static Function(RemoteMessage)? _onMessageReceived;
@@ -96,10 +101,13 @@ class FCMService with ErrorHandlingMixin {
       FlutterLocalNotificationsPlugin();
 
   /// Initialize FCM service with permission handling
-  /// Should be called during app startup after Firebase initialization
+  /// Should be called during app startup after Firebase initialization.
+  /// Permission requests and token registration are gated behind
+  /// pushNotifications consent via [consentService].
   static Future<void> initialize({
     Function(RemoteMessage)? onMessageReceived,
     Function(RemoteMessage)? onMessageOpenedApp,
+    ConsentService? consentService,
   }) async {
     if (_isInitialized) {
       AppLogger.warning('FCMService already initialized, skipping...');
@@ -112,11 +120,20 @@ class FCMService with ErrorHandlingMixin {
 
         _onMessageReceived = onMessageReceived;
         _onMessageOpenedApp = onMessageOpenedApp;
+        _consentService = consentService;
 
         await _initializeNotificationChannels();
-        await _requestPermissions();
         await _setupMessageHandlers();
-        await _refreshToken();
+
+        // Gate permission request and token registration behind consent
+        final hasConsent = await _hasPushConsent();
+        if (hasConsent) {
+          await _requestPermissions();
+          await _refreshToken();
+        } else {
+          AppLogger.info(
+              '🔔 FCM: Skipping permission request — pushNotifications consent not granted');
+        }
 
         _tokenRefreshSubscription =
             _messaging.onTokenRefresh.listen(_onTokenRefresh);
@@ -130,6 +147,14 @@ class FCMService with ErrorHandlingMixin {
     if (result == null) {
       throw Exception('Failed to initialize FCM service');
     }
+  }
+
+  /// Check if user has granted push notification consent (GDPR Art. 6.1.a).
+  /// Fails closed: if consent cannot be determined, deny by default.
+  static Future<bool> _hasPushConsent() async {
+    return ConsentService.checkSafely(
+        _consentService, ConsentPurpose.pushNotifications,
+        logTag: 'FCMService');
   }
 
   /// Initialize Android notification channels (required for Android 8+)
@@ -514,6 +539,7 @@ class FCMService with ErrorHandlingMixin {
       _onMessageOpenedAppSubscription = null;
 
       _currentToken = null;
+      _consentService = null;
       _isInitialized = false;
       _onMessageReceived = null;
       _onMessageOpenedApp = null;

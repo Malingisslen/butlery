@@ -580,20 +580,24 @@ void main() {
     group('Has Consent For Specific Purpose', () {
       test('should check if user has consent for specific purpose', () async {
         // Arrange
-        when(() => mockConsentService.hasConsent('analytics'))
+        when(() => mockConsentService.hasConsent(ConsentPurpose.analytics))
             .thenAnswer((_) async => true);
-        when(() => mockConsentService.hasConsent('marketing'))
+        when(() => mockConsentService.hasConsent(ConsentPurpose.marketing))
             .thenAnswer((_) async => false);
 
         // Act & Assert
-        final hasAnalytics = await viewModel.hasConsentFor('analytics');
-        final hasMarketing = await viewModel.hasConsentFor('marketing');
+        final hasAnalytics =
+            await viewModel.hasConsentFor(ConsentPurpose.analytics);
+        final hasMarketing =
+            await viewModel.hasConsentFor(ConsentPurpose.marketing);
 
         expect(hasAnalytics, true);
         expect(hasMarketing, false);
 
-        verify(() => mockConsentService.hasConsent('analytics')).called(1);
-        verify(() => mockConsentService.hasConsent('marketing')).called(1);
+        verify(() => mockConsentService.hasConsent(ConsentPurpose.analytics))
+            .called(1);
+        verify(() => mockConsentService.hasConsent(ConsentPurpose.marketing))
+            .called(1);
       });
     });
 

@@ -89,6 +89,7 @@ class Routes {
 
   // Legal routes
   static const String termsOfService = '/legal/terms';
+  static const String privacyPolicy = '/legal/privacy';
   static const String communityGuidelines = '/legal/community-guidelines';
 
   // Help routes
@@ -155,6 +156,7 @@ class Routes {
   /// Routes using slide-from-right animation
   static const Set<String> rightSlideRoutes = {
     termsOfService,
+    privacyPolicy,
     communityGuidelines,
     inkopslista,
     profileEdit,
@@ -278,6 +280,7 @@ class Routes {
 
     // Legal
     termsOfService,
+    privacyPolicy,
     communityGuidelines,
 
     // Help

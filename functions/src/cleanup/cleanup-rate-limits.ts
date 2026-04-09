@@ -21,7 +21,7 @@ const MAX_EXECUTION_TIME_MS = 8 * 60 * 1000; // 8 minutes (Cloud Functions timeo
  * Weekly cleanup of old rate limit records
  *
  * Schedule: 0 3 * * 0 (Weekly on Sundays at 3 AM UTC)
- * Region: europe-west1 (Stockholm)
+ * Region: europe-west1 (Belgium)
  *
  * CRIT-7: Processing with safety limits:
  * - Processes users in chunks of 1000

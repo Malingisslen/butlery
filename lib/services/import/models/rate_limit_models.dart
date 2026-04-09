@@ -139,7 +139,7 @@ extension LlmOperationCost on LlmOperationType {
       case LlmOperationType.fullExtraction:
         return 0.03; // ~3000 tokens
       case LlmOperationType.vision:
-        return 0.04; // Gemini Flash: same model for vision, slightly cheaper than Pixtral
+        return 0.04; // Gemini Flash vision
       case LlmOperationType.ingredientLines:
         return 0.005; // ~500 tokens, ingredient-only prompt
     }

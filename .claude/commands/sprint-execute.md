@@ -27,6 +27,10 @@ Tasks under the same `### Agent` heading should be batched into a single agent i
    - If Linear MCP unavailable, skip silently
 2. **Implement** — if the task specifies an agent, invoke that agent with the full task group. Otherwise, implement directly.
 3. **Verify** — run `dart analyze --fatal-infos` on changed files. Fix any issues.
+3.5. **Background test validation** — after completing an agent batch that modified multiple files, start a background test monitor for affected test paths:
+   - Identify test files corresponding to modified `lib/` files (e.g. `test/unit/<area>/`)
+   - Use Monitor tool: command `bash .claude/hooks/monitors/test-streamer.sh <test-paths>`, persistent: false, timeout_ms: 600000, description: "Tests: <batch>"
+   - Continue to the next task without waiting. Address failures when notifications arrive.
 4. **Check off** — mark the task as `[x]` in todo.md
 5. **Report progress** — "Task A1 complete. Sprint: X/Y done."
 
@@ -43,6 +47,9 @@ After all tasks are processed (or all remaining tasks are blocked):
 1. Run full `dart analyze --fatal-infos`
 2. Run `/commit` (this triggers code review, testing, and Linear ticket closure)
 3. Push to remote: `git push -u origin HEAD`
+3.5. **CI monitoring** — after push, start CI watcher:
+   - Use Monitor tool: command `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)`, persistent: false, timeout_ms: 900000, description: "CI for sprint push"
+   - Continue with PR creation. Include CI status in the final report if results arrived.
 4. Create PR via `gh pr create` with sprint summary derived from todo.md
 5. Report: "Sprint complete. PR: [url]. X/Y tasks done, Z blocked."
 

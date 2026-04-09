@@ -20,7 +20,7 @@ Du ansvarar för att skydda dina inloggningsuppgifter och för all aktivitet som
 
 Tjänsten låter dig:
 - Spara, organisera och dela recept
-- Planera veckomenyerr och skapa inköpslistor
+- Planera veckomenyer och skapa inköpslistor
 - Interagera med andra användare genom sociala funktioner
 
 Du förbinder dig att:

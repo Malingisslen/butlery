@@ -208,7 +208,7 @@ class ConsentViewModel extends ChangeNotifier
   }
 
   /// Check if user has granted a specific consent
-  Future<bool> hasConsentFor(String purpose) async {
+  Future<bool> hasConsentFor(ConsentPurpose purpose) async {
     return await _consentService.hasConsent(purpose);
   }
 

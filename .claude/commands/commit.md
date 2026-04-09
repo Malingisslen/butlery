@@ -20,13 +20,20 @@ Commit all changes made during this session to git with an appropriate commit me
    - If no test file exists for a modified file: note the gap in commit body (don't block)
 5. Create a conventional commit message:
    - Prefix: `feat:`, `fix:`, `refactor:`, `chore:`, `test:`, `docs:`
-   - Clear description of what was accomplished
-   - List key changes in the body if multi-file
+   - Subject: clear, concise description of what was accomplished
+   - Body (always include for non-trivial changes):
+     - *Why* this change was made — the problem or need it addresses
+     - Design decisions and trade-offs considered
+     - Invariants that must be preserved (e.g. "X must always be called before Y")
+     - List key changes if multi-file
    - If review/test findings were noted, include: `Review notes: ...`
    - `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` footer
 6. Commit the changes
 7. If pre-commit hook fails: fix the issue, re-stage, create a NEW commit (never amend)
 8. Confirm success with `git status`
+8.5. **CI monitoring (if pushed):** If `git push` was executed during this flow, start a CI watcher:
+   - Use Monitor tool: command `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)`, persistent: false, timeout_ms: 900000, description: "CI status for <short-sha>"
+   - Continue with remaining steps — do not wait for CI
 9. After successful commit, check `tasks/todo.md`:
    - If a task matches what was just committed, check it off (`[ ]` → `[x]`)
    - Report sprint progress: "Sprint: X/Y tasks done"

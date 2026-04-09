@@ -61,6 +61,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/setup-morning-brief.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/monitors/auto-analyze-monitor.sh"
           }
         ]
       }
@@ -126,6 +130,15 @@
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/monitors/auto-firebase-monitor.sh"
+          }
+        ]
+      },
       {
         "matcher": "Write|Edit",
         "hooks": [

@@ -16,7 +16,7 @@ import * as admin from "firebase-admin";
  * Daily cleanup of expired cache entries
  *
  * Schedule: 0 2 * * * (Daily at 2 AM UTC)
- * Region: europe-west1 (Stockholm)
+ * Region: europe-west1 (Belgium)
  *
  * Batch processing:
  * - Processes all cache entries

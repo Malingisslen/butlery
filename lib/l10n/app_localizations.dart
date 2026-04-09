@@ -20350,6 +20350,24 @@ abstract class AppLocalizations {
   /// **'Du måste bekräfta din ålder för att skapa ett konto'**
   String get authAgeConfirmationRequired;
 
+  /// No description provided for @authTermsAcceptPrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag accepterar '**
+  String get authTermsAcceptPrefix;
+
+  /// No description provided for @authTermsAcceptMiddle.
+  ///
+  /// In sv, this message translates to:
+  /// **' och '**
+  String get authTermsAcceptMiddle;
+
+  /// No description provided for @authTermsAcceptRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste acceptera villkoren för att skapa ett konto'**
+  String get authTermsAcceptRequired;
+
   /// No description provided for @reportContent.
   ///
   /// In sv, this message translates to:

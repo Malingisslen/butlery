@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
@@ -16,6 +17,7 @@ void main() {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(<String, Object>{});
       registerFallbackValue(DateTime.now());
+      registerFallbackValue(ConsentPurpose.analytics);
     });
 
     setUp(() {

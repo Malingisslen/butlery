@@ -9,9 +9,9 @@ class UserConsent {
   final ConsentPurposes purposes;
   final DateTime grantedAt;
   final DateTime? updatedAt;
-  final String consentVersion; // Track consent policy version
-  final String? ipAddress; // Optional: IP address when consent was given
-  final String deviceInfo; // Device/platform where consent was given
+  final String consentVersion;
+  final String? ipAddress;
+  final String deviceInfo;
 
   const UserConsent({
     required this.userId,
@@ -85,16 +85,28 @@ class UserConsent {
   }
 }
 
+/// Consent purpose identifiers for compile-safe hasConsent() calls.
+/// Enum `.name` matches the Firestore document keys (camelCase).
+enum ConsentPurpose {
+  essentialServices,
+  dataProcessing,
+  analytics,
+  marketing,
+  socialFeatures,
+  pushNotifications,
+  aiProcessing;
+}
+
 /// Tracks consent for different data processing purposes
 /// GDPR requires explicit consent for each purpose separately.
 class ConsentPurposes {
-  final bool essentialServices; // Required for app functionality
-  final bool dataProcessing; // Required for core features (recipes, etc.)
-  final bool analytics; // Optional: Usage analytics
-  final bool marketing; // Optional: Marketing communications
-  final bool socialFeatures; // Optional: Social features (sharing, friends)
-  final bool pushNotifications; // Optional: Push notifications
-  final bool aiProcessing; // Optional: AI recipe processing (Mistral OCR)
+  final bool essentialServices;
+  final bool dataProcessing;
+  final bool analytics;
+  final bool marketing;
+  final bool socialFeatures;
+  final bool pushNotifications;
+  final bool aiProcessing;
 
   const ConsentPurposes({
     required this.essentialServices,
@@ -109,35 +121,51 @@ class ConsentPurposes {
   /// Create from Firestore map
   factory ConsentPurposes.fromMap(Map<String, dynamic> map) {
     return ConsentPurposes(
-      essentialServices: SerializationUtils.safeBool(map, 'essentialServices',
+      essentialServices: SerializationUtils.safeBool(
+          map, ConsentPurpose.essentialServices.name,
           defaultValue: true),
-      dataProcessing: SerializationUtils.safeBool(map, 'dataProcessing',
+      dataProcessing: SerializationUtils.safeBool(
+          map, ConsentPurpose.dataProcessing.name,
           defaultValue: true),
-      analytics:
-          SerializationUtils.safeBool(map, 'analytics', defaultValue: false),
-      marketing:
-          SerializationUtils.safeBool(map, 'marketing', defaultValue: false),
-      socialFeatures: SerializationUtils.safeBool(map, 'socialFeatures',
+      analytics: SerializationUtils.safeBool(map, ConsentPurpose.analytics.name,
           defaultValue: false),
-      pushNotifications: SerializationUtils.safeBool(map, 'pushNotifications',
+      marketing: SerializationUtils.safeBool(map, ConsentPurpose.marketing.name,
           defaultValue: false),
-      aiProcessing:
-          SerializationUtils.safeBool(map, 'aiProcessing', defaultValue: false),
+      socialFeatures: SerializationUtils.safeBool(
+          map, ConsentPurpose.socialFeatures.name,
+          defaultValue: false),
+      pushNotifications: SerializationUtils.safeBool(
+          map, ConsentPurpose.pushNotifications.name,
+          defaultValue: false),
+      aiProcessing: SerializationUtils.safeBool(
+          map, ConsentPurpose.aiProcessing.name,
+          defaultValue: false),
     );
   }
 
   /// Convert to Firestore map
   Map<String, dynamic> toMap() {
     return {
-      'essentialServices': essentialServices,
-      'dataProcessing': dataProcessing,
-      'analytics': analytics,
-      'marketing': marketing,
-      'socialFeatures': socialFeatures,
-      'pushNotifications': pushNotifications,
-      'aiProcessing': aiProcessing,
+      ConsentPurpose.essentialServices.name: essentialServices,
+      ConsentPurpose.dataProcessing.name: dataProcessing,
+      ConsentPurpose.analytics.name: analytics,
+      ConsentPurpose.marketing.name: marketing,
+      ConsentPurpose.socialFeatures.name: socialFeatures,
+      ConsentPurpose.pushNotifications.name: pushNotifications,
+      ConsentPurpose.aiProcessing.name: aiProcessing,
     };
   }
+
+  /// Type-safe accessor — exhaustive switch ensures compile error when new purposes are added.
+  bool operator [](ConsentPurpose purpose) => switch (purpose) {
+        ConsentPurpose.essentialServices => essentialServices,
+        ConsentPurpose.dataProcessing => dataProcessing,
+        ConsentPurpose.analytics => analytics,
+        ConsentPurpose.marketing => marketing,
+        ConsentPurpose.socialFeatures => socialFeatures,
+        ConsentPurpose.pushNotifications => pushNotifications,
+        ConsentPurpose.aiProcessing => aiProcessing,
+      };
 
   /// Create default consents (only essential services)
   factory ConsentPurposes.defaults() {

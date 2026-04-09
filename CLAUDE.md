@@ -3,32 +3,6 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 Additional rules in `.claude/rules/` are auto-loaded.
 
-## Commands
-- **Analysis**: `flutter analyze`
-- **Run**: `flutter run`
-- **Tests**: `flutter test test/unit/file_test.dart`
-- **Path rule**: Always use forward slashes in test paths
-
-## Architecture
-
-**Pattern**: MVVM + Repository (Views → ViewModels → Services → Repositories → Firebase)
-
-See `.claude/rules/code-style.md` for file size limits, service access patterns, syntax, and commenting conventions.
-See `.claude/rules/git-workflow.md` for git safety, pre-commit checks, and lefthook.
-See `.claude/rules/workflow-discipline.md` for plan mode, verification, and self-improvement.
-See `.claude/rules/ui-conventions.md` for responsive design and mockup comparison (scoped to views/widgets).
-
-## Critical Conventions
-
-**Data Sources** (CRITICAL — see `data-source-enforcer` skill):
-- `userService.currentUserProfile` → complete user data (settings, avatar, social)
-- `permissionService.currentUserId` → auth/permission checks only
-- Never mix these — causes settings not persisting
-
-## Infrastructure
-
-New code must use project mixins and base classes. See `mixin-advisor` skill for the decision table.
-
 ## Critical Rules
 
 1. **Find root causes** - prefer proper fixes over quick patches. If you can't find the root cause, say what you investigated and why you're stuck.
@@ -45,12 +19,25 @@ New code must use project mixins and base classes. See `mixin-advisor` skill for
 12. **No retry loops on plan/review gates** - when exiting plan mode or completing a review gate, do it once. If the first attempt fails or is rejected, ask the user what they want instead of retrying the same action.
 13. **Learn from corrections** - when the user corrects you ("no", "wrong", redirects, terse follow-up after "done"), IMMEDIATELY add an entry to `tasks/lessons.md` before doing anything else. Format: `### [Category] Title` + Date, Trigger, Rule, Example. Non-negotiable.
 
-## Honesty Over Completion
-- Saying "I don't know" or "this isn't working" is always acceptable
-- A partial solution with clear docs of what's missing beats a complete solution that papers over problems
-- If tests pass but you're not confident the fix is correct, say so
-- Never claim "done" if you skipped verification steps — say which ones and why
-- When stuck: describe what you tried, what failed, and where you'd look next
+## Critical Conventions
+
+**Data Sources** (CRITICAL — see `data-source-enforcer` skill):
+- `userService.currentUserProfile` → complete user data (settings, avatar, social)
+- `permissionService.currentUserId` → auth/permission checks only
+- Never mix these — causes settings not persisting
+
+## Architecture
+
+**Pattern**: MVVM + Repository (Views → ViewModels → Services → Repositories → Firebase)
+
+See `.claude/rules/code-style.md` for file size limits, service access patterns, syntax, and commenting conventions.
+See `.claude/rules/git-workflow.md` for git safety, pre-commit checks, and lefthook.
+See `.claude/rules/workflow-discipline.md` for plan mode, verification, and self-improvement.
+See `.claude/rules/ui-conventions.md` for responsive design and mockup comparison (scoped to views/widgets).
+
+## Infrastructure
+
+New code must use project mixins and base classes. See `mixin-advisor` skill for the decision table.
 
 ## Testing Philosophy
 
@@ -62,6 +49,19 @@ Tests exist to verify **intended behavior**, not to be green.
 4. **Don't mock the subject** — mock dependencies, not the thing you're testing. A test that mocks away the behavior it claims to verify proves nothing.
 5. **Meaningful > comprehensive** — one test that verifies a critical user-facing behavior is worth more than ten tests that check getter return values.
 6. **Test the contract, not the implementation** — test what a function promises (inputs → outputs, side effects), not how it does it internally. Implementation changes shouldn't break tests unless behavior changed.
+
+## Honesty Over Completion
+- Saying "I don't know" or "this isn't working" is always acceptable
+- A partial solution with clear docs of what's missing beats a complete solution that papers over problems
+- If tests pass but you're not confident the fix is correct, say so
+- Never claim "done" if you skipped verification steps — say which ones and why
+- When stuck: describe what you tried, what failed, and where you'd look next
+
+## Commands
+- **Analysis**: `flutter analyze`
+- **Run**: `flutter run`
+- **Tests**: `flutter test test/unit/file_test.dart`
+- **Path rule**: Always use forward slashes in test paths
 
 ## Stop Hook Response
 

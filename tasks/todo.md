@@ -1,27 +1,48 @@
 # Sprint Backlog
 
-## Sprint: Social Polish & Tech Debt — 2026-04-09
+## Sprint: Insights & Engagement — 2026-04-09
 
-### Agent A: flutter-developer — Social UX Quick Wins
+### Agent A: flutter-developer — Social & Insights
 
-- [x] **A1. Fix share dialog dead end** — `share_dialog_states.dart`: add inline "Bjud in vänner" CTA when no friends. (BUT-342)
-- [x] **A2. Add reply shortcut on shared recipe cards** — `shared_recipe_card.dart`: add quick-reply action that opens conversation with sender. (BUT-343)
-- [x] **A3. Improve comment engagement** — `comments_section.dart`: inline preview of latest comment, edit capability, reaction hint icon. (BUT-305)
+- [ ] **A1. Add cooking photos ("Jag lagade detta")** — extend "Lagat idag" with photo upload, gallery on recipe detail, author notification loop. (BUT-338)
+- [ ] **A2. Add tag-based collection insights** — aggregate view: cooking pattern stats from existing tag data. (BUT-350)
 
-### Agent B: flutter-developer — Search & Theme Polish
+### Agent B: flutter-developer — Tagging Polish
 
-- [x] **B1. Add search history + Algolia highlights** — `recipe_query_viewmodel.dart`, search widgets: persist recent queries, render `highlightedTitle`/`highlightedDescription`. (BUT-304)
-- [x] **B2. Handcraft warm dark color scheme** — `butlery_colors.dart`, theme files: replace auto-generated cold dark with warm dark brown (#1A1611). (BUT-346)
+- [ ] **B1. Add tag analytics heat map + dead tag detection** — usage bars on PersonalTagsView, highlight 0-recipe tags. Existing `getTagUsageCounts()` data. (BUT-223)
 
-### Agent C: code-reviewer — Tech Debt
+### Agent C: code-reviewer — Quality & Compliance
 
-- [x] **C1. Accept or refactor 9 files exceeding 500-line limit** — review each file, refactor where beneficial, accept with rationale where appropriate. (BUT-302)
+- [ ] **C1. Review allergen system against EU FIC 1169/2011** — audit 14 EU allergens coverage, cross-contamination gaps, Livsmedelsverket alignment. (BUT-354)
+- [ ] **C2. Improve CI/CD: golden tests + coverage gates** — add golden tests for key UI components, enforce coverage threshold. (BUT-214)
 
 ### Post-Sprint Steps
-- [x] Run `dart analyze --fatal-infos`
-- [x] Run relevant unit tests (from previous sprint — no new test files for UI additions)
-- [x] Commit, push, PR, merge (9e688fd on main)
-- [x] Update Linear ticket states (BUT-342, BUT-343, BUT-305, BUT-304, BUT-346, BUT-302 → Done)
+- [ ] Run `dart analyze --fatal-infos`
+- [ ] Run relevant unit tests
+- [ ] Commit, push, PR, merge
+- [ ] Update Linear ticket states
+
+---
+
+## What this means in plain language
+
+- You'll be able to **take a photo when you cook a recipe** and share it — friends who shared the recipe get notified
+- A new **"My Collection" insights screen** shows your cooking patterns (% vegetarian, top cuisines, etc.)
+- Your **personal tags screen gets visual indicators** — see which tags are heavily used vs. dead
+- Your **allergen tagging gets audited** against actual EU food regulations for beta safety
+- **CI gets golden tests** so UI regressions are caught automatically
+- Risk: Cooking photos is the biggest item — requires photo upload + gallery + notifications. Others are small. Easy to undo since all are additive features.
+
+---
+
+## Archive: Sprint Social Polish & Tech Debt (completed 2026-04-09)
+
+- [x] A1: Fix share dialog dead end (BUT-342)
+- [x] A2: Add reply shortcut on shared recipe cards (BUT-343)
+- [x] A3: Improve comment engagement (BUT-305)
+- [x] B1: Add search history + Algolia highlights (BUT-304)
+- [x] B2: Handcraft warm dark color scheme (BUT-346)
+- [x] C1: Accept or refactor 9 files exceeding 500-line limit (BUT-302)
 
 ---
 
@@ -46,20 +67,10 @@
 - [x] B1-B2: Test fixes (BUT-303, BUT-306)
 - [x] C1: Test coverage — 127 new tests (BUT-299)
 
-## Archive: Sprint Bug Stability + Hardening H2 (completed 2026-04-08)
-
-- [x] A1-A4: Build blockers & backend stability (BUT-308, BUT-320, BUT-335, BUT-319)
-- [x] B1-B2: Data integrity (BUT-336, BUT-331)
-- [x] C1-C2: GDPR compliance (BUT-317, BUT-297)
-- [x] D1: Cooking mode UX (BUT-322)
-- [x] H2 A1-A2: GDPR + security tests (BUT-297, BUT-298)
-- [x] H2 B1-B3: Social bugs (BUT-313, BUT-311, BUT-312)
-- [x] H2 C1-C2: Performance + resource leaks (BUT-332, BUT-327)
-
 ## Archive: Previous Sprints
 
-- Security Hardening Part 2 (2026-04-08): BUT-329, BUT-328, BUT-321
-- Security Hardening (2026-04-08): BUT-334, BUT-315, BUT-310, BUT-325, BUT-326, BUT-330, BUT-316, BUT-333, BUT-318
+- Bug Stability + Hardening H2 (2026-04-08): BUT-308, BUT-320, BUT-335, BUT-319, BUT-336, BUT-331, BUT-317, BUT-297, BUT-313, BUT-311, BUT-312, BUT-332, BUT-327
+- Security Hardening (2026-04-08): BUT-334, BUT-315, BUT-310, BUT-325, BUT-326, BUT-330, BUT-316, BUT-333, BUT-318, BUT-329, BUT-328, BUT-321
 - Household + Menu Voting (2026-04-08): BUT-256, BUT-239
 - Bug Cleanup + Loading Polish (2026-04-07): BUT-292-296, BUT-244
 - Share & Discover (2026-04-07): BUT-219, BUT-242, BUT-272, BUT-271

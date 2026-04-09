@@ -11,7 +11,7 @@ import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/views/account/data_export_view.dart';
 import 'package:butlery/views/account/consent_management_view.dart';
-import 'package:butlery/views/legal/privacy_policy_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 /// Handler for GDPR-related actions.
 /// Provides navigation to privacy policy, consent management, and data export.
@@ -23,12 +23,7 @@ class GdprConsentHandler {
       Navigator.pop(context);
 
       // Navigate to privacy policy view
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const PrivacyPolicyView(),
-        ),
-      );
+      await Navigator.pushNamed(context, Routes.privacyPolicy);
     } catch (e) {
       AppLogger.error('Failed to open privacy policy', e);
       if (context.mounted) {
