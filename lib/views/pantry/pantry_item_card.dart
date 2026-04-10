@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -65,7 +66,7 @@ class PantryItemCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      _formatQuantity(item),
+                      '${item.formattedQuantity} ${item.unit}',
                       style: AppTextStyles.bodySmall
                           .copyWith(color: cs.onSurfaceVariant),
                     ),
@@ -84,26 +85,10 @@ class PantryItemCard extends StatelessWidget {
   }
 
   Future<bool> _confirmDelete(BuildContext context) async {
-    final cs = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    final result = await showDialog<bool>(
+    final result = await CommonDialogActions.showDeleteConfirmation(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        title: Text(l10n.pantryDeleteConfirmTitle),
-        content: Text(l10n.pantryDeleteConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: TextButton.styleFrom(foregroundColor: cs.error),
-            child: Text(l10n.commonDelete),
-          ),
-        ],
-      ),
+      itemName: item.ingredientName,
+      itemType: 'ingrediens',
     );
     return result ?? false;
   }
@@ -119,13 +104,6 @@ class PantryItemCard extends StatelessWidget {
         child: AddPantryItemSheet(existingItem: item),
       ),
     );
-  }
-
-  String _formatQuantity(PantryItem item) {
-    final qty = item.quantity == item.quantity.truncate()
-        ? item.quantity.toInt().toString()
-        : item.quantity.toString();
-    return '$qty ${item.unit}';
   }
 }
 

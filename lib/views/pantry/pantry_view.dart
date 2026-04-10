@@ -113,38 +113,40 @@ class _PantrySections extends StatelessWidget {
     final vm = context.watch<PantryViewModel>();
     final l10n = context.l10n;
 
+    final expiring = vm.expiringItems;
+
     return ListView(
       padding: const EdgeInsets.only(
         top: AppDimensions.spacingMd,
         bottom: 96,
       ),
       children: [
-        if (vm.expiringItems.isNotEmpty)
+        if (expiring.isNotEmpty)
           _PantrySection(
             title: l10n.pantrySectionExpiring,
             icon: Icons.schedule,
-            items: vm.expiringItems,
+            items: expiring,
             initiallyExpanded: true,
           ),
         _PantrySection(
           title: l10n.pantrySectionFridge,
           icon: Icons.kitchen,
-          items: vm.fridgeItems,
+          items: vm.itemsByLocation(PantryLocation.fridge),
         ),
         _PantrySection(
           title: l10n.pantrySectionFreezer,
           icon: Icons.ac_unit,
-          items: vm.freezerItems,
+          items: vm.itemsByLocation(PantryLocation.freezer),
         ),
         _PantrySection(
           title: l10n.pantrySectionPantry,
           icon: Icons.inventory_2_outlined,
-          items: vm.pantryItems,
+          items: vm.itemsByLocation(PantryLocation.pantry),
         ),
         _PantrySection(
           title: l10n.pantrySectionSpiceRack,
           icon: Icons.grass_outlined,
-          items: vm.spiceRackItems,
+          items: vm.itemsByLocation(PantryLocation.spiceRack),
         ),
       ],
     );

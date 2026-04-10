@@ -1,9 +1,3 @@
-/// Pantry module ("Skafferiet") — manages the user's tracked ingredients.
-///
-/// Registers the pantry repository (app scope) and service (user scope).
-/// The service depends on [IngredientLookupService] which is registered in
-/// [TaggingModule.configureUserScope], so [PantryService] must also live in
-/// user scope to resolve its dependencies correctly.
 library;
 
 import 'package:get_it/get_it.dart';
@@ -18,17 +12,7 @@ import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
 
 import 'package:butlery/services/pantry/pantry_service.dart';
-import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
-/// Pantry module providing the "Skafferiet" feature.
-///
-/// Depends on:
-/// - [CoreModule] for Firestore/auth foundations
-/// - [TaggingModule] for [IngredientLookupService] + [IngredientRepository]
-///
-/// Provides:
-/// - [PantryRepository] (app scope)
-/// - [PantryService] (user scope — depends on user-scoped lookup service)
 class PantryModule implements DIModule {
   @override
   String get name => 'Pantry';
@@ -52,12 +36,9 @@ class PantryModule implements DIModule {
   Future<void> configureUserScope(GetIt container) async {
     final app = GetIt.instance;
 
-    // PantryService lives in user scope because IngredientLookupService is
-    // user-scoped. Disposing on logout clears any base-service state.
     container.registerLazySingleton<PantryService>(
       () => PantryService(
         pantryRepository: app<PantryRepository>(),
-        ingredientLookup: container<IngredientLookupService>(),
         ingredientRepository: app<IngredientRepository>(),
       ),
       dispose: (s) => s.dispose(),

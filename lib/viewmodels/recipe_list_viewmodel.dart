@@ -420,9 +420,6 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Loads (or reloads) the pantry-to-recipe match percentages from
-  /// [PantryService]. Silent on failure — the filter just yields no
-  /// matches rather than showing an error banner.
   Future<void> _refreshPantryMatches() async {
     final userId = ServiceLocator.get<PermissionService>().currentUserId;
     if (userId == null) {
@@ -430,7 +427,6 @@ class RecipeListViewModel extends ChangeNotifier {
       return;
     }
     _isLoadingPantryMatches = true;
-    notifyListeners();
     try {
       final service = ServiceLocator.get<PantryService>();
       final matches = await service.getMatchingRecipes(

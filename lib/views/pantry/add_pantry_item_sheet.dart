@@ -43,10 +43,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     final existing = widget.existingItem;
     if (existing != null) {
       _nameController.text = existing.ingredientName;
-      _quantityController.text =
-          existing.quantity == existing.quantity.truncate()
-              ? existing.quantity.toInt().toString()
-              : existing.quantity.toString();
+      _quantityController.text = existing.formattedQuantity;
       _unit = _units.contains(existing.unit) ? existing.unit : 'st';
       _location = existing.location;
       _expiryDate = existing.expiryDate;

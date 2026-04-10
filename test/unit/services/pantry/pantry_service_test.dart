@@ -11,14 +11,10 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
-import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
 class MockPantryRepository extends Mock implements PantryRepository {}
 
 class MockIngredientRepository extends Mock implements IngredientRepository {}
-
-class MockIngredientLookupService extends Mock
-    implements IngredientLookupService {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -90,7 +86,6 @@ void main() {
   late PantryService service;
   late MockPantryRepository mockPantryRepository;
   late MockIngredientRepository mockIngredientRepository;
-  late MockIngredientLookupService mockLookupService;
   late MockAuthRepository mockAuthRepository;
 
   const userId = 'test-user-123';
@@ -102,7 +97,6 @@ void main() {
   setUp(() async {
     mockPantryRepository = MockPantryRepository();
     mockIngredientRepository = MockIngredientRepository();
-    mockLookupService = MockIngredientLookupService();
     mockAuthRepository = MockAuthRepository();
 
     // BaseService.executeServiceOperation performs an auth pre-flight
@@ -117,7 +111,6 @@ void main() {
 
     service = PantryService(
       pantryRepository: mockPantryRepository,
-      ingredientLookup: mockLookupService,
       ingredientRepository: mockIngredientRepository,
     );
   });

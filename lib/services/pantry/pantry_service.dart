@@ -5,39 +5,22 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
-import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
 /// Business logic layer for the pantry ("skafferi") feature.
-///
-/// Responsibilities:
-/// - Convert user input (ingredient picks, free text) into [PantryItem]s
-/// - Boundary validation (positive quantity, non-empty name)
-/// - Recipe matching based on pantry contents
 class PantryService extends BaseService {
   final PantryRepository _pantryRepository;
-  // Wired now so follow-up work can switch to the richer lookup service
-  // without another DI pass. Currently unused by the service itself.
-  // ignore: unused_field
-  final IngredientLookupService _ingredientLookup;
   final IngredientRepository _ingredientRepository;
 
   PantryService({
     required PantryRepository pantryRepository,
-    required IngredientLookupService ingredientLookup,
     required IngredientRepository ingredientRepository,
   })  : _pantryRepository = pantryRepository,
-        _ingredientLookup = ingredientLookup,
         _ingredientRepository = ingredientRepository;
 
   @override
   String get serviceName => 'PantryService';
 
-  /// Adds a pantry item seeded from a taxonomy ingredient.
-  ///
-  /// Defaults follow the ingredient's metadata when the caller leaves
-  /// params null: [quantity]=1, [unit]=ingredient.typicalUnit (or 'st'),
-  /// [location] inferred from ingredient.typicalStorage.
-  Future<void> addFromIngredient(
+  Future<PantryItem> addFromIngredient(
     String userId,
     IngredientData ingredient, {
     double quantity = 1,
@@ -46,37 +29,32 @@ class PantryService extends BaseService {
     DateTime? expiryDate,
     String? note,
   }) async {
-    await executeServiceOperation<void>(
+    final result = await executeServiceOperation<PantryItem>(
       () async {
-        if (quantity <= 0) {
-          throw ValidationException(
-            'Quantity must be positive',
-            field: 'quantity',
-            value: quantity,
-          );
-        }
-        final item = PantryItem(
-          id: '',
+        _validateInput(ingredient.swedish, quantity);
+        final item = _buildItem(
           ingredientId: ingredient.id,
-          ingredientName: ingredient.swedish,
+          name: ingredient.swedish,
           quantity: quantity,
-          unit: unit ?? ingredient.typicalUnit ?? 'st',
-          location: location ??
-              PantryLocation.fromTypicalStorage(ingredient.typicalStorage),
-          addedAt: DateTime.now().toUtc(),
+          unit: unit ?? ingredient.typicalUnit,
+          typicalStorage: ingredient.typicalStorage,
+          location: location,
           expiryDate: expiryDate,
           note: note,
         );
-        await _pantryRepository.add(userId, item);
+        final id = await _pantryRepository.add(userId, item);
+        return item.copyWith(id: id);
       },
       operationName: 'addFromIngredient',
     );
+    if (result == null) {
+      throw StateError('addFromIngredient failed');
+    }
+    return result;
   }
 
-  /// Adds a pantry item from free-text input, attempting a fuzzy match
-  /// against the ingredient database. On match the item is linked via
-  /// [PantryItem.ingredientId]; otherwise it's stored as an orphan with
-  /// the raw text as [PantryItem.ingredientName].
+  /// Adds a pantry item from free-text input, fuzzy-matched against the
+  /// ingredient database. Orphan items (no match) store the raw text.
   Future<PantryItem> addFromText(
     String userId,
     String rawText, {
@@ -89,19 +67,7 @@ class PantryService extends BaseService {
     final result = await executeServiceOperation<PantryItem>(
       () async {
         final trimmed = rawText.trim();
-        if (trimmed.isEmpty) {
-          throw ValidationException(
-            'Ingredient name cannot be empty',
-            field: 'rawText',
-          );
-        }
-        if (quantity <= 0) {
-          throw ValidationException(
-            'Quantity must be positive',
-            field: 'quantity',
-            value: quantity,
-          );
-        }
+        _validateInput(trimmed, quantity);
 
         final matches = await _ingredientRepository.searchIngredients(
           trimmed,
@@ -109,17 +75,13 @@ class PantryService extends BaseService {
         );
         final match = matches.isNotEmpty ? matches.first : null;
 
-        final item = PantryItem(
-          id: '',
+        final item = _buildItem(
           ingredientId: match?.id,
-          ingredientName: match?.swedish ?? trimmed,
+          name: match?.swedish ?? trimmed,
           quantity: quantity,
-          unit: unit ?? match?.typicalUnit ?? 'st',
-          location: location ??
-              (match != null
-                  ? PantryLocation.fromTypicalStorage(match.typicalStorage)
-                  : PantryLocation.pantry),
-          addedAt: DateTime.now().toUtc(),
+          unit: unit ?? match?.typicalUnit,
+          typicalStorage: match?.typicalStorage,
+          location: location,
           expiryDate: expiryDate,
           note: note,
         );
@@ -134,23 +96,8 @@ class PantryService extends BaseService {
     return result;
   }
 
-  /// Validates at the boundary and persists an update. Throws
-  /// [ValidationException] on bad input so ViewModels can surface the
-  /// error instead of writing garbage to Firestore.
   Future<void> updateItem(String userId, PantryItem item) async {
-    if (item.ingredientName.trim().isEmpty) {
-      throw ValidationException(
-        'Ingredient name cannot be empty',
-        field: 'ingredientName',
-      );
-    }
-    if (item.quantity <= 0) {
-      throw ValidationException(
-        'Quantity must be positive',
-        field: 'quantity',
-        value: item.quantity,
-      );
-    }
+    _validateInput(item.ingredientName, item.quantity);
     await executeServiceOperation<void>(
       () => _pantryRepository.update(userId, item),
       operationName: 'updateItem',
@@ -189,25 +136,22 @@ class PantryService extends BaseService {
         const [];
   }
 
-  /// For each [recipes] entry, computes the fraction of its normalized
-  /// ingredients that are present in the user's pantry. Recipes with no
-  /// overlap are dropped; the remainder is sorted most-complete first.
-  ///
-  /// Recipes without [ingredientsNormalized] are skipped — they predate
-  /// the MODUL1 migration and can't be matched.
+  /// Scores [recipes] by pantry ingredient coverage. Recipes without
+  /// `ingredientsNormalized` are skipped (pre-MODUL1 legacy). Callers
+  /// holding a fresh pantry snapshot can pass it via [pantryItems] to
+  /// avoid a duplicate Firestore read.
   Future<List<({Recipe recipe, double matchPercent})>> getMatchingRecipes(
     String userId,
-    List<Recipe> recipes,
-  ) async {
+    List<Recipe> recipes, {
+    List<PantryItem>? pantryItems,
+  }) async {
     final result = await executeServiceOperation<
         List<({Recipe recipe, double matchPercent})>>(() async {
-      final pantryItems = await _pantryRepository.getAll(userId);
-      if (pantryItems.isEmpty) return const [];
+      final items = pantryItems ?? await _pantryRepository.getAll(userId);
+      if (items.isEmpty) return const [];
 
-      final pantryIngredientIds = pantryItems
-          .map((item) => item.ingredientId)
-          .whereType<String>()
-          .toSet();
+      final pantryIngredientIds =
+          items.map((item) => item.ingredientId).whereType<String>().toSet();
       if (pantryIngredientIds.isEmpty) return const [];
 
       final matches = <({Recipe recipe, double matchPercent})>[];
@@ -219,13 +163,54 @@ class PantryService extends BaseService {
             normalized.toSet().intersection(pantryIngredientIds).length;
         if (overlap == 0) continue;
 
-        final percent = overlap / normalized.length;
-        matches.add((recipe: recipe, matchPercent: percent));
+        matches.add((
+          recipe: recipe,
+          matchPercent: overlap / normalized.length,
+        ));
       }
 
       matches.sort((a, b) => b.matchPercent.compareTo(a.matchPercent));
       return matches;
     }, operationName: 'getMatchingRecipes', defaultValue: const []);
     return result ?? const [];
+  }
+
+  void _validateInput(String name, double quantity) {
+    if (name.trim().isEmpty) {
+      throw ValidationException(
+        'Ingredient name cannot be empty',
+        field: 'ingredientName',
+      );
+    }
+    if (quantity <= 0) {
+      throw ValidationException(
+        'Quantity must be positive',
+        field: 'quantity',
+        value: quantity,
+      );
+    }
+  }
+
+  PantryItem _buildItem({
+    String? ingredientId,
+    required String name,
+    required double quantity,
+    String? unit,
+    String? typicalStorage,
+    PantryLocation? location,
+    DateTime? expiryDate,
+    String? note,
+  }) {
+    return PantryItem(
+      id: '',
+      ingredientId: ingredientId,
+      ingredientName: name,
+      quantity: quantity,
+      unit: unit ?? 'st',
+      location: location ?? PantryLocation.fromTypicalStorage(typicalStorage),
+      addedAt: DateTime.now().toUtc(),
+      expiryDate: expiryDate,
+      note: note,
+    );
   }
 }

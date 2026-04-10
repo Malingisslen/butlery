@@ -138,6 +138,10 @@ class PantryItem {
     );
   }
 
+  String get formattedQuantity => quantity == quantity.truncate()
+      ? quantity.toInt().toString()
+      : quantity.toString();
+
   bool get isExpired {
     final exp = expiryDate;
     if (exp == null) return false;
