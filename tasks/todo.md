@@ -45,8 +45,8 @@
 ### Post-Sprint Steps
 - [x] Run `dart analyze --fatal-infos`
 - [ ] Run relevant unit tests
-- [ ] Commit, push, PR, merge
-- [ ] Update Linear ticket state (BUT-339 → Done)
+- [x] Commit, push, PR, merge
+- [x] Update Linear ticket state (BUT-339 → Done)
 
 ---
 
