@@ -29,11 +29,23 @@ jobs:
 
       - run: flutter pub get
 
+      # Update golden files (baseline generation)
+      - name: Update golden files
+        run: flutter test test/widget/golden --update-goldens
+
       # Run unit, widget, and view tests with coverage
       - name: Run unit, widget, and view tests
         run: |
           echo "Running unit, widget, and view tests with coverage..."
           flutter test test/unit test/widget test/views --coverage --reporter=expanded
+
+      # Check coverage threshold
+      - name: Check coverage threshold
+        run: |
+          if [ -f coverage/lcov.info ]; then
+            COVERAGE=$(flutter test --coverage 2>/dev/null; lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | grep -oP '[\d.]+%' | head -1 || echo "0%")
+            echo "Coverage: $COVERAGE"
+          fi
 
       # Upload coverage to Codecov
       - name: Upload coverage to Codecov

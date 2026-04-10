@@ -96,6 +96,7 @@ class DataExportService extends BaseService {
       'personal_tags': await _contentManager.exportPersonalTags(userId),
       'personal_tag_groups':
           await _contentManager.exportPersonalTagGroups(userId),
+      'cook_snaps': await _contentManager.exportCookSnaps(userId),
       // Social exports
       'friends': await _socialManager.exportFriends(userId),
       'messages': await _socialManager.exportMessages(userId),

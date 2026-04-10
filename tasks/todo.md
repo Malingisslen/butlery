@@ -4,17 +4,17 @@
 
 ### Agent A: flutter-developer — Social & Insights
 
-- [ ] **A1. Add cooking photos ("Jag lagade detta")** — extend "Lagat idag" with photo upload, gallery on recipe detail, author notification loop. (BUT-338)
-- [ ] **A2. Add tag-based collection insights** — aggregate view: cooking pattern stats from existing tag data. (BUT-350)
+- [x] **A1. Add cooking photos ("Jag lagade detta")** — extend "Lagat idag" with photo upload, gallery on recipe detail, author notification loop. (BUT-338)
+- [x] **A2. Add tag-based collection insights** — aggregate view: cooking pattern stats from existing tag data. (BUT-350)
 
 ### Agent B: flutter-developer — Tagging Polish
 
-- [ ] **B1. Add tag analytics heat map + dead tag detection** — usage bars on PersonalTagsView, highlight 0-recipe tags. Existing `getTagUsageCounts()` data. (BUT-223)
+- [x] **B1. Add tag analytics heat map + dead tag detection** — usage bars on PersonalTagsView, highlight 0-recipe tags. Existing `getTagUsageCounts()` data. (BUT-223)
 
 ### Agent C: code-reviewer — Quality & Compliance
 
-- [ ] **C1. Review allergen system against EU FIC 1169/2011** — audit 14 EU allergens coverage, cross-contamination gaps, Livsmedelsverket alignment. (BUT-354)
-- [ ] **C2. Improve CI/CD: golden tests + coverage gates** — add golden tests for key UI components, enforce coverage threshold. (BUT-214)
+- [x] **C1. Review allergen system against EU FIC 1169/2011** — audit 14 EU allergens coverage, cross-contamination gaps, Livsmedelsverket alignment. (BUT-354)
+- [x] **C2. Improve CI/CD: golden tests + coverage gates** — add golden tests for key UI components, enforce coverage threshold. (BUT-214)
 
 ### Post-Sprint Steps
 - [ ] Run `dart analyze --fatal-infos`

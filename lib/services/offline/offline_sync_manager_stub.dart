@@ -38,4 +38,6 @@ class OfflineSyncManager {
       message: 'Web platform - offline sync not supported',
     );
   }
+
+  void dispose() {}
 }

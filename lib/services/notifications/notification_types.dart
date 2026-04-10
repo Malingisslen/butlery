@@ -132,6 +132,21 @@ class NotificationStrategy {
     },
   );
 
+  /// Someone posted a cooking photo on a recipe you own
+  static const cookSnapAdded = NotificationStrategy(
+    type: NotificationType.batchable,
+    priority: NotificationPriority.medium,
+    category: NotificationCategory.recipes,
+    batchWindow: Duration(minutes: 5),
+    maxBatchSize: 5,
+    localization: {
+      'title_sv': 'Nytt matfoto',
+      'title_en': 'New cooking photo',
+      'body_sv': '{senderName} lagade "{recipeName}"',
+      'body_en': '{senderName} cooked "{recipeName}"',
+    },
+  );
+
   /// Recipe comments - can be batched to prevent spam
   static const recipeComment = NotificationStrategy(
     type: NotificationType.batchable,

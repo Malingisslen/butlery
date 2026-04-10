@@ -12367,4 +12367,76 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get tagDecisionIngredients => 'Ingredienser';
+
+  @override
+  String get cookSnapSectionTitle => 'Lagade detta';
+
+  @override
+  String cookSnapSectionTitleCount(int count) {
+    return 'Lagade detta ($count)';
+  }
+
+  @override
+  String get cookSnapAddTooltip => 'Lägg till matfoto';
+
+  @override
+  String get cookSnapEmptyTitle => 'Ingen har lagat detta än';
+
+  @override
+  String get cookSnapEmptySubtitle => 'Bli först!';
+
+  @override
+  String get cookSnapFromCamera => 'Ta foto';
+
+  @override
+  String get cookSnapFromGallery => 'Välj från galleri';
+
+  @override
+  String get cookSnapDelete => 'Ta bort foto';
+
+  @override
+  String get cookSnapReport => 'Rapportera foto';
+
+  @override
+  String get collectionInsightsTitle => 'Min samling';
+
+  @override
+  String get collectionInsightsInsufficientData =>
+      'Lägg till fler recept för att se mönster';
+
+  @override
+  String get collectionInsightsTopCuisines => 'Topkök';
+
+  @override
+  String personalTagUnusedTags(int count) {
+    return 'Oanvända taggar ($count)';
+  }
+
+  @override
+  String get personalTagDeleteAllUnused => 'Radera alla oanvända';
+
+  @override
+  String get personalTagDeleteAllUnusedConfirm => 'Radera oanvända taggar?';
+
+  @override
+  String personalTagDeleteAllUnusedMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count taggar utan recept kommer att tas bort.',
+      one: '1 tagg utan recept kommer att tas bort.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String personalTagUnusedDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count oanvända taggar borttagna',
+      one: '1 oanvänd tagg borttagen',
+    );
+    return '$_temp0';
+  }
 }

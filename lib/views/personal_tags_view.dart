@@ -283,6 +283,13 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                           viewModel, group.id),
                       viewModel: viewModel,
                     ),
+                  if (viewModel.unusedTags.isNotEmpty)
+                    UnusedTagsSection(
+                      unusedTags: viewModel.unusedTags,
+                      viewModel: viewModel,
+                      onDeleteAll: () =>
+                          _confirmDeleteUnusedTags(context, viewModel),
+                    ),
                   const SizedBox(height: AppDimensions.spacingXxl),
                 ];
                 return ListView.builder(
@@ -297,5 +304,41 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteUnusedTags(
+      BuildContext context, PersonalTagViewModel viewModel) async {
+    final count = viewModel.unusedTags.length;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.personalTagDeleteAllUnusedConfirm),
+        content: Text(context.l10n.personalTagDeleteAllUnusedMessage(count)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(context.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              context.l10n.commonDelete,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final deleted = await viewModel.deleteUnusedTags();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.personalTagUnusedDeleted(deleted)),
+          ),
+        );
+      }
+    }
   }
 }

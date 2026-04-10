@@ -8426,5 +8426,45 @@
 
   "tagDecisionWhyTitle": "Why this tag?",
   "tagDecisionReason": "Reason",
-  "tagDecisionIngredients": "Ingredients"
+  "tagDecisionIngredients": "Ingredients",
+
+  "cookSnapSectionTitle": "Cooked this",
+  "cookSnapSectionTitleCount": "Cooked this ({count})",
+  "@cookSnapSectionTitleCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "cookSnapAddTooltip": "Add cooking photo",
+  "cookSnapEmptyTitle": "No one has cooked this yet",
+  "cookSnapEmptySubtitle": "Be the first!",
+  "cookSnapFromCamera": "Take photo",
+  "cookSnapFromGallery": "Choose from gallery",
+  "cookSnapDelete": "Delete photo",
+  "cookSnapReport": "Report photo",
+
+  "collectionInsightsTitle": "My collection",
+  "collectionInsightsInsufficientData": "Add more recipes to see patterns",
+  "collectionInsightsTopCuisines": "Top cuisines",
+
+  "personalTagUnusedTags": "Unused tags ({count})",
+  "@personalTagUnusedTags": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalTagDeleteAllUnused": "Delete all unused",
+  "personalTagDeleteAllUnusedConfirm": "Delete unused tags?",
+  "personalTagDeleteAllUnusedMessage": "{count, plural, =1{1 tag with no recipes will be deleted.} other{{count} tags with no recipes will be deleted.}}",
+  "@personalTagDeleteAllUnusedMessage": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalTagUnusedDeleted": "{count, plural, =1{1 unused tag deleted} other{{count} unused tags deleted}}",
+  "@personalTagUnusedDeleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

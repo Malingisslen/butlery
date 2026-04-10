@@ -8426,5 +8426,45 @@
 
   "tagDecisionWhyTitle": "Varför denna tagg?",
   "tagDecisionReason": "Orsak",
-  "tagDecisionIngredients": "Ingredienser"
+  "tagDecisionIngredients": "Ingredienser",
+
+  "cookSnapSectionTitle": "Lagade detta",
+  "cookSnapSectionTitleCount": "Lagade detta ({count})",
+  "@cookSnapSectionTitleCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "cookSnapAddTooltip": "Lägg till matfoto",
+  "cookSnapEmptyTitle": "Ingen har lagat detta än",
+  "cookSnapEmptySubtitle": "Bli först!",
+  "cookSnapFromCamera": "Ta foto",
+  "cookSnapFromGallery": "Välj från galleri",
+  "cookSnapDelete": "Ta bort foto",
+  "cookSnapReport": "Rapportera foto",
+
+  "collectionInsightsTitle": "Min samling",
+  "collectionInsightsInsufficientData": "Lägg till fler recept för att se mönster",
+  "collectionInsightsTopCuisines": "Topkök",
+
+  "personalTagUnusedTags": "Oanvända taggar ({count})",
+  "@personalTagUnusedTags": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalTagDeleteAllUnused": "Radera alla oanvända",
+  "personalTagDeleteAllUnusedConfirm": "Radera oanvända taggar?",
+  "personalTagDeleteAllUnusedMessage": "{count, plural, =1{1 tagg utan recept kommer att tas bort.} other{{count} taggar utan recept kommer att tas bort.}}",
+  "@personalTagDeleteAllUnusedMessage": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalTagUnusedDeleted": "{count, plural, =1{1 oanvänd tagg borttagen} other{{count} oanvända taggar borttagna}}",
+  "@personalTagUnusedDeleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

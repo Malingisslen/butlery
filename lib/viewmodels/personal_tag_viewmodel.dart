@@ -683,6 +683,29 @@ class PersonalTagViewModel extends ChangeNotifier
     return await recipeRepo.fetchAllUserRecipes(userId);
   }
 
+  /// Gets all tags with zero recipe usage.
+  List<PersonalTag> get unusedTags =>
+      _tags.where((t) => getUsageCount(t.name) == 0).toList();
+
+  /// Deletes all tags that have zero recipe usage.
+  Future<int> deleteUnusedTags() async {
+    final toDelete = unusedTags;
+    if (toDelete.isEmpty) return 0;
+
+    int deleted = 0;
+    for (final tag in toDelete) {
+      final success = await deleteTag(tag.id);
+      if (success) deleted++;
+    }
+    return deleted;
+  }
+
+  /// Gets the maximum usage count across all tags (for relative bar sizing).
+  int get maxUsageCount {
+    if (_tagUsageCounts.isEmpty) return 0;
+    return _tagUsageCounts.values.fold(0, (max, v) => v > max ? v : max);
+  }
+
   /// Checks if a tag name already exists.
   Future<bool> tagNameExists(String name, {String? excludeId}) async {
     return await _service.tagNameExists(name, excludeId: excludeId);

@@ -31,8 +31,12 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/widgets/recipe/cook_snap_gallery.dart';
+import 'package:butlery/viewmodels/cook_snap_viewmodel.dart';
+import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
+import 'package:image_picker/image_picker.dart';
 
 /// Menu actions for the recipe detail overflow menu.
 enum _MenuAction {
@@ -570,12 +574,74 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               onSharingChanged: () => setState(() {}),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
+            _buildCookSnapGallery(recipe),
+            const SizedBox(height: AppDimensions.spacingMd),
             RecipeDetailComments(
               recipe: recipe,
               initiallyExpanded: widget.scrollToComments,
               onCommentPosted: () => setState(() {}),
             ),
             SizedBox(height: bottomPadding + AppDimensions.spacingXl),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCookSnapGallery(Recipe recipe) {
+    return ChangeNotifierProvider(
+      create: (_) => CookSnapViewModel(
+        service: ServiceLocator.get<CookSnapService>(),
+        recipeId: recipe.id,
+        recipeAuthorId: recipe.createdBy ?? '',
+        recipeName: recipe.core.title,
+      ),
+      child: Consumer<CookSnapViewModel>(
+        builder: (context, vm, _) {
+          final userId = ServiceLocator.get<PermissionService>().currentUserId;
+          return CookSnapGallery(
+            snaps: vm.snaps,
+            isLoading: vm.isLoading,
+            isUploading: vm.isUploading,
+            currentUserId: userId,
+            error: vm.error,
+            onAdd: () => _showAddSnapSheet(context, vm),
+            onDelete: (snapId) => vm.deleteSnap(snapId),
+            onReport: (snap) => ReportContentDialog.show(
+              context: context,
+              contentType: 'cook_snap',
+              contentId: snap.id,
+              contentOwnerId: snap.userId,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showAddSnapSheet(BuildContext context, CookSnapViewModel vm) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(context.l10n.cookSnapFromCamera),
+              onTap: () {
+                Navigator.pop(ctx);
+                vm.addSnap(source: ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(context.l10n.cookSnapFromGallery),
+              onTap: () {
+                Navigator.pop(ctx);
+                vm.addSnap(source: ImageSource.gallery);
+              },
+            ),
           ],
         ),
       ),

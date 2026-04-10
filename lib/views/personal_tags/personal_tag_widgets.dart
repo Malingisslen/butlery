@@ -82,14 +82,28 @@ class PersonalTagTile extends StatelessWidget {
             ],
           ),
           title: Text(tag.name),
-          subtitle: Text(
-            _buildSubtitle(context, usageCount, ruleCount, enabledRuleCount),
-            style: AppTextStyles.bodySmall.copyWith(
-              color: isUnused
-                  ? colorScheme.onSurfaceVariant
-                      .withValues(alpha: AppDimensions.opacityDark)
-                  : colorScheme.onSurfaceVariant,
-            ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _buildSubtitle(
+                    context, usageCount, ruleCount, enabledRuleCount),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: isUnused
+                      ? colorScheme.onSurfaceVariant
+                          .withValues(alpha: AppDimensions.opacityDark)
+                      : colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (usageCount > 0 && viewModel.maxUsageCount > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: TagUsageBar(
+                    usageCount: usageCount,
+                    maxCount: viewModel.maxUsageCount,
+                  ),
+                ),
+            ],
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => _navigateToTagDetail(context),
@@ -192,6 +206,102 @@ class PersonalTagSection extends StatelessWidget {
               ),
             ),
           ),
+      ],
+    );
+  }
+}
+
+/// Inline usage bar showing relative tag usage.
+class TagUsageBar extends StatelessWidget {
+  const TagUsageBar({
+    super.key,
+    required this.usageCount,
+    required this.maxCount,
+  });
+
+  final int usageCount;
+  final int maxCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final fraction = maxCount > 0 ? usageCount / maxCount : 0.0;
+
+    return Row(
+      children: [
+        Expanded(
+          child: LinearProgressIndicator(
+            value: fraction,
+            backgroundColor: colorScheme.surfaceContainerHighest,
+            color: colorScheme.primary,
+            minHeight: 6,
+            borderRadius: BorderRadius.zero,
+          ),
+        ),
+        const SizedBox(width: AppDimensions.spacingSm),
+        Text(
+          '$usageCount',
+          style: AppTextStyles.labelSmall.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Collapsible section showing tags with zero usage and a "delete all" action.
+class UnusedTagsSection extends StatelessWidget {
+  const UnusedTagsSection({
+    super.key,
+    required this.unusedTags,
+    required this.onDeleteAll,
+    required this.viewModel,
+  });
+
+  final List<PersonalTag> unusedTags;
+  final VoidCallback onDeleteAll;
+  final PersonalTagViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ExpansionTile(
+      leading: Icon(
+        Icons.label_off,
+        color: colorScheme.onSurfaceVariant,
+        size: AppDimensions.iconSizeM,
+      ),
+      title: Text(
+        context.l10n.personalTagUnusedTags(unusedTags.length),
+        style: AppTextStyles.labelLarge.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+      children: [
+        ...unusedTags.map((tag) => PersonalTagTile(
+              key: ValueKey(tag.id),
+              tag: tag,
+              viewModel: viewModel,
+            )),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingLg,
+            vertical: AppDimensions.spacingSm,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: onDeleteAll,
+              icon: Icon(Icons.delete_sweep, color: colorScheme.error),
+              label: Text(
+                context.l10n.personalTagDeleteAllUnused,
+                style: TextStyle(color: colorScheme.error),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -21195,6 +21195,108 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ingredienser'**
   String get tagDecisionIngredients;
+
+  /// No description provided for @cookSnapSectionTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagade detta'**
+  String get cookSnapSectionTitle;
+
+  /// No description provided for @cookSnapSectionTitleCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagade detta ({count})'**
+  String cookSnapSectionTitleCount(int count);
+
+  /// No description provided for @cookSnapAddTooltip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till matfoto'**
+  String get cookSnapAddTooltip;
+
+  /// No description provided for @cookSnapEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen har lagat detta än'**
+  String get cookSnapEmptyTitle;
+
+  /// No description provided for @cookSnapEmptySubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bli först!'**
+  String get cookSnapEmptySubtitle;
+
+  /// No description provided for @cookSnapFromCamera.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta foto'**
+  String get cookSnapFromCamera;
+
+  /// No description provided for @cookSnapFromGallery.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj från galleri'**
+  String get cookSnapFromGallery;
+
+  /// No description provided for @cookSnapDelete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort foto'**
+  String get cookSnapDelete;
+
+  /// No description provided for @cookSnapReport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapportera foto'**
+  String get cookSnapReport;
+
+  /// No description provided for @collectionInsightsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Min samling'**
+  String get collectionInsightsTitle;
+
+  /// No description provided for @collectionInsightsInsufficientData.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till fler recept för att se mönster'**
+  String get collectionInsightsInsufficientData;
+
+  /// No description provided for @collectionInsightsTopCuisines.
+  ///
+  /// In sv, this message translates to:
+  /// **'Topkök'**
+  String get collectionInsightsTopCuisines;
+
+  /// No description provided for @personalTagUnusedTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Oanvända taggar ({count})'**
+  String personalTagUnusedTags(int count);
+
+  /// No description provided for @personalTagDeleteAllUnused.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera alla oanvända'**
+  String get personalTagDeleteAllUnused;
+
+  /// No description provided for @personalTagDeleteAllUnusedConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera oanvända taggar?'**
+  String get personalTagDeleteAllUnusedConfirm;
+
+  /// No description provided for @personalTagDeleteAllUnusedMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 tagg utan recept kommer att tas bort.} other{{count} taggar utan recept kommer att tas bort.}}'**
+  String personalTagDeleteAllUnusedMessage(int count);
+
+  /// No description provided for @personalTagUnusedDeleted.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 oanvänd tagg borttagen} other{{count} oanvända taggar borttagna}}'**
+  String personalTagUnusedDeleted(int count);
 }
 
 class _AppLocalizationsDelegate

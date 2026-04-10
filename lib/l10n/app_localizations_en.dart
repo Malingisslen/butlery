@@ -12337,4 +12337,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tagDecisionIngredients => 'Ingredients';
+
+  @override
+  String get cookSnapSectionTitle => 'Cooked this';
+
+  @override
+  String cookSnapSectionTitleCount(int count) {
+    return 'Cooked this ($count)';
+  }
+
+  @override
+  String get cookSnapAddTooltip => 'Add cooking photo';
+
+  @override
+  String get cookSnapEmptyTitle => 'No one has cooked this yet';
+
+  @override
+  String get cookSnapEmptySubtitle => 'Be the first!';
+
+  @override
+  String get cookSnapFromCamera => 'Take photo';
+
+  @override
+  String get cookSnapFromGallery => 'Choose from gallery';
+
+  @override
+  String get cookSnapDelete => 'Delete photo';
+
+  @override
+  String get cookSnapReport => 'Report photo';
+
+  @override
+  String get collectionInsightsTitle => 'My collection';
+
+  @override
+  String get collectionInsightsInsufficientData =>
+      'Add more recipes to see patterns';
+
+  @override
+  String get collectionInsightsTopCuisines => 'Top cuisines';
+
+  @override
+  String personalTagUnusedTags(int count) {
+    return 'Unused tags ($count)';
+  }
+
+  @override
+  String get personalTagDeleteAllUnused => 'Delete all unused';
+
+  @override
+  String get personalTagDeleteAllUnusedConfirm => 'Delete unused tags?';
+
+  @override
+  String personalTagDeleteAllUnusedMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags with no recipes will be deleted.',
+      one: '1 tag with no recipes will be deleted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String personalTagUnusedDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unused tags deleted',
+      one: '1 unused tag deleted',
+    );
+    return '$_temp0';
+  }
 }

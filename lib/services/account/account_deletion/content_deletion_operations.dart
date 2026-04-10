@@ -89,6 +89,24 @@ class ContentDeletionOperations {
     }
   }
 
+  /// Delete cook snaps (GDPR Article 17 - Right to Erasure)
+  Future<bool> deleteCookSnaps(String userId) async {
+    try {
+      final snapsSnapshot = await _firestore
+          .collection(FirestoreCollections.cookSnaps)
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      await batchDeleteDocs(_firestore, snapsSnapshot.docs);
+      app_logger.AppLogger.info(
+          '[$_logTag] Deleted ${snapsSnapshot.docs.length} cook snaps');
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to delete cook snaps', e);
+      return false;
+    }
+  }
+
   /// Delete personal tag groups (GDPR Article 17 - Right to Erasure)
   Future<bool> deletePersonalTagGroups(String userId) async {
     try {

@@ -46,6 +46,10 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
+import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_cook_snap_repository.dart';
+import 'package:butlery/services/cook_snap_service.dart';
+
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
@@ -79,6 +83,8 @@ class SocialModule implements DIModule {
         SocialRecipeCoordinator,
         SocialMenuCoordinator,
         SocialShoppingCoordinator,
+        CookSnapRepository,
+        CookSnapService,
         FirebaseReportRepository,
         ReportService,
         ContentFilterService,
@@ -271,6 +277,19 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<FirebaseSharedShoppingRepository>(
         () => FirebaseSharedShoppingRepository(
             authRepository: container<AuthRepository>()),
+      );
+
+      // CookSnap repository and service
+      container.registerLazySingleton<CookSnapRepository>(
+        () => FirebaseCookSnapRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      container.registerLazySingleton<CookSnapService>(
+        () => CookSnapService(
+          repository: container<CookSnapRepository>(),
+        ),
       );
 
       // Content reporting repository and service

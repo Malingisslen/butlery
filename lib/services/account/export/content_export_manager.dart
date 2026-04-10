@@ -243,4 +243,35 @@ class ContentExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// Export all cook snaps (GDPR Article 20)
+  Future<Map<String, dynamic>> exportCookSnaps(String userId) async {
+    try {
+      final snaps = <Map<String, dynamic>>[];
+      final snapLimit = ExportPaginationHelper.getLimitForType('cook_snaps');
+
+      final snapsSnapshot = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection(FirestoreCollections.cookSnaps)
+            .where('userId', isEqualTo: userId),
+        maxDocuments: snapLimit,
+      );
+
+      for (final doc in snapsSnapshot) {
+        snaps.add({
+          'snap_id': doc.id,
+          'data': sanitizeForJson(doc.data()),
+        });
+      }
+
+      return {
+        'total_count': snaps.length,
+        'cook_snaps': snaps,
+        if (snaps.length >= snapLimit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export cook snaps', e);
+      return {'error': e.toString()};
+    }
+  }
 }

@@ -40,6 +40,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/widgets/recipe/collection_insights_card.dart';
 import 'package:butlery/widgets/recipe/recipe_shelf.dart';
 
 // Service integration for functionality and data management
@@ -853,8 +854,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       child: Column(
         children: [
           if (viewModel.showOnboardingBanner) _buildOnboardingBanner(viewModel),
-          if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters)
+          if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters) ...[
+            CollectionInsightsCard(recipes: viewModel.recipes),
             _buildDiscoveryShelves(context.read<RecipeQueryViewModel>()),
+          ],
           Expanded(
             child: viewModel.isGridView
                 ? GridView.builder(
