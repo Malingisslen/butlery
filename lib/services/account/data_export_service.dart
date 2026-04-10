@@ -86,6 +86,7 @@ class DataExportService extends BaseService {
       'cook_snaps': _contentManager.exportCookSnaps(userId),
       'activity_events': _contentManager.exportActivityEvents(userId),
       'weekly_menu_plans': _contentManager.exportWeeklyMenuPlans(userId),
+      'pantry_items': _contentManager.exportPantryItems(userId),
       'friends': _socialManager.exportFriends(userId),
       'messages': _socialManager.exportMessages(userId),
       'shared_content': _socialManager.exportSharedContent(userId),

@@ -8531,5 +8531,49 @@
   },
   "mealSlotLunch": "Lunch",
   "mealSlotMiddag": "Dinner",
-  "mealSlotOvrigt": "Other"
+  "mealSlotOvrigt": "Other",
+
+  "pantrySectionExpiring": "Expiring soon",
+  "pantrySectionFridge": "Fridge",
+  "pantrySectionFreezer": "Freezer",
+  "pantrySectionPantry": "Pantry",
+  "pantrySectionSpiceRack": "Spice rack",
+  "pantryLocationFridge": "Fridge",
+  "pantryLocationFreezer": "Freezer",
+  "pantryLocationPantry": "Pantry",
+  "pantryLocationSpiceRack": "Spice rack",
+  "pantryLocationLabel": "Location",
+  "pantryExpiryExpired": "Expired",
+  "pantryExpiryToday": "Expires today",
+  "pantryExpiryInDays": "{days, plural, =1{Expires in 1 day} other{Expires in {days} days}}",
+  "@pantryExpiryInDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "pantryExpiryDate": "Expiry date",
+  "pantryExpiryLabel": "Expires",
+  "pantryExpiryNone": "No expiry date",
+  "pantryEmptyTitle": "Your pantry is empty",
+  "pantryEmptyDescription": "Add ingredients to find recipes you can cook with what you have",
+  "pantryAddIngredient": "Add ingredient",
+  "pantryAddSheetTitle": "Add ingredient",
+  "pantryEditSheetTitle": "Edit ingredient",
+  "pantryIngredientLabel": "Ingredient",
+  "pantryIngredientHint": "Search ingredient...",
+  "pantryQuantityLabel": "Quantity",
+  "pantryUnitLabel": "Unit",
+  "pantryNoteLabel": "Note (optional)",
+  "pantryAddAction": "ADD",
+  "pantryDeleteConfirmTitle": "Remove ingredient?",
+  "pantryDeleteConfirmMessage": "The ingredient will be removed from the pantry",
+  "filterWithMyIngredients": "With my ingredients",
+  "shoppingTabLists": "Shopping lists",
+  "shoppingTabPantry": "Pantry",
+  "recipeCardPantryMatchA11y": "Matches {percent}% of your ingredients",
+  "@recipeCardPantryMatchA11y": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  }
 }

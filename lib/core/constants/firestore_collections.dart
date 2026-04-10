@@ -68,6 +68,7 @@ abstract final class FirestoreCollections {
   static const String userSharedShoppingLists = 'user_shared_shopping_lists';
   static const String categoryPreferences = 'category_preferences';
   static const String listCategoryOrders = 'list_category_orders';
+  static const String pantry = 'pantry';
 
   // ── Shared content subcollections ──
 

@@ -32,6 +32,9 @@ import 'package:butlery/views/unified_shopping/widgets/category_order_sheet.dart
 import 'package:butlery/widgets/common/main_view_header.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
+// Pantry sub-tab
+import 'package:butlery/views/pantry/pantry_view.dart';
+
 /// Shopping list management view using facade pattern architecture.
 class UnifiedShoppingView extends StatefulWidget {
   const UnifiedShoppingView({super.key});
@@ -40,13 +43,29 @@ class UnifiedShoppingView extends StatefulWidget {
   State<UnifiedShoppingView> createState() => _UnifiedShoppingViewState();
 }
 
-class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
+class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
+    with TickerProviderStateMixin {
   late UnifiedShoppingViewModel _viewModel;
+  late TabController _tabController;
+  int _currentTabIndex = 0;
+  // Delay instantiating PantryView until the user first visits the tab,
+  // so pantry data isn't loaded for users who only use shopping lists.
+  bool _pantryTabVisited = false;
 
   @override
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<UnifiedShoppingViewModel>();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      if (_currentTabIndex != _tabController.index) {
+        setState(() {
+          _currentTabIndex = _tabController.index;
+          if (_currentTabIndex == 1) _pantryTabVisited = true;
+        });
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _viewModel.initialize();
     });
@@ -63,75 +82,113 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
               viewModel.activeList?.items.where((item) => item.bought).length ??
                   0;
 
+          final isShoppingTab = _currentTabIndex == 0;
+          final cs = Theme.of(context).colorScheme;
+
           return Scaffold(
             appBar: MainViewHeader(
               title: context.l10n.shoppingListTitle,
               countBadge:
                   context.l10n.shoppingCountBadge(itemCount, boughtCount),
-              actions: ShoppingAppBar.buildHeaderActions(
-                context,
-                viewModel,
-                _showCreateListDialog,
-                _showShoppingShareDialog,
-                _shareListExternally,
-                () => _showSharingStatus(viewModel),
-                onBrowseTemplates: _showTemplateBrowser,
-              ),
-            ),
-            floatingActionButton: ShoppingAppBar.buildFloatingActionButton(
-              context,
-              _showAddItemDialog,
-            ),
-            body: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: double.infinity,
-                    tablet: 800,
-                    desktop: 900,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    // Collaborative offline indicator for connection awareness
-                    if (!viewModel.isOnline)
-                      LayoutComponents.offlineIndicator(),
-
-                    // Shopping list header with statistics and bulk operations
-                    ShoppingListHeader.build(
+              actions: isShoppingTab
+                  ? ShoppingAppBar.buildHeaderActions(
                       context,
                       viewModel,
-                      () => _clearBoughtItemsWithConfirmation(viewModel),
-                      () => _uncheckAllItems(viewModel),
-                      () => _showRenameListDialog(viewModel),
-                      () => _showDeleteListConfirmation(viewModel),
-                      onConvertList: _canConvertActiveList(viewModel)
-                          ? () => _convertActiveList(viewModel)
-                          : null,
-                      onSortCategories: viewModel.activeList != null
-                          ? () => _showCategoryOrderSheet(viewModel)
-                          : null,
-                    ),
-
-                    // Main shopping list content with item management
-                    Expanded(
-                      child: ShoppingListContent.build(
-                        context,
-                        viewModel,
-                        _onItemTap,
-                        _onEditItem,
-                        _onDeleteItem,
-                        _showCreateListDialog,
-                        _showAddItemDialog,
+                      _showCreateListDialog,
+                      _showShoppingShareDialog,
+                      _shareListExternally,
+                      () => _showSharingStatus(viewModel),
+                      onBrowseTemplates: _showTemplateBrowser,
+                    )
+                  : const <Widget>[],
+            ),
+            floatingActionButton: isShoppingTab
+                ? ShoppingAppBar.buildFloatingActionButton(
+                    context,
+                    _showAddItemDialog,
+                  )
+                : null,
+            body: Column(
+              children: [
+                ColoredBox(
+                  color: cs.surface,
+                  child: TabBar(
+                    controller: _tabController,
+                    tabs: [
+                      Tab(
+                        icon: const Icon(Icons.shopping_cart_outlined),
+                        text: context.l10n.shoppingTabLists,
                       ),
-                    ),
-                  ],
+                      Tab(
+                        icon: const Icon(Icons.kitchen_outlined),
+                        text: context.l10n.shoppingTabPantry,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildShoppingTab(context, viewModel),
+                      _pantryTabVisited
+                          ? const PantryView()
+                          : const SizedBox.shrink(),
+                    ],
+                  ),
+                ),
+              ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildShoppingTab(
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+  ) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: LayoutComponents.valueFor(
+            context: context,
+            mobile: double.infinity,
+            tablet: 800,
+            desktop: 900,
+          ),
+        ),
+        child: Column(
+          children: [
+            if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
+            ShoppingListHeader.build(
+              context,
+              viewModel,
+              () => _clearBoughtItemsWithConfirmation(viewModel),
+              () => _uncheckAllItems(viewModel),
+              () => _showRenameListDialog(viewModel),
+              () => _showDeleteListConfirmation(viewModel),
+              onConvertList: _canConvertActiveList(viewModel)
+                  ? () => _convertActiveList(viewModel)
+                  : null,
+              onSortCategories: viewModel.activeList != null
+                  ? () => _showCategoryOrderSheet(viewModel)
+                  : null,
+            ),
+            Expanded(
+              child: ShoppingListContent.build(
+                context,
+                viewModel,
+                _onItemTap,
+                _onEditItem,
+                _onDeleteItem,
+                _showCreateListDialog,
+                _showAddItemDialog,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -463,6 +520,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Event handler cleanup with proper subscription management
   @override
   void dispose() {
+    _tabController.dispose();
     super.dispose();
   }
 }

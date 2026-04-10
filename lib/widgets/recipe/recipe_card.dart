@@ -49,6 +49,12 @@ class RecipeCard extends StatelessWidget {
   final bool showAnalysisStatus;
   final void Function(Recipe)? onFavoriteToggle;
 
+  /// Pantry match percentage (0.0..1.0). When non-null, renders a small
+  /// badge in the card showing how much of the recipe the user's pantry
+  /// already covers. Only used when the "Laga med vad jag har" filter is
+  /// active in the recipe list.
+  final double? matchPercent;
+
   const RecipeCard({
     super.key,
     required this.recipe,
@@ -73,6 +79,7 @@ class RecipeCard extends StatelessWidget {
     this.showMealType = false, // UI Redesign: Clean list cards by default
     this.showAnalysisStatus =
         false, // UI Redesign: Hide analysis status in list
+    this.matchPercent,
   });
 
   @override
@@ -383,6 +390,8 @@ class RecipeCard extends StatelessWidget {
 
     final hasRating = recipe.rating != null && recipe.rating! > 0;
 
+    final hasMatchPercent = matchPercent != null;
+
     return Row(
       children: [
         if (parts.isNotEmpty)
@@ -398,7 +407,37 @@ class RecipeCard extends StatelessWidget {
           if (parts.isNotEmpty) const SizedBox(width: AppDimensions.spacingSm),
           _buildRatingPill(context),
         ],
+        if (hasMatchPercent) ...[
+          if (parts.isNotEmpty || hasRating)
+            const SizedBox(width: AppDimensions.spacingSm),
+          _buildMatchBadge(context, matchPercent!),
+        ],
       ],
+    );
+  }
+
+  Widget _buildMatchBadge(BuildContext context, double percent) {
+    final cs = Theme.of(context).colorScheme;
+    final pct = (percent * 100).round().clamp(0, 100);
+    return Semantics(
+      label: context.l10n.recipeCardPantryMatchA11y(pct),
+      child: Container(
+        padding: AppDimensions.paddingSymmetric6x2,
+        decoration: BoxDecoration(
+          color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+          border: Border.all(
+            color:
+                cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          ),
+        ),
+        child: Text(
+          '$pct%',
+          style: AppTextStyles.badge.copyWith(
+            color: cs.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
     );
   }
 

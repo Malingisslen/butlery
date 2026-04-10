@@ -22,6 +22,7 @@ import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/core/di/modules/search_module.dart';
 import 'package:butlery/core/di/modules/tagging_module.dart';
+import 'package:butlery/core/di/modules/pantry_module.dart';
 
 // Application provider
 import 'package:butlery/core/providers/application_provider.dart';
@@ -224,6 +225,7 @@ Future<void> _initializeModularSystem() async {
     CoreModule(),
     SearchModule(), // Search provider (Algolia/Firestore fallback)
     TaggingModule(), // Automatic recipe tagging system
+    PantryModule(), // Skafferiet — user's pantry inventory
     ContentModule(),
     SocialModule(),
     MessagingModule(),

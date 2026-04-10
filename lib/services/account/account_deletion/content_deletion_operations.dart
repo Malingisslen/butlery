@@ -148,6 +148,25 @@ class ContentDeletionOperations {
     }
   }
 
+  /// Delete pantry items (GDPR Article 17 - Right to Erasure)
+  Future<bool> deletePantryItems(String userId) async {
+    try {
+      final pantrySnapshot = await _firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.pantry)
+          .get();
+
+      await batchDeleteDocs(_firestore, pantrySnapshot.docs);
+      app_logger.AppLogger.info(
+          '[$_logTag] Deleted ${pantrySnapshot.docs.length} pantry items');
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to delete pantry items', e);
+      return false;
+    }
+  }
+
   /// Delete personal tag groups (GDPR Article 17 - Right to Erasure)
   Future<bool> deletePersonalTagGroups(String userId) async {
     try {

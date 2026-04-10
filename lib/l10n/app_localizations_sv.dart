@@ -12573,4 +12573,115 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mealSlotOvrigt => 'Övrigt';
+
+  @override
+  String get pantrySectionExpiring => 'Går ut snart';
+
+  @override
+  String get pantrySectionFridge => 'Kylskåp';
+
+  @override
+  String get pantrySectionFreezer => 'Frys';
+
+  @override
+  String get pantrySectionPantry => 'Skafferi';
+
+  @override
+  String get pantrySectionSpiceRack => 'Kryddhylla';
+
+  @override
+  String get pantryLocationFridge => 'Kylskåp';
+
+  @override
+  String get pantryLocationFreezer => 'Frys';
+
+  @override
+  String get pantryLocationPantry => 'Skafferi';
+
+  @override
+  String get pantryLocationSpiceRack => 'Kryddhylla';
+
+  @override
+  String get pantryLocationLabel => 'Plats';
+
+  @override
+  String get pantryExpiryExpired => 'Utgånget';
+
+  @override
+  String get pantryExpiryToday => 'Utgår idag';
+
+  @override
+  String pantryExpiryInDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Utgår om $days dagar',
+      one: 'Utgår om 1 dag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pantryExpiryDate => 'Utgångsdatum';
+
+  @override
+  String get pantryExpiryLabel => 'Utgår';
+
+  @override
+  String get pantryExpiryNone => 'Inget utgångsdatum';
+
+  @override
+  String get pantryEmptyTitle => 'Ditt skafferi är tomt';
+
+  @override
+  String get pantryEmptyDescription =>
+      'Lägg till ingredienser för att hitta recept du kan laga med det du har';
+
+  @override
+  String get pantryAddIngredient => 'Lägg till ingrediens';
+
+  @override
+  String get pantryAddSheetTitle => 'Lägg till ingrediens';
+
+  @override
+  String get pantryEditSheetTitle => 'Redigera ingrediens';
+
+  @override
+  String get pantryIngredientLabel => 'Ingrediens';
+
+  @override
+  String get pantryIngredientHint => 'Sök ingrediens...';
+
+  @override
+  String get pantryQuantityLabel => 'Mängd';
+
+  @override
+  String get pantryUnitLabel => 'Enhet';
+
+  @override
+  String get pantryNoteLabel => 'Anteckning (valfritt)';
+
+  @override
+  String get pantryAddAction => 'LÄGG TILL';
+
+  @override
+  String get pantryDeleteConfirmTitle => 'Ta bort ingrediens?';
+
+  @override
+  String get pantryDeleteConfirmMessage =>
+      'Ingrediensen tas bort från skafferiet';
+
+  @override
+  String get filterWithMyIngredients => 'Med mina ingredienser';
+
+  @override
+  String get shoppingTabLists => 'Inköpslistor';
+
+  @override
+  String get shoppingTabPantry => 'Skafferiet';
+
+  @override
+  String recipeCardPantryMatchA11y(int percent) {
+    return 'Matchar $percent% av dina ingredienser';
+  }
 }

@@ -12543,4 +12543,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mealSlotOvrigt => 'Other';
+
+  @override
+  String get pantrySectionExpiring => 'Expiring soon';
+
+  @override
+  String get pantrySectionFridge => 'Fridge';
+
+  @override
+  String get pantrySectionFreezer => 'Freezer';
+
+  @override
+  String get pantrySectionPantry => 'Pantry';
+
+  @override
+  String get pantrySectionSpiceRack => 'Spice rack';
+
+  @override
+  String get pantryLocationFridge => 'Fridge';
+
+  @override
+  String get pantryLocationFreezer => 'Freezer';
+
+  @override
+  String get pantryLocationPantry => 'Pantry';
+
+  @override
+  String get pantryLocationSpiceRack => 'Spice rack';
+
+  @override
+  String get pantryLocationLabel => 'Location';
+
+  @override
+  String get pantryExpiryExpired => 'Expired';
+
+  @override
+  String get pantryExpiryToday => 'Expires today';
+
+  @override
+  String pantryExpiryInDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Expires in $days days',
+      one: 'Expires in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pantryExpiryDate => 'Expiry date';
+
+  @override
+  String get pantryExpiryLabel => 'Expires';
+
+  @override
+  String get pantryExpiryNone => 'No expiry date';
+
+  @override
+  String get pantryEmptyTitle => 'Your pantry is empty';
+
+  @override
+  String get pantryEmptyDescription =>
+      'Add ingredients to find recipes you can cook with what you have';
+
+  @override
+  String get pantryAddIngredient => 'Add ingredient';
+
+  @override
+  String get pantryAddSheetTitle => 'Add ingredient';
+
+  @override
+  String get pantryEditSheetTitle => 'Edit ingredient';
+
+  @override
+  String get pantryIngredientLabel => 'Ingredient';
+
+  @override
+  String get pantryIngredientHint => 'Search ingredient...';
+
+  @override
+  String get pantryQuantityLabel => 'Quantity';
+
+  @override
+  String get pantryUnitLabel => 'Unit';
+
+  @override
+  String get pantryNoteLabel => 'Note (optional)';
+
+  @override
+  String get pantryAddAction => 'ADD';
+
+  @override
+  String get pantryDeleteConfirmTitle => 'Remove ingredient?';
+
+  @override
+  String get pantryDeleteConfirmMessage =>
+      'The ingredient will be removed from the pantry';
+
+  @override
+  String get filterWithMyIngredients => 'With my ingredients';
+
+  @override
+  String get shoppingTabLists => 'Shopping lists';
+
+  @override
+  String get shoppingTabPantry => 'Pantry';
+
+  @override
+  String recipeCardPantryMatchA11y(int percent) {
+    return 'Matches $percent% of your ingredients';
+  }
 }

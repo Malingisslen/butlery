@@ -18,6 +18,8 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
 import 'package:butlery/viewmodels/recipe_list/recipe_selection_manager.dart';
 import 'package:butlery/viewmodels/recipe_list/recipe_delete_manager.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
@@ -67,6 +69,16 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Whether to show only favorite recipes.
   bool _favoritesOnly = false;
 
+  /// When enabled, the recipe list is filtered to recipes that the pantry
+  /// can (partially) cover, with a match-percent attached for badge display.
+  bool _pantryOnly = false;
+
+  /// Recipe id → match percent for the currently loaded pantry filter.
+  /// Populated lazily in [_refreshPantryMatches] — empty when the filter
+  /// is inactive or still loading.
+  Map<String, double> _pantryMatches = const {};
+  bool _isLoadingPantryMatches = false;
+
   // Grid/list view toggle
   bool _isGridView = false;
   bool get isGridView => _isGridView;
@@ -95,6 +107,9 @@ class RecipeListViewModel extends ChangeNotifier {
   Set<String>? _lastPersonalTagFilters;
   Set<String>? _lastExcludedPersonalTagFilters;
   bool? _lastFavoritesOnly;
+
+  /// Last pantry-only state for cache validation.
+  bool? _lastPantryOnly;
 
   RecipeListViewModel({
     UnifiedRecipeService? recipeService,
@@ -163,6 +178,17 @@ class RecipeListViewModel extends ChangeNotifier {
 
   bool get favoritesOnly => _favoritesOnly;
 
+  /// Whether the "Laga med vad jag har" (cook with what I have) pantry
+  /// filter is active.
+  bool get pantryOnly => _pantryOnly;
+
+  /// Match percent (0..1) per recipe id while the pantry filter is active.
+  /// Returns an empty map when the filter is off or still loading.
+  Map<String, double> get pantryMatches => _pantryMatches;
+
+  /// Whether the pantry match list is currently being fetched.
+  bool get isLoadingPantryMatches => _isLoadingPantryMatches;
+
   /// Whether local writes are pending server confirmation (Firestore metadata).
   bool get hasPendingWrites => _recipeService.hasPendingWrites;
 
@@ -177,7 +203,8 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeDietaryFilters.isNotEmpty ||
       _activePersonalTagFilters.isNotEmpty ||
       _excludedPersonalTagFilters.isNotEmpty ||
-      _favoritesOnly;
+      _favoritesOnly ||
+      _pantryOnly;
 
   /// Whether allergen or dietary filters are specifically active.
   /// These filters require tagResult to be present, so untagged recipes are excluded.
@@ -379,6 +406,49 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Toggles the "cook with what I have" pantry filter. When turned on,
+  /// kicks off an async load of the match map; when turned off, clears
+  /// the cached matches so they can't leak into other filters.
+  void togglePantryFilter() {
+    _pantryOnly = !_pantryOnly;
+    _invalidateCache();
+    if (_pantryOnly) {
+      unawaited(_refreshPantryMatches());
+    } else {
+      _pantryMatches = const {};
+    }
+    notifyListeners();
+  }
+
+  /// Loads (or reloads) the pantry-to-recipe match percentages from
+  /// [PantryService]. Silent on failure — the filter just yields no
+  /// matches rather than showing an error banner.
+  Future<void> _refreshPantryMatches() async {
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    if (userId == null) {
+      _pantryMatches = const {};
+      return;
+    }
+    _isLoadingPantryMatches = true;
+    notifyListeners();
+    try {
+      final service = ServiceLocator.get<PantryService>();
+      final matches = await service.getMatchingRecipes(
+        userId,
+        _recipeService.recipes,
+      );
+      _pantryMatches = {
+        for (final m in matches) m.recipe.id: m.matchPercent,
+      };
+    } catch (_) {
+      _pantryMatches = const {};
+    } finally {
+      _isLoadingPantryMatches = false;
+      _invalidateCache();
+      if (!_isDisposed) notifyListeners();
+    }
+  }
+
   void clearAllFilters() {
     _activeTimeFilters.clear();
     _activeMealTypeFilters.clear();
@@ -388,6 +458,8 @@ class RecipeListViewModel extends ChangeNotifier {
     _activePersonalTagFilters.clear();
     _excludedPersonalTagFilters.clear();
     _favoritesOnly = false;
+    _pantryOnly = false;
+    _pantryMatches = const {};
     _invalidateCache();
     notifyListeners();
   }
@@ -487,7 +559,8 @@ class RecipeListViewModel extends ChangeNotifier {
         _setEquals(_lastPersonalTagFilters, _activePersonalTagFilters) &&
         _setEquals(
             _lastExcludedPersonalTagFilters, _excludedPersonalTagFilters) &&
-        _lastFavoritesOnly == _favoritesOnly) {
+        _lastFavoritesOnly == _favoritesOnly &&
+        _lastPantryOnly == _pantryOnly) {
       return _cachedFilteredRecipes!;
     }
 
@@ -536,6 +609,15 @@ class RecipeListViewModel extends ChangeNotifier {
       filtered = filtered.where((r) => r.isFavorite).toList();
     }
 
+    // Pantry match filter — keep only recipes that have a known match
+    // percent from the last pantry lookup. An empty map means the lookup
+    // hasn't resolved yet or returned nothing, which correctly yields an
+    // empty list until the view rebuilds after notifyListeners().
+    if (_pantryOnly) {
+      filtered =
+          filtered.where((r) => _pantryMatches.containsKey(r.id)).toList();
+    }
+
     // Search
     if (_searchQuery.isNotEmpty) {
       filtered = _searchService.searchRecipes(filtered, _searchQuery);
@@ -561,6 +643,7 @@ class RecipeListViewModel extends ChangeNotifier {
     _lastPersonalTagFilters = Set.from(_activePersonalTagFilters);
     _lastExcludedPersonalTagFilters = Set.from(_excludedPersonalTagFilters);
     _lastFavoritesOnly = _favoritesOnly;
+    _lastPantryOnly = _pantryOnly;
 
     // PERFORMANCE FIX: Apply pagination limit to prevent UI performance issues
     return sorted.take(_displayLimit).toList();
@@ -744,6 +827,9 @@ class RecipeListViewModel extends ChangeNotifier {
 
   void _onRecipesChanged() {
     _invalidateCache();
+    if (_pantryOnly) {
+      unawaited(_refreshPantryMatches());
+    }
     notifyListeners();
   }
 

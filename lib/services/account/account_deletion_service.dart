@@ -140,6 +140,7 @@ class AccountDeletionService extends BaseService {
         'cook_snaps': () => _contentOps.deleteCookSnaps(userId),
         'activity_events': () => _contentOps.deleteActivityEvents(userId),
         'weekly_menu_plans': () => _contentOps.deleteWeeklyMenuPlans(userId),
+        'pantry_items': () => _contentOps.deletePantryItems(userId),
         'friend_connections': () => _socialOps.removeFriendConnections(userId),
         'messages': () => _socialOps.deleteMessages(userId),
         'shared_content': () => _socialOps.removeFromSharedContent(userId),
