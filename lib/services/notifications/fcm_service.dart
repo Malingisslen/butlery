@@ -80,6 +80,7 @@ class FCMService with ErrorHandlingMixin {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static String? _currentToken;
   static bool _isInitialized = false;
+  static bool _pushPermissionsRequested = false;
   static ConsentService? _consentService;
 
   // Callbacks for handling different notification scenarios
@@ -122,6 +123,9 @@ class FCMService with ErrorHandlingMixin {
         _onMessageOpenedApp = onMessageOpenedApp;
         _consentService = consentService;
 
+        // Listen for mid-session consent changes (BUT-356)
+        _consentService?.onConsentChanged = _onConsentChanged;
+
         await _initializeNotificationChannels();
         await _setupMessageHandlers();
 
@@ -130,6 +134,7 @@ class FCMService with ErrorHandlingMixin {
         if (hasConsent) {
           await _requestPermissions();
           await _refreshToken();
+          _pushPermissionsRequested = true;
         } else {
           AppLogger.info(
               '🔔 FCM: Skipping permission request — pushNotifications consent not granted');
@@ -155,6 +160,29 @@ class FCMService with ErrorHandlingMixin {
     return ConsentService.checkSafely(
         _consentService, ConsentPurpose.pushNotifications,
         logTag: 'FCMService');
+  }
+
+  /// Called when consent changes mid-session (BUT-356).
+  /// Re-enables push permissions and token registration if consent is now granted.
+  static bool _consentChangeInProgress = false;
+
+  static Future<void> _onConsentChanged() async {
+    if (_pushPermissionsRequested || _consentChangeInProgress) return;
+    _consentChangeInProgress = true;
+    try {
+      final hasConsent = await _hasPushConsent();
+      if (hasConsent) {
+        AppLogger.info(
+            '🔔 FCM: Push consent granted mid-session — requesting permissions');
+        await _requestPermissions();
+        await _refreshToken();
+        _pushPermissionsRequested = true;
+      }
+    } catch (e) {
+      AppLogger.error('❌ FCM: Failed to handle consent change', e);
+    } finally {
+      _consentChangeInProgress = false;
+    }
   }
 
   /// Initialize Android notification channels (required for Android 8+)
@@ -539,7 +567,9 @@ class FCMService with ErrorHandlingMixin {
       _onMessageOpenedAppSubscription = null;
 
       _currentToken = null;
+      _consentService?.onConsentChanged = null;
       _consentService = null;
+      _pushPermissionsRequested = false;
       _isInitialized = false;
       _onMessageReceived = null;
       _onMessageOpenedApp = null;

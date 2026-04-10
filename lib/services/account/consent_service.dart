@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show VoidCallback, kIsWeb;
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
@@ -19,6 +19,10 @@ class ConsentService extends BaseService {
 
   final auth.AuthRepository _authRepository;
   final FirebaseConsentRepository _consentRepository;
+
+  /// Optional callback invoked after any successful consent save.
+  /// Used by FCMService to re-enable push notifications mid-session.
+  VoidCallback? onConsentChanged;
 
   // Session cache — consent rarely changes, no need to hit Firestore every call
   UserConsent? _cachedConsent;
@@ -95,6 +99,7 @@ class ConsentService extends BaseService {
               _cachePopulated = true;
               app_logger.AppLogger.info(
                   '[$_logTag] Consent saved for user $userId');
+              onConsentChanged?.call();
             }
 
             return success;

@@ -6,7 +6,7 @@
       "npm --prefix functions audit --audit-level=critical",
       "npm --prefix functions run build"
     ],
-    "runtime": "nodejs20"
+    "runtime": "nodejs22"
   },
   "firestore": {
     "rules": "firestore.rules",

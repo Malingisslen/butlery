@@ -25,7 +25,7 @@ void main() {
 
     // Test data
     const testUserId = 'user-123';
-    const currentVersion = '1.0.0';
+    const currentVersion = '1.1.0';
 
     final testConsentPurposes = ConsentPurposes(
       essentialServices: true,
@@ -570,6 +570,96 @@ void main() {
 
         // Assert
         expect(name, 'ConsentService');
+      });
+    });
+
+    group('checkSafely — fail-closed consent gate', () {
+      test('returns false when service is null', () async {
+        final result = await ConsentService.checkSafely(
+          null,
+          ConsentPurpose.pushNotifications,
+        );
+        expect(result, isFalse);
+      });
+
+      test('returns true when consent is granted', () async {
+        when(() => mockConsentRepository.getUserConsent(testUserId))
+            .thenAnswer((_) async => testUserConsent.copyWith(
+                  purposes:
+                      testConsentPurposes.copyWith(pushNotifications: true),
+                ));
+        // Clear cache so fresh fetch happens
+        service.clearConsentCache();
+
+        final result = await ConsentService.checkSafely(
+          service,
+          ConsentPurpose.pushNotifications,
+        );
+        expect(result, isTrue);
+      });
+
+      test('returns false when consent is denied', () async {
+        when(() => mockConsentRepository.getUserConsent(testUserId)).thenAnswer(
+            (_) async => testUserConsent); // pushNotifications=false
+
+        final result = await ConsentService.checkSafely(
+          service,
+          ConsentPurpose.pushNotifications,
+        );
+        expect(result, isFalse);
+      });
+
+      test('returns false when hasConsent throws (fail-closed)', () async {
+        when(() => mockConsentRepository.getUserConsent(testUserId))
+            .thenThrow(Exception('Firestore unavailable'));
+
+        final result = await ConsentService.checkSafely(
+          service,
+          ConsentPurpose.analytics,
+          logTag: 'TestTag',
+        );
+        expect(result, isFalse);
+      });
+    });
+
+    group('onConsentChanged callback', () {
+      test('fires after successful save', () async {
+        var callbackFired = false;
+        service.onConsentChanged = () => callbackFired = true;
+
+        when(() => mockConsentRepository.getUserConsent(testUserId))
+            .thenAnswer((_) async => null);
+        when(() => mockConsentRepository.saveConsent(testUserId, any()))
+            .thenAnswer((_) async => true);
+
+        await service.saveConsent(testConsentPurposes);
+
+        expect(callbackFired, isTrue);
+      });
+
+      test('does not fire on failed save', () async {
+        var callbackFired = false;
+        service.onConsentChanged = () => callbackFired = true;
+
+        when(() => mockConsentRepository.getUserConsent(testUserId))
+            .thenAnswer((_) async => null);
+        when(() => mockConsentRepository.saveConsent(testUserId, any()))
+            .thenAnswer((_) async => false);
+
+        await service.saveConsent(testConsentPurposes);
+
+        expect(callbackFired, isFalse);
+      });
+
+      test('does not fire when no callback is set', () async {
+        // No exception should be thrown
+        when(() => mockConsentRepository.getUserConsent(testUserId))
+            .thenAnswer((_) async => null);
+        when(() => mockConsentRepository.saveConsent(testUserId, any()))
+            .thenAnswer((_) async => true);
+
+        await service.saveConsent(testConsentPurposes);
+        // If we get here without error, null callback was handled safely
       });
     });
 

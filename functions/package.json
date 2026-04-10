@@ -18,7 +18,7 @@
     "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {
@@ -27,7 +27,7 @@
     "firebase-functions": "4.9.0"
   },
   "devDependencies": {
-    "@types/node": "20.19.24",
+    "@types/node": "^22",
     "ts-node": "10.9.2",
     "typescript": "5.9.3"
   },

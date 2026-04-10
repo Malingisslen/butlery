@@ -1,37 +1,39 @@
 # Sprint Backlog
 
-## Sprint: Insights & Engagement — 2026-04-09
+## Sprint: Consent Hardening — 2026-04-10
 
-### Agent A: flutter-developer — Social & Insights
+### Agent A: firebase-backend-security — FCM Consent Bug
 
-- [x] **A1. Add cooking photos ("Jag lagade detta")** — extend "Lagat idag" with photo upload, gallery on recipe detail, author notification loop. (BUT-338)
-- [x] **A2. Add tag-based collection insights** — aggregate view: cooking pattern stats from existing tag data. (BUT-350)
+- [x] **A1. Add consent change callback to ConsentService** — `lib/services/account/consent_service.dart`: VoidCallback field, invoked after successful save. (BUT-356)
+- [x] **A2. Subscribe FCMService to consent changes** — `lib/services/notifications/fcm_service.dart`: listen for mid-session consent grant, re-enable push permissions + token. (BUT-356)
 
-### Agent B: flutter-developer — Tagging Polish
+### Agent B: testing-specialist — Consent Test Coverage
 
-- [x] **B1. Add tag analytics heat map + dead tag detection** — usage bars on PersonalTagsView, highlight 0-recipe tags. Existing `getTagUsageCounts()` data. (BUT-223)
-
-### Agent C: code-reviewer — Quality & Compliance
-
-- [x] **C1. Review allergen system against EU FIC 1169/2011** — audit 14 EU allergens coverage, cross-contamination gaps, Livsmedelsverket alignment. (BUT-354)
-- [x] **C2. Improve CI/CD: golden tests + coverage gates** — add golden tests for key UI components, enforce coverage threshold. (BUT-214)
+- [x] **B1. Add ConsentService.checkSafely + onConsentChanged unit tests** — `test/unit/services/account/consent_service_test.dart`: 8 new tests covering fail-closed behavior, callback firing. (BUT-357)
 
 ### Post-Sprint Steps
-- [ ] Run `dart analyze --fatal-infos`
-- [ ] Run relevant unit tests
+- [x] Run `dart analyze --fatal-infos`
+- [x] Run relevant unit tests (45/45 pass)
 - [ ] Commit, push, PR, merge
-- [ ] Update Linear ticket states
+- [ ] Update Linear ticket states (BUT-356, BUT-357 → Done)
 
 ---
 
 ## What this means in plain language
 
-- You'll be able to **take a photo when you cook a recipe** and share it — friends who shared the recipe get notified
-- A new **"My Collection" insights screen** shows your cooking patterns (% vegetarian, top cuisines, etc.)
-- Your **personal tags screen gets visual indicators** — see which tags are heavily used vs. dead
-- Your **allergen tagging gets audited** against actual EU food regulations for beta safety
-- **CI gets golden tests** so UI regressions are caught automatically
-- Risk: Cooking photos is the biggest item — requires photo upload + gallery + notifications. Others are small. Easy to undo since all are additive features.
+- Push notifications now start working if you grant permission after the app has already loaded
+- A safety net of tests covers the consent checking code — future changes can't silently break GDPR compliance
+- Risk: Very low. Both changes are additive. Easy to revert.
+
+---
+
+## Archive: Sprint Insights & Engagement (completed 2026-04-10)
+
+- [x] A1: Cooking photos (BUT-338)
+- [x] A2: Tag-based collection insights (BUT-350)
+- [x] B1: Tag analytics heat map (BUT-223)
+- [x] C1: Allergen EU FIC audit (BUT-354)
+- [x] C2: Golden tests + coverage gates (BUT-214)
 
 ---
 

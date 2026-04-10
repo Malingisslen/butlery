@@ -84,8 +84,8 @@ export const cleanupOldRateLimits = functions
         for (const limitDoc of rateLimitsSnapshot.docs) {
           const data = limitDoc.data();
 
-          // Check the last write timestamp (written by Firestore rules rateLimitWrite)
-          const lastUpdate = data.lastWrite?.toDate();
+          // Check the last update timestamp (written by rate_limiter middleware)
+          const lastUpdate = data.updatedAt?.toDate();
 
           if (lastUpdate && lastUpdate < cutoffDate) {
             docsToDelete.push(limitDoc.ref);

@@ -24,9 +24,14 @@ export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
 
-// Admin Stats - On-demand callable functions (no scheduler cost)
-export { getAuditLogStats } from "./cleanup/cleanup-audit-logs";
-export { getDeletedIngredientStats } from "./cleanup/cleanup-deleted-ingredients";
+// Cleanup Functions - Scheduled
+export { cleanupExpiredCache } from "./cleanup/cleanup-cache";
+export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-logs";
+export { cleanupDeletedIngredients, getDeletedIngredientStats } from "./cleanup/cleanup-deleted-ingredients";
+export { cleanupOldNotifications } from "./cleanup/cleanup-old-notifications";
+export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
+export { cleanupExpiredFriendRequests } from "./cleanup/cleanup-expired-friend-requests";
+export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
 
 // Social Cleanup - User deletion and moderation
 export { onUserDeleted } from "./cleanup/on-user-deleted";
@@ -57,6 +62,8 @@ export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analyt
 // Analytics Functions - Scheduled engagement
 export { detectLapsedUsers } from "./analytics/detect-lapsed-users";
 export { sendWeeklyActivityDigest } from "./analytics/send-activity-digest";
+export { trackDayNRetention } from "./analytics/track-retention";
+export { correlateNotificationEffectiveness } from "./analytics/correlate-notifications";
 
 // Correction Analytics - Alias learning and domain stats
 export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corrections";
