@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FLUTTER_VERSION: '3.32.4'
+  FLUTTER_VERSION: '3.35.1'
 
 jobs:
   architecture-validation:

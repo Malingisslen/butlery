@@ -589,6 +589,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   }
 
   Widget _buildCookSnapGallery(Recipe recipe) {
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
     return ChangeNotifierProvider(
       create: (_) => CookSnapViewModel(
         service: ServiceLocator.get<CookSnapService>(),
@@ -598,12 +599,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       ),
       child: Consumer<CookSnapViewModel>(
         builder: (context, vm, _) {
-          final userId = ServiceLocator.get<PermissionService>().currentUserId;
           return CookSnapGallery(
             snaps: vm.snaps,
             isLoading: vm.isLoading,
             isUploading: vm.isUploading,
-            currentUserId: userId,
+            currentUserId: currentUserId,
             error: vm.error,
             onAdd: () => _showAddSnapSheet(context, vm),
             onDelete: (snapId) => vm.deleteSnap(snapId),

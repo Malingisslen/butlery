@@ -69,6 +69,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     timeoutSeconds: 120,
     cors: ["https://butlery.app", "https://www.butlery.app"],
     region: "europe-west1",
+    enforceAppCheck: true,
   },
   withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
     // Authentication is handled by withRateLimit middleware

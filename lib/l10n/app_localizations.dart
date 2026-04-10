@@ -21244,6 +21244,24 @@ abstract class AppLocalizations {
   /// **'Mig'**
   String get cookSnapMe;
 
+  /// No description provided for @cookSnapErrorLoad.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda foton'**
+  String get cookSnapErrorLoad;
+
+  /// No description provided for @cookSnapErrorUpload.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda upp foto'**
+  String get cookSnapErrorUpload;
+
+  /// No description provided for @cookSnapErrorDelete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort foto'**
+  String get cookSnapErrorDelete;
+
   /// No description provided for @cookSnapDelete.
   ///
   /// In sv, this message translates to:

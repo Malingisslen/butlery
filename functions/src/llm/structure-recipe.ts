@@ -72,6 +72,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
     timeoutSeconds: 60,
     cors: ["https://butlery.app", "https://www.butlery.app"],
     region: "europe-west1",
+    enforceAppCheck: true,
   },
   withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
     // Authentication is handled by withRateLimit middleware

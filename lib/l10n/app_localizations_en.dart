@@ -12365,6 +12365,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookSnapMe => 'Me';
 
   @override
+  String get cookSnapErrorLoad => 'Could not load photos';
+
+  @override
+  String get cookSnapErrorUpload => 'Could not upload photo';
+
+  @override
+  String get cookSnapErrorDelete => 'Could not delete photo';
+
+  @override
   String get cookSnapDelete => 'Delete photo';
 
   @override

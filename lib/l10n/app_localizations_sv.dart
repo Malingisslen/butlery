@@ -12395,6 +12395,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookSnapMe => 'Mig';
 
   @override
+  String get cookSnapErrorLoad => 'Kunde inte ladda foton';
+
+  @override
+  String get cookSnapErrorUpload => 'Kunde inte ladda upp foto';
+
+  @override
+  String get cookSnapErrorDelete => 'Kunde inte ta bort foto';
+
+  @override
   String get cookSnapDelete => 'Ta bort foto';
 
   @override

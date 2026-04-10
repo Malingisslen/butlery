@@ -8441,6 +8441,9 @@
   "cookSnapFromCamera": "Take photo",
   "cookSnapFromGallery": "Choose from gallery",
   "cookSnapMe": "Me",
+  "cookSnapErrorLoad": "Could not load photos",
+  "cookSnapErrorUpload": "Could not upload photo",
+  "cookSnapErrorDelete": "Could not delete photo",
   "cookSnapDelete": "Delete photo",
   "cookSnapReport": "Report photo",
 

@@ -8441,6 +8441,9 @@
   "cookSnapFromCamera": "Ta foto",
   "cookSnapFromGallery": "Välj från galleri",
   "cookSnapMe": "Mig",
+  "cookSnapErrorLoad": "Kunde inte ladda foton",
+  "cookSnapErrorUpload": "Kunde inte ladda upp foto",
+  "cookSnapErrorDelete": "Kunde inte ta bort foto",
   "cookSnapDelete": "Ta bort foto",
   "cookSnapReport": "Rapportera foto",
 

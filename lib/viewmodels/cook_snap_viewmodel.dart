@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:image_picker/image_picker.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/services/cook_snap_service.dart';
@@ -49,7 +50,7 @@ class CookSnapViewModel extends BaseViewModel {
       },
       onError: (e) {
         AppLogger.error('CookSnap stream error: $e');
-        setError('Could not load photos');
+        setError(AppLocale.current.cookSnapErrorLoad);
       },
     );
   }
@@ -74,7 +75,7 @@ class CookSnapViewModel extends BaseViewModel {
       return snap != null;
     } catch (e) {
       AppLogger.error('Failed to add cook snap: $e');
-      setError('Could not upload photo');
+      setError(AppLocale.current.cookSnapErrorUpload);
       return false;
     } finally {
       _isUploading = false;
@@ -88,7 +89,7 @@ class CookSnapViewModel extends BaseViewModel {
       return true;
     } catch (e) {
       AppLogger.error('Failed to delete cook snap: $e');
-      setError('Could not delete photo');
+      setError(AppLocale.current.cookSnapErrorDelete);
       return false;
     }
   }
