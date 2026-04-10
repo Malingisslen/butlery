@@ -10,7 +10,8 @@
  * uses hashUid for GDPR-safe logging. Steps run in parallel via Promise.all.
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
 import { batchUpdateQuery, batchUpdateDocs, batchUpdateRefs } from "../shared/batch-update";
@@ -18,14 +19,12 @@ import { Collections } from "../shared/collections";
 
 const getDb = () => admin.firestore();
 
-export const onProfileUpdated = functions
-  .runWith({ timeoutSeconds: 540 })
-  .region("europe-west1")
-  .firestore.document(`${Collections.publicProfiles}/{userId}`)
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
-    const before = change.before.data();
-    const after = change.after.data();
+export const onProfileUpdated = onDocumentUpdated(
+  { document: `${Collections.publicProfiles}/{userId}`, timeoutSeconds: 540 },
+  async (event) => {
+    const userId = event.params.userId;
+    const before = event.data!.before.data();
+    const after = event.data!.after.data();
 
     const oldName = before.displayName as string | undefined;
     const newName = after.displayName as string | undefined;
@@ -40,7 +39,7 @@ export const onProfileUpdated = functions
     }
 
     const userHash = hashUid(userId);
-    functions.logger.info(
+    logger.info(
       `Profile updated for ${userHash}: name=${nameChanged}, avatar=${avatarChanged}`
     );
 
@@ -63,7 +62,7 @@ export const onProfileUpdated = functions
         db.collection(Collections.messages).where("senderId", "==", userId),
         messageUpdates,
         db
-      ).catch((e) => { functions.logger.error(`Failed to update messages for ${userHash}`, e); return 0; }),
+      ).catch((e) => { logger.error(`Failed to update messages for ${userHash}`, e); return 0; }),
 
       batchUpdateDocs(
         db.collection(Collections.conversations).where("participantIds", "array-contains", userId),
@@ -74,19 +73,19 @@ export const onProfileUpdated = functions
           if (avatarChanged) updates[`participantAvatarUrls.${userId}`] = newAvatar;
           return updates;
         }
-      ).catch((e) => { functions.logger.error(`Failed to update conversations for ${userHash}`, e); return 0; }),
+      ).catch((e) => { logger.error(`Failed to update conversations for ${userHash}`, e); return 0; }),
 
       batchUpdateQuery(
         db.collection(Collections.recipeComments).where("authorId", "==", userId),
         commentUpdates,
         db
-      ).catch((e) => { functions.logger.error(`Failed to update recipe_comments for ${userHash}`, e); return 0; }),
+      ).catch((e) => { logger.error(`Failed to update recipe_comments for ${userHash}`, e); return 0; }),
 
       batchUpdateQuery(
         db.collectionGroup("members").where("userId", "==", userId),
         memberUpdates,
         db
-      ).catch((e) => { functions.logger.error(`Failed to update members for ${userHash}`, e); return 0; }),
+      ).catch((e) => { logger.error(`Failed to update members for ${userHash}`, e); return 0; }),
     ];
 
     if (nameChanged) {
@@ -102,7 +101,7 @@ export const onProfileUpdated = functions
             () => ({ displayNameLower: newName?.toLowerCase() }),
             db
           );
-        })().catch((e) => { functions.logger.error(`Failed to update friends for ${userHash}`, e); return 0; })
+        })().catch((e) => { logger.error(`Failed to update friends for ${userHash}`, e); return 0; })
       );
 
       // Realtime resources — merged owner+editor updates to avoid double-write
@@ -112,7 +111,7 @@ export const onProfileUpdated = functions
             { queryField: "ownerId", updateField: "ownerDisplayName" },
             { queryField: "lastEditedBy", updateField: "lastEditedByDisplayName" },
             newName)
-            .catch((e) => { functions.logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
+            .catch((e) => { logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
         );
       }
 
@@ -121,7 +120,7 @@ export const onProfileUpdated = functions
           db.collection(Collections.sharedRecipes).where("socialData.ownerId", "==", userId),
           { "socialData.ownerDisplayName": newName },
           db
-        ).catch((e) => { functions.logger.error(`Failed to update shared_recipes for ${userHash}`, e); return 0; })
+        ).catch((e) => { logger.error(`Failed to update shared_recipes for ${userHash}`, e); return 0; })
       );
 
       // Shopping lists — merged owner+activity updates to avoid double-write
@@ -131,7 +130,7 @@ export const onProfileUpdated = functions
             { queryField: "ownerId", updateField: "ownerDisplayName" },
             { queryField: "lastActivityByUserId", updateField: "lastActivityByDisplayName" },
             newName)
-            .catch((e) => { functions.logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
+            .catch((e) => { logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
         );
       }
 
@@ -142,17 +141,18 @@ export const onProfileUpdated = functions
             .where("status", "==", "pending"),
           { fromUserName: newName },
           db
-        ).catch((e) => { functions.logger.error(`Failed to update group_invitations for ${userHash}`, e); return 0; })
+        ).catch((e) => { logger.error(`Failed to update group_invitations for ${userHash}`, e); return 0; })
       );
     }
 
     const results = await Promise.all(steps);
     const totalUpdated = results.reduce((sum, n) => sum + n, 0);
 
-    functions.logger.info(
+    logger.info(
       `Profile propagation complete for ${userHash}: ${totalUpdated} documents updated`
     );
-  });
+  }
+);
 
 interface DualFieldPair {
   queryField: string;

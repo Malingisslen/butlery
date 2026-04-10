@@ -9,7 +9,8 @@
  * /users/{userId}/notifications/{auto} — activity_digest notification
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 import { sendPushToUser } from "../shared/fcm-tokens";
@@ -19,18 +20,16 @@ const getDb = () => admin.firestore();
 
 const USER_BATCH_SIZE = 100;
 
-export const sendWeeklyActivityDigest = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 8 * * 1")
-  .timeZone("UTC")
-  .onRun(async () => {
+export const sendWeeklyActivityDigest = onSchedule(
+  { schedule: "0 8 * * 1", timeZone: "UTC" },
+  async () => {
     const db = getDb();
     const now = admin.firestore.Timestamp.now();
     const sevenDaysAgo = admin.firestore.Timestamp.fromMillis(
       now.toMillis() - 7 * 24 * 60 * 60 * 1000
     );
 
-    functions.logger.info("Starting weekly activity digest...");
+    logger.info("Starting weekly activity digest...");
 
     try {
       let usersNotified = 0;
@@ -164,13 +163,13 @@ export const sendWeeklyActivityDigest = functions
         usersSnapshot = await userQuery.startAfter(lastDoc).get();
       }
 
-      functions.logger.info(
+      logger.info(
         `Weekly digest complete: ${usersNotified} users notified, ${usersSkipped} skipped (no activity)`
       );
     } catch (error) {
-      functions.logger.error("Failed to send weekly activity digest:", error);
+      logger.error("Failed to send weekly activity digest:", error);
       throw error;
     }
 
-    return null;
-  });
+  }
+);

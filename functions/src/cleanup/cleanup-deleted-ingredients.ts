@@ -8,8 +8,11 @@
  * This function maintains data hygiene and prevents orphaned references.
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { requireAdmin } from "../shared/require-admin";
 
 // Configuration
 const SOFT_DELETE_GRACE_PERIOD_DAYS = 30;
@@ -19,21 +22,18 @@ const BATCH_SIZE = 500; // Firestore batch limit
  * Weekly cleanup of soft-deleted ingredients
  *
  * Schedule: 0 4 * * 1 (Weekly on Monday at 4 AM UTC)
- * Region: europe-west1 (Belgium)
  *
  * Actions:
  * 1. Find ingredients with status='deleted' older than grace period
  * 2. Hard-delete them permanently
  * 3. Check for recipes with stale tags and ensure they're queued for retagging
  */
-export const cleanupDeletedIngredients = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 4 * * 1") // Weekly on Monday at 4 AM UTC
-  .timeZone("UTC")
-  .onRun(async () => {
+export const cleanupDeletedIngredients = onSchedule(
+  { schedule: "0 4 * * 1", timeZone: "UTC" },
+  async () => {
     const db = admin.firestore();
 
-    functions.logger.info("Starting deleted ingredient cleanup...");
+    logger.info("Starting deleted ingredient cleanup...");
 
     try {
       // Calculate cutoff date for permanent deletion
@@ -41,7 +41,7 @@ export const cleanupDeletedIngredients = functions
       cutoffDate.setDate(cutoffDate.getDate() - SOFT_DELETE_GRACE_PERIOD_DAYS);
       const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
 
-      functions.logger.info(
+      logger.info(
         `Deleting ingredients soft-deleted before ${cutoffDate.toISOString()}`
       );
 
@@ -66,17 +66,17 @@ export const cleanupDeletedIngredients = functions
 
       await db.collection("system_events").add(cleanupLog);
 
-      functions.logger.info(
+      logger.info(
         `Ingredient cleanup complete: hard-deleted ${deletedIngredientsCount} ingredients, ` +
           `found ${staleRecipesCount} recipes with stale tags`
       );
 
-      return null;
     } catch (e) {
-      functions.logger.error("Ingredient cleanup failed", e);
+      logger.error("Ingredient cleanup failed", e);
       throw e; // Let Cloud Functions retry
     }
-  });
+  }
+);
 
 /**
  * Hard-delete ingredients that have been soft-deleted past the grace period.
@@ -95,7 +95,7 @@ async function hardDeleteOldIngredients(
     .get();
 
   if (snapshot.empty) {
-    functions.logger.info("No old deleted ingredients to hard-delete");
+    logger.info("No old deleted ingredients to hard-delete");
     return 0;
   }
 
@@ -113,14 +113,14 @@ async function hardDeleteOldIngredients(
       await batch.commit();
       batch = db.batch();
       batchCount = 0;
-      functions.logger.info(`Committed batch of ${BATCH_SIZE} deletions`);
+      logger.info(`Committed batch of ${BATCH_SIZE} deletions`);
     }
   }
 
   // Commit remaining deletions
   if (batchCount > 0) {
     await batch.commit();
-    functions.logger.info(`Committed final batch of ${batchCount} deletions`);
+    logger.info(`Committed final batch of ${batchCount} deletions`);
   }
 
   return deletedCount;
@@ -150,7 +150,7 @@ async function countStaleRecipes(
   const failedCount = failedSnapshot.data().count;
 
   if (staleCount > 0 || failedCount > 0) {
-    functions.logger.warn(
+    logger.warn(
       `Found ${staleCount} stale and ${failedCount} failed recipes needing retagging`
     );
   }
@@ -161,16 +161,9 @@ async function countStaleRecipes(
 /**
  * Get deleted ingredient statistics (callable for admin dashboard)
  */
-export const getDeletedIngredientStats = functions
-  .region("europe-west1")
-  .https.onCall(async (data, context) => {
-    // Verify admin access
-    if (!context.auth?.token.admin) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "Admin access required"
-      );
-    }
+export const getDeletedIngredientStats = onCall(
+  async (request: CallableRequest) => {
+    requireAdmin(request);
 
     const db = admin.firestore();
 
@@ -217,7 +210,8 @@ export const getDeletedIngredientStats = functions
         gracePeriodDays: SOFT_DELETE_GRACE_PERIOD_DAYS,
       };
     } catch (e) {
-      functions.logger.error("Failed to get deleted ingredient stats", e);
-      throw new functions.https.HttpsError("internal", "Failed to get stats");
+      logger.error("Failed to get deleted ingredient stats", e);
+      throw new HttpsError("internal", "Failed to get stats");
     }
-  });
+  }
+);

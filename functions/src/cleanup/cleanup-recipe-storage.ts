@@ -13,7 +13,8 @@
  * - users/{userId}/recipes/thumbnails/{filename}_thumb
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentDeleted } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 /**
@@ -22,28 +23,27 @@ import * as admin from "firebase-admin";
  * Extracts imageUrls from the deleted document and deletes the
  * corresponding Storage files. Handles both full-size images and thumbnails.
  */
-export const onRecipeDeleted = functions
-  .region("europe-west1")
-  .firestore.document("users/{userId}/recipes/{recipeId}")
-  .onDelete(async (snapshot, context) => {
-    const { userId, recipeId } = context.params;
-    const data = snapshot.data();
+export const onRecipeDeleted = onDocumentDeleted(
+  "users/{userId}/recipes/{recipeId}",
+  async (event) => {
+    const { userId, recipeId } = event.params;
+    const data = event.data?.data();
 
     if (!data) {
-      functions.logger.warn(`Recipe ${recipeId} had no data on delete`);
+      logger.warn(`Recipe ${recipeId} had no data on delete`);
       return;
     }
 
     const imageUrls: string[] = data.imageUrls || [];
 
     if (imageUrls.length === 0) {
-      functions.logger.info(
+      logger.info(
         `Recipe ${recipeId} (user: ${userId}) had no images to clean up`
       );
       return;
     }
 
-    functions.logger.info(
+    logger.info(
       `Cleaning up ${imageUrls.length} images for deleted recipe ${recipeId} (user: ${userId})`
     );
 
@@ -54,7 +54,7 @@ export const onRecipeDeleted = functions
     for (const imageUrl of imageUrls) {
       const filePath = extractStoragePath(imageUrl);
       if (!filePath) {
-        functions.logger.warn(`Could not extract path from URL: ${imageUrl}`);
+        logger.warn(`Could not extract path from URL: ${imageUrl}`);
         failedCount++;
         continue;
       }
@@ -62,7 +62,7 @@ export const onRecipeDeleted = functions
       // Path traversal protection: reject paths containing ../ sequences
       // that could escape the user's directory after URL decoding
       if (filePath.includes("..") || filePath.includes("//")) {
-        functions.logger.warn(
+        logger.warn(
           `Path traversal attempt blocked: ${filePath}`
         );
         failedCount++;
@@ -71,7 +71,7 @@ export const onRecipeDeleted = functions
 
       // Validate the file belongs to this user
       if (!filePath.startsWith(`users/${userId}/`)) {
-        functions.logger.warn(
+        logger.warn(
           `Skipping file not owned by user ${userId}: ${filePath}`
         );
         failedCount++;
@@ -84,9 +84,9 @@ export const onRecipeDeleted = functions
         deletedCount++;
       } catch (e: any) {
         if (e.code === 404) {
-          functions.logger.info(`File already deleted: ${filePath}`);
+          logger.info(`File already deleted: ${filePath}`);
         } else {
-          functions.logger.error(`Failed to delete file ${filePath}:`, e);
+          logger.error(`Failed to delete file ${filePath}:`, e);
           failedCount++;
         }
       }
@@ -101,15 +101,16 @@ export const onRecipeDeleted = functions
       } catch (e: any) {
         // Thumbnails may not exist — silently ignore 404
         if (e.code !== 404) {
-          functions.logger.warn(`Failed to delete thumbnail ${thumbPath}:`, e);
+          logger.warn(`Failed to delete thumbnail ${thumbPath}:`, e);
         }
       }
     }
 
-    functions.logger.info(
+    logger.info(
       `Storage cleanup for recipe ${recipeId}: ${deletedCount} deleted, ${failedCount} failed out of ${imageUrls.length} images`
     );
-  });
+  }
+);
 
 /**
  * Extracts the Storage file path from a Firebase Storage download URL.
@@ -133,7 +134,7 @@ function extractStoragePath(url: string): string | null {
 
     return null;
   } catch (e) {
-    functions.logger.error(`Failed to parse storage URL: ${url}`, e);
+    logger.error(`Failed to parse storage URL: ${url}`, e);
     return null;
   }
 }

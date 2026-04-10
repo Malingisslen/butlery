@@ -6,8 +6,8 @@
  */
 
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 import { isAllowedUrl } from "../shared/url-safety";
 import {
@@ -68,7 +68,6 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     memory: "1GiB", // Vision needs more memory
     timeoutSeconds: 120,
     cors: ["https://butlery.app", "https://www.butlery.app"],
-    region: "europe-west1",
     enforceAppCheck: true,
   },
   withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
@@ -113,7 +112,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       const client = getGeminiClient(geminiApiKey.value());
       const model = getTextModel(client);
 
-      functions.logger.info(
+      logger.info(
         `[ocrRecipeImage] Processing image for user ${hashUid(request.auth!.uid)} (prompt v${PROMPT_VERSION})`,
         { inputType: imageUrl ? "url" : "base64" }
       );
@@ -143,7 +142,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       const actualCost = calculateGeminiCost(response.usageMetadata, 0.01);
 
       if (!content) {
-        functions.logger.error("[ocrRecipeImage] Empty response from Gemini");
+        logger.error("[ocrRecipeImage] Empty response from Gemini");
         return {
           success: false,
           error: "Inget svar från AI-tjänsten.",
@@ -154,7 +153,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       // Try to parse as structured recipe
       const recipe = parseRecipeResponse(content);
       if (recipe) {
-        functions.logger.info(
+        logger.info(
           `[ocrRecipeImage] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
         );
         return {
@@ -166,7 +165,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       }
 
       // If parsing failed, the model might have returned raw text
-      functions.logger.warn(
+      logger.warn(
         "[ocrRecipeImage] Could not parse as recipe, returning raw text"
       );
       return {
@@ -176,7 +175,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
         estimatedCost: actualCost,
       };
     } catch (error) {
-      functions.logger.error("[ocrRecipeImage] Error:", error);
+      logger.error("[ocrRecipeImage] Error:", error);
 
       if (error instanceof HttpsError) {
         throw error;

@@ -14,7 +14,9 @@
  *   - exampleRecipes: string[] (up to 5 recipe IDs)
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { onCall, CallableRequest } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { requireAdmin } from "../shared/require-admin";
@@ -42,12 +44,12 @@ function normalizeIngredientName(name: string): string {
  *
  * Only processes when core.tagResult.unknownIngredients changes
  */
-export const trackUnmatchedIngredients = functions.firestore
-  .document("recipes/{recipeId}")
-  .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
-    const recipeId = context.params.recipeId;
+export const trackUnmatchedIngredients = onDocumentUpdated(
+  "recipes/{recipeId}",
+  async (event) => {
+    const before = event.data!.before.data();
+    const after = event.data!.after.data();
+    const recipeId = event.params.recipeId;
 
     // Extract unknownIngredients from tagResult
     const beforeUnknowns: string[] =
@@ -66,13 +68,13 @@ export const trackUnmatchedIngredients = functions.firestore
     );
 
     if (newUnknowns.length === 0) {
-      functions.logger.debug(
+      logger.debug(
         `Recipe ${recipeId}: No new unknown ingredients to track`
       );
       return;
     }
 
-    functions.logger.info(
+    logger.info(
       `Recipe ${recipeId}: Tracking ${newUnknowns.length} new unknown ingredients`
     );
 
@@ -84,7 +86,7 @@ export const trackUnmatchedIngredients = functions.firestore
       const normalizedName = normalizeIngredientName(ingredientName);
 
       if (!normalizedName) {
-        functions.logger.warn(
+        logger.warn(
           `Skipping empty ingredient name after normalization: "${ingredientName}"`
         );
         continue;
@@ -115,7 +117,7 @@ export const trackUnmatchedIngredients = functions.firestore
 
     try {
       await batch.commit();
-      functions.logger.info(
+      logger.info(
         `Tracked ${newUnknowns.length} unknown ingredients from recipe ${recipeId}`
       );
 
@@ -147,25 +149,26 @@ export const trackUnmatchedIngredients = functions.firestore
         }
       }
     } catch (error) {
-      functions.logger.error(
+      logger.error(
         `Failed to track unknown ingredients for recipe ${recipeId}:`,
         error
       );
       // Don't throw - this is analytics, not critical
     }
-  });
+  }
+);
 
 /**
  * Get statistics about unmatched ingredients.
  *
  * Callable function for admin use.
  */
-export const getUnmatchedIngredientStats = functions.https.onCall(
-  async (data, context) => {
-    requireAdmin(context);
+export const getUnmatchedIngredientStats = onCall(
+  async (request: CallableRequest) => {
+    requireAdmin(request);
 
     const db = getDb();
-    const limit = data?.limit || 50;
+    const limit = request.data?.limit || 50;
 
     const snapshot = await db
       .collection("analytics")

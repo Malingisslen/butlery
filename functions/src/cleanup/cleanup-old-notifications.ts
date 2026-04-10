@@ -6,7 +6,8 @@
  * short-term analytics and deduplication — not needed after 90 days.
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { batchDeleteDocs } from "../shared/batch-delete";
 
@@ -42,20 +43,17 @@ async function cleanupCollection(
  * Weekly cleanup of old notification tracking data
  *
  * Schedule: 0 4 * * 0 (Weekly on Sunday at 4 AM UTC)
- * Region: europe-west1 (same as other cleanup functions)
  */
-export const cleanupOldNotifications = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 4 * * 0")
-  .timeZone("UTC")
-  .onRun(async () => {
+export const cleanupOldNotifications = onSchedule(
+  { schedule: "0 4 * * 0", timeZone: "UTC" },
+  async () => {
     const db = admin.firestore();
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - RETENTION_DAYS);
     const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
 
-    functions.logger.info(
+    logger.info(
       `Starting notification cleanup — deleting records older than ${cutoffDate.toISOString()}`
     );
 
@@ -79,14 +77,14 @@ export const cleanupOldNotifications = functions
         });
       }
 
-      functions.logger.info(
+      logger.info(
         `Notification cleanup complete: ${totalDeleted} total records deleted`,
         { results }
       );
 
-      return null;
     } catch (e) {
-      functions.logger.error("Notification cleanup failed", e);
+      logger.error("Notification cleanup failed", e);
       throw e;
     }
-  });
+  }
+);

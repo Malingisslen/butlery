@@ -12,8 +12,12 @@
  * - ocrRecipeImage: Extract recipe from images using vision AI
  */
 
-import * as functions from "firebase-functions";
+import { setGlobalOptions } from "firebase-functions/v2/options";
+import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+
+setGlobalOptions({ region: "europe-west1" });
 
 admin.initializeApp();
 
@@ -104,7 +108,7 @@ interface RatingStats {
  * @param recipeId The ID of the recipe to update
  */
 async function updateRecipeRatingStats(recipeId: string): Promise<void> {
-  functions.logger.info(`Updating rating stats for recipe ${recipeId}`);
+  logger.info(`Updating rating stats for recipe ${recipeId}`);
 
   try {
     // Query all ratings for this recipe
@@ -113,7 +117,7 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
       .where("recipeId", "==", recipeId)
       .get();
 
-    functions.logger.info(
+    logger.info(
       `Found ${ratingsSnapshot.size} ratings for recipe ${recipeId}`
     );
 
@@ -127,7 +131,7 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
         lastRatedAt: null,
       }, { merge: true });
 
-      functions.logger.info(
+      logger.info(
         `Cleared rating stats for recipe ${recipeId} (no ratings)`
       );
       return;
@@ -162,7 +166,7 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
           lastRatedAt = ratedAt;
         }
       } else {
-        functions.logger.warn(
+        logger.warn(
           `Invalid rating value ${ratingValue} for recipe ${recipeId}, doc ${doc.id}`
         );
       }
@@ -181,11 +185,11 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
 
     await db.collection("recipe_social_stats").doc(recipeId).set(stats, { merge: true });
 
-    functions.logger.info(
+    logger.info(
       `Updated recipe ${recipeId}: ${ratingCount} ratings, avg ${stats.averageRating}`
     );
   } catch (error) {
-    functions.logger.error(
+    logger.error(
       `Failed to update rating stats for recipe ${recipeId}:`,
       error
     );
@@ -199,25 +203,27 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
  * Path: ratings/{ratingId}
  * Event: onCreate
  */
-export const onRatingCreated = functions.firestore
-  .document("recipe_ratings/{ratingId}")
-  .onCreate(async (snapshot, context) => {
-    const data = snapshot.data();
+export const onRatingCreated = onDocumentCreated(
+  "recipe_ratings/{ratingId}",
+  async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
     const recipeId = data.recipeId as string;
 
     if (!recipeId) {
-      functions.logger.error(
-        `Rating ${snapshot.id} missing recipeId field`
+      logger.error(
+        `Rating ${event.data!.id} missing recipeId field`
       );
       return;
     }
 
-    functions.logger.info(
+    logger.info(
       `New rating created for recipe ${recipeId} (rating: ${data.rating})`
     );
 
     await updateRecipeRatingStats(recipeId);
-  });
+  }
+);
 
 /**
  * Trigger: When a rating is updated
@@ -225,33 +231,34 @@ export const onRatingCreated = functions.firestore
  * Path: ratings/{ratingId}
  * Event: onUpdate
  */
-export const onRatingUpdated = functions.firestore
-  .document("recipe_ratings/{ratingId}")
-  .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
+export const onRatingUpdated = onDocumentUpdated(
+  "recipe_ratings/{ratingId}",
+  async (event) => {
+    const before = event.data!.before.data();
+    const after = event.data!.after.data();
     const recipeId = after.recipeId as string;
 
     if (!recipeId) {
-      functions.logger.error(
-        `Rating ${change.after.id} missing recipeId field`
+      logger.error(
+        `Rating ${event.data!.after.id} missing recipeId field`
       );
       return;
     }
 
     // Only update if rating value changed
     if (before.rating !== after.rating) {
-      functions.logger.info(
+      logger.info(
         `Rating updated for recipe ${recipeId} (${before.rating} -> ${after.rating})`
       );
 
       await updateRecipeRatingStats(recipeId);
     } else {
-      functions.logger.info(
-        `Rating ${change.after.id} updated but value unchanged, skipping aggregation`
+      logger.info(
+        `Rating ${event.data!.after.id} updated but value unchanged, skipping aggregation`
       );
     }
-  });
+  }
+);
 
 /**
  * Trigger: When a rating is deleted
@@ -259,22 +266,24 @@ export const onRatingUpdated = functions.firestore
  * Path: ratings/{ratingId}
  * Event: onDelete
  */
-export const onRatingDeleted = functions.firestore
-  .document("recipe_ratings/{ratingId}")
-  .onDelete(async (snapshot, context) => {
-    const data = snapshot.data();
+export const onRatingDeleted = onDocumentDeleted(
+  "recipe_ratings/{ratingId}",
+  async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
     const recipeId = data.recipeId as string;
 
     if (!recipeId) {
-      functions.logger.error(
-        `Deleted rating ${snapshot.id} missing recipeId field`
+      logger.error(
+        `Deleted rating ${event.data!.id} missing recipeId field`
       );
       return;
     }
 
-    functions.logger.info(
+    logger.info(
       `Rating deleted for recipe ${recipeId} (was: ${data.rating})`
     );
 
     await updateRecipeRatingStats(recipeId);
-  });
+  }
+);

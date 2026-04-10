@@ -8,7 +8,8 @@
  * /analytics/retention/events/{auto} — {userId, day, timestamp, wasActive}
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 const getDb = () => admin.firestore();
@@ -17,16 +18,14 @@ const RETENTION_DAYS = [1, 7, 30];
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const BATCH_LIMIT = 500;
 
-export const trackDayNRetention = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 4 * * *")
-  .timeZone("UTC")
-  .onRun(async () => {
+export const trackDayNRetention = onSchedule(
+  { schedule: "0 4 * * *", timeZone: "UTC" },
+  async () => {
     const db = getDb();
     const now = admin.firestore.Timestamp.now();
     const nowMs = now.toMillis();
 
-    functions.logger.info("Starting day-N retention tracking...");
+    logger.info("Starting day-N retention tracking...");
 
     try {
       let processedUsers = 0;
@@ -91,13 +90,13 @@ export const trackDayNRetention = functions
         await batch.commit();
       }
 
-      functions.logger.info(
+      logger.info(
         `Processed ${processedUsers} users, wrote ${eventsWritten} retention events`
       );
     } catch (error) {
-      functions.logger.error("Failed to track retention:", error);
+      logger.error("Failed to track retention:", error);
       throw error;
     }
 
-    return null;
-  });
+  }
+);

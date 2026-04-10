@@ -9,7 +9,8 @@
  * CRIT-7: Uses batched deletes and pagination to prevent timeouts on large user bases.
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 // CRIT-7: Constants for safe batch processing
@@ -21,24 +22,21 @@ const MAX_EXECUTION_TIME_MS = 8 * 60 * 1000; // 8 minutes (Cloud Functions timeo
  * Weekly cleanup of old rate limit records
  *
  * Schedule: 0 3 * * 0 (Weekly on Sundays at 3 AM UTC)
- * Region: europe-west1 (Belgium)
  *
  * CRIT-7: Processing with safety limits:
  * - Processes users in chunks of 1000
  * - Uses batched deletes (500 per batch)
  * - Has timeout protection (8 minutes)
  */
-export const cleanupOldRateLimits = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 3 * * 0")  // Weekly on Sundays at 3 AM UTC
-  .timeZone("UTC")
-  .onRun(async () => {
+export const cleanupOldRateLimits = onSchedule(
+  { schedule: "0 3 * * 0", timeZone: "UTC" },
+  async () => {
     const startTime = Date.now();
     const db = admin.firestore();
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 90);  // 90 days ago
 
-    functions.logger.info(
+    logger.info(
       `Starting rate limit cleanup, deleting records older than ${cutoffDate.toISOString()}`
     );
 
@@ -51,7 +49,7 @@ export const cleanupOldRateLimits = functions
     while (hasMoreUsers) {
       // Check timeout
       if (Date.now() - startTime > MAX_EXECUTION_TIME_MS) {
-        functions.logger.warn(
+        logger.warn(
           `CRIT-7: Approaching timeout after ${processedUsers} users, ${deletedCount} deletes. ` +
           `Will continue in next scheduled run.`
         );
@@ -108,7 +106,7 @@ export const cleanupOldRateLimits = functions
           if (batchCount >= BATCH_SIZE) {
             await batch.commit();
             deletedCount += batchCount;
-            functions.logger.debug(`Committed batch of ${batchCount} deletes`);
+            logger.debug(`Committed batch of ${batchCount} deletes`);
             batch = db.batch();
             batchCount = 0;
           }
@@ -118,12 +116,12 @@ export const cleanupOldRateLimits = functions
         if (batchCount > 0) {
           await batch.commit();
           deletedCount += batchCount;
-          functions.logger.debug(`Committed final batch of ${batchCount} deletes`);
+          logger.debug(`Committed final batch of ${batchCount} deletes`);
         }
       }
 
       // Log progress
-      functions.logger.info(
+      logger.info(
         `Processed ${processedUsers} users, deleted ${deletedCount} records so far`
       );
 
@@ -134,10 +132,10 @@ export const cleanupOldRateLimits = functions
     }
 
     const elapsedMs = Date.now() - startTime;
-    functions.logger.info(
+    logger.info(
       `Rate limit cleanup complete: deleted ${deletedCount} old records ` +
       `from ${processedUsers} users in ${(elapsedMs / 1000).toFixed(1)}s`
     );
 
-    return null;
-  });
+  }
+);

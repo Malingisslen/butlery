@@ -10,7 +10,8 @@
  * /analytics/notifications/summary/{date} — daily aggregate by type
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 const getDb = () => admin.firestore();
@@ -24,11 +25,9 @@ interface TypeStats {
   rate: number;
 }
 
-export const correlateNotificationEffectiveness = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 6 * * *")
-  .timeZone("UTC")
-  .onRun(async () => {
+export const correlateNotificationEffectiveness = onSchedule(
+  { schedule: "0 6 * * *", timeZone: "UTC" },
+  async () => {
     const db = getDb();
     const now = admin.firestore.Timestamp.now();
     const nowMs = now.toMillis();
@@ -36,7 +35,7 @@ export const correlateNotificationEffectiveness = functions
       nowMs - 24 * MS_PER_HOUR
     );
 
-    functions.logger.info("Starting notification effectiveness correlation...");
+    logger.info("Starting notification effectiveness correlation...");
 
     try {
       // Query notification_history from the past 24h
@@ -46,8 +45,8 @@ export const correlateNotificationEffectiveness = functions
         .get();
 
       if (notificationsSnapshot.empty) {
-        functions.logger.info("No notifications sent in the past 24 hours");
-        return null;
+        logger.info("No notifications sent in the past 24 hours");
+        return;
       }
 
       const typeStats: Record<string, TypeStats> = {};
@@ -164,17 +163,17 @@ export const correlateNotificationEffectiveness = functions
         await batch.commit();
       }
 
-      functions.logger.info(
+      logger.info(
         `Notification correlation complete: ${totalProcessed} notifications processed, ` +
           `${Object.keys(typeStats).length} types summarized`
       );
     } catch (error) {
-      functions.logger.error(
+      logger.error(
         "Failed to correlate notification effectiveness:",
         error
       );
       throw error;
     }
 
-    return null;
-  });
+  }
+);

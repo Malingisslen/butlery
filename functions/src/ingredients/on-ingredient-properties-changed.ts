@@ -8,7 +8,8 @@
  * properties are updated in the database.
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { batchUpdateRefs } from "../shared/batch-update";
@@ -59,16 +60,16 @@ function propertiesChanged(
  * Triggers cascade when properties change (excluding soft-delete which is
  * handled by onIngredientSoftDeleted).
  */
-export const onIngredientPropertiesChanged = functions.firestore
-  .document("ingredients/{ingredientId}")
-  .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
-    const ingredientId = context.params.ingredientId;
+export const onIngredientPropertiesChanged = onDocumentUpdated(
+  "ingredients/{ingredientId}",
+  async (event) => {
+    const before = event.data!.before.data();
+    const after = event.data!.after.data();
+    const ingredientId = event.params.ingredientId;
 
     // Skip if status changed to 'deleted' (handled by onIngredientSoftDeleted)
     if (before.status !== "deleted" && after.status === "deleted") {
-      functions.logger.debug(
+      logger.debug(
         `Skipping ${ingredientId}: soft-delete handled by other function`
       );
       return;
@@ -79,7 +80,7 @@ export const onIngredientPropertiesChanged = functions.firestore
     const afterProps = after.properties as string[] | undefined;
 
     if (!propertiesChanged(beforeProps, afterProps)) {
-      functions.logger.debug(
+      logger.debug(
         `Skipping ${ingredientId}: properties unchanged`
       );
       return;
@@ -91,7 +92,7 @@ export const onIngredientPropertiesChanged = functions.firestore
       : undefined;
 
     if (!ingredientName || !ingredientNameNormalized) {
-      functions.logger.error(
+      logger.error(
         `Ingredient ${ingredientId} missing 'swedish' field`
       );
       return;
@@ -104,7 +105,7 @@ export const onIngredientPropertiesChanged = functions.firestore
       (p) => !(afterProps || []).includes(p)
     );
 
-    functions.logger.info(
+    logger.info(
       `Ingredient properties changed: "${ingredientName}" (${ingredientId})`,
       {
         added: addedProps,
@@ -124,13 +125,13 @@ export const onIngredientPropertiesChanged = functions.firestore
         .get();
 
       if (recipesSnapshot.empty) {
-        functions.logger.info(
+        logger.info(
           `No recipes found using ingredient "${ingredientName}"`
         );
         return;
       }
 
-      functions.logger.info(
+      logger.info(
         `Found ${recipesSnapshot.size} recipes using "${ingredientName}"`
       );
 
@@ -141,7 +142,7 @@ export const onIngredientPropertiesChanged = functions.firestore
         db
       );
 
-      functions.logger.info(
+      logger.info(
         `Marked ${totalUpdated} recipes for retagging due to property change for "${ingredientName}"`
       );
     };
@@ -153,10 +154,11 @@ export const onIngredientPropertiesChanged = functions.firestore
         `Cascade property change for "${ingredientName}"`
       );
     } catch (error) {
-      functions.logger.error(
+      logger.error(
         `Failed to cascade property change for ingredient "${ingredientName}":`,
         error
       );
       throw error; // Re-throw to trigger Cloud Functions retry
     }
-  });
+  }
+);

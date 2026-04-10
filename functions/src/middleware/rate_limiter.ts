@@ -23,7 +23,7 @@
 
 import * as admin from "firebase-admin";
 import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
-import * as functions from "firebase-functions";
+import { logger } from "firebase-functions/logger";
 
 // =============================================================================
 // Types
@@ -223,7 +223,7 @@ export async function checkRateLimit(
     return result;
   } catch (error) {
     // Fail closed — deny on Firestore errors to prevent abuse
-    functions.logger.error(
+    logger.error(
       `Rate limit check failed for ${operationType}, denying request:`,
       error
     );
@@ -256,7 +256,7 @@ async function logRateLimitViolation(
     });
   } catch (error) {
     // Don't fail the request if logging fails
-    functions.logger.warn("Failed to log rate limit violation:", error);
+    logger.warn("Failed to log rate limit violation:", error);
   }
 }
 
@@ -308,7 +308,7 @@ export async function checkGlobalLimit(): Promise<boolean> {
     return result;
   } catch (error) {
     // Fail closed on error — deny request to prevent abuse bypass
-    functions.logger.error("Global limit check failed, denying request:", error);
+    logger.error("Global limit check failed, denying request:", error);
     return false;
   }
 }
@@ -354,7 +354,7 @@ export function withRateLimit<TRequest, TResponse>(
     // Check global aggregate limit before per-user limit
     const globalAllowed = await checkGlobalLimit();
     if (!globalAllowed) {
-      functions.logger.warn(
+      logger.warn(
         `Global LLM limit exceeded for ${operationType} by user ${userId}`
       );
       throw new HttpsError(
@@ -373,7 +373,7 @@ export function withRateLimit<TRequest, TResponse>(
       // Return 429 with Retry-After
       const retryAfterSeconds = Math.ceil((rateLimitResult.retryAfterMs || 60000) / 1000);
 
-      functions.logger.warn(
+      logger.warn(
         `Rate limit exceeded for user ${userId} on ${operationType}. ` +
         `Remaining: ${rateLimitResult.remainingTokens}, Retry after: ${retryAfterSeconds}s`
       );
@@ -389,7 +389,7 @@ export function withRateLimit<TRequest, TResponse>(
     }
 
     // Rate limit passed - execute handler
-    functions.logger.info(
+    logger.info(
       `Rate limit passed for ${operationType}: ${rateLimitResult.remainingTokens} tokens remaining`
     );
 

@@ -6,7 +6,8 @@
  * been pending for more than 7 days.
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { batchUpdateQuery } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
@@ -17,12 +18,10 @@ const db = admin.firestore();
  * Runs weekly on Sundays at 4 AM. Deletes pending friend requests
  * older than 7 days.
  */
-export const cleanupExpiredFriendRequests = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 4 * * 0")
-  .timeZone("Europe/Stockholm")
-  .onRun(async () => {
-    functions.logger.info("Starting expired friend request cleanup");
+export const cleanupExpiredFriendRequests = onSchedule(
+  { schedule: "0 4 * * 0", timeZone: "Europe/Stockholm" },
+  async () => {
+    logger.info("Starting expired friend request cleanup");
 
     const sevenDaysAgo = admin.firestore.Timestamp.fromDate(
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -43,7 +42,7 @@ export const cleanupExpiredFriendRequests = functions
         db
       );
 
-      functions.logger.info(
+      logger.info(
         `Expired ${totalExpired} friend requests older than 7 days`
       );
 
@@ -54,7 +53,8 @@ export const cleanupExpiredFriendRequests = functions
         details: { expiredCount: totalExpired },
       });
     } catch (error) {
-      functions.logger.error("Failed to cleanup expired friend requests:", error);
+      logger.error("Failed to cleanup expired friend requests:", error);
       throw error;
     }
-  });
+  }
+);

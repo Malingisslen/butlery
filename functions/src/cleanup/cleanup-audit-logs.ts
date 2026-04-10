@@ -28,9 +28,12 @@
  * - Runs with admin privileges (via service account)
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onCall, CallableRequest, HttpsError } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { batchDeleteDocs } from "../shared/batch-delete";
+import { requireAdmin } from "../shared/require-admin";
 
 // Retention period defaults (can be overridden by Remote Config)
 const DEFAULT_RETENTION_DAYS = 90;
@@ -40,22 +43,19 @@ const MINIMUM_RETENTION_DAYS = 30; // Safety minimum
  * Weekly cleanup of old audit logs
  *
  * Schedule: 0 3 * * 0 (Weekly on Sunday at 3 AM UTC)
- * Region: europe-west1 (Belgium) - same region as main functions
  *
  * Batch processing:
  * - Queries logs older than retention period
  * - Deletes in batches of 500 (Firestore limit)
  * - Logs cleanup metrics for monitoring
  */
-export const cleanupOldAuditLogs = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 3 * * 0") // Weekly on Sunday at 3 AM UTC
-  .timeZone("UTC")
-  .onRun(async () => {
+export const cleanupOldAuditLogs = onSchedule(
+  { schedule: "0 3 * * 0", timeZone: "UTC" },
+  async () => {
     const db = admin.firestore();
     const auditLogsRef = db.collection("audit_logs");
 
-    functions.logger.info("Starting audit log cleanup...");
+    logger.info("Starting audit log cleanup...");
 
     // Get retention days from Remote Config or use default
     let retentionDays = DEFAULT_RETENTION_DAYS;
@@ -71,20 +71,20 @@ export const cleanupOldAuditLogs = functions
         }
       }
     } catch (e) {
-      functions.logger.warn(
+      logger.warn(
         `Could not fetch Remote Config, using default retention: ${DEFAULT_RETENTION_DAYS} days`,
         e
       );
     }
 
-    functions.logger.info(`Retention period: ${retentionDays} days`);
+    logger.info(`Retention period: ${retentionDays} days`);
 
     // Calculate cutoff timestamp
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
     const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
 
-    functions.logger.info(`Deleting audit logs older than ${cutoffDate.toISOString()}`);
+    logger.info(`Deleting audit logs older than ${cutoffDate.toISOString()}`);
 
     try {
       // Query old audit logs
@@ -94,8 +94,8 @@ export const cleanupOldAuditLogs = functions
         .get();
 
       if (snapshot.empty) {
-        functions.logger.info("No old audit logs to delete");
-        return null;
+        logger.info("No old audit logs to delete");
+        return;
       }
 
       const deletedCount = await batchDeleteDocs(db, snapshot);
@@ -113,7 +113,7 @@ export const cleanupOldAuditLogs = functions
         : await batchDeleteDocs(db, deletionAuditSnapshot);
 
       if (deletionAuditCount > 0) {
-        functions.logger.info(
+        logger.info(
           `Deletion audit log cleanup: deleted ${deletionAuditCount} expired entries`
         );
       }
@@ -132,16 +132,16 @@ export const cleanupOldAuditLogs = functions
       // Store cleanup event in a separate collection for tracking
       await db.collection("system_events").add(cleanupLog);
 
-      functions.logger.info(
+      logger.info(
         `Audit log cleanup complete: deleted ${deletedCount} entries older than ${retentionDays} days`
       );
 
-      return null;
     } catch (e) {
-      functions.logger.error("Audit log cleanup failed", e);
+      logger.error("Audit log cleanup failed", e);
       throw e; // Let Cloud Functions retry
     }
-  });
+  }
+);
 
 /**
  * Get audit log statistics (callable for admin dashboard)
@@ -152,16 +152,9 @@ export const cleanupOldAuditLogs = functions
  * - Storage estimate
  * - Logs by resource type
  */
-export const getAuditLogStats = functions
-  .region("europe-west1")
-  .https.onCall(async (data, context) => {
-    // Verify admin access
-    if (!context.auth?.token.admin) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "Admin access required"
-      );
-    }
+export const getAuditLogStats = onCall(
+  async (request: CallableRequest) => {
+    requireAdmin(request);
 
     const db = admin.firestore();
     const auditLogsRef = db.collection("audit_logs");
@@ -203,7 +196,8 @@ export const getAuditLogStats = functions
         estimatedStorageMB: Math.round((totalCount * 0.5) / 1024), // ~500 bytes per log
       };
     } catch (e) {
-      functions.logger.error("Failed to get audit log stats", e);
-      throw new functions.https.HttpsError("internal", "Failed to get stats");
+      logger.error("Failed to get audit log stats", e);
+      throw new HttpsError("internal", "Failed to get stats");
     }
-  });
+  }
+);

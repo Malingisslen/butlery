@@ -11,7 +11,8 @@
  * CRIT-6: Includes rate limiting and audit logging for security.
  */
 
-import * as functions from "firebase-functions";
+import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { requireAdmin } from "../shared/require-admin";
 
@@ -80,7 +81,7 @@ async function logAuditEntry(
     });
   } catch (error) {
     // H11: Log warning but don't crash the main operation
-    functions.logger.warn(
+    logger.warn(
       `H11: Audit logging failed for action "${action}": ${error}`,
       { adminUid, action, details }
     );
@@ -143,7 +144,7 @@ async function withRetry<T>(
 
       // M14: Don't retry non-retryable errors
       if (!isRetryableError(error)) {
-        functions.logger.debug(
+        logger.debug(
           `Non-retryable error, not retrying: ${lastError.message}`
         );
         throw lastError;
@@ -153,7 +154,7 @@ async function withRetry<T>(
         // Exponential backoff: 100ms, 200ms, 400ms
         const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
         await new Promise((resolve) => setTimeout(resolve, delay));
-        functions.logger.debug(
+        logger.debug(
           `Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`
         );
       }
@@ -186,46 +187,40 @@ interface BulkRetagResponse {
 
 /**
  * Callable function for admins to trigger bulk retagging.
- *
- * Usage:
- *   const result = await functions.httpsCallable('bulkMarkForRetagging')({
- *     targetVersion: 'v1.2.3',
- *     limit: 500,
- *     dryRun: true
- *   });
  */
-export const bulkMarkForRetagging = functions.https.onCall(
-  async (data: BulkRetagRequest, context): Promise<BulkRetagResponse> => {
+export const bulkMarkForRetagging = onCall(
+  async (request: CallableRequest<BulkRetagRequest>): Promise<BulkRetagResponse> => {
     // Verify admin access (check for admin custom claim)
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
+    if (!request.auth) {
+      throw new HttpsError(
         "unauthenticated",
         "Authentication required"
       );
     }
 
     // Check for admin claim - adjust based on your auth setup
-    const isAdmin = context.auth.token.admin === true ||
-                    context.auth.token.role === "admin";
+    const isAdmin = request.auth.token.admin === true ||
+                    request.auth.token.role === "admin";
     if (!isAdmin) {
-      functions.logger.warn(
-        `Non-admin user ${context.auth.uid} attempted bulk retagging`
+      logger.warn(
+        `Non-admin user ${request.auth.uid} attempted bulk retagging`
       );
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "permission-denied",
         "Admin access required for bulk retagging"
       );
     }
 
-    const adminUid = context.auth.uid;
+    const adminUid = request.auth.uid;
+    const data = request.data;
 
     // CRIT-6: Check rate limit before proceeding
     const withinRateLimit = await checkRateLimit(adminUid);
     if (!withinRateLimit) {
-      functions.logger.warn(
+      logger.warn(
         `Admin ${adminUid} exceeded bulk retag rate limit`
       );
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "resource-exhausted",
         `Rate limit exceeded. Maximum ${RATE_LIMIT_PER_DAY} calls per day.`
       );
@@ -242,13 +237,13 @@ export const bulkMarkForRetagging = functions.https.onCall(
     });
 
     if (!targetVersion) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "targetVersion is required"
       );
     }
 
-    functions.logger.info(
+    logger.info(
       `Bulk retag requested: targetVersion=${targetVersion}, limit=${limit}, userId=${userId || "all"}, dryRun=${dryRun}`
     );
 
@@ -291,7 +286,7 @@ export const bulkMarkForRetagging = functions.https.onCall(
       const totalFound = recipesToUpdate.length;
 
       if (dryRun) {
-        functions.logger.info(
+        logger.info(
           `Dry run: Would update ${totalFound} recipes`
         );
         return {
@@ -327,7 +322,7 @@ export const bulkMarkForRetagging = functions.https.onCall(
               });
               return { id: doc.id, success: true };
             } catch (error) {
-              functions.logger.warn(
+              logger.warn(
                 `Failed to update recipe ${doc.id} after ${MAX_RETRIES} retries: ${error}`
               );
               return { id: doc.id, success: false, error: String(error) };
@@ -348,19 +343,19 @@ export const bulkMarkForRetagging = functions.https.onCall(
         }
 
         batchesProcessed++;
-        functions.logger.info(
+        logger.info(
           `Processed batch ${batchesProcessed}: ${batchDocs.length} recipes`
         );
       }
 
       // M4: Log failures summary
       if (failedIds.length > 0) {
-        functions.logger.warn(
+        logger.warn(
           `Bulk retag completed with ${totalFailed} failures. Failed IDs (first 10): ${failedIds.slice(0, 10).join(", ")}`
         );
       }
 
-      functions.logger.info(
+      logger.info(
         `Bulk retag complete: ${totalUpdated} recipes marked, ${totalFailed} failed`
       );
 
@@ -386,8 +381,8 @@ export const bulkMarkForRetagging = functions.https.onCall(
         },
       };
     } catch (error) {
-      functions.logger.error("Bulk retag failed:", error);
-      throw new functions.https.HttpsError(
+      logger.error("Bulk retag failed:", error);
+      throw new HttpsError(
         "internal",
         `Bulk retag failed: ${error}`
       );
@@ -403,14 +398,14 @@ export const bulkMarkForRetagging = functions.https.onCall(
  * H12: Optimized to only fetch the fields needed (generatorVersion) instead
  * of full documents. Uses pagination to handle large collections.
  */
-export const getRetagStatus = functions.https.onCall(
-  async (data: { userId?: string }, context): Promise<{
+export const getRetagStatus = onCall(
+  async (request: CallableRequest<{ userId?: string }>): Promise<{
     byVersion: { [version: string]: number };
     total: number;
   }> => {
-    requireAdmin(context);
+    requireAdmin(request);
 
-    const { userId } = data;
+    const { userId } = request.data;
 
     try {
       const byVersion: { [version: string]: number } = {};
@@ -451,7 +446,7 @@ export const getRetagStatus = functions.https.onCall(
 
         // Safety limit to prevent infinite loops
         if (total >= 50000) {
-          functions.logger.warn(
+          logger.warn(
             `H12: Reached safety limit of 50000 recipes, results may be partial`
           );
           break;
@@ -468,8 +463,8 @@ export const getRetagStatus = functions.https.onCall(
         total,
       };
     } catch (error) {
-      functions.logger.error("Get retag status failed:", error);
-      throw new functions.https.HttpsError(
+      logger.error("Get retag status failed:", error);
+      throw new HttpsError(
         "internal",
         `Failed to get retag status: ${error}`
       );

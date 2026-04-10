@@ -18,7 +18,8 @@
  * TTL: 90 days (metadata older than this has no analytical value)
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 
@@ -39,19 +40,16 @@ const METADATA_SUBCOLLECTIONS = ["views", "engagements", "dismissals"];
  * Weekly cleanup of expired shared content metadata subcollections.
  *
  * Schedule: 0 4 * * 6 (Saturday at 4 AM UTC)
- * Region: europe-west1
  */
-export const cleanupSharedContentMetadata = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 4 * * 6")
-  .timeZone("UTC")
-  .onRun(async () => {
+export const cleanupSharedContentMetadata = onSchedule(
+  { schedule: "0 4 * * 6", timeZone: "UTC" },
+  async () => {
     const db = admin.firestore();
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - DEFAULT_TTL_DAYS);
     const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
 
-    functions.logger.info(
+    logger.info(
       `Starting shared content metadata cleanup (TTL: ${DEFAULT_TTL_DAYS} days, cutoff: ${cutoffDate.toISOString()})`
     );
 
@@ -64,7 +62,7 @@ export const cleanupSharedContentMetadata = functions
 
       while (hasMore) {
         if (Date.now() - startTime > MAX_EXECUTION_TIME_MS) {
-          functions.logger.warn(
+          logger.warn(
             `Approaching timeout — stopping cleanup for ${parentCollection}. Will continue next run.`
           );
           hasMore = false;
@@ -99,12 +97,12 @@ export const cleanupSharedContentMetadata = functions
       }
     }
 
-    functions.logger.info(
+    logger.info(
       `Shared content metadata cleanup complete: deleted ${totalDeleted} expired entries`
     );
 
-    return null;
-  });
+  }
+);
 
 async function cleanupSubcollection(
   db: admin.firestore.Firestore,
@@ -144,7 +142,7 @@ async function cleanupSubcollection(
   }
 
   if (deletedCount > 0) {
-    functions.logger.info(
+    logger.info(
       `Cleaned ${deletedCount} expired ${subcollection} from ${parentPath}`
     );
   }

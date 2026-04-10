@@ -8,7 +8,8 @@
  * This ensures allergen data stays current when ingredients are removed from the database.
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { batchUpdateRefs } from "../shared/batch-update";
@@ -32,12 +33,12 @@ function normalizeSwedish(text: string): string {
  *
  * Only triggers cascade when status changes to 'deleted'
  */
-export const onIngredientSoftDeleted = functions.firestore
-  .document("ingredients/{ingredientId}")
-  .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
-    const ingredientId = context.params.ingredientId;
+export const onIngredientSoftDeleted = onDocumentUpdated(
+  "ingredients/{ingredientId}",
+  async (event) => {
+    const before = event.data!.before.data();
+    const after = event.data!.after.data();
+    const ingredientId = event.params.ingredientId;
 
     // Only trigger when status changes to 'deleted'
     if (before.status === "deleted" || after.status !== "deleted") {
@@ -50,13 +51,13 @@ export const onIngredientSoftDeleted = functions.firestore
       : undefined;
 
     if (!ingredientName) {
-      functions.logger.error(
+      logger.error(
         `Ingredient ${ingredientId} missing 'swedish' field`
       );
       return;
     }
 
-    functions.logger.info(
+    logger.info(
       `Ingredient soft-deleted: "${ingredientName}" (${ingredientId})`
     );
 
@@ -72,13 +73,13 @@ export const onIngredientSoftDeleted = functions.firestore
         .get();
 
       if (recipesSnapshot.empty) {
-        functions.logger.info(
+        logger.info(
           `No recipes found using ingredient "${ingredientName}"`
         );
         return;
       }
 
-      functions.logger.info(
+      logger.info(
         `Found ${recipesSnapshot.size} recipes using "${ingredientName}"`
       );
 
@@ -89,7 +90,7 @@ export const onIngredientSoftDeleted = functions.firestore
         db
       );
 
-      functions.logger.info(
+      logger.info(
         `Marked ${totalUpdated} recipes for retagging due to deleted ingredient "${ingredientName}"`
       );
     };
@@ -101,10 +102,11 @@ export const onIngredientSoftDeleted = functions.firestore
         `Cascade soft-delete for "${ingredientName}"`
       );
     } catch (error) {
-      functions.logger.error(
+      logger.error(
         `Failed to cascade soft-delete for ingredient "${ingredientName}":`,
         error
       );
       throw error; // Re-throw to trigger Cloud Functions retry
     }
-  });
+  }
+);

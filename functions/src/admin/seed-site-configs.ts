@@ -10,7 +10,8 @@
  * - CLI: firebase functions:call seedSiteConfigs
  */
 
-import * as functions from "firebase-functions";
+import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { requireAdmin } from "../shared/require-admin";
 
@@ -47,7 +48,7 @@ function isAdmin(uid: string, token?: admin.auth.DecodedIdToken): boolean {
   // M16: Fallback to UID list (only if list is not empty)
   // SECURITY: Empty list does NOT grant access (was a bug)
   if (ADMIN_UIDS.length > 0 && ADMIN_UIDS.includes(uid)) {
-    functions.logger.warn(
+    logger.warn(
       `M16: Admin access via UID list for ${uid}. ` +
       `Consider migrating to custom claims for production.`
     );
@@ -256,35 +257,29 @@ const SITE_CONFIGS: SiteConfigData[] = [
 ];
 
 /**
- * seedSiteConfigs - Admin callable to populate site_configs collection
- *
- * This function:
- * 1. Verifies admin authentication
- * 2. Writes all site configs in a batch
- * 3. Uses merge: true to preserve existing successCount/failureCount
- *
- * @returns Success status and count of seeded configs
+ * Admin callable to populate site_configs collection.
+ * Uses merge: true to preserve existing successCount/failureCount.
  */
-export const seedSiteConfigs = functions.https.onCall(
-  async (data, context) => {
+export const seedSiteConfigs = onCall(
+  async (request: CallableRequest) => {
     // Require authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
+    if (!request.auth) {
+      throw new HttpsError(
         "unauthenticated",
         "Must be logged in to seed site configs"
       );
     }
 
     // Check admin permission (M16: pass token for custom claims check)
-    if (!isAdmin(context.auth.uid, context.auth.token as admin.auth.DecodedIdToken)) {
-      throw new functions.https.HttpsError(
+    if (!isAdmin(request.auth.uid, request.auth.token as admin.auth.DecodedIdToken)) {
+      throw new HttpsError(
         "permission-denied",
         "Only admins can seed site configs"
       );
     }
 
-    functions.logger.info("Seeding site configs", {
-      userId: context.auth.uid,
+    logger.info("Seeding site configs", {
+      userId: request.auth.uid,
       configCount: SITE_CONFIGS.length,
     });
 
@@ -299,7 +294,7 @@ export const seedSiteConfigs = functions.https.onCall(
 
       await batch.commit();
 
-      functions.logger.info("Site configs seeded successfully", {
+      logger.info("Site configs seeded successfully", {
         count: SITE_CONFIGS.length,
       });
 
@@ -309,8 +304,8 @@ export const seedSiteConfigs = functions.https.onCall(
         domains: SITE_CONFIGS.map((c) => c.domain),
       };
     } catch (error) {
-      functions.logger.error("Failed to seed site configs", { error });
-      throw new functions.https.HttpsError(
+      logger.error("Failed to seed site configs", { error });
+      throw new HttpsError(
         "internal",
         "Failed to seed site configs"
       );
@@ -323,9 +318,9 @@ export const seedSiteConfigs = functions.https.onCall(
  *
  * Returns success/failure rates for each configured site.
  */
-export const getSiteConfigStats = functions.https.onCall(
-  async (data, context) => {
-    requireAdmin(context);
+export const getSiteConfigStats = onCall(
+  async (request: CallableRequest) => {
+    requireAdmin(request);
 
     try {
       const snapshot = await getDb().collection("site_configs").get();
@@ -353,8 +348,8 @@ export const getSiteConfigStats = functions.https.onCall(
 
       return { success: true, stats };
     } catch (error) {
-      functions.logger.error("Failed to get site config stats", { error });
-      throw new functions.https.HttpsError(
+      logger.error("Failed to get site config stats", { error });
+      throw new HttpsError(
         "internal",
         "Failed to get site config stats"
       );

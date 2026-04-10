@@ -11,7 +11,8 @@
  * - Supports silent notifications for background sync
  */
 
-import * as functions from "firebase-functions";
+import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { checkRateLimit } from "../middleware/rate_limiter";
 import { isAllowedUrl } from "../shared/url-safety";
@@ -66,22 +67,23 @@ interface NotificationResponse {
  * the notification to all their devices. Invalid tokens are
  * automatically removed from the database.
  */
-export const sendNotification = functions.https.onCall(
-  async (data: NotificationRequest, context): Promise<NotificationResponse> => {
+export const sendNotification = onCall(
+  async (request: CallableRequest<NotificationRequest>): Promise<NotificationResponse> => {
     // Validate authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
+    if (!request.auth) {
+      throw new HttpsError(
         "unauthenticated",
         "Must be authenticated to send notifications"
       );
     }
 
-    const callerUid = context.auth.uid;
+    const callerUid = request.auth.uid;
+    const data = request.data;
 
     // Rate limit check
     const rateLimitResult = await checkRateLimit(callerUid, "sendNotification");
     if (!rateLimitResult.allowed) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "resource-exhausted",
         "Rate limit exceeded. Please try again later."
       );
@@ -91,14 +93,14 @@ export const sendNotification = functions.https.onCall(
 
     // Validate required fields
     if (!targetUserId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "targetUserId is required"
       );
     }
 
     if (!silent && (!title || !body)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "title and body are required for display notifications"
       );
@@ -128,10 +130,10 @@ export const sendNotification = functions.https.onCall(
         ]);
 
         if (sentRequest.empty && receivedRequest.empty) {
-          functions.logger.warn(
+          logger.warn(
             `Unauthorized notification attempt: ${callerUid} -> ${targetUserId}`
           );
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'Not authorized to send notifications to this user'
           );
@@ -144,7 +146,7 @@ export const sendNotification = functions.https.onCall(
       const { tokens, tokenDocIds } = await getActiveTokensForUser(targetUserId);
 
       if (tokens.length === 0) {
-        functions.logger.info(
+        logger.info(
           `No active FCM tokens for user ${targetUserId}`
         );
         return {
@@ -154,7 +156,7 @@ export const sendNotification = functions.https.onCall(
         };
       }
 
-      functions.logger.info(
+      logger.info(
         `Sending notification to ${tokens.length} device(s) for user ${targetUserId}`
       );
 
@@ -216,7 +218,7 @@ export const sendNotification = functions.https.onCall(
       // Send to all devices
       const response = await admin.messaging().sendEachForMulticast(message);
 
-      functions.logger.info(
+      logger.info(
         `Notification sent: ${response.successCount} success, ${response.failureCount} failures`
       );
 
@@ -230,12 +232,12 @@ export const sendNotification = functions.https.onCall(
         failureCount: response.failureCount,
       };
     } catch (error) {
-      functions.logger.error(
+      logger.error(
         `Failed to send notification to user ${targetUserId}:`,
         error
       );
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "internal",
         "Failed to send notification"
       );
@@ -283,25 +285,25 @@ function validateNotification(notification: NotificationRequest): string | null 
  * Useful for group notifications or announcements.
  * H14: Validates each notification before processing.
  */
-export const sendNotificationBatch = functions.https.onCall(
+export const sendNotificationBatch = onCall(
   async (
-    data: { notifications: NotificationRequest[] },
-    context
+    request: CallableRequest<{ notifications: NotificationRequest[] }>
   ): Promise<{ results: NotificationResponse[] }> => {
     // Validate authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
+    if (!request.auth) {
+      throw new HttpsError(
         "unauthenticated",
         "Must be authenticated to send notifications"
       );
     }
 
-    const callerUid = context.auth.uid;
+    const callerUid = request.auth.uid;
+    const data = request.data;
 
     // Rate limit check for batch operations
     const rateLimitResult = await checkRateLimit(callerUid, "sendNotification");
     if (!rateLimitResult.allowed) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "resource-exhausted",
         "Rate limit exceeded. Please try again later."
       );
@@ -310,7 +312,7 @@ export const sendNotificationBatch = functions.https.onCall(
     const { notifications } = data;
 
     if (!notifications || !Array.isArray(notifications)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "notifications array is required"
       );
@@ -318,7 +320,7 @@ export const sendNotificationBatch = functions.https.onCall(
 
     // Limit batch size to prevent abuse
     if (notifications.length > 100) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "Maximum 100 notifications per batch"
       );
@@ -371,10 +373,10 @@ export const sendNotificationBatch = functions.https.onCall(
       }
 
       if (unauthorizedTargets.length > 0) {
-        functions.logger.warn(
+        logger.warn(
           `Unauthorized batch notification: ${callerUid} -> ${unauthorizedTargets.join(", ")}`
         );
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           "permission-denied",
           `Not authorized to send notifications to ${unauthorizedTargets.length} target user(s)`
         );
@@ -382,18 +384,18 @@ export const sendNotificationBatch = functions.https.onCall(
     }
 
     if (validationErrors.length > 0) {
-      functions.logger.warn(
+      logger.warn(
         `H14: Batch has ${validationErrors.length} invalid notifications`,
         { errors: validationErrors.slice(0, 5) } // Log first 5 errors
       );
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         `${validationErrors.length} notifications failed validation. ` +
         `First error at index ${validationErrors[0].index}: ${validationErrors[0].error}`
       );
     }
 
-    functions.logger.info(
+    logger.info(
       `Processing batch of ${notifications.length} notifications`
     );
 

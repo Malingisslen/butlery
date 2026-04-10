@@ -12,7 +12,7 @@
  * in other users' documents is removed or anonymized.
  */
 
-import * as functions from "firebase-functions";
+import * as v1 from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 import { withTimeout } from "../shared/with-timeout";
@@ -25,13 +25,13 @@ const BATCH_LIMIT = 500;
  * Triggered when a Firebase Auth user is deleted.
  * Cleans up all social references to that user across the database.
  */
-export const onUserDeleted = functions
+export const onUserDeleted = v1
   .region("europe-west1")
   .runWith({ timeoutSeconds: 540, memory: "512MB" })
   .auth.user()
   .onDelete(async (user) => {
     const userId = user.uid;
-    functions.logger.info(`User deleted: ${userId}. Starting social cleanup.`);
+    v1.logger.info(`User deleted: ${userId}. Starting social cleanup.`);
 
     try {
       await withTimeout(
@@ -39,9 +39,9 @@ export const onUserDeleted = functions
         8 * 60 * 1000,
         "onUserDeleted"
       );
-      functions.logger.info(`Social cleanup complete for user ${userId}`);
+      v1.logger.info(`Social cleanup complete for user ${userId}`);
     } catch (error) {
-      functions.logger.error(
+      v1.logger.error(
         `Social cleanup failed for user ${userId}:`,
         error
       );
@@ -86,7 +86,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   // 7. Delete public profile
   await db.collection("public_profiles").doc(userId).delete();
 
-  functions.logger.info(`Cleanup results for ${userId}:`, results);
+  v1.logger.info(`Cleanup results for ${userId}:`, results);
 }
 
 /**
@@ -275,7 +275,7 @@ async function cleanupFeedback(userId: string): Promise<number> {
       prefix: `feedback/${userId}/`,
     });
   } catch (error) {
-    functions.logger.warn(`Failed to delete feedback storage for ${userId}: ${error}`);
+    v1.logger.warn(`Failed to delete feedback storage for ${userId}: ${error}`);
   }
 
   return feedbackDocs.size;

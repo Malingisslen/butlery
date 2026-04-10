@@ -6,7 +6,8 @@
  * sends domain and unknownDomain flag for site coverage analytics.
  */
 
-import * as functions from "firebase-functions";
+import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 
@@ -139,21 +140,19 @@ interface ParseEventData {
  * - Only accepting validated/sanitized fields
  * - Using server timestamps
  *
- * @param data - Parse event data from client
- * @param context - Firebase callable context with auth info
- * @returns Success status
  */
-export const logParseEvent = functions.https.onCall(
-  async (data: ParseEventData, context) => {
+export const logParseEvent = onCall(
+  async (request: CallableRequest<ParseEventData>) => {
     // Require authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
+    if (!request.auth) {
+      throw new HttpsError(
         "unauthenticated",
         "Must be logged in to log parse events"
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
+    const data = request.data;
 
     // Rate limiting: 30 requests per minute, 10 refilled per minute
     await enforceRateLimit(userId, "logParseEvent");
@@ -161,7 +160,7 @@ export const logParseEvent = functions.https.onCall(
     // Validate required field
     const sanitizedUrl = sanitizeUrl(data.url);
     if (!sanitizedUrl && !data.source) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "Either url or source must be provided"
       );
@@ -218,7 +217,7 @@ export const logParseEvent = functions.https.onCall(
           .set(siteUpdate, { merge: true });
       }
 
-      functions.logger.info("Parse event logged", {
+      logger.info("Parse event logged", {
         userId,
         domain: trustedFields.domain,
         source: trustedFields.source,
@@ -227,8 +226,8 @@ export const logParseEvent = functions.https.onCall(
 
       return { success: true };
     } catch (error) {
-      functions.logger.error("Failed to log parse event", { error, userId });
-      throw new functions.https.HttpsError(
+      logger.error("Failed to log parse event", { error, userId });
+      throw new HttpsError(
         "internal",
         "Failed to log parse event"
       );

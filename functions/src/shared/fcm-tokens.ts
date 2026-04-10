@@ -13,7 +13,7 @@
  * Also handles stale token cleanup after FCM delivery failures.
  */
 
-import * as functions from "firebase-functions";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 export interface TokenQueryResult {
@@ -63,7 +63,7 @@ export async function deactivateStaleTokens(
 ): Promise<void> {
   if (invalidTokens.length === 0) return;
 
-  functions.logger.info(
+  logger.info(
     `Deactivating ${invalidTokens.length} stale token(s) for user ${targetUserId}`
   );
 
@@ -85,7 +85,7 @@ export async function deactivateStaleTokens(
     await batch.commit();
   } catch (error) {
     // Don't fail the notification if token cleanup fails
-    functions.logger.warn(
+    logger.warn(
       `Failed to deactivate stale tokens for ${targetUserId}: ${error}`
     );
   }
@@ -149,7 +149,7 @@ export function findInvalidTokens(
       ) {
         invalidTokens.push(tokens[idx]);
       }
-      functions.logger.warn(
+      logger.warn(
         `Failed to send to token ${idx}: ${error?.message}`
       );
     }

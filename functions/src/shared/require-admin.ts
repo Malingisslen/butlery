@@ -4,22 +4,22 @@
  * Throws HttpsError if the caller is not authenticated or not an admin.
  */
 
-import * as functions from "firebase-functions";
+import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 
 export function requireAdmin(
-  context: functions.https.CallableContext
+  request: CallableRequest<unknown>
 ): void {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
+  if (!request.auth) {
+    throw new HttpsError(
       "unauthenticated",
       "Authentication required"
     );
   }
 
-  const isAdmin = context.auth.token.admin === true ||
-                  context.auth.token.role === "admin";
+  const isAdmin = request.auth.token.admin === true ||
+                  request.auth.token.role === "admin";
   if (!isAdmin) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       "permission-denied",
       "Admin access required"
     );

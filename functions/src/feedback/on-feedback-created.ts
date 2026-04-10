@@ -4,20 +4,23 @@
  * notifications in the future.
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 
-export const onFeedbackCreated = functions.firestore
-  .document("feedback/{feedbackId}")
-  .onCreate(async (snapshot, context) => {
-    const data = snapshot.data();
-    const feedbackId = context.params.feedbackId;
+export const onFeedbackCreated = onDocumentCreated(
+  "feedback/{feedbackId}",
+  async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+    const feedbackId = event.params.feedbackId;
 
-    functions.logger.info(
+    logger.info(
       `New feedback received [${feedbackId}]: ` +
       `category=${data.category}, userHash=${hashUid(data.userId || "unknown")}`
     );
 
     // Future enhancement: send email notification to the team
     // Future enhancement: post to Slack channel
-  });
+  }
+);

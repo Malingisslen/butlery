@@ -9,37 +9,35 @@
  * - ttlDays field (default 90 days if not specified)
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 /**
  * Daily cleanup of expired cache entries
  *
  * Schedule: 0 2 * * * (Daily at 2 AM UTC)
- * Region: europe-west1 (Belgium)
  *
  * Batch processing:
  * - Processes all cache entries
  * - Commits deletions in batches of 500
  * - Logs total deleted count
  */
-export const cleanupExpiredCache = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 2 * * *")  // Daily at 2 AM UTC
-  .timeZone("UTC")
-  .onRun(async () => {
+export const cleanupExpiredCache = onSchedule(
+  { schedule: "0 2 * * *", timeZone: "UTC" },
+  async () => {
     const db = admin.firestore();
     const now = Date.now();
     const collectionRef = db.collection("globalRecipeCache");
 
-    functions.logger.info("Starting cache cleanup...");
+    logger.info("Starting cache cleanup...");
 
     // Query all cache entries
     const snapshot = await collectionRef.get();
 
     if (snapshot.empty) {
-      functions.logger.info("No cache entries found");
-      return null;
+      logger.info("No cache entries found");
+      return;
     }
 
     let deletedCount = 0;
@@ -62,7 +60,7 @@ export const cleanupExpiredCache = functions
           await batch.commit();
           batch = db.batch();
           batchCount = 0;
-          functions.logger.info(`Committed batch of 500 deletions`);
+          logger.info(`Committed batch of 500 deletions`);
         }
       }
     }
@@ -72,9 +70,9 @@ export const cleanupExpiredCache = functions
       await batch.commit();
     }
 
-    functions.logger.info(
+    logger.info(
       `Cache cleanup complete: deleted ${deletedCount} expired entries out of ${snapshot.size} total`
     );
 
-    return null;
-  });
+  }
+);

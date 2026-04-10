@@ -9,7 +9,8 @@
  * This enables crowdsourced improvement of the ingredient database.
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
 
@@ -42,13 +43,14 @@ interface IngredientSuggestion {
  * Path: ingredientSuggestions/{suggestionId}
  * Event: onCreate
  */
-export const onSuggestionCreated = functions.firestore
-  .document("ingredient_suggestions/{suggestionId}")
-  .onCreate(async (snapshot, context) => {
-    const suggestionId = context.params.suggestionId;
-    const suggestion = snapshot.data() as IngredientSuggestion;
+export const onSuggestionCreated = onDocumentCreated(
+  "ingredient_suggestions/{suggestionId}",
+  async (event) => {
+    const suggestionId = event.params.suggestionId;
+    const suggestion = event.data?.data() as IngredientSuggestion | undefined;
+    if (!suggestion) return;
 
-    functions.logger.info(
+    logger.info(
       `📥 New ingredient suggestion received`,
       {
         suggestionId,
@@ -60,7 +62,7 @@ export const onSuggestionCreated = functions.firestore
     try {
       // Idempotency guard: skip if already processed
       if (suggestion.notifiedAt) {
-        functions.logger.info(`Suggestion ${suggestionId} already processed, skipping`);
+        logger.info(`Suggestion ${suggestionId} already processed, skipping`);
         return;
       }
 
@@ -74,7 +76,7 @@ export const onSuggestionCreated = functions.firestore
         });
 
       // Log for monitoring dashboard
-      functions.logger.info(
+      logger.info(
         `✅ Suggestion processed: ${suggestionId}`,
         {
           status: "notification_sent",
@@ -88,13 +90,14 @@ export const onSuggestionCreated = functions.firestore
       // });
 
     } catch (error) {
-      functions.logger.error(
+      logger.error(
         `❌ Failed to process suggestion: ${suggestionId}`,
         { error, suggestionId }
       );
       throw error;
     }
-  });
+  }
+);
 
 /**
  * Trigger: When a suggestion status changes
@@ -104,19 +107,19 @@ export const onSuggestionCreated = functions.firestore
  *
  * Logs status changes for audit trail.
  */
-export const onSuggestionStatusChanged = functions.firestore
-  .document("ingredient_suggestions/{suggestionId}")
-  .onUpdate(async (change, context) => {
-    const before = change.before.data() as IngredientSuggestion;
-    const after = change.after.data() as IngredientSuggestion;
-    const suggestionId = context.params.suggestionId;
+export const onSuggestionStatusChanged = onDocumentUpdated(
+  "ingredient_suggestions/{suggestionId}",
+  async (event) => {
+    const before = event.data!.before.data() as IngredientSuggestion;
+    const after = event.data!.after.data() as IngredientSuggestion;
+    const suggestionId = event.params.suggestionId;
 
     // Only track status changes
     if (before.status === after.status) {
       return;
     }
 
-    functions.logger.info(
+    logger.info(
       `📋 Suggestion status changed: ${before.status} → ${after.status}`,
       {
         suggestionId,
@@ -127,7 +130,7 @@ export const onSuggestionStatusChanged = functions.firestore
 
     // If approved, log for ingredient sync
     if (after.status === "approved") {
-      functions.logger.info(
+      logger.info(
         `✅ Suggestion approved for addition`,
         {
           suggestionId,
@@ -135,4 +138,5 @@ export const onSuggestionStatusChanged = functions.firestore
         }
       );
     }
-  });
+  }
+);

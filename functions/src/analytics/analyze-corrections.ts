@@ -13,7 +13,9 @@
  * - ingredients/{id}.learnedAliasesSv — approved learned aliases
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onCall, CallableRequest } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { requireAdmin } from "../shared/require-admin";
@@ -109,10 +111,10 @@ async function findIngredientByName(
  * Path: parsing_corrections/{correctionId}
  * Event: onCreate
  */
-export const analyzeCorrections = functions.firestore
-  .document("parsing_corrections/{correctionId}")
-  .onCreate(async (snapshot) => {
-    const data = snapshot.data();
+export const analyzeCorrections = onDocumentCreated(
+  "parsing_corrections/{correctionId}",
+  async (event) => {
+    const data = event.data?.data();
     if (!data) return;
 
     const userId = data.userId as string | undefined;
@@ -143,7 +145,7 @@ export const analyzeCorrections = functions.firestore
 
       // --- Process ingredient name corrections for alias learning ---
       if (!userId) {
-        functions.logger.warn("Correction missing userId, skipping alias learning");
+        logger.warn("Correction missing userId, skipping alias learning");
         return;
       }
 
@@ -168,9 +170,10 @@ export const analyzeCorrections = functions.firestore
       }
     } catch (error) {
       // Never throw on analytics — log and return
-      functions.logger.error("Failed to analyze corrections:", error);
+      logger.error("Failed to analyze corrections:", error);
     }
-  });
+  }
+);
 
 /**
  * Aggregate correction stats by domain and tier.
@@ -234,7 +237,7 @@ async function processAliasCandidate(
   // Corrected name must map to a known ingredient (anti-poisoning)
   const ingredient = await findIngredientByName(db, params.correctedName);
   if (!ingredient) {
-    functions.logger.debug(
+    logger.debug(
       `Corrected name "${params.correctedName}" not found in ingredients, skipping`
     );
     return;
@@ -276,7 +279,7 @@ async function processAliasCandidate(
             ),
           });
 
-          functions.logger.info(
+          logger.info(
             `Auto-approved alias: "${params.originalName}" → ` +
               `"${params.correctedName}" (ingredient: ${ingredient!.id}, ` +
               `${uniqueUsers.size} distinct users)`
@@ -302,12 +305,12 @@ async function processAliasCandidate(
 /**
  * Callable admin function: get correction stats and pending alias candidates.
  */
-export const getCorrectionStats = functions.https.onCall(
-  async (data, context) => {
-    requireAdmin(context);
+export const getCorrectionStats = onCall(
+  async (request: CallableRequest) => {
+    requireAdmin(request);
 
     const db = getDb();
-    const limit = data?.limit || 50;
+    const limit = request.data?.limit || 50;
 
     // Get domain stats
     const domainsSnapshot = await db
@@ -385,7 +388,7 @@ export async function cleanUserFromLearnedAliases(
 
   await batch.commit();
 
-  functions.logger.info(
+  logger.info(
     `GDPR: Cleaned userId ${userId} from ${snapshot.size} learned alias documents`
   );
 }

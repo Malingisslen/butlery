@@ -9,7 +9,8 @@
  * /users/{userId}/notifications/{auto} — win-back notification
  */
 
-import * as functions from "firebase-functions";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { sendPushToUser } from "../shared/fcm-tokens";
 import { BATCH_LIMIT } from "../shared/batch-update";
@@ -43,16 +44,14 @@ const THRESHOLDS: LapsedThreshold[] = [
   },
 ];
 
-export const detectLapsedUsers = functions
-  .region("europe-west1")
-  .pubsub.schedule("0 5 * * *")
-  .timeZone("UTC")
-  .onRun(async () => {
+export const detectLapsedUsers = onSchedule(
+  { schedule: "0 5 * * *", timeZone: "UTC" },
+  async () => {
     const db = getDb();
     const now = admin.firestore.Timestamp.now();
     const nowMs = now.toMillis();
 
-    functions.logger.info("Starting lapsed user detection...");
+    logger.info("Starting lapsed user detection...");
 
     try {
       let totalDetected = 0;
@@ -73,7 +72,7 @@ export const detectLapsedUsers = functions
           .get();
 
         if (usersSnapshot.empty) {
-          functions.logger.info(
+          logger.info(
             `No users lapsed at ${threshold.days} days`
           );
           continue;
@@ -145,19 +144,19 @@ export const detectLapsedUsers = functions
         }
 
         totalDetected += thresholdCount;
-        functions.logger.info(
+        logger.info(
           `Detected ${thresholdCount} users lapsed at ${threshold.days} days, ` +
           `${pushSuccessCount} push notifications delivered`
         );
       }
 
-      functions.logger.info(
+      logger.info(
         `Lapsed user detection complete: ${totalDetected} total events`
       );
     } catch (error) {
-      functions.logger.error("Failed to detect lapsed users:", error);
+      logger.error("Failed to detect lapsed users:", error);
       throw error;
     }
 
-    return null;
-  });
+  }
+);

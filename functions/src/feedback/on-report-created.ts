@@ -10,17 +10,18 @@
  * reports are logged and flagged for review.
  */
 
-import * as functions from "firebase-functions";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 const db = admin.firestore();
 
-export const onReportCreated = functions
-  .region("europe-west1")
-  .firestore.document("reports/{reportId}")
-  .onCreate(async (snapshot, context) => {
-    const reportData = snapshot.data();
-    const reportId = context.params.reportId;
+export const onReportCreated = onDocumentCreated(
+  "reports/{reportId}",
+  async (event) => {
+    const reportData = event.data?.data();
+    if (!reportData) return;
+    const reportId = event.params.reportId;
 
     const reportedUserId = reportData.reportedUserId as string;
     const reporterUserId = reportData.reporterUserId as string;
@@ -28,7 +29,7 @@ export const onReportCreated = functions
     const contentType = reportData.contentType as string;
     const contentId = reportData.contentId as string;
 
-    functions.logger.info(
+    logger.info(
       `New report ${reportId}: ${reporterUserId} reported ${reportedUserId} ` +
       `for ${reason} on ${contentType}/${contentId}`
     );
@@ -73,7 +74,7 @@ export const onReportCreated = functions
       const totalReports = moderationDoc.data()?.totalReports ?? 0;
 
       if (totalReports >= 5) {
-        functions.logger.warn(
+        logger.warn(
           `User ${reportedUserId} has ${totalReports} reports — ` +
           `flagged for review`
         );
@@ -90,9 +91,10 @@ export const onReportCreated = functions
         });
       }
 
-      functions.logger.info(`Report ${reportId} processed successfully`);
+      logger.info(`Report ${reportId} processed successfully`);
     } catch (error) {
-      functions.logger.error(`Failed to process report ${reportId}:`, error);
+      logger.error(`Failed to process report ${reportId}:`, error);
       throw error; // Retry
     }
-  });
+  }
+);
