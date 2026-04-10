@@ -8440,12 +8440,16 @@
   "cookSnapEmptySubtitle": "Bli först!",
   "cookSnapFromCamera": "Ta foto",
   "cookSnapFromGallery": "Välj från galleri",
+  "cookSnapMe": "Mig",
   "cookSnapDelete": "Ta bort foto",
   "cookSnapReport": "Rapportera foto",
 
   "collectionInsightsTitle": "Min samling",
   "collectionInsightsInsufficientData": "Lägg till fler recept för att se mönster",
   "collectionInsightsTopCuisines": "Topkök",
+  "collectionInsightsDietaryVegetarian": "vegetariskt",
+  "collectionInsightsDietaryVegan": "veganskt",
+  "collectionInsightsDietaryPescetarian": "pescetarianskt",
 
   "personalTagUnusedTags": "Oanvända taggar ({count})",
   "@personalTagUnusedTags": {

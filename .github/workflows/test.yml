@@ -29,10 +29,6 @@ jobs:
 
       - run: flutter pub get
 
-      # Update golden files (baseline generation)
-      - name: Update golden files
-        run: flutter test test/widget/golden --update-goldens
-
       # Run unit, widget, and view tests with coverage
       - name: Run unit, widget, and view tests
         run: |

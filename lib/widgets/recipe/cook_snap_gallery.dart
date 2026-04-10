@@ -158,29 +158,24 @@ class _SnapThumbnail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Square image
-            ClipRRect(
-              borderRadius: BorderRadius.zero,
-              child: SizedBox(
-                width: 100,
-                height: 100,
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => ColoredBox(
-                    color: colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      Icons.broken_image,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+            SizedBox(
+              width: 100,
+              height: 100,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => ColoredBox(
+                  color: colorScheme.surfaceContainerHighest,
+                  child: Icon(
+                    Icons.broken_image,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 4),
-            // Author + time
             Text(
-              isOwn ? 'Mig' : snap.userDisplayName,
+              isOwn ? context.l10n.cookSnapMe : snap.userDisplayName,
               style: AppTextStyles.labelSmall.copyWith(
                 color: colorScheme.onSurface,
               ),

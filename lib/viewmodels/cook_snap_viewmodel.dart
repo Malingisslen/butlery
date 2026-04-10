@@ -3,18 +3,17 @@ library;
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/services/cook_snap_service.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 /// Provides cook snap state for a single recipe.
 ///
 /// Created per-recipe via factory registration in DI.
-class CookSnapViewModel extends ChangeNotifier with StateNotifierMixin {
+class CookSnapViewModel extends BaseViewModel {
   final CookSnapService _service;
   final String _recipeId;
   final String _recipeAuthorId;
@@ -22,7 +21,6 @@ class CookSnapViewModel extends ChangeNotifier with StateNotifierMixin {
 
   List<CookSnap> _snaps = [];
   bool _isUploading = false;
-  bool _isDisposed = false;
   StreamSubscription<List<CookSnap>>? _subscription;
 
   CookSnapViewModel({
@@ -48,7 +46,6 @@ class CookSnapViewModel extends ChangeNotifier with StateNotifierMixin {
       (snapList) {
         _snaps = snapList;
         setLoading(false);
-        _safeNotify();
       },
       onError: (e) {
         AppLogger.error('CookSnap stream error: $e');
@@ -57,7 +54,6 @@ class CookSnapViewModel extends ChangeNotifier with StateNotifierMixin {
     );
   }
 
-  /// Picks and uploads a new cook snap photo.
   Future<bool> addSnap({
     required ImageSource source,
     String? caption,
@@ -65,7 +61,7 @@ class CookSnapViewModel extends ChangeNotifier with StateNotifierMixin {
     if (_isUploading) return false;
 
     _isUploading = true;
-    _safeNotify();
+    notifyListeners();
 
     try {
       final snap = await _service.addCookSnap(
@@ -82,11 +78,10 @@ class CookSnapViewModel extends ChangeNotifier with StateNotifierMixin {
       return false;
     } finally {
       _isUploading = false;
-      _safeNotify();
+      notifyListeners();
     }
   }
 
-  /// Deletes a cook snap.
   Future<bool> deleteSnap(String snapId) async {
     try {
       await _service.deleteCookSnap(snapId);
@@ -98,13 +93,8 @@ class CookSnapViewModel extends ChangeNotifier with StateNotifierMixin {
     }
   }
 
-  void _safeNotify() {
-    if (!_isDisposed) notifyListeners();
-  }
-
   @override
   void dispose() {
-    _isDisposed = true;
     _subscription?.cancel();
     super.dispose();
   }

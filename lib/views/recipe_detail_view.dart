@@ -36,7 +36,7 @@ import 'package:butlery/viewmodels/cook_snap_viewmodel.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
-import 'package:image_picker/image_picker.dart';
+import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 
 /// Menu actions for the recipe detail overflow menu.
 enum _MenuAction {
@@ -619,33 +619,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  void _showAddSnapSheet(BuildContext context, CookSnapViewModel vm) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: Text(context.l10n.cookSnapFromCamera),
-              onTap: () {
-                Navigator.pop(ctx);
-                vm.addSnap(source: ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: Text(context.l10n.cookSnapFromGallery),
-              onTap: () {
-                Navigator.pop(ctx);
-                vm.addSnap(source: ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+  Future<void> _showAddSnapSheet(
+      BuildContext context, CookSnapViewModel vm) async {
+    final source = await ImagePickerDialogs.showImageSourceDialog(context);
+    if (source != null) {
+      vm.addSnap(source: source);
+    }
   }
 
   Future<void> _printRecipe(Recipe recipe) async {

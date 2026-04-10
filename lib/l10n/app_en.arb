@@ -8440,12 +8440,16 @@
   "cookSnapEmptySubtitle": "Be the first!",
   "cookSnapFromCamera": "Take photo",
   "cookSnapFromGallery": "Choose from gallery",
+  "cookSnapMe": "Me",
   "cookSnapDelete": "Delete photo",
   "cookSnapReport": "Report photo",
 
   "collectionInsightsTitle": "My collection",
   "collectionInsightsInsufficientData": "Add more recipes to see patterns",
   "collectionInsightsTopCuisines": "Top cuisines",
+  "collectionInsightsDietaryVegetarian": "vegetarian",
+  "collectionInsightsDietaryVegan": "vegan",
+  "collectionInsightsDietaryPescetarian": "pescetarian",
 
   "personalTagUnusedTags": "Unused tags ({count})",
   "@personalTagUnusedTags": {

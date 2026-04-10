@@ -12362,6 +12362,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookSnapFromGallery => 'Choose from gallery';
 
   @override
+  String get cookSnapMe => 'Me';
+
+  @override
   String get cookSnapDelete => 'Delete photo';
 
   @override
@@ -12376,6 +12379,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get collectionInsightsTopCuisines => 'Top cuisines';
+
+  @override
+  String get collectionInsightsDietaryVegetarian => 'vegetarian';
+
+  @override
+  String get collectionInsightsDietaryVegan => 'vegan';
+
+  @override
+  String get collectionInsightsDietaryPescetarian => 'pescetarian';
 
   @override
   String personalTagUnusedTags(int count) {

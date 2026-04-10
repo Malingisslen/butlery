@@ -143,6 +143,7 @@ class PersonalTagViewModel extends ChangeNotifier
     try {
       _tags = await _service.getAllTags();
       _groups = await _service.getAllGroups();
+      _invalidateUnusedTagsCache();
 
       _watchTagsWithGroups();
 
@@ -178,6 +179,7 @@ class PersonalTagViewModel extends ChangeNotifier
       (data) {
         _tags = data.tagsByGroup.values.expand((t) => t).toList();
         _groups = data.groups;
+        _invalidateUnusedTagsCache();
         _safeNotifyListeners();
       },
       onError: (e) {
@@ -503,6 +505,7 @@ class PersonalTagViewModel extends ChangeNotifier
       }
 
       _tagUsageCounts = nameCounts;
+      _invalidateUnusedTagsCache();
       AppLogger.info(
         '#8: Loaded usage stats for ${_tags.length} tags from ${recipes.length} recipes',
       );
@@ -683,21 +686,24 @@ class PersonalTagViewModel extends ChangeNotifier
     return await recipeRepo.fetchAllUserRecipes(userId);
   }
 
+  // Cached unused tags — invalidated when _tags or _tagUsageCounts change.
+  List<PersonalTag>? _unusedTagsCache;
+
   /// Gets all tags with zero recipe usage.
-  List<PersonalTag> get unusedTags =>
-      _tags.where((t) => getUsageCount(t.name) == 0).toList();
+  List<PersonalTag> get unusedTags {
+    return _unusedTagsCache ??=
+        _tags.where((t) => getUsageCount(t.name) == 0).toList();
+  }
+
+  void _invalidateUnusedTagsCache() => _unusedTagsCache = null;
 
   /// Deletes all tags that have zero recipe usage.
   Future<int> deleteUnusedTags() async {
     final toDelete = unusedTags;
     if (toDelete.isEmpty) return 0;
 
-    int deleted = 0;
-    for (final tag in toDelete) {
-      final success = await deleteTag(tag.id);
-      if (success) deleted++;
-    }
-    return deleted;
+    final results = await Future.wait(toDelete.map((tag) => deleteTag(tag.id)));
+    return results.where((success) => success).length;
   }
 
   /// Gets the maximum usage count across all tags (for relative bar sizing).

@@ -42,6 +42,7 @@ import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badg
 import 'package:butlery/widgets/common/main_view_header.dart';
 import 'package:butlery/widgets/recipe/collection_insights_card.dart';
 import 'package:butlery/widgets/recipe/recipe_shelf.dart';
+import 'package:butlery/services/tagging/tag_config_service.dart';
 
 // Service integration for functionality and data management
 import 'package:butlery/services/search_service.dart';
@@ -135,12 +136,30 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   /// Filter panel visibility state.
   bool _showFilters = false;
 
+  /// Cuisine key → display name map, loaded once in initState.
+  Map<String, String> _cuisineDisplayNames = const {};
+
+  void _loadCuisineNames() {
+    try {
+      final config = ServiceLocator.get<TagConfigService>().configOrNull;
+      if (config != null) {
+        _cuisineDisplayNames = {
+          for (final e in config.cuisines.enabledEntries) e.key: e.getTag('sv'),
+        };
+      }
+    } catch (_) {
+      // Config not available — insights card will skip cuisines
+    }
+  }
+
   /// Initialize state and load social/recipe data after widget mount.
   @override
   void initState() {
     super.initState();
 
     // Load data after widget mount with safety checks
+    _loadCuisineNames();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _safeLoadSocialData();
@@ -855,7 +874,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         children: [
           if (viewModel.showOnboardingBanner) _buildOnboardingBanner(viewModel),
           if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters) ...[
-            CollectionInsightsCard(recipes: viewModel.recipes),
+            CollectionInsightsCard(
+              recipes: viewModel.recipes,
+              cuisineDisplayNames: _cuisineDisplayNames,
+            ),
             _buildDiscoveryShelves(context.read<RecipeQueryViewModel>()),
           ],
           Expanded(

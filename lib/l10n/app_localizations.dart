@@ -21238,6 +21238,12 @@ abstract class AppLocalizations {
   /// **'Välj från galleri'**
   String get cookSnapFromGallery;
 
+  /// No description provided for @cookSnapMe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mig'**
+  String get cookSnapMe;
+
   /// No description provided for @cookSnapDelete.
   ///
   /// In sv, this message translates to:
@@ -21267,6 +21273,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Topkök'**
   String get collectionInsightsTopCuisines;
+
+  /// No description provided for @collectionInsightsDietaryVegetarian.
+  ///
+  /// In sv, this message translates to:
+  /// **'vegetariskt'**
+  String get collectionInsightsDietaryVegetarian;
+
+  /// No description provided for @collectionInsightsDietaryVegan.
+  ///
+  /// In sv, this message translates to:
+  /// **'veganskt'**
+  String get collectionInsightsDietaryVegan;
+
+  /// No description provided for @collectionInsightsDietaryPescetarian.
+  ///
+  /// In sv, this message translates to:
+  /// **'pescetarianskt'**
+  String get collectionInsightsDietaryPescetarian;
 
   /// No description provided for @personalTagUnusedTags.
   ///

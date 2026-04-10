@@ -4,6 +4,7 @@ import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Firebase implementation for CookSnap storage.
 ///
@@ -84,8 +85,10 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   @override
   Future<void> deleteCookSnap(String snapId) async {
     final userId = requireCurrentUserId();
-    final canDelete = await validateDeletePermission(userId, snapId);
-    if (!canDelete) {
+    final doc = await collection.doc(snapId).get();
+    if (!doc.exists) return;
+    final snap = fromFirestore(doc);
+    if (snap.userId != userId) {
       throw Exception('Permission denied: cannot delete this cook snap');
     }
     await collection.doc(snapId).delete();
@@ -114,31 +117,13 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
 
   @override
   Future<int> deleteAllByUser(String userId) async {
-    final snaps = await getCookSnapsByUser(userId);
-    if (snaps.isEmpty) return 0;
+    final snapshot = await collection.where('userId', isEqualTo: userId).get();
 
-    // Batch delete in groups of 500 (Firestore limit)
-    final batches = <WriteBatch>[];
-    var currentBatch = firestore.batch();
-    var count = 0;
+    if (snapshot.docs.isEmpty) return 0;
 
-    for (final snap in snaps) {
-      currentBatch.delete(collection.doc(snap.id));
-      count++;
-      if (count % 500 == 0) {
-        batches.add(currentBatch);
-        currentBatch = firestore.batch();
-      }
-    }
-    if (count % 500 != 0) {
-      batches.add(currentBatch);
-    }
-
-    for (final batch in batches) {
-      await batch.commit();
-    }
-
-    AppLogger.info('Deleted $count cook snaps for user $userId');
-    return count;
+    await batchDeleteDocs(firestore, snapshot.docs);
+    AppLogger.info(
+        'Deleted ${snapshot.docs.length} cook snaps for user $userId');
+    return snapshot.docs.length;
   }
 }
