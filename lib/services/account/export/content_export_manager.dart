@@ -274,4 +274,37 @@ class ContentExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// Export all activity events (GDPR Article 20)
+  Future<Map<String, dynamic>> exportActivityEvents(String userId) async {
+    try {
+      final events = <Map<String, dynamic>>[];
+      final eventLimit =
+          ExportPaginationHelper.getLimitForType('activity_events');
+
+      final eventsSnapshot = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection(FirestoreCollections.activityEvents)
+            .where('actorId', isEqualTo: userId),
+        maxDocuments: eventLimit,
+      );
+
+      for (final doc in eventsSnapshot) {
+        events.add({
+          'event_id': doc.id,
+          'data': sanitizeForJson(doc.data()),
+        });
+      }
+
+      return {
+        'total_count': events.length,
+        'activity_events': events,
+        if (events.length >= eventLimit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export activity events', e);
+      return {'error': e.toString()};
+    }
+  }
 }

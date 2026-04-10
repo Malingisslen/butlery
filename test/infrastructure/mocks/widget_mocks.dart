@@ -8,7 +8,9 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -488,6 +490,54 @@ class MockFriendsViewModel extends MockBaseViewModel
   Future<void> refresh() async {
     // Mock implementation - just return completed future
     return Future.value();
+  }
+}
+
+/// Mock for ActivityFeedViewModel
+class MockActivityFeedViewModel extends MockBaseViewModel
+    implements ActivityFeedViewModel {
+  List<ActivityEvent> _events = const [];
+  bool _hasMore = false;
+  ActivityEventType? _filter;
+
+  @override
+  List<ActivityEvent> get events => _events;
+
+  @override
+  List<ActivityEvent> get filteredEvents => _filter == null
+      ? _events
+      : _events.where((e) => e.type == _filter).toList();
+
+  @override
+  bool get hasMore => _hasMore;
+
+  @override
+  ActivityEventType? get filter => _filter;
+
+  @override
+  Future<void> loadFeed() async => Future.value();
+
+  @override
+  Future<void> loadMore() async => Future.value();
+
+  @override
+  Future<void> refresh() async => Future.value();
+
+  @override
+  void setFilter(ActivityEventType? type) {
+    _filter = type;
+    notifyListeners();
+  }
+
+  void setFeedState({
+    List<ActivityEvent>? events,
+    bool? hasMore,
+    ActivityEventType? filter,
+  }) {
+    if (events != null) _events = events;
+    if (hasMore != null) _hasMore = hasMore;
+    if (filter != null) _filter = filter;
+    notifyListeners();
   }
 }
 

@@ -1,29 +1,72 @@
 # Sprint Backlog
 
-## Sprint: Consent Hardening — 2026-04-10
+## Sprint: Social Activity Feed — Phase 1 — 2026-04-10
 
-### Agent A: firebase-backend-security — FCM Consent Bug
+### Step 1: Model + Constants
 
-- [x] **A1. Add consent change callback to ConsentService** — `lib/services/account/consent_service.dart`: VoidCallback field, invoked after successful save. (BUT-356)
-- [x] **A2. Subscribe FCMService to consent changes** — `lib/services/notifications/fcm_service.dart`: listen for mid-session consent grant, re-enable push permissions + token. (BUT-356)
+- [x] **S1. Create ActivityEvent model + FirestoreCollections constant** — new `lib/models/social/activity_event.dart`: ActivityEventType enum (cooked, shared), model with id/actorId/actorDisplayName/type/recipeId/recipeTitle/extraData/createdAt, toFirestore/fromMap. Add `activityEvents` to `lib/core/constants/firestore_collections.dart`. (BUT-339)
 
-### Agent B: testing-specialist — Consent Test Coverage
+### Step 2: Repository
 
-- [x] **B1. Add ConsentService.checkSafely + onConsentChanged unit tests** — `test/unit/services/account/consent_service_test.dart`: 8 new tests covering fail-closed behavior, callback firing. (BUT-357)
+- [x] **S2. Create ActivityEventRepository interface + Firebase implementation** — `lib/repositories/interfaces/activity_event_repository.dart`: addEvent, fetchFriendActivity, getEventsByUser, deleteAllByUser. `lib/repositories/firebase/firebase_activity_event_repository.dart`: BaseFirebaseRepository<ActivityEvent>, batched whereIn queries in chunks of 10. (BUT-339)
+
+### Step 3: Service
+
+- [x] **S3. Create ActivityFeedService** — `lib/services/social/activity_feed_service.dart`: emitEvent (fire-and-forget), fetchFeed (gets friend IDs, passes to repo). (BUT-339)
+
+### Step 4: DI Registration
+
+- [x] **S4. Register in DI modules** — `social_module.dart`: ActivityEventRepository + ActivityFeedService in configure(). `ui_module.dart`: ActivityFeedViewModel as factory. (BUT-339)
+
+### Step 5: ViewModel
+
+- [x] **S5. Create ActivityFeedViewModel** — `lib/viewmodels/social/activity_feed_viewmodel.dart`: ChangeNotifier + StateNotifierMixin + AsyncOperationMixin, loadFeed/loadMore/refresh/setFilter/filteredEvents. (BUT-339)
+
+### Step 6: Feed Tab UI
+
+- [x] **S6. Create FeedTab widget** — `lib/views/social/friends_list/feed_tab.dart`: static build pattern, LoadingStateBuilder, activity cards with color-coded borders, filter chips, date separators, empty state. (BUT-339)
+
+### Step 7: Tab Integration
+
+- [x] **S7. Integrate feed tab into FriendsListView** — `lib/views/social/friends_list_view.dart`: tabs 3→4, insert Flöde at index 0, shift indices, MultiProvider, loadFeed on init. (BUT-339)
+
+### Step 8: Emission Points
+
+- [x] **S8. Emit activity events from CookSnap + Share** — `lib/services/cook_snap_service.dart`: emit cooked after upload. `lib/services/unified/operations/modules/recipe_sharing_manager.dart`: emit shared after notifications. (BUT-339)
+
+### Step 9: GDPR
+
+- [x] **S9. Add GDPR deletion + export for activity events** — `content_deletion_operations.dart`: deleteActivityEvents. `data_export_service.dart`: export activity events. (BUT-339)
+
+### Step 10: Localization
+
+- [x] **S10. Add l10n strings** — `app_sv.arb` + `app_en.arb`: socialFeed, feedEmpty, feedEmptyDescription, feedInviteFriends, feedFilterAll, feedFilterCooked, feedFilterShared, feedActionCooked, feedActionShared, feedTimeToday, feedTimeYesterday, feedTimeDaysAgo. (BUT-339)
 
 ### Post-Sprint Steps
 - [x] Run `dart analyze --fatal-infos`
-- [x] Run relevant unit tests (45/45 pass)
+- [ ] Run relevant unit tests
 - [ ] Commit, push, PR, merge
-- [ ] Update Linear ticket states (BUT-356, BUT-357 → Done)
+- [ ] Update Linear ticket state (BUT-339 → Done)
 
 ---
 
 ## What this means in plain language
 
-- Push notifications now start working if you grant permission after the app has already loaded
-- A safety net of tests covers the consent checking code — future changes can't silently break GDPR compliance
-- Risk: Very low. Both changes are additive. Easy to revert.
+- A new "Flöde" tab appears first on your friends screen
+- When a friend posts a cooking photo or shares a recipe, it appears in your feed
+- Only explicitly social actions show up — private things stay private
+- You can filter by type and tap any recipe to open it
+- Feed starts empty, fills up as people use the app
+- Account deletion removes all activity events too
+- Risk: Low — new feature, easy to remove
+
+---
+
+## Archive: Sprint Consent Hardening (completed 2026-04-10)
+
+- [x] A1: Consent change callback (BUT-356)
+- [x] A2: FCM mid-session re-enable (BUT-356)
+- [x] B1: ConsentService.checkSafely tests (BUT-357)
 
 ---
 
@@ -48,29 +91,11 @@
 
 ---
 
-## Archive: Sprint Feature & Polish (completed 2026-04-09)
-
-- [x] A1-A3: Notification inbox (BUT-348)
-- [x] B1: UNKNOWN allergen toggle (BUT-355)
-- [x] B2: TagDecision audit trail UI (BUT-352)
-- [x] B3: Tag thresholds → Remote Config (BUT-353)
-
----
-
-## Archive: Sprint Social & Stability Blitz (completed 2026-04-08)
-
-- [x] A1-A4: Social reliability (BUT-345, BUT-341, BUT-314, BUT-323)
-- [x] B1-B2: Import & recipe bugs (BUT-337, BUT-324)
-- [x] C1-C2: Dependency maintenance (BUT-300, BUT-301)
-
-## Archive: Sprint Tech Debt Consolidation (completed 2026-04-08)
-
-- [x] A1-A3: Refactor + performance (BUT-303, BUT-306)
-- [x] B1-B2: Test fixes (BUT-303, BUT-306)
-- [x] C1: Test coverage — 127 new tests (BUT-299)
-
 ## Archive: Previous Sprints
 
+- Feature & Polish (2026-04-09): BUT-348, BUT-355, BUT-352, BUT-353
+- Social & Stability Blitz (2026-04-08): BUT-345, BUT-341, BUT-314, BUT-323, BUT-337, BUT-324, BUT-300, BUT-301
+- Tech Debt Consolidation (2026-04-08): BUT-303, BUT-306, BUT-299
 - Bug Stability + Hardening H2 (2026-04-08): BUT-308, BUT-320, BUT-335, BUT-319, BUT-336, BUT-331, BUT-317, BUT-297, BUT-313, BUT-311, BUT-312, BUT-332, BUT-327
 - Security Hardening (2026-04-08): BUT-334, BUT-315, BUT-310, BUT-325, BUT-326, BUT-330, BUT-316, BUT-333, BUT-318, BUT-329, BUT-328, BUT-321
 - Household + Menu Voting (2026-04-08): BUT-256, BUT-239

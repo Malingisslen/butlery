@@ -3450,6 +3450,42 @@
     }
   },
   "socialFriends": "Vänner",
+  "socialFeed": "Flöde",
+  "feedEmpty": "Inget att visa ännu",
+  "feedEmptyDescription": "När dina vänner lagar mat eller delar recept dyker det upp här.",
+  "feedInviteFriends": "Bjud in vänner",
+  "feedFilterAll": "Allt",
+  "feedFilterCooked": "Lagat",
+  "feedFilterShared": "Delat",
+  "feedActionCooked": "lagade",
+  "feedActionShared": "delade",
+  "feedTimeJustNow": "Nyss",
+  "feedTimeToday": "Idag",
+  "feedTimeYesterday": "Igår",
+  "feedTimeMinutesAgo": "{count} min sedan",
+  "@feedTimeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "feedTimeHoursAgo": "{count, plural, =1{1 timme sedan} other{{count} timmar sedan}}",
+  "@feedTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "feedTimeDaysAgo": "{count, plural, =1{1 dag sedan} other{{count} dagar sedan}}",
+  "@feedTimeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "socialLoadingComments": "Laddar kommentarer...",
   "socialMustBeLoggedInToComment": "Du måste vara inloggad för att kommentera",
   "socialMustBeLoggedInToLike": "Du måste vara inloggad för att gilla",

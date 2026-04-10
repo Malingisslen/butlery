@@ -16,6 +16,8 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/models/social/activity_event.dart';
 
 class CookSnapService extends BaseService {
   final CookSnapRepository _repository;
@@ -95,6 +97,19 @@ class CookSnapService extends BaseService {
         await _repository.addCookSnap(snap);
 
         AppLogger.success('CookSnap added for recipe $recipeId');
+
+        // Emit activity event (fire-and-forget)
+        try {
+          ServiceLocator.get<ActivityFeedService>().emitEvent(
+            ActivityEventType.cooked,
+            recipeId,
+            recipeName,
+            extraData: {
+              'photoUrl': result.url!,
+              if (validCaption != null) 'caption': validCaption,
+            },
+          );
+        } catch (_) {}
 
         // Notify recipe author (if not self)
         if (recipeAuthorId != userId) {

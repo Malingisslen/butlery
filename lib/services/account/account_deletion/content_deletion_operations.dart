@@ -107,6 +107,25 @@ class ContentDeletionOperations {
     }
   }
 
+  /// Delete activity events (GDPR Article 17 - Right to Erasure)
+  Future<bool> deleteActivityEvents(String userId) async {
+    try {
+      final eventsSnapshot = await _firestore
+          .collection(FirestoreCollections.activityEvents)
+          .where('actorId', isEqualTo: userId)
+          .get();
+
+      await batchDeleteDocs(_firestore, eventsSnapshot.docs);
+      app_logger.AppLogger.info(
+          '[$_logTag] Deleted ${eventsSnapshot.docs.length} activity events');
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete activity events', e);
+      return false;
+    }
+  }
+
   /// Delete personal tag groups (GDPR Article 17 - Right to Erasure)
   Future<bool> deletePersonalTagGroups(String userId) async {
     try {

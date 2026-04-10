@@ -43,6 +43,8 @@ import 'package:butlery/services/unified/operations/social_menu_operations.dart'
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
+import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
+import '../mocks/widget_mocks.dart';
 
 // Service imports for Phase 4
 // (ActivityService removed - dead code)
@@ -464,6 +466,11 @@ class TestServiceLocator {
     // Friends ViewModel
     getIt.registerFactory(
       () => MockFactory.createFriendsViewModel(),
+    );
+
+    // Activity Feed ViewModel
+    getIt.registerFactory<ActivityFeedViewModel>(
+      () => MockActivityFeedViewModel(),
     );
 
     // Profile ViewModel

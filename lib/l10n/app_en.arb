@@ -3450,6 +3450,42 @@
     }
   },
   "socialFriends": "Friends",
+  "socialFeed": "Feed",
+  "feedEmpty": "Nothing to show yet",
+  "feedEmptyDescription": "When your friends cook or share recipes, it will show up here.",
+  "feedInviteFriends": "Invite friends",
+  "feedFilterAll": "All",
+  "feedFilterCooked": "Cooked",
+  "feedFilterShared": "Shared",
+  "feedActionCooked": "cooked",
+  "feedActionShared": "shared",
+  "feedTimeJustNow": "Just now",
+  "feedTimeToday": "Today",
+  "feedTimeYesterday": "Yesterday",
+  "feedTimeMinutesAgo": "{count} min ago",
+  "@feedTimeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "feedTimeHoursAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@feedTimeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "feedTimeDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@feedTimeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "socialLoadingComments": "Loading comments...",
   "socialMustBeLoggedInToComment": "You must be logged in to comment",
   "socialMustBeLoggedInToLike": "You must be logged in to like",

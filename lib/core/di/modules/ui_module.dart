@@ -37,6 +37,7 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart';
+import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 
 // Services dependencies
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -101,6 +102,7 @@ class UIModule implements DIModule {
 
         // Social ViewModels
         FriendsViewModel,
+        ActivityFeedViewModel,
         SharedContentCoordinatorViewModel,
         SharedMenuViewModel,
         CreateGroupViewModel,
@@ -231,6 +233,11 @@ class UIModule implements DIModule {
           friendsService: container<UnifiedFriendsService>(),
           userService: container<UserService>(),
         ),
+      );
+
+      // Activity Feed ViewModel
+      container.registerFactory<ActivityFeedViewModel>(
+        () => ActivityFeedViewModel(),
       );
 
       // Shared Content Coordinator ViewModel - modular architecture

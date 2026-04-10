@@ -9507,6 +9507,96 @@ abstract class AppLocalizations {
   /// **'Vänner'**
   String get socialFriends;
 
+  /// No description provided for @socialFeed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flöde'**
+  String get socialFeed;
+
+  /// No description provided for @feedEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget att visa ännu'**
+  String get feedEmpty;
+
+  /// No description provided for @feedEmptyDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'När dina vänner lagar mat eller delar recept dyker det upp här.'**
+  String get feedEmptyDescription;
+
+  /// No description provided for @feedInviteFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bjud in vänner'**
+  String get feedInviteFriends;
+
+  /// No description provided for @feedFilterAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt'**
+  String get feedFilterAll;
+
+  /// No description provided for @feedFilterCooked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagat'**
+  String get feedFilterCooked;
+
+  /// No description provided for @feedFilterShared.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat'**
+  String get feedFilterShared;
+
+  /// No description provided for @feedActionCooked.
+  ///
+  /// In sv, this message translates to:
+  /// **'lagade'**
+  String get feedActionCooked;
+
+  /// No description provided for @feedActionShared.
+  ///
+  /// In sv, this message translates to:
+  /// **'delade'**
+  String get feedActionShared;
+
+  /// No description provided for @feedTimeJustNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyss'**
+  String get feedTimeJustNow;
+
+  /// No description provided for @feedTimeToday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Idag'**
+  String get feedTimeToday;
+
+  /// No description provided for @feedTimeYesterday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Igår'**
+  String get feedTimeYesterday;
+
+  /// No description provided for @feedTimeMinutesAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} min sedan'**
+  String feedTimeMinutesAgo(int count);
+
+  /// No description provided for @feedTimeHoursAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 timme sedan} other{{count} timmar sedan}}'**
+  String feedTimeHoursAgo(int count);
+
+  /// No description provided for @feedTimeDaysAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 dag sedan} other{{count} dagar sedan}}'**
+  String feedTimeDaysAgo(int count);
+
   /// No description provided for @socialLoadingComments.
   ///
   /// In sv, this message translates to:

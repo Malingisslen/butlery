@@ -10,6 +10,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/models/social/activity_event.dart';
 
 typedef CreateCollaborativeRecipeFn = Future<String?> Function({
   required String title,
@@ -171,6 +173,16 @@ class RecipeSharingManager {
         memberIds: memberIds,
         memberDisplayNames: memberDisplayNames,
       );
+
+      // Emit activity event (fire-and-forget)
+      try {
+        ServiceLocator.get<ActivityFeedService>().emitEvent(
+          ActivityEventType.shared,
+          finalRecipeId,
+          recipeToShare.title,
+          extraData: {'memberCount': memberIds.length},
+        );
+      } catch (_) {}
 
       AppLogger.success('✅ Recipe sharing completed successfully');
       return finalRecipeId;

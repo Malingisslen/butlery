@@ -5436,6 +5436,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialFriends => 'Friends';
 
   @override
+  String get socialFeed => 'Feed';
+
+  @override
+  String get feedEmpty => 'Nothing to show yet';
+
+  @override
+  String get feedEmptyDescription =>
+      'When your friends cook or share recipes, it will show up here.';
+
+  @override
+  String get feedInviteFriends => 'Invite friends';
+
+  @override
+  String get feedFilterAll => 'All';
+
+  @override
+  String get feedFilterCooked => 'Cooked';
+
+  @override
+  String get feedFilterShared => 'Shared';
+
+  @override
+  String get feedActionCooked => 'cooked';
+
+  @override
+  String get feedActionShared => 'shared';
+
+  @override
+  String get feedTimeJustNow => 'Just now';
+
+  @override
+  String get feedTimeToday => 'Today';
+
+  @override
+  String get feedTimeYesterday => 'Yesterday';
+
+  @override
+  String feedTimeMinutesAgo(int count) {
+    return '$count min ago';
+  }
+
+  @override
+  String feedTimeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours ago',
+      one: '1 hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String feedTimeDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get socialLoadingComments => 'Loading comments...';
 
   @override

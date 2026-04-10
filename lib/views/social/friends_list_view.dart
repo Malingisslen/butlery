@@ -25,6 +25,8 @@ import 'package:butlery/views/social/friends_list/requests_tab.dart';
 import 'package:butlery/views/social/friends_list/search_tab.dart';
 import 'package:butlery/views/social/friends_list/groups_tab.dart';
 import 'package:butlery/views/social/friends_list/group_search_tab.dart';
+import 'package:butlery/views/social/friends_list/feed_tab.dart';
+import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 
 /// Friends and groups management view with tabs for friends, groups, and discovery.
 class FriendsListView extends StatefulWidget {
@@ -36,16 +38,20 @@ class FriendsListView extends StatefulWidget {
 
 class _FriendsListViewState extends State<FriendsListView> {
   late final FriendsViewModel _vm;
+  late final ActivityFeedViewModel _feedVm;
 
   @override
   void initState() {
     super.initState();
     _vm = ServiceLocator.get<FriendsViewModel>();
+    _feedVm = ServiceLocator.get<ActivityFeedViewModel>();
+    _feedVm.loadFeed();
   }
 
   @override
   void dispose() {
     _vm.dispose();
+    _feedVm.dispose();
     super.dispose();
   }
 
@@ -54,6 +60,7 @@ class _FriendsListViewState extends State<FriendsListView> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<FriendsViewModel>.value(value: _vm),
+        ChangeNotifierProvider<ActivityFeedViewModel>.value(value: _feedVm),
         Provider.value(value: ServiceLocator.get<UnifiedFriendsService>()),
       ],
       child: const _FriendsListViewContent(),
@@ -81,7 +88,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     super.initState();
     _socialEnabled = ServiceLocator.get<FeatureFlagService>()
         .isEnabled(FeatureFlags.enableSocialFeatures);
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         if (mounted) {
@@ -100,7 +107,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null && args['tabIndex'] != null) {
         final tabIndex = args['tabIndex'] as int;
-        if (tabIndex >= 0 && tabIndex < 3) {
+        if (tabIndex >= 0 && tabIndex < 4) {
           _tabController.animateTo(tabIndex);
           if (mounted) {
             setState(() {
@@ -192,6 +199,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         indicatorWeight: AppDimensions.borderWidthThick,
                         tabs: [
                           Tab(
+                            icon: const Icon(Icons.dynamic_feed),
+                            text: context.l10n.socialFeed,
+                          ),
+                          Tab(
                             icon: const Icon(Icons.people),
                             text: context.l10n.socialFriends,
                           ),
@@ -267,7 +278,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     ],
 
                     // Search functionality for groups and friend discovery tabs
-                    if (_currentTabIndex == 1)
+                    if (_currentTabIndex == 2)
                       SearchFilterWidget.searchOnly(
                         searchQuery: _searchQuery,
                         onSearchChanged: _onSearchChanged,
@@ -277,7 +288,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         showStats: true,
                         resultCount: viewModel.searchResults.length,
                       ),
-                    if (_currentTabIndex == 2)
+                    if (_currentTabIndex == 3)
                       SearchFilterWidget.searchOnly(
                         searchQuery: _searchQuery,
                         onSearchChanged: _onSearchChanged,
@@ -291,9 +302,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     // Tab content — only build the active tab
                     Expanded(
                       child: switch (_currentTabIndex) {
-                        0 => _buildFriendsTab(viewModel),
-                        1 => _buildGroupsTab(friendsService, viewModel),
-                        2 => _buildDiscoveryTab(viewModel),
+                        0 => FeedTab.build(
+                            context, context.watch<ActivityFeedViewModel>()),
+                        1 => _buildFriendsTab(viewModel),
+                        2 => _buildGroupsTab(friendsService, viewModel),
+                        3 => _buildDiscoveryTab(viewModel),
                         _ => const SizedBox.shrink(),
                       },
                     ),
@@ -302,7 +315,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
               ),
             ),
           ),
-          floatingActionButton: _currentTabIndex == 1
+          floatingActionButton: _currentTabIndex == 2
               ? FloatingActionButton(
                   onPressed: () => _showCreateGroupDialog(viewModel),
                   tooltip: context.l10n.groupCreateGroup,
