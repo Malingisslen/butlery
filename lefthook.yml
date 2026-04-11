@@ -7,10 +7,11 @@
 
 pre-commit:
   commands:
-    # Format Dart files, then restage everything
+    # Format staged Dart files, then restage them (only the originally-staged files —
+    # never `git add -A`, which would sweep in unrelated work from parallel sessions)
     format:
       glob: "*.dart"
-      run: dart format {staged_files} && git add -A
+      run: dart format {staged_files} && git add {staged_files}
       priority: 1
 
     # Scan for potential secrets in staged files
