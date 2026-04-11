@@ -288,6 +288,13 @@ class SwedishPluralization {
 
     final lower = singular.toLowerCase();
 
+    // Idempotence: if input is already a known plural form (e.g. "tomater",
+    // "lökar", "äpplen"), return it unchanged. Without this guard the suffix
+    // rules in _pluralizeWord re-pluralize already-plural words.
+    if (_reversePlurals.containsKey(lower)) {
+      return singular;
+    }
+
     // Check irregular plurals database first
     if (irregularPlurals.containsKey(lower)) {
       final plural = irregularPlurals[lower]!;
@@ -353,6 +360,12 @@ class SwedishPluralization {
 
   static String _pluralizeWord(String word) {
     final lower = word.toLowerCase();
+
+    // Idempotence guard for compound paths that bypass pluralize()'s top-level
+    // check. If the word is already a known plural form, return it unchanged.
+    if (_reversePlurals.containsKey(lower)) {
+      return word;
+    }
 
     // Special cases for specific words
     final specialCases = {
