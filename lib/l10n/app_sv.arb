@@ -8509,5 +8509,27 @@
     "placeholders": {
       "count": {"type": "int"}
     }
-  }
+  },
+  "weeklyMenuToggleList": "Lista",
+  "weeklyMenuToggleCalendar": "Kalender",
+  "weeklyMenuPrevWeek": "Föregående vecka",
+  "weeklyMenuNextWeek": "Nästa vecka",
+  "weeklyMenuTodayBadge": "Idag",
+  "weeklyMenuEmptyTitle": "Ingen planering än",
+  "weeklyMenuEmptyHint": "Skapa en veckomeny från prompten ovan så fyller vi i dagarna åt dig.",
+  "weeklyMenuOverflowTitle": "Recept som inte fick plats",
+  "weeklyMenuOvrigtAddMore": "+ lägg till",
+  "weeklyMenuOverwriteConfirm": "Detta ersätter din nuvarande planering. Fortsätt?",
+  "weeklyMenuLoadError": "Kunde inte ladda veckomenyn",
+  "weeklyMenuWeekLabel": "Vecka {weekNum} · {start}–{end}",
+  "@weeklyMenuWeekLabel": {
+    "placeholders": {
+      "weekNum": {"type": "int"},
+      "start": {"type": "String"},
+      "end": {"type": "String"}
+    }
+  },
+  "mealSlotLunch": "Lunch",
+  "mealSlotMiddag": "Middag",
+  "mealSlotOvrigt": "Övrigt"
 }

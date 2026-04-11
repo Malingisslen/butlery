@@ -39,6 +39,10 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -142,6 +146,8 @@ class ContentModule implements DIModule {
         UnifiedMenuService,
         ImportManager,
         MenuService,
+        WeeklyMenuPlanRepository,
+        WeeklyMenuPlanService,
         SearchService,
         ShareService,
         StorageRepository,
@@ -453,6 +459,23 @@ class ContentModule implements DIModule {
       // Menu service for meal planning
       container.registerLazySingleton<MenuService>(
         () => MenuService(),
+      );
+
+      container.registerLazySingleton<WeeklyMenuPlanRepository>(
+        () => FirebaseWeeklyMenuPlanRepository(
+          authRepository: container<auth.AuthRepository>(),
+          auditRepository: container<FirebaseAuditRepository>(),
+        ),
+      );
+
+      // Lazy resolution of UserService: it's registered in SocialModule
+      // which loads after ContentModule. Lazy singleton resolves at first
+      // get() which happens after all modules are configured.
+      container.registerLazySingleton<WeeklyMenuPlanService>(
+        () => WeeklyMenuPlanService(
+          repository: container<WeeklyMenuPlanRepository>(),
+          userService: container<UserService>(),
+        ),
       );
 
       // Search service for content discovery

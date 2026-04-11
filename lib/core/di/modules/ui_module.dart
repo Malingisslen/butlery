@@ -32,6 +32,7 @@ import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -45,6 +46,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
@@ -93,6 +95,7 @@ class UIModule implements DIModule {
         // Menu ViewModels
         MenuViewModel,
         RealtimeMenuViewModel,
+        WeeklyMenuPlanViewModel,
 
         // Shopping ViewModels
         UnifiedShoppingViewModel,
@@ -201,6 +204,12 @@ class UIModule implements DIModule {
           menuService: container<RealtimeMenuService>(),
           syncService: container<RealtimeSyncService>(),
           authService: container<AuthService>(),
+        ),
+      );
+
+      container.registerFactory<WeeklyMenuPlanViewModel>(
+        () => WeeklyMenuPlanViewModel(
+          service: container<WeeklyMenuPlanService>(),
         ),
       );
       // Unified Shopping ViewModel - Zero dependencies

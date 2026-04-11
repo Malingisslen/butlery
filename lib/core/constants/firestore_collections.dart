@@ -46,6 +46,7 @@ abstract final class FirestoreCollections {
   static const String ingredientSubstitutions = 'ingredient_substitutions';
   static const String cookSnaps = 'cook_snaps';
   static const String activityEvents = 'activity_events';
+  static const String weeklyMenuPlans = 'weekly_menu_plans';
 
   static const String shoppingListTemplates = 'shopping_list_templates';
   static const String categoryOverrides = 'category_overrides';

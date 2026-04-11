@@ -12494,4 +12494,53 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get weeklyMenuToggleList => 'List';
+
+  @override
+  String get weeklyMenuToggleCalendar => 'Calendar';
+
+  @override
+  String get weeklyMenuPrevWeek => 'Previous week';
+
+  @override
+  String get weeklyMenuNextWeek => 'Next week';
+
+  @override
+  String get weeklyMenuTodayBadge => 'Today';
+
+  @override
+  String get weeklyMenuEmptyTitle => 'No plan yet';
+
+  @override
+  String get weeklyMenuEmptyHint =>
+      'Generate a weekly menu from the prompt above and we\'ll lay out the days for you.';
+
+  @override
+  String get weeklyMenuOverflowTitle => 'Recipes that didn\'t fit';
+
+  @override
+  String get weeklyMenuOvrigtAddMore => '+ add';
+
+  @override
+  String get weeklyMenuOverwriteConfirm =>
+      'This will replace your current plan. Continue?';
+
+  @override
+  String get weeklyMenuLoadError => 'Couldn\'t load the weekly menu';
+
+  @override
+  String weeklyMenuWeekLabel(int weekNum, String start, String end) {
+    return 'Week $weekNum · $start–$end';
+  }
+
+  @override
+  String get mealSlotLunch => 'Lunch';
+
+  @override
+  String get mealSlotMiddag => 'Dinner';
+
+  @override
+  String get mealSlotOvrigt => 'Other';
 }

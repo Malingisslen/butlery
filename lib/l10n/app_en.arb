@@ -8509,5 +8509,27 @@
     "placeholders": {
       "count": {"type": "int"}
     }
-  }
+  },
+  "weeklyMenuToggleList": "List",
+  "weeklyMenuToggleCalendar": "Calendar",
+  "weeklyMenuPrevWeek": "Previous week",
+  "weeklyMenuNextWeek": "Next week",
+  "weeklyMenuTodayBadge": "Today",
+  "weeklyMenuEmptyTitle": "No plan yet",
+  "weeklyMenuEmptyHint": "Generate a weekly menu from the prompt above and we'll lay out the days for you.",
+  "weeklyMenuOverflowTitle": "Recipes that didn't fit",
+  "weeklyMenuOvrigtAddMore": "+ add",
+  "weeklyMenuOverwriteConfirm": "This will replace your current plan. Continue?",
+  "weeklyMenuLoadError": "Couldn't load the weekly menu",
+  "weeklyMenuWeekLabel": "Week {weekNum} · {start}–{end}",
+  "@weeklyMenuWeekLabel": {
+    "placeholders": {
+      "weekNum": {"type": "int"},
+      "start": {"type": "String"},
+      "end": {"type": "String"}
+    }
+  },
+  "mealSlotLunch": "Lunch",
+  "mealSlotMiddag": "Dinner",
+  "mealSlotOvrigt": "Other"
 }

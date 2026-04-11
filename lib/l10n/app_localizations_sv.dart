@@ -12524,4 +12524,53 @@ class AppLocalizationsSv extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get weeklyMenuToggleList => 'Lista';
+
+  @override
+  String get weeklyMenuToggleCalendar => 'Kalender';
+
+  @override
+  String get weeklyMenuPrevWeek => 'Föregående vecka';
+
+  @override
+  String get weeklyMenuNextWeek => 'Nästa vecka';
+
+  @override
+  String get weeklyMenuTodayBadge => 'Idag';
+
+  @override
+  String get weeklyMenuEmptyTitle => 'Ingen planering än';
+
+  @override
+  String get weeklyMenuEmptyHint =>
+      'Skapa en veckomeny från prompten ovan så fyller vi i dagarna åt dig.';
+
+  @override
+  String get weeklyMenuOverflowTitle => 'Recept som inte fick plats';
+
+  @override
+  String get weeklyMenuOvrigtAddMore => '+ lägg till';
+
+  @override
+  String get weeklyMenuOverwriteConfirm =>
+      'Detta ersätter din nuvarande planering. Fortsätt?';
+
+  @override
+  String get weeklyMenuLoadError => 'Kunde inte ladda veckomenyn';
+
+  @override
+  String weeklyMenuWeekLabel(int weekNum, String start, String end) {
+    return 'Vecka $weekNum · $start–$end';
+  }
+
+  @override
+  String get mealSlotLunch => 'Lunch';
+
+  @override
+  String get mealSlotMiddag => 'Middag';
+
+  @override
+  String get mealSlotOvrigt => 'Övrigt';
 }

@@ -21429,6 +21429,96 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =1{1 oanvänd tagg borttagen} other{{count} oanvända taggar borttagna}}'**
   String personalTagUnusedDeleted(int count);
+
+  /// No description provided for @weeklyMenuToggleList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lista'**
+  String get weeklyMenuToggleList;
+
+  /// No description provided for @weeklyMenuToggleCalendar.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kalender'**
+  String get weeklyMenuToggleCalendar;
+
+  /// No description provided for @weeklyMenuPrevWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föregående vecka'**
+  String get weeklyMenuPrevWeek;
+
+  /// No description provided for @weeklyMenuNextWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nästa vecka'**
+  String get weeklyMenuNextWeek;
+
+  /// No description provided for @weeklyMenuTodayBadge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Idag'**
+  String get weeklyMenuTodayBadge;
+
+  /// No description provided for @weeklyMenuEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen planering än'**
+  String get weeklyMenuEmptyTitle;
+
+  /// No description provided for @weeklyMenuEmptyHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa en veckomeny från prompten ovan så fyller vi i dagarna åt dig.'**
+  String get weeklyMenuEmptyHint;
+
+  /// No description provided for @weeklyMenuOverflowTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept som inte fick plats'**
+  String get weeklyMenuOverflowTitle;
+
+  /// No description provided for @weeklyMenuOvrigtAddMore.
+  ///
+  /// In sv, this message translates to:
+  /// **'+ lägg till'**
+  String get weeklyMenuOvrigtAddMore;
+
+  /// No description provided for @weeklyMenuOverwriteConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta ersätter din nuvarande planering. Fortsätt?'**
+  String get weeklyMenuOverwriteConfirm;
+
+  /// No description provided for @weeklyMenuLoadError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda veckomenyn'**
+  String get weeklyMenuLoadError;
+
+  /// No description provided for @weeklyMenuWeekLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {weekNum} · {start}–{end}'**
+  String weeklyMenuWeekLabel(int weekNum, String start, String end);
+
+  /// No description provided for @mealSlotLunch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lunch'**
+  String get mealSlotLunch;
+
+  /// No description provided for @mealSlotMiddag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Middag'**
+  String get mealSlotMiddag;
+
+  /// No description provided for @mealSlotOvrigt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övrigt'**
+  String get mealSlotOvrigt;
 }
 
 class _AppLocalizationsDelegate

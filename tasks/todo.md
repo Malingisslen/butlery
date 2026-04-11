@@ -1,64 +1,67 @@
 # Sprint Backlog
 
-## Sprint: Social Activity Feed — Phase 1 — 2026-04-10
+## Sprint: Calendar Weekly Menu — Phase 1 — 2026-04-11
 
-### Step 1: Model + Constants
+**Slot model:** 3 slots only — `MealSlot { lunch, middag, ovrigt }`. Frukost removed; breakfast/dessert/mellanmål/fika/snack all map to `ovrigt`. Lunch and middag are single-recipe per cell. **Övrigt is multi-recipe per day** (stacked entries, user can keep adding via "+ lägg till" inside the cell).
 
-- [x] **S1. Create ActivityEvent model + FirestoreCollections constant** — new `lib/models/social/activity_event.dart`: ActivityEventType enum (cooked, shared), model with id/actorId/actorDisplayName/type/recipeId/recipeTitle/extraData/createdAt, toFirestore/fromMap. Add `activityEvents` to `lib/core/constants/firestore_collections.dart`. (BUT-339)
+### Step 0: HTML Preview (before any Flutter code)
 
-### Step 2: Repository
+- [x] **S0. HTML preview** — `docs/design/previews/weekly-menu-plan-preview.html` with 3-column grid (lunch/middag/övrigt), prompt + toggle in header, multi-entry övrigt cell on tisdag, single-entry on onsdag, overflow tray, empty state in Frame 2. Approved 2026-04-11. Delete after implementation. (BUT-211)
 
-- [x] **S2. Create ActivityEventRepository interface + Firebase implementation** — `lib/repositories/interfaces/activity_event_repository.dart`: addEvent, fetchFriendActivity, getEventsByUser, deleteAllByUser. `lib/repositories/firebase/firebase_activity_event_repository.dart`: BaseFirebaseRepository<ActivityEvent>, batched whereIn queries in chunks of 10. (BUT-339)
+### Agent A: firebase-backend-security — Data layer
 
-### Step 3: Service
+- [x] **S1. Create WeeklyMenuPlan model + enums + mapper + ISO week utils** — new `lib/models/menu/weekly_menu_plan.dart`: `MealSlot { lunch, middag, ovrigt }` enum with Swedish display labels + `isMulti` getter (true for ovrigt only), `DayOfWeek` enum, `WeeklyMenuPlanEntry { day, slot, recipeId, recipeTitle, recipeImageUrl? }`, `WeeklyMenuPlan { id, userId, weekStartDate, entries, createdAt, updatedAt }` with `toFirestore`/`fromMap` using `lib/core/utils/serialization_utils.dart`. Helper getters on `WeeklyMenuPlan`: `entryAt(day, slot)` (single, returns first match), `entriesAt(day, slot)` (list, used for ovrigt). New `lib/services/menu/meal_slot_mapper.dart`: pure `MealSlot mapMealTypeToSlot(String)` — frukost/breakfast/dessert/mellanmål/fika/snack/snacks → ovrigt, lunch → lunch, middag/dinner → middag, default → middag. New `lib/core/utils/iso_week_utils.dart`: `weekStartOf(DateTime)`, `isoWeekNumber(DateTime)`, `weekIdFor(userId, DateTime)`. Add `weeklyMenuPlans` constant to `lib/core/constants/firestore_collections.dart`. (BUT-211)
 
-- [x] **S3. Create ActivityFeedService** — `lib/services/social/activity_feed_service.dart`: emitEvent (fire-and-forget), fetchFeed (gets friend IDs, passes to repo). (BUT-339)
+- [x] **S2. Create WeeklyMenuPlanRepository interface + Firebase impl + security rules** — `lib/repositories/interfaces/weekly_menu_plan_repository.dart`: `fetchForWeek`, `save`, `deleteAllByUser`. `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart`: extend `BaseFirebaseRepository<WeeklyMenuPlan>` with `PermissionValidationMixin`, deterministic doc ID `userId_YYYY-WW`, upsert on save. Update `firestore.rules` with owner-scoped read/write for `weeklyMenuPlans/{docId}`. (BUT-211)
 
-### Step 4: DI Registration
+- [x] **S3. Create WeeklyMenuPlanService with distribution** — `lib/services/menu/weekly_menu_plan_service.dart` extends `BaseService`. Methods: `getWeek(date)`, `distributeFromGeneratedMenu(generated, weekStart, {existing, now})` returns `(WeeklyMenuPlan, List<Recipe> overflow)` — for lunch/middag walks anchor→sun skipping occupied, for ovrigt walks anchor→sun adding one per day (no skip), overflow when out of days. `addEntry(plan, day, slot, recipe)` (always adds; ovrigt allows multiple per day, lunch/middag replace), `moveEntry`, `removeEntry(entryId)`, `clearWeek`, `save`. Use `executeServiceOperation` for all public async methods. (BUT-211)
 
-- [x] **S4. Register in DI modules** — `social_module.dart`: ActivityEventRepository + ActivityFeedService in configure(). `ui_module.dart`: ActivityFeedViewModel as factory. (BUT-339)
+- [x] **S4. Register in DI** — `lib/core/di/modules/content_module.dart`: register `WeeklyMenuPlanRepository` as interface + `WeeklyMenuPlanService` (lazy singletons). `lib/core/di/modules/ui_module.dart`: register `WeeklyMenuPlanViewModel` as factory. Verify dependency order. (BUT-211)
 
-### Step 5: ViewModel
+### Agent B: flutter-developer + uiux-designer — Presentation layer
 
-- [x] **S5. Create ActivityFeedViewModel** — `lib/viewmodels/social/activity_feed_viewmodel.dart`: ChangeNotifier + StateNotifierMixin + AsyncOperationMixin, loadFeed/loadMore/refresh/setFilter/filteredEvents. (BUT-339)
+- [x] **S5. Create WeeklyMenuPlanViewModel** — `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart` extends `BaseViewModel`: state `{currentWeekStart, entriesByDaySlot, hasOfflineChanges}`, methods `loadWeek`, `previousWeek`, `nextWeek`, `assignRecipe`, `moveEntry` (guard self-drop), `removeEntry`, `fillPlaceholders`, `clearWeek`. Use `executeAsyncVoid` for persistence. Guard async gaps with `if (isDisposed) return`. (BUT-211)
 
-### Step 6: Feed Tab UI
+- [x] **S6. Create CalendarWeeklyMenuWidget with all five UI states** — new `lib/widgets/menu/calendar_weekly_menu_widget.dart` (embeddable, not a page — `BaseScaffold` not used). State builder for loading (pea animation) / error (contextual error engine + retry) / empty (centered illustration + bouncing arrow up + "Skapa en veckomeny från prompten ovan" hint) / offline (animated banner) / success (week-nav header, overflow tray when non-empty, 7 day-rows × 3-column grid: lunch / middag / övrigt). Lunch/middag cells render single-recipe (empty=plus icon, assigned=image+title). Övrigt cell renders **stacked entries** (mini chip per recipe) + "+ lägg till" affordance. Reuse `menu_recipe_selection_dialog.dart` for picking. Theme tokens only — zero hardcoded values. (BUT-211)
 
-- [x] **S6. Create FeedTab widget** — `lib/views/social/friends_list/feed_tab.dart`: static build pattern, LoadingStateBuilder, activity cards with color-coded borders, filter chips, date separators, empty state. (BUT-339)
+- [x] **S7. Add drag-and-drop between slots** — `LongPressDraggable<WeeklyMenuPlanEntry>` on assigned cells, `DragTarget` on all slots. On accept → `viewModel.moveEntry` (swap if occupied). Haptic feedback on pickup + drop. Theme accent border on drop targets while dragging. (BUT-211)
 
-### Step 7: Tab Integration
+- [x] **S8. Veckomeny integration: Lista/Kalender toggle + auto-distribute on generation** — modify `lib/views/veckomeny_view.dart`. Add segmented "Lista │ Kalender" toggle (persisted via `SharedPreferences` key `veckomeny_view_mode`). Wire `WeeklyMenuPlanViewModel` via `MultiProvider`. When toggle = Lista, render existing list output unchanged. When toggle = Kalender, render `CalendarWeeklyMenuWidget` and after successful generation call `weeklyMenuPlanViewModel.applyGeneratedMenu(generated)`. If existing plan has entries, show overwrite confirmation dialog. (BUT-211)
 
-- [x] **S7. Integrate feed tab into FriendsListView** — `lib/views/social/friends_list_view.dart`: tabs 3→4, insert Flöde at index 0, shift indices, MultiProvider, loadFeed on init. (BUT-339)
+### Agent C: flutter-developer — Integration & housekeeping
 
-### Step 8: Emission Points
-
-- [x] **S8. Emit activity events from CookSnap + Share** — `lib/services/cook_snap_service.dart`: emit cooked after upload. `lib/services/unified/operations/modules/recipe_sharing_manager.dart`: emit shared after notifications. (BUT-339)
-
-### Step 9: GDPR
-
-- [x] **S9. Add GDPR deletion + export for activity events** — `content_deletion_operations.dart`: deleteActivityEvents. `data_export_service.dart`: export activity events. (BUT-339)
-
-### Step 10: Localization
-
-- [x] **S10. Add l10n strings** — `app_sv.arb` + `app_en.arb`: socialFeed, feedEmpty, feedEmptyDescription, feedInviteFriends, feedFilterAll, feedFilterCooked, feedFilterShared, feedActionCooked, feedActionShared, feedTimeToday, feedTimeYesterday, feedTimeDaysAgo. (BUT-339)
+- [x] **S10. GDPR deletion + export** — `content_deletion_operations.dart`: `deleteWeeklyMenuPlans(userId)` with 500-op batch limit. `data_export_service.dart`: export under `weeklyMenuPlans` key. `app_sv.arb` + `app_en.arb`: `weeklyMenuToggleList`, `weeklyMenuToggleCalendar`, `weeklyMenuWeekLabel`, `mealSlotLunch`, `mealSlotMiddag`, `mealSlotOvrigt`, `weeklyMenuOvrigtAddMore` ("+ lägg till"), `weeklyMenuOverflowTitle` ("Recept som inte fick plats"), `weeklyMenuEmptyHint` ("Skapa en veckomeny från prompten ovan"), `weeklyMenuOverwriteConfirm` ("Detta ersätter din nuvarande planering. Fortsätt?"), `weeklyMenuLoadError`, `dayMon..daySun`. (BUT-211)
 
 ### Post-Sprint Steps
-- [x] Run `dart analyze --fatal-infos`
-- [ ] Run relevant unit tests
-- [x] Commit, push, PR, merge
-- [x] Update Linear ticket state (BUT-339 → Done)
+- [ ] Run `dart analyze --fatal-infos`
+- [ ] Run `flutter test test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart test/unit/repositories/firebase_weekly_menu_plan_repository_test.dart`
+- [ ] Chrome end-to-end: empty → quick-fill → pick → drag → week nav → reload → offline → account deletion
+- [ ] Commit, push, PR, merge
+- [ ] Update Linear: BUT-211 → Done
 
 ---
 
 ## What this means in plain language
 
-- A new "Flöde" tab appears first on your friends screen
-- When a friend posts a cooking photo or shares a recipe, it appears in your feed
-- Only explicitly social actions show up — private things stay private
-- You can filter by type and tap any recipe to open it
-- Feed starts empty, fills up as people use the app
-- Account deletion removes all activity events too
-- Risk: Low — new feature, easy to remove
+- A new "Kalender" view shows your week as a grid: 7 days across, 4 meal slots down (frukost, lunch, middag, snacks)
+- You can tap an empty slot to add a recipe, or long-press and drag a recipe to move it to another day
+- Quick-fill chips let you sketch the week: tap "3 middagar" and three empty dinner spaces appear, ready for you to pick recipes later
+- The existing flat menu list stays exactly as it is — you can switch between "Lista" and "Kalender" on the veckomeny screen
+- Your weekly plan saves automatically and reloads when you come back
+- Account deletion removes your weekly plans along with everything else
+- Risk: Low — the new calendar lives next to the existing menu without touching it. Worst case, we hide the toggle button and nothing else breaks.
+
+---
+
+## Archive: Sprint Skafferiet (Pantry) — 2026-04-10
+
+- [x] A1-A3, B1, C1-C3, D1: Pantry model/repo/service/DI/VM, PantryView, "Laga med vad jag har" filter, navigation, GDPR/l10n/tests (BUT-349, BUT-205) — PR #143
+
+---
+
+## Archive: Sprint Social Activity Feed — Phase 1 (completed 2026-04-10)
+
+- [x] S1-S10: ActivityEvent model, repository, service, DI, ViewModel, FeedTab UI, tab integration, emission points, GDPR, l10n (BUT-339)
 
 ---
 

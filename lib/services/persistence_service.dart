@@ -71,6 +71,7 @@ class PersistenceService extends BaseService {
   static const String _lastUpdatedKey = 'butlery_last_updated';
 
   static const String _viewModeKey = 'butlery_view_mode';
+  static const String _veckomenyViewModeKey = 'veckomeny_view_mode';
   static const String _sortCriteriaKey = 'butlery_sort_criteria';
   static const String _sortAscendingKey = 'butlery_sort_ascending';
   static const String _defaultPortionsKey = 'butlery_default_portions';
@@ -292,6 +293,26 @@ class PersistenceService extends BaseService {
       await prefs.setBool(_viewModeKey, value);
     } catch (e) {
       AppLogger.error('Failed to save view mode', e, 'Persistence');
+    }
+  }
+
+  /// Veckomeny Lista/Kalender toggle — stores the enum name.
+  Future<String?> getVeckomenyViewMode() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getString(_veckomenyViewModeKey);
+    } catch (e) {
+      AppLogger.error('Failed to load veckomeny view mode', e, 'Persistence');
+      return null;
+    }
+  }
+
+  Future<void> setVeckomenyViewMode(String mode) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setString(_veckomenyViewModeKey, mode);
+    } catch (e) {
+      AppLogger.error('Failed to save veckomeny view mode', e, 'Persistence');
     }
   }
 

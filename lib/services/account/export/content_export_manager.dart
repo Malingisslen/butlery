@@ -307,4 +307,40 @@ class ContentExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// Export all weekly menu plans (BUT-211, GDPR Article 20).
+  /// Doc IDs are prefixed with `{userId}_` so a range query gives us only
+  /// this user's plans without an additional Firestore index.
+  Future<Map<String, dynamic>> exportWeeklyMenuPlans(String userId) async {
+    try {
+      final plans = <Map<String, dynamic>>[];
+      final planLimit =
+          ExportPaginationHelper.getLimitForType('weekly_menu_plans');
+
+      final plansSnapshot = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection(FirestoreCollections.weeklyMenuPlans)
+            .where(FieldPath.documentId, isGreaterThanOrEqualTo: '${userId}_')
+            .where(FieldPath.documentId, isLessThan: '${userId}_\uf8ff'),
+        maxDocuments: planLimit,
+      );
+
+      for (final doc in plansSnapshot) {
+        plans.add({
+          'plan_id': doc.id,
+          'data': sanitizeForJson(doc.data()),
+        });
+      }
+
+      return {
+        'total_count': plans.length,
+        'weekly_menu_plans': plans,
+        if (plans.length >= planLimit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export weekly menu plans', e);
+      return {'error': e.toString()};
+    }
+  }
 }

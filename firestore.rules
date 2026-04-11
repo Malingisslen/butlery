@@ -517,7 +517,31 @@ service cloud.firestore {
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
     }
-    
+
+    // ========================================
+    // WEEKLY MENU PLANS - Calendar view of veckomeny (BUT-211)
+    // ========================================
+    // Doc ID is `{userId}_{YYYY}-W{WW}` so ownership is encoded in the path.
+    // Owner-only read/write — no sharing in Phase 1.
+
+    match /weekly_menu_plans/{planId} {
+      allow read: if isAuthenticated()
+        && planId.matches('^' + request.auth.uid + '_.*');
+
+      allow create: if isAuthenticated()
+        && planId.matches('^' + request.auth.uid + '_.*')
+        && request.auth.uid == request.resource.data.userId;
+
+      allow update: if isAuthenticated()
+        && planId.matches('^' + request.auth.uid + '_.*')
+        && request.auth.uid == resource.data.userId
+        && request.auth.uid == request.resource.data.userId
+        && cannotModify(['userId', 'createdAt']);
+
+      allow delete: if isAuthenticated()
+        && planId.matches('^' + request.auth.uid + '_.*');
+    }
+
     // ========================================
     // REALTIME RECIPES - Collaborative editing
     // ========================================

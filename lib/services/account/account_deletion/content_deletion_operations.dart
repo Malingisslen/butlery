@@ -126,6 +126,28 @@ class ContentDeletionOperations {
     }
   }
 
+  /// Delete weekly menu plans (BUT-211, GDPR Article 17 - Right to Erasure).
+  /// Doc IDs are prefixed with `{userId}_` so a range query gives us only
+  /// this user's plans without an additional Firestore index.
+  Future<bool> deleteWeeklyMenuPlans(String userId) async {
+    try {
+      final plansSnapshot = await _firestore
+          .collection(FirestoreCollections.weeklyMenuPlans)
+          .where(FieldPath.documentId, isGreaterThanOrEqualTo: '${userId}_')
+          .where(FieldPath.documentId, isLessThan: '${userId}_\uf8ff')
+          .get();
+
+      await batchDeleteDocs(_firestore, plansSnapshot.docs);
+      app_logger.AppLogger.info(
+          '[$_logTag] Deleted ${plansSnapshot.docs.length} weekly menu plans');
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete weekly menu plans', e);
+      return false;
+    }
+  }
+
   /// Delete personal tag groups (GDPR Article 17 - Right to Erasure)
   Future<bool> deletePersonalTagGroups(String userId) async {
     try {
