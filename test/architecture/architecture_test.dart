@@ -78,6 +78,15 @@ void main() {
           continue;
         }
 
+        // Skip the production entry point. main.dart configures Firestore
+        // settings + recovers from IndexedDB corruption on web before any DI
+        // module instantiates a repository — see lib/main.dart for inline
+        // explanation. Documented as an "Entry Point" exception in
+        // docs/architecture/ACCEPTED_LARGE_FILES.md.
+        if (path.endsWith('lib/main.dart')) {
+          continue;
+        }
+
         // Skip sync managers that use fallback injection pattern
         if (path.contains('sync_manager')) {
           continue;
