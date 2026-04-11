@@ -335,7 +335,11 @@ class OCRExtractionService extends BaseService {
     request.fields['scale'] = 'true';
     request.fields['isTable'] = 'false';
 
-    final response = await request.send().timeout(const Duration(seconds: 30));
+    // _httpClient.send(request) routes through the (test-)injected client.
+    // request.send() would create a fresh internal IOClient and bypass the
+    // injected one, breaking testability and the singleton lifecycle.
+    final response =
+        await _httpClient.send(request).timeout(const Duration(seconds: 30));
     final responseBody = await response.stream.bytesToString();
 
     if (response.statusCode == 200) {
