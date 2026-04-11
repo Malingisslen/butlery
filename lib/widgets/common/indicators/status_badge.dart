@@ -35,7 +35,7 @@ class StatusBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: backgroundColor ?? Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+        borderRadius: BorderRadius.zero,
       ),
       child: Text(
         text,

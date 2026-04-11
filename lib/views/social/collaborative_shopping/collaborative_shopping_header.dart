@@ -79,7 +79,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+        borderRadius: BorderRadius.zero,
         border: Border.all(
             color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),

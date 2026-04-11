@@ -191,8 +191,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                     .colorScheme
                     .primary
                     .withValues(alpha: AppDimensions.opacityVeryLight),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusRound),
+                borderRadius: BorderRadius.zero,
               ),
               child: Text(
                 context.l10n.dialogSelectedCount(viewModel.selectedCount),
@@ -305,8 +304,7 @@ class FriendRecipeListItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: successColor.withValues(
                     alpha: AppDimensions.opacityVeryLight),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusRound),
+                borderRadius: BorderRadius.zero,
                 border: Border.all(
                     color: successColor.withValues(
                         alpha: AppDimensions.opacityMediumLight)),
@@ -321,9 +319,7 @@ class FriendRecipeListItem extends StatelessWidget {
         value: isSelected,
         onChanged: (value) => onSelectionChanged(value ?? false),
         activeColor: isAlreadyShared ? cs.onSurfaceVariant : cs.primary,
-        shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(AppDimensions.borderRadiusRound)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       onTap: () => onSelectionChanged(!isSelected),
     );

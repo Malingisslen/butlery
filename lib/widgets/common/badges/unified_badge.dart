@@ -145,7 +145,7 @@ class UnifiedBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+        borderRadius: BorderRadius.zero,
         border: borderColor != null
             ? Border.all(color: borderColor, width: 1)
             : null,

@@ -209,9 +209,7 @@ class ButtonThemes {
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingXl,
             vertical: AppDimensions.paddingM),
-        shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(AppDimensions.borderRadiusRound)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         minimumSize: const Size(200, 56),
         textStyle: AppTextStyles.buttonText,
       );

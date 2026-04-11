@@ -162,16 +162,14 @@ class LoadingStates {
                         SkeletonComponents.skeletonBox(
                           height: 24,
                           width: 60,
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusRound),
+                          borderRadius: BorderRadius.zero,
                           margin: const EdgeInsets.only(
                               right: AppDimensions.spacingXs),
                         ),
                         SkeletonComponents.skeletonBox(
                           height: 24,
                           width: 80,
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusRound),
+                          borderRadius: BorderRadius.zero,
                         ),
                       ],
                     ),

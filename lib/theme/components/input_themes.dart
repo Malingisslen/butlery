@@ -126,8 +126,8 @@ class InputThemes {
         horizontal: AppDimensions.paddingM,
         vertical: AppDimensions.paddingS,
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
       ),
     );
   }

@@ -411,7 +411,7 @@ class RecipeCard extends StatelessWidget {
         padding: AppDimensions.paddingSymmetric6x2,
         decoration: BoxDecoration(
           color: cs.primary,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+          borderRadius: BorderRadius.zero,
         ),
         child: Text(
           '\u2605 ${recipe.rating!.toStringAsFixed(1)}',

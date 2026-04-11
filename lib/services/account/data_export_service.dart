@@ -72,8 +72,42 @@ class DataExportService extends BaseService {
     app_logger.AppLogger.info(
         '[$_logTag] Starting data export for user: $userId');
 
-    // Create comprehensive export data structure
-    final exportData = {
+    // Fan out all collection reads in parallel — wall time becomes max(t)
+    // instead of sum(t). Each manager method is read-only, stateless, takes
+    // only userId, and returns Map<String, dynamic>. Mirrors the pattern in
+    // account_deletion_service.dart's tier-parallel deletion.
+    final futures = <String, Future<Map<String, dynamic>>>{
+      'profile': _exportUserProfile(userId),
+      'recipes': _contentManager.exportRecipes(userId),
+      'menus': _contentManager.exportMenus(userId),
+      'shopping_lists': _contentManager.exportShoppingLists(userId),
+      'personal_tags': _contentManager.exportPersonalTags(userId),
+      'personal_tag_groups': _contentManager.exportPersonalTagGroups(userId),
+      'cook_snaps': _contentManager.exportCookSnaps(userId),
+      'activity_events': _contentManager.exportActivityEvents(userId),
+      'friends': _socialManager.exportFriends(userId),
+      'messages': _socialManager.exportMessages(userId),
+      'shared_content': _socialManager.exportSharedContent(userId),
+      'comments_and_ratings': _activityManager.exportCommentsAndRatings(userId),
+      'audit_logs': _complianceManager.exportAuditLogs(userId),
+      'consent_records': _complianceManager.exportConsentRecords(userId),
+      'preferences': _preferencesManager.exportPreferences(userId),
+      'notifications': _preferencesManager.exportNotifications(userId),
+      'notification_preferences':
+          _preferencesManager.exportNotificationPreferences(userId),
+      'blocks': _socialManager.exportBlocks(userId),
+      'conversation_memberships':
+          _socialManager.exportConversationMemberships(userId),
+      'feedback': _activityManager.exportFeedback(userId),
+      'fcm_tokens': _preferencesManager.exportFcmTokens(userId),
+      'category_preferences':
+          _preferencesManager.exportCategoryPreferences(userId),
+    };
+
+    final keys = futures.keys.toList();
+    final results = await Future.wait(futures.values, eagerError: true);
+
+    final exportData = <String, dynamic>{
       'export_metadata': {
         'export_date': DateTime.now().toIso8601String(),
         'export_version': '2.0',
@@ -88,39 +122,7 @@ class DataExportService extends BaseService {
         'includes_audit_logs': true,
         'includes_consent_history': true,
       },
-      'profile': await _exportUserProfile(userId),
-      // Content exports
-      'recipes': await _contentManager.exportRecipes(userId),
-      'menus': await _contentManager.exportMenus(userId),
-      'shopping_lists': await _contentManager.exportShoppingLists(userId),
-      'personal_tags': await _contentManager.exportPersonalTags(userId),
-      'personal_tag_groups':
-          await _contentManager.exportPersonalTagGroups(userId),
-      'cook_snaps': await _contentManager.exportCookSnaps(userId),
-      'activity_events': await _contentManager.exportActivityEvents(userId),
-      // Social exports
-      'friends': await _socialManager.exportFriends(userId),
-      'messages': await _socialManager.exportMessages(userId),
-      'shared_content': await _socialManager.exportSharedContent(userId),
-      // Activity exports
-      'comments_and_ratings':
-          await _activityManager.exportCommentsAndRatings(userId),
-      // Compliance exports (GDPR-critical)
-      'audit_logs': await _complianceManager.exportAuditLogs(userId),
-      'consent_records': await _complianceManager.exportConsentRecords(userId),
-      // Preferences exports
-      'preferences': await _preferencesManager.exportPreferences(userId),
-      'notifications': await _preferencesManager.exportNotifications(userId),
-      'notification_preferences':
-          await _preferencesManager.exportNotificationPreferences(userId),
-      // Additional collections (GDPR completeness)
-      'blocks': await _socialManager.exportBlocks(userId),
-      'conversation_memberships':
-          await _socialManager.exportConversationMemberships(userId),
-      'feedback': await _activityManager.exportFeedback(userId),
-      'fcm_tokens': await _preferencesManager.exportFcmTokens(userId),
-      'category_preferences':
-          await _preferencesManager.exportCategoryPreferences(userId),
+      for (var i = 0; i < keys.length; i++) keys[i]: results[i],
     };
 
     // Aggregate truncation flags into metadata

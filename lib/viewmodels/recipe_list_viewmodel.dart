@@ -87,36 +87,15 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Last sorting direction for cache consistency and state management.
   bool? _lastSortAscending;
 
-  /// Last time filters for cache invalidation and filter state comparison.
   Set<String>? _lastTimeFilters;
-
-  /// Last meal type filters for cache validation and performance optimization.
   Set<String>? _lastMealTypeFilters;
-
-  /// Last rating filters for cache consistency and state management optimization.
   Set<String>? _lastRatingFilters;
-
-  /// Last allergen filters for cache validation.
   Set<String>? _lastAllergenFilters;
-
-  /// Last dietary filters for cache validation.
   Set<String>? _lastDietaryFilters;
-
-  /// Last personal tag filters for cache validation.
   Set<String>? _lastPersonalTagFilters;
-
-  /// Last excluded personal tag filters for cache validation.
   Set<String>? _lastExcludedPersonalTagFilters;
-
-  /// Last favorites-only state for cache validation.
   bool? _lastFavoritesOnly;
 
-  /// Initializes recipe list ViewModel with comprehensive service integration and reactive state coordination.
-  /// [recipeService] Optional UnifiedRecipeService instance for dependency injection
-  /// [searchService] Optional SearchService instance for dependency injection
-  /// Establishes service layer integration with reactive state coordination, enabling
-  /// comprehensive recipe list management with automatic cache invalidation and UI synchronization
-  /// for optimal user experience and performance optimization.
   RecipeListViewModel({
     UnifiedRecipeService? recipeService,
     SearchService? searchService,
@@ -159,75 +138,29 @@ class RecipeListViewModel extends ChangeNotifier {
     }
   }
 
-  /// Filtered and sorted recipe collection with performance caching and intelligent optimization.
-  /// Provides complete recipe list with applied search, filtering, and sorting operations
-  /// through cached results for optimal performance and responsive user experience.
-  /// Automatically invalidates cache when filter or sort criteria change.
   List<Recipe> get recipes => _getFilteredAndSortedRecipes();
 
-  /// Loading state from recipe service for UI progress indication and interaction control.
-  /// Delegates to UnifiedRecipeService for loading state enabling UI loading indicators
-  /// and user interaction management during recipe operations and data refresh.
   bool get isLoading => _recipeService.isLoading;
-
-  /// Error state from recipe service for user feedback and error handling.
-  /// Provides localized error messages from recipe operations for user display
-  /// and comprehensive error state management throughout recipe list operations.
   String? get error => _recipeService.error;
-
-  /// Error presence indicator for UI conditional rendering and error state management.
-  /// Delegates to UnifiedRecipeService for error state checking enabling
-  /// UI conditional display and error handling throughout recipe operations.
   bool get hasError => _recipeService.hasError;
 
-  /// Current search query for UI display and search state management.
-  /// Provides access to active search query for UI input field synchronization
-  /// and search state display throughout recipe list filtering operations.
   String get searchQuery => _searchQuery;
-
-  /// Current sorting criteria for UI display and sort state management.
-  /// Indicates active sorting method for UI sort control display
-  /// and sort state management throughout recipe list organization.
   SortCriteria get sortCriteria => _sortCriteria;
-
-  /// Current sorting direction for UI display and sort toggle management.
-  /// Provides sorting direction state for UI sort direction indicators
-  /// and ascending/descending toggle functionality display.
   bool get sortAscending => _sortAscending;
 
-  /// Active time filters for UI display and filter state management.
-  /// Provides immutable set of active time-based filters for UI filter display
-  /// and filter state synchronization with user interface components.
   Set<String> get activeTimeFilters => Set.unmodifiable(_activeTimeFilters);
-
-  /// Active meal type filters for UI display and category filter management.
-  /// Provides immutable set of active meal type filters with Swedish localized categories
-  /// for UI filter display and meal category selection state management.
   Set<String> get activeMealTypeFilters =>
       Set.unmodifiable(_activeMealTypeFilters);
-
-  /// Active rating filters for UI display and quality filter management.
-  /// Provides immutable set of active rating-based filters for UI filter display
-  /// and quality threshold selection state management.
   Set<String> get activeRatingFilters => Set.unmodifiable(_activeRatingFilters);
-
-  /// Active allergen-free filters for UI display and allergen filter management.
   Set<String> get activeAllergenFilters =>
       Set.unmodifiable(_activeAllergenFilters);
-
-  /// Active dietary filters for UI display and dietary filter management.
   Set<String> get activeDietaryFilters =>
       Set.unmodifiable(_activeDietaryFilters);
-
-  /// Active personal tag filter IDs for UI state synchronization.
   Set<String> get activePersonalTagFilters =>
       Set.unmodifiable(_activePersonalTagFilters);
-
-  /// Excluded personal tag filter IDs for UI state synchronization.
   Set<String> get excludedPersonalTagFilters =>
       Set.unmodifiable(_excludedPersonalTagFilters);
 
-  /// Whether favorites-only filter is active.
   bool get favoritesOnly => _favoritesOnly;
 
   /// Whether local writes are pending server confirmation (Firestore metadata).
@@ -236,9 +169,6 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Whether data came from local cache — device is offline (Firestore metadata).
   bool get isFromCache => _recipeService.isFromCache;
 
-  /// Filter presence indicator for UI conditional display and filter management.
-  /// Indicates whether any filters are currently active for UI conditional rendering
-  /// of filter clear buttons and filter state indicators.
   bool get hasActiveFilters =>
       _activeTimeFilters.isNotEmpty ||
       _activeMealTypeFilters.isNotEmpty ||
@@ -449,9 +379,6 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Clears all active filters with comprehensive state reset and performance optimization.
-  /// Removes all time, meal type, rating, allergen, and dietary filters with automatic
-  /// cache invalidation and UI notification for complete filter state reset.
   void clearAllFilters() {
     _activeTimeFilters.clear();
     _activeMealTypeFilters.clear();
@@ -815,10 +742,6 @@ class RecipeListViewModel extends ChangeNotifier {
     _displayLimit = _initialPageSize;
   }
 
-  /// Handles reactive updates from recipe service changes with automatic cache management.
-  /// Provides seamless state synchronization between UnifiedRecipeService and ViewModel ensuring
-  /// all recipe data changes are immediately reflected in filtered results with cache invalidation
-  /// for consistent user experience and real-time recipe list updates.
   void _onRecipesChanged() {
     _invalidateCache();
     notifyListeners();
