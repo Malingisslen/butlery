@@ -111,81 +111,81 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
         behavior: HitTestBehavior.translucent,
         child: SafeArea(
           child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 700,
-                desktop: 800,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: LayoutComponents.valueFor(
+                  context: context,
+                  mobile: double.infinity,
+                  tablet: 700,
+                  desktop: 800,
+                ),
               ),
-            ),
-            child: Padding(
-              padding: AppDimensions.responsiveContentPadding(context),
-              child: Column(
-                children: [
-                  // URL input
-                  StyledInput(
-                    controller: _urlController,
-                    enabled: !viewModel.isLoading,
-                    label: context.l10n.importPasteRecipeUrl,
-                    hint: 'https://example.com/recept',
-                    keyboardType: TextInputType.url,
-                    textInputAction: TextInputAction.done,
-                    // Note: onFieldSubmitted functionality moved to fetch button
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Fetch button
-                  ActionButtons.primaryButton(
-                    context,
-                    label: context.l10n.importFetchText,
-                    onPressed: viewModel.canFetch && !viewModel.isLoading
-                        ? _fetchPage
-                        : null,
-                    isLoading: viewModel.isLoading,
-                    loadingText: context.l10n.importFetching,
-                    isExpanded: true,
-                  ),
-
-                  // Error visning
-                  if (viewModel.hasError) ...[
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    StateWidget.error(
-                      message: viewModel.error!,
-                    ),
-                  ],
-
-                  // Extraherad text (editable)
-                  if (viewModel.hasExtractedText) ...[
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    Text(context.l10n.importExtractedText,
-                        style: AppTextStyles.headlineSmall),
-                    const SizedBox(height: AppDimensions.spacingS),
-                    Expanded(
-                      child: StyledInput(
-                        controller: _extractedTextController
-                          ..text = viewModel.extractedText,
-                        maxLines: null,
-                        minLines: 10,
-                        label: context.l10n.importEditTextBeforeImport,
-                        hint: context.l10n.importEditTextHint,
-                        keyboardType: TextInputType.multiline,
-                      ),
+              child: Padding(
+                padding: AppDimensions.responsiveContentPadding(context),
+                child: Column(
+                  children: [
+                    // URL input
+                    StyledInput(
+                      controller: _urlController,
+                      enabled: !viewModel.isLoading,
+                      label: context.l10n.importPasteRecipeUrl,
+                      hint: 'https://example.com/recept',
+                      keyboardType: TextInputType.url,
+                      textInputAction: TextInputAction.done,
+                      // Note: onFieldSubmitted functionality moved to fetch button
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Fetch button
                     ActionButtons.primaryButton(
                       context,
-                      label: context.l10n.importProceedToPaste,
-                      onPressed: _navigateToTextImport,
+                      label: context.l10n.importFetchText,
+                      onPressed: viewModel.canFetch && !viewModel.isLoading
+                          ? _fetchPage
+                          : null,
+                      isLoading: viewModel.isLoading,
+                      loadingText: context.l10n.importFetching,
                       isExpanded: true,
                     ),
+
+                    // Error visning
+                    if (viewModel.hasError) ...[
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      StateWidget.error(
+                        message: viewModel.error!,
+                      ),
+                    ],
+
+                    // Extraherad text (editable)
+                    if (viewModel.hasExtractedText) ...[
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      Text(context.l10n.importExtractedText,
+                          style: AppTextStyles.headlineSmall),
+                      const SizedBox(height: AppDimensions.spacingS),
+                      Expanded(
+                        child: StyledInput(
+                          controller: _extractedTextController
+                            ..text = viewModel.extractedText,
+                          maxLines: null,
+                          minLines: 10,
+                          label: context.l10n.importEditTextBeforeImport,
+                          hint: context.l10n.importEditTextHint,
+                          keyboardType: TextInputType.multiline,
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      ActionButtons.primaryButton(
+                        context,
+                        label: context.l10n.importProceedToPaste,
+                        onPressed: _navigateToTextImport,
+                        isExpanded: true,
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
-        ),
         ),
       ),
     );

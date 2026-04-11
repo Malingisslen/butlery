@@ -95,16 +95,19 @@ class RealtimeMenuFactory {
     return {
       'id': id,
       'ownerId': SerializationUtils.safeString(data, 'ownerId'),
-      'ownerDisplayName': SerializationUtils.safeString(data, 'ownerDisplayName'),
+      'ownerDisplayName':
+          SerializationUtils.safeString(data, 'ownerDisplayName'),
       'participants': participants,
       'createdAt':
           data['createdAt'] as DateTime, // Repository provides DateTime
       'lastEditedAt':
           data['lastEditedAt'] as DateTime, // Repository provides DateTime
       'lastEditedBy': SerializationUtils.safeString(data, 'lastEditedBy'),
-      'lastEditedByDisplayName': SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
+      'lastEditedByDisplayName':
+          SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
       'editCount': SerializationUtils.safeInt(data, 'editCount'),
-      'isActive': SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      'isActive':
+          SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
       'metadata': SerializationUtils.safeMap(data, 'metadata'),
       'data': menuData,
     };
@@ -131,15 +134,18 @@ class RealtimeMenuFactory {
     return {
       'id': SerializationUtils.safeString(json, 'id'),
       'ownerId': SerializationUtils.safeString(json, 'ownerId'),
-      'ownerDisplayName': SerializationUtils.safeString(json, 'ownerDisplayName'),
+      'ownerDisplayName':
+          SerializationUtils.safeString(json, 'ownerDisplayName'),
       'participants': participants,
       'createdAt': SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
       'lastEditedAt':
           SerializationUtils.safeRequiredDateTime(json, 'lastEditedAt'),
       'lastEditedBy': SerializationUtils.safeString(json, 'lastEditedBy'),
-      'lastEditedByDisplayName': SerializationUtils.safeString(json, 'lastEditedByDisplayName'),
+      'lastEditedByDisplayName':
+          SerializationUtils.safeString(json, 'lastEditedByDisplayName'),
       'editCount': SerializationUtils.safeInt(json, 'editCount'),
-      'isActive': SerializationUtils.safeBool(json, 'isActive', defaultValue: true),
+      'isActive':
+          SerializationUtils.safeBool(json, 'isActive', defaultValue: true),
       'metadata': SerializationUtils.safeMap(json, 'metadata'),
       'data': menuData,
     };

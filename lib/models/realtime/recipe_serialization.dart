@@ -70,11 +70,13 @@ class RecipeSerialization {
 
     return Recipe(
       core: RecipeCore(
-        id: SerializationUtils.safeString(coreData, 'id', defaultValue: fallbackId),
+        id: SerializationUtils.safeString(coreData, 'id',
+            defaultValue: fallbackId),
         title: SerializationUtils.safeString(coreData, 'title'),
         description: SerializationUtils.safeString(coreData, 'description'),
         portions: SerializationUtils.safeNullableInt(coreData, 'portions'),
-        timeMinutes: SerializationUtils.safeNullableInt(coreData, 'timeMinutes'),
+        timeMinutes:
+            SerializationUtils.safeNullableInt(coreData, 'timeMinutes'),
         ingredients: List<String>.from(coreData['ingredients'] ?? []),
         instructions: List<String>.from(coreData['instructions'] ?? []),
         personalTagIds: coreData['personalTagIds'] != null
@@ -82,7 +84,8 @@ class RecipeSerialization {
             : null,
         rating: (coreData['rating'] as num?)?.toDouble(),
         imageUrls: List<String>.from(coreData['imageUrls'] ?? []),
-        mealType: SerializationUtils.safeString(coreData, 'mealType', defaultValue: 'Middag'),
+        mealType: SerializationUtils.safeString(coreData, 'mealType',
+            defaultValue: 'Middag'),
         sourceUrl: SerializationUtils.safeNullableString(coreData, 'sourceUrl'),
         createdAt:
             SerializationUtils.parseDateTimeValue(coreData['createdAt']) ??
@@ -113,14 +116,17 @@ class RecipeSerialization {
     final metadataMap = {
       'id': id,
       'ownerId': SerializationUtils.safeString(data, 'ownerId'),
-      'ownerDisplayName': SerializationUtils.safeString(data, 'ownerDisplayName'),
+      'ownerDisplayName':
+          SerializationUtils.safeString(data, 'ownerDisplayName'),
       'participants': data['participants'] as Map<String, dynamic>? ?? {},
       'createdAt': data['createdAt'],
       'lastEditedAt': data['lastEditedAt'],
       'lastEditedBy': SerializationUtils.safeString(data, 'lastEditedBy'),
-      'lastEditedByDisplayName': SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
+      'lastEditedByDisplayName':
+          SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
       'editCount': SerializationUtils.safeInt(data, 'editCount'),
-      'isActive': SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      'isActive':
+          SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
       'metadata': SerializationUtils.safeMap(data, 'metadata'),
     };
 
@@ -258,8 +264,11 @@ class RecipeSerialization {
       ownerId: socialData['ownerId']?.toString(),
       ownerDisplayName: socialData['ownerDisplayName']?.toString(),
       memberPermissions: _parsePermissions(socialData['memberPermissions']),
-      allowGuestViewing: SerializationUtils.safeBool(socialData, 'allowGuestViewing'),
-      allowMemberInvites: SerializationUtils.safeBool(socialData, 'allowMemberInvites', defaultValue: true),
+      allowGuestViewing:
+          SerializationUtils.safeBool(socialData, 'allowGuestViewing'),
+      allowMemberInvites: SerializationUtils.safeBool(
+          socialData, 'allowMemberInvites',
+          defaultValue: true),
       categoryIds: _sanitizeStringList(socialData['categoryIds']),
       descriptionCollaborative: socialData['description']?.toString(),
     );

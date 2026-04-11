@@ -84,12 +84,14 @@ class UserBehaviorPattern {
       userId: json['userId'],
       recipeViews:
           Map<String, int>.from((json['recipeViews'] as Map?).orEmpty()),
-      lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)
-          ?.map((k, v) => MapEntry(k, DateTime.tryParse(v) ?? DateTime.now()))).orEmpty(),
+      lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)?.map(
+              (k, v) => MapEntry(k, DateTime.tryParse(v) ?? DateTime.now())))
+          .orEmpty(),
       mealTypePreferences: Map<String, int>.from(
           (json['mealTypePreferences'] as Map?).orEmpty()),
       viewTimePreferences:
-          SerializationUtils.safeIntKeyIntMap(json, 'viewTimePreferences') ?? {},
+          SerializationUtils.safeIntKeyIntMap(json, 'viewTimePreferences') ??
+              {},
       favoriteRecipeIds:
           Set<String>.from((json['favoriteRecipeIds'] as List?).orEmpty()),
       activeFriendIds:
@@ -448,7 +450,8 @@ class IntelligentCacheManager {
 
       if (data != null) {
         _currentPattern = UserBehaviorPattern.fromJson(data);
-        AppLogger.debug('Loaded behavior pattern for user ${userId.maskedUserId}');
+        AppLogger.debug(
+            'Loaded behavior pattern for user ${userId.maskedUserId}');
       } else {
         _currentPattern = UserBehaviorPattern(userId: userId);
       }

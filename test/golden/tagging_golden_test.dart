@@ -29,7 +29,8 @@ void main() {
         final ingredients = (entry['ingredients'] as List).cast<String>();
         final instructions = (entry['instructions'] as List).cast<String>();
         final timeMinutes = entry['timeMinutes'] as int?;
-        final matchedRaw = (entry['matched'] as List).cast<Map<String, dynamic>>();
+        final matchedRaw =
+            (entry['matched'] as List).cast<Map<String, dynamic>>();
         final unmatchedRaw = (entry['unmatched'] as List).cast<String>();
         final expected = entry['expected'] as Map<String, dynamic>;
 
@@ -91,8 +92,7 @@ void main() {
             expect(
               result.getDietaryStatus(diet.key),
               diet.value,
-              reason:
-                  '[$title] dietary "${diet.key}" expected ${diet.value}',
+              reason: '[$title] dietary "${diet.key}" expected ${diet.value}',
             );
           }
         }
@@ -115,7 +115,8 @@ void main() {
             expect(
               result.hasTag(tag),
               isTrue,
-              reason: '[$title] expected tag "$tag" not found in ${result.tags}',
+              reason:
+                  '[$title] expected tag "$tag" not found in ${result.tags}',
             );
           }
         }
@@ -127,8 +128,7 @@ void main() {
             expect(
               result.hasTag(tag),
               isFalse,
-              reason:
-                  '[$title] unexpected tag "$tag" found in ${result.tags}',
+              reason: '[$title] unexpected tag "$tag" found in ${result.tags}',
             );
           }
         }

@@ -176,10 +176,8 @@ class ParsedRecipe {
           'ingredients': ingredients.value!.map((i) => i.originalLine).toList(),
         if (instructions.hasValue) 'instructions': instructions.value,
         if (totalTime.hasValue) 'timeMinutes': totalTime.value!.inMinutes,
-        if (prepTime.hasValue)
-          'prepTimeMinutes': prepTime.value!.inMinutes,
-        if (cookTime.hasValue)
-          'cookTimeMinutes': cookTime.value!.inMinutes,
+        if (prepTime.hasValue) 'prepTimeMinutes': prepTime.value!.inMinutes,
+        if (cookTime.hasValue) 'cookTimeMinutes': cookTime.value!.inMinutes,
         if (cuisine.hasValue) 'cuisine': cuisine.value,
         if (category.hasValue) 'mealType': category.value,
         if (difficulty.hasValue) 'difficulty': difficulty.value,
@@ -224,8 +222,9 @@ class ParsedRecipe {
         ingredients: FieldResult.fromJson(
           json['ingredients'] as Map<String, dynamic>? ?? {},
           (v) => (v is List ? v : [])
-              .map((i) => ParsedIngredient.fromJson(
-                  i is Map<String, dynamic> ? i : Map<String, dynamic>.from(i as Map)))
+              .map((i) => ParsedIngredient.fromJson(i is Map<String, dynamic>
+                  ? i
+                  : Map<String, dynamic>.from(i as Map)))
               .toList(),
         ),
         instructions: FieldResult.fromJson(
@@ -234,15 +233,18 @@ class ParsedRecipe {
         ),
         totalTime: FieldResult.fromJson(
           json['totalTime'] as Map<String, dynamic>? ?? {},
-          (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+          (v) =>
+              Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
         ),
         prepTime: FieldResult.fromJson(
           json['prepTime'] as Map<String, dynamic>? ?? {},
-          (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+          (v) =>
+              Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
         ),
         cookTime: FieldResult.fromJson(
           json['cookTime'] as Map<String, dynamic>? ?? {},
-          (v) => Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
+          (v) =>
+              Duration(minutes: v is int ? v : int.tryParse(v.toString()) ?? 0),
         ),
         cuisine: FieldResult.fromJson(
           json['cuisine'] as Map<String, dynamic>? ?? {},
@@ -258,8 +260,9 @@ class ParsedRecipe {
         ),
         nutrition: FieldResult.fromJson(
           json['nutrition'] as Map<String, dynamic>? ?? {},
-          (v) => NutritionInfo.fromJson(
-              v is Map<String, dynamic> ? v : Map<String, dynamic>.from(v as Map)),
+          (v) => NutritionInfo.fromJson(v is Map<String, dynamic>
+              ? v
+              : Map<String, dynamic>.from(v as Map)),
         ),
         metadata: ParseMetadata.fromJson(
           json['metadata'] as Map<String, dynamic>? ?? {},

@@ -85,20 +85,30 @@ mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
   static Map<String, dynamic> parseCopyOnWriteFieldsFromFirestore(
       Map<String, dynamic> data) {
     return {
-      'isOriginalReference': SerializationUtils.safeBool(data, 'isOriginalReference', defaultValue: true),
-      'copyOnWriteTriggered': SerializationUtils.safeBool(data, 'copyOnWriteTriggered'),
-      'originalOwnerStaticCopyId': SerializationUtils.safeNullableString(data, 'originalOwnerStaticCopyId'),
-      'activeCollaboratorCount': SerializationUtils.safeInt(data, 'activeCollaboratorCount'),
+      'isOriginalReference': SerializationUtils.safeBool(
+          data, 'isOriginalReference',
+          defaultValue: true),
+      'copyOnWriteTriggered':
+          SerializationUtils.safeBool(data, 'copyOnWriteTriggered'),
+      'originalOwnerStaticCopyId': SerializationUtils.safeNullableString(
+          data, 'originalOwnerStaticCopyId'),
+      'activeCollaboratorCount':
+          SerializationUtils.safeInt(data, 'activeCollaboratorCount'),
     };
   }
 
   static Map<String, dynamic> parseCopyOnWriteFieldsFromJson(
       Map<String, dynamic> json) {
     return {
-      'isOriginalReference': SerializationUtils.safeBool(json, 'isOriginalReference', defaultValue: true),
-      'copyOnWriteTriggered': SerializationUtils.safeBool(json, 'copyOnWriteTriggered'),
-      'originalOwnerStaticCopyId': SerializationUtils.safeNullableString(json, 'originalOwnerStaticCopyId'),
-      'activeCollaboratorCount': SerializationUtils.safeInt(json, 'activeCollaboratorCount'),
+      'isOriginalReference': SerializationUtils.safeBool(
+          json, 'isOriginalReference',
+          defaultValue: true),
+      'copyOnWriteTriggered':
+          SerializationUtils.safeBool(json, 'copyOnWriteTriggered'),
+      'originalOwnerStaticCopyId': SerializationUtils.safeNullableString(
+          json, 'originalOwnerStaticCopyId'),
+      'activeCollaboratorCount':
+          SerializationUtils.safeInt(json, 'activeCollaboratorCount'),
     };
   }
 

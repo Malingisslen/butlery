@@ -118,7 +118,8 @@ class InstructionCorrection {
         orElse: () => InstructionCorrectionType.textModified,
       ),
       originalIndex: SerializationUtils.safeNullableInt(json, 'originalIndex'),
-      correctedIndex: SerializationUtils.safeNullableInt(json, 'correctedIndex'),
+      correctedIndex:
+          SerializationUtils.safeNullableInt(json, 'correctedIndex'),
       originalText: json['originalText']?.toString(),
       correctedText: json['correctedText']?.toString(),
     );

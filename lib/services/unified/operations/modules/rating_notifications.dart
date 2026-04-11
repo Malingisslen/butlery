@@ -105,8 +105,8 @@ class RatingNotifications {
 
     if (totalNewRatings == 0) return;
 
-    final topRecipe = recipeRatingSummaries.firstWhere(
-        (s) => (s['newRatings'] as int) > 0);
+    final topRecipe =
+        recipeRatingSummaries.firstWhere((s) => (s['newRatings'] as int) > 0);
     final summary = _generateRatingSummaryText(recipeRatingSummaries, period);
 
     await NotificationHelper.sendImmediateSafely(

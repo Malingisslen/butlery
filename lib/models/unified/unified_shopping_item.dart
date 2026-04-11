@@ -82,8 +82,19 @@ class ShoppingCategory {
 
   /// All valid category constants for iteration
   static const List<String> all = [
-    fruitVeg, dairy, meatFish, breadGrain, dryGoods,
-    canned, pantry, spices, frozen, drinks, snacks, cleaning, other,
+    fruitVeg,
+    dairy,
+    meatFish,
+    breadGrain,
+    dryGoods,
+    canned,
+    pantry,
+    spices,
+    frozen,
+    drinks,
+    snacks,
+    cleaning,
+    other,
   ];
 
   /// Default category order based on typical Swedish grocery store layout.
@@ -633,19 +644,27 @@ class UnifiedShoppingItem {
       name: SerializationUtils.safeString(json, 'name'),
       amount: SerializationUtils.safeDouble(json, 'amount'),
       unit: SerializationUtils.safeString(json, 'unit'),
-      category: SerializationUtils.safeString(json, 'category', defaultValue: ShoppingCategory.other),
+      category: SerializationUtils.safeString(json, 'category',
+          defaultValue: ShoppingCategory.other),
       bought: SerializationUtils.safeBool(json, 'bought'),
-      addedByUserId: SerializationUtils.safeNullableString(json, 'addedByUserId'),
-      addedByDisplayName: SerializationUtils.safeNullableString(json, 'addedByDisplayName'),
+      addedByUserId:
+          SerializationUtils.safeNullableString(json, 'addedByUserId'),
+      addedByDisplayName:
+          SerializationUtils.safeNullableString(json, 'addedByDisplayName'),
       addedAt: SerializationUtils.safeDateTime(json, 'addedAt'),
-      purchasedByUserId: SerializationUtils.safeNullableString(json, 'purchasedByUserId'),
-      purchasedByDisplayName: SerializationUtils.safeNullableString(json, 'purchasedByDisplayName'),
+      purchasedByUserId:
+          SerializationUtils.safeNullableString(json, 'purchasedByUserId'),
+      purchasedByDisplayName:
+          SerializationUtils.safeNullableString(json, 'purchasedByDisplayName'),
       purchasedAt: SerializationUtils.safeDateTime(json, 'purchasedAt'),
-      lastModifiedByUserId: SerializationUtils.safeNullableString(json, 'lastModifiedByUserId'),
-      lastModifiedByDisplayName: SerializationUtils.safeNullableString(json, 'lastModifiedByDisplayName'),
+      lastModifiedByUserId:
+          SerializationUtils.safeNullableString(json, 'lastModifiedByUserId'),
+      lastModifiedByDisplayName: SerializationUtils.safeNullableString(
+          json, 'lastModifiedByDisplayName'),
       lastModifiedAt: SerializationUtils.safeDateTime(json, 'lastModifiedAt'),
       note: SerializationUtils.safeNullableString(json, 'note'),
-      estimatedPrice: SerializationUtils.safeNullableDouble(json, 'estimatedPrice'),
+      estimatedPrice:
+          SerializationUtils.safeNullableDouble(json, 'estimatedPrice'),
       priority: SerializationUtils.safeInt(json, 'priority', defaultValue: 3),
     );
   }

@@ -185,7 +185,8 @@ class IngredientCorrection {
         orElse: () => IngredientCorrectionType.multipleFixed,
       ),
       originalIndex: SerializationUtils.safeNullableInt(json, 'originalIndex'),
-      correctedIndex: SerializationUtils.safeNullableInt(json, 'correctedIndex'),
+      correctedIndex:
+          SerializationUtils.safeNullableInt(json, 'correctedIndex'),
       originalLine: json['originalLine']?.toString(),
       originalQuantity: json['originalQuantity']?.toString(),
       originalUnit: json['originalUnit']?.toString(),

@@ -224,8 +224,7 @@ void main() {
 
       test('should handle friend removal failure', () async {
         // Arrange - configure failure state
-        mockManagement.setManagementState(
-            friends: [], shouldSucceed: false);
+        mockManagement.setManagementState(friends: [], shouldSucceed: false);
 
         // Act
         final result = await viewModel.removeFriend(testFriendId);
@@ -447,7 +446,9 @@ void main() {
         // Arrange
         mockCategories.setCategoriesState(
           shouldSucceed: true,
-          friendsByCategory: {testGroupId: [testFriendProfile]},
+          friendsByCategory: {
+            testGroupId: [testFriendProfile]
+          },
         );
 
         // Act

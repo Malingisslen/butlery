@@ -265,7 +265,8 @@ void main() {
 
         // First 2 calls fail
         var callCount = 0;
-        when(() => mockTaggingService.generateTags(any())).thenAnswer((_) async {
+        when(() => mockTaggingService.generateTags(any()))
+            .thenAnswer((_) async {
           callCount++;
           if (callCount <= 2) {
             return failedTagResult();
@@ -301,7 +302,8 @@ void main() {
 
         // Fail twice, then succeed
         var callCount = 0;
-        when(() => mockTaggingService.generateTags(any())).thenAnswer((_) async {
+        when(() => mockTaggingService.generateTags(any()))
+            .thenAnswer((_) async {
           callCount++;
           if (callCount <= 2) return failedTagResult();
           return successTagResult();
@@ -332,8 +334,7 @@ void main() {
     });
 
     group('resetFailureTracking', () {
-      test(
-          'should allow previously-skipped recipes to be retried after reset',
+      test('should allow previously-skipped recipes to be retried after reset',
           () async {
         final recipe = buildRecipe(
           id: 'reset-1',

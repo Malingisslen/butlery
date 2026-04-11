@@ -28,8 +28,7 @@ class CategoryPreferences {
       id: id,
       itemCategoryOverrides:
           itemCategoryOverrides ?? this.itemCategoryOverrides,
-      defaultCategoryOrder:
-          defaultCategoryOrder ?? this.defaultCategoryOrder,
+      defaultCategoryOrder: defaultCategoryOrder ?? this.defaultCategoryOrder,
       updatedAt: updatedAt ?? DateTime.now(),
     );
   }

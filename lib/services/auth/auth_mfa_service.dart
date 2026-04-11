@@ -153,7 +153,8 @@ class AuthMfaService extends ChangeNotifier
     try {
       final firebaseFactor = factor.unwrap<MultiFactorInfo>();
       await user.multiFactor.unenroll(multiFactorInfo: firebaseFactor);
-      AppLogger.info('MFA factor unenrolled: ${firebaseFactor.uid.maskedUserId}');
+      AppLogger.info(
+          'MFA factor unenrolled: ${firebaseFactor.uid.maskedUserId}');
       await _analyticsService.logEvent(name: 'mfa_unenrolled');
       return true;
     } on FirebaseAuthException catch (e) {

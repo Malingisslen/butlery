@@ -442,7 +442,8 @@ class FirebaseStorageRepository extends BaseStorageRepository
     try {
       final originalSize = bytes.length;
 
-      const maxSizeWithoutCompression = UploadConstants.skipCompressionThreshold;
+      const maxSizeWithoutCompression =
+          UploadConstants.skipCompressionThreshold;
       if (originalSize < maxSizeWithoutCompression) {
         AppLogger.info(
           '⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB',
@@ -467,7 +468,8 @@ class FirebaseStorageRepository extends BaseStorageRepository
 
       // Progressive quality reduction if still too large (max 4 iterations)
       int currentQuality = quality;
-      while (compressed.length > UploadConstants.compressionTargetBytes && currentQuality > 50) {
+      while (compressed.length > UploadConstants.compressionTargetBytes &&
+          currentQuality > 50) {
         currentQuality -= 10;
         compressed = await FlutterImageCompress.compressWithList(
           bytes,

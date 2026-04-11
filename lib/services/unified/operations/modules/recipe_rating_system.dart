@@ -211,7 +211,8 @@ class RecipeRatingSystem {
     int? limit,
   }) async {
     try {
-      AppLogger.debug('📊 Getting ratings given by user ${userId.maskedUserId}');
+      AppLogger.debug(
+          '📊 Getting ratings given by user ${userId.maskedUserId}');
       final ratings = await _ratingsRepository.getUserRatings(userId);
 
       if (limit != null && ratings.length > limit) {

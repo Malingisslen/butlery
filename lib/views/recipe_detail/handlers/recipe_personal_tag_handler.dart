@@ -334,8 +334,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             style: AppTextStyles.labelLarge,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
-          _buildTagWrap(
-              tags.where((tag) => _suggestedTagIds.contains(tag.id))),
+          _buildTagWrap(tags.where((tag) => _suggestedTagIds.contains(tag.id))),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             context.l10n.tagAll,
@@ -346,8 +345,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
 
         // All tags (excluding suggested if suggestions shown)
         _buildTagWrap(tags.where((tag) =>
-            _suggestedTagIds.isEmpty ||
-            !_suggestedTagIds.contains(tag.id))),
+            _suggestedTagIds.isEmpty || !_suggestedTagIds.contains(tag.id))),
         const SizedBox(height: AppDimensions.spacingXl),
 
         // Manage tags link

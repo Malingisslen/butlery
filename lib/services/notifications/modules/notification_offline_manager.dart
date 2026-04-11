@@ -349,7 +349,8 @@ class NotificationOfflineManager {
 
   /// Dispose resources and cleanup
   void dispose() {
-    AppLogger.info('🔔 Disposing NotificationOfflineManager for user ${_userId.maskedUserId}');
+    AppLogger.info(
+        '🔔 Disposing NotificationOfflineManager for user ${_userId.maskedUserId}');
 
     _connectivityRestoreTimer?.cancel();
     _cancelRetryTimer();

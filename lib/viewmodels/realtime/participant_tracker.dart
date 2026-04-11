@@ -127,7 +127,8 @@ class ParticipantTracker {
     if (_participantNames[userId] != displayName) {
       _participantNames[userId] = displayName;
       onUpdated?.call();
-      AppLogger.debug('👤 Display name uppdaterat för ${userId.maskedUserId}: ${displayName.maskedName}');
+      AppLogger.debug(
+          '👤 Display name uppdaterat för ${userId.maskedUserId}: ${displayName.maskedName}');
     }
   }
 
@@ -179,7 +180,8 @@ class ParticipantTracker {
 
     if (removed) {
       onUpdated?.call();
-      AppLogger.debug('🚫 Deltagare ${userId.maskedUserId} borttagen från tracking');
+      AppLogger.debug(
+          '🚫 Deltagare ${userId.maskedUserId} borttagen från tracking');
     }
   }
 

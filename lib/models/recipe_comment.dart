@@ -213,13 +213,17 @@ class RecipeComment {
       id: SerializationUtils.safeString(json, 'id'),
       recipeId: SerializationUtils.safeString(json, 'recipeId'),
       authorId: SerializationUtils.safeString(json, 'authorId'),
-      authorDisplayName: SerializationUtils.safeString(json, 'authorDisplayName', defaultValue: '?'),
-      authorAvatarUrl: SerializationUtils.safeNullableString(json, 'authorAvatarUrl'),
+      authorDisplayName: SerializationUtils.safeString(
+          json, 'authorDisplayName',
+          defaultValue: '?'),
+      authorAvatarUrl:
+          SerializationUtils.safeNullableString(json, 'authorAvatarUrl'),
       text: SerializationUtils.safeString(json, 'text'),
       createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
       editedAt: SerializationUtils.safeDateTime(json, 'editedAt'),
       likesCount: SerializationUtils.safeInt(json, 'likesCount'),
-      parentCommentId: SerializationUtils.safeNullableString(json, 'parentCommentId'),
+      parentCommentId:
+          SerializationUtils.safeNullableString(json, 'parentCommentId'),
       replyCount: SerializationUtils.safeInt(json, 'replyCount'),
       isDeleted: SerializationUtils.safeBool(json, 'isDeleted'),
       reactions:

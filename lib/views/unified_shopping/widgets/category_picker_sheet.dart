@@ -71,12 +71,9 @@ class CategoryPickerSheet extends StatelessWidget {
                           isSelected ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
-                  trailing: isSelected
-                      ? Icon(Icons.check, color: cs.primary)
-                      : null,
-                  onTap: isSelected
-                      ? null
-                      : () => onCategorySelected(category),
+                  trailing:
+                      isSelected ? Icon(Icons.check, color: cs.primary) : null,
+                  onTap: isSelected ? null : () => onCategorySelected(category),
                 );
               },
             ),

@@ -225,7 +225,9 @@ void main() {
         final lastUpdated = prefs.getString('butlery_last_updated');
         expect(lastUpdated, isNotNull);
         final parsedTime = DateTime.parse(lastUpdated!);
-        expect(parsedTime.isAfter(beforeSave.subtract(const Duration(seconds: 1))), isTrue);
+        expect(
+            parsedTime.isAfter(beforeSave.subtract(const Duration(seconds: 1))),
+            isTrue);
       });
     });
 

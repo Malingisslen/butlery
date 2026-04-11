@@ -128,7 +128,8 @@ class SocialEngagementMetrics {
     required List<Recipe> userRecipes,
   }) async {
     try {
-      AppLogger.debug('📊 Calculating social stats for user ${userId.maskedUserId}');
+      AppLogger.debug(
+          '📊 Calculating social stats for user ${userId.maskedUserId}');
 
       final collaborativeRecipes =
           userRecipes.where((r) => r.isCollaborative).toList();

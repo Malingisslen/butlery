@@ -117,8 +117,7 @@ void main() {
       });
 
       test('should preserve JSON-LD script tags', () {
-        final input =
-            '<div>Hello</div>'
+        final input = '<div>Hello</div>'
             '<script type="application/ld+json">{"@type":"Recipe","name":"Pancakes"}</script>'
             '<script>alert("xss")</script>'
             '<p>World</p>';

@@ -45,46 +45,46 @@ class SharedShoppingListsView extends StatelessWidget {
                       LayoutComponents.offlineIndicator(),
                       Expanded(
                         child: RefreshIndicator(
-                    onRefresh: viewModel.refreshData,
-                    child: LoadingStateBuilder<List<UnifiedShoppingList>>(
-                      isLoading: viewModel.isLoading,
-                      error: viewModel.error,
-                      data: viewModel.sharedLists,
-                      onErrorRetry: viewModel.loadSharedLists,
-                      emptyBuilder: (_) => ListView(
-                            children: [
-                              EmptyStates.buildEmptyState(
-                                context,
-                                variant:
-                                    EmptyStateVariant.noSharedShoppingLists,
-                              ),
-                            ],
+                          onRefresh: viewModel.refreshData,
+                          child: LoadingStateBuilder<List<UnifiedShoppingList>>(
+                            isLoading: viewModel.isLoading,
+                            error: viewModel.error,
+                            data: viewModel.sharedLists,
+                            onErrorRetry: viewModel.loadSharedLists,
+                            emptyBuilder: (_) => ListView(
+                              children: [
+                                EmptyStates.buildEmptyState(
+                                  context,
+                                  variant:
+                                      EmptyStateVariant.noSharedShoppingLists,
+                                ),
+                              ],
+                            ),
+                            builder: (context, lists) {
+                              return ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.paddingM,
+                                  vertical: AppDimensions.paddingS,
+                                ),
+                                itemCount: lists.length,
+                                itemBuilder: (context, index) {
+                                  final list = lists[index];
+                                  return ShoppingListCard(
+                                    key: ValueKey(list.id),
+                                    shoppingList: list,
+                                    style: ShoppingListCardStyle.compact,
+                                    showSharingStatus: true,
+                                    onTap: () => Navigator.pushNamed(
+                                      context,
+                                      Routes.collaborativeShopping,
+                                      arguments: list.id,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
-                      builder: (context, lists) {
-                        return ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingM,
-                            vertical: AppDimensions.paddingS,
-                          ),
-                          itemCount: lists.length,
-                          itemBuilder: (context, index) {
-                            final list = lists[index];
-                            return ShoppingListCard(
-                              key: ValueKey(list.id),
-                              shoppingList: list,
-                              style: ShoppingListCardStyle.compact,
-                              showSharingStatus: true,
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                Routes.collaborativeShopping,
-                                arguments: list.id,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
+                        ),
                       ),
                     ],
                   ),

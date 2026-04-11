@@ -114,8 +114,7 @@ class MenuStorage {
       final data = doc.data()!;
 
       // Verify ownership or shared access
-      final sharedToUserIds =
-          List<String>.from(data['sharedToUserIds'] ?? []);
+      final sharedToUserIds = List<String>.from(data['sharedToUserIds'] ?? []);
       if (data['sharedByUserId'] != userId &&
           !sharedToUserIds.contains(userId)) {
         AppLogger.warning('Menu $menuId does not belong to current user');

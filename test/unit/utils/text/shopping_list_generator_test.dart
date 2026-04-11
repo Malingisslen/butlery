@@ -452,17 +452,14 @@ void main() {
           ],
         };
 
-        final items =
-            ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
 
-        final milk = items.where(
-            (i) => i.name.toLowerCase().contains('mjölk'));
+        final milk = items.where((i) => i.name.toLowerCase().contains('mjölk'));
         expect(milk, hasLength(1));
         expect(milk.first.amount, equals(5.0));
         expect(milk.first.unit, equals('dl'));
 
-        final eggs =
-            items.where((i) => i.name.toLowerCase().contains('ägg'));
+        final eggs = items.where((i) => i.name.toLowerCase().contains('ägg'));
         expect(eggs, hasLength(1));
         expect(eggs.first.amount, equals(5.0));
       });
@@ -480,8 +477,7 @@ void main() {
           ],
         };
 
-        final items =
-            ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
         expect(items, hasLength(1));
         expect(items.first.name.toLowerCase(), contains('mjölk'));
         expect(items.first.amount, equals(2.0));
@@ -489,15 +485,18 @@ void main() {
 
       test('should consolidate across menu sections', () {
         final menu = {
-          'Förrätt': [_makeRecipe(['100g smör'])],
-          'Huvudrätt': [_makeRecipe(['200g smör'])],
+          'Förrätt': [
+            _makeRecipe(['100g smör'])
+          ],
+          'Huvudrätt': [
+            _makeRecipe(['200g smör'])
+          ],
         };
 
-        final items =
-            ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
 
-        final butter = items.where(
-            (i) => i.name.toLowerCase().contains('smör'));
+        final butter =
+            items.where((i) => i.name.toLowerCase().contains('smör'));
         expect(butter, hasLength(1));
         expect(butter.first.amount, equals(300.0));
         expect(butter.first.unit, equals('g'));
@@ -510,8 +509,7 @@ void main() {
           ],
         };
 
-        final items =
-            ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
         // dl mjöl and g mjöl should be separate items
         expect(items.length, greaterThanOrEqualTo(2));
       });
@@ -523,8 +521,7 @@ void main() {
           ],
         };
 
-        final items =
-            ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
         expect(items, isNotEmpty);
         // Each item should have a non-empty category
         for (final item in items) {
@@ -534,11 +531,12 @@ void main() {
 
       test('items should have bought=false', () {
         final menu = {
-          'Huvudrätter': [_makeRecipe(['2 dl mjölk'])],
+          'Huvudrätter': [
+            _makeRecipe(['2 dl mjölk'])
+          ],
         };
 
-        final items =
-            ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
+        final items = ShoppingListGenerator.generateShoppingItemsFromMenu(menu);
         expect(items.first.bought, isFalse);
       });
     });

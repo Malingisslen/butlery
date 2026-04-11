@@ -69,7 +69,8 @@ class FirebaseRecipePresenceRepository {
         'isActive': true,
       }, SetOptions(merge: true));
 
-      AppLogger.debug('Set presence for user ${userId.maskedUserId} in recipe $recipeId');
+      AppLogger.debug(
+          'Set presence for user ${userId.maskedUserId} in recipe $recipeId');
     } catch (e) {
       AppLogger.error('Failed to set user presence: $e');
       rethrow;
@@ -98,7 +99,8 @@ class FirebaseRecipePresenceRepository {
         'leftAt': _timestampProvider.serverTimestamp(),
       });
 
-      AppLogger.debug('Marked user ${userId.maskedUserId} inactive in recipe $recipeId');
+      AppLogger.debug(
+          'Marked user ${userId.maskedUserId} inactive in recipe $recipeId');
     } catch (e) {
       AppLogger.error('Failed to mark user inactive: $e');
       rethrow;
@@ -126,7 +128,8 @@ class FirebaseRecipePresenceRepository {
         'lastSeen': _timestampProvider.serverTimestamp(),
       });
 
-      AppLogger.debug('Updated heartbeat for user ${userId.maskedUserId} in recipe $recipeId');
+      AppLogger.debug(
+          'Updated heartbeat for user ${userId.maskedUserId} in recipe $recipeId');
     } catch (e) {
       AppLogger.error('Failed to update presence heartbeat: $e');
       rethrow;

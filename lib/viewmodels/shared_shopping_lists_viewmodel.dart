@@ -21,8 +21,7 @@ class SharedShoppingListsViewModel extends ChangeNotifier
     loadSharedLists();
   }
 
-  List<UnifiedShoppingList> get sharedLists =>
-      List.unmodifiable(_sharedLists);
+  List<UnifiedShoppingList> get sharedLists => List.unmodifiable(_sharedLists);
 
   Future<void> loadSharedLists() async {
     try {

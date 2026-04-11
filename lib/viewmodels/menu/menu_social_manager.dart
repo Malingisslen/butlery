@@ -183,7 +183,8 @@ class MenuSocialManager {
     // Check last shared activity
     if (stats['lastSharedAt'] != null) {
       try {
-        lastActivity = DateTime.tryParse(stats['lastSharedAt'] as String? ?? '');
+        lastActivity =
+            DateTime.tryParse(stats['lastSharedAt'] as String? ?? '');
       } catch (e) {
         // Ignore parsing errors
       }
@@ -193,7 +194,8 @@ class MenuSocialManager {
     for (final menu in sharedMenus) {
       try {
         final sharedAt = DateTime.tryParse(menu['sharedAt'] as String? ?? '');
-        if (sharedAt != null && (lastActivity == null || sharedAt.isAfter(lastActivity))) {
+        if (sharedAt != null &&
+            (lastActivity == null || sharedAt.isAfter(lastActivity))) {
           lastActivity = sharedAt;
         }
       } catch (e) {

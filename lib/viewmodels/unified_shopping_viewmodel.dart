@@ -448,8 +448,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
 
   /// Save user's default category order
   Future<void> saveDefaultCategoryOrder(List<String> order) async {
-    await _shoppingService.categoryPreferences
-        .saveDefaultCategoryOrder(order);
+    await _shoppingService.categoryPreferences.saveDefaultCategoryOrder(order);
     notifyListeners();
   }
 

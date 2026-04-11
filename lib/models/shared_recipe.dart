@@ -454,8 +454,10 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     } else {
       recipeTitle = json['recipeTitle']?.toString() ?? 'Untitled Recipe';
       recipeImageUrl = json['recipeImageUrl']?.toString();
-      recipePortions = utils.SerializationUtils.safeNullableInt(json, 'recipePortions');
-      recipeTimeMinutes = utils.SerializationUtils.safeNullableInt(json, 'recipeTimeMinutes');
+      recipePortions =
+          utils.SerializationUtils.safeNullableInt(json, 'recipePortions');
+      recipeTimeMinutes =
+          utils.SerializationUtils.safeNullableInt(json, 'recipeTimeMinutes');
       recipeDescription = json['recipeDescription']?.toString();
     }
 
@@ -479,8 +481,10 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         (s) => s.name == json['scope'],
         orElse: () => ShareScope.individual,
       ),
-      allowImport: utils.SerializationUtils.safeBool(json, 'allowImport', defaultValue: true),
-      allowCollaboration: utils.SerializationUtils.safeBool(json, 'allowCollaboration'),
+      allowImport: utils.SerializationUtils.safeBool(json, 'allowImport',
+          defaultValue: true),
+      allowCollaboration:
+          utils.SerializationUtils.safeBool(json, 'allowCollaboration'),
       isOriginalReference: cowFields['isOriginalReference'] as bool,
       copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
       originalOwnerStaticCopyId:

@@ -186,7 +186,8 @@ class RealtimeCacheManager {
       final cacheTimestamp = cachedData['editedAt'];
       if (cacheTimestamp == null) return true;
 
-      final cacheTime = SerializationUtils.parseRequiredDateTimeValue(cacheTimestamp);
+      final cacheTime =
+          SerializationUtils.parseRequiredDateTimeValue(cacheTimestamp);
 
       return lastFirestoreUpdate.isAfter(cacheTime);
     } catch (e) {

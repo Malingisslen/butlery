@@ -361,7 +361,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     _typingTimers[conversationId]?.cancel();
     _typingTimers.remove(conversationId);
 
-    AppLogger.debug('Typing indicator cleared for ${userId.maskedUserId} in $conversationId');
+    AppLogger.debug(
+        'Typing indicator cleared for ${userId.maskedUserId} in $conversationId');
   }
 
   /// Get users currently typing in conversation

@@ -129,10 +129,9 @@ class ComplianceExportManager {
       return {
         'total_consent_records': consentRecords.length,
         'consent_history': consentRecords,
-        'current_consent':
-            currentConsentDoc.exists
-                ? sanitizeForJson(currentConsentDoc.data())
-                : null,
+        'current_consent': currentConsentDoc.exists
+            ? sanitizeForJson(currentConsentDoc.data())
+            : null,
         'gdpr_article': 'Article 7 - Conditions for Consent',
         'note': 'Complete history of consent decisions and purposes',
       };

@@ -227,8 +227,7 @@ class ConversationsViewModel extends ChangeNotifier
 
   Future<void> togglePin(String conversationId) async {
     if (_isDisposed) return;
-    final index =
-        _allConversations.indexWhere((c) => c.id == conversationId);
+    final index = _allConversations.indexWhere((c) => c.id == conversationId);
     if (index == -1) return;
     final conversation = _allConversations[index];
     final newPinned = !conversation.isPinned;
@@ -258,8 +257,7 @@ class ConversationsViewModel extends ChangeNotifier
 
   Future<void> toggleArchive(String conversationId) async {
     if (_isDisposed) return;
-    final index =
-        _allConversations.indexWhere((c) => c.id == conversationId);
+    final index = _allConversations.indexWhere((c) => c.id == conversationId);
     if (index == -1) return;
     final conversation = _allConversations[index];
     final newArchived = !conversation.isArchived;

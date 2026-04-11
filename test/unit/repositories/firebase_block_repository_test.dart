@@ -60,7 +60,8 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('should reject create permission when blockerId does not match userId',
+      test(
+          'should reject create permission when blockerId does not match userId',
           () async {
         // Arrange
         final record = BlockRecord.create(
@@ -94,11 +95,11 @@ void main() {
         expect(result, isFalse);
       });
 
-      test('should grant delete permission when blockerId matches in composite ID',
+      test(
+          'should grant delete permission when blockerId matches in composite ID',
           () async {
         // Arrange
-        final compositeId =
-            BlockRecord.compositeId('user-123', 'target-456');
+        final compositeId = BlockRecord.compositeId('user-123', 'target-456');
 
         // Act
         final result =
@@ -108,11 +109,11 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('should reject delete permission when blockerId does not match in composite ID',
+      test(
+          'should reject delete permission when blockerId does not match in composite ID',
           () async {
         // Arrange
-        final compositeId =
-            BlockRecord.compositeId('other-user', 'target-456');
+        final compositeId = BlockRecord.compositeId('other-user', 'target-456');
 
         // Act
         final result =
@@ -209,7 +210,8 @@ void main() {
     });
 
     group('Edge Cases', () {
-      test('should throw AuthenticationException when blocking while unauthenticated',
+      test(
+          'should throw AuthenticationException when blocking while unauthenticated',
           () async {
         // Arrange
         mockAuthRepo.setAuthState(
@@ -225,7 +227,8 @@ void main() {
         );
       });
 
-      test('should delete all blocks in both directions for deleteAllBlocksForUser',
+      test(
+          'should delete all blocks in both directions for deleteAllBlocksForUser',
           () async {
         // Arrange - create blocks where user-123 is the blocker
         await repository.blockUser('target-1');
@@ -253,7 +256,8 @@ void main() {
         expect(snapshot.docs, isEmpty);
       });
 
-      test('should throw PermissionDeniedException when deleting blocks for another user',
+      test(
+          'should throw PermissionDeniedException when deleting blocks for another user',
           () async {
         // Act & Assert
         expect(
@@ -262,7 +266,8 @@ void main() {
         );
       });
 
-      test('should return empty set stream when unauthenticated for watchBlockedUserIds',
+      test(
+          'should return empty set stream when unauthenticated for watchBlockedUserIds',
           () async {
         // Arrange
         mockAuthRepo.setAuthState(

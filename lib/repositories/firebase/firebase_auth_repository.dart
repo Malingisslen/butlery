@@ -20,7 +20,8 @@ class FirebaseAuthRepository implements AuthRepository {
     _ignoreInitialNull = (_cachedUser != null);
 
     if (_cachedUser != null) {
-      AppLogger.info('Auth protection enabled for user: ${_cachedUser!.uid.maskedUserId}',
+      AppLogger.info(
+          'Auth protection enabled for user: ${_cachedUser!.uid.maskedUserId}',
           'AuthRepository');
     }
   }

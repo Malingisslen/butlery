@@ -117,8 +117,8 @@ void main() {
         expect(find.byType(Card), findsAtLeastNWidgets(1));
       });
 
-      testWidgetsNoOverflow(
-          'save with empty name shows snackbar, does NOT pop', (tester) async {
+      testWidgetsNoOverflow('save with empty name shows snackbar, does NOT pop',
+          (tester) async {
         await _showSheet(tester);
 
         await tester.tap(find.byType(FilledButton));
@@ -144,8 +144,7 @@ void main() {
         expect(segmented.selected, contains(MatchMode.any));
       });
 
-      testWidgetsNoOverflow('shows edit title and save button',
-          (tester) async {
+      testWidgetsNoOverflow('shows edit title and save button', (tester) async {
         await _showSheet(tester, existingRule: _existingRule);
 
         expect(find.byType(FilledButton), findsOneWidget);

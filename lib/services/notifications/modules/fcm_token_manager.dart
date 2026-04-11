@@ -80,7 +80,8 @@ class FCMTokenManager {
   /// This should be called after user authentication to ensure tokens are properly managed
   Future<void> initialize() async {
     try {
-      AppLogger.info('🔔 Initializing FCM token management for user: ${_userId.maskedUserId}');
+      AppLogger.info(
+          '🔔 Initializing FCM token management for user: ${_userId.maskedUserId}');
 
       // Request permission for notifications
       final permission = await _messaging.requestPermission(
@@ -514,7 +515,8 @@ class FCMTokenManager {
 
   /// Dispose resources
   void dispose() {
-    AppLogger.info('🔔 Disposing FCMTokenManager for user ${_userId.maskedUserId}');
+    AppLogger.info(
+        '🔔 Disposing FCMTokenManager for user ${_userId.maskedUserId}');
 
     // Cancel token refresh subscription
     _tokenRefreshSubscription?.cancel();
