@@ -12,7 +12,12 @@
       "mcp__linear__save_comment",
       "mcp__linear__list_projects",
       "Skill(update-config)",
-      "mcp__plugin_telegram_telegram__reply"
+      "mcp__plugin_telegram_telegram__reply",
+      "Bash(rm -f ~/.claude/state/plan-reviewed-*.marker)",
+      "Bash(rm -f ~/.claude/state/plan-review-gate.log)",
+      "Bash(bash .claude/hooks/plan-review-gate.sh)",
+      "Bash(echo \"exit=$?\")",
+      "Read(//c/Users/malla/.claude/state/**)"
     ]
   }
 }
