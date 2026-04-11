@@ -52,7 +52,8 @@ jobs:
         if: matrix.tier == 'emulator'
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          # firebase-tools v15.13.0 requires Node >=20
+          node-version: '20'
 
       - name: Setup Java for Firebase Emulator (firebase-tools requires Java 21+)
         if: matrix.tier == 'emulator'
