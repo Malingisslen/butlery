@@ -116,6 +116,12 @@ jobs:
         OCR_API_URL=${{ secrets.OCR_API_URL }}
         ENVEOF
 
+    - name: Decode google-services.json
+      if: matrix.platform == 'android'
+      run: |
+        echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android/app/google-services.json
+        test -s android/app/google-services.json || { echo "::error::google-services.json decode failed or empty — is GOOGLE_SERVICES_JSON_BASE64 set as a repo secret?"; exit 1; }
+
     - name: Setup Gradle
       if: matrix.platform == 'android'
       uses: gradle/actions/setup-gradle@v3
