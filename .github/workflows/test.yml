@@ -3,8 +3,20 @@ name: Run Tests
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'tasks/**'
+      - '.claude/**'
+      - 'memory/**'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'tasks/**'
+      - '.claude/**'
+      - 'memory/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,7 +29,8 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
       
@@ -35,11 +48,11 @@ jobs:
           echo "Running unit, widget, and view tests with coverage..."
           flutter test test/unit test/widget test/views --coverage --reporter=expanded
 
-      # Check coverage threshold
+      # Check coverage threshold (parses lcov.info from previous step — no re-run)
       - name: Check coverage threshold
         run: |
           if [ -f coverage/lcov.info ]; then
-            COVERAGE=$(flutter test --coverage 2>/dev/null; lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | grep -oP '[\d.]+%' | head -1 || echo "0%")
+            COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | grep -oP '[\d.]+%' | head -1 || echo "0%")
             echo "Coverage: $COVERAGE"
           fi
 
@@ -65,7 +78,8 @@ jobs:
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
       

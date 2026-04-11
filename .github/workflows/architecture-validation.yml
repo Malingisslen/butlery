@@ -3,8 +3,20 @@ name: Architecture & Code Quality Validation
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'tasks/**'
+      - '.claude/**'
+      - 'memory/**'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'tasks/**'
+      - '.claude/**'
+      - 'memory/**'
   workflow_dispatch: # Allow manual triggering
 
 concurrency:
@@ -17,6 +29,7 @@ env:
 jobs:
   architecture-validation:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: write
@@ -25,34 +38,33 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
         cache: true
-        
+
     - name: Get Flutter dependencies
       run: flutter pub get
-      
-    - name: Verify Flutter installation
-      run: flutter doctor -v
-      
+
     - name: Run Flutter analyze
       run: |
         echo "🔍 Running Flutter analyze..."
         flutter analyze
-        
+
     - name: Run architecture tests
       run: |
         echo "🏗️ Running architecture compliance tests..."
         flutter test test/architecture/architecture_test.dart
-        
+
+    # Single validator run: tee stdout to the report file, fail the job on non-zero exit.
     - name: Run architecture validation tool
       run: |
         echo "🔧 Running comprehensive architecture validation..."
-        dart run tools/validate_architecture.dart
-        
+        set -o pipefail
+        dart run tools/validate_architecture.dart 2>&1 | tee architecture_report.txt
+
     - name: Check for TODO/FIXME comments
       run: |
         echo "🔍 Checking for TODO/FIXME comments in critical files..."
@@ -63,12 +75,6 @@ jobs:
           echo "⚠️ Warning: High number of TODO/FIXME comments found"
           echo "Consider addressing some of these before merging"
         fi
-        
-    - name: Generate architecture report
-      if: always()
-      run: |
-        echo "📊 Generating architecture compliance report..."
-        dart run tools/validate_architecture.dart > architecture_report.txt 2>&1 || true
         
     - name: Upload architecture report
       if: always()
