@@ -54,6 +54,13 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Setup Java for Firebase Emulator (firebase-tools requires Java 21+)
+        if: matrix.tier == 'emulator'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
       - name: Install Firebase CLI (emulator tests only)
         if: matrix.tier == 'emulator'
         run: npm install -g firebase-tools@15.13.0
