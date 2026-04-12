@@ -174,6 +174,7 @@ class ExportPaginationHelper {
     'ratings': 1000,
     'consent_records': 100,
     'weekly_menu_plans': 260, // ~5 years × 52 weeks
+    'pantry_items': 1000,
   };
 
   /// Get export limit for content type

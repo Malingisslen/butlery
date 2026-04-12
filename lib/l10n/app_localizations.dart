@@ -21519,6 +21519,204 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Övrigt'**
   String get mealSlotOvrigt;
+
+  /// No description provided for @pantrySectionExpiring.
+  ///
+  /// In sv, this message translates to:
+  /// **'Går ut snart'**
+  String get pantrySectionExpiring;
+
+  /// No description provided for @pantrySectionFridge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kylskåp'**
+  String get pantrySectionFridge;
+
+  /// No description provided for @pantrySectionFreezer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Frys'**
+  String get pantrySectionFreezer;
+
+  /// No description provided for @pantrySectionPantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skafferi'**
+  String get pantrySectionPantry;
+
+  /// No description provided for @pantrySectionSpiceRack.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kryddhylla'**
+  String get pantrySectionSpiceRack;
+
+  /// No description provided for @pantryLocationFridge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kylskåp'**
+  String get pantryLocationFridge;
+
+  /// No description provided for @pantryLocationFreezer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Frys'**
+  String get pantryLocationFreezer;
+
+  /// No description provided for @pantryLocationPantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skafferi'**
+  String get pantryLocationPantry;
+
+  /// No description provided for @pantryLocationSpiceRack.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kryddhylla'**
+  String get pantryLocationSpiceRack;
+
+  /// No description provided for @pantryLocationLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Plats'**
+  String get pantryLocationLabel;
+
+  /// No description provided for @pantryExpiryExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utgånget'**
+  String get pantryExpiryExpired;
+
+  /// No description provided for @pantryExpiryToday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utgår idag'**
+  String get pantryExpiryToday;
+
+  /// No description provided for @pantryExpiryInDays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{days, plural, =1{Utgår om 1 dag} other{Utgår om {days} dagar}}'**
+  String pantryExpiryInDays(int days);
+
+  /// No description provided for @pantryExpiryDate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utgångsdatum'**
+  String get pantryExpiryDate;
+
+  /// No description provided for @pantryExpiryLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utgår'**
+  String get pantryExpiryLabel;
+
+  /// No description provided for @pantryExpiryNone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget utgångsdatum'**
+  String get pantryExpiryNone;
+
+  /// No description provided for @pantryEmptyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt skafferi är tomt'**
+  String get pantryEmptyTitle;
+
+  /// No description provided for @pantryEmptyDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ingredienser för att hitta recept du kan laga med det du har'**
+  String get pantryEmptyDescription;
+
+  /// No description provided for @pantryAddIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ingrediens'**
+  String get pantryAddIngredient;
+
+  /// No description provided for @pantryAddSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ingrediens'**
+  String get pantryAddSheetTitle;
+
+  /// No description provided for @pantryEditSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera ingrediens'**
+  String get pantryEditSheetTitle;
+
+  /// No description provided for @pantryIngredientLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediens'**
+  String get pantryIngredientLabel;
+
+  /// No description provided for @pantryIngredientHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök ingrediens...'**
+  String get pantryIngredientHint;
+
+  /// No description provided for @pantryQuantityLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mängd'**
+  String get pantryQuantityLabel;
+
+  /// No description provided for @pantryUnitLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enhet'**
+  String get pantryUnitLabel;
+
+  /// No description provided for @pantryNoteLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anteckning (valfritt)'**
+  String get pantryNoteLabel;
+
+  /// No description provided for @pantryAddAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'LÄGG TILL'**
+  String get pantryAddAction;
+
+  /// No description provided for @pantryDeleteConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort ingrediens?'**
+  String get pantryDeleteConfirmTitle;
+
+  /// No description provided for @pantryDeleteConfirmMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediensen tas bort från skafferiet'**
+  String get pantryDeleteConfirmMessage;
+
+  /// No description provided for @filterWithMyIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Med mina ingredienser'**
+  String get filterWithMyIngredients;
+
+  /// No description provided for @shoppingTabLists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpslistor'**
+  String get shoppingTabLists;
+
+  /// No description provided for @shoppingTabPantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skafferiet'**
+  String get shoppingTabPantry;
+
+  /// No description provided for @recipeCardPantryMatchA11y.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matchar {percent}% av dina ingredienser'**
+  String recipeCardPantryMatchA11y(int percent);
 }
 
 class _AppLocalizationsDelegate

@@ -39,8 +39,11 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
+import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 
 // Services dependencies
+import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -58,6 +61,7 @@ import 'package:butlery/services/realtime/realtime_menu_service.dart';
 // Dependencies from other modules
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
+import 'package:butlery/core/di/modules/pantry_module.dart';
 import 'package:butlery/core/di/modules/social_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/messaging_module.dart';
@@ -74,6 +78,7 @@ class UIModule implements DIModule {
   List<Type> get dependencies => [
         CoreModule,
         ContentModule,
+        PantryModule,
         SocialModule,
         CollaborationModule,
         MessagingModule,
@@ -102,6 +107,9 @@ class UIModule implements DIModule {
         CreateSharedListViewModel,
         ShoppingShareViewModel,
         SharedShoppingListsViewModel,
+
+        // Pantry ViewModel
+        PantryViewModel,
 
         // Social ViewModels
         FriendsViewModel,
@@ -247,6 +255,16 @@ class UIModule implements DIModule {
       // Activity Feed ViewModel
       container.registerFactory<ActivityFeedViewModel>(
         () => ActivityFeedViewModel(),
+      );
+
+      // Pantry ViewModel — depends on PantryService (user-scoped) and
+      // IngredientRepository (app-scoped). Factory so each view gets a
+      // fresh instance with its own debounce/search state.
+      container.registerFactory<PantryViewModel>(
+        () => PantryViewModel(
+          pantryService: container<PantryService>(),
+          ingredientRepository: container<IngredientRepository>(),
+        ),
       );
 
       // Shared Content Coordinator ViewModel - modular architecture

@@ -145,6 +145,10 @@ class ContentCard extends StatelessWidget {
   /// Favorite toggle handler for recipe cards
   final VoidCallback? onFavoriteToggle;
 
+  /// Pantry match percentage (0.0..1.0) for recipe cards — displayed as
+  /// a badge when the "Laga med vad jag har" filter is active.
+  final double? matchPercent;
+
   /// Accept action handler specifically for friend request cards
   final VoidCallback? onAccept;
 
@@ -190,6 +194,7 @@ class ContentCard extends StatelessWidget {
     this.userAllergenPrefs,
     this.userDietaryPrefs,
     this.onFavoriteToggle,
+    this.matchPercent,
     this.onAccept,
     this.onDecline,
   });
@@ -245,6 +250,7 @@ class ContentCard extends StatelessWidget {
       style: _mapToRecipeCardStyle(style),
       userAllergenPrefs: userAllergenPrefs,
       userDietaryPrefs: userDietaryPrefs,
+      matchPercent: matchPercent,
     );
   }
 

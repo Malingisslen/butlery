@@ -275,6 +275,40 @@ class ContentExportManager {
     }
   }
 
+  /// Export all pantry items (GDPR Article 20)
+  Future<Map<String, dynamic>> exportPantryItems(String userId) async {
+    try {
+      final items = <Map<String, dynamic>>[];
+      final pantryLimit =
+          ExportPaginationHelper.getLimitForType('pantry_items');
+
+      final pantrySnapshot =
+          await ExportPaginationHelper.paginatedCollectionExport(
+        collection: _firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.pantry),
+        maxDocuments: pantryLimit,
+      );
+
+      for (final doc in pantrySnapshot) {
+        items.add({
+          'item_id': doc.id,
+          'data': sanitizeForJson(doc.data()),
+        });
+      }
+
+      return {
+        'total_count': items.length,
+        'pantry_items': items,
+        if (items.length >= pantryLimit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export pantry items', e);
+      return {'error': e.toString()};
+    }
+  }
+
   /// Export all activity events (GDPR Article 20)
   Future<Map<String, dynamic>> exportActivityEvents(String userId) async {
     try {

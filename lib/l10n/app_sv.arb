@@ -8531,5 +8531,49 @@
   },
   "mealSlotLunch": "Lunch",
   "mealSlotMiddag": "Middag",
-  "mealSlotOvrigt": "Övrigt"
+  "mealSlotOvrigt": "Övrigt",
+
+  "pantrySectionExpiring": "Går ut snart",
+  "pantrySectionFridge": "Kylskåp",
+  "pantrySectionFreezer": "Frys",
+  "pantrySectionPantry": "Skafferi",
+  "pantrySectionSpiceRack": "Kryddhylla",
+  "pantryLocationFridge": "Kylskåp",
+  "pantryLocationFreezer": "Frys",
+  "pantryLocationPantry": "Skafferi",
+  "pantryLocationSpiceRack": "Kryddhylla",
+  "pantryLocationLabel": "Plats",
+  "pantryExpiryExpired": "Utgånget",
+  "pantryExpiryToday": "Utgår idag",
+  "pantryExpiryInDays": "{days, plural, =1{Utgår om 1 dag} other{Utgår om {days} dagar}}",
+  "@pantryExpiryInDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "pantryExpiryDate": "Utgångsdatum",
+  "pantryExpiryLabel": "Utgår",
+  "pantryExpiryNone": "Inget utgångsdatum",
+  "pantryEmptyTitle": "Ditt skafferi är tomt",
+  "pantryEmptyDescription": "Lägg till ingredienser för att hitta recept du kan laga med det du har",
+  "pantryAddIngredient": "Lägg till ingrediens",
+  "pantryAddSheetTitle": "Lägg till ingrediens",
+  "pantryEditSheetTitle": "Redigera ingrediens",
+  "pantryIngredientLabel": "Ingrediens",
+  "pantryIngredientHint": "Sök ingrediens...",
+  "pantryQuantityLabel": "Mängd",
+  "pantryUnitLabel": "Enhet",
+  "pantryNoteLabel": "Anteckning (valfritt)",
+  "pantryAddAction": "LÄGG TILL",
+  "pantryDeleteConfirmTitle": "Ta bort ingrediens?",
+  "pantryDeleteConfirmMessage": "Ingrediensen tas bort från skafferiet",
+  "filterWithMyIngredients": "Med mina ingredienser",
+  "shoppingTabLists": "Inköpslistor",
+  "shoppingTabPantry": "Skafferiet",
+  "recipeCardPantryMatchA11y": "Matchar {percent}% av dina ingredienser",
+  "@recipeCardPantryMatchA11y": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  }
 }

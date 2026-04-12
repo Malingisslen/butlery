@@ -276,6 +276,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     if (viewModel.favoritesOnly) {
       ids.add('favorites');
     }
+    if (viewModel.pantryOnly) {
+      ids.add('pantry');
+    }
     // Allergen quick-filter chips
     ids.addAll(viewModel.activeAllergenFilters);
     return ids;
@@ -296,6 +299,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         break;
       case 'favorites':
         viewModel.toggleFavoritesFilter();
+        break;
+      case 'pantry':
+        viewModel.togglePantryFilter();
         break;
     }
   }
@@ -593,6 +599,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           allergenPrefs.showOnCards ? allergenPrefs.trackedAllergens : null,
       userDietaryPrefs:
           allergenPrefs.showOnCards ? allergenPrefs.trackedDietary : null,
+      matchPercent:
+          viewModel.pantryOnly ? viewModel.pantryMatches[recipe.id] : null,
       onFavoriteToggle: viewModel.isSelectionMode
           ? null
           : () => viewModel.toggleFavorite(recipe.id),
