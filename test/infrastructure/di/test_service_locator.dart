@@ -142,10 +142,10 @@ class TestServiceLocator {
         // First clear all states
         await clearState();
 
-        // Unregister all services explicitly
-        await _unregisterAll();
-
-        // Reset GetIt with dispose flag
+        // reset(dispose: true) unregisters everything — no need for manual
+        // per-type unregister (the old _unregisterAll was a no-op anyway:
+        // it passed Type objects to isRegistered(instance:), which always
+        // returned false).
         await ServiceLocator._getIt.reset(dispose: true);
         ServiceLocator._initialized = false;
 
@@ -167,70 +167,6 @@ class TestServiceLocator {
 
     // Force Firestore hard reset
     await FirestoreSingleton.hardReset();
-  }
-
-  /// Unregister all services explicitly
-  static Future<void> _unregisterAll() async {
-    final getIt = ServiceLocator._getIt;
-
-    // Get all registered types - comprehensive list
-    final repositoryTypes = <Type>[
-      AuthRepository,
-      RecipeRepository,
-      UserRepository,
-      ShoppingRepository,
-      FirestoreRepository,
-      CommentsRepository,
-      RatingsRepository,
-      NotificationsRepository,
-      MessagingRepository,
-      FriendsRepository,
-      AnalyticsRepository,
-      CollaborativeRecipeRepository,
-    ];
-
-    final serviceTypes = <Type>[
-      AuthService,
-      UserService,
-      PermissionService,
-      AnalyticsService,
-      ConnectivityMonitoringService,
-      StorageService,
-      ImagePickerService,
-    ];
-
-    // Unregister repositories
-    for (final type in repositoryTypes) {
-      try {
-        if (getIt.isRegistered(instance: type)) {
-          await getIt.unregister(instance: type);
-        }
-      } catch (e) {
-        // Type might not be registered, continue
-      }
-    }
-
-    // Unregister services
-    for (final type in serviceTypes) {
-      try {
-        if (getIt.isRegistered(instance: type)) {
-          await getIt.unregister(instance: type);
-        }
-      } catch (e) {
-        // Type might not be registered, continue
-      }
-    }
-
-    // Also try to unregister any remaining registrations
-    try {
-      // This will unregister anything we might have missed
-      final allFactories = getIt.getAll<Object>();
-      for (final _ in allFactories) {
-        // Just iterate to clear references
-      }
-    } catch (e) {
-      // Ignore errors here
-    }
   }
 
   /// Register a custom mock (for test-specific overrides)
