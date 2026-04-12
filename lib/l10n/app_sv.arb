@@ -8533,6 +8533,10 @@
   "mealSlotMiddag": "Middag",
   "mealSlotOvrigt": "Övrigt",
 
+  "weeklyMenuChipsHeading": "Vi förstod:",
+  "weeklyMenuChipsNotUnderstood": "Vi förstod inte:",
+  "weeklyMenuChipsRefinePrompt": "Förfina prompten",
+
   "pantrySectionExpiring": "Går ut snart",
   "pantrySectionFridge": "Kylskåp",
   "pantrySectionFreezer": "Frys",

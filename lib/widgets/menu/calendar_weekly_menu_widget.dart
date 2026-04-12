@@ -13,6 +13,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -110,6 +111,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     if (plan.isEmpty && !vm.hasOverflow) {
       return _buildEmptyHint(context);
     }
+
+    // Extraction chips strip (BUT-359): show what the parser understood.
+    final chipsWidget = ParsedExtractionChips(
+      parsed: vm.lastParsedRequest,
+    );
+
     // Compute today's index once — avoids 7× DateTime.now() in _buildDayRow.
     // -1 when the visible week isn't the current ISO week.
     final now = DateTime.now();
@@ -120,6 +127,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildWeekNavHeader(context, vm),
+        chipsWidget,
         if (vm.hasOverflow) _buildOverflowTray(context, vm),
         for (final day in DayOfWeek.values)
           _buildDayRow(context, vm, plan, day, day.index == todayIndex),

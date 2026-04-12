@@ -21520,6 +21520,24 @@ abstract class AppLocalizations {
   /// **'Övrigt'**
   String get mealSlotOvrigt;
 
+  /// No description provided for @weeklyMenuChipsHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi förstod:'**
+  String get weeklyMenuChipsHeading;
+
+  /// No description provided for @weeklyMenuChipsNotUnderstood.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi förstod inte:'**
+  String get weeklyMenuChipsNotUnderstood;
+
+  /// No description provided for @weeklyMenuChipsRefinePrompt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förfina prompten'**
+  String get weeklyMenuChipsRefinePrompt;
+
   /// No description provided for @pantrySectionExpiring.
   ///
   /// In sv, this message translates to:

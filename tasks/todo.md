@@ -1,55 +1,79 @@
 # Sprint Backlog
 
-## Sprint: Calendar Weekly Menu — Phase 1 — 2026-04-11
+## Sprint: Veckomeny Constraint Parser — 2026-04-11
 
-**Slot model:** 3 slots only — `MealSlot { lunch, middag, ovrigt }`. Frukost removed; breakfast/dessert/mellanmål/fika/snack all map to `ovrigt`. Lunch and middag are single-recipe per cell. **Övrigt is multi-recipe per day** (stacked entries, user can keep adding via "+ lägg till" inside the cell).
+**Goal:** Replace the count-only regex parser in `MenuService.generateMenuFromPrompt` with a deterministic, lexicon-driven Swedish constraint parser. Users can write rich prompts (allergens, dieter, cuisines, formats, themes, time limits, day-anchored idioms like *tacofredag*). A transparent extraction-chip strip above the calendar shows what was understood, with amber chips for anything that wasn't — no silent failures, no LLM cost. Pre-production: lexicon ships as code (sprint 1) behind a `LexiconProvider` interface so a follow-up sprint can swap in a Google-Sheet-sourced Firestore overlay (BUT-360, to be filed) without parser changes.
 
-### Step 0: HTML Preview (before any Flutter code)
+**Plan file:** `C:\Users\malla\.claude\plans\tranquil-zooming-codd.md`
 
-- [x] **S0. HTML preview** — `docs/design/previews/weekly-menu-plan-preview.html` with 3-column grid (lunch/middag/övrigt), prompt + toggle in header, multi-entry övrigt cell on tisdag, single-entry on onsdag, overflow tray, empty state in Frame 2. Approved 2026-04-11. Delete after implementation. (BUT-211)
+### Agent A: flutter-developer — Models + Lexicon scaffold
 
-### Agent A: firebase-backend-security — Data layer
+- [ ] **A1. Value classes** — `lib/models/menu/parsed_menu_request.dart`: `ParsedMenuRequest`, `SlotRequest`, `RecipeConstraint`, `DayPin`, `ExtractionTrace`, `TraceEntry`. Immutable, equatable. Const constructors where possible. (BUT-359)
 
-- [x] **S1. Create WeeklyMenuPlan model + enums + mapper + ISO week utils** — new `lib/models/menu/weekly_menu_plan.dart`: `MealSlot { lunch, middag, ovrigt }` enum with Swedish display labels + `isMulti` getter (true for ovrigt only), `DayOfWeek` enum, `WeeklyMenuPlanEntry { day, slot, recipeId, recipeTitle, recipeImageUrl? }`, `WeeklyMenuPlan { id, userId, weekStartDate, entries, createdAt, updatedAt }` with `toFirestore`/`fromMap` using `lib/core/utils/serialization_utils.dart`. Helper getters on `WeeklyMenuPlan`: `entryAt(day, slot)` (single, returns first match), `entriesAt(day, slot)` (list, used for ovrigt). New `lib/services/menu/meal_slot_mapper.dart`: pure `MealSlot mapMealTypeToSlot(String)` — frukost/breakfast/dessert/mellanmål/fika/snack/snacks → ovrigt, lunch → lunch, middag/dinner → middag, default → middag. New `lib/core/utils/iso_week_utils.dart`: `weekStartOf(DateTime)`, `isoWeekNumber(DateTime)`, `weekIdFor(userId, DateTime)`. Add `weeklyMenuPlans` constant to `lib/core/constants/firestore_collections.dart`. (BUT-211)
+- [ ] **A2. LexiconProvider interface** — `lib/services/menu/parser/lexicon_provider.dart`: `LexiconCategory` enum (18 entries), `Lexicon` value class with `of(category)` lookup + `mergedWith(overlay)` method, `abstract class LexiconProvider { Future<Lexicon> load(); }`. Sprint 2 will add `FirestoreLexiconProvider` against this interface — keep the surface minimal. (BUT-359)
 
-- [x] **S2. Create WeeklyMenuPlanRepository interface + Firebase impl + security rules** — `lib/repositories/interfaces/weekly_menu_plan_repository.dart`: `fetchForWeek`, `save`, `deleteAllByUser`. `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart`: extend `BaseFirebaseRepository<WeeklyMenuPlan>` with `PermissionValidationMixin`, deterministic doc ID `userId_YYYY-WW`, upsert on save. Update `firestore.rules` with owner-scoped read/write for `weeklyMenuPlans/{docId}`. (BUT-211)
+- [ ] **A3. CodeLexiconProvider seed** — `lib/services/menu/parser/code_lexicon_provider.dart`: 18 `static const Map<String, String>` fields with the ~250 seed stems from the plan (numbers, vagueQuantity, everydayPhrases, mealStems, dietaryStems, allergenFreeStems, allergenNounStems, negationWords, cuisineStems, formatStems, verbObjectMap, themeStems, timeKeywords, dayNames, dayIdioms, subdivisionWords, politePreamble, skipFrukostMarkers). All canonical values verified against `AllergenConfig.allKeys`, `DietaryConfig.all`, `CuisineConfig.cuisines`. (BUT-359)
 
-- [x] **S3. Create WeeklyMenuPlanService with distribution** — `lib/services/menu/weekly_menu_plan_service.dart` extends `BaseService`. Methods: `getWeek(date)`, `distributeFromGeneratedMenu(generated, weekStart, {existing, now})` returns `(WeeklyMenuPlan, List<Recipe> overflow)` — for lunch/middag walks anchor→sun skipping occupied, for ovrigt walks anchor→sun adding one per day (no skip), overflow when out of days. `addEntry(plan, day, slot, recipe)` (always adds; ovrigt allows multiple per day, lunch/middag replace), `moveEntry`, `removeEntry(entryId)`, `clearWeek`, `save`. Use `executeServiceOperation` for all public async methods. (BUT-211)
+- [ ] **A4. DI registration** — `lib/core/di/modules/content_module.dart`: register `LexiconProvider` interface → `CodeLexiconProvider` impl as lazy singleton. Verify dependency order: must register before `MenuService`. (BUT-359)
 
-- [x] **S4. Register in DI** — `lib/core/di/modules/content_module.dart`: register `WeeklyMenuPlanRepository` as interface + `WeeklyMenuPlanService` (lazy singletons). `lib/core/di/modules/ui_module.dart`: register `WeeklyMenuPlanViewModel` as factory. Verify dependency order. (BUT-211)
+### Agent B: flutter-developer — Parser engine
 
-### Agent B: flutter-developer + uiux-designer — Presentation layer
+- [ ] **B1. Text normalizer** — `lib/services/menu/parser/text_normalizer.dart`: `normalize(input)` (lowercase + NFC + collapse whitespace + strip trailing punctuation), `stripDiacritics`, `stripPolitePreamble(words)`, `levenshtein1Lookup(token, candidates)` with bigram pre-index for sub-millisecond fallback on tokens ≥6 chars. Pure functions, no state. (BUT-359)
 
-- [x] **S5. Create WeeklyMenuPlanViewModel** — `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart` extends `BaseViewModel`: state `{currentWeekStart, entriesByDaySlot, hasOfflineChanges}`, methods `loadWeek`, `previousWeek`, `nextWeek`, `assignRecipe`, `moveEntry` (guard self-drop), `removeEntry`, `fillPlaceholders`, `clearWeek`. Use `executeAsyncVoid` for persistence. Guard async gaps with `if (isDisposed) return`. (BUT-211)
+- [ ] **B2. MenuConstraintParser engine** — `lib/services/menu/parser/menu_constraint_parser.dart`: `static ParsedMenuRequest parse(String prompt, Lexicon lexicon)`. Implement the 7-step pipeline from the plan: normalize → extract globals (negations, dietary, day idioms, day-name+format pins) → clause-split on `[,;] | och | samt | plus` → per-clause (count + meal + subdivision + modifier sweep) → second-pass verb+object → trace assembly → return. Handle `den ena ... den andra`, soft markers (helst/gärna/minst), range counts (`2-3`, `två till tre`), vague quantities, everyday phrases (`varje dag`, `hela veckan`). (BUT-359)
 
-- [x] **S6. Create CalendarWeeklyMenuWidget with all five UI states** — new `lib/widgets/menu/calendar_weekly_menu_widget.dart` (embeddable, not a page — `BaseScaffold` not used). State builder for loading (pea animation) / error (contextual error engine + retry) / empty (centered illustration + bouncing arrow up + "Skapa en veckomeny från prompten ovan" hint) / offline (animated banner) / success (week-nav header, overflow tray when non-empty, 7 day-rows × 3-column grid: lunch / middag / övrigt). Lunch/middag cells render single-recipe (empty=plus icon, assigned=image+title). Övrigt cell renders **stacked entries** (mini chip per recipe) + "+ lägg till" affordance. Reuse `menu_recipe_selection_dialog.dart` for picking. Theme tokens only — zero hardcoded values. (BUT-211)
+- [ ] **B3. Parser unit tests** — `test/unit/services/menu/menu_constraint_parser_test.dart`: 80+ test cases organized by taxonomy group (counts, meal types, dietary, allergens, cuisines, formats and verbs, time, day pins, themes, subdivisions, skip frukost, robustness, graceful failure, full motivating example). Each test asserts a single specific behaviour. Pure Dart, no Firebase. (BUT-359)
 
-- [x] **S7. Add drag-and-drop between slots** — `LongPressDraggable<WeeklyMenuPlanEntry>` on assigned cells, `DragTarget` on all slots. On accept → `viewModel.moveEntry` (swap if occupied). Haptic feedback on pickup + drop. Theme accent border on drop targets while dragging. (BUT-211)
+- [ ] **B4. Normalizer + lexicon tests** — `test/unit/services/menu/parser/text_normalizer_test.dart` (lowercase, NFC, diacritic strip, levenshtein lookup, polite-preamble stripping doesn't eat real content) + `test/unit/services/menu/parser/code_lexicon_provider_test.dart` (no duplicate stems within a category, all canonical values exist in their respective tagging configs). (BUT-359)
 
-- [x] **S8. Veckomeny integration: Lista/Kalender toggle + auto-distribute on generation** — modify `lib/views/veckomeny_view.dart`. Add segmented "Lista │ Kalender" toggle (persisted via `SharedPreferences` key `veckomeny_view_mode`). Wire `WeeklyMenuPlanViewModel` via `MultiProvider`. When toggle = Lista, render existing list output unchanged. When toggle = Kalender, render `CalendarWeeklyMenuWidget` and after successful generation call `weeklyMenuPlanViewModel.applyGeneratedMenu(generated)`. If existing plan has entries, show overwrite confirmation dialog. (BUT-211)
+### Agent C: flutter-developer — MenuService + distribution integration
 
-### Agent C: flutter-developer — Integration & housekeeping
+- [ ] **C1. MenuService.generateMenuFromParsedRequest** — `lib/services/menu_service.dart`: add the new method per the plan. Reuse `_weightedSelect`, `_enforceCuisineDiversity`, `SeasonUtils.currentSeasonTag`. Implement `_passesGlobals` (allergen + dietary), `_matchesConstraint` (dietary, allergen, requiredTags, requiredCuisines via `CuisineConfig.extractCuisineTag`, maxTimeMinutes via `recipe.timeInMinutes ?? totalTime`). Place day pins first (so tacofredag wins). Soft constraint fallback to unconstrained slot pool. (BUT-359)
 
-- [x] **S10. GDPR deletion + export** — `content_deletion_operations.dart`: `deleteWeeklyMenuPlans(userId)` with 500-op batch limit. `data_export_service.dart`: export under `weeklyMenuPlans` key. `app_sv.arb` + `app_en.arb`: `weeklyMenuToggleList`, `weeklyMenuToggleCalendar`, `weeklyMenuWeekLabel`, `mealSlotLunch`, `mealSlotMiddag`, `mealSlotOvrigt`, `weeklyMenuOvrigtAddMore` ("+ lägg till"), `weeklyMenuOverflowTitle` ("Recept som inte fick plats"), `weeklyMenuEmptyHint` ("Skapa en veckomeny från prompten ovan"), `weeklyMenuOverwriteConfirm` ("Detta ersätter din nuvarande planering. Fortsätt?"), `weeklyMenuLoadError`, `dayMon..daySun`. (BUT-211)
+- [ ] **C2. Wire the parser into the existing entrypoint** — `MenuService.generateMenuFromPrompt` becomes a thin wrapper: load lexicon (cached on first use via injected `LexiconProvider`), call `MenuConstraintParser.parse`, return early if `isEmpty`, otherwise delegate to `generateMenuFromParsedRequest`. Constructor or setter inject `LexiconProvider`. Backwards-compatible: count-only prompts still produce identical results because empty `RecipeConstraint`s pass `_matchesConstraint`. (BUT-359)
+
+- [ ] **C3. Distribution layer learns DayPin** — `lib/services/menu/weekly_menu_plan_service.distributeFromGeneratedMenu`: new optional param `List<DayPin> dayPins = const []`. Place pinned recipes on their pinned weekday/slot first; remaining recipes flow into the existing today-anchored chronological fill. Output shape unchanged. Update existing tests; add new test for tacofredag pinning. (BUT-359)
+
+- [ ] **C4. Service-layer integration tests** — `test/unit/services/menu_service_parsed_request_test.dart`: hand-built recipe pool with diverse `TagResult`. Assert: dietary filter respected, allergen filter respected, global filter applies to every slot, soft constraint falls back when hard match empty, cuisine diversity preserved, day pin placement, time-bound filter. Mocktail pattern from existing `menu_viewmodel_test.dart`. (BUT-359)
+
+### Agent D: flutter-developer + uiux-designer — Extraction chips UI
+
+- [ ] **D1. ParsedExtractionChips widget** — `lib/widgets/menu/parsed_extraction_chips.dart`: stateless. Renders nothing when `parsed == null`. When present: green pill chips for `trace.understood` (icon per category), amber pill chips for `trace.notUnderstood`, "Förfina prompten" link only when warnings/notUnderstood present. Reuses existing pill-chip widget from the design system — no new theme tokens, SQUARE corners. Theme constants only. (BUT-359)
+
+- [ ] **D2. ViewModel surface** — `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`: expose latest `ParsedMenuRequest?` (set after each successful generation). Notify listeners. Guard async gaps with `if (isDisposed) return`. (BUT-359)
+
+- [ ] **D3. Calendar widget integration** — `lib/widgets/menu/calendar_weekly_menu_widget.dart`: render `ParsedExtractionChips` strip above the day grid when the ViewModel exposes a parse. No layout shift when parse is null. (BUT-359)
+
+- [ ] **D4. Localization** — `lib/l10n/app_sv.arb` + `lib/l10n/app_en.arb`: keys `weeklyMenuChipsHeading` ("Vi förstod:"), `weeklyMenuChipsHeadingNotUnderstood` ("Vi förstod inte:"), `weeklyMenuChipsRefinePrompt` ("Förfina prompten"), category labels for trace icons. Both languages. (BUT-359)
 
 ### Post-Sprint Steps
+
 - [ ] Run `dart analyze --fatal-infos`
-- [ ] Run `flutter test test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart test/unit/repositories/firebase_weekly_menu_plan_repository_test.dart`
-- [ ] Chrome end-to-end: empty → quick-fill → pick → drag → week nav → reload → offline → account deletion
+- [ ] Run `flutter test test/unit/services/menu/ test/unit/services/menu_service_parsed_request_test.dart test/unit/viewmodels/menu_viewmodel_test.dart`
+- [ ] Chrome end-to-end with the prompts from the plan's verification section (full motivating example, tacofredag, snabba middagar max 30 min, vague intentional, legacy "3 middagar")
+- [ ] Canonical-tag check: confirm whether `matlåda`, `snabb`, `bröd`, `vardagsmat` exist in the canonical tag set; file follow-up note if any are missing
 - [ ] Commit, push, PR, merge
-- [ ] Update Linear: BUT-211 → Done
+- [ ] File BUT-360 in Linear: "Google Sheet → Firestore overlay for menu_lexicon (mirror ingredient pipeline)"
+- [ ] Update Linear: BUT-359 → Done
 
 ---
 
 ## What this means in plain language
 
-- A new "Kalender" view shows your week as a grid: 7 days across, 4 meal slots down (frukost, lunch, middag, snacks)
-- You can tap an empty slot to add a recipe, or long-press and drag a recipe to move it to another day
-- Quick-fill chips let you sketch the week: tap "3 middagar" and three empty dinner spaces appear, ready for you to pick recipes later
-- The existing flat menu list stays exactly as it is — you can switch between "Lista" and "Kalender" on the veckomeny screen
-- Your weekly plan saves automatically and reloads when you come back
-- Account deletion removes your weekly plans along with everything else
-- Risk: Low — the new calendar lives next to the existing menu without touching it. Worst case, we hide the toggle button and nothing else breaks.
+- You can write your weekly menu prompt the way you'd say it out loud — *"3 middagar varav en glutenfri och två matlådor, 4 luncher där en är vegansk och en italiensk, tacofredag, inget jordnötter, baka bröd två dagar, snabba vardagsmiddagar"* — and the app understands all of it.
+- It works for counts, vague counts (*några, ett par, varje dag*), ranges (*2–3 middagar*), allergens, dieter, cuisines, recipe formats (soppa, gryta, tacos…), themes (*vardagsmat, festmat, husmanskost*), time limits (*max 30 minuter*), and Friday traditions (*tacofredag*).
+- Above the calendar, a small chip strip shows exactly what the app understood. If something didn't fit (e.g. *low-FODMAP* or a free-form wish), an amber warning chip tells you so — no silent failures.
+- No AI, no extra cost, no waiting. Same speed as today.
+- "Baka bröd" just means "include a bread recipe from your collection" — same as any other recipe, no special task list.
+- Old simple prompts work exactly like today.
+- Risk: Low. The parser only runs *before* the existing recipe picker. Anything it doesn't recognise becomes a visible chip and gets ignored. Easy to revert in one PR.
+- Next sprint (BUT-360): the lexicon moves to a Google Sheet you edit directly — same workflow as the ingredient list. Adding a new word becomes a one-row edit, no code change. This sprint puts the abstraction in place so the follow-up is plumbing only.
+
+---
+
+## Archive: Sprint Calendar Weekly Menu — Phase 1 — 2026-04-11
+
+- [x] S0–S10: HTML preview, WeeklyMenuPlan model + repo + service + DI, ViewModel, CalendarWeeklyMenuWidget with all UI states, drag-and-drop, Lista/Kalender toggle + auto-distribute, GDPR deletion + export, l10n (BUT-211)
 
 ---
 

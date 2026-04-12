@@ -12545,6 +12545,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealSlotOvrigt => 'Other';
 
   @override
+  String get weeklyMenuChipsHeading => 'We understood:';
+
+  @override
+  String get weeklyMenuChipsNotUnderstood => 'We didn\'t understand:';
+
+  @override
+  String get weeklyMenuChipsRefinePrompt => 'Refine your prompt';
+
+  @override
   String get pantrySectionExpiring => 'Expiring soon';
 
   @override

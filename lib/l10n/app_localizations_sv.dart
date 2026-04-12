@@ -12575,6 +12575,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mealSlotOvrigt => 'Övrigt';
 
   @override
+  String get weeklyMenuChipsHeading => 'Vi förstod:';
+
+  @override
+  String get weeklyMenuChipsNotUnderstood => 'Vi förstod inte:';
+
+  @override
+  String get weeklyMenuChipsRefinePrompt => 'Förfina prompten';
+
+  @override
   String get pantrySectionExpiring => 'Går ut snart';
 
   @override

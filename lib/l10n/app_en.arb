@@ -8533,6 +8533,10 @@
   "mealSlotMiddag": "Dinner",
   "mealSlotOvrigt": "Other",
 
+  "weeklyMenuChipsHeading": "We understood:",
+  "weeklyMenuChipsNotUnderstood": "We didn't understand:",
+  "weeklyMenuChipsRefinePrompt": "Refine your prompt",
+
   "pantrySectionExpiring": "Expiring soon",
   "pantrySectionFridge": "Fridge",
   "pantrySectionFreezer": "Freezer",

@@ -6,27 +6,51 @@
 library;
 
 import 'dart:math';
+import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/season_utils.dart';
+import 'package:butlery/services/menu/parser/lexicon_provider.dart';
+import 'package:butlery/services/menu/parser/menu_constraint_parser.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 
 /// Generates menus by parsing Swedish meal requests and randomly selecting recipes.
 ///
 /// Example: "tre frukoster och två middagar" → 3 breakfast + 2 dinner recipes
 class MenuService extends BaseService {
-  MenuService();
+  MenuService({LexiconProvider? lexiconProvider})
+      : _lexiconProvider = lexiconProvider;
+
+  final LexiconProvider? _lexiconProvider;
+  Lexicon? _cachedLexicon;
 
   @override
   String get serviceName => 'MenuService';
 
+  Future<Lexicon?> _loadLexicon() async {
+    if (_cachedLexicon != null) return _cachedLexicon;
+    if (_lexiconProvider == null) return null;
+    _cachedLexicon = await _lexiconProvider.load();
+    return _cachedLexicon;
+  }
+
   /// Parses Swedish meal request and returns randomly selected recipes.
   ///
-  /// Supports: "3 middagar", "tre frukoster och två luncher", etc.
+  /// When a [LexiconProvider] is injected, the prompt goes through the
+  /// rich constraint parser first. Otherwise falls back to the legacy
+  /// count-only regex parser.
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String input,
     List<Recipe> allRecipes,
   ) async {
+    final lexicon = await _loadLexicon();
+    if (lexicon != null) {
+      final parsed = MenuConstraintParser.parse(input, lexicon);
+      if (!parsed.isEmpty) {
+        return generateMenuFromParsedRequest(parsed, allRecipes);
+      }
+    }
     return await executeServiceOperation(
           () async {
             return _generateMenuFromPromptInternal(input, allRecipes);
@@ -36,6 +60,15 @@ class MenuService extends BaseService {
           requiresAuth: false,
         ) ??
         <String, List<Recipe>>{};
+  }
+
+  /// Returns the last parsed request for the given prompt, or null if no
+  /// lexicon is available. Used by the ViewModel to expose the extraction
+  /// trace to the chip strip UI.
+  Future<ParsedMenuRequest?> parsePrompt(String input) async {
+    final lexicon = await _loadLexicon();
+    if (lexicon == null) return null;
+    return MenuConstraintParser.parse(input, lexicon);
   }
 
   Map<String, List<Recipe>> _generateMenuFromPromptInternal(
@@ -362,5 +395,136 @@ class MenuService extends BaseService {
       if (low == singular || low.startsWith(singular)) return type;
     }
     return null;
+  }
+
+  /// Selects recipes from [allRecipes] matching the structured constraints
+  /// in [parsed]. Return shape is the same `Map<mealType, List<Recipe>>` as
+  /// [generateMenuFromPrompt] so the weekly-plan distribution layer is
+  /// untouched.
+  Future<Map<String, List<Recipe>>> generateMenuFromParsedRequest(
+    ParsedMenuRequest parsed,
+    List<Recipe> allRecipes,
+  ) async {
+    return await executeServiceOperation(
+          () async => _generateFromParsedInternal(parsed, allRecipes),
+          operationName: 'Generate menu from parsed request',
+          defaultValue: <String, List<Recipe>>{},
+          requiresAuth: false,
+        ) ??
+        <String, List<Recipe>>{};
+  }
+
+  Map<String, List<Recipe>> _generateFromParsedInternal(
+    ParsedMenuRequest parsed,
+    List<Recipe> allRecipes,
+  ) {
+    final globallyOk =
+        allRecipes.where((r) => _passesGlobals(r, parsed)).toList();
+    final result = <String, List<Recipe>>{};
+    final usedIds = <String>{};
+    final rand = Random();
+    final season = SeasonUtils.currentSeasonTag();
+
+    // Day pins land first (so tacofredag wins over generic selection).
+    for (final pin in parsed.dayPins) {
+      final pool = globallyOk
+          .where((r) =>
+              r.mealType.toLowerCase() == pin.mealType.toLowerCase() &&
+              _matchesConstraint(r, pin.constraint) &&
+              !usedIds.contains(r.id))
+          .toList();
+      if (pool.isEmpty) continue;
+      final pick = _weightedSelect(pool, 1, rand, seasonTag: season);
+      for (final r in pick) {
+        usedIds.add(r.id);
+        (result[pin.mealType] ??= []).add(r);
+      }
+    }
+
+    // Slot requests.
+    for (final slot in parsed.slotRequests) {
+      final slotPool = globallyOk
+          .where((r) =>
+              r.mealType.toLowerCase() == slot.mealType.toLowerCase() &&
+              !usedIds.contains(r.id))
+          .toList();
+
+      final picks = <Recipe>[];
+      for (final sub in slot.subRequests) {
+        final subPool = slotPool
+            .where((r) => _matchesConstraint(r, sub) && !usedIds.contains(r.id))
+            .toList();
+        var selected =
+            _weightedSelect(subPool, sub.count, rand, seasonTag: season);
+        // Soft constraints fall back to unconstrained pool when empty.
+        if (selected.isEmpty && sub.isSoft) {
+          selected = _weightedSelect(
+            slotPool.where((r) => !usedIds.contains(r.id)).toList(),
+            sub.count,
+            rand,
+            seasonTag: season,
+          );
+        }
+        for (final r in selected) {
+          usedIds.add(r.id);
+        }
+        picks.addAll(selected);
+      }
+
+      final diversified = _enforceCuisineDiversity(
+        picks,
+        slotPool,
+        rand,
+        usedIds: usedIds,
+        seasonTag: season,
+      );
+      for (final r in diversified) {
+        usedIds.add(r.id);
+      }
+      (result[slot.mealType] ??= []).addAll(diversified);
+    }
+
+    return result;
+  }
+
+  static bool _passesGlobals(Recipe r, ParsedMenuRequest p) {
+    if (p.globalAllergenAvoid.isEmpty && p.globalDietaryRequire.isEmpty) {
+      return true;
+    }
+    final tr = r.tagResult;
+    if (tr == null) return false;
+    for (final a in p.globalAllergenAvoid) {
+      if (tr.getAllergenStatus(a) != TriState.free) return false;
+    }
+    for (final d in p.globalDietaryRequire) {
+      if (tr.getDietaryStatus(d) != TriState.free) return false;
+    }
+    return true;
+  }
+
+  static bool _matchesConstraint(Recipe r, RecipeConstraint c) {
+    if (c.isUnconstrained) return true;
+    final tr = r.tagResult;
+    if (tr == null) return false;
+    for (final d in c.dietaryFree) {
+      if (tr.getDietaryStatus(d) != TriState.free) return false;
+    }
+    for (final a in c.allergenFree) {
+      if (tr.getAllergenStatus(a) != TriState.free) return false;
+    }
+    if (c.requiredTags.isNotEmpty && !tr.hasAllTags(c.requiredTags)) {
+      return false;
+    }
+    if (c.requiredCuisines.isNotEmpty) {
+      final cuisine = CuisineConfig.extractCuisineTag(r);
+      if (cuisine == null || !c.requiredCuisines.contains(cuisine)) {
+        return false;
+      }
+    }
+    if (c.maxTimeMinutes != null) {
+      final t = r.core.timeMinutes;
+      if (t == null || t > c.maxTimeMinutes!) return false;
+    }
+    return true;
   }
 }

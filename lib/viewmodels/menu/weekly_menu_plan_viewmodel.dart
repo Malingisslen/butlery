@@ -2,6 +2,7 @@
 library;
 
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
@@ -16,9 +17,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   WeeklyMenuPlan? _plan;
   List<Recipe> _overflow = const [];
   bool _applyInFlight = false;
+  ParsedMenuRequest? _lastParsedRequest;
 
   WeeklyMenuPlan? get plan => _plan;
   List<Recipe> get overflow => _overflow;
+  ParsedMenuRequest? get lastParsedRequest => _lastParsedRequest;
 
   // Until the first `loadWeek` call completes, fall back to "this week".
   DateTime get currentWeekStart =>
@@ -59,9 +62,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   Future<void> applyGeneratedMenu(
     Map<String, List<Recipe>> generated, {
     DateTime? now,
+    ParsedMenuRequest? parsedRequest,
   }) async {
     if (_applyInFlight) return;
     _applyInFlight = true;
+    _lastParsedRequest = parsedRequest;
     try {
       await executeAsyncVoid(
         () async {
@@ -70,6 +75,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
             weekStart: currentWeekStart,
             existing: _plan,
             now: now,
+            dayPins: parsedRequest?.dayPins ?? const [],
           );
           if (isDisposed) return;
           _plan = result.plan;

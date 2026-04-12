@@ -6,6 +6,7 @@ library;
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
@@ -92,6 +93,7 @@ class WeeklyMenuPlanService extends BaseService {
     required DateTime weekStart,
     WeeklyMenuPlan? existing,
     DateTime? now,
+    List<DayPin> dayPins = const [],
   }) {
     final userId = _currentUserId ?? 'anonymous';
     final clock = now ?? DateTime.now();
@@ -108,6 +110,30 @@ class WeeklyMenuPlanService extends BaseService {
     final mutableEntries = List<WeeklyMenuPlanEntry>.from(base.entries);
     final overflow = <Recipe>[];
 
+    // Day pins (e.g. tacofredag) land first — they claim their weekday
+    // before the generic chronological fill. Pinned recipes come from the
+    // generated map; the pin's tag is matched against recipe tags.
+    final pinnedRecipeIds = <String>{};
+    for (final pin in dayPins) {
+      final slotKey = pin.mealType;
+      final recipes = generated[slotKey];
+      if (recipes == null) continue;
+      final match = recipes
+          .where((r) =>
+              !pinnedRecipeIds.contains(r.id) &&
+              (pin.constraint.requiredTags.isEmpty ||
+                  (r.tagResult?.hasAllTags(pin.constraint.requiredTags) ??
+                      false)))
+          .firstOrNull;
+      if (match == null) continue;
+      pinnedRecipeIds.add(match.id);
+      // weekdayIndex is 1-based (Mon=1), DayOfWeek is 0-based index.
+      final dayIdx = (pin.weekdayIndex - 1).clamp(0, DayOfWeek.sun.index);
+      final day = DayOfWeek.values[dayIdx];
+      final slot = mapMealTypeToSlot(slotKey);
+      mutableEntries.add(_entryFor(day: day, slot: slot, recipe: match));
+    }
+
     for (final entry in generated.entries) {
       final slot = mapMealTypeToSlot(entry.key);
       final recipes = entry.value;
@@ -116,6 +142,7 @@ class WeeklyMenuPlanService extends BaseService {
         // Övrigt — one per day Mon→Sun starting at anchor, no skip.
         var dayCursor = anchorIndex;
         for (final recipe in recipes) {
+          if (pinnedRecipeIds.contains(recipe.id)) continue;
           if (dayCursor > DayOfWeek.sun.index) {
             overflow.add(recipe);
             continue;
@@ -130,6 +157,7 @@ class WeeklyMenuPlanService extends BaseService {
       } else {
         // Lunch / middag — fill empty cells chronologically from anchor.
         for (final recipe in recipes) {
+          if (pinnedRecipeIds.contains(recipe.id)) continue;
           DayOfWeek? targetDay;
           for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
             final candidate = DayOfWeek.values[i];

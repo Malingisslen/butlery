@@ -39,6 +39,8 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
+import 'package:butlery/services/menu/parser/lexicon_provider.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
@@ -456,9 +458,14 @@ class ContentModule implements DIModule {
         ),
       );
 
+      // Menu lexicon provider (sprint 2 will swap to FirestoreLexiconProvider)
+      container.registerLazySingleton<LexiconProvider>(
+        () => const CodeLexiconProvider(),
+      );
+
       // Menu service for meal planning
       container.registerLazySingleton<MenuService>(
-        () => MenuService(),
+        () => MenuService(lexiconProvider: container<LexiconProvider>()),
       );
 
       container.registerLazySingleton<WeeklyMenuPlanRepository>(
