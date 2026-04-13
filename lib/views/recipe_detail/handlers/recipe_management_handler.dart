@@ -44,18 +44,27 @@ class RecipeManagementHandler {
     }
   }
 
-  /// Navigate to edit recipe view
+  /// Navigate to edit recipe view and refresh recipe on return
   static Future<void> editRecipe(BuildContext context) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
 
     try {
-      await Navigator.pushNamed(
+      final result = await Navigator.pushNamed(
         context,
         Routes.redigeraRecept,
         arguments: viewModel.recipe,
       );
+
+      // Edit view pops with `true` after a successful save — refresh local state
+      if (result == true && context.mounted) {
+        final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+        final updated = recipeService.getRecipeById(viewModel.recipe.id);
+        if (updated != null) {
+          viewModel.updateRecipe(updated);
+        }
+      }
     } catch (e) {
       if (!context.mounted) return;
       SnackBarUtils.showError(context, context.l10n.recipeCouldNotOpenEditor);
