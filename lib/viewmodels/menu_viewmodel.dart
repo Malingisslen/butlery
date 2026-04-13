@@ -115,6 +115,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
 
     _stateManager.setGenerating(true);
+    _stateManager.setMenu({}); // Clear old result so stale data doesn't persist
     _stateManager.setLastPrompt(prompt.trim());
 
     // Track menu generation started
@@ -181,7 +182,13 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _stateManager.setGenerating(true);
 
     try {
-      final newRecipes = await _generator.regenerateMenuSection(section, menu);
+      final newRecipes = await _generator.regenerateMenuSection(
+        section,
+        menu,
+        originalPrompt: _stateManager.lastPrompt.isNotEmpty
+            ? _stateManager.lastPrompt
+            : null,
+      );
 
       if (newRecipes != null) {
         _stateManager.updateMenuSection(section, newRecipes);

@@ -273,17 +273,20 @@ class MenuGenerator {
     return recipes;
   }
 
-  /// Regenerate specific menu section
+  /// Regenerate specific menu section using the original prompt if available.
   Future<List<Recipe>?> regenerateMenuSection(
     String section,
-    Map<String, List<Recipe>> currentMenu,
-  ) async {
+    Map<String, List<Recipe>> currentMenu, {
+    String? originalPrompt,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 200));
 
     final currentCount = currentMenu[section]?.length ?? 1;
+    // Preserve original constraints (e.g. "utan linser") on refresh
+    final prompt = originalPrompt ?? '$currentCount $section';
 
     final newRecipes = await _menuService.generateMenuFromPrompt(
-      '$currentCount $section',
+      prompt,
       availableRecipes,
     );
 
