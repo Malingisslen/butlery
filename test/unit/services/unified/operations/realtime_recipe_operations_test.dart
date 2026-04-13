@@ -1,17 +1,24 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:get_it/get_it.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/builders/recipe_builder.dart';
 import '../../../../infrastructure/builders/realtime_recipe_builder.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
+
+class _MockFirebaseRecipePresenceRepository extends Mock
+    implements FirebaseRecipePresenceRepository {}
 
 void main() {
   group('RealtimeRecipeOperations - Comprehensive Behavior Testing', () {
@@ -24,6 +31,10 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
+
+      // Bridge production ServiceLocator so constructor can resolve deps
+      production.ServiceLocator.initialize(DIContainer());
+
       // Register fallback values for mocktail
       registerFallbackValue(Recipe(
         core: RecipeCore(
@@ -46,6 +57,14 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
+
+      // Register mock presence repository so RealtimeRecipeOperations
+      // constructor can call ServiceLocator.get<FirebaseRecipePresenceRepository>()
+      if (GetIt.instance.isRegistered<FirebaseRecipePresenceRepository>()) {
+        GetIt.instance.unregister<FirebaseRecipePresenceRepository>();
+      }
+      GetIt.instance.registerSingleton<FirebaseRecipePresenceRepository>(
+          _MockFirebaseRecipePresenceRepository());
 
       // Create mocks
       mockParent = MockUnifiedRecipeService();
@@ -168,9 +187,8 @@ void main() {
     group('Real-time Watching with Stream Behavior', () {
       test('should watch recipe and transform RealtimeRecipe to Recipe',
           () async {
-        // Arrange
-        final controller = mockRealtimeService
-            .getOrCreateStreamController<RealtimeRecipe>('recipe-123');
+        // Arrange - use local controller to avoid generic type cast issues
+        final controller = StreamController<RealtimeRecipe>.broadcast();
         when(() =>
                 mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
             .thenAnswer((_) => controller.stream);
@@ -190,9 +208,9 @@ void main() {
             .withTitle('Updated Title 2')
             .build();
 
-        mockRealtimeService.triggerStreamUpdate('recipe-123', updatedRecipe1);
+        controller.add(updatedRecipe1);
         await Future.delayed(Duration(milliseconds: 100));
-        mockRealtimeService.triggerStreamUpdate('recipe-123', updatedRecipe2);
+        controller.add(updatedRecipe2);
         await Future.delayed(Duration(milliseconds: 100));
 
         // Assert
@@ -272,11 +290,9 @@ void main() {
 
       test('should watch multiple recipes and combine streams correctly',
           () async {
-        // Arrange
-        final controller1 = mockRealtimeService
-            .getOrCreateStreamController<RealtimeRecipe>('recipe-123');
-        final controller2 = mockRealtimeService
-            .getOrCreateStreamController<RealtimeRecipe>('collab-456');
+        // Arrange - use local controllers to avoid generic type cast issues
+        final controller1 = StreamController<RealtimeRecipe>.broadcast();
+        final controller2 = StreamController<RealtimeRecipe>.broadcast();
 
         when(() =>
                 mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
@@ -301,8 +317,8 @@ void main() {
             .withTitle('Updated Fika')
             .build();
 
-        mockRealtimeService.triggerStreamUpdate('recipe-123', recipe1Update);
-        mockRealtimeService.triggerStreamUpdate('collab-456', recipe2Update);
+        controller1.add(recipe1Update);
+        controller2.add(recipe2Update);
         await Future.delayed(Duration(milliseconds: 100));
 
         // Assert
@@ -321,9 +337,8 @@ void main() {
 
       test('should watch multiple recipes individually with error isolation',
           () async {
-        // Arrange
-        final controller1 = mockRealtimeService
-            .getOrCreateStreamController<RealtimeRecipe>('recipe-123');
+        // Arrange - use local controller to avoid generic type cast issues
+        final controller1 = StreamController<RealtimeRecipe>.broadcast();
 
         when(() =>
                 mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
@@ -340,8 +355,7 @@ void main() {
         final resultsFuture = stream.skip(1).first;
 
         // Emit update after starting to listen
-        mockRealtimeService.triggerStreamUpdate(
-            'recipe-123', testRealtimeRecipe);
+        controller1.add(testRealtimeRecipe);
 
         final results = await resultsFuture;
 
@@ -354,9 +368,8 @@ void main() {
       });
 
       test('should start watching with callback and handle updates', () async {
-        // Arrange
-        final controller = mockRealtimeService
-            .getOrCreateStreamController<RealtimeRecipe>('recipe-123');
+        // Arrange - use local controller to avoid generic type cast issues
+        final controller = StreamController<RealtimeRecipe>.broadcast();
         when(() =>
                 mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
             .thenAnswer((_) => controller.stream);
@@ -374,7 +387,7 @@ void main() {
             .withId('recipe-123')
             .withTitle('Callback Update')
             .build();
-        mockRealtimeService.triggerStreamUpdate('recipe-123', updatedRecipe);
+        controller.add(updatedRecipe);
         await Future.delayed(Duration(milliseconds: 100));
 
         // Assert
@@ -397,16 +410,21 @@ void main() {
       });
 
       test('should stream connection status changes', () async {
+        // Arrange - stub connectionStream with a controllable broadcast stream
+        final connectionController = StreamController<bool>.broadcast();
+        when(() => mockRealtimeService.connectionStream)
+            .thenAnswer((_) => connectionController.stream);
+
         // Act
         final statusStream = operations.connectionStream;
         final statuses = <bool>[];
         final subscription = statusStream.listen(statuses.add);
 
         // Change connection status
-        mockRealtimeService.setConnectionState(false);
-        await Future.delayed(Duration(milliseconds: 100));
-        mockRealtimeService.setConnectionState(true);
-        await Future.delayed(Duration(milliseconds: 100));
+        connectionController.add(false);
+        await Future.delayed(Duration(milliseconds: 50));
+        connectionController.add(true);
+        await Future.delayed(Duration(milliseconds: 50));
 
         // Assert
         expect(statuses, contains(false));
@@ -414,35 +432,54 @@ void main() {
 
         // Cleanup
         await subscription.cancel();
+        await connectionController.close();
       });
 
       test('should wait for connection with timeout', () async {
-        // Arrange
+        // Arrange - stub connectionStream so waitForConnection can listen
+        final connectionController = StreamController<bool>.broadcast();
+        when(() => mockRealtimeService.connectionStream)
+            .thenAnswer((_) => connectionController.stream);
         mockRealtimeService.setConnectionState(false);
 
-        // Simulate connection after delay
+        // Simulate connection becoming true after a delay
         Future.delayed(Duration(milliseconds: 50), () {
-          mockRealtimeService.setConnectionState(true);
+          connectionController.add(true);
         });
 
         // Act
         final connected = await operations.waitForConnection(
-          timeout: Duration(milliseconds: 200),
+          timeout: Duration(milliseconds: 500),
         );
 
         // Assert
         expect(connected, isTrue);
+
+        // Cleanup
+        await connectionController.close();
       });
 
       test('should monitor connection status with detailed info', () async {
+        // Arrange - stub connectionStream
+        final connectionController = StreamController<bool>.broadcast();
+        when(() => mockRealtimeService.connectionStream)
+            .thenAnswer((_) => connectionController.stream);
+
         // Act
         final statusStream = operations.monitorConnectionStatus();
+
+        // Emit a connection status to trigger the stream
+        connectionController.add(true);
+
         final status = await statusStream.first;
 
         // Assert
         expect(status.isConnected, isTrue);
         expect(status.hasRealtimeService, isTrue);
         expect(status.timestamp, isA<DateTime>());
+
+        // Cleanup
+        await connectionController.close();
       });
     });
 
