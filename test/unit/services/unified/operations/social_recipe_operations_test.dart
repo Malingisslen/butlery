@@ -1,675 +1,423 @@
+/// Unit tests for SocialRecipeOperations sub-modules
+///
+/// SocialRecipeOperations cannot be constructed in unit tests because its
+/// constructor creates RecipeSharingManager which calls
+/// `ServiceLocator.get<FirestoreRepository>()` at construction time.
+///
+/// Instead we test the independently-constructible modules:
+/// 1. RecipePermissionHelper — pure permission logic
+/// 2. RecipeDiscoveryService — in-memory recipe filtering
+library;
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
-import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 
-import '../../../../test_support/base_unit_test.dart';
-import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/builders/recipe_builder.dart';
-import '../../../../infrastructure/mocks/production_mocks.dart';
 
-// Using centralized mocks:
-// - From production_mocks.dart: MockUnifiedRecipeService, MockRecipeSharingManager,
-//   MockRecipeMemberManager, MockRecipeCommentsManager, MockRecipeSocialStats,
-//   MockRecipePermissionHelper, MockRatingsRepository, MockFirestoreRepository
-// - From service_mocks.dart (via production_mocks.dart): MockRecipeDiscoveryService
+Recipe _buildCollaborative({
+  required String ownerId,
+  Map<String, ResourcePermission>? memberPermissions,
+  List<String>? categoryIds,
+  bool allowMemberInvites = true,
+}) {
+  return RecipeBuilder()
+      .asCollaborative()
+      .withSocialData(RecipeSocialData(
+        ownerId: ownerId,
+        ownerDisplayName: 'Owner',
+        memberPermissions: memberPermissions ?? {},
+        allowMemberInvites: allowMemberInvites,
+        categoryIds: categoryIds,
+      ))
+      .build();
+}
 
 void main() {
-  group('SocialRecipeOperations', () {
-    late SocialRecipeOperations operations;
-    late MockUnifiedRecipeService mockParent;
-    late MockRatingsRepository mockRatingsRepo;
-    late MockFirestoreRepository mockFirestoreRepo;
+  // -----------------------------------------------------------------------
+  // RecipePermissionHelper
+  // -----------------------------------------------------------------------
+  group('RecipePermissionHelper', () {
+    late RecipePermissionHelper helper;
 
-    // Module mocks for direct testing (if needed later)
-    // late MockRecipeSharingManager mockSharingManager;
-
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-    });
-
-    setUp(() async {
-      await TestServiceLocator.initialize();
-
-      // Create mocks
-      mockParent = MockUnifiedRecipeService();
-      mockRatingsRepo = MockRatingsRepository();
-      mockFirestoreRepo = MockFirestoreRepository();
-
-      // Module mocks are created internally by SocialRecipeOperations
-
-      // Set default state
-      mockParent.setRecipeState(currentUserId: 'test-user-123');
-
-      // Create operations with explicit deps (no _parent back-reference)
-      operations = SocialRecipeOperations(
-        getCurrentUserId: () => 'test-user-123',
-        getCurrentUserDisplayName: () => 'Test User',
-        getRecipes: () => mockParent.recipes,
-        updateRecipe: (recipe) async => true,
-        createCollaborativeRecipe: ({
-          required String title,
-          required List<String> memberIds,
-          String description = '',
-          List<String> ingredients = const [],
-          List<String> instructions = const [],
-          List<String> imageUrls = const [],
-          String mealType = '',
-          int? portions,
-          int? timeMinutes,
-          double? rating,
-          List<String>? personalTagIds,
-          String? sourceUrl,
-          String? descriptionCollaborative,
-          bool allowGuestViewing = false,
-          bool allowMemberInvites = true,
-          List<String>? categoryIds,
-        }) async =>
-            null,
-        createPersonalRecipe: ({
-          required String title,
-          String description = '',
-          List<String> ingredients = const [],
-          List<String> instructions = const [],
-          List<String> imageUrls = const [],
-          String mealType = '',
-          int? portions,
-          int? timeMinutes,
-          double? rating,
-          List<String>? personalTagIds,
-          String? sourceUrl,
-        }) async =>
-            null,
-        ratingsRepository: mockRatingsRepo,
-        firestoreRepository: mockFirestoreRepo,
+    setUp(() {
+      helper = RecipePermissionHelper(
+        getCurrentUserId: () => 'current-user',
       );
     });
 
-    tearDown(() async {
-      BaseUnitTest.resetMocks();
-      await TestServiceLocator.reset();
-    });
-
-    tearDownAll(() async {
-      await BaseUnitTest.teardownUnit();
-    });
-
-    group('Recipe Sharing', () {
-      setUp(() {
-        // Note: Since SocialRecipeOperations creates its own module instances,
-        // we can't easily mock them. These tests verify the API contract.
-        // For deeper testing, consider refactoring to allow dependency injection.
-        /*
-        when(() => mockSharingManager.shareRecipe(
-          recipeId: any(named: 'recipeId'),
-          memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
-          collaborativeDescription: any(named: 'collaborativeDescription'),
-          allowGuestViewing: any(named: 'allowGuestViewing'),
-          allowMemberInvites: any(named: 'allowMemberInvites'),
-          categoryIds: any(named: 'categoryIds'),
-        )).thenAnswer((_) async => 'shared-recipe-123');
-        
-        when(() => mockSharingManager.makeRecipePersonal(
-          collaborativeRecipeId: any(named: 'collaborativeRecipeId'),
-          newTitle: any(named: 'newTitle'),
-        )).thenAnswer((_) async => 'personal-recipe-123');
-        
-        when(() => mockSharingManager.duplicateAndShareRecipe(
-          recipeId: any(named: 'recipeId'),
-          memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
-          newTitle: any(named: 'newTitle'),
-          collaborativeDescription: any(named: 'collaborativeDescription'),
-          allowGuestViewing: any(named: 'allowGuestViewing'),
-          allowMemberInvites: any(named: 'allowMemberInvites'),
-          categoryIds: any(named: 'categoryIds'),
-        )).thenAnswer((_) async => 'duplicated-recipe-123');
-        */
+    group('canViewRecipe', () {
+      test('owner can view own personal recipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('current-user').build();
+        expect(helper.canViewRecipe(recipe), isTrue);
       });
 
-      test('should share recipe with members', () async {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final result = await operations.shareRecipe(
-          recipeId: 'recipe-123',
-          memberIds: ['member-1', 'member-2'],
-          memberDisplayNames: {'member-1': 'Anna', 'member-2': 'Erik'},
-        );
-
-        // Assert
-        // Note: Since operations creates its own modules internally,
-        // we can't control the result. Just verify it doesn't throw.
-        expect(result, isA<String?>());
+      test('non-owner cannot view personal recipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('other-user').build();
+        expect(helper.canViewRecipe(recipe), isFalse);
       });
 
-      test('should convert collaborative recipe to personal', () async {
-        // Arrange
-        final collaborativeRecipe =
-            RecipeBuilder().withId('collab-123').asCollaborative().build();
-        mockParent.setRecipeState(recipes: [collaborativeRecipe]);
-
-        // Act
-        final result = await operations.makeRecipePersonal(
-          collaborativeRecipeId: 'collab-123',
-          newTitle: 'My Personal Copy',
+      test('member can view collaborative recipe', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.viewer,
+          },
         );
-
-        // Assert
-        expect(result, isA<String?>());
+        expect(helper.canViewRecipe(recipe), isTrue);
       });
 
-      test('should duplicate and share recipe', () async {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final result = await operations.duplicateAndShareRecipe(
-          recipeId: 'recipe-123',
-          memberIds: ['friend-1'],
-          memberDisplayNames: {'friend-1': 'Friend'},
-          newTitle: 'Shared Copy',
+      test('non-member cannot view collaborative recipe', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {'someone-else': ResourcePermission.viewer},
         );
+        expect(helper.canViewRecipe(recipe), isFalse);
+      });
 
-        // Assert
-        expect(result, isA<String?>());
+      test('returns false when user is not logged in', () {
+        final noAuth = RecipePermissionHelper(getCurrentUserId: () => null);
+        final recipe = RecipeBuilder().build();
+        expect(noAuth.canViewRecipe(recipe), isFalse);
       });
     });
 
-    group('Member Management', () {
-      test('should add member to collaborative recipe', () async {
-        // Arrange
-        final recipe =
-            RecipeBuilder().withId('recipe-123').asCollaborative().build();
-        mockParent.setRecipeState(recipes: [recipe]);
+    group('canEditRecipe', () {
+      test('owner can edit own recipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('current-user').build();
+        expect(helper.canEditRecipe(recipe), isTrue);
+      });
 
-        // Act
-        final result = await operations.addMember(
-          recipeId: 'recipe-123',
-          userId: 'new-member',
-          userDisplayName: 'New Member',
-          permission: ResourcePermission.editor,
+      test('editor member can edit collaborative recipe', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.editor,
+          },
         );
-
-        // Assert
-        expect(result, isA<bool>());
+        expect(helper.canEditRecipe(recipe), isTrue);
       });
 
-      test('should use default viewer permission when adding member', () async {
-        // Arrange
-        final recipe =
-            RecipeBuilder().withId('recipe-123').asCollaborative().build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final result = await operations.addMember(
-          recipeId: 'recipe-123',
-          userId: 'new-member',
-          userDisplayName: 'New Member',
-          // No permission specified - should default to viewer
+      test('viewer member cannot edit collaborative recipe', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.viewer,
+          },
         );
-
-        // Assert
-        expect(result, isA<bool>());
+        expect(helper.canEditRecipe(recipe), isFalse);
       });
 
-      test('should remove member from collaborative recipe', () async {
-        // Arrange
-        final recipe =
-            RecipeBuilder().withId('recipe-123').asCollaborative().build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final result = await operations.removeMember(
-          recipeId: 'recipe-123',
-          userId: 'member-to-remove',
+      test('admin member can edit collaborative recipe', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.admin,
+          },
         );
-
-        // Assert
-        expect(result, isA<bool>());
-      });
-
-      test('should update member permission', () async {
-        // Arrange
-        final recipe =
-            RecipeBuilder().withId('recipe-123').asCollaborative().build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final result = await operations.updateMemberPermission(
-          recipeId: 'recipe-123',
-          userId: 'member-123',
-          permission: ResourcePermission.admin,
-        );
-
-        // Assert
-        expect(result, isA<bool>());
-      });
-
-      test('should get recipe members', () async {
-        // Act
-        final members = await operations.getRecipeMembers('recipe-123');
-
-        // Assert
-        expect(members, isA<List<Map<String, dynamic>>>());
-      });
-
-      test('should check if user can invite members', () {
-        // Act
-        final canInvite = operations.canInviteMembers('recipe-123');
-
-        // Assert
-        expect(canInvite, isA<bool>());
-      });
-
-      test('should get member statistics', () {
-        // Act
-        final stats = operations.getMemberStatistics('recipe-123');
-
-        // Assert
-        expect(stats, isA<Map<String, dynamic>>());
+        expect(helper.canEditRecipe(recipe), isTrue);
       });
     });
 
-    group('Social Discovery', () {
-      test('should get collaborative recipes', () async {
-        // Act
-        final recipes = await operations.getCollaborativeRecipes(
-          limit: 10,
+    group('canDeleteRecipe', () {
+      test('owner can delete own recipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('current-user').build();
+        expect(helper.canDeleteRecipe(recipe), isTrue);
+      });
+
+      test('non-owner cannot delete recipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('other-user').build();
+        expect(helper.canDeleteRecipe(recipe), isFalse);
+      });
+    });
+
+    group('canManageMembers', () {
+      test('returns false for personal recipes', () {
+        final recipe = RecipeBuilder().withCreatedBy('current-user').build();
+        expect(helper.canManageMembers(recipe), isFalse);
+      });
+
+      test('owner of collaborative recipe can manage members', () {
+        final recipe = _buildCollaborative(ownerId: 'current-user');
+        expect(helper.canManageMembers(recipe), isTrue);
+      });
+
+      test('admin member can manage members', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.admin,
+          },
+        );
+        expect(helper.canManageMembers(recipe), isTrue);
+      });
+
+      test('editor member cannot manage members', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.editor,
+          },
+        );
+        expect(helper.canManageMembers(recipe), isFalse);
+      });
+    });
+
+    group('canCommentOnRecipe', () {
+      test('owner can comment on own personal recipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('current-user').build();
+        expect(helper.canCommentOnRecipe(recipe), isTrue);
+      });
+
+      test('non-owner cannot comment on personal recipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('other-user').build();
+        expect(helper.canCommentOnRecipe(recipe), isFalse);
+      });
+
+      test('member can comment on collaborative recipe', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.viewer,
+          },
+        );
+        expect(helper.canCommentOnRecipe(recipe), isTrue);
+      });
+    });
+
+    group('canRateRecipe', () {
+      test('cannot rate own recipe', () {
+        final recipe = _buildCollaborative(ownerId: 'current-user');
+        expect(helper.canRateRecipe(recipe), isFalse);
+      });
+
+      test('member can rate collaborative recipe of another owner', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.viewer,
+          },
+        );
+        expect(helper.canRateRecipe(recipe), isTrue);
+      });
+
+      test('cannot rate personal recipe of another user', () {
+        final recipe = RecipeBuilder().withCreatedBy('other-user').build();
+        expect(helper.canRateRecipe(recipe), isFalse);
+      });
+    });
+
+    group('getUserPermission', () {
+      test('owner gets owner permission', () {
+        final recipe = _buildCollaborative(ownerId: 'current-user');
+        expect(helper.getUserPermission(recipe, 'current-user'),
+            ResourcePermission.owner);
+      });
+
+      test('member gets their assigned permission', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.editor,
+          },
+        );
+        expect(helper.getUserPermission(recipe, 'current-user'),
+            ResourcePermission.editor);
+      });
+
+      test('non-member gets read permission', () {
+        final recipe = _buildCollaborative(ownerId: 'other-owner');
+        expect(helper.getUserPermission(recipe, 'stranger'),
+            ResourcePermission.read);
+      });
+    });
+
+    group('checkLegacyPermission', () {
+      test('maps view action to canViewRecipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('current-user').build();
+        expect(helper.checkLegacyPermission(recipe, 'current-user', 'view'),
+            isTrue);
+      });
+
+      test('maps edit action to canEditRecipe', () {
+        final recipe = RecipeBuilder().withCreatedBy('current-user').build();
+        expect(helper.checkLegacyPermission(recipe, 'current-user', 'edit'),
+            isTrue);
+      });
+
+      test('returns false for unknown action', () {
+        final recipe = RecipeBuilder().withCreatedBy('current-user').build();
+        expect(helper.checkLegacyPermission(recipe, 'current-user', 'fly'),
+            isFalse);
+      });
+    });
+
+    group('canInviteMembers', () {
+      test('owner can invite even when allowMemberInvites is true', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'current-user',
+          allowMemberInvites: true,
+        );
+        expect(helper.canInviteMembers(recipe), isTrue);
+      });
+
+      test('returns false when allowMemberInvites is false and not owner', () {
+        final recipe = _buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.editor,
+          },
+          allowMemberInvites: false,
+        );
+        expect(helper.canInviteMembers(recipe), isFalse);
+      });
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // RecipeDiscoveryService
+  // -----------------------------------------------------------------------
+  group('RecipeDiscoveryService', () {
+    late RecipeDiscoveryService discovery;
+    late List<Recipe> recipes;
+
+    setUp(() {
+      recipes = [];
+      discovery = RecipeDiscoveryService(
+        getCurrentUserId: () => 'current-user',
+        getRecipes: () => recipes,
+      );
+    });
+
+    group('getCollaborativeRecipes', () {
+      test('returns collaborative recipes where user is owner', () async {
+        recipes.addAll([
+          _buildCollaborative(ownerId: 'current-user'),
+          RecipeBuilder().withCreatedBy('current-user').build(), // personal
+        ]);
+
+        final result = await discovery.getCollaborativeRecipes();
+
+        expect(result.length, 1);
+        expect(result.first.isCollaborative, isTrue);
+      });
+
+      test('returns collaborative recipes where user is member', () async {
+        recipes.add(_buildCollaborative(
+          ownerId: 'other-owner',
+          memberPermissions: {
+            'current-user': ResourcePermission.viewer,
+          },
+        ));
+
+        final result = await discovery.getCollaborativeRecipes();
+        expect(result.length, 1);
+      });
+
+      test('filters by category', () async {
+        recipes.addAll([
+          _buildCollaborative(
+            ownerId: 'current-user',
+            categoryIds: ['dinner'],
+          ),
+          _buildCollaborative(
+            ownerId: 'current-user',
+            categoryIds: ['dessert'],
+          ),
+        ]);
+
+        final result = await discovery.getCollaborativeRecipes(
           categoryFilter: ['dinner'],
         );
-
-        // Assert
-        expect(recipes, isA<List<Recipe>>());
+        expect(result.length, 1);
       });
 
-      test('should get recipes shared with current user', () async {
-        // Act
-        final recipes = await operations.getSharedWithMe(
-          limit: 20,
-          searchQuery: 'pasta',
-        );
-
-        // Assert
-        expect(recipes, isA<List<Recipe>>());
-      });
-
-      test('should get recipes shared by current user', () async {
-        // Act
-        final recipes = await operations.getSharedByMe(
-          limit: 15,
-          includeEmpty: true,
-        );
-
-        // Assert
-        expect(recipes, isA<List<Recipe>>());
-      });
-
-      test('should get recipes by specific user', () async {
-        // Act
-        final recipes = await operations.getRecipesByUser(
-          userId: 'user-123',
-          limit: 25,
-          includePersonal: false,
-        );
-
-        // Assert
-        expect(recipes, isA<List<Recipe>>());
-      });
-
-      test('should get trending recipes', () async {
-        // Act
-        final recipes = await operations.getTrendingRecipes(
-          limit: 10,
-          timeWindow: const Duration(days: 7),
-        );
-
-        // Assert
-        expect(recipes, isA<List<Recipe>>());
-      });
-
-      test('should search recipes', () async {
-        // Act
-        final recipes = await operations.searchRecipes(
-          query: 'chicken',
-          limit: 20,
-          includePersonal: true,
-        );
-
-        // Assert
-        expect(recipes, isA<List<Recipe>>());
-      });
-
-      test('should get popular collaborative categories', () async {
-        // Act
-        final categories = await operations.getPopularCollaborativeCategories(
-          limit: 5,
-        );
-
-        // Assert
-        expect(categories, isA<Map<String, int>>());
-      });
-
-      test('should get discovery statistics', () {
-        // Act
-        final stats = operations.getDiscoveryStatistics();
-
-        // Assert
-        expect(stats, isA<Map<String, dynamic>>());
-      });
-    });
-
-    group('Recipe Comments', () {
-      test('should add comment to recipe', () async {
-        // Act
-        final commentId = await operations.addComment(
-          recipeId: 'recipe-123',
-          content: 'Great recipe!',
-        );
-
-        // Assert
-        expect(commentId, isA<String?>());
-      });
-
-      test('should add reply to comment', () async {
-        // Act
-        final replyId = await operations.addComment(
-          recipeId: 'recipe-123',
-          content: 'I agree!',
-          parentCommentId: 'parent-comment-123',
-          mentions: ['user-456'],
-        );
-
-        // Assert
-        expect(replyId, isA<String?>());
-      });
-
-      test('should get comments for recipe', () async {
-        // Act
-        final comments = await operations.getComments(
-          recipeId: 'recipe-123',
-          limit: 20,
-          includeReplies: true,
-        );
-
-        // Assert
-        expect(comments, isA<List<RecipeComment>>());
-      });
-
-      test('should edit comment', () async {
-        // Act
-        final result = await operations.editComment(
-          commentId: 'comment-123',
-          newContent: 'Updated comment',
-        );
-
-        // Assert
-        expect(result, isA<bool>());
-      });
-
-      test('should delete comment', () async {
-        // Act
-        final result = await operations.deleteComment('comment-123');
-
-        // Assert
-        expect(result, isA<bool>());
-      });
-
-      test('should toggle comment like', () async {
-        // Act
-        final result = await operations.toggleCommentLike('comment-123');
-
-        // Assert
-        expect(result, isA<bool>());
-      });
-
-      test('should stream comments for recipe', () {
-        // Act
-        final stream = operations.getCommentsStream('recipe-123');
-
-        // Assert
-        expect(stream, isA<Stream<List<RecipeComment>>>());
-      });
-
-      test('should get comment statistics', () async {
-        // Act
-        final stats = await operations.getCommentStatistics('recipe-123');
-
-        // Assert
-        expect(stats, isA<Map<String, dynamic>>());
-      });
-    });
-
-    group('Recipe Rating & Social Stats', () {
-      test('should rate recipe', () async {
-        // Act
-        final result = await operations.rateRecipe(
-          recipeId: 'recipe-123',
-          rating: 4.5,
-          review: 'Excellent recipe!',
-        );
-
-        // Assert
-        expect(result, isA<bool>());
-      });
-
-      test('should get recipe statistics', () async {
-        // Act
-        final stats = await operations.getRecipeStats('recipe-123');
-
-        // Assert
-        expect(stats, isA<Map<String, dynamic>>());
-      });
-
-      test('should get user rating for recipe', () async {
-        // Act
-        final rating = await operations.getUserRating('recipe-123');
-
-        // Assert
-        expect(rating, isA<Map<String, dynamic>?>());
-      });
-
-      test('should get top rated recipes', () async {
-        // Act
-        final topRated = await operations.getTopRatedRecipes(
-          limit: 5,
-          minRating: 4.5,
-          minRatingCount: 10,
-        );
-
-        // Assert
-        expect(topRated, isA<List>());
-      });
-
-      test('should get user social statistics', () async {
-        // Act
-        final stats = await operations.getUserSocialStats();
-
-        // Assert
-        expect(stats, isA<Map>());
-      });
-    });
-
-    group('Permissions', () {
-      test('should check if user can view recipe', () {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final canView = operations.canView('recipe-123');
-
-        // Assert
-        expect(canView, isA<bool>());
-      });
-
-      test('should check if user can edit recipe', () {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final canEdit = operations.canEdit('recipe-123');
-
-        // Assert
-        expect(canEdit, isA<bool>());
-      });
-
-      test('should check if user can delete recipe', () {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final canDelete = operations.canDelete('recipe-123');
-
-        // Assert
-        expect(canDelete, isA<bool>());
-      });
-
-      test('should check if user can manage members', () {
-        // Arrange
-        final recipe =
-            RecipeBuilder().withId('recipe-123').asCollaborative().build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final canManage = operations.canManageMembers('recipe-123');
-
-        // Assert
-        expect(canManage, isA<bool>());
-      });
-
-      test('should check if user can comment on recipe', () {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final canComment = operations.canComment('recipe-123');
-
-        // Assert
-        expect(canComment, isA<bool>());
-      });
-
-      test('should check if user can rate recipe', () {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final canRate = operations.canRate('recipe-123');
-
-        // Assert
-        expect(canRate, isA<bool>());
-      });
-
-      test('should get user permission for recipe', () {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final permission =
-            operations.getUserPermission('recipe-123', 'user-123');
-
-        // Assert
-        expect(permission, isA<ResourcePermission>());
-      });
-
-      test('should get permission summary', () {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final summary =
-            operations.getPermissionSummary('recipe-123', 'user-123');
-
-        // Assert
-        expect(summary, isA<Map<String, dynamic>>());
-      });
-
-      test('should return error for non-existent recipe permission check', () {
-        // Arrange
-        mockParent.setRecipeState(recipes: []);
-
-        // Act
-        final canView = operations.canView('non-existent');
-        final canEdit = operations.canEdit('non-existent');
-        final permission =
-            operations.getUserPermission('non-existent', 'user-123');
-
-        // Assert
-        expect(canView, isFalse);
-        expect(canEdit, isFalse);
-        expect(permission, equals(ResourcePermission.read));
-      });
-    });
-
-    group('Legacy Compatibility', () {
-      test('should get legacy shared recipes format', () async {
-        // Arrange
-        // Note: We can't easily mock the internal module calls,
-        // so we test the API contract
-        /*
-        final sharedRecipe = RecipeBuilder()
-            .withId('shared-123')
+      test('filters by search query on title', () async {
+        final r = RecipeBuilder()
             .asCollaborative()
-            .withTitle('Shared Recipe')
+            .withTitle('Pannkakor')
+            .withSocialData(RecipeSocialData(
+              ownerId: 'current-user',
+              ownerDisplayName: 'Owner',
+            ))
             .build();
-        */
+        recipes.add(r);
 
-        // Act
-        final legacyRecipes = await operations.getLegacySharedRecipes();
-
-        // Assert
-        expect(legacyRecipes, isA<List<Map<String, dynamic>>>());
+        final result = await discovery.getCollaborativeRecipes(
+          searchQuery: 'pannkakor',
+        );
+        expect(result.length, 1);
       });
 
-      test('should check legacy permission compatibility', () {
-        // Arrange
-        final recipe = RecipeBuilder().withId('recipe-123').build();
-        mockParent.setRecipeState(recipes: [recipe]);
-
-        // Act
-        final hasPermission = operations.checkLegacyPermission(
-          'recipe-123',
-          'user-123',
-          'view',
+      test('returns empty list when not authenticated', () async {
+        final noAuthDiscovery = RecipeDiscoveryService(
+          getCurrentUserId: () => null,
+          getRecipes: () => recipes,
         );
+        recipes.add(_buildCollaborative(ownerId: 'someone'));
 
-        // Assert
-        expect(hasPermission, isA<bool>());
+        final result = await noAuthDiscovery.getCollaborativeRecipes();
+        expect(result, isEmpty);
       });
     });
 
-    group('Additional Features', () {
-      test('should get sharing statistics', () {
-        // Act
-        final stats = operations.getSharingStats();
+    group('getSharedWithMe', () {
+      test('returns collaborative recipes where user is member but not owner',
+          () async {
+        recipes.addAll([
+          _buildCollaborative(
+            ownerId: 'other-owner',
+            memberPermissions: {
+              'current-user': ResourcePermission.viewer,
+            },
+          ),
+          _buildCollaborative(
+              ownerId: 'current-user'), // own, not "shared with me"
+        ]);
 
-        // Assert
+        final result = await discovery.getSharedWithMe();
+        expect(result.length, 1);
+      });
+    });
+
+    group('getSharedByMe', () {
+      test('returns collaborative recipes where user is owner', () async {
+        recipes.addAll([
+          _buildCollaborative(
+            ownerId: 'current-user',
+            memberPermissions: {
+              'member-1': ResourcePermission.viewer,
+            },
+          ),
+          _buildCollaborative(ownerId: 'other-owner'),
+        ]);
+
+        final result = await discovery.getSharedByMe();
+        // Should include ones user owns that are collaborative
+        expect(
+            result.every((r) =>
+                (r.socialData?.ownerId ?? r.createdBy) == 'current-user'),
+            isTrue);
+      });
+    });
+
+    group('getDiscoveryStatistics', () {
+      test('returns statistics map', () {
+        recipes.addAll([
+          _buildCollaborative(ownerId: 'current-user'),
+          _buildCollaborative(
+            ownerId: 'other',
+            memberPermissions: {'current-user': ResourcePermission.viewer},
+          ),
+          RecipeBuilder().withCreatedBy('current-user').build(),
+        ]);
+
+        final stats = discovery.getDiscoveryStatistics();
         expect(stats, isA<Map<String, dynamic>>());
-      });
-
-      test('should dispose resources properly', () {
-        // Act & Assert - just verify it doesn't throw
-        operations.dispose();
-      });
-
-      test('should access discovery service directly', () {
-        // Act
-        final discoveryService = operations.discoveryService;
-
-        // Assert
-        expect(discoveryService, isA<RecipeDiscoveryService>());
+        expect(stats.containsKey('total_recipes'), isTrue);
+        expect(stats['total_recipes'], 3);
       });
     });
   });
