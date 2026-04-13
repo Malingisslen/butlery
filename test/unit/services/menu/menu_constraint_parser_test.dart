@@ -337,7 +337,7 @@ void main() {
       final tags = result.slotRequests.first.subRequests
           .expand((s) => s.requiredTags)
           .toSet();
-      expect(tags, contains('vardagsmat'));
+      expect(tags, contains('vardagsmiddag'));
     });
 
     test('husmanskost', () {
@@ -360,7 +360,7 @@ void main() {
       final result = p('2 middagar varav två matlådor');
       final sub = result.slotRequests.first.subRequests
           .firstWhere((s) => s.requiredTags.isNotEmpty);
-      expect(sub.requiredTags, contains('matlåda'));
+      expect(sub.requiredTags, contains('meal-prep'));
     });
   });
 

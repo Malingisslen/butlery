@@ -59,6 +59,7 @@ class _VeckomenyViewContent extends StatefulWidget {
 
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
+  final FocusNode _promptFocusNode = FocusNode();
   final UnifiedFriendsService _friendsService =
       ServiceLocator.get<UnifiedFriendsService>();
 
@@ -82,6 +83,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   void dispose() {
     _promptController.removeListener(_onPromptChanged);
     _promptController.dispose();
+    _promptFocusNode.dispose();
     super.dispose();
   }
 
@@ -300,6 +302,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                       MenuContentWidgets.buildPromptInput(
                         context,
                         controller: _promptController,
+                        focusNode: _promptFocusNode,
                         isGenerating: viewModel.isGenerating,
                         onClear: () {
                           _promptController.clear();
@@ -336,8 +339,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                   child: Padding(
                     padding: AppDimensions.responsiveHorizontalPadding(context),
                     child: _viewMode == VeckomenyViewMode.kalender
-                        ? const SingleChildScrollView(
-                            child: CalendarWeeklyMenuWidget(),
+                        ? SingleChildScrollView(
+                            child: CalendarWeeklyMenuWidget(
+                              onRefinePrompt: _promptFocusNode.requestFocus,
+                            ),
                           )
                         : MenuContentWidgets.buildMenuContent(
                             context,

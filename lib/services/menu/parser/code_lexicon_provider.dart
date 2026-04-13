@@ -379,13 +379,13 @@ class CodeLexiconProvider implements LexiconProvider {
 
   // Theme tags — match against canonical recipe tag set; missing → warning.
   static const Map<String, String> _themeStems = {
-    'vardagsmat': 'vardagsmat',
-    'vardag': 'vardagsmat',
-    'snabbmat': 'snabb',
-    'snabb': 'snabb',
-    'snabba': 'snabb',
-    'snabblagat': 'snabb',
-    'snabblagad': 'snabb',
+    'vardagsmat': 'vardagsmiddag',
+    'vardag': 'vardagsmiddag',
+    'snabbmat': 'snabblagat',
+    'snabb': 'snabblagat',
+    'snabba': 'snabblagat',
+    'snabblagat': 'snabblagat',
+    'snabblagad': 'snabblagat',
     'enkelt': 'enkel',
     'enkel': 'enkel',
     'enkla': 'enkel',
@@ -406,12 +406,12 @@ class CodeLexiconProvider implements LexiconProvider {
     'nyttigt': 'nyttig',
     'hälsosam': 'nyttig',
     'halsosam': 'nyttig',
-    'matlåda': 'matlåda',
-    'matlada': 'matlåda',
-    'matlådor': 'matlåda',
-    'matlador': 'matlåda',
-    'lunchlåda': 'matlåda',
-    'lunchlada': 'matlåda',
+    'matlåda': 'meal-prep',
+    'matlada': 'meal-prep',
+    'matlådor': 'meal-prep',
+    'matlador': 'meal-prep',
+    'lunchlåda': 'meal-prep',
+    'lunchlada': 'meal-prep',
   };
 
   // Time keywords — values are unused; presence triggers regex extraction.

@@ -40,7 +40,10 @@ import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
+import 'package:butlery/services/menu/parser/composite_lexicon_provider.dart';
+import 'package:butlery/services/menu/parser/firestore_lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
+import 'package:butlery/repositories/firebase/firebase_menu_lexicon_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
@@ -198,6 +201,8 @@ class ContentModule implements DIModule {
         NeuralLineClassifier,
         // Ingredient substitution
         IngredientSubstitutionService,
+        // Menu lexicon overlay (BUT-370)
+        FirebaseMenuLexiconRepository,
         // Ingredient registry (enriches static KnownIngredients from Firestore)
         IngredientRegistryService,
         // Firebase Storage instance for model loaders
@@ -458,9 +463,17 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // Menu lexicon provider (sprint 2 will swap to FirestoreLexiconProvider)
+      // Menu lexicon: code defaults + Firestore overlay (BUT-370)
+      container.registerLazySingleton<FirebaseMenuLexiconRepository>(
+        () => FirebaseMenuLexiconRepository(),
+      );
       container.registerLazySingleton<LexiconProvider>(
-        () => const CodeLexiconProvider(),
+        () => CompositeLexiconProvider(
+          code: const CodeLexiconProvider(),
+          firestore: FirestoreLexiconProvider(
+            repository: container<FirebaseMenuLexiconRepository>(),
+          ),
+        ),
       );
 
       // Menu service for meal planning

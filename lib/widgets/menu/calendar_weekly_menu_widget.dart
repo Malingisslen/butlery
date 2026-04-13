@@ -8,11 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -48,7 +46,9 @@ Text _slotLabel(String text, Color color) => Text(
 /// Embeddable calendar widget. Reads `WeeklyMenuPlanViewModel` from the
 /// surrounding `MultiProvider` (set up by `VeckomenyView`).
 class CalendarWeeklyMenuWidget extends StatefulWidget {
-  const CalendarWeeklyMenuWidget({super.key});
+  final VoidCallback? onRefinePrompt;
+
+  const CalendarWeeklyMenuWidget({super.key, this.onRefinePrompt});
 
   @override
   State<CalendarWeeklyMenuWidget> createState() =>
@@ -115,6 +115,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     // Extraction chips strip (BUT-359): show what the parser understood.
     final chipsWidget = ParsedExtractionChips(
       parsed: vm.lastParsedRequest,
+      onRefinePrompt: widget.onRefinePrompt,
     );
 
     // Compute today's index once — avoids 7× DateTime.now() in _buildDayRow.
@@ -650,17 +651,13 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     BuildContext context,
     String recipeId,
   ) async {
-    try {
-      final recipeRepo = ServiceLocator.get<RecipeRepository>();
-      final recipe = await recipeRepo.read(recipeId);
-      if (recipe != null && context.mounted) {
-        await Navigator.of(context).pushNamed(
-          '/recipe-detail',
-          arguments: recipe,
-        );
-      }
-    } catch (_) {
-      // Recipe deleted — entry tombstone stays in the cell.
+    final vm = context.read<WeeklyMenuPlanViewModel>();
+    final recipe = vm.resolveForNavigation(recipeId);
+    if (recipe != null && context.mounted) {
+      await Navigator.of(context).pushNamed(
+        '/recipe-detail',
+        arguments: recipe,
+      );
     }
   }
 

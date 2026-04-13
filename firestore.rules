@@ -1067,6 +1067,18 @@ service cloud.firestore {
     }
 
     // ========================================
+    // MENU LEXICON - Parser vocabulary overrides (BUT-370)
+    // ========================================
+
+    match /menu_lexicon/{category} {
+      // Authenticated users can read lexicon overrides
+      allow read: if isAuthenticated();
+
+      // No client writes - admin only via console
+      allow write: if false;
+    }
+
+    // ========================================
     // PARSING CORRECTIONS - Parser improvement analytics
     // ========================================
 

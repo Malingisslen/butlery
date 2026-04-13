@@ -1,10 +1,9 @@
 /// Lexicon abstraction for the menu constraint parser.
 ///
-/// Sprint 1: only [CodeLexiconProvider] exists; the lexicon is shipped as code.
-/// Sprint 2 (BUT-360) will add `FirestoreLexiconProvider` that overlays
-/// operator-edited Google-Sheet data on top of the code defaults. The parser
-/// only ever sees a [Lexicon] snapshot; it doesn't know or care where the
-/// data came from.
+/// Three implementations: [CodeLexiconProvider] (hardcoded defaults),
+/// [FirestoreLexiconProvider] (Firestore overlay, BUT-370), and
+/// [CompositeLexiconProvider] (merges both). The parser only ever sees
+/// a [Lexicon] snapshot; it doesn't know or care where the data came from.
 library;
 
 /// Categories of lexical data the parser needs.
@@ -48,9 +47,9 @@ class Lexicon {
   Map<String, String> of(LexiconCategory category) =>
       _entries[category] ?? const {};
 
-  /// Sprint 2 will use this to overlay Firestore data on top of code
-  /// defaults: keys present in [overlay] win, everything else from `this`
-  /// passes through. Per-category shallow merge.
+  /// Overlays Firestore data on top of code defaults: keys present in
+  /// [overlay] win, everything else from `this` passes through.
+  /// Per-category shallow merge.
   Lexicon mergedWith(Lexicon overlay) {
     final merged = <LexiconCategory, Map<String, String>>{};
     final allCategories = {..._entries.keys, ...overlay._entries.keys};
@@ -64,8 +63,8 @@ class Lexicon {
   }
 }
 
-/// Loads a [Lexicon]. Implementations: [CodeLexiconProvider] (sprint 1),
-/// `FirestoreLexiconProvider` (sprint 2, not yet implemented).
+/// Loads a [Lexicon]. Implementations: [CodeLexiconProvider],
+/// [FirestoreLexiconProvider], [CompositeLexiconProvider].
 abstract class LexiconProvider {
   Future<Lexicon> load();
 }

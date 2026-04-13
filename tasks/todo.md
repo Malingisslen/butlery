@@ -1,6 +1,57 @@
 # Sprint Backlog
 
-## Sprint: Veckomeny Constraint Parser — 2026-04-11
+## Sprint: Menu System Deepening — 2026-04-13
+
+**Plan file:** `C:\Users\malla\.claude\plans\melodic-bouncing-finch.md`
+
+### Carry-Forward: Close BUT-359 loose ends
+
+- [ ] **CF1. Chrome E2E verification** — Visual check constraint parser + extraction chips in browser.
+- [x] **CF2. Canonical-tag check** — Fixed: `vardagsmat`→`vardagsmiddag`, `snabb`→`snabblagat`, `matlåda`→`meal-prep`. `bröd` was correct.
+
+### Agent A: flutter-developer — MVVM fix + dead code cleanup
+
+- [x] **A1. BUT-360: Move RecipeRepository.read into ViewModel** — `weekly_menu_plan_viewmodel.dart` + `calendar_weekly_menu_widget.dart`.
+- [x] **A2. Wire onRefinePrompt callback** — `calendar_weekly_menu_widget.dart` → `ParsedExtractionChips`.
+- [x] **A3. Remove legacy regex fallback** — `menu_service.dart`: remove dead count-only parser code.
+
+### Agent B: firebase-backend-security + flutter-developer — Firestore Lexicon Overlay
+
+- [x] **B1. File Linear ticket** — BUT-370 filed.
+- [x] **B2. Define Firestore collection schema** — `FirestoreCollections.menuLexicon`.
+- [x] **B3. MenuLexiconRepository** — `lib/repositories/firebase/firebase_menu_lexicon_repository.dart`.
+- [x] **B4. FirestoreLexiconProvider** — `lib/services/menu/parser/firestore_lexicon_provider.dart`.
+- [x] **B5. CompositeLexiconProvider** — `lib/services/menu/parser/composite_lexicon_provider.dart`.
+- [x] **B6. DI wiring** — `content_module.dart`: register repo + providers.
+- [x] **B7. Firestore security rules** — `firestore.rules`: menuLexicon read-only.
+- [x] **B8. Seed data** — Documented in BUT-370 (manual console edits).
+
+### Agent C: testing-specialist — Tests
+
+- [x] **C1. MenuLexiconRepository tests** — 8/8 pass.
+- [x] **C2. CompositeLexiconProvider tests** — 4/4 pass.
+- [x] **C3. ViewModel resolveForNavigation test** — 2/2 pass.
+
+### Post-Sprint Steps
+
+- [x] Run `dart analyze --fatal-infos` — 0 issues
+- [x] Run relevant tests — 101/101 menu tests + 14/14 new tests pass
+- [ ] Chrome E2E: composite provider works with empty Firestore collection
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-360 → Done, new lexicon ticket → Done
+
+---
+
+## What this means in plain language
+
+- Menu prompt word lists can now come from a database you edit — no code deploy needed.
+- "Förfina prompten" link actually scrolls back to the input field.
+- Code hygiene: recipe tap in calendar uses proper architecture, dead parser code removed.
+- Risk: Very low — empty Firestore = same behavior as today.
+
+---
+
+## Archive: Sprint Veckomeny Constraint Parser — 2026-04-11
 
 **Goal:** Replace the count-only regex parser in `MenuService.generateMenuFromPrompt` with a deterministic, lexicon-driven Swedish constraint parser. Users can write rich prompts (allergens, dieter, cuisines, formats, themes, time limits, day-anchored idioms like *tacofredag*). A transparent extraction-chip strip above the calendar shows what was understood, with amber chips for anything that wasn't — no silent failures, no LLM cost. Pre-production: lexicon ships as code (sprint 1) behind a `LexiconProvider` interface so a follow-up sprint can swap in a Google-Sheet-sourced Firestore overlay (BUT-360, to be filed) without parser changes.
 
@@ -8,53 +59,53 @@
 
 ### Agent A: flutter-developer — Models + Lexicon scaffold
 
-- [ ] **A1. Value classes** — `lib/models/menu/parsed_menu_request.dart`: `ParsedMenuRequest`, `SlotRequest`, `RecipeConstraint`, `DayPin`, `ExtractionTrace`, `TraceEntry`. Immutable, equatable. Const constructors where possible. (BUT-359)
+- [x] **A1. Value classes** — `lib/models/menu/parsed_menu_request.dart`: `ParsedMenuRequest`, `SlotRequest`, `RecipeConstraint`, `DayPin`, `ExtractionTrace`, `TraceEntry`. Immutable, equatable. Const constructors where possible. (BUT-359)
 
-- [ ] **A2. LexiconProvider interface** — `lib/services/menu/parser/lexicon_provider.dart`: `LexiconCategory` enum (18 entries), `Lexicon` value class with `of(category)` lookup + `mergedWith(overlay)` method, `abstract class LexiconProvider { Future<Lexicon> load(); }`. Sprint 2 will add `FirestoreLexiconProvider` against this interface — keep the surface minimal. (BUT-359)
+- [x] **A2. LexiconProvider interface** — `lib/services/menu/parser/lexicon_provider.dart`: `LexiconCategory` enum (18 entries), `Lexicon` value class with `of(category)` lookup + `mergedWith(overlay)` method, `abstract class LexiconProvider { Future<Lexicon> load(); }`. Sprint 2 will add `FirestoreLexiconProvider` against this interface — keep the surface minimal. (BUT-359)
 
-- [ ] **A3. CodeLexiconProvider seed** — `lib/services/menu/parser/code_lexicon_provider.dart`: 18 `static const Map<String, String>` fields with the ~250 seed stems from the plan (numbers, vagueQuantity, everydayPhrases, mealStems, dietaryStems, allergenFreeStems, allergenNounStems, negationWords, cuisineStems, formatStems, verbObjectMap, themeStems, timeKeywords, dayNames, dayIdioms, subdivisionWords, politePreamble, skipFrukostMarkers). All canonical values verified against `AllergenConfig.allKeys`, `DietaryConfig.all`, `CuisineConfig.cuisines`. (BUT-359)
+- [x] **A3. CodeLexiconProvider seed** — `lib/services/menu/parser/code_lexicon_provider.dart`: 18 `static const Map<String, String>` fields with the ~250 seed stems from the plan (numbers, vagueQuantity, everydayPhrases, mealStems, dietaryStems, allergenFreeStems, allergenNounStems, negationWords, cuisineStems, formatStems, verbObjectMap, themeStems, timeKeywords, dayNames, dayIdioms, subdivisionWords, politePreamble, skipFrukostMarkers). All canonical values verified against `AllergenConfig.allKeys`, `DietaryConfig.all`, `CuisineConfig.cuisines`. (BUT-359)
 
-- [ ] **A4. DI registration** — `lib/core/di/modules/content_module.dart`: register `LexiconProvider` interface → `CodeLexiconProvider` impl as lazy singleton. Verify dependency order: must register before `MenuService`. (BUT-359)
+- [x] **A4. DI registration** — `lib/core/di/modules/content_module.dart`: register `LexiconProvider` interface → `CodeLexiconProvider` impl as lazy singleton. Verify dependency order: must register before `MenuService`. (BUT-359)
 
 ### Agent B: flutter-developer — Parser engine
 
-- [ ] **B1. Text normalizer** — `lib/services/menu/parser/text_normalizer.dart`: `normalize(input)` (lowercase + NFC + collapse whitespace + strip trailing punctuation), `stripDiacritics`, `stripPolitePreamble(words)`, `levenshtein1Lookup(token, candidates)` with bigram pre-index for sub-millisecond fallback on tokens ≥6 chars. Pure functions, no state. (BUT-359)
+- [x] **B1. Text normalizer** — `lib/services/menu/parser/text_normalizer.dart`: `normalize(input)` (lowercase + NFC + collapse whitespace + strip trailing punctuation), `stripDiacritics`, `stripPolitePreamble(words)`, `levenshtein1Lookup(token, candidates)` with bigram pre-index for sub-millisecond fallback on tokens ≥6 chars. Pure functions, no state. (BUT-359)
 
-- [ ] **B2. MenuConstraintParser engine** — `lib/services/menu/parser/menu_constraint_parser.dart`: `static ParsedMenuRequest parse(String prompt, Lexicon lexicon)`. Implement the 7-step pipeline from the plan: normalize → extract globals (negations, dietary, day idioms, day-name+format pins) → clause-split on `[,;] | och | samt | plus` → per-clause (count + meal + subdivision + modifier sweep) → second-pass verb+object → trace assembly → return. Handle `den ena ... den andra`, soft markers (helst/gärna/minst), range counts (`2-3`, `två till tre`), vague quantities, everyday phrases (`varje dag`, `hela veckan`). (BUT-359)
+- [x] **B2. MenuConstraintParser engine** — `lib/services/menu/parser/menu_constraint_parser.dart`: `static ParsedMenuRequest parse(String prompt, Lexicon lexicon)`. Implement the 7-step pipeline from the plan: normalize → extract globals (negations, dietary, day idioms, day-name+format pins) → clause-split on `[,;] | och | samt | plus` → per-clause (count + meal + subdivision + modifier sweep) → second-pass verb+object → trace assembly → return. Handle `den ena ... den andra`, soft markers (helst/gärna/minst), range counts (`2-3`, `två till tre`), vague quantities, everyday phrases (`varje dag`, `hela veckan`). (BUT-359)
 
-- [ ] **B3. Parser unit tests** — `test/unit/services/menu/menu_constraint_parser_test.dart`: 80+ test cases organized by taxonomy group (counts, meal types, dietary, allergens, cuisines, formats and verbs, time, day pins, themes, subdivisions, skip frukost, robustness, graceful failure, full motivating example). Each test asserts a single specific behaviour. Pure Dart, no Firebase. (BUT-359)
+- [x] **B3. Parser unit tests** — `test/unit/services/menu/menu_constraint_parser_test.dart`: 80+ test cases organized by taxonomy group (counts, meal types, dietary, allergens, cuisines, formats and verbs, time, day pins, themes, subdivisions, skip frukost, robustness, graceful failure, full motivating example). Each test asserts a single specific behaviour. Pure Dart, no Firebase. (BUT-359)
 
-- [ ] **B4. Normalizer + lexicon tests** — `test/unit/services/menu/parser/text_normalizer_test.dart` (lowercase, NFC, diacritic strip, levenshtein lookup, polite-preamble stripping doesn't eat real content) + `test/unit/services/menu/parser/code_lexicon_provider_test.dart` (no duplicate stems within a category, all canonical values exist in their respective tagging configs). (BUT-359)
+- [x] **B4. Normalizer + lexicon tests** — `test/unit/services/menu/parser/text_normalizer_test.dart` (lowercase, NFC, diacritic strip, levenshtein lookup, polite-preamble stripping doesn't eat real content) + `test/unit/services/menu/parser/code_lexicon_provider_test.dart` (no duplicate stems within a category, all canonical values exist in their respective tagging configs). (BUT-359)
 
 ### Agent C: flutter-developer — MenuService + distribution integration
 
-- [ ] **C1. MenuService.generateMenuFromParsedRequest** — `lib/services/menu_service.dart`: add the new method per the plan. Reuse `_weightedSelect`, `_enforceCuisineDiversity`, `SeasonUtils.currentSeasonTag`. Implement `_passesGlobals` (allergen + dietary), `_matchesConstraint` (dietary, allergen, requiredTags, requiredCuisines via `CuisineConfig.extractCuisineTag`, maxTimeMinutes via `recipe.timeInMinutes ?? totalTime`). Place day pins first (so tacofredag wins). Soft constraint fallback to unconstrained slot pool. (BUT-359)
+- [x] **C1. MenuService.generateMenuFromParsedRequest** — `lib/services/menu_service.dart`: add the new method per the plan. Reuse `_weightedSelect`, `_enforceCuisineDiversity`, `SeasonUtils.currentSeasonTag`. Implement `_passesGlobals` (allergen + dietary), `_matchesConstraint` (dietary, allergen, requiredTags, requiredCuisines via `CuisineConfig.extractCuisineTag`, maxTimeMinutes via `recipe.timeInMinutes ?? totalTime`). Place day pins first (so tacofredag wins). Soft constraint fallback to unconstrained slot pool. (BUT-359)
 
-- [ ] **C2. Wire the parser into the existing entrypoint** — `MenuService.generateMenuFromPrompt` becomes a thin wrapper: load lexicon (cached on first use via injected `LexiconProvider`), call `MenuConstraintParser.parse`, return early if `isEmpty`, otherwise delegate to `generateMenuFromParsedRequest`. Constructor or setter inject `LexiconProvider`. Backwards-compatible: count-only prompts still produce identical results because empty `RecipeConstraint`s pass `_matchesConstraint`. (BUT-359)
+- [x] **C2. Wire the parser into the existing entrypoint** — `MenuService.generateMenuFromPrompt` becomes a thin wrapper: load lexicon (cached on first use via injected `LexiconProvider`), call `MenuConstraintParser.parse`, return early if `isEmpty`, otherwise delegate to `generateMenuFromParsedRequest`. Constructor or setter inject `LexiconProvider`. Backwards-compatible: count-only prompts still produce identical results because empty `RecipeConstraint`s pass `_matchesConstraint`. (BUT-359)
 
-- [ ] **C3. Distribution layer learns DayPin** — `lib/services/menu/weekly_menu_plan_service.distributeFromGeneratedMenu`: new optional param `List<DayPin> dayPins = const []`. Place pinned recipes on their pinned weekday/slot first; remaining recipes flow into the existing today-anchored chronological fill. Output shape unchanged. Update existing tests; add new test for tacofredag pinning. (BUT-359)
+- [x] **C3. Distribution layer learns DayPin** — `lib/services/menu/weekly_menu_plan_service.distributeFromGeneratedMenu`: new optional param `List<DayPin> dayPins = const []`. Place pinned recipes on their pinned weekday/slot first; remaining recipes flow into the existing today-anchored chronological fill. Output shape unchanged. Update existing tests; add new test for tacofredag pinning. (BUT-359)
 
-- [ ] **C4. Service-layer integration tests** — `test/unit/services/menu_service_parsed_request_test.dart`: hand-built recipe pool with diverse `TagResult`. Assert: dietary filter respected, allergen filter respected, global filter applies to every slot, soft constraint falls back when hard match empty, cuisine diversity preserved, day pin placement, time-bound filter. Mocktail pattern from existing `menu_viewmodel_test.dart`. (BUT-359)
+- [x] **C4. Service-layer integration tests** — `test/unit/services/menu_service_parsed_request_test.dart`: hand-built recipe pool with diverse `TagResult`. Assert: dietary filter respected, allergen filter respected, global filter applies to every slot, soft constraint falls back when hard match empty, cuisine diversity preserved, day pin placement, time-bound filter. Mocktail pattern from existing `menu_viewmodel_test.dart`. (BUT-359)
 
 ### Agent D: flutter-developer + uiux-designer — Extraction chips UI
 
-- [ ] **D1. ParsedExtractionChips widget** — `lib/widgets/menu/parsed_extraction_chips.dart`: stateless. Renders nothing when `parsed == null`. When present: green pill chips for `trace.understood` (icon per category), amber pill chips for `trace.notUnderstood`, "Förfina prompten" link only when warnings/notUnderstood present. Reuses existing pill-chip widget from the design system — no new theme tokens, SQUARE corners. Theme constants only. (BUT-359)
+- [x] **D1. ParsedExtractionChips widget** — `lib/widgets/menu/parsed_extraction_chips.dart`: stateless. Renders nothing when `parsed == null`. When present: green pill chips for `trace.understood` (icon per category), amber pill chips for `trace.notUnderstood`, "Förfina prompten" link only when warnings/notUnderstood present. Reuses existing pill-chip widget from the design system — no new theme tokens, SQUARE corners. Theme constants only. (BUT-359)
 
-- [ ] **D2. ViewModel surface** — `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`: expose latest `ParsedMenuRequest?` (set after each successful generation). Notify listeners. Guard async gaps with `if (isDisposed) return`. (BUT-359)
+- [x] **D2. ViewModel surface** — `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`: expose latest `ParsedMenuRequest?` (set after each successful generation). Notify listeners. Guard async gaps with `if (isDisposed) return`. (BUT-359)
 
-- [ ] **D3. Calendar widget integration** — `lib/widgets/menu/calendar_weekly_menu_widget.dart`: render `ParsedExtractionChips` strip above the day grid when the ViewModel exposes a parse. No layout shift when parse is null. (BUT-359)
+- [x] **D3. Calendar widget integration** — `lib/widgets/menu/calendar_weekly_menu_widget.dart`: render `ParsedExtractionChips` strip above the day grid when the ViewModel exposes a parse. No layout shift when parse is null. (BUT-359)
 
-- [ ] **D4. Localization** — `lib/l10n/app_sv.arb` + `lib/l10n/app_en.arb`: keys `weeklyMenuChipsHeading` ("Vi förstod:"), `weeklyMenuChipsHeadingNotUnderstood` ("Vi förstod inte:"), `weeklyMenuChipsRefinePrompt` ("Förfina prompten"), category labels for trace icons. Both languages. (BUT-359)
+- [x] **D4. Localization** — `lib/l10n/app_sv.arb` + `lib/l10n/app_en.arb`: keys `weeklyMenuChipsHeading` ("Vi förstod:"), `weeklyMenuChipsHeadingNotUnderstood` ("Vi förstod inte:"), `weeklyMenuChipsRefinePrompt` ("Förfina prompten"), category labels for trace icons. Both languages. (BUT-359)
 
 ### Post-Sprint Steps
 
-- [ ] Run `dart analyze --fatal-infos`
-- [ ] Run `flutter test test/unit/services/menu/ test/unit/services/menu_service_parsed_request_test.dart test/unit/viewmodels/menu_viewmodel_test.dart`
-- [ ] Chrome end-to-end with the prompts from the plan's verification section (full motivating example, tacofredag, snabba middagar max 30 min, vague intentional, legacy "3 middagar")
-- [ ] Canonical-tag check: confirm whether `matlåda`, `snabb`, `bröd`, `vardagsmat` exist in the canonical tag set; file follow-up note if any are missing
-- [ ] Commit, push, PR, merge
+- [x] Run `dart analyze --fatal-infos`
+- [x] Run `flutter test test/unit/services/menu/` — 97/97 pass
+- [ ] Chrome end-to-end with the prompts from the plan's verification section
+- [ ] Canonical-tag check: confirm whether `matlåda`, `snabb`, `bröd`, `vardagsmat` exist in the canonical tag set
+- [x] Commit, push to main — `fa2c895f4`
 - [ ] File BUT-360 in Linear: "Google Sheet → Firestore overlay for menu_lexicon (mirror ingredient pipeline)"
-- [ ] Update Linear: BUT-359 → Done
+- [x] Update Linear: BUT-359 → Done
 
 ---
 

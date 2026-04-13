@@ -6,13 +6,19 @@ import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 class WeeklyMenuPlanViewModel extends BaseViewModel {
   final WeeklyMenuPlanService _service;
+  final UnifiedRecipeService? _recipeService;
 
-  WeeklyMenuPlanViewModel({required WeeklyMenuPlanService service})
-      : _service = service;
+  WeeklyMenuPlanViewModel({
+    required WeeklyMenuPlanService service,
+    UnifiedRecipeService? recipeService,
+  })  : _service = service,
+        _recipeService = recipeService;
 
   WeeklyMenuPlan? _plan;
   List<Recipe> _overflow = const [];
@@ -32,6 +38,13 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   List<WeeklyMenuPlanEntry> entriesAt(DayOfWeek day, MealSlot slot) {
     return _plan?.entriesAt(day, slot) ?? const [];
+  }
+
+  /// Resolves a recipe by ID for navigation. Returns null if deleted.
+  Recipe? resolveForNavigation(String recipeId) {
+    final service =
+        _recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+    return service.getRecipeById(recipeId);
   }
 
   Future<void> loadWeek(DateTime date) async {

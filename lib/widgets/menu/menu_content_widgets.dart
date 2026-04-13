@@ -32,6 +32,7 @@ class MenuContentWidgets {
     required bool isGenerating,
     required VoidCallback onClear,
     required VoidCallback onChanged,
+    FocusNode? focusNode,
   }) {
     final cs = Theme.of(context).colorScheme;
 
@@ -65,6 +66,7 @@ class MenuContentWidgets {
           const SizedBox(height: AppDimensions.spacingM),
           StyledInput(
             controller: controller,
+            focusNode: focusNode,
             enabled: !isGenerating,
             hint: context.l10n.menuPromptHint,
             prefixIcon: const Icon(Icons.edit),
