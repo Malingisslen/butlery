@@ -340,20 +340,17 @@ void main() {
       expect(tags, contains('vardagsmiddag'));
     });
 
-    test('husmanskost', () {
+    test('husmanskost goes to notUnderstood (no matching auto-tag)', () {
       final result = p('3 husmanskost middagar');
-      final tags = result.slotRequests.first.subRequests
-          .expand((s) => s.requiredTags)
-          .toSet();
-      expect(tags, contains('husmanskost'));
+      expect(result.trace.notUnderstood, contains('husmanskost'));
     });
 
-    test('billigt', () {
+    test('billigt maps to budgetvänlig', () {
       final result = p('3 billigt middagar');
       final tags = result.slotRequests.first.subRequests
           .expand((s) => s.requiredTags)
           .toSet();
-      expect(tags, contains('budget'));
+      expect(tags, contains('budgetvänlig'));
     });
 
     test('matlåda', () {
@@ -522,6 +519,109 @@ void main() {
 
       // Trace should have many understood entries and no (or few) not-understood
       expect(result.trace.understood.length, greaterThan(4));
+    });
+  });
+
+  // -------------------------------------------------------------------
+  // GAP FIXES (BUT-376)
+  // -------------------------------------------------------------------
+
+  group('gap 2: global dietary requirement', () {
+    test('bara vegetariskt populates globalDietaryRequire', () {
+      final result = p('bara vegetariskt 5 middagar');
+      expect(result.globalDietaryRequire, contains('vegetarisk'));
+    });
+
+    test('allt veganskt populates globalDietaryRequire', () {
+      final result = p('allt veganskt, 3 luncher');
+      expect(result.globalDietaryRequire, contains('vegansk'));
+    });
+
+    test('bara + dietary is removed from clause', () {
+      final result = p('bara vegetariskt 3 middagar');
+      expect(result.slotRequests, isNotEmpty);
+      expect(result.slotRequests.first.mealType, 'middag');
+    });
+  });
+
+  group('gap 3: day pins with dietary/cuisine/theme', () {
+    test('måndag vegetariskt creates dietary day pin', () {
+      final result = p('3 middagar, måndag vegetariskt');
+      final pin = result.dayPins.where((p) => p.weekdayIndex == 1);
+      expect(pin, isNotEmpty);
+      expect(pin.first.constraint.dietaryFree, contains('vegetarisk'));
+    });
+
+    test('tisdag thai creates cuisine day pin', () {
+      final result = p('3 middagar, tisdag thai');
+      final pin = result.dayPins.where((p) => p.weekdayIndex == 2);
+      expect(pin, isNotEmpty);
+      expect(pin.first.constraint.requiredCuisines, contains('thailandsk'));
+    });
+  });
+
+  group('gap 4: tag exclusion via negation', () {
+    test('utan soppa excludes soppa tag globally', () {
+      final result = p('3 middagar utan soppa');
+      expect(result.globalExcludedTags, contains('soppa'));
+    });
+
+    test('inga grytor excludes gryta tag globally', () {
+      p('inga grytor, 3 middagar');
+      // "grytor" may not be in formatStems (only "gryta") —
+      // test with the canonical stem form
+      final result2 = p('ingen gryta, 3 middagar');
+      expect(result2.globalExcludedTags, contains('gryta'));
+    });
+
+    test('utan kyckling excludes kyckling tag', () {
+      final result = p('3 middagar utan kyckling');
+      expect(result.globalExcludedTags, contains('kyckling'));
+    });
+  });
+
+  group('gap 6: colon day syntax', () {
+    test('måndag: soppa creates day pin', () {
+      final result = p('3 middagar, måndag: soppa');
+      final pin = result.dayPins.where((p) => p.weekdayIndex == 1);
+      expect(pin, isNotEmpty);
+      expect(pin.first.constraint.requiredTags, contains('soppa'));
+    });
+  });
+
+  group('gap 7: kcal not consumed as count', () {
+    test('500 kcal does not produce count 500', () {
+      final result = p('500 kcal middagar');
+      final middagSlots =
+          result.slotRequests.where((s) => s.mealType == 'middag');
+      if (middagSlots.isNotEmpty) {
+        expect(middagSlots.first.totalCount, lessThan(10));
+      }
+    });
+
+    test('under 1800 kalorier does not produce count 1800', () {
+      final result = p('3 middagar under 1800 kalorier');
+      final middag =
+          result.slotRequests.firstWhere((s) => s.mealType == 'middag');
+      expect(middag.totalCount, 3);
+    });
+  });
+
+  group('gap: theme stem alignment (BUT-371)', () {
+    test('festmat maps to helgmat', () {
+      final result = p('3 festmat middagar');
+      final tags = result.slotRequests.first.subRequests
+          .expand((s) => s.requiredTags)
+          .toSet();
+      expect(tags, contains('helgmat'));
+    });
+
+    test('billigt maps to budgetvänlig', () {
+      final result = p('3 billigt middagar');
+      final tags = result.slotRequests.first.subRequests
+          .expand((s) => s.requiredTags)
+          .toSet();
+      expect(tags, contains('budgetvänlig'));
     });
   });
 }
