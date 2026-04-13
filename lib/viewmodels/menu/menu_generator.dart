@@ -155,9 +155,7 @@ class MenuGenerator {
     final includeUnknown = prefs.includeUnknownInMenu;
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
-      if (tagResult == null) {
-        return includeUnknown; // No tag data = respect preference
-      }
+      if (tagResult == null) return true; // No tag data = include (can't know)
 
       for (final allergen in tracked) {
         final status = tagResult.getAllergenStatus(allergen);
@@ -183,9 +181,7 @@ class MenuGenerator {
     final includeUnknown = prefs.includeUnknownInMenu;
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
-      if (tagResult == null) {
-        return includeUnknown; // No tag data = respect preference
-      }
+      if (tagResult == null) return true; // No tag data = include (can't know)
 
       for (final diet in tracked) {
         final status = tagResult.getDietaryStatus(diet);
