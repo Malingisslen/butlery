@@ -109,12 +109,25 @@ class ShoppingListGenerator {
           }
         } else if (recipe is Recipe) {
           allIngredients.addAll(recipe.ingredients);
+        } else {
+          // Duck-typing fallback: try accessing .ingredients on dynamic objects
+          try {
+            final dynamic dynamicRecipe = recipe;
+            final ingredients = dynamicRecipe.ingredients;
+            if (ingredients is List) {
+              allIngredients.addAll(ingredients.map((e) => e.toString()));
+            }
+          } catch (_) {
+            // Object doesn't have an ingredients property — skip
+          }
         }
       }
     }
 
     // Intelligent ingredient grouping with normalization and consolidation
     final Map<String, double> groupedIngredients = {};
+    // Track the original display name per grouping key (first occurrence wins)
+    final Map<String, String> displayKeys = {};
 
     for (final rawIngredient in allIngredients) {
       // Skip empty or whitespace-only ingredients
@@ -133,6 +146,13 @@ class ShoppingListGenerator {
           ? processed.normalizedName
           : '${processed.unit} ${processed.normalizedName}';
 
+      // Preserve the original name (with descriptors) for display.
+      // First occurrence wins — keeps "finhackad lök" instead of bare "lök".
+      final origKey = processed.unit.isEmpty
+          ? processed.originalName
+          : '${processed.unit} ${processed.originalName}';
+      displayKeys.putIfAbsent(key, () => origKey);
+
       // Aggregate quantities for identical ingredients
       groupedIngredients[key] =
           (groupedIngredients[key] ?? 0.0) + processed.quantity;
@@ -144,9 +164,10 @@ class ShoppingListGenerator {
 
     for (final key in sortedKeys) {
       final totalQuantity = groupedIngredients[key]!;
+      final display = displayKeys[key] ?? key;
 
       // Apply smart unit conversion for practical shopping quantities
-      final parts = key.split(' ');
+      final parts = display.split(' ');
       if (parts.length > 1 &&
           SwedishPluralization.isMeasurementUnit(parts[0])) {
         final unit = parts[0];
@@ -166,7 +187,7 @@ class ShoppingListGenerator {
         } else {
           // Use original unit if conversion doesn't improve readability
           final formatted = SwedishPluralization.formatIngredient(
-            key,
+            display,
             totalQuantity,
           );
           displayList.add(formatted);
@@ -174,7 +195,7 @@ class ShoppingListGenerator {
       } else {
         // Handle unit-less ingredients with proper pluralization
         final formatted = SwedishPluralization.formatIngredient(
-          key,
+          display,
           totalQuantity,
         );
         displayList.add(formatted);

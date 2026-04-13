@@ -10,6 +10,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
+const _menuSentinel = Object();
+
 /// Comprehensive realtime menu data with pure data representation and robust serialization for collaborative meal planning.
 /// Represents complete menu data structure with category-based recipe organization, temporal management,
 /// and comprehensive metadata support through focused data responsibility and clean serialization patterns.
@@ -136,10 +138,13 @@ class RealtimeMenuData {
 
     for (final entry in menuData.entries) {
       final recipesData = entry.value as List<dynamic>? ?? [];
-      final recipes = recipesData
-          .map((recipeData) =>
-              Recipe.fromMap('', recipeData as Map<String, dynamic>))
-          .toList();
+      final recipes = recipesData.map((recipeData) {
+        final d = recipeData as Map<String, dynamic>;
+        // ID may be at top level (flat) or inside 'core' (nested)
+        final coreData = d['core'] as Map<String, dynamic>? ?? d;
+        final id = SerializationUtils.safeString(coreData, 'id');
+        return Recipe.fromMap(id, d);
+      }).toList();
 
       menuSnapshot[entry.key] = recipes;
     }
@@ -188,10 +193,13 @@ class RealtimeMenuData {
 
     for (final entry in menuData.entries) {
       final recipesData = entry.value as List<dynamic>? ?? [];
-      final recipes = recipesData
-          .map((recipeData) =>
-              Recipe.fromMap('', recipeData as Map<String, dynamic>))
-          .toList();
+      final recipes = recipesData.map((recipeData) {
+        final data = recipeData as Map<String, dynamic>;
+        // ID may be at top level (flat) or inside 'core' (nested)
+        final coreData = data['core'] as Map<String, dynamic>? ?? data;
+        final id = SerializationUtils.safeString(coreData, 'id');
+        return Recipe.fromMap(id, data);
+      }).toList();
 
       menuSnapshot[entry.key] = recipes;
     }
@@ -212,22 +220,29 @@ class RealtimeMenuData {
     );
   }
 
-  /// Create copy with updated values
+  /// Create copy with updated values.
+  /// Uses sentinel pattern for nullable fields so passing null explicitly
+  /// clears the value, while omitting the parameter preserves the original.
   RealtimeMenuData copyWith({
     String? menuTitle,
     DateTime? createdForDate,
     Map<String, List<Recipe>>? menuSnapshot,
-    String? menuNotes,
-    List<String>? favoriteRecipeIds,
-    String? originalPrompt,
+    Object? menuNotes = _menuSentinel,
+    Object? favoriteRecipeIds = _menuSentinel,
+    Object? originalPrompt = _menuSentinel,
   }) {
     return RealtimeMenuData(
       menuTitle: menuTitle ?? this.menuTitle,
       createdForDate: createdForDate ?? this.createdForDate,
       menuSnapshot: menuSnapshot ?? this.menuSnapshot,
-      menuNotes: menuNotes ?? this.menuNotes,
-      favoriteRecipeIds: favoriteRecipeIds ?? this.favoriteRecipeIds,
-      originalPrompt: originalPrompt ?? this.originalPrompt,
+      menuNotes:
+          menuNotes == _menuSentinel ? this.menuNotes : menuNotes as String?,
+      favoriteRecipeIds: favoriteRecipeIds == _menuSentinel
+          ? this.favoriteRecipeIds
+          : favoriteRecipeIds as List<String>?,
+      originalPrompt: originalPrompt == _menuSentinel
+          ? this.originalPrompt
+          : originalPrompt as String?,
     );
   }
 
@@ -247,9 +262,9 @@ class RealtimeMenuData {
   int get hashCode => Object.hash(
         menuTitle,
         createdForDate,
-        menuSnapshot,
+        menuSnapshot.length,
         menuNotes,
-        favoriteRecipeIds,
+        favoriteRecipeIds?.length,
         originalPrompt,
       );
 

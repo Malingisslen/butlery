@@ -1,5 +1,6 @@
 // ignore_for_file: subtype_of_sealed_class
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -203,8 +204,8 @@ void main() {
         expect(serialized['favoriteRecipeIds'], equals(['recipe_1']));
         expect(serialized['originalPrompt'], equals('Test prompt'));
 
-        // Check timestamp serialization
-        expect(serialized['createdForDate'], isA<Map<String, dynamic>>());
+        // Check timestamp serialization (AppTimestamp.toFirestore returns Timestamp)
+        expect(serialized['createdForDate'], isA<Timestamp>());
 
         // Check menu snapshot serialization
         final menuSnapshotData =
@@ -219,7 +220,9 @@ void main() {
         final restored = RealtimeMenuData.fromFirestore(serialized);
 
         expect(restored.menuTitle, equals(menuData.menuTitle));
-        expect(restored.createdForDate, equals(menuData.createdForDate));
+        // Firestore round-trip converts to UTC
+        expect(restored.createdForDate.toUtc(),
+            equals(menuData.createdForDate.toUtc()));
         expect(restored.menuNotes, equals(menuData.menuNotes));
         expect(restored.favoriteRecipeIds, equals(menuData.favoriteRecipeIds));
         expect(restored.originalPrompt, equals(menuData.originalPrompt));

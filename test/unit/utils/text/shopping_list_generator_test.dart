@@ -423,7 +423,7 @@ void main() {
 
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(2));
-        expect(result, contains('1 pepp')); // Normalized by removing -ar ending
+        expect(result, contains('1 peppar')); // peppar is invariant in Swedish
         expect(result, contains('1 salt'));
       });
 

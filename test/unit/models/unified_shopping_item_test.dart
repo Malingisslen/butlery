@@ -582,7 +582,8 @@ void main() {
         expect(item.name, equals('Minimal'));
         expect(item.amount, equals(1.0));
         expect(item.unit, equals('')); // Default empty string
-        expect(item.category, equals('Övrigt')); // Default category
+        expect(
+            item.category, equals('other')); // Default ShoppingCategory.other
         expect(item.bought, isFalse); // Default
         expect(item.note, isNull);
         expect(item.priority, equals(3)); // Default medium priority

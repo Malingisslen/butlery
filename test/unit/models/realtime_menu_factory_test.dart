@@ -1,5 +1,6 @@
 // ignore_for_file: subtype_of_sealed_class
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/realtime/realtime_menu_factory.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
@@ -156,10 +157,7 @@ void main() {
           'isActive': true,
           'metadata': {'key': 'value'},
           'menuTitle': 'Repository Menu',
-          'createdForDate': {
-            '_seconds': 1736899200,
-            '_nanoseconds': 0
-          }, // Firestore timestamp
+          'createdForDate': Timestamp(1736899200, 0), // Firestore timestamp
           'menuSnapshot': {
             'Måndag': [testRecipe1.toFirestore()],
           },
@@ -199,7 +197,7 @@ void main() {
           'lastEditedByDisplayName': 'Test User',
           'createdAt': DateTime.now(),
           'lastEditedAt': DateTime.now(),
-          'createdForDate': {'_seconds': 1736899200, '_nanoseconds': 0},
+          'createdForDate': Timestamp(1736899200, 0),
         };
 
         final result =
@@ -227,7 +225,7 @@ void main() {
           'lastEditedAt': DateTime.now(),
           'lastEditedBy': 'user_123',
           'lastEditedByDisplayName': 'Test',
-          'createdForDate': {'_seconds': 1736899200, '_nanoseconds': 0},
+          'createdForDate': Timestamp(1736899200, 0),
         };
 
         final result = RealtimeMenuFactory.parseRepositoryData(

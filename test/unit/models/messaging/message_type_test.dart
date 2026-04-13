@@ -8,7 +8,7 @@ void main() {
   ModelTestBase.testModelGroup('MessageType', () {
     group('MessageType Enum', () {
       test('should have all expected message types', () {
-        expect(MessageType.values.length, equals(7));
+        expect(MessageType.values.length, equals(8));
         expect(MessageType.values, contains(MessageType.text));
         expect(MessageType.values, contains(MessageType.recipeShare));
         expect(MessageType.values, contains(MessageType.menuShare));
@@ -16,6 +16,7 @@ void main() {
         expect(MessageType.values, contains(MessageType.system));
         expect(MessageType.values, contains(MessageType.image));
         expect(MessageType.values, contains(MessageType.voice));
+        expect(MessageType.values, contains(MessageType.poll));
       });
 
       test('should have correct Swedish display names', () {

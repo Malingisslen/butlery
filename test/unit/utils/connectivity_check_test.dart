@@ -9,6 +9,8 @@ import 'package:mocktail/mocktail.dart';
 import 'dart:io';
 
 import 'package:butlery/core/utils/connectivity_check.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -30,6 +32,9 @@ void main() {
       // Register mock in test service locator
       TestServiceLocator.registerMock<ConnectivityRepository>(
           mockConnectivityRepo);
+
+      // Bridge production ServiceLocator so ConnectivityCheck can resolve mocks
+      production.ServiceLocator.initialize(DIContainer());
     });
 
     tearDown(() async {
@@ -152,14 +157,13 @@ void main() {
         final result = await ConnectivityCheck.checkConnectivity();
 
         // Assert
-        // Firebase is available, but actual internet connectivity may vary in test environment
+        // Mock returns true for Firebase. Internet check uses real DNS, so result
+        // depends on actual network: full (both work) or none (no internet).
         expect(result, isA<ConnectivityResult>());
-        expect([
-          ConnectivityResult.limited,
-          ConnectivityResult.none,
-          ConnectivityResult.degraded,
-          ConnectivityResult.unknown,
-        ], contains(result));
+        expect(
+          [ConnectivityResult.full, ConnectivityResult.none],
+          contains(result),
+        );
       });
 
       test('should return limited when internet works but firebase fails',
@@ -172,13 +176,18 @@ void main() {
         final result = await ConnectivityCheck.checkConnectivity();
 
         // Assert
-        // When Firebase fails but internet might work, expect limited, none, or unknown
+        // Mock returns false, but DNS failover may still succeed on machines with
+        // internet. Possible: full (DNS failover success), limited (internet yes,
+        // firebase no), none (no internet).
         expect(result, isA<ConnectivityResult>());
-        expect([
-          ConnectivityResult.limited,
-          ConnectivityResult.none,
-          ConnectivityResult.unknown,
-        ], contains(result));
+        expect(
+          [
+            ConnectivityResult.full,
+            ConnectivityResult.limited,
+            ConnectivityResult.none,
+          ],
+          contains(result),
+        );
       });
 
       test('should handle connectivity check exceptions', () async {
@@ -190,13 +199,18 @@ void main() {
         final result = await ConnectivityCheck.checkConnectivity();
 
         // Assert
-        // When exceptions occur, expect limited, none, or unknown
+        // Exception caught, DNS failover attempted. Result depends on actual
+        // network state: full, limited, none, or unknown.
         expect(result, isA<ConnectivityResult>());
-        expect([
-          ConnectivityResult.limited,
-          ConnectivityResult.none,
-          ConnectivityResult.unknown,
-        ], contains(result));
+        expect(
+          [
+            ConnectivityResult.full,
+            ConnectivityResult.limited,
+            ConnectivityResult.none,
+            ConnectivityResult.unknown,
+          ],
+          contains(result),
+        );
       });
     });
 

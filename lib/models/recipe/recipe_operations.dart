@@ -1,6 +1,8 @@
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
+const _sentinel = Object();
+
 /// Recipe content operations (ingredients, instructions, state changes).
 class RecipeOperations {
   /// Add ingredient with user tracking
@@ -287,24 +289,29 @@ class RecipeOperations {
     String? title,
     String? description,
     String? mealType,
-    int? portions,
-    int? timeMinutes,
-    double? rating,
-    List<String>? personalTagIds,
-    String? sourceUrl,
+    Object? portions = _sentinel,
+    Object? timeMinutes = _sentinel,
+    Object? rating = _sentinel,
+    Object? personalTagIds = _sentinel,
+    Object? sourceUrl = _sentinel,
     bool? isPublic,
     String? userId,
     String? userDisplayName,
   }) {
+    // Use sentinel pattern for nullable fields to distinguish
+    // "not provided" (keep existing) from "explicitly set to null" (clear).
     return recipe.copyWith(
       title: title,
       description: description,
       mealType: mealType,
-      portions: portions,
-      timeMinutes: timeMinutes,
-      rating: rating,
-      personalTagIds: personalTagIds,
-      sourceUrl: sourceUrl,
+      portions: portions == _sentinel ? recipe.core.portions : portions,
+      timeMinutes:
+          timeMinutes == _sentinel ? recipe.core.timeMinutes : timeMinutes,
+      rating: rating == _sentinel ? recipe.core.rating : rating,
+      personalTagIds: personalTagIds == _sentinel
+          ? recipe.core.personalTagIds
+          : personalTagIds,
+      sourceUrl: sourceUrl == _sentinel ? recipe.core.sourceUrl : sourceUrl,
       isPublic: isPublic,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,

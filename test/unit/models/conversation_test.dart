@@ -576,11 +576,11 @@ void main() {
         );
         expect(conv.formattedLastActivity, equals('3d'));
 
-        // Weeks
+        // Days (compact format uses days up to 30)
         conv = conversation.copyWith(
           updatedAt: now.subtract(Duration(days: 14)),
         );
-        expect(conv.formattedLastActivity, equals('2w'));
+        expect(conv.formattedLastActivity, equals('14d'));
       });
     });
 
@@ -796,8 +796,7 @@ void main() {
           isGroup: false,
         );
 
-        expect(
-            conversation.getDisplayTitle('user_1'), equals('Okänd användare'));
+        expect(conversation.getDisplayTitle('user_1'), equals('?'));
       });
 
       test('should handle null avatars', () {

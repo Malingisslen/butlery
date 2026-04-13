@@ -432,7 +432,7 @@ void main() {
       test('should generate Swedish summary', () {
         // Empty list
         final emptyList = testList.copyWith(items: []);
-        expect(emptyList.summary, equals('Tom lista'));
+        expect(emptyList.summary, equals('Tom handlingslista'));
 
         // One item
         final oneItem = testList.copyWith(
@@ -700,7 +700,7 @@ void main() {
         expect(emptyList.isEmpty, isTrue);
         expect(emptyList.totalItems, equals(0));
         expect(emptyList.completionPercentage, equals(0));
-        expect(emptyList.summary, equals('Tom lista'));
+        expect(emptyList.summary, equals('Tom handlingslista'));
       });
 
       test('should handle Swedish characters in names', () {

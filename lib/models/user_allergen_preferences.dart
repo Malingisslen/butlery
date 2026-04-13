@@ -154,9 +154,27 @@ class UserAllergenPreferences {
   static Set<String>? _parseStringSet(dynamic value) {
     if (value == null) return null;
     if (value is List) {
-      return value.map((e) => e.toString()).toSet();
+      return value.map((e) => _normalizeAllergenKey(e.toString())).toSet();
     }
     return null;
+  }
+
+  /// Normalizes ASCII allergen keys to proper Swedish characters.
+  /// Firestore data may contain ASCII-only keys from older clients or imports.
+  static const _asciiToSwedish = {
+    'mjolk': 'mjölk',
+    'notter': 'nötter',
+    'agg': 'ägg',
+    'tradnotter': 'trädnötter',
+    'kraftdjur': 'kräftdjur',
+    'blotdjur': 'blötdjur',
+    'kott': 'kött',
+    'flask': 'fläsk',
+    'notkott': 'nötkött',
+  };
+
+  static String _normalizeAllergenKey(String key) {
+    return _asciiToSwedish[key] ?? key;
   }
 
   @override

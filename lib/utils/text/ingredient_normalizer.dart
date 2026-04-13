@@ -179,10 +179,18 @@ class IngredientNormalizer {
               .split(RegExp(r'\s+'))
               .any((w) => PreparationWords.shouldRemove(w));
       if (!hasRemovableWord) {
+        // Normalize to singular so plural forms consolidate with their
+        // singular counterparts (e.g. "tomater" → "tomat", "lökar" → "lök").
+        // Only apply if the singular form is also a known ingredient to
+        // prevent false stripping of compound names like "vitpeppar".
+        final singular = SwedishPluralization.normalizeToSingular(cleaned);
+        final useSingular =
+            singular != cleaned && _isKnown(singular, additionalKnown);
+        final normalized = useSingular ? singular : cleaned;
         return NormalizationResult(
-          normalized: cleaned,
+          normalized: normalized,
           isKnown: true,
-          category: KnownIngredients.getCategory(cleaned),
+          category: KnownIngredients.getCategory(normalized),
           original: original,
           confidence: 1.0,
         );

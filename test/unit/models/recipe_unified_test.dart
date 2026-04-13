@@ -987,7 +987,7 @@ void main() {
       });
 
       test('should handle invalid JSON gracefully', () {
-        // Missing required field
+        // Missing required field — fromJson uses safeString defaults
         final invalidJson = {
           'id': 'test',
           // Missing title
@@ -997,11 +997,10 @@ void main() {
           'mealType': 'Lunch',
         };
 
-        // Should throw when trying to deserialize
-        expect(
-          () => RecipeCore.fromJson(invalidJson),
-          throwsA(isA<TypeError>()),
-        );
+        // safeString returns '' for missing fields — resilient deserialization
+        final recipe = RecipeCore.fromJson(invalidJson);
+        expect(recipe.title, equals(''));
+        expect(recipe.description, equals('Test'));
       });
     });
   });
