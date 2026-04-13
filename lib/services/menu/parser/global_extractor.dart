@@ -149,7 +149,20 @@ String extractAllergenNegations(
         final allergenKey = nouns[tok];
         final formatKey = formats[tok];
         final themeKey = themes[tok];
-        if (allergenKey == null && formatKey == null && themeKey == null) break;
+        if (allergenKey == null && formatKey == null && themeKey == null) {
+          // Not a known tag — capture as raw ingredient exclusion word
+          if (tok.length >= 3) {
+            excludeTags.add(tok);
+            understood.add(TraceEntry(
+              label: 'inget $tok',
+              category: TraceCategory.format,
+            ));
+            found = true;
+            cursor += tok.length;
+            spanEnd = cursor;
+          }
+          break;
+        }
         if (allergenKey != null) {
           avoid.add(allergenKey);
           understood.add(TraceEntry(

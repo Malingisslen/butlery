@@ -326,9 +326,16 @@ class MenuService extends BaseService {
     for (final d in p.globalDietaryRequire) {
       if (tr.getDietaryStatus(d) != TriState.free) return false;
     }
-    if (p.globalExcludedTags.isNotEmpty &&
-        p.globalExcludedTags.any(tr.tags.contains)) {
-      return false;
+    if (p.globalExcludedTags.isNotEmpty) {
+      // Check tags first
+      if (p.globalExcludedTags.any(tr.tags.contains)) return false;
+      // Fall back to ingredient text matching for non-tag words
+      final ingredients = r.core.ingredientsNormalized;
+      if (ingredients != null && ingredients.isNotEmpty) {
+        for (final word in p.globalExcludedTags) {
+          if (ingredients.any((i) => i.contains(word))) return false;
+        }
+      }
     }
     return true;
   }
