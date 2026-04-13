@@ -330,10 +330,10 @@ class MenuService extends BaseService {
       // Check tags first
       if (p.globalExcludedTags.any(tr.tags.contains)) return false;
       // Fall back to ingredient text matching for non-tag words
-      final ingredients = r.core.ingredientsNormalized;
-      if (ingredients != null && ingredients.isNotEmpty) {
-        for (final word in p.globalExcludedTags) {
-          if (ingredients.any((i) => i.contains(word))) return false;
+      final ingredients = r.core.ingredientsNormalized ?? r.core.ingredients;
+      for (final word in p.globalExcludedTags) {
+        if (ingredients.any((i) => i.toLowerCase().contains(word))) {
+          return false;
         }
       }
     }
