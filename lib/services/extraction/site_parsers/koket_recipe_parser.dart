@@ -25,13 +25,83 @@ class KoketRecipeParser extends RecipeSiteParser {
   @override
   Map<String, dynamic> enhanceRecipe(Map<String, dynamic> recipe, String html) {
     try {
-      // Only clean up formatting quirks, no additional field extraction
+      final doc = html_parser.parse(html);
+
+      // Extract site-specific fields from HTML
+      recipe = _extractKoketEnhancements(recipe, doc);
+
+      // Normalize author from JSON-LD nested object to plain string
+      final author = recipe['author'];
+      if (author is Map && author['name'] != null) {
+        recipe['author'] = author['name'];
+      }
+
+      // Clean up formatting quirks
       recipe = _cleanKoketFormatting(recipe);
       return recipe;
     } catch (e) {
       // Enhancement failed, return recipe as-is
       return recipe;
     }
+  }
+
+  /// Extract Koket-specific enhancements from HTML
+  Map<String, dynamic> _extractKoketEnhancements(
+      Map<String, dynamic> recipe, Document doc) {
+    // Difficulty level
+    if (recipe['difficulty'] == null) {
+      final diffEl = doc.querySelector('.recipe-difficulty');
+      if (diffEl != null) {
+        final difficulty = extractDifficulty(diffEl.text);
+        if (difficulty != null) recipe['difficulty'] = difficulty;
+      }
+    }
+
+    // Rating from JSON-LD aggregateRating
+    final aggRating = recipe['aggregateRating'];
+    if (aggRating is Map && recipe['rating'] == null) {
+      final score = double.tryParse(aggRating['ratingValue']?.toString() ?? '');
+      final count = int.tryParse(aggRating['reviewCount']?.toString() ?? '');
+      if (score != null && count != null) {
+        recipe['rating'] = {'score': score, 'count': count};
+      }
+    }
+
+    // Cooking tips from HTML
+    if (recipe['cookingTips'] == null) {
+      final tips = <String>[];
+      for (final selector in [
+        '.recipe-tips p',
+        '.recipe-tips',
+        '.user-tips p',
+        '.user-tips',
+      ]) {
+        for (final el in doc.querySelectorAll(selector)) {
+          final text = el.text.trim();
+          if (text.isNotEmpty) {
+            // Strip "Tips:" / "Tips från användare:" prefix
+            final cleaned =
+                text.replaceFirst(RegExp(r'^Tips[^:]*:\s*'), '').trim();
+            if (cleaned.isNotEmpty) tips.add(cleaned);
+          }
+        }
+        if (tips.isNotEmpty) break;
+      }
+      if (tips.isNotEmpty) recipe['cookingTips'] = tips;
+    }
+
+    // Seasonal/holiday tags from HTML
+    if (recipe['tags'] == null) {
+      final tagEls = doc.querySelectorAll('.recipe-tags span');
+      if (tagEls.isNotEmpty) {
+        recipe['tags'] = tagEls
+            .map((e) => e.text.trim())
+            .where((t) => t.isNotEmpty)
+            .toList();
+      }
+    }
+
+    return recipe;
   }
 
   @override
@@ -63,6 +133,13 @@ class KoketRecipeParser extends RecipeSiteParser {
       if (portions != null) recipe['recipeYield'] = portions;
       if (time != null) recipe['totalTime'] = time;
       if (image != null) recipe['image'] = image;
+
+      // Extract difficulty from CSS fallback
+      final diffEl = doc.querySelector('.recipe-difficulty');
+      if (diffEl != null) {
+        final difficulty = extractDifficulty(diffEl.text);
+        if (difficulty != null) recipe['difficulty'] = difficulty;
+      }
 
       return recipe;
     } catch (e) {

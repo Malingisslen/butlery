@@ -13,10 +13,9 @@ import '../../infrastructure/di/test_service_locator.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
-
-// ============= USING CENTRALIZED MOCKS =============
-// Removed local mock classes:
-// - FakeFile (now using centralized FakeFile from production_mocks.dart)
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:get_it/get_it.dart';
 
 void main() {
   group('StorageService', () {
@@ -43,6 +42,20 @@ void main() {
       // calls ServiceLocator.get() but only TestServiceLocator was initialized
       final productionContainer = DIContainer();
       prod_locator.ServiceLocator.initialize(productionContainer);
+
+      // Configure auth so executeServiceOperation's requiresAuth check passes.
+      // The production ServiceLocator resolves from the same GetIt.instance that
+      // TestServiceLocator registered mocks into.
+      final authRepo =
+          GetIt.instance.get<AuthRepository>() as MockAuthRepository;
+      authRepo.setAuthState(userId: 'test_user_123');
+
+      // Register OfflineService mock so requiresNetwork check passes.
+      if (!GetIt.instance.isRegistered<OfflineService>()) {
+        final mockOffline = MockOfflineService();
+        when(() => mockOffline.isOnline).thenReturn(true);
+        GetIt.instance.registerSingleton<OfflineService>(mockOffline);
+      }
 
       // Create mocks
       mockRepository = MockStorageRepository();

@@ -6,12 +6,17 @@ import 'package:butlery/models/recipe_unified.dart';
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/builders/recipe_builder.dart';
-import '../../../../infrastructure/mocks/production_mocks.dart';
+
+// Local pure mock — the centralized MockUnifiedRecipeService has concrete
+// @override methods (e.g. createRecipe(Recipe)) that clash with mocktail's
+// when() for the named-parameter PersonalRecipeDelegate.createRecipe signature.
+class MockPersonalRecipeDelegate extends Mock
+    implements PersonalRecipeDelegate {}
 
 void main() {
   group('PersonalRecipeOperations', () {
     late PersonalRecipeOperations operations;
-    late MockUnifiedRecipeService mockParent;
+    late MockPersonalRecipeDelegate mockDelegate;
     late Recipe testRecipe;
 
     setUpAll(() async {
@@ -22,25 +27,15 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
 
-      // Create mock parent service
-      mockParent = MockUnifiedRecipeService();
+      mockDelegate = MockPersonalRecipeDelegate();
 
-      // Create test recipe
       testRecipe = RecipeBuilder()
           .withId('recipe-123')
           .withTitle('Swedish Meatballs')
           .withDescription('Traditional Swedish meatballs')
           .build();
 
-      // Configure default mock behavior
-      mockParent.setRecipeState(
-        recipes: [],
-        currentUserId: 'test-user-123',
-        currentUserDisplayName: 'Test User',
-      );
-
-      // Create operations instance
-      operations = PersonalRecipeOperations(mockParent);
+      operations = PersonalRecipeOperations(mockDelegate);
     });
 
     tearDown(() async {
@@ -54,15 +49,13 @@ void main() {
 
     group('Initialization', () {
       test('should initialize with parent service', () {
-        // Assert
         expect(operations, isNotNull);
       });
     });
 
     group('Recipe CRUD Operations', () {
       test('should add unified recipe successfully', () async {
-        // Arrange
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
@@ -72,17 +65,15 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'new-recipe-id');
 
-        // Act
         final result = await operations.addUnifiedRecipe(testRecipe);
 
-        // Assert
         expect(result.isSuccess, isTrue);
         expect(result.message, contains('successfully'));
-        verify(() => mockParent.createRecipe(
+        verify(() => mockDelegate.createRecipe(
               title: testRecipe.title,
               description: testRecipe.description,
               ingredients: testRecipe.ingredients,
@@ -98,8 +89,7 @@ void main() {
       });
 
       test('should handle add recipe failure', () async {
-        // Arrange
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
@@ -109,69 +99,57 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => null);
 
-        // Act
         final result = await operations.addUnifiedRecipe(testRecipe);
 
-        // Assert
         expect(result.isSuccess, isFalse);
         expect(result.message, contains('Failed'));
       });
 
       test('should update unified recipe successfully', () async {
-        // Arrange
-        when(() => mockParent.updateRecipe(any()))
+        when(() => mockDelegate.updateRecipe(any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.updateUnifiedRecipe(testRecipe);
 
-        // Assert
         expect(result.isSuccess, isTrue);
         expect(result.message, contains('successfully'));
-        verify(() => mockParent.updateRecipe(testRecipe)).called(1);
+        verify(() => mockDelegate.updateRecipe(testRecipe)).called(1);
       });
 
       test('should handle update recipe failure', () async {
-        // Arrange
-        when(() => mockParent.updateRecipe(any()))
+        when(() => mockDelegate.updateRecipe(any()))
             .thenAnswer((_) async => false);
 
-        // Act
         final result = await operations.updateUnifiedRecipe(testRecipe);
 
-        // Assert
         expect(result.isSuccess, isFalse);
         expect(result.message, contains('Failed'));
       });
 
       test('should delete recipe', () async {
-        // Arrange
-        when(() => mockParent.deleteRecipe(any()))
+        when(() => mockDelegate.deleteRecipe(any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.deleteRecipe('recipe-123');
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.deleteRecipe('recipe-123')).called(1);
+        verify(() => mockDelegate.deleteRecipe('recipe-123')).called(1);
       });
     });
 
     group('Batch Operations', () {
       test('should add multiple recipes successfully', () async {
-        // Arrange
         final recipes = [
           RecipeBuilder().withTitle('Recipe 1').build(),
           RecipeBuilder().withTitle('Recipe 2').build(),
           RecipeBuilder().withTitle('Recipe 3').build(),
         ];
 
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
@@ -181,17 +159,16 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'new-id');
 
-        // Act
         final result = await operations.addMultipleUnifiedRecipes(recipes);
 
-        // Assert
+        // Production returns '3 recipes imported' (English hardcoded)
         expect(result.isSuccess, isTrue);
-        expect(result.message, contains('3 recept importerade'));
-        verify(() => mockParent.createRecipe(
+        expect(result.message, contains('3 recipes imported'));
+        verify(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
@@ -201,13 +178,12 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).called(3);
       });
 
       test('should handle partial batch success', () async {
-        // Arrange
         final recipes = [
           RecipeBuilder().withTitle('Recipe 1').build(),
           RecipeBuilder().withTitle('Recipe 2').build(),
@@ -215,7 +191,7 @@ void main() {
         ];
 
         var callCount = 0;
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
@@ -225,31 +201,27 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async {
           callCount++;
-          return callCount <= 2
-              ? 'new-id'
-              : null; // First 2 succeed, last fails
+          return callCount <= 2 ? 'new-id' : null;
         });
 
-        // Act
         final result = await operations.addMultipleUnifiedRecipes(recipes);
 
-        // Assert
+        // Production returns '2/3 recipes imported...'
         expect(result.isSuccess, isTrue);
-        expect(result.message, contains('2 av 3 recept importerade'));
+        expect(result.message, contains('2/3 recipes imported'));
       });
 
       test('should handle complete batch failure', () async {
-        // Arrange
         final recipes = [
           RecipeBuilder().withTitle('Recipe 1').build(),
           RecipeBuilder().withTitle('Recipe 2').build(),
         ];
 
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
@@ -259,23 +231,22 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => null);
 
-        // Act
         final result = await operations.addMultipleUnifiedRecipes(recipes);
 
-        // Assert
+        // Production uses AppLocale.current.errorCouldNotImportRecipes
+        // Default locale is Swedish: 'Kunde inte importera recept'
         expect(result.isSuccess, isFalse);
-        expect(result.message, contains('Kunde inte importera några recept'));
+        expect(result.message, contains('Kunde inte importera recept'));
       });
     });
 
     group('Content Management', () {
       test('should update recipe content', () async {
-        // Arrange
-        when(() => mockParent.updateRecipeContent(
+        when(() => mockDelegate.updateRecipeContent(
               recipeId: any(named: 'recipeId'),
               title: any(named: 'title'),
               description: any(named: 'description'),
@@ -285,20 +256,18 @@ void main() {
               rating: any(named: 'rating'),
               ingredients: any(named: 'ingredients'),
               instructions: any(named: 'instructions'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.updateRecipeContent(
           recipeId: 'recipe-123',
           title: 'Updated Title',
           description: 'Updated Description',
         );
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.updateRecipeContent(
+        verify(() => mockDelegate.updateRecipeContent(
               recipeId: 'recipe-123',
               title: 'Updated Title',
               description: 'Updated Description',
@@ -306,111 +275,90 @@ void main() {
       });
 
       test('should add ingredient', () async {
-        // Arrange
-        when(() => mockParent.addIngredient(any(), any()))
+        when(() => mockDelegate.addIngredient(any(), any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result =
             await operations.addIngredient('recipe-123', '2 dl mjölk');
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.addIngredient('recipe-123', '2 dl mjölk'))
+        verify(() => mockDelegate.addIngredient('recipe-123', '2 dl mjölk'))
             .called(1);
       });
 
       test('should update ingredient', () async {
-        // Arrange
-        when(() => mockParent.updateIngredient(any(), any(), any()))
+        when(() => mockDelegate.updateIngredient(any(), any(), any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result =
             await operations.updateIngredient('recipe-123', 0, '3 dl mjölk');
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.updateIngredient('recipe-123', 0, '3 dl mjölk'))
+        verify(() =>
+                mockDelegate.updateIngredient('recipe-123', 0, '3 dl mjölk'))
             .called(1);
       });
 
       test('should remove ingredient', () async {
-        // Arrange
-        when(() => mockParent.removeIngredient(any(), any()))
+        when(() => mockDelegate.removeIngredient(any(), any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.removeIngredient('recipe-123', 0);
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.removeIngredient('recipe-123', 0)).called(1);
+        verify(() => mockDelegate.removeIngredient('recipe-123', 0)).called(1);
       });
 
       test('should add instruction', () async {
-        // Arrange
-        when(() => mockParent.addInstruction(any(), any()))
+        when(() => mockDelegate.addInstruction(any(), any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.addInstruction(
             'recipe-123', 'Värm ugnen till 200°C');
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.addInstruction(
+        verify(() => mockDelegate.addInstruction(
             'recipe-123', 'Värm ugnen till 200°C')).called(1);
       });
 
       test('should update instruction', () async {
-        // Arrange
-        when(() => mockParent.updateInstruction(any(), any(), any()))
+        when(() => mockDelegate.updateInstruction(any(), any(), any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.updateInstruction(
             'recipe-123', 0, 'Värm ugnen till 225°C');
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.updateInstruction(
+        verify(() => mockDelegate.updateInstruction(
             'recipe-123', 0, 'Värm ugnen till 225°C')).called(1);
       });
 
       test('should remove instruction', () async {
-        // Arrange
-        when(() => mockParent.removeInstruction(any(), any()))
+        when(() => mockDelegate.removeInstruction(any(), any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.removeInstruction('recipe-123', 0);
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.removeInstruction('recipe-123', 0)).called(1);
+        verify(() => mockDelegate.removeInstruction('recipe-123', 0)).called(1);
       });
     });
 
     group('Recipe Lifecycle', () {
       test('should mark recipe as cooked', () async {
-        // Arrange
-        when(() => mockParent.markAsCooked(any()))
+        when(() => mockDelegate.markAsCooked(any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.markAsCooked('recipe-123');
 
-        // Assert
         expect(result, isTrue);
-        verify(() => mockParent.markAsCooked('recipe-123')).called(1);
+        verify(() => mockDelegate.markAsCooked('recipe-123')).called(1);
       });
     });
 
     group('Legacy Compatibility', () {
       test('should add legacy recipe', () async {
-        // Arrange
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
@@ -420,16 +368,14 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'new-recipe-id');
 
-        // Act
         final result = await operations.addLegacyRecipe(testRecipe);
 
-        // Assert
         expect(result.isSuccess, isTrue);
-        verify(() => mockParent.createRecipe(
+        verify(() => mockDelegate.createRecipe(
               title: testRecipe.title,
               description: testRecipe.description,
               ingredients: testRecipe.ingredients,
@@ -445,90 +391,92 @@ void main() {
       });
 
       test('should update legacy recipe', () async {
-        // Arrange
-        when(() => mockParent.updateRecipe(any()))
+        when(() => mockDelegate.updateRecipe(any()))
             .thenAnswer((_) async => true);
 
-        // Act
         final result = await operations.updateLegacyRecipe(testRecipe);
 
-        // Assert
         expect(result.isSuccess, isTrue);
-        verify(() => mockParent.updateRecipe(testRecipe)).called(1);
+        verify(() => mockDelegate.updateRecipe(testRecipe)).called(1);
       });
     });
 
     group('Edge Cases', () {
       test('should handle empty batch import', () async {
-        // Act
         final result = await operations.addMultipleUnifiedRecipes([]);
 
-        // Assert
+        // Production: all success path with 0 recipes -> '0 recipes imported'
         expect(result.isSuccess, isTrue);
-        expect(result.message, equals('Alla 0 recept importerade'));
+        expect(result.message, equals('0 recipes imported'));
       });
 
       test('should handle recipe with minimal data', () async {
-        // Arrange
         final minimalRecipe = RecipeBuilder()
             .withTitle('Simple Recipe')
             .withDescription('')
             .withIngredients([]).withInstructions([]).build();
 
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
               instructions: any(named: 'instructions'),
               imageUrls: any(named: 'imageUrls'),
               mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              rating: any(named: 'rating'),
+              personalTagIds: any(named: 'personalTagIds'),
+              sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'recipe-id');
 
-        // Act
         final result = await operations.addUnifiedRecipe(minimalRecipe);
 
-        // Assert
         expect(result.isSuccess, isTrue);
       });
 
       test('should handle special characters in recipe content', () async {
-        // Arrange
         final specialRecipe = RecipeBuilder()
             .withTitle('Räksmörgås & lax')
             .withDescription('En "klassisk" rätt med <special> tecken')
             .withIngredients(['100g räkor & lax', '1 msk "majonnäs"']).build();
 
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
               instructions: any(named: 'instructions'),
               imageUrls: any(named: 'imageUrls'),
               mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              rating: any(named: 'rating'),
+              personalTagIds: any(named: 'personalTagIds'),
+              sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'recipe-id');
 
-        // Act
         final result = await operations.addUnifiedRecipe(specialRecipe);
 
-        // Assert
         expect(result.isSuccess, isTrue);
       });
 
       test('should handle add recipe exception', () async {
-        // Arrange
-        when(() => mockParent.createRecipe(
+        when(() => mockDelegate.createRecipe(
               title: any(named: 'title'),
               description: any(named: 'description'),
               ingredients: any(named: 'ingredients'),
               instructions: any(named: 'instructions'),
               imageUrls: any(named: 'imageUrls'),
               mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              rating: any(named: 'rating'),
+              personalTagIds: any(named: 'personalTagIds'),
+              sourceUrl: any(named: 'sourceUrl'),
             )).thenThrow(Exception('Database error'));
 
-        // Act
         final result = await operations.addUnifiedRecipe(testRecipe);
 
-        // Assert
         expect(result.isSuccess, isFalse);
         expect(result.message, contains('Database error'));
       });

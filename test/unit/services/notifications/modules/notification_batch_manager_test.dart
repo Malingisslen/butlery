@@ -121,6 +121,9 @@ void main() {
 
       when(() => mockRepository.removeBatch(any())).thenAnswer((_) async {});
 
+      when(() => mockRepository.getBatchByKey(any()))
+          .thenAnswer((_) async => null);
+
       // Create the REAL NotificationBatchManager with mocked dependencies
       batchManager = NotificationBatchManager(
         userId: 'test-user-123',
@@ -413,6 +416,8 @@ void main() {
 
         when(() => mockRepository.getPendingBatches())
             .thenAnswer((_) async => [batch]);
+        when(() => mockRepository.getBatchByKey('spam-test'))
+            .thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('spam-test');
@@ -444,6 +449,8 @@ void main() {
 
         when(() => mockRepository.getPendingBatches())
             .thenAnswer((_) async => [batch]);
+        when(() => mockRepository.getBatchByKey('rapid-test'))
+            .thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('rapid-test');
@@ -476,6 +483,8 @@ void main() {
 
         when(() => mockRepository.getPendingBatches())
             .thenAnswer((_) async => [batch]);
+        when(() => mockRepository.getBatchByKey('legitimate-test'))
+            .thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('legitimate-test');
@@ -497,6 +506,10 @@ void main() {
 
         when(() => mockRepository.getPendingBatches())
             .thenAnswer((_) async => batches);
+        for (final b in batches) {
+          when(() => mockRepository.getBatchByKey(b.batchKey))
+              .thenAnswer((_) async => b);
+        }
 
         // Act
         await batchManager.processAllPendingBatches();
@@ -521,6 +534,8 @@ void main() {
 
         when(() => mockRepository.getPendingBatches())
             .thenAnswer((_) async => [batch]);
+        when(() => mockRepository.getBatchByKey('combine-test'))
+            .thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('combine-test');
@@ -566,6 +581,8 @@ void main() {
 
           when(() => mockRepository.getPendingBatches())
               .thenAnswer((_) async => [batch]);
+          when(() => mockRepository.getBatchByKey('category-${category.name}'))
+              .thenAnswer((_) async => batch);
 
           // Act
           sentBatches.clear();
@@ -603,6 +620,8 @@ void main() {
 
         when(() => mockRepository.getPendingBatches())
             .thenAnswer((_) async => [batch]);
+        when(() => mockRepository.getBatchByKey('single-test'))
+            .thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('single-test');
@@ -668,6 +687,10 @@ void main() {
 
         when(() => mockRepository.getPendingBatches())
             .thenAnswer((_) async => batches);
+        for (final b in batches) {
+          when(() => mockRepository.getBatchByKey(b.batchKey))
+              .thenAnswer((_) async => b);
+        }
 
         // Make second batch fail
         int callCount = 0;
@@ -716,6 +739,8 @@ void main() {
         final batch = createTestBatch(batchKey: 'callback-test');
         when(() => mockRepository.getPendingBatches())
             .thenAnswer((_) async => [batch]);
+        when(() => mockRepository.getBatchByKey('callback-test'))
+            .thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('callback-test');

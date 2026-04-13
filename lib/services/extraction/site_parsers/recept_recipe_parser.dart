@@ -27,13 +27,94 @@ class ReceptRecipeParser extends RecipeSiteParser {
   @override
   Map<String, dynamic> enhanceRecipe(Map<String, dynamic> recipe, String html) {
     try {
-      // Only clean up formatting quirks, no additional field extraction
+      final doc = html_parser.parse(html);
+
+      // Extract site-specific fields from HTML
+      recipe = _extractReceptEnhancements(recipe, doc);
+
+      // Normalize author from JSON-LD nested object to plain string
+      final author = recipe['author'];
+      if (author is Map && author['name'] != null) {
+        recipe['author'] = author['name'];
+      }
+
+      // Clean up formatting quirks
       recipe = _cleanReceptFormatting(recipe);
       return recipe;
     } catch (e) {
       // Enhancement failed, return recipe as-is
       return recipe;
     }
+  }
+
+  /// Extract Recept-specific enhancements from HTML
+  Map<String, dynamic> _extractReceptEnhancements(
+      Map<String, dynamic> recipe, Document doc) {
+    // Difficulty level
+    if (recipe['difficulty'] == null) {
+      final diffEl = doc.querySelector('.recipe-difficulty');
+      if (diffEl != null) {
+        final difficulty = extractDifficulty(diffEl.text);
+        if (difficulty != null) recipe['difficulty'] = difficulty;
+      }
+    }
+
+    // Category (meal type) from HTML or JSON-LD
+    if (recipe['category'] == null) {
+      final catEl = doc.querySelector('.recipe-category');
+      if (catEl != null) {
+        final cat = catEl.text.trim();
+        if (cat.isNotEmpty) recipe['category'] = cat;
+      }
+      // Fallback: use JSON-LD recipeCategory
+      recipe['category'] ??= recipe['recipeCategory'];
+    }
+
+    // Cuisine from HTML or JSON-LD
+    if (recipe['cuisine'] == null) {
+      final cuisineEl = doc.querySelector('.recipe-cuisine');
+      if (cuisineEl != null) {
+        final cuisine = cuisineEl.text.trim();
+        if (cuisine.isNotEmpty) recipe['cuisine'] = cuisine;
+      }
+      // Fallback: use JSON-LD recipeCuisine
+      recipe['cuisine'] ??= recipe['recipeCuisine'];
+    }
+
+    // Cooking tips from HTML
+    if (recipe['cookingTips'] == null) {
+      final tips = <String>[];
+      for (final selector in ['.recipe-tips p', '.recipe-tips']) {
+        for (final el in doc.querySelectorAll(selector)) {
+          final text = el.text.trim();
+          if (text.isNotEmpty) {
+            final cleaned =
+                text.replaceFirst(RegExp(r'^Tips[^:]*:\s*'), '').trim();
+            if (cleaned.isNotEmpty) tips.add(cleaned);
+          }
+        }
+        if (tips.isNotEmpty) break;
+      }
+      if (tips.isNotEmpty) recipe['cookingTips'] = tips;
+    }
+
+    // Serving suggestions from HTML
+    if (recipe['servingSuggestions'] == null) {
+      final suggestions = <String>[];
+      for (final selector in [
+        '.serving-suggestions p',
+        '.serving-suggestions'
+      ]) {
+        for (final el in doc.querySelectorAll(selector)) {
+          final text = el.text.trim();
+          if (text.isNotEmpty) suggestions.add(text);
+        }
+        if (suggestions.isNotEmpty) break;
+      }
+      if (suggestions.isNotEmpty) recipe['servingSuggestions'] = suggestions;
+    }
+
+    return recipe;
   }
 
   @override
@@ -65,6 +146,20 @@ class ReceptRecipeParser extends RecipeSiteParser {
       if (portions != null) recipe['recipeYield'] = portions;
       if (time != null) recipe['totalTime'] = time;
       if (image != null) recipe['image'] = image;
+
+      // Extract difficulty from CSS fallback
+      final diffEl = doc.querySelector('.recipe-difficulty');
+      if (diffEl != null) {
+        final difficulty = extractDifficulty(diffEl.text);
+        if (difficulty != null) recipe['difficulty'] = difficulty;
+      }
+
+      // Extract category from CSS fallback
+      final catEl = doc.querySelector('.recipe-category');
+      if (catEl != null) {
+        final cat = catEl.text.trim();
+        if (cat.isNotEmpty) recipe['category'] = cat;
+      }
 
       return recipe;
     } catch (e) {
