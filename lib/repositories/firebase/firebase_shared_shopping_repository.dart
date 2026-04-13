@@ -76,14 +76,17 @@ class FirebaseSharedShoppingRepository
     SharedShoppingDismissalRepository? dismissalRepository,
   })  : _viewRepository = viewRepository ??
             SharedShoppingViewRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         _engagementRepository = engagementRepository ??
             SharedShoppingEngagementRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         _dismissalRepository = dismissalRepository ??
             SharedShoppingDismissalRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         super(
@@ -113,7 +116,7 @@ class FirebaseSharedShoppingRepository
   String get resourceType => 'shared_shopping_list';
 
   @override
-  List<String> get createRequiredFields => ['listItems', 'listName'];
+  List<String> get createRequiredFields => ['listName'];
 
   @override
   String getContentTitle(SharedShoppingList entity) => entity.listName;

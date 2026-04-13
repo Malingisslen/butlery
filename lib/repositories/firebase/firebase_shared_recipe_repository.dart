@@ -74,14 +74,17 @@ class FirebaseSharedRecipeRepository
     SharedRecipeDismissalRepository? dismissalRepository,
   })  : _viewRepository = viewRepository ??
             SharedRecipeViewRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         _engagementRepository = engagementRepository ??
             SharedRecipeEngagementRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         _dismissalRepository = dismissalRepository ??
             SharedRecipeDismissalRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         super(

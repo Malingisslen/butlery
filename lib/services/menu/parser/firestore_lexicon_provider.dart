@@ -1,8 +1,3 @@
-/// [LexiconProvider] backed by Firestore via [FirebaseMenuLexiconRepository].
-///
-/// Returns a partial [Lexicon] containing only the categories that have
-/// overrides in Firestore. The caller merges this with the code defaults
-/// via [CompositeLexiconProvider].
 library;
 
 import 'package:butlery/repositories/firebase/firebase_menu_lexicon_repository.dart';

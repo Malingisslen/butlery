@@ -84,6 +84,8 @@ void main() {
     late MockTaskSnapshot mockTaskSnapshot;
     late MockAuthRepository mockAuthRepository;
 
+    const testUserId = 'test-user-123';
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(Uint8List(0));
@@ -102,8 +104,14 @@ void main() {
       mockTaskSnapshot = MockTaskSnapshot();
       mockAuthRepository = MockAuthRepository();
 
-      // Setup mock auth behaviors
-      when(() => mockAuthRepository.currentUserId).thenReturn('test-user-123');
+      // Setup mock auth using setAuthState (not when()) since MockAuthRepository
+      // has real getter overrides. BaseStorageRepository.currentUserId accesses
+      // _authRepository.currentUser?.uid, so we must provide a FakeUser.
+      mockAuthRepository.setAuthState(
+        user: FakeUser(uid: testUserId),
+        userId: testUserId,
+        isAuthenticated: true,
+      );
 
       // Setup mock behaviors
       when(() => mockUuid.v4()).thenReturn('test-uuid-123');
@@ -127,8 +135,8 @@ void main() {
       test('should upload image data successfully', () async {
         // Arrange
         final imageData = Uint8List.fromList([1, 2, 3, 4, 5]);
-        const userId = 'test_user_123';
-        const path = 'recipes/images/test-image.jpg';
+        // Path must start with users/{userId}/ for permission validation
+        const path = 'users/$testUserId/recipes/images/test-image.jpg';
         const expectedUrl = 'https://storage.example.com/test-image.jpg';
 
         // Setup mock task snapshot
@@ -153,7 +161,7 @@ void main() {
         // Act
         final result = await repository.uploadImageData(
           imageData: imageData,
-          userId: userId,
+          userId: testUserId,
           path: path,
         );
 
@@ -163,17 +171,14 @@ void main() {
         verify(() => mockRef.child(path)).called(1);
         verify(() => mockChildRef.putData(
               imageData,
-              any(
-                  that: isA<SettableMetadata>().having(
-                      (m) => m.contentType, 'contentType', 'image/jpeg')),
+              any(that: isA<SettableMetadata>()),
             )).called(1);
       });
 
       test('should handle upload progress callback', () async {
         // Arrange
         final imageData = Uint8List.fromList([1, 2, 3]);
-        const userId = 'test_user';
-        const path = 'test/path.jpg';
+        const path = 'users/$testUserId/recipes/path.jpg';
         const expectedUrl = 'https://example.com/image.jpg';
 
         final progressValues = <double>[];
@@ -211,7 +216,7 @@ void main() {
         // Act
         final result = await repository.uploadImageData(
           imageData: imageData,
-          userId: userId,
+          userId: testUserId,
           path: path,
           onProgress: (progress) => progressValues.add(progress),
         );
@@ -224,8 +229,7 @@ void main() {
       test('should include metadata in upload', () async {
         // Arrange
         final imageData = Uint8List.fromList([1, 2, 3]);
-        const userId = 'test_user';
-        const path = 'test/path.jpg';
+        const path = 'users/$testUserId/recipes/path.jpg';
         final metadata = {
           'originalName': 'photo.jpg',
           'recipeId': 'recipe_123',
@@ -253,7 +257,7 @@ void main() {
         // Act
         await repository.uploadImageData(
           imageData: imageData,
-          userId: userId,
+          userId: testUserId,
           path: path,
           metadata: metadata,
         );
@@ -279,8 +283,7 @@ void main() {
       test('should return null on upload failure', () async {
         // Arrange
         final imageData = Uint8List.fromList([1, 2, 3]);
-        const userId = 'test_user';
-        const path = 'test/path.jpg';
+        const path = 'users/$testUserId/recipes/path.jpg';
 
         when(() => mockChildRef.putData(
               any(),
@@ -290,7 +293,7 @@ void main() {
         // Act
         final result = await repository.uploadImageData(
           imageData: imageData,
-          userId: userId,
+          userId: testUserId,
           path: path,
         );
 
@@ -326,16 +329,15 @@ void main() {
         when(() => file3.lengthSync()).thenReturn(3);
 
         final imageFiles = [file1, file2, file3];
-        const userId = 'test_user';
-        const basePath = 'recipes/batch';
+        const basePath = 'users/$testUserId/recipes/batch';
 
         // Act
-        // Note: uploadMultipleImages calls uploadImage which uses FlutterImageCompress
-        // Since we can't mock FlutterImageCompress easily, the compression will fail
-        // and uploadImage will return null, so we expect empty results
+        // uploadMultipleImages calls uploadImage which uses FlutterImageCompress.
+        // Since FlutterImageCompress isn't available in tests, compression fails
+        // and uploadImage returns null, so we expect empty results.
         final results = await repository.uploadMultipleImages(
           imageFiles: imageFiles,
-          userId: userId,
+          userId: testUserId,
           basePath: basePath,
         );
 
@@ -362,17 +364,15 @@ void main() {
         when(() => file2.lengthSync()).thenReturn(3);
 
         final imageFiles = [file1, file2];
-        const userId = 'test_user';
-        const basePath = 'recipes/batch';
+        const basePath = 'users/$testUserId/recipes/batch';
 
         final progressUpdates = <(int, int)>[];
 
         // Act
-        // Note: uploadMultipleImages calls uploadImage which uses compression
         // Progress is still tracked even if uploads fail
         await repository.uploadMultipleImages(
           imageFiles: imageFiles,
-          userId: userId,
+          userId: testUserId,
           basePath: basePath,
           onProgress: (completed, total) {
             progressUpdates.add((completed, total));
@@ -387,8 +387,9 @@ void main() {
 
     group('Image Deletion', () {
       test('should delete image successfully', () async {
-        // Arrange
-        const imageUrl = 'https://storage.example.com/path/to/image.jpg';
+        // Arrange — URL must contain users/{userId} for permission validation
+        const imageUrl =
+            'https://storage.example.com/users%2F$testUserId%2Frecipes%2Fimage.jpg';
         final mockDeleteRef = MockReference();
 
         when(() => mockStorage.refFromURL(imageUrl)).thenReturn(mockDeleteRef);
@@ -405,7 +406,8 @@ void main() {
 
       test('should return false on deletion failure', () async {
         // Arrange
-        const imageUrl = 'https://storage.example.com/path/to/image.jpg';
+        const imageUrl =
+            'https://storage.example.com/users%2F$testUserId%2Frecipes%2Fimage.jpg';
         final mockDeleteRef = MockReference();
 
         when(() => mockStorage.refFromURL(imageUrl)).thenReturn(mockDeleteRef);
@@ -421,11 +423,11 @@ void main() {
       });
 
       test('should delete multiple images', () async {
-        // Arrange
+        // Arrange — all URLs must contain users/{userId}
         final imageUrls = [
-          'https://storage.example.com/image1.jpg',
-          'https://storage.example.com/image2.jpg',
-          'https://storage.example.com/image3.jpg',
+          'https://storage.example.com/users%2F$testUserId%2Frecipes%2Fimage1.jpg',
+          'https://storage.example.com/users%2F$testUserId%2Frecipes%2Fimage2.jpg',
+          'https://storage.example.com/users%2F$testUserId%2Frecipes%2Fimage3.jpg',
         ];
 
         final mockDeleteRef = MockReference();

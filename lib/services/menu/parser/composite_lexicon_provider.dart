@@ -1,7 +1,3 @@
-/// Composes code defaults with Firestore overrides into a single [Lexicon].
-///
-/// Loads both providers and merges via [Lexicon.mergedWith] — Firestore
-/// entries override code defaults per category (shallow merge, overlay wins).
 library;
 
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';

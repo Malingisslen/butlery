@@ -218,6 +218,7 @@ class UIModule implements DIModule {
       container.registerFactory<WeeklyMenuPlanViewModel>(
         () => WeeklyMenuPlanViewModel(
           service: container<WeeklyMenuPlanService>(),
+          recipeService: container<UnifiedRecipeService>(),
         ),
       );
       // Unified Shopping ViewModel - Zero dependencies

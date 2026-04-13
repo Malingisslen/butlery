@@ -74,14 +74,17 @@ class FirebaseSharedMenuRepository
     SharedMenuDismissalRepository? dismissalRepository,
   })  : _viewRepository = viewRepository ??
             SharedMenuViewRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         _engagementRepository = engagementRepository ??
             SharedMenuEngagementRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         _dismissalRepository = dismissalRepository ??
             SharedMenuDismissalRepository(
+              firestore: firestore,
               authRepository: authRepository ?? FirebaseAuthRepository(),
             ),
         super(

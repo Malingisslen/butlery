@@ -715,7 +715,8 @@ void main() {
         expect(stats.lastCommentAt, isNull);
       });
 
-      test('should respect 500 comment limit for statistics', () async {
+      test('should return accurate count via aggregation even above 500',
+          () async {
         // Arrange - Create more than 500 comments
         const recipeId = 'recipe-1';
         for (int i = 0; i < 600; i++) {
@@ -730,8 +731,8 @@ void main() {
         final stats = await repository.getCommentStatistics(recipeId);
 
         // Assert
-        // Should process max 500 comments (though all are top-level in this test)
-        expect(stats.totalComments, lessThanOrEqualTo(500));
+        // count() aggregation returns true count; only likes fetch is limited to 500
+        expect(stats.totalComments, equals(600));
       });
     });
 

@@ -101,12 +101,8 @@ class FirebaseMenuLexiconRepository {
     _cachedAt = null;
   }
 
-  /// Maps a Firestore document ID to a [LexiconCategory].
-  /// Document IDs must match the enum value names exactly.
-  static LexiconCategory? _parseCategory(String docId) {
-    for (final cat in LexiconCategory.values) {
-      if (cat.name == docId) return cat;
-    }
-    return null;
-  }
+  static final _categoryByName = LexiconCategory.values.asNameMap();
+
+  static LexiconCategory? _parseCategory(String docId) =>
+      _categoryByName[docId];
 }

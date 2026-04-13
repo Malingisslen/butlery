@@ -80,7 +80,7 @@ void main() {
         .thenReturn(mockUsersCollection);
     when(() => mockUsersCollection.doc('test-user-123'))
         .thenReturn(mockUserDoc);
-    when(() => mockUserDoc.collection('personalTagIds'))
+    when(() => mockUserDoc.collection('personal_tags'))
         .thenReturn(mockCollection);
   });
 
