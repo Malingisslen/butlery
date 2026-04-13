@@ -562,26 +562,24 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     return _wrapAsDraggable(_MovePayload(entry), chip);
   }
 
-  /// Wraps [child] as draggable. Uses `Draggable` on web (long-press
-  /// doesn't fire with a mouse) and `LongPressDraggable` on mobile.
+  /// Wraps [child] as draggable. On web, uses a short delay (150ms)
+  /// instead of the default 500ms so click-and-drag feels responsive.
   Widget _wrapAsDraggable(_CalendarDragPayload payload, Widget child) {
     final feedback = Material(
       color: Colors.transparent,
       child: SizedBox(width: _kDragFeedbackWidth, child: child),
     );
-    final ghost = Opacity(opacity: 0.4, child: child);
+    final ghost = Opacity(
+      opacity: AppDimensions.opacityMediumLight,
+      child: child,
+    );
 
-    if (kIsWeb) {
-      return Draggable<_CalendarDragPayload>(
-        data: payload,
-        feedback: feedback,
-        childWhenDragging: ghost,
-        child: child,
-      );
-    }
     return LongPressDraggable<_CalendarDragPayload>(
       data: payload,
-      onDragStarted: HapticFeedback.selectionClick,
+      delay: kIsWeb
+          ? const Duration(milliseconds: 150)
+          : const Duration(milliseconds: 500),
+      onDragStarted: kIsWeb ? null : HapticFeedback.selectionClick,
       feedback: feedback,
       childWhenDragging: ghost,
       child: child,

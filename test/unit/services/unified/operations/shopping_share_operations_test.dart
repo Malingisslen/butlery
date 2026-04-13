@@ -4,17 +4,23 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
-// Mock for FirestoreRepository
-class MockFirestoreRepository extends Mock implements FirestoreRepository {}
+// Local pure mock — avoids concrete overrides on centralized MockFirestoreRepository
+class _MockFirestoreRepository extends Mock implements FirestoreRepository {}
+
+const _testUserId = 'test-user-123';
+const _testListId = 'list-123';
 
 void main() {
   group('ShoppingShareOperations', () {
     late ShoppingShareOperations operations;
+    late FakeFirebaseFirestore fakeFirestore;
+    late MockPermissionService mockPermissionService;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -23,15 +29,22 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
 
-      // Create mock FirestoreRepository wrapping FakeFirebaseFirestore
-      final mockFirestoreRepository = MockFirestoreRepository();
-      when(() => mockFirestoreRepository.firestore)
-          .thenReturn(FakeFirebaseFirestore());
+      fakeFirestore = FakeFirebaseFirestore();
 
-      // Create operations instance with required dependencies
+      final mockFirestoreRepository = _MockFirestoreRepository();
+      when(() => mockFirestoreRepository.firestore).thenReturn(fakeFirestore);
+
+      // Configure permission service with authenticated state
+      mockPermissionService = MockPermissionService();
+      mockPermissionService.setPermissionState(
+        isAuthenticated: true,
+        currentUserId: _testUserId,
+        userDisplayName: 'Test User',
+      );
+
       operations = ShoppingShareOperations(
         firestoreRepository: mockFirestoreRepository,
-        permissionService: MockPermissionService(),
+        permissionService: mockPermissionService,
       );
     });
 
@@ -44,9 +57,71 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
+    /// Seed a shopping list doc in FakeFirebaseFirestore so social share can find it.
+    Future<void> seedShoppingList({
+      String listId = _testListId,
+      String userId = _testUserId,
+    }) async {
+      await fakeFirestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.unifiedShoppingLists)
+          .doc(listId)
+          .set({
+        'name': 'Test Shopping List',
+        'items': ['Milk', 'Bread'],
+        'createdAt': DateTime.now().toIso8601String(),
+      });
+    }
+
+    /// Seed a shared content doc for import/view tests.
+    Future<void> seedSharedContent({
+      String sharedListId = 'shared-list-123',
+      String sharedByUserId = 'other-user',
+      List<String> sharedWithUserIds = const [_testUserId],
+    }) async {
+      await fakeFirestore
+          .collection(FirestoreCollections.sharedContent)
+          .doc(sharedListId)
+          .set({
+        'contentType': 'shopping_list',
+        'title': 'Shared List',
+        'listData': {
+          'name': 'Shared List',
+          'items': ['Eggs']
+        },
+        'sharedByUserId': sharedByUserId,
+        'sharedByDisplayName': 'Other User',
+        'sharedAt': DateTime.now().toIso8601String(),
+        'sharedWithUserIds': sharedWithUserIds,
+        'isActive': true,
+        'listType': 'shopping_list_shared',
+      });
+    }
+
+    /// Seed a received-list record for the current user.
+    Future<void> seedReceivedList({
+      String sharedListId = 'shared-list-123',
+      String userId = _testUserId,
+    }) async {
+      await fakeFirestore
+          .collection(FirestoreCollections.userSharedShoppingLists)
+          .doc(userId)
+          .collection(FirestoreCollections.receivedLists)
+          .doc(sharedListId)
+          .set({
+        'sharedListId': sharedListId,
+        'sharedByUserId': 'other-user',
+        'sharedByDisplayName': 'Other User',
+        'listTitle': 'Shared List',
+        'sharedAt': DateTime.now().toIso8601String(),
+        'isViewed': false,
+        'isImported': false,
+      });
+    }
+
     group('Initialization', () {
       test('should initialize with all modules', () {
-        // Assert
         expect(operations, isNotNull);
         expect(operations.export, isNotNull);
         expect(operations.externalShare, isNotNull);
@@ -58,38 +133,26 @@ void main() {
 
     group('Export Operations', () {
       test('should export list as text', () {
-        // Act
         final result = operations.exportListAsText('list-123');
-
-        // Assert
         expect(result, isA<String>());
         expect(result, contains('Shopping List'));
       });
 
       test('should export list as minimal text', () {
-        // Act
         final result = operations.exportListAsMinimalText('list-123');
-
-        // Assert
         expect(result, isA<String>());
         expect(result, contains('List list-123'));
       });
 
       test('should export list as JSON', () {
-        // Act
         final result = operations.exportListAsJson('list-123');
-
-        // Assert
         expect(result, isA<Map<String, dynamic>>());
         expect(result['listId'], equals('list-123'));
         expect(result['items'], isA<List>());
       });
 
       test('should export list as CSV', () {
-        // Act
         final result = operations.exportListAsCSV('list-123');
-
-        // Assert
         expect(result, isA<String>());
         expect(result, contains('Item'));
         expect(result, contains('Quantity'));
@@ -98,59 +161,51 @@ void main() {
 
     group('External Sharing Operations', () {
       test('should share list via external apps', () async {
-        // Act
         final result = await operations.shareList(
           listId: 'list-123',
           format: 'text',
           customMessage: 'Check out my shopping list',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
       test('should share list in JSON format', () async {
-        // Act
         final result = await operations.shareList(
           listId: 'list-123',
           format: 'json',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
       test('should create public link', () async {
-        // Act
+        // createPublicLink needs currentUserId and calls DeepLinkService static
+        // methods. With auth configured, it generates a URL containing the listId.
+        // generateShortUrl falls back to the long URL in test env.
         final result = await operations.createPublicLink('list-123');
 
-        // Assert
-        expect(result, isA<String?>());
+        // The URL is generated by DeepLinkService.generateShoppingListShareLink
+        // which includes the listId as a query param, then generateShortUrl
+        // returns the long URL as fallback. The result should contain 'list-123'.
+        expect(result, isA<String>());
         expect(result, contains('list-123'));
       });
     });
 
     group('Template Operations', () {
       test('should save list as template', () async {
-        // Act
         final result = await operations.saveAsTemplate(
           listId: 'list-123',
           templateName: 'Weekly Shopping',
           description: 'My weekly shopping template',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
       test('should create list from template', () async {
-        // Act
         final result = await operations.createFromTemplate(
           templateId: 'template-456',
           customName: 'This Week Shopping',
         );
-
-        // Assert
         expect(result, isA<String?>());
         expect(result, contains('list'));
       });
@@ -158,26 +213,21 @@ void main() {
 
     group('Import Operations', () {
       test('should import from text', () async {
-        // Arrange
         const text = '''
         Milk - 2 liters
         Bread - 1 loaf
         Eggs - 12
         ''';
 
-        // Act
         final result = await operations.importFromText(
           text: text,
           listName: 'Imported List',
         );
-
-        // Assert
         expect(result, isA<String?>());
         expect(result, contains('list'));
       });
 
       test('should import from JSON', () async {
-        // Arrange
         final jsonData = {
           'name': 'Shopping List',
           'items': [
@@ -186,10 +236,7 @@ void main() {
           ],
         };
 
-        // Act
         final result = await operations.importFromJson(jsonData);
-
-        // Assert
         expect(result, isA<String?>());
         expect(result, contains('list'));
       });
@@ -197,169 +244,190 @@ void main() {
 
     group('Social Sharing Operations', () {
       test('should share with friends', () async {
-        // Act
+        await seedShoppingList();
+
         final result = await operations.shareWithFriends(
-          listId: 'list-123',
+          listId: _testListId,
           friendIds: ['friend-1', 'friend-2'],
           message: 'Check out my shopping list!',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
       test('should share with single friend', () async {
-        // Act
-        final result =
-            await operations.shareListWithFriend('list-123', 'friend-1');
+        await seedShoppingList();
 
-        // Assert
+        final result =
+            await operations.shareListWithFriend(_testListId, 'friend-1');
         expect(result, isTrue);
       });
 
       test('should share with multiple friends', () async {
-        // Act
+        await seedShoppingList();
+
         final result = await operations.shareListWithMultipleFriends(
-          listId: 'list-123',
+          listId: _testListId,
           friendIds: ['friend-1', 'friend-2', 'friend-3'],
           message: 'Shopping together!',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
       test('should share with groups', () async {
-        // Act
+        await seedShoppingList();
+
+        // Seed group docs with friend member lists
+        await fakeFirestore
+            .collection(FirestoreCollections.userFriendCategories)
+            .doc('family')
+            .set({
+          'friendUserIds': ['friend-1', 'friend-2'],
+        });
+        await fakeFirestore
+            .collection(FirestoreCollections.userFriendCategories)
+            .doc('roommates')
+            .set({
+          'friendUserIds': ['friend-3'],
+        });
+
         final result = await operations.shareWithGroups(
-          listId: 'list-123',
+          listId: _testListId,
           groupIds: ['family', 'roommates'],
           message: 'Weekly shopping',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
       test('should share with single group', () async {
-        // Act
-        final result =
-            await operations.shareListWithGroup('list-123', 'family');
+        await seedShoppingList();
 
-        // Assert
+        await fakeFirestore
+            .collection(FirestoreCollections.userFriendCategories)
+            .doc('family')
+            .set({
+          'friendUserIds': ['friend-1'],
+        });
+
+        final result =
+            await operations.shareListWithGroup(_testListId, 'family');
         expect(result, isTrue);
       });
 
       test('should share with multiple groups', () async {
-        // Act
+        await seedShoppingList();
+
+        await fakeFirestore
+            .collection(FirestoreCollections.userFriendCategories)
+            .doc('family')
+            .set({
+          'friendUserIds': ['friend-1'],
+        });
+        await fakeFirestore
+            .collection(FirestoreCollections.userFriendCategories)
+            .doc('friends')
+            .set({
+          'friendUserIds': ['friend-2'],
+        });
+        await fakeFirestore
+            .collection(FirestoreCollections.userFriendCategories)
+            .doc('colleagues')
+            .set({
+          'friendUserIds': ['friend-3'],
+        });
+
         final result = await operations.shareListWithMultipleGroups(
-          listId: 'list-123',
+          listId: _testListId,
           groupIds: ['family', 'friends', 'colleagues'],
           message: 'Group shopping',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
       test('should send collaboration invite', () async {
-        // Act
+        await seedShoppingList();
+
         final result = await operations.sendCollaborationInvite(
-          listId: 'list-123',
+          listId: _testListId,
           recipientId: 'user-456',
           message: 'Join my shopping list!',
         );
-
-        // Assert
         expect(result, isTrue);
       });
 
       test('should get shopping lists shared with me', () async {
-        // Act
         final result = await operations.getShoppingListsSharedWithMe();
-
-        // Assert
         expect(result, isA<List<Map<String, dynamic>>>());
-        expect(result.isEmpty,
-            isTrue); // Simplified implementation returns empty list
+        // No received lists seeded -> empty
+        expect(result.isEmpty, isTrue);
       });
 
       test('should get shopping lists shared by me', () async {
-        // Act
         final result = await operations.getShoppingListsSharedByMe();
-
-        // Assert
         expect(result, isA<List<Map<String, dynamic>>>());
-        expect(result.isEmpty,
-            isTrue); // Simplified implementation returns empty list
+        // No shared content seeded by current user -> empty
+        expect(result.isEmpty, isTrue);
       });
 
       test('should import shared shopping list', () async {
-        // Act
+        await seedSharedContent();
+        await seedReceivedList();
+
         final result =
             await operations.importSharedShoppingList('shared-list-123');
-
-        // Assert
         expect(result, isA<String?>());
-        expect(result, contains('list'));
+        expect(result, equals('shared-list-123'));
       });
 
       test('should mark shared list as viewed', () async {
-        // Act & Assert - Should not throw
+        await seedReceivedList();
+
+        // Should not throw
         await operations.markSharedShoppingListAsViewed('shared-list-123');
+
+        // Verify the document was updated
+        final doc = await fakeFirestore
+            .collection(FirestoreCollections.userSharedShoppingLists)
+            .doc(_testUserId)
+            .collection(FirestoreCollections.receivedLists)
+            .doc('shared-list-123')
+            .get();
+        expect(doc.data()?['isViewed'], isTrue);
       });
 
       test('should get shopping list sharing stats', () async {
-        // Act
-        final result = await operations.getShoppingListSharingStats('list-123');
-
-        // Assert
+        // No shared content by current user -> stats show 0
+        final result =
+            await operations.getShoppingListSharingStats(_testListId);
         expect(result, isA<Map<String, dynamic>>());
         expect(result['sharedWith'], equals(0));
-        expect(result['views'], equals(0));
-        expect(result['lastShared'], isA<String>());
+        expect(result['totalShared'], equals(0));
       });
     });
 
     group('Module Access', () {
       test('should provide access to export module', () {
-        // Act
         final module = operations.export;
-
-        // Assert
         expect(module, isA<ShoppingExportModule>());
         expect(module.exportListAsText('list-123'), isA<String>());
       });
 
       test('should provide access to external share module', () {
-        // Act
         final module = operations.externalShare;
-
-        // Assert
         expect(module, isA<ShoppingExternalShareModule>());
       });
 
       test('should provide access to template module', () {
-        // Act
         final module = operations.template;
-
-        // Assert
         expect(module, isA<ShoppingTemplateModule>());
       });
 
       test('should provide access to import module', () {
-        // Act
         final module = operations.import;
-
-        // Assert
         expect(module, isA<ShoppingImportModule>());
       });
 
       test('should provide access to social share module', () {
-        // Act
         final module = operations.socialShare;
-
-        // Assert
         expect(module, isA<ShoppingSocialShareModule>());
       });
     });
