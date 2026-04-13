@@ -330,22 +330,20 @@ class MenuService extends BaseService {
       return true;
     }
     final tr = r.tagResult;
-    if (tr == null) return false;
-    for (final a in p.globalAllergenAvoid) {
-      if (tr.getAllergenStatus(a) != TriState.free) return false;
+    // Allergen/dietary checks need tagResult
+    if (p.globalAllergenAvoid.isNotEmpty || p.globalDietaryRequire.isNotEmpty) {
+      if (tr == null) return true; // No tag data = include (can't determine)
+      for (final a in p.globalAllergenAvoid) {
+        if (tr.getAllergenStatus(a) != TriState.free) return false;
+      }
+      for (final d in p.globalDietaryRequire) {
+        if (tr.getDietaryStatus(d) != TriState.free) return false;
+      }
     }
-    for (final d in p.globalDietaryRequire) {
-      if (tr.getDietaryStatus(d) != TriState.free) return false;
-    }
+    // Tag/ingredient exclusion doesn't require tagResult
     if (p.globalExcludedTags.isNotEmpty) {
-      // Check tags first
-      if (p.globalExcludedTags.any(tr.tags.contains)) return false;
-      // Fall back to ingredient text matching for non-tag words
-      final ingredients = r.core.ingredientsNormalized ?? r.core.ingredients;
-      for (final word in p.globalExcludedTags) {
-        if (ingredients.any((i) => i.toLowerCase().contains(word))) {
-          return false;
-        }
+      if (tr != null && p.globalExcludedTags.any(tr.tags.contains)) {
+        return false;
       }
     }
     return true;
