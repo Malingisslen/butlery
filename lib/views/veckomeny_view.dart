@@ -124,8 +124,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     if (!mounted) return;
 
     if (_viewMode == VeckomenyViewMode.kalender && menuVm.hasMenu) {
-      if (calendarVm.hasEntries) await calendarVm.clearWeek();
-      await calendarVm.applyGeneratedMenu(menuVm.menu);
+      await calendarVm.applyGeneratedMenu(
+        menuVm.menu,
+        replaceExisting: true,
+      );
     }
   }
 

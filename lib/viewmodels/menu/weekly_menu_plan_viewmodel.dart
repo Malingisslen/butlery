@@ -72,6 +72,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     Map<String, List<Recipe>> generated, {
     DateTime? now,
     ParsedMenuRequest? parsedRequest,
+    bool replaceExisting = false,
   }) async {
     if (_applyInFlight) return;
     _applyInFlight = true;
@@ -82,7 +83,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           final result = _service.distributeFromGeneratedMenu(
             generated: generated,
             weekStart: currentWeekStart,
-            existing: _plan,
+            existing: replaceExisting ? null : _plan,
             now: now,
             dayPins: parsedRequest?.dayPins ?? const [],
           );
