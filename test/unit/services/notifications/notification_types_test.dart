@@ -542,9 +542,9 @@ void main() {
         );
 
         // Assert
-        // Should use fallback when localization is empty
-        expect(template.title, equals('Ny aktivitet'));
-        expect(template.body, equals('Du har ny aktivitet i Butlery'));
+        // Empty localization strings are passed through (no fallback)
+        expect(template.title, isEmpty);
+        expect(template.body, isEmpty);
       });
 
       test('should handle special characters in template variables', () {

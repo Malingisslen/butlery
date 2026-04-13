@@ -285,7 +285,7 @@ void main() {
           ('recipes', 'Ny receptaktivitet', '2 nya händelser på dina recept'),
           ('friends', 'Vänaktivitet', '2 nya aktiviteter från dina vänner'),
           ('shopping', 'Inköpslistor', '2 uppdateringar av dina inköpslistor'),
-          ('collaboration', 'Samarbeten', '2 nya samarbetsaktiviteter'),
+          ('collaboration', 'Samarbetsaktivitet', '2 nya samarbetsaktiviteter'),
           ('unknown', 'Ny aktivitet', '2 nya händelser i Butlery'),
         ];
 

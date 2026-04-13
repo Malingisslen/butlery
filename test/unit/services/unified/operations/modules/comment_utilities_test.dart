@@ -515,7 +515,7 @@ void main() {
         // Act & Assert
         expect(
           CommentUtilities.getCommentAge(now.subtract(Duration(seconds: 30))),
-          equals('nu'),
+          equals('Nu'),
         );
         expect(
           CommentUtilities.getCommentAge(now.subtract(Duration(minutes: 5))),
