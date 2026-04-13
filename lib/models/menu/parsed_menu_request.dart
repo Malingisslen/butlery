@@ -7,6 +7,7 @@ class ParsedMenuRequest {
   final List<SlotRequest> slotRequests;
   final Set<String> globalAllergenAvoid;
   final Set<String> globalDietaryRequire;
+  final Set<String> globalExcludedTags;
   final List<DayPin> dayPins;
   final ExtractionTrace trace;
   final String rawPrompt;
@@ -15,6 +16,7 @@ class ParsedMenuRequest {
     required this.slotRequests,
     required this.globalAllergenAvoid,
     required this.globalDietaryRequire,
+    this.globalExcludedTags = const {},
     required this.dayPins,
     required this.trace,
     required this.rawPrompt,
@@ -51,6 +53,7 @@ class RecipeConstraint {
   final Set<String> dietaryFree;
   final Set<String> allergenFree;
   final Set<String> requiredTags;
+  final Set<String> excludedTags;
   final Set<String> requiredCuisines;
   final int? maxTimeMinutes;
   final bool isSoft;
@@ -60,6 +63,7 @@ class RecipeConstraint {
     this.dietaryFree = const {},
     this.allergenFree = const {},
     this.requiredTags = const {},
+    this.excludedTags = const {},
     this.requiredCuisines = const {},
     this.maxTimeMinutes,
     this.isSoft = false,
@@ -69,6 +73,7 @@ class RecipeConstraint {
       dietaryFree.isEmpty &&
       allergenFree.isEmpty &&
       requiredTags.isEmpty &&
+      excludedTags.isEmpty &&
       requiredCuisines.isEmpty &&
       maxTimeMinutes == null;
 }

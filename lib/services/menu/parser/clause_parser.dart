@@ -332,11 +332,17 @@ CountResult detectCount(String input, Lexicon lexicon) {
 
   final digitMatch = _digitRe.firstMatch(s);
   if (digitMatch != null) {
-    return CountResult(
-      count: int.parse(digitMatch.group(1)!),
-      remaining: s.substring(digitMatch.end),
-      label: digitMatch.group(1),
-    );
+    // Don't consume numbers followed by nutritional units (kcal, kalorier)
+    final afterDigit = s.substring(digitMatch.end).trimLeft();
+    if (!afterDigit.startsWith('kcal') &&
+        !afterDigit.startsWith('kalorier') &&
+        !afterDigit.startsWith('cal ')) {
+      return CountResult(
+        count: int.parse(digitMatch.group(1)!),
+        remaining: s.substring(digitMatch.end),
+        label: digitMatch.group(1),
+      );
+    }
   }
 
   final vague = lexicon.of(LexiconCategory.vagueQuantity);

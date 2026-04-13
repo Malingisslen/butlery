@@ -313,7 +313,9 @@ class MenuService extends BaseService {
   }
 
   static bool _passesGlobals(Recipe r, ParsedMenuRequest p) {
-    if (p.globalAllergenAvoid.isEmpty && p.globalDietaryRequire.isEmpty) {
+    if (p.globalAllergenAvoid.isEmpty &&
+        p.globalDietaryRequire.isEmpty &&
+        p.globalExcludedTags.isEmpty) {
       return true;
     }
     final tr = r.tagResult;
@@ -323,6 +325,10 @@ class MenuService extends BaseService {
     }
     for (final d in p.globalDietaryRequire) {
       if (tr.getDietaryStatus(d) != TriState.free) return false;
+    }
+    if (p.globalExcludedTags.isNotEmpty &&
+        p.globalExcludedTags.any(tr.tags.contains)) {
+      return false;
     }
     return true;
   }
@@ -338,6 +344,9 @@ class MenuService extends BaseService {
       if (tr.getAllergenStatus(a) != TriState.free) return false;
     }
     if (c.requiredTags.isNotEmpty && !tr.hasAllTags(c.requiredTags)) {
+      return false;
+    }
+    if (c.excludedTags.isNotEmpty && c.excludedTags.any(tr.tags.contains)) {
       return false;
     }
     if (c.requiredCuisines.isNotEmpty) {

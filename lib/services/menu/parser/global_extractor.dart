@@ -14,23 +14,45 @@ String extractDayFormatPins(
 ) {
   final dayNames = lexicon.of(LexiconCategory.dayNames);
   final formats = lexicon.of(LexiconCategory.formatStems);
+  final dietary = lexicon.of(LexiconCategory.dietaryStems);
+  final cuisines = lexicon.of(LexiconCategory.cuisineStems);
+  final themes = lexicon.of(LexiconCategory.themeStems);
 
   var result = working;
   for (final dayEntry in dayNames.entries) {
     final dayWord = dayEntry.key;
+    // Support both "måndag pasta" and "måndag: pasta"
     final pattern = RegExp(
-      '\\b${RegExp.escape(dayWord)}\\s+([a-zåäö]+)',
+      '\\b${RegExp.escape(dayWord)}[:\\s]+([a-zåäö]+)',
       caseSensitive: false,
     );
     for (final match in pattern.allMatches(result).toList()) {
       final next = match.group(1)!;
-      final tag = formats[next];
-      if (tag == null) continue;
+      // Cascading lookup: format → dietary → cuisine → theme
+      final formatTag = formats[next];
+      final dietaryTag = dietary[next];
+      final cuisineTag = cuisines[next];
+      final themeTag = themes[next];
+      if (formatTag == null &&
+          dietaryTag == null &&
+          cuisineTag == null &&
+          themeTag == null) {
+        continue;
+      }
+
       final weekday = int.tryParse(dayEntry.value) ?? 1;
       dayPins.add(DayPin(
         weekdayIndex: weekday,
         mealType: 'middag',
-        constraint: RecipeConstraint(count: 1, requiredTags: {tag}),
+        constraint: RecipeConstraint(
+          count: 1,
+          requiredTags: {
+            if (formatTag != null) formatTag,
+            if (themeTag != null) themeTag,
+          },
+          dietaryFree: {if (dietaryTag != null) dietaryTag},
+          requiredCuisines: {if (cuisineTag != null) cuisineTag},
+        ),
       ));
       understood.add(TraceEntry(
         label: '$dayWord $next',
@@ -43,15 +65,68 @@ String extractDayFormatPins(
   return result;
 }
 
+/// Extracts global dietary requirements from phrases like "bara vegetariskt",
+/// "allt veganskt", "hela veckan vegetariskt".
+String extractGlobalDietary(
+  String working,
+  Lexicon lexicon,
+  Set<String> require,
+  List<TraceEntry> understood,
+) {
+  final dietary = lexicon.of(LexiconCategory.dietaryStems);
+  if (dietary.isEmpty) return working;
+
+  const prefixes = ['bara ', 'allt ', 'enbart ', 'helt '];
+  var result = working;
+
+  for (final prefix in prefixes) {
+    int searchFrom = 0;
+    while (true) {
+      final idx = result.indexOf(prefix, searchFrom);
+      if (idx < 0) break;
+      if (idx > 0 && isWordChar(result.codeUnitAt(idx - 1))) {
+        searchFrom = idx + prefix.length;
+        continue;
+      }
+      int cursor = idx + prefix.length;
+      cursor = skipSpaces(result, cursor);
+      final tok = readWord(result, cursor);
+      if (tok == null) {
+        searchFrom = idx + prefix.length;
+        continue;
+      }
+      final key = dietary[tok];
+      if (key == null) {
+        searchFrom = idx + prefix.length;
+        continue;
+      }
+      require.add(key);
+      understood.add(TraceEntry(
+        label: '$prefix$tok'.trim(),
+        category: TraceCategory.dietary,
+      ));
+      final spanEnd = cursor + tok.length;
+      result = result.substring(0, idx) +
+          ' ' * (spanEnd - idx) +
+          result.substring(spanEnd);
+      searchFrom = spanEnd;
+    }
+  }
+  return result;
+}
+
 String extractAllergenNegations(
   String working,
   Lexicon lexicon,
   Set<String> avoid,
+  Set<String> excludeTags,
   List<TraceEntry> understood,
 ) {
   final negs = lexicon.of(LexiconCategory.negationWords).keys.toList()
     ..sort((a, b) => b.length.compareTo(a.length));
   final nouns = lexicon.of(LexiconCategory.allergenNounStems);
+  final formats = lexicon.of(LexiconCategory.formatStems);
+  final themes = lexicon.of(LexiconCategory.themeStems);
 
   var result = working;
   for (final neg in negs) {
@@ -70,13 +145,25 @@ String extractAllergenNegations(
       while (cursor < result.length) {
         final tok = readWord(result, cursor);
         if (tok == null) break;
-        final key = nouns[tok];
-        if (key == null) break;
-        avoid.add(key);
-        understood.add(TraceEntry(
-          label: 'inget $tok',
-          category: TraceCategory.allergen,
-        ));
+        // Check allergen nouns first, then format/theme tags
+        final allergenKey = nouns[tok];
+        final formatKey = formats[tok];
+        final themeKey = themes[tok];
+        if (allergenKey == null && formatKey == null && themeKey == null) break;
+        if (allergenKey != null) {
+          avoid.add(allergenKey);
+          understood.add(TraceEntry(
+            label: 'inget $tok',
+            category: TraceCategory.allergen,
+          ));
+        } else {
+          final tag = formatKey ?? themeKey!;
+          excludeTags.add(tag);
+          understood.add(TraceEntry(
+            label: 'inget $tok',
+            category: TraceCategory.format,
+          ));
+        }
         found = true;
         cursor += tok.length;
         spanEnd = cursor;

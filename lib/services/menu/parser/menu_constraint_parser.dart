@@ -34,6 +34,7 @@ class MenuConstraintParser {
     final warnings = <String>[];
     final globalAllergenAvoid = <String>{};
     final globalDietaryRequire = <String>{};
+    final globalExcludedTags = <String>{};
     final dayPins = <DayPin>[];
     bool skipFrukost = false;
 
@@ -74,8 +75,10 @@ class MenuConstraintParser {
     }
 
     working = extractDayFormatPins(working, lexicon, dayPins, understood);
+    working = extractGlobalDietary(
+        working, lexicon, globalDietaryRequire, understood);
     working = extractAllergenNegations(
-        working, lexicon, globalAllergenAvoid, understood);
+        working, lexicon, globalAllergenAvoid, globalExcludedTags, understood);
 
     final clauses = _splitClauses(working);
 
@@ -97,6 +100,7 @@ class MenuConstraintParser {
       slotRequests: merged,
       globalAllergenAvoid: globalAllergenAvoid,
       globalDietaryRequire: globalDietaryRequire,
+      globalExcludedTags: globalExcludedTags,
       dayPins: dayPins,
       trace: ExtractionTrace(
         understood: understood,
