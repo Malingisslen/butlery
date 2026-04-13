@@ -565,9 +565,33 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   /// Wraps [child] as draggable. On web, uses a short delay (150ms)
   /// instead of the default 500ms so click-and-drag feels responsive.
   Widget _wrapAsDraggable(_CalendarDragPayload payload, Widget child) {
+    // Simple label feedback avoids layout issues (Expanded in overlay)
+    final label = payload is _MovePayload
+        ? payload.entry.recipeTitle
+        : payload is _OverflowPayload
+            ? payload.recipe.title
+            : '?';
     final feedback = Material(
-      color: Colors.transparent,
-      child: SizedBox(width: _kDragFeedbackWidth, child: child),
+      elevation: 4,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+      child: Container(
+        width: _kDragFeedbackWidth,
+        padding: const EdgeInsets.all(AppDimensions.spacingS),
+        decoration: BoxDecoration(
+          color: AppColors.cream,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          border: Border.all(color: AppColors.forestGreen),
+        ),
+        child: Text(
+          label.toLowerCase(),
+          style: AppTextStyles.labelSmall.copyWith(
+            color: AppColors.textDark,
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
     final ghost = Opacity(
       opacity: AppDimensions.opacityMediumLight,
