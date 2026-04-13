@@ -104,7 +104,7 @@ dev_dependencies:
   coverage: ^1.9.0
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
-  mocktail: ^1.0.4
+  mocktail: ^1.0.5
   build_runner: ^2.7.1  # Downgraded for drift_dev compatibility
   drift_dev: ^2.29.0    # Code generator for Drift database (compatible version)
   
