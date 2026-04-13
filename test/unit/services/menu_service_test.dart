@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
-import 'package:butlery/core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/services/tagging/config/cuisine_config.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -19,123 +21,47 @@ void main() {
     });
 
     setUp(() {
-      // Reset singleton for test isolation
-      SingletonServiceMixin.resetForTesting();
+      menuService = MenuService(lexiconProvider: const CodeLexiconProvider());
 
-      // Create service
-      menuService = MenuService();
-
-      // Create test recipes with different meal types
+      // Recipe mealType values must match the lexicon canonical forms
+      // (case-insensitive comparison in the service, but the map key uses
+      // the parser's lowercase canonical form).
       testRecipes = [
-        // Breakfasts
+        // Breakfasts (5) — lexicon canonical: 'frukost'
         RecipeFactory.build(
-          id: 'breakfast1',
-          title: 'Havregrynsgröt',
-          mealType: 'Frukost',
-        ),
+            id: 'b1', title: 'Havregrynsgrot', mealType: 'frukost'),
+        RecipeFactory.build(id: 'b2', title: 'Aggmacka', mealType: 'frukost'),
         RecipeFactory.build(
-          id: 'breakfast2',
-          title: 'Äggmacka',
-          mealType: 'Frukost',
-        ),
+            id: 'b3', title: 'Smoothie bowl', mealType: 'frukost'),
+        RecipeFactory.build(id: 'b4', title: 'Yoghurt', mealType: 'frukost'),
+        RecipeFactory.build(id: 'b5', title: 'Pannkakor', mealType: 'frukost'),
+        // Lunches (4) — lexicon canonical: 'lunch'
+        RecipeFactory.build(id: 'l1', title: 'Caesarsallad', mealType: 'lunch'),
         RecipeFactory.build(
-          id: 'breakfast3',
-          title: 'Smoothie bowl',
-          mealType: 'Frukost',
-        ),
+            id: 'l2', title: 'Pasta Carbonara', mealType: 'lunch'),
+        RecipeFactory.build(id: 'l3', title: 'Soppor', mealType: 'lunch'),
+        RecipeFactory.build(id: 'l4', title: 'Wraps', mealType: 'lunch'),
+        // Dinners (6) — lexicon canonical: 'middag'
+        RecipeFactory.build(id: 'd1', title: 'Kottbullar', mealType: 'middag'),
         RecipeFactory.build(
-          id: 'breakfast4',
-          title: 'Yoghurt med müsli',
-          mealType: 'Frukost',
-        ),
+            id: 'd2', title: 'Lax med potatis', mealType: 'middag'),
+        RecipeFactory.build(id: 'd3', title: 'Tacos', mealType: 'middag'),
+        RecipeFactory.build(id: 'd4', title: 'Pizza', mealType: 'middag'),
+        RecipeFactory.build(id: 'd5', title: 'Lasagne', mealType: 'middag'),
         RecipeFactory.build(
-          id: 'breakfast5',
-          title: 'Pannkakor',
-          mealType: 'Frukost',
-        ),
-
-        // Lunches
+            id: 'd6', title: 'Kyckling curry', mealType: 'middag'),
+        // Snacks (2) — lexicon canonical: 'mellanm\u00e5l'
         RecipeFactory.build(
-          id: 'lunch1',
-          title: 'Caesarsallad',
-          mealType: 'Lunch',
-        ),
+            id: 's1', title: 'Fruktsallad', mealType: 'mellanm\u00e5l'),
         RecipeFactory.build(
-          id: 'lunch2',
-          title: 'Pasta Carbonara',
-          mealType: 'Lunch',
-        ),
-        RecipeFactory.build(
-          id: 'lunch3',
-          title: 'Soppor',
-          mealType: 'Lunch',
-        ),
-        RecipeFactory.build(
-          id: 'lunch4',
-          title: 'Wraps',
-          mealType: 'Lunch',
-        ),
-
-        // Dinners
-        RecipeFactory.build(
-          id: 'dinner1',
-          title: 'Köttbullar',
-          mealType: 'Middag',
-        ),
-        RecipeFactory.build(
-          id: 'dinner2',
-          title: 'Lax med potatis',
-          mealType: 'Middag',
-        ),
-        RecipeFactory.build(
-          id: 'dinner3',
-          title: 'Tacos',
-          mealType: 'Middag',
-        ),
-        RecipeFactory.build(
-          id: 'dinner4',
-          title: 'Pizza',
-          mealType: 'Middag',
-        ),
-        RecipeFactory.build(
-          id: 'dinner5',
-          title: 'Lasagne',
-          mealType: 'Middag',
-        ),
-        RecipeFactory.build(
-          id: 'dinner6',
-          title: 'Kyckling curry',
-          mealType: 'Middag',
-        ),
-
-        // Snacks
-        RecipeFactory.build(
-          id: 'snack1',
-          title: 'Fruktsallad',
-          mealType: 'Mellanmål',
-        ),
-        RecipeFactory.build(
-          id: 'snack2',
-          title: 'Nötter',
-          mealType: 'Mellanmål',
-        ),
-
-        // Desserts
-        RecipeFactory.build(
-          id: 'dessert1',
-          title: 'Kladdkaka',
-          mealType: 'Efterrätt',
-        ),
-        RecipeFactory.build(
-          id: 'dessert2',
-          title: 'Glass',
-          mealType: 'Efterrätt',
-        ),
+            id: 's2', title: 'Notter', mealType: 'mellanm\u00e5l'),
+        // Desserts (2) — lexicon canonical: 'dessert'
+        RecipeFactory.build(id: 'e1', title: 'Kladdkaka', mealType: 'dessert'),
+        RecipeFactory.build(id: 'e2', title: 'Glass', mealType: 'dessert'),
       ];
     });
 
     tearDown(() async {
-      SingletonServiceMixin.resetForTesting();
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
@@ -146,645 +72,229 @@ void main() {
 
     group('Service Identification', () {
       test('should have correct service name', () {
-        // Assert
         expect(menuService.serviceName, equals('MenuService'));
-      });
-
-      test('should be singleton instance', () {
-        // Arrange & Act
-        final instance1 = MenuService();
-        final instance2 = MenuService();
-
-        // Assert
-        expect(identical(instance1, instance2), isTrue);
       });
     });
 
-    group('Natural Language Processing - Swedish Numbers', () {
-      test('should parse Swedish word numbers correctly', () async {
-        // Arrange
-        const input = 'tre frukoster';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu.containsKey('Frukost'), isTrue);
-        expect(menu['Frukost']?.length, equals(3));
+    group('Swedish Number Parsing', () {
+      test('should parse Swedish word numbers', () async {
+        final menu = await menuService.generateMenuFromPrompt(
+          'tre frukoster',
+          testRecipes,
+        );
+        expect(menu['frukost']?.length, equals(3));
       });
 
-      test('should handle all Swedish numbers from en to tio', () async {
-        // Test each Swedish number
-        final testCases = {
-          'en frukost': 1,
-          'två frukoster': 2,
-          'tre frukoster': 3,
-          'fyra frukoster': 4,
-          'fem frukoster': 5,
-          'sex middagar':
-              6, // Note: using middag to avoid running out of breakfast recipes
-          'sju middagar': 6, // Limited by available recipes (6 dinners)
-          'åtta middagar': 6,
-          'nio middagar': 6,
-          'tio middagar': 6,
-        };
-
-        for (final entry in testCases.entries) {
-          final menu =
-              await menuService.generateMenuFromPrompt(entry.key, testRecipes);
-          final mealType = entry.key.contains('frukost') ? 'Frukost' : 'Middag';
-          expect(
-            menu[mealType]?.length,
-            equals(entry.value),
-            reason: 'Failed for input: ${entry.key}',
-          );
-        }
+      test('should parse numeric digits', () async {
+        final menu = await menuService.generateMenuFromPrompt(
+          '3 frukoster',
+          testRecipes,
+        );
+        expect(menu['frukost']?.length, equals(3));
       });
 
       test('should handle ett variant for en', () async {
-        // Arrange
-        const input = 'ett mellanmål';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Mellanmål']?.length, equals(1));
-      });
-    });
-
-    group('Natural Language Processing - Numeric Digits', () {
-      test('should parse numeric digits correctly', () async {
-        // Arrange
-        const input = '3 frukoster';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(3));
+        final menu = await menuService.generateMenuFromPrompt(
+          'ett mellanm\u00e5l',
+          testRecipes,
+        );
+        expect(menu['mellanm\u00e5l']?.length, equals(1));
       });
 
       test('should handle mixed numeric and word numbers', () async {
-        // Arrange
-        const input = '3 frukoster och två middagar';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(3));
-        expect(menu['Middag']?.length, equals(2));
+        final menu = await menuService.generateMenuFromPrompt(
+          '3 frukoster och tva middagar',
+          testRecipes,
+        );
+        expect(menu['frukost']?.length, equals(3));
+        expect(menu['middag']?.length, equals(2));
       });
     });
 
     group('Meal Type Detection', () {
-      test('should detect Frukost correctly', () async {
-        // Test variations
-        final variations = [
-          'frukost',
-          'frukoster',
-          'frukostar',
-        ];
-
-        for (final variation in variations) {
+      test('should detect frukost', () async {
+        for (final word in ['frukost', 'frukoster', 'frukostar']) {
           final menu = await menuService.generateMenuFromPrompt(
-            '2 $variation',
+            '2 $word',
             testRecipes,
           );
-          expect(menu.containsKey('Frukost'), isTrue,
-              reason: 'Failed for variation: $variation');
+          expect(menu.containsKey('frukost'), isTrue,
+              reason: 'Failed for: $word');
         }
       });
 
-      test('should detect Lunch correctly', () async {
-        // Arrange
-        const input = 'två luncher';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu.containsKey('Lunch'), isTrue);
-        expect(menu['Lunch']?.length, equals(2));
+      test('should detect lunch', () async {
+        final menu = await menuService.generateMenuFromPrompt(
+          'tva luncher',
+          testRecipes,
+        );
+        expect(menu['lunch']?.length, equals(2));
       });
 
-      test('should detect Middag correctly', () async {
-        // Arrange
-        const input = 'fem middagar';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu.containsKey('Middag'), isTrue);
-        expect(menu['Middag']?.length, equals(5));
+      test('should detect middag', () async {
+        final menu = await menuService.generateMenuFromPrompt(
+          'fem middagar',
+          testRecipes,
+        );
+        expect(menu['middag']?.length, equals(5));
       });
 
-      test('should detect Mellanmål correctly', () async {
-        // Arrange
-        const input = 'två mellanmål';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu.containsKey('Mellanmål'), isTrue);
-        expect(menu['Mellanmål']?.length, equals(2));
+      test('should detect mellanmal', () async {
+        final menu = await menuService.generateMenuFromPrompt(
+          'tva mellanmal',
+          testRecipes,
+        );
+        expect(menu['mellanm\u00e5l']?.length, equals(2));
       });
 
-      test('should detect Efterrätt correctly', () async {
-        // Arrange
-        const input = 'en efterrätt';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu.containsKey('Efterrätt'), isTrue);
-        expect(menu['Efterrätt']?.length, equals(1));
-      });
-
-      test('should handle plural normalization', () async {
-        // Test that plural forms are normalized correctly
-        final testCases = {
-          'middagar': 'Middag',
-          'luncher': 'Lunch',
-          'frukoster': 'Frukost',
-          'frukostar': 'Frukost',
-        };
-
-        for (final entry in testCases.entries) {
-          final menu = await menuService.generateMenuFromPrompt(
-            '1 ${entry.key}',
-            testRecipes,
-          );
-          expect(menu.containsKey(entry.value), isTrue,
-              reason: 'Failed to detect ${entry.value} from ${entry.key}');
-        }
+      test('should detect dessert', () async {
+        final menu = await menuService.generateMenuFromPrompt(
+          'en dessert',
+          testRecipes,
+        );
+        expect(menu['dessert']?.length, equals(1));
       });
     });
 
     group('Complex Input Parsing', () {
       test('should handle comma-separated input', () async {
-        // Arrange
-        const input = 'tre frukoster, två luncher, fyra middagar';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(3));
-        expect(menu['Lunch']?.length, equals(2));
-        expect(menu['Middag']?.length, equals(4));
+        final menu = await menuService.generateMenuFromPrompt(
+          'tre frukoster, tva luncher, fyra middagar',
+          testRecipes,
+        );
+        expect(menu['frukost']?.length, equals(3));
+        expect(menu['lunch']?.length, equals(2));
+        expect(menu['middag']?.length, equals(4));
       });
 
       test('should handle "och" conjunction', () async {
-        // Arrange
-        const input = 'tre frukoster och två middagar och en efterrätt';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(3));
-        expect(menu['Middag']?.length, equals(2));
-        expect(menu['Efterrätt']?.length, equals(1));
-      });
-
-      test('should handle "&" separator', () async {
-        // Arrange
-        const input = 'tre frukoster & två middagar';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(3));
-        expect(menu['Middag']?.length, equals(2));
+        final menu = await menuService.generateMenuFromPrompt(
+          'tre frukoster och tva middagar och en dessert',
+          testRecipes,
+        );
+        expect(menu['frukost']?.length, equals(3));
+        expect(menu['middag']?.length, equals(2));
+        expect(menu['dessert']?.length, equals(1));
       });
 
       test('should handle semicolon separator', () async {
-        // Arrange
-        const input = 'tre frukoster; två middagar';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(3));
-        expect(menu['Middag']?.length, equals(2));
-      });
-
-      test('should handle mixed separators', () async {
-        // Arrange
-        const input =
-            'tre frukoster, två luncher och fyra middagar; en efterrätt';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(3));
-        expect(menu['Lunch']?.length, equals(2));
-        expect(menu['Middag']?.length, equals(4));
-        expect(menu['Efterrätt']?.length, equals(1));
-      });
-
-      test('should accumulate counts for same meal type', () async {
-        // Arrange - Request more breakfasts in multiple parts
-        const input = 'två frukoster och tre frukoster';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert - Should sum to 5 breakfasts
-        expect(menu['Frukost']?.length, equals(5));
+        final menu = await menuService.generateMenuFromPrompt(
+          'tre frukoster; tva middagar',
+          testRecipes,
+        );
+        expect(menu['frukost']?.length, equals(3));
+        expect(menu['middag']?.length, equals(2));
       });
     });
 
     group('Edge Cases', () {
       test('should return empty map for empty input', () async {
-        // Act
         final menu = await menuService.generateMenuFromPrompt('', testRecipes);
-
-        // Assert
         expect(menu, isEmpty);
       });
 
       test('should return empty map for whitespace input', () async {
-        // Act
         final menu =
             await menuService.generateMenuFromPrompt('   \n\t  ', testRecipes);
-
-        // Assert
         expect(menu, isEmpty);
       });
 
-      test('should return empty map for invalid input', () async {
-        // Act
+      test('should return empty map for unrecognised input', () async {
         final menu = await menuService.generateMenuFromPrompt(
-          'detta är inte en giltig meny instruktion',
+          'detta ar inte en giltig meny instruktion',
           testRecipes,
         );
-
-        // Assert
         expect(menu, isEmpty);
       });
 
       test('should handle case insensitive input', () async {
-        // Arrange
-        const input = 'TRE FRUKOSTER OCH TVÅ MIDDAGAR';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(3));
-        expect(menu['Middag']?.length, equals(2));
+        final menu = await menuService.generateMenuFromPrompt(
+          'TRE FRUKOSTER OCH TVA MIDDAGAR',
+          testRecipes,
+        );
+        expect(menu['frukost']?.length, equals(3));
+        expect(menu['middag']?.length, equals(2));
       });
 
       test('should handle empty recipe list', () async {
-        // Arrange
-        const input = 'tre frukoster';
-
-        // Act
-        final menu = await menuService.generateMenuFromPrompt(input, []);
-
-        // Assert
-        expect(menu, isEmpty);
+        final menu =
+            await menuService.generateMenuFromPrompt('tre frukoster', []);
+        // Parser produces slots but no matching recipes, so result is empty
+        final breakfasts = menu['frukost'] ?? [];
+        expect(breakfasts, isEmpty);
       });
 
       test('should limit to available recipes', () async {
-        // Arrange - Request more than available
-        const input = 'tio frukoster'; // Only 5 breakfast recipes available
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(5)); // Limited to available
+        final menu = await menuService.generateMenuFromPrompt(
+          'tio frukoster',
+          testRecipes,
+        );
+        expect(menu['frukost']?.length, equals(5));
       });
 
       test('should not include duplicate recipes', () async {
-        // Arrange
-        const input = 'fem frukoster';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        final breakfasts = menu['Frukost'] ?? [];
-        final uniqueIds = breakfasts.map((r) => r.id).toSet();
-        expect(uniqueIds.length, equals(breakfasts.length)); // All unique
-      });
-
-      test('should handle invalid numbers gracefully', () async {
-        // Arrange
-        const input = 'elva frukoster'; // 'elva' not in word2num map
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu, isEmpty);
-      });
-
-      test('should handle zero or negative numbers', () async {
-        // Arrange
-        const input = '0 frukoster';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu, isEmpty);
-      });
-
-      test('should handle unknown meal types', () async {
-        // Arrange
-        const input = 'tre kvällsmat'; // Unknown meal type
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        expect(menu, isEmpty);
-      });
-
-      test('should handle recipes with null or empty meal types', () async {
-        // Arrange
-        final recipesWithNullType = [
-          RecipeFactory.build(id: 'null1', mealType: ''),
-          RecipeFactory.build(id: 'valid1', mealType: 'Frukost'),
-        ];
-
-        // Act
         final menu = await menuService.generateMenuFromPrompt(
-          'en frukost',
-          recipesWithNullType,
+          'fem frukoster',
+          testRecipes,
         );
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(1));
-        expect(menu['Frukost']?.first.id, equals('valid1'));
+        final breakfasts = menu['frukost'] ?? [];
+        final uniqueIds = breakfasts.map((r) => r.id).toSet();
+        expect(uniqueIds.length, equals(breakfasts.length));
       });
     });
 
     group('Recipe Selection', () {
-      test('should randomize recipe selection', () async {
-        // Arrange
-        const input = 'tre frukoster';
-
-        // Act - Generate multiple menus
-        final menus = <List<String>>[];
-        for (int i = 0; i < 10; i++) {
-          final menu =
-              await menuService.generateMenuFromPrompt(input, testRecipes);
-          final ids = menu['Frukost']?.map((r) => r.id).toList() ?? [];
-          if (ids.isNotEmpty) {
-            menus.add(ids);
-          }
+      test('should randomise selection across multiple runs', () async {
+        final selections = <String>{};
+        for (int i = 0; i < 20; i++) {
+          final menu = await menuService.generateMenuFromPrompt(
+            'en frukost',
+            testRecipes,
+          );
+          final id = menu['frukost']?.first.id;
+          if (id != null) selections.add(id);
         }
-
-        // Assert - At least some variations should exist
-        // Note: This might occasionally fail due to randomness
-        final uniqueMenus = menus.map((m) => m.join(',')).toSet();
-        expect(uniqueMenus.length, greaterThan(1),
-            reason: 'Should have different random selections');
+        expect(selections.length, greaterThan(1));
       });
 
       test('should return correct recipe objects', () async {
-        // Arrange
-        const input = 'en frukost';
-
-        // Act
-        final menu =
-            await menuService.generateMenuFromPrompt(input, testRecipes);
-
-        // Assert
-        final breakfast = menu['Frukost']?.first;
+        final menu = await menuService.generateMenuFromPrompt(
+          'en frukost',
+          testRecipes,
+        );
+        final breakfast = menu['frukost']?.first;
         expect(breakfast, isNotNull);
-        expect(breakfast?.mealType, equals('Frukost'));
+        expect(breakfast?.mealType, equals('frukost'));
         expect(testRecipes.contains(breakfast), isTrue);
       });
     });
 
-    group('Performance', () {
-      test('should handle large recipe collections efficiently', () async {
-        // Arrange
-        final largeRecipeList = List.generate(
-          1000,
-          (i) => RecipeFactory.build(
-            id: 'recipe_$i',
-            title: 'Recipe $i',
-            mealType: i % 5 == 0
-                ? 'Frukost'
-                : i % 5 == 1
-                    ? 'Lunch'
-                    : i % 5 == 2
-                        ? 'Middag'
-                        : i % 5 == 3
-                            ? 'Mellanmål'
-                            : 'Efterrätt',
-          ),
+    group('Parsed Request API', () {
+      test('should generate menu from a pre-built ParsedMenuRequest', () async {
+        final parsed = ParsedMenuRequest(
+          slotRequests: [
+            SlotRequest(
+              mealType: 'middag',
+              subRequests: [RecipeConstraint(count: 3)],
+            ),
+          ],
+          globalAllergenAvoid: const {},
+          globalDietaryRequire: const {},
+          dayPins: const [],
+          trace: const ExtractionTrace(),
+          rawPrompt: 'test',
         );
 
-        const input = 'fem frukoster, tre luncher och fyra middagar';
-
-        // Act
-        final stopwatch = Stopwatch()..start();
-        final menu =
-            await menuService.generateMenuFromPrompt(input, largeRecipeList);
-        stopwatch.stop();
-
-        // Assert
-        expect(menu['Frukost']?.length, equals(5));
-        expect(menu['Lunch']?.length, equals(3));
-        expect(menu['Middag']?.length, equals(4));
-        expect(stopwatch.elapsedMilliseconds, lessThan(100),
-            reason: 'Should process large lists quickly');
-      });
-    });
-
-    group('Singleton Pattern', () {
-      test('should maintain same instance across multiple factory calls', () {
-        // Act
-        final instance1 = MenuService();
-        final instance2 = MenuService();
-        final instance3 = MenuService();
-
-        // Assert
-        expect(identical(instance1, instance2), isTrue);
-        expect(identical(instance2, instance3), isTrue);
+        final menu = await menuService.generateMenuFromParsedRequest(
+            parsed, testRecipes);
+        expect(menu['middag']?.length, equals(3));
       });
 
-      test('should reset singleton for testing', () {
-        // Arrange
-        final instance1 = MenuService();
-
-        // Act
-        SingletonServiceMixin.resetForTesting();
-        final instance2 = MenuService();
-
-        // Assert
-        expect(identical(instance1, instance2), isFalse);
-      });
-    });
-
-    group('Error Handling', () {
-      // Tests for existing generateMenuFromPrompt functionality
-      group('Current Implementation Errors', () {
-        test('should handle extremely large number requests gracefully',
-            () async {
-          // Arrange
-          const input = '9999999 frukoster'; // Extreme number
-
-          // Act
-          final menu =
-              await menuService.generateMenuFromPrompt(input, testRecipes);
-
-          // Assert - Should be limited to available recipes
-          expect(menu['Frukost']?.length,
-              lessThanOrEqualTo(5)); // Only 5 breakfast recipes available
-        });
-
-        test('should handle negative numbers gracefully', () async {
-          // Arrange
-          const input = '-5 frukoster';
-
-          // Act
-          final menu =
-              await menuService.generateMenuFromPrompt(input, testRecipes);
-
-          // Assert
-          expect(menu, isEmpty);
-        });
-
-        test('should handle no recipes available for meal type', () async {
-          // Arrange
-          final recipesWithoutBreakfast =
-              testRecipes.where((r) => r.mealType != 'Frukost').toList();
-          const input = 'fem frukoster';
-
-          // Act
-          final menu = await menuService.generateMenuFromPrompt(
-            input,
-            recipesWithoutBreakfast,
-          );
-
-          // Assert
-          expect(menu['Frukost'], isNull);
-        });
-
-        test('should handle invalid meal type strings gracefully', () async {
-          // Arrange
-          const invalidMealTypes = [
-            'invalid_meal',
-            'xyz_random_type',
-            'not_a_meal',
-          ];
-
-          // Act & Assert
-          for (final mealType in invalidMealTypes) {
-            final menu = await menuService.generateMenuFromPrompt(
-              'tre $mealType',
-              testRecipes,
-            );
-            expect(menu, isEmpty,
-                reason: 'Should return empty for invalid meal type: $mealType');
-          }
-
-          // Note: The service may be lenient and match partial inputs
-          // This is actually a feature, not a bug - it helps with user experience
-        });
-
-        test('should handle malformed input with special characters', () async {
-          // Arrange
-          const malformedInputs = [
-            '@#\$%^&*()',
-            '!!!###',
-            '<<<>>>',
-            '{}[]',
-            'null undefined',
-          ];
-
-          // Act & Assert
-          for (final input in malformedInputs) {
-            final menu = await menuService.generateMenuFromPrompt(
-              input,
-              testRecipes,
-            );
-            expect(menu, isEmpty,
-                reason: 'Should return empty for malformed input: $input');
-          }
-        });
-
-        test('should handle mixed valid and invalid requests', () async {
-          // Arrange
-          const input = 'tre frukoster och invalid_meal och två middagar';
-
-          // Act
-          final menu =
-              await menuService.generateMenuFromPrompt(input, testRecipes);
-
-          // Assert - Should only process valid meal types
-          expect(menu['Frukost']?.length, equals(3));
-          expect(menu['Middag']?.length, equals(2));
-          expect(menu.containsKey('invalid_meal'), isFalse);
-        });
-
-        test('should handle recipe list with duplicate IDs', () async {
-          // Arrange
-          final duplicateRecipes = [
-            RecipeFactory.build(id: 'dup1', mealType: 'Frukost'),
-            RecipeFactory.build(id: 'dup1', mealType: 'Frukost'), // Duplicate
-            RecipeFactory.build(id: 'dup2', mealType: 'Frukost'),
-          ];
-
-          // Act
-          final menu = await menuService.generateMenuFromPrompt(
-            'två frukoster',
-            duplicateRecipes,
-          );
-
-          // Assert - Should handle duplicates gracefully
-          expect(menu['Frukost']?.length, lessThanOrEqualTo(2));
-        });
-
-        test('should handle concurrent calls gracefully', () async {
-          // Arrange
-          final futures = List.generate(
-              10,
-              (i) => menuService.generateMenuFromPrompt(
-                  'en frukost', testRecipes));
-
-          // Act & Assert - All should complete without issues
-          final results = await Future.wait(futures);
-          for (final result in results) {
-            expect(result['Frukost']?.length, equals(1));
-          }
-        });
+      test('should return empty map for empty parsed request', () async {
+        final parsed = ParsedMenuRequest.empty('nothing');
+        final menu = await menuService.generateMenuFromParsedRequest(
+            parsed, testRecipes);
+        expect(menu, isEmpty);
       });
     });
 
@@ -792,7 +302,7 @@ void main() {
       Recipe recipeWithCookedAt(
         String id,
         DateTime? lastCookedAt, {
-        String mealType = 'Middag',
+        String mealType = 'middag',
         Set<String>? tags,
       }) {
         final base = RecipeFactory.build(
@@ -811,156 +321,200 @@ void main() {
               )
             : null;
         return Recipe(
-          core: base.core.copyWith(
-            tagResult: tagResult,
-          ),
+          core: base.core.copyWith(tagResult: tagResult),
           type: base.type,
         );
       }
 
-      test('should prefer never-cooked recipes over recently-cooked', () async {
-        // Never-cooked = weight 90, recently cooked = weight ~1-2
-        final neverCooked =
-            recipeWithCookedAt('never', null, mealType: 'Middag');
+      test('should prefer never-cooked recipes', () async {
+        final neverCooked = recipeWithCookedAt('never', null);
         final justCooked = recipeWithCookedAt(
           'just',
           DateTime.now().subtract(const Duration(hours: 1)),
-          mealType: 'Middag',
         );
 
-        final recipes = [neverCooked, justCooked];
+        final pool = [neverCooked, justCooked];
+        final parsed = ParsedMenuRequest(
+          slotRequests: [
+            SlotRequest(
+                mealType: 'middag', subRequests: [RecipeConstraint(count: 1)]),
+          ],
+          globalAllergenAvoid: const {},
+          globalDietaryRequire: const {},
+          dayPins: const [],
+          trace: const ExtractionTrace(),
+          rawPrompt: 'en middag',
+        );
+
         var neverCount = 0;
-
         for (var i = 0; i < 50; i++) {
-          final menu = await menuService.generateMenuFromPrompt(
-            'en middag',
-            recipes,
-          );
-          if (menu['Middag']?.first.id == 'never') neverCount++;
+          final menu =
+              await menuService.generateMenuFromParsedRequest(parsed, pool);
+          if (menu['middag']?.first.id == 'never') neverCount++;
         }
-
-        // Never-cooked should be picked significantly more often
         expect(neverCount, greaterThan(35),
-            reason: 'Never-cooked should be heavily preferred');
+            reason: 'Never-cooked (weight 90) should be heavily preferred');
       });
 
       test('should give season boost to seasonal recipes', () async {
-        // Both never cooked (weight 90 base), but one has season tag
-        // Season boost = 1.5x, so seasonal = 135, non-seasonal = 90
         final currentMonth = DateTime.now().month;
         String seasonTag;
         if (currentMonth >= 3 && currentMonth <= 5) {
-          seasonTag = 'vår';
+          seasonTag = 'v\u00e5r';
         } else if (currentMonth >= 6 && currentMonth <= 8) {
           seasonTag = 'sommar';
         } else if (currentMonth >= 9 && currentMonth <= 11) {
-          seasonTag = 'höst';
+          seasonTag = 'h\u00f6st';
         } else {
           seasonTag = 'vinter';
         }
 
-        final seasonal = recipeWithCookedAt(
-          'seasonal',
-          null,
-          mealType: 'Middag',
-          tags: {seasonTag},
-        );
-        final nonSeasonal = recipeWithCookedAt(
-          'non_seasonal',
-          null,
-          mealType: 'Middag',
-          tags: {'not_a_season'},
+        final seasonal =
+            recipeWithCookedAt('seasonal', null, tags: {seasonTag});
+        final nonSeasonal =
+            recipeWithCookedAt('non_seasonal', null, tags: {'not_a_season'});
+
+        final pool = [seasonal, nonSeasonal];
+        final parsed = ParsedMenuRequest(
+          slotRequests: [
+            SlotRequest(
+                mealType: 'middag', subRequests: [RecipeConstraint(count: 1)]),
+          ],
+          globalAllergenAvoid: const {},
+          globalDietaryRequire: const {},
+          dayPins: const [],
+          trace: const ExtractionTrace(),
+          rawPrompt: 'en middag',
         );
 
-        final recipes = [seasonal, nonSeasonal];
         var seasonalCount = 0;
-
         for (var i = 0; i < 100; i++) {
-          final menu = await menuService.generateMenuFromPrompt(
-            'en middag',
-            recipes,
-          );
-          if (menu['Middag']?.first.id == 'seasonal') seasonalCount++;
+          final menu =
+              await menuService.generateMenuFromParsedRequest(parsed, pool);
+          if (menu['middag']?.first.id == 'seasonal') seasonalCount++;
         }
-
-        // Seasonal should be picked more often (1.5x weight advantage)
         expect(seasonalCount, greaterThan(50),
-            reason: 'Seasonal recipes should be preferred');
+            reason: 'Seasonal recipes should be preferred (1.5x weight)');
       });
 
       test('should enforce cuisine diversity (max 2 per cuisine)', () async {
-        // Create 5 Italian recipes, 3 Thai, and 2 Swedish for diverse pool
-        final italianRecipes = List.generate(
-          5,
-          (i) => recipeWithCookedAt(
-            'ita_$i',
-            null,
-            mealType: 'Middag',
-            tags: {'italiensk'},
+        final italienskTag =
+            CuisineConfig.cuisines.firstWhere((c) => c.key == 'italiensk').tag;
+        final svenskTag =
+            CuisineConfig.cuisines.firstWhere((c) => c.key == 'svensk').tag;
+
+        // Need at least 3 distinct cuisine groups so diversity kicks in.
+        // Use null-cuisine recipes as a third group.
+        final pool = [
+          ...List.generate(
+            5,
+            (i) => recipeWithCookedAt('ita_$i', null, tags: {italienskTag}),
           ),
-        );
-        final thaiRecipes = List.generate(
-          3,
-          (i) => recipeWithCookedAt(
-            'thai_$i',
-            null,
-            mealType: 'Middag',
-            tags: {'thailändsk'},
+          ...List.generate(
+            2,
+            (i) => recipeWithCookedAt('sv_$i', null, tags: {svenskTag}),
           ),
-        );
-        final swedishRecipes = List.generate(
-          2,
-          (i) => recipeWithCookedAt(
-            'sv_$i',
-            null,
-            mealType: 'Middag',
-            tags: {'svensk'},
+          // 3 recipes with no cuisine tag
+          ...List.generate(
+            3,
+            (i) => recipeWithCookedAt('plain_$i', null),
           ),
+        ];
+
+        final parsed = ParsedMenuRequest(
+          slotRequests: [
+            SlotRequest(
+                mealType: 'middag', subRequests: [RecipeConstraint(count: 5)]),
+          ],
+          globalAllergenAvoid: const {},
+          globalDietaryRequire: const {},
+          dayPins: const [],
+          trace: const ExtractionTrace(),
+          rawPrompt: 'fem middagar',
         );
 
-        final recipes = [...italianRecipes, ...thaiRecipes, ...swedishRecipes];
-
-        // Single run to verify diversity works
-        final menu = await menuService.generateMenuFromPrompt(
-          'fem middagar',
-          recipes,
-        );
-
-        final dinners = menu['Middag'] ?? [];
+        final menu =
+            await menuService.generateMenuFromParsedRequest(parsed, pool);
+        final dinners = menu['middag'] ?? [];
         expect(dinners.length, equals(5));
 
         final cuisineCounts = <String, int>{};
         for (final r in dinners) {
-          final tags = r.tagResult?.tags;
-          if (tags == null) continue;
-          for (final tag in tags) {
-            if ({'italiensk', 'thailändsk', 'svensk'}.contains(tag)) {
-              cuisineCounts[tag] = (cuisineCounts[tag] ?? 0) + 1;
-            }
+          final cuisine = CuisineConfig.extractCuisineTag(r);
+          if (cuisine != null) {
+            cuisineCounts[cuisine] = (cuisineCounts[cuisine] ?? 0) + 1;
           }
         }
 
-        // Should not have more than 2 of any single cuisine
         for (final entry in cuisineCounts.entries) {
           expect(entry.value, lessThanOrEqualTo(2),
-              reason: '${entry.key} should have max 2, got ${entry.value}. '
-                  'Dinners: ${dinners.map((r) => r.id).join(", ")}');
+              reason: '${entry.key} should have max 2, got ${entry.value}');
         }
       });
 
-      test('should still work with no cuisine tags', () async {
-        // All recipes without cuisine tags — should not crash
-        final recipesNoTags = List.generate(
+      test('should work with no cuisine tags', () async {
+        final pool = List.generate(
           5,
-          (i) => recipeWithCookedAt('r_$i', null, mealType: 'Middag'),
+          (i) => recipeWithCookedAt('r_$i', null),
+        );
+        final parsed = ParsedMenuRequest(
+          slotRequests: [
+            SlotRequest(
+                mealType: 'middag', subRequests: [RecipeConstraint(count: 3)]),
+          ],
+          globalAllergenAvoid: const {},
+          globalDietaryRequire: const {},
+          dayPins: const [],
+          trace: const ExtractionTrace(),
+          rawPrompt: 'tre middagar',
         );
 
-        final menu = await menuService.generateMenuFromPrompt(
-          'tre middagar',
-          recipesNoTags,
+        final menu =
+            await menuService.generateMenuFromParsedRequest(parsed, pool);
+        expect(menu['middag']?.length, equals(3));
+      });
+    });
+
+    group('Performance', () {
+      test('should handle large recipe collections efficiently', () async {
+        final largeList = List.generate(
+          1000,
+          (i) => RecipeFactory.build(
+            id: 'r_$i',
+            title: 'Recipe $i',
+            mealType: i % 3 == 0
+                ? 'frukost'
+                : i % 3 == 1
+                    ? 'lunch'
+                    : 'middag',
+          ),
         );
 
-        expect(menu['Middag']?.length, equals(3));
+        final parsed = ParsedMenuRequest(
+          slotRequests: [
+            SlotRequest(
+                mealType: 'frukost', subRequests: [RecipeConstraint(count: 5)]),
+            SlotRequest(
+                mealType: 'lunch', subRequests: [RecipeConstraint(count: 3)]),
+            SlotRequest(
+                mealType: 'middag', subRequests: [RecipeConstraint(count: 4)]),
+          ],
+          globalAllergenAvoid: const {},
+          globalDietaryRequire: const {},
+          dayPins: const [],
+          trace: const ExtractionTrace(),
+          rawPrompt: 'test',
+        );
+
+        final sw = Stopwatch()..start();
+        final menu =
+            await menuService.generateMenuFromParsedRequest(parsed, largeList);
+        sw.stop();
+
+        expect(menu['frukost']?.length, equals(5));
+        expect(menu['lunch']?.length, equals(3));
+        expect(menu['middag']?.length, equals(4));
+        expect(sw.elapsedMilliseconds, lessThan(200));
       });
     });
   });

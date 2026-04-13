@@ -2,6 +2,7 @@
 /// ```dart
 /// final im = ImportManager(ops); await im.autoImport(text);
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
@@ -38,6 +39,16 @@ class ImportManager {
 
   ImportManager(this._personalOperations) {
     _initializeStrategies();
+  }
+
+  /// Test-only constructor that accepts pre-built strategies, avoiding
+  /// Firebase/network initialisation that `_initializeStrategies` triggers.
+  @visibleForTesting
+  ImportManager.withStrategies(
+    this._personalOperations,
+    List<ImportStrategy> strategies,
+  ) {
+    _strategies.addAll(strategies);
   }
 
   /// Get the global recipe cache (lazy initialization with graceful fallback)
