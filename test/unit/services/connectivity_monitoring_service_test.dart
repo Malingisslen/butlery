@@ -182,7 +182,9 @@ void main() {
         // Arrange
         service.startMonitoring();
 
-        // Act
+        // Act — first disconnect so state actually changes, then reconnect
+        firebaseStreamController.add(false);
+        await Future.delayed(Duration(milliseconds: 100));
         firebaseStreamController.add(true);
         await Future.delayed(Duration(milliseconds: 100));
 

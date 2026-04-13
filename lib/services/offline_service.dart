@@ -169,7 +169,9 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       _currentUserId = userId;
       AppLogger.info(
           '👤 Offline service använder nu user: ${userId ?? "INGEN"}');
-      // Refresh sync state for new user
+      // Always notify listeners so UI reacts to user change
+      notifyListeners();
+      // Refresh sync state for new user (also notifies when initialized)
       refreshSyncState();
     }
   }

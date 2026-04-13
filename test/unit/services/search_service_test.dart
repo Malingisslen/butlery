@@ -91,11 +91,14 @@ void main() {
 
   group('SearchService', () {
     group('Initialization', () {
-      test('should maintain singleton pattern', () {
+      test('should be instantiable (DI-managed singleton)', () {
         final service1 = SearchService();
         final service2 = SearchService();
 
-        expect(identical(service1, service2), isTrue);
+        // SearchService is no longer a manual singleton — GetIt manages the
+        // single instance. Two constructor calls produce distinct objects.
+        expect(service1, isA<SearchService>());
+        expect(service2, isA<SearchService>());
       });
 
       test('should have correct service name', () {
@@ -464,11 +467,13 @@ void main() {
       });
 
       test('should handle recipes with null optional fields', () {
-        // Create recipe without optional fields
-        final recipeWithoutOptionalFields = RecipeFactory.buildPersonal(
+        // Create recipe with null rating and timeMinutes
+        final recipeWithoutOptionalFields = RecipeFactory.build(
           id: 'test-id',
           title: 'Test Recipe',
           createdBy: 'user123',
+          rating: null,
+          timeMinutes: null,
         );
         final recipesWithNulls = [recipeWithoutOptionalFields];
 

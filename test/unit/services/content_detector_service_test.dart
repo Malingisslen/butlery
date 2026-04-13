@@ -27,13 +27,15 @@ void main() {
 
   group('ContentDetectorService', () {
     group('Initialization', () {
-      test('should maintain singleton pattern', () {
+      test('should be instantiable (DI-managed singleton)', () {
         // Arrange & Act
         final service1 = ContentDetectorService();
         final service2 = ContentDetectorService();
 
-        // Assert
-        expect(identical(service1, service2), isTrue);
+        // ContentDetectorService is no longer a manual singleton — GetIt
+        // manages the single instance. Constructor calls create distinct objects.
+        expect(service1, isA<ContentDetectorService>());
+        expect(service2, isA<ContentDetectorService>());
       });
 
       test('should have correct service name', () {
