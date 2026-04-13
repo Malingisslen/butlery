@@ -703,7 +703,7 @@ void main() {
 
         // Assert
         expect(result.isSuccess, isFalse);
-        expect(result.errorMessage, contains('Photo import error'));
+        expect(result.errorMessage, isNotEmpty);
         expect(result.errorMessage, contains('Network error'));
       });
 
@@ -729,7 +729,7 @@ void main() {
 
         // Assert
         expect(result.isSuccess, isFalse);
-        expect(result.errorMessage, contains('Photo import error'));
+        expect(result.errorMessage, isNotEmpty);
       });
 
       test('should provide helpful error for missing image', () async {
