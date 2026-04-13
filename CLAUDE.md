@@ -1,103 +1,76 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 Additional rules in `.claude/rules/` are auto-loaded.
 
 ## Critical Rules
 
-1. **Find root causes** - prefer proper fixes over quick patches. If you can't find the root cause, say what you investigated and why you're stuck.
-2. **500-line limit** - use facade pattern for complex files
-3. **Security validation** - PermissionValidationMixin on all repositories
-4. **Single data source** - don't mix UserService/PermissionService
-5. **Ask before deviating** - from planned tasks
-6. **Existing plan = execute** - if a plan/spec file exists, START implementing. Don't re-explore or re-plan.
-7. **Run when asked to run** - `flutter run -d chrome` when asked to test/run. Don't create planning docs instead.
-8. **Plan = plan + verify** - when a plan includes verification steps, "implement this" means execute ALL steps including testing. If a verification step fails or can't run, report what happened instead of claiming done.
-9. **Terse follow-up after "done" = you missed something** - if the user sends a short prompt right after you claimed completion, re-read what you skipped. Don't ask what they mean.
-10. **"No" starts a redirect, not a discussion** - when user says "No, I want X", you misunderstood. Re-read their prior request. Don't ask what went wrong.
-11. **Be accurate about scope** - don't call simple tasks "massive" or over-estimate complexity.
-12. **No retry loops on plan/review gates** - when exiting plan mode or completing a review gate, do it once. If the first attempt fails or is rejected, ask the user what they want instead of retrying the same action.
-13. **Learn from corrections** - when the user corrects you ("no", "wrong", redirects, terse follow-up after "done"), IMMEDIATELY add an entry to `tasks/lessons.md` before doing anything else. Format: `### [Category] Title` + Date, Trigger, Rule, Example. Non-negotiable.
+1. **Find root causes** — proper fixes over quick patches. If stuck, say what you investigated and why.
+2. **500-line limit** — use facade pattern for complex files
+3. **Security validation** — PermissionValidationMixin on all repositories
+4. **Ask before deviating** from planned tasks
+5. **Plans = execute + verify** — if a plan/spec exists, implement it (don't re-plan). "Implement" includes verification steps. If verification fails, report what happened — don't claim done.
+6. **Pushback = re-read** — terse follow-up after "done" means you missed something. "No, I want X" means you misunderstood. Re-read before responding.
+7. **Be accurate about scope** — don't over-estimate complexity
+8. **No retry loops** on plan/review gates — if rejected, ask user instead of retrying
+9. **Learn from corrections** — on any correction, IMMEDIATELY add to `tasks/lessons.md` (format: `### [Category] Title` + Date, Trigger, Rule, Example) before doing anything else.
+10. **Honesty over completion** — "I don't know" is acceptable. Partial solution with clear gaps beats papering over problems. Never claim done if you skipped verification.
 
 ## Critical Conventions
 
-**Data Sources** (CRITICAL — see `data-source-enforcer` skill):
+**Data Sources** (see `data-source-enforcer` skill):
 - `userService.currentUserProfile` → complete user data (settings, avatar, social)
 - `permissionService.currentUserId` → auth/permission checks only
 - Never mix these — causes settings not persisting
 
-## Cost & Architecture Principles
+## Cost Principles
 
 - **Minimize running costs** — every feature decision should consider operational expense
 - **Prefer deterministic logic over LLM calls** — use code, rules, and algorithms when possible; LLMs only when genuinely needed (e.g., free-text understanding, creative generation)
-- **When LLMs are necessary** — optimize for cost: prompt caching, smaller models where sufficient, batching requests
-- **Firebase usage** — avoid unnecessary reads/writes; use batched operations, caching, and efficient queries
+- **When LLMs are necessary** — optimize: prompt caching, smaller models where sufficient, batching
+- **Firebase** — avoid unnecessary reads/writes; batch operations, cache, use efficient queries
 
 ## Architecture
 
 **Pattern**: MVVM + Repository (Views → ViewModels → Services → Repositories → Firebase)
 
-See `.claude/rules/code-style.md` for file size limits, service access patterns, syntax, and commenting conventions.
-See `.claude/rules/git-workflow.md` for git safety, pre-commit checks, and lefthook.
-See `.claude/rules/workflow-discipline.md` for plan mode, verification, and self-improvement.
-See `.claude/rules/ui-conventions.md` for responsive design and mockup comparison (scoped to views/widgets).
+See `.claude/rules/code-style.md` for file size limits, service access, syntax, commenting.
+See `.claude/rules/git-workflow.md` for git safety, pre-commit checks, lefthook.
+See `.claude/rules/workflow-discipline.md` for plan mode, verification, self-improvement.
+See `.claude/rules/ui-conventions.md` for responsive design, mockup comparison.
 
-## Infrastructure
-
-New code must use project mixins and base classes. See `mixin-advisor` skill for the decision table.
+New code must use project mixins and base classes — see `mixin-advisor` skill.
 
 ## Testing Philosophy
 
-Tests exist to verify **intended behavior**, not to be green.
+Tests verify **intended behavior**, not green status.
 
-1. **Intention first** — before writing or fixing a test, articulate what behavior it proves. If you can't state the intention in one sentence, the test is unfocused.
-2. **A failing test might be right** — when a test fails, ask "is the test correct?" before asking "how do I make it pass?" The test may be catching a real bug.
-3. **Never weaken to green** — don't remove assertions, broaden matchers, or increase tolerances just to make a test pass. If the assertion is wrong, understand why first.
-4. **Don't mock the subject** — mock dependencies, not the thing you're testing. A test that mocks away the behavior it claims to verify proves nothing.
-5. **Meaningful > comprehensive** — one test that verifies a critical user-facing behavior is worth more than ten tests that check getter return values.
-6. **Test the contract, not the implementation** — test what a function promises (inputs → outputs, side effects), not how it does it internally. Implementation changes shouldn't break tests unless behavior changed.
-
-## Honesty Over Completion
-- Saying "I don't know" or "this isn't working" is always acceptable
-- A partial solution with clear docs of what's missing beats a complete solution that papers over problems
-- If tests pass but you're not confident the fix is correct, say so
-- Never claim "done" if you skipped verification steps — say which ones and why
-- When stuck: describe what you tried, what failed, and where you'd look next
+1. **Intention first** — articulate what behavior a test proves. One sentence or it's unfocused.
+2. **Failing test might be right** — ask "is the test correct?" before "how do I make it pass?" Never weaken assertions just to go green.
+3. **Mock dependencies, not the subject** — a test that mocks away the behavior it claims to verify proves nothing.
+4. **Test the contract** — inputs → outputs and side effects, not implementation details. One meaningful behavioral test beats ten getter checks.
 
 ## Commands
-- **Analysis**: `flutter analyze`
-- **Run**: `flutter run`
-- **Tests**: `flutter test test/unit/file_test.dart`
-- **Path rule**: Always use forward slashes in test paths
+- `flutter analyze` / `flutter run` / `flutter test test/unit/file_test.dart`
+- Always use forward slashes in test paths
 
 ## Stop Hook Response
 
-När stop hook blockerar med en `reason`:
-- **Fixa problemet OMEDELBART** - fråga INTE användaren
-- Om reason nämner "uncommitted" → committa direkt
-- Om reason nämner "analyze" → kör analyze och fixa fel
-- Om reason nämner "tests" → kör tester och fixa fel
-- Försök sedan stoppa igen
+When stop hook blocks with a `reason`, fix it immediately — don't ask the user:
+- "uncommitted" → commit now
+- "analyze" → run analyze and fix
+- "tests" → run tests and fix
 
-The stop hook is session-aware: it only blocks on errors in files THIS session modified. Errors in files modified by another parallel session are ignored — do NOT attempt to fix them.
+Session-aware: only blocks on errors in files THIS session modified. Ignore errors from parallel sessions.
 
 ## Agent Usage Rules
 
-### Tier 1: Strongly Recommended
+**Tier 1 — Strongly Recommended:**
+- **debugger** — bug reports, errors, test failures, unexpected behavior
+- **firebase-backend-security** — lib/repositories/, Firebase/Firestore/auth, user data
 
-**debugger** - Use when encountering: bug reports, errors/exceptions, test failures, unexpected behavior, runtime issues.
+**Tier 2 — Commit Enforced (automatic):**
+- **code-reviewer** — reviews staged .dart changes
+- **testing-specialist** — verifies test coverage for modified lib/ files
 
-**firebase-backend-security** - Use when modifying: files in lib/repositories/, Firebase/Firestore/auth logic, user data operations.
-
-### Tier 2: Quality Gates (Commit Enforced)
-
-When committing, these agents run automatically:
-- **code-reviewer** - Reviews all staged .dart changes
-- **testing-specialist** - Verifies test coverage for modified lib/ files
-
-### Tier 3: On Request
-
-Available when explicitly requested:
-- **uiux-designer** - New views, UI changes, accessibility
-- **performance-optimizer** - Performance concerns
-- **flutter-developer** - Complex architecture questions
+**Tier 3 — On Request:**
+- **uiux-designer**, **performance-optimizer**, **flutter-developer**
