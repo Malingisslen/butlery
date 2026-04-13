@@ -107,6 +107,18 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     setState(() => _viewMode = mode);
     await ServiceLocator.get<PersistenceService>()
         .setVeckomenyViewMode(mode.name);
+
+    // When switching to calendar with a generated menu, apply it.
+    if (mode == VeckomenyViewMode.kalender && mounted) {
+      final menuVm = context.read<MenuViewModel>();
+      final calendarVm = context.read<WeeklyMenuPlanViewModel>();
+      if (menuVm.hasMenu) {
+        await calendarVm.applyGeneratedMenu(
+          menuVm.menu,
+          replaceExisting: true,
+        );
+      }
+    }
   }
 
   Future<void> _generateMenu() async {
