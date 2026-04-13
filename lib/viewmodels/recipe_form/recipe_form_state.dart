@@ -715,6 +715,7 @@ class RecipeFormState extends ChangeNotifier {
         imageUrls: imageUrls ?? _imageUrls,
         thumbnailUrl: thumbnailUrl ?? _originalRecipe?.core.thumbnailUrl,
         sourceUrl: _sourceUrl?.trim(),
+        createdBy: _originalRecipe?.core.createdBy,
         createdAt: (_originalRecipe?.createdAt).orNow(),
         updatedAt: DateTime.now(),
         tagResult: _originalRecipe?.tagResult,
