@@ -26,6 +26,13 @@ Additional rules in `.claude/rules/` are auto-loaded.
 - `permissionService.currentUserId` → auth/permission checks only
 - Never mix these — causes settings not persisting
 
+## Cost & Architecture Principles
+
+- **Minimize running costs** — every feature decision should consider operational expense
+- **Prefer deterministic logic over LLM calls** — use code, rules, and algorithms when possible; LLMs only when genuinely needed (e.g., free-text understanding, creative generation)
+- **When LLMs are necessary** — optimize for cost: prompt caching, smaller models where sufficient, batching requests
+- **Firebase usage** — avoid unnecessary reads/writes; use batched operations, caching, and efficient queries
+
 ## Architecture
 
 **Pattern**: MVVM + Repository (Views → ViewModels → Services → Repositories → Firebase)
