@@ -100,7 +100,7 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
           imageUrls: sourceRecipe.imageUrls,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          createdBy: sourceRecipe.createdBy,
+          createdBy: null,
           isPublic: sourceRecipe.isPublic,
           lastCookedAt: sourceRecipe.lastCookedAt,
         ),
