@@ -243,8 +243,19 @@ class MenuService extends BaseService {
     ParsedMenuRequest parsed,
     List<Recipe> allRecipes,
   ) {
-    final globallyOk =
+    var globallyOk =
         allRecipes.where((r) => _passesGlobals(r, parsed)).toList();
+
+    // Ingredient-text exclusion: remove recipes containing excluded words
+    if (parsed.globalExcludedTags.isNotEmpty) {
+      globallyOk = globallyOk.where((r) {
+        final ings = r.core.ingredientsNormalized ?? r.core.ingredients;
+        for (final word in parsed.globalExcludedTags) {
+          if (ings.any((i) => i.toLowerCase().contains(word))) return false;
+        }
+        return true;
+      }).toList();
+    }
     final result = <String, List<Recipe>>{};
     final usedIds = <String>{};
     final rand = Random();
