@@ -83,7 +83,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           final result = _service.distributeFromGeneratedMenu(
             generated: generated,
             weekStart: currentWeekStart,
-            existing: replaceExisting ? null : _plan,
+            existing:
+                replaceExisting ? _plan?.copyWith(entries: const []) : _plan,
             now: now,
             dayPins: parsedRequest?.dayPins ?? const [],
           );
