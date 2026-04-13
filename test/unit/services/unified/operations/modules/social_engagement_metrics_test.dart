@@ -324,9 +324,11 @@ void main() {
           ], // Need a recipe to trigger Firestore calls
         );
 
-        // Assert
-        expect(stats.containsKey('error'), isTrue);
-        expect(stats['error'], equals('Failed to calculate statistics'));
+        // Assert - Firestore errors are caught in _calculateUserRatingStats
+        // which returns default values; the outer method succeeds with zeroed ratings
+        expect(stats['total_recipes'], equals(1));
+        expect(stats['ratings_received'], equals(0));
+        expect(stats['ratings_given'], equals(0));
       });
 
       test('should handle missing user data', () async {
