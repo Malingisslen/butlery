@@ -76,31 +76,33 @@ void main() {
         expect(result.unit, equals('dl'));
       });
 
-      test('should convert tablespoons to matskedar', () {
+      test('should convert tablespoons to matskedar with 1:1 mapping', () {
+        // 1 tbsp (14.79 ml) ≈ 1 msk (15 ml) — close enough for cooking
         var result = SmartUnitConverter.convertToReadableUnit(1.0, 'tbsp');
-        expect(result.quantity, closeTo(0.89, 0.01));
+        expect(result.quantity, equals(1.0));
         expect(result.unit, equals('msk'));
 
         result = SmartUnitConverter.convertToReadableUnit(2.0, 'tablespoon');
-        expect(result.quantity, closeTo(1.78, 0.01));
+        expect(result.quantity, equals(2.0));
         expect(result.unit, equals('msk'));
 
         result = SmartUnitConverter.convertToReadableUnit(3.0, 'tablespoons');
-        expect(result.quantity, closeTo(2.67, 0.01));
+        expect(result.quantity, equals(3.0));
         expect(result.unit, equals('msk'));
       });
 
-      test('should convert teaspoons to teskedar', () {
+      test('should convert teaspoons to teskedar with 1:1 mapping', () {
+        // 1 tsp (4.93 ml) ≈ 1 tsk (5 ml) — close enough for cooking
         var result = SmartUnitConverter.convertToReadableUnit(1.0, 'tsp');
-        expect(result.quantity, closeTo(0.84, 0.01));
+        expect(result.quantity, equals(1.0));
         expect(result.unit, equals('tsk'));
 
         result = SmartUnitConverter.convertToReadableUnit(2.0, 'teaspoon');
-        expect(result.quantity, closeTo(1.68, 0.01));
+        expect(result.quantity, equals(2.0));
         expect(result.unit, equals('tsk'));
 
         result = SmartUnitConverter.convertToReadableUnit(0.5, 'teaspoons');
-        expect(result.quantity, closeTo(0.42, 0.01));
+        expect(result.quantity, equals(0.5));
         expect(result.unit, equals('tsk'));
       });
 

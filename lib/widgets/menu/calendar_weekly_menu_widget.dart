@@ -3,6 +3,7 @@
 /// week-nav header, and all five UI states, with drag-drop between cells.
 library;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -561,18 +562,28 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     return _wrapAsDraggable(_MovePayload(entry), chip);
   }
 
-  /// Wraps [child] in a `LongPressDraggable` carrying [payload] — used by
-  /// both the single-recipe cells and the multi-entry övrigt chips so the
-  /// feedback width and haptic behavior stay in one place.
+  /// Wraps [child] as draggable. Uses `Draggable` on web (long-press
+  /// doesn't fire with a mouse) and `LongPressDraggable` on mobile.
   Widget _wrapAsDraggable(_CalendarDragPayload payload, Widget child) {
+    final feedback = Material(
+      color: Colors.transparent,
+      child: SizedBox(width: _kDragFeedbackWidth, child: child),
+    );
+    final ghost = Opacity(opacity: 0.4, child: child);
+
+    if (kIsWeb) {
+      return Draggable<_CalendarDragPayload>(
+        data: payload,
+        feedback: feedback,
+        childWhenDragging: ghost,
+        child: child,
+      );
+    }
     return LongPressDraggable<_CalendarDragPayload>(
       data: payload,
       onDragStarted: HapticFeedback.selectionClick,
-      feedback: Material(
-        color: Colors.transparent,
-        child: SizedBox(width: _kDragFeedbackWidth, child: child),
-      ),
-      childWhenDragging: Opacity(opacity: 0.4, child: child),
+      feedback: feedback,
+      childWhenDragging: ghost,
       child: child,
     );
   }

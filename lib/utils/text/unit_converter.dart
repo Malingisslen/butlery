@@ -19,7 +19,7 @@
 /// ```
 /// // American to Swedish conversion
 /// convertToReadableUnit(1.0, "cup")     // -> ConvertedMeasurement(2.37, "dl")
-/// convertToReadableUnit(2.0, "tbsp")    // -> ConvertedMeasurement(1.78, "msk")
+/// convertToReadableUnit(2.0, "tbsp")    // -> ConvertedMeasurement(2.0, "msk")
 /// // Swedish unit optimization
 /// convertToReadableUnit(1500.0, "g")   // -> ConvertedMeasurement(1.5, "kg")
 /// convertToReadableUnit(15.0, "dl")    // -> ConvertedMeasurement(1.5, "l")
@@ -77,14 +77,15 @@ class SmartUnitConverter {
       case 'tablespoon':
       case 'tablespoons':
         return ConvertedMeasurement(
-          quantity * 0.89,
+          quantity,
           'msk',
-        ); // 1 tbsp ≈ 0.89 msk
+        ); // 1 tbsp (14.79 ml) ≈ 1 msk (15 ml)
 
       case 'tsp':
       case 'teaspoon':
       case 'teaspoons':
-        return ConvertedMeasurement(quantity * 0.84, 'tsk'); // 1 tsp ≈ 0.84 tsk
+        return ConvertedMeasurement(
+            quantity, 'tsk'); // 1 tsp (4.93 ml) ≈ 1 tsk (5 ml)
 
       case 'pint':
       case 'pints':
