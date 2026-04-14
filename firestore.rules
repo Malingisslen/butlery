@@ -8,7 +8,7 @@ service cloud.firestore {
     //   recipes, unified_shopping_lists(/items), ingredients, personal_tags,
     //   personal_tag_groups, friends, friend_categories, conversations,
     //   rate_limits, counters, conversation_memberships,
-    //   settings, consent
+    //   settings, consent, category_preferences, list_category_orders
     //
     // Social / shared:
     //   public_profiles, social_requests,
@@ -332,6 +332,16 @@ service cloud.firestore {
       match /pantry/{pantryItemId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+
+      // User's shopping category preferences (BUT-379)
+      match /category_preferences/{prefId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // User's list category display orders (BUT-379)
+      match /list_category_orders/{orderId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // ========================================
@@ -645,7 +655,7 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.authorId
         && hasRequiredFields(['authorId', 'recipeId', 'text', 'createdAt'])
         && request.resource.data.text.size() > 0
-        && request.resource.data.text.size() <= 1000
+        && request.resource.data.text.size() <= 2000
         && isServerTimestamp('createdAt')
         && rateLimitWrite('comments', 5);
 
@@ -653,9 +663,14 @@ service cloud.firestore {
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.authorId
         && request.resource.data.text.size() > 0
-        && request.resource.data.text.size() <= 1000
+        && request.resource.data.text.size() <= 2000
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['text', 'updatedAt', 'editedAt']);
+
+      // Any authenticated user can update counters (likes, replies) (BUT-381)
+      allow update: if isAuthenticated()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['replyCount', 'likesCount']);
 
       // Can delete only your own comments
       allow delete: if isAuthenticated()

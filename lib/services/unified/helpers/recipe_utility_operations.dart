@@ -79,10 +79,10 @@ class RecipeUtilityOperations {
       final cachedRecipes = await cacheModule.initializeCache();
       recipes.addAll(cachedRecipes);
 
-      // Restart Firebase sync
+      // Restart Firebase sync (force: bypasses BUT-382 dedup guard)
       await cacheModule.stopFirebaseSync();
       if (authRepository.currentUser != null) {
-        await cacheModule.startFirebaseSync();
+        await cacheModule.startFirebaseSync(force: true);
       }
 
       setLoading(false);

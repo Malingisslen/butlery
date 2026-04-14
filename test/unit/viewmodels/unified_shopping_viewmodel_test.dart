@@ -1,6 +1,5 @@
 // test/unit/viewmodels/unified_shopping_viewmodel_test.dart
 
-import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
@@ -21,7 +20,6 @@ void main() {
   late UnifiedShoppingViewModel viewModel;
   late MockUnifiedShoppingService mockShoppingService;
   late MockPermissionService mockPermissionService;
-  late StreamController<ShoppingServiceState> stateController;
 
   const testUserId = 'test-user-123';
   const testListId = 'list-1';
@@ -51,7 +49,6 @@ void main() {
 
   setUp(() {
     final getIt = GetIt.instance;
-    stateController = StreamController<ShoppingServiceState>.broadcast();
 
     mockShoppingService = MockUnifiedShoppingService();
     mockPermissionService = MockPermissionService();
@@ -75,9 +72,7 @@ void main() {
       defaultHasPermission: true,
     );
 
-    // Stub stateStream (not overridden in MockUnifiedShoppingService)
-    when(() => mockShoppingService.stateStream)
-        .thenAnswer((_) => stateController.stream);
+    // stateStream is already overridden in MockUnifiedShoppingService
     when(() => mockShoppingService.hasLists).thenReturn(true);
     when(() => mockShoppingService.clearError()).thenReturn(null);
 
@@ -153,7 +148,6 @@ void main() {
 
   tearDown(() {
     viewModel.dispose();
-    stateController.close();
     final getIt = GetIt.instance;
     if (getIt.isRegistered<UnifiedShoppingService>()) {
       getIt.unregister<UnifiedShoppingService>();
@@ -421,7 +415,7 @@ void main() {
       var notified = false;
       viewModel.addListener(() => notified = true);
 
-      stateController.add(const ShoppingStateLoading());
+      mockShoppingService.emitState(const ShoppingStateLoading());
       // Allow microtask to complete
       await Future.delayed(Duration.zero);
 

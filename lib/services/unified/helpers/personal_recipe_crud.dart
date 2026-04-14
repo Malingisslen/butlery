@@ -61,7 +61,12 @@ class PersonalRecipeCrud {
       }
 
       if (recipe != null) {
-        recipes.add(recipe);
+        // Dedup: Firebase sync listener may have already added this recipe
+        // to the list (race between optimistic add and listener callback).
+        final newId = recipe.id;
+        if (!recipes.any((r) => r.id == newId)) {
+          recipes.add(recipe);
+        }
         notifyListeners();
       }
     }

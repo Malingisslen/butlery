@@ -75,6 +75,9 @@ class RecipeCacheModule {
   /// Sync subscriptions (delegated to FirebaseSyncManager)
   final Map<String, StreamSubscription> _syncSubscriptions = {};
 
+  /// BUT-382: Track which user has active sync to prevent redundant restarts
+  String? _activeSyncUserId;
+
   /// Pending sync items (delegated to DebouncedSyncOperations)
   final Set<String> _pendingSyncIds = {};
 
@@ -151,11 +154,25 @@ class RecipeCacheModule {
     return CacheOperations.clearCache(_cacheHelper);
   }
 
-  /// Start Firebase synchronization for user's recipes
-  Future<void> startFirebaseSync() async {
+  /// Start Firebase synchronization for user's recipes.
+  ///
+  /// BUT-382: Guards against redundant sync starts. If sync is already active
+  /// for the current user, this is a no-op. Use [forceRestartFirebaseSync] when
+  /// a fresh sync is explicitly needed (e.g. manual refresh).
+  Future<void> startFirebaseSync({bool force = false}) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       AppLogger.warning('Cannot start Firebase sync: No authenticated user');
+      return;
+    }
+
+    // BUT-382: Skip if sync is already running for this user
+    if (!force &&
+        _activeSyncUserId == currentUserId &&
+        _syncSubscriptions.isNotEmpty) {
+      AppLogger.debug(
+        '⏭️ Firebase sync already active for user, skipping redundant start',
+      );
       return;
     }
 
@@ -192,6 +209,7 @@ class RecipeCacheModule {
       );
 
       _syncSubscriptions.addAll(subscriptions);
+      _activeSyncUserId = currentUserId;
 
       AppLogger.success('✅ Firebase sync started');
     } catch (e) {
@@ -205,6 +223,7 @@ class RecipeCacheModule {
     await FirebaseSyncManager.stopFirebaseSync(
       subscriptions: _syncSubscriptions,
     );
+    _activeSyncUserId = null;
 
     // Cancel sync timer
     _syncDebounceTimer?.cancel();

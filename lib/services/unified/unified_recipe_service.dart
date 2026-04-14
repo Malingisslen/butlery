@@ -119,6 +119,11 @@ class UnifiedRecipeService
   bool _isLoading = false;
   String? _error;
 
+  /// BUT-382: Suppresses auth handler recipe reload during initial initialize().
+  /// The auth stream fires immediately on listen, but initialize() already handles
+  /// cache loading and sync — the auth handler's reload would be redundant.
+  bool _initializing = false;
+
   // Cached unmodifiable views — invalidated on every _recipes mutation
   List<Recipe>? _cachedUnmodifiable;
   List<Recipe>? _cachedPersonal;
@@ -506,6 +511,7 @@ class UnifiedRecipeService
       AppLogger.info(
         '🔄 [UnifiedRecipeService.initialize] Starting initialization (early return guard active)...',
       );
+      _initializing = true;
       _isLoading = true;
       notifyListeners();
 
@@ -578,12 +584,14 @@ class UnifiedRecipeService
 
       _isInitialized = true;
       _isLoading = false;
+      _initializing = false;
       AppLogger.success('✅ UnifiedRecipeService initialized');
       notifyListeners();
     } catch (e, stackTrace) {
       AppLogger.error(
         '❌ [UnifiedRecipeService] Initialization failed: $e\n$stackTrace',
       );
+      _initializing = false;
       _setError(AppLocale.current.errorCouldNotLoadRecipes);
       _isLoading = false;
       notifyListeners();
@@ -906,6 +914,15 @@ class UnifiedRecipeService
   }
 
   void _handleAuthStateChange(String? userId) {
+    // BUT-382: Skip redundant reload during initialize() — it already handles
+    // cache loading and Firebase sync. The auth stream always fires on listen,
+    // so without this guard the first event would trigger a full duplicate reload.
+    if (_initializing && userId != null) {
+      AppLogger.debug(
+        '⏭️ Skipping auth handler reload during initialize() — already syncing',
+      );
+      return;
+    }
     _authHandler.handleAuthStateChange(userId);
   }
 

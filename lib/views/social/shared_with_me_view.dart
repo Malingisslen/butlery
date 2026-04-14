@@ -92,12 +92,11 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+    return LayoutComponents.mainMenu(
       body: Consumer<SharedContentCoordinatorViewModel>(
         builder: (context, viewModel, _) {
           return SafeArea(
-            // ✅ RESPONSIVE: Center and constrain content on large screens
+            // Responsive: center and constrain content on large screens
             child: Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(

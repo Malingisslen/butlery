@@ -10,6 +10,7 @@ import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/menu_constraint_parser.dart';
@@ -245,6 +246,15 @@ class MenuService extends BaseService {
   ) {
     final globallyOk =
         allRecipes.where((r) => _passesGlobals(r, parsed)).toList();
+
+    if (globallyOk.length < allRecipes.length) {
+      AppLogger.debug(
+        'MenuService: ${allRecipes.length - globallyOk.length} recipes '
+        'filtered by global constraints '
+        '(${allRecipes.length} total → ${globallyOk.length} remaining)',
+      );
+    }
+
     final result = <String, List<Recipe>>{};
     final usedIds = <String>{};
     final rand = Random();
@@ -273,6 +283,20 @@ class MenuService extends BaseService {
               r.mealType.toLowerCase() == slot.mealType.toLowerCase() &&
               !usedIds.contains(r.id))
           .toList();
+
+      if (slotPool.length < slot.totalCount) {
+        // Build mealType distribution for diagnostics
+        final mealDist = <String, int>{};
+        for (final r in globallyOk) {
+          final mt = r.mealType.toLowerCase();
+          mealDist[mt] = (mealDist[mt] ?? 0) + 1;
+        }
+        AppLogger.warning(
+          'MenuService: Only ${slotPool.length} recipes match '
+          '"${slot.mealType}" but ${slot.totalCount} requested. '
+          'Available mealTypes: $mealDist',
+        );
+      }
 
       final picks = <Recipe>[];
       for (final sub in slot.subRequests) {

@@ -25,10 +25,8 @@ class SharedShoppingListsView extends StatelessWidget {
       ),
       child: Consumer<SharedShoppingListsViewModel>(
         builder: (context, viewModel, _) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(context.l10n.shoppingSharedLists),
-            ),
+          return LayoutComponents.mainMenu(
+            title: context.l10n.shoppingSharedLists,
             body: SafeArea(
               child: Center(
                 child: ConstrainedBox(

@@ -1,53 +1,60 @@
 # Sprint Backlog
 
-## Sprint: Menu System Deepening — 2026-04-13
+## Sprint: Stability & Permissions — 2026-04-14
 
-**Plan file:** `C:\Users\malla\.claude\plans\melodic-bouncing-finch.md`
+**Plan file:** `C:\Users\malla\.claude\plans\spicy-stirring-token.md`
 
-### Carry-Forward: Close BUT-359 loose ends
+### Agent A: firebase-backend-security — Firestore Permissions
 
-- [ ] **CF1. Chrome E2E verification** — Visual check constraint parser + extraction chips in browser.
-- [x] **CF2. Canonical-tag check** — Fixed: `vardagsmat`→`vardagsmiddag`, `snabb`→`snabblagat`, `matlåda`→`meal-prep`. `bröd` was correct.
+- [x] **A1. Fix 3 permission-denied errors on startup** — `firestore.rules`: added rules for `category_preferences` and `list_category_orders` subcollections. (BUT-379)
+- [x] **A2. Fix recipe comments permission-denied** — `firestore.rules`: added counter update rule for `replyCount`/`likesCount`, aligned text limit to 2000. (BUT-381)
 
-### Agent A: flutter-developer — MVVM fix + dead code cleanup
+### Agent B: debugger — Menu & Import Bugs
 
-- [x] **A1. BUT-360: Move RecipeRepository.read into ViewModel** — `weekly_menu_plan_viewmodel.dart` + `calendar_weekly_menu_widget.dart`.
-- [x] **A2. Wire onRefinePrompt callback** — `calendar_weekly_menu_widget.dart` → `ParsedExtractionChips`.
-- [x] **A3. Remove legacy regex fallback** — `menu_service.dart`: remove dead count-only parser code.
+- [x] **B1. Investigate menu generator returning fewer recipes than requested** — code correct, data mismatch (recipes stored as Middag not Lunch). Added diagnostic logging. (BUT-383)
+- [x] **B2. Fix archive import adding recipes twice in UI** — race condition: dedup check before `recipes.add()` in PersonalRecipeCrud. (BUT-373)
 
-### Agent B: firebase-backend-security + flutter-developer — Firestore Lexicon Overlay
+### Agent C: flutter-developer — UI Fixes
 
-- [x] **B1. File Linear ticket** — BUT-370 filed.
-- [x] **B2. Define Firestore collection schema** — `FirestoreCollections.menuLexicon`.
-- [x] **B3. MenuLexiconRepository** — `lib/repositories/firebase/firebase_menu_lexicon_repository.dart`.
-- [x] **B4. FirestoreLexiconProvider** — `lib/services/menu/parser/firestore_lexicon_provider.dart`.
-- [x] **B5. CompositeLexiconProvider** — `lib/services/menu/parser/composite_lexicon_provider.dart`.
-- [x] **B6. DI wiring** — `content_module.dart`: register repo + providers.
-- [x] **B7. Firestore security rules** — `firestore.rules`: menuLexicon read-only.
-- [x] **B8. Seed data** — Documented in BUT-370 (manual console edits).
+- [x] **C1. Fix RenderFlex overflow in MinaReceptView** — header in Flexible+SingleChildScrollView, Expanded recipe list takes remainder. (BUT-380)
+- [x] **C2. Add navigation shell to social routes** — SharedWithMeView + SharedShoppingListsView now use LayoutComponents.mainMenu(). (BUT-372)
 
-### Agent C: testing-specialist — Tests
+### Agent D: performance-optimizer — Startup Performance
 
-- [x] **C1. MenuLexiconRepository tests** — 8/8 pass.
-- [x] **C2. CompositeLexiconProvider tests** — 4/4 pass.
-- [x] **C3. ViewModel resolveForNavigation test** — 2/2 pass.
+- [x] **D1. Eliminate 3x redundant recipe sync on startup** — dedup guard in startFirebaseSync + _initializing flag skips redundant auth handler during init. 21→7 events. (BUT-382)
+
+### Continue: testing-specialist — Viewmodel Tests
+
+- [ ] **E1. Continue green-lighting viewmodel tests** — 65 files, partially done. (BUT-367) *(deferred — parallel session)*
 
 ### Post-Sprint Steps
 
-- [x] Run `dart analyze --fatal-infos` — 0 issues
-- [x] Run relevant tests — 101/101 menu tests + 14/14 new tests pass
-- [ ] Chrome E2E: composite provider works with empty Firestore collection
+- [ ] Run `dart analyze --fatal-infos`
+- [ ] Run relevant unit tests
 - [ ] Commit, push to main
-- [ ] Update Linear: BUT-360 → Done, new lexicon ticket → Done
+- [ ] Update Linear: move sprint tickets → Done, mark BUT-375 → Done (already fixed)
 
 ---
 
 ## What this means in plain language
 
-- Menu prompt word lists can now come from a database you edit — no code deploy needed.
-- "Förfina prompten" link actually scrolls back to the input field.
-- Code hygiene: recipe tap in calendar uses proper architecture, dead parser code removed.
-- Risk: Very low — empty Firestore = same behavior as today.
+- The app currently crashes or shows errors when you open it — three "permission denied" errors block category preferences, shopping lists, and comments. This sprint fixes those first.
+- Menu generator sometimes gives you fewer recipes than you asked for — that gets investigated and fixed.
+- When you import recipes from the archive, you temporarily see duplicates (they go away on reload). That gets fixed.
+- The recipe list page can overflow on smaller screens — layout fix.
+- Social pages (shared recipes, friends) are missing the bottom navigation bar — you get stuck with no way to go back. Fixed.
+- App loads every recipe 3 times on startup instead of once — wastes bandwidth and slows startup. Fixed.
+- Test health continues improving (ongoing from last sprint).
+- Risk: Low-medium. Permission fixes require deploying Firestore rules (reversible). UI fixes are local. The menu generator bug needs investigation — fix complexity unknown until root cause found.
+
+---
+
+## Archive: Sprint Menu System Deepening — 2026-04-13
+
+- [x] CF1-CF2: Chrome E2E, canonical-tag check
+- [x] A1-A3: BUT-360 MVVM fix, refine prompt wiring, dead code removal
+- [x] B1-B8: Firestore lexicon overlay (BUT-370)
+- [x] C1-C3: Lexicon + ViewModel tests (14/14 pass)
 
 ---
 

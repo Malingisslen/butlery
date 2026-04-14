@@ -880,14 +880,30 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       },
       child: Column(
         children: [
-          if (viewModel.showOnboardingBanner) _buildOnboardingBanner(viewModel),
-          if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters) ...[
-            CollectionInsightsCard(
-              recipes: viewModel.recipes,
-              cuisineDisplayNames: _cuisineDisplayNames,
+          // Header content in Flexible to prevent overflow when
+          // insights + discovery shelves exceed available space
+          if (viewModel.showOnboardingBanner ||
+              (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters))
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (viewModel.showOnboardingBanner)
+                      _buildOnboardingBanner(viewModel),
+                    if (viewModel.searchQuery.isEmpty &&
+                        !viewModel.hasActiveFilters) ...[
+                      CollectionInsightsCard(
+                        recipes: viewModel.recipes,
+                        cuisineDisplayNames: _cuisineDisplayNames,
+                      ),
+                      _buildDiscoveryShelves(
+                          context.read<RecipeQueryViewModel>()),
+                    ],
+                  ],
+                ),
+              ),
             ),
-            _buildDiscoveryShelves(context.read<RecipeQueryViewModel>()),
-          ],
           Expanded(
             child: viewModel.isGridView
                 ? GridView.builder(
