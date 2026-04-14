@@ -4,10 +4,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/presence_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
@@ -227,6 +229,24 @@ void main() {
       final permissionService =
           TestServiceLocator.get<PermissionService>() as MockPermissionService;
       permissionService.setPermissionState(currentUserId: testUserId);
+
+      // Configure UnifiedFriendsService so _checkFriendshipStatus sees
+      // 'user2' as a friend (otherwise canSendMessages returns false).
+      final friendsService = TestServiceLocator.get<UnifiedFriendsService>()
+          as MockUnifiedFriendsService;
+      final managementMock = MockFriendsManagementOperations();
+      managementMock.setManagementState(
+        friends: [
+          UserProfile(
+            uid: 'user2',
+            displayName: 'Anna Andersson',
+            email: 'anna@test.com',
+            joinedAt: DateTime.now(),
+            lastActiveAt: DateTime.now(),
+          ),
+        ],
+      );
+      friendsService.setFriendsState(management: managementMock);
 
       // Create viewModel with initial conversation to avoid async loading in setup
       final initialConversation = ConversationBuilder.build(
@@ -759,8 +779,15 @@ void main() {
       });
 
       test('should check if can send messages', () {
-        // Arrange - with conversation
-        final conversation = ConversationBuilder.build();
+        // Arrange - with conversation where current user is a participant
+        final conversation = ConversationBuilder.build(
+          id: testConversationId,
+          participantIds: [testUserId, 'user2'],
+          participantDisplayNames: {
+            testUserId: 'Test User',
+            'user2': 'Anna Andersson',
+          },
+        );
         final vmWithConversation = ChatViewModel(
           messagingService: mockMessagingService,
           conversationId: testConversationId,

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_permission_manager.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -45,19 +45,27 @@ void main() {
     group('canEdit', () {
       test('should return true when permission service allows editing', () {
         // Behavior: canEdit delegates to permissionService.canEditShoppingList
-        // with the manager's own listId
-        when(() => mockPermissionService.canEditShoppingList(testListId))
-            .thenReturn(true);
+        // with the manager's own listId.
+        // MockPermissionService has concrete overrides — configure via setPermissionState.
+        mockPermissionService.setPermissionState(
+          currentUserId: 'test-user',
+          permissions: {
+            testListId: {ResourcePermission.editor: true},
+          },
+        );
 
         expect(manager.canEdit, true);
-        verify(() => mockPermissionService.canEditShoppingList(testListId))
-            .called(1);
       });
 
       test('should return false when permission service denies editing', () {
         // Behavior: denied permission propagates as false
-        when(() => mockPermissionService.canEditShoppingList(testListId))
-            .thenReturn(false);
+        mockPermissionService.setPermissionState(
+          currentUserId: 'test-user',
+          permissions: {
+            testListId: {ResourcePermission.editor: false},
+          },
+          defaultHasPermission: false,
+        );
 
         expect(manager.canEdit, false);
       });
@@ -68,19 +76,26 @@ void main() {
     group('canView', () {
       test('should return true when permission service allows viewing', () {
         // Behavior: canView delegates to permissionService.canViewShoppingList
-        // with the manager's own listId
-        when(() => mockPermissionService.canViewShoppingList(testListId))
-            .thenReturn(true);
+        // with the manager's own listId.
+        mockPermissionService.setPermissionState(
+          currentUserId: 'test-user',
+          permissions: {
+            testListId: {ResourcePermission.viewer: true},
+          },
+        );
 
         expect(manager.canView, true);
-        verify(() => mockPermissionService.canViewShoppingList(testListId))
-            .called(1);
       });
 
       test('should return false when permission service denies viewing', () {
         // Behavior: denied permission propagates as false
-        when(() => mockPermissionService.canViewShoppingList(testListId))
-            .thenReturn(false);
+        mockPermissionService.setPermissionState(
+          currentUserId: 'test-user',
+          permissions: {
+            testListId: {ResourcePermission.viewer: false},
+          },
+          defaultHasPermission: false,
+        );
 
         expect(manager.canView, false);
       });
@@ -93,18 +108,25 @@ void main() {
         // Behavior: the method forwards the arbitrary listId (not just the
         // manager's own listId) to the permission service
         const otherListId = 'other-list-456';
-        when(() => mockPermissionService.canEditShoppingList(otherListId))
-            .thenReturn(true);
+        mockPermissionService.setPermissionState(
+          currentUserId: 'test-user',
+          permissions: {
+            otherListId: {ResourcePermission.editor: true},
+          },
+        );
 
         expect(manager.canEditShoppingList(otherListId), true);
-        verify(() => mockPermissionService.canEditShoppingList(otherListId))
-            .called(1);
       });
 
       test('should return false when permission denied for given listId', () {
         // Behavior: denial for a specific list propagates correctly
-        when(() => mockPermissionService.canEditShoppingList('restricted-list'))
-            .thenReturn(false);
+        mockPermissionService.setPermissionState(
+          currentUserId: 'test-user',
+          permissions: {
+            'restricted-list': {ResourcePermission.editor: false},
+          },
+          defaultHasPermission: false,
+        );
 
         expect(manager.canEditShoppingList('restricted-list'), false);
       });
@@ -117,18 +139,25 @@ void main() {
         // Behavior: the method forwards the arbitrary listId to the
         // permission service for view-level checks
         const otherListId = 'other-list-789';
-        when(() => mockPermissionService.canViewShoppingList(otherListId))
-            .thenReturn(true);
+        mockPermissionService.setPermissionState(
+          currentUserId: 'test-user',
+          permissions: {
+            otherListId: {ResourcePermission.viewer: true},
+          },
+        );
 
         expect(manager.canViewShoppingList(otherListId), true);
-        verify(() => mockPermissionService.canViewShoppingList(otherListId))
-            .called(1);
       });
 
       test('should return false when view permission denied', () {
         // Behavior: denied view permission propagates as false
-        when(() => mockPermissionService.canViewShoppingList('private-list'))
-            .thenReturn(false);
+        mockPermissionService.setPermissionState(
+          currentUserId: 'test-user',
+          permissions: {
+            'private-list': {ResourcePermission.viewer: false},
+          },
+          defaultHasPermission: false,
+        );
 
         expect(manager.canViewShoppingList('private-list'), false);
       });
