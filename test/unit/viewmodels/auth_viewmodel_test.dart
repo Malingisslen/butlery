@@ -192,7 +192,8 @@ void main() {
 
         // Assert - Service should not be called due to validation failure
         expect(result, isFalse);
-        expect(viewModel.errorMessage, equals('E-post kan inte vara tom'));
+        expect(
+            viewModel.errorMessage, equals('Fyll i alla obligatoriska fält'));
       });
 
       test('should reject invalid email format during sign in', () async {
@@ -212,7 +213,8 @@ void main() {
             password: 'password123',
           );
           expect(result, isFalse, reason: 'Should reject email: $email');
-          expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
+          expect(viewModel.errorMessage,
+              equals('Fyll i alla obligatoriska fält korrekt'));
         }
       });
 
@@ -308,7 +310,8 @@ void main() {
 
         // Assert - Should fail validation due to spaces (production behavior)
         expect(result, isFalse);
-        expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
+        expect(viewModel.errorMessage,
+            equals('Fyll i alla obligatoriska fält korrekt'));
       });
 
       test('should handle service failure during sign in', () async {

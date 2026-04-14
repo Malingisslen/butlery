@@ -1,55 +1,92 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/trackers/recipe_events_tracker.dart';
+import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
+import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart';
+import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
+import 'package:butlery/services/analytics/trackers/import_events_tracker.dart';
 
-import '../../test_support/base_unit_test.dart';
-import '../../infrastructure/di/test_service_locator.dart';
-import '../../infrastructure/mocks/production_mocks.dart';
+// Pure mocks — no concrete overrides so when()/verify() work with mocktail
+class _MockUserService extends Mock implements UserService {}
+
+class _MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class _MockRecipeEventsTracker extends Mock implements RecipeEventsTracker {}
+
+class _MockMenuEventsTracker extends Mock implements MenuEventsTracker {}
+
+class _MockShoppingEventsTracker extends Mock
+    implements ShoppingEventsTracker {}
+
+class _MockSocialEventsTracker extends Mock implements SocialEventsTracker {}
+
+class _MockImportEventsTracker extends Mock implements ImportEventsTracker {}
 
 void main() {
   group('OnboardingViewModel', () {
     late OnboardingViewModel viewModel;
-    late MockUserService mockUserService;
-    late MockAnalyticsService mockAnalyticsService;
+    late _MockUserService mockUserService;
+    late _MockAnalyticsService mockAnalyticsService;
 
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
+    setUpAll(() {
       registerFallbackValue(UserAllergenPreferences.defaults);
     });
 
-    setUp(() async {
-      await TestServiceLocator.initialize();
+    setUp(() {
+      // Fresh GetIt + production ServiceLocator so the VM can resolve services
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<UserService>()) getIt.unregister<UserService>();
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+
       production.ServiceLocator.initialize(DIContainer());
 
-      mockUserService = MockUserService();
-      mockAnalyticsService = MockAnalyticsService();
+      mockUserService = _MockUserService();
+      mockAnalyticsService = _MockAnalyticsService();
 
-      when(() => mockUserService.completeOnboardingWithPreferences(any()))
-          .thenAnswer((_) async {});
+      // Stub tracker getters so production code can access them if needed
+      when(() => mockAnalyticsService.recipe)
+          .thenReturn(_MockRecipeEventsTracker());
+      when(() => mockAnalyticsService.menu)
+          .thenReturn(_MockMenuEventsTracker());
+      when(() => mockAnalyticsService.shopping)
+          .thenReturn(_MockShoppingEventsTracker());
+      when(() => mockAnalyticsService.social)
+          .thenReturn(_MockSocialEventsTracker());
+      when(() => mockAnalyticsService.import)
+          .thenReturn(_MockImportEventsTracker());
+
+      when(() => mockUserService.completeOnboardingWithPreferences(
+            any(),
+            onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          )).thenAnswer((_) async {});
+
       when(() => mockAnalyticsService.logEvent(
             name: any(named: 'name'),
             parameters: any(named: 'parameters'),
           )).thenAnswer((_) async {});
 
-      TestServiceLocator.registerMock<UserService>(mockUserService);
-      TestServiceLocator.registerMock<AnalyticsService>(mockAnalyticsService);
+      getIt.registerSingleton<UserService>(mockUserService);
+      getIt.registerSingleton<AnalyticsService>(mockAnalyticsService);
 
       viewModel = OnboardingViewModel();
     });
 
-    tearDown(() async {
+    tearDown(() {
       viewModel.dispose();
-      await TestServiceLocator.reset();
-      BaseUnitTest.resetMocks();
-    });
-
-    tearDownAll(() async {
-      await BaseUnitTest.teardownUnit();
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<UserService>()) getIt.unregister<UserService>();
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
     });
 
     group('completeOnboarding', () {
@@ -64,6 +101,7 @@ void main() {
         final captured = verify(
           () => mockUserService.completeOnboardingWithPreferences(
             captureAny(),
+            onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
           ),
         ).captured;
         final prefs = captured.first as UserAllergenPreferences;
@@ -76,13 +114,18 @@ void main() {
 
         expect(result, isTrue);
         verify(
-          () => mockUserService.completeOnboardingWithPreferences(null),
+          () => mockUserService.completeOnboardingWithPreferences(
+            null,
+            onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          ),
         ).called(1);
       });
 
       test('returns false when service throws', () async {
-        when(() => mockUserService.completeOnboardingWithPreferences(any()))
-            .thenThrow(Exception('Firestore write failed'));
+        when(() => mockUserService.completeOnboardingWithPreferences(
+              any(),
+              onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+            )).thenThrow(Exception('Firestore write failed'));
 
         final result = await viewModel.completeOnboarding();
 
