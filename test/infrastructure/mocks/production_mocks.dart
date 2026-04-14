@@ -854,6 +854,14 @@ class MockFirestoreRepository extends Mock implements FirestoreRepository {
 
   @override
   FirebaseFirestore get firestore => _fakeFirestore;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String path) =>
+      _fakeFirestore.collection(path);
+
+  @override
+  DocumentReference<Map<String, dynamic>> doc(String path) =>
+      _fakeFirestore.doc(path);
 }
 
 /// Mock implementation of CollaborativeRecipeRepository
@@ -1089,6 +1097,9 @@ class MockUnifiedFriendsService extends Mock
   bool _isLoading = false;
   String? _error;
 
+  String? _currentUserId = 'test-user-123';
+  String? _currentUserDisplayName = 'Test User';
+
   void setFriendsState({
     List<UserProfile>? friends,
     List<FriendRequest>? incomingRequests,
@@ -1102,9 +1113,8 @@ class MockUnifiedFriendsService extends Mock
         categories, // ⭐ ADDED: Missing categories operations parameter
     MockFriendsInvitationsOperations?
         invitations, // ⭐ ADDED: Missing invitations operations parameter
-    String? currentUserId, // ✅ FIXED: Added missing currentUserId parameter
-    String?
-        currentUserDisplayName, // ✅ FIXED: Added missing currentUserDisplayName parameter
+    String? currentUserId,
+    String? currentUserDisplayName,
     bool isInitialized = false,
     bool isLoading = false,
     String? error,
@@ -1118,18 +1128,21 @@ class MockUnifiedFriendsService extends Mock
         ..addAll(blockedUsers);
     }
     if (categoriesList != null) {
-      _categories = categoriesList; // ⭐ ADDED: Store categories state
+      _categories = categoriesList;
     }
     if (management != null) {
-      _management = management; // ⭐ ADDED: Store management operations
+      _management = management;
     }
     if (categories != null) {
-      _categoriesOps = categories; // ⭐ ADDED: Store categories operations
+      _categoriesOps = categories;
     }
     if (invitations != null) {
-      _invitationsOps = invitations; // ⭐ ADDED: Store invitations operations
+      _invitationsOps = invitations;
     }
-    // Note: currentUserId and currentUserDisplayName can be stored in parent state if needed
+    if (currentUserId != null) _currentUserId = currentUserId;
+    if (currentUserDisplayName != null) {
+      _currentUserDisplayName = currentUserDisplayName;
+    }
     _isInitialized = isInitialized;
     _isLoading = isLoading;
     _error = error;
@@ -1179,6 +1192,72 @@ class MockUnifiedFriendsService extends Mock
 
   @override
   bool get hasError => _error != null;
+
+  @override
+  String? get currentUserId => _currentUserId;
+
+  @override
+  String? get currentUserDisplayName => _currentUserDisplayName;
+
+  @override
+  List<UserProfile> get friendsList => List.from(_friends);
+
+  // Internal methods needed by operations classes
+  @override
+  Map<String, Set<String>> get friendCategoryRelationshipsInternal =>
+      _friendCategoryRelationships;
+  final Map<String, Set<String>> _friendCategoryRelationships = {};
+
+  @override
+  void notifyListenersInternal() => notifyListeners();
+
+  // Invitation internal methods with in-memory tracking
+  @override
+  List<GroupInvitation> getAllSentInvitationsInternal() =>
+      List.unmodifiable(_sentInvitationsTracker);
+
+  @override
+  List<GroupInvitation> getReceivedGroupInvitationsInternal(String userId) =>
+      [];
+
+  @override
+  GroupInvitation? getSentInvitationByIdInternal(String invitationId) =>
+      _sentInvitationsTracker
+          .where((inv) => inv.id == invitationId)
+          .firstOrNull;
+
+  @override
+  void addSentInvitationInternal(GroupInvitation invitation) =>
+      _sentInvitationsTracker.add(invitation);
+
+  @override
+  void updateSentInvitationInternal(
+      String invitationId, GroupInvitation invitation) {
+    final index =
+        _sentInvitationsTracker.indexWhere((inv) => inv.id == invitationId);
+    if (index >= 0) {
+      _sentInvitationsTracker[index] = invitation;
+    }
+  }
+
+  @override
+  Future<bool> sendEmailInvitationInternal(
+          {required String email, required GroupInvitation invitation}) async =>
+      true;
+
+  @override
+  Future<bool> sendSMSInvitationInternal(
+          {required String phoneNumber,
+          required GroupInvitation invitation}) async =>
+      true;
+
+  @override
+  Future<String> createInvitationLinkInternal(String invitationId) async =>
+      'https://butlery.app/invite/$invitationId';
+
+  @override
+  Future<void> updateInvitationStatusInternal(
+      String invitationId, GroupInvitationStatus status) async {}
 
   /// Test utility method to update categories list
   void updateCategoriesList(List<FriendCategory> categories) {
@@ -1296,14 +1375,73 @@ class MockPermissionService extends Mock implements PermissionService {
   @override
   bool isRecipeOwner(String recipeId) {
     if (_currentUserId == null) return false;
-    // For tests, assume current user owns recipes with IDs containing their userId
-    return recipeId.contains(_currentUserId!);
+    if (recipeId.isEmpty) return false;
+    return _permissions[recipeId]?[ResourcePermission.owner] ??
+        _defaultHasPermission;
+  }
+
+  @override
+  bool canViewRecipe(String recipeId) {
+    if (_currentUserId == null) return false;
+    if (recipeId.isEmpty) return false;
+    return _permissions[recipeId]?[ResourcePermission.viewer] ??
+        _defaultHasPermission;
+  }
+
+  @override
+  bool canInviteToRecipe(String recipeId) {
+    if (_currentUserId == null) return false;
+    if (recipeId.isEmpty) return false;
+    return _permissions[recipeId]?[ResourcePermission.editor] ??
+        _defaultHasPermission;
   }
 
   bool isMenuOwner(String menuId) {
     if (_currentUserId == null) return false;
-    // For tests, assume current user owns menus with IDs containing their userId
-    return menuId.contains(_currentUserId!);
+    if (menuId.isEmpty) return false;
+    return _permissions[menuId]?[ResourcePermission.owner] ??
+        _defaultHasPermission;
+  }
+
+  // Shopping list permission methods using the same config-based pattern
+  @override
+  bool canEditShoppingList(String listId) {
+    if (_currentUserId == null) return false;
+    if (listId.isEmpty) return false;
+    return _permissions[listId]?[ResourcePermission.editor] ??
+        _defaultHasPermission;
+  }
+
+  @override
+  bool canViewShoppingList(String listId) {
+    if (_currentUserId == null) return false;
+    if (listId.isEmpty) return false;
+    return _permissions[listId]?[ResourcePermission.viewer] ??
+        _defaultHasPermission;
+  }
+
+  @override
+  bool canManageShoppingList(String listId) {
+    if (_currentUserId == null) return false;
+    if (listId.isEmpty) return false;
+    return _permissions[listId]?[ResourcePermission.admin] ??
+        _defaultHasPermission;
+  }
+
+  @override
+  bool canDeleteShoppingList(String listId) {
+    if (_currentUserId == null) return false;
+    if (listId.isEmpty) return false;
+    return _permissions[listId]?[ResourcePermission.owner] ??
+        _defaultHasPermission;
+  }
+
+  @override
+  bool isShoppingListOwner(String listId) {
+    if (_currentUserId == null) return false;
+    if (listId.isEmpty) return false;
+    return _permissions[listId]?[ResourcePermission.owner] ??
+        _defaultHasPermission;
   }
 
   /// Reset method for test cleanup - ✅ FIXED: Added missing reset method
@@ -1463,6 +1601,18 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
   bool get isInitialized => _isInitialized;
 
   // Analytics methods called by ViewModels — return no-op futures
+  @override
+  Future<void> setUserProperties({
+    int? recipeCount,
+    bool? hasUsedImport,
+    bool? hasSharedRecipe,
+    bool? hasCooked,
+  }) async {}
+  @override
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object>? parameters,
+  }) async {}
   @override
   Future<void> logFriendRequestSent(
       {required String recipientId, String? source}) async {}
@@ -3848,6 +3998,12 @@ class MockAnalyticsRepository extends Mock implements AnalyticsRepository {
 /// Mock implementation of UnifiedShoppingService
 class MockUnifiedShoppingService extends Mock
     implements UnifiedShoppingService {
+  // Stream controller for stateStream
+  final _stateController = StreamController<ShoppingServiceState>.broadcast();
+
+  @override
+  Stream<ShoppingServiceState> get stateStream => _stateController.stream;
+
   // Configuration state - FIXED: All required properties
   bool _isLoading = false;
   String? _error;
@@ -3859,7 +4015,7 @@ class MockUnifiedShoppingService extends Mock
   String? _currentUserId;
   String? _currentUserDisplayName;
   bool _isSyncing = false;
-  MockShoppingShareOperations? _shareOps;
+  ShoppingShareOperations? _shareOps;
   Map<String, dynamic>? _shoppingState;
 
   /// Configure mock state for tests - ⭐ FIXED: Complete parameter interface alignment
@@ -3874,7 +4030,8 @@ class MockUnifiedShoppingService extends Mock
     String? currentUserId, // ⭐ ADDED: Missing parameter
     String? currentUserDisplayName, // ⭐ ADDED: Missing parameter
     bool isSyncing = false, // ⭐ ADDED: Missing parameter
-    MockShoppingShareOperations? shareOps, // ⭐ ADDED: Missing parameter
+    ShoppingShareOperations?
+        shareOps, // Accepts any ShoppingShareOperations subtype
     Map<String, dynamic>? state,
   }) {
     _isLoading = isLoading;
@@ -3940,9 +4097,28 @@ class MockUnifiedShoppingService extends Mock
   ShoppingShareOperations get share =>
       _shareOps ?? MockShoppingShareOperations();
 
+  /// Alias for share (production service exposes both)
+  @override
+  ShoppingShareOperations get sharing => share;
+
+  @override
+  UnifiedShoppingList? get activeList {
+    if (_activeListId == null) return null;
+    try {
+      return _shoppingLists.firstWhere((list) => list.id == _activeListId);
+    } catch (_) {
+      return null;
+    }
+  }
+
   // Legacy getters for backward compatibility
   List<UnifiedShoppingList> get shoppingLists => _shoppingLists;
   Map<String, dynamic>? get shoppingState => _shoppingState;
+
+  /// Emit a state event on the mock's stateStream for test verification
+  void emitState(ShoppingServiceState state) {
+    _stateController.add(state);
+  }
 
   // All other methods left without implementation to allow stubbing with when()
 }

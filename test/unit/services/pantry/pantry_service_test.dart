@@ -11,12 +11,16 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/ingredient_match_service.dart';
 
 class MockPantryRepository extends Mock implements PantryRepository {}
 
 class MockIngredientRepository extends Mock implements IngredientRepository {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
+
+class MockIngredientMatchService extends Mock
+    implements IngredientMatchService {}
 
 // Minimal PantryItem fallback for mocktail argument matchers.
 PantryItem _fallbackPantryItem() => PantryItem(
@@ -112,6 +116,7 @@ void main() {
     service = PantryService(
       pantryRepository: mockPantryRepository,
       ingredientRepository: mockIngredientRepository,
+      matchService: MockIngredientMatchService(),
     );
   });
 

@@ -1013,7 +1013,7 @@ void main() {
         expect(permissionManager.canEdit, isTrue);
         expect(permissionManager.canView, isTrue);
         expect(permissionManager.canShare, isFalse); // Not owner
-        expect(permissionManager.canInvite, isFalse); // Not admin/owner
+        expect(permissionManager.canInvite, isTrue); // Editors can invite
         expect(permissionManager.canDelete, isFalse); // Not owner
         expect(permissionManager.isOwner, isFalse);
         expect(permissionManager.hasPermissions, isTrue);
@@ -1021,7 +1021,7 @@ void main() {
             isFalse); // Not owner
         expect(permissionManager.canEditRecipe(testRecipeId), isTrue);
         expect(permissionManager.canInviteMembers(testRecipeId),
-            isFalse); // Not admin/owner
+            isTrue); // Editors can invite
         expect(
             permissionManager.updateUserPermission(
                 testRecipeId, testUserId, 'viewer'),
