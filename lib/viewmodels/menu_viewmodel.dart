@@ -115,7 +115,6 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
 
     _stateManager.setGenerating(true);
-    _stateManager.setMenu({}); // Clear old result so stale data doesn't persist
     _stateManager.setLastPrompt(prompt.trim());
 
     // Track menu generation started

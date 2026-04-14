@@ -243,19 +243,8 @@ class MenuService extends BaseService {
     ParsedMenuRequest parsed,
     List<Recipe> allRecipes,
   ) {
-    var globallyOk =
+    final globallyOk =
         allRecipes.where((r) => _passesGlobals(r, parsed)).toList();
-
-    // Ingredient-text exclusion: remove recipes containing excluded words
-    if (parsed.globalExcludedTags.isNotEmpty) {
-      globallyOk = globallyOk.where((r) {
-        final ings = r.core.ingredientsNormalized ?? r.core.ingredients;
-        for (final word in parsed.globalExcludedTags) {
-          if (ings.any((i) => i.toLowerCase().contains(word))) return false;
-        }
-        return true;
-      }).toList();
-    }
     final result = <String, List<Recipe>>{};
     final usedIds = <String>{};
     final rand = Random();
@@ -340,10 +329,14 @@ class MenuService extends BaseService {
         if (tr.getDietaryStatus(d) != TriState.free) return false;
       }
     }
-    // Tag/ingredient exclusion doesn't require tagResult
+    // Tag + ingredient exclusion (doesn't require tagResult)
     if (p.globalExcludedTags.isNotEmpty) {
       if (tr != null && p.globalExcludedTags.any(tr.tags.contains)) {
         return false;
+      }
+      final ings = r.core.ingredientsNormalized ?? r.core.ingredients;
+      for (final word in p.globalExcludedTags) {
+        if (ings.any((i) => i.toLowerCase().contains(word))) return false;
       }
     }
     return true;

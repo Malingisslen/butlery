@@ -150,8 +150,10 @@ String extractAllergenNegations(
         final formatKey = formats[tok];
         final themeKey = themes[tok];
         if (allergenKey == null && formatKey == null && themeKey == null) {
-          // Not a known tag — capture as raw ingredient exclusion word
-          if (tok.length >= 3) {
+          // Not a known tag — capture as raw ingredient exclusion word.
+          // Min 3 chars to avoid false positives on short prepositions.
+          const minIngredientWordLength = 3;
+          if (tok.length >= minIngredientWordLength) {
             excludeTags.add(tok);
             understood.add(TraceEntry(
               label: 'inget $tok',

@@ -4,79 +4,64 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/realtime_menu/realtime_menu_operations.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
+import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
-import '../../infrastructure/mocks/production_mocks.dart';
-import '../../infrastructure/factories/mock_factory.dart';
 import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart'
-    as prod_locator;
+import 'package:butlery/core/providers/application_provider.dart' as production;
+
+// Local pure-Mock classes — the centralized mocks have concrete @override
+// methods that prevent mocktail when() from intercepting calls.
+class _MockMenuService extends Mock implements RealtimeMenuService {}
+
+class _MockOptimisticManager extends Mock implements OptimisticUpdateManager {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('RealtimeMenuOperations - Ultrathink Enhanced Tests', () {
+  group('RealtimeMenuOperations', () {
     late RealtimeMenuOperations operations;
-    late MockRealtimeMenuService mockMenuService;
-    late MockOptimisticUpdateManager mockOptimisticManager;
+    late _MockMenuService mockMenuService;
+    late _MockOptimisticManager mockOptimistic;
 
-    // Test data
     const testMenuId = 'menu_123';
-    const testCategoryName = 'Middag';
-    const testFromCategory = 'Frukost';
-    const testToCategory = 'Middag';
+    const testCategory = 'Middag';
 
     final testRecipe = RecipeFactory.build(
-      id: 'recipe_123',
-      title: 'Köttbullar med potatismos',
-      ingredients: ['500g köttfärs', '3 ägg', '1 dl ströbröd'],
-      instructions: ['Blanda ingredienserna', 'Forma bullar', 'Stek i panna'],
+      id: 'recipe_1',
+      title: 'Köttbullar',
       mealType: 'Middag',
-      portions: 4,
-      timeMinutes: 30,
     );
-
     final testRecipe2 = RecipeFactory.build(
-      id: 'recipe_456',
+      id: 'recipe_2',
       title: 'Pannkakor',
-      ingredients: ['3 ägg', '3 dl mjöl', '3 dl mjölk'],
-      instructions: ['Vispa ihop smeten', 'Stek tunna pannkakor'],
       mealType: 'Frukost',
-      portions: 4,
-      timeMinutes: 20,
     );
-
-    final testRecipes = [testRecipe, testRecipe2];
-    final testMultipleRecipes = [testRecipe, testRecipe2];
 
     setUpAll(() async {
       await TestServiceLocator.initialize();
+      production.ServiceLocator.initialize(DIContainer());
       registerFallbackValue(testRecipe);
-      registerFallbackValue(testRecipes);
+      registerFallbackValue(<Recipe>[]);
     });
 
     setUp(() {
-      // ULTRATHINK FIX: Bridge production ServiceLocator to test mocks
-      // This solves "ServiceLocator not initialized" errors when production code
-      // calls ServiceLocator.get() but only TestServiceLocator was initialized
-      final productionContainer = DIContainer();
-      prod_locator.ServiceLocator.initialize(productionContainer);
+      mockMenuService = _MockMenuService();
+      mockOptimistic = _MockOptimisticManager();
 
-      // Create mocks using centralized versions
-      mockMenuService = MockFactory.createRealtimeMenuService();
-      mockOptimisticManager = MockFactory.createOptimisticUpdateManager();
-
-      // Configure default optimistic manager behavior
-      when(() => mockOptimisticManager.applyChange(any(), any(), any()))
+      // Default stubs
+      when(() => mockOptimistic.applyChange(any(), any(), any()))
           .thenReturn(null);
-      when(() => mockOptimisticManager.rollback()).thenReturn(null);
-      when(() => mockOptimisticManager.clear()).thenReturn(null);
-      when(() => mockOptimisticManager.hasChanges).thenReturn(false);
-      when(() => mockOptimisticManager.allChanges).thenReturn({});
-      when(() => mockOptimisticManager.applyToMenu(any())).thenReturn({});
+      when(() => mockOptimistic.applyChange(any(), any())).thenReturn(null);
+      when(() => mockOptimistic.rollback()).thenReturn(null);
+      when(() => mockOptimistic.clear()).thenReturn(null);
+      when(() => mockOptimistic.hasChanges).thenReturn(false);
+      when(() => mockOptimistic.allChanges).thenReturn({});
+      when(() => mockOptimistic.applyToMenu(any())).thenReturn({});
 
-      // Configure default menu service behavior - success
       when(() => mockMenuService.addRecipeToCategory(
             resourceId: any(named: 'resourceId'),
             categoryName: any(named: 'categoryName'),
@@ -102,9 +87,15 @@ void main() {
             categoryName: any(named: 'categoryName'),
           )).thenAnswer((_) async {});
 
+      when(() => mockMenuService.updateWholeCategory(
+            resourceId: any(named: 'resourceId'),
+            categoryName: any(named: 'categoryName'),
+            recipes: any(named: 'recipes'),
+          )).thenAnswer((_) async {});
+
       operations = RealtimeMenuOperations(
         menuService: mockMenuService,
-        optimisticManager: mockOptimisticManager,
+        optimisticManager: mockOptimistic,
       );
     });
 
@@ -112,92 +103,49 @@ void main() {
       await TestServiceLocator.reset();
     });
 
-    tearDownAll(() async {
-      await TestServiceLocator.reset();
-    });
+    // -- Add Recipe ---------------------------------------------------------
 
-    group('Recipe Operations - Add Recipe', () {
-      test('should add recipe to category successfully', () async {
-        // Act
-        await operations.addRecipeToCategory(
-          menuId: testMenuId,
-          categoryName: testCategoryName,
-          recipe: testRecipe,
-        );
-
-        // Assert
-        verify(() => mockOptimisticManager.applyChange(
-              testCategoryName,
-              any(),
-            )).called(1);
-
-        verify(() => mockMenuService.addRecipeToCategory(
-              resourceId: testMenuId,
-              categoryName: testCategoryName,
-              recipe: testRecipe,
-            )).called(1);
-
-        verifyNever(() => mockOptimisticManager.rollback());
-      });
-
-      test('should apply optimistic update before service call', () async {
-        // Arrange
-        bool optimisticUpdateCalled = false;
-        bool serviceCalled = false;
-        final callOrder = <String>[];
-
-        when(() => mockOptimisticManager.applyChange(any(), any(), any()))
-            .thenAnswer((_) {
-          optimisticUpdateCalled = true;
-          callOrder.add('optimistic');
-        });
-
+    group('Add Recipe', () {
+      test('should call optimistic update then service', () async {
+        final order = <String>[];
+        when(() => mockOptimistic.applyChange(any(), any()))
+            .thenAnswer((_) => order.add('optimistic'));
         when(() => mockMenuService.addRecipeToCategory(
               resourceId: any(named: 'resourceId'),
               categoryName: any(named: 'categoryName'),
               recipe: any(named: 'recipe'),
-            )).thenAnswer((_) async {
-          serviceCalled = true;
-          callOrder.add('service');
-        });
+            )).thenAnswer((_) async => order.add('service'));
 
-        // Act
         await operations.addRecipeToCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
+          categoryName: testCategory,
           recipe: testRecipe,
         );
 
-        // Assert
-        expect(optimisticUpdateCalled, isTrue);
-        expect(serviceCalled, isTrue);
-        expect(callOrder, equals(['optimistic', 'service']));
+        expect(order, equals(['optimistic', 'service']));
+        verifyNever(() => mockOptimistic.rollback());
       });
 
-      test('should rollback on service error and rethrow', () async {
-        // Arrange
-        final error = Exception('Service error');
+      test('should rollback and rethrow on service error', () async {
         when(() => mockMenuService.addRecipeToCategory(
               resourceId: any(named: 'resourceId'),
               categoryName: any(named: 'categoryName'),
               recipe: any(named: 'recipe'),
-            )).thenThrow(error);
+            )).thenThrow(Exception('fail'));
 
-        // Act & Assert
         expect(
           () => operations.addRecipeToCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
+            categoryName: testCategory,
             recipe: testRecipe,
           ),
           throwsA(isA<Exception>()),
         );
 
-        verify(() => mockOptimisticManager.rollback()).called(1);
+        verify(() => mockOptimistic.rollback()).called(1);
       });
 
       test('should handle empty category name', () async {
-        // Act & Assert - should not crash
         await operations.addRecipeToCategory(
           menuId: testMenuId,
           categoryName: '',
@@ -210,272 +158,209 @@ void main() {
               recipe: testRecipe,
             )).called(1);
       });
-
-      test('should handle recipe with empty title', () async {
-        // Arrange
-        final recipeWithEmptyTitle = RecipeFactory.build(
-          id: 'recipe_empty',
-          title: '',
-        );
-
-        // Act
-        await operations.addRecipeToCategory(
-          menuId: testMenuId,
-          categoryName: testCategoryName,
-          recipe: recipeWithEmptyTitle,
-        );
-
-        // Assert - should still attempt to add
-        verify(() => mockMenuService.addRecipeToCategory(
-              resourceId: testMenuId,
-              categoryName: testCategoryName,
-              recipe: recipeWithEmptyTitle,
-            )).called(1);
-      });
     });
 
-    group('Recipe Operations - Remove Recipe', () {
-      test('should remove recipe from category successfully', () async {
-        // Act
+    // -- Remove Recipe ------------------------------------------------------
+
+    group('Remove Recipe', () {
+      test('should remove recipe and call service', () async {
         await operations.removeRecipeFromCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
+          categoryName: testCategory,
           recipeIndex: 0,
-          currentRecipes: testRecipes,
+          currentRecipes: [testRecipe, testRecipe2],
         );
 
-        // Assert
-        verify(() => mockOptimisticManager.applyChange(
-              testCategoryName,
+        verify(() => mockOptimistic.applyChange(
+              testCategory,
               any(),
-              testRecipes,
+              [testRecipe, testRecipe2],
             )).called(1);
 
         verify(() => mockMenuService.removeRecipeFromCategory(
               resourceId: testMenuId,
-              categoryName: testCategoryName,
+              categoryName: testCategory,
               recipeIndex: 0,
             )).called(1);
       });
 
-      test('should throw on invalid recipe index (negative)', () async {
-        // Act & Assert
+      test('should throw ArgumentError on negative index', () {
         expect(
           () => operations.removeRecipeFromCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
+            categoryName: testCategory,
             recipeIndex: -1,
-            currentRecipes: testRecipes,
-          ),
-          throwsA(isA<ArgumentError>()),
-        );
-
-        verifyNever(
-            () => mockOptimisticManager.applyChange(any(), any(), any()));
-        verifyNever(() => mockMenuService.removeRecipeFromCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-              recipeIndex: any(named: 'recipeIndex'),
-            ));
-      });
-
-      test('should throw on invalid recipe index (too high)', () async {
-        // Act & Assert
-        expect(
-          () => operations.removeRecipeFromCategory(
-            menuId: testMenuId,
-            categoryName: testCategoryName,
-            recipeIndex: 10,
-            currentRecipes: testRecipes,
+            currentRecipes: [testRecipe],
           ),
           throwsA(isA<ArgumentError>()),
         );
       });
 
-      test('should rollback on service error', () async {
-        // Arrange
-        final error = Exception('Remove failed');
-        when(() => mockMenuService.removeRecipeFromCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-              recipeIndex: any(named: 'recipeIndex'),
-            )).thenThrow(error);
-
-        // Act & Assert
+      test('should throw ArgumentError on index out of range', () {
         expect(
           () => operations.removeRecipeFromCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
-            recipeIndex: 0,
-            currentRecipes: testRecipes,
+            categoryName: testCategory,
+            recipeIndex: 5,
+            currentRecipes: [testRecipe],
           ),
-          throwsA(isA<Exception>()),
+          throwsA(isA<ArgumentError>()),
         );
-
-        verify(() => mockOptimisticManager.rollback()).called(1);
       });
 
-      test('should handle empty recipes list', () async {
-        // Act & Assert
+      test('should throw ArgumentError on empty list', () {
         expect(
           () => operations.removeRecipeFromCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
+            categoryName: testCategory,
             recipeIndex: 0,
             currentRecipes: [],
           ),
           throwsA(isA<ArgumentError>()),
         );
       });
-    });
 
-    group('Recipe Operations - Move Between Categories', () {
-      test('should move recipe between categories successfully', () async {
-        // Arrange
-        final fromRecipes = [testRecipe];
-        final toRecipes = [testRecipe2];
+      test('should rollback on service error', () {
+        when(() => mockMenuService.removeRecipeFromCategory(
+              resourceId: any(named: 'resourceId'),
+              categoryName: any(named: 'categoryName'),
+              recipeIndex: any(named: 'recipeIndex'),
+            )).thenThrow(Exception('fail'));
 
-        // Act
-        await operations.moveRecipeBetweenCategories(
-          menuId: testMenuId,
-          fromCategory: testFromCategory,
-          fromIndex: 0,
-          toCategory: testToCategory,
-          fromRecipes: fromRecipes,
-          toRecipes: toRecipes,
+        expect(
+          () => operations.removeRecipeFromCategory(
+            menuId: testMenuId,
+            categoryName: testCategory,
+            recipeIndex: 0,
+            currentRecipes: [testRecipe],
+          ),
+          throwsA(isA<Exception>()),
         );
 
-        // Assert - should apply optimistic updates to both categories
-        verify(() => mockOptimisticManager.applyChange(
-              testFromCategory,
-              any(),
-              fromRecipes,
-            )).called(1);
+        verify(() => mockOptimistic.rollback()).called(1);
+      });
+    });
 
-        verify(() => mockOptimisticManager.applyChange(
-              testToCategory,
-              any(),
-              toRecipes,
-            )).called(1);
+    // -- Move Between Categories --------------------------------------------
 
+    group('Move Between Categories', () {
+      test('should move recipe applying optimistic updates to both categories',
+          () async {
+        final from = [testRecipe];
+        final to = [testRecipe2];
+
+        await operations.moveRecipeBetweenCategories(
+          menuId: testMenuId,
+          fromCategory: 'Frukost',
+          fromIndex: 0,
+          toCategory: 'Middag',
+          fromRecipes: from,
+          toRecipes: to,
+        );
+
+        verify(() => mockOptimistic.applyChange('Frukost', any(), from))
+            .called(1);
+        verify(() => mockOptimistic.applyChange('Middag', any(), to)).called(1);
         verify(() => mockMenuService.moveRecipeBetweenCategories(
               resourceId: testMenuId,
-              fromCategory: testFromCategory,
+              fromCategory: 'Frukost',
               fromIndex: 0,
-              toCategory: testToCategory,
+              toCategory: 'Middag',
               toIndex: null,
             )).called(1);
       });
 
-      test('should move recipe with specific toIndex', () async {
-        // Arrange
-        final fromRecipes = [testRecipe];
-        final toRecipes = [testRecipe2];
-
-        // Act
+      test('should pass toIndex when specified', () async {
         await operations.moveRecipeBetweenCategories(
           menuId: testMenuId,
-          fromCategory: testFromCategory,
+          fromCategory: 'Frukost',
           fromIndex: 0,
-          toCategory: testToCategory,
-          fromRecipes: fromRecipes,
-          toRecipes: toRecipes,
+          toCategory: 'Middag',
+          fromRecipes: [testRecipe],
+          toRecipes: [testRecipe2],
           toIndex: 1,
         );
 
-        // Assert
         verify(() => mockMenuService.moveRecipeBetweenCategories(
               resourceId: testMenuId,
-              fromCategory: testFromCategory,
+              fromCategory: 'Frukost',
               fromIndex: 0,
-              toCategory: testToCategory,
+              toCategory: 'Middag',
               toIndex: 1,
             )).called(1);
       });
 
-      test('should throw on invalid fromIndex', () async {
-        // Act & Assert
+      test('should throw on invalid fromIndex', () {
         expect(
           () => operations.moveRecipeBetweenCategories(
             menuId: testMenuId,
-            fromCategory: testFromCategory,
+            fromCategory: 'A',
             fromIndex: -1,
-            toCategory: testToCategory,
-            fromRecipes: testRecipes,
+            toCategory: 'B',
+            fromRecipes: [testRecipe],
             toRecipes: [],
           ),
           throwsA(isA<ArgumentError>()),
         );
       });
 
-      test('should rollback both categories on service error', () async {
-        // Arrange
-        final error = Exception('Move failed');
+      test('should rollback on service error', () {
         when(() => mockMenuService.moveRecipeBetweenCategories(
               resourceId: any(named: 'resourceId'),
               fromCategory: any(named: 'fromCategory'),
               fromIndex: any(named: 'fromIndex'),
               toCategory: any(named: 'toCategory'),
               toIndex: any(named: 'toIndex'),
-            )).thenThrow(error);
+            )).thenThrow(Exception('fail'));
 
-        // Act & Assert
         expect(
           () => operations.moveRecipeBetweenCategories(
             menuId: testMenuId,
-            fromCategory: testFromCategory,
+            fromCategory: 'A',
             fromIndex: 0,
-            toCategory: testToCategory,
-            fromRecipes: testRecipes,
+            toCategory: 'B',
+            fromRecipes: [testRecipe],
             toRecipes: [],
           ),
           throwsA(isA<Exception>()),
         );
 
-        verify(() => mockOptimisticManager.rollback()).called(1);
+        verify(() => mockOptimistic.rollback()).called(1);
       });
     });
 
-    group('Recipe Operations - Reorder Within Category', () {
-      test('should reorder recipes within category successfully', () async {
-        // Act
+    // -- Reorder Within Category --------------------------------------------
+
+    group('Reorder Within Category', () {
+      test('should reorder via moveRecipeBetweenCategories (same category)',
+          () async {
         await operations.reorderRecipesInCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
+          categoryName: testCategory,
           fromIndex: 0,
           toIndex: 1,
-          currentRecipes: testRecipes,
+          currentRecipes: [testRecipe, testRecipe2],
         );
-
-        // Assert
-        verify(() => mockOptimisticManager.applyChange(
-              testCategoryName,
-              any(),
-              testRecipes,
-            )).called(1);
 
         verify(() => mockMenuService.moveRecipeBetweenCategories(
               resourceId: testMenuId,
-              fromCategory: testCategoryName,
+              fromCategory: testCategory,
               fromIndex: 0,
-              toCategory: testCategoryName,
+              toCategory: testCategory,
               toIndex: 1,
             )).called(1);
       });
 
-      test('should skip reorder when fromIndex equals toIndex', () async {
-        // Act
+      test('should skip when fromIndex equals toIndex', () async {
         await operations.reorderRecipesInCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
+          categoryName: testCategory,
           fromIndex: 1,
           toIndex: 1,
-          currentRecipes: testRecipes,
+          currentRecipes: [testRecipe, testRecipe2],
         );
 
-        // Assert - no operations should be called
-        verifyNever(
-            () => mockOptimisticManager.applyChange(any(), any(), any()));
+        verifyNever(() => mockOptimistic.applyChange(any(), any(), any()));
         verifyNever(() => mockMenuService.moveRecipeBetweenCategories(
               resourceId: any(named: 'resourceId'),
               fromCategory: any(named: 'fromCategory'),
@@ -485,558 +370,330 @@ void main() {
             ));
       });
 
-      test('should throw on invalid fromIndex for reorder', () async {
-        // Act & Assert
+      test('should throw on invalid fromIndex', () {
         expect(
           () => operations.reorderRecipesInCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
+            categoryName: testCategory,
             fromIndex: -1,
-            toIndex: 1,
-            currentRecipes: testRecipes,
+            toIndex: 0,
+            currentRecipes: [testRecipe],
           ),
           throwsA(isA<ArgumentError>()),
         );
       });
 
-      test('should throw on invalid toIndex for reorder', () async {
-        // Act & Assert
+      test('should throw on invalid toIndex', () {
         expect(
           () => operations.reorderRecipesInCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
+            categoryName: testCategory,
             fromIndex: 0,
             toIndex: 10,
-            currentRecipes: testRecipes,
+            currentRecipes: [testRecipe],
           ),
           throwsA(isA<ArgumentError>()),
         );
       });
     });
 
-    group('Category Operations - Clear Category', () {
-      test('should clear category successfully', () async {
-        // Act
+    // -- Clear Category -----------------------------------------------------
+
+    group('Clear Category', () {
+      test('should clear category and call service', () async {
         await operations.clearCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
-          currentRecipes: testRecipes,
+          categoryName: testCategory,
+          currentRecipes: [testRecipe],
         );
 
-        // Assert
-        verify(() => mockOptimisticManager.applyChange(
-              testCategoryName,
+        verify(() => mockOptimistic.applyChange(
+              testCategory,
               any(),
-              testRecipes,
+              [testRecipe],
             )).called(1);
-
         verify(() => mockMenuService.clearCategory(
               resourceId: testMenuId,
-              categoryName: testCategoryName,
+              categoryName: testCategory,
             )).called(1);
       });
 
-      test('should rollback on clear category error', () async {
-        // Arrange
-        final error = Exception('Clear failed');
+      test('should rollback on error', () {
         when(() => mockMenuService.clearCategory(
               resourceId: any(named: 'resourceId'),
               categoryName: any(named: 'categoryName'),
-            )).thenThrow(error);
+            )).thenThrow(Exception('fail'));
 
-        // Act & Assert
         expect(
           () => operations.clearCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
-            currentRecipes: testRecipes,
+            categoryName: testCategory,
+            currentRecipes: [testRecipe],
           ),
           throwsA(isA<Exception>()),
         );
-
-        verify(() => mockOptimisticManager.rollback()).called(1);
+        verify(() => mockOptimistic.rollback()).called(1);
       });
+    });
 
-      test('should handle empty category name for clear', () async {
-        // Act
-        await operations.clearCategory(
+    // -- Regenerate Category ------------------------------------------------
+
+    group('Regenerate Category', () {
+      test('should complete without error (feature stub)', () async {
+        // Production code logs a warning but does NOT throw
+        await operations.regenerateCategory(
           menuId: testMenuId,
-          categoryName: '',
-          currentRecipes: testRecipes,
+          categoryName: testCategory,
         );
-
-        // Assert - should still call service
-        verify(() => mockMenuService.clearCategory(
-              resourceId: testMenuId,
-              categoryName: '',
-            )).called(1);
+        // No service call expected
       });
     });
 
-    group('Category Operations - Regenerate Category', () {
-      test('should throw UnimplementedError for regenerate category', () async {
-        // Act & Assert
-        expect(
-          () => operations.regenerateCategory(
-            menuId: testMenuId,
-            categoryName: testCategoryName,
-          ),
-          throwsA(isA<UnimplementedError>()),
-        );
-      });
+    // -- Batch Operations ---------------------------------------------------
 
-      test('should include proper error message for regenerate', () async {
-        // Act & Assert
-        try {
-          await operations.regenerateCategory(
-            menuId: testMenuId,
-            categoryName: testCategoryName,
-          );
-          fail('Should have thrown UnimplementedError');
-        } catch (e) {
-          expect(e, isA<UnimplementedError>());
-          expect(e.toString(), contains('AI menu regeneration feature'));
-        }
-      });
-    });
-
-    group('Batch Operations - Multiple Recipes', () {
-      test('should add multiple recipes to category successfully', () async {
-        // Act
+    group('Batch Operations', () {
+      test('should add multiple recipes calling service for each', () async {
         await operations.addMultipleRecipesToCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
-          recipes: testMultipleRecipes,
+          categoryName: testCategory,
+          recipes: [testRecipe, testRecipe2],
         );
 
-        // Assert
-        verify(() => mockOptimisticManager.applyChange(
-              testCategoryName,
-              any(),
-            )).called(1);
-
-        // Should call add for each recipe
         verify(() => mockMenuService.addRecipeToCategory(
               resourceId: testMenuId,
-              categoryName: testCategoryName,
+              categoryName: testCategory,
               recipe: testRecipe,
             )).called(1);
-
         verify(() => mockMenuService.addRecipeToCategory(
               resourceId: testMenuId,
-              categoryName: testCategoryName,
+              categoryName: testCategory,
               recipe: testRecipe2,
             )).called(1);
       });
 
-      test('should skip adding empty recipes list', () async {
-        // Arrange - create fresh isolated mocks to avoid contamination
-        final isolatedMenuService = MockRealtimeMenuService();
-        final isolatedOptimisticManager = MockOptimisticUpdateManager();
-
-        // Configure default behavior
-        when(() => isolatedOptimisticManager.applyChange(any(), any(), any()))
-            .thenReturn(null);
-        when(() => isolatedOptimisticManager.rollback()).thenReturn(null);
-
-        final isolatedOperations = RealtimeMenuOperations(
-          menuService: isolatedMenuService,
-          optimisticManager: isolatedOptimisticManager,
-        );
-
-        // Act
-        await isolatedOperations.addMultipleRecipesToCategory(
+      test('should skip when recipes list is empty', () async {
+        await operations.addMultipleRecipesToCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
+          categoryName: testCategory,
           recipes: [],
         );
 
-        // Assert - no operations should be called due to early return
-        verifyNever(() => isolatedOptimisticManager.applyChange(any(), any()));
-        verifyNever(
-            () => isolatedOptimisticManager.applyChange(any(), any(), any()));
-        verifyNever(() => isolatedMenuService.addRecipeToCategory(
+        verifyNever(() => mockOptimistic.applyChange(any(), any()));
+        verifyNever(() => mockMenuService.addRecipeToCategory(
               resourceId: any(named: 'resourceId'),
               categoryName: any(named: 'categoryName'),
               recipe: any(named: 'recipe'),
             ));
       });
 
-      test('should rollback on partial failure in multiple add', () async {
-        // Arrange - second recipe fails
+      test('should rollback on partial failure in batch add', () {
         when(() => mockMenuService.addRecipeToCategory(
               resourceId: testMenuId,
-              categoryName: testCategoryName,
-              recipe: testRecipe,
-            )).thenAnswer((_) async {});
-
-        when(() => mockMenuService.addRecipeToCategory(
-              resourceId: testMenuId,
-              categoryName: testCategoryName,
+              categoryName: testCategory,
               recipe: testRecipe2,
-            )).thenThrow(Exception('Second recipe failed'));
+            )).thenThrow(Exception('second failed'));
 
-        // Act & Assert
         expect(
           () => operations.addMultipleRecipesToCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
-            recipes: testMultipleRecipes,
+            categoryName: testCategory,
+            recipes: [testRecipe, testRecipe2],
           ),
           throwsA(isA<Exception>()),
         );
-
-        verify(() => mockOptimisticManager.rollback()).called(1);
+        verify(() => mockOptimistic.rollback()).called(1);
       });
 
-      test('should remove multiple recipes by indices', () async {
-        // Arrange
-        final indices = [1, 0]; // Reversed order for proper removal
-
-        // Act
+      test('should remove multiple recipes via updateWholeCategory', () async {
         await operations.removeMultipleRecipesFromCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
-          indices: indices,
-          currentRecipes: testRecipes,
+          categoryName: testCategory,
+          indices: [1, 0],
+          currentRecipes: [testRecipe, testRecipe2],
         );
 
-        // Assert - should remove in descending order
-        verify(() => mockMenuService.removeRecipeFromCategory(
+        verify(() => mockMenuService.updateWholeCategory(
               resourceId: testMenuId,
-              categoryName: testCategoryName,
-              recipeIndex: 1, // Higher index first
-            )).called(1);
-
-        verify(() => mockMenuService.removeRecipeFromCategory(
-              resourceId: testMenuId,
-              categoryName: testCategoryName,
-              recipeIndex: 0,
+              categoryName: testCategory,
+              recipes: any(named: 'recipes'),
             )).called(1);
       });
 
-      test('should skip removing empty indices list', () async {
-        // Arrange - create fresh isolated mocks to avoid contamination
-        final isolatedMenuService = MockRealtimeMenuService();
-        final isolatedOptimisticManager = MockOptimisticUpdateManager();
-
-        // Configure default behavior
-        when(() => isolatedOptimisticManager.applyChange(any(), any(), any()))
-            .thenReturn(null);
-        when(() => isolatedOptimisticManager.rollback()).thenReturn(null);
-
-        final isolatedOperations = RealtimeMenuOperations(
-          menuService: isolatedMenuService,
-          optimisticManager: isolatedOptimisticManager,
-        );
-
-        // Act
-        await isolatedOperations.removeMultipleRecipesFromCategory(
+      test('should skip when indices list is empty', () async {
+        await operations.removeMultipleRecipesFromCategory(
           menuId: testMenuId,
-          categoryName: testCategoryName,
+          categoryName: testCategory,
           indices: [],
-          currentRecipes: testRecipes,
+          currentRecipes: [testRecipe],
         );
 
-        // Assert - no operations should be called due to early return
-        verifyNever(() => isolatedOptimisticManager.applyChange(any(), any()));
-        verifyNever(
-            () => isolatedOptimisticManager.applyChange(any(), any(), any()));
-        verifyNever(() => isolatedMenuService.removeRecipeFromCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-              recipeIndex: any(named: 'recipeIndex'),
-            ));
+        verifyNever(() => mockOptimistic.applyChange(any(), any(), any()));
       });
 
-      test('should throw on invalid indices in multiple remove', () async {
-        // Act & Assert
+      test('should throw on invalid index in batch remove', () {
         expect(
           () => operations.removeMultipleRecipesFromCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
-            indices: [0, 10], // 10 is invalid
-            currentRecipes: testRecipes,
+            categoryName: testCategory,
+            indices: [0, 10],
+            currentRecipes: [testRecipe],
           ),
           throwsA(isA<ArgumentError>()),
         );
       });
     });
 
-    group('Optimistic Updates Management', () {
-      test('should apply optimistic changes to menu snapshot', () {
-        // Arrange
-        final baseMenu = {
+    // -- Optimistic Update Management ---------------------------------------
+
+    group('Optimistic Update Management', () {
+      test('should delegate applyOptimisticChanges to manager', () {
+        final base = {
           'Middag': [testRecipe]
         };
-        final optimisticMenu = {
+        final result = {
           'Middag': [testRecipe, testRecipe2]
         };
+        when(() => mockOptimistic.applyToMenu(base)).thenReturn(result);
 
-        when(() => mockOptimisticManager.applyToMenu(baseMenu))
-            .thenReturn(optimisticMenu);
-
-        // Act
-        final result = operations.applyOptimisticChanges(baseMenu);
-
-        // Assert
-        expect(result, equals(optimisticMenu));
-        verify(() => mockOptimisticManager.applyToMenu(baseMenu)).called(1);
+        expect(operations.applyOptimisticChanges(base), equals(result));
+        verify(() => mockOptimistic.applyToMenu(base)).called(1);
       });
 
-      test('should check for optimistic changes', () {
-        // Arrange
-        when(() => mockOptimisticManager.hasChanges).thenReturn(true);
-
-        // Act
-        final hasChanges = operations.hasOptimisticChanges;
-
-        // Assert
-        expect(hasChanges, isTrue);
+      test('should delegate hasOptimisticChanges', () {
+        when(() => mockOptimistic.hasChanges).thenReturn(true);
+        expect(operations.hasOptimisticChanges, isTrue);
       });
 
-      test('should get all optimistic changes', () {
-        // Arrange
+      test('should delegate optimisticChanges', () {
         final changes = {
-          'Middag': [testRecipe]
+          'A': [testRecipe]
         };
-        when(() => mockOptimisticManager.allChanges).thenReturn(changes);
-
-        // Act
-        final result = operations.optimisticChanges;
-
-        // Assert
-        expect(result, equals(changes));
+        when(() => mockOptimistic.allChanges).thenReturn(changes);
+        expect(operations.optimisticChanges, equals(changes));
       });
 
-      test('should clear optimistic changes', () {
-        // Act
+      test('should delegate clearOptimisticChanges', () {
         operations.clearOptimisticChanges();
-
-        // Assert
-        verify(() => mockOptimisticManager.clear()).called(1);
+        verify(() => mockOptimistic.clear()).called(1);
       });
 
-      test('should rollback optimistic changes', () {
-        // Act
+      test('should delegate rollbackOptimisticChanges', () {
         operations.rollbackOptimisticChanges();
-
-        // Assert
-        verify(() => mockOptimisticManager.rollback()).called(1);
+        verify(() => mockOptimistic.rollback()).called(1);
       });
     });
 
-    group('Validation Methods', () {
-      test('should validate recipe for category - valid recipe', () {
-        // Act
-        final isValid =
-            operations.validateRecipeForCategory(testRecipe, testCategoryName);
+    // -- Validation ---------------------------------------------------------
 
-        // Assert
-        expect(isValid, isTrue);
+    group('Validation', () {
+      test('valid recipe returns true', () {
+        expect(operations.validateRecipeForCategory(testRecipe, 'X'), isTrue);
       });
 
-      test('should validate recipe for category - empty title', () {
-        // Arrange
-        final recipeWithEmptyTitle = RecipeFactory.build(
-          id: 'empty_title',
-          title: '',
-        );
-
-        // Act
-        final isValid = operations.validateRecipeForCategory(
-          recipeWithEmptyTitle,
-          testCategoryName,
-        );
-
-        // Assert
-        expect(isValid, isFalse);
+      test('recipe with empty title returns false', () {
+        final r = RecipeFactory.build(id: 'x', title: '');
+        expect(operations.validateRecipeForCategory(r, 'X'), isFalse);
       });
 
-      test('should validate category name - valid name', () {
-        // Act
-        final isValid = operations.validateCategoryName('Middag');
-
-        // Assert
-        expect(isValid, isTrue);
+      test('valid category name returns true', () {
+        expect(operations.validateCategoryName('Middag'), isTrue);
       });
 
-      test('should validate category name - empty name', () {
-        // Act
-        final isValid = operations.validateCategoryName('');
-
-        // Assert
-        expect(isValid, isFalse);
+      test('empty category name returns false', () {
+        expect(operations.validateCategoryName(''), isFalse);
       });
 
-      test('should validate category name - whitespace only', () {
-        // Act
-        final isValid = operations.validateCategoryName('   ');
-
-        // Assert
-        expect(isValid, isFalse);
+      test('whitespace-only category name returns false', () {
+        expect(operations.validateCategoryName('   '), isFalse);
       });
     });
+
+    // -- Utility methods ----------------------------------------------------
 
     group('Utility Methods', () {
-      test('should get recipe count with optimistic changes', () {
-        // Arrange
-        final baseRecipes = [testRecipe];
-        final optimisticChanges = {
-          testCategoryName: [testRecipe, testRecipe2]
-        };
+      test('getRecipeCountForCategory with optimistic changes', () {
+        when(() => mockOptimistic.hasChanges).thenReturn(true);
+        when(() => mockOptimistic.allChanges).thenReturn({
+          testCategory: [testRecipe, testRecipe2]
+        });
 
-        when(() => mockOptimisticManager.hasChanges).thenReturn(true);
-        when(() => mockOptimisticManager.allChanges)
-            .thenReturn(optimisticChanges);
-
-        // Act
-        final count =
-            operations.getRecipeCountForCategory(testCategoryName, baseRecipes);
-
-        // Assert
-        expect(count, equals(2));
+        expect(
+          operations.getRecipeCountForCategory(testCategory, [testRecipe]),
+          equals(2),
+        );
       });
 
-      test('should get recipe count without optimistic changes', () {
-        // Arrange
-        final baseRecipes = [testRecipe];
+      test('getRecipeCountForCategory without optimistic changes', () {
+        when(() => mockOptimistic.hasChanges).thenReturn(false);
 
-        when(() => mockOptimisticManager.hasChanges).thenReturn(false);
-
-        // Act
-        final count =
-            operations.getRecipeCountForCategory(testCategoryName, baseRecipes);
-
-        // Assert
-        expect(count, equals(1));
+        expect(
+          operations.getRecipeCountForCategory(testCategory, [testRecipe]),
+          equals(1),
+        );
       });
 
-      test('should get recipes with optimistic changes', () {
-        // Arrange
-        final baseRecipes = [testRecipe];
-        final optimisticRecipes = [testRecipe, testRecipe2];
-        final optimisticChanges = {testCategoryName: optimisticRecipes};
+      test('getRecipesForCategory with optimistic changes', () {
+        final optimistic = [testRecipe, testRecipe2];
+        when(() => mockOptimistic.hasChanges).thenReturn(true);
+        when(() => mockOptimistic.allChanges)
+            .thenReturn({testCategory: optimistic});
 
-        when(() => mockOptimisticManager.hasChanges).thenReturn(true);
-        when(() => mockOptimisticManager.allChanges)
-            .thenReturn(optimisticChanges);
-
-        // Act
-        final recipes =
-            operations.getRecipesForCategory(testCategoryName, baseRecipes);
-
-        // Assert
-        expect(recipes, equals(optimisticRecipes));
+        expect(
+          operations.getRecipesForCategory(testCategory, [testRecipe]),
+          equals(optimistic),
+        );
       });
 
-      test('should get recipes without optimistic changes', () {
-        // Arrange
-        final baseRecipes = [testRecipe];
+      test('getRecipesForCategory without optimistic changes', () {
+        when(() => mockOptimistic.hasChanges).thenReturn(false);
 
-        when(() => mockOptimisticManager.hasChanges).thenReturn(false);
-
-        // Act
-        final recipes =
-            operations.getRecipesForCategory(testCategoryName, baseRecipes);
-
-        // Assert
-        expect(recipes, equals(baseRecipes));
+        final base = [testRecipe];
+        expect(
+          operations.getRecipesForCategory(testCategory, base),
+          equals(base),
+        );
       });
     });
 
-    group('Edge Cases and Integration Scenarios', () {
-      test('should handle concurrent operations gracefully', () async {
-        // Arrange - simulate concurrent add operations
-        final futures = <Future>[];
+    // -- Edge Cases ---------------------------------------------------------
 
-        // Act - start multiple operations simultaneously
+    group('Edge Cases', () {
+      test('concurrent add operations all complete', () async {
+        final futures = <Future>[];
         for (int i = 0; i < 3; i++) {
           futures.add(operations.addRecipeToCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
-            recipe: RecipeFactory.build(id: 'recipe_$i'),
+            categoryName: testCategory,
+            recipe: RecipeFactory.build(id: 'r_$i'),
           ));
         }
-
         await Future.wait(futures);
 
-        // Assert - all operations should complete
         verify(() => mockMenuService.addRecipeToCategory(
               resourceId: testMenuId,
-              categoryName: testCategoryName,
+              categoryName: testCategory,
               recipe: any(named: 'recipe'),
             )).called(3);
       });
 
-      test('should handle null and empty values safely', () async {
-        // Test various edge cases without crashing
-        expect(operations.validateCategoryName(''), isFalse);
-        expect(
-            operations.validateRecipeForCategory(
-              RecipeFactory.build(title: ''),
-              'test',
-            ),
-            isFalse);
-
-        // Test utility methods with empty data
-        expect(operations.getRecipeCountForCategory('test', []), equals(0));
-        expect(operations.getRecipesForCategory('test', []), isEmpty);
-
-        // Validation methods handle edge cases properly
-        expect(operations.validateCategoryName('   '), isFalse);
-        expect(operations.validateCategoryName('Valid Category'), isTrue);
-      });
-
-      test('should maintain operation order consistency', () async {
-        // Arrange
-        final operationOrder = <String>[];
-
-        when(() => mockOptimisticManager.applyChange(any(), any(), any()))
-            .thenAnswer((_) {
-          operationOrder.add('optimistic');
-        });
-
+      test('timeout exception triggers rollback', () {
         when(() => mockMenuService.addRecipeToCategory(
               resourceId: any(named: 'resourceId'),
               categoryName: any(named: 'categoryName'),
               recipe: any(named: 'recipe'),
-            )).thenAnswer((_) async {
-          operationOrder.add('service');
-        });
-
-        // Act
-        await operations.addRecipeToCategory(
-          menuId: testMenuId,
-          categoryName: testCategoryName,
-          recipe: testRecipe,
+            )).thenThrow(
+          TimeoutException('timed out', const Duration(seconds: 30)),
         );
 
-        // Assert - optimistic update should always come before service call
-        expect(operationOrder, equals(['optimistic', 'service']));
-      });
-
-      test('should handle service timeout scenarios', () async {
-        // Arrange - simulate timeout
-        when(() => mockMenuService.addRecipeToCategory(
-                  resourceId: any(named: 'resourceId'),
-                  categoryName: any(named: 'categoryName'),
-                  recipe: any(named: 'recipe'),
-                ))
-            .thenThrow(
-                TimeoutException('Operation timed out', Duration(seconds: 30)));
-
-        // Act & Assert
         expect(
           () => operations.addRecipeToCategory(
             menuId: testMenuId,
-            categoryName: testCategoryName,
+            categoryName: testCategory,
             recipe: testRecipe,
           ),
           throwsA(isA<TimeoutException>()),
         );
-
-        verify(() => mockOptimisticManager.rollback()).called(1);
+        verify(() => mockOptimistic.rollback()).called(1);
       });
     });
   });

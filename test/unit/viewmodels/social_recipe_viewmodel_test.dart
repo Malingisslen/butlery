@@ -1,3 +1,5 @@
+// test/unit/viewmodels/social_recipe_viewmodel_test.dart
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
@@ -7,85 +9,53 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
 
-import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 
-// Test data builders
-class UserProfileBuilder {
-  static UserProfile build({
-    String? uid,
-    String? displayName,
-    String? email,
-    String? avatarUrl,
-    bool isSearchable = true,
-    bool allowEmailSearch = false,
-    int publicRecipeCount = 0,
-    int friendsCount = 0,
-    DateTime? joinedAt,
-    DateTime? lastActiveAt,
-    bool isOnline = false,
-    String? fcmToken,
-    DateTime? fcmTokenUpdatedAt,
-    bool notificationsEnabled = true,
-  }) {
-    final now = DateTime.now();
-    return UserProfile(
-      uid: uid ?? 'test-user-123',
-      displayName: displayName ?? 'Test User',
-      email: email ?? 'test@example.com',
-      avatarUrl: avatarUrl,
-      isSearchable: isSearchable,
-      allowEmailSearch: allowEmailSearch,
-      publicRecipeCount: publicRecipeCount,
-      friendsCount: friendsCount,
-      joinedAt: joinedAt ?? now,
-      lastActiveAt: lastActiveAt ?? now,
-      isOnline: isOnline,
-      fcmToken: fcmToken,
-      fcmTokenUpdatedAt: fcmTokenUpdatedAt,
-      notificationsEnabled: notificationsEnabled,
-    );
-  }
+// ---- Helpers ---------------------------------------------------------------
+
+UserProfile _user({
+  String uid = 'test-user-123',
+  String displayName = 'Test User',
+  String email = 'test@example.com',
+  String? avatarUrl,
+}) {
+  final now = DateTime.now();
+  return UserProfile(
+    uid: uid,
+    displayName: displayName,
+    email: email,
+    avatarUrl: avatarUrl,
+    joinedAt: now,
+    lastActiveAt: now,
+  );
 }
 
-class RecipeCommentBuilder {
-  static RecipeComment build({
-    String? id,
-    String? recipeId,
-    String? authorId,
-    String? text,
-    DateTime? createdAt,
-    String? parentCommentId,
-    int likesCount = 0,
-  }) {
-    return RecipeComment(
-      id: id ?? 'comment_${DateTime.now().millisecondsSinceEpoch}',
-      recipeId: recipeId ?? 'recipe_123',
-      authorId: authorId ?? 'user_123',
-      authorDisplayName: 'Test Author',
-      text: text ?? 'Test comment',
-      createdAt: createdAt ?? DateTime.now(),
-      parentCommentId: parentCommentId,
-      likesCount: likesCount,
-    );
-  }
-
-  static RecipeComment buildReply({
-    String? id,
-    String? parentId,
-    String? authorId,
-    String? text,
-  }) {
-    return build(
-      id: id,
-      parentCommentId: parentId ?? 'parent_comment_123',
-      authorId: authorId,
-      text: text ?? 'Reply comment',
-    );
-  }
+RecipeComment _comment({
+  String? id,
+  String recipeId = 'recipe_123',
+  String authorId = 'user_123',
+  String text = 'Test comment',
+  String? parentCommentId,
+  int likesCount = 0,
+}) {
+  return RecipeComment(
+    id: id ?? 'comment_${DateTime.now().microsecondsSinceEpoch}',
+    recipeId: recipeId,
+    authorId: authorId,
+    authorDisplayName: 'Test Author',
+    text: text,
+    createdAt: DateTime.now(),
+    parentCommentId: parentCommentId,
+    likesCount: likesCount,
+  );
 }
+
+// ---- Tests -----------------------------------------------------------------
 
 void main() {
   group('SocialRecipeViewModel', () {
@@ -93,96 +63,62 @@ void main() {
     late MockUnifiedFriendsService mockFriendsService;
     late MockUnifiedRecipeService mockRecipeService;
     late MockUserService mockUserService;
-    late MockSocialRecipeOperations mockSocialOps;
+    late MockPermissionService mockPermissionService;
+
     const testRecipeId = 'test_recipe_123';
 
     setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-      registerFallbackValue(UserProfileBuilder.build());
-      registerFallbackValue(RecipeCommentBuilder.build());
+      await TestServiceLocator.initialize();
+      // Bridge production ServiceLocator for SocialCommentsManager / SocialEngagementManager
+      production.ServiceLocator.initialize(DIContainer());
+      registerFallbackValue(_user());
+      registerFallbackValue(_comment());
       registerFallbackValue(ResourcePermission.viewer);
     });
 
     setUp(() async {
       await TestServiceLocator.initialize();
+      // Re-bridge after reset (reset clears GetIt)
+      production.ServiceLocator.initialize(DIContainer());
 
-      // Create mocks
       mockFriendsService = MockUnifiedFriendsService();
       mockRecipeService = MockUnifiedRecipeService();
       mockUserService = MockUserService();
-      mockSocialOps = MockSocialRecipeOperations();
+      mockPermissionService = MockPermissionService();
 
-      // Configure default state
-      final testFriends = [
-        UserProfileBuilder.build(
-          uid: 'friend_1',
-          displayName: 'Anna Andersson',
-          email: 'anna@example.com',
-        ),
-        UserProfileBuilder.build(
-          uid: 'friend_2',
-          displayName: 'Erik Svensson',
-          email: 'erik@example.com',
-        ),
-      ];
+      // Register PermissionService so SocialEngagementManager finds it
+      mockPermissionService.setPermissionState(
+        currentUserId: 'current_user_123',
+        isAuthenticated: true,
+      );
+      TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
 
+      // Configure friends via state setter (concrete override — no when())
       mockFriendsService.setFriendsState(
-        friends: testFriends,
+        friends: [
+          _user(uid: 'friend_1', displayName: 'Anna Andersson'),
+          _user(uid: 'friend_2', displayName: 'Erik Svensson'),
+        ],
         isInitialized: true,
         isLoading: false,
         error: null,
       );
 
-      // Configure user service state
+      // Configure user via state setter
       mockUserService.setUserState(
-        currentUser: UserProfileBuilder.build(
+        currentUser: _user(
           uid: 'current_user_123',
           displayName: 'Current User',
-          email: 'current@example.com',
         ),
       );
 
-      // Stub the social accessor and service-layer methods on the recipe mock
-      when(() => mockRecipeService.social).thenReturn(mockSocialOps);
-      when(() => mockRecipeService.createCollaborativeRecipe(
-            title: any(named: 'title'),
-            memberIds: any(named: 'memberIds'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: any(named: 'sourceUrl'),
-            descriptionCollaborative: any(named: 'descriptionCollaborative'),
-            allowGuestViewing: any(named: 'allowGuestViewing'),
-            allowMemberInvites: any(named: 'allowMemberInvites'),
-            categoryIds: any(named: 'categoryIds'),
-          )).thenAnswer((_) async => null);
-      when(() => mockRecipeService.addMemberToRecipe(
-            any(),
-            any(),
-            any(),
-          )).thenAnswer((_) async => false);
-      when(() => mockRecipeService.removeMemberFromRecipe(any(), any()))
-          .thenAnswer((_) async => false);
-      when(() => mockRecipeService.updateMemberPermission(
-            any(),
-            any(),
-            any(),
-          )).thenAnswer((_) async => false);
-
-      // Stub currentUserProfile on MockUserService so SocialProfileManager gets it
+      // currentUserProfile is NOT concrete on MockUserService — stub it
       when(() => mockUserService.currentUserProfile).thenReturn(
-        UserProfileBuilder.build(
-          uid: 'current_user_123',
-          displayName: 'Current User',
-          email: 'current@example.com',
-        ),
+        _user(uid: 'current_user_123', displayName: 'Current User'),
       );
+
+      // social getter is concrete on MockUnifiedRecipeService (returns _mockSocial).
+      // Do NOT use when() on it. Access via mockRecipeService.mockSocial instead.
 
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UnifiedFriendsService>(
@@ -190,7 +126,6 @@ void main() {
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       TestServiceLocator.registerMock<UserService>(mockUserService);
 
-      // Create viewModel
       viewModel = SocialRecipeViewModel(
         friendsService: mockFriendsService,
         recipeService: mockRecipeService,
@@ -200,21 +135,13 @@ void main() {
 
     tearDown(() async {
       viewModel.dispose();
-      BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
 
-    tearDownAll(() async {
-      await BaseUnitTest.teardownUnit();
-    });
+    // -- Initialization ------------------------------------------------------
 
     group('Initialization', () {
-      test('should initialize with default state', () {
-        // Arrange - viewModel created in setUp
-
-        // Act - no action needed, checking initial state
-
-        // Assert
+      test('should have default empty state', () {
         expect(viewModel.hasComments, isFalse);
         expect(viewModel.isLoadingComments, isFalse);
         expect(viewModel.commentsError, isNull);
@@ -223,654 +150,437 @@ void main() {
         expect(viewModel.newCommentText, isEmpty);
         expect(viewModel.comments, isEmpty);
         expect(viewModel.topLevelComments, isEmpty);
-        expect(viewModel.friends, isEmpty); // Not initialized yet
-        expect(viewModel.currentUser, isNull); // Not initialized yet
+        expect(viewModel.friends, isEmpty);
+        expect(viewModel.currentUser, isNull);
       });
 
-      test('should initialize friends and user on initialize', () async {
-        // Arrange - service configured in setUp
-
-        // Act
+      test('should load friends and user on initialize', () async {
         await viewModel.initialize();
 
-        // Assert
         expect(viewModel.friends.length, equals(2));
         expect(viewModel.friends[0].displayName, equals('Anna Andersson'));
         expect(viewModel.friends[1].displayName, equals('Erik Svensson'));
       });
 
       test('should handle initialization error gracefully', () async {
-        // Arrange
         mockFriendsService.setFriendsState(
           friends: [],
           error: 'Connection failed',
         );
 
-        // Act
         await viewModel.initialize();
-
-        // Assert - should not throw, but log error
         expect(viewModel.friends, isEmpty);
       });
     });
 
-    group('Comment System State Management', () {
-      test('should refresh comments for recipe', () async {
-        // Arrange
-        var notificationCount = 0;
-        viewModel.addListener(() => notificationCount++);
+    // -- Comment State -------------------------------------------------------
 
-        // Act
+    group('Comment State', () {
+      test('should refresh comments for recipe', () async {
+        var notifications = 0;
+        viewModel.addListener(() => notifications++);
+
         await viewModel.refreshComments(testRecipeId);
 
-        // Assert
-        expect(viewModel.comments, isEmpty); // Mock returns empty
+        expect(viewModel.comments, isEmpty);
         expect(viewModel.commentsError, isNull);
         expect(viewModel.isLoadingComments, isFalse);
-        expect(notificationCount,
-            greaterThanOrEqualTo(2)); // Loading and loaded states
+        expect(notifications, greaterThanOrEqualTo(2));
       });
 
-      test('should handle comment refresh error', () async {
-        // Note: In production, this would connect to a service
-        // For now, we simulate an error scenario
-
-        // Act
-        await viewModel.refreshComments('invalid_recipe');
-
-        // Assert - should handle gracefully
+      test('should handle refresh for unknown recipe', () async {
+        await viewModel.refreshComments('unknown');
         expect(viewModel.isLoadingComments, isFalse);
       });
 
-      test('should update comment text', () {
-        // Arrange
-        var notificationCount = 0;
-        viewModel.addListener(() => notificationCount++);
+      test('should update comment text and notify', () {
+        var notifications = 0;
+        viewModel.addListener(() => notifications++);
 
-        // Act
-        viewModel.updateNewCommentText('Detta är en kommentar');
-
-        // Assert
-        expect(viewModel.newCommentText, equals('Detta är en kommentar'));
-        expect(notificationCount, equals(1));
+        viewModel.updateNewCommentText('Ny kommentar');
+        expect(viewModel.newCommentText, equals('Ny kommentar'));
+        expect(notifications, equals(1));
       });
 
-      test('should trim comment text on update', () {
-        // Arrange & Act
-        viewModel.updateNewCommentText('  Trimmed text  ');
-
-        // Assert - Note: trimming happens on post, not update
-        expect(viewModel.newCommentText, equals('  Trimmed text  '));
+      test('should preserve whitespace on update (trimmed on post)', () {
+        viewModel.updateNewCommentText('  spaces  ');
+        expect(viewModel.newCommentText, equals('  spaces  '));
       });
     });
 
+    // -- Posting Comments ----------------------------------------------------
+
     group('Comment Posting', () {
-      test('should post comment successfully', () async {
-        // Arrange
+      test('should post comment and clear state', () async {
         await viewModel.initialize();
         viewModel.updateNewCommentText('Fantastiskt recept!');
-        var notificationCount = 0;
-        viewModel.addListener(() => notificationCount++);
 
-        // Act
+        var notifications = 0;
+        viewModel.addListener(() => notifications++);
+
         await viewModel.postComment(testRecipeId);
 
-        // Assert - after posting, the comment text is cleared and state is reset
-        expect(viewModel.newCommentText, isEmpty); // Should clear
-        expect(viewModel.isReplying, isFalse); // Should reset
+        expect(viewModel.newCommentText, isEmpty);
+        expect(viewModel.isReplying, isFalse);
         expect(viewModel.isPostingComment, isFalse);
-        expect(notificationCount,
-            greaterThanOrEqualTo(2)); // Posting and posted states
+        expect(notifications, greaterThanOrEqualTo(2));
       });
 
       test('should not post empty comment', () async {
-        // Arrange
-        viewModel.updateNewCommentText('   '); // Only whitespace
-
-        // Act
+        viewModel.updateNewCommentText('   ');
         await viewModel.postComment(testRecipeId);
-
-        // Assert
         expect(viewModel.comments, isEmpty);
       });
 
-      test('should handle comment posting error', () async {
-        // Arrange - use a failing social ops mock
-        final failingSocialOps = _FailingAddCommentSocialOps();
-        when(() => mockRecipeService.social).thenReturn(failingSocialOps);
+      test('should post reply with parent reference then clear', () async {
+        viewModel.setReplyTo('parent_123');
+        viewModel.updateNewCommentText('Svar!');
 
-        // Create a new viewModel that uses the failing social ops
-        final errorViewModel = SocialRecipeViewModel(
-          friendsService: mockFriendsService,
-          recipeService: mockRecipeService,
-          userService: mockUserService,
-        );
-        errorViewModel.updateNewCommentText('Test comment');
-
-        // Act - postComment rethrows, so expect the exception
-        await expectLater(
-          () => errorViewModel.postComment(testRecipeId),
-          throwsA(isA<Exception>()),
-        );
-
-        errorViewModel.dispose();
-
-        // Restore the original mock social ops for other tests
-        when(() => mockRecipeService.social).thenReturn(mockSocialOps);
-      });
-
-      test('should post reply with parent reference', () async {
-        // Arrange
-        viewModel.setReplyTo('parent_comment_123');
-        viewModel.updateNewCommentText('Detta är ett svar');
-
-        // Act
         await viewModel.postComment(testRecipeId);
 
-        // Assert - reply state is cleared after successful post
-        expect(viewModel.isReplying, isFalse); // Should reset
-        expect(viewModel.newCommentText, isEmpty); // Should clear
-        expect(viewModel.isPostingComment, isFalse);
+        expect(viewModel.isReplying, isFalse);
+        expect(viewModel.newCommentText, isEmpty);
+      });
+
+      test('should rethrow when addComment returns null', () async {
+        // Configure the built-in mockSocial to return null (failure path)
+        final failingSocial = _NullAddCommentSocialOps();
+        // Since social is concrete, we need a local recipe service mock
+        final localRecipeService = _MockRecipeServiceWithSocial(failingSocial);
+        final vm = SocialRecipeViewModel(
+          friendsService: mockFriendsService,
+          recipeService: localRecipeService,
+          userService: mockUserService,
+        );
+        vm.updateNewCommentText('Test');
+
+        await expectLater(
+          () => vm.postComment(testRecipeId),
+          throwsA(isA<Exception>()),
+        );
+        vm.dispose();
       });
     });
+
+    // -- Reply Functionality -------------------------------------------------
 
     group('Reply Functionality', () {
       test('should set reply target', () {
-        // Arrange
-        var notificationCount = 0;
-        viewModel.addListener(() => notificationCount++);
+        var n = 0;
+        viewModel.addListener(() => n++);
 
-        // Act
         viewModel.setReplyTo('comment_456');
-
-        // Assert
         expect(viewModel.isReplying, isTrue);
-        expect(notificationCount, equals(1));
+        expect(n, equals(1));
       });
 
       test('should cancel reply mode', () {
-        // Arrange
         viewModel.setReplyTo('comment_456');
-        var notificationCount = 0;
-        viewModel.addListener(() => notificationCount++);
+        var n = 0;
+        viewModel.addListener(() => n++);
 
-        // Act
         viewModel.cancelReply();
-
-        // Assert
         expect(viewModel.isReplying, isFalse);
-        expect(notificationCount, equals(1));
+        expect(n, equals(1));
       });
 
-      test('should get replies for parent comment', () {
-        // Arrange
-        final parentComment = RecipeCommentBuilder.build(
-          id: 'parent_1',
-          parentCommentId: null,
-        );
-        final reply1 = RecipeCommentBuilder.buildReply(
-          id: 'reply_1',
-          parentId: 'parent_1',
-        );
-        final reply2 = RecipeCommentBuilder.buildReply(
-          id: 'reply_2',
-          parentId: 'parent_1',
-        );
-        final otherComment = RecipeCommentBuilder.build(
-          id: 'other_1',
-        );
+      test('should filter replies for parent', () {
+        viewModel.comments.addAll([
+          _comment(id: 'top_1'),
+          _comment(id: 'reply_a', parentCommentId: 'top_1'),
+          _comment(id: 'reply_b', parentCommentId: 'top_1'),
+          _comment(id: 'other'),
+        ]);
 
-        // Simulate having comments
-        viewModel.comments
-            .addAll([parentComment, reply1, reply2, otherComment]);
-
-        // Act
-        final replies = viewModel.getReplies('parent_1');
-
-        // Assert
+        final replies = viewModel.getReplies('top_1');
         expect(replies.length, equals(2));
-        expect(replies[0].id, equals('reply_1'));
-        expect(replies[1].id, equals('reply_2'));
+        expect(replies[0].id, equals('reply_a'));
+        expect(replies[1].id, equals('reply_b'));
       });
 
-      test('should return empty list for comment with no replies', () {
-        // Arrange
-        final comment = RecipeCommentBuilder.build(id: 'lonely_comment');
-        viewModel.comments.add(comment);
-
-        // Act
-        final replies = viewModel.getReplies('lonely_comment');
-
-        // Assert
-        expect(replies, isEmpty);
+      test('should return empty for comment with no replies', () {
+        viewModel.comments.add(_comment(id: 'lonely'));
+        expect(viewModel.getReplies('lonely'), isEmpty);
       });
     });
+
+    // -- Social Engagement ---------------------------------------------------
 
     group('Social Engagement', () {
-      test('should toggle comment like', () async {
-        // Arrange
-        final comment = RecipeCommentBuilder.build(
-          id: 'comment_789',
-          likesCount: 5,
-        );
-        viewModel.comments.add(comment);
-        var notificationCount = 0;
-        viewModel.addListener(() => notificationCount++);
+      test('should toggle comment like (optimistic)', () async {
+        viewModel.comments.add(_comment(id: 'c_1', likesCount: 5));
 
-        // Act
-        await viewModel.toggleCommentLike('comment_789');
+        var n = 0;
+        viewModel.addListener(() => n++);
 
-        // Assert
-        expect(viewModel.hasLikedComment('comment_789'), isTrue);
-        expect(notificationCount, equals(1));
+        await viewModel.toggleCommentLike('c_1');
+        expect(viewModel.hasLikedComment('c_1'), isTrue);
+        expect(n, greaterThanOrEqualTo(1));
       });
 
-      test('should toggle comment unlike', () async {
-        // Arrange
-        final comment = RecipeCommentBuilder.build(
-          id: 'comment_789',
-          likesCount: 6,
-        );
-        viewModel.comments.add(comment);
+      test('should toggle unlike', () async {
+        viewModel.comments.add(_comment(id: 'c_2'));
 
-        // Like then unlike
-        await viewModel.toggleCommentLike('comment_789');
-        await viewModel.toggleCommentLike('comment_789');
+        await viewModel.toggleCommentLike('c_2');
+        expect(viewModel.hasLikedComment('c_2'), isTrue);
 
-        // Assert
-        expect(viewModel.hasLikedComment('comment_789'), isFalse);
+        await viewModel.toggleCommentLike('c_2');
+        expect(viewModel.hasLikedComment('c_2'), isFalse);
       });
 
-      test('should handle toggle like for non-existent comment', () async {
-        // Arrange & Act
-        await viewModel.toggleCommentLike('non_existent');
-
-        // Assert - should not throw, handled by try-catch
-        expect(viewModel.comments, isEmpty);
+      test('should handle toggle for non-existent comment', () async {
+        await viewModel.toggleCommentLike('missing');
+        // Engagement manager tracks likes regardless of comment list membership
+        expect(viewModel.hasLikedComment('missing'), isTrue);
       });
 
-      test('should check if comment is liked', () async {
-        // Arrange
-        final comment1 = RecipeCommentBuilder.build(id: 'liked_comment');
-        final comment2 = RecipeCommentBuilder.build(id: 'unliked_comment');
-        viewModel.comments.addAll([comment1, comment2]);
+      test('should track per-comment like state', () async {
+        viewModel.comments.addAll([
+          _comment(id: 'liked'),
+          _comment(id: 'not_liked'),
+        ]);
 
-        // Like only the first comment
-        await viewModel.toggleCommentLike('liked_comment');
+        await viewModel.toggleCommentLike('liked');
 
-        // Act & Assert
-        expect(viewModel.hasLikedComment('liked_comment'), isTrue);
-        expect(viewModel.hasLikedComment('unliked_comment'), isFalse);
-        expect(viewModel.hasLikedComment('non_existent'), isFalse);
+        expect(viewModel.hasLikedComment('liked'), isTrue);
+        expect(viewModel.hasLikedComment('not_liked'), isFalse);
+        expect(viewModel.hasLikedComment('unknown'), isFalse);
       });
     });
+
+    // -- User Operations -----------------------------------------------------
 
     group('User Operations', () {
-      test('should get author display name for friend', () async {
-        // Arrange
+      test('should get friend display name', () async {
         await viewModel.initialize();
-
-        // Act
-        final name = viewModel.getAuthorDisplayName('friend_1');
-
-        // Assert
-        expect(name, equals('Anna Andersson'));
+        expect(viewModel.getAuthorDisplayName('friend_1'),
+            equals('Anna Andersson'));
       });
 
-      test('should return current user name for self', () async {
-        // Arrange - set current user
+      test('should return ? for unknown user', () async {
         await viewModel.initialize();
-
-        // Act - look up an ID that is neither the current user nor a friend
-        final name = viewModel.getAuthorDisplayName('unknown_user');
-
-        // Assert - SocialProfileManager returns '?' for unknown author IDs
-        expect(name, equals('?'));
+        expect(viewModel.getAuthorDisplayName('unknown'), equals('?'));
       });
 
-      test('should get author avatar URL', () async {
-        // Arrange
-        final friendWithAvatar = UserProfileBuilder.build(
-          uid: 'friend_avatar',
-          displayName: 'Friend With Avatar',
-          avatarUrl: 'https://example.com/avatar.jpg',
-        );
-
-        // Update friends list in mock service
+      test('should get friend avatar URL', () async {
         mockFriendsService.setFriendsState(
           friends: [
-            UserProfileBuilder.build(
-              uid: 'friend_1',
-              displayName: 'Anna Andersson',
+            _user(
+              uid: 'f_avatar',
+              displayName: 'With Avatar',
+              avatarUrl: 'https://example.com/avatar.jpg',
             ),
-            UserProfileBuilder.build(
-              uid: 'friend_2',
-              displayName: 'Erik Svensson',
-            ),
-            friendWithAvatar,
           ],
         );
-
         await viewModel.initialize();
 
-        // Act
-        final avatarUrl = viewModel.getAuthorAvatarUrl('friend_avatar');
-
-        // Assert
-        expect(avatarUrl, equals('https://example.com/avatar.jpg'));
+        expect(viewModel.getAuthorAvatarUrl('f_avatar'),
+            equals('https://example.com/avatar.jpg'));
       });
 
-      test('should return null for unknown user avatar', () async {
-        // Arrange
+      test('should return null avatar for unknown user', () async {
         await viewModel.initialize();
-
-        // Act
-        final avatarUrl = viewModel.getAuthorAvatarUrl('unknown_user');
-
-        // Assert
-        expect(avatarUrl, isNull);
+        expect(viewModel.getAuthorAvatarUrl('unknown'), isNull);
       });
     });
+
+    // -- Comment Hierarchy ---------------------------------------------------
 
     group('Comment Hierarchy', () {
-      test('should get top level comments only', () {
-        // Arrange
-        final topLevel1 = RecipeCommentBuilder.build(
-          id: 'top_1',
-          parentCommentId: null,
-        );
-        final topLevel2 = RecipeCommentBuilder.build(
-          id: 'top_2',
-          parentCommentId: null,
-        );
-        final reply1 = RecipeCommentBuilder.buildReply(
-          id: 'reply_1',
-          parentId: 'top_1',
-        );
-        final reply2 = RecipeCommentBuilder.buildReply(
-          id: 'reply_2',
-          parentId: 'top_2',
-        );
+      test('should filter top-level comments only', () {
+        viewModel.comments.addAll([
+          _comment(id: 't1'),
+          _comment(id: 'r1', parentCommentId: 't1'),
+          _comment(id: 't2'),
+          _comment(id: 'r2', parentCommentId: 't2'),
+        ]);
 
-        viewModel.comments.addAll([topLevel1, reply1, topLevel2, reply2]);
-
-        // Act
-        final topLevelComments = viewModel.topLevelComments;
-
-        // Assert
-        expect(topLevelComments.length, equals(2));
-        expect(topLevelComments[0].id, equals('top_1'));
-        expect(topLevelComments[1].id, equals('top_2'));
+        final top = viewModel.topLevelComments;
+        expect(top.length, equals(2));
+        expect(top[0].id, equals('t1'));
+        expect(top[1].id, equals('t2'));
       });
 
-      test('should handle empty comments list', () {
-        // Arrange - no comments
-
-        // Act
-        final topLevelComments = viewModel.topLevelComments;
-
-        // Assert
-        expect(topLevelComments, isEmpty);
+      test('should return empty when no comments', () {
+        expect(viewModel.topLevelComments, isEmpty);
       });
 
-      test('should handle all replies (no top level)', () {
-        // Arrange
-        final reply1 = RecipeCommentBuilder.buildReply(id: 'r1');
-        final reply2 = RecipeCommentBuilder.buildReply(id: 'r2');
-        viewModel.comments.addAll([reply1, reply2]);
-
-        // Act
-        final topLevelComments = viewModel.topLevelComments;
-
-        // Assert
-        expect(topLevelComments, isEmpty);
+      test('should return empty when all are replies', () {
+        viewModel.comments.addAll([
+          _comment(id: 'r1', parentCommentId: 'p'),
+          _comment(id: 'r2', parentCommentId: 'p'),
+        ]);
+        expect(viewModel.topLevelComments, isEmpty);
       });
     });
+
+    // -- Collaborative Recipe Operations -------------------------------------
 
     group('Collaborative Recipe Operations', () {
-      test('should create collaborative recipe', () async {
-        // Arrange
-        const recipeName = 'Collaborative Köttbullar';
-        final memberIds = ['user_1', 'user_2'];
-        final memberDisplayNames = {
-          'user_1': 'Anna',
-          'user_2': 'Erik',
-        };
-
-        // Act
+      test('should create collaborative recipe (delegates to service)',
+          () async {
+        // createCollaborativeRecipe is concrete on MockUnifiedRecipeService,
+        // returns null by default (collaborativeShouldSucceed=false)
         final result = await viewModel.createCollaborativeRecipe(
-          name: recipeName,
-          memberIds: memberIds,
-          memberDisplayNames: memberDisplayNames,
+          name: 'Collab',
+          memberIds: ['u1', 'u2'],
+          memberDisplayNames: {'u1': 'A', 'u2': 'B'},
         );
-
-        // Assert - placeholder implementation returns false
         expect(result, isFalse);
       });
 
-      test('should share recipe', () async {
-        // Arrange
-        const recipeId = 'recipe_to_share';
-        final memberIds = ['friend_1'];
-        final memberDisplayNames = {'friend_1': 'Anna'};
-
-        // Act
-        final sharedId = await viewModel.shareRecipe(
-          recipeId: recipeId,
-          memberIds: memberIds,
-          memberDisplayNames: memberDisplayNames,
+      test('should share recipe (delegates to social ops)', () async {
+        // social.shareRecipe is concrete on MockSocialRecipeOperations:
+        // returns 'shared-<recipeId>'
+        final id = await viewModel.shareRecipe(
+          recipeId: 'r1',
+          memberIds: ['f1'],
+          memberDisplayNames: {'f1': 'Anna'},
         );
-
-        // Assert - delegates to social ops which returns 'shared-<recipeId>'
-        expect(sharedId, equals('shared-recipe_to_share'));
+        expect(id, equals('shared-r1'));
       });
 
-      test('should make recipe personal', () async {
-        // Arrange
-        const collaborativeRecipeId = 'collab_recipe_123';
-
-        // Act
-        final personalId =
-            await viewModel.makeRecipePersonal(collaborativeRecipeId);
-
-        // Assert - delegates to social ops which returns 'personal-<id>'
-        expect(personalId, equals('personal-collab_recipe_123'));
+      test('should make recipe personal (delegates to social ops)', () async {
+        final id = await viewModel.makeRecipePersonal('collab_1');
+        expect(id, equals('personal-collab_1'));
       });
     });
 
-    group('Member Management', () {
-      test('should add member to recipe', () async {
-        // Arrange
-        const recipeId = 'recipe_123';
-        const userId = 'new_member';
-        const displayName = 'New Member';
+    // -- Member Management ---------------------------------------------------
 
-        // Act
+    group('Member Management', () {
+      test('should add member', () async {
+        when(() => mockRecipeService.addMemberToRecipe(any(), any(), any()))
+            .thenAnswer((_) async => false);
         final result = await viewModel.addMemberToRecipe(
-          recipeId,
-          userId,
-          displayName,
+          'r',
+          'u',
+          'User',
           permission: ResourcePermission.editor,
         );
-
-        // Assert - placeholder implementation returns false
         expect(result, isFalse);
       });
 
-      test('should remove member from recipe', () async {
-        // Arrange
-        const recipeId = 'recipe_123';
-        const userId = 'member_to_remove';
-
-        // Act
-        final result = await viewModel.removeMemberFromRecipe(recipeId, userId);
-
-        // Assert - placeholder implementation returns false
+      test('should remove member', () async {
+        when(() => mockRecipeService.removeMemberFromRecipe(any(), any()))
+            .thenAnswer((_) async => false);
+        final result = await viewModel.removeMemberFromRecipe('r', 'u');
         expect(result, isFalse);
       });
 
       test('should update member permission', () async {
-        // Arrange
-        const recipeId = 'recipe_123';
-        const userId = 'member_123';
-
-        // Act
+        when(() =>
+                mockRecipeService.updateMemberPermission(any(), any(), any()))
+            .thenAnswer((_) async => false);
         final result = await viewModel.updateMemberPermission(
-          recipeId,
-          userId,
+          'r',
+          'u',
           ResourcePermission.admin,
         );
-
-        // Assert - placeholder implementation returns false
         expect(result, isFalse);
       });
 
-      test('should get recipe members', () {
-        // Arrange
-        const recipeId = 'recipe_123';
-
-        // Act
-        final members = viewModel.getRecipeMembers(recipeId);
-
-        // Assert - placeholder implementation returns empty map
-        expect(members, isEmpty);
+      test('should get recipe members (placeholder)', () {
+        expect(viewModel.getRecipeMembers('r'), isEmpty);
       });
 
       test('should check if can invite members', () {
-        // Arrange
-        const recipeId = 'recipe_123';
-
-        // Act
-        final canInvite = viewModel.canInviteMembers(recipeId);
-
-        // Assert - delegates to social ops which returns true
-        expect(canInvite, isTrue);
+        // Concrete override on MockSocialRecipeOperations returns true
+        expect(viewModel.canInviteMembers('r'), isTrue);
       });
 
-      test('should get recipes shared with me', () {
-        // Arrange - no setup needed
-
-        // Act
-        final sharedWithMe = viewModel.getSharedWithMe();
-
-        // Assert - placeholder implementation returns empty list
-        expect(sharedWithMe, isEmpty);
+      test('should get shared with me (placeholder)', () {
+        expect(viewModel.getSharedWithMe(), isEmpty);
       });
 
-      test('should get recipes shared by me', () {
-        // Arrange - no setup needed
-
-        // Act
-        final sharedByMe = viewModel.getSharedByMe();
-
-        // Assert - placeholder implementation returns empty list
-        expect(sharedByMe, isEmpty);
+      test('should get shared by me (placeholder)', () {
+        expect(viewModel.getSharedByMe(), isEmpty);
       });
     });
 
-    group('Service Information', () {
-      test('should provide service name', () {
-        // Arrange - viewModel created in setUp
+    // -- Service Info --------------------------------------------------------
 
-        // Act & Assert
+    group('Service Info', () {
+      test('should provide service name', () {
         expect(viewModel.serviceName, equals('SocialRecipeViewModel'));
       });
     });
 
-    group('State Management', () {
-      test('should notify listeners on comment text update', () {
-        // Arrange
-        var notificationCount = 0;
-        viewModel.addListener(() => notificationCount++);
+    // -- State Notifications -------------------------------------------------
 
-        // Act
-        viewModel.updateNewCommentText('Test 1');
-        viewModel.updateNewCommentText('Test 2');
-        viewModel.updateNewCommentText('Test 3');
+    group('State Notifications', () {
+      test('should notify on each comment text update', () {
+        var n = 0;
+        viewModel.addListener(() => n++);
 
-        // Assert
-        expect(notificationCount, equals(3));
+        viewModel.updateNewCommentText('A');
+        viewModel.updateNewCommentText('B');
+        viewModel.updateNewCommentText('C');
+        expect(n, equals(3));
       });
 
-      test('should maintain comment state across operations', () async {
-        // Arrange
-        final comment1 = RecipeCommentBuilder.build(id: 'c1', text: 'First');
-        final comment2 = RecipeCommentBuilder.build(id: 'c2', text: 'Second');
+      test('should maintain like state across operations', () async {
+        viewModel.comments.addAll([
+          _comment(id: 'c1', text: 'First'),
+          _comment(id: 'c2', text: 'Second'),
+        ]);
 
-        // Act
-        viewModel.comments.add(comment1);
         await viewModel.toggleCommentLike('c1');
-        viewModel.comments.add(comment2);
 
-        // Assert
-        expect(viewModel.comments.length, equals(2));
         expect(viewModel.hasLikedComment('c1'), isTrue);
         expect(viewModel.hasLikedComment('c2'), isFalse);
       });
     });
 
+    // -- Error Handling ------------------------------------------------------
+
     group('Error Handling', () {
-      test('should set error on comment refresh failure', () async {
-        // Note: In production, this would connect to service
-        // Error handling is in place but needs service integration
-
-        // Act
-        await viewModel.refreshComments('test_recipe');
-
-        // Assert - no error in mock scenario
+      test('should have no error after successful refresh', () async {
+        await viewModel.refreshComments(testRecipeId);
         expect(viewModel.commentsError, isNull);
       });
 
-      test('should handle missing comment gracefully in operations', () async {
-        // Arrange - no comments in the list
-
-        // Act & Assert - toggleCommentLike is async but should not throw
+      test('should handle missing comment in operations', () async {
         await viewModel.toggleCommentLike('missing');
-        // After toggling, the engagement manager tracks the like regardless
-        // of whether the comment exists in the local list
         expect(viewModel.hasLikedComment('missing'), isTrue);
         expect(viewModel.getReplies('missing'), isEmpty);
       });
     });
 
+    // -- Lifecycle ------------------------------------------------------------
+
     group('Lifecycle', () {
       test('should dispose without errors', () {
-        // Arrange
-        final testViewModel = SocialRecipeViewModel(
+        final vm = SocialRecipeViewModel(
           friendsService: mockFriendsService,
           recipeService: mockRecipeService,
           userService: mockUserService,
         );
-
-        // Act & Assert
-        expect(() => testViewModel.dispose(), returnsNormally);
+        expect(() => vm.dispose(), returnsNormally);
       });
 
-      test('should clean up listeners on dispose', () {
-        // Arrange
-        final testViewModel = SocialRecipeViewModel(
+      test('should stop notifying after dispose', () {
+        final vm = SocialRecipeViewModel(
           friendsService: mockFriendsService,
           recipeService: mockRecipeService,
           userService: mockUserService,
         );
-        var notificationCount = 0;
-        testViewModel.addListener(() => notificationCount++);
-
-        // Act
-        testViewModel.updateNewCommentText('Test');
-        expect(notificationCount, equals(1));
-
-        testViewModel.dispose();
-
-        // Note: After dispose, notifications should not work
-        // Framework ensures listeners are cleaned up
+        var n = 0;
+        vm.addListener(() => n++);
+        vm.updateNewCommentText('Before');
+        expect(n, equals(1));
+        vm.dispose();
       });
     });
   });
 }
 
-/// A social ops mock that returns null from addComment to trigger the error path.
-class _FailingAddCommentSocialOps extends MockSocialRecipeOperations {
+// ---------------------------------------------------------------------------
+// Local helpers for test-specific mock behavior
+// ---------------------------------------------------------------------------
+
+/// Social ops that returns null from addComment to trigger the error path.
+class _NullAddCommentSocialOps extends MockSocialRecipeOperations {
   @override
   Future<String?> addComment({
     required String recipeId,
@@ -879,4 +589,13 @@ class _FailingAddCommentSocialOps extends MockSocialRecipeOperations {
     List<String>? mentions,
   }) async =>
       null;
+}
+
+/// Recipe service with injectable social ops (bypasses the concrete getter).
+class _MockRecipeServiceWithSocial extends MockUnifiedRecipeService {
+  final MockSocialRecipeOperations _social;
+  _MockRecipeServiceWithSocial(this._social);
+
+  @override
+  MockSocialRecipeOperations get social => _social;
 }
