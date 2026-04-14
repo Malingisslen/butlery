@@ -9,6 +9,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:butlery/core/constants/http_constants.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/youtube/youtube_models.dart';
@@ -139,9 +140,8 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
     final response = await _client.get(
       watchUrl,
       headers: {
-        'Accept-Language': 'sv-SE,sv;q=0.9,en;q=0.8',
-        'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept-Language': HttpConstants.acceptLanguage,
+        'User-Agent': HttpConstants.desktopUserAgent,
       },
     ).timeout(const Duration(seconds: 15));
 

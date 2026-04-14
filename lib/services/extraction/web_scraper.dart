@@ -4,6 +4,7 @@
 
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:async';
+import 'package:butlery/core/constants/http_constants.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 import 'package:butlery/theme/app_dimensions.dart';
@@ -306,9 +307,7 @@ class WebScraper {
 
   /// User agent to mimic desktop browser
   String _getUserAgent(pd.SourcePlatform platform) {
-    return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-        'AppleWebKit/537.36 (KHTML, like Gecko) '
-        'Chrome/120.0.0.0 Safari/537.36';
+    return HttpConstants.desktopUserAgent;
   }
 
   /// Safe cleanup of WebView, tracked via [_pendingCleanup] so

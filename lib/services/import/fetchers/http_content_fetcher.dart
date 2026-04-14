@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/http_constants.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 
@@ -12,9 +13,7 @@ class HttpContentFetcher {
   static const _fetchTimeout = Duration(seconds: 10);
   static const _maxResponseBytes = 5 * 1024 * 1024; // 5 MB
   static const _allowedSchemes = {'http', 'https'};
-  static const _userAgent =
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) '
-      'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1';
+  static const _userAgent = HttpConstants.mobileUserAgent;
 
   final http.Client? _httpClient;
   final WebScraper Function()? _webScraperFactory;
@@ -125,7 +124,12 @@ class HttpContentFetcher {
           'User-Agent': _userAgent,
           'Accept':
               'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9,sv;q=0.8',
+          'Accept-Language': HttpConstants.acceptLanguage,
+          'Upgrade-Insecure-Requests': '1',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
         });
 
         final streamedResponse =
