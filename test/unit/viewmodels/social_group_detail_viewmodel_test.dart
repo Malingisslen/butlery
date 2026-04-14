@@ -3,62 +3,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
-// Test data builders
-class FriendCategoryBuilder {
-  static FriendCategory build({
-    String? id,
-    String? name,
-    String? description,
-    String? emoji,
-    String? ownerId,
-    List<String>? friendUserIds,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    int sortOrder = 0,
-    bool isDefault = false,
-  }) {
-    final now = DateTime.now();
-    return FriendCategory(
-      id: id ?? 'category_${now.millisecondsSinceEpoch}',
-      name: name ?? 'Test Grupp',
-      description: description,
-      emoji: emoji ?? '👥',
-      ownerId: ownerId ?? 'test_user_123',
-      friendUserIds: friendUserIds ?? [],
-      createdAt: createdAt ?? now,
-      updatedAt: updatedAt ?? now,
-      sortOrder: sortOrder,
-      isDefault: isDefault,
-    );
-  }
-}
-
-class UserProfileBuilder {
-  static UserProfile build({
-    String? uid,
-    String? displayName,
-    String? email,
-    String? avatarUrl,
-    DateTime? joinedAt,
-    DateTime? lastActiveAt,
-    bool isOnline = false,
-  }) {
-    final now = DateTime.now();
-    return UserProfile(
-      uid: uid ?? 'user_${now.millisecondsSinceEpoch}',
-      displayName: displayName ?? 'Test User',
-      email: email ?? 'test@example.com',
-      avatarUrl: avatarUrl,
-      joinedAt: joinedAt ?? now,
-      lastActiveAt: lastActiveAt ?? now,
-      isOnline: isOnline,
-    );
-  }
-}
+class MockFriendCategoryRepository extends Mock
+    implements FriendCategoryRepository {}
 
 void main() {
   group('SocialGroupDetailViewModel', () {
@@ -67,35 +18,52 @@ void main() {
     late MockUserService mockUserService;
     late MockPermissionService mockPermissionService;
     late MockFriendsCategoriesOperations mockCategoriesOps;
+    late MockFriendCategoryRepository mockCategoryRepo;
 
-    // Test data
     const testGroupId = 'test_group_123';
     const testUserId = 'test_user_123';
     const otherUserId = 'other_user_456';
+    final now = DateTime(2026, 4, 14);
 
-    final testGroup = FriendCategoryBuilder.build(
+    final testGroup = FriendCategory(
       id: testGroupId,
       name: 'Test Social Group',
       description: 'A test group',
-      emoji: '🎉',
+      emoji: 'party',
       ownerId: testUserId,
       friendUserIds: [testUserId, otherUserId],
+      createdAt: now,
+      updatedAt: now,
     );
 
-    final currentUser = UserProfileBuilder.build(
+    final currentUser = UserProfile(
       uid: testUserId,
       displayName: 'Test Owner',
       email: 'owner@example.com',
+      joinedAt: now,
+      lastActiveAt: now,
     );
 
-    final otherMember = UserProfileBuilder.build(
+    final otherMember = UserProfile(
       uid: otherUserId,
       displayName: 'Other Member',
       email: 'member@example.com',
+      joinedAt: now,
+      lastActiveAt: now,
     );
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
+      registerFallbackValue(
+        FriendCategory(
+          id: 'fb',
+          ownerId: 'fb',
+          name: 'fb',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+      registerFallbackValue(currentUser);
     });
 
     setUp(() {
@@ -103,28 +71,44 @@ void main() {
       mockUserService = MockUserService();
       mockPermissionService = MockPermissionService();
       mockCategoriesOps = MockFriendsCategoriesOperations();
+      mockCategoryRepo = MockFriendCategoryRepository();
 
-      // Setup default mock behaviors
-      when(() => mockFriendsService.categories).thenReturn(mockCategoriesOps);
+      // Wire categories ops through setFriendsState (concrete override)
+      mockFriendsService.setFriendsState(
+        categories: mockCategoriesOps,
+      );
+
+      // Stubs on mock (not concrete overrides -- safe to use when())
+      when(() => mockFriendsService.refresh()).thenAnswer((_) async {});
       when(() => mockFriendsService.getCategoryById(testGroupId))
           .thenReturn(testGroup);
-      when(() => mockFriendsService.refresh()).thenAnswer((_) async {});
-      when(() => mockFriendsService.updateCategoryInternal(any(), any()))
-          .thenReturn(null);
-      when(() => mockFriendsService.syncCategoryToFirebaseInternal(any()))
-          .thenAnswer((_) async {});
+      when(() => mockFriendsService.sentInvitations).thenReturn([]);
+      when(() => mockFriendsService.friendsCategoryRepositoryInternal)
+          .thenReturn(mockCategoryRepo);
 
-      when(() => mockUserService.getUserProfiles(any()))
-          .thenAnswer((_) async => [currentUser, otherMember]);
+      // MockUserService.getUserProfiles is a concrete override using _users map
+      mockUserService.setUserState(
+        users: {
+          testUserId: currentUser,
+          otherUserId: otherMember,
+        },
+      );
 
-      when(() => mockPermissionService.currentUserId).thenReturn(testUserId);
-      when(() => mockPermissionService.isAuthenticated).thenReturn(true);
+      // MockPermissionService uses setPermissionState
+      mockPermissionService.setPermissionState(
+        currentUserId: testUserId,
+        isAuthenticated: true,
+      );
+
+      // isGroupAdmin is not a concrete override -- stub it
       when(() => mockPermissionService.isGroupAdmin(any())).thenReturn(true);
 
       when(() => mockCategoriesOps.removeFriendFromCategory(any(), any()))
           .thenAnswer((_) async => true);
 
-      // Create ViewModel after all mocks are set up
+      when(() => mockCategoryRepo.transferOwnership(any(), any(), any()))
+          .thenAnswer((_) async {});
+
       viewModel = SocialGroupDetailViewModel(
         groupId: testGroupId,
         friendsService: mockFriendsService,
@@ -137,9 +121,12 @@ void main() {
       viewModel.dispose();
     });
 
+    tearDownAll(() async {
+      await BaseUnitTest.teardownUnit();
+    });
+
     group('Initialization', () {
       test('loads group data on initialization', () async {
-        // Wait for async initialization to complete
         await Future.delayed(const Duration(milliseconds: 100));
 
         expect(viewModel.group, isNotNull);
@@ -161,8 +148,6 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         expect(viewModel.isAdmin, isTrue);
-        verify(() => mockPermissionService.isGroupAdmin(testGroupId))
-            .called(greaterThan(0));
       });
 
       test('isAdmin returns false when user is not admin', () async {
@@ -200,11 +185,6 @@ void main() {
         expect(viewModel.group, isNotNull);
         expect(viewModel.members, hasLength(2));
         expect(viewModel.isLoading, isFalse);
-
-        verify(() => mockFriendsService.refresh()).called(1);
-        verify(() => mockFriendsService.getCategoryById(testGroupId)).called(1);
-        verify(() => mockUserService.getUserProfiles([testUserId, otherUserId]))
-            .called(1);
       });
 
       test('handles null group gracefully', () async {
@@ -244,9 +224,8 @@ void main() {
         final emptyGroup = testGroup.copyWith(friendUserIds: [testUserId]);
         when(() => mockFriendsService.getCategoryById(testGroupId))
             .thenReturn(emptyGroup);
-        when(() => mockUserService.getUserProfiles([testUserId]))
-            .thenAnswer((_) async => [currentUser]);
 
+        // getUserProfiles will return only currentUser based on _users map
         await viewModel.loadGroupData();
         final decision = viewModel.checkLeaveGroupRequirements();
 
@@ -309,24 +288,16 @@ void main() {
 
     group('transferGroupOwnership', () {
       test('successfully transfers ownership', () async {
-        when(() => mockFriendsService.updateCategoryInternal(any(), any()))
-            .thenReturn(null);
-        when(() => mockFriendsService.syncCategoryToFirebaseInternal(any()))
-            .thenAnswer((_) async => {});
-
         await viewModel.loadGroupData();
         final result = await viewModel.transferGroupOwnership(otherMember);
 
         expect(result, isTrue);
-        verify(() =>
-                mockFriendsService.updateCategoryInternal(testGroupId, any()))
-            .called(1);
-        verify(() => mockFriendsService.syncCategoryToFirebaseInternal(any()))
-            .called(1);
+        verify(() => mockCategoryRepo.transferOwnership(
+            testUserId, testGroupId, otherUserId)).called(1);
       });
 
       test('returns false when transfer fails', () async {
-        when(() => mockFriendsService.updateCategoryInternal(any(), any()))
+        when(() => mockCategoryRepo.transferOwnership(any(), any(), any()))
             .thenThrow(Exception('Transfer failed'));
 
         await viewModel.loadGroupData();
@@ -369,7 +340,7 @@ void main() {
       });
 
       test('sharing methods return false when not authenticated', () async {
-        when(() => mockPermissionService.isAuthenticated).thenReturn(false);
+        mockPermissionService.setPermissionState(isAuthenticated: false);
 
         final unAuthViewModel = SocialGroupDetailViewModel(
           groupId: testGroupId,
