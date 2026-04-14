@@ -162,19 +162,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Regenerates specific menu section with AI-powered recipe replacement and state coordination.
-  /// [section] Menu category to regenerate (e.g., 'Middag', 'Lunch', 'Frukost')
-  /// Performs targeted menu section regeneration through MenuGenerator with existing menu context,
-  /// maintaining other sections while replacing specified category with new AI-generated recipes.
-  /// Includes comprehensive error handling and state management for seamless user experience.
-  /// **Regeneration Process:**
-  /// - Menu existence validation before operation
-  /// - Section-specific AI generation with context preservation
-  /// - Targeted menu section update with new recipes
-  /// - State coordination and error handling
-  /// **Usage Example:**
-  /// ```dart
-  /// await menuViewModel.regenerateSection('Middag');
-  /// ```
+  /// Re-rolls one section using the original prompt constraints.
   Future<void> regenerateSection(String section) async {
     if (!hasMenu) return;
 
