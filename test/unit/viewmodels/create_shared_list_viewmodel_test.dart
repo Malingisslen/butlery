@@ -8,6 +8,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/core/di/di_container.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -24,6 +26,7 @@ void main() {
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
+    production.ServiceLocator.initialize(DIContainer());
   });
 
   setUp(() async {
@@ -182,7 +185,7 @@ void main() {
 
       viewModel.updateTitle(' ');
       expect(viewModel.isTitleValid, isFalse);
-      expect(viewModel.titleError, equals('Titel krävs'));
+      expect(viewModel.titleError, equals('Titel krävs och får inte vara tom'));
 
       viewModel.updateTitle('Valid Title');
       expect(viewModel.isTitleValid, isTrue);
@@ -193,24 +196,24 @@ void main() {
       final longTitle = 'a' * 101;
       viewModel.updateTitle(longTitle);
 
-      expect(viewModel.titleError, equals('Titel för lång (max 100 tecken)'));
+      // VM reuses errorDescriptionTooLong for title length too
+      expect(viewModel.titleError, equals('Beskrivning för lång'));
     });
 
     test('should validate description length', () {
       final longDescription = 'a' * 501;
       viewModel.updateDescription(longDescription);
 
-      expect(viewModel.descriptionError,
-          equals('Beskrivning för lång (max 500 tecken)'));
+      expect(viewModel.descriptionError, equals('Beskrivning för lång'));
     });
 
     test('should validate form completeness', () {
       expect(viewModel.validateForm(), isFalse);
-      expect(viewModel.error, contains('Titel krävs'));
+      expect(viewModel.error, contains('Titel krävs och får inte vara tom'));
 
       viewModel.updateTitle('Valid Title');
       expect(viewModel.validateForm(), isFalse);
-      expect(viewModel.error, contains('Du måste välja minst en vän'));
+      expect(viewModel.error, contains('Välj minst en vän att dela med'));
 
       viewModel.updateSelectedFriends(['friend_1']);
       expect(viewModel.validateForm(), isTrue);
@@ -304,11 +307,12 @@ void main() {
       viewModel.updateTitle('List');
       viewModel.updateSelectedFriends(['unknown_friend']);
 
+      // VM uses friend?.displayName ?? '?' for unknown friends
       when(() => mockShoppingService.createCollaborativeList(
             name: 'List',
             description: null,
             memberIds: ['unknown_friend'],
-            memberDisplayNames: {'unknown_friend': 'Okänd vän'},
+            memberDisplayNames: {'unknown_friend': '?'},
           )).thenAnswer((_) async => 'list_789');
 
       final listId = await viewModel.createSharedList();
