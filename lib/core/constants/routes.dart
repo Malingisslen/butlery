@@ -76,6 +76,9 @@ class Routes {
   // Cooking mode
   static const String cookingMode = '/cooking-mode';
 
+  // Ingredient search
+  static const String ingredientSearch = '/ingredient-search';
+
   // Notifications
   static const String notifications = '/notifications';
 
@@ -117,6 +120,7 @@ class Routes {
     veckomeny,
     realtimeMenu,
     inkopslista,
+    ingredientSearch,
     profileEdit,
     friends,
     friendRequests,
@@ -173,6 +177,7 @@ class Routes {
     messages,
     chat,
     cookingMode,
+    ingredientSearch,
     notifications,
     settings,
     settingsAllergens,
@@ -249,6 +254,9 @@ class Routes {
 
     // Cooking
     cookingMode,
+
+    // Ingredient search
+    ingredientSearch,
 
     // Notifications
     notifications,

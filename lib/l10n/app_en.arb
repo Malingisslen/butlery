@@ -8579,5 +8579,31 @@
     "placeholders": {
       "percent": {"type": "int"}
     }
+  },
+  "ingredientSearchTitle": "Search by ingredients",
+  "ingredientSearchHint": "Search ingredient...",
+  "ingredientSearchButton": "Show recipes",
+  "ingredientSearchChip": "By ingredients",
+  "ingredientSearchEmpty": "Add ingredients to find recipes",
+  "ingredientSearchNoResults": "No recipes match your ingredients",
+  "ingredientSearchError": "Could not search recipes",
+  "ingredientSearchResultCount": "{count} recipes found",
+  "@ingredientSearchResultCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "ingredientMatchCount": "{matched} of {total} ingredients",
+  "@ingredientMatchCount": {
+    "placeholders": {
+      "matched": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "ingredientMissing": "Missing: {list}",
+  "@ingredientMissing": {
+    "placeholders": {
+      "list": {"type": "String"}
+    }
   }
 }

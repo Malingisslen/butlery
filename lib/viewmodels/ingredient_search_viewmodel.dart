@@ -79,8 +79,12 @@ class IngredientSearchViewModel extends BaseViewModel {
         _autocompleteResults =
             results.where((r) => !selectedIds.contains(r.id)).toList();
         notifyListeners();
-      } catch (_) {
-        // Autocomplete failures are non-fatal
+      } catch (e) {
+        // Autocomplete failures are non-fatal but logged for debugging
+        if (!isDisposed) {
+          _autocompleteResults = [];
+          notifyListeners();
+        }
       }
     });
   }

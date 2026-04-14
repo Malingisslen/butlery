@@ -11,7 +11,9 @@ import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
 
+import 'package:butlery/services/ingredient_match_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
 class PantryModule implements DIModule {
   @override
@@ -23,6 +25,7 @@ class PantryModule implements DIModule {
   @override
   List<Type> get provides => [
         PantryRepository,
+        IngredientMatchService,
         PantryService,
       ];
 
@@ -36,10 +39,19 @@ class PantryModule implements DIModule {
   Future<void> configureUserScope(GetIt container) async {
     final app = GetIt.instance;
 
+    container.registerLazySingleton<IngredientMatchService>(
+      () => IngredientMatchService(
+        lookupService: container<IngredientLookupService>(),
+        ingredientRepository: app<IngredientRepository>(),
+      ),
+      dispose: (s) => s.dispose(),
+    );
+
     container.registerLazySingleton<PantryService>(
       () => PantryService(
         pantryRepository: app<PantryRepository>(),
         ingredientRepository: app<IngredientRepository>(),
+        matchService: container<IngredientMatchService>(),
       ),
       dispose: (s) => s.dispose(),
     );
@@ -90,6 +102,11 @@ class PantryModule implements DIModule {
       final services = <String, dynamic>{
         'PantryRepository': container<PantryRepository>(),
       };
+
+      if (container.isRegistered<IngredientMatchService>()) {
+        services['IngredientMatchService'] =
+            container<IngredientMatchService>();
+      }
 
       if (container.isRegistered<PantryService>()) {
         services['PantryService'] = container<PantryService>();

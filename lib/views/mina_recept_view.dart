@@ -303,6 +303,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       case 'pantry':
         viewModel.togglePantryFilter();
         break;
+      case 'ingredient-search':
+        Navigator.pushNamed(context, Routes.ingredientSearch);
+        return;
     }
   }
 

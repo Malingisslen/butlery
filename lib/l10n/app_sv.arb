@@ -8579,5 +8579,31 @@
     "placeholders": {
       "percent": {"type": "int"}
     }
+  },
+  "ingredientSearchTitle": "Sök med ingredienser",
+  "ingredientSearchHint": "Sök ingrediens...",
+  "ingredientSearchButton": "Visa recept",
+  "ingredientSearchChip": "Med ingredienser",
+  "ingredientSearchEmpty": "Lägg till ingredienser för att hitta recept",
+  "ingredientSearchNoResults": "Inga recept matchar dina ingredienser",
+  "ingredientSearchError": "Kunde inte söka recept",
+  "ingredientSearchResultCount": "{count} recept hittade",
+  "@ingredientSearchResultCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "ingredientMatchCount": "{matched} av {total} ingredienser",
+  "@ingredientMatchCount": {
+    "placeholders": {
+      "matched": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "ingredientMissing": "Saknas: {list}",
+  "@ingredientMissing": {
+    "placeholders": {
+      "list": {"type": "String"}
+    }
   }
 }

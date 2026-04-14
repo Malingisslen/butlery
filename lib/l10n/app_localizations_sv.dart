@@ -12693,4 +12693,42 @@ class AppLocalizationsSv extends AppLocalizations {
   String recipeCardPantryMatchA11y(int percent) {
     return 'Matchar $percent% av dina ingredienser';
   }
+
+  @override
+  String get ingredientSearchTitle => 'Sök med ingredienser';
+
+  @override
+  String get ingredientSearchHint => 'Sök ingrediens...';
+
+  @override
+  String get ingredientSearchButton => 'Visa recept';
+
+  @override
+  String get ingredientSearchChip => 'Med ingredienser';
+
+  @override
+  String get ingredientSearchEmpty =>
+      'Lägg till ingredienser för att hitta recept';
+
+  @override
+  String get ingredientSearchNoResults =>
+      'Inga recept matchar dina ingredienser';
+
+  @override
+  String get ingredientSearchError => 'Kunde inte söka recept';
+
+  @override
+  String ingredientSearchResultCount(int count) {
+    return '$count recept hittade';
+  }
+
+  @override
+  String ingredientMatchCount(int matched, int total) {
+    return '$matched av $total ingredienser';
+  }
+
+  @override
+  String ingredientMissing(String list) {
+    return 'Saknas: $list';
+  }
 }

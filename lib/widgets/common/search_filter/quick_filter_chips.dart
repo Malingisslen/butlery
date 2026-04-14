@@ -77,6 +77,11 @@ class QuickFilterChips extends StatelessWidget {
           label: context.l10n.filterWithMyIngredients,
           icon: Icons.kitchen_outlined,
         ),
+        QuickFilterOption(
+          id: 'ingredient-search',
+          label: context.l10n.ingredientSearchChip,
+          icon: Icons.search_outlined,
+        ),
       ];
 
   /// Dynamic allergen quick-filter chips based on user's tracked allergens.

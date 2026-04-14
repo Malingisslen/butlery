@@ -5,17 +5,21 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
+import 'package:butlery/services/ingredient_match_service.dart';
 
 /// Business logic layer for the pantry ("skafferi") feature.
 class PantryService extends BaseService {
   final PantryRepository _pantryRepository;
   final IngredientRepository _ingredientRepository;
+  final IngredientMatchService _matchService;
 
   PantryService({
     required PantryRepository pantryRepository,
     required IngredientRepository ingredientRepository,
+    required IngredientMatchService matchService,
   })  : _pantryRepository = pantryRepository,
-        _ingredientRepository = ingredientRepository;
+        _ingredientRepository = ingredientRepository,
+        _matchService = matchService;
 
   @override
   String get serviceName => 'PantryService';
@@ -140,6 +144,9 @@ class PantryService extends BaseService {
   /// `ingredientsNormalized` are skipped (pre-MODUL1 legacy). Callers
   /// holding a fresh pantry snapshot can pass it via [pantryItems] to
   /// avoid a duplicate Firestore read.
+  ///
+  /// Delegates matching to [IngredientMatchService] for reuse by
+  /// ingredient search and other features.
   Future<List<({Recipe recipe, double matchPercent})>> getMatchingRecipes(
     String userId,
     List<Recipe> recipes, {
@@ -154,23 +161,14 @@ class PantryService extends BaseService {
           items.map((item) => item.ingredientId).whereType<String>().toSet();
       if (pantryIngredientIds.isEmpty) return const [];
 
-      final matches = <({Recipe recipe, double matchPercent})>[];
-      for (final recipe in recipes) {
-        final normalized = recipe.core.ingredientsNormalized;
-        if (normalized == null || normalized.isEmpty) continue;
+      final matchResults = await _matchService.matchRecipes(
+        selectedIngredientIds: pantryIngredientIds,
+        recipes: recipes,
+      );
 
-        final overlap =
-            normalized.toSet().intersection(pantryIngredientIds).length;
-        if (overlap == 0) continue;
-
-        matches.add((
-          recipe: recipe,
-          matchPercent: overlap / normalized.length,
-        ));
-      }
-
-      matches.sort((a, b) => b.matchPercent.compareTo(a.matchPercent));
-      return matches;
+      return matchResults
+          .map((r) => (recipe: r.recipe, matchPercent: r.matchPercent))
+          .toList();
     }, operationName: 'getMatchingRecipes', defaultValue: const []);
     return result ?? const [];
   }

@@ -40,10 +40,12 @@ import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
+import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart';
 
 // Services dependencies
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/ingredient_match_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -110,6 +112,9 @@ class UIModule implements DIModule {
 
         // Pantry ViewModel
         PantryViewModel,
+
+        // Ingredient Search ViewModel
+        IngredientSearchViewModel,
 
         // Social ViewModels
         FriendsViewModel,
@@ -265,6 +270,17 @@ class UIModule implements DIModule {
         () => PantryViewModel(
           pantryService: container<PantryService>(),
           ingredientRepository: container<IngredientRepository>(),
+        ),
+      );
+
+      // Ingredient Search ViewModel — depends on IngredientMatchService
+      // (user-scoped) and IngredientRepository (app-scoped). Factory so
+      // each view gets a fresh instance with its own state.
+      container.registerFactory<IngredientSearchViewModel>(
+        () => IngredientSearchViewModel(
+          matchService: container<IngredientMatchService>(),
+          ingredientRepository: container<IngredientRepository>(),
+          recipeService: container<UnifiedRecipeService>(),
         ),
       );
 

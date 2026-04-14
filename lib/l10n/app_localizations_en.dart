@@ -12663,4 +12663,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String recipeCardPantryMatchA11y(int percent) {
     return 'Matches $percent% of your ingredients';
   }
+
+  @override
+  String get ingredientSearchTitle => 'Search by ingredients';
+
+  @override
+  String get ingredientSearchHint => 'Search ingredient...';
+
+  @override
+  String get ingredientSearchButton => 'Show recipes';
+
+  @override
+  String get ingredientSearchChip => 'By ingredients';
+
+  @override
+  String get ingredientSearchEmpty => 'Add ingredients to find recipes';
+
+  @override
+  String get ingredientSearchNoResults => 'No recipes match your ingredients';
+
+  @override
+  String get ingredientSearchError => 'Could not search recipes';
+
+  @override
+  String ingredientSearchResultCount(int count) {
+    return '$count recipes found';
+  }
+
+  @override
+  String ingredientMatchCount(int matched, int total) {
+    return '$matched of $total ingredients';
+  }
+
+  @override
+  String ingredientMissing(String list) {
+    return 'Missing: $list';
+  }
 }

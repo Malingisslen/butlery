@@ -1,6 +1,56 @@
 # Sprint Backlog
 
-## Sprint: Stability & Permissions — 2026-04-14
+## Sprint: Ingredient Search — "Sök med ingredienser" — 2026-04-14
+
+**Plan file:** `C:\Users\malla\.claude\plans\robust-toasting-kite.md`
+
+### Agent A: flutter-developer — Service Layer
+
+- [x] **A1. Create `IngredientMatchService`** — `lib/services/ingredient_match_service.dart`: set-intersection matching with `IngredientMatchResult` model. (BUT-205)
+- [x] **A2. Add lazy in-memory normalization** — `matchRecipesWithNormalization()` handles null `ingredientsNormalized` via `IngredientLookupService.lookupFromRaw()`. (BUT-205)
+- [x] **A3. Refactor PantryService to delegate** — `getMatchingRecipes` now calls `IngredientMatchService.matchRecipes()`. (BUT-205)
+- [x] **A4. DI registration** — `IngredientMatchService` registered in `PantryModule.configureUserScope`. (BUT-205)
+
+### Agent B: flutter-developer — ViewModel
+
+- [x] **B1. Create `IngredientSearchViewModel`** — chips, debounced autocomplete, match results, missing ingredient name resolution. (BUT-205)
+- [x] **B2. Register ViewModel in DI** — factory in `UIModule`, same pattern as `PantryViewModel`. (BUT-205)
+
+### Agent C: flutter-developer — View + Widgets + Navigation
+
+- [x] **C1. Create `IngredientSearchView`** — full-screen view with autocomplete, chips, results using `ContentCard` + `matchPercent`. (BUT-205)
+- [x] **C2. Create `IngredientChipInput` widget** — autocomplete overlay + square removable chips. (BUT-205)
+- [x] **C3. Route + entry point** — `/ingredient-search` route, "Med ingredienser" QuickFilterOption chip in recipe list. (BUT-205)
+- [x] **C4. Localization** — 11 new keys in both `app_sv.arb` and `app_en.arb`. (BUT-205)
+
+### Agent D: testing-specialist — Tests
+
+- [x] **D1. `IngredientMatchService` tests** — 11 tests: empty set, full/partial match, sorting, null/empty normalized, lazy normalization, caching, name resolution. (BUT-205)
+- [x] **D2. `IngredientSearchViewModel` tests** — 10 tests: add/remove/clear, debounced autocomplete, filtering, performSearch, loading states. (BUT-205)
+- [x] **D3. PantryService regression** — 5 tests pass after delegation refactor. (BUT-205)
+
+### Post-Sprint Steps
+
+- [x] Run `dart analyze --fatal-infos` — 0 issues
+- [x] All 26 tests pass (11 + 10 + 5)
+- [ ] Chrome E2E: add 3+ ingredients, verify results ranked by coverage, tap result → recipe detail
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-205 → In Progress
+
+---
+
+## What this means in plain language
+
+- New feature: you can search your recipes by what ingredients you have — type "kyckling", "ris", "kokosmjölk" and see all recipes ranked by how well they match
+- Each result shows how many ingredients match ("4 av 6") and what you're missing ("Saknas: grädde, vitlök")
+- Old recipes that were missing ingredient data get automatically handled
+- Entry point: a new "Med ingredienser" chip in the recipe list
+- Works offline — no internet needed for searching your own recipes
+- Risk: Low. New service + view, reuses existing recipe card with its match badge.
+
+---
+
+## Archive: Sprint Stability & Permissions — 2026-04-14
 
 **Plan file:** `C:\Users\malla\.claude\plans\spicy-stirring-token.md`
 
@@ -29,10 +79,9 @@
 
 ### Post-Sprint Steps
 
-- [ ] Run `dart analyze --fatal-infos`
-- [ ] Run relevant unit tests
-- [ ] Commit, push to main
-- [ ] Update Linear: move sprint tickets → Done, mark BUT-375 → Done (already fixed)
+- [x] Run `dart analyze --fatal-infos` — 0 issues
+- [x] Commit `6e2720bc2`, pushed to main
+- [x] Update Linear: BUT-379, BUT-381, BUT-383, BUT-373, BUT-380, BUT-372, BUT-382, BUT-375 → Done
 
 ---
 

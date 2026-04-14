@@ -91,6 +91,7 @@ void main() {
   late MockPantryRepository mockPantryRepository;
   late MockIngredientRepository mockIngredientRepository;
   late MockAuthRepository mockAuthRepository;
+  late MockIngredientMatchService mockMatchService;
 
   const userId = 'test-user-123';
 
@@ -102,6 +103,7 @@ void main() {
     mockPantryRepository = MockPantryRepository();
     mockIngredientRepository = MockIngredientRepository();
     mockAuthRepository = MockAuthRepository();
+    mockMatchService = MockIngredientMatchService();
 
     // BaseService.executeServiceOperation performs an auth pre-flight
     // via ServiceLocator.get<AuthRepository>(). We route GetIt through
@@ -113,10 +115,39 @@ void main() {
 
     when(() => mockAuthRepository.currentUserId).thenReturn(userId);
 
+    // Stub matchRecipes to delegate correctly — by default return
+    // results computed from the actual set intersection so existing
+    // tests keep verifying PantryService end-to-end behavior.
+    when(() => mockMatchService.matchRecipes(
+          selectedIngredientIds: any(named: 'selectedIngredientIds'),
+          recipes: any(named: 'recipes'),
+        )).thenAnswer((invocation) async {
+      final selectedIds =
+          invocation.namedArguments[#selectedIngredientIds] as Set<String>;
+      final recipes = invocation.namedArguments[#recipes] as List<Recipe>;
+      final matches = <IngredientMatchResult>[];
+      for (final recipe in recipes) {
+        final normalized = recipe.core.ingredientsNormalized;
+        if (normalized == null || normalized.isEmpty) continue;
+        final normalizedSet = normalized.toSet();
+        final overlap = normalizedSet.intersection(selectedIds).length;
+        if (overlap == 0) continue;
+        matches.add(IngredientMatchResult(
+          recipe: recipe,
+          matchPercent: overlap / normalizedSet.length,
+          matchedCount: overlap,
+          totalCount: normalizedSet.length,
+          missingIngredientIds: normalizedSet.difference(selectedIds).toList(),
+        ));
+      }
+      matches.sort((a, b) => b.matchPercent.compareTo(a.matchPercent));
+      return matches;
+    });
+
     service = PantryService(
       pantryRepository: mockPantryRepository,
       ingredientRepository: mockIngredientRepository,
-      matchService: MockIngredientMatchService(),
+      matchService: mockMatchService,
     );
   });
 

@@ -21735,6 +21735,66 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Matchar {percent}% av dina ingredienser'**
   String recipeCardPantryMatchA11y(int percent);
+
+  /// No description provided for @ingredientSearchTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök med ingredienser'**
+  String get ingredientSearchTitle;
+
+  /// No description provided for @ingredientSearchHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök ingrediens...'**
+  String get ingredientSearchHint;
+
+  /// No description provided for @ingredientSearchButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa recept'**
+  String get ingredientSearchButton;
+
+  /// No description provided for @ingredientSearchChip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Med ingredienser'**
+  String get ingredientSearchChip;
+
+  /// No description provided for @ingredientSearchEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ingredienser för att hitta recept'**
+  String get ingredientSearchEmpty;
+
+  /// No description provided for @ingredientSearchNoResults.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept matchar dina ingredienser'**
+  String get ingredientSearchNoResults;
+
+  /// No description provided for @ingredientSearchError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte söka recept'**
+  String get ingredientSearchError;
+
+  /// No description provided for @ingredientSearchResultCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept hittade'**
+  String ingredientSearchResultCount(int count);
+
+  /// No description provided for @ingredientMatchCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{matched} av {total} ingredienser'**
+  String ingredientMatchCount(int matched, int total);
+
+  /// No description provided for @ingredientMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Saknas: {list}'**
+  String ingredientMissing(String list);
 }
 
 class _AppLocalizationsDelegate
