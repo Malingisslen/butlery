@@ -5,6 +5,10 @@ import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/services/permission_service.dart';
+
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -188,6 +192,7 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
+      production.ServiceLocator.initialize(DIContainer());
 
       // Create mocks
       mockMessagingService = MockMessagingService();
@@ -198,6 +203,14 @@ void main() {
       // Configure default mock behavior
       mockAuthRepository.setAuthState(
         userId: testUserId,
+        isAuthenticated: true,
+      );
+
+      // Configure PermissionService in ServiceLocator (used by currentUserId getter)
+      final mockPermissionService =
+          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+      mockPermissionService.setPermissionState(
+        currentUserId: testUserId,
         isAuthenticated: true,
       );
 
@@ -835,8 +848,11 @@ void main() {
 
       test('should handle when user not authenticated', () async {
         // Arrange
-        mockAuthRepository.setAuthState(
-          userId: null,
+        final mockPermissionService =
+            TestServiceLocator.get<PermissionService>()
+                as MockPermissionService;
+        mockPermissionService.setPermissionState(
+          currentUserId: null,
           isAuthenticated: false,
         );
 

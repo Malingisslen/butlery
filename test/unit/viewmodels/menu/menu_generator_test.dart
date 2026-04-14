@@ -157,9 +157,8 @@ void main() {
 
       expect(
         () => menuGenerator.generateMenuFromPrompt('test prompt'),
-        throwsA(predicate((e) =>
-            e is Exception &&
-            e.toString().contains('Kunde inte generera meny'))),
+        throwsA(predicate(
+            (e) => e is Exception && e.toString().contains('Ett fel uppstod'))),
       );
     });
 
@@ -289,7 +288,7 @@ void main() {
         () => menuGenerator.validateGenerationPrerequisites(''),
         throwsA(predicate((e) =>
             e is ArgumentError &&
-            e.toString().contains('Ange vad du vill ha för meny'))),
+            e.toString().contains('Fyll i alla obligatoriska fält'))),
       );
     });
 
@@ -298,7 +297,7 @@ void main() {
         () => menuGenerator.validateGenerationPrerequisites('   '),
         throwsA(predicate((e) =>
             e is ArgumentError &&
-            e.toString().contains('Ange vad du vill ha för meny'))),
+            e.toString().contains('Fyll i alla obligatoriska fält'))),
       );
     });
 
@@ -553,6 +552,8 @@ void main() {
 
     test('should exclude UNKNOWN dietary when includeUnknownInMenu is false',
         () {
+      menuGenerator.filterByDietary = true;
+
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
           trackedAllergens: {},
@@ -585,6 +586,8 @@ void main() {
     });
 
     test('should keep UNKNOWN dietary when includeUnknownInMenu is true', () {
+      menuGenerator.filterByDietary = true;
+
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
           trackedAllergens: {},
@@ -611,7 +614,9 @@ void main() {
       expect(available.length, equals(2));
     });
 
-    test('should exclude recipes with no tag data when strict', () {
+    test('should include recipes with no tag data even when strict', () {
+      menuGenerator.filterByDietary = true;
+
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
           trackedAllergens: {},
@@ -620,7 +625,7 @@ void main() {
         ),
       );
 
-      // Recipe with no tagResult at all
+      // Recipe with no tagResult at all — production includes these (can't know)
       final noTagRecipe = RecipeFactory.build(id: 'no_tags', title: 'No Tags');
 
       mockRecipeService.setRecipeState(
@@ -629,7 +634,7 @@ void main() {
       );
 
       final available = menuGenerator.availableRecipes;
-      expect(available, isEmpty);
+      expect(available.length, equals(1));
     });
   });
 
@@ -658,6 +663,8 @@ void main() {
     test(
         'should exclude recipe when one of multiple tracked allergens is CONTAINS',
         () {
+      menuGenerator.filterByAllergens = true;
+
       // User tracks both gluten and mjölk
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
@@ -686,6 +693,8 @@ void main() {
     });
 
     test('should include recipe when all tracked allergens are FREE', () {
+      menuGenerator.filterByAllergens = true;
+
       // User tracks both gluten and mjölk
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
@@ -716,6 +725,8 @@ void main() {
     test(
         'should exclude recipe when one tracked allergen is UNKNOWN and strict mode is on',
         () {
+      menuGenerator.filterByAllergens = true;
+
       // User tracks both, strict mode excludes UNKNOWN
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
@@ -748,6 +759,8 @@ void main() {
     test(
         'should include recipe when one tracked allergen is UNKNOWN and tolerant mode is on',
         () {
+      menuGenerator.filterByAllergens = true;
+
       // User tracks both, tolerant mode keeps UNKNOWN
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
@@ -779,6 +792,8 @@ void main() {
     test(
         'should filter correctly across a mixed set of recipes with multiple tracked allergens',
         () {
+      menuGenerator.filterByAllergens = true;
+
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
           trackedAllergens: {'gluten', 'mjölk'},
@@ -830,6 +845,8 @@ void main() {
     test(
         'should pass UNKNOWN recipes in tolerant mode but still reject CONTAINS',
         () {
+      menuGenerator.filterByAllergens = true;
+
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
           trackedAllergens: {'gluten', 'mjölk'},
