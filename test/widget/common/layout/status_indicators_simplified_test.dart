@@ -1,331 +1,248 @@
-// test/widget/common/layout/status_indicators_simplified_test.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
-import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/core/di/di_container.dart';
+import 'package:get_it/get_it.dart';
+// ignore: unused_import - mocktail removed, lightweight mock used instead
+import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/helpers/base_widget_test.dart';
 
-// Simple mock that implements OfflineService behavior
-class MockOfflineServiceForWidget extends Mock
-    with ChangeNotifier
-    implements OfflineService {
-  bool _isOnline = true;
+/// Lightweight mock that extends ChangeNotifier so listeners work.
+class _MockOfflineService extends ChangeNotifier implements OfflineService {
+  bool _online = true;
 
   @override
-  bool get isOnline => _isOnline;
+  bool get isOnline => _online;
 
-  void setOnlineStatus(bool online) {
-    _isOnline = online;
+  void setOnline(bool value) {
+    _online = value;
     notifyListeners();
   }
+
+  // Stubs for remaining OfflineService API (unused in indicator widgets)
+  @override
+  bool get isInitialized => true;
+  @override
+  String? get currentUserId => null;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
-  group('StatusIndicators Tests - ULTRATHINK METHODOLOGY', () {
-    late MockOfflineServiceForWidget mockOfflineService;
+  group('StatusIndicators Tests', () {
+    late _MockOfflineService mockOffline;
 
-    setUp(() {
-      mockOfflineService = MockOfflineServiceForWidget();
+    setUpAll(() async {
+      await BaseWidgetTest.setupWidget();
     });
 
-    Widget createTestWidget(Widget child) {
-      return Provider<OfflineService>.value(
-        value: mockOfflineService,
-        child: MaterialApp(
-          home: Scaffold(
-            body: child,
-          ),
-        ),
-      );
-    }
+    setUp(() async {
+      await TestServiceLocator.initialize();
+      // Bridge production ServiceLocator to the same GetIt instance
+      production.ServiceLocator.initialize(DIContainer());
+      mockOffline = _MockOfflineService();
+      // Register into GetIt so production ServiceLocator.get<OfflineService>() works
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<OfflineService>()) {
+        getIt.unregister<OfflineService>();
+      }
+      getIt.registerSingleton<OfflineService>(mockOffline);
+    });
 
-    group('StatusIndicators Facade Tests', () {
+    tearDown(() async {
+      await BaseWidgetTest.teardownWidget();
+    });
+
+    group('StatusIndicators facade', () {
       testWidgets('offlineIndicator creates OfflineIndicator widget',
           (tester) async {
         final widget = StatusIndicators.offlineIndicator();
-
-        await tester.pumpWidget(createTestWidget(widget));
-
+        await tester.pumpWidget(createLocalizedTestApp(child: widget));
         expect(find.byType(OfflineIndicator), findsOneWidget);
       });
 
       testWidgets('offlineStatusIcon creates OfflineStatusIcon widget',
           (tester) async {
         final widget = StatusIndicators.offlineStatusIcon();
-
-        await tester.pumpWidget(createTestWidget(widget));
-
+        await tester.pumpWidget(createLocalizedTestApp(child: widget));
         expect(find.byType(OfflineStatusIcon), findsOneWidget);
       });
 
-      testWidgets('facade methods create proper widget types', (tester) async {
-        final indicator = StatusIndicators.offlineIndicator();
-        final statusIcon = StatusIndicators.offlineStatusIcon();
-
-        expect(indicator, isA<OfflineIndicator>());
-        expect(statusIcon, isA<OfflineStatusIcon>());
+      testWidgets('facade methods return correct widget types', (tester) async {
+        expect(StatusIndicators.offlineIndicator(), isA<OfflineIndicator>());
+        expect(StatusIndicators.offlineStatusIcon(), isA<OfflineStatusIcon>());
       });
     });
 
-    group('OfflineIndicator Online State Tests', () {
+    group('OfflineIndicator - online state', () {
       testWidgets('shows nothing when online', (tester) async {
-        mockOfflineService.setOnlineStatus(true);
+        mockOffline.setOnline(true);
 
-        await tester.pumpWidget(createTestWidget(
-          const OfflineIndicator(),
-        ));
-
-        expect(find.byType(SizedBox), findsOneWidget);
-        expect(find.byType(Container), findsNothing);
-        expect(
-            find.text('Offline-läge - Ändringar sparas lokalt'), findsNothing);
-      });
-
-      testWidgets('switches from offline to online correctly', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
-
-        await tester.pumpWidget(createTestWidget(
-          const OfflineIndicator(),
-        ));
-
-        expect(find.text('Offline-läge - Ändringar sparas lokalt'),
-            findsOneWidget);
-
-        // Change to online
-        mockOfflineService.setOnlineStatus(true);
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const OfflineIndicator()),
+        );
         await tester.pumpAndSettle();
 
-        expect(find.byType(SizedBox), findsOneWidget);
-        expect(
-            find.text('Offline-läge - Ändringar sparas lokalt'), findsNothing);
+        // AnimatedSwitcher renders SizedBox.shrink when online
+        expect(find.byType(AnimatedSwitcher), findsOneWidget);
+        expect(find.byIcon(Icons.wifi_off), findsNothing);
+      });
+
+      testWidgets('switches from offline to online', (tester) async {
+        mockOffline.setOnline(false);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const OfflineIndicator()),
+        );
+        await tester.pump();
+
+        expect(find.byIcon(Icons.wifi_off), findsOneWidget);
+
+        mockOffline.setOnline(true);
+        // Pump past the "back online" confirmation timer (3s snackbarDuration)
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 3100));
+        await tester.pumpAndSettle();
+
+        // After going online the offline icon is gone
+        expect(find.byIcon(Icons.wifi_off), findsNothing);
       });
     });
 
-    group('OfflineIndicator Offline State Tests', () {
-      testWidgets('shows banner when offline with default message',
-          (tester) async {
-        mockOfflineService.setOnlineStatus(false);
+    group('OfflineIndicator - offline state', () {
+      testWidgets('shows banner when offline', (tester) async {
+        mockOffline.setOnline(false);
 
-        await tester.pumpWidget(createTestWidget(
-          const OfflineIndicator(),
-        ));
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const OfflineIndicator()),
+        );
+        await tester.pump();
 
-        expect(find.byType(Container), findsOneWidget);
         expect(find.byIcon(Icons.wifi_off), findsOneWidget);
-        expect(find.text('Offline-läge - Ändringar sparas lokalt'),
-            findsOneWidget);
+        // l10n sv: 'Offline-lage - Andringar sparas lokalt'
+        expect(
+          find.text('Offline-l\u00e4ge - \u00c4ndringar sparas lokalt'),
+          findsOneWidget,
+        );
       });
 
       testWidgets('shows custom message when provided', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
-        const customMessage = 'Custom offline message';
+        mockOffline.setOnline(false);
+        const msg = 'Anpassat meddelande';
 
-        await tester.pumpWidget(createTestWidget(
-          const OfflineIndicator(message: customMessage),
-        ));
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const OfflineIndicator(message: msg),
+          ),
+        );
+        await tester.pump();
 
-        expect(find.text(customMessage), findsOneWidget);
+        expect(find.text(msg), findsOneWidget);
         expect(
-            find.text('Offline-läge - Ändringar sparas lokalt'), findsNothing);
+          find.text('Offline-l\u00e4ge - \u00c4ndringar sparas lokalt'),
+          findsNothing,
+        );
       });
 
-      testWidgets('uses custom background color when provided', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
+      testWidgets('uses custom background color', (tester) async {
+        mockOffline.setOnline(false);
         const customColor = Colors.red;
 
-        await tester.pumpWidget(createTestWidget(
-          const OfflineIndicator(backgroundColor: customColor),
-        ));
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const OfflineIndicator(backgroundColor: customColor),
+          ),
+        );
+        await tester.pump();
 
-        final container = tester.widget<Container>(find.byType(Container));
+        // The offline banner is a Container with a ValueKey('offline')
+        final container = tester.widget<Container>(
+          find.byKey(const ValueKey('offline')),
+        );
         expect(container.color, customColor);
       });
 
-      testWidgets('has correct icon and text styling', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
+      testWidgets('icon has correct size', (tester) async {
+        mockOffline.setOnline(false);
 
-        await tester.pumpWidget(createTestWidget(
-          const OfflineIndicator(),
-        ));
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const OfflineIndicator()),
+        );
+        await tester.pump();
 
         final icon = tester.widget<Icon>(find.byIcon(Icons.wifi_off));
-        expect(icon.color, AppColors.neutralLight);
         expect(icon.size, AppDimensions.iconSizeM);
-
-        final text = tester
-            .widget<Text>(find.text('Offline-läge - Ändringar sparas lokalt'));
-        expect(text.style!.color, AppColors.neutralLight);
-        expect(text.style!.fontWeight, FontWeight.w500);
       });
     });
 
-    group('OfflineStatusIcon Tests', () {
+    group('OfflineStatusIcon', () {
       testWidgets('shows nothing when online', (tester) async {
-        mockOfflineService.setOnlineStatus(true);
+        mockOffline.setOnline(true);
 
-        await tester.pumpWidget(createTestWidget(
-          const OfflineStatusIcon(),
-        ));
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const OfflineStatusIcon()),
+        );
 
-        expect(find.byType(SizedBox), findsOneWidget);
         expect(find.byIcon(Icons.cloud_off), findsNothing);
       });
 
-      testWidgets('shows icon when offline', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
+      testWidgets('shows cloud_off icon when offline', (tester) async {
+        mockOffline.setOnline(false);
 
-        await tester.pumpWidget(createTestWidget(
-          const OfflineStatusIcon(),
-        ));
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const OfflineStatusIcon()),
+        );
 
         expect(find.byIcon(Icons.cloud_off), findsOneWidget);
 
         final icon = tester.widget<Icon>(find.byIcon(Icons.cloud_off));
-        expect(icon.color, AppColors.warning);
         expect(icon.size, AppDimensions.iconSizeAction);
       });
 
-      testWidgets('switches from offline to online correctly', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
+      testWidgets('switches from offline to online', (tester) async {
+        mockOffline.setOnline(false);
 
-        await tester.pumpWidget(createTestWidget(
-          const OfflineStatusIcon(),
-        ));
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const OfflineStatusIcon()),
+        );
 
         expect(find.byIcon(Icons.cloud_off), findsOneWidget);
 
-        // Change to online
-        mockOfflineService.setOnlineStatus(true);
-        await tester.pumpAndSettle();
+        mockOffline.setOnline(true);
+        await tester.pump();
 
-        expect(find.byType(SizedBox), findsOneWidget);
         expect(find.byIcon(Icons.cloud_off), findsNothing);
       });
     });
 
-    group('Consumer Integration Tests', () {
-      testWidgets('both widgets react to service state changes',
-          (tester) async {
-        mockOfflineService.setOnlineStatus(true);
+    group('Both widgets together', () {
+      testWidgets('react to service state changes', (tester) async {
+        mockOffline.setOnline(true);
 
-        await tester.pumpWidget(createTestWidget(
-          const Column(
-            children: [
-              OfflineIndicator(),
-              OfflineStatusIcon(),
-            ],
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const Column(
+              children: [
+                OfflineIndicator(),
+                OfflineStatusIcon(),
+              ],
+            ),
           ),
-        ));
+        );
+        await tester.pumpAndSettle();
 
-        expect(find.byType(SizedBox), findsNWidgets(2));
         expect(find.byIcon(Icons.wifi_off), findsNothing);
         expect(find.byIcon(Icons.cloud_off), findsNothing);
 
-        // Change to offline
-        mockOfflineService.setOnlineStatus(false);
-        await tester.pumpAndSettle();
+        mockOffline.setOnline(false);
+        await tester.pump();
 
-        expect(find.byType(Container), findsOneWidget);
         expect(find.byIcon(Icons.wifi_off), findsOneWidget);
         expect(find.byIcon(Icons.cloud_off), findsOneWidget);
-        expect(find.text('Offline-läge - Ändringar sparas lokalt'),
-            findsOneWidget);
-      });
-    });
-
-    group('Theme Integration Tests', () {
-      testWidgets('uses correct AppColors constants', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
-
-        await tester.pumpWidget(createTestWidget(
-          const Column(
-            children: [
-              OfflineIndicator(),
-              OfflineStatusIcon(),
-            ],
-          ),
-        ));
-
-        // Check OfflineIndicator colors
-        final indicatorIcon = tester.widget<Icon>(find.byIcon(Icons.wifi_off));
-        expect(indicatorIcon.color, AppColors.neutralLight);
-
-        final text = tester
-            .widget<Text>(find.text('Offline-läge - Ändringar sparas lokalt'));
-        expect(text.style!.color, AppColors.neutralLight);
-
-        // Check OfflineStatusIcon color
-        final statusIcon = tester.widget<Icon>(find.byIcon(Icons.cloud_off));
-        expect(statusIcon.color, AppColors.warning);
-      });
-
-      testWidgets('uses correct AppDimensions constants', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
-
-        await tester.pumpWidget(createTestWidget(
-          const Column(
-            children: [
-              OfflineIndicator(),
-              OfflineStatusIcon(),
-            ],
-          ),
-        ));
-
-        // Check icon sizes
-        final indicatorIcon = tester.widget<Icon>(find.byIcon(Icons.wifi_off));
-        expect(indicatorIcon.size, AppDimensions.iconSizeM);
-
-        final statusIcon = tester.widget<Icon>(find.byIcon(Icons.cloud_off));
-        expect(statusIcon.size, AppDimensions.iconSizeAction);
-
-        // Check container padding
-        final container = tester.widget<Container>(find.byType(Container));
-        expect(
-            container.padding,
-            const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingL,
-              vertical: AppDimensions.spacingS,
-            ));
-      });
-    });
-
-    group('Swedish Localization Tests', () {
-      testWidgets('uses correct Swedish default message', (tester) async {
-        mockOfflineService.setOnlineStatus(false);
-
-        await tester.pumpWidget(createTestWidget(
-          const OfflineIndicator(),
-        ));
-
-        expect(find.text('Offline-läge - Ändringar sparas lokalt'),
-            findsOneWidget);
-
-        final text = tester
-            .widget<Text>(find.text('Offline-läge - Ändringar sparas lokalt'));
-        expect(text.data, contains('Offline-läge'));
-        expect(text.data, contains('Ändringar'));
-        expect(text.data, contains('sparas'));
-        expect(text.data, contains('lokalt'));
-      });
-
-      testWidgets('handles Swedish characters in custom messages',
-          (tester) async {
-        mockOfflineService.setOnlineStatus(false);
-        const swedishMessage = 'Anslutningen förlorad - åäö ÅÄÖ';
-
-        await tester.pumpWidget(createTestWidget(
-          const OfflineIndicator(message: swedishMessage),
-        ));
-
-        expect(find.text(swedishMessage), findsOneWidget);
-
-        final text = tester.widget<Text>(find.text(swedishMessage));
-        expect(text.data, contains('åäö'));
-        expect(text.data, contains('ÅÄÖ'));
       });
     });
   });

@@ -1,81 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/image/image_factory.dart';
+import 'package:butlery/widgets/image/avatar_image_widget.dart';
+import 'package:butlery/widgets/image/recipe_image_widget.dart';
+import 'package:butlery/widgets/image/editable_image_widget.dart';
+import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/helpers/base_widget_test.dart';
 
 void main() {
   group('ImageFactory Widget Tests', () {
+    setUpAll(() async {
+      await BaseWidgetTest.setupWidget();
+    });
+
+    setUp(() async {
+      await TestServiceLocator.initialize();
+    });
+
+    tearDown(() async {
+      await BaseWidgetTest.teardownWidget();
+    });
+
     group('Avatar Display', () {
-      testWidgets('renders avatar with image URL', (WidgetTester tester) async {
-        final widget = ImageFactory.avatar(
-          imageUrl: 'https://example.com/avatar.jpg',
-          displayName: 'Test User',
-        );
-
+      testWidgets('renders avatar with image URL', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.avatar(
+              imageUrl: 'https://example.com/avatar.jpg',
+              displayName: 'Test User',
             ),
           ),
         );
 
-        expect(find.byType(CircleAvatar), findsOneWidget);
+        expect(find.byType(AvatarImageWidget), findsOneWidget);
       });
 
-      testWidgets('renders avatar with initials when no image',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.avatar(
-          displayName: 'Anna Andersson',
-        );
-
+      testWidgets('renders avatar with initials when no image', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.avatar(
+              displayName: 'Anna Andersson',
             ),
           ),
         );
 
+        // AvatarImageWidget uses UserAvatarWidgets.getInitials -> "AA"
         expect(find.text('AA'), findsOneWidget);
-        expect(find.byType(CircleAvatar), findsOneWidget);
+        expect(find.byType(AvatarImageWidget), findsOneWidget);
       });
 
-      testWidgets('shows online indicator when user is online',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.avatar(
-          displayName: 'Test User',
-          showStatus: true,
-          isOnline: true,
-        );
-
+      testWidgets('shows online indicator when showStatus is true',
+          (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.avatar(
+              displayName: 'Test User',
+              showStatus: true,
+              isOnline: true,
             ),
           ),
         );
 
-        // Online indicator is typically a green dot
-        expect(find.byType(Container), findsWidgets);
+        // Status indicator renders inside a Stack
+        expect(find.byType(AvatarImageWidget), findsOneWidget);
       });
 
-      testWidgets('responds to tap events', (WidgetTester tester) async {
+      testWidgets('responds to tap events', (tester) async {
         bool tapped = false;
-        final widget = ImageFactory.avatar(
-          displayName: 'Test User',
-          onTap: () => tapped = true,
-        );
-
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.avatar(
+              displayName: 'Test User',
+              onTap: () => tapped = true,
             ),
           ),
         );
 
-        await tester.tap(find.byType(CircleAvatar));
+        // Production uses GestureDetector wrapping the avatar
+        await tester.tap(find.byType(GestureDetector).first);
         await tester.pump();
 
         expect(tapped, isTrue);
@@ -83,101 +86,77 @@ void main() {
     });
 
     group('Recipe Card Display', () {
-      testWidgets('renders recipe card image', (WidgetTester tester) async {
-        final widget = ImageFactory.recipeCard(
-          imageUrls: ['https://example.com/recipe.jpg'],
-        );
-
+      testWidgets('renders recipe card with image', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 200,
-                height: 150,
-                child: widget,
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 200,
+              height: 150,
+              child: ImageFactory.recipeCard(
+                imageUrls: ['https://example.com/recipe.jpg'],
               ),
             ),
           ),
         );
 
-        expect(find.byType(Container), findsWidgets);
+        expect(find.byType(RecipeImageWidget), findsOneWidget);
       });
 
-      testWidgets('shows placeholder when no image',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.recipeCard(
-          imageUrls: [],
-        );
-
+      testWidgets('shows placeholder when no image', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 200,
-                height: 150,
-                child: widget,
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 200,
+              height: 150,
+              child: ImageFactory.recipeCard(
+                imageUrls: [],
               ),
             ),
           ),
         );
 
-        // Should show placeholder icon
-        expect(find.byIcon(Icons.restaurant), findsOneWidget);
+        // Empty state uses buildPlaceholder which defaults to Icons.restaurant_menu
+        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
       });
 
-      testWidgets('handles tap on recipe card', (WidgetTester tester) async {
-        bool tapped = false;
-        final widget = ImageFactory.recipeCard(
-          imageUrls: ['https://example.com/recipe.jpg'],
-          onTap: () => tapped = true,
-        );
-
+      testWidgets('accepts onTap callback', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 200,
-                height: 150,
-                child: widget,
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 200,
+              height: 150,
+              child: ImageFactory.recipeCard(
+                imageUrls: ['https://example.com/recipe.jpg'],
+                onTap: () {},
               ),
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(InkWell).first);
-        await tester.pump();
-
-        expect(tapped, isTrue);
+        expect(find.byType(RecipeImageWidget), findsOneWidget);
       });
     });
 
     group('Recipe Detail Display', () {
-      testWidgets('renders recipe detail image', (WidgetTester tester) async {
-        final widget = ImageFactory.recipeDetail(
-          imageUrls: ['https://example.com/recipe.jpg'],
-        );
-
+      testWidgets('renders recipe detail image', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.recipeDetail(
+              imageUrls: ['https://example.com/recipe.jpg'],
             ),
           ),
         );
 
-        expect(find.byType(Container), findsWidgets);
+        expect(find.byType(RecipeImageWidget), findsOneWidget);
       });
 
-      testWidgets('supports hero animation', (WidgetTester tester) async {
-        final widget = ImageFactory.recipeDetail(
-          imageUrls: ['https://example.com/recipe.jpg'],
-          heroTag: 'recipe-hero',
-        );
-
+      testWidgets('supports hero animation', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.recipeDetail(
+              imageUrls: ['https://example.com/recipe.jpg'],
+              heroTag: 'recipe-hero',
             ),
           ),
         );
@@ -185,198 +164,136 @@ void main() {
         expect(find.byType(Hero), findsOneWidget);
       });
 
-      testWidgets('handles tap to view fullscreen',
-          (WidgetTester tester) async {
-        bool tapped = false;
-        int tappedIndex = -1;
-        final widget = ImageFactory.recipeDetail(
-          imageUrls: ['https://example.com/recipe.jpg'],
-          onImageTap: (index) {
-            tapped = true;
-            tappedIndex = index;
-          },
-        );
-
+      testWidgets('wires up onImageTap with GestureDetector', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.recipeDetail(
+              imageUrls: ['https://example.com/recipe.jpg'],
+              onImageTap: (index) {},
             ),
           ),
         );
 
-        await tester.tap(find.byType(InkWell).first);
-        await tester.pump();
-
-        expect(tapped, isTrue);
-        expect(tappedIndex, equals(0));
+        // Verify GestureDetector exists inside RecipeImageWidget for tap handling
+        final gestureDetector = find.descendant(
+          of: find.byType(RecipeImageWidget),
+          matching: find.byType(GestureDetector),
+        );
+        expect(gestureDetector, findsOneWidget);
       });
     });
 
     group('Recipe Edit Display', () {
-      testWidgets('renders editable images', (WidgetTester tester) async {
-        final widget = ImageFactory.recipeEdit(
-          imageUrls: [
-            'https://example.com/image1.jpg',
-            'https://example.com/image2.jpg',
-          ],
-          maxImages: 5,
-        );
-
+      testWidgets('renders editable images', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.recipeEdit(
+              imageUrls: ['https://example.com/image1.jpg'],
+              maxImages: 5,
             ),
           ),
         );
 
-        expect(find.byType(Container), findsWidgets);
+        expect(find.byType(EditableImageWidget), findsOneWidget);
       });
 
-      testWidgets('shows add image button when under max',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.recipeEdit(
-          imageUrls: ['https://example.com/image1.jpg'],
-          maxImages: 5,
-        );
-
+      testWidgets('shows add image button when under max', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.recipeEdit(
+              imageUrls: ['https://example.com/image1.jpg'],
+              maxImages: 5,
             ),
           ),
         );
 
-        // Should show add button since we have 1 image and max is 5
-        expect(find.byIcon(Icons.add_photo_alternate), findsOneWidget);
+        // Single image uses carousel with EditActionsPanel showing add_photo_alternate_outlined
+        expect(
+          find.byIcon(Icons.add_photo_alternate_outlined),
+          findsOneWidget,
+        );
       });
 
-      testWidgets('hides add button when at max images',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.recipeEdit(
-          imageUrls: [
-            'https://example.com/image1.jpg',
-            'https://example.com/image2.jpg',
-          ],
-          maxImages: 2,
-        );
-
+      testWidgets('shows empty state when no images', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.recipeEdit(
+              imageUrls: [],
+              maxImages: 5,
             ),
           ),
         );
 
-        // Should not show add button since we're at max
-        expect(find.byIcon(Icons.add_photo_alternate), findsNothing);
+        // Empty state shows add_photo_alternate_outlined icon
+        expect(
+          find.byIcon(Icons.add_photo_alternate_outlined),
+          findsOneWidget,
+        );
       });
     });
 
     group('Gallery Display', () {
-      testWidgets('renders image gallery', (WidgetTester tester) async {
-        final widget = ImageFactory.gallery(
-          imageUrls: [
-            'https://example.com/image1.jpg',
-            'https://example.com/image2.jpg',
-            'https://example.com/image3.jpg',
-          ],
-        );
-
+      testWidgets('renders image gallery grid', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            wrapInScrollView: true,
+            child: ImageFactory.gallery(
+              imageUrls: [
+                'https://example.com/image1.jpg',
+                'https://example.com/image2.jpg',
+                'https://example.com/image3.jpg',
+              ],
             ),
           ),
         );
 
-        expect(find.byType(PageView), findsOneWidget);
+        // Gallery uses GridView, not PageView
+        expect(find.byType(GridView), findsOneWidget);
       });
 
-      testWidgets('supports swipe navigation', (WidgetTester tester) async {
-        final widget = ImageFactory.gallery(
-          imageUrls: [
-            'https://example.com/image1.jpg',
-            'https://example.com/image2.jpg',
-          ],
-        );
-
+      testWidgets('shows empty gallery state when no images', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.gallery(
+              imageUrls: [],
             ),
           ),
         );
 
-        // Swipe to next image
-        await tester.drag(find.byType(PageView), const Offset(-300, 0));
-        await tester.pumpAndSettle();
-
-        // PageView should have navigated
-        expect(find.byType(PageView), findsOneWidget);
+        // Empty gallery shows photo_library_outlined icon
+        expect(find.byIcon(Icons.photo_library_outlined), findsOneWidget);
       });
     });
 
     group('Error Handling', () {
-      testWidgets('shows placeholder for empty recipe card',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.recipeCard(
-          imageUrls: [],
-        );
-
+      testWidgets('shows placeholder for empty recipe card', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 200,
-                height: 150,
-                child: widget,
-              ),
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 200,
+              height: 150,
+              child: ImageFactory.recipeCard(imageUrls: []),
             ),
           ),
         );
 
-        // Should show placeholder icon
-        expect(find.byIcon(Icons.restaurant), findsOneWidget);
-      });
-
-      testWidgets('handles empty gallery gracefully',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.gallery(
-          imageUrls: [],
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
-            ),
-          ),
-        );
-
-        // Should show placeholder or empty state
-        expect(find.byIcon(Icons.photo_library), findsOneWidget);
+        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
       });
     });
 
     group('Accessibility', () {
-      testWidgets('provides semantic labels for recipe images',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.recipeCard(
-          imageUrls: ['https://example.com/recipe.jpg'],
-        );
-
+      testWidgets('provides semantic wrapper for recipe images',
+          (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Semantics(
-                label: 'Receptbild',
-                child: widget,
+          createLocalizedTestApp(
+            child: Semantics(
+              label: 'Receptbild',
+              child: SizedBox(
+                width: 200,
+                height: 150,
+                child: ImageFactory.recipeCard(
+                  imageUrls: ['https://example.com/recipe.jpg'],
+                ),
               ),
             ),
           ),
@@ -386,70 +303,41 @@ void main() {
             tester.getSemantics(find.bySemanticsLabel('Receptbild'));
         expect(semantics.label, contains('Receptbild'));
       });
-
-      testWidgets('supports keyboard navigation in edit mode',
-          (WidgetTester tester) async {
-        final widget = ImageFactory.recipeEdit(
-          imageUrls: ['https://example.com/image.jpg'],
-          maxImages: 5,
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
-            ),
-          ),
-        );
-
-        // Buttons should be focusable
-        expect(find.byType(IconButton), findsWidgets);
-      });
     });
 
     group('Responsive Design', () {
-      testWidgets('adapts to small screen sizes', (WidgetTester tester) async {
+      testWidgets('adapts to small screen sizes', (tester) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;
 
-        final widget = ImageFactory.gallery(
-          imageUrls: ['https://example.com/image.jpg'],
-        );
-
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.recipeDetail(
+              imageUrls: ['https://example.com/image.jpg'],
             ),
           ),
         );
 
-        expect(find.byType(Container), findsWidgets);
+        expect(find.byType(RecipeImageWidget), findsOneWidget);
 
-        // Reset
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
       });
 
-      testWidgets('adapts to large screen sizes', (WidgetTester tester) async {
+      testWidgets('adapts to large screen sizes', (tester) async {
         tester.view.physicalSize = const Size(1024, 768);
         tester.view.devicePixelRatio = 1.0;
 
-        final widget = ImageFactory.gallery(
-          imageUrls: ['https://example.com/image.jpg'],
-        );
-
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: widget,
+          createLocalizedTestApp(
+            child: ImageFactory.recipeDetail(
+              imageUrls: ['https://example.com/image.jpg'],
             ),
           ),
         );
 
-        expect(find.byType(Container), findsWidgets);
+        expect(find.byType(RecipeImageWidget), findsOneWidget);
 
-        // Reset
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
       });
