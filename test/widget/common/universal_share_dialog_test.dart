@@ -6,20 +6,17 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
-// Note: FriendCategory import removed as not used in streamlined tests
 
-// Import test factories - ultrathink approach: use existing infrastructure
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/factories/shopping_list_factory.dart';
 import '../../infrastructure/factories/user_profile_factory.dart';
-// Note: SocialFactory import removed as not used in streamlined tests
+import '../../infrastructure/helpers/widget_test_app.dart';
 
 // Mock classes
 class MockUniversalShareDialogViewModel extends Mock
     implements UniversalShareDialogViewModel {}
 
 void main() {
-  // Register fallback values for mocktail - ultrathink pattern from existing tests
   setUpAll(() {
     registerFallbackValue(RecipeFactory.build());
     registerFallbackValue(<String, List<Recipe>>{});
@@ -33,34 +30,32 @@ void main() {
     late Map<String, List<Recipe>> testMenu;
     late UnifiedShoppingList testShoppingList;
     late List<UserProfile> testFriends;
-    // Note: testGroups removed for streamlined testing
 
     setUp(() {
       mockViewModel = MockUniversalShareDialogViewModel();
 
-      // Create Swedish test data using factory methods - ultrathink approach
       testRecipe = RecipeFactory.build(
         id: 'recipe_1',
-        title: 'Mormors köttbullar',
-        description: 'Klassiska svenska köttbullar',
+        title: 'Mormors kottbullar',
+        description: 'Klassiska svenska kottbullar',
         portions: 4,
-        ingredients: ['köttfärs', 'ägg', 'mjölk', 'lök'],
+        ingredients: ['kottfars', 'agg', 'mjolk', 'lok'],
         instructions: [
           'Blanda ingredienserna',
-          'Forma köttbullar',
+          'Forma kottbullar',
           'Stek i pannan'
         ],
         personalTagIds: ['svenska', 'klassiker'],
       );
 
       testMenu = {
-        'Måndag': [testRecipe],
+        'Mandag': [testRecipe],
         'Tisdag': [testRecipe],
       };
 
       testShoppingList = ShoppingListFactory.build(
         id: 'shopping_1',
-        name: 'Veckans inköp',
+        name: 'Veckans inkop',
         ownerId: 'user_anna',
         ownerDisplayName: 'Anna Andersson',
       );
@@ -77,8 +72,6 @@ void main() {
           email: 'maria@example.com',
         ),
       ];
-
-      // Note: testGroups removed as not used in streamlined tests
 
       // Mock ViewModel behavior
       when(() => mockViewModel.isSharing).thenReturn(false);
@@ -107,7 +100,6 @@ void main() {
     });
 
     test('recipe factory constructor creates correct widget configuration', () {
-      // Test factory constructor logic without rendering - ultrathink focus
       final dialog = UniversalShareDialog.recipe(
         recipe: testRecipe,
         viewModel: mockViewModel,
@@ -115,7 +107,6 @@ void main() {
         initialMessage: 'Test recipe message',
       );
 
-      // Verify factory constructor sets correct properties
       expect(dialog.content, equals(testRecipe));
       expect(dialog.contentType, equals(ShareContentType.recipe));
       expect(dialog.viewModel, equals(mockViewModel));
@@ -129,15 +120,13 @@ void main() {
         menu: testMenu,
         viewModel: mockViewModel,
         availableFriends: testFriends,
-        // Note: availableGroups removed for streamlined testing
       );
 
-      // Verify menu factory sets correct properties
       expect(dialog.content, equals(testMenu));
       expect(dialog.contentType, equals(ShareContentType.menu));
       expect(dialog.viewModel, equals(mockViewModel));
       expect(dialog.availableFriends, equals(testFriends));
-      expect(dialog.availableGroups, isNull); // No groups in streamlined test
+      expect(dialog.availableGroups, isNull);
       expect(dialog.isBulkSharing, isFalse);
     });
 
@@ -147,14 +136,13 @@ void main() {
       final dialog = UniversalShareDialog.shoppingList(
         shoppingList: testShoppingList,
         viewModel: mockViewModel,
-        initialMessage: 'Dela inköpslistan',
+        initialMessage: 'Dela inkopslistan',
       );
 
-      // Verify shopping list factory sets correct properties
       expect(dialog.content, equals(testShoppingList));
       expect(dialog.contentType, equals(ShareContentType.shoppingList));
       expect(dialog.viewModel, equals(mockViewModel));
-      expect(dialog.initialMessage, equals('Dela inköpslistan'));
+      expect(dialog.initialMessage, equals('Dela inkopslistan'));
       expect(dialog.isBulkSharing, isFalse);
     });
 
@@ -169,7 +157,6 @@ void main() {
         availableFriends: testFriends,
       );
 
-      // Verify bulk sharing factory sets correct properties
       expect(dialog.content, equals(bulkContent));
       expect(dialog.contentType, equals(ShareContentType.recipe));
       expect(dialog.viewModel, equals(mockViewModel));
@@ -178,7 +165,6 @@ void main() {
     });
 
     test('factory constructors handle null optional parameters correctly', () {
-      // Test recipe factory with minimal parameters
       final minimalDialog = UniversalShareDialog.recipe(
         recipe: testRecipe,
         viewModel: mockViewModel,
@@ -206,51 +192,44 @@ void main() {
         viewModel: mockViewModel,
       );
 
-      // Verify each factory uses correct content type
       expect(recipeDialog.contentType, ShareContentType.recipe);
       expect(menuDialog.contentType, ShareContentType.menu);
       expect(shoppingDialog.contentType, ShareContentType.shoppingList);
     });
   });
 
-  // ===== WIDGET RENDERING TESTS - ULTRATHINK METHODOLOGY =====
-  // NOTE: Production layout bug in ShareDialogActions has been FIXED using Expanded widgets
-  // Previous 122px RenderFlex overflow issue resolved through systematic ultrathink debugging
   group('UniversalShareDialog Widget Rendering Tests', () {
     late MockUniversalShareDialogViewModel mockViewModel;
     late Recipe testRecipe;
     late Map<String, List<Recipe>> testMenu;
     late UnifiedShoppingList testShoppingList;
     late List<UserProfile> testFriends;
-    // Note: testGroups removed as not used in streamlined Gold Standard tests
 
     setUp(() async {
-      // Initialize test infrastructure using centralized patterns
       mockViewModel = MockUniversalShareDialogViewModel();
 
-      // Create Swedish test data using factory methods
       testRecipe = RecipeFactory.build(
         id: 'recipe_1',
-        title: 'Mormors köttbullar',
-        description: 'Klassiska svenska köttbullar',
+        title: 'Mormors kottbullar',
+        description: 'Klassiska svenska kottbullar',
         portions: 4,
-        ingredients: ['köttfärs', 'ägg', 'mjölk', 'lök'],
+        ingredients: ['kottfars', 'agg', 'mjolk', 'lok'],
         instructions: [
           'Blanda ingredienserna',
-          'Forma köttbullar',
+          'Forma kottbullar',
           'Stek i pannan'
         ],
         personalTagIds: ['svenska', 'klassiker'],
       );
 
       testMenu = {
-        'Måndag': [testRecipe],
+        'Mandag': [testRecipe],
         'Tisdag': [testRecipe],
       };
 
       testShoppingList = ShoppingListFactory.build(
         id: 'shopping_1',
-        name: 'Veckans inköp',
+        name: 'Veckans inkop',
         ownerId: 'user_anna',
         ownerDisplayName: 'Anna Andersson',
       );
@@ -267,8 +246,6 @@ void main() {
           email: 'maria@example.com',
         ),
       ];
-
-      // Note: testGroups removed as not used in streamlined tests
 
       // Mock ViewModel behavior - successful sharing
       when(() => mockViewModel.isSharing).thenReturn(false);
@@ -298,30 +275,23 @@ void main() {
 
     group('Essential Structure Tests - Gold Standard', () {
       testWidgets('should render dialog structure correctly', (tester) async {
-        // Test core dialog structure - ultrathink focus on essential functionality
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: UniversalShareDialog.recipe(
-                recipe: testRecipe,
-                viewModel: mockViewModel,
-                availableFriends: testFriends,
-              ),
+          createLocalizedTestApp(
+            child: UniversalShareDialog.recipe(
+              recipe: testRecipe,
+              viewModel: mockViewModel,
+              availableFriends: testFriends,
             ),
           ),
         );
 
-        // Verify essential dialog structure exists
         expect(find.byType(Dialog), findsOneWidget);
         expect(find.byType(Column), findsWidgets);
-
-        // Verify clean rendering - no layout exceptions expected (bug fixed)
         expect(tester.takeException(), isNull);
       });
 
       testWidgets('should handle different content types correctly',
           (tester) async {
-        // Test all three content types render without crashing
         final dialogs = [
           UniversalShareDialog.recipe(
             recipe: testRecipe,
@@ -342,130 +312,101 @@ void main() {
 
         for (final dialog in dialogs) {
           await tester.pumpWidget(
-            MaterialApp(
-              home: Scaffold(body: dialog),
-            ),
+            createLocalizedTestApp(child: dialog),
           );
 
-          // Verify dialog renders cleanly for each content type
           expect(find.byType(Dialog), findsOneWidget);
-          expect(tester.takeException(), isNull); // No exceptions expected
+          expect(tester.takeException(), isNull);
         }
       });
 
       testWidgets('should handle empty friends list gracefully',
           (tester) async {
-        // Test no friends state - production uses ShareDialogStates.buildNoFriendsState
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: UniversalShareDialog.recipe(
-                recipe: testRecipe,
-                viewModel: mockViewModel,
-                availableFriends: const [],
-              ),
+          createLocalizedTestApp(
+            child: UniversalShareDialog.recipe(
+              recipe: testRecipe,
+              viewModel: mockViewModel,
+              availableFriends: const [],
             ),
           ),
         );
 
-        // Verify dialog renders no friends state without crashing
         expect(find.byType(Dialog), findsOneWidget);
-        expect(tester.takeException(),
-            isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(), isNull);
       });
     });
 
     group('Share Actions and Features - Gold Standard', () {
       testWidgets('should support platform selection for recipes',
           (tester) async {
-        // Test ShareMode functionality - recipes support realtime sharing
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: UniversalShareDialog.recipe(
-                recipe: testRecipe,
-                viewModel: mockViewModel,
-                availableFriends: testFriends,
-              ),
+          createLocalizedTestApp(
+            child: UniversalShareDialog.recipe(
+              recipe: testRecipe,
+              viewModel: mockViewModel,
+              availableFriends: testFriends,
             ),
           ),
         );
 
-        // Verify dialog supports realtime sharing for recipes
         expect(find.byType(Dialog), findsOneWidget);
-        expect(tester.takeException(),
-            isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(), isNull);
       });
 
       testWidgets('should exclude platform selection for shopping lists',
           (tester) async {
-        // Test ShareMode exclusion - shopping lists don't support realtime
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: UniversalShareDialog.shoppingList(
-                shoppingList: testShoppingList,
-                viewModel: mockViewModel,
-                availableFriends: testFriends,
-              ),
+          createLocalizedTestApp(
+            child: UniversalShareDialog.shoppingList(
+              shoppingList: testShoppingList,
+              viewModel: mockViewModel,
+              availableFriends: testFriends,
             ),
           ),
         );
 
-        // Verify dialog renders successfully for shopping lists
         expect(find.byType(Dialog), findsOneWidget);
-        expect(tester.takeException(),
-            isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(), isNull);
       });
 
       testWidgets('should handle custom messages correctly', (tester) async {
-        // Test message input functionality
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: UniversalShareDialog.recipe(
-                recipe: testRecipe,
-                viewModel: mockViewModel,
-                availableFriends: testFriends,
-                initialMessage: 'Prova detta recept!',
-              ),
+          createLocalizedTestApp(
+            child: UniversalShareDialog.recipe(
+              recipe: testRecipe,
+              viewModel: mockViewModel,
+              availableFriends: testFriends,
+              initialMessage: 'Prova detta recept!',
             ),
           ),
         );
 
-        // Verify initial message is set
         expect(find.text('Prova detta recept!'), findsWidgets);
-        expect(tester.takeException(),
-            isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(), isNull);
       });
 
       testWidgets('should support Swedish localization', (tester) async {
-        // Test Swedish character support
         final swedishRecipe = RecipeFactory.build(
-          title: 'Köttbullar med ärtor och räkor',
-          description: 'Traditionell svensk husmanskost med åäö tecken',
-          ingredients: ['kött', 'ärtor', 'räkor', 'grädde'],
+          title: 'Kottbullar med artor och rakor',
+          description: 'Traditionell svensk husmanskost',
+          ingredients: ['kott', 'artor', 'rakor', 'gradde'],
         );
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: UniversalShareDialog.recipe(
-                recipe: swedishRecipe,
-                viewModel: mockViewModel,
-                availableFriends: testFriends,
-                initialMessage: 'Hej! Prova denna underbara rätt med åäö!',
-              ),
+          createLocalizedTestApp(
+            child: UniversalShareDialog.recipe(
+              recipe: swedishRecipe,
+              viewModel: mockViewModel,
+              availableFriends: testFriends,
+              initialMessage: 'Hej! Prova denna underbara ratt!',
             ),
           ),
         );
 
-        // Verify Swedish text renders correctly
-        expect(find.text('Hej! Prova denna underbara rätt med åäö!'),
-            findsWidgets);
+        expect(find.text('Hej! Prova denna underbara ratt!'), findsWidgets);
         expect(find.byType(Dialog), findsOneWidget);
-        expect(tester.takeException(),
-            isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(), isNull);
       });
     });
   });

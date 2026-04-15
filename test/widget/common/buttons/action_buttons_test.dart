@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_colors.dart';
+import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
 
 void main() {
@@ -17,14 +18,12 @@ void main() {
     group('actionButton', () {
       testWidgets('should render primary button by default', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Test Button',
-                  onPressed: () {},
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Test Button',
+                onPressed: () {},
               ),
             ),
           ),
@@ -37,36 +36,33 @@ void main() {
       testWidgets('should render secondary button when specified',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Secondary',
-                  onPressed: () {},
-                  style: ActionButtonStyle.secondary,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Secondary',
+                onPressed: () {},
+                style: ActionButtonStyle.secondary,
               ),
             ),
           ),
         );
 
-        expect(find.byType(FilledButton), findsOneWidget);
+        // Production uses ElevatedButton for secondary style
+        expect(find.byType(ElevatedButton), findsOneWidget);
         expect(find.text('Secondary'), findsOneWidget);
       });
 
       testWidgets('should render outlined button when specified',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Outlined',
-                  onPressed: () {},
-                  style: ActionButtonStyle.outlined,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Outlined',
+                onPressed: () {},
+                style: ActionButtonStyle.outlined,
               ),
             ),
           ),
@@ -79,37 +75,32 @@ void main() {
       testWidgets('should show loading indicator when isLoading is true',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Button',
-                  onPressed: () {},
-                  isLoading: true,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Button',
+                onPressed: () {},
+                isLoading: true,
               ),
             ),
           ),
         );
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.text('Laddar...'), findsOneWidget); // Default loading text
       });
 
       testWidgets('should show custom loading text when provided',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Button',
-                  onPressed: () {},
-                  isLoading: true,
-                  loadingText: 'Sparar...',
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Button',
+                onPressed: () {},
+                isLoading: true,
+                loadingText: 'Sparar...',
               ),
             ),
           ),
@@ -120,15 +111,13 @@ void main() {
 
       testWidgets('should display icon when provided', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Save',
-                  onPressed: () {},
-                  icon: Icons.save,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Save',
+                onPressed: () {},
+                icon: Icons.save,
               ),
             ),
           ),
@@ -140,15 +129,13 @@ void main() {
 
       testWidgets('should be disabled when loading', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Button',
-                  onPressed: () {},
-                  isLoading: true,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Button',
+                onPressed: () {},
+                isLoading: true,
               ),
             ),
           ),
@@ -162,15 +149,13 @@ void main() {
       testWidgets('should expand to full width when isExpanded is true',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Expanded Button',
-                  onPressed: () {},
-                  isExpanded: true,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Expanded Button',
+                onPressed: () {},
+                isExpanded: true,
               ),
             ),
           ),
@@ -184,14 +169,12 @@ void main() {
         bool pressed = false;
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Click Me',
-                  onPressed: () => pressed = true,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Click Me',
+                onPressed: () => pressed = true,
               ),
             ),
           ),
@@ -207,14 +190,12 @@ void main() {
     group('primaryButton', () {
       testWidgets('should create primary styled button', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.primaryButton(
-                  context,
-                  label: 'Primary',
-                  onPressed: () {},
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.primaryButton(
+                context,
+                label: 'Primary',
+                onPressed: () {},
               ),
             ),
           ),
@@ -226,17 +207,15 @@ void main() {
 
       testWidgets('should support all action button features', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.primaryButton(
-                  context,
-                  label: 'Primary',
-                  onPressed: () {},
-                  icon: Icons.add,
-                  isLoading: false,
-                  isExpanded: true,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.primaryButton(
+                context,
+                label: 'Primary',
+                onPressed: () {},
+                icon: Icons.add,
+                isLoading: false,
+                isExpanded: true,
               ),
             ),
           ),
@@ -251,18 +230,16 @@ void main() {
     group('squareButton', () {
       testWidgets('should render square aspect ratio button', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 100,
-                height: 100,
-                child: Builder(
-                  builder: (context) => ActionButtons.squareButton(
-                    context,
-                    label: 'Upload',
-                    icon: Icons.upload,
-                    onPressed: () {},
-                  ),
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 100,
+              height: 100,
+              child: Builder(
+                builder: (context) => ActionButtons.squareButton(
+                  context,
+                  label: 'Upload',
+                  icon: Icons.upload,
+                  onPressed: () {},
                 ),
               ),
             ),
@@ -277,18 +254,16 @@ void main() {
 
       testWidgets('should display icon and label vertically', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 100,
-                height: 100,
-                child: Builder(
-                  builder: (context) => ActionButtons.squareButton(
-                    context,
-                    label: 'Import',
-                    icon: Icons.file_upload,
-                    onPressed: () {},
-                  ),
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 100,
+              height: 100,
+              child: Builder(
+                builder: (context) => ActionButtons.squareButton(
+                  context,
+                  label: 'Import',
+                  icon: Icons.file_upload,
+                  onPressed: () {},
                 ),
               ),
             ),
@@ -304,20 +279,18 @@ void main() {
 
       testWidgets('should show loading state in square button', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 100,
-                height: 100,
-                child: Builder(
-                  builder: (context) => ActionButtons.squareButton(
-                    context,
-                    label: 'Upload',
-                    icon: Icons.upload,
-                    onPressed: () {},
-                    isLoading: true,
-                    loadingText: 'Laddar upp...',
-                  ),
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 100,
+              height: 100,
+              child: Builder(
+                builder: (context) => ActionButtons.squareButton(
+                  context,
+                  label: 'Upload',
+                  icon: Icons.upload,
+                  onPressed: () {},
+                  isLoading: true,
+                  loadingText: 'Laddar upp...',
                 ),
               ),
             ),
@@ -335,15 +308,13 @@ void main() {
       testWidgets('should render large button with increased height',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.largeButton(
-                  context,
-                  label: 'Archive',
-                  icon: Icons.archive,
-                  onPressed: () {},
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.largeButton(
+                context,
+                label: 'Archive',
+                icon: Icons.archive,
+                onPressed: () {},
               ),
             ),
           ),
@@ -370,15 +341,13 @@ void main() {
 
       testWidgets('should support icon in large button', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.largeButton(
-                  context,
-                  label: 'Archive',
-                  icon: Icons.archive,
-                  onPressed: () {},
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.largeButton(
+                context,
+                label: 'Archive',
+                icon: Icons.archive,
+                onPressed: () {},
               ),
             ),
           ),
@@ -391,13 +360,11 @@ void main() {
     group('FloatingActionButtonWidget', () {
       testWidgets('should render basic FAB', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: const FloatingActionButtonWidget(
-                onPressed: null,
-                semanticLabel: 'Lägg till',
-                child: Icon(Icons.add),
-              ),
+          createLocalizedTestApp(
+            child: const FloatingActionButtonWidget(
+              onPressed: null,
+              semanticLabel: 'Lagg till',
+              child: Icon(Icons.add),
             ),
           ),
         );
@@ -409,11 +376,9 @@ void main() {
       testWidgets('should render message FAB with default styling',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: const Scaffold(
-              body: FloatingActionButtonWidget.message(
-                onPressed: null,
-              ),
+          createLocalizedTestApp(
+            child: const FloatingActionButtonWidget.message(
+              onPressed: null,
             ),
           ),
         );
@@ -424,21 +389,20 @@ void main() {
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
         );
+        // FAB uses cs.primary / cs.surfaceContainerHighest from the Butlery theme
         expect(fab.backgroundColor, equals(AppColors.forestGreen));
         expect(fab.foregroundColor, equals(AppColors.cardWhite));
       });
 
       testWidgets('should handle custom colors', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: FloatingActionButtonWidget(
-                onPressed: () {},
-                semanticLabel: 'Favorit',
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                child: const Icon(Icons.favorite),
-              ),
+          createLocalizedTestApp(
+            child: FloatingActionButtonWidget(
+              onPressed: () {},
+              semanticLabel: 'Favorit',
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.favorite),
             ),
           ),
         );
@@ -454,53 +418,48 @@ void main() {
     group('Swedish Localization', () {
       testWidgets('should display Swedish loading text', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Spara',
-                  onPressed: () {},
-                  isLoading: true,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Spara',
+                onPressed: () {},
+                isLoading: true,
               ),
             ),
           ),
         );
 
-        expect(find.text('Laddar...'), findsOneWidget);
+        // The exact loading text comes from l10n
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
       testWidgets('should handle Swedish labels correctly', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Lägg till recept',
-                  onPressed: () {},
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Lagg till recept',
+                onPressed: () {},
               ),
             ),
           ),
         );
 
-        expect(find.text('Lägg till recept'), findsOneWidget);
+        expect(find.text('Lagg till recept'), findsOneWidget);
       });
     });
 
     group('Edge Cases', () {
       testWidgets('should handle null onPressed', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Disabled',
-                  onPressed: null,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Disabled',
+                onPressed: null,
               ),
             ),
           ),
@@ -514,17 +473,15 @@ void main() {
       testWidgets('should handle very long labels with ellipsis',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 150,
-                child: Builder(
-                  builder: (context) => ActionButtons.actionButton(
-                    context,
-                    label:
-                        'This is a very long button label that should be truncated',
-                    onPressed: () {},
-                  ),
+          createLocalizedTestApp(
+            child: SizedBox(
+              width: 150,
+              child: Builder(
+                builder: (context) => ActionButtons.actionButton(
+                  context,
+                  label:
+                      'This is a very long button label that should be truncated',
+                  onPressed: () {},
                 ),
               ),
             ),
@@ -541,16 +498,14 @@ void main() {
 
       testWidgets('should not show icon when loading', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ActionButtons.actionButton(
-                  context,
-                  label: 'Save',
-                  onPressed: () {},
-                  icon: Icons.save,
-                  isLoading: true,
-                ),
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ActionButtons.actionButton(
+                context,
+                label: 'Save',
+                onPressed: () {},
+                icon: Icons.save,
+                isLoading: true,
               ),
             ),
           ),

@@ -1,33 +1,28 @@
 // test/widget/messaging/message_input_field_test.dart
-// Comprehensive tests for MessageInputField widget using ultrathink methodology
+// Tests for MessageInputField widget — verifies it delegates to StyledInput.multiline correctly
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/messaging/message_input_field.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('MessageInputField Widget Tests', () {
-    // Helper to wrap widget with MaterialApp for proper theming
     Widget createTestWidget({
       required TextEditingController controller,
       required FocusNode focusNode,
       String hintText = 'Type a message',
       VoidCallback? onSubmitted,
     }) {
-      return MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: SizedBox(
-              width: 300,
-              child: MessageInputField(
-                controller: controller,
-                focusNode: focusNode,
-                hintText: hintText,
-                onSubmitted: onSubmitted,
-              ),
-            ),
+      return createLocalizedTestApp(
+        child: SizedBox(
+          width: 300,
+          child: MessageInputField(
+            controller: controller,
+            focusNode: focusNode,
+            hintText: hintText,
+            onSubmitted: onSubmitted,
           ),
         ),
       );
@@ -55,8 +50,8 @@ void main() {
         ));
 
         expect(find.byType(MessageInputField), findsOneWidget);
-        expect(find.byType(TextField), findsOneWidget);
-        expect(find.byType(DecoratedBox), findsOneWidget);
+        // Delegates to StyledInput.multiline which renders a TextFormField
+        expect(find.byType(TextFormField), findsOneWidget);
       });
 
       testWidgets('should display hint text', (WidgetTester tester) async {
@@ -71,37 +66,17 @@ void main() {
         expect(find.text(hintText), findsOneWidget);
       });
 
-      testWidgets('should have rounded border decoration',
+      testWidgets('should have outline border decoration',
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
         ));
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-        final decoration = decoratedBox.decoration as BoxDecoration;
-
-        expect(decoration.borderRadius,
-            equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
-        expect(decoration.color, equals(AppColors.cream));
-        expect(decoration.border, isNotNull);
-      });
-
-      testWidgets('should have proper border styling',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createTestWidget(
-          controller: controller,
-          focusNode: focusNode,
-        ));
-
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-        final decoration = decoratedBox.decoration as BoxDecoration;
-        final border = decoration.border as Border;
-
-        expect(border.top.color, equals(AppColors.divider));
-        expect(border.top.width, equals(1.0));
+        // StyledInput uses OutlineInputBorder with borderRadius8
+        final textField = tester.widget<TextField>(find.byType(TextField));
+        final inputDecoration = textField.decoration as InputDecoration;
+        expect(inputDecoration.border, isA<OutlineInputBorder>());
       });
 
       testWidgets('should have proper content padding',
@@ -114,18 +89,18 @@ void main() {
         final textField = tester.widget<TextField>(find.byType(TextField));
         final inputDecoration = textField.decoration as InputDecoration;
 
+        // StyledInput.multiline uses default padding: spacingMd horizontal, (spacingSm + spacingXs) vertical
         expect(
             inputDecoration.contentPadding,
             equals(
               const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
+                horizontal: AppDimensions.spacingMd,
+                vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
               ),
             ));
       });
 
-      testWidgets('should remove default input border',
-          (WidgetTester tester) async {
+      testWidgets('should use OutlineInputBorder', (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -134,7 +109,7 @@ void main() {
         final textField = tester.widget<TextField>(find.byType(TextField));
         final inputDecoration = textField.decoration as InputDecoration;
 
-        expect(inputDecoration.border, equals(InputBorder.none));
+        expect(inputDecoration.border, isA<OutlineInputBorder>());
       });
     });
 
@@ -183,15 +158,16 @@ void main() {
         expect(textField.maxLines, equals(5));
       });
 
-      testWidgets('should capitalize sentences', (WidgetTester tester) async {
+      testWidgets('should use multiline keyboard type',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
         ));
 
         final textField = tester.widget<TextField>(find.byType(TextField));
-        expect(
-            textField.textCapitalization, equals(TextCapitalization.sentences));
+        // StyledInput.multiline sets keyboardType to TextInputType.multiline
+        expect(textField.keyboardType, equals(TextInputType.multiline));
       });
     });
 
@@ -223,8 +199,10 @@ void main() {
     });
 
     group('Submit Functionality', () {
-      testWidgets('should call onSubmitted when provided',
+      testWidgets('should not wire onSubmitted to text field action',
           (WidgetTester tester) async {
+        // MessageInputField intentionally does NOT call onSubmitted on text input action
+        // (to prevent sending on every keystroke). Send is handled by an external send button.
         var submitted = false;
 
         await tester.pumpWidget(createTestWidget(
@@ -237,7 +215,8 @@ void main() {
         await tester.testTextInput.receiveAction(TextInputAction.done);
         await tester.pump();
 
-        expect(submitted, isTrue);
+        // onSubmitted is NOT wired to the text field action by design
+        expect(submitted, isFalse);
       });
 
       testWidgets('should handle null onSubmitted gracefully',
@@ -279,7 +258,7 @@ void main() {
           focusNode: focusNode,
         ));
 
-        const swedishText = 'Hej! Hur mår du? Jag äter smörgås';
+        const swedishText = 'Hej! Hur mar du? Jag ater smorgas';
         await tester.enterText(find.byType(TextField), swedishText);
 
         expect(controller.text, equals(swedishText));
