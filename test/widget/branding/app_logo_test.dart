@@ -6,12 +6,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/branding/app_logo.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/theme/app_shadows.dart';
 
 void main() {
   group('AppLogo Widget Tests', () {
-    // Helper to wrap widget with MaterialApp for proper theming
+    // Helper to wrap widget with MaterialApp using the real app theme
     Widget createTestWidget(Widget child) {
       return MaterialApp(
+        theme: AppTheme.lightTheme,
         home: Scaffold(
           body: Center(child: child),
         ),
@@ -40,10 +43,10 @@ void main() {
             equals(BorderRadius.circular(AppDimensions.borderRadius12)));
         expect(decoration.boxShadow, isNull); // No shadow by default
 
-        // Verify Icon
+        // Verify Icon — widget uses cs.outlineVariant for default icon color
         final icon = tester.widget<Icon>(find.byType(Icon));
         expect(icon.icon, equals(Icons.restaurant_menu));
-        expect(icon.color, equals(AppColors.neutralLight));
+        expect(icon.color, equals(AppColors.lightColorScheme.outlineVariant));
         expect(icon.size, equals(AppDimensions.imageSizeLarge * 0.4));
       });
 
@@ -101,14 +104,10 @@ void main() {
             .widget<Container>(find.byType(Container))
             .decoration as BoxDecoration;
         expect(decoration.boxShadow, isNotNull);
-        expect(decoration.boxShadow!.length, equals(1));
-
-        final shadow = decoration.boxShadow!.first;
+        // Widget uses AppShadows.elevated (2 black-based shadows)
         expect(
-            shadow.color, equals(AppColors.forestGreen.withValues(alpha: 0.3)));
-        expect(shadow.blurRadius, equals(AppDimensions.elevationMedium * 2));
-        expect(shadow.offset,
-            equals(const Offset(0, AppDimensions.elevationMedium)));
+            decoration.boxShadow!.length, equals(AppShadows.elevated.length));
+        expect(decoration.boxShadow, equals(AppShadows.elevated));
       });
     });
 
@@ -379,7 +378,7 @@ void main() {
         await tester.pumpWidget(createTestWidget(const AppBranding()));
 
         final nameText = tester.widget<Text>(find.text('Butlery'));
-        expect(nameText.style?.fontWeight, equals(FontWeight.bold));
+        expect(nameText.style?.fontWeight, equals(FontWeight.w600));
       });
     });
 

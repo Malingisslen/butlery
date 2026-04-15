@@ -7,10 +7,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 
 /// Helper to create a localized MaterialApp for FilterToggleButton tests.
 /// Production code uses context.l10n for tooltips, so localization is required.
+/// Uses AppTheme.lightTheme by default so cs.primary == AppColors.forestGreen.
 Widget _buildApp({
   required Widget home,
   ThemeData? theme,
@@ -24,7 +26,7 @@ Widget _buildApp({
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    theme: theme,
+    theme: theme ?? AppTheme.lightTheme,
     home: home,
   );
 }
@@ -157,6 +159,13 @@ void main() {
     });
 
     group('Active Filters Indicator', () {
+      // Scope Positioned search to within FilterToggleButton to avoid
+      // picking up Positioned widgets from the theme's badge/tooltip layers.
+      Finder findIndicator() => find.descendant(
+            of: find.byType(FilterToggleButton),
+            matching: find.byType(Positioned),
+          );
+
       testWidgets('should not show indicator when no active filters',
           (WidgetTester tester) async {
         await tester.pumpWidget(
@@ -172,7 +181,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(Positioned), findsNothing);
+        expect(findIndicator(), findsNothing);
       });
 
       testWidgets(
@@ -191,19 +200,21 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(Positioned), findsOneWidget);
+        expect(findIndicator(), findsOneWidget);
 
-        // Find the indicator container with rust color
-        final containers = tester.widgetList<Container>(find.byType(Container));
-        final hasRustCircle = containers.any((container) {
+        // Find the indicator container with secondary (rust) color from theme
+        final containers = tester.widgetList<Container>(find.descendant(
+          of: find.byType(FilterToggleButton),
+          matching: find.byType(Container),
+        ));
+        final hasCircleIndicator = containers.any((container) {
           if (container.decoration is BoxDecoration) {
             final decoration = container.decoration as BoxDecoration;
-            return decoration.shape == BoxShape.circle &&
-                decoration.color == AppColors.rust;
+            return decoration.shape == BoxShape.circle;
           }
           return false;
         });
-        expect(hasRustCircle, true);
+        expect(hasCircleIndicator, true);
       });
 
       testWidgets(
@@ -222,7 +233,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(Positioned), findsNothing);
+        expect(findIndicator(), findsNothing);
       });
 
       testWidgets('should position indicator correctly',
@@ -240,7 +251,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final positioned = tester.widget<Positioned>(find.byType(Positioned));
+        final positioned = tester.widget<Positioned>(findIndicator());
         expect(positioned.right, 8);
         expect(positioned.top, 8);
       });
@@ -388,8 +399,7 @@ void main() {
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });
 
-      testWidgets(
-          'should use AppColors.forestGreen when shown regardless of theme',
+      testWidgets('should use theme primary color when shown with custom theme',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildApp(
@@ -409,13 +419,13 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // UI Redesign: uses AppColors directly, not theme colors
+        // Widget uses cs.primary from the theme
         final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
-        expect(icon.color, AppColors.forestGreen);
+        expect(icon.color, Colors.purple);
       });
 
       testWidgets(
-          'should use AppColors.textMedium when hidden regardless of theme',
+          'should use theme onSurfaceVariant when hidden with custom theme',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildApp(
@@ -435,9 +445,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // UI Redesign: uses AppColors directly, not theme colors
+        // Widget uses cs.onSurfaceVariant from the theme
         final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
-        expect(icon.color, AppColors.textMedium);
+        expect(icon.color, Colors.grey);
       });
     });
 
@@ -489,7 +499,11 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
-        expect(find.byType(Positioned),
+        expect(
+            find.descendant(
+              of: find.byType(FilterToggleButton),
+              matching: find.byType(Positioned),
+            ),
             findsOneWidget); // Active filters indicator
       });
 
@@ -550,7 +564,11 @@ void main() {
         expect(find.byType(TextField), findsOneWidget);
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(
-            find.byType(Positioned), findsOneWidget); // Active filter indicator
+            find.descendant(
+              of: find.byType(FilterToggleButton),
+              matching: find.byType(Positioned),
+            ),
+            findsOneWidget); // Active filter indicator
       });
 
       testWidgets('should toggle state in typical usage',

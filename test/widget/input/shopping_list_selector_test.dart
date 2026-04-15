@@ -1,13 +1,35 @@
 // test/widget/input/shopping_list_selector_test.dart
-// Basic tests for ShoppingListSelector using ultrathink methodology
+// Basic tests for ShoppingListSelector
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/input/shopping_list_selector.dart';
+import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/core/di/di_container.dart';
 
-// Test infrastructure
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../infrastructure/mocks/widget_mocks.dart';
 import '../../test_support/base_unit_test.dart';
+
+/// Minimal mock that provides all properties the widget reads in initState/build.
+class _TestShoppingViewModel extends MockUnifiedShoppingViewModel {
+  @override
+  List<UnifiedShoppingList> get lists => [];
+
+  @override
+  bool get isLoading => false;
+
+  @override
+  bool get hasError => false;
+
+  @override
+  String? get error => null;
+
+  @override
+  UnifiedShoppingList? get activeList => null;
+}
 
 void main() {
   group('ShoppingListSelector Widget Tests', () {
@@ -18,6 +40,13 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
+
+      // Register a mock UnifiedShoppingViewModel with safe defaults
+      final mockVm = _TestShoppingViewModel();
+      TestServiceLocator.registerMock<UnifiedShoppingViewModel>(mockVm);
+
+      // Bridge production ServiceLocator to the same GetIt instance
+      production.ServiceLocator.initialize(DIContainer());
     });
 
     tearDown(() async {
@@ -32,62 +61,50 @@ void main() {
       testWidgets('should create ShoppingListSelector without crashing',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ShoppingListSelector(),
-            ),
+          createLocalizedTestApp(
+            child: ShoppingListSelector(),
           ),
         );
 
-        // Should not crash and should render the widget
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
       testWidgets('should handle optional callback parameter',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ShoppingListSelector(
-                onListSelected: () {}, // Provide callback
-              ),
+          createLocalizedTestApp(
+            child: ShoppingListSelector(
+              onListSelected: () {},
             ),
           ),
         );
 
-        // Should render without issues
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
       testWidgets('should handle optional menu parameter',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ShoppingListSelector(
-                menu: const {}, // Provide empty menu
-              ),
+          createLocalizedTestApp(
+            child: ShoppingListSelector(
+              menu: const {},
             ),
           ),
         );
 
-        // Should render without issues
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
       testWidgets('should handle null menu gracefully',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ShoppingListSelector(
-                menu: null, // Explicit null
-              ),
+          createLocalizedTestApp(
+            child: ShoppingListSelector(
+              menu: null,
             ),
           ),
         );
 
-        // Should render without crashing
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
@@ -96,22 +113,17 @@ void main() {
         bool callbackCalled = false;
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ShoppingListSelector(
-                onListSelected: () => callbackCalled = true,
-                menu: const {
-                  'Test Day': [],
-                },
-              ),
+          createLocalizedTestApp(
+            child: ShoppingListSelector(
+              onListSelected: () => callbackCalled = true,
+              menu: const {
+                'Test Day': [],
+              },
             ),
           ),
         );
 
-        // Should render properly with all parameters
         expect(find.byType(ShoppingListSelector), findsOneWidget);
-
-        // Callback should not be called automatically
         expect(callbackCalled, isFalse);
       });
     });

@@ -6,12 +6,26 @@ import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
+/// The page now renders 7 dietary options (vegetarisk, vegansk, pescetarian,
+/// glutenfri, laktosfri, halalanpassad, kosheranpassad).
+const _dietaryOptionCount = 7;
+
 Widget _testApp({required OnboardingViewModel viewModel}) {
   return ChangeNotifierProvider<OnboardingViewModel>.value(
     value: viewModel,
     child: createLocalizedTestApp(
+      wrapInScrollView: true,
       child: const OnboardingDietaryPage(),
     ),
+  );
+}
+
+/// Find the dietary toggle cards by their GestureDetector inside Semantics
+/// (each _DietaryToggleCard wraps GestureDetector in a Semantics widget
+/// with `button: true`).
+Finder _findDietaryCards() {
+  return find.byWidgetPredicate(
+    (w) => w is Semantics && w.properties.button == true,
   );
 }
 
@@ -27,12 +41,11 @@ void main() {
       viewModel.dispose();
     });
 
-    testWidgets('renders 3 dietary cards', (tester) async {
+    testWidgets('renders all dietary cards', (tester) async {
       await tester.pumpWidget(_testApp(viewModel: viewModel));
       await tester.pumpAndSettle();
 
-      // 3 dietary options: vegetarisk, vegansk, pescetarian
-      expect(find.byType(GestureDetector), findsNWidgets(3));
+      expect(_findDietaryCards(), findsNWidgets(_dietaryOptionCount));
     });
 
     testWidgets('initially no check_circle icons', (tester) async {
@@ -47,7 +60,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap the first dietary card (Vegetarisk)
-      await tester.tap(find.byType(GestureDetector).first);
+      await tester.tap(_findDietaryCards().first);
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
@@ -58,19 +71,14 @@ void main() {
       await tester.pumpWidget(_testApp(viewModel: viewModel));
       await tester.pumpAndSettle();
 
-      // Cards have both a title (label) and description subtitle
-      // Each GestureDetector card contains a Column with label + description
-      // Verify we have at least the 3 label texts via the GestureDetectors
-      final cards = tester.widgetList<GestureDetector>(
-        find.byType(GestureDetector),
-      );
-      expect(cards.length, 3);
+      final cards = tester.widgetList(_findDietaryCards());
+      expect(cards.length, _dietaryOptionCount);
 
-      // Check that descriptions exist (body text below each label)
-      // The descriptions are separate Text widgets
+      // Each card has label + description; page has title + description
+      // So at minimum _dietaryOptionCount*2 + 2 Text widgets
       final textWidgets = tester.widgetList<Text>(find.byType(Text));
-      // Title + description + page title + page description = at least 3*2 + 2 = 8
-      expect(textWidgets.length, greaterThanOrEqualTo(8));
+      expect(textWidgets.length,
+          greaterThanOrEqualTo(_dietaryOptionCount * 2 + 2));
     });
 
     testWidgets('can select multiple simultaneously', (tester) async {
@@ -78,11 +86,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Select first (vegetarisk)
-      await tester.tap(find.byType(GestureDetector).first);
+      await tester.tap(_findDietaryCards().first);
       await tester.pumpAndSettle();
 
       // Select second (vegansk)
-      await tester.tap(find.byType(GestureDetector).at(1));
+      await tester.tap(_findDietaryCards().at(1));
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.check_circle), findsNWidgets(2));
