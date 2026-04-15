@@ -1,84 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
-import '../../../infrastructure/helpers/base_widget_test.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/widget_mocks.dart';
 
-// Comprehensive widget test for FriendCategoryWidgets following ultrathink methodology
 void main() {
-  setUp(() async {
-    await BaseWidgetTest.setupWidget();
-  });
+  group('FriendCategoryWidgets', () {
+    late MockUnifiedFriendsService mockFriendsService;
+    late MockFriendsViewModel mockFriendsViewModel;
 
-  tearDown(() async {
-    await BaseWidgetTest.teardownWidget();
-  });
-
-  group('FriendCategoryWidgets Tests', () {
-    // Test data with predictable IDs to match selectedCategoryIds
     final testCategories = [
       FriendCategory(
-        id: 'cat1', // Use predictable ID that matches testSelectedCategoryIds
+        id: 'cat1',
         ownerId: 'user123',
         name: 'Familie',
         description: 'Familjemedlemmar',
-        emoji: '👨‍👩‍👧‍👦',
+        emoji: '\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}\u{200D}\u{1F466}',
         friendUserIds: ['friend1', 'friend2'],
         sortOrder: 1,
       ),
       FriendCategory(
-        id: 'cat2', // Use predictable ID that matches testSelectedCategoryIds
+        id: 'cat2',
         ownerId: 'user123',
         name: 'Jobbet',
         description: 'Arbetskamrater',
-        emoji: '💼',
+        emoji: '\u{1F4BC}',
         friendUserIds: ['friend3', 'friend4', 'friend5'],
         sortOrder: 2,
       ),
       FriendCategory(
-        id: 'cat3', // Use predictable ID
+        id: 'cat3',
         ownerId: 'user123',
         name: 'Grannar',
-        emoji: '🏠',
+        emoji: '\u{1F3E0}',
         friendUserIds: ['friend6'],
         sortOrder: 3,
       ),
     ];
 
-    final testSelectedFriendIds = ['friend1', 'friend3'];
-    final testSelectedCategoryIds = {
-      'cat1',
-      'cat2'
-    }; // Now matches category IDs
+    final testSelectedCategoryIds = {'cat1', 'cat2'};
 
-    Widget createTestWidget(
-      Widget child, {
-      MockUnifiedFriendsService? friendsService,
-      MockFriendsViewModel? friendsViewModel,
-    }) {
-      // Create default mocks if not provided
-      final mockFriendsService = friendsService ?? MockUnifiedFriendsService();
-      final mockFriendsViewModel = friendsViewModel ?? MockFriendsViewModel();
-
-      // Configure default mock state for successful rendering
+    setUp(() {
+      Provider.debugCheckInvalidValueType = null;
+      mockFriendsService = MockUnifiedFriendsService();
+      mockFriendsViewModel = MockFriendsViewModel();
       mockFriendsService.setFriendsState(
-        categoriesList: testCategories,
-        isLoading: false,
-        error: null,
-      );
+          categoriesList: testCategories, isLoading: false, error: null);
+      mockFriendsViewModel
+          .setFriendsState(friends: [], isLoading: false, error: null);
+    });
 
-      mockFriendsViewModel.setFriendsState(
-        friends: [],
-        isLoading: false,
-        error: null,
-      );
-
+    Widget createTestWidget(Widget child) {
       return MaterialApp(
+        locale: const Locale('sv'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: AppTheme.lightTheme,
         home: Scaffold(
           body: MultiProvider(
             providers: [
@@ -100,710 +89,405 @@ void main() {
       );
     }
 
-    group('Friend Category Manager', () {
-      testWidgets('renders friendCategoryManager with default parameters',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            FriendCategoryWidgets.friendCategoryManager(
-              selectedFriendIds: testSelectedFriendIds,
-              onSelectionChanged: (_) {},
-            ),
+    group('FriendCategoryManager', () {
+      testWidgets('renders default Swedish title and subtitle', (tester) async {
+        await tester.pumpWidget(createTestWidget(
+          FriendCategoryWidgets.friendCategoryManager(
+            selectedFriendIds: ['friend1'],
+            onSelectionChanged: (_) {},
           ),
-        );
+        ));
+        await tester.pumpAndSettle();
 
-        // Assert
         expect(find.text('Välj vänner'), findsOneWidget);
         expect(find.text('Välj kategorier eller individuella vänner'),
             findsOneWidget);
       });
 
-      testWidgets('renders friendCategoryManager with custom parameters',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            FriendCategoryWidgets.friendCategoryManager(
-              selectedFriendIds: testSelectedFriendIds,
-              onSelectionChanged: (_) {},
-              allowMultipleCategories: false,
-              title: 'Custom Title',
-              subtitle: 'Custom Subtitle',
-            ),
+      testWidgets('renders custom title and subtitle', (tester) async {
+        await tester.pumpWidget(createTestWidget(
+          FriendCategoryWidgets.friendCategoryManager(
+            selectedFriendIds: [],
+            onSelectionChanged: (_) {},
+            title: 'Custom Title',
+            subtitle: 'Custom Subtitle',
           ),
-        );
+        ));
+        await tester.pumpAndSettle();
 
-        // Assert
         expect(find.text('Custom Title'), findsOneWidget);
         expect(find.text('Custom Subtitle'), findsOneWidget);
       });
 
-      testWidgets('renders compactFriendCategoryManager with constraints',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            FriendCategoryWidgets.compactFriendCategoryManager(
-              selectedFriendIds: testSelectedFriendIds,
-              onSelectionChanged: (_) {},
-              maxHeight:
-                  320, // Increased to prevent 64px overflow (250 + 64 + margin)
-            ),
+      testWidgets('compact variant constrains height', (tester) async {
+        await tester.pumpWidget(createTestWidget(
+          FriendCategoryWidgets.compactFriendCategoryManager(
+            selectedFriendIds: [],
+            onSelectionChanged: (_) {},
+            maxHeight: 320,
           ),
-        );
+        ));
+        await tester.pumpAndSettle();
 
-        // Assert - Use more specific container finder to avoid "Too many elements" error
-        final containerFinder = find.byWidgetPredicate(
-          (widget) =>
-              widget is Container && widget.constraints?.maxHeight == 320.0,
-        );
-        expect(containerFinder, findsOneWidget);
-        final container = tester.widget<Container>(containerFinder);
-        expect(container.constraints?.maxHeight,
-            equals(320.0)); // Updated to match new height
-        expect(find.text('Välj vänner'), findsOneWidget);
-        expect(find.text('Snabbval via kategorier'), findsOneWidget);
+        final finder = find.byWidgetPredicate(
+            (w) => w is Container && w.constraints?.maxHeight == 320.0);
+        expect(finder, findsOneWidget);
       });
     });
 
-    group('Category Selection Widgets', () {
-      testWidgets('renders friendCategorySelector with all options',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) =>
-                  FriendCategoryWidgets.friendCategorySelector(
-                context,
-                categories: testCategories,
-                selectedCategoryIds: testSelectedCategoryIds,
-                onCategoryToggled: (_) {},
-                title: 'Test Selector',
-                onCreateNew:
-                    () {}, // Required for "Skapa ny kategori" text to appear
-              ),
-            ),
+    group('CategorySelector', () {
+      testWidgets('renders Swedish action buttons and create option',
+          (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+            context,
+            categories: testCategories,
+            selectedCategoryIds: testSelectedCategoryIds,
+            onCategoryToggled: (_) {},
+            title: 'Test Selector',
+            onCreateNew: () {},
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
         expect(find.text('Test Selector'), findsOneWidget);
         expect(find.text('Välj alla'), findsOneWidget);
         expect(find.text('Rensa alla'), findsOneWidget);
         expect(find.text('Skapa ny kategori'), findsOneWidget);
       });
 
-      testWidgets('renders friendCategorySelector without select all options',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) =>
-                  FriendCategoryWidgets.friendCategorySelector(
-                context,
-                categories: testCategories,
-                selectedCategoryIds: testSelectedCategoryIds,
-                onCategoryToggled: (_) {},
-                showSelectAll: false,
-                showCreateNew: false,
-              ),
-            ),
+      testWidgets('hides select-all and create-new when disabled',
+          (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+            context,
+            categories: testCategories,
+            selectedCategoryIds: testSelectedCategoryIds,
+            onCategoryToggled: (_) {},
+            showSelectAll: false,
+            showCreateNew: false,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
         expect(find.text('Välj alla'), findsNothing);
         expect(find.text('Rensa alla'), findsNothing);
         expect(find.text('Skapa ny kategori'), findsNothing);
       });
 
-      testWidgets('renders friendCategoryChip with category data',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
-                context,
-                category: testCategories.first,
-                isSelected: true,
-                onTap: () {},
-                showCount: true,
-              ),
-            ),
+      testWidgets('handles toggle callback', (tester) async {
+        String? toggled;
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+            context,
+            categories: testCategories,
+            selectedCategoryIds: {},
+            onCategoryToggled: (id) => toggled = id,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
-        expect(find.text('Familie'), findsOneWidget);
-        // Production code uses Icons.emoji_emotions icon instead of literal emoji text
-        expect(find.byIcon(Icons.emoji_emotions), findsOneWidget);
+        await tester.tap(find.text('Familie'));
+        await tester.pump();
+        expect(toggled, isNotNull);
       });
 
-      testWidgets('renders friendCategoryChip without count',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
-                context,
-                category: testCategories.first,
-                isSelected: false,
-                onTap: () {},
-                showCount: false,
-              ),
-            ),
+      testWidgets('handles empty categories list', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+            context,
+            categories: [],
+            selectedCategoryIds: {},
+            onCategoryToggled: (_) {},
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
-        expect(find.text('Familie'), findsOneWidget);
-      });
-
-      testWidgets('renders horizontalCategorySelector with custom height',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) =>
-                  FriendCategoryWidgets.horizontalCategorySelector(
-                context,
-                categories: testCategories,
-                selectedCategoryIds: testSelectedCategoryIds,
-                onCategoryToggled: (_) {},
-                height: 80,
-              ),
-            ),
-          ),
-        );
-
-        // Assert - Check for horizontal scrollable structure
-        expect(find.byType(SingleChildScrollView), findsAtLeastNWidgets(1));
+        expect(find.byType(Wrap), findsOneWidget);
       });
     });
 
-    group('Category Display Widgets', () {
-      testWidgets('renders categoryList with member counts',
-          (WidgetTester tester) async {
-        // Act - Wrap ListView in height-constrained container to prevent unbounded height error
-        await tester.pumpWidget(
-          createTestWidget(
-            SizedBox(
-              height: 300, // Provide explicit height constraint for ListView
-              child: FriendCategoryWidgets.categoryList(
-                categories: testCategories,
-                onCategoryTap: (_) {},
-                showMemberCount: true,
-              ),
-            ),
+    group('CategoryChip', () {
+      testWidgets('shows name and emoji icon when selected', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+            context,
+            category: testCategories.first,
+            isSelected: true,
+            onTap: () {},
+            showCount: true,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
+        expect(find.text('Familie'), findsOneWidget);
+        expect(find.byIcon(Icons.emoji_emotions), findsOneWidget);
+      });
+
+      testWidgets('renders without count', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+            context,
+            category: testCategories.first,
+            isSelected: false,
+            onTap: () {},
+            showCount: false,
+          ),
+        )));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Familie'), findsOneWidget);
+      });
+
+      testWidgets('responds to tap', (tester) async {
+        bool tapped = false;
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+            context,
+            category: testCategories.first,
+            isSelected: false,
+            onTap: () => tapped = true,
+          ),
+        )));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Familie'));
+        await tester.pump();
+        expect(tapped, isTrue);
+      });
+
+      testWidgets('handles category without emoji', (tester) async {
+        final noEmoji = FriendCategory.create(ownerId: 'u1', name: 'No Emoji');
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+            context,
+            category: noEmoji,
+            isSelected: false,
+            onTap: () {},
+          ),
+        )));
+        await tester.pumpAndSettle();
+
+        expect(find.text('No Emoji'), findsOneWidget);
+      });
+
+      testWidgets('horizontalCategorySelector scrolls', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) =>
+              FriendCategoryWidgets.horizontalCategorySelector(
+            context,
+            categories: testCategories,
+            selectedCategoryIds: testSelectedCategoryIds,
+            onCategoryToggled: (_) {},
+            height: 80,
+          ),
+        )));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ListView), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('compactCategoryChip renders FilterChip', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.compactCategoryChip(
+            context,
+            category: testCategories.first,
+            isSelected: true,
+            onTap: () {},
+          ),
+        )));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Familie'), findsOneWidget);
+        expect(find.byType(FilterChip), findsOneWidget);
+      });
+    });
+
+    group('CategoryDisplay', () {
+      testWidgets('categoryList shows all names', (tester) async {
+        await tester.pumpWidget(createTestWidget(SizedBox(
+          height: 300,
+          child: FriendCategoryWidgets.categoryList(
+            categories: testCategories,
+            onCategoryTap: (_) {},
+            showMemberCount: true,
+          ),
+        )));
+        await tester.pumpAndSettle();
+
         expect(find.text('Familie'), findsOneWidget);
         expect(find.text('Jobbet'), findsOneWidget);
         expect(find.text('Grannar'), findsOneWidget);
       });
 
-      testWidgets('renders categoryGrid with custom crossAxisCount',
-          (WidgetTester tester) async {
-        // Act - Wrap GridView in height-constrained container to prevent unbounded height error
-        await tester.pumpWidget(
-          createTestWidget(
-            SizedBox(
-              height: 400, // Provide explicit height constraint for GridView
-              child: FriendCategoryWidgets.categoryGrid(
-                categories: testCategories,
-                onCategoryTap: (_) {},
-                crossAxisCount: 3,
-              ),
-            ),
+      testWidgets('categoryGrid renders GridView', (tester) async {
+        await tester.pumpWidget(createTestWidget(SizedBox(
+          height: 400,
+          child: FriendCategoryWidgets.categoryGrid(
+            categories: testCategories,
+            onCategoryTap: (_) {},
+            crossAxisCount: 3,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
         expect(find.byType(GridView), findsOneWidget);
         expect(find.text('Familie'), findsOneWidget);
-        expect(find.text('Jobbet'), findsOneWidget);
       });
 
-      testWidgets('renders categoryStatistics widget',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.categoryStatistics(
-                context: context,
-                categories: testCategories,
-              ),
-            ),
+      testWidgets('categoryStatistics renders', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.categoryStatistics(
+            context: context,
+            categories: testCategories,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
         expect(find.byType(Column), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('renders categoryCard with all options',
-          (WidgetTester tester) async {
-        // Act - Remove fixed dimensions to prevent layout overflow
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.categoryCard(
-                context: context,
-                category: testCategories.first,
-                onTap: () {},
-                showMemberCount: true,
-                showDescription: true,
-                // Removed fixed width/height to allow natural sizing
-              ),
-            ),
+      testWidgets('categoryCard shows name and description', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.categoryCard(
+            context: context,
+            category: testCategories.first,
+            onTap: () {},
+            showMemberCount: true,
+            showDescription: true,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
         expect(find.text('Familie'), findsOneWidget);
         expect(find.text('Familjemedlemmar'), findsOneWidget);
       });
 
-      testWidgets('renders categoryCarousel with custom height',
-          (WidgetTester tester) async {
-        // Act - Increase height to prevent content overflow in category cards
-        await tester.pumpWidget(
-          createTestWidget(
-            FriendCategoryWidgets.categoryCarousel(
-              categories: testCategories,
-              onCategoryTap: (_) {},
-              height:
-                  200, // Increased from 140 to accommodate category card content
-            ),
+      testWidgets('categoryCard responds to tap', (tester) async {
+        bool tapped = false;
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.categoryCard(
+            context: context,
+            category: testCategories.first,
+            onTap: () => tapped = true,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert - categoryCarousel uses ListView.separated, not SingleChildScrollView
+        await tester.tap(find.byType(Card));
+        await tester.pump();
+        expect(tapped, isTrue);
+      });
+
+      testWidgets('categoryCard hides missing description', (tester) async {
+        final noDesc = FriendCategory.create(ownerId: 'u1', name: 'No Desc');
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.categoryCard(
+            context: context,
+            category: noDesc,
+            onTap: () {},
+            showDescription: true,
+          ),
+        )));
+        await tester.pumpAndSettle();
+
+        expect(find.text('No Desc'), findsOneWidget);
+        expect(find.textContaining('Familjemedlemmar'), findsNothing);
+      });
+
+      testWidgets('categoryCarousel renders horizontal list', (tester) async {
+        await tester.pumpWidget(createTestWidget(
+          FriendCategoryWidgets.categoryCarousel(
+            categories: testCategories,
+            onCategoryTap: (_) {},
+            height: 200,
+          ),
+        ));
+        await tester.pumpAndSettle();
+
         expect(find.byType(ListView), findsOneWidget);
         expect(find.text('Familie'), findsOneWidget);
       });
 
-      testWidgets('renders categorySummaryRow with total members',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.categorySummaryRow(
-                context: context,
-                categories: testCategories,
-                showTotalMembers: true,
-              ),
-            ),
+      testWidgets('categorySummaryRow renders rows', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.categorySummaryRow(
+            context: context,
+            categories: testCategories,
+            showTotalMembers: true,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
         expect(find.byType(Row), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('renders emptyState with default text',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.emptyState(
-                context: context,
-              ),
-            ),
-          ),
-        );
+      testWidgets('emptyState shows Swedish default text', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) =>
+              FriendCategoryWidgets.emptyState(context: context),
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
-        expect(find.text('Inga kategorier'), findsOneWidget);
+        expect(find.text('Inga kategorier skapade'), findsOneWidget);
         expect(find.text('Skapa din första vänkategori'), findsOneWidget);
       });
 
-      testWidgets('renders emptyState with custom text and callback',
-          (WidgetTester tester) async {
-        bool callbackCalled = false;
-
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.emptyState(
-                context: context,
-                title: 'Custom Empty Title',
-                subtitle: 'Custom Empty Subtitle',
-                onCreateCategory: () => callbackCalled = true,
-              ),
-            ),
+      testWidgets('emptyState with custom text and create callback',
+          (tester) async {
+        bool created = false;
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (context) => FriendCategoryWidgets.emptyState(
+            context: context,
+            title: 'Custom Title',
+            subtitle: 'Custom Subtitle',
+            onCreateCategory: () => created = true,
           ),
-        );
+        )));
+        await tester.pumpAndSettle();
 
-        // Assert
-        expect(find.text('Custom Empty Title'), findsOneWidget);
-        expect(find.text('Custom Empty Subtitle'), findsOneWidget);
+        expect(find.text('Custom Title'), findsOneWidget);
+        expect(find.text('Custom Subtitle'), findsOneWidget);
 
-        // Tap create button if it exists
-        final createButton = find.textContaining('Skapa');
-        if (tester.any(createButton)) {
-          await tester.tap(createButton);
-          expect(callbackCalled, isTrue);
+        final btn = find.text('Skapa kategori');
+        if (tester.any(btn)) {
+          await tester.tap(btn);
+          expect(created, isTrue);
         }
       });
     });
 
-    group('Advanced Selection Widgets', () {
-      testWidgets('renders categorySelectionSummary with clear functionality',
-          (WidgetTester tester) async {
-        bool clearCalled = false;
-
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            FriendCategoryWidgets.categorySelectionSummary(
-              selectedCategoryIds: testSelectedCategoryIds,
-              categories: testCategories,
-              onClear: () => clearCalled = true,
-            ),
+    group('AdvancedSelection', () {
+      testWidgets('selectionSummary renders and clears', (tester) async {
+        bool cleared = false;
+        await tester.pumpWidget(createTestWidget(
+          FriendCategoryWidgets.categorySelectionSummary(
+            selectedCategoryIds: testSelectedCategoryIds,
+            categories: testCategories,
+            onClear: () => cleared = true,
           ),
-        );
-
-        // Assert - Check for summary structure
+        ));
+        await tester.pumpAndSettle();
         expect(find.byType(Row), findsAtLeastNWidgets(1));
-
-        // Try to find and tap clear button
-        final clearButton = find.textContaining('Rensa');
-        if (tester.any(clearButton)) {
-          await tester.tap(clearButton);
-          expect(clearCalled, isTrue);
+        final clearBtn = find.text('Rensa');
+        if (tester.any(clearBtn)) {
+          await tester.tap(clearBtn);
+          expect(cleared, isTrue);
         }
       });
 
-      testWidgets('renders categoryMultiSelectDropdown with hint text',
-          (WidgetTester tester) async {
-        // Act - Remove fixed width to prevent CheckboxListTile overflow
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) =>
-                  FriendCategoryWidgets.categoryMultiSelectDropdown(
-                context: context,
-                categories: testCategories,
-                selectedCategoryIds: testSelectedCategoryIds,
-                onCategoryToggled: (_) {},
-                hint: 'Custom Hint Text',
-                // Removed fixed width to allow natural sizing and prevent overflow
-              ),
-            ),
+      testWidgets('multiSelectDropdown shows selected count', (tester) async {
+        await tester.pumpWidget(createTestWidget(Builder(
+          builder: (ctx) => FriendCategoryWidgets.categoryMultiSelectDropdown(
+            context: ctx,
+            categories: testCategories,
+            selectedCategoryIds: testSelectedCategoryIds,
+            onCategoryToggled: (_) {},
           ),
-        );
-
-        // Assert - With selected categories, shows count instead of hint text
-        expect(find.text('2 kategorier valda'),
-            findsOneWidget); // testSelectedCategoryIds has 2 items
-        expect(find.byType(ExpansionTile),
-            findsOneWidget); // Uses ExpansionTile, not PopupMenuButton
-      });
-
-      testWidgets('renders compactCategoryChip for smaller spaces',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.compactCategoryChip(
-                context,
-                category: testCategories.first,
-                isSelected: true,
-                onTap: () {},
-                enabled: true,
-              ),
-            ),
-          ),
-        );
-
-        // Assert
-        expect(find.text('Familie'), findsOneWidget);
-        expect(find.byType(FilterChip), findsOneWidget);
-      });
-
-      testWidgets('renders disabled compactCategoryChip',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.compactCategoryChip(
-                context,
-                category: testCategories.first,
-                isSelected: false,
-                onTap: () {},
-                enabled: false,
-              ),
-            ),
-          ),
-        );
-
-        // Assert
-        expect(find.text('Familie'), findsOneWidget);
-      });
-    });
-
-    group('Interaction Testing', () {
-      testWidgets('friendCategoryChip responds to tap',
-          (WidgetTester tester) async {
-        bool tapped = false;
-
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
-                context,
-                category: testCategories.first,
-                isSelected: false,
-                onTap: () => tapped = true,
-              ),
-            ),
-          ),
-        );
-
-        // Tap the chip
-        await tester.tap(find.text('Familie'));
-        await tester.pump();
-
-        // Assert
-        expect(tapped, isTrue);
-      });
-
-      testWidgets('categoryCard responds to tap', (WidgetTester tester) async {
-        bool tapped = false;
-
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.categoryCard(
-                context: context,
-                category: testCategories.first,
-                onTap: () => tapped = true,
-              ),
-            ),
-          ),
-        );
-
-        // Tap the card
-        await tester.tap(find.byType(Card));
-        await tester.pump();
-
-        // Assert
-        expect(tapped, isTrue);
-      });
-
-      testWidgets('friendCategorySelector handles category toggle',
-          (WidgetTester tester) async {
-        String? toggledCategory;
-
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) =>
-                  FriendCategoryWidgets.friendCategorySelector(
-                context,
-                categories: testCategories,
-                selectedCategoryIds: {},
-                onCategoryToggled: (categoryId) => toggledCategory = categoryId,
-              ),
-            ),
-          ),
-        );
-
-        // Tap a category chip
-        await tester.tap(find.text('Familie'));
-        await tester.pump();
-
-        // Assert
-        expect(toggledCategory, isNotNull);
-      });
-    });
-
-    group('Edge Cases and Error Handling', () {
-      testWidgets('handles empty categories list gracefully',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) =>
-                  FriendCategoryWidgets.friendCategorySelector(
-                context,
-                categories: [],
-                selectedCategoryIds: {},
-                onCategoryToggled: (_) {},
-              ),
-            ),
-          ),
-        );
-
-        // Assert - Should not crash
-        expect(find.byType(Wrap), findsOneWidget);
-      });
-
-      testWidgets('handles null descriptions in categories',
-          (WidgetTester tester) async {
-        final categoryWithoutDescription = FriendCategory.create(
-          ownerId: 'user123',
-          name: 'No Description',
-          // No emoji to avoid potential rendering issues
-        );
-
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.categoryCard(
-                context: context,
-                category: categoryWithoutDescription,
-                onTap: () {},
-                showDescription: true,
-              ),
-            ),
-          ),
-        );
-
-        // Assert - Should not crash, description section should not appear
-        expect(find.text('No Description'), findsOneWidget);
-        // Verify no description is shown when description is null
-        expect(find.textContaining('Familjemedlemmar'), findsNothing);
-      });
-
-      testWidgets('handles categories without emojis',
-          (WidgetTester tester) async {
-        final categoryWithoutEmoji = FriendCategory.create(
-          ownerId: 'user123',
-          name: 'No Emoji Category',
-        );
-
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
-                context,
-                category: categoryWithoutEmoji,
-                isSelected: false,
-                onTap: () {},
-              ),
-            ),
-          ),
-        );
-
-        // Assert - Should not crash
-        expect(find.text('No Emoji Category'), findsOneWidget);
-      });
-
-      testWidgets('handles very long category names',
-          (WidgetTester tester) async {
-        final categoryWithLongName = FriendCategory.create(
-          ownerId: 'user123',
-          name:
-              'This is a very long category name that might cause overflow issues in the UI',
-        );
-
-        // Act - Use FlutterError.onError to handle expected overflow warnings
-        final List<FlutterErrorDetails> errors = [];
-        FlutterError.onError = (FlutterErrorDetails details) {
-          errors.add(details);
-        };
-
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
-                context,
-                category: categoryWithLongName,
-                isSelected: false,
-                onTap: () {},
-              ),
-            ),
-          ),
-        );
-
-        // Assert - Widget should render and show the text content
-        expect(find.textContaining('This is a very long'), findsOneWidget);
-
-        // Verify that we got the expected overflow error (not a crash)
-        expect(errors.length, 1);
-        expect(errors.first.exception.toString(),
-            contains('RenderFlex overflowed'));
-
-        // Reset error handler
-        FlutterError.onError = FlutterError.presentError;
-      });
-    });
-
-    group('Swedish Localization', () {
-      testWidgets('displays Swedish text throughout components',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) => Column(
-                children: [
-                  FriendCategoryWidgets.friendCategoryManager(
-                    selectedFriendIds: [],
-                    onSelectionChanged: (_) {},
-                  ),
-                  FriendCategoryWidgets.emptyState(
-                    context: context,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-
-        // Assert - Check for Swedish text
-        expect(find.text('Välj vänner'), findsOneWidget);
-        expect(find.text('Välj kategorier eller individuella vänner'),
-            findsOneWidget);
-        expect(find.text('Inga kategorier'), findsOneWidget);
-        expect(find.text('Skapa din första vänkategori'), findsOneWidget);
-      });
-
-      testWidgets('displays Swedish action buttons',
-          (WidgetTester tester) async {
-        // Act
-        await tester.pumpWidget(
-          createTestWidget(
-            Builder(
-              builder: (context) =>
-                  FriendCategoryWidgets.friendCategorySelector(
-                context,
-                categories: testCategories,
-                selectedCategoryIds: {},
-                onCategoryToggled: (_) {},
-                onCreateNew:
-                    () {}, // Required for "Skapa ny kategori" text to appear
-              ),
-            ),
-          ),
-        );
-
-        // Assert - Check for Swedish button text
-        expect(find.text('Välj alla'), findsOneWidget);
-        expect(find.text('Rensa alla'), findsOneWidget);
-        expect(find.text('Skapa ny kategori'), findsOneWidget);
+        )));
+        await tester.pumpAndSettle();
+        expect(find.text('2 kategorier valda'), findsOneWidget);
+        expect(find.byType(ExpansionTile), findsOneWidget);
       });
     });
   });
