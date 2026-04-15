@@ -1,465 +1,279 @@
+// test/widget/common/input/portion_scaler_orchestration_test.dart
+// Tests for PortionScaler widget — construction, scaling, animation, edge cases.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 
+import '../../../infrastructure/helpers/widget_test_app.dart';
+
 void main() {
-  group('PortionScaler Orchestration Widget Tests', () {
-    // Swedish test data - ultrathink realistic patterns
-    final testIngredients = [
-      '2 dl mjölk',
-      '4 ägg',
-      '3 dl mjöl',
-      '1 tsk salt',
-    ];
+  final testIngredients = ['2 dl mjölk', '4 ägg', '3 dl mjöl', '1 tsk salt'];
+  final americanIngredients = [
+    '1 cup milk',
+    '4 eggs',
+    '2 cups flour',
+    '1 tsp salt',
+  ];
 
-    final americanIngredients = [
-      '1 cup milk',
-      '4 eggs',
-      '2 cups flour',
-      '1 tsp salt',
-    ];
+  Widget buildScaler({
+    int originalPortions = 4,
+    List<String>? ingredients,
+    int minPortions = 1,
+    int maxPortions = 20,
+    Function(int, List<String>)? onPortionChanged,
+  }) {
+    return createLocalizedTestApp(
+      child: PortionScaler(
+        originalPortions: originalPortions,
+        originalIngredients: ingredients ?? testIngredients,
+        onPortionChanged: onPortionChanged ?? (_, __) {},
+        minPortions: minPortions,
+        maxPortions: maxPortions,
+      ),
+    );
+  }
 
-    group('Widget Construction and Initialization', () {
-      testWidgets('creates widget with required parameters successfully',
-          (WidgetTester tester) async {
-        bool callbackTriggered = false;
+  // Helper to find the add/remove buttons inside InkWell controls
+  Finder findControlIcon(IconData icon) => find.byIcon(icon);
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {
-                  callbackTriggered = true;
-                },
-              ),
-            ),
-          ),
-        );
+  group('Construction and Initialization', () {
+    testWidgets('creates widget successfully', (tester) async {
+      bool called = false;
 
-        // Widget should be created successfully
-        expect(find.byType(PortionScaler), findsOneWidget);
-        expect(callbackTriggered, isFalse); // No callback on initial creation
-      });
+      await tester.pumpWidget(buildScaler(
+        onPortionChanged: (_, __) => called = true,
+      ));
+      await tester.pumpAndSettle();
 
-      testWidgets('initializes with custom min and max portions',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 6,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {},
-                minPortions: 2,
-                maxPortions: 12,
-              ),
-            ),
-          ),
-        );
-
-        // Widget should accept custom bounds
-        expect(find.byType(PortionScaler), findsOneWidget);
-      });
-
-      testWidgets('detects American units on initialization',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: americanIngredients,
-                onPortionChanged: (portions, ingredients) {},
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // Should detect American units and show conversion toggle
-        expect(find.text('Konvertera amerikanska enheter'), findsOneWidget);
-      });
-
-      testWidgets('does not show conversion toggle for Swedish ingredients',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {},
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // Should not show conversion toggle for Swedish ingredients
-        expect(find.text('Konvertera amerikanska enheter'), findsNothing);
-      });
+      expect(find.byType(PortionScaler), findsOneWidget);
+      expect(called, isFalse);
     });
 
-    group('State Management and Updates', () {
-      testWidgets('updates portions and triggers callback',
-          (WidgetTester tester) async {
-        bool callbackTriggered = false;
-        int finalPortions = 0;
-        List<String> finalIngredients = [];
+    testWidgets('accepts custom min and max portions', (tester) async {
+      await tester.pumpWidget(buildScaler(
+        originalPortions: 6,
+        minPortions: 2,
+        maxPortions: 12,
+      ));
+      await tester.pumpAndSettle();
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {
-                  callbackTriggered = true;
-                  finalPortions = portions;
-                  finalIngredients = ingredients;
-                },
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // Increase portions
-        await tester.tap(find.byIcon(Icons.add));
-        await tester.pumpAndSettle();
-
-        // Verify callback was triggered with correct values
-        expect(callbackTriggered, isTrue);
-        expect(finalPortions, equals(5));
-        expect(finalIngredients.length, equals(testIngredients.length));
-      });
-
-      testWidgets('respects minimum portion bounds',
-          (WidgetTester tester) async {
-        int callbackCount = 0;
-        int lastCallbackPortions = 0;
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 1, // Start at minimum
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {
-                  callbackCount++;
-                  lastCallbackPortions = portions;
-                },
-                minPortions: 1,
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // Try to decrease below minimum
-        await tester.tap(find.byIcon(Icons.remove));
-        await tester.pumpAndSettle();
-
-        // Should not trigger callback (no change)
-        expect(callbackCount, equals(0));
-        expect(lastCallbackPortions, equals(0)); // No callback triggered
-      });
-
-      testWidgets('respects maximum portion bounds',
-          (WidgetTester tester) async {
-        int callbackCount = 0;
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 5, // Start at maximum
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {
-                  callbackCount++;
-                },
-                maxPortions: 5,
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // Try to increase above maximum
-        await tester.tap(find.byIcon(Icons.add));
-        await tester.pumpAndSettle();
-
-        // Should not trigger callback (no change)
-        expect(callbackCount, equals(0));
-      });
-
-      testWidgets('handles unit conversion toggle',
-          (WidgetTester tester) async {
-        bool callbackTriggered = false;
-        List<String> finalIngredients = [];
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: americanIngredients,
-                onPortionChanged: (portions, ingredients) {
-                  callbackTriggered = true;
-                  finalIngredients = ingredients;
-                },
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // Toggle unit conversion
-        await tester.tap(find.text('Konvertera amerikanska enheter'));
-        await tester.pumpAndSettle();
-
-        // Verify conversion was triggered
-        expect(callbackTriggered, isTrue);
-        expect(finalIngredients.length, equals(americanIngredients.length));
-      });
+      expect(find.byType(PortionScaler), findsOneWidget);
     });
 
-    group('Animation Controller Management', () {
-      testWidgets('manages animation controller lifecycle correctly',
-          (WidgetTester tester) async {
-        // Test that widget can be created and disposed without errors
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {},
-              ),
-            ),
-          ),
-        );
+    testWidgets('shows conversion toggle for American ingredients',
+        (tester) async {
+      await tester.pumpWidget(buildScaler(
+        ingredients: americanIngredients,
+      ));
+      await tester.pumpAndSettle();
 
-        await tester.pumpAndSettle();
-
-        // Widget should be present
-        expect(find.byType(PortionScaler), findsOneWidget);
-
-        // Dispose the widget by removing it
-        await tester.pumpWidget(const MaterialApp(home: Scaffold()));
-
-        // Should not crash during disposal
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('triggers animation on portion changes',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {},
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // Change portions to trigger animation
-        await tester.tap(find.byIcon(Icons.add));
-
-        // Let animation start
-        await tester.pump(const Duration(milliseconds: 50));
-
-        // Animation should be running (widget still present)
-        expect(find.byType(PortionScaler), findsOneWidget);
-
-        // Wait for animation to complete
-        await tester.pumpAndSettle();
-
-        // Widget should still be present after animation
-        expect(find.byType(PortionScaler), findsOneWidget);
-      });
+      // l10n sv: 'Konvertera amerikanska enheter'
+      expect(find.text('Konvertera amerikanska enheter'), findsOneWidget);
     });
 
-    group('Integration with Logic Components', () {
-      testWidgets('integrates with PortionScalerLogic for scaling',
-          (WidgetTester tester) async {
-        List<String> scaledIngredients = [];
+    testWidgets('hides conversion toggle for Swedish ingredients',
+        (tester) async {
+      await tester.pumpWidget(buildScaler());
+      await tester.pumpAndSettle();
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {
-                  scaledIngredients = ingredients;
-                },
-              ),
-            ),
-          ),
-        );
+      expect(find.text('Konvertera amerikanska enheter'), findsNothing);
+    });
+  });
 
-        await tester.pumpAndSettle();
+  group('State Management', () {
+    testWidgets('increase button triggers callback with portions+1',
+        (tester) async {
+      int finalPortions = 0;
+      List<String> finalIngredients = [];
 
-        // Double the portions
-        await tester.tap(find.byIcon(Icons.add));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(buildScaler(
+        onPortionChanged: (p, i) {
+          finalPortions = p;
+          finalIngredients = i;
+        },
+      ));
+      await tester.pumpAndSettle();
 
-        // Verify ingredients were processed by logic component
-        expect(scaledIngredients.length, equals(testIngredients.length));
-        expect(scaledIngredients,
-            isNot(equals(testIngredients))); // Should be different (scaled)
-      });
+      await tester.tap(findControlIcon(Icons.add));
+      await tester.pumpAndSettle();
 
-      testWidgets('passes correct parameters to UI component',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 6,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {},
-                minPortions: 2,
-                maxPortions: 15,
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // UI should show the correct initial portions
-        expect(find.text('6'), findsOneWidget);
-        expect(find.text('Portioner'), findsOneWidget);
-
-        // Controls should be present
-        expect(find.byIcon(Icons.add), findsOneWidget);
-        expect(find.byIcon(Icons.remove), findsOneWidget);
-      });
+      expect(finalPortions, equals(5));
+      expect(finalIngredients.length, equals(testIngredients.length));
     });
 
-    group('Error Handling and Edge Cases', () {
-      testWidgets('handles empty ingredients list gracefully',
-          (WidgetTester tester) async {
-        bool callbackTriggered = false;
+    testWidgets('does not go below minPortions', (tester) async {
+      int callbackCount = 0;
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: const [],
-                onPortionChanged: (portions, ingredients) {
-                  callbackTriggered = true;
-                },
-              ),
-            ),
-          ),
-        );
+      await tester.pumpWidget(buildScaler(
+        originalPortions: 1,
+        minPortions: 1,
+        onPortionChanged: (_, __) => callbackCount++,
+      ));
+      await tester.pumpAndSettle();
 
-        await tester.pumpAndSettle();
+      await tester.tap(findControlIcon(Icons.remove));
+      await tester.pumpAndSettle();
 
-        // Should not crash with empty ingredients
-        expect(find.byType(PortionScaler), findsOneWidget);
+      expect(callbackCount, equals(0));
+    });
 
-        // Should still allow portion changes
-        await tester.tap(find.byIcon(Icons.add));
-        await tester.pumpAndSettle();
+    testWidgets('does not go above maxPortions', (tester) async {
+      int callbackCount = 0;
 
-        expect(callbackTriggered, isTrue);
-      });
+      await tester.pumpWidget(buildScaler(
+        originalPortions: 5,
+        maxPortions: 5,
+        onPortionChanged: (_, __) => callbackCount++,
+      ));
+      await tester.pumpAndSettle();
 
-      testWidgets('handles rapid interactions without crashing',
-          (WidgetTester tester) async {
-        int callbackCount = 0;
+      await tester.tap(findControlIcon(Icons.add));
+      await tester.pumpAndSettle();
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 10,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {
-                  callbackCount++;
-                },
-                minPortions: 5,
-                maxPortions: 15,
-              ),
-            ),
-          ),
-        );
+      expect(callbackCount, equals(0));
+    });
 
-        await tester.pumpAndSettle();
+    testWidgets('unit conversion toggle triggers callback', (tester) async {
+      bool called = false;
+      List<String> finalIngredients = [];
 
-        // Rapidly tap buttons
-        for (int i = 0; i < 3; i++) {
-          await tester.tap(find.byIcon(Icons.add));
-          await tester.pump(const Duration(milliseconds: 10));
-        }
+      await tester.pumpWidget(buildScaler(
+        ingredients: americanIngredients,
+        onPortionChanged: (_, i) {
+          called = true;
+          finalIngredients = i;
+        },
+      ));
+      await tester.pumpAndSettle();
 
-        for (int i = 0; i < 5; i++) {
-          await tester.tap(find.byIcon(Icons.remove));
-          await tester.pump(const Duration(milliseconds: 10));
-        }
+      await tester.tap(find.text('Konvertera amerikanska enheter'));
+      await tester.pumpAndSettle();
 
-        await tester.pumpAndSettle();
+      expect(called, isTrue);
+      expect(finalIngredients.length, equals(americanIngredients.length));
+    });
+  });
 
-        // Should handle rapid interactions
-        expect(callbackCount, greaterThan(0));
-        expect(find.byType(PortionScaler), findsOneWidget);
-      });
+  group('Animation Controller', () {
+    testWidgets('disposes cleanly when widget removed', (tester) async {
+      await tester.pumpWidget(buildScaler());
+      await tester.pumpAndSettle();
 
-      testWidgets('maintains state consistency during updates',
-          (WidgetTester tester) async {
-        int lastCallbackPortions = 0;
-        List<String> lastCallbackIngredients = [];
+      expect(find.byType(PortionScaler), findsOneWidget);
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: PortionScaler(
-                originalPortions: 4,
-                originalIngredients: testIngredients,
-                onPortionChanged: (portions, ingredients) {
-                  lastCallbackPortions = portions;
-                  lastCallbackIngredients = List.from(ingredients);
-                },
-              ),
-            ),
-          ),
-        );
+      // Remove widget
+      await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+      expect(tester.takeException(), isNull);
+    });
 
-        await tester.pumpAndSettle();
+    testWidgets('animation runs on portion change', (tester) async {
+      await tester.pumpWidget(buildScaler());
+      await tester.pumpAndSettle();
 
-        // Make a series of changes
-        await tester.tap(find.byIcon(Icons.add)); // 5
-        await tester.pumpAndSettle();
+      await tester.tap(findControlIcon(Icons.add));
+      await tester.pump(const Duration(milliseconds: 50));
 
-        await tester.tap(find.byIcon(Icons.add)); // 6
-        await tester.pumpAndSettle();
+      // Widget should still be present mid-animation
+      expect(find.byType(PortionScaler), findsOneWidget);
+      await tester.pumpAndSettle();
+    });
+  });
 
-        await tester.tap(find.byIcon(Icons.remove)); // 5
-        await tester.pumpAndSettle();
+  group('Integration with Logic', () {
+    testWidgets('scaled ingredients differ from original after change',
+        (tester) async {
+      List<String> scaled = [];
 
-        // Final state should be consistent
-        expect(lastCallbackPortions, equals(5));
-        expect(lastCallbackIngredients.length, equals(testIngredients.length));
-        expect(find.text('5'), findsOneWidget);
-      });
+      await tester.pumpWidget(buildScaler(
+        onPortionChanged: (_, i) => scaled = i,
+      ));
+      await tester.pumpAndSettle();
+
+      // Increase portions: 4 -> 5
+      await tester.tap(findControlIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      expect(scaled.length, equals(testIngredients.length));
+      expect(scaled, isNot(equals(testIngredients)));
+    });
+
+    testWidgets('displays correct initial portion count', (tester) async {
+      await tester.pumpWidget(buildScaler(originalPortions: 6));
+      await tester.pumpAndSettle();
+
+      expect(find.text('6'), findsOneWidget);
+      // l10n sv: 'Portioner:'
+      expect(find.text('Portioner:'), findsOneWidget);
+    });
+  });
+
+  group('Edge Cases', () {
+    testWidgets('handles empty ingredients list', (tester) async {
+      bool called = false;
+
+      await tester.pumpWidget(buildScaler(
+        ingredients: const [],
+        onPortionChanged: (_, __) => called = true,
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PortionScaler), findsOneWidget);
+
+      await tester.tap(findControlIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      expect(called, isTrue);
+    });
+
+    testWidgets('handles rapid taps', (tester) async {
+      int callbackCount = 0;
+
+      await tester.pumpWidget(buildScaler(
+        originalPortions: 10,
+        minPortions: 5,
+        maxPortions: 15,
+        onPortionChanged: (_, __) => callbackCount++,
+      ));
+      await tester.pumpAndSettle();
+
+      for (int i = 0; i < 3; i++) {
+        await tester.tap(findControlIcon(Icons.add));
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      for (int i = 0; i < 5; i++) {
+        await tester.tap(findControlIcon(Icons.remove));
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      await tester.pumpAndSettle();
+
+      expect(callbackCount, greaterThan(0));
+      expect(find.byType(PortionScaler), findsOneWidget);
+    });
+
+    testWidgets('maintains consistent state across up-down sequence',
+        (tester) async {
+      int lastPortions = 0;
+      List<String> lastIngredients = [];
+
+      await tester.pumpWidget(buildScaler(
+        onPortionChanged: (p, i) {
+          lastPortions = p;
+          lastIngredients = List.from(i);
+        },
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(findControlIcon(Icons.add)); // 5
+      await tester.pumpAndSettle();
+      await tester.tap(findControlIcon(Icons.add)); // 6
+      await tester.pumpAndSettle();
+      await tester.tap(findControlIcon(Icons.remove)); // 5
+      await tester.pumpAndSettle();
+
+      expect(lastPortions, equals(5));
+      expect(lastIngredients.length, equals(testIngredients.length));
+      expect(find.text('5'), findsOneWidget);
     });
   });
 }
