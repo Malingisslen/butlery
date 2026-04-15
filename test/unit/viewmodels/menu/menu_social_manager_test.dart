@@ -511,7 +511,7 @@ void main() {
         ),
         throwsA(predicate((e) =>
             e is ArgumentError &&
-            e.toString().contains('Ange ett namn för menyn'))),
+            e.toString().contains('Fyll i alla obligatoriska fält'))),
       );
     });
 
@@ -527,7 +527,7 @@ void main() {
         ),
         throwsA(predicate((e) =>
             e is ArgumentError &&
-            e.toString().contains('Ange ett namn för menyn'))),
+            e.toString().contains('Fyll i alla obligatoriska fält'))),
       );
     });
 

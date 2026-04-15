@@ -1,6 +1,7 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
@@ -25,6 +26,8 @@ void main() {
     late MockSearchService mockSearchService;
 
     setUpAll(() async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
       registerFallbackValue(SortCriteria.title);
@@ -693,8 +696,7 @@ void main() {
 
     group('Recipe Operations', () {
       test('should delete recipe optimistically', () {
-        // Arrange
-        when(() => mockRecipeService.getRecipeById(any())).thenReturn(null);
+        // Arrange — mock has empty recipes list, so getRecipeById returns null
 
         // Act
         viewModel.deleteRecipe('recipe-123');

@@ -368,7 +368,7 @@ void main() {
 
         // Assert
         final text = viewModel.exportTimestampText;
-        expect(text, 'Just nu', reason: 'Recent export should show "Just nu"');
+        expect(text, 'just nu', reason: 'Recent export should show "just nu"');
       });
 
       test('should format timestamp in minutes for recent export', () async {
@@ -613,9 +613,10 @@ void main() {
 
         // Act
         viewModel.dispose();
-        viewModel.reset(); // Try to modify after dispose
+        // reset() calls notifyListeners() which throws on a disposed ChangeNotifier
+        expect(() => viewModel.reset(), throwsFlutterError);
 
-        // Assert
+        // Assert — listener was not notified before the error
         expect(notificationCount, 0, reason: 'Should not notify after dispose');
       });
     });

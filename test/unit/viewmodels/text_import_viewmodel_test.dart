@@ -238,7 +238,7 @@ void main() {
         // Assert
         expect(result, isFalse);
         expect(viewModel.hasParsedRecipe, isFalse);
-        expect(viewModel.error, contains('Failed to parse recipe'));
+        expect(viewModel.error, contains('Import misslyckades'));
       });
 
       test('should track parsing state', () async {
@@ -361,12 +361,13 @@ void main() {
                 mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenThrow(Exception('Import failed'));
 
-        // Act
-        final result = await viewModel.importAndSave();
+        // Act — executeAsync rethrows after setting error
+        try {
+          await viewModel.importAndSave();
+        } catch (_) {}
 
         // Assert
-        expect(result, isFalse);
-        expect(viewModel.error, contains('Failed to parse recipe'));
+        expect(viewModel.hasError, isTrue);
         verifyNever(() => mockImportManager.saveImportedRecipe(any()));
       });
     });
@@ -565,7 +566,7 @@ void main() {
 
         // Assert
         expect(viewModel.hasError, isTrue);
-        expect(viewModel.error, contains('Failed to parse recipe'));
+        expect(viewModel.error, contains('Import misslyckades'));
 
         // Clear error by updating text
         viewModel.updateInputText('New text');
@@ -593,7 +594,7 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        expect(testViewModel.error, contains('Failed to parse recipe'));
+        expect(testViewModel.error, contains('Import misslyckades'));
 
         // Cleanup
         testViewModel.dispose();

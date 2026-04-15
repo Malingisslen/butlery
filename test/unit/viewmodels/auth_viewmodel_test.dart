@@ -357,7 +357,8 @@ void main() {
           displayName: 'Test User',
         );
         expect(result, isFalse);
-        expect(viewModel.errorMessage, equals('E-post kan inte vara tom'));
+        expect(
+            viewModel.errorMessage, equals('Fyll i alla obligatoriska fält'));
 
         // Act & Assert - empty password
         result = await viewModel.register(
@@ -451,7 +452,8 @@ void main() {
 
         // Assert - Should fail validation due to spaces (production behavior)
         expect(result, isFalse);
-        expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
+        expect(viewModel.errorMessage,
+            equals('Fyll i alla obligatoriska fält korrekt'));
       });
 
       test('should handle service failure during registration', () async {
@@ -509,9 +511,11 @@ void main() {
           expect(result, isFalse, reason: 'Should reject email: $email');
           // Verify appropriate error message based on email
           if (email.isEmpty) {
-            expect(viewModel.errorMessage, equals('E-post kan inte vara tom'));
+            expect(viewModel.errorMessage,
+                equals('Fyll i alla obligatoriska fält'));
           } else {
-            expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
+            expect(viewModel.errorMessage,
+                equals('Fyll i alla obligatoriska fält korrekt'));
           }
         }
       });
@@ -526,7 +530,8 @@ void main() {
 
         // Assert - Should fail validation due to spaces (production behavior)
         expect(result, isFalse);
-        expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
+        expect(viewModel.errorMessage,
+            equals('Fyll i alla obligatoriska fält korrekt'));
       });
 
       test('should handle service failure during password reset', () async {
@@ -798,7 +803,8 @@ void main() {
           );
           expect(result, isFalse,
               reason: 'Should reject email with non-ASCII domain: $email');
-          expect(viewModel.errorMessage, equals('Ogiltig e-postadress'));
+          expect(viewModel.errorMessage,
+              equals('Fyll i alla obligatoriska fält korrekt'));
         }
       });
     });

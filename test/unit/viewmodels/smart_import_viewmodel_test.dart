@@ -30,6 +30,9 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform,
             (MethodCall methodCall) async {
+      if (methodCall.method == 'Clipboard.hasStrings') {
+        return <String, dynamic>{'value': text != null && text.isNotEmpty};
+      }
       if (methodCall.method == 'Clipboard.getData') {
         if (text == null) return null;
         return <String, dynamic>{'text': text};
@@ -42,6 +45,9 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform,
             (MethodCall methodCall) async {
+      if (methodCall.method == 'Clipboard.hasStrings') {
+        return <String, dynamic>{'value': true};
+      }
       if (methodCall.method == 'Clipboard.getData') {
         throw PlatformException(
             code: 'ERROR', message: 'Clipboard unavailable');

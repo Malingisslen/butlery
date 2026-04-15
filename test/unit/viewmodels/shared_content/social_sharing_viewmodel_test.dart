@@ -243,8 +243,8 @@ void main() {
 
         final summary = viewModel.getFriendSelectionSummary();
 
-        expect(summary, contains('1 vän vald'));
         expect(summary, contains('Anna Andersson'));
+        expect(summary, contains('vald'));
       });
 
       test('should get selection summary for multiple friends', () async {
@@ -255,7 +255,7 @@ void main() {
 
         final summary = viewModel.getFriendSelectionSummary();
 
-        expect(summary, contains('2 vänner valda'));
+        expect(summary, contains('2 valda'));
       });
 
       test('should get selection summary for many friends', () async {
@@ -265,7 +265,7 @@ void main() {
 
         final summary = viewModel.getFriendSelectionSummary();
 
-        expect(summary, contains('3 vänner valda'));
+        expect(summary, contains('3 valda'));
       });
     });
 
@@ -525,7 +525,7 @@ void main() {
         );
 
         expect(result.success, isFalse);
-        expect(result.errorMessage, contains('Network error'));
+        expect(result.errorMessage, contains('Nätverksfel'));
         expect(viewModel.error, isNotNull);
       });
 

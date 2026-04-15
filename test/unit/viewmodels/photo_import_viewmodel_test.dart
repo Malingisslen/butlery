@@ -562,8 +562,7 @@ void main() {
         // Assert
         expect(viewModel.hasParsedRecipe, isFalse);
         expect(viewModel.hasError, isTrue);
-        expect(
-            viewModel.error, equals('Ingen OCR-text tillgänglig för import'));
+        expect(viewModel.error, equals('Vänligen ange text att tolka'));
       });
     });
 
@@ -661,7 +660,7 @@ void main() {
 
         // Assert
         expect(saved, isFalse);
-        expect(viewModel.error, equals('No recipe to save'));
+        expect(viewModel.error, equals('Inget recept att spara'));
         verifyNever(() => mockImportManager.saveImportedRecipe(any()));
       });
 
@@ -688,7 +687,7 @@ void main() {
 
         // Assert
         expect(saved, isFalse);
-        expect(viewModel.error, contains('Failed to save'));
+        expect(viewModel.error, equals('Ett oväntat fel uppstod'));
       });
     });
 

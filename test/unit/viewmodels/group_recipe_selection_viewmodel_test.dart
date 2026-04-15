@@ -643,7 +643,7 @@ void main() {
         // Assert
         expect(result, false);
         expect(viewModel.error, isNotNull);
-        expect(viewModel.error, contains('Kunde inte dela recept'));
+        expect(viewModel.error, contains('Vissa delningar misslyckades'));
         expect(viewModel.isSharing, false);
       });
 
@@ -664,7 +664,7 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(viewModel.error, contains('Kunde inte dela recept'));
+        expect(viewModel.error, contains('Vissa delningar misslyckades'));
       });
 
       test('should set loading state during share', () async {

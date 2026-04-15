@@ -1026,7 +1026,10 @@ class MockUnifiedRecipeService extends Mock
     return _recipes.where((r) => r.id == id).firstOrNull;
   }
 
-  // clearError left to Mock — tests can stub/verify via mocktail
+  @override
+  void clearError() {
+    _error = null;
+  }
 
   /// Emit a state event on the mock's stateStream for test verification
   void emitState(RecipeServiceState state) {
