@@ -267,17 +267,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   /// Get active quick filter IDs from ViewModel state.
   Set<String> _getQuickFilterIds(RecipeListViewModel viewModel) {
     final ids = <String>{};
-    if (viewModel.activeTimeFilters.contains('quick')) {
-      ids.add('quick');
+    if (viewModel.activeTimeFilters.contains(RecipeFilters.filterQuick)) {
+      ids.add(RecipeFilters.filterQuick);
     }
-    if (viewModel.activeDietaryFilters.contains('vegetarian')) {
-      ids.add('vegetarian');
+    if (viewModel.activeDietaryFilters
+        .contains(RecipeFilters.filterVegetarian)) {
+      ids.add(RecipeFilters.filterVegetarian);
     }
     if (viewModel.favoritesOnly) {
-      ids.add('favorites');
+      ids.add(RecipeFilters.filterFavorites);
     }
     if (viewModel.pantryOnly) {
-      ids.add('pantry');
+      ids.add(RecipeFilters.filterPantry);
     }
     // Allergen quick-filter chips
     ids.addAll(viewModel.activeAllergenFilters);
@@ -291,19 +292,19 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       return;
     }
     switch (filterId) {
-      case 'quick':
-        viewModel.toggleTimeFilter('quick');
+      case RecipeFilters.filterQuick:
+        viewModel.toggleTimeFilter(RecipeFilters.filterQuick);
         break;
-      case 'vegetarian':
-        viewModel.toggleDietaryFilter('vegetarian');
+      case RecipeFilters.filterVegetarian:
+        viewModel.toggleDietaryFilter(RecipeFilters.filterVegetarian);
         break;
-      case 'favorites':
+      case RecipeFilters.filterFavorites:
         viewModel.toggleFavoritesFilter();
         break;
-      case 'pantry':
+      case RecipeFilters.filterPantry:
         viewModel.togglePantryFilter();
         break;
-      case 'ingredient-search':
+      case RecipeFilters.filterIngredientSearch:
         Navigator.pushNamed(context, Routes.ingredientSearch);
         return;
     }

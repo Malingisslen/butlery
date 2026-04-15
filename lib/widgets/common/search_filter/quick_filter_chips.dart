@@ -61,24 +61,24 @@ class QuickFilterChips extends StatelessWidget {
           BuildContext context) =>
       [
         QuickFilterOption(
-          id: 'favorites',
+          id: RecipeFilters.filterFavorites,
           label: context.l10n.filterFavorites,
         ),
         QuickFilterOption(
-          id: 'quick',
+          id: RecipeFilters.filterQuick,
           label: context.l10n.filterUnder30Min,
         ),
         QuickFilterOption(
-          id: 'vegetarian',
+          id: RecipeFilters.filterVegetarian,
           label: context.l10n.filterVegetarianQuick,
         ),
         QuickFilterOption(
-          id: 'pantry',
+          id: RecipeFilters.filterPantry,
           label: context.l10n.filterWithMyIngredients,
           icon: Icons.kitchen_outlined,
         ),
         QuickFilterOption(
-          id: 'ingredient-search',
+          id: RecipeFilters.filterIngredientSearch,
           label: context.l10n.ingredientSearchChip,
           icon: Icons.search_outlined,
         ),

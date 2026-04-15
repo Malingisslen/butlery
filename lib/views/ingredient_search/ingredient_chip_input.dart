@@ -1,5 +1,4 @@
 /// Autocomplete text input with removable ingredient chips.
-/// Reuses the suggestion list pattern from add_pantry_item_sheet.
 library;
 
 import 'package:flutter/material.dart';
@@ -8,6 +7,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 
 class IngredientChipInput extends StatefulWidget {
   const IngredientChipInput({
@@ -55,7 +55,6 @@ class _IngredientChipInputState extends State<IngredientChipInput> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
 
     return Column(
@@ -78,33 +77,9 @@ class _IngredientChipInputState extends State<IngredientChipInput> {
 
         // Autocomplete suggestions
         if (_showSuggestions && widget.autocompleteResults.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: AppDimensions.spacingXs),
-            constraints: const BoxConstraints(maxHeight: 180),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              border: Border.all(color: cs.outlineVariant),
-            ),
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: widget.autocompleteResults.length,
-              itemBuilder: (context, index) {
-                final ingredient = widget.autocompleteResults[index];
-                return InkWell(
-                  onTap: () => _onSuggestionTap(ingredient),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingMd,
-                      vertical: AppDimensions.spacingSm,
-                    ),
-                    child: Text(
-                      ingredient.swedish,
-                      style: AppTextStyles.bodyMedium,
-                    ),
-                  ),
-                );
-              },
-            ),
+          IngredientSuggestionList(
+            results: widget.autocompleteResults,
+            onTap: _onSuggestionTap,
           ),
 
         // Selected ingredient chips

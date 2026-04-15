@@ -20,6 +20,13 @@ class FilterOption {
 
 /// Predefined recipe filters
 class RecipeFilters {
+  // Quick filter chip IDs — used by QuickFilterChips and mina_recept_view
+  static const String filterFavorites = 'favorites';
+  static const String filterQuick = 'quick';
+  static const String filterVegetarian = 'vegetarian';
+  static const String filterPantry = 'pantry';
+  static const String filterIngredientSearch = 'ingredient-search';
+
   static const List<FilterOption> timeFilters = [
     FilterOption(
       id: 'quick',

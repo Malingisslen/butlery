@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -188,7 +189,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               ),
             ),
             if (_showSuggestions && viewModel.searchResults.isNotEmpty)
-              _SuggestionList(
+              IngredientSuggestionList(
                 results: viewModel.searchResults,
                 onTap: _onSuggestionTap,
               ),
@@ -308,46 +309,6 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SuggestionList extends StatelessWidget {
-  const _SuggestionList({required this.results, required this.onTap});
-
-  final List<IngredientData> results;
-  final void Function(IngredientData) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(top: AppDimensions.spacingXs),
-      constraints: const BoxConstraints(maxHeight: 180),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: results.length,
-        itemBuilder: (context, index) {
-          final ingredient = results[index];
-          return InkWell(
-            onTap: () => onTap(ingredient),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm,
-              ),
-              child: Text(
-                ingredient.swedish,
-                style: AppTextStyles.bodyMedium,
-              ),
-            ),
-          );
-        },
       ),
     );
   }
