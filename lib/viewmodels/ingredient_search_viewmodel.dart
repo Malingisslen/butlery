@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/ingredient_match_service.dart';
@@ -104,16 +105,49 @@ class IngredientSearchViewModel extends BaseViewModel {
   /// Returns display name for an ingredient ID, or the ID as fallback.
   String ingredientName(String id) => _resolvedNames[id] ?? id;
 
+  // -- Collaborative recipe cache --
+
+  List<Recipe>? _cachedCollaborativeRecipes;
+
+  /// Merges personal + collaborative recipes, deduplicating by ID.
+  /// On collaborative fetch failure, returns personal-only (next search retries).
+  Future<List<Recipe>> _getAllSearchableRecipes() async {
+    final personal = _recipeService.recipes;
+    final personalIds = personal.map((r) => r.id).toSet();
+
+    if (_cachedCollaborativeRecipes == null) {
+      try {
+        _cachedCollaborativeRecipes =
+            await _recipeService.social.getCollaborativeRecipes();
+      } catch (_) {
+        // Transient failure — return personal-only, next search retries
+        return personal;
+      }
+    }
+
+    final collaborative = _cachedCollaborativeRecipes!
+        .where((r) => !personalIds.contains(r.id))
+        .toList();
+
+    return [...personal, ...collaborative];
+  }
+
+  /// Force re-fetch collaborative recipes on next search.
+  void refreshCollaborative() {
+    _cachedCollaborativeRecipes = null;
+  }
+
   Future<void> performSearch() async {
     if (_selectedIngredients.isEmpty) return;
 
     await executeAsyncVoid(
       () async {
         final selectedIds = _selectedIngredients.map((i) => i.id).toSet();
+        final allRecipes = await _getAllSearchableRecipes();
 
         _matchResults = await _matchService.matchRecipesWithNormalization(
           selectedIngredientIds: selectedIds,
-          recipes: _recipeService.recipes,
+          recipes: allRecipes,
         );
         _hasSearched = true;
 

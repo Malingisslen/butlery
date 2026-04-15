@@ -184,19 +184,37 @@ class _IngredientSearchContent extends StatelessWidget {
             arguments: result.recipe,
           ),
         ),
-        if (missingText != null)
+        if (missingText != null || result.recipe.isCollaborative)
           Padding(
             padding: const EdgeInsets.only(
               left: AppDimensions.spacingMd,
               bottom: AppDimensions.spacingSm,
             ),
-            child: Text(
-              missingText,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: Row(
+              children: [
+                if (result.recipe.isCollaborative)
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(right: AppDimensions.spacingSm),
+                    child: Text(
+                      l10n.ingredientSearchSharedBadge,
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                if (missingText != null)
+                  Expanded(
+                    child: Text(
+                      missingText,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
             ),
           ),
       ],

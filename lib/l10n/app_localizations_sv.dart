@@ -12731,4 +12731,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String ingredientMissing(String list) {
     return 'Saknas: $list';
   }
+
+  @override
+  String get ingredientSearchSharedBadge => 'Delat';
 }

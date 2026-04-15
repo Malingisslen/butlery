@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/ingredient_match_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/viewmodels/ingredient_search_viewmodel.dart';
 
 class MockIngredientMatchService extends Mock
@@ -19,6 +20,9 @@ class MockIngredientMatchService extends Mock
 class MockIngredientRepository extends Mock implements IngredientRepository {}
 
 class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
+
+class MockSocialRecipeOperations extends Mock
+    implements SocialRecipeOperations {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -50,12 +54,14 @@ void main() {
   late MockIngredientMatchService mockMatchService;
   late MockIngredientRepository mockIngredientRepo;
   late MockUnifiedRecipeService mockRecipeService;
+  late MockSocialRecipeOperations mockSocial;
   late MockAuthRepository mockAuthRepo;
 
   setUp(() async {
     mockMatchService = MockIngredientMatchService();
     mockIngredientRepo = MockIngredientRepository();
     mockRecipeService = MockUnifiedRecipeService();
+    mockSocial = MockSocialRecipeOperations();
     mockAuthRepo = MockAuthRepository();
 
     final getIt = GetIt.instance;
@@ -65,6 +71,13 @@ void main() {
 
     when(() => mockAuthRepo.currentUserId).thenReturn('test-user');
     when(() => mockRecipeService.recipes).thenReturn([_recipe('r1', 'Test')]);
+    when(() => mockRecipeService.social).thenReturn(mockSocial);
+    when(() => mockSocial.getCollaborativeRecipes(
+          limit: any(named: 'limit'),
+          startAfter: any(named: 'startAfter'),
+          categoryFilter: any(named: 'categoryFilter'),
+          searchQuery: any(named: 'searchQuery'),
+        )).thenAnswer((_) async => []);
 
     vm = IngredientSearchViewModel(
       matchService: mockMatchService,
@@ -238,6 +251,109 @@ void main() {
       expect(vm.matchResults, hasLength(1));
       expect(vm.matchResults.first.matchPercent, 0.75);
       expect(vm.ingredientName('pepper'), 'peppar');
+    });
+  });
+
+  group('collaborative recipe merge', () {
+    test('includes collaborative recipes in search results', () async {
+      final collabRecipe = Recipe(
+        core: RecipeCore(
+          id: 'collab-1',
+          title: 'Shared Pasta',
+          description: '',
+          ingredients: const ['pasta'],
+          instructions: const ['cook'],
+          mealType: 'Middag',
+          ingredientsNormalized: ['pasta', 'tomato'],
+        ),
+        type: RecipeType.collaborative,
+      );
+
+      when(() => mockSocial.getCollaborativeRecipes(
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+            categoryFilter: any(named: 'categoryFilter'),
+            searchQuery: any(named: 'searchQuery'),
+          )).thenAnswer((_) async => [collabRecipe]);
+
+      vm.addIngredient(_ingredient('pasta', 'pasta'));
+
+      when(() => mockMatchService.matchRecipesWithNormalization(
+            selectedIngredientIds: any(named: 'selectedIngredientIds'),
+            recipes: any(named: 'recipes'),
+          )).thenAnswer((invocation) async {
+        final recipes = invocation.namedArguments[#recipes] as List<Recipe>;
+        // Verify both personal + collaborative recipes are passed
+        expect(recipes.length, greaterThan(1));
+        return [];
+      });
+      when(() => mockMatchService.resolveIngredientNames(any()))
+          .thenAnswer((_) async => {});
+
+      await vm.performSearch();
+
+      verify(() => mockMatchService.matchRecipesWithNormalization(
+            selectedIngredientIds: any(named: 'selectedIngredientIds'),
+            recipes: any(named: 'recipes'),
+          )).called(1);
+    });
+
+    test('deduplicates recipes present in both personal and collaborative',
+        () async {
+      // r1 is already in mockRecipeService.recipes (personal)
+      final duplicateRecipe = _recipe('r1', 'Test');
+
+      when(() => mockSocial.getCollaborativeRecipes(
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+            categoryFilter: any(named: 'categoryFilter'),
+            searchQuery: any(named: 'searchQuery'),
+          )).thenAnswer((_) async => [duplicateRecipe]);
+
+      vm.addIngredient(_ingredient('chicken', 'kyckling'));
+
+      when(() => mockMatchService.matchRecipesWithNormalization(
+            selectedIngredientIds: any(named: 'selectedIngredientIds'),
+            recipes: any(named: 'recipes'),
+          )).thenAnswer((invocation) async {
+        final recipes = invocation.namedArguments[#recipes] as List<Recipe>;
+        // Should NOT have duplicates — only 1 recipe (r1)
+        expect(recipes.length, 1);
+        return [];
+      });
+      when(() => mockMatchService.resolveIngredientNames(any()))
+          .thenAnswer((_) async => {});
+
+      await vm.performSearch();
+    });
+
+    test('caches collaborative recipes across searches', () async {
+      when(() => mockSocial.getCollaborativeRecipes(
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+            categoryFilter: any(named: 'categoryFilter'),
+            searchQuery: any(named: 'searchQuery'),
+          )).thenAnswer((_) async => []);
+
+      vm.addIngredient(_ingredient('chicken', 'kyckling'));
+
+      when(() => mockMatchService.matchRecipesWithNormalization(
+            selectedIngredientIds: any(named: 'selectedIngredientIds'),
+            recipes: any(named: 'recipes'),
+          )).thenAnswer((_) async => []);
+      when(() => mockMatchService.resolveIngredientNames(any()))
+          .thenAnswer((_) async => {});
+
+      await vm.performSearch();
+      await vm.performSearch();
+
+      // getCollaborativeRecipes called only once (cached)
+      verify(() => mockSocial.getCollaborativeRecipes(
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+            categoryFilter: any(named: 'categoryFilter'),
+            searchQuery: any(named: 'searchQuery'),
+          )).called(1);
     });
   });
 }

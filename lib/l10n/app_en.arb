@@ -8605,5 +8605,6 @@
     "placeholders": {
       "list": {"type": "String"}
     }
-  }
+  },
+  "ingredientSearchSharedBadge": "Shared"
 }

@@ -12699,4 +12699,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String ingredientMissing(String list) {
     return 'Missing: $list';
   }
+
+  @override
+  String get ingredientSearchSharedBadge => 'Shared';
 }

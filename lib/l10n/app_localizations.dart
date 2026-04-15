@@ -21795,6 +21795,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Saknas: {list}'**
   String ingredientMissing(String list);
+
+  /// No description provided for @ingredientSearchSharedBadge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat'**
+  String get ingredientSearchSharedBadge;
 }
 
 class _AppLocalizationsDelegate
