@@ -1028,6 +1028,11 @@ class MockUnifiedRecipeService extends Mock
 
   // clearError left to Mock — tests can stub/verify via mocktail
 
+  /// Emit a state event on the mock's stateStream for test verification
+  void emitState(RecipeServiceState state) {
+    _stateController.add(state);
+  }
+
   bool _collaborativeShouldSucceed = false;
 
   void setCollaborativeState({bool? shouldSucceed}) {

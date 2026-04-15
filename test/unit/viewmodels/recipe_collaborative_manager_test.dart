@@ -154,7 +154,9 @@ void main() {
         // Assert
         expect(manager.isCollaborative, isFalse);
         expect(manager.isConnectedToFirebase, isTrue);
-        expect(manager.connectionStatusText, equals('Ansluten'));
+        // connectionStatusText starts empty; it's set by connectivity listener
+        // only after enableCollaborativeMode calls _setupConnectivityMonitoring
+        expect(manager.connectionStatusText, equals(''));
         expect(manager.collaborativeParticipants, isEmpty);
         expect(manager.liveEditors, isEmpty);
         expect(manager.realtimeRecipe, isNull);
@@ -188,9 +190,8 @@ void main() {
       });
 
       test('should handle null current user gracefully', () {
-        // Arrange
-        when(() => mockPermissionService.currentUserId).thenReturn(null);
-        when(() => mockPermissionService.currentUser).thenReturn(null);
+        // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
+        (mockPermissionService as MockPermissionService).reset();
 
         // Act & Assert - should not throw
         expect(() => manager.canEdit, returnsNormally);
@@ -223,8 +224,8 @@ void main() {
       test(
           'should throw exception when enabling collaborative mode without user',
           () async {
-        // Arrange
-        when(() => mockPermissionService.currentUserId).thenReturn(null);
+        // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
+        (mockPermissionService as MockPermissionService).reset();
 
         // Act & Assert
         await expectLater(
@@ -464,7 +465,9 @@ void main() {
 
         // Assert
         expect(manager.isConnectedToFirebase, isFalse);
-        expect(manager.connectionStatusText, equals('Anslutningsfel'));
+        // Production uses AppLocale.current.errorNetwork
+        expect(manager.connectionStatusText,
+            equals('Nätverksfel. Kontrollera din internetanslutning.'));
       });
 
       test('should debounce multiple rapid updates', () async {
@@ -534,7 +537,9 @@ void main() {
 
         // Assert
         expect(manager.isConnectedToFirebase, isFalse);
-        expect(manager.connectionStatusText, equals('Anslutningsfel'));
+        // Production uses AppLocale.current.errorNetwork
+        expect(manager.connectionStatusText,
+            equals('Nätverksfel. Kontrollera din internetanslutning.'));
 
         streamController.close();
       });
@@ -602,8 +607,8 @@ void main() {
       });
 
       test('should not update presence if user is null', () async {
-        // Arrange - Don't enable collaborative mode with null user
-        when(() => mockPermissionService.currentUserId).thenReturn(null);
+        // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
+        (mockPermissionService as MockPermissionService).reset();
 
         // Act - Try to enable collaborative mode (should fail)
         try {
