@@ -6,17 +6,14 @@ import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/widgets/common/search_filter/filters_panel_widget.dart';
 import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
 
-// Test infrastructure
-import '../../test_support/base_unit_test.dart';
+import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('SearchFilterWidget Facade Pattern Tests', () {
-    // Swedish test data - ultrathink realistic patterns
     final testActiveTimeFilters = <String>{'< 30 min', '30-60 min'};
     final testActiveMealTypeFilters = <String>{'Middag', 'Lunch'};
     final testActiveRatingFilters = <String>{'4+', '5'};
 
-    // Helper function for creating full mode widgets - ultrathink pattern
     Widget createFullModeWidget({
       String searchQuery = '',
       Set<String> activeTimeFilters = const {},
@@ -30,50 +27,38 @@ void main() {
       VoidCallback? onClearAllFilters,
       int? resultCount,
     }) {
-      return MaterialApp(
-        home: Scaffold(
-          body: SearchFilterWidget.withFilters(
-            searchQuery: searchQuery,
-            onSearchChanged: onSearchChanged ?? (query) {},
-            activeTimeFilters: activeTimeFilters,
-            activeMealTypeFilters: activeMealTypeFilters,
-            activeRatingFilters: activeRatingFilters,
-            onTimeFilterToggle: onTimeFilterToggle ?? (filter) {},
-            onMealTypeFilterToggle: (filter) {},
-            onRatingFilterToggle: (filter) {},
-            showFilters: showFilters,
-            onToggleFilters: onToggleFilters ?? () {},
-            hasActiveFilters: hasActiveFilters,
-            onClearAllFilters: onClearAllFilters ?? () {},
-            resultCount: resultCount,
-          ),
+      return createLocalizedTestApp(
+        wrapInScrollView: true,
+        child: SearchFilterWidget.withFilters(
+          searchQuery: searchQuery,
+          onSearchChanged: onSearchChanged ?? (query) {},
+          activeTimeFilters: activeTimeFilters,
+          activeMealTypeFilters: activeMealTypeFilters,
+          activeRatingFilters: activeRatingFilters,
+          onTimeFilterToggle: onTimeFilterToggle ?? (filter) {},
+          onMealTypeFilterToggle: (filter) {},
+          onRatingFilterToggle: (filter) {},
+          showFilters: showFilters,
+          onToggleFilters: onToggleFilters ?? () {},
+          hasActiveFilters: hasActiveFilters,
+          onClearAllFilters: onClearAllFilters ?? () {},
+          resultCount: resultCount,
         ),
       );
     }
-
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-    });
-
-    tearDown(() async {
-      BaseUnitTest.resetMocks();
-    });
 
     group('Factory Constructor Tests', () {
       testWidgets('searchOnly factory creates correct configuration',
           (WidgetTester tester) async {
         final widget = SearchFilterWidget.searchOnly(
-          searchQuery: 'köttbullar',
-          onSearchChanged: (query) {
-            // Callback tested elsewhere - focus on factory constructor logic
-          },
-          searchHint: 'Sök svenska recept...',
+          searchQuery: 'kottbullar',
+          onSearchChanged: (query) {},
+          searchHint: 'Sok svenska recept...',
           autofocus: true,
         );
 
-        // Verify factory constructor properties without rendering
-        expect(widget.searchQuery, equals('köttbullar'));
-        expect(widget.searchHint, equals('Sök svenska recept...'));
+        expect(widget.searchQuery, equals('kottbullar'));
+        expect(widget.searchHint, equals('Sok svenska recept...'));
         expect(widget.searchOnly, isTrue);
         expect(widget.autofocus, isTrue);
         expect(widget.activeTimeFilters, isNull);
@@ -84,9 +69,7 @@ void main() {
           (WidgetTester tester) async {
         final widget = SearchFilterWidget.withFilters(
           searchQuery: 'mormors recept',
-          onSearchChanged: (query) {
-            // Callback behavior tested elsewhere - focus on factory constructor
-          },
+          onSearchChanged: (query) {},
           activeTimeFilters: testActiveTimeFilters,
           activeMealTypeFilters: testActiveMealTypeFilters,
           activeRatingFilters: testActiveRatingFilters,
@@ -100,7 +83,6 @@ void main() {
           resultCount: 42,
         );
 
-        // Verify factory constructor sets all required properties
         expect(widget.searchQuery, equals('mormors recept'));
         expect(widget.searchOnly, isFalse);
         expect(widget.activeTimeFilters, equals(testActiveTimeFilters));
@@ -113,18 +95,17 @@ void main() {
 
       testWidgets('factory constructors handle optional parameters correctly',
           (WidgetTester tester) async {
-        // Test minimal searchOnly configuration
+        // searchHint defaults to null (rendered as context.l10n.searchHint)
         final minimalSearchWidget = SearchFilterWidget.searchOnly(
           searchQuery: '',
           onSearchChanged: (query) {},
         );
 
-        expect(minimalSearchWidget.searchHint, equals('Sök...'));
+        expect(minimalSearchWidget.searchHint, isNull);
         expect(minimalSearchWidget.autofocus, isFalse);
         expect(minimalSearchWidget.showStats, isFalse);
         expect(minimalSearchWidget.resultCount, isNull);
 
-        // Test minimal withFilters configuration
         final minimalFilterWidget = SearchFilterWidget.withFilters(
           searchQuery: '',
           onSearchChanged: (query) {},
@@ -149,72 +130,60 @@ void main() {
       testWidgets('renders only SearchInputWidget in search-only mode',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: 'pasta',
-                onSearchChanged: (query) {},
-                searchHint: 'Sök italienska rätter...',
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: 'pasta',
+              onSearchChanged: (query) {},
+              searchHint: 'Sok italienska ratter...',
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Should render only SearchInputWidget
         expect(find.byType(SearchInputWidget), findsOneWidget);
         expect(find.byType(FilterToggleButton), findsNothing);
         expect(find.byType(FiltersPanelWidget), findsNothing);
         expect(find.byType(SearchStatsWidget), findsNothing);
 
-        // Verify Swedish hint text
-        expect(find.text('Sök italienska rätter...'), findsOneWidget);
+        expect(find.text('Sok italienska ratter...'), findsOneWidget);
       });
 
       testWidgets('handles search input in search-only mode',
           (WidgetTester tester) async {
         String capturedQuery = '';
-        bool searchChanged = false;
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: '',
-                onSearchChanged: (query) {
-                  capturedQuery = query;
-                  searchChanged = true;
-                },
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: '',
+              onSearchChanged: (query) {
+                capturedQuery = query;
+              },
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Type in search field
-        await tester.enterText(find.byType(TextField), 'fisksoppa');
+        await tester.enterText(find.byType(TextFormField), 'fisksoppa');
         await tester.pump();
 
-        // Verify callback triggered
-        expect(searchChanged, isTrue);
         expect(capturedQuery, equals('fisksoppa'));
       });
 
-      testWidgets(
-          'does not show stats in search-only mode - facade design pattern',
+      testWidgets('does not show stats in search-only mode',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: 'soppa',
-                onSearchChanged: (query) {},
-                showStats: true,
-                resultCount: 15,
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: 'soppa',
+              onSearchChanged: (query) {},
+              showStats: true,
+              resultCount: 15,
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Search-only mode only shows SearchInputWidget - ultrathink production code analysis
         expect(find.byType(SearchInputWidget), findsOneWidget);
         expect(find.byType(SearchStatsWidget), findsNothing);
       });
@@ -232,15 +201,15 @@ void main() {
             resultCount: 8,
           ),
         );
+        await tester.pumpAndSettle();
 
-        // All components should be present
         expect(find.byType(SearchInputWidget), findsOneWidget);
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(find.byType(FiltersPanelWidget), findsOneWidget);
         expect(find.byType(SearchStatsWidget), findsOneWidget);
       });
 
-      testWidgets('hides filter panel when showFilters is false',
+      testWidgets('hides filter panel content when showFilters is false',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           createFullModeWidget(
@@ -248,10 +217,9 @@ void main() {
             activeTimeFilters: testActiveTimeFilters,
           ),
         );
-
         await tester.pumpAndSettle();
 
-        // Filter panel should be rendered but collapsed
+        // FiltersPanelWidget is rendered but collapsed (AnimatedSize -> SizedBox.shrink)
         expect(find.byType(FiltersPanelWidget), findsOneWidget);
       });
 
@@ -263,10 +231,8 @@ void main() {
             activeTimeFilters: testActiveTimeFilters,
           ),
         );
-
         await tester.pumpAndSettle();
 
-        // Filter panel should be visible
         expect(find.byType(FiltersPanelWidget), findsOneWidget);
       });
 
@@ -281,8 +247,8 @@ void main() {
             activeTimeFilters: testActiveTimeFilters,
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Tap filter toggle button
         await tester.tap(find.byType(FilterToggleButton));
         await tester.pump();
 
@@ -293,67 +259,53 @@ void main() {
     group('State Management and Lifecycle', () {
       testWidgets('manages TextEditingController lifecycle correctly',
           (WidgetTester tester) async {
-        // Create widget
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: 'initial',
-                onSearchChanged: (query) {},
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: 'initial',
+              onSearchChanged: (query) {},
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Verify TextField is created
-        expect(find.byType(TextField), findsOneWidget);
+        expect(find.byType(TextFormField), findsOneWidget);
 
         // Dispose widget by removing it
-        await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const SizedBox()),
+        );
+        await tester.pumpAndSettle();
 
-        // Should not crash during disposal
         expect(tester.takeException(), isNull);
       });
 
       testWidgets('synchronizes external search query changes',
           (WidgetTester tester) async {
-        String currentQuery = 'pannkakor';
-
-        // Initial render
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: currentQuery,
-                onSearchChanged: (query) {
-                  // Track callback but don't setState during build - ultrathink pattern
-                },
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: 'pannkakor',
+              onSearchChanged: (query) {},
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Initial state
         expect(find.text('pannkakor'), findsOneWidget);
 
-        // Simulate external state change by re-rendering with new query
-        currentQuery = 'våfflor';
-
+        // Re-render with new query
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: currentQuery,
-                onSearchChanged: (query) {},
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: 'vafflor',
+              onSearchChanged: (query) {},
             ),
           ),
         );
-
         await tester.pump();
 
-        // Should update TextField - tests didUpdateWidget synchronization
-        expect(find.text('våfflor'), findsOneWidget);
+        expect(find.text('vafflor'), findsOneWidget);
       });
 
       testWidgets('handles rapid search input without issues',
@@ -362,32 +314,29 @@ void main() {
         String lastQuery = '';
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: '',
-                onSearchChanged: (query) {
-                  callbackCount++;
-                  lastQuery = query;
-                },
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: '',
+              onSearchChanged: (query) {
+                callbackCount++;
+                lastQuery = query;
+              },
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Rapid typing
-        await tester.enterText(find.byType(TextField), 'k');
+        await tester.enterText(find.byType(TextFormField), 'k');
         await tester.pump(const Duration(milliseconds: 10));
 
-        await tester.enterText(find.byType(TextField), 'kö');
+        await tester.enterText(find.byType(TextFormField), 'ko');
         await tester.pump(const Duration(milliseconds: 10));
 
-        await tester.enterText(find.byType(TextField), 'kött');
+        await tester.enterText(find.byType(TextFormField), 'kott');
         await tester.pump(const Duration(milliseconds: 10));
 
-        // Should handle rapid changes
         expect(callbackCount, greaterThan(0));
-        expect(lastQuery, equals('kött'));
+        expect(lastQuery, equals('kott'));
       });
     });
 
@@ -403,12 +352,10 @@ void main() {
             hasActiveFilters: true,
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Widget should be created without issues
         expect(find.byType(SearchFilterWidget), findsOneWidget);
         expect(find.byType(SearchStatsWidget), findsOneWidget);
-
-        // Total filters: 2 + 1 + 2 = 5 active filters should be reflected in stats
       });
 
       testWidgets('handles empty filter sets correctly',
@@ -422,8 +369,8 @@ void main() {
             hasActiveFilters: false,
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Should handle empty sets without issues
         expect(find.byType(SearchFilterWidget), findsOneWidget);
       });
     });
@@ -432,45 +379,43 @@ void main() {
       testWidgets('displays Swedish search hints correctly',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: '',
-                onSearchChanged: (query) {},
-                searchHint: 'Sök recept...',
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: '',
+              onSearchChanged: (query) {},
+              searchHint: 'Sok recept...',
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        expect(find.text('Sök recept...'), findsOneWidget);
+        expect(find.text('Sok recept...'), findsOneWidget);
       });
 
       testWidgets('handles Swedish search queries correctly',
           (WidgetTester tester) async {
         const swedishQueries = [
-          'köttbullar',
+          'kottbullar',
           'fiskgryta',
-          'äppelpaj',
+          'appelpaj',
           'kryddig kyckling',
-          'vegetarisk lasagne'
+          'vegetarisk lasagne',
         ];
 
         for (final query in swedishQueries) {
           String capturedQuery = '';
 
           await tester.pumpWidget(
-            MaterialApp(
-              home: Scaffold(
-                body: SearchFilterWidget.searchOnly(
-                  searchQuery: '',
-                  onSearchChanged: (q) => capturedQuery = q,
-                ),
+            createLocalizedTestApp(
+              child: SearchFilterWidget.searchOnly(
+                searchQuery: '',
+                onSearchChanged: (q) => capturedQuery = q,
               ),
             ),
           );
+          await tester.pumpAndSettle();
 
-          await tester.enterText(find.byType(TextField), query);
+          await tester.enterText(find.byType(TextFormField), query);
           await tester.pump();
 
           expect(capturedQuery, equals(query));
@@ -479,51 +424,36 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('handles null filter callbacks gracefully',
+      testWidgets('handles filter callbacks gracefully',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.withFilters(
-                searchQuery: '',
-                onSearchChanged: (query) {},
-                activeTimeFilters: const <String>{},
-                activeMealTypeFilters: const <String>{},
-                activeRatingFilters: const <String>{},
-                onTimeFilterToggle: (filter) {},
-                onMealTypeFilterToggle: (filter) {},
-                onRatingFilterToggle: (filter) {},
-                showFilters: true,
-                onToggleFilters: () {},
-                hasActiveFilters: false,
-                onClearAllFilters: () {},
-              ),
-            ),
+          createFullModeWidget(
+            showFilters: true,
+            hasActiveFilters: false,
           ),
         );
+        await tester.pumpAndSettle();
 
-        // Should render without crashing
         expect(find.byType(SearchFilterWidget), findsOneWidget);
       });
 
       testWidgets('handles very long search queries',
           (WidgetTester tester) async {
         const longQuery =
-            'en mycket lång sökning som innehåller många svenska ord och tecken för att testa hur widgeten hanterar långa strängar';
+            'en mycket lang sokning som innehaller manga svenska ord';
         String capturedQuery = '';
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.searchOnly(
-                searchQuery: '',
-                onSearchChanged: (query) => capturedQuery = query,
-              ),
+          createLocalizedTestApp(
+            child: SearchFilterWidget.searchOnly(
+              searchQuery: '',
+              onSearchChanged: (query) => capturedQuery = query,
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextField), longQuery);
+        await tester.enterText(find.byType(TextFormField), longQuery);
         await tester.pump();
 
         expect(capturedQuery, equals(longQuery));
@@ -531,66 +461,34 @@ void main() {
 
       testWidgets('maintains state consistency during widget updates',
           (WidgetTester tester) async {
-        String currentQuery = 'initial';
-        bool showFilters = false;
-
-        // Use a simpler approach to avoid setState during build - ultrathink pattern
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.withFilters(
-                searchQuery: currentQuery,
-                onSearchChanged: (query) {
-                  // This callback will be triggered but we don't call setState here
-                  // This tests the external state synchronization behavior
-                },
-                activeTimeFilters: testActiveTimeFilters,
-                activeMealTypeFilters: testActiveMealTypeFilters,
-                activeRatingFilters: testActiveRatingFilters,
-                onTimeFilterToggle: (filter) {},
-                onMealTypeFilterToggle: (filter) {},
-                onRatingFilterToggle: (filter) {},
-                showFilters: showFilters,
-                onToggleFilters: () {},
-                hasActiveFilters: true,
-                onClearAllFilters: () {},
-              ),
-            ),
+          createFullModeWidget(
+            searchQuery: 'initial',
+            activeTimeFilters: testActiveTimeFilters,
+            activeMealTypeFilters: testActiveMealTypeFilters,
+            activeRatingFilters: testActiveRatingFilters,
+            showFilters: false,
+            hasActiveFilters: true,
           ),
         );
-
-        // Initial state should be displayed
-        expect(find.text(currentQuery), findsOneWidget);
-        expect(find.byType(SearchFilterWidget), findsOneWidget);
-
-        // Update the widget with new query - simulating external state change
-        currentQuery = 'updated';
-        showFilters = true;
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SearchFilterWidget.withFilters(
-                searchQuery: currentQuery,
-                onSearchChanged: (query) {},
-                activeTimeFilters: testActiveTimeFilters,
-                activeMealTypeFilters: testActiveMealTypeFilters,
-                activeRatingFilters: testActiveRatingFilters,
-                onTimeFilterToggle: (filter) {},
-                onMealTypeFilterToggle: (filter) {},
-                onRatingFilterToggle: (filter) {},
-                showFilters: showFilters,
-                onToggleFilters: () {},
-                hasActiveFilters: true,
-                onClearAllFilters: () {},
-              ),
-            ),
-          ),
-        );
-
         await tester.pumpAndSettle();
 
-        // Should show updated state
+        expect(find.text('initial'), findsOneWidget);
+        expect(find.byType(SearchFilterWidget), findsOneWidget);
+
+        // Update widget with new query
+        await tester.pumpWidget(
+          createFullModeWidget(
+            searchQuery: 'updated',
+            activeTimeFilters: testActiveTimeFilters,
+            activeMealTypeFilters: testActiveMealTypeFilters,
+            activeRatingFilters: testActiveRatingFilters,
+            showFilters: true,
+            hasActiveFilters: true,
+          ),
+        );
+        await tester.pumpAndSettle();
+
         expect(find.text('updated'), findsOneWidget);
       });
     });
