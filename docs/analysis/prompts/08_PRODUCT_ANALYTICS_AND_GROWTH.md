@@ -2,7 +2,7 @@
 
 ## Analyst
 
-Claude (Opus 4.6) -- comprehensive product analytics and growth analysis agent.
+Claude (Opus 4.7) -- comprehensive product analytics and growth analysis agent.
 
 ## Mission
 
@@ -570,7 +570,7 @@ Generated file exclusions (skip during analysis):
 BUTLERY PRODUCT ANALYTICS & GROWTH ANALYSIS - PHASE 1 FINDINGS
 ================================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Scope: Analytics, funnels, retention, notifications, experimentation, onboarding
 
 OVERALL SCORE: X/100

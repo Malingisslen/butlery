@@ -7,7 +7,7 @@
 ## Header
 
 ```
-Analyst:        Claude (Opus 4.6)
+Analyst:        Claude (Opus 4.7)
 Scope:          App performance, Firebase data layer, scalability projections
 Consolidates:   Performance (v3, 9 dims), Scalability (v3, 8 dims),
                 Firebase dims 1/3/4/5 (Schema, Queries, Streams, Offline)
@@ -475,7 +475,7 @@ Work through all 7 dimensions systematically:
 BUTLERY PERFORMANCE & SCALABILITY ANALYSIS -- PHASE 1
 ======================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Firebase Project: butlery-app-1
 Platforms: Android, iOS, Web, macOS, Windows
 

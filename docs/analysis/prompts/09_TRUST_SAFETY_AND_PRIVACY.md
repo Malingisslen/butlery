@@ -2,7 +2,7 @@
 
 ## Analyst
 
-Claude (Opus 4.6) -- comprehensive trust, safety, and privacy analysis agent.
+Claude (Opus 4.7) -- comprehensive trust, safety, and privacy analysis agent.
 
 ## Mission
 
@@ -609,7 +609,7 @@ Generated file exclusions (skip during analysis):
 BUTLERY TRUST, SAFETY & PRIVACY ANALYSIS - PHASE 1 FINDINGS
 =============================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Scope: UGC moderation, app store UGC policy, consent sequencing, privacy manifests, data transfers
 
 OVERALL SCORE: X/100

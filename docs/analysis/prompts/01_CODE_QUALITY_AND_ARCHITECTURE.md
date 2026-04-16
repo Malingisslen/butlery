@@ -2,7 +2,7 @@
 
 ## Analyst
 
-Claude (Opus 4.6) -- comprehensive codebase analysis agent.
+Claude (Opus 4.7) -- comprehensive codebase analysis agent.
 
 ## Mission
 
@@ -742,7 +742,7 @@ Compile all findings into structured report with severity classification, effort
 BUTLERY CODE QUALITY & ARCHITECTURE ANALYSIS - PHASE 1 FINDINGS
 ================================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Codebase: ~850+ .dart files in lib/, ~150k+ LOC (hand-written, excluding generated)
 
 OVERALL SCORE: X/100

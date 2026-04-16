@@ -6,7 +6,7 @@
 
 ## Mission
 
-Analyst: **Claude (Opus 4.6)**
+Analyst: **Claude (Opus 4.7)**
 
 Deliver a world-class user experience across all platforms. This prompt audits the full
 surface area of what users see, touch, and interact with: design consistency, accessibility,
@@ -490,7 +490,7 @@ Tools: Grep, Glob, Read. No Edit, no Write.
 USER EXPERIENCE & PLATFORM ANALYSIS -- PHASE 1 FINDINGS
 =========================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Platforms: Android, iOS, Web, macOS, Windows
 
 OVERALL UX SCORE: X/100

@@ -1,6 +1,6 @@
 # Legal Review — Juridisk Granskning
 
-**Analyst:** Claude (Opus 4.6)
+**Analyst:** Claude (Opus 4.7)
 **Mission:** Systematisk granskning av Butlerys juridiska dokument, licensefterlevnad och regulatorisk status. Identifiera diskrepanser mellan vad juridiska dokument påstår och vad koden faktiskt gör.
 **Scope:** Legal document accuracy, license compliance, regulatory alignment (GDPR, EU AI Act, app store rules), discrepancy detection.
 
@@ -761,7 +761,7 @@ Note: No payment processing exists today. This is a forward-looking assessment, 
 BUTLERY LEGAL REVIEW - PHASE 1 FINDINGS
 =========================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Scope: Legal document accuracy, license compliance, regulatory alignment
 
 OVERALL SCORE: X/100

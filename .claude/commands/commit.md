@@ -27,7 +27,7 @@ Commit all changes made during this session to git with an appropriate commit me
      - Invariants that must be preserved (e.g. "X must always be called before Y")
      - List key changes if multi-file
    - If review/test findings were noted, include: `Review notes: ...`
-   - `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` footer
+   - `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>` footer
 6. Commit the changes
 7. If pre-commit hook fails: fix the issue, re-stage, create a NEW commit (never amend)
 8. Confirm success with `git status`

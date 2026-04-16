@@ -1,6 +1,6 @@
 # Security & Compliance Analysis
 
-**Analyst**: Claude (Opus 4.6)
+**Analyst**: Claude (Opus 4.7)
 **Framework**: OWASP Mobile Application Security Top 10 (2024)
 **Scope**: Enterprise-grade security audit covering authentication, data protection, network security, Firebase rules, secret management, GDPR compliance, and platform hardening.
 
@@ -560,7 +560,7 @@ Use this intelligence to focus the audit:
 BUTLERY SECURITY AND COMPLIANCE ANALYSIS - PHASE 1
 ====================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Framework: OWASP Mobile Application Security Top 10 (2024)
 
 OVERALL SECURITY SCORE: X/100

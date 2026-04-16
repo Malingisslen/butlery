@@ -2,7 +2,7 @@
 
 ## Analyst
 
-Claude (Opus 4.6) -- comprehensive AI feature quality analysis agent.
+Claude (Opus 4.7) -- comprehensive AI feature quality analysis agent.
 
 ## Mission
 
@@ -603,7 +603,7 @@ Generated file exclusions (skip during analysis):
 BUTLERY AI/LLM QUALITY & RELIABILITY ANALYSIS - PHASE 1 FINDINGS
 =================================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Scope: Multi-tier recipe import pipeline, OCR, Swedish NLP, auto-tagging
 
 OVERALL SCORE: X/100

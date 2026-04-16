@@ -1,6 +1,6 @@
 # 05 - Dependencies & Supply Chain Security Analysis
 
-**Analyst:** Claude (Opus 4.6)
+**Analyst:** Claude (Opus 4.7)
 **Mission:** Secure, maintainable dependency stack with zero known CVEs.
 **Orchestrator weight:** 12% of overall codebase health score.
 
@@ -378,7 +378,7 @@ Compile all findings into the output format below with scores, severity classifi
 BUTLERY DEPENDENCIES & SUPPLY CHAIN SECURITY ANALYSIS - PHASE 1
 ================================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Total Dependencies: [X] direct, [Y] dev, [Z] total resolved
 Flutter SDK: [version] | Dart SDK: [version]
 

@@ -2,7 +2,7 @@
 
 ## Analyst
 
-Claude (Opus 4.6) -- comprehensive monetization and competitive analysis agent.
+Claude (Opus 4.7) -- comprehensive monetization and competitive analysis agent.
 
 ## Mission
 
@@ -558,7 +558,7 @@ Generated file exclusions (skip during analysis):
 BUTLERY MONETIZATION & COMPETITIVE POSITIONING - PHASE 1 FINDINGS
 ===================================================================
 Analysis Date: [Date]
-Analyst: Claude (Opus 4.6)
+Analyst: Claude (Opus 4.7)
 Scope: Monetization readiness, feature completeness, competitive position, app store risk
 
 OVERALL SCORE: X/100
