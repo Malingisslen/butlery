@@ -11,6 +11,8 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:get_it/get_it.dart';
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
@@ -48,6 +50,9 @@ void main() {
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
+
+      // Bridge production ServiceLocator to GetIt so ServiceLocator.get<T>() works
+      production.ServiceLocator.initialize(DIContainer());
 
       // Create mocks
       mockParentService = MockUnifiedShoppingService();

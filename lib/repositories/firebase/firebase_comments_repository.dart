@@ -415,9 +415,10 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     // This reduces reads from 500 full docs to 2 count queries + 1 limited fetch
 
     // Count top-level comments (no parentCommentId)
+    // Use isNull instead of isEqualTo: null for Firestore compatibility
     final topLevelCount = await collection
         .where('recipeId', isEqualTo: recipeId)
-        .where('parentCommentId', isEqualTo: null)
+        .where('parentCommentId', isNull: true)
         .count()
         .get();
 

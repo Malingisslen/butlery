@@ -368,13 +368,13 @@ void main() {
           unit: 'g',
         );
 
-        // Assert
+        // Assert — addItem defaults category to ShoppingCategory.other ('other')
         expect(result, isTrue);
         verify(() => mockParent.addItemToActiveList(
               name: 'Kaffe',
               amount: 500,
               unit: 'g',
-              category: 'Övrigt',
+              category: 'other',
               note: null,
               estimatedPrice: null,
               priority: 3,
@@ -876,8 +876,8 @@ void main() {
         // Act
         final categoryMap = operations.getItemsByCategory('test-list-1');
 
-        // Assert
-        expect(categoryMap['Övrigt'], hasLength(1));
+        // Assert — empty category maps to ShoppingCategory.other ('other')
+        expect(categoryMap['other'], hasLength(1));
         expect(categoryMap['Category'], hasLength(1));
       });
     });

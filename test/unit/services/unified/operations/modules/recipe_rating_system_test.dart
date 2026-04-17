@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_rating_system.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import '../../../../../test_support/base_unit_test.dart';
@@ -52,6 +53,19 @@ void main() {
       // Initialize production ServiceLocator with MockDIContainer
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(MockDIContainer());
+
+      // Stub getUserRating (called by rateRecipe to get previous rating for analytics)
+      when(() => mockRatingsRepository.getUserRating(any(), any()))
+          .thenAnswer((_) async => null);
+
+      // Stub analytics logRecipeRated (called after successful rating)
+      final mockAnalytics =
+          TestServiceLocator.get<AnalyticsService>() as MockAnalyticsService;
+      when(() => mockAnalytics.logRecipeRated(
+            recipeId: any(named: 'recipeId'),
+            rating: any(named: 'rating'),
+            previousRating: any(named: 'previousRating'),
+          )).thenAnswer((_) async {});
 
       // Create rating system instance
       ratingSystem = RecipeRatingSystem(

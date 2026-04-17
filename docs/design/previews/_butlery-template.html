@@ -133,21 +133,20 @@ body {
 }
 .page-header-title {
   font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 600;
+  font-size: 44px;
+  font-weight: 700;
   color: var(--cream);
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   text-transform: lowercase;
-  line-height: 1.1;
+  line-height: 0.95;
 }
 .page-header .count-badge {
-  background: var(--cream);
-  color: var(--green-dark);
+  background: transparent;
+  color: var(--rust-light);
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 1px;
-  padding: 4px 10px;
+  padding: 0;
   margin-left: 12px;
 }
 .page-header .avatar {
@@ -264,11 +263,11 @@ body {
 }
 .section-header-title {
   font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: lowercase;
+  color: var(--green-dark);
 }
 .section-header-count {
   font-family: var(--font-body);
@@ -282,9 +281,10 @@ body {
   border-left: 4px solid var(--green);
   border-bottom: 3px solid var(--rust-light);
   padding: 14px 16px;
-  margin: 0 16px 8px;
+  margin: 0 16px 12px;
   display: flex;
   gap: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.12);
 }
 .recipe-tag {
   font-family: var(--font-body);
@@ -314,16 +314,18 @@ body {
 .recipe-card-content { flex: 1; min-width: 0; }
 .recipe-card-title {
   font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text);
-  margin-bottom: 2px;
+  margin-bottom: 1px;
+  letter-spacing: -0.2px;
 }
 .recipe-card-desc {
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 300;
   color: var(--text-light);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .recipe-card-meta {
   display: flex;

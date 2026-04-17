@@ -368,29 +368,29 @@ class AppTextStyles {
         letterSpacing: 0.5,
       );
 
-  /// Main view header title - elegant style for main views (32px, Josefin Sans)
+  /// Main view header title - bold editorial style for main views (44px, Josefin Sans)
   static TextStyle get mainViewTitle => TextStyle(
         fontFamily: _headerFontFamily,
-        fontSize: 32,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 2,
-        height: 1.1,
+        fontSize: 44,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1,
+        height: 0.95,
       );
 
-  /// Header count badge text style
+  /// Header count badge text style (rust-colored, no border)
   static TextStyle get headerCountBadge => TextStyle(
         fontFamily: _primaryFontFamily,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: FontWeight.w600,
-        letterSpacing: 1,
+        color: AppColors.rustLight,
       );
 
-  /// Section header label style (uppercase, small, with letter-spacing)
+  /// Section header label style (Josefin Sans lowercase, 13px)
   static TextStyle get sectionLabel => TextStyle(
         fontFamily: _headerFontFamily,
-        fontSize: 10,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 3,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.5,
         color: AppColors.forestGreenDark,
       );
 
@@ -420,9 +420,28 @@ class AppTextStyles {
   /// Empty state body
   static TextStyle get emptyStateBody => bodyMedium;
 
-  /// Recipe card title (15px/w600 per mockup)
-  static TextStyle get recipeCardTitle => titleMedium.copyWith(
-        fontWeight: FontWeight.w600,
+  /// Recipe card title (16px/w700 — bold for clear hierarchy)
+  static TextStyle get recipeCardTitle => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.2,
+      );
+
+  /// Recipe card description (13px/w300 — light for contrast against bold title)
+  static TextStyle get recipeCardDescription => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 13,
+        fontWeight: FontWeight.w300,
+        height: 1.3,
+      );
+
+  /// Recipe card meta (11px/w500 uppercase — distinct third layer)
+  static TextStyle get recipeCardMeta => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.3,
       );
 
   /// Badge text style for unified badges

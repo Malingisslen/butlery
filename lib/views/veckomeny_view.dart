@@ -13,6 +13,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
@@ -178,6 +179,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     return Scaffold(
       appBar: MainViewHeader(
         title: 'veckans\nmeny',
+        ghostIllustration: VegetableType.peaPod,
         countBadge: viewModel.hasMenu
             ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
             : context.l10n.menuWeekBadge(weekNumber),

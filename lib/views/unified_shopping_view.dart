@@ -13,6 +13,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 // Theme and utility components
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -88,6 +89,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
           return Scaffold(
             appBar: MainViewHeader(
               title: context.l10n.shoppingListTitle,
+              ghostIllustration: VegetableType.carrot,
               countBadge:
                   context.l10n.shoppingCountBadge(itemCount, boughtCount),
               actions: isShoppingTab

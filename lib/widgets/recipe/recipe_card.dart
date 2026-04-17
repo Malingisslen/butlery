@@ -360,9 +360,8 @@ class RecipeCard extends StatelessWidget {
 
     return Text(
       recipe.description,
-      style: AppTextStyles.labelMedium.copyWith(
+      style: AppTextStyles.recipeCardDescription.copyWith(
         color: cs.onSurfaceVariant,
-        fontWeight: FontWeight.w400,
       ),
       maxLines: 2,
       overflow: TextOverflow.ellipsis,

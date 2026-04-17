@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -31,6 +32,7 @@ class LaggTillReceptView extends StatelessWidget {
     return Scaffold(
       appBar: MainViewHeader(
         title: context.l10n.addRecipeTitle,
+        ghostIllustration: VegetableType.redOnion,
       ),
       body: SafeArea(
         child: Center(

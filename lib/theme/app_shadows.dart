@@ -80,4 +80,37 @@ abstract class AppShadows {
           offset: const Offset(0, 8),
         ),
       ];
+
+  /// Lifted card shadow — cards that "float" above the page
+  /// Stronger than standard card, used for recipe cards in lists
+  static List<BoxShadow> get cardLifted => [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.08),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
+        ),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.12),
+          blurRadius: 24,
+          offset: const Offset(0, 8),
+        ),
+      ];
+
+  /// Search box shadow — subtle lift for the search input
+  static List<BoxShadow> get searchBox => [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.08),
+          blurRadius: 16,
+          offset: const Offset(0, 4),
+        ),
+      ];
+
+  /// Active chip glow — green-tinted shadow for selected filter chips
+  static List<BoxShadow> activeChip(Color primaryColor) => [
+        BoxShadow(
+          color: primaryColor.withValues(alpha: 0.4),
+          blurRadius: 12,
+          offset: const Offset(0, 2),
+        ),
+      ];
 }

@@ -9,6 +9,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 
 /// Header widget for main views with large title and count badge.
 ///
@@ -29,6 +31,7 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
     this.trailing,
     this.actions,
     this.showAccentBar = true,
+    this.ghostIllustration,
     super.key,
   });
 
@@ -46,6 +49,9 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
 
   /// Whether to show the rust-colored accent bar at the bottom.
   final bool showAccentBar;
+
+  /// Optional ghost illustration type for decorative background.
+  final VegetableType? ghostIllustration;
 
   /// Height of the accent bar at the bottom.
   static const double accentBarHeight = 4.0;
@@ -72,83 +78,91 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
               height: headerHeight,
               child: IconTheme(
                 data: IconThemeData(color: cs.surface),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppDimensions.spacingL,
-                    AppDimensions.spacingMd,
-                    AppDimensions.spacingL,
-                    AppDimensions.spacingL,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title and count badge
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            // Title — cream on dark green
-                            Semantics(
-                              header: true,
-                              child: Text(
-                                title.toLowerCase(),
-                                style: AppTextStyles.mainViewTitle.copyWith(
-                                  color: cs.surface,
-                                ),
-                              ),
-                            ),
-                            // Count badge
-                            if (countBadge != null) ...[
-                              const SizedBox(height: AppDimensions.spacingXs),
-                              Semantics(
-                                liveRegion: true,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.spacingSm,
-                                    vertical: AppDimensions.spacingXxs,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: cs.surface,
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                  child: Text(
-                                    countBadge!,
-                                    style:
-                                        AppTextStyles.headerCountBadge.copyWith(
-                                      color: cs.onPrimaryContainer,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
+                child: Stack(
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    if (ghostIllustration != null)
+                      HeaderGhostIllustration(type: ghostIllustration!),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppDimensions.spacingL,
+                        AppDimensions.spacingMd,
+                        AppDimensions.spacingL,
+                        AppDimensions.spacingL,
                       ),
-
-                      // Actions and trailing — cream icons on dark green
-                      IconButtonTheme(
-                        data: IconButtonThemeData(
-                          style: IconButton.styleFrom(
-                            foregroundColor: cs.surface,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title and count badge (count to the right of title)
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                if (actions != null) ...actions!,
-                                if (trailing != null) trailing!,
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    // Title — cream on dark green
+                                    Flexible(
+                                      child: Semantics(
+                                        header: true,
+                                        child: Text(
+                                          title.toLowerCase(),
+                                          style: AppTextStyles.mainViewTitle
+                                              .copyWith(
+                                            color: cs.surface,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    // Count badge — rust text, to the right
+                                    if (countBadge != null) ...[
+                                      const SizedBox(
+                                          width: AppDimensions.spacingSm),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            bottom: AppDimensions.spacingXs),
+                                        child: Semantics(
+                                          liveRegion: true,
+                                          child: Text(
+                                            countBadge!,
+                                            style:
+                                                AppTextStyles.headerCountBadge,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+
+                          // Actions and trailing — cream icons on dark green
+                          IconButtonTheme(
+                            data: IconButtonThemeData(
+                              style: IconButton.styleFrom(
+                                foregroundColor: cs.surface,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (actions != null) ...actions!,
+                                    if (trailing != null) trailing!,
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -235,24 +249,29 @@ class _FilterChip extends StatelessWidget {
       label: label,
       button: true,
       selected: isSelected,
-      child: Material(
-        color: isSelected ? cs.primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(0),
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm,
-            ),
-            decoration: BoxDecoration(
-              border:
-                  isSelected ? null : Border.all(color: cs.primary, width: 2),
-            ),
-            child: Text(
-              label,
-              style: AppTextStyles.filterChip.copyWith(
-                color: isSelected ? cs.surface : cs.primaryContainer,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          boxShadow: isSelected ? AppShadows.activeChip(cs.primary) : null,
+        ),
+        child: Material(
+          color: isSelected ? cs.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(0),
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingMd,
+                vertical: AppDimensions.spacingSm,
+              ),
+              decoration: BoxDecoration(
+                border:
+                    isSelected ? null : Border.all(color: cs.primary, width: 2),
+              ),
+              child: Text(
+                label,
+                style: AppTextStyles.filterChip.copyWith(
+                  color: isSelected ? cs.surface : cs.primaryContainer,
+                ),
               ),
             ),
           ),
@@ -283,22 +302,21 @@ class ButlerySectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final effectiveAccentColor = accentColor ?? cs.secondary;
+    final effectiveAccentColor = accentColor ?? cs.primary;
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
+        horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        color: effectiveAccentColor.withValues(alpha: 0.08),
+        color: cs.primary.withValues(alpha: 0.06),
         border: Border(
           left: BorderSide(
             color: effectiveAccentColor,
-            width: 4,
+            width: 3,
           ),
         ),
       ),
@@ -308,7 +326,7 @@ class ButlerySectionHeader extends StatelessWidget {
           Semantics(
             header: true,
             child: Text(
-              label.toUpperCase(),
+              label.toLowerCase(),
               style: AppTextStyles.sectionLabel,
             ),
           ),

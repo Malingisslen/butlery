@@ -7,6 +7,8 @@ import 'package:butlery/services/unified/operations/friend_categories_operations
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
@@ -43,6 +45,9 @@ void main() {
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
+
+      // Bridge production ServiceLocator to GetIt so ServiceLocator.get<T>() works
+      production.ServiceLocator.initialize(DIContainer());
 
       // Create mocks
       mockParentService = MockUnifiedFriendsService();
@@ -104,6 +109,8 @@ void main() {
         friends: [testFriend1, testFriend2],
         categoriesList: [testCategory1, testCategory2],
         management: mockManagement,
+        currentUserId: 'user_123',
+        currentUserDisplayName: 'Test User',
       );
 
       // Configure management mock using configuration methods
@@ -262,12 +269,25 @@ void main() {
       });
 
       test('should not delete without permission', () async {
-        // Arrange
-        when(() => mockPermissionService.canDeleteGroup('category_1'))
+        // Arrange - Use a category owned by someone else
+        final otherCategory = FriendCategory(
+          id: 'other_cat',
+          name: 'Other',
+          description: '',
+          ownerId: 'other_user', // Not current user
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          friendUserIds: [],
+        );
+        mockParentService.updateCategoriesList(
+            [testCategory1, testCategory2, otherCategory]);
+        when(() => mockPermissionService.isGroupAdmin('other_cat'))
+            .thenReturn(false);
+        when(() => mockPermissionService.canDeleteGroup('other_cat'))
             .thenReturn(false);
 
         // Act
-        final result = await operations.deleteCategory('category_1');
+        final result = await operations.deleteCategory('other_cat');
 
         // Assert
         expect(result, isFalse);
@@ -278,9 +298,9 @@ void main() {
 
     group('Category Membership Operations', () {
       test('should add friend to category', () async {
-        // Arrange
+        // Arrange - friend_2 must be in management's friends list to pass isFriend check
         mockManagement.setManagementState(
-          friends: [],
+          friends: [testFriend1, testFriend2],
         );
 
         // Act
@@ -346,9 +366,9 @@ void main() {
 
     group('Bulk Operations', () {
       test('should add multiple friends to category', () async {
-        // Arrange
+        // Arrange - friend_2 must be a friend; friend_3 is not
         mockManagement.setManagementState(
-          friends: [],
+          friends: [testFriend1, testFriend2],
         );
 
         // Act
@@ -532,12 +552,12 @@ void main() {
     });
 
     group('Privacy Features', () {
-      test('should throw unimplemented error for privacy settings', () {
-        // Act & Assert
-        expect(
-          () async =>
-              await operations.setCategoryPrivacy('category_1', isPublic: true),
-          throwsUnimplementedError,
+      test('should handle privacy settings gracefully (not yet implemented)',
+          () async {
+        // Production code logs a warning and returns without error
+        await expectLater(
+          operations.setCategoryPrivacy('category_1', isPublic: true),
+          completes,
         );
       });
     });
@@ -552,9 +572,9 @@ void main() {
       });
 
       test('should assign friend to category', () async {
-        // Arrange
+        // Arrange - friend_2 must be a friend to pass isFriend check
         mockManagement.setManagementState(
-          friends: [],
+          friends: [testFriend1, testFriend2],
         );
 
         // Act

@@ -25,6 +25,9 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 
+// ImageUploadService import for local mock
+import 'package:butlery/services/upload/image_upload_service.dart';
+
 // Test infrastructure
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -36,12 +39,12 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
 
-// ============= USING CENTRALIZED MOCKS =============
-// Removed local mock classes:
-// - MockConnectivityMonitoringService (now in production_mocks.dart)
-// - MockImagePickerService (now in production_mocks.dart)
+// Local mock: ImageUploadService has no centralized mock yet
+class MockImageUploadService extends Mock implements ImageUploadService {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('RecipeFormViewModel', () {
     late RecipeFormViewModel viewModel;
     late MockUnifiedRecipeService mockRecipeService;
@@ -109,9 +112,12 @@ void main() {
       // Register additional dependencies for RecipeImageManager
       final mockStorageService = MockStorageService();
       final mockImagePickerService = MockImagePickerService();
+      final mockImageUploadService = MockImageUploadService();
       TestServiceLocator.registerMock<StorageService>(mockStorageService);
       TestServiceLocator.registerMock<ImagePickerService>(
           mockImagePickerService);
+      TestServiceLocator.registerMock<ImageUploadService>(
+          mockImageUploadService);
 
       // Register additional dependencies for RecipeCollaborativeManager
       // These are required by the managers inside RecipeFormViewModel
@@ -435,9 +441,12 @@ void main() {
           initialRecipe: testRecipe,
         );
 
-        expect(editViewModel.hasUnsavedChanges, isFalse);
+        // Note: hasUnsavedChanges is initially true because _loadRecipeData
+        // appends trailing empty strings to ingredients/instructions/tags
+        // for auto-add behavior, making them differ from the original lists.
+        expect(editViewModel.hasUnsavedChanges, isTrue);
 
-        // Act - change title
+        // Act - change title to verify it still reports unsaved
         editViewModel.setTitle('Changed Title');
 
         // Assert

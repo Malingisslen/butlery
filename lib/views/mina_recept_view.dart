@@ -420,6 +420,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         ? _buildSelectionAppBar(viewModel)
         : MainViewHeader(
             title: 'dina\nrecept',
+            ghostIllustration: VegetableType.broccoli,
             countBadge: context.l10n.recipeCountBadge(recipeCount),
             trailing: const RecipeListAvatarBadge(),
             actions: [

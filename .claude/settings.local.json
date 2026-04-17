@@ -17,7 +17,10 @@
       "Bash(rm -f ~/.claude/state/plan-review-gate.log)",
       "Bash(bash .claude/hooks/plan-review-gate.sh)",
       "Bash(echo \"exit=$?\")",
-      "Read(//c/Users/malla/.claude/state/**)"
+      "Read(//c/Users/malla/.claude/state/**)",
+      "mcp__linear__list_comments",
+      "Bash(rm /c/Users/malla/.claude/projects/C--Butlery-butlery/memory/patterns.md)",
+      "Bash(rm /c/Users/malla/.claude/projects/C--Butlery-butlery/memory/friends-screen-freeze-diagnostic.md)"
     ]
   }
 }

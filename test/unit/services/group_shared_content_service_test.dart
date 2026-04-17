@@ -26,6 +26,7 @@ void main() {
         .collection(FirestoreCollections.sharedContent)
         .doc(id)
         .set({
+      'contentType': 'recipe',
       'sharedByUserId': sharedByUserId,
       'sharedByDisplayName': 'Test User',
       'recipeTitle': recipeTitle,

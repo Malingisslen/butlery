@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
 
 /// Input, card, and data display component themes.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
@@ -135,9 +136,9 @@ class InputThemes {
   /// Recipe card decoration - Left green border + bottom rust border.
   /// Uses AppColors directly since BoxDecoration is not part of ThemeData
   /// and these are brand-specific decorative borders.
-  static BoxDecoration get recipeCardDecoration => const BoxDecoration(
+  static BoxDecoration get recipeCardDecoration => BoxDecoration(
         color: AppColors.cardWhite,
-        border: Border(
+        border: const Border(
           left: BorderSide(
             color: AppColors.recipeCardLeftBorder,
             width: 4,
@@ -147,6 +148,7 @@ class InputThemes {
             width: 3,
           ),
         ),
+        boxShadow: AppShadows.cardLifted,
       );
 
   /// Trending recipe card decoration
@@ -180,24 +182,26 @@ class InputThemes {
       );
 
   /// Search box decoration — green+rust border always visible
-  static BoxDecoration get searchBoxDecoration => const BoxDecoration(
+  static BoxDecoration get searchBoxDecoration => BoxDecoration(
         color: AppColors.cardWhite,
-        border: Border(
+        border: const Border(
           top: BorderSide(color: AppColors.forestGreen, width: 1),
           left: BorderSide(color: AppColors.forestGreen, width: 1),
           right: BorderSide(color: AppColors.forestGreen, width: 1),
           bottom: BorderSide(color: AppColors.rust, width: 2),
         ),
+        boxShadow: AppShadows.searchBox,
       );
 
   /// Search box decoration (focused) — heavier green+rust border
-  static BoxDecoration get searchBoxDecorationFocused => const BoxDecoration(
+  static BoxDecoration get searchBoxDecorationFocused => BoxDecoration(
         color: AppColors.cardWhite,
-        border: Border(
+        border: const Border(
           top: BorderSide(color: AppColors.forestGreen, width: 2),
           left: BorderSide(color: AppColors.forestGreen, width: 2),
           right: BorderSide(color: AppColors.forestGreen, width: 2),
           bottom: BorderSide(color: AppColors.rust, width: 4),
         ),
+        boxShadow: AppShadows.searchBox,
       );
 }

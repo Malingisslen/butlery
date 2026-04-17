@@ -127,6 +127,114 @@ class VegetableIllustration extends StatelessWidget {
   }
 }
 
+/// Ghost illustration for page headers — large, very transparent, brightened.
+///
+/// Positioned absolutely behind the header title text.
+/// Each main view maps to a specific vegetable.
+class HeaderGhostIllustration extends StatelessWidget {
+  const HeaderGhostIllustration({
+    required this.type,
+    this.size = 130,
+    super.key,
+  });
+
+  final VegetableType type;
+  final double size;
+
+  /// Maps main view routes to their illustration type.
+  static const viewMapping = {
+    'recipes': VegetableType.broccoli,
+    'menu': VegetableType.peaPod,
+    'shopping': VegetableType.carrot,
+    'add': VegetableType.redOnion,
+    'profile': VegetableType.mushroom,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      right: -10,
+      bottom: -15,
+      child: IgnorePointer(
+        child: Opacity(
+          opacity: 0.12,
+          child: ColorFiltered(
+            colorFilter: const ColorFilter.mode(
+              Colors.white,
+              BlendMode.modulate,
+            ),
+            child: Image.asset(
+              VegetableIllustration.getAssetPath(type),
+              width: size,
+              height: size,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Small illustration for section headers (36px, semi-transparent).
+class SectionIllustration extends StatelessWidget {
+  const SectionIllustration({
+    required this.type,
+    this.size = 36,
+    super.key,
+  });
+
+  final VegetableType type;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: 0.7,
+      child: Image.asset(
+        VegetableIllustration.getAssetPath(type),
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      ),
+    );
+  }
+}
+
+/// Faint watermark illustration in recipe card corners (6% opacity).
+class CardWatermarkIllustration extends StatelessWidget {
+  const CardWatermarkIllustration({
+    required this.type,
+    this.size = 50,
+    super.key,
+  });
+
+  final VegetableType type;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      right: -5,
+      bottom: -5,
+      child: IgnorePointer(
+        child: Opacity(
+          opacity: 0.06,
+          child: Image.asset(
+            VegetableIllustration.getAssetPath(type),
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// A container widget that displays an illustration with optional label.
 ///
 /// Useful for empty state compositions.
