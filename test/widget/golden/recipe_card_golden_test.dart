@@ -56,9 +56,11 @@ void main() {
 
       await tester.pumpWidget(
         createLocalizedTestApp(
+          // Grid cards flow inside a GridView in production and aren't
+          // height-constrained, so use intrinsic height here to avoid
+          // RenderFlex overflow in the golden.
           child: SizedBox(
             width: 180,
-            height: 240,
             child: ContentCard(
               item: recipe,
               type: ContentCardType.recipe,

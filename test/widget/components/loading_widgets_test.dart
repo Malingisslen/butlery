@@ -131,26 +131,33 @@ void main() {
 
       testWidgets('should have correct styling for loading container',
           (tester) async {
-        // Act
+        // Act — capture the colorScheme used by the overlay so we assert
+        // against the actual theme color rather than a hardcoded constant.
+        late ColorScheme capturedColorScheme;
         await tester.pumpWidget(
           MaterialApp(
-            home: LoadingWidgets.loadingOverlay(
-              isLoading: true,
-              loadingMessage: 'Test',
-            ),
+            home: Builder(builder: (context) {
+              capturedColorScheme = Theme.of(context).colorScheme;
+              return LoadingWidgets.loadingOverlay(
+                isLoading: true,
+                loadingMessage: 'Test',
+              );
+            }),
           ),
         );
 
-        // Assert
-        final container = tester.widget<Container>(
-          find.byType(Container).first,
+        // Assert — first Container is the full-screen translucent background,
+        // so we look for the inner Container carrying the message surface.
+        final surface = tester.widget<Container>(
+          find
+              .byWidgetPredicate((w) =>
+                  w is Container &&
+                  w.padding == const EdgeInsets.all(AppDimensions.paddingL))
+              .first,
         );
 
-        expect(container.padding,
-            equals(const EdgeInsets.all(AppDimensions.paddingL)));
-
-        final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.cardWhite));
+        final decoration = surface.decoration as BoxDecoration;
+        expect(decoration.color, capturedColorScheme.surfaceContainerHighest);
         expect(decoration.borderRadius,
             equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
       });

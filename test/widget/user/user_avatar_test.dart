@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
+import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('UserAvatar Widget Tests', () {
@@ -90,8 +91,8 @@ void main() {
           ),
         );
 
-        // Should show question mark for empty name
-        expect(find.text('?'), findsOneWidget);
+        // Empty name → person icon fallback (renders via initialsOrFallback).
+        expect(find.byIcon(Icons.person), findsOneWidget);
       });
 
       testWidgets('handles names with extra spaces',
@@ -243,12 +244,10 @@ void main() {
         bool tapped = false;
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Tappable User',
-                onTap: () => tapped = true,
-              ),
+          createLocalizedTestApp(
+            child: UserAvatar(
+              displayName: 'Tappable User',
+              onTap: () => tapped = true,
             ),
           ),
         );
@@ -419,30 +418,32 @@ void main() {
         expect(find.byType(CachedNetworkImage), findsNothing);
       });
 
-      testWidgets('maintains circular shape', (WidgetTester tester) async {
+      testWidgets('renders square avatar container (Butlery design language)',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
               body: UserAvatar(
-                displayName: 'Circle Test',
+                displayName: 'Shape Test',
               ),
             ),
           ),
         );
 
-        // Find containers with circular decoration
-        final circularContainers = find.byWidgetPredicate(
+        // Butlery design language is square — avatar Container uses
+        // BoxDecoration without shape: BoxShape.circle.
+        final avatarContainer = find.byWidgetPredicate(
           (widget) {
             if (widget is Container) {
               final decoration = widget.decoration;
               return decoration is BoxDecoration &&
-                  decoration.shape == BoxShape.circle;
+                  decoration.shape == BoxShape.rectangle;
             }
             return false;
           },
         );
 
-        expect(circularContainers, findsWidgets);
+        expect(avatarContainer, findsWidgets);
       });
     });
 
@@ -450,17 +451,15 @@ void main() {
       testWidgets('provides semantic label for screen readers',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Accessible User',
-                onTap: () {},
-              ),
+          createLocalizedTestApp(
+            child: UserAvatar(
+              displayName: 'Accessible User',
+              onTap: () {},
             ),
           ),
         );
 
-        // InkWell should be present for tappable avatars
+        // Tappable avatar wraps its content in InkWell + Semantics(button: true).
         expect(find.byType(InkWell), findsOneWidget);
       });
     });
