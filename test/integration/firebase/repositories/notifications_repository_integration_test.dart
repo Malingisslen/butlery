@@ -101,7 +101,7 @@ void main() {
 
       test('should mark notification as read with readAt timestamp', () async {
         // Arrange
-        const userId = 'test_user';
+        const userId = testUserId;
 
         // Create notification with server timestamp
         final docRef =
@@ -133,7 +133,7 @@ void main() {
       test('should stream notifications with proper timestamp ordering',
           () async {
         // Arrange
-        const userId = 'test_user';
+        const userId = testUserId;
 
         // Create notifications with server timestamps
         for (int i = 0; i < 3; i++) {
@@ -205,7 +205,7 @@ void main() {
 
       test('should mark multiple notifications as read in batch', () async {
         // Arrange
-        const userId = 'test_user';
+        const userId = testUserId;
         final notificationIds = <String>[];
 
         // Create multiple unread notifications
@@ -242,7 +242,7 @@ void main() {
     group('Complex Queries with Timestamps', () {
       test('should retrieve notifications since specific date', () async {
         // Arrange
-        const userId = 'test_user';
+        const userId = testUserId;
         final cutoffDate = DateTime.now().subtract(const Duration(days: 7));
 
         // Create old notifications
@@ -293,16 +293,17 @@ void main() {
 
       test('should handle unread count with real-time updates', () async {
         // Arrange
-        const userId = 'test_user';
+        const userId = testUserId;
 
-        // Create mix of read and unread notifications
+        // Create mix of read and unread notifications.
+        // i % 3 == 0 hits 0, 3, 6, 9 → 4 read, 6 unread across i=0..9.
         for (int i = 0; i < 10; i++) {
           await fakeFirestore.collection('user_notifications').add({
             'userId': userId,
             'type': NotificationType.optional.toString(),
             'title': 'Notification $i',
             'body': 'Body $i',
-            'isRead': i % 3 == 0, // Every third is read
+            'isRead': i % 3 == 0,
             'createdAt': TestFieldValues.serverTimestamp(),
           });
         }
@@ -310,8 +311,8 @@ void main() {
         // Act
         final unreadCount = await repository.getUnreadCount(userId);
 
-        // Assert
-        expect(unreadCount, equals(7)); // 10 total, 3 read, 7 unread
+        // Assert — 10 total, 4 read (0,3,6,9), 6 unread.
+        expect(unreadCount, equals(6));
 
         // Mark all as read
         await repository.markAllAsRead(userId);
@@ -324,8 +325,9 @@ void main() {
 
     group('Notification Preferences', () {
       test('should save and retrieve notification preferences', () async {
-        // Arrange
-        const userId = 'test_user';
+        // Arrange — use the authenticated user, otherwise
+        // PermissionValidationMixin.validateSelfOperation rejects the write.
+        const userId = testUserId;
         final preferences = NotificationPreferences.defaults();
 
         // Act
@@ -335,14 +337,11 @@ void main() {
         final savedPreferences =
             await repository.getNotificationPreferences(userId);
 
+        // Defaults per NotificationPreferences.defaults(): everything on.
         expect(savedPreferences.enabled, isTrue);
-        expect(savedPreferences.soundEnabled, isFalse);
+        expect(savedPreferences.soundEnabled, isTrue);
         expect(savedPreferences.vibrationEnabled, isTrue);
-        expect(savedPreferences.allowBatching, isFalse);
-        expect(savedPreferences.enabled, isTrue);
-        expect(savedPreferences.soundEnabled, isFalse);
-        expect(savedPreferences.vibrationEnabled, isTrue);
-        expect(savedPreferences.allowBatching, isFalse);
+        expect(savedPreferences.allowBatching, isTrue);
       });
     });
   });

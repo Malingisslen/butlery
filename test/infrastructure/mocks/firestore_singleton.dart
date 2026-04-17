@@ -64,12 +64,34 @@ class FirestoreSingleton {
     debugPrint('Force recreated FakeFirebaseFirestore instance');
   }
 
-  /// Clear all data in the Firestore instance (called after EVERY test)
+  /// Clear all data in the Firestore instance (called after EVERY test).
+  ///
+  /// Nuke-and-recreate by default: the selective per-collection cleanup
+  /// below missed any collection not hardcoded in the list, and that
+  /// residual state was the source of cross-test count pollution
+  /// (tests asserting `count == 3` getting 12 because previous tests'
+  /// docs persisted). The hard reset is cheap and bulletproof.
   static Future<void> clearData() async {
     if (_instance == null) return;
 
     try {
       // Cancel all active streams first
+      await _cancelAllStreams();
+
+      _forceRecreate();
+
+      _currentTestName = null;
+      _testCollections.clear();
+      _testSnapshots.clear();
+      return;
+    } catch (e) {
+      debugPrint('Error resetting Firestore data: $e');
+      _forceRecreate();
+      return;
+    }
+
+    // ignore: dead_code — legacy selective path kept for reference.
+    try {
       await _cancelAllStreams();
 
       // Count operations
