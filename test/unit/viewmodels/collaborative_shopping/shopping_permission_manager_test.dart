@@ -12,7 +12,7 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 void main() {
   group('ShoppingPermissionManager', () {
     late ShoppingPermissionManager manager;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
 
     const testListId = 'shopping-list-123';
 
@@ -24,7 +24,7 @@ void main() {
       await TestServiceLocator.initialize();
       production.ServiceLocator.initialize(DIContainer());
 
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
       TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
 
       manager = ShoppingPermissionManager(testListId);
@@ -46,7 +46,7 @@ void main() {
       test('should return true when permission service allows editing', () {
         // Behavior: canEdit delegates to permissionService.canEditShoppingList
         // with the manager's own listId.
-        // MockPermissionService has concrete overrides — configure via setPermissionState.
+        // FakePermissionService has concrete overrides — configure via setPermissionState.
         mockPermissionService.setPermissionState(
           currentUserId: 'test-user',
           permissions: {

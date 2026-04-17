@@ -93,7 +93,7 @@ void main() {
     late UserProfileViewModel viewModel;
     late TestMockUserService mockUserService;
     late MockImagePickerService mockImagePickerService;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     late MockImageUploadService mockImageUploadService;
     const testUserId = 'test-user-123';
 
@@ -114,7 +114,7 @@ void main() {
       // Create mocks
       mockUserService = TestMockUserService();
       mockImagePickerService = MockImagePickerService();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
       mockImageUploadService = MockImageUploadService();
 
       // Configure UserService state

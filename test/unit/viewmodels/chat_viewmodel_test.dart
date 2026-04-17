@@ -227,7 +227,7 @@ void main() {
       // Configure PermissionService with test user ID so
       // ChatViewModel.currentUserId resolves correctly via production ServiceLocator
       final permissionService =
-          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+          TestServiceLocator.get<PermissionService>() as FakePermissionService;
       permissionService.setPermissionState(currentUserId: testUserId);
 
       // Configure UnifiedFriendsService so _checkFriendshipStatus sees

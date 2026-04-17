@@ -138,7 +138,7 @@ void main() {
   group('IntelligentCacheManager', () {
     late IntelligentCacheManager manager;
     late MockUnifiedRecipeService mockRecipeService;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -153,7 +153,7 @@ void main() {
       mockRecipeService = TestServiceLocator.get<UnifiedRecipeService>()
           as MockUnifiedRecipeService;
       mockPermissionService =
-          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+          TestServiceLocator.get<PermissionService>() as FakePermissionService;
 
       mockRecipeService.setRecipeState(
         recipes: [],

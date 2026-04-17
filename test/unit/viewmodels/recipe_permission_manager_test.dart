@@ -13,7 +13,7 @@ void main() {
 
   group('RecipePermissionManager - Ultrathink Enhanced Tests', () {
     late RecipePermissionManager permissionManager;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
 
     // Test data
     const testRecipeId = 'recipe_123';
@@ -26,7 +26,7 @@ void main() {
     });
 
     setUp(() {
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
 
       // Configure default permission service state using ultrathink state configuration
       mockPermissionService.setPermissionState(

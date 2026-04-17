@@ -96,6 +96,73 @@ jobs:
 
           echo "Filtered coverage: ${FILTERED_PCT:-unknown}"
 
+      # Hard local coverage floor. Codecov is the primary gate, but if the
+      # token is unavailable (outage, rotated secret) the dashboard fails
+      # open. This step fails the build locally so regressions can't sneak
+      # in. Floors are intentionally loose until we've logged ~5 runs and
+      # can tighten to observed-baseline-minus-2pp.
+      - name: Enforce coverage floors
+        if: always()
+        run: |
+          if [ ! -f coverage/lcov_filtered.info ]; then
+            echo "No filtered lcov — skipping floor check"
+            exit 0
+          fi
+
+          fail=0
+
+          parse_pct() {
+            lcov --summary "$1" 2>/dev/null \
+              | awk '/^  lines/ {print $2}' | tr -d '%'
+          }
+
+          below_floor() {
+            awk -v v="$1" -v f="$2" 'BEGIN { exit !(v+0 < f+0) }'
+          }
+
+          OVERALL_FLOOR=55.0
+          OVERALL_PCT=$(parse_pct coverage/lcov_filtered.info)
+          if [ -z "$OVERALL_PCT" ]; then
+            echo "::warning::Could not parse overall filtered coverage"
+          elif below_floor "$OVERALL_PCT" "$OVERALL_FLOOR"; then
+            echo "::error::Overall filtered coverage ${OVERALL_PCT}% < floor ${OVERALL_FLOOR}%"
+            fail=1
+          else
+            echo "Overall filtered coverage ${OVERALL_PCT}% >= ${OVERALL_FLOOR}%"
+          fi
+
+          check_area() {
+            local name="$1"
+            local pattern="$2"
+            local floor="$3"
+            local out="coverage/area_${name}.info"
+            lcov --extract coverage/lcov_filtered.info "$pattern" \
+              --ignore-errors unused \
+              -o "$out" >/dev/null 2>&1 || true
+            if [ ! -s "$out" ]; then
+              echo "::warning::No coverage data for ${name} (${pattern})"
+              return
+            fi
+            local pct
+            pct=$(parse_pct "$out")
+            if [ -z "$pct" ]; then
+              echo "::warning::Could not parse ${name} coverage"
+              return
+            fi
+            if below_floor "$pct" "$floor"; then
+              echo "::error::${name} coverage ${pct}% < floor ${floor}%"
+              fail=1
+            else
+              echo "${name} coverage ${pct}% >= ${floor}%"
+            fi
+          }
+
+          check_area "auth" "*/services/auth*" 80.0
+          check_area "repositories" "*/repositories/*" 70.0
+          check_area "rate_limiting" "*/core/rate_limiting/*" 80.0
+
+          exit $fail
+
       # Upload coverage to Codecov — this is the real gate (see codecov.yml).
       - name: Upload coverage to Codecov
         if: success()

@@ -19,7 +19,7 @@ void main() {
 
   late UnifiedShoppingViewModel viewModel;
   late MockUnifiedShoppingService mockShoppingService;
-  late MockPermissionService mockPermissionService;
+  late FakePermissionService mockPermissionService;
 
   const testUserId = 'test-user-123';
   const testListId = 'list-1';
@@ -51,7 +51,7 @@ void main() {
     final getIt = GetIt.instance;
 
     mockShoppingService = MockUnifiedShoppingService();
-    mockPermissionService = MockPermissionService();
+    mockPermissionService = FakePermissionService();
 
     // Configure state
     mockShoppingService.setShoppingState(

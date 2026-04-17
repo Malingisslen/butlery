@@ -62,6 +62,7 @@ import 'package:butlery/core/constants/routes.dart' as app_routes;
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/router/app_router.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 // Localization
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -106,6 +107,13 @@ Future<void> main() async {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
+      // Web: use path-based URLs (no `#` fragment). Without this, the debug
+      // Chrome opens `http://host:port/` and the router fails to match the
+      // root route — the navigation shell never renders.
+      if (kIsWeb) {
+        usePathUrlStrategy();
+      }
 
       // Limit image cache to prevent unbounded memory growth
       PaintingBinding.instance.imageCache.maximumSize = 100;

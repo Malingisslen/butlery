@@ -30,7 +30,7 @@ void main() {
     late CollaborativeMenuOperations collaborativeOps;
     late SocialMenuOperations socialOps;
     late MockFirebaseFirestore mockFirestore;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     late MockUnifiedFriendsService mockFriendsService;
     late MockUnifiedMenuService mockParent;
     late Recipe testRecipe;
@@ -63,7 +63,7 @@ void main() {
       // Get the existing permission service mock that was registered during initialization
       // This ensures production code uses the same instance we're configuring
       mockPermissionService =
-          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+          TestServiceLocator.get<PermissionService>() as FakePermissionService;
 
       final mockMenuCollaborationRepo = MockMenuCollaborationRepository();
       collaborativeOps = CollaborativeMenuOperations(

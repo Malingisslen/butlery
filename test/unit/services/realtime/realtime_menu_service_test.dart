@@ -55,7 +55,7 @@ void main() {
   late RealtimeMenuService service;
   late MockRealtimeSyncService mockSyncService;
   late MockAuthService mockAuthService;
-  late MockPermissionService mockPermissionService;
+  late FakePermissionService mockPermissionService;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -75,7 +75,7 @@ void main() {
 
     mockSyncService = MockRealtimeSyncService();
     mockAuthService = MockAuthService();
-    mockPermissionService = MockPermissionService();
+    mockPermissionService = FakePermissionService();
 
     mockAuthService.setAuthState(
       isAuthenticated: true,

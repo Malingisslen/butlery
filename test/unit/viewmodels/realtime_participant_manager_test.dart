@@ -26,7 +26,7 @@ void main() {
     late RealtimeParticipantManager manager;
     late _MockRealtimeMenuService mockMenuService;
     late _MockParticipantTracker mockTracker;
-    late MockPermissionService mockPermission;
+    late FakePermissionService mockPermission;
 
     const testMenuId = 'menu_123';
     const testUserId = 'current_user';
@@ -57,7 +57,7 @@ void main() {
     setUp(() {
       mockMenuService = _MockRealtimeMenuService();
       mockTracker = _MockParticipantTracker();
-      mockPermission = MockPermissionService();
+      mockPermission = FakePermissionService();
 
       mockPermission.setPermissionState(
         currentUserId: testUserId,

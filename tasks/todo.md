@@ -1,6 +1,44 @@
 # Sprint Backlog
 
-## Sprint: Ingredient Search — "Sök med ingredienser" — 2026-04-14
+## Sprint: Test Hardening Close-Out (BUT-387 Final Phase) — 2026-04-17
+
+### Agent A: testing-specialist — User-journey & Integration Coverage
+
+- [x] **A1. Write 6 user-journey integration tests** — `test/views/` using `allergen_preferences_view_test.dart` template: onboarding → first recipe, menu gen → calendar, pantry → "laga med vad jag har", shopping list collab check-off, recipe edit → detail refresh, shared list reply. (BUT-390)
+- [x] **A2. Unskip 26 @Skip('BUT-387 Phase 7') integration tests** — migrate each to `test/test_support/emulator_lane.dart`; keep `@Skip` only for fixtures that genuinely can't run against emulator. (BUT-391)
+
+### Agent B: firebase-backend-security — CI Hard Gates
+
+- [x] **B1. Hard local coverage floor + per-area gates** — `.github/workflows/`: add bash `exit 1` if filtered coverage <60%; per-area lines for `lib/repositories/` (≥70%) and `lib/services/` (≥65%). (BUT-392)
+
+### Agent C: flutter-developer — Test Infrastructure + Bug Fixes
+
+- [x] **C1. Rename MockPermissionService → FakePermissionService** — `test/test_support/fake_permission_service.dart` + 34 call sites, match Phase 3 Fake-style naming. (BUT-388)
+- [x] **C2. Fix Flutter web base URL drops navigation shell** — `lib/main.dart`: add `usePathUrlStrategy()`; verify `/` and `/#/` both render main menu. (BUT-374)
+- [x] **C3. Replace manual Timer debounce with executeDebounced** — `lib/viewmodels/ingredient_search_viewmodel.dart`, `lib/viewmodels/pantry/pantry_viewmodel.dart`, `lib/viewmodels/friends/friends_search_manager.dart`: delete Timer + isDisposed guards, call `executeDebounced()`. (BUT-385)
+
+### Post-Sprint Steps
+
+- [x] Run `dart analyze --fatal-infos` — clean
+- [x] Run `flutter test test/views/` — 21/21 green; targeted VM tests pass
+- [ ] Verify CI coverage gate fires on intentional drop (verifiable only once CI runs)
+- [ ] Commit, push to main
+- [x] Update Linear: BUT-390, BUT-391, BUT-392, BUT-388, BUT-385, BUT-374 → Done
+
+---
+
+## What this means in plain language
+
+- The big test-infrastructure rescue that's dominated the last two weeks finally pays off: 6 "real user journeys" get automated tests — onboarding, menu generation, pantry search, shopping collab, recipe editing, social reply — so the next UI change can't silently break them.
+- 26 tests that were parked behind a "skip — needs emulator" flag come back online. The infrastructure for that shipped last week; now we use it.
+- CI gets a hard "fail the build if coverage drops below X%" rule, per area. Today the gate is silent if the Codecov token hiccups — now it's local and unskippable.
+- The "blank screen when you open the web app without the `#`" bug gets fixed.
+- Three screens with identical duplicated debounce code collapse into one helper.
+- Risk: Low. All test/infra work; the only user-facing change is the web routing fix.
+
+---
+
+## Archive: Sprint Ingredient Search — "Sök med ingredienser" — 2026-04-14
 
 **Plan file:** `C:\Users\malla\.claude\plans\robust-toasting-kite.md`
 
@@ -33,20 +71,7 @@
 
 - [x] Run `dart analyze --fatal-infos` — 0 issues
 - [x] All 26 tests pass (11 + 10 + 5)
-- [ ] Chrome E2E: add 3+ ingredients, verify results ranked by coverage, tap result → recipe detail
-- [ ] Commit, push to main
-- [ ] Update Linear: BUT-205 → In Progress
-
----
-
-## What this means in plain language
-
-- New feature: you can search your recipes by what ingredients you have — type "kyckling", "ris", "kokosmjölk" and see all recipes ranked by how well they match
-- Each result shows how many ingredients match ("4 av 6") and what you're missing ("Saknas: grädde, vitlök")
-- Old recipes that were missing ingredient data get automatically handled
-- Entry point: a new "Med ingredienser" chip in the recipe list
-- Works offline — no internet needed for searching your own recipes
-- Risk: Low. New service + view, reuses existing recipe card with its match badge.
+- [x] Commit, push to main — `23231073b`
 
 ---
 
@@ -73,29 +98,6 @@
 
 - [x] **D1. Eliminate 3x redundant recipe sync on startup** — dedup guard in startFirebaseSync + _initializing flag skips redundant auth handler during init. 21→7 events. (BUT-382)
 
-### Continue: testing-specialist — Viewmodel Tests
-
-- [ ] **E1. Continue green-lighting viewmodel tests** — 65 files, partially done. (BUT-367) *(deferred — parallel session)*
-
-### Post-Sprint Steps
-
-- [x] Run `dart analyze --fatal-infos` — 0 issues
-- [x] Commit `6e2720bc2`, pushed to main
-- [x] Update Linear: BUT-379, BUT-381, BUT-383, BUT-373, BUT-380, BUT-372, BUT-382, BUT-375 → Done
-
----
-
-## What this means in plain language
-
-- The app currently crashes or shows errors when you open it — three "permission denied" errors block category preferences, shopping lists, and comments. This sprint fixes those first.
-- Menu generator sometimes gives you fewer recipes than you asked for — that gets investigated and fixed.
-- When you import recipes from the archive, you temporarily see duplicates (they go away on reload). That gets fixed.
-- The recipe list page can overflow on smaller screens — layout fix.
-- Social pages (shared recipes, friends) are missing the bottom navigation bar — you get stuck with no way to go back. Fixed.
-- App loads every recipe 3 times on startup instead of once — wastes bandwidth and slows startup. Fixed.
-- Test health continues improving (ongoing from last sprint).
-- Risk: Low-medium. Permission fixes require deploying Firestore rules (reversible). UI fixes are local. The menu generator bug needs investigation — fix complexity unknown until root cause found.
-
 ---
 
 ## Archive: Sprint Menu System Deepening — 2026-04-13
@@ -109,72 +111,10 @@
 
 ## Archive: Sprint Veckomeny Constraint Parser — 2026-04-11
 
-**Goal:** Replace the count-only regex parser in `MenuService.generateMenuFromPrompt` with a deterministic, lexicon-driven Swedish constraint parser. Users can write rich prompts (allergens, dieter, cuisines, formats, themes, time limits, day-anchored idioms like *tacofredag*). A transparent extraction-chip strip above the calendar shows what was understood, with amber chips for anything that wasn't — no silent failures, no LLM cost. Pre-production: lexicon ships as code (sprint 1) behind a `LexiconProvider` interface so a follow-up sprint can swap in a Google-Sheet-sourced Firestore overlay (BUT-360, to be filed) without parser changes.
-
-**Plan file:** `C:\Users\malla\.claude\plans\tranquil-zooming-codd.md`
-
-### Agent A: flutter-developer — Models + Lexicon scaffold
-
-- [x] **A1. Value classes** — `lib/models/menu/parsed_menu_request.dart`: `ParsedMenuRequest`, `SlotRequest`, `RecipeConstraint`, `DayPin`, `ExtractionTrace`, `TraceEntry`. Immutable, equatable. Const constructors where possible. (BUT-359)
-
-- [x] **A2. LexiconProvider interface** — `lib/services/menu/parser/lexicon_provider.dart`: `LexiconCategory` enum (18 entries), `Lexicon` value class with `of(category)` lookup + `mergedWith(overlay)` method, `abstract class LexiconProvider { Future<Lexicon> load(); }`. Sprint 2 will add `FirestoreLexiconProvider` against this interface — keep the surface minimal. (BUT-359)
-
-- [x] **A3. CodeLexiconProvider seed** — `lib/services/menu/parser/code_lexicon_provider.dart`: 18 `static const Map<String, String>` fields with the ~250 seed stems from the plan (numbers, vagueQuantity, everydayPhrases, mealStems, dietaryStems, allergenFreeStems, allergenNounStems, negationWords, cuisineStems, formatStems, verbObjectMap, themeStems, timeKeywords, dayNames, dayIdioms, subdivisionWords, politePreamble, skipFrukostMarkers). All canonical values verified against `AllergenConfig.allKeys`, `DietaryConfig.all`, `CuisineConfig.cuisines`. (BUT-359)
-
-- [x] **A4. DI registration** — `lib/core/di/modules/content_module.dart`: register `LexiconProvider` interface → `CodeLexiconProvider` impl as lazy singleton. Verify dependency order: must register before `MenuService`. (BUT-359)
-
-### Agent B: flutter-developer — Parser engine
-
-- [x] **B1. Text normalizer** — `lib/services/menu/parser/text_normalizer.dart`: `normalize(input)` (lowercase + NFC + collapse whitespace + strip trailing punctuation), `stripDiacritics`, `stripPolitePreamble(words)`, `levenshtein1Lookup(token, candidates)` with bigram pre-index for sub-millisecond fallback on tokens ≥6 chars. Pure functions, no state. (BUT-359)
-
-- [x] **B2. MenuConstraintParser engine** — `lib/services/menu/parser/menu_constraint_parser.dart`: `static ParsedMenuRequest parse(String prompt, Lexicon lexicon)`. Implement the 7-step pipeline from the plan: normalize → extract globals (negations, dietary, day idioms, day-name+format pins) → clause-split on `[,;] | och | samt | plus` → per-clause (count + meal + subdivision + modifier sweep) → second-pass verb+object → trace assembly → return. Handle `den ena ... den andra`, soft markers (helst/gärna/minst), range counts (`2-3`, `två till tre`), vague quantities, everyday phrases (`varje dag`, `hela veckan`). (BUT-359)
-
-- [x] **B3. Parser unit tests** — `test/unit/services/menu/menu_constraint_parser_test.dart`: 80+ test cases organized by taxonomy group (counts, meal types, dietary, allergens, cuisines, formats and verbs, time, day pins, themes, subdivisions, skip frukost, robustness, graceful failure, full motivating example). Each test asserts a single specific behaviour. Pure Dart, no Firebase. (BUT-359)
-
-- [x] **B4. Normalizer + lexicon tests** — `test/unit/services/menu/parser/text_normalizer_test.dart` (lowercase, NFC, diacritic strip, levenshtein lookup, polite-preamble stripping doesn't eat real content) + `test/unit/services/menu/parser/code_lexicon_provider_test.dart` (no duplicate stems within a category, all canonical values exist in their respective tagging configs). (BUT-359)
-
-### Agent C: flutter-developer — MenuService + distribution integration
-
-- [x] **C1. MenuService.generateMenuFromParsedRequest** — `lib/services/menu_service.dart`: add the new method per the plan. Reuse `_weightedSelect`, `_enforceCuisineDiversity`, `SeasonUtils.currentSeasonTag`. Implement `_passesGlobals` (allergen + dietary), `_matchesConstraint` (dietary, allergen, requiredTags, requiredCuisines via `CuisineConfig.extractCuisineTag`, maxTimeMinutes via `recipe.timeInMinutes ?? totalTime`). Place day pins first (so tacofredag wins). Soft constraint fallback to unconstrained slot pool. (BUT-359)
-
-- [x] **C2. Wire the parser into the existing entrypoint** — `MenuService.generateMenuFromPrompt` becomes a thin wrapper: load lexicon (cached on first use via injected `LexiconProvider`), call `MenuConstraintParser.parse`, return early if `isEmpty`, otherwise delegate to `generateMenuFromParsedRequest`. Constructor or setter inject `LexiconProvider`. Backwards-compatible: count-only prompts still produce identical results because empty `RecipeConstraint`s pass `_matchesConstraint`. (BUT-359)
-
-- [x] **C3. Distribution layer learns DayPin** — `lib/services/menu/weekly_menu_plan_service.distributeFromGeneratedMenu`: new optional param `List<DayPin> dayPins = const []`. Place pinned recipes on their pinned weekday/slot first; remaining recipes flow into the existing today-anchored chronological fill. Output shape unchanged. Update existing tests; add new test for tacofredag pinning. (BUT-359)
-
-- [x] **C4. Service-layer integration tests** — `test/unit/services/menu_service_parsed_request_test.dart`: hand-built recipe pool with diverse `TagResult`. Assert: dietary filter respected, allergen filter respected, global filter applies to every slot, soft constraint falls back when hard match empty, cuisine diversity preserved, day pin placement, time-bound filter. Mocktail pattern from existing `menu_viewmodel_test.dart`. (BUT-359)
-
-### Agent D: flutter-developer + uiux-designer — Extraction chips UI
-
-- [x] **D1. ParsedExtractionChips widget** — `lib/widgets/menu/parsed_extraction_chips.dart`: stateless. Renders nothing when `parsed == null`. When present: green pill chips for `trace.understood` (icon per category), amber pill chips for `trace.notUnderstood`, "Förfina prompten" link only when warnings/notUnderstood present. Reuses existing pill-chip widget from the design system — no new theme tokens, SQUARE corners. Theme constants only. (BUT-359)
-
-- [x] **D2. ViewModel surface** — `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`: expose latest `ParsedMenuRequest?` (set after each successful generation). Notify listeners. Guard async gaps with `if (isDisposed) return`. (BUT-359)
-
-- [x] **D3. Calendar widget integration** — `lib/widgets/menu/calendar_weekly_menu_widget.dart`: render `ParsedExtractionChips` strip above the day grid when the ViewModel exposes a parse. No layout shift when parse is null. (BUT-359)
-
-- [x] **D4. Localization** — `lib/l10n/app_sv.arb` + `lib/l10n/app_en.arb`: keys `weeklyMenuChipsHeading` ("Vi förstod:"), `weeklyMenuChipsHeadingNotUnderstood` ("Vi förstod inte:"), `weeklyMenuChipsRefinePrompt` ("Förfina prompten"), category labels for trace icons. Both languages. (BUT-359)
-
-### Post-Sprint Steps
-
-- [x] Run `dart analyze --fatal-infos`
-- [x] Run `flutter test test/unit/services/menu/` — 97/97 pass
-- [ ] Chrome end-to-end with the prompts from the plan's verification section
-- [ ] Canonical-tag check: confirm whether `matlåda`, `snabb`, `bröd`, `vardagsmat` exist in the canonical tag set
-- [x] Commit, push to main — `fa2c895f4`
-- [ ] File BUT-360 in Linear: "Google Sheet → Firestore overlay for menu_lexicon (mirror ingredient pipeline)"
-- [x] Update Linear: BUT-359 → Done
-
----
-
-## What this means in plain language
-
-- You can write your weekly menu prompt the way you'd say it out loud — *"3 middagar varav en glutenfri och två matlådor, 4 luncher där en är vegansk och en italiensk, tacofredag, inget jordnötter, baka bröd två dagar, snabba vardagsmiddagar"* — and the app understands all of it.
-- It works for counts, vague counts (*några, ett par, varje dag*), ranges (*2–3 middagar*), allergens, dieter, cuisines, recipe formats (soppa, gryta, tacos…), themes (*vardagsmat, festmat, husmanskost*), time limits (*max 30 minuter*), and Friday traditions (*tacofredag*).
-- Above the calendar, a small chip strip shows exactly what the app understood. If something didn't fit (e.g. *low-FODMAP* or a free-form wish), an amber warning chip tells you so — no silent failures.
-- No AI, no extra cost, no waiting. Same speed as today.
-- "Baka bröd" just means "include a bread recipe from your collection" — same as any other recipe, no special task list.
-- Old simple prompts work exactly like today.
-- Risk: Low. The parser only runs *before* the existing recipe picker. Anything it doesn't recognise becomes a visible chip and gets ignored. Easy to revert in one PR.
-- Next sprint (BUT-360): the lexicon moves to a Google Sheet you edit directly — same workflow as the ingredient list. Adding a new word becomes a one-row edit, no code change. This sprint puts the abstraction in place so the follow-up is plumbing only.
+- [x] A1-A4: Models + Lexicon scaffold (BUT-359)
+- [x] B1-B4: Parser engine + 80+ tests (BUT-359)
+- [x] C1-C4: MenuService integration + day pins (BUT-359)
+- [x] D1-D4: ParsedExtractionChips UI + l10n (BUT-359)
 
 ---
 

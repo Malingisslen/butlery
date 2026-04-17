@@ -18,7 +18,7 @@ void main() {
     late MockUserService mockUserService;
     late MockFriendsManagementOperations mockManagement;
     late MockFriendsCategoriesOperations mockCategories;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     late MockAnalyticsService mockAnalyticsService;
 
     // Test data
@@ -78,7 +78,7 @@ void main() {
       mockUserService = MockUserService();
       mockManagement = MockFriendsManagementOperations();
       mockCategories = MockFriendsCategoriesOperations();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
       mockAnalyticsService = MockAnalyticsService();
 
       // Configure auth state

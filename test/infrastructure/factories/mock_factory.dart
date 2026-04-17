@@ -286,7 +286,7 @@ class MockFactory {
     String? userDisplayName = 'Test User',
     bool defaultHasPermission = true,
   }) {
-    final mock = production.MockPermissionService();
+    final mock = production.FakePermissionService();
     mock.setPermissionState(
       currentUserId: currentUserId,
       userDisplayName: userDisplayName,

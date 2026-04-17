@@ -25,7 +25,7 @@ import 'package:butlery/core/providers/application_provider.dart'
 
 // ============= USING CENTRALIZED MOCKS =============
 // Removed local mock classes:
-// - MockPermissionService (now in production_mocks.dart)
+// - FakePermissionService (now in production_mocks.dart)
 // - MockCollaborativeRecipeRepository (now in production_mocks.dart)
 // - MockConnectivityMonitoringService (now in production_mocks.dart)
 
@@ -99,7 +99,7 @@ void main() {
       );
 
       // Configure permission service using ultrathink state configuration methods
-      // MockPermissionService has concrete implementations that use configured state
+      // FakePermissionService has concrete implementations that use configured state
       // getUserProfile can be stubbed since it's not part of concrete state management
       when(() => mockPermissionService.getUserProfile(any()))
           .thenAnswer((_) async => testParticipant);
@@ -191,7 +191,7 @@ void main() {
 
       test('should handle null current user gracefully', () {
         // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
-        (mockPermissionService as MockPermissionService).reset();
+        (mockPermissionService as FakePermissionService).reset();
 
         // Act & Assert - should not throw
         expect(() => manager.canEdit, returnsNormally);
@@ -225,7 +225,7 @@ void main() {
           'should throw exception when enabling collaborative mode without user',
           () async {
         // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
-        (mockPermissionService as MockPermissionService).reset();
+        (mockPermissionService as FakePermissionService).reset();
 
         // Act & Assert
         await expectLater(
@@ -608,7 +608,7 @@ void main() {
 
       test('should not update presence if user is null', () async {
         // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
-        (mockPermissionService as MockPermissionService).reset();
+        (mockPermissionService as FakePermissionService).reset();
 
         // Act - Try to enable collaborative mode (should fail)
         try {

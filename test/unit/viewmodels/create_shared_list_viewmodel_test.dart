@@ -20,7 +20,7 @@ import '../../infrastructure/di/test_service_locator.dart';
 void main() {
   late MockUnifiedShoppingService mockShoppingService;
   late MockUnifiedFriendsService mockFriendsService;
-  late MockPermissionService mockPermissionService;
+  late FakePermissionService mockPermissionService;
   late CreateSharedListViewModel viewModel;
   late List<UserProfile> testFriends;
 
@@ -34,7 +34,7 @@ void main() {
 
     mockShoppingService = MockUnifiedShoppingService();
     mockFriendsService = MockUnifiedFriendsService();
-    mockPermissionService = MockPermissionService();
+    mockPermissionService = FakePermissionService();
 
     // Register mocks
     TestServiceLocator.registerMock<UnifiedShoppingService>(

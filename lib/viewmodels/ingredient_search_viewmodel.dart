@@ -1,5 +1,4 @@
-import 'dart:async';
-
+import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
@@ -11,7 +10,7 @@ import 'package:butlery/viewmodels/base_viewmodel.dart';
 ///
 /// Users select ingredients via autocomplete, then get recipes ranked
 /// by how many of those ingredients each recipe uses.
-class IngredientSearchViewModel extends BaseViewModel {
+class IngredientSearchViewModel extends BaseViewModel with DebounceMixin {
   final IngredientMatchService _matchService;
   final IngredientRepository _ingredientRepository;
   final UnifiedRecipeService _recipeService;
@@ -56,7 +55,6 @@ class IngredientSearchViewModel extends BaseViewModel {
   List<IngredientData> _autocompleteResults = [];
   List<IngredientData> get autocompleteResults => _autocompleteResults;
 
-  Timer? _searchDebouncer;
   String? _lastSearchQuery;
 
   void searchIngredient(String query) {
@@ -64,29 +62,20 @@ class IngredientSearchViewModel extends BaseViewModel {
     if (trimmed == _lastSearchQuery) return;
     _lastSearchQuery = trimmed;
 
-    _searchDebouncer?.cancel();
     if (trimmed.isEmpty) {
+      cancelDebounce('search');
       _autocompleteResults = [];
       if (!isDisposed) notifyListeners();
       return;
     }
-    _searchDebouncer = Timer(const Duration(milliseconds: 300), () async {
-      try {
-        final results =
-            await _ingredientRepository.searchIngredients(trimmed, limit: 10);
-        if (isDisposed) return;
-        // Filter out already-selected ingredients
-        final selectedIds = _selectedIngredients.map((i) => i.id).toSet();
-        _autocompleteResults =
-            results.where((r) => !selectedIds.contains(r.id)).toList();
-        notifyListeners();
-      } catch (e) {
-        // Autocomplete failures are non-fatal but logged for debugging
-        if (!isDisposed) {
-          _autocompleteResults = [];
-          notifyListeners();
-        }
-      }
+    debounce('search', const Duration(milliseconds: 300), () async {
+      final results =
+          await _ingredientRepository.searchIngredients(trimmed, limit: 10);
+      if (isDisposed) return;
+      final selectedIds = _selectedIngredients.map((i) => i.id).toSet();
+      _autocompleteResults =
+          results.where((r) => !selectedIds.contains(r.id)).toList();
+      notifyListeners();
     });
   }
 
@@ -167,11 +156,5 @@ class IngredientSearchViewModel extends BaseViewModel {
       },
       errorPrefix: 'Kunde inte söka recept',
     );
-  }
-
-  @override
-  void dispose() {
-    _searchDebouncer?.cancel();
-    super.dispose();
   }
 }

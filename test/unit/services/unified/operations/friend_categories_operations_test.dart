@@ -15,7 +15,7 @@ import '../../../../infrastructure/mocks/production_mocks.dart';
 void main() {
   group('FriendsCategoriesOperations', () {
     late MockUnifiedFriendsService mockParentService;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     late MockFriendsManagementOperations mockManagement;
     late FriendsCategoriesOperations operations;
     late FriendCategory testCategory1;
@@ -51,7 +51,7 @@ void main() {
 
       // Create mocks
       mockParentService = MockUnifiedFriendsService();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
       mockManagement = MockFriendsManagementOperations();
 
       // Register permission service in GetIt

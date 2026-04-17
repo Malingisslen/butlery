@@ -38,7 +38,7 @@ void main() {
       when(() => mockFirestoreRepository.firestore).thenReturn(fakeFirestore);
 
       // Configure permission service with authenticated state
-      final mockPermissionService = MockPermissionService();
+      final mockPermissionService = FakePermissionService();
       mockPermissionService.setPermissionState(
         isAuthenticated: true,
         currentUserId: _testUserId,

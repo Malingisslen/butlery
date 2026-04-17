@@ -78,7 +78,7 @@ void main() {
       await TestServiceLocator.initialize();
 
       final perm =
-          ServiceLocator.get<PermissionService>() as MockPermissionService;
+          ServiceLocator.get<PermissionService>() as FakePermissionService;
       perm.setPermissionState(
           currentUserId: 'test-user-123', isAuthenticated: true);
 
@@ -368,7 +368,7 @@ void main() {
     group('Edge Cases', () {
       test('handles null current user ID', () async {
         final perm =
-            ServiceLocator.get<PermissionService>() as MockPermissionService;
+            ServiceLocator.get<PermissionService>() as FakePermissionService;
         perm.setPermissionState(currentUserId: null);
 
         await viewModel.joinGroup('avail_1');

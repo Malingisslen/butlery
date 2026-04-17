@@ -76,7 +76,7 @@ void main() {
       mockPersonalOps = MockPersonalRecipeOperations();
 
       // Create test recipe for editing tests
-      // Note: Recipe ID contains user ID for ownership checks in MockPermissionService
+      // Note: Recipe ID contains user ID for ownership checks in FakePermissionService
       testRecipe = RecipeBuilder()
           .withId('recipe-test-user-123-001')
           .withTitle('Test Recipe')
@@ -140,7 +140,7 @@ void main() {
           mockConnectivityService);
 
       // Register PermissionService mock for delete operations
-      final mockPermissionService = MockPermissionService();
+      final mockPermissionService = FakePermissionService();
       // Configure permission service using configuration method
       mockPermissionService.setPermissionState(
         currentUserId: 'test-user-123',

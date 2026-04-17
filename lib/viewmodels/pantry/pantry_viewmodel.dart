@@ -1,8 +1,7 @@
 /// ViewModel for the "Skafferiet" (pantry) feature.
 library;
 
-import 'dart:async';
-
+import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -11,7 +10,7 @@ import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
-class PantryViewModel extends BaseViewModel {
+class PantryViewModel extends BaseViewModel with DebounceMixin {
   final PantryService _pantryService;
   final IngredientRepository _ingredientRepository;
 
@@ -45,7 +44,6 @@ class PantryViewModel extends BaseViewModel {
   List<IngredientData> _searchResults = [];
   List<IngredientData> get searchResults => _searchResults;
 
-  Timer? _searchDebouncer;
   String? _lastSearchQuery;
 
   String? _currentUserId() =>
@@ -156,28 +154,18 @@ class PantryViewModel extends BaseViewModel {
     if (trimmed == _lastSearchQuery) return;
     _lastSearchQuery = trimmed;
 
-    _searchDebouncer?.cancel();
     if (trimmed.isEmpty) {
+      cancelDebounce('search');
       _searchResults = [];
       if (!isDisposed) notifyListeners();
       return;
     }
-    _searchDebouncer = Timer(const Duration(milliseconds: 300), () async {
-      try {
-        final results =
-            await _ingredientRepository.searchIngredients(trimmed, limit: 10);
-        if (isDisposed) return;
-        _searchResults = results;
-        notifyListeners();
-      } catch (_) {
-        // Autocomplete failures are non-fatal.
-      }
+    debounce('search', const Duration(milliseconds: 300), () async {
+      final results =
+          await _ingredientRepository.searchIngredients(trimmed, limit: 10);
+      if (isDisposed) return;
+      _searchResults = results;
+      notifyListeners();
     });
-  }
-
-  @override
-  void dispose() {
-    _searchDebouncer?.cancel();
-    super.dispose();
   }
 }

@@ -23,7 +23,7 @@ void main() {
   group('PresenceTrackingModule', () {
     late MockUnifiedRecipeService mockParentService;
     late MockRealtimeSyncService mockRealtimeSyncService;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     late MockFirebaseRecipePresenceRepository mockPresenceRepository;
     late PresenceTrackingModule presenceModule;
     late UserProfile testUser;
@@ -98,7 +98,7 @@ void main() {
 
       // Get and configure permission service mock
       mockPermissionService =
-          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+          TestServiceLocator.get<PermissionService>() as FakePermissionService;
       mockPermissionService.setPermissionState(
         defaultHasPermission: true,
         currentUserId: 'user_123',
@@ -634,4 +634,4 @@ void main() {
 }
 
 // Using centralized mocks from production_mocks.dart:
-// MockUnifiedRecipeService, MockRealtimeSyncService, MockPermissionService
+// MockUnifiedRecipeService, MockRealtimeSyncService, FakePermissionService

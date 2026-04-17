@@ -104,7 +104,7 @@ void main() {
       // Configure PermissionService with test user ID so
       // GroupDetailViewModel.currentUserId resolves correctly via production ServiceLocator
       final permissionService =
-          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+          TestServiceLocator.get<PermissionService>() as FakePermissionService;
       permissionService.setPermissionState(currentUserId: testUserId);
 
       // Default mock behaviors
@@ -339,7 +339,7 @@ void main() {
       test('should return false for isAdmin when not authenticated', () async {
         // Arrange - clear userId on PermissionService (which the ViewModel actually uses)
         final permService = TestServiceLocator.get<PermissionService>()
-            as MockPermissionService;
+            as FakePermissionService;
         permService.setPermissionState(currentUserId: null);
         when(() => mockAuthRepository.currentUserId).thenReturn(null);
         viewModel = createViewModel();
@@ -653,7 +653,7 @@ void main() {
       test('should not leave group when not authenticated', () async {
         // Arrange - clear userId on PermissionService (which the ViewModel actually uses)
         final permService = TestServiceLocator.get<PermissionService>()
-            as MockPermissionService;
+            as FakePermissionService;
         permService.setPermissionState(currentUserId: null);
         when(() => mockAuthRepository.currentUserId).thenReturn(null);
         viewModel = createViewModel();

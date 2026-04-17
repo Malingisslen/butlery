@@ -1,43 +1,25 @@
 /// Integration tests for FieldValue operations in notification analytics
 ///
-/// These tests verify actual Firebase FieldValue operations that cannot be mocked:
-/// - FieldValue.serverTimestamp()
-/// - FieldValue.increment()
-/// - Batch operations with timestamps
-/// - Complex query operations
+/// Verifies FieldValue operations that the in-memory fake cannot reproduce:
+/// serverTimestamp(), increment(), arrayUnion/arrayRemove, batch writes.
 ///
-/// ✅ Following FIREBASE_TESTING_GUIDE.md:
-/// - Uses Firebase emulator for FieldValue operations
-/// - Tests server-side behavior that cannot be unit tested
-/// - Verifies actual Firebase integration
-///
-/// Run with: flutter test --tags integration
+/// Runs against the Firebase emulator via the lane helper from BUT-387 Phase 7.
+/// Mock tier skips the group cleanly; emulator tier runs it.
 @Tags(['integration', 'firebase'])
-// Whole suite requires a live Firebase emulator; skipped in plain
-// `flutter test`. Re-enabled once the emulator CI lane from BUT-387 Phase 7
-// (Patrol / emulator runner) is in place.
-@Skip('Requires Firebase emulator — see BUT-387 Phase 7.')
 library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../infrastructure/firebase/firebase_test_helper.dart';
+import '../../../test_support/emulator_lane.dart';
 
 void main() {
   group('Notification Analytics - Firebase FieldValue Integration', () {
     late FirebaseFirestore firestore;
     const String testUserId = 'test_user_analytics';
 
-    setUpAll(() async {
-      // Connect to Firebase emulators
-      await FirebaseTestHelper.connectToEmulators();
-    });
-
     setUp(() async {
-      // Clear Firestore data for clean test state
-      await FirebaseTestHelper.clearFirestoreData();
-
-      firestore = FirebaseFirestore.instance;
+      firestore = await firestoreForLane();
+      await clearLane();
     });
 
     test('should handle FieldValue.serverTimestamp() for notification events',
@@ -286,5 +268,5 @@ void main() {
       expect(firstDoc['priority'], equals('high'));
       expect(secondDoc['priority'], equals('high'));
     });
-  });
+  }, skip: emulatorOnlySkip);
 }

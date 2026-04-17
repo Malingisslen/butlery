@@ -498,7 +498,7 @@ void main() {
         // Arrange
         final mockPermissionService =
             TestServiceLocator.get<PermissionService>()
-                as MockPermissionService;
+                as FakePermissionService;
         mockPermissionService.setPermissionState(
           currentUserId: null,
           userDisplayName: null,

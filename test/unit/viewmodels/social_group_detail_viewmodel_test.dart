@@ -16,7 +16,7 @@ void main() {
     late SocialGroupDetailViewModel viewModel;
     late MockUnifiedFriendsService mockFriendsService;
     late MockUserService mockUserService;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     late MockFriendsCategoriesOperations mockCategoriesOps;
     late MockFriendCategoryRepository mockCategoryRepo;
 
@@ -69,7 +69,7 @@ void main() {
     setUp(() {
       mockFriendsService = MockUnifiedFriendsService();
       mockUserService = MockUserService();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
       mockCategoriesOps = MockFriendsCategoriesOperations();
       mockCategoryRepo = MockFriendCategoryRepository();
 
@@ -94,7 +94,7 @@ void main() {
         },
       );
 
-      // MockPermissionService uses setPermissionState
+      // FakePermissionService uses setPermissionState
       mockPermissionService.setPermissionState(
         currentUserId: testUserId,
         isAuthenticated: true,

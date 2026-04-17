@@ -24,7 +24,7 @@ void main() {
     late PersonalTagViewModel viewModel;
     late MockPersonalTagService mockService;
     late MockRecipeRepository mockRecipeRepo;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     late StreamController<PersonalTagsWithGroups> tagsStreamController;
 
     // Test data
@@ -109,7 +109,7 @@ void main() {
 
       mockService = MockPersonalTagService();
       mockRecipeRepo = MockRecipeRepository();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
       tagsStreamController =
           StreamController<PersonalTagsWithGroups>.broadcast();
 

@@ -24,7 +24,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MenuStorage menuStorage;
-  late MockPermissionService mockPermissionService;
+  late FakePermissionService mockPermissionService;
   late FakeFirestoreRepository mockFirestoreRepo;
 
   const testUserId = 'test-user-123';
@@ -42,7 +42,7 @@ void main() {
     production.ServiceLocator.initialize(DIContainer());
 
     // Configure permission service with authenticated user
-    mockPermissionService = MockPermissionService();
+    mockPermissionService = FakePermissionService();
     mockPermissionService.setPermissionState(
       currentUserId: testUserId,
       userDisplayName: testUserName,

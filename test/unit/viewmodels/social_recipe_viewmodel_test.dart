@@ -63,7 +63,7 @@ void main() {
     late MockUnifiedFriendsService mockFriendsService;
     late MockUnifiedRecipeService mockRecipeService;
     late MockUserService mockUserService;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
 
     const testRecipeId = 'test_recipe_123';
 
@@ -84,7 +84,7 @@ void main() {
       mockFriendsService = MockUnifiedFriendsService();
       mockRecipeService = MockUnifiedRecipeService();
       mockUserService = MockUserService();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
 
       // Register PermissionService so SocialEngagementManager finds it
       mockPermissionService.setPermissionState(

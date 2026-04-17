@@ -49,7 +49,7 @@ Future<void> processTestDeepLink(
 void main() {
   late DeepLinkService service;
   late MockDeepLinkRepository mockRepository;
-  late MockPermissionService mockPermissionService;
+  late FakePermissionService mockPermissionService;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -58,7 +58,7 @@ void main() {
 
   setUp(() {
     mockRepository = MockDeepLinkRepository();
-    mockPermissionService = MockPermissionService();
+    mockPermissionService = FakePermissionService();
 
     // Register mocks with TestServiceLocator
     TestServiceLocator.registerMock<PermissionService>(mockPermissionService);

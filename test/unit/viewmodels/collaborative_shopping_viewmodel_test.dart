@@ -31,7 +31,7 @@ void main() {
   group('CollaborativeShoppingViewModel', () {
     late CollaborativeShoppingViewModel viewModel;
     late MockUnifiedShoppingService mockShoppingService;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     const testListId = 'test_list_123';
     const testUserId = 'test_user_123';
 
@@ -85,7 +85,7 @@ void main() {
 
       // Create mocks
       mockShoppingService = MockUnifiedShoppingService();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
 
       // Register permission service in TestServiceLocator
       // (shared GetIt instance, accessible by production ServiceLocator too)
@@ -333,7 +333,7 @@ void main() {
 
       test('should handle no edit permissions', () {
         // Use defaultHasPermission: false so canEdit returns false
-        final restrictedPermissionService = MockPermissionService();
+        final restrictedPermissionService = FakePermissionService();
         restrictedPermissionService.setPermissionState(
           currentUserId: testUserId,
           defaultHasPermission: false,

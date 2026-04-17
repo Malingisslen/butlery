@@ -23,7 +23,7 @@ void main() {
     late UnifiedFriendsService friendsService;
     late FakeFirestoreRepository mockFirestoreRepo;
     late MockFirebaseAuthRepository mockAuthRepo;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -37,7 +37,7 @@ void main() {
 
       mockFirestoreRepo = FakeFirestoreRepository();
       mockAuthRepo = MockFirebaseAuthRepository();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
 
       mockPermissionService.setPermissionState(
         currentUserId: 'test-user-id',

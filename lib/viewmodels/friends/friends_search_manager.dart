@@ -5,14 +5,14 @@
 /// - Debounced search (300ms) to prevent excessive network requests
 /// - Search result caching (last 10 queries)
 
-import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/mixins/debounce_mixin.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-class FriendsSearchManager extends ChangeNotifier {
+class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
   final UnifiedFriendsService _friendsService;
 
   String _searchQuery = '';
@@ -21,8 +21,6 @@ class FriendsSearchManager extends ChangeNotifier {
   bool _isSearching = false;
   bool _isDisposed = false;
 
-  // Performance optimization: Debouncing and caching
-  Timer? _debounceTimer;
   static const Duration _debounceDuration = Duration(milliseconds: 300);
   final Map<String, List<UserProfile>> _searchCache = {};
   static const int _maxCacheSize = 10;
@@ -41,28 +39,24 @@ class FriendsSearchManager extends ChangeNotifier {
   Future<void> updateSearch(String query) async {
     if (_isDisposed) return;
 
-    // Cancel any pending search
-    _debounceTimer?.cancel();
-
     _searchQuery = query.trim();
 
     if (_searchQuery.isEmpty) {
+      cancelDebounce('search');
       _clearSearch();
       _safeNotifyListeners();
       return;
     }
 
     if (_searchQuery.length < 2) {
+      cancelDebounce('search');
       _searchResults = [];
       _searchError = AppLocale.current.errorFillRequiredFields;
       _safeNotifyListeners();
       return;
     }
 
-    // Debounce: wait 300ms before executing search
-    _debounceTimer = Timer(_debounceDuration, () async {
-      await _performSearch();
-    });
+    debounce('search', _debounceDuration, _performSearch);
   }
 
   /// Clears search state completely
@@ -137,7 +131,6 @@ class FriendsSearchManager extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
-    _debounceTimer?.cancel();
     _searchResults.clear();
     _searchCache.clear();
     super.dispose();

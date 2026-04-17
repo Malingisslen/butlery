@@ -19,7 +19,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late _MockSocialRecipeService mockSocial;
-  late MockPermissionService mockPermission;
+  late FakePermissionService mockPermission;
   late CollaborativeStatusViewModel viewModel;
 
   setUpAll(() async {
@@ -29,7 +29,7 @@ void main() {
 
   setUp(() {
     mockSocial = _MockSocialRecipeService();
-    mockPermission = MockPermissionService();
+    mockPermission = FakePermissionService();
     mockPermission.setPermissionState(
         currentUserId: 'test_user_id', isAuthenticated: true);
     TestServiceLocator.registerMock<PermissionService>(mockPermission);

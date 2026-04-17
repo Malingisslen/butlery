@@ -57,7 +57,7 @@ class TestRealtimeRecipe extends RealtimeRecipe {
 void main() {
   late RealtimeRecipeService service;
   late MockRealtimeSyncService mockSyncService;
-  late MockPermissionService mockPermissionService;
+  late FakePermissionService mockPermissionService;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -73,7 +73,7 @@ void main() {
 
   setUp(() async {
     mockSyncService = MockRealtimeSyncService();
-    mockPermissionService = MockPermissionService();
+    mockPermissionService = FakePermissionService();
 
     mockPermissionService.setPermissionState(
       currentUserId: 'test_user_123',

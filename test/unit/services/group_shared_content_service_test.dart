@@ -8,7 +8,7 @@ import '../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
-  late MockPermissionService mockPermissionService;
+  late FakePermissionService mockPermissionService;
   late GroupSharedContentService service;
 
   const ownerId = 'owner-123';
@@ -38,7 +38,7 @@ void main() {
 
   setUp(() {
     fakeFirestore = FakeFirebaseFirestore();
-    mockPermissionService = MockPermissionService();
+    mockPermissionService = FakePermissionService();
     mockPermissionService.setPermissionState(
       currentUserId: ownerId,
       isAuthenticated: true,

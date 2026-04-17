@@ -208,7 +208,7 @@ void main() {
 
       // Configure PermissionService in ServiceLocator (used by currentUserId getter)
       final mockPermissionService =
-          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+          TestServiceLocator.get<PermissionService>() as FakePermissionService;
       mockPermissionService.setPermissionState(
         currentUserId: testUserId,
         isAuthenticated: true,
@@ -850,7 +850,7 @@ void main() {
         // Arrange
         final mockPermissionService =
             TestServiceLocator.get<PermissionService>()
-                as MockPermissionService;
+                as FakePermissionService;
         mockPermissionService.setPermissionState(
           currentUserId: null,
           isAuthenticated: false,

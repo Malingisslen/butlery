@@ -33,7 +33,7 @@ void main() {
   late _MockMenuService mockMenuService;
   late _MockSyncService mockSyncService;
   late _MockAuthService mockAuthService;
-  late MockPermissionService mockPermission;
+  late FakePermissionService mockPermission;
 
   late StreamController<bool> connectionController;
   late StreamController<RealtimeMenu> menuStreamController;
@@ -62,7 +62,7 @@ void main() {
     await TestServiceLocator.initialize();
 
     // Production ServiceLocator bridge for PermissionService
-    mockPermission = MockPermissionService();
+    mockPermission = FakePermissionService();
     mockPermission.setPermissionState(
       currentUserId: 'test-user-123',
       userDisplayName: 'Test User',

@@ -21,7 +21,7 @@ import '../../../../infrastructure/mocks/production_mocks.dart';
 void main() {
   group('CollaborativeShoppingOperations', () {
     late MockUnifiedShoppingService mockParentService;
-    late MockPermissionService mockPermissionService;
+    late FakePermissionService mockPermissionService;
     late CollaborativeShoppingOperations operations;
     late UnifiedShoppingList testCollaborativeList;
     late UnifiedShoppingList testSharedList;
@@ -56,7 +56,7 @@ void main() {
 
       // Create mocks
       mockParentService = MockUnifiedShoppingService();
-      mockPermissionService = MockPermissionService();
+      mockPermissionService = FakePermissionService();
 
       // Register permission service
       if (GetIt.instance.isRegistered<PermissionService>()) {

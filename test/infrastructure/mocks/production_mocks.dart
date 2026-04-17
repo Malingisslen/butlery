@@ -1301,7 +1301,7 @@ class MockUnifiedFriendsService extends Mock
 }
 
 /// Mock implementation of PermissionService
-class MockPermissionService extends Mock implements PermissionService {
+class FakePermissionService extends Fake implements PermissionService {
   // Configuration state
   Map<String, Map<ResourcePermission, bool>> _permissions = {};
   bool _defaultHasPermission = true;
@@ -2755,7 +2755,7 @@ class MockShoppingExportModule extends ShoppingExportModule {
 
 class MockShoppingExternalShareModule extends ShoppingExternalShareModule {
   MockShoppingExternalShareModule()
-      : super(permissionService: MockPermissionService());
+      : super(permissionService: FakePermissionService());
 }
 
 class MockShoppingTemplateModule extends ShoppingTemplateModule {
@@ -2770,7 +2770,7 @@ class MockShoppingSocialShareModule extends ShoppingSocialShareModule {
   MockShoppingSocialShareModule()
       : super(
           firestore: FakeFirebaseFirestore(),
-          permissionService: MockPermissionService(),
+          permissionService: FakePermissionService(),
         );
 }
 
@@ -3721,7 +3721,7 @@ class MockRealtimeSyncService extends Mock
   }
 }
 
-// Note: MockPermissionService already exists earlier in this file at line 991
+// Note: FakePermissionService already exists earlier in this file at line 991
 // This duplicate has been removed to avoid compilation errors
 
 /// Mock implementation of AnalyticsRepository
