@@ -430,7 +430,7 @@ void main() {
       });
 
       test('should share recipe (delegates to social ops)', () async {
-        // social.shareRecipe is concrete on MockSocialRecipeOperations:
+        // social.shareRecipe is concrete on FakeSocialRecipeOperations:
         // returns 'shared-<recipeId>'
         final id = await viewModel.shareRecipe(
           recipeId: 'r1',
@@ -485,7 +485,7 @@ void main() {
       });
 
       test('should check if can invite members', () {
-        // Concrete override on MockSocialRecipeOperations returns true
+        // Concrete override on FakeSocialRecipeOperations returns true
         expect(viewModel.canInviteMembers('r'), isTrue);
       });
 
@@ -580,7 +580,7 @@ void main() {
 // ---------------------------------------------------------------------------
 
 /// Social ops that returns null from addComment to trigger the error path.
-class _NullAddCommentSocialOps extends MockSocialRecipeOperations {
+class _NullAddCommentSocialOps extends FakeSocialRecipeOperations {
   @override
   Future<String?> addComment({
     required String recipeId,
@@ -593,9 +593,9 @@ class _NullAddCommentSocialOps extends MockSocialRecipeOperations {
 
 /// Recipe service with injectable social ops (bypasses the concrete getter).
 class _MockRecipeServiceWithSocial extends MockUnifiedRecipeService {
-  final MockSocialRecipeOperations _social;
+  final FakeSocialRecipeOperations _social;
   _MockRecipeServiceWithSocial(this._social);
 
   @override
-  MockSocialRecipeOperations get social => _social;
+  FakeSocialRecipeOperations get social => _social;
 }

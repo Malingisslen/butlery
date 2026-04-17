@@ -14,7 +14,7 @@ import '../../../../infrastructure/builders/recipe_builder.dart';
 
 void main() {
   group('RealtimeCacheManager', () {
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late Recipe testRecipe;
     late Recipe testRecipe2;
 
@@ -27,7 +27,7 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Initialize mocks using centralized infrastructure
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
 
       // Create test data
       testRecipe = RecipeBuilder()
@@ -232,7 +232,7 @@ void main() {
 
       test('should handle errors when clearing cache', () async {
         // Arrange - create a mock that throws on delete
-        final errorHelper = MockJsonCacheHelper();
+        final errorHelper = FakeJsonCacheHelper();
 
         // Act & Assert - should not throw
         await RealtimeCacheManager.clearRecipeCache(

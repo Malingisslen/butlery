@@ -9,7 +9,7 @@ import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
-// Local pure mock -- avoids concrete overrides on centralized MockFirestoreRepository
+// Local pure mock -- avoids concrete overrides on centralized FakeFirestoreRepository
 class _MockFirestoreRepository extends Mock implements FirestoreRepository {}
 
 // Mock for ShoppingSocialShareModule — real module uses FieldValue.serverTimestamp()

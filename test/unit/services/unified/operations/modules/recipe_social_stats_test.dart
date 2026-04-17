@@ -20,7 +20,7 @@ import '../../../../../infrastructure/mocks/production_mocks.dart';
 void main() {
   group('RecipeSocialStats', () {
     late RecipeSocialStats stats;
-    late MockFirestoreRepository mockFirestoreRepository;
+    late FakeFirestoreRepository mockFirestoreRepository;
     late MockNotificationService mockNotificationService;
     late MockRatingsRepository mockRatingsRepository;
     late Recipe testRecipe;
@@ -35,7 +35,7 @@ void main() {
       // Bridge so RecipeRatingSystem can call ServiceLocator.get<T>()
       production.ServiceLocator.initialize(DIContainer());
 
-      mockFirestoreRepository = MockFirestoreRepository();
+      mockFirestoreRepository = FakeFirestoreRepository();
       mockNotificationService = MockNotificationService();
       mockRatingsRepository = MockRatingsRepository();
 

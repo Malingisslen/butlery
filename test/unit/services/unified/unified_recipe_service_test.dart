@@ -177,7 +177,7 @@ void main() {
     late mocks.MockCommentsRepository mockCommentsRepository;
     late mocks.MockRatingsRepository mockRatingsRepository;
     late mocks.MockNotificationsRepository mockNotificationsRepository;
-    late mocks.MockFirestoreRepository mockFirestoreRepository;
+    late mocks.FakeFirestoreRepository mockFirestoreRepository;
     late mocks.MockCollaborativeRecipeRepository mockCollaborativeRepository;
 
     setUp(() async {
@@ -195,7 +195,7 @@ void main() {
       mockCommentsRepository = mocks.MockCommentsRepository();
       mockRatingsRepository = mocks.MockRatingsRepository();
       mockNotificationsRepository = mocks.MockNotificationsRepository();
-      mockFirestoreRepository = mocks.MockFirestoreRepository();
+      mockFirestoreRepository = mocks.FakeFirestoreRepository();
       mockCollaborativeRepository = mocks.MockCollaborativeRecipeRepository();
 
       // Setup auth repository defaults - create mock user

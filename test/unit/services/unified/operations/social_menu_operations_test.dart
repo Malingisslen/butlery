@@ -14,7 +14,7 @@ import '../../../../infrastructure/mocks/production_mocks.dart';
 import 'package:butlery/core/providers/application_provider.dart' as app;
 
 // Using centralized mocks from production_mocks.dart:
-// MockUnifiedFriendsService, MockFriendsCategoriesOperations, MockFirestoreRepository,
+// MockUnifiedFriendsService, MockFriendsCategoriesOperations, FakeFirestoreRepository,
 // MockCollectionReference, MockDocumentReference, MockDocumentSnapshot, MockQuerySnapshot,
 // MockQueryDocumentSnapshot, MockQuery, MockWriteBatch
 
@@ -22,7 +22,7 @@ void main() {
   group('SocialMenuOperations with Centralized Mocks', () {
     late SocialMenuOperations operations;
     late MockUnifiedFriendsService mockFriendsService;
-    late MockFirestoreRepository mockFirestoreRepository;
+    late FakeFirestoreRepository mockFirestoreRepository;
     late MockDocumentReference<Map<String, dynamic>> mockDocRef;
     late MockWriteBatch mockBatch;
     late MockFriendsCategoriesOperations mockCategoriesOperations;
@@ -43,7 +43,7 @@ void main() {
       app.ServiceLocator.initialize(MockDIContainer());
 
       // Create centralized mocks
-      mockFirestoreRepository = MockFirestoreRepository();
+      mockFirestoreRepository = FakeFirestoreRepository();
       mockDocRef = MockDocumentReference<Map<String, dynamic>>();
       mockBatch = MockWriteBatch();
       mockFriendsService = MockUnifiedFriendsService();

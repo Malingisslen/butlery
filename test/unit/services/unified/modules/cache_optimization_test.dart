@@ -16,7 +16,7 @@ import '../../../../infrastructure/builders/recipe_builder.dart';
 
 void main() {
   group('CacheOptimization', () {
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late Recipe recentRecipe;
     late Recipe oldRecipe;
     late Recipe collaborativeRecipe;
@@ -30,7 +30,7 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Create mock dependencies
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
 
       // Create test data with different characteristics
       final recentBuilder = RecipeBuilder()
@@ -322,7 +322,7 @@ void main() {
 
       test('should remove null entries', () async {
         // Arrange
-        final helper = MockJsonCacheHelper();
+        final helper = FakeJsonCacheHelper();
         helper.setCacheState(cache: {
           'good_recipe': recentRecipe.toJson(),
         });

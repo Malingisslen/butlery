@@ -31,7 +31,7 @@ class _MockRecipeServiceAdapter extends Mock implements RecipeServiceAdapter {}
 void main() {
   group('SocialRecipeQueryService', () {
     late SocialRecipeQueryService queryService;
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late _MockRecipeServiceAdapter mockServiceAdapter;
     late String currentUserId;
     late List<Recipe> testRecipes;
@@ -51,7 +51,7 @@ void main() {
       currentUserId = 'test-user-123';
       testRecipes = [];
 
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
       mockServiceAdapter = _MockRecipeServiceAdapter();
 
       // Create test recipes

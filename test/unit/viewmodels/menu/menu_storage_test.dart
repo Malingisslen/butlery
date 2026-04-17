@@ -25,7 +25,7 @@ void main() {
 
   late MenuStorage menuStorage;
   late MockPermissionService mockPermissionService;
-  late MockFirestoreRepository mockFirestoreRepo;
+  late FakeFirestoreRepository mockFirestoreRepo;
 
   const testUserId = 'test-user-123';
   const testUserName = 'Test User';
@@ -53,7 +53,7 @@ void main() {
 
     // Get the Firestore repository from TestServiceLocator
     mockFirestoreRepo = TestServiceLocator.get<FirestoreRepository>()
-        as MockFirestoreRepository;
+        as FakeFirestoreRepository;
 
     // Create MenuStorage with injected repository
     menuStorage = MenuStorage(firestoreRepository: mockFirestoreRepo);

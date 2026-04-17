@@ -26,7 +26,7 @@ import '../../../../infrastructure/builders/recipe_builder.dart';
 void main() {
   group('RealtimeRecipeModule', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late RealtimeRecipeModule realtimeModule;
     late Recipe testRecipe;
     late String? currentUserId;
@@ -44,7 +44,7 @@ void main() {
       await TestServiceLocator.initialize();
 
       fakeFirestore = FakeFirebaseFirestore();
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
       mockCacheHelper.setCacheState(cache: {});
 
       testRecipe = RecipeBuilder()

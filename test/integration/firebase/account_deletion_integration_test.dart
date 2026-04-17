@@ -34,7 +34,7 @@ void main() {
     late FirebaseFirestore firestore;
     late MockFirebaseAuth mockAuth;
     late MockAuthRepository mockAuthRepository;
-    late MockFirestoreRepository mockFirestoreRepository;
+    late FakeFirestoreRepository mockFirestoreRepository;
     late MockAuthService mockAuthService;
     late MockUserService mockUserService;
     late MockUnifiedRecipeService mockRecipeService;
@@ -53,8 +53,8 @@ void main() {
       // Create mocks for non-Firebase services
       mockAuth = MockFirebaseAuth();
       mockAuthRepository = MockAuthRepository();
-      mockFirestoreRepository = MockFirestoreRepository();
-      // Use the fake firestore that MockFirestoreRepository already wraps —
+      mockFirestoreRepository = FakeFirestoreRepository();
+      // Use the fake firestore that FakeFirestoreRepository already wraps —
       // stubbing `.firestore` with `when()` fails because the mock has a
       // concrete @override getter.
       firestore = mockFirestoreRepository.firestore as FakeFirebaseFirestore;

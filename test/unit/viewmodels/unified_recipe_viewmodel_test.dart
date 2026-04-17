@@ -124,7 +124,7 @@ void main() {
       // Collaborative — left to Mock base (returns null by default).
       // Individual success tests override via when() as needed.
 
-      // Social and Realtime — MockSocialRecipeOperations and
+      // Social and Realtime — FakeSocialRecipeOperations and
       // MockRealtimeRecipeOperations already have default implementations
 
       // Register mocks

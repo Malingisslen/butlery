@@ -1,7 +1,7 @@
 /// Unit tests for PersonalRecipeModule
 ///
 /// Tests validation, auth guards, cache loading, repository access,
-/// and sync status. MockJsonCacheHelper and MockRecipeServiceAdapter
+/// and sync status. FakeJsonCacheHelper and MockRecipeServiceAdapter
 /// have concrete @override methods, so we use their built-in behavior
 /// instead of when() stubs. MockRecipeRepository has no concrete
 /// overrides and IS stubbable with when().
@@ -22,7 +22,7 @@ void main() {
     late PersonalRecipeModule module;
     late MockRecipeRepository mockRepository;
     late MockUserRepository mockUserRepository;
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late MockRecipeServiceAdapter mockServiceAdapter;
     late Recipe testRecipe;
 
@@ -41,7 +41,7 @@ void main() {
 
       mockRepository = MockRecipeRepository();
       mockUserRepository = MockUserRepository();
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
       mockServiceAdapter = MockRecipeServiceAdapter();
 
       currentUserId = 'test-user-123';

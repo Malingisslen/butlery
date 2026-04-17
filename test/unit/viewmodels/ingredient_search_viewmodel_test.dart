@@ -21,7 +21,7 @@ class MockIngredientRepository extends Mock implements IngredientRepository {}
 
 class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 
-class MockSocialRecipeOperations extends Mock
+class FakeSocialRecipeOperations extends Mock
     implements SocialRecipeOperations {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -54,14 +54,14 @@ void main() {
   late MockIngredientMatchService mockMatchService;
   late MockIngredientRepository mockIngredientRepo;
   late MockUnifiedRecipeService mockRecipeService;
-  late MockSocialRecipeOperations mockSocial;
+  late FakeSocialRecipeOperations mockSocial;
   late MockAuthRepository mockAuthRepo;
 
   setUp(() async {
     mockMatchService = MockIngredientMatchService();
     mockIngredientRepo = MockIngredientRepository();
     mockRecipeService = MockUnifiedRecipeService();
-    mockSocial = MockSocialRecipeOperations();
+    mockSocial = FakeSocialRecipeOperations();
     mockAuthRepo = MockAuthRepository();
 
     final getIt = GetIt.instance;

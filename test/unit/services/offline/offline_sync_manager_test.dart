@@ -53,7 +53,7 @@ void main() {
     late MockAppDatabase mockDatabase;
     late MockRecipeDao mockRecipeDao;
     late MockSyncQueueDao mockSyncQueueDao;
-    late MockFirestoreRepository mockFirestoreRepo;
+    late FakeFirestoreRepository mockFirestoreRepo;
     late MockAuthRepository mockAuthRepo;
     late FakeFirebaseFirestore fakeFirestore;
 
@@ -67,7 +67,7 @@ void main() {
       mockDatabase = MockAppDatabase();
       mockRecipeDao = MockRecipeDao();
       mockSyncQueueDao = MockSyncQueueDao();
-      mockFirestoreRepo = MockFirestoreRepository();
+      mockFirestoreRepo = FakeFirestoreRepository();
       mockAuthRepo =
           TestServiceLocator.get<AuthRepository>() as MockAuthRepository;
       fakeFirestore = FakeFirebaseFirestore();

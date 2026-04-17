@@ -16,7 +16,7 @@ class FakeRecipe extends Fake implements Recipe {}
 void main() {
   group('OfflineService', () {
     late OfflineService offlineService;
-    late MockFirestoreRepository mockFirestoreRepository;
+    late FakeFirestoreRepository mockFirestoreRepository;
     late MockFirebaseAuthRepository mockAuthRepository;
 
     setUpAll(() async {
@@ -33,7 +33,7 @@ void main() {
       OfflineService.resetForTesting();
 
       // Create mocks from centralized system
-      mockFirestoreRepository = MockFirestoreRepository();
+      mockFirestoreRepository = FakeFirestoreRepository();
       mockAuthRepository = MockFirebaseAuthRepository();
 
       // Create service with mock dependencies
@@ -42,9 +42,9 @@ void main() {
         authRepository: mockAuthRepository,
       );
 
-      // Register mocks for automatic reset
+      // Register mocks for automatic reset. FakeFirestoreRepository is a
+      // Fake (no mocktail state to reset), so only the Mock needs to be here.
       BaseUnitTest.registerMocks([
-        mockFirestoreRepository,
         mockAuthRepository,
       ]);
     });
@@ -79,7 +79,7 @@ void main() {
       });
 
       test('should accept dependency injection', () {
-        final customFirestore = MockFirestoreRepository();
+        final customFirestore = FakeFirestoreRepository();
         final customAuth = MockAuthRepository();
 
         // Act

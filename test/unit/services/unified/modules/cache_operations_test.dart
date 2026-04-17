@@ -14,7 +14,7 @@ import '../../../../infrastructure/builders/recipe_builder.dart';
 
 void main() {
   group('CacheOperations', () {
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late Recipe testRecipe;
     late Recipe testRecipe2;
 
@@ -27,7 +27,7 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Initialize mocks using centralized infrastructure
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
 
       // Create test data
       testRecipe = RecipeBuilder()
@@ -405,7 +405,7 @@ void main() {
         });
 
         // Create a special mock helper that can return null for specific keys
-        final validationHelper = MockJsonCacheHelper();
+        final validationHelper = FakeJsonCacheHelper();
         validationHelper.setCacheState(cache: {
           'recipe_1': testRecipe.toJson(),
           'recipe_2': testRecipe2.toJson(),
@@ -426,7 +426,7 @@ void main() {
 
       test('should fix cache corruption', () async {
         // Arrange
-        final fixHelper = MockJsonCacheHelper();
+        final fixHelper = FakeJsonCacheHelper();
         fixHelper.setCacheState(cache: {
           'recipe_1': testRecipe.toJson(),
           'corrupted': {'invalid': 'data'},
@@ -469,7 +469,7 @@ void main() {
         // Arrange — Recipe.fromJson handles missing fields with safe defaults,
         // so {'invalid': 'data'} is parsed as a valid Recipe. All entries are valid,
         // meaning invalidRatio = 0 which is not > 0.1.
-        final compactionHelper = MockJsonCacheHelper();
+        final compactionHelper = FakeJsonCacheHelper();
         final cacheData = <String, Map<String, dynamic>>{};
         for (int i = 0; i < 8; i++) {
           cacheData['recipe_$i'] = testRecipe.toJson();
@@ -487,7 +487,7 @@ void main() {
 
       test('should not need compaction with few invalid entries', () async {
         // Arrange - less than 10% invalid entries
-        final compactionHelper = MockJsonCacheHelper();
+        final compactionHelper = FakeJsonCacheHelper();
         final cacheData = <String, Map<String, dynamic>>{};
         for (int i = 0; i < 10; i++) {
           cacheData['recipe_$i'] = testRecipe.toJson();
@@ -513,7 +513,7 @@ void main() {
 
         // Error callback is now a regular function, no mocking needed
         // Use a helper that will cause an error during Recipe.fromJson
-        final errorHelper = MockJsonCacheHelper();
+        final errorHelper = FakeJsonCacheHelper();
 
         // Act
         final recipes = await CacheOperations.initializeCache(

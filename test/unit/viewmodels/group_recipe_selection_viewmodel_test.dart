@@ -14,14 +14,14 @@ import '../../infrastructure/di/test_service_locator.dart';
 // Mock services
 class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 
-class MockSocialRecipeOperations extends Mock
+class FakeSocialRecipeOperations extends Mock
     implements SocialRecipeOperations {}
 
 void main() {
   group('GroupRecipeSelectionViewModel - Group Recipe Sharing Tests', () {
     late GroupRecipeSelectionViewModel viewModel;
     late MockUnifiedRecipeService mockRecipeService;
-    late MockSocialRecipeOperations mockSocialOperations;
+    late FakeSocialRecipeOperations mockSocialOperations;
 
     // Test data
     const testUserId = 'current-user-123';
@@ -105,7 +105,7 @@ void main() {
 
       // Create mocks
       mockRecipeService = MockUnifiedRecipeService();
-      mockSocialOperations = MockSocialRecipeOperations();
+      mockSocialOperations = FakeSocialRecipeOperations();
 
       // Wire up social operations
       when(() => mockRecipeService.social).thenReturn(mockSocialOperations);

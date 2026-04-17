@@ -28,7 +28,7 @@ class _MockSharedRecipeRepo extends Mock
 void main() {
   group('SocialRecipeCoordinator', () {
     late SocialRecipeCoordinator coordinator;
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late MockRecipeServiceAdapter mockServiceAdapter;
     late _MockSharedRecipeRepo mockSharedRecipeRepo;
     late Map<String, Recipe> testRecipesMap;
@@ -51,7 +51,7 @@ void main() {
       notifyCount = 0;
       testRecipesMap = {};
 
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
       mockServiceAdapter = MockRecipeServiceAdapter();
       mockSharedRecipeRepo = _MockSharedRecipeRepo();
 

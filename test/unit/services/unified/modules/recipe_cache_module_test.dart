@@ -1,7 +1,7 @@
 /// Unit tests for RecipeCacheModule
 ///
 /// Tests cache initialization, CRUD, sync scheduling, auth state,
-/// and diagnostics. Uses MockJsonCacheHelper's concrete behavior
+/// and diagnostics. Uses FakeJsonCacheHelper's concrete behavior
 /// (not when() stubs) since that mock has @override implementations.
 library;
 
@@ -19,7 +19,7 @@ import '../../../../infrastructure/di/test_service_locator.dart';
 void main() {
   group('RecipeCacheModule', () {
     late RecipeCacheModule module;
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late FakeFirebaseFirestore fakeFirestore;
     late Recipe testRecipe;
 
@@ -31,7 +31,7 @@ void main() {
     });
 
     setUp(() {
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
       fakeFirestore = FirestoreSingleton.instance;
 
       currentUserId = 'test-user-123';

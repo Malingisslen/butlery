@@ -30,7 +30,7 @@ class _MockSharedRecipeRepo extends Mock
 void main() {
   group('SocialRecipeModule', () {
     late SocialRecipeModule module;
-    late MockJsonCacheHelper mockCacheHelper;
+    late FakeJsonCacheHelper mockCacheHelper;
     late MockRecipeServiceAdapter mockServiceAdapter;
     late _MockSharedRecipeRepo mockSharedRecipeRepo;
     late Map<String, Recipe> recipeDatabase;
@@ -49,7 +49,7 @@ void main() {
       await TestServiceLocator.initialize();
       production.ServiceLocator.initialize(DIContainer());
 
-      mockCacheHelper = MockJsonCacheHelper();
+      mockCacheHelper = FakeJsonCacheHelper();
       mockServiceAdapter = MockRecipeServiceAdapter();
       mockSharedRecipeRepo = _MockSharedRecipeRepo();
 

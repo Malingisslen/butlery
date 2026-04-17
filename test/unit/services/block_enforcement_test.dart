@@ -21,7 +21,7 @@ import 'package:butlery/core/di/di_container.dart';
 void main() {
   group('Block Enforcement', () {
     late UnifiedFriendsService friendsService;
-    late MockFirestoreRepository mockFirestoreRepo;
+    late FakeFirestoreRepository mockFirestoreRepo;
     late MockFirebaseAuthRepository mockAuthRepo;
     late MockPermissionService mockPermissionService;
 
@@ -35,7 +35,7 @@ void main() {
       final productionContainer = DIContainer();
       prod_locator.ServiceLocator.initialize(productionContainer);
 
-      mockFirestoreRepo = MockFirestoreRepository();
+      mockFirestoreRepo = FakeFirestoreRepository();
       mockAuthRepo = MockFirebaseAuthRepository();
       mockPermissionService = MockPermissionService();
 

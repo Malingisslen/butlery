@@ -151,8 +151,8 @@ class MockFactory {
   }
 
   /// Create mock firestore repository
-  static production.MockFirestoreRepository createFirestoreRepository() {
-    final mock = production.MockFirestoreRepository();
+  static production.FakeFirestoreRepository createFirestoreRepository() {
+    final mock = production.FakeFirestoreRepository();
     // Mock will provide FakeFirebaseFirestore via its implementation
     return mock;
   }

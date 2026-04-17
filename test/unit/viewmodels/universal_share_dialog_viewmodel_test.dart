@@ -21,7 +21,7 @@ void main() {
 
   late MockSocialRecipeCoordinator mockSocialRecipeCoordinator;
   late MockUnifiedShoppingService mockShoppingService;
-  late MockShoppingShareOperations mockSharingOperations;
+  late FakeShoppingShareOperations mockSharingOperations;
   late UniversalShareDialogViewModel viewModel;
 
   setUpAll(() async {
@@ -36,7 +36,7 @@ void main() {
 
     mockSocialRecipeCoordinator = MockSocialRecipeCoordinator();
     mockShoppingService = MockUnifiedShoppingService();
-    mockSharingOperations = MockShoppingShareOperations();
+    mockSharingOperations = FakeShoppingShareOperations();
 
     mockShoppingService.setShoppingState(
       shareOps: mockSharingOperations,

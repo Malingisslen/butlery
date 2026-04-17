@@ -100,9 +100,7 @@ import 'package:butlery/services/unified/operations/friends_invitations_operatio
 import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
 import 'package:butlery/services/import/import_strategy.dart';
-import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
-import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/import/file_content_provider.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/social_media_extractor.dart'; // For SourcePlatform and ExtractionResult
@@ -159,7 +157,7 @@ class MockAuthRepository extends Mock implements AuthRepository {
   @override
   User? getCurrentUser() => _currentUser;
 
-  // All other methods - no implementation to allow stubbing with when()
+  // Other methods left without implementation so tests can stub via when().
 }
 
 /// Mock implementation of RecipeRepository
@@ -290,11 +288,14 @@ class MockAuthService extends Mock with ChangeNotifier implements AuthService {
   @override
   bool get hasError => _error != null;
 
-  // Provide default implementations for auth methods
+  // Provide default implementations for auth methods. These are
+  // state-backed (driven by setAuthState/setError), not pure no-ops —
+  // tests that need a specific return override via setAuthState instead
+  // of Mocktail's when().
   @override
   Future<bool> signInWithEmail(
       {required String email, required String password}) async {
-    return !hasError; // Return true unless there's an error
+    return !hasError;
   }
 
   @override
@@ -323,9 +324,6 @@ class MockAuthService extends Mock with ChangeNotifier implements AuthService {
     _error = null;
     notifyListeners();
   }
-
-  // Other methods left without concrete implementation to allow stubbing
-  // Use when() to define behavior in tests
 }
 
 /// Mock AuthViewModel with proper ChangeNotifier implementation
@@ -849,7 +847,13 @@ class MockGroupsRepository extends Mock {
 }
 
 /// Mock implementation of FirestoreRepository
-class MockFirestoreRepository extends Mock implements FirestoreRepository {
+/// Fake implementation of FirestoreRepository — delegates to the singleton
+/// `FakeFirebaseFirestore`. Every method has a concrete body, so this is a
+/// Fake, not a Mock (`when().thenReturn(...)` on `firestore` / `collection`
+/// / `doc` is silently ignored — the body runs instead). Tests that need
+/// stubbable behaviour should use a local `class FooMock extends Mock
+/// implements FirestoreRepository`.
+class FakeFirestoreRepository extends Fake implements FirestoreRepository {
   FakeFirebaseFirestore get _fakeFirestore => FirestoreSingleton.instance;
 
   @override
@@ -962,7 +966,7 @@ class MockUnifiedRecipeService extends Mock
     if (personalOperations != null) _personalOperations = personalOperations;
   }
 
-  final _mockSocial = MockSocialRecipeOperations();
+  final _mockSocial = FakeSocialRecipeOperations();
   final _mockRealtime = MockRealtimeRecipeOperations();
 
   @override
@@ -971,7 +975,7 @@ class MockUnifiedRecipeService extends Mock
   @override
   RealtimeRecipeOperations get realtime => _mockRealtime;
 
-  MockSocialRecipeOperations get mockSocial => _mockSocial;
+  FakeSocialRecipeOperations get mockSocial => _mockSocial;
   MockRealtimeRecipeOperations get mockRealtime => _mockRealtime;
 
   @override
@@ -1608,7 +1612,11 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
 
   bool get isInitialized => _isInitialized;
 
-  // Analytics methods called by ViewModels — return no-op futures
+  // State-backed no-op method bodies. These methods return Future<void>
+  // and are fire-and-forget analytics — tests should not stub them with
+  // when() (MockAnalyticsService is semantically a Fake). The concrete
+  // bodies below also provide a non-null Future<void> that Mocktail's
+  // default-null return cannot supply.
   @override
   Future<void> setUserProperties({
     int? recipeCount,
@@ -1668,54 +1676,6 @@ class MockImportStrategy extends Mock implements ImportStrategy {
   // Methods left without implementation to allow stubbing
 }
 
-/// Mock implementation of ArchiveImportStrategy
-///
-/// Provides configuration support for testing archive-based recipe imports
-/// with mock recipe data and search capabilities.
-class MockArchiveImportStrategy extends Mock implements ArchiveImportStrategy {
-  // Configuration state
-  List<Recipe> _availableRecipes = [];
-  Set<String> _availableTags = {};
-  Set<String> _availableMealTypes = {};
-  String _strategyName = 'Archive Import';
-
-  void setArchiveState({
-    List<Recipe>? availableRecipes,
-    Set<String>? availableTags,
-    Set<String>? availableMealTypes,
-    String? strategyName,
-  }) {
-    if (availableRecipes != null) _availableRecipes = availableRecipes;
-    if (availableTags != null) _availableTags = availableTags;
-    if (availableMealTypes != null) _availableMealTypes = availableMealTypes;
-    if (strategyName != null) _strategyName = strategyName;
-  }
-
-  @override
-  String get strategyName => _strategyName;
-
-  @override
-  String get description =>
-      'Import recipes from the Butlery curated recipe archive';
-
-  @override
-  String get inputExample => 'recipe_id_123 or archive:recipe_name';
-
-  @override
-  List<Recipe> getAvailableRecipes() => List.unmodifiable(_availableRecipes);
-
-  @override
-  int getRecipeCount() => _availableRecipes.length;
-
-  @override
-  Set<String> getAvailableTags() => Set.unmodifiable(_availableTags);
-
-  @override
-  Set<String> getAvailableMealTypes() => Set.unmodifiable(_availableMealTypes);
-
-  // Methods left without implementation to allow stubbing
-}
-
 /// Mock implementation of TextImportStrategy
 ///
 /// Provides configuration support for testing text-based recipe imports
@@ -1744,55 +1704,16 @@ class MockTextImportStrategy extends Mock implements TextImportStrategy {
       'Import recipes from text content (social media posts, manual input)';
 
   @override
-  String get inputExample => ''';
+  String get inputExample => '''
 Pannkakor
 Ingredienser:
 3 ägg
 5 dl mjölk
-3 dl vetemjöl
-1 tsk salt
 
 Gör så här:
-1. Vispa ihop allt till en slät smet
-2. Stek pannkakor i smörad panna
-3. Servera med sylt och grädde
+1. Vispa ihop allt
+2. Stek i smörad panna
 ''';
-
-  // Methods left without implementation to allow stubbing
-}
-
-/// Mock implementation of FileImportStrategy
-///
-/// Provides configuration support for testing file-based recipe imports
-/// from CSV and Excel formats with Swedish content support.
-class MockFileImportStrategy extends Mock implements FileImportStrategy {
-  // Configuration state
-  String _strategyName = 'File Import (CSV/Excel)';
-  bool _canHandleFiles = true;
-
-  void setFileImportState({
-    String? strategyName,
-    bool canHandleFiles = true,
-  }) {
-    if (strategyName != null) _strategyName = strategyName;
-    _canHandleFiles = canHandleFiles;
-  }
-
-  @override
-  String get strategyName => _strategyName;
-
-  @override
-  String get name =>
-      _strategyName; // FileImportStrategy has both name and strategyName
-
-  @override
-  String get description => 'Import recipes from CSV or Excel files';
-
-  @override
-  String get inputExample =>
-      'CSV or Excel file with columns: title, ingredients, instructions';
-
-  // Methods left without implementation to allow stubbing
 }
 
 /// Mock implementation of ImportManager
@@ -1861,11 +1782,13 @@ class MockPersonalRecipeOperations extends Mock
 
 // ============= PERFORMANCE SERVICE MOCKS =============
 
-/// Mock implementation of JsonCacheHelper
+/// Fake implementation of JsonCacheHelper — in-memory maps.
 ///
-/// Provides testing support for JSON cache operations including
-/// user-specific caching, batch operations, and statistics.
-class MockJsonCacheHelper extends Mock implements JsonCacheHelper {
+/// This is a Fake, not a Mock: every method is a real behavioural
+/// implementation, so `when(...).thenReturn(...)` wouldn't work anyway.
+/// Tests that need to stub individual calls should use a separate
+/// `class XyzMock extends Mock implements JsonCacheHelper` locally.
+class FakeJsonCacheHelper extends Fake implements JsonCacheHelper {
   // Configuration state
   String? _currentUserId;
   final Map<String, Map<String, dynamic>> _cache = {};
@@ -2046,17 +1969,6 @@ class MockQueryDocumentSnapshot<T> extends Mock
 /// Mock implementation of FirebaseAnalytics for analytics testing
 class MockFirebaseAnalytics extends Mock implements FirebaseAnalytics {}
 
-/// Mock implementation of FirebaseAnalyticsObserver for route tracking
-class MockFirebaseAnalyticsObserver extends Mock
-    implements FirebaseAnalyticsObserver {}
-
-/// Mock implementation of AggregateQuery for Firestore aggregate queries
-class MockAggregateQuery extends Mock implements AggregateQuery {}
-
-/// Mock implementation of AggregateQuerySnapshot for Firestore aggregate results
-class MockAggregateQuerySnapshot extends Mock
-    implements AggregateQuerySnapshot {}
-
 /// Mock implementation of StreamSubscription for stream subscription tests
 class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}
 
@@ -2068,9 +1980,11 @@ class MockTimer extends Mock implements Timer {}
 /// Mock for FriendsManagementOperations (Tier 1 - 6 errors)
 // REMOVED: Duplicate class definition moved above
 
-/// Mock for SocialRecipeOperations (Tier 1 - 3 errors)
-/// Mock implementation of SocialRecipeOperations - COMPREHENSIVE INTERFACE
-class MockSocialRecipeOperations extends Mock
+/// Fake implementation of SocialRecipeOperations — full in-memory behaviour.
+/// Every method has a concrete body driven by `_shouldSucceed` / seed lists,
+/// so this is a Fake, not a Mock. Tests that need method-level stubbing
+/// should define a local `Mock`.
+class FakeSocialRecipeOperations extends Fake
     implements SocialRecipeOperations {
   bool _shouldSucceed = true;
 
@@ -2653,8 +2567,9 @@ typedef MockFriendCategoriesOperations = MockFriendsCategoriesOperations;
 /// Mock for UnifiedMenuService (Tier 2 - 2 errors)
 class MockUnifiedMenuService extends Mock implements UnifiedMenuService {}
 
-/// Mock for ShoppingShareOperations (Tier 2 - 2 errors)
-class MockShoppingShareOperations extends Mock
+/// Fake implementation of ShoppingShareOperations — full in-memory behaviour.
+/// Tests that need method-level stubbing should define a local `Mock`.
+class FakeShoppingShareOperations extends Fake
     implements ShoppingShareOperations {
   // ===== EXPORT OPERATIONS =====
 
@@ -3288,26 +3203,22 @@ class MockNotificationParent extends Mock implements NotificationParent {
 
 class MockMenuCollaborationRepository extends Mock
     implements MenuCollaborationRepository {
-  /// Enable collaboration for menu - ✅ FIXED: Named parameters for Phase 4D
+  // State-backed no-ops. See MockAnalyticsService note — returning a real
+  // value is necessary for Future<bool>-typed methods that Mocktail cannot
+  // default-supply. Tests that need failure paths should configure state
+  // or define a local Mock for the specific test case.
   @override
   Future<bool> enableCollaboration({
     required String menuId,
     required List<String> collaboratorIds,
     Map<String, String>? collaboratorDisplayNames,
-  }) async {
-    // Mock collaboration enablement
-    return true;
-  }
+  }) async =>
+      true;
 
-  /// Start collaboration listener - ✅ FIXED: Match interface signature
   @override
   void startCollaborationListener(
-      String menuId, Function(SharedMenu) onUpdate) {
-    // Mock collaboration listener - does nothing in test
-    // In real implementation, this would set up Firebase listener
-  }
+      String menuId, Function(SharedMenu) onUpdate) {}
 
-  /// Add recipe to menu - ✅ FIXED: Named parameters for Phase 4D
   @override
   Future<bool> addRecipeToMenu({
     required String menuId,
@@ -3315,21 +3226,17 @@ class MockMenuCollaborationRepository extends Mock
     required Recipe recipe,
     String? suggestedBy,
     String? suggestion,
-  }) async {
-    // Mock recipe addition to menu
-    return true;
-  }
+  }) async =>
+      true;
 
-  /// Remove recipe from menu
   @override
   Future<bool> removeRecipeFromMenu({
     required String menuId,
     required String category,
     required String recipeId,
     String? reason,
-  }) async {
-    return true;
-  }
+  }) async =>
+      true;
 
   @override
   void disposeAllListeners() {}
@@ -3652,27 +3559,6 @@ class FakeNotificationStrategy {
   }
 }
 
-/// Simple fake notification action for testing
-class FakeNotificationAction {
-  final String id;
-  final String title;
-  final Map<String, dynamic> data;
-
-  const FakeNotificationAction({
-    required this.id,
-    required this.title,
-    this.data = const {},
-  });
-
-  factory FakeNotificationAction.defaults() {
-    return const FakeNotificationAction(
-      id: 'test-action',
-      title: 'Test Action',
-      data: {'type': 'test'},
-    );
-  }
-}
-
 /// Simple fake notification preferences for testing
 class FakeNotificationPreferences {
   final bool enabled;
@@ -3719,132 +3605,6 @@ class FakeNotificationPreferences {
       vibrationEnabled: enabled,
       lastUpdated: DateTime.now(),
     );
-  }
-}
-
-/// ✅ PHASE 2: NotificationTestFactory for production-compatible test objects
-/// Factory to create production-compatible notification objects from simple fakes
-/// Following testing guide pattern: "Create production-compatible objects for tests"
-class NotificationTestFactory {
-  /// Create production NotificationStrategy from FakeNotificationStrategy
-  static NotificationStrategy createStrategy({
-    String? id,
-    String? name,
-    NotificationType? type,
-    NotificationPriority? priority,
-    NotificationCategory? category,
-  }) {
-    // Use provided values or defaults that work with production
-    return NotificationStrategy(
-      type: type ?? NotificationType.immediate,
-      priority: priority ?? NotificationPriority.medium,
-      category: category ?? NotificationCategory.social,
-      localization: {
-        'title_sv': name ?? 'Test Notification',
-        'body_sv': 'Test notification body',
-      },
-    );
-  }
-
-  /// Create production NotificationAction from FakeNotificationAction
-  static NotificationAction createAction({
-    String? id,
-    String? title,
-    Map<String, dynamic>? data,
-  }) {
-    return NotificationAction(
-      id: id ?? 'test-action',
-      title: title ?? 'Test Action',
-      data: data,
-    );
-  }
-
-  /// Create list of production NotificationActions from FakeNotificationActions
-  static List<NotificationAction> createActionList(
-      List<FakeNotificationAction> fakeActions) {
-    return fakeActions
-        .map((fake) => createAction(
-              id: fake.id,
-              title: fake.title,
-              data: fake.data,
-            ))
-        .toList();
-  }
-
-  /// Convert FakeNotificationStrategy to production NotificationStrategy
-  static NotificationStrategy fromFakeStrategy(FakeNotificationStrategy fake) {
-    return createStrategy(
-      id: fake.id,
-      name: fake.name,
-      // Map fake properties to production equivalents
-      type: NotificationType.immediate, // Default for tests
-      priority: NotificationPriority.medium, // Default for tests
-      category: NotificationCategory.social, // Default for tests
-    );
-  }
-
-  /// Convert FakeNotificationAction to production NotificationAction
-  static NotificationAction fromFakeAction(FakeNotificationAction fake) {
-    return createAction(
-      id: fake.id,
-      title: fake.title,
-      data: fake.data,
-    );
-  }
-
-  /// Helper method: Create test notification template
-  static NotificationTemplate createTemplate({
-    String? title,
-    String? body,
-    Map<String, dynamic>? data,
-  }) {
-    return NotificationTemplate(
-      title: title ?? 'Test Notification',
-      body: body ?? 'Test notification body',
-      data: data ?? {'type': 'test'},
-    );
-  }
-}
-
-/// ✅ PHASE 3: Type Compatibility Extensions for seamless fake→production conversion
-/// Extension methods to convert fake objects to production types
-extension FakeNotificationStrategyExtension on FakeNotificationStrategy {
-  /// Convert to production NotificationStrategy
-  NotificationStrategy toNotificationStrategy({
-    NotificationType? type,
-    NotificationPriority? priority,
-    NotificationCategory? category,
-  }) {
-    return NotificationTestFactory.fromFakeStrategy(this);
-  }
-
-  /// Create production NotificationStrategy with custom properties
-  NotificationStrategy asStrategy({
-    NotificationType? type,
-    NotificationPriority? priority,
-    NotificationCategory? category,
-  }) {
-    return NotificationTestFactory.createStrategy(
-      id: id,
-      name: name,
-      type: type,
-      priority: priority,
-      category: category,
-    );
-  }
-}
-
-extension FakeNotificationActionExtension on FakeNotificationAction {
-  /// Convert to production NotificationAction
-  NotificationAction toNotificationAction() {
-    return NotificationTestFactory.fromFakeAction(this);
-  }
-}
-
-extension FakeNotificationActionListExtension on List<FakeNotificationAction> {
-  /// Convert list to production NotificationAction list
-  List<NotificationAction> toNotificationActionList() {
-    return NotificationTestFactory.createActionList(this);
   }
 }
 
@@ -4103,7 +3863,7 @@ class MockUnifiedShoppingService extends Mock
   /// Get share operations ⭐ FIXED: Return proper interface type
   @override
   ShoppingShareOperations get share =>
-      _shareOps ?? MockShoppingShareOperations();
+      _shareOps ?? FakeShoppingShareOperations();
 
   /// Alias for share (production service exposes both)
   @override
@@ -4670,59 +4430,30 @@ class MockParticipantTracker extends Mock implements ParticipantTracker {
   @override
   List<String> get recentlyActiveParticipants => _onlineParticipants;
 
-  // Method implementations for test compatibility
+  // State-backed no-ops. Same rationale as MockMenuCollaborationRepository —
+  // the concrete returns supply non-null values for getters/return types
+  // that Mocktail cannot default-fill; they don't block `when()` stubs in
+  // practice because no test attempts that pattern.
   @override
-  void updateDisplayName(String userId, String displayName) {
-    // Mock implementation - can be stubbed with when() if needed
-  }
-
+  void updateDisplayName(String userId, String displayName) {}
   @override
-  void removeParticipant(String userId) {
-    // Mock implementation - can be stubbed with when() if needed
-  }
-
+  void removeParticipant(String userId) {}
   @override
-  void updateFromMenu(RealtimeMenu menu) {
-    // Mock implementation - can be stubbed with when() if needed
-  }
-
+  void updateFromMenu(RealtimeMenu menu) {}
   @override
-  void dispose() {
-    // Mock implementation - can be stubbed with when() if needed
-  }
-
+  void dispose() {}
   @override
-  void markActiveNow(String userId, String displayName) {
-    // Mock implementation - can be stubbed with when() if needed
-  }
-
+  void markActiveNow(String userId, String displayName) {}
   @override
-  bool wasRecentlyActive(String userId, Duration within) {
-    // Mock implementation - can be stubbed with when() if needed
-    return false;
-  }
-
+  bool wasRecentlyActive(String userId, Duration within) => false;
   @override
-  String getDisplayName(String userId) {
-    // Mock implementation - can be stubbed with when() if needed
-    return 'Mock User';
-  }
-
+  String getDisplayName(String userId) => 'Mock User';
   @override
-  DateTime? getLastActivity(String userId) {
-    // Mock implementation - can be stubbed with when() if needed
-    return null;
-  }
-
+  DateTime? getLastActivity(String userId) => null;
   @override
-  void clear() {
-    // Mock implementation - can be stubbed with when() if needed
-  }
-
+  void clear() {}
   @override
-  void forceCleanup() {
-    // Mock implementation - can be stubbed with when() if needed
-  }
+  void forceCleanup() {}
 }
 
 /// Mock implementation of SocialMenuOperations
@@ -4750,57 +4481,6 @@ class FakeXFile extends Fake implements XFile {
 
 /// Mock implementation of BuildContext for testing
 class MockBuildContext extends Mock implements BuildContext {}
-
-/// ✅ FIXED: Complete NotificationRepository mock implementation - PHASE 4B SUCCESS!
-/// Mock implementation of NotificationRepository with complete interface alignment
-class MockNotificationRepositoryV2 extends Mock
-    implements NotificationsRepository {
-  // Configuration state
-  NotificationPreferences _preferences = NotificationPreferences.defaults();
-  Map<String, dynamic> _notificationHistory = {};
-  List<String> _batchQueue = [];
-
-  /// Configure mock state for notification repository
-  void setNotificationRepositoryState({
-    NotificationPreferences? preferences,
-    Map<String, dynamic>? notificationHistory,
-    List<String>? batchQueue,
-  }) {
-    if (preferences != null) _preferences = preferences;
-    if (notificationHistory != null) _notificationHistory = notificationHistory;
-    if (batchQueue != null) _batchQueue = batchQueue;
-  }
-
-  // Getters for configured state (tests can access)
-  NotificationPreferences get preferences => _preferences;
-  Map<String, dynamic> get notificationHistory => _notificationHistory;
-  List<String> get batchQueue => _batchQueue;
-
-  // ===== COMPLETE INTERFACE IMPLEMENTATION =====
-
-  // Core preference methods
-  Future<NotificationPreferences> getPreferences() async => _preferences;
-
-  Future<void> updatePreferences(NotificationPreferences prefs) async {
-    _preferences = prefs;
-  }
-
-  // Notification tracking methods
-  Future<void> recordNotification({
-    required String notificationId,
-    required NotificationCategory category,
-    required NotificationType type,
-    required Map<String, dynamic> data,
-  }) async {
-    // Mock implementation
-  }
-
-  Future<bool> wasNotificationSent(String notificationId) async => false;
-
-  Future<void> markNotificationDelivered(String notificationId) async {}
-
-  Future<void> markNotificationOpened(String notificationId) async {}
-}
 
 /// Simple error class for sync operations in tests
 class SyncError {
