@@ -142,3 +142,4 @@ share/
 
 # ML training outputs (too large for git)
 scripts/line_classifier/output_v2/
+test/widget/golden/failures/
