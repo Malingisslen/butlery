@@ -367,17 +367,18 @@ void main() {
 
     group('Network Error Handling', () {
       test('should handle network timeout during sign in', () async {
-        // Arrange
+        // Arrange — throw immediately; the test cares about the error
+        // translation, not the timeout duration. The previous 30-second
+        // real wait added 30s per run with zero assertion value.
         when(() => mockAuthRepository.signIn(
               email: any(named: 'email'),
               password: any(named: 'password'),
-            )).thenAnswer((_) async {
-          await Future.delayed(Duration(seconds: 30));
-          throw FirebaseAuthException(
+            )).thenThrow(
+          FirebaseAuthException(
             code: 'network-request-failed',
             message: 'Network timeout',
-          );
-        });
+          ),
+        );
 
         // Act
         final result = await authService.signInWithEmail(

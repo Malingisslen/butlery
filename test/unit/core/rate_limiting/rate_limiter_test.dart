@@ -1,6 +1,7 @@
 // test/unit/core/rate_limiting/rate_limiter_test.dart
 
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -63,28 +64,32 @@ void main() {
       expect(bucket.tryConsume(1), false);
     });
 
-    test('refills tokens over time', () async {
-      bucket.tryConsume(10); // Exhaust all tokens
-      expect(bucket.currentTokens, 0.0);
+    test('refills tokens over time', () {
+      fakeAsync((async) {
+        bucket.tryConsume(10); // Exhaust all tokens
+        expect(bucket.currentTokens, 0.0);
 
-      // Wait for refill (refillRate: 5 tokens per second)
-      await Future.delayed(const Duration(milliseconds: 1100));
+        // Advance virtual clock (refillRate: 5 tokens per second).
+        async.elapse(const Duration(milliseconds: 1100));
 
-      // Should have refilled approximately 5 tokens
-      final tokens = bucket.currentTokens;
-      expect(tokens, greaterThan(4.0));
-      expect(tokens, lessThanOrEqualTo(10.0));
+        // Should have refilled approximately 5 tokens
+        final tokens = bucket.currentTokens;
+        expect(tokens, greaterThan(4.0));
+        expect(tokens, lessThanOrEqualTo(10.0));
+      });
     });
 
-    test('does not exceed max tokens on refill', () async {
-      // Start with full bucket
-      expect(bucket.currentTokens, 10.0);
+    test('does not exceed max tokens on refill', () {
+      fakeAsync((async) {
+        // Start with full bucket
+        expect(bucket.currentTokens, 10.0);
 
-      // Wait for refill interval
-      await Future.delayed(const Duration(milliseconds: 1100));
+        // Advance past refill interval
+        async.elapse(const Duration(milliseconds: 1100));
 
-      // Should still be at max
-      expect(bucket.currentTokens, 10.0);
+        // Should still be at max
+        expect(bucket.currentTokens, 10.0);
+      });
     });
 
     test('calculates time until next token', () {
@@ -419,21 +424,23 @@ void main() {
       expect(blockedCount, 10);
     });
 
-    test('Normal usage - recipe creation spread over time', () async {
-      const operation = RateLimitOperation.createRecipe;
+    test('Normal usage - recipe creation spread over time', () {
+      fakeAsync((async) {
+        const operation = RateLimitOperation.createRecipe;
 
-      // Create 5 recipes
-      for (int i = 0; i < 5; i++) {
+        // Create 5 recipes
+        for (int i = 0; i < 5; i++) {
+          final result = limiter.checkLimit(operation);
+          expect(result.allowed, true);
+        }
+
+        // Advance past refill (5 tokens per second)
+        async.elapse(const Duration(milliseconds: 1100));
+
+        // Should be able to create more recipes
         final result = limiter.checkLimit(operation);
         expect(result.allowed, true);
-      }
-
-      // Wait for refill (5 tokens per second)
-      await Future.delayed(const Duration(milliseconds: 1100));
-
-      // Should be able to create more recipes
-      final result = limiter.checkLimit(operation);
-      expect(result.allowed, true);
+      });
     });
 
     test('Mixed operations - realistic user session', () {

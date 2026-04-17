@@ -1,6 +1,7 @@
 // lib/core/rate_limiting/rate_limiter.dart
 
 import 'dart:async';
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Operation types for rate limiting
@@ -59,7 +60,7 @@ class TokenBucket {
 
   TokenBucket(this.config)
       : _tokens = config.maxTokens.toDouble(),
-        _lastRefill = DateTime.now();
+        _lastRefill = clock.now();
 
   /// Try to consume tokens, returns true if successful
   bool tryConsume(int tokens) {
@@ -90,7 +91,7 @@ class TokenBucket {
 
   /// Refill tokens based on elapsed time
   void _refill() {
-    final now = DateTime.now();
+    final now = clock.now();
     final elapsed = now.difference(_lastRefill);
 
     if (elapsed >= config.refillInterval) {
@@ -106,7 +107,7 @@ class TokenBucket {
   /// Reset bucket to full capacity (for testing)
   void reset() {
     _tokens = config.maxTokens.toDouble();
-    _lastRefill = DateTime.now();
+    _lastRefill = clock.now();
   }
 }
 

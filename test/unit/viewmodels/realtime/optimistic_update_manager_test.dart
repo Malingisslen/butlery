@@ -1,5 +1,6 @@
 // test/unit/viewmodels/realtime/optimistic_update_manager_test.dart
 
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -285,70 +286,77 @@ void main() {
   });
 
   group('OptimisticUpdateManager - Automatic Rollback', () {
-    test('should automatically rollback after 10 seconds', () async {
-      updateManager.applyChange('Måndag', (recipes) => recipes);
+    test('should automatically rollback after 10 seconds', () {
+      fakeAsync((async) {
+        updateManager.applyChange('Måndag', (recipes) => recipes);
+        expect(updateManager.hasChanges, isTrue);
 
-      expect(updateManager.hasChanges, isTrue);
+        // Wait for auto rollback (plus buffer)
+        async.elapse(const Duration(seconds: 11));
 
-      // Wait for auto rollback (plus buffer)
-      await Future.delayed(Duration(seconds: 11));
-
-      expect(updateManager.hasChanges, isFalse);
-      expect(updateManager.allChanges, isEmpty);
+        expect(updateManager.hasChanges, isFalse);
+        expect(updateManager.allChanges, isEmpty);
+      });
     });
 
-    test('should reset rollback timer on new changes', () async {
-      final firstRecipes = createTestRecipes(count: 1, namePrefix: 'First');
-      final secondRecipes = createTestRecipes(count: 2, namePrefix: 'Second');
+    test('should reset rollback timer on new changes', () {
+      fakeAsync((async) {
+        final firstRecipes = createTestRecipes(count: 1, namePrefix: 'First');
+        final secondRecipes = createTestRecipes(count: 2, namePrefix: 'Second');
 
-      updateManager.applyChange('Måndag', (recipes) => firstRecipes);
+        updateManager.applyChange('Måndag', (recipes) => firstRecipes);
 
-      // Wait 5 seconds, then apply another change
-      await Future.delayed(Duration(seconds: 5));
-      updateManager.applyChange('Tisdag', (recipes) => secondRecipes);
+        // Wait 5 seconds, then apply another change
+        async.elapse(const Duration(seconds: 5));
+        updateManager.applyChange('Tisdag', (recipes) => secondRecipes);
 
-      // Wait another 6 seconds (total 11, but timer was reset)
-      await Future.delayed(Duration(seconds: 6));
+        // Wait another 6 seconds (total 11, but timer was reset)
+        async.elapse(const Duration(seconds: 6));
 
-      // Should still have changes since timer was reset
-      expect(updateManager.hasChanges, isTrue);
-      expect(updateManager.allChanges.length, equals(2));
+        // Should still have changes since timer was reset
+        expect(updateManager.hasChanges, isTrue);
+        expect(updateManager.allChanges.length, equals(2));
+      });
     });
 
-    test('should cancel rollback timer on manual clear', () async {
-      updateManager.applyChange('Måndag', (recipes) => recipes);
+    test('should cancel rollback timer on manual clear', () {
+      fakeAsync((async) {
+        updateManager.applyChange('Måndag', (recipes) => recipes);
 
-      // Clear manually before auto rollback
-      await Future.delayed(Duration(seconds: 2));
-      updateManager.clear();
+        // Clear manually before auto rollback
+        async.elapse(const Duration(seconds: 2));
+        updateManager.clear();
 
-      expect(updateManager.hasChanges, isFalse);
+        expect(updateManager.hasChanges, isFalse);
 
-      // Wait past original rollback time
-      await Future.delayed(Duration(seconds: 10));
+        // Wait past original rollback time
+        async.elapse(const Duration(seconds: 10));
 
-      // Should still be clear (no double clear)
-      expect(updateManager.hasChanges, isFalse);
+        // Should still be clear (no double clear)
+        expect(updateManager.hasChanges, isFalse);
+      });
     });
 
-    test('should trigger callback on automatic rollback', () async {
-      int callbackCount = 0;
+    test('should trigger callback on automatic rollback', () {
+      fakeAsync((async) {
+        int callbackCount = 0;
 
-      final manager = OptimisticUpdateManager(
-        onUpdated: () {
-          callbackCount++;
-        },
-      );
+        final manager = OptimisticUpdateManager(
+          onUpdated: () {
+            callbackCount++;
+          },
+        );
 
-      manager.applyChange('Test', (recipes) => createTestRecipes(count: 1));
-      expect(callbackCount, equals(1)); // From apply
+        manager.applyChange('Test', (recipes) => createTestRecipes(count: 1));
+        expect(callbackCount, equals(1)); // From apply
 
-      // Wait for auto rollback
-      await Future.delayed(Duration(seconds: 11));
+        // Wait for auto rollback
+        async.elapse(const Duration(seconds: 11));
 
-      expect(callbackCount, equals(2)); // From apply + rollback
+        expect(callbackCount, equals(2)); // From apply + rollback
 
-      manager.dispose();
+        manager.dispose();
+      });
     });
   });
 
@@ -534,16 +542,18 @@ void main() {
       expect(() => updateManager.dispose(), returnsNormally);
     });
 
-    test('should cancel rollback timer on dispose', () async {
-      updateManager.applyChange('Måndag', (recipes) => recipes);
+    test('should cancel rollback timer on dispose', () {
+      fakeAsync((async) {
+        updateManager.applyChange('Måndag', (recipes) => recipes);
 
-      updateManager.dispose();
+        updateManager.dispose();
 
-      // Wait past rollback time
-      await Future.delayed(Duration(seconds: 11));
+        // Wait past rollback time
+        async.elapse(const Duration(seconds: 11));
 
-      // Changes should be cleared by dispose, not by timer
-      expect(updateManager.hasChanges, isFalse);
+        // Changes should be cleared by dispose, not by timer
+        expect(updateManager.hasChanges, isFalse);
+      });
     });
 
     test('should clear all changes on dispose', () {

@@ -181,35 +181,38 @@ void main() {
   });
 
   group('Stability and Uptime Tracking', () {
-    test('should track stability correctly', () async {
-      final monitor = ConnectionMonitor(syncService: mockSyncService);
+    test('should track stability correctly', () {
+      fakeAsync((async) {
+        final monitor = ConnectionMonitor(syncService: mockSyncService);
 
-      mockSyncService.triggerConnectionChange(true);
-      // Real delay to let debounce timer fire (350ms)
-      await Future.delayed(const Duration(milliseconds: 500));
+        mockSyncService.triggerConnectionChange(true);
+        // Let the 350ms debounce timer fire (virtual clock).
+        async.elapse(const Duration(milliseconds: 500));
 
-      // Not stable for 1 minute (just connected)
-      expect(monitor.hasBeenStableFor(const Duration(minutes: 1)), isFalse);
+        // Not stable for 1 minute (just connected)
+        expect(monitor.hasBeenStableFor(const Duration(minutes: 1)), isFalse);
 
-      // hasBeenStableFor(Duration.zero) should be true once connected
-      expect(monitor.hasBeenStableFor(Duration.zero), isTrue);
+        // hasBeenStableFor(Duration.zero) should be true once connected
+        expect(monitor.hasBeenStableFor(Duration.zero), isTrue);
 
-      await monitor.dispose();
+        monitor.dispose();
+      });
     });
 
-    test('should calculate connection uptime', () async {
-      final monitor = ConnectionMonitor(syncService: mockSyncService);
+    test('should calculate connection uptime', () {
+      fakeAsync((async) {
+        final monitor = ConnectionMonitor(syncService: mockSyncService);
 
-      mockSyncService.triggerConnectionChange(true);
-      await Future.delayed(const Duration(milliseconds: 500));
+        mockSyncService.triggerConnectionChange(true);
+        async.elapse(const Duration(milliseconds: 500));
 
-      // Once connected, uptime should be non-null
-      final uptime = monitor.connectionUptime;
-      expect(uptime, isNotNull);
-      // Uptime >= 0 (may be 0ms depending on timing)
-      expect(uptime!.inMicroseconds, greaterThanOrEqualTo(0));
+        // Once connected, uptime should be non-null
+        final uptime = monitor.connectionUptime;
+        expect(uptime, isNotNull);
+        expect(uptime!.inMicroseconds, greaterThanOrEqualTo(0));
 
-      await monitor.dispose();
+        monitor.dispose();
+      });
     });
 
     test('should return null uptime when disconnected', () {
