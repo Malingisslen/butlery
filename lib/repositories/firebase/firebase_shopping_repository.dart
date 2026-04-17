@@ -7,6 +7,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 // Module imports
@@ -261,18 +262,41 @@ class FirebaseShoppingRepository
     }
   }
 
-  /// Override delete method to route collaborative lists to correct collection
+  /// Override delete method to route collaborative lists to correct collection.
+  ///
+  /// SECURITY: the collaborative path still has to run the permission check,
+  /// otherwise any member (or any user) could delete someone else's shared
+  /// list. We validate via [validateDeletePermission] (which restricts to
+  /// owner-only) before touching the shared collection.
   @override
   Future<void> delete(String id) async {
     // First try to find if it's a collaborative list
     try {
       final collabDoc = await _sharedListsRef.doc(id).get();
       if (collabDoc.exists) {
+        final userId = requireCurrentUserId();
+        final canDelete = await validateDeletePermission(userId, id);
+        // Base class owns the audit repo as a private field; the console
+        // log path in logPermissionCheck still runs with a null audit repo,
+        // which is sufficient for the collaborative-delete gate.
+        await logPermissionCheck(
+          userId: userId,
+          resource: 'UnifiedShoppingList/$id (collaborative)',
+          operation: 'delete',
+          granted: canDelete,
+        );
+        if (!canDelete) {
+          throw PermissionDeniedException(
+            'User $userId does not have permission to delete collaborative shopping list $id',
+          );
+        }
         AppLogger.info('Deleting collaborative list from shared collection',
             'ShoppingRepository');
         await _sharedListsRef.doc(id).delete();
         return;
       }
+    } on PermissionDeniedException {
+      rethrow;
     } catch (e) {
       AppLogger.warning(
           'Error checking collaborative collection during delete: $e');
