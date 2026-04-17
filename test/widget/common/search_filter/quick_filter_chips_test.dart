@@ -215,6 +215,7 @@ void main() {
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
             home: Builder(
               builder: (context) {
@@ -225,10 +226,17 @@ void main() {
           ),
         );
 
-        expect(defaults.length, 3);
-        expect(defaults[0].id, 'favorites');
-        expect(defaults[1].id, 'quick');
-        expect(defaults[2].id, 'vegetarian');
+        // Current default recipe filters (see QuickFilterChips.getDefaultRecipeFilters):
+        //   favorites, quick, vegetarian, pantry, ingredient-search
+        expect(defaults.length, 5);
+        final ids = defaults.map((f) => f.id).toList();
+        expect(ids, [
+          'favorites',
+          'quick',
+          'vegetarian',
+          'pantry',
+          'ingredient-search',
+        ]);
       });
     });
 

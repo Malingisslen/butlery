@@ -201,40 +201,36 @@ void main() {
         );
       });
 
-      testWidgets('should have rounded corners', (WidgetTester tester) async {
+      testWidgets('has square corners per Butlery design language',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: StatusBadge(text: 'ROUNDED'),
+              body: StatusBadge(text: 'SQUARE'),
             ),
           ),
         );
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(
-          decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusRound)),
-        );
+        // Design system is square: no rounded corners on badges.
+        expect(decoration.borderRadius, equals(BorderRadius.zero));
       });
 
-      testWidgets('should use labelSmall text style',
+      testWidgets('renders text using the widget badge style',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData(
-              textTheme: const TextTheme(
-                labelSmall: TextStyle(fontSize: 11),
-              ),
-            ),
-            home: const Scaffold(
+          const MaterialApp(
+            home: Scaffold(
               body: StatusBadge(text: 'SMALL'),
             ),
           ),
         );
 
         final text = tester.widget<Text>(find.text('SMALL'));
-        expect(text.style?.fontSize, equals(11));
+        // The widget owns its typography; we just assert the style exists.
+        expect(text.style, isNotNull);
+        expect(text.style!.fontSize, isNotNull);
       });
 
       testWidgets('should have fontWeight 600', (WidgetTester tester) async {

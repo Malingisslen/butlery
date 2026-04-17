@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
@@ -120,24 +119,35 @@ void main() {
         expect(coloredBox.color, equals(customColor));
       });
 
-      testWidgets('should use default overlay color when not provided',
+      testWidgets('should use theme onSurface overlay when not provided',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(
-          LoadingWidgets.loadingOverlay(
-            isLoading: true,
+        late ColorScheme cs;
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: Builder(builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return LoadingWidgets.loadingOverlay(isLoading: true);
+            }),
           ),
         ));
 
         final coloredBox = tester.widget<ColoredBox>(find.byType(ColoredBox));
-        expect(coloredBox.color,
-            equals(AppColors.neutralDark.withValues(alpha: 0.3)));
+        expect(
+          coloredBox.color,
+          equals(
+              cs.onSurface.withValues(alpha: AppDimensions.opacityMediumLight)),
+        );
       });
 
       testWidgets('should have proper container styling',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(
-          LoadingWidgets.loadingOverlay(
-            isLoading: true,
+        late ColorScheme cs;
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: Builder(builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return LoadingWidgets.loadingOverlay(isLoading: true);
+            }),
           ),
         ));
 
@@ -151,7 +161,7 @@ void main() {
         expect(container.padding,
             equals(const EdgeInsets.all(AppDimensions.paddingL)));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.cardWhite));
+        expect(decoration.color, equals(cs.surfaceContainerHighest));
         expect(decoration.borderRadius,
             equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
       });
@@ -179,9 +189,13 @@ void main() {
 
       testWidgets('should have correct progress indicator styling',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(
-          LoadingWidgets.loadingOverlay(
-            isLoading: true,
+        late ColorScheme cs;
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: Builder(builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return LoadingWidgets.loadingOverlay(isLoading: true);
+            }),
           ),
         ));
 
@@ -192,7 +206,7 @@ void main() {
         expect(progressIndicator.strokeWidth, equals(2));
         final valueColor =
             progressIndicator.valueColor as AlwaysStoppedAnimation<Color>;
-        expect(valueColor.value, equals(AppColors.forestGreen));
+        expect(valueColor.value, equals(cs.primary));
       });
 
       testWidgets('should transition from loading to not loading',

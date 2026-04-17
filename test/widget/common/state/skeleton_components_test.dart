@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
@@ -46,10 +45,14 @@ void main() {
       });
 
       testWidgets('should have shimmer gradient', (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: SkeletonComponents.skeletonBox(),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return SkeletonComponents.skeletonBox();
+              }),
             ),
           ),
         );
@@ -60,12 +63,13 @@ void main() {
 
         final gradient = decoration.gradient as LinearGradient;
         expect(
-            gradient.colors,
-            equals(const [
-              AppColors.neutralMedium,
-              AppColors.neutralLight,
-              AppColors.neutralMedium,
-            ]));
+          gradient.colors,
+          equals([
+            cs.onSurfaceVariant,
+            cs.surfaceContainerHighest,
+            cs.onSurfaceVariant,
+          ]),
+        );
       });
 
       testWidgets('should have animation controller',

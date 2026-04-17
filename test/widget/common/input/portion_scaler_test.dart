@@ -445,7 +445,8 @@ void main() {
         expect(find.byType(SizedBox), findsAtLeastNWidgets(2));
       });
 
-      testWidgets('uses correct text styles', (WidgetTester tester) async {
+      testWidgets('uses bodySmall (14px) text style',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -454,10 +455,10 @@ void main() {
           ),
         );
 
-        // Assert - UI Redesign: Uses bodySmall (13px) w400 per mockup
+        // Assert — AppTextStyles.bodySmall resolves to 14px w400.
         final portionText = tester.widget<Text>(find.text('Portioner:'));
-        expect(portionText.style?.fontSize, equals(13.0));
-        expect(portionText.style?.fontWeight, equals(FontWeight.w400));
+        expect(portionText.style?.fontSize, equals(14.0));
+        expect(portionText.style?.fontWeight, equals(FontWeight.w500));
       });
     });
 

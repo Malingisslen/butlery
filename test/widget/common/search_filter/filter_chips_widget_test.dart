@@ -291,7 +291,8 @@ void main() {
     });
 
     group('Layout', () {
-      testWidgets('should have correct padding', (WidgetTester tester) async {
+      testWidgets('should apply horizontal spacingL padding around title',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -305,14 +306,18 @@ void main() {
           ),
         );
 
-        // The FilterChipsWidget contains a Padding widget
-        expect(find.byType(Padding), findsOneWidget);
-        final padding = tester.widget<Padding>(find.byType(Padding).first);
-        expect(
-          padding.padding,
-          equals(
-              const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL)),
+        // The widget wraps its title row in a Padding with the expected
+        // symmetric horizontal insets. Search by predicate since Material
+        // itself inserts additional Padding widgets into the tree.
+        final hostedPaddings = find.byWidgetPredicate(
+          (w) =>
+              w is Padding &&
+              w.padding ==
+                  const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingL,
+                  ),
         );
+        expect(hostedPaddings, findsAtLeastNWidgets(1));
       });
 
       testWidgets('should use Wrap for chip layout',
@@ -459,6 +464,10 @@ void main() {
             label: 'This is a very long filter option label that might wrap',
           ),
         ];
+
+        // Use a wide test surface so the long-label chip has room to render.
+        await tester.binding.setSurfaceSize(const Size(1200, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
 
         await tester.pumpWidget(
           MaterialApp(

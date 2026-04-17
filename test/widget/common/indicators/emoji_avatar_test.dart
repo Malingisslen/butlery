@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/indicators/emoji_avatar.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
@@ -58,20 +57,26 @@ void main() {
         expect(text.style?.fontSize, equals(24));
       });
 
-      testWidgets('should use default blue background with alpha',
+      testWidgets('uses theme primary as tinted default background',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: EmojiAvatar(emoji: '😀'),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const EmojiAvatar(emoji: '😀');
+              }),
             ),
           ),
         );
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color,
-            equals(AppColors.forestGreen.withValues(alpha: 0.1)));
+        expect(
+          decoration.color,
+          equals(cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)),
+        );
       });
 
       testWidgets('should apply custom size', (WidgetTester tester) async {
