@@ -4,37 +4,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/feedback/snackbar_widgets.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 void main() {
   group('SnackbarWidgets Tests', () {
+    // Captured from the live theme so assertions track whatever the design
+    // system currently resolves to (cs.error, butleryColors.success, ...).
+    late ColorScheme capturedColorScheme;
+    late ButleryColors capturedButleryColors;
+
     // Helper to create app with scaffold for snackbar testing
     Widget createTestApp({Widget? child}) {
       return MaterialApp(
+        theme: AppTheme.lightTheme,
         home: Scaffold(
           body: Builder(
-            builder: (context) =>
-                child ??
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => SnackbarWidgets.showSuccessSnackbar(
-                          context, 'Success'),
-                      child: const Text('Success'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () =>
-                          SnackbarWidgets.showErrorSnackbar(context, 'Error'),
-                      child: const Text('Error'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => SnackbarWidgets.showWarningSnackbar(
-                          context, 'Warning'),
-                      child: const Text('Warning'),
-                    ),
-                  ],
-                ),
+            builder: (context) {
+              capturedColorScheme = Theme.of(context).colorScheme;
+              capturedButleryColors = context.butleryColors;
+              return child ??
+                  Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => SnackbarWidgets.showSuccessSnackbar(
+                            context, 'Success'),
+                        child: const Text('Success'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () =>
+                            SnackbarWidgets.showErrorSnackbar(context, 'Error'),
+                        child: const Text('Error'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => SnackbarWidgets.showWarningSnackbar(
+                            context, 'Warning'),
+                        child: const Text('Warning'),
+                      ),
+                    ],
+                  );
+            },
           ),
         ),
       );
@@ -72,7 +82,7 @@ void main() {
         await tester.pump();
 
         final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-        expect(snackBar.backgroundColor, equals(AppColors.success));
+        expect(snackBar.backgroundColor, equals(capturedButleryColors.success));
       });
 
       testWidgets('should have floating behavior', (WidgetTester tester) async {
@@ -180,7 +190,7 @@ void main() {
         await tester.pump();
 
         final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-        expect(snackBar.backgroundColor, equals(AppColors.error));
+        expect(snackBar.backgroundColor, equals(capturedColorScheme.error));
       });
 
       testWidgets('should have 4 second duration', (WidgetTester tester) async {
@@ -245,7 +255,7 @@ void main() {
         await tester.pump();
 
         final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
-        expect(snackBar.backgroundColor, equals(AppColors.warning));
+        expect(snackBar.backgroundColor, equals(capturedButleryColors.warning));
       });
 
       testWidgets('should have 4 second duration', (WidgetTester tester) async {
@@ -266,7 +276,8 @@ void main() {
         await tester.pump();
 
         final icon = tester.widget<Icon>(find.byIcon(Icons.warning_outlined));
-        expect(icon.color, equals(AppColors.warning));
+        // Warning snackbar icon is light on a gold background.
+        expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
         expect(icon.size, equals(AppDimensions.iconSizeM));
       });
     });
@@ -282,7 +293,7 @@ void main() {
         expect(find.byIcon(Icons.check_circle), findsOneWidget);
         final icon = tester.widget<Icon>(find.byIcon(Icons.check_circle));
         expect(icon.size, equals(AppDimensions.iconSizeM));
-        expect(icon.color, equals(AppColors.neutralLight));
+        expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
       });
 
       testWidgets('should show error icon with correct styling',
@@ -295,7 +306,7 @@ void main() {
         expect(find.byIcon(Icons.error), findsOneWidget);
         final icon = tester.widget<Icon>(find.byIcon(Icons.error));
         expect(icon.size, equals(AppDimensions.iconSizeM));
-        expect(icon.color, equals(AppColors.neutralLight));
+        expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
       });
 
       testWidgets('should show warning icon with correct styling',
@@ -308,7 +319,7 @@ void main() {
         expect(find.byIcon(Icons.warning_outlined), findsOneWidget);
         final icon = tester.widget<Icon>(find.byIcon(Icons.warning_outlined));
         expect(icon.size, equals(AppDimensions.iconSizeM));
-        expect(icon.color, equals(AppColors.warning));
+        expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
       });
     });
 

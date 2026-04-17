@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 void main() {
   group('SyncIndicator', () {
@@ -88,54 +88,66 @@ void main() {
     });
 
     group('Colors', () {
-      testWidgets('pending writes uses warning color', (tester) async {
+      testWidgets('pending writes uses butleryColors warning', (tester) async {
+        late ButleryColors butleryColors;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: SyncIndicator(
-                hasPendingWrites: true,
-                isFromCache: false,
-              ),
+              body: Builder(builder: (context) {
+                butleryColors = context.butleryColors;
+                return const SyncIndicator(
+                  hasPendingWrites: true,
+                  isFromCache: false,
+                );
+              }),
             ),
           ),
         );
 
         await tester.pump();
         final icon = tester.widget<Icon>(find.byType(Icon));
-        expect(icon.color, equals(AppColors.warning));
+        expect(icon.color, equals(butleryColors.warning));
       });
 
-      testWidgets('offline uses textLight color', (tester) async {
+      testWidgets('offline uses theme onSurfaceVariant', (tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: SyncIndicator(
-                hasPendingWrites: false,
-                isFromCache: true,
-              ),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const SyncIndicator(
+                  hasPendingWrites: false,
+                  isFromCache: true,
+                );
+              }),
             ),
           ),
         );
 
         final icon = tester.widget<Icon>(find.byType(Icon));
-        expect(icon.color, equals(AppColors.textLight));
+        expect(icon.color, equals(cs.onSurfaceVariant));
       });
 
-      testWidgets('synced uses success color', (tester) async {
+      testWidgets('synced uses butleryColors success', (tester) async {
+        late ButleryColors butleryColors;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: SyncIndicator(
-                hasPendingWrites: false,
-                isFromCache: false,
-                alwaysVisible: true,
-              ),
+              body: Builder(builder: (context) {
+                butleryColors = context.butleryColors;
+                return const SyncIndicator(
+                  hasPendingWrites: false,
+                  isFromCache: false,
+                  alwaysVisible: true,
+                );
+              }),
             ),
           ),
         );
 
         final icon = tester.widget<Icon>(find.byType(Icon));
-        expect(icon.color, equals(AppColors.success));
+        expect(icon.color, equals(butleryColors.success));
       });
     });
 
@@ -186,7 +198,7 @@ void main() {
           ),
         );
 
-        expect(find.bySemanticsLabel('Offline-lage'), findsOneWidget);
+        expect(find.bySemanticsLabel('Offline-läge'), findsOneWidget);
       });
 
       testWidgets('has tooltip for pending writes', (tester) async {
