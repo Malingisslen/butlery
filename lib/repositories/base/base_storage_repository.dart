@@ -57,7 +57,12 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 /// 3. Security Validation: validatePathPermission, extractUserIdFromPath
 /// 4. Audit Logging: All operations logged for GDPR compliance
 abstract class BaseStorageRepository with PermissionValidationMixin {
-  final FirebaseStorage _storage;
+  // Lazy so constructing a BaseStorageRepository subclass doesn't require
+  // Firebase.initializeApp(); FirebaseStorage.instance is only resolved on
+  // first actual storage access. Tests that never touch storage can still
+  // wire up a service that uses this repository.
+  final FirebaseStorage? _storageOverride;
+  FirebaseStorage? _resolvedStorage;
   final AuthRepository _authRepository;
   final FirebaseAuditRepository? _auditRepository;
 
@@ -65,13 +70,14 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
     FirebaseStorage? storage,
     required AuthRepository authRepository,
     FirebaseAuditRepository? auditRepository,
-  })  : _storage = storage ?? FirebaseStorage.instance,
+  })  : _storageOverride = storage,
         _authRepository = authRepository,
         _auditRepository = auditRepository;
 
   /// Protected access to FirebaseStorage instance for subclasses
   @protected
-  FirebaseStorage get storage => _storage;
+  FirebaseStorage get storage =>
+      _storageOverride ?? (_resolvedStorage ??= FirebaseStorage.instance);
 
   /// Protected access to AuthRepository instance for subclasses
   @protected
@@ -90,7 +96,7 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
   /// **Usage:** Subclasses use this to get references for upload/download operations
   @protected
   Reference getReference(String path) {
-    return _storage.ref(path);
+    return storage.ref(path);
   }
 
   /// Get download URL for a file at the specified path
