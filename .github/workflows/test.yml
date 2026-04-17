@@ -42,30 +42,80 @@ jobs:
 
       - run: flutter pub get
 
+      # lcov isn't preinstalled on ubuntu-latest. Install before we run
+      # tests so the summary step below can actually produce a number.
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
       # Run unit, widget, and view tests with coverage
       - name: Run unit, widget, and view tests
         run: |
           echo "Running unit, widget, and view tests with coverage..."
           flutter test test/unit test/widget test/views --coverage --reporter=expanded
 
-      # Check coverage threshold (parses lcov.info from previous step — no re-run)
-      - name: Check coverage threshold
+      # Produce a filtered lcov.info matching codecov.yml's ignore list, so
+      # the local "project coverage" number and the Codecov dashboard agree.
+      # No hard gate yet — Codecov owns the drop-tolerance gate via the
+      # `if_ci_failed: error` rule in codecov.yml. Once we've observed a
+      # real baseline from CI, a follow-up PR adds a local floor check
+      # that guards against the Codecov token being unavailable.
+      - name: Summarise filtered coverage
+        if: always()
         run: |
-          if [ -f coverage/lcov.info ]; then
-            COVERAGE=$(lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | grep -oP '[\d.]+%' | head -1 || echo "0%")
-            echo "Coverage: $COVERAGE"
+          if [ ! -f coverage/lcov.info ]; then
+            echo "No coverage/lcov.info — skipping summary" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
 
-      # Upload coverage to Codecov
+          lcov --remove coverage/lcov.info \
+            '**/*.g.dart' \
+            '**/*.freezed.dart' \
+            '**/*.mocks.dart' \
+            '**/mock_*.dart' \
+            'lib/firebase_options.dart' \
+            'lib/l10n/**' \
+            'lib/theme/**' \
+            --ignore-errors unused \
+            -o coverage/lcov_filtered.info
+
+          RAW_PCT=$(lcov --summary coverage/lcov.info \
+            | awk '/^  lines/ {print $2}')
+          FILTERED_PCT=$(lcov --summary coverage/lcov_filtered.info \
+            | awk '/^  lines/ {print $2}')
+
+          {
+            echo "## Coverage"
+            echo ""
+            echo "| Scope | Lines covered |"
+            echo "| --- | --- |"
+            echo "| Raw (all of \`lib/\`) | ${RAW_PCT:-unknown} |"
+            echo "| Filtered (matches codecov.yml ignores) | ${FILTERED_PCT:-unknown} |"
+            echo ""
+            echo "The filtered number is what Codecov gates on (60% target, 2% drop tolerance)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Filtered coverage: ${FILTERED_PCT:-unknown}"
+
+      # Upload coverage to Codecov — this is the real gate (see codecov.yml).
       - name: Upload coverage to Codecov
         if: success()
         uses: codecov/codecov-action@v4
         with:
-          files: coverage/lcov.info
+          files: coverage/lcov_filtered.info
           flags: unittests
           name: butlery-coverage
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      # Keep the filtered lcov as an artifact so a maintainer can download
+      # and inspect line-by-line coverage from any run.
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage/lcov_filtered.info
+          retention-days: 14
 
       # Upload test results if tests fail
       - name: Upload test results
