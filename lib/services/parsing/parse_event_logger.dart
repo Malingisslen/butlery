@@ -6,7 +6,13 @@ import 'package:butlery/core/utils/logger.dart';
 /// Fire-and-forget logger for recipe parse events via Cloud Function.
 /// Used by both RecipeParserService and UrlImportStrategy.
 class ParseEventLogger {
-  final FirebaseFunctions _functions = FirebaseFunctions.instance;
+  // Lazy so the Firebase app doesn't have to be initialised at construction.
+  // Integration/unit tests that only exercise parsing logic (no Firebase)
+  // would otherwise throw "No Firebase App '[DEFAULT]'" just from creating
+  // a UrlImportStrategy.
+  FirebaseFunctions? _functionsCache;
+  FirebaseFunctions get _functions =>
+      _functionsCache ??= FirebaseFunctions.instance;
 
   void logEvent({
     required String? url,
