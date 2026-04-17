@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/indicators/member_count_badge.dart';
-import 'package:butlery/theme/app_colors.dart';
 
 void main() {
   group('MemberCountBadge Widget Tests', () {
@@ -133,12 +132,16 @@ void main() {
         expect(decoration.color, equals(testColor));
       });
 
-      testWidgets('should have divider color border',
+      testWidgets('should have outlineVariant border from theme',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: MemberCountBadge(additionalCount: 3),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const MemberCountBadge(additionalCount: 3);
+              }),
             ),
           ),
         );
@@ -146,7 +149,7 @@ void main() {
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
         final border = decoration.border as Border;
-        expect(border.top.color, equals(AppColors.divider));
+        expect(border.top.color, equals(cs.outlineVariant));
         expect(border.top.width, equals(1));
       });
 
@@ -173,7 +176,7 @@ void main() {
         );
 
         final text = tester.widget<Text>(find.text('+3'));
-        expect(text.style?.fontWeight, equals(FontWeight.w600));
+        expect(text.style?.fontWeight, equals(FontWeight.w500));
       });
     });
 
@@ -522,11 +525,12 @@ void main() {
 
         final text = tester.widget<Text>(find.text('+5'));
         // The widget uses AppTextStyles.bodySmall.copyWith, not theme's bodySmall directly
-        expect(text.style?.fontWeight, equals(FontWeight.w600));
+        expect(text.style?.fontWeight, equals(FontWeight.w500));
       });
 
       testWidgets('should maintain visibility with transparent background',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -534,20 +538,23 @@ void main() {
                 surfaceContainerHighest: Colors.transparent,
               ),
             ),
-            home: const Scaffold(
+            home: Scaffold(
               backgroundColor: Colors.white,
-              body: MemberCountBadge(additionalCount: 5),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const MemberCountBadge(additionalCount: 5);
+              }),
             ),
           ),
         );
 
         expect(find.text('+5'), findsOneWidget);
 
-        // Border should still be visible
+        // Border should still be visible (theme-driven).
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
         final border = decoration.border as Border;
-        expect(border.top.color, equals(AppColors.divider));
+        expect(border.top.color, equals(cs.outlineVariant));
       });
     });
 

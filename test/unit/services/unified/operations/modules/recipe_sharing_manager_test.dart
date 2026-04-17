@@ -6,6 +6,8 @@ import 'package:butlery/services/unified/operations/modules/recipe_sharing_manag
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
 import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
@@ -41,6 +43,10 @@ void main() {
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
+
+      // Bridge production ServiceLocator to TestServiceLocator
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(MockDIContainer());
 
       // Create mocks
       mockParentService = MockUnifiedRecipeService();

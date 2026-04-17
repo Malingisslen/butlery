@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/indicators/notification_badge.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
@@ -89,11 +88,15 @@ void main() {
     });
 
     group('Default Styling', () {
-      testWidgets('should use default error background color', (tester) async {
+      testWidgets('should use theme error background color', (tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: NotificationBadge(count: 3),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const NotificationBadge(count: 3);
+              }),
             ),
           ),
         );
@@ -102,21 +105,25 @@ void main() {
           find.byType(Container),
         );
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.error));
+        expect(decoration.color, equals(cs.error));
       });
 
-      testWidgets('should use default neutral light text color',
+      testWidgets('should use theme surfaceContainerHighest text color',
           (tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: NotificationBadge(count: 3),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const NotificationBadge(count: 3);
+              }),
             ),
           ),
         );
 
         final text = tester.widget<Text>(find.text('3'));
-        expect(text.style?.color, equals(AppColors.neutralLight));
+        expect(text.style?.color, equals(cs.surfaceContainerHighest));
       });
 
       testWidgets('should use surface color for default border',
@@ -222,7 +229,8 @@ void main() {
         expect(text.textAlign, equals(TextAlign.center));
       });
 
-      testWidgets('should use bold font weight', (tester) async {
+      testWidgets('should use w600 font weight from badge style',
+          (tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -232,7 +240,7 @@ void main() {
         );
 
         final text = tester.widget<Text>(find.text('3'));
-        expect(text.style?.fontWeight, equals(FontWeight.bold));
+        expect(text.style?.fontWeight, equals(FontWeight.w600));
       });
     });
 
@@ -468,25 +476,29 @@ void main() {
       });
 
       testWidgets('should be visible with sufficient contrast', (tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
               backgroundColor: Colors.white,
-              body: NotificationBadge(count: 5),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const NotificationBadge(count: 5);
+              }),
             ),
           ),
         );
 
-        // Error color (red) on white background should have good contrast
+        // Error color on white background should have good contrast.
         final container = tester.widget<Container>(
           find.byType(Container),
         );
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.error));
+        expect(decoration.color, equals(cs.error));
 
-        // Text is neutral light (white) on error background
+        // Badge text uses the theme's surfaceContainerHighest on error bg.
         final text = tester.widget<Text>(find.text('5'));
-        expect(text.style?.color, equals(AppColors.neutralLight));
+        expect(text.style?.color, equals(cs.surfaceContainerHighest));
       });
     });
 

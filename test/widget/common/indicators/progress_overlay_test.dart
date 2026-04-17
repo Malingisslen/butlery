@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
@@ -74,16 +73,18 @@ void main() {
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('should use default dark background with alpha',
+      testWidgets('should use theme onSurface for default dark background',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: Stack(
-                children: [
-                  ProgressOverlay(text: 'Loading'),
-                ],
-              ),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const Stack(
+                  children: [ProgressOverlay(text: 'Loading')],
+                );
+              }),
             ),
           ),
         );
@@ -92,19 +93,21 @@ void main() {
             tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.color,
-            equals(AppColors.neutralDark.withValues(alpha: 0.7)));
+            equals(cs.onSurface.withValues(alpha: AppDimensions.opacityDark)));
       });
 
-      testWidgets('should use default light progress color',
+      testWidgets('should use theme surfaceContainerHighest for progress',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: Stack(
-                children: [
-                  ProgressOverlay(text: 'Loading'),
-                ],
-              ),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const Stack(
+                  children: [ProgressOverlay(text: 'Loading')],
+                );
+              }),
             ),
           ),
         );
@@ -112,7 +115,7 @@ void main() {
         final progress = tester.widget<CircularProgressIndicator>(
           find.byType(CircularProgressIndicator),
         );
-        expect(progress.color, equals(AppColors.neutralLight));
+        expect(progress.color, equals(cs.surfaceContainerHighest));
       });
 
       testWidgets('should apply custom background color',
@@ -222,16 +225,19 @@ void main() {
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('should use neutral light for avatar progress',
+      testWidgets(
+          'should use theme surfaceContainerHighest for avatar progress',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: Stack(
-                children: [
-                  ProgressOverlay.avatar(text: 'Uploading'),
-                ],
-              ),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const Stack(
+                  children: [ProgressOverlay.avatar(text: 'Uploading')],
+                );
+              }),
             ),
           ),
         );
@@ -239,25 +245,27 @@ void main() {
         final progress = tester.widget<CircularProgressIndicator>(
           find.byType(CircularProgressIndicator),
         );
-        expect(progress.color, equals(AppColors.neutralLight));
+        expect(progress.color, equals(cs.surfaceContainerHighest));
       });
 
-      testWidgets('should use neutral light for avatar text',
+      testWidgets('should use theme surfaceContainerHighest for avatar text',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
-              body: Stack(
-                children: [
-                  ProgressOverlay.avatar(text: 'Uploading'),
-                ],
-              ),
+              body: Builder(builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return const Stack(
+                  children: [ProgressOverlay.avatar(text: 'Uploading')],
+                );
+              }),
             ),
           ),
         );
 
         final text = tester.widget<Text>(find.text('Uploading'));
-        expect(text.style?.color, equals(AppColors.neutralLight));
+        expect(text.style?.color, equals(cs.surfaceContainerHighest));
       });
     });
 
@@ -602,11 +610,15 @@ void main() {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
-              body: Stack(
-                children: [
-                  Text('Background content'),
-                  ProgressOverlay(text: 'Overlay'),
-                ],
+              body: SizedBox.expand(
+                // Stack must have non-zero height for the Positioned.fill
+                // overlay Column (spinner + text) to fit.
+                child: Stack(
+                  children: [
+                    Center(child: Text('Background content')),
+                    ProgressOverlay(text: 'Overlay'),
+                  ],
+                ),
               ),
             ),
           ),
