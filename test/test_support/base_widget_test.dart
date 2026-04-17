@@ -4,6 +4,7 @@
 /// widget wrapping, theme injection, and interaction helpers.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -225,14 +226,14 @@ extension WidgetTesterExtensions on WidgetTester {
     Finder finder, {
     Duration timeout = const Duration(seconds: 10),
   }) async {
-    final end = DateTime.now().add(timeout);
+    final end = clock.now().add(timeout);
 
     do {
       if (finder.evaluate().isNotEmpty) {
         return;
       }
       await pump(const Duration(milliseconds: 100));
-    } while (DateTime.now().isBefore(end));
+    } while (clock.now().isBefore(end));
 
     throw TestFailure('Could not find widget within timeout');
   }
@@ -242,14 +243,14 @@ extension WidgetTesterExtensions on WidgetTester {
     bool Function() condition, {
     Duration timeout = const Duration(seconds: 10),
   }) async {
-    final end = DateTime.now().add(timeout);
+    final end = clock.now().add(timeout);
 
     do {
       if (condition()) {
         return;
       }
       await pump(const Duration(milliseconds: 100));
-    } while (DateTime.now().isBefore(end));
+    } while (clock.now().isBefore(end));
 
     throw TestFailure('Condition not met within timeout');
   }

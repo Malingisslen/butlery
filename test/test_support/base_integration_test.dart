@@ -4,6 +4,7 @@
 /// real app bootstrapping, feature flow testing, and end-to-end utilities.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -174,10 +175,10 @@ class IntegrationTestHelpers {
     Duration timeout = const Duration(seconds: 30),
     String? timeoutMessage,
   }) async {
-    final end = DateTime.now().add(timeout);
+    final end = clock.now().add(timeout);
 
     while (!condition()) {
-      if (DateTime.now().isAfter(end)) {
+      if (clock.now().isAfter(end)) {
         throw TestFailure(timeoutMessage ?? 'Condition not met within timeout');
       }
       await tester.pump(const Duration(milliseconds: 100));

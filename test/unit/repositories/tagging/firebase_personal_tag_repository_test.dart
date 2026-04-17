@@ -8,10 +8,8 @@
 /// - newWriteBatch(): Create batch for atomic operations (#7)
 library;
 
-// Firestore classes are sealed but need to be mocked for unit tests
-// ignore_for_file: subtype_of_sealed_class
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
@@ -19,97 +17,49 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
 import '../../../infrastructure/builders/personal_tag_builder.dart';
 
-// Mocks
-class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
-
-class MockCollectionReference extends Mock
-    implements CollectionReference<Map<String, dynamic>> {}
-
-class MockDocumentReference extends Mock
-    implements DocumentReference<Map<String, dynamic>> {}
-
-class MockDocumentSnapshot extends Mock
-    implements DocumentSnapshot<Map<String, dynamic>> {}
-
-class MockQuerySnapshot extends Mock
-    implements QuerySnapshot<Map<String, dynamic>> {}
-
-class MockQueryDocumentSnapshot extends Mock
-    implements QueryDocumentSnapshot<Map<String, dynamic>> {}
-
-class MockQuery extends Mock implements Query<Map<String, dynamic>> {}
-
-class MockWriteBatch extends Mock implements WriteBatch {}
-
+// Only project-interface mocks are kept — SDK shapes come from FakeFirebaseFirestore.
 class MockAuthRepository extends Mock implements AuthRepository {}
 
-// Fakes for fallback values
-class FakeDocumentReference extends Fake
-    implements DocumentReference<Map<String, dynamic>> {}
-
 void main() {
-  late MockFirebaseFirestore mockFirestore;
-  late MockCollectionReference mockCollection;
+  late FakeFirebaseFirestore fakeFirestore;
   late MockAuthRepository mockAuthRepository;
   late FirebasePersonalTagRepository repository;
 
+  const testUserId = 'test-user-123';
+
+  // Convenience for the user subcollection the repo writes into:
+  // users/{uid}/personal_tags
+  CollectionReference<Map<String, dynamic>> tagsRef() => fakeFirestore
+      .collection('users')
+      .doc(testUserId)
+      .collection('personal_tags');
+
   setUpAll(() {
     registerFallbackValue(PersonalTagBuilder().build());
-    registerFallbackValue(FakeDocumentReference());
   });
 
   setUp(() {
-    mockFirestore = MockFirebaseFirestore();
-    mockCollection = MockCollectionReference();
+    fakeFirestore = FakeFirebaseFirestore();
     mockAuthRepository = MockAuthRepository();
 
-    // Stub auth to return a user ID
-    when(() => mockAuthRepository.currentUserId).thenReturn('test-user-123');
+    when(() => mockAuthRepository.currentUserId).thenReturn(testUserId);
 
-    // Create repository with mocked dependencies
     repository = FirebasePersonalTagRepository(
-      firestore: mockFirestore,
+      firestore: fakeFirestore,
       authRepository: mockAuthRepository,
     );
-
-    // Stub collection access - repository uses user subcollection
-    final mockUsersCollection = MockCollectionReference();
-    final mockUserDoc = MockDocumentReference();
-
-    when(() => mockFirestore.collection('users'))
-        .thenReturn(mockUsersCollection);
-    when(() => mockUsersCollection.doc('test-user-123'))
-        .thenReturn(mockUserDoc);
-    when(() => mockUserDoc.collection('personal_tags'))
-        .thenReturn(mockCollection);
   });
 
   group('#9: FirebasePersonalTagRepository batch operations', () {
     group('getByIds', () {
-      // Real code uses whereIn batch queries, not per-doc .get().
-      // These tests mock the actual query chain for fidelity.
-
       test('returns tags for valid IDs', () async {
-        // Arrange: mock the whereIn query chain
+        // Arrange: seed two tags in the user subcollection.
         final tag1 =
             PersonalTagBuilder().withId('tag-1').withName('Tag One').build();
         final tag2 =
             PersonalTagBuilder().withId('tag-2').withName('Tag Two').build();
-
-        final mockQuery = MockQuery();
-        final mockQuerySnapshot = MockQuerySnapshot();
-        final mockQDoc1 = MockQueryDocumentSnapshot();
-        final mockQDoc2 = MockQueryDocumentSnapshot();
-
-        when(() => mockCollection.where(any(), whereIn: any(named: 'whereIn')))
-            .thenReturn(mockQuery);
-        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        when(() => mockQuerySnapshot.docs).thenReturn([mockQDoc1, mockQDoc2]);
-
-        when(() => mockQDoc1.id).thenReturn('tag-1');
-        when(() => mockQDoc1.data()).thenReturn(tag1.toFirestore());
-        when(() => mockQDoc2.id).thenReturn('tag-2');
-        when(() => mockQDoc2.data()).thenReturn(tag2.toFirestore());
+        await tagsRef().doc('tag-1').set(tag1.toFirestore());
+        await tagsRef().doc('tag-2').set(tag2.toFirestore());
 
         // Act
         final result = await repository.getByIds(['tag-1', 'tag-2']);
@@ -121,36 +71,20 @@ void main() {
       });
 
       test('returns empty list for empty IDs', () async {
-        // Act
         final result = await repository.getByIds([]);
-
-        // Assert
         expect(result, isEmpty);
       });
 
       test('ignores missing IDs silently', () async {
-        // Arrange: whereIn only returns docs that exist — missing IDs
-        // are simply absent from the result (Firestore behavior).
+        // Arrange: only tag-1 exists.
         final tag1 =
             PersonalTagBuilder().withId('tag-1').withName('Tag One').build();
+        await tagsRef().doc('tag-1').set(tag1.toFirestore());
 
-        final mockQuery = MockQuery();
-        final mockQuerySnapshot = MockQuerySnapshot();
-        final mockQDoc1 = MockQueryDocumentSnapshot();
-
-        when(() => mockCollection.where(any(), whereIn: any(named: 'whereIn')))
-            .thenReturn(mockQuery);
-        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        // Only tag-1 exists; 'missing-tag' simply not in results
-        when(() => mockQuerySnapshot.docs).thenReturn([mockQDoc1]);
-
-        when(() => mockQDoc1.id).thenReturn('tag-1');
-        when(() => mockQDoc1.data()).thenReturn(tag1.toFirestore());
-
-        // Act
+        // Act: request one existing + one missing.
         final result = await repository.getByIds(['tag-1', 'missing-tag']);
 
-        // Assert: Only existing tag returned
+        // Assert: missing IDs are simply absent.
         expect(result.length, 1);
         expect(result.first.id, 'tag-1');
       });
@@ -158,197 +92,126 @@ void main() {
 
     group('reorder', () {
       test('updates sortOrder for all tags', () async {
-        // Arrange
-        final mockBatch = MockWriteBatch();
-        when(() => mockFirestore.batch()).thenReturn(mockBatch);
-
-        final mockDocRef1 = MockDocumentReference();
-        final mockDocRef2 = MockDocumentReference();
-        final mockDocRef3 = MockDocumentReference();
-
-        when(() => mockCollection.doc('tag-1')).thenReturn(mockDocRef1);
-        when(() => mockCollection.doc('tag-2')).thenReturn(mockDocRef2);
-        when(() => mockCollection.doc('tag-3')).thenReturn(mockDocRef3);
-
-        when(() => mockBatch.update(any(), any())).thenReturn(null);
-        when(() => mockBatch.commit()).thenAnswer((_) async {});
+        // Arrange: seed three tags with arbitrary sort orders.
+        for (final id in ['tag-1', 'tag-2', 'tag-3']) {
+          await tagsRef().doc(id).set(
+                PersonalTagBuilder()
+                    .withId(id)
+                    .withName(id)
+                    .build()
+                    .toFirestore(),
+              );
+        }
 
         // Act
         await repository.reorder(['tag-1', 'tag-2', 'tag-3']);
 
-        // Assert
-        verify(() => mockBatch.update(
-            mockDocRef1,
-            any(
-              that: containsPair('sortOrder', 0),
-            ))).called(1);
-        verify(() => mockBatch.update(
-            mockDocRef2,
-            any(
-              that: containsPair('sortOrder', 1),
-            ))).called(1);
-        verify(() => mockBatch.update(
-            mockDocRef3,
-            any(
-              that: containsPair('sortOrder', 2),
-            ))).called(1);
-        verify(() => mockBatch.commit()).called(1);
+        // Assert: sortOrder matches position in list.
+        final doc1 = await tagsRef().doc('tag-1').get();
+        final doc2 = await tagsRef().doc('tag-2').get();
+        final doc3 = await tagsRef().doc('tag-3').get();
+        expect(doc1.data()!['sortOrder'], 0);
+        expect(doc2.data()!['sortOrder'], 1);
+        expect(doc3.data()!['sortOrder'], 2);
       });
 
       test('handles empty list', () async {
-        // Arrange
-        final mockBatch = MockWriteBatch();
-        when(() => mockFirestore.batch()).thenReturn(mockBatch);
-        when(() => mockBatch.commit()).thenAnswer((_) async {});
-
-        // Act
-        await repository.reorder([]);
-
-        // Assert: Batch still committed (even if empty)
-        verify(() => mockBatch.commit()).called(1);
+        // Act & assert: no documents to reorder, no exception.
+        await expectLater(repository.reorder([]), completes);
       });
     });
 
     group('clearGroupFromTags', () {
       test('clears groupId from all tags in group', () async {
-        // Arrange
-        final tag1 =
-            PersonalTagBuilder().withId('tag-1').withGroupId('group-1').build();
-        final tag2 =
-            PersonalTagBuilder().withId('tag-2').withGroupId('group-1').build();
-
-        // Mock query for tags in group
-        final mockQuery = MockQuery();
-        final mockQuerySnapshot = MockQuerySnapshot();
-        final mockQDoc1 = MockQueryDocumentSnapshot();
-        final mockQDoc2 = MockQueryDocumentSnapshot();
-
-        when(() => mockCollection.where('groupId', isEqualTo: 'group-1'))
-            .thenReturn(mockQuery);
-        when(() => mockQuery.orderBy('sortOrder')).thenReturn(mockQuery);
-        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        when(() => mockQuerySnapshot.docs).thenReturn([mockQDoc1, mockQDoc2]);
-
-        when(() => mockQDoc1.id).thenReturn('tag-1');
-        when(() => mockQDoc1.data()).thenReturn(tag1.toFirestore());
-        when(() => mockQDoc2.id).thenReturn('tag-2');
-        when(() => mockQDoc2.data()).thenReturn(tag2.toFirestore());
-
-        // Mock batch operations
-        final mockBatch = MockWriteBatch();
-        when(() => mockFirestore.batch()).thenReturn(mockBatch);
-
-        final mockDocRef1 = MockDocumentReference();
-        final mockDocRef2 = MockDocumentReference();
-
-        when(() => mockCollection.doc('tag-1')).thenReturn(mockDocRef1);
-        when(() => mockCollection.doc('tag-2')).thenReturn(mockDocRef2);
-
-        when(() => mockBatch.update(any(), any())).thenReturn(null);
-        when(() => mockBatch.commit()).thenAnswer((_) async {});
+        // Arrange: two tags in group-1, one in a different group.
+        await tagsRef().doc('tag-1').set(
+              PersonalTagBuilder()
+                  .withId('tag-1')
+                  .withGroupId('group-1')
+                  .build()
+                  .toFirestore(),
+            );
+        await tagsRef().doc('tag-2').set(
+              PersonalTagBuilder()
+                  .withId('tag-2')
+                  .withGroupId('group-1')
+                  .build()
+                  .toFirestore(),
+            );
+        await tagsRef().doc('tag-3').set(
+              PersonalTagBuilder()
+                  .withId('tag-3')
+                  .withGroupId('group-other')
+                  .build()
+                  .toFirestore(),
+            );
 
         // Act
         final count = await repository.clearGroupFromTags('group-1');
 
         // Assert
         expect(count, 2);
-        verify(() => mockBatch.update(mockDocRef1, any())).called(1);
-        verify(() => mockBatch.update(mockDocRef2, any())).called(1);
-        verify(() => mockBatch.commit()).called(1);
+        final doc1 = await tagsRef().doc('tag-1').get();
+        final doc2 = await tagsRef().doc('tag-2').get();
+        final doc3 = await tagsRef().doc('tag-3').get();
+        // FieldValue.delete removes the field entirely.
+        expect(doc1.data()!.containsKey('groupId'), isFalse);
+        expect(doc2.data()!.containsKey('groupId'), isFalse);
+        // Untouched tag keeps its group.
+        expect(doc3.data()!['groupId'], 'group-other');
       });
 
       test('returns 0 for empty group', () async {
-        // Arrange
-        final mockQuery = MockQuery();
-        final mockQuerySnapshot = MockQuerySnapshot();
-
-        when(() => mockCollection.where('groupId', isEqualTo: 'empty-group'))
-            .thenReturn(mockQuery);
-        when(() => mockQuery.orderBy('sortOrder')).thenReturn(mockQuery);
-        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        when(() => mockQuerySnapshot.docs).thenReturn([]);
-
-        // Act
         final count = await repository.clearGroupFromTags('empty-group');
-
-        // Assert
         expect(count, 0);
-        verifyNever(() => mockFirestore.batch());
       });
     });
 
     group('#7: addClearGroupToBatch', () {
       test('adds update operations to external batch', () async {
-        // Arrange
-        final tag1 =
-            PersonalTagBuilder().withId('tag-1').withGroupId('group-1').build();
+        // Arrange: one tag in group-1.
+        await tagsRef().doc('tag-1').set(
+              PersonalTagBuilder()
+                  .withId('tag-1')
+                  .withGroupId('group-1')
+                  .build()
+                  .toFirestore(),
+            );
 
-        // Mock query
-        final mockQuery = MockQuery();
-        final mockQuerySnapshot = MockQuerySnapshot();
-        final mockQDoc = MockQueryDocumentSnapshot();
-
-        when(() => mockCollection.where('groupId', isEqualTo: 'group-1'))
-            .thenReturn(mockQuery);
-        when(() => mockQuery.orderBy('sortOrder')).thenReturn(mockQuery);
-        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        when(() => mockQuerySnapshot.docs).thenReturn([mockQDoc]);
-
-        when(() => mockQDoc.id).thenReturn('tag-1');
-        when(() => mockQDoc.data()).thenReturn(tag1.toFirestore());
-
-        // External batch
-        final externalBatch = MockWriteBatch();
-        final mockDocRef = MockDocumentReference();
-
-        when(() => mockCollection.doc('tag-1')).thenReturn(mockDocRef);
-        when(() => externalBatch.update(any(), any())).thenReturn(null);
+        final externalBatch = fakeFirestore.batch();
 
         // Act
         final count =
             await repository.addClearGroupToBatch(externalBatch, 'group-1');
 
-        // Assert: Operations added to external batch, not committed
+        // Assert: operation added but NOT committed yet.
         expect(count, 1);
-        verify(() => externalBatch.update(mockDocRef, any())).called(1);
-        verifyNever(() => externalBatch.commit()); // Caller commits
+        var doc = await tagsRef().doc('tag-1').get();
+        expect(doc.data()!['groupId'], 'group-1',
+            reason: 'caller must commit the external batch');
+
+        // Once caller commits, the update lands.
+        await externalBatch.commit();
+        doc = await tagsRef().doc('tag-1').get();
+        expect(doc.data()!.containsKey('groupId'), isFalse);
       });
 
       test('returns 0 and adds nothing for empty group', () async {
-        // Arrange
-        final mockQuery = MockQuery();
-        final mockQuerySnapshot = MockQuerySnapshot();
-
-        when(() => mockCollection.where('groupId', isEqualTo: 'empty-group'))
-            .thenReturn(mockQuery);
-        when(() => mockQuery.orderBy('sortOrder')).thenReturn(mockQuery);
-        when(() => mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        when(() => mockQuerySnapshot.docs).thenReturn([]);
-
-        final externalBatch = MockWriteBatch();
-
-        // Act
-        final count =
-            await repository.addClearGroupToBatch(externalBatch, 'empty-group');
-
-        // Assert
+        final externalBatch = fakeFirestore.batch();
+        final count = await repository.addClearGroupToBatch(
+          externalBatch,
+          'empty-group',
+        );
         expect(count, 0);
-        verifyNever(() => externalBatch.update(any(), any()));
+        // Committing an empty batch is a no-op.
+        await expectLater(externalBatch.commit(), completes);
       });
     });
 
     group('#7: newWriteBatch', () {
-      test('creates new WriteBatch from firestore', () {
-        // Arrange
-        final mockBatch = MockWriteBatch();
-        when(() => mockFirestore.batch()).thenReturn(mockBatch);
-
-        // Act
+      test('creates a WriteBatch from firestore', () {
         final batch = repository.newWriteBatch();
-
-        // Assert
-        expect(batch, mockBatch);
-        verify(() => mockFirestore.batch()).called(1);
+        expect(batch, isA<WriteBatch>());
       });
     });
   });

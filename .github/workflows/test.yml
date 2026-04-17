@@ -42,6 +42,13 @@ jobs:
 
       - run: flutter pub get
 
+      # Real-time guard (BUT-393). Fails fast if a PR reintroduces
+      # `DateTime.now()` in a new unit test outside the allowlist, or any
+      # long `Future.delayed(...)` in unit/widget/view/integration tests.
+      # Guards the BUT-387 Phase 5 rescue against decay.
+      - name: Real-time regression guard
+        run: bash scripts/check_test_real_time.sh
+
       # lcov isn't preinstalled on ubuntu-latest. Install before we run
       # tests so the summary step below can actually produce a number.
       - name: Install lcov

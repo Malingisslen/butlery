@@ -827,7 +827,10 @@ void main() {
         // Act
         manager.dispose();
 
-        // Wait to ensure no additional timer callbacks are executed after disposal
+        // Wait to ensure no additional timer callbacks are executed after disposal.
+        // Real-time delay needed: production uses a real Timer whose clock is
+        // not routed through `package:clock`, so fakeAsync cannot drive it.
+        // ignore: butlery_fake_time
         await Future.delayed(const Duration(seconds: 1));
 
         // Assert - Presence cleanup was called, initial presence may or may not be called due to timer

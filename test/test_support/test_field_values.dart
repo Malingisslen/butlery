@@ -4,6 +4,7 @@
 /// correctly with FakeFirebaseFirestore and prevent type mismatch errors.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Test-safe alternatives to FieldValue operations
@@ -15,8 +16,9 @@ class TestFieldValues {
 
   /// Get server timestamp (returns current DateTime)
   ///
-  /// Use this instead of FieldValue.serverTimestamp() in tests
-  static DateTime serverTimestamp() => DateTime.now();
+  /// Use this instead of FieldValue.serverTimestamp() in tests.
+  /// Uses [clock.now()] so `fakeAsync` / `withClock` can control time.
+  static DateTime serverTimestamp() => clock.now();
 
   /// Array union operation (manually adds items)
   ///

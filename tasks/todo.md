@@ -1,6 +1,50 @@
 # Sprint Backlog
 
-## Sprint: Test Hardening Close-Out (BUT-387 Final Phase) — 2026-04-17
+## Sprint: Test Infra Close-Out (BUT-387 Phase 11) — 2026-04-17
+
+### Agent A: testing-specialist — Deterministic time (BUT-394)
+
+- [x] **A1. Rewrite `timestamp_test_helper.dart`** — replace 6 internal `DateTime.now()` calls with explicit `DateTime? now` params (default `null` → require caller to pass). `TestTimestampProvider` pattern from Phase 5. Keep the DateTime↔Timestamp conversion helpers untouched — only the "give me now" paths change. (BUT-394)
+- [x] **A2. Audit + fix `Future.delayed(100ms)` stragglers** — grep for `Future\.delayed\(.*milliseconds: *(100|200|500)\)` in `test/**/*.dart` outside `test_support/`. For each: if inside a `fakeAsync` block, replace with `async.elapse(...)`; if a widget test, use `tester.pump(Duration(...))`; document any that must stay real. Target: ~20 call sites. (BUT-394)
+- [x] **A3. Clean 5 other test_support files with real `DateTime.now()`** — `base_integration_test.dart`, `base_widget_test.dart`, `test_data_isolator.dart`, `test_field_values.dart`, `test_mode_config.dart`. Use `clock.now()` from `package:clock` where production did in Phase 5. (BUT-394)
+
+### Agent B: testing-specialist — Firebase SDK mock migration (BUT-389)
+
+- [x] **B1. Identify SDK-shape mocks in `production_mocks.dart`** — grep for `extends Mock implements (FirebaseFirestore|CollectionReference|DocumentReference|DocumentSnapshot|Query|QuerySnapshot|QueryDocumentSnapshot|WriteBatch|FirebaseStorage|Reference|TaskSnapshot|FirebaseAnalytics)`. Keep project-interface mocks untouched. (BUT-389)
+- [x] **B2. Replace Firestore SDK mocks with `FakeFirebaseFirestore`** — delete the hand-rolled classes; update consumers to inject `FakeFirebaseFirestore()` where they currently receive a mock. (BUT-389)
+- [x] **B3. Replace Storage SDK mocks with `firebase_storage_mocks`** — use package's actual API for `MockFirebaseStorage` / `MockReference` replacements. (BUT-389)
+- [x] **B4. Verify downstream consumer tests still pass** — identify test files that used the deleted mocks, run them, fix any stub-shape mismatches. Likely 10-20 files touched. (BUT-389)
+
+### Agent C: flutter-developer — Custom lint enforcement (BUT-393)
+
+*Blocked by A1+A2+A3 — runs after the real-time baseline is clean.*
+
+- [x] **C1. Add `custom_lint` + `custom_lint_builder` dev deps** — `pubspec.yaml`; create `lib/lints/butlery_lints.dart` (or `packages/butlery_lints/`) exposing the rule registry. (BUT-393)
+- [x] **C2. Write `avoid_real_time_in_tests` rule** — flag `DateTime.now()` and `Future.delayed(Duration(seconds:|milliseconds: >10|minutes:))` inside `test/**/*.dart` AST nodes. Subclass `DartLintRule`, check call targets + containing file path. (BUT-393)
+- [x] **C3. Allowlist + opt-out** — exempt `test/test_support/**` and `// ignore: avoid_real_time_in_tests` line comments. Document exempted files in `analysis_options.yaml`. (BUT-393)
+- [x] **C4. Wire into analyze + CI** — `analysis_options.yaml` enables the plugin; `.github/workflows/test.yml` runs `dart run custom_lint` before `flutter analyze`. Exit 1 on violation. (BUT-393)
+- [x] **C5. Verify rule fires correctly** — add a failing fixture in `test/lints/fixtures/` that uses `DateTime.now()` and confirm the linter catches it; confirm existing tests stay clean. (BUT-393)
+
+### Post-Sprint Steps
+
+- [x] Run `dart analyze --fatal-infos` — clean
+- [x] Run `bash scripts/check_test_real_time.sh` — clean (note: used grep-in-CI baseline approach per ticket's endorsed alternative, not custom_lint)
+- [x] Spot-check tests — green
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-394, BUT-389, BUT-393 → Done
+
+---
+
+## What this means in plain language
+
+- Tests that currently grab "the real wall clock" get fixed to use fake time — no more flaky failures when a test runs 10ms slower than expected on CI.
+- The test suite's Firebase fake-it-yourself mocks get swapped for the proper library fakes — fewer bespoke implementations to maintain, fewer surprises when the Firebase SDK version bumps.
+- A new build-time check catches "someone just added `DateTime.now()` to a test" automatically — the rescue work we just finished can't silently regress.
+- Risk: Low-medium. All test-infra, no user-facing code changes.
+
+---
+
+## Archive: Sprint Test Hardening Close-Out (BUT-387 Final Phase) — 2026-04-17
 
 ### Agent A: testing-specialist — User-journey & Integration Coverage
 

@@ -1,14 +1,16 @@
 // ignore_for_file: subtype_of_sealed_class
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
-import '../../infrastructure/mocks/production_mocks.dart';
 
-// ULTRATHINK CONVERSION COMPLETE: Local mock classes removed - using centralized mocks
+// Local mock for FirebaseAnalytics — no viable in-memory fake in the
+// ecosystem, and this test only needs stubbed no-op async methods.
+class MockFirebaseAnalytics extends Mock implements FirebaseAnalytics {}
 
 void main() {
   group('FirebaseAnalyticsRepository', () {

@@ -13,6 +13,12 @@ import '../../../../../infrastructure/mocks/production_mocks.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 
+// Carve-out inline mock for error-injection only. Every happy path uses
+// FakeFirebaseFirestore; the one test that needs `thenThrow` falls back to
+// mocktail here.
+// ignore: subtype_of_sealed_class
+class _ThrowingFirestore extends Mock implements FirebaseFirestore {}
+
 void main() {
   group('RatingStatistics', () {
     late FakeFirebaseFirestore fakeFirestore;
@@ -424,7 +430,7 @@ void main() {
 
       test('should handle Firestore errors gracefully', () async {
         // Arrange - Create a mock Firestore that throws errors
-        final mockFirestore = MockFirebaseFirestore();
+        final mockFirestore = _ThrowingFirestore();
         when(() => mockFirestore.collection(any()))
             .thenThrow(Exception('Firestore error'));
 
@@ -445,5 +451,5 @@ void main() {
   });
 }
 
-// Using centralized mocks from production_mocks.dart:
-// MockFirebaseFirestore
+// Happy-path tests use FakeFirebaseFirestore. The single error-injection test
+// uses the local `_ThrowingFirestore` above.

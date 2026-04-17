@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/shared_content/social_sharing_viewmodel.dart';
@@ -361,15 +363,18 @@ void main() {
       test('should not share when already sharing', () async {
         viewModel.toggleFriendSelection('friend-1');
 
-        // Start a sharing operation (mock doesn't complete)
+        // Start a sharing operation (mock never completes — used to prove
+        // the "already sharing" guard runs while the first call is in flight).
+        final inflight = Completer<String>();
+        addTearDown(() {
+          if (!inflight.isCompleted) inflight.complete('inv-123');
+        });
         when(() => mockRecipeCoordinator.createRecipeInvitation(
-                  recipeId: any(named: 'recipeId'),
-                  inviteeUserIds: any(named: 'inviteeUserIds'),
-                  message: any(named: 'message'),
-                  allowCollaboration: any(named: 'allowCollaboration'),
-                ))
-            .thenAnswer((_) =>
-                Future.delayed(const Duration(seconds: 1), () => 'inv-123'));
+              recipeId: any(named: 'recipeId'),
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: any(named: 'message'),
+              allowCollaboration: any(named: 'allowCollaboration'),
+            )).thenAnswer((_) => inflight.future);
 
         // ignore: unawaited_futures
         viewModel.shareContent(

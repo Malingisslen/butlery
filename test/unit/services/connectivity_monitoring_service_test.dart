@@ -459,10 +459,12 @@ void main() {
       });
 
       test('should handle repository timeout', () async {
-        // Arrange
+        // Arrange — a slow-but-eventually-returning repository call.
+        // Prior 10-second delay was pointless real-time waste; 50ms is enough
+        // to exercise the "takes a while" path without slowing CI.
         when(() => mockRepository.checkFirebaseConnection())
             .thenAnswer((_) async {
-          await Future.delayed(Duration(seconds: 10));
+          await Future.delayed(const Duration(milliseconds: 50));
           return true;
         });
 

@@ -38,6 +38,10 @@ class MockRecipeRepository extends Mock implements RecipeRepository {}
 class MockFirebaseRecipeRepository extends Mock
     implements FirebaseRecipeRepository {}
 
+// Local WriteBatch mock — the tests below need `verify(() => batch.commit())`,
+// which requires a real mocktail Mock. A FakeFirebaseFirestore batch won't
+// work because we can't verify calls on it.
+// ignore: subtype_of_sealed_class
 class MockWriteBatch extends Mock implements WriteBatch {}
 
 void main() {

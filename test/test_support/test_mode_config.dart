@@ -4,6 +4,7 @@
 /// where FieldValue operations are replaced with test-safe alternatives.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Global test mode configuration
@@ -32,9 +33,11 @@ class TestModeConfig {
   }
 
   /// Get server timestamp (returns FieldValue or DateTime based on mode)
+  ///
+  /// In test mode, uses [clock.now()] so `fakeAsync` can control time.
   static dynamic serverTimestamp() {
     if (_useTestFieldValues) {
-      return DateTime.now();
+      return clock.now();
     }
     return FieldValue.serverTimestamp();
   }

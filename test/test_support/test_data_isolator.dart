@@ -22,7 +22,10 @@ class TestDataIsolator {
     _currentTestName = testName;
     _testCounter++;
 
-    // Create unique prefix for this test
+    // Create unique prefix for this test.
+    // Intentionally uses real-clock millisecond epoch so prefixes are unique
+    // across test runs (fakeAsync clock starts at epoch 0, which would collide).
+    // ignore: butlery_fake_time
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final prefix = 'test_${_testCounter}_${timestamp}_';
     _testPrefixes[testName] = prefix;

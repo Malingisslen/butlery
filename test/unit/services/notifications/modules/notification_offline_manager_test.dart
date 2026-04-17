@@ -429,6 +429,9 @@ void main() {
         // Assert - Should delay processing by 2 seconds to ensure stable connection
         expect(offlineManager.queueSize, equals(1)); // Still queued immediately
 
+        // Real-time delay needed: production uses a real Timer whose clock is
+        // not routed through `package:clock`, so fakeAsync cannot drive it.
+        // ignore: butlery_fake_time
         await Future.delayed(const Duration(seconds: 3));
         expect(sentNotifications.length, equals(1)); // Processed after delay
       });

@@ -1052,13 +1052,14 @@ void main() {
         });
 
         test('should handle network timeout during save', () async {
-          // Arrange
-          when(() => mockRecipeRepository.create(any())).thenAnswer(
-            (_) async {
-              await Future.delayed(const Duration(seconds: 2));
-              throw TimeoutException('Network timeout during save');
-            },
-          );
+          // Arrange — simulate a hanging save that never resolves in test time.
+          // Optimistic-update path returns immediately without awaiting this.
+          final hang = Completer<Recipe>();
+          addTearDown(() {
+            if (!hang.isCompleted) hang.completeError('test-tearDown');
+          });
+          when(() => mockRecipeRepository.create(any()))
+              .thenAnswer((_) => hang.future);
 
           // Act - optimistic update returns immediately
           final recipeId = await service.createPersonalRecipe(
@@ -1087,12 +1088,11 @@ void main() {
         });
 
         test('should handle search timeout', () async {
-          // Arrange
+          // Arrange — simulate a timeout by throwing TimeoutException directly.
+          // The prior 3-second Future.delayed added no behavioural value; the
+          // service's catch-block treats any throw as a failed search.
           when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer(
-            (_) async {
-              await Future.delayed(const Duration(seconds: 3));
-              throw TimeoutException('Search timeout after 30 seconds');
-            },
+            (_) async => throw TimeoutException('Search timeout'),
           );
 
           // Act

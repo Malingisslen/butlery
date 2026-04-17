@@ -4,6 +4,7 @@
 /// addressing issues with Firestore Timestamp vs DateTime comparisons.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,44 +57,56 @@ class TimestampTestHelper {
   }
 
   /// Check if timestamp is recent (within tolerance)
+  ///
+  /// Uses [clock.now()] by default so `fakeAsync` / `withClock` can control
+  /// the reference time. Pass [now] to override explicitly.
   static bool isRecent(
     dynamic timestamp, {
     Duration tolerance = const Duration(seconds: 5),
+    DateTime? now,
   }) {
     final dt = toDateTime(timestamp);
     if (dt == null) return false;
 
-    final now = DateTime.now();
-    final difference = now.difference(dt).abs();
+    final reference = now ?? clock.now();
+    final difference = reference.difference(dt).abs();
     return difference <= tolerance;
   }
 
   /// Create a test timestamp
+  ///
+  /// Uses [clock.now()] by default so `fakeAsync` / `withClock` can control
+  /// the reference time. Pass [now] to override explicitly.
   static Timestamp createTestTimestamp({
     DateTime? dateTime,
     Duration? ago,
     Duration? fromNow,
+    DateTime? now,
   }) {
     DateTime dt;
 
     if (dateTime != null) {
       dt = dateTime;
-    } else if (ago != null) {
-      dt = DateTime.now().subtract(ago);
-    } else if (fromNow != null) {
-      dt = DateTime.now().add(fromNow);
     } else {
-      dt = DateTime.now();
+      final reference = now ?? clock.now();
+      if (ago != null) {
+        dt = reference.subtract(ago);
+      } else if (fromNow != null) {
+        dt = reference.add(fromNow);
+      } else {
+        dt = reference;
+      }
     }
 
     return Timestamp.fromDate(dt);
   }
 
   /// Create a server timestamp placeholder for tests
-  /// This mimics FieldValue.serverTimestamp() behavior
+  /// This mimics FieldValue.serverTimestamp() behavior.
+  ///
+  /// Uses [clock.now()] so `fakeAsync` / `withClock` can control time.
   static dynamic serverTimestamp() {
-    // Return current timestamp for FakeFirebaseFirestore
-    return Timestamp.now();
+    return Timestamp.fromDate(clock.now());
   }
 
   /// Convert Firestore data with timestamps to DateTime
@@ -151,9 +164,11 @@ class TimestampTestHelper {
   }
 
   /// Normalize timestamp for comparison (remove microseconds)
-  static DateTime normalizeTimestamp(dynamic timestamp) {
+  ///
+  /// Fallback for null input uses [clock.now()]; override via [now].
+  static DateTime normalizeTimestamp(dynamic timestamp, {DateTime? now}) {
     final dt = toDateTime(timestamp);
-    if (dt == null) return DateTime.now();
+    if (dt == null) return now ?? clock.now();
 
     return DateTime(
       dt.year,
@@ -168,12 +183,15 @@ class TimestampTestHelper {
   }
 
   /// Create a range of timestamps for testing
+  ///
+  /// Uses [clock.now()] as default start so `fakeAsync` / `withClock`
+  /// can control the reference time.
   static List<Timestamp> createTimestampRange({
     required int count,
     DateTime? start,
     Duration interval = const Duration(minutes: 1),
   }) {
-    final startTime = start ?? DateTime.now();
+    final startTime = start ?? clock.now();
     final timestamps = <Timestamp>[];
 
     for (int i = 0; i < count; i++) {
@@ -213,7 +231,7 @@ class TimestampTestHelper {
 
     for (final field in fields) {
       if (!result.containsKey(field) || result[field] == null) {
-        result[field] = Timestamp.now();
+        result[field] = Timestamp.fromDate(clock.now());
       } else if (result[field] is DateTime) {
         result[field] = Timestamp.fromDate(result[field] as DateTime);
       }

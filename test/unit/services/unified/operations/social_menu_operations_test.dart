@@ -14,17 +14,15 @@ import '../../../../infrastructure/mocks/production_mocks.dart';
 import 'package:butlery/core/providers/application_provider.dart' as app;
 
 // Using centralized mocks from production_mocks.dart:
-// MockUnifiedFriendsService, MockFriendsCategoriesOperations, FakeFirestoreRepository,
-// MockCollectionReference, MockDocumentReference, MockDocumentSnapshot, MockQuerySnapshot,
-// MockQueryDocumentSnapshot, MockQuery, MockWriteBatch
+// MockUnifiedFriendsService, MockFriendsCategoriesOperations, FakeFirestoreRepository.
+// Firestore interactions run against the FakeFirebaseFirestore exposed by
+// FakeFirestoreRepository — no hand-rolled SDK mocks needed.
 
 void main() {
   group('SocialMenuOperations with Centralized Mocks', () {
     late SocialMenuOperations operations;
     late MockUnifiedFriendsService mockFriendsService;
     late FakeFirestoreRepository mockFirestoreRepository;
-    late MockDocumentReference<Map<String, dynamic>> mockDocRef;
-    late MockWriteBatch mockBatch;
     late MockFriendsCategoriesOperations mockCategoriesOperations;
     late Recipe testRecipe;
     late Map<String, List<Recipe>> testMenu;
@@ -44,8 +42,6 @@ void main() {
 
       // Create centralized mocks
       mockFirestoreRepository = FakeFirestoreRepository();
-      mockDocRef = MockDocumentReference<Map<String, dynamic>>();
-      mockBatch = MockWriteBatch();
       mockFriendsService = MockUnifiedFriendsService();
       mockCategoriesOperations = MockFriendsCategoriesOperations();
 
@@ -158,9 +154,11 @@ void main() {
         // Assert
         expect(result, isFalse);
 
-        // Verify no Firebase operations were called
-        verifyNever(() => mockDocRef.set(any()));
-        verifyNever(() => mockBatch.commit());
+        // No shared_content doc should have landed in Firestore.
+        final sharedDocs = await mockFirestoreRepository.firestore
+            .collection('shared_content')
+            .get();
+        expect(sharedDocs.docs, isEmpty);
       });
 
       test('should not share with non-friends', () async {
@@ -175,9 +173,10 @@ void main() {
         // Assert
         expect(result, isFalse);
 
-        // Verify no Firebase operations were called
-        verifyNever(() => mockDocRef.set(any()));
-        verifyNever(() => mockBatch.commit());
+        final sharedDocs = await mockFirestoreRepository.firestore
+            .collection('shared_content')
+            .get();
+        expect(sharedDocs.docs, isEmpty);
       });
     });
 
@@ -218,9 +217,10 @@ void main() {
         // Assert
         expect(result, isFalse);
 
-        // Verify no Firebase operations were called
-        verifyNever(() => mockDocRef.set(any()));
-        verifyNever(() => mockBatch.commit());
+        final sharedDocs = await mockFirestoreRepository.firestore
+            .collection('shared_content')
+            .get();
+        expect(sharedDocs.docs, isEmpty);
       });
     });
 

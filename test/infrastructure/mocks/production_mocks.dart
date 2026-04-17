@@ -113,9 +113,7 @@ import 'service_mocks.dart'; // For MockRecipeDiscoveryService
 
 // Firebase imports
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 
 // Third-party library imports
 import 'package:image_picker/image_picker.dart';
@@ -1925,49 +1923,19 @@ class MockUser extends Mock implements User {
   // All other methods left without implementation to allow stubbing
 }
 
-/// Mock implementation of FirebaseStorage
-class MockFirebaseStorage extends Mock implements FirebaseStorage {}
-
-/// Mock implementation of Reference (Storage)
-class MockReference extends Mock implements Reference {}
-
-/// Mock implementation of TaskSnapshot (Storage)
-class MockTaskSnapshot extends Mock implements TaskSnapshot {}
-
-/// Mock implementation of WriteBatch
-class MockWriteBatch extends Mock implements WriteBatch {}
-
-/// Mock implementation of FirebaseFirestore for direct Firestore testing
-class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
-
-// ignore: subtype_of_sealed_class
-/// Mock Firebase CollectionReference - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
-class MockCollectionReference<T> extends Mock
-    implements CollectionReference<T> {}
-
-// ignore: subtype_of_sealed_class
-/// Mock Firebase DocumentReference - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
-class MockDocumentReference<T> extends Mock implements DocumentReference<T> {}
-
-// ignore: subtype_of_sealed_class
-/// Mock Firebase DocumentSnapshot - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
-class MockDocumentSnapshot<T> extends Mock implements DocumentSnapshot<T> {}
-
-// ignore: subtype_of_sealed_class
-/// Mock Firebase Query - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
-class MockQuery<T> extends Mock implements Query<T> {}
-
-// ignore: subtype_of_sealed_class
-/// Mock Firebase QuerySnapshot - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
-class MockQuerySnapshot<T> extends Mock implements QuerySnapshot<T> {}
-
-// ignore: subtype_of_sealed_class
-/// Mock Firebase QueryDocumentSnapshot - ⚠️ SEALED CLASS: Temporary ignore until migration to FakeFirebaseFirestore
-class MockQueryDocumentSnapshot<T> extends Mock
-    implements QueryDocumentSnapshot<T> {}
-
-/// Mock implementation of FirebaseAnalytics for analytics testing
-class MockFirebaseAnalytics extends Mock implements FirebaseAnalytics {}
+// NOTE: 13 hand-rolled Firebase SDK-shape mocks were removed here as part of
+// BUT-389 step B4 (MockFirebaseFirestore / MockCollectionReference /
+// MockDocumentReference / MockDocumentSnapshot / MockQuery / MockQuerySnapshot
+// / MockQueryDocumentSnapshot / MockWriteBatch / MockFirebaseStorage /
+// MockReference / MockTaskSnapshot / MockFirebaseAnalytics).
+//
+// Use the real fakes instead:
+//   - package:fake_cloud_firestore/fake_cloud_firestore.dart (Firestore)
+//   - package:firebase_storage_mocks/firebase_storage_mocks.dart (Storage)
+//
+// For FirebaseAnalytics, define a local `class MockFirebaseAnalytics extends
+// Mock implements FirebaseAnalytics {}` inside the individual test file —
+// there's no in-memory fake for analytics in the ecosystem.
 
 /// Mock implementation of StreamSubscription for stream subscription tests
 class MockStreamSubscription<T> extends Mock implements StreamSubscription<T> {}

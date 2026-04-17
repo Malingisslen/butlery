@@ -48,8 +48,6 @@ class TestFirebaseService with ErrorHandlingMixin, FirebaseServiceMixin {
 }
 
 // Mock classes
-class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
-
 class MockFirestoreRepository extends Mock implements FirestoreRepository {}
 
 void main() {

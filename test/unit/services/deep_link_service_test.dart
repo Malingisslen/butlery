@@ -1035,15 +1035,23 @@ void main() {
         });
 
         test('should handle network timeout during fetch', () async {
-          // Arrange
-          when(() => mockRepository.getLongUrl(any())).thenAnswer((_) async {
-            await Future.delayed(Duration(seconds: 35)); // Simulate timeout
-            throw TimeoutException('Network timeout');
+          // Arrange — simulate a hanging network call. Previously used
+          // Future.delayed(35s) which leaked a real timer into the isolate;
+          // a Completer + swallowed completion at tearDown cleans up safely.
+          final hang = Completer<String>();
+          addTearDown(() {
+            if (!hang.isCompleted) {
+              // Complete with a dummy value so the unawaited future resolves
+              // quietly; `.timeout` already returned null long before this.
+              hang.complete('');
+            }
           });
+          when(() => mockRepository.getLongUrl(any()))
+              .thenAnswer((_) => hang.future);
 
           // Act
           final longUrl = await DeepLinkService.resolveShortUrl('abc123')
-              .timeout(Duration(seconds: 1), onTimeout: () => null);
+              .timeout(const Duration(seconds: 1), onTimeout: () => null);
 
           // Assert
           expect(longUrl, isNull);

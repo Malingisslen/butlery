@@ -2,6 +2,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/unified/operations/modules/social_engagement_metrics.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -12,6 +13,12 @@ import '../../../../../infrastructure/builders/recipe_builder.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
+
+// Carve-out inline mock for error-injection only. All happy-path tests use
+// FakeFirebaseFirestore; the one "handle Firestore errors gracefully" test
+// needs `thenThrow`, which falls back to mocktail.
+// ignore: subtype_of_sealed_class
+class _ThrowingFirestore extends Mock implements FirebaseFirestore {}
 
 void main() {
   group('SocialEngagementMetrics', () {
@@ -311,7 +318,7 @@ void main() {
     group('Error Handling', () {
       test('should handle Firestore errors gracefully', () async {
         // Arrange - Create mock that throws
-        final mockFirestore = MockFirebaseFirestore();
+        final mockFirestore = _ThrowingFirestore();
         when(() => mockFirestore.collection(any()))
             .thenThrow(Exception('Firestore error'));
 
@@ -347,5 +354,5 @@ void main() {
   });
 }
 
-// Using centralized mocks from production_mocks.dart:
-// MockFirebaseFirestore
+// Happy-path tests use FakeFirebaseFirestore. The single error-injection test
+// uses the local `_ThrowingFirestore` above.
