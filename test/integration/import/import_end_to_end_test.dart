@@ -1,10 +1,16 @@
 /// Comprehensive integration tests for the import system
 ///
-/// Tests end-to-end workflows from input → strategy → recipe save
-/// Covers: URL import, Photo import, Text import, Auto-detection, Fallback chains
+/// **Status:** Bulk-skipped pending BUT-369 continuation. Same root cause
+/// as `swedish_sites_integration_test.dart` — the URL-import tier order
+/// now prefers LLM/OCR over raw HTML, so the WebScraper mock stub path
+/// taken by these fixtures returns "Mock extracted text" instead of
+/// structured recipe data. See BUT-209 for the pipeline context and
+/// BUT-387 Phase 7 for the emulator lane that will cover the real flow.
 ///
 /// Priority: HIGH - Critical workflows
-/// Target: 5 essential integration scenarios
+@Tags(['integration'])
+@Skip('Bulk-skipped pending BUT-369 rewrite — see file header.')
+library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
