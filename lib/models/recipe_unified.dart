@@ -423,12 +423,15 @@ class RecipeCore with JsonSerializableMixin {
           timeMinutes == _sentinel ? this.timeMinutes : timeMinutes as int?,
       ingredients: newIngredients,
       instructions: newInstructions,
+      // Use `(x as List?)?.cast<T>()` instead of `x as List<T>?` because
+      // Dart infers a bare `[]` literal as `List<dynamic>`, which cannot be
+      // cast to a parameterised list type at runtime.
       personalTagIds: personalTagIds == _sentinel
           ? this.personalTagIds
-          : personalTagIds as List<String>?,
+          : (personalTagIds as List?)?.cast<String>(),
       personalTags: personalTags == _sentinel
           ? this.personalTags
-          : personalTags as List<RecipePersonalTag>?,
+          : (personalTags as List?)?.cast<RecipePersonalTag>(),
       rating: rating == _sentinel ? this.rating : rating as double?,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl == _sentinel ? this.sourceUrl : sourceUrl as String?,
@@ -446,7 +449,7 @@ class RecipeCore with JsonSerializableMixin {
       cookCount: cookCount ?? this.cookCount,
       ingredientsNormalized: ingredientsNormalized == _sentinel
           ? this.ingredientsNormalized
-          : ingredientsNormalized as List<String>?,
+          : (ingredientsNormalized as List?)?.cast<String>(),
       ratingCount:
           ratingCount == _sentinel ? this.ratingCount : ratingCount as int?,
       averageRating: averageRating == _sentinel
@@ -454,7 +457,7 @@ class RecipeCore with JsonSerializableMixin {
           : averageRating as double?,
       ratingDistribution: ratingDistribution == _sentinel
           ? this.ratingDistribution
-          : ratingDistribution as Map<int, int>?,
+          : (ratingDistribution as Map?)?.cast<int, int>(),
       lastRatedAt: lastRatedAt == _sentinel
           ? this.lastRatedAt
           : lastRatedAt as DateTime?,

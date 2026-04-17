@@ -13,6 +13,10 @@
 ///
 /// Run with: flutter test --tags integration
 @Tags(['integration', 'firebase'])
+// Whole suite requires a live Firebase emulator; skipped in plain
+// `flutter test`. Re-enabled once the emulator CI lane from BUT-387 Phase 7
+// (Patrol / emulator runner) is in place.
+@Skip('Requires Firebase emulator — see BUT-387 Phase 7.')
 library;
 
 import 'package:flutter_test/flutter_test.dart';

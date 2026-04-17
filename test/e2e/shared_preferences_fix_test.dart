@@ -5,29 +5,12 @@ void main() {
   group('🔧 SharedPreferences Hang Fix Validation', () {
     testWidgets('🚨 REPRODUCE: SharedPreferences hang issue',
         (WidgetTester tester) async {
-      print('🚨 REPRODUCING: SharedPreferences.getInstance() hang');
-      print('   This should timeout to confirm the issue...');
-
-      try {
-        final stopwatch = Stopwatch()..start();
-
-        // This should hang without proper test setup
-        await SharedPreferences.getInstance().timeout(
-          const Duration(seconds: 5),
-        );
-
-        print(
-            '   ❌ UNEXPECTED: SharedPreferences completed in ${stopwatch.elapsedMilliseconds}ms');
-        print(
-            '   💡 Either the issue is environment-specific or already fixed');
-      } catch (e) {
-        print(
-            '   ✅ CONFIRMED: SharedPreferences.getInstance() times out as expected');
-        print(
-            '   🎯 This confirms SharedPreferences is the root cause of bootstrap hang');
-        print('   💡 Error: $e');
-      }
-    });
+      // Demo/debug test that intentionally hangs for up to 10 minutes to
+      // reproduce an old SharedPreferences bootstrap issue. Offers no
+      // regression coverage — kept for historical context, but always
+      // skipped so it never blocks CI. The fix is covered by the two
+      // solution tests below.
+    }, skip: true);
 
     testWidgets('✅ SOLUTION: Mocked SharedPreferences approach',
         (WidgetTester tester) async {

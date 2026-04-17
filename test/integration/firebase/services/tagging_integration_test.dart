@@ -75,7 +75,7 @@ void main() {
         expect(result.tags, contains('kyckling'));
         expect(result.dietaryStatus['vegetarisk'], TriState.contains);
         expect(result.coverage, 1.0);
-        expect(result.generatorVersion, '1.0.0');
+        expect(result.generatorVersion, kTagGeneratorVersion);
       });
 
       test('generates tags for vegetarian recipe', () {
