@@ -124,10 +124,13 @@ void main() {
         expect(data['isRead'], isTrue);
         expect(data['readAt'], isA<Timestamp>());
 
-        // Verify readAt is after createdAt
+        // Verify readAt is at least as new as createdAt. We use isAtSameMoment
+        // || isAfter because the TestTimestampProvider resolves both in the
+        // same event-loop tick when the machine is fast (intermittent
+        // cross-file flake when this test ran after a reset).
         final createdAt = (data['createdAt'] as Timestamp).toDate();
         final readAt = (data['readAt'] as Timestamp).toDate();
-        expect(readAt.isAfter(createdAt), isTrue);
+        expect(readAt.isBefore(createdAt), isFalse);
       });
 
       test('should stream notifications with proper timestamp ordering',
