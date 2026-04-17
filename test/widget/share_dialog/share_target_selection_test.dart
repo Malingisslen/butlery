@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/share_dialog/share_target_selection.dart';
 import 'package:butlery/models/user_profile.dart';
+import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('ShareTargetSelection Widget Tests', () {
@@ -42,17 +43,15 @@ void main() {
       String searchQuery = '';
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ShareTargetSelection.build(
-                context, // Use Builder context properly
-                mockFriends,
-                selectedIds,
-                searchQuery,
-                (query) => searchQuery = query,
-                (id) => selectedIds.add(id),
-              ),
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => ShareTargetSelection.build(
+              context, // Use Builder context properly
+              mockFriends,
+              selectedIds,
+              searchQuery,
+              (query) => searchQuery = query,
+              (id) => selectedIds.add(id),
             ),
           ),
         ),
@@ -73,17 +72,15 @@ void main() {
       String searchQuery = '';
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ShareTargetSelection.build(
-                context,
-                [], // Empty friends list
-                selectedIds,
-                searchQuery,
-                (query) => searchQuery = query,
-                (id) {},
-              ),
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => ShareTargetSelection.build(
+              context,
+              [], // Empty friends list
+              selectedIds,
+              searchQuery,
+              (query) => searchQuery = query,
+              (id) {},
             ),
           ),
         ),
@@ -107,17 +104,15 @@ void main() {
       }).toList();
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ShareTargetSelection.build(
-                context,
-                filteredFriends, // Use filtered friends
-                selectedIds,
-                searchQuery,
-                (query) => searchQuery = query,
-                (id) {},
-              ),
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => ShareTargetSelection.build(
+              context,
+              filteredFriends, // Use filtered friends
+              selectedIds,
+              searchQuery,
+              (query) => searchQuery = query,
+              (id) {},
             ),
           ),
         ),

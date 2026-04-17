@@ -293,7 +293,7 @@ void main() {
     });
 
     group('ListItem Constructor', () {
-      testWidgets('should render with minimal elevation',
+      testWidgets('should render with low elevation',
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.listItem(
@@ -302,7 +302,7 @@ void main() {
         ));
 
         final card = tester.widget<Card>(find.byType(Card));
-        expect(card.elevation, equals(1));
+        expect(card.elevation, equals(AppDimensions.elevationLow));
       });
 
       testWidgets('should be tappable when onTap provided',
@@ -360,23 +360,27 @@ void main() {
     });
 
     group('Selection Constructor', () {
-      testWidgets('should show elevated and bordered when selected',
+      testWidgets('should show elevated and themed border when selected',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(createTestWidget(
-          const StyledCard.selection(
-            isSelected: true,
-            child: Text('Selected'),
-          ),
+          Builder(builder: (context) {
+            cs = Theme.of(context).colorScheme;
+            return const StyledCard.selection(
+              isSelected: true,
+              child: Text('Selected'),
+            );
+          }),
         ));
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.elevation, equals(AppDimensions.elevationMedium));
 
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.side.color, equals(AppColors.forestGreen));
+        expect(shape.side.color, equals(cs.primary));
       });
 
-      testWidgets('should show minimal elevation when not selected',
+      testWidgets('should show low elevation when not selected',
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.selection(
@@ -386,7 +390,7 @@ void main() {
         ));
 
         final card = tester.widget<Card>(find.byType(Card));
-        expect(card.elevation, equals(1));
+        expect(card.elevation, equals(AppDimensions.elevationLow));
 
         final shape = card.shape as RoundedRectangleBorder;
         expect(shape.side, equals(BorderSide.none));
@@ -457,19 +461,23 @@ void main() {
     });
 
     group('Error Card', () {
-      testWidgets('should render with error colors',
+      testWidgets('should render with theme error colors',
           (WidgetTester tester) async {
+        late ColorScheme cs;
         await tester.pumpWidget(createTestWidget(
-          StyledCards.error(
-            child: const Text('Error occurred'),
-          ),
+          Builder(builder: (context) {
+            cs = Theme.of(context).colorScheme;
+            return StyledCards.error(
+              child: const Text('Error occurred'),
+            );
+          }),
         ));
 
         final card = tester.widget<Card>(find.byType(Card));
-        expect(card.color, equals(AppColors.errorContainer));
+        expect(card.color, equals(cs.errorContainer));
 
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.side.color, equals(AppColors.error));
+        expect(shape.side.color, equals(cs.error));
       });
 
       testWidgets('should be tappable when onRetry provided',
