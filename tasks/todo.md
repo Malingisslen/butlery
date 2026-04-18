@@ -1,6 +1,53 @@
 # Sprint Backlog
 
-## Sprint: Shared Menu Decisions — 2026-04-18
+## Sprint: UX polish + menu model upgrade — 2026-04-18
+
+Theme: high-priority UX bugs from the 2026-04-18 exploratory testing pass + BUT-340 follow-up promoting group votes from creator-owned to a true group-scoped weekly plan. Dev tooling polish (session-aware stop hook) included.
+
+### Agent A: flutter-developer — UX polish bugs
+
+- [x] **A1. Fix FeedbackFab visibility on all views** — root cause: visual collision, not stack ordering. Extended FABs (shopping "Lägg till vara" 200×56, menu "Till inköpslistan", "Från arkiv" grid tile) overlap the former `bottom: 80`. Moved FeedbackFAB to `bottom: 150` with comment explaining why. (BUT-402)
+- [x] **A2. Neutralize uncertain diet chips** — `lib/widgets/tagging/dietary_status_badge.dart`: new `dietaryStatusUnknownLabel` l10n key ("Vegetarisk: okänd"). Grey `onSurfaceVariant` + `help_outline` icon; no onTap, clearly distinct from CONTAINS cancel-outline warning chip. Also fixed pre-existing stale test assertion left over from commit `12e2645ec`. (BUT-399)
+- [x] **A3. Explain "Snabbspara recept"** — `lib/views/lagg_till_recept_view.dart`: subtitle `"Bara namn och måltid — fyll i resten senare"` (checked actual handler — it saves a stub, not clipboard). l10n both languages. (BUT-400)
+- [x] **A4. i18n text fix** — `lib/l10n/app_sv.arb`: `overifierad` → `ej verifierad`. gen-l10n regenerated. (BUT-404)
+
+### Agent B: flutter-developer — Group-scoped weekly menu (BUT-340 follow-up)
+
+- [x] **B1. `GroupWeeklyMenuPlan` model** — `lib/models/menu/group_weekly_menu_plan.dart` with dual-rep (`participants` list for audit, `memberPermissions` map for rules-queryable lookup — mirrors shopping-list idiom). Deterministic `{groupId}_YYYY-WWW` doc ID. (BUT-405)
+- [x] **B2. Repository + service + DI + Firestore rules** — interface + FirebaseGroupWeeklyMenuPlanRepository + GroupWeeklyMenuPlanService registered in `ContentModule`. New `firestore.rules` block: read=any member, create/update=edit|admin, delete=admin, `groupId`+`createdAt` immutable. Deploys clean. (BUT-405)
+- [x] **B3. Realtime sync** — `RealtimeGroupMenuModule` at `lib/services/unified/operations/realtime_group_menu/`. Content-only (presence deferred — that was BUT-238's shopping scope). (BUT-405)
+- [x] **B4. Auto-resolution routing** — `messaging_service.dart closePoll()` now dispatches by `conversation.isGroup`: group → `_appendWinnerToGroupPlan`; 1:1 → existing creator-plan path. Mirrored BUT-340's pre-read + deterministic-ID idempotency guard. (BUT-405)
+- [x] **B5. GDPR paths** — `content_export_manager.exportGroupWeeklyMenuPlans` + `content_deletion_operations._scrubGroupWeeklyMenuPlans` (scrubs user from `memberPermissions` + `participantUserIds`; deletes plan if participants become empty; preserves otherwise). `array-contains` query for FakeFirestore test-compat. (BUT-405)
+- [x] **B6. Tests** — 28 new (13 model + 11 repo integration + 4 GDPR scrub) + 5 close-poll routing tests. 132/132 green across menu + messaging. `dart analyze --fatal-infos lib/` — 0 issues. Rules compile cleanly. (BUT-405)
+
+### Agent C: debugger — Tooling + analysis
+
+- [x] **C1. Session-aware stop hook** — `.claude/hooks/stop-analyze.sh`: two bugs fixed. (1) Sessions with zero Edit/Write calls (no manifest file) fell through to block-on-anything behavior — now `exit 0` when `session_id` is known but manifest absent. (2) Windows path mismatch — dart analyze emits `lib\test.dart` but manifests store `lib/test.dart`; added normalize() helper. Verified with 3 simulated scenarios. (BUT-398)
+- [x] **C2. Analyze "Min samling" accordion** — `lib/widgets/recipe/collection_insights_card.dart`: holds dietary % + top-3 cuisines (not redundant with filters). Added `ExpansionTile.subtitle` showing "{count} recept" via existing `recipeCountBadge` key — no new l10n keys needed. (BUT-401)
+
+### Post-Sprint Steps
+
+- [ ] Run `dart analyze --fatal-infos`
+- [ ] Targeted tests per agent batch
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-402, BUT-399, BUT-400, BUT-404, BUT-405, BUT-398, BUT-401 → Done
+- [ ] Housekeeping carry-over: confirm last sprint's Linear (BUT-340, BUT-238, BUT-361 → Done); file "Tighten coverage floor ≥5 CI runs after 2026-04-24"
+
+---
+
+## What this means in plain language
+
+- The orange "!" feedback button will show up on every screen again, not just some.
+- Uncertain diet labels stop looking like interactive yes/no questions — neutral "Okänd" treatment instead.
+- "Snabbspara recept" button will finally explain what it does.
+- Tiny Swedish word swap: "overifierad" → "ej verifierad".
+- Group weekly-menu feature gets a real foundation — when a group votes for a recipe, it now lands on a shared group plan everyone can edit (not just the creator's plan).
+- Developer annoyance fixed: two parallel sessions stop deadlocking each other over unrelated lint warnings.
+- Risk: **Low-medium.** Agents A + C are small, reversible. Agent B adds a new model alongside existing one (no migration), but touches security rules and GDPR paths — needs careful testing.
+
+---
+
+## Archive: Sprint Shared Menu Decisions — 2026-04-18
 
 **Plan file:** `C:\Users\malla\.claude\plans\without-touching-anything-just-piped-pearl.md`
 

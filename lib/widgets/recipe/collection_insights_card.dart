@@ -47,6 +47,14 @@ class CollectionInsightsCard extends StatelessWidget {
             color: colorScheme.onSurface,
           ),
         ),
+        // Show recipe count when collapsed so users know the accordion
+        // has meaningful content before expanding (BUT-401).
+        subtitle: Text(
+          context.l10n.recipeCountBadge(recipes.length),
+          style: AppTextStyles.bodySmall.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(

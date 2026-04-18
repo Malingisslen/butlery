@@ -377,4 +377,45 @@ class ContentExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// Export all group weekly menu plans the user is a participant on
+  /// (BUT-405, GDPR Article 20). Query hinges on the denormalised
+  /// `memberPermissions` map — `memberPermissions.{userId} != null`
+  /// matches any plan the user is in, regardless of permission level.
+  ///
+  /// Does NOT export plans for groups the user isn't in (obviously).
+  /// Does NOT strip other participants from the exported doc — GDPR
+  /// portability covers the user's copy of the shared data; the
+  /// collaborative context is part of the data's meaning.
+  Future<Map<String, dynamic>> exportGroupWeeklyMenuPlans(String userId) async {
+    try {
+      final plans = <Map<String, dynamic>>[];
+      final planLimit =
+          ExportPaginationHelper.getLimitForType('weekly_menu_plans');
+
+      final plansSnapshot = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection(FirestoreCollections.groupWeeklyMenuPlans)
+            .where('memberPermissions.$userId', isNotEqualTo: null),
+        maxDocuments: planLimit,
+      );
+
+      for (final doc in plansSnapshot) {
+        plans.add({
+          'plan_id': doc.id,
+          'data': sanitizeForJson(doc.data()),
+        });
+      }
+
+      return {
+        'total_count': plans.length,
+        'group_weekly_menu_plans': plans,
+        if (plans.length >= planLimit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export group weekly menu plans', e);
+      return {'error': e.toString()};
+    }
+  }
 }

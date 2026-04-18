@@ -45,9 +45,13 @@ import 'package:butlery/services/menu/parser/firestore_lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_menu_lexicon_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
+import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
+import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -153,6 +157,9 @@ class ContentModule implements DIModule {
         MenuService,
         WeeklyMenuPlanRepository,
         WeeklyMenuPlanService,
+        GroupWeeklyMenuPlanRepository,
+        GroupWeeklyMenuPlanService,
+        RealtimeGroupMenuModule,
         SearchService,
         ShareService,
         StorageRepository,
@@ -496,6 +503,26 @@ class ContentModule implements DIModule {
           repository: container<WeeklyMenuPlanRepository>(),
           userService: container<UserService>(),
         ),
+      );
+
+      // BUT-405: group-scoped weekly menu plans. Coexists with the per-user
+      // plan service — 1:1 conversations still use WeeklyMenuPlanService;
+      // group conversations route through this one.
+      container.registerLazySingleton<GroupWeeklyMenuPlanRepository>(
+        () => FirebaseGroupWeeklyMenuPlanRepository(
+          authRepository: container<auth.AuthRepository>(),
+          auditRepository: container<FirebaseAuditRepository>(),
+        ),
+      );
+      container.registerLazySingleton<GroupWeeklyMenuPlanService>(
+        () => GroupWeeklyMenuPlanService(
+          repository: container<GroupWeeklyMenuPlanRepository>(),
+        ),
+      );
+
+      // Live watcher for the group plan doc (BUT-211 pattern, content-only).
+      container.registerLazySingleton<RealtimeGroupMenuModule>(
+        () => RealtimeGroupMenuModule(),
       );
 
       // Search service for content discovery

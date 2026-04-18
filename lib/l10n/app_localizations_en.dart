@@ -1892,6 +1892,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String dietaryStatusUnknownLabel(String name) {
+    return '$name: unknown';
+  }
+
+  @override
   String allergenStatusFreeA11y(String name) {
     return 'Free from $name';
   }
@@ -12213,6 +12218,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickCaptureTitle => 'Quick save recipe';
+
+  @override
+  String get quickCaptureSubtitle =>
+      'Just name and meal type — add the rest later';
 
   @override
   String get quickCaptureSave => 'Save';

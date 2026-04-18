@@ -51,14 +51,47 @@ class LaggTillReceptView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: AppDimensions.spacingSm),
-                  // Quick capture — full-width entry point
-                  FilledButton.icon(
+                  // Quick capture — full-width entry point. Title + subtitle
+                  // clarify that this saves only name + meal type (no import).
+                  FilledButton(
                     onPressed: () => _navigate(context, Routes.quickCapture),
-                    icon: const Icon(Icons.flash_on),
-                    label: Text(context.l10n.quickCaptureTitle),
                     style: FilledButton.styleFrom(
-                      minimumSize:
-                          const Size.fromHeight(AppDimensions.buttonHeight),
+                      minimumSize: const Size.fromHeight(
+                        AppDimensions.buttonHeight,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingL,
+                        vertical: AppDimensions.paddingM,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.flash_on),
+                        const SizedBox(width: AppDimensions.spacingSm),
+                        Flexible(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                context.l10n.quickCaptureTitle,
+                                style: AppTextStyles.labelLarge,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                context.l10n.quickCaptureSubtitle,
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary
+                                      .withValues(alpha: 0.85),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: AppDimensions.spacingMd),

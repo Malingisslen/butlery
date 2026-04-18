@@ -560,6 +560,58 @@ service cloud.firestore {
     }
 
     // ========================================
+    // GROUP WEEKLY MENU PLANS - Collaborative weekly plans (BUT-405)
+    // ========================================
+    // Doc ID is `{groupId}_{YYYY}-W{WW}`. Access is gated by the denormalised
+    // `participantUserIds` list + the nested `participants[].permission`
+    // field (mirrors SharedListPermission: 'view' | 'edit' | 'admin').
+    //
+    // Helpers are inlined rather than declared at top-level because the
+    // participant-permission lookup is specific to this collection's shape.
+
+    match /group_weekly_menu_plans/{planId} {
+      // Access is gated by the `memberPermissions` map: {uid: 'view'|'edit'|'admin'}.
+      // Mirrors the `unified_shared_shopping_lists` model so rules can do
+      // direct map-key lookups (Firestore rules language cannot filter
+      // arrays of maps, so a denormalised permission map is the idiomatic
+      // choice).
+
+      // Any participant can read (any permission level).
+      allow read: if isAuthenticated()
+        && request.auth.uid in resource.data.memberPermissions;
+
+      // Creator must (a) match the doc-ID prefix with their submitted
+      // groupId, (b) include themselves in memberPermissions as edit/admin.
+      allow create: if isAuthenticated()
+        && planId.matches('^' + request.resource.data.groupId + '_.*')
+        && request.auth.uid in request.resource.data.memberPermissions
+        && request.resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
+        && hasRequiredFields([
+             'groupId', 'participants', 'participantUserIds',
+             'memberPermissions', 'entries', 'createdAt', 'lastModifiedAt'
+           ]);
+
+      // Editors + admins may update entries. Immutable fields: groupId,
+      // createdAt. Participants/permissions changes require admin.
+      allow update: if isAuthenticated()
+        && request.auth.uid in resource.data.memberPermissions
+        && resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
+        && cannotModify(['groupId', 'createdAt'])
+        && (
+          // Either the participant list/permissions are unchanged…
+          (!request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['participants', 'participantUserIds', 'memberPermissions']))
+          // …or the writer is an admin (can manage membership).
+          || resource.data.memberPermissions[request.auth.uid] == 'admin'
+        );
+
+      // Admin-only delete.
+      allow delete: if isAuthenticated()
+        && request.auth.uid in resource.data.memberPermissions
+        && resource.data.memberPermissions[request.auth.uid] == 'admin';
+    }
+
+    // ========================================
     // REALTIME RECIPES - Collaborative editing
     // ========================================
     

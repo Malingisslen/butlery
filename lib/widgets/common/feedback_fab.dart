@@ -55,8 +55,14 @@ class _FeedbackFABState extends State<FeedbackFAB> {
         }
 
         final cs = Theme.of(context).colorScheme;
+        // Positioned high enough to clear both standard Scaffold FABs
+        // (bottom: 16, 56px tall) and extended FABs at the same slot (e.g.
+        // the shopping "Lägg till vara" and veckomeny "Till inköpslistan"
+        // buttons). Extended FABs sit roughly at global bottom 76-132 when
+        // the main shell's BottomNavigationBar (~60px) is underneath, so
+        // we stack above them at bottom: 150.
         return Positioned(
-          bottom: 80,
+          bottom: 150,
           right: 16,
           child: Semantics(
             label: context.l10n.feedbackSendLabel,

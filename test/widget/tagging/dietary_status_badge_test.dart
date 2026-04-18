@@ -20,11 +20,11 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.eco_outlined), findsOneWidget);
-        expect(find.byIcon(Icons.warning_amber), findsNothing);
+        expect(find.byIcon(Icons.cancel_outlined), findsNothing);
         expect(find.byIcon(Icons.help_outline), findsNothing);
       });
 
-      testWidgets('CONTAINS renders warning_amber icon', (tester) async {
+      testWidgets('CONTAINS renders cancel_outlined icon', (tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const DietaryStatusBadge(
@@ -35,12 +35,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.warning_amber), findsOneWidget);
+        expect(find.byIcon(Icons.cancel_outlined), findsOneWidget);
         expect(find.byIcon(Icons.eco_outlined), findsNothing);
         expect(find.byIcon(Icons.help_outline), findsNothing);
       });
 
-      testWidgets('UNKNOWN renders help_outline icon and "?" label',
+      testWidgets('UNKNOWN renders help_outline icon and "okänd" label',
           (tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
@@ -53,7 +53,10 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.help_outline), findsOneWidget);
-        expect(find.textContaining('?'), findsOneWidget);
+        // Uses neutral "Vegetarisk: okänd" label so it doesn't read like a
+        // yes/no question (BUT-399).
+        expect(find.textContaining('okänd'), findsOneWidget);
+        expect(find.textContaining('?'), findsNothing);
       });
     });
 

@@ -13,7 +13,12 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/models/menu/group_weekly_menu_plan.dart'
+    show GroupMenuParticipant, GroupWeeklyMenuPlan;
+import 'package:butlery/models/unified/unified_shopping_list.dart'
+    show SharedListPermission;
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -622,10 +627,27 @@ class MessagingService extends BaseService with StreamManagementMixin {
       final winner = _resolveWinner(poll);
       if (winner?.recipeId == null) return;
 
-      await _appendWinnerToWeeklyPlanAndShare(
-        winnerRecipeId: winner!.recipeId!,
-        conversationId: finalMessage.conversationId,
-      );
+      // BUT-405: route by conversation type. Groups get a collaborative
+      // `GroupWeeklyMenuPlan`; 1:1 conversations keep the creator-personal
+      // plan path from BUT-340. The split is deliberately narrow — only
+      // the target collection differs, everything else (winner resolution,
+      // today-anchored slot search, double-fire guard) is shared.
+      final conversation = await _messagingRepository
+          .getConversation(finalMessage.conversationId);
+      final isGroup = conversation?.isGroup ?? false;
+
+      if (isGroup && conversation != null) {
+        await _appendWinnerToGroupPlan(
+          winnerRecipeId: winner!.recipeId!,
+          conversation: conversation,
+          creatorId: currentUserId,
+        );
+      } else {
+        await _appendWinnerToWeeklyPlanAndShare(
+          winnerRecipeId: winner!.recipeId!,
+          conversationId: finalMessage.conversationId,
+        );
+      }
     } catch (e) {
       AppLogger.error('Failed to close poll $messageId', e);
       rethrow;
@@ -738,6 +760,87 @@ class MessagingService extends BaseService with StreamManagementMixin {
       // Share failure shouldn't unwind the plan append — log and continue.
       AppLogger.warning('Auto-share after poll close failed: $e');
     }
+  }
+
+  /// BUT-405: group-plan auto-resolution path. Appends the winning recipe
+  /// to a shared `GroupWeeklyMenuPlan` (creates it with all conversation
+  /// participants as editors if none exists for the ISO week).
+  ///
+  /// Double-fire race: the poll's `isClosed` check in [closePoll] already
+  /// gates this — by the time we reach here, the caller holds logical
+  /// ownership of the resolution. The group-plan upsert itself is
+  /// idempotent by deterministic doc ID (`{groupId}_{YYYY}-W{WW}`), so a
+  /// race with another branch of the same close would overwrite with
+  /// identical content rather than append twice.
+  Future<void> _appendWinnerToGroupPlan({
+    required String winnerRecipeId,
+    required Conversation conversation,
+    required String creatorId,
+  }) async {
+    final groupService = ServiceLocator.tryGet<GroupWeeklyMenuPlanService>();
+    final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
+    if (groupService == null || recipeService == null) {
+      AppLogger.warning(
+          'Auto-resolution (group) skipped — required services not registered');
+      return;
+    }
+
+    Recipe? winnerRecipe;
+    for (final r in recipeService.recipes) {
+      if (r.id == winnerRecipeId) {
+        winnerRecipe = r;
+        break;
+      }
+    }
+    if (winnerRecipe == null) {
+      AppLogger.warning(
+          'Auto-resolution (group) skipped — winner recipe $winnerRecipeId not found');
+      return;
+    }
+
+    final now = DateTime.now();
+
+    // Fetch-or-create the group plan. First-time creation seeds every
+    // conversation participant as an editor; the closer (creator) is
+    // admin. Existing plans keep their membership intact.
+    final initialParticipants = <GroupMenuParticipant>[
+      for (final pid in conversation.participantIds)
+        GroupMenuParticipant(
+          userId: pid,
+          permission: pid == creatorId
+              ? SharedListPermission.admin
+              : SharedListPermission.edit,
+          addedAt: now,
+        ),
+    ];
+    final GroupWeeklyMenuPlan plan = await groupService.getOrCreateWeek(
+      groupId: conversation.id,
+      creatorId: creatorId,
+      date: now,
+      initialParticipants: initialParticipants,
+    );
+
+    // Today-anchored slot search — identical to the personal-plan branch.
+    final anchorIndex = DayOfWeek.fromDateTime(now).index;
+    DayOfWeek? targetDay;
+    for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
+      final candidate = DayOfWeek.values[i];
+      if (!plan.isOccupied(candidate, MealSlot.middag)) {
+        targetDay = candidate;
+        break;
+      }
+    }
+    final usedSlot = targetDay == null ? MealSlot.ovrigt : MealSlot.middag;
+    final usedDay = targetDay ?? DayOfWeek.values[anchorIndex];
+
+    final updatedPlan = groupService.addEntry(
+      plan: plan,
+      actorId: creatorId,
+      day: usedDay,
+      slot: usedSlot,
+      recipe: winnerRecipe,
+    );
+    await groupService.save(plan: updatedPlan, actorId: creatorId);
   }
 
   @override

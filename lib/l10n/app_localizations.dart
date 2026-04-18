@@ -3393,6 +3393,12 @@ abstract class AppLocalizations {
   /// **'Ej {name}'**
   String dietaryStatusNotLabel(String name);
 
+  /// Neutral label for dietary status that can't be auto-determined. Shown instead of 'Vegetarisk?' so it doesn't read like a yes/no question.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}: okänd'**
+  String dietaryStatusUnknownLabel(String name);
+
   /// No description provided for @allergenStatusFreeA11y.
   ///
   /// In sv, this message translates to:
@@ -20575,7 +20581,7 @@ abstract class AppLocalizations {
   /// No description provided for @ingredientDataUnverified.
   ///
   /// In sv, this message translates to:
-  /// **'Viss ingrediensdata är overifierad'**
+  /// **'Viss ingrediensdata är ej verifierad'**
   String get ingredientDataUnverified;
 
   /// No description provided for @recipeStartCookingTooltip.
@@ -20943,6 +20949,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Snabbspara recept'**
   String get quickCaptureTitle;
+
+  /// Explainer shown under the 'Snabbspara recept' button on the add-recipe view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara namn och måltid — fyll i resten senare'**
+  String get quickCaptureSubtitle;
 
   /// No description provided for @quickCaptureSave.
   ///

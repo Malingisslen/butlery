@@ -1,8 +1,29 @@
 #!/usr/bin/env bash
 # Stop hook: Run dart analyze to catch errors before Claude declares "done".
+#
 # Session-aware: only blocks on errors in files THIS session modified.
-# Falls back to blocking on ALL errors if no session manifest exists.
-# On PERSISTENT failures (same error twice), instructs Claude to file a Linear ticket.
+# The session manifest is built incrementally by track-session-files.sh (a
+# PostToolUse hook on Write|Edit) and lives at
+#   $TMPDIR/.claude-session-files/$SESSION_ID
+#
+# Decision tree:
+#   - No session_id in stdin           -> fall back to legacy behavior
+#                                         (block on any dart analyze error).
+#   - session_id present, no manifest  -> this session modified zero .dart
+#                                         files; any error belongs to a
+#                                         parallel session. Exit 0 (don't
+#                                         block). Fixes the deadlock where
+#                                         Session A's uncommitted lint
+#                                         blocks a read-only Session B.
+#   - session_id + manifest            -> partition dart analyze output by
+#                                         file ownership (paths normalized
+#                                         to forward-slashes so Windows
+#                                         backslash output matches the
+#                                         manifest format). Block only on
+#                                         OUR errors; ignore FOREIGN errors.
+#
+# On PERSISTENT failures (same error twice in this session), instructs
+# Claude to file a Linear ticket instead of re-trying the same fix.
 
 set -euo pipefail
 
@@ -27,11 +48,19 @@ fi
 # Load session manifest (built by track-session-files.sh)
 MANIFEST_DIR="${TMPDIR:-/tmp}/.claude-session-files"
 SESSION_FILES_LOADED=false
+SESSION_HAS_NO_EDITS=false
 MANIFEST=""
 
-if [ -n "$SESSION_ID" ] && [ -f "$MANIFEST_DIR/$SESSION_ID" ]; then
-  MANIFEST="$MANIFEST_DIR/$SESSION_ID"
-  SESSION_FILES_LOADED=true
+if [ -n "$SESSION_ID" ]; then
+  if [ -f "$MANIFEST_DIR/$SESSION_ID" ]; then
+    MANIFEST="$MANIFEST_DIR/$SESSION_ID"
+    SESSION_FILES_LOADED=true
+  else
+    # We know the session_id but track-session-files.sh never recorded an
+    # Edit/Write for it. This session is read-only: any dart analyze error
+    # must belong to a parallel session or uncommitted work from outside.
+    SESSION_HAS_NO_EDITS=true
+  fi
 fi
 
 # JSON-escape stdin for embedding in a JSON string value.
@@ -52,6 +81,13 @@ if [ -z "$MODIFIED_DART" ] && [ -z "$STAGED_DART" ] && [ -z "$UNTRACKED_DART" ];
   exit 0
 fi
 
+# Session-aware short-circuit: if we know the session_id AND the session
+# manifest doesn't exist, this session made zero Dart edits. Any lint in
+# the working tree belongs to a parallel session — don't block. See BUT-398.
+if [ "$SESSION_HAS_NO_EDITS" = true ]; then
+  exit 0
+fi
+
 # Scope failure hash per session to prevent cross-session interference
 LAST_FAILURE_FILE="${TMPDIR:-/tmp}/.stop-analyze-last-failure"
 if [ -n "$SESSION_ID" ]; then
@@ -67,9 +103,15 @@ OUTPUT="$(dart analyze --fatal-infos 2>&1)" || {
     cat > "$PARTITION_SCRIPT" << 'PYEOF'
 import sys, re
 
+def normalize(p):
+    # Manifest stores forward-slash repo-relative paths; dart analyze on
+    # Windows emits backslashes. Canonicalize both sides to forward-slash
+    # lowercase for comparison so ownership matches cross-platform.
+    return p.replace('\\', '/').lower()
+
 manifest_path = sys.argv[1]
 with open(manifest_path) as f:
-    our_files = set(line.strip() for line in f if line.strip())
+    our_files = set(normalize(line.strip()) for line in f if line.strip())
 
 output = sys.stdin.read()
 our_lines = []
@@ -80,7 +122,7 @@ pattern = re.compile(r'^\s*\S+\s+-\s+(\S+\.dart):\d+:\d+\s+-\s+')
 for line in output.splitlines():
     m = pattern.match(line)
     if m:
-        file_path = m.group(1)
+        file_path = normalize(m.group(1))
         if file_path in our_files:
             our_lines.append(line)
         else:

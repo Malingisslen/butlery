@@ -1170,6 +1170,15 @@
       }
     }
   },
+  "dietaryStatusUnknownLabel": "{name}: unknown",
+  "@dietaryStatusUnknownLabel": {
+    "description": "Neutral label for dietary status that can't be auto-determined. Shown instead of 'Vegetarian?' so it doesn't read like a yes/no question.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "allergenStatusFreeA11y": "Free from {name}",
   "@allergenStatusFreeA11y": {
     "placeholders": {
@@ -8369,6 +8378,10 @@
     }
   },
   "quickCaptureTitle": "Quick save recipe",
+  "quickCaptureSubtitle": "Just name and meal type — add the rest later",
+  "@quickCaptureSubtitle": {
+    "description": "Explainer shown under the 'Quick save recipe' button on the add-recipe view."
+  },
   "quickCaptureSave": "Save",
   "quickCaptureSaved": "Recipe saved!",
   "quickCaptureEditAction": "Edit",

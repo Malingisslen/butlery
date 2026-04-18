@@ -110,7 +110,9 @@ class DietaryStatusBadge extends StatelessWidget {
       case TriState.contains:
         return context.l10n.dietaryStatusNotLabel(displayName);
       case TriState.unknown:
-        return '$displayName?';
+        // Neutral "Vegetarisk: okänd" instead of "Vegetarisk?" so it doesn't
+        // read like a yes/no question. Status-driven; non-interactive.
+        return context.l10n.dietaryStatusUnknownLabel(displayName);
     }
   }
 }

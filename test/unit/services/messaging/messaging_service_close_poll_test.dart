@@ -1,10 +1,21 @@
-/// Tests for `MessagingService.closePoll` auto-resolution path (BUT-340).
+/// Tests for `MessagingService.closePoll` auto-resolution path.
+///
+/// History:
+/// - BUT-340: initial MVP. Winner appended to the poll creator's personal
+///   plan + reshared via `shareMenuWithFriends`. Group or 1:1, both paths
+///   landed on the personal plan.
+/// - BUT-405: routing split. Group conversations now write to a
+///   `GroupWeeklyMenuPlan` (collaborative, per-group). 1:1 conversations
+///   retain the BUT-340 personal-plan fallback.
 ///
 /// Scenarios covered:
-/// - Winner with `recipeId` → plan append + share call fires
-/// - Winner without `recipeId` → no plan write
-/// - Tie on votes → first option (chronological order) wins
-/// - Already-closed poll → no plan write (double-fire guard)
+/// - Group conversation winner → `GroupWeeklyMenuPlanService.addEntry` +
+///   `GroupWeeklyMenuPlanService.save` fire, personal plan untouched.
+/// - 1:1 direct conversation winner → personal `WeeklyMenuPlanService` +
+///   `shareMenuWithFriends` fire, group service untouched.
+/// - Winner without `recipeId` → no plan write on either path.
+/// - Tie on votes → first option (chronological) wins.
+/// - Already-closed poll → no plan write (double-fire guard).
 library;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,6 +25,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -21,6 +33,7 @@ import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
+import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -34,6 +47,9 @@ class _MockAuthRepo extends Mock implements AuthRepository {}
 class _MockReactionsService extends Mock implements MessageReactionsService {}
 
 class _MockPlanService extends Mock implements WeeklyMenuPlanService {}
+
+class _MockGroupPlanService extends Mock
+    implements GroupWeeklyMenuPlanService {}
 
 class _MockSocialMenuOps extends Mock implements SocialMenuOperations {}
 
@@ -92,6 +108,20 @@ Conversation _groupConversation(String id, List<String> participants) {
   );
 }
 
+Conversation _directConversation(String id, List<String> participants) {
+  return Conversation(
+    id: id,
+    participantIds: participants,
+    participantDisplayNames: {for (final p in participants) p: 'User $p'},
+    participantAvatarUrls: {for (final p in participants) p: null},
+    isGroup: false,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+    lastReadTimestamps: const {},
+    metadata: const {},
+  );
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -99,18 +129,25 @@ void main() {
   late _MockAuthRepo authRepo;
   late _MockReactionsService reactionsService;
   late _MockPlanService planService;
+  late _MockGroupPlanService groupPlanService;
   late _MockSocialMenuOps socialMenuOps;
   late _MockRecipeService recipeService;
   late MessagingService service;
 
   const creatorId = 'user-creator';
   const conversationId = 'conv-group-1';
+  const directConversationId = 'conv-direct-1';
   const messageId = 'msg-poll-1';
 
   setUpAll(() {
     registerFallbackValue(_recipe('fallback', 'fallback'));
     registerFallbackValue(WeeklyMenuPlan.empty(
       userId: creatorId,
+      date: DateTime.now(),
+    ));
+    registerFallbackValue(GroupWeeklyMenuPlan.empty(
+      groupId: conversationId,
+      creatorId: creatorId,
       date: DateTime.now(),
     ));
     registerFallbackValue(DayOfWeek.mon);
@@ -122,6 +159,7 @@ void main() {
     authRepo = _MockAuthRepo();
     reactionsService = _MockReactionsService();
     planService = _MockPlanService();
+    groupPlanService = _MockGroupPlanService();
     socialMenuOps = _MockSocialMenuOps();
     recipeService = _MockRecipeService();
 
@@ -129,6 +167,7 @@ void main() {
     await getIt.reset();
     ServiceLocator.initialize(DIContainer());
     getIt.registerSingleton<WeeklyMenuPlanService>(planService);
+    getIt.registerSingleton<GroupWeeklyMenuPlanService>(groupPlanService);
     getIt.registerSingleton<SocialMenuOperations>(socialMenuOps);
     getIt.registerSingleton<UnifiedRecipeService>(recipeService);
 
@@ -140,11 +179,15 @@ void main() {
           messageId: any(named: 'messageId'),
           closerId: any(named: 'closerId'),
         )).thenAnswer((_) async {});
+
+    // Default — group conversation. Overridden per-test for 1:1 cases.
     when(() => messagingRepo.getConversation(conversationId))
         .thenAnswer((_) async => _groupConversation(
               conversationId,
               [creatorId, 'user-2', 'user-3'],
             ));
+
+    // Personal plan service stubs (1:1 path).
     when(() => planService.addEntry(
           plan: any(named: 'plan'),
           day: any(named: 'day'),
@@ -152,6 +195,32 @@ void main() {
           recipe: any(named: 'recipe'),
         )).thenAnswer((inv) => inv.namedArguments[#plan] as WeeklyMenuPlan);
     when(() => planService.save(any())).thenAnswer((_) async {});
+
+    // Group plan service stubs (group path).
+    when(() => groupPlanService.getOrCreateWeek(
+          groupId: any(named: 'groupId'),
+          creatorId: any(named: 'creatorId'),
+          date: any(named: 'date'),
+          initialParticipants: any(named: 'initialParticipants'),
+        )).thenAnswer((inv) async => GroupWeeklyMenuPlan.empty(
+          groupId: inv.namedArguments[#groupId] as String,
+          creatorId: inv.namedArguments[#creatorId] as String,
+          date: inv.namedArguments[#date] as DateTime,
+        ));
+    when(() => groupPlanService.addEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any(named: 'recipe'),
+        )).thenAnswer(
+      (inv) => inv.namedArguments[#plan] as GroupWeeklyMenuPlan,
+    );
+    when(() => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        )).thenAnswer((_) async {});
+
     when(() => socialMenuOps.shareMenuWithFriends(
           menu: any(named: 'menu'),
           friendUserIds: any(named: 'friendUserIds'),
@@ -169,15 +238,15 @@ void main() {
     await GetIt.instance.reset();
   });
 
-  group('closePoll auto-resolution', () {
-    test('winner with recipeId → plan append + share call', () async {
+  group('closePoll routing by conversation type (BUT-405)', () {
+    test(
+        'group conversation → writes to GroupWeeklyMenuPlan, personal plan '
+        'service is never touched', () async {
       final now = DateTime.now();
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
       final loserRecipe = _recipe('recipe-loser', 'Pasta');
 
       when(() => recipeService.recipes).thenReturn([winnerRecipe, loserRecipe]);
-      when(() => planService.getWeek(any())).thenAnswer(
-          (_) async => WeeklyMenuPlan.empty(userId: creatorId, date: now));
 
       final poll = Poll(
         id: 'poll-1',
@@ -190,7 +259,6 @@ void main() {
             text: 'Tacos',
             voterIds: const ['user-2', 'user-3'],
             recipeId: 'recipe-winner',
-            recipePortions: 4,
           ),
           PollOption(
             id: 'opt-2',
@@ -200,11 +268,10 @@ void main() {
           ),
         ],
       );
-      when(() => messagingRepo.getMessage(messageId)).thenAnswer((_) async =>
-          _pollMessage(
-              messageId: messageId,
-              conversationId: conversationId,
-              poll: poll));
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+            messageId: messageId, conversationId: conversationId, poll: poll),
+      );
 
       await service.closePoll(messageId: messageId);
 
@@ -212,6 +279,72 @@ void main() {
             messageId: messageId,
             closerId: creatorId,
           )).called(1);
+      verify(() => groupPlanService.getOrCreateWeek(
+            groupId: conversationId,
+            creatorId: creatorId,
+            date: any(named: 'date'),
+            initialParticipants: any(named: 'initialParticipants'),
+          )).called(1);
+      verify(() => groupPlanService.addEntry(
+            plan: any(named: 'plan'),
+            actorId: creatorId,
+            day: any(named: 'day'),
+            slot: any(named: 'slot'),
+            recipe: any<Recipe>(named: 'recipe', that: isA<Recipe>()),
+          )).called(1);
+      verify(() => groupPlanService.save(
+            plan: any(named: 'plan'),
+            actorId: creatorId,
+          )).called(1);
+
+      // Personal plan path MUST NOT fire for group conversations.
+      verifyNever(() => planService.save(any()));
+      verifyNever(() => socialMenuOps.shareMenuWithFriends(
+            menu: any(named: 'menu'),
+            friendUserIds: any(named: 'friendUserIds'),
+          ));
+    });
+
+    test(
+        '1:1 direct conversation → writes to the creator\'s personal plan + '
+        'shares with the other participant, group service untouched', () async {
+      final now = DateTime.now();
+      final winnerRecipe = _recipe('recipe-winner', 'Tacos');
+      when(() => recipeService.recipes).thenReturn([winnerRecipe]);
+      when(() => planService.getWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlan.empty(userId: creatorId, date: now),
+      );
+      // Override default mock: return a direct (1:1) conversation.
+      when(() => messagingRepo.getConversation(directConversationId))
+          .thenAnswer(
+        (_) async =>
+            _directConversation(directConversationId, [creatorId, 'user-2']),
+      );
+
+      final poll = Poll(
+        id: 'poll-direct',
+        question: 'Vad ska vi äta ikväll?',
+        creatorId: creatorId,
+        createdAt: now,
+        options: [
+          PollOption(
+            id: 'opt-1',
+            text: 'Tacos',
+            voterIds: const ['user-2'],
+            recipeId: 'recipe-winner',
+          ),
+        ],
+      );
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+            messageId: messageId,
+            conversationId: directConversationId,
+            poll: poll),
+      );
+
+      await service.closePoll(messageId: messageId);
+
+      // Personal plan path fires.
       verify(() => planService.addEntry(
             plan: any(named: 'plan'),
             day: any(named: 'day'),
@@ -219,16 +352,24 @@ void main() {
             recipe: any<Recipe>(named: 'recipe', that: isA<Recipe>()),
           )).called(1);
       verify(() => planService.save(any())).called(1);
-      verify(() => socialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-          )).called(1);
-    });
 
+      // Group path MUST NOT fire on 1:1.
+      verifyNever(() => groupPlanService.getOrCreateWeek(
+            groupId: any(named: 'groupId'),
+            creatorId: any(named: 'creatorId'),
+            date: any(named: 'date'),
+            initialParticipants: any(named: 'initialParticipants'),
+          ));
+      verifyNever(() => groupPlanService.save(
+            plan: any(named: 'plan'),
+            actorId: any(named: 'actorId'),
+          ));
+    });
+  });
+
+  group('closePoll auto-resolution (shared behaviours)', () {
     test('winner without recipeId → no plan write', () async {
       when(() => recipeService.recipes).thenReturn(const []);
-      when(() => planService.getWeek(any())).thenAnswer((_) async =>
-          WeeklyMenuPlan.empty(userId: creatorId, date: DateTime.now()));
 
       final poll = Poll(
         id: 'poll-text',
@@ -240,11 +381,10 @@ void main() {
           PollOption(id: 'opt-2', text: 'Sushi'),
         ],
       );
-      when(() => messagingRepo.getMessage(messageId)).thenAnswer((_) async =>
-          _pollMessage(
-              messageId: messageId,
-              conversationId: conversationId,
-              poll: poll));
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+            messageId: messageId, conversationId: conversationId, poll: poll),
+      );
 
       await service.closePoll(messageId: messageId);
 
@@ -253,6 +393,10 @@ void main() {
             closerId: creatorId,
           )).called(1);
       verifyNever(() => planService.save(any()));
+      verifyNever(() => groupPlanService.save(
+            plan: any(named: 'plan'),
+            actorId: any(named: 'actorId'),
+          ));
       verifyNever(() => socialMenuOps.shareMenuWithFriends(
             menu: any(named: 'menu'),
             friendUserIds: any(named: 'friendUserIds'),
@@ -262,10 +406,7 @@ void main() {
     test('tie on votes → first option (chronological order) wins', () async {
       final firstRecipe = _recipe('recipe-first', 'Tacos');
       final secondRecipe = _recipe('recipe-second', 'Pasta');
-
       when(() => recipeService.recipes).thenReturn([firstRecipe, secondRecipe]);
-      when(() => planService.getWeek(any())).thenAnswer((_) async =>
-          WeeklyMenuPlan.empty(userId: creatorId, date: DateTime.now()));
 
       final poll = Poll(
         id: 'poll-tie',
@@ -287,18 +428,17 @@ void main() {
           ),
         ],
       );
-      when(() => messagingRepo.getMessage(messageId)).thenAnswer((_) async =>
-          _pollMessage(
-              messageId: messageId,
-              conversationId: conversationId,
-              poll: poll));
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+            messageId: messageId, conversationId: conversationId, poll: poll),
+      );
 
       await service.closePoll(messageId: messageId);
 
-      // Capture the recipe passed to addEntry — must be the first option's
-      // recipe (tie-break by chronological order).
-      final captured = verify(() => planService.addEntry(
+      // This is a group conversation by default → group path fires.
+      final captured = verify(() => groupPlanService.addEntry(
             plan: any(named: 'plan'),
+            actorId: any(named: 'actorId'),
             day: any(named: 'day'),
             slot: any(named: 'slot'),
             recipe: captureAny(named: 'recipe'),
@@ -311,8 +451,6 @@ void main() {
     test('already-closed poll → no plan write (double-fire guard)', () async {
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
       when(() => recipeService.recipes).thenReturn([winnerRecipe]);
-      when(() => planService.getWeek(any())).thenAnswer((_) async =>
-          WeeklyMenuPlan.empty(userId: creatorId, date: DateTime.now()));
 
       final closedPoll = Poll(
         id: 'poll-closed',
@@ -329,24 +467,23 @@ void main() {
           ),
         ],
       );
-      when(() => messagingRepo.getMessage(messageId)).thenAnswer((_) async =>
-          _pollMessage(
-              messageId: messageId,
-              conversationId: conversationId,
-              poll: closedPoll));
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+            messageId: messageId,
+            conversationId: conversationId,
+            poll: closedPoll),
+      );
 
       await service.closePoll(messageId: messageId);
 
-      // Tight guard: repo's closePoll must not be called when poll is
-      // already closed — prevents redundant writes and duplicate fires.
       verifyNever(() => messagingRepo.closePoll(
             messageId: any(named: 'messageId'),
             closerId: any(named: 'closerId'),
           ));
       verifyNever(() => planService.save(any()));
-      verifyNever(() => socialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
+      verifyNever(() => groupPlanService.save(
+            plan: any(named: 'plan'),
+            actorId: any(named: 'actorId'),
           ));
     });
   });

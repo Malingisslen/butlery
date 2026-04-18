@@ -1170,6 +1170,15 @@
       }
     }
   },
+  "dietaryStatusUnknownLabel": "{name}: okänd",
+  "@dietaryStatusUnknownLabel": {
+    "description": "Neutral label for dietary status that can't be auto-determined. Shown instead of 'Vegetarisk?' so it doesn't read like a yes/no question.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "allergenStatusFreeA11y": "Fri från {name}",
   "@allergenStatusFreeA11y": {
     "placeholders": {
@@ -8244,7 +8253,7 @@
       }
     }
   },
-  "ingredientDataUnverified": "Viss ingrediensdata är overifierad",
+  "ingredientDataUnverified": "Viss ingrediensdata är ej verifierad",
   "recipeStartCookingTooltip": "Börja laga",
   "taggingDegradedWarning": "Allergen- och kostdata kan vara opålitlig",
   "recipeEditTags": "Redigera taggar",
@@ -8369,6 +8378,10 @@
     }
   },
   "quickCaptureTitle": "Snabbspara recept",
+  "quickCaptureSubtitle": "Bara namn och måltid — fyll i resten senare",
+  "@quickCaptureSubtitle": {
+    "description": "Explainer shown under the 'Snabbspara recept' button on the add-recipe view."
+  },
   "quickCaptureSave": "Spara",
   "quickCaptureSaved": "Recept sparat!",
   "quickCaptureEditAction": "Redigera",

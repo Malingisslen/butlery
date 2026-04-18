@@ -1897,6 +1897,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String dietaryStatusUnknownLabel(String name) {
+    return '$name: okänd';
+  }
+
+  @override
   String allergenStatusFreeA11y(String name) {
     return 'Fri från $name';
   }
@@ -12031,7 +12036,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get ingredientDataUnverified => 'Viss ingrediensdata är overifierad';
+  String get ingredientDataUnverified => 'Viss ingrediensdata är ej verifierad';
 
   @override
   String get recipeStartCookingTooltip => 'Börja laga';
@@ -12243,6 +12248,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get quickCaptureTitle => 'Snabbspara recept';
+
+  @override
+  String get quickCaptureSubtitle =>
+      'Bara namn och måltid — fyll i resten senare';
 
   @override
   String get quickCaptureSave => 'Spara';

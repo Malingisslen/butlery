@@ -208,11 +208,86 @@ class ContentDeletionOperations {
       await batchDeleteDocs(_firestore, plansSnapshot.docs);
       app_logger.AppLogger.info(
           '[$_logTag] Deleted ${plansSnapshot.docs.length} weekly menu plans');
+
+      // BUT-405: scrub this user from any GROUP plans they were part of.
+      // Those plans belong to the group (other participants), so we never
+      // cascade-delete — just remove the departing user. If the scrub
+      // leaves the plan with zero participants, it's orphaned and gets
+      // deleted. Mirrors the collaborative-shopping scrub pattern above.
+      await _scrubGroupWeeklyMenuPlans(userId);
+
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
           '[$_logTag] Failed to delete weekly menu plans', e);
       return false;
+    }
+  }
+
+  /// Remove [userId] from the `participants` list + `participantUserIds` +
+  /// `memberPermissions` map on every [GroupWeeklyMenuPlan] they're on.
+  /// If a plan ends up with zero participants, delete it (orphaned).
+  ///
+  /// Uses the `participantUserIds` array (which `array-contains` can
+  /// filter on natively) rather than the `memberPermissions.{userId}`
+  /// dot-path query. The dotted-field idiom used by the shopping scrub
+  /// works on real Firestore but can misbehave in certain test fakes;
+  /// array-contains is unambiguous and the denormalised list is kept in
+  /// sync with the permissions map on every save.
+  Future<void> _scrubGroupWeeklyMenuPlans(String userId) async {
+    try {
+      final groupPlans = await _firestore
+          .collection(FirestoreCollections.groupWeeklyMenuPlans)
+          .where('participantUserIds', arrayContains: userId)
+          .get();
+
+      if (groupPlans.docs.isEmpty) return;
+
+      var orphanedCount = 0;
+      var scrubbedCount = 0;
+
+      for (final planDoc in groupPlans.docs) {
+        final data = planDoc.data();
+
+        final participantsRaw = data['participants'];
+        final participants = participantsRaw is List
+            ? participantsRaw
+                .whereType<Map>()
+                .map((m) => Map<String, dynamic>.from(m))
+                .where((m) => m['userId'] != userId)
+                .toList()
+            : <Map<String, dynamic>>[];
+
+        final userIdsRaw = data['participantUserIds'];
+        final userIds = userIdsRaw is List
+            ? userIdsRaw.where((id) => id != userId).cast<String>().toList()
+            : <String>[];
+
+        if (userIds.isEmpty) {
+          // Orphan — no one left to see the plan.
+          await planDoc.reference.delete();
+          orphanedCount += 1;
+        } else {
+          // Use dotted-path `FieldValue.delete()` for the per-user entry
+          // in `memberPermissions` — this cleanly removes the key without
+          // relying on whole-map replacement semantics. Same idiom is
+          // what Firestore's `update()` uses for nested-key deletes.
+          await planDoc.reference.update({
+            'participants': participants,
+            'participantUserIds': userIds,
+            'memberPermissions.$userId': FieldValue.delete(),
+          });
+          scrubbedCount += 1;
+        }
+      }
+
+      app_logger.AppLogger.info(
+          '[$_logTag] Group menu scrub: $scrubbedCount updated, '
+          '$orphanedCount deleted as orphans (user=$userId)');
+    } catch (e) {
+      // Non-fatal — account deletion proceeds. Scrub is best-effort.
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to scrub group weekly menu plans', e);
     }
   }
 
