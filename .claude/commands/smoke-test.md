@@ -81,22 +81,19 @@ explicitly clean up: kill the Firebase process + `preview_stop`.
 
 Flutter web's CanvasKit renderer draws everything into one `<flutter-view>`
 canvas, so plain CSS selectors (`#foo`, `.bar`) match nothing. Widgets must
-be located via the **browser a11y tree** — populated by Flutter once
-accessibility is enabled on the page.
+be located via the **browser a11y tree**, which Flutter populates with
+`<flt-semantics>` nodes once the semantics tree is built.
 
-**First-run: enable accessibility.** The Flutter engine ships accessibility
-off by default on web. On the first journey step, click the tiny
-"Enable accessibility" placeholder button (bottom-right of the viewport)
-via `preview_click` OR inject it programmatically:
+The app force-enables semantics at startup on web (see
+`SemanticsBinding.instance.ensureSemantics()` in `lib/main.dart`), so the
+tree is ready from the first frame — no placeholder click needed. Every
+widget with a `Semantics(identifier: ...)` wrapper shows up as an
+`<flt-semantics>` node with matching `id` / `aria-label` attributes.
 
-```js
-// In a preview_eval call — toggles the semantics placeholder button
-document.querySelector('flt-semantics-placeholder')?.click();
-```
-
-Once enabled, every widget with a `Semantics(identifier: ...)` wrapper
-becomes a node in the tree (rendered as `<flt-semantics>` with matching
-`id` / `aria-label` attributes).
+If a journey ever sees empty selector results on load, confirm semantics is
+actually on: `document.querySelector('flt-semantics') !== null`. If it's
+missing, the `DISABLE_FORCE_SEMANTICS` dart-define may have been set, or
+the force-enable call was removed — re-check `main.dart`.
 
 **Query pattern — preview_eval:**
 
@@ -142,9 +139,6 @@ is a separate discovery mechanism from Semantics. Keep both.
 - Overlay-positioned children (`PopupMenuItem`, dialogs) mount outside the
   main tree. Query them only after the parent is tapped; rely on the
   tree settling (1-2 `preview_snapshot` calls) before asserting.
-- `SemanticsBinding.instance.ensureSemantics()` on app startup would
-  eliminate the first-run placeholder click — tracked as a follow-up
-  ticket, do not inline.
 
 ## Adding journeys
 

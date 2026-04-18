@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart';
 
 // Bootstrap system
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
@@ -116,6 +117,21 @@ Future<void> main() async {
       // root route — the navigation shell never renders.
       if (kIsWeb) {
         usePathUrlStrategy();
+
+        // Force-enable the semantics tree so it's populated from the first
+        // frame. Without this, Flutter web defers building `<flt-semantics>`
+        // nodes until the user clicks the "Enable accessibility" placeholder,
+        // which breaks Chrome-MCP / smoke-test automation that locates CTAs
+        // via `document.querySelector('[aria-label="btn-..."]')`. Also improves
+        // the real a11y experience — screen reader users no longer need the
+        // extra click. Gate behind --dart-define=DISABLE_FORCE_SEMANTICS=true
+        // if a per-frame cost ever shows up in profiling.
+        const disableForceSemantics = bool.fromEnvironment(
+          'DISABLE_FORCE_SEMANTICS',
+        );
+        if (!disableForceSemantics) {
+          SemanticsBinding.instance.ensureSemantics();
+        }
       }
 
       // Limit image cache to prevent unbounded memory growth
