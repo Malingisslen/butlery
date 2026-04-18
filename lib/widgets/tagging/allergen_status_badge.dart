@@ -116,7 +116,9 @@ class AllergenStatusBadge extends StatelessWidget {
           baseLabel =
               entry.freeTag ?? context.l10n.allergenFreeLabel(entry.key);
         case TriState.contains:
-          baseLabel = entry.containsTag;
+          // `containsTag` is stored as a slug ("innehåller-gluten") for the
+          // tag system; humanize it for display: "Innehåller gluten".
+          baseLabel = _humanizeContainsTag(entry.containsTag);
         case TriState.unknown:
           baseLabel = context.l10n.allergenUnknownLabel(entry.key);
       }
@@ -137,5 +139,13 @@ class AllergenStatusBadge extends StatelessWidget {
       return '$baseLabel (${context.l10n.allergenCoverageLabel(coveragePercent!)})';
     }
     return baseLabel;
+  }
+
+  /// Converts a dash-separated tag slug ("innehåller-gluten") into a
+  /// human-readable label ("Innehåller gluten").
+  static String _humanizeContainsTag(String tag) {
+    final spaced = tag.replaceAll('-', ' ');
+    if (spaced.isEmpty) return spaced;
+    return spaced[0].toUpperCase() + spaced.substring(1);
   }
 }

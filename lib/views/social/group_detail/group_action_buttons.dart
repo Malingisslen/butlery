@@ -14,6 +14,7 @@ class GroupActionButtons extends StatelessWidget {
   final VoidCallback onShareRecipe;
   final VoidCallback onShareMenu;
   final VoidCallback onShareShoppingList;
+  final VoidCallback onAskWhatToEat;
   final VoidCallback onEditGroup;
   final VoidCallback onDeleteGroup;
   final VoidCallback onLeaveGroup;
@@ -25,6 +26,7 @@ class GroupActionButtons extends StatelessWidget {
     required this.onShareRecipe,
     required this.onShareMenu,
     required this.onShareShoppingList,
+    required this.onAskWhatToEat,
     required this.onEditGroup,
     required this.onDeleteGroup,
     required this.onLeaveGroup,
@@ -79,6 +81,15 @@ class GroupActionButtons extends StatelessWidget {
             onPressed: onShareShoppingList,
             icon: const Icon(Icons.shopping_cart),
             label: Text(context.l10n.groupShareShoppingList),
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: onAskWhatToEat,
+            icon: const Icon(Icons.how_to_vote),
+            label: Text(context.l10n.askWhatToEat),
           ),
         ),
       ],

@@ -413,6 +413,35 @@ class UnifiedShoppingService
     return await _itemManagement.toggleItemBought(itemId);
   }
 
+  /// Update a single item on a collaborative list (BUT-238 claim/unclaim).
+  /// Goes through the repository's updateItem which enforces permission rules
+  /// and refreshes local cache via the collaborative stream. Returns true
+  /// when Firestore confirms the write; false on any failure.
+  Future<bool> updateCollaborativeItem(
+    String listId,
+    UnifiedShoppingItem item,
+  ) async {
+    try {
+      await _shoppingRepository.updateItem(listId, item);
+      // Optimistically reflect in local state — the collaborative stream
+      // will reconcile with the authoritative server copy shortly.
+      final listIndex = _lists.indexWhere((l) => l.id == listId);
+      if (listIndex >= 0) {
+        final items = List<UnifiedShoppingItem>.from(_lists[listIndex].items);
+        final itemIndex = items.indexWhere((i) => i.id == item.id);
+        if (itemIndex >= 0) {
+          items[itemIndex] = item;
+          _lists[listIndex] = _lists[listIndex].copyWith(items: items);
+          notifyListeners();
+        }
+      }
+      return true;
+    } catch (e, st) {
+      AppLogger.error('updateCollaborativeItem failed', e, null, st);
+      return false;
+    }
+  }
+
   Future<bool> removeItemFromActiveList(String itemId) async {
     return await _itemManagement.removeItemFromActiveList(itemId);
   }

@@ -5371,6 +5371,18 @@
   "pollCancel": "Cancel",
   "pollCreate": "Create poll",
   "pollClose": "Close poll",
+  "askWhatToEat": "What should we eat?",
+  "pickRecipesToVote": "Pick recipes to vote on",
+  "winnerAddedToMenu": "{recipe} added to the weekly menu",
+  "@winnerAddedToMenu": {
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "noRecipesToVote": "No recipes to vote on",
+  "importFirstCta": "Import your first recipe",
   "messageTypeText": "Text message",
   "messageTypeRecipeShare": "Recipe share",
   "messageTypeMenuShare": "Menu share",
@@ -8606,5 +8618,41 @@
       "list": {"type": "String"}
     }
   },
-  "ingredientSearchSharedBadge": "Shared"
+  "ingredientSearchSharedBadge": "Shared",
+  "tarJag": "I'll get",
+  "lamnaTillbaka": "Give back",
+  "minDel": "My part",
+  "annasDel": "{name}'s part",
+  "@annasDel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "otilldelat": "Unassigned",
+  "handlarNu": "{name} is shopping now",
+  "@handlarNu": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "efterZon": "By zone",
+  "alla": "All",
+  "nagonAnnanTogDen": "{name} grabbed that — pick another",
+  "@nagonAnnanTogDen": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingItemClaimed": "Claimed \"{itemName}\"",
+  "@shoppingItemClaimed": {
+    "placeholders": {
+      "itemName": {"type": "String"}
+    }
+  },
+  "shoppingItemUnclaimed": "Released \"{itemName}\"",
+  "@shoppingItemUnclaimed": {
+    "placeholders": {
+      "itemName": {"type": "String"}
+    }
+  }
 }

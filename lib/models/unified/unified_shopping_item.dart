@@ -227,6 +227,22 @@ class UnifiedShoppingItem {
   /// Used for item organization and visual prioritization with emoji indicators.
   final int priority;
 
+  /// Collaborative claim metadata — "I'll grab this one" (BUT-238).
+  /// Distinct from [addedByUserId] (who added the item) and [purchasedByUserId]
+  /// (who actually bought it). An assigned item is one a user has claimed
+  /// responsibility for shopping; still purchasable by anyone with edit rights.
+
+  /// User identifier of the person who has claimed ("tar jag") this item.
+  /// Null when the item is unassigned.
+  final String? assignedToUserId;
+
+  /// Cached display name of the assignee for avatar/initials rendering.
+  /// Stored locally to avoid user-profile lookups during list rendering.
+  final String? assignedToDisplayName;
+
+  /// Timestamp when the item was assigned. Null when unassigned.
+  final DateTime? assignedAt;
+
   /// Creates a new unified shopping item with comprehensive metadata and automatic ID generation.
   /// This constructor provides complete shopping item initialization with support for both basic
   /// personal shopping and collaborative shared shopping experiences. All collaborative metadata
@@ -268,6 +284,9 @@ class UnifiedShoppingItem {
     this.note,
     this.estimatedPrice,
     this.priority = 3,
+    this.assignedToUserId,
+    this.assignedToDisplayName,
+    this.assignedAt,
   }) : id = id ?? const Uuid().v4();
 
   /// Factory constructors for simplified shopping item creation with specific use cases.
@@ -537,8 +556,83 @@ class UnifiedShoppingItem {
       note: note ?? this.note,
       estimatedPrice: estimatedPrice ?? this.estimatedPrice,
       priority: priority ?? this.priority,
+      assignedToUserId: assignedToUserId,
+      assignedToDisplayName: assignedToDisplayName,
+      assignedAt: assignedAt,
     );
   }
+
+  /// Claims the item for a user — "Tar jag" / "I'll get this" (BUT-238).
+  /// Returns a new instance with [assignedToUserId], [assignedToDisplayName],
+  /// and [assignedAt] populated plus `lastModifiedBy*` synced to the claimer.
+  /// Note: service layer should use atomic Firestore `update` on these fields
+  /// to avoid lost-update races — see `CollaborativeShoppingViewModel.claimItem`.
+  UnifiedShoppingItem assign({
+    required String userId,
+    required String displayName,
+  }) {
+    final now = DateTime.now();
+    return UnifiedShoppingItem(
+      id: id,
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      bought: bought,
+      addedByUserId: addedByUserId,
+      addedByDisplayName: addedByDisplayName,
+      addedAt: addedAt,
+      purchasedByUserId: purchasedByUserId,
+      purchasedByDisplayName: purchasedByDisplayName,
+      purchasedAt: purchasedAt,
+      lastModifiedByUserId: userId,
+      lastModifiedByDisplayName: displayName,
+      lastModifiedAt: now,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      assignedToUserId: userId,
+      assignedToDisplayName: displayName,
+      assignedAt: now,
+    );
+  }
+
+  /// Releases the claim — "Lämna tillbaka" / "Give back" (BUT-238).
+  /// Returns a new instance with assignment fields cleared. Caller-provided
+  /// [userId] / [displayName] stamp `lastModifiedBy*` for audit trail; when
+  /// omitted, existing modification metadata is preserved.
+  UnifiedShoppingItem unassign({
+    String? userId,
+    String? displayName,
+  }) {
+    final now = DateTime.now();
+    return UnifiedShoppingItem(
+      id: id,
+      name: name,
+      amount: amount,
+      unit: unit,
+      category: category,
+      bought: bought,
+      addedByUserId: addedByUserId,
+      addedByDisplayName: addedByDisplayName,
+      addedAt: addedAt,
+      purchasedByUserId: purchasedByUserId,
+      purchasedByDisplayName: purchasedByDisplayName,
+      purchasedAt: purchasedAt,
+      lastModifiedByUserId: userId ?? lastModifiedByUserId,
+      lastModifiedByDisplayName: displayName ?? lastModifiedByDisplayName,
+      lastModifiedAt: now,
+      note: note,
+      estimatedPrice: estimatedPrice,
+      priority: priority,
+      assignedToUserId: null,
+      assignedToDisplayName: null,
+      assignedAt: null,
+    );
+  }
+
+  /// True when this item is currently claimed by some user.
+  bool get isAssigned => assignedToUserId != null;
 
   /// Toggles the purchased status of the shopping item with collaborative user tracking.
   /// Implements purchase status toggle functionality with automatic collaborative metadata
@@ -572,6 +666,9 @@ class UnifiedShoppingItem {
       note: note,
       estimatedPrice: estimatedPrice,
       priority: priority,
+      assignedToUserId: assignedToUserId,
+      assignedToDisplayName: assignedToDisplayName,
+      assignedAt: assignedAt,
     );
   }
 
@@ -601,6 +698,9 @@ class UnifiedShoppingItem {
       'note': note,
       'estimatedPrice': estimatedPrice,
       'priority': priority,
+      'assignedToUserId': assignedToUserId,
+      'assignedToDisplayName': assignedToDisplayName,
+      'assignedAt': assignedAt?.toIso8601String(),
     };
   }
 
@@ -630,6 +730,9 @@ class UnifiedShoppingItem {
       'note': note,
       'estimatedPrice': estimatedPrice,
       'priority': priority,
+      'assignedToUserId': assignedToUserId,
+      'assignedToDisplayName': assignedToDisplayName,
+      'assignedAt': assignedAt != null ? Timestamp.fromDate(assignedAt!) : null,
     };
   }
 
@@ -666,6 +769,11 @@ class UnifiedShoppingItem {
       estimatedPrice:
           SerializationUtils.safeNullableDouble(json, 'estimatedPrice'),
       priority: SerializationUtils.safeInt(json, 'priority', defaultValue: 3),
+      assignedToUserId:
+          SerializationUtils.safeNullableString(json, 'assignedToUserId'),
+      assignedToDisplayName:
+          SerializationUtils.safeNullableString(json, 'assignedToDisplayName'),
+      assignedAt: SerializationUtils.safeDateTime(json, 'assignedAt'),
     );
   }
 
@@ -703,6 +811,11 @@ class UnifiedShoppingItem {
       estimatedPrice:
           SerializationUtils.safeNullableDouble(data, 'estimatedPrice'),
       priority: SerializationUtils.safeInt(data, 'priority', defaultValue: 3),
+      assignedToUserId:
+          SerializationUtils.safeNullableString(data, 'assignedToUserId'),
+      assignedToDisplayName:
+          SerializationUtils.safeNullableString(data, 'assignedToDisplayName'),
+      assignedAt: SerializationUtils.safeDateTime(data, 'assignedAt'),
     );
   }
 

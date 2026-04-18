@@ -30,14 +30,21 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
 /// Information about ownership succession when owner leaves group.
 /// Used to communicate leave group requirements to the UI.
@@ -370,6 +377,118 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     if (_group == null) return false;
     if (!_permissionService.isAuthenticated) return false;
     return true;
+  }
+
+  /// Pick up to [maxCount] recipe suggestions from the household-filtered
+  /// recipe pool for a "Vad ska vi äta?" poll. Biases toward variety by
+  /// grouping by meal type and round-robining across types.
+  /// Returns an empty list when the pool is empty (UI shows import CTA).
+  Future<List<Recipe>> pickMealVoteSuggestions({int maxCount = 4}) async {
+    final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+    final menuService = ServiceLocator.get<MenuService>();
+    final generator = MenuGenerator(
+      menuService: menuService,
+      recipeService: recipeService,
+      userService: _userService,
+      filterByAllergens: true,
+      filterByDietary: true,
+    );
+
+    final pool = generator.availableRecipes;
+    if (pool.isEmpty) return const [];
+
+    // Group by meal type to encourage variety — cheap deterministic
+    // bucketing, no LLM involvement. Fall back to title hash when meal type
+    // is missing so recipes without one still get distributed.
+    final buckets = <String, List<Recipe>>{};
+    for (final recipe in pool) {
+      final rawMealType = recipe.mealType;
+      final key = rawMealType.isNotEmpty
+          ? rawMealType
+          : (recipe.title.hashCode & 0x3).toString();
+      buckets.putIfAbsent(key, () => []).add(recipe);
+    }
+
+    final picked = <Recipe>[];
+    final bucketIterators =
+        buckets.values.map((b) => b.iterator).toList(growable: false);
+    while (picked.length < maxCount) {
+      var anyAdded = false;
+      for (final it in bucketIterators) {
+        if (picked.length >= maxCount) break;
+        if (it.moveNext()) {
+          picked.add(it.current);
+          anyAdded = true;
+        }
+      }
+      if (!anyAdded) break;
+    }
+    return picked;
+  }
+
+  /// Create a group chat conversation with [recipes] as a poll and return
+  /// the conversation id. Pushes the Poll via MessagingService.sendPollMessage.
+  /// Returns null on failure (error state set on this VM).
+  Future<String?> startMealVotePoll({
+    required String question,
+    required List<Recipe> recipes,
+    bool allowMultipleChoices = false,
+  }) async {
+    if (_group == null) {
+      AppLogger.warning('Cannot start meal vote: group not loaded');
+      return null;
+    }
+    final currentUserId = _permissionService.currentUserId;
+    if (currentUserId == null) {
+      AppLogger.warning('Cannot start meal vote: not authenticated');
+      return null;
+    }
+
+    String? conversationId;
+    await executeAsync(() async {
+      final messagingService = ServiceLocator.get<MessagingService>();
+      final memberProfiles = _members;
+
+      final participantIds = <String>[
+        for (final m in memberProfiles)
+          if (m.uid != currentUserId) m.uid,
+      ];
+      final displayNames = <String, String>{
+        for (final m in memberProfiles) m.uid: m.displayName,
+      };
+      final avatarUrls = <String, String?>{
+        for (final m in memberProfiles) m.uid: m.avatarUrl,
+      };
+
+      conversationId = await messagingService.createGroupConversation(
+        participantIds: participantIds,
+        participantDisplayNames: displayNames,
+        participantAvatarUrls: avatarUrls,
+        title: _group!.name,
+      );
+
+      final options = recipes
+          .map((r) => PollOption.create(
+                text: r.title,
+                recipeId: r.id,
+                recipeImageUrl: r.primaryImageUrl,
+                recipePortions: r.portions,
+              ))
+          .toList();
+
+      final poll = Poll.fromOptions(
+        question: question,
+        options: options,
+        creatorId: currentUserId,
+        allowMultipleChoices: allowMultipleChoices,
+      );
+
+      await messagingService.sendPollMessage(
+        conversationId: conversationId!,
+        pollData: poll.toMap(),
+      );
+    });
+    return conversationId;
   }
 
   @override

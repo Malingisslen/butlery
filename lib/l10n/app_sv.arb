@@ -5371,6 +5371,18 @@
   "pollCancel": "Avbryt",
   "pollCreate": "Skapa omröstning",
   "pollClose": "Stäng omröstning",
+  "askWhatToEat": "Vad ska vi äta?",
+  "pickRecipesToVote": "Välj recept att rösta på",
+  "winnerAddedToMenu": "{recipe} lades till i veckomenyn",
+  "@winnerAddedToMenu": {
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
+  "noRecipesToVote": "Inga recept att rösta om",
+  "importFirstCta": "Importera ditt första recept",
   "messageTypeText": "Textmeddelande",
   "messageTypeRecipeShare": "Receptdelning",
   "messageTypeMenuShare": "Menydelning",
@@ -8606,5 +8618,41 @@
       "list": {"type": "String"}
     }
   },
-  "ingredientSearchSharedBadge": "Delat"
+  "ingredientSearchSharedBadge": "Delat",
+  "tarJag": "Tar jag",
+  "lamnaTillbaka": "Lämna tillbaka",
+  "minDel": "Min del",
+  "annasDel": "{name}s del",
+  "@annasDel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "otilldelat": "Otilldelat",
+  "handlarNu": "{name} handlar nu",
+  "@handlarNu": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "efterZon": "Efter zon",
+  "alla": "Alla",
+  "nagonAnnanTogDen": "{name} tog den — välj en annan",
+  "@nagonAnnanTogDen": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingItemClaimed": "Tar hand om \"{itemName}\"",
+  "@shoppingItemClaimed": {
+    "placeholders": {
+      "itemName": {"type": "String"}
+    }
+  },
+  "shoppingItemUnclaimed": "Släppte \"{itemName}\"",
+  "@shoppingItemUnclaimed": {
+    "placeholders": {
+      "itemName": {"type": "String"}
+    }
+  }
 }

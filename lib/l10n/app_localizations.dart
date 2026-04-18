@@ -14289,6 +14289,36 @@ abstract class AppLocalizations {
   /// **'Stäng omröstning'**
   String get pollClose;
 
+  /// No description provided for @askWhatToEat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad ska vi äta?'**
+  String get askWhatToEat;
+
+  /// No description provided for @pickRecipesToVote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj recept att rösta på'**
+  String get pickRecipesToVote;
+
+  /// No description provided for @winnerAddedToMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'{recipe} lades till i veckomenyn'**
+  String winnerAddedToMenu(String recipe);
+
+  /// No description provided for @noRecipesToVote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept att rösta om'**
+  String get noRecipesToVote;
+
+  /// No description provided for @importFirstCta.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera ditt första recept'**
+  String get importFirstCta;
+
   /// No description provided for @messageTypeText.
   ///
   /// In sv, this message translates to:
@@ -21801,6 +21831,72 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delat'**
   String get ingredientSearchSharedBadge;
+
+  /// No description provided for @tarJag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tar jag'**
+  String get tarJag;
+
+  /// No description provided for @lamnaTillbaka.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna tillbaka'**
+  String get lamnaTillbaka;
+
+  /// No description provided for @minDel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Min del'**
+  String get minDel;
+
+  /// No description provided for @annasDel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}s del'**
+  String annasDel(String name);
+
+  /// No description provided for @otilldelat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Otilldelat'**
+  String get otilldelat;
+
+  /// No description provided for @handlarNu.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} handlar nu'**
+  String handlarNu(String name);
+
+  /// No description provided for @efterZon.
+  ///
+  /// In sv, this message translates to:
+  /// **'Efter zon'**
+  String get efterZon;
+
+  /// No description provided for @alla.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla'**
+  String get alla;
+
+  /// No description provided for @nagonAnnanTogDen.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} tog den — välj en annan'**
+  String nagonAnnanTogDen(String name);
+
+  /// No description provided for @shoppingItemClaimed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tar hand om \"{itemName}\"'**
+  String shoppingItemClaimed(String itemName);
+
+  /// No description provided for @shoppingItemUnclaimed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Släppte \"{itemName}\"'**
+  String shoppingItemUnclaimed(String itemName);
 }
 
 class _AppLocalizationsDelegate

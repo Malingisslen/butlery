@@ -84,14 +84,17 @@ class DietaryStatusBadge extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     // Shape distinction for color-blind accessibility:
     // - FREE: Leaf (eco)
-    // - CONTAINS: Triangle (warning)
+    // - CONTAINS: Neutral "not" icon (dietary preference, not a health risk)
     // - UNKNOWN: Circle with question (help_outline)
     switch (status) {
       case TriState.free:
         return (context.butleryColors.success, Icons.eco_outlined);
       case TriState.contains:
-        // Triangle shape distinguishes from other states
-        return (cs.error, Icons.warning_amber);
+        // Dietary "contains" = factual ("not vegetarian"), not an allergen
+        // health risk. Using the same red as allergen warnings made "Ej
+        // vegetarisk" look as alarming as "Innehåller gluten". Neutral grey +
+        // a cancel icon keeps the message clear without overstating risk.
+        return (cs.onSurfaceVariant, Icons.cancel_outlined);
       case TriState.unknown:
         return (cs.onSurfaceVariant, Icons.help_outline);
     }

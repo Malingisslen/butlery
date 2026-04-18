@@ -366,8 +366,12 @@ class TagResultDisplay extends StatelessWidget {
   }
 
   Color _getCoverageColor(BuildContext context) {
-    if (tagResult.coverage >= 1.0) return context.butleryColors.success;
-    if (tagResult.coverage >= 0.8) return context.butleryColors.warning;
+    // Mostly-full bar should read as "positive" visually, so we grade
+    // generously: 80%+ is green, 40%+ amber, rust-red only for genuinely
+    // incomplete coverage. Previously 80–99% showed as amber and anything
+    // below 80% rendered rust-red — a nearly-full red bar misleads.
+    if (tagResult.coverage >= 0.8) return context.butleryColors.success;
+    if (tagResult.coverage >= 0.4) return context.butleryColors.warning;
     return Theme.of(context).colorScheme.error;
   }
 

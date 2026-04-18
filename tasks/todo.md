@@ -1,39 +1,70 @@
 # Sprint Backlog
 
-## Sprint: Test Infra Phase 12 — Cross-platform + Patrol MVP — 2026-04-17
+## Sprint: Shared Menu Decisions — 2026-04-18
 
-### Agent A: testing-specialist — Patrol MVP (BUT-395)
+**Plan file:** `C:\Users\malla\.claude\plans\without-touching-anything-just-piped-pearl.md`
 
-Goal: ONE real-device E2E journey proven end-to-end, not a comprehensive suite.
+Theme: pivot from test-infra to user-facing features. Group meal voting + split-store shopping + closing the BUT-211 test gap. MVVM discipline, square design, theme tokens only — see plan file for the full design + security + edge-case coverage.
 
-- [x] **A1. Patrol scaffold** — `integration_test/patrol_test.dart` entry point, `patrol.yaml` config for Android emulator + iOS simulator targets. Verify `patrol_cli` can be installed and referenced. (BUT-395)
-- [x] **A2. First journey: auth → home → recipe create** — convert the happy path from `test/e2e/flows/comprehensive_e2e_test.dart` (currently `skip: Patrol`) into a real Patrol test. Firebase emulator backend. Asserts: register → land on empty state → tap +Create → fill title + one ingredient + save → new recipe visible on home. (BUT-395)
-- [x] **A3. CI wiring** — new `.github/workflows/patrol_e2e.yml` (separate job so it doesn't block PRs on flaky emulator boot). macOS runner for iOS simulator; Android on ubuntu-latest via emulator. Schedule: on PRs to `main` + nightly. (BUT-395)
-- [x] **A4. Audit skipped E2E files** — audit the 10 files in `test/e2e/flows/` — delete duplicates of unit/integration coverage, file follow-up tickets for real journey gaps. (BUT-395)
+### Agent A: flutter-developer — BUT-340 Group meal voting (MVP)
 
-### Agent B: firebase-backend-security — Cross-platform CI matrix (BUT-396)
+MVP scope: extend poll metadata to carry recipe references; auto-add winner to **creator's** shared plan via `shareMenuWithGroup`. Group-scoped `WeeklyMenuPlan` is a follow-up ticket.
 
-- [x] **B1. Matrix the unit-tests job** — `.github/workflows/test.yml`: add `strategy.matrix.os: [ubuntu-latest, macos-latest, windows-latest]`. Expect Windows path-separator issues and macOS file-watcher quirks; fix as they surface. (BUT-396)
-- [x] **B2. Verify real-time guard + coverage script cross-platform** — the bash scripts assume POSIX. Windows runs under Git Bash; validate: Windows job runs `bash scripts/check_test_real_time.sh` and passes. (BUT-396)
-- [x] **B3. Reconcile runtime cost** — matrix triples CI minutes. Add `fail-fast: false` + keep coverage step ubuntu-only (only one platform produces lcov). (BUT-396)
+- [x] **A1. Extend `PollOption` with recipe metadata** — `lib/models/messaging/poll.dart`: add nullable `recipeId`, `recipeImageUrl`, `recipePortions`. Safe-map serialization. Backward compatible. (BUT-340)
+- [x] **A2. "Vad ska vi äta?" entry point** — `lib/views/social/group_detail_view.dart`: new action routed through `SocialGroupDetailViewModel`, calls `MenuGenerator.availableRecipes` for household-filtered suggestions, opens adapted `poll_creation_dialog.dart` with optional `List<Recipe> recipeOptions` param. (BUT-340)
+- [x] **A3. Recipe-aware poll rendering** — `lib/widgets/messaging/poll_message_widget.dart`: when `option.recipeId != null`, render thumbnail + title + portions/time metadata above vote bar. Tap → recipe detail. Plain-text polls unchanged. (BUT-340)
+- [x] **A4. Auto-resolution on poll close** — `lib/services/messaging_service.dart` `closePoll()`: when winning option has `recipeId`, append to creator's current-week plan via `WeeklyMenuPlanService` (today-anchored next empty slot), reshare via `social_menu_operations.shareMenuWithGroup`. Wrap in Firestore transaction to avoid double-fire race. (BUT-340)
+- [x] **A5. Swedish l10n** — `ask_what_to_eat`, `pick_recipes_to_vote`, `winner_added_to_menu`, empty-state "Inga recept att rösta om". Both `app_sv.arb` + `app_en.arb`. (BUT-340)
+- [x] **A6. Tests** — `PollOption` round-trip with new fields; `closePoll` auto-resolution path (mocked plan service + menu ops); recipe-aware poll widget render; empty-recipes state. File follow-up: "group-scoped `WeeklyMenuPlan` — BUT-340 f/u". (BUT-340)
+
+### Agent B: flutter-developer — BUT-238 Split-store shopping
+
+- [x] **B1. Add `assignedToUserId` field** — `lib/models/unified/unified_shopping_item.dart`: nullable `assignedToUserId`, `assignedToDisplayName`, `assignedAt`. `assign()` / `unassign()` helpers update `lastModifiedBy*`. Safe-map serialization. No migration needed (nullable). Update Firestore rules for shopping-items subcollection. (BUT-238)
+- [x] **B2. "Tar jag / Lämna tillbaka" action** — `lib/views/unified_shopping/widgets/shopping_item_tiles.dart` + `lib/views/social/collaborative_shopping/collaborative_shopping_items.dart`: swipe-right on mobile, tap-to-claim on web, all routed through `CollaborativeShoppingViewModel`. Assigned items show avatar badge; `assignedToUserId == currentUserId` items promoted to "Min del" section. Firestore `update` (atomic), not read-modify-write. (BUT-238)
+- [x] **B3. `ShoppingPresenceModule`** — mirror `lib/services/unified/operations/realtime_recipe/presence_tracking_module.dart`. New module extends same base class, registered as interface in **UnifiedShoppingModule** DI (lazy singleton). 30s TTL heartbeat, per-list (not per-item). Header widget shows "Anna handlar nu" + greendot indicator. (BUT-238)
+- [x] **B4. Zone-grouped toggle** — `collaborative_shopping_items.dart`: `[Alla] [Min del] [Efter zon]` toggle. Zone view groups by `ShoppingCategory.defaultStoreOrder`, then by assignee within each zone. (BUT-238)
+- [x] **B5. GDPR paths** — verify new fields flow through `content_export_manager.exportShoppingLists()` (items exported as-is); on account deletion, scrub `assignedToUserId` from items on other users' lists (`content_deletion_operations`). Follow the `purchasedByUserId` scrub pattern; add if missing. (BUT-238)
+- [x] **B6. Swedish l10n** — `tar_jag`, `lamna_tillbaka`, `min_del`, `handlar_nu`, `efter_zon`, `anna_tog_den_snackbar`. `app_sv.arb` + `app_en.arb`. (BUT-238)
+- [x] **B7. Tests** — model round-trip, `ShoppingPresenceModule` unit test (mocked FakeFirebaseFirestore), widget test for "Min del" grouping + claim/unclaim + presence indicator, permission gate test (only `edit`/`admin` may assign), simultaneous-claim resolution test. (BUT-238)
+
+### Agent C: testing-specialist — BUT-361 Calendar weekly menu test gap
+
+Goal: ≥80% line coverage on the three wrappers. The VM test exists (74 lines) — **expand**, don't recreate. Ticket specifies exact behaviors to test; follow them exactly.
+
+- [x] **C1. Repository tests** — new file `test/integration/firebase/repositories/weekly_menu_plan_repository_test.dart`. Template: `base_firebase_repository_integration_test.dart`. Cover: deterministic `userId_YYYY-WWW` doc ID + upsert-no-duplicate, `fetchForWeek` null on missing, `deleteAllByUser` batches 600 docs into ≤500-op chunks via `batchDeleteDocs`, owner-prefix range returns only target user, cross-user permission rejection. (BUT-361)
+- [x] **C2. Expand ViewModel tests** — extend `test/unit/viewmodels/menu/weekly_menu_plan_viewmodel_test.dart`. Cover: `loadWeek` short-circuits when target week already loaded (no extra repo call), `applyGeneratedMenu` `_applyInFlight` guard blocks concurrent calls, `moveEntry` self-drop (`identical(updated, current)`) skips notify + save, `removeEntry` unknown id is no-op, `clearWeek` short-circuits on empty plan + empty overflow, `assignFromOverflow` prunes overflow after successful assign. Plus `previousWeek`/`nextWeek` boundary arithmetic. (BUT-361)
+- [x] **C3. Widget smoke test** — new file `test/widget/menu/calendar_weekly_menu_widget_test.dart`. Template: `base_widget_test.dart` + Mocktail `MockWeeklyMenuPlanViewModel`. Cover: empty state renders `StateWidget.empty` + arrow-up hint, populated week renders 7 rows × 3 columns, tap empty slot → recipe dialog, drag-drop assigned cell → empty target triggers `moveEntry`, overflow chips render when `vm.overflow.isNotEmpty`. One golden via `golden_helper.butleryGolden(...)` for the populated-with-overflow state. (BUT-361)
+- [x] **C4. Coverage verification** — `flutter test --coverage` targeted to the three wrapper files; filter lcov summary; confirm each ≥80%. (BUT-361) — Repository 94.29%, ViewModel 96.70%, Widget 85.42%.
 
 ### Post-Sprint Steps
 
-- [x] Run `dart analyze --fatal-infos` — clean
-- [ ] Run Patrol journey locally against emulator — requires human (no emulator in sandbox)
-- [ ] Observe first matrix CI run — verifiable only on GitHub
-- [ ] File follow-up: "tighten coverage floor once ≥5 CI runs are logged (after 2026-04-24)"
+- [x] `dart analyze --fatal-infos` — clean (0 issues)
+- [x] Targeted test runs per agent — 128 tests green (13 + 72 + 43)
+- [ ] BUT-340 E2E against Firebase emulator (2-browser poll → vote → close → winner lands in shared menu) — requires human
+- [ ] BUT-238 E2E (2 browsers, collaborative list, claim syncs + presence + zone toggle) — requires human
 - [ ] Commit, push to main
-- [ ] Update Linear: BUT-395, BUT-396 → Done
+- [ ] Update Linear: BUT-340, BUT-238, BUT-361 → Done
+- [x] File follow-up tickets:
+  - Filed: "Group-scoped `WeeklyMenuPlan` model — BUT-340 f/u"
+  - [ ] Still to file: "Tighten coverage floor ≥5 CI runs after 2026-04-24" (carried from Phase 12)
 
 ---
 
 ## What this means in plain language
 
-- The app finally gets a real-device end-to-end test: a virtual phone boots, taps through registration, creates a recipe, and asserts it shows up. Catches "works in harness, broke on real phone" bugs.
-- CI runs the unit/widget/view suite on three operating systems instead of one. Catches platform-specific breakage before release.
-- Risk: Medium. Patrol on CI is notoriously finicky (emulator boot flake). Kept in a separate non-blocking CI job so PRs aren't held hostage.
-- Coverage-floor tightening is deferred — needs a week of CI data.
+- Groups get a "what should we eat?" poll with recipe previews — tap the winning option, it lands on everyone's shared week.
+- Shopping partners at the same store can tap "I'll get this" on an item, see a live "Anna is shopping now" indicator, and split the list by zone — no more double-buying or missed items.
+- The calendar week-menu feature (which shipped fast) gets a proper test safety net so the next UI change can't silently break it.
+- **Risk: Medium.** BUT-340's MVP reuses poll infrastructure (low risk) but writes to the creator's plan only until a follow-up ticket builds a true group plan. BUT-238 adds a new nullable field + presence module following the existing recipe-presence pattern closely.
+- All reversible — additive Firestore fields only, no schema-breaking migrations.
+
+---
+
+## Archive: Sprint Test Infra Phase 12 — Cross-platform + Patrol MVP — 2026-04-17
+
+- [x] **B1–B3 (BUT-396).** Cross-platform CI matrix (ubuntu + macOS + windows) with `fail-fast: false`, coverage step ubuntu-only. Shipped in commit `627b46458`.
+- [~] **A1–A4 (BUT-395).** Patrol MVP — **abandoned** after landing (commit `b729d66ae`). Replaced by lightweight `/smoke-test` slash command using Chrome MCP; Patrol complexity not worth the flake-to-signal ratio for a solo dev. Linear: document reasoning, close as Won't Do.
+- [ ] Coverage-floor tightening — deferred to post-2026-04-24 (needs ≥5 CI runs).
 
 ---
 

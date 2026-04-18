@@ -4,19 +4,39 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:uuid/uuid.dart';
 
 /// A poll option that users can vote on.
+/// Optional recipe metadata ([recipeId], [recipeImageUrl], [recipePortions])
+/// lets a poll embed "Vad ska vi äta?" choices with thumbnails — backward
+/// compatible: plain-text polls deserialize with these three fields as null.
 class PollOption {
   final String id;
   final String text;
   final List<String> voterIds;
+  final String? recipeId;
+  final String? recipeImageUrl;
+  final int? recipePortions;
 
   const PollOption({
     required this.id,
     required this.text,
     this.voterIds = const [],
+    this.recipeId,
+    this.recipeImageUrl,
+    this.recipePortions,
   });
 
-  factory PollOption.create({required String text}) {
-    return PollOption(id: const Uuid().v4(), text: text);
+  factory PollOption.create({
+    required String text,
+    String? recipeId,
+    String? recipeImageUrl,
+    int? recipePortions,
+  }) {
+    return PollOption(
+      id: const Uuid().v4(),
+      text: text,
+      recipeId: recipeId,
+      recipeImageUrl: recipeImageUrl,
+      recipePortions: recipePortions,
+    );
   }
 
   factory PollOption.fromMap(Map<String, dynamic> data) {
@@ -24,6 +44,11 @@ class PollOption {
       id: SerializationUtils.safeString(data, 'id'),
       text: SerializationUtils.safeString(data, 'text'),
       voterIds: SerializationUtils.safeStringList(data, 'voterIds'),
+      recipeId: SerializationUtils.safeNullableString(data, 'recipeId'),
+      recipeImageUrl:
+          SerializationUtils.safeNullableString(data, 'recipeImageUrl'),
+      recipePortions:
+          SerializationUtils.safeNullableInt(data, 'recipePortions'),
     );
   }
 
@@ -32,6 +57,9 @@ class PollOption {
       'id': id,
       'text': text,
       'voterIds': voterIds,
+      if (recipeId != null) 'recipeId': recipeId,
+      if (recipeImageUrl != null) 'recipeImageUrl': recipeImageUrl,
+      if (recipePortions != null) 'recipePortions': recipePortions,
     };
   }
 
@@ -40,12 +68,18 @@ class PollOption {
       id: id,
       text: text,
       voterIds: voterIds ?? this.voterIds,
+      recipeId: recipeId,
+      recipeImageUrl: recipeImageUrl,
+      recipePortions: recipePortions,
     );
   }
 
   int get voteCount => voterIds.length;
 
   bool hasVoted(String userId) => voterIds.contains(userId);
+
+  /// Whether this option carries a recipe reference.
+  bool get hasRecipe => recipeId != null;
 }
 
 /// A poll embedded in a chat message for group decision-making.
@@ -81,6 +115,27 @@ class Poll {
       id: const Uuid().v4(),
       question: question,
       options: optionTexts.map((t) => PollOption.create(text: t)).toList(),
+      allowMultipleChoices: allowMultipleChoices,
+      deadline: deadline,
+      creatorId: creatorId,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  /// Build a poll from pre-constructed options — used when options carry
+  /// recipe metadata (A2 "Vad ska vi äta?") and can't be expressed as plain
+  /// strings.
+  factory Poll.fromOptions({
+    required String question,
+    required List<PollOption> options,
+    required String creatorId,
+    bool allowMultipleChoices = false,
+    DateTime? deadline,
+  }) {
+    return Poll(
+      id: const Uuid().v4(),
+      question: question,
+      options: options,
       allowMultipleChoices: allowMultipleChoices,
       deadline: deadline,
       creatorId: creatorId,

@@ -56,6 +56,18 @@ class OfflineInitialization {
   }
 
   Future<void> _initConnectivityMonitoring() async {
+    if (kIsWeb) {
+      // connectivity_plus returns ConnectivityResult.none on Flutter web even
+      // when the browser is online — the plugin's web implementation is
+      // unreliable in practice. Firebase has its own offline cache and will
+      // surface real network failures through per-request errors, so treat
+      // the app as always online on web and skip the stream.
+      _isOnline = true;
+      AppLogger.info('📶 Web platform — assuming online (Firebase handles '
+          'per-request offline behavior)');
+      return;
+    }
+
     final connectivityResult = await _connectivity.checkConnectivity();
     _updateConnectionStatus(connectivityResult);
 
@@ -69,7 +81,16 @@ class OfflineInitialization {
 
   void _updateConnectionStatus(List<ConnectivityResult> results) {
     final wasOnline = _isOnline;
-    _isOnline = results.isNotEmpty && results.first != ConnectivityResult.none;
+    // connectivity_plus can return multiple results (wifi + mobile) — treat
+    // the device as online if ANY result is non-none, not just the first.
+    // Also ignore an empty list: platforms occasionally emit [] before the
+    // first real status is known, which previously flipped the app to
+    // OFFLINE before it ever went online.
+    if (results.isEmpty) {
+      // No signal either way — keep previous value instead of flipping offline.
+      return;
+    }
+    _isOnline = results.any((r) => r != ConnectivityResult.none);
 
     AppLogger.info('📶 Connection status: ${_isOnline ? "ONLINE" : "OFFLINE"}');
 

@@ -14,6 +14,8 @@ import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_category_preferences_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shopping_presence_repository.dart';
+import 'package:butlery/services/unified/operations/shopping/shopping_presence_module.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
@@ -45,6 +47,9 @@ class CollaborationModule implements DIModule {
         CategoryPreferencesRepository,
         MenuVotingRepository,
         MenuVotingService,
+        // BUT-238: collaborative shopping presence
+        FirebaseShoppingPresenceRepository,
+        ShoppingPresenceModule,
       ];
 
   @override
@@ -79,6 +84,20 @@ class CollaborationModule implements DIModule {
         shoppingRepository: app<ShoppingRepository>(),
       ),
       dispose: (s) => s.resetForLogout(),
+    );
+
+    // BUT-238: shopping presence repository + module. Registered as the
+    // interface type so tests / alt implementations can swap in cleanly.
+    container.registerLazySingleton<FirebaseShoppingPresenceRepository>(
+      () => FirebaseShoppingPresenceRepository(
+        firestoreRepository: app<FirestoreRepository>(),
+      ),
+    );
+    container.registerLazySingleton<ShoppingPresenceModule>(
+      () => FirebaseShoppingPresenceModule(
+        repository: container<FirebaseShoppingPresenceRepository>(),
+      ),
+      dispose: (m) => m.dispose(),
     );
 
     container.registerLazySingleton<RealtimeMenuService>(

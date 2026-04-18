@@ -164,6 +164,17 @@ class TagDisplayUtils {
     'vegansk': 'Vegansk',
   };
 
+  /// Time buckets in tightest-first order. Used for display dedup — a 15-min
+  /// recipe is stored with all of `under-15/30/45/60-min` (for filter matching)
+  /// but should only show the tightest bucket on the recipe card.
+  static const List<String> _timeBucketsTightestFirst = [
+    'under-15-min',
+    'under-30-min',
+    'under-45-min',
+    'under-60-min',
+    'över-60-min',
+  ];
+
   /// Returns the top N tags with smart prioritization.
   ///
   /// Priority order:
@@ -181,11 +192,12 @@ class TagDisplayUtils {
   }) {
     if (effectiveTags.isEmpty) return [];
 
+    final displayTags = _collapseTimeBuckets(effectiveTags);
     final result = <String>[];
 
     // 1. User-added tags first (in order they were added)
     for (final tag in userAddedTags) {
-      if (effectiveTags.contains(tag) && result.length < limit) {
+      if (displayTags.contains(tag) && result.length < limit) {
         result.add(tag);
       }
     }
@@ -193,7 +205,7 @@ class TagDisplayUtils {
     if (result.length >= limit) return result;
 
     // 2. Smart priority for auto-generated tags
-    final remaining = effectiveTags.difference(userAddedTags);
+    final remaining = displayTags.difference(userAddedTags);
     for (final category in _priorityCategories) {
       for (final tag in category) {
         if (remaining.contains(tag) &&
@@ -214,6 +226,20 @@ class TagDisplayUtils {
     }
 
     return result;
+  }
+
+  /// Drops all time buckets except the tightest one present. A 15-min recipe
+  /// stores all of `under-15/30/45/60-min` for filter matching, but for
+  /// display we only want to show "Under 15 min".
+  static Set<String> _collapseTimeBuckets(Set<String> tags) {
+    final present =
+        _timeBucketsTightestFirst.where(tags.contains).toList(growable: false);
+    if (present.length <= 1) return tags;
+    final collapsed = Set<String>.from(tags);
+    for (var i = 1; i < present.length; i++) {
+      collapsed.remove(present[i]);
+    }
+    return collapsed;
   }
 
   /// Returns a display-friendly name for a tag.

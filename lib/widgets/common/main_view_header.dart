@@ -102,15 +102,24 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    // Title — cream on dark green
+                                    // Title — cream on dark green. FittedBox
+                                    // scales long single-word titles
+                                    // ("inköpslista", "lägg till recept") down
+                                    // so they don't mid-word wrap or clip at
+                                    // narrow widths, while still wrapping
+                                    // multi-word titles naturally.
                                     Flexible(
                                       child: Semantics(
                                         header: true,
-                                        child: Text(
-                                          title.toLowerCase(),
-                                          style: AppTextStyles.mainViewTitle
-                                              .copyWith(
-                                            color: cs.surface,
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.bottomLeft,
+                                          child: Text(
+                                            title.toLowerCase(),
+                                            style: AppTextStyles.mainViewTitle
+                                                .copyWith(
+                                              color: cs.surface,
+                                            ),
                                           ),
                                         ),
                                       ),

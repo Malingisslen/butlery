@@ -10,6 +10,13 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/models/messaging/poll.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/unified/operations/social_menu_operations.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -567,7 +574,18 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
   }
 
-  /// Close a poll (creator only)
+  /// Close a poll (creator only).
+  ///
+  /// When the closed poll has a winning option with a `recipeId`, auto-
+  /// resolution appends that recipe to the creator's current-week plan
+  /// (today-anchored next empty slot) and reshares the plan with the group
+  /// that received the poll. Winner = most votes; ties broken by chronological
+  /// order (first option in the options list wins).
+  ///
+  /// MVP scope: writes to the poll creator's own plan. Double-fire across
+  /// concurrent callers is guarded by a pre-read of the poll message — if
+  /// already closed, the plan write is skipped on this call. The underlying
+  /// repo's `closePoll` also re-checks `!isClosed` inside its write path.
   Future<void> closePoll({required String messageId}) async {
     try {
       final currentUserId = _authRepository.currentUserId;
@@ -575,15 +593,150 @@ class MessagingService extends BaseService with StreamManagementMixin {
         throw AuthenticationException('User must be authenticated');
       }
 
+      // Pre-read the message to guard against double-resolution. If the poll
+      // is already closed, another caller raced us — skip both the repo
+      // close and the plan write so auto-resolution fires exactly once.
+      final existing = await _messagingRepository.getMessage(messageId);
+      final existingPoll = _extractPoll(existing);
+      if (existingPoll?.isClosed == true) {
+        AppLogger.debug('Poll $messageId already closed — skipping resolve');
+        return;
+      }
+
       await _messagingRepository.closePoll(
         messageId: messageId,
         closerId: currentUserId,
       );
 
-      AppLogger.debug('Poll closed: $messageId');
+      // Re-read the message so vote tallies reflect the final state.
+      final finalMessage =
+          await _messagingRepository.getMessage(messageId) ?? existing;
+      final poll = _extractPoll(finalMessage);
+      if (poll == null || finalMessage == null) return;
+
+      if (poll.creatorId != currentUserId) {
+        // Only creator-triggered closes resolve into the creator's plan.
+        return;
+      }
+
+      final winner = _resolveWinner(poll);
+      if (winner?.recipeId == null) return;
+
+      await _appendWinnerToWeeklyPlanAndShare(
+        winnerRecipeId: winner!.recipeId!,
+        conversationId: finalMessage.conversationId,
+      );
     } catch (e) {
       AppLogger.error('Failed to close poll $messageId', e);
       rethrow;
+    }
+  }
+
+  /// Extract a `Poll` from a `Message.metadata.poll` map, or null if absent.
+  Poll? _extractPoll(Message? message) {
+    final metadata = message?.metadata;
+    if (metadata == null) return null;
+    final pollMap = metadata['poll'];
+    if (pollMap is! Map) return null;
+    try {
+      return Poll.fromMap(Map<String, dynamic>.from(pollMap));
+    } catch (e) {
+      AppLogger.warning('Failed to parse poll from metadata: $e');
+      return null;
+    }
+  }
+
+  /// Winner = option with the most votes. Ties broken by chronological order
+  /// (first option in `options` wins) — keeps resolution deterministic.
+  PollOption? _resolveWinner(Poll poll) {
+    if (poll.options.isEmpty) return null;
+    PollOption? best;
+    for (final option in poll.options) {
+      if (best == null || option.voteCount > best.voteCount) {
+        best = option;
+      }
+    }
+    if (best == null || best.voteCount == 0) return null;
+    return best;
+  }
+
+  /// Appends the winning recipe to the current-week plan at the next empty
+  /// middag slot (today-anchored) and reshares with the group the poll was
+  /// sent to. Creates an empty plan first if the creator has none.
+  Future<void> _appendWinnerToWeeklyPlanAndShare({
+    required String winnerRecipeId,
+    required String conversationId,
+  }) async {
+    final planService = ServiceLocator.tryGet<WeeklyMenuPlanService>();
+    final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
+    final socialMenuOps = ServiceLocator.tryGet<SocialMenuOperations>();
+    if (planService == null || recipeService == null || socialMenuOps == null) {
+      AppLogger.warning(
+          'Auto-resolution skipped — required services not registered');
+      return;
+    }
+
+    Recipe? winnerRecipe;
+    for (final r in recipeService.recipes) {
+      if (r.id == winnerRecipeId) {
+        winnerRecipe = r;
+        break;
+      }
+    }
+    if (winnerRecipe == null) {
+      AppLogger.warning(
+          'Auto-resolution skipped — winner recipe $winnerRecipeId not found');
+      return;
+    }
+
+    final now = DateTime.now();
+    final plan = await planService.getWeek(now);
+
+    // Today-anchored next empty middag slot. Walks today → Sunday.
+    final anchorIndex = DayOfWeek.fromDateTime(now).index;
+    DayOfWeek? targetDay;
+    for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
+      final candidate = DayOfWeek.values[i];
+      if (!plan.isOccupied(candidate, MealSlot.middag)) {
+        targetDay = candidate;
+        break;
+      }
+    }
+    // If the rest of this week is full, fall back to ovrigt (multi-slot).
+    final usedSlot = targetDay == null ? MealSlot.ovrigt : MealSlot.middag;
+    final usedDay = targetDay ?? DayOfWeek.values[anchorIndex];
+
+    final updatedPlan = planService.addEntry(
+      plan: plan,
+      day: usedDay,
+      slot: usedSlot,
+      recipe: winnerRecipe,
+    );
+    await planService.save(updatedPlan);
+
+    // Share with the group — for MVP we share the in-progress menu payload
+    // with the other participants of the conversation that hosted the poll.
+    try {
+      final conversation =
+          await _messagingRepository.getConversation(conversationId);
+      final currentUserId = _authRepository.currentUserId;
+      if (conversation != null && conversation.isGroup) {
+        final menuPayload = <String, List<Recipe>>{
+          'middag': [winnerRecipe],
+        };
+        final participantIds = conversation.participantIds
+            .where((id) => id != currentUserId)
+            .toList();
+        if (participantIds.isNotEmpty) {
+          await socialMenuOps.shareMenuWithFriends(
+            menu: menuPayload,
+            friendUserIds: participantIds,
+          );
+        }
+      }
+    } catch (e) {
+      // Share failure shouldn't unwind the plan append — log and continue.
+      AppLogger.warning('Auto-share after poll close failed: $e');
     }
   }
 

@@ -61,11 +61,79 @@ class ContentDeletionOperations {
           .get();
 
       await batchDeleteDocs(_firestore, listsSnapshot.docs);
+
+      // BUT-238: cross-user scrub. When this user is removed, null out
+      // any references on OTHER users' collaborative lists:
+      //   - assignedToUserId (BUT-238)
+      //   - purchasedByUserId (pre-existing; no prior scrub path)
+      await _scrubCollaborativeListReferences(userId);
+
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
           '[$_logTag] Failed to delete shopping lists', e);
       return false;
+    }
+  }
+
+  /// Remove references to a deleted user from collaborative shopping list
+  /// items on OTHER users' lists (GDPR Article 17 — right to erasure).
+  ///
+  /// Scope: only `unified_shared_shopping_lists` where the deleted user
+  /// is a member. The deleted user's own lists are handled by the regular
+  /// delete path above.
+  ///
+  /// Fields scrubbed on matching items (kept for audit integrity, but
+  /// the actor reference is removed):
+  ///   - `assignedToUserId` / `assignedToDisplayName` / `assignedAt`
+  ///   - `purchasedByUserId` / `purchasedByDisplayName` / `purchasedAt`
+  Future<void> _scrubCollaborativeListReferences(String userId) async {
+    try {
+      // memberPermissions is a map keyed by userId. Firestore cannot query
+      // map keys directly, so we use a dot-path filter with isNotEqualTo: null.
+      // This matches any list document where `memberPermissions.{userId}`
+      // exists (and isn't null), i.e. the user is a member.
+      final sharedLists = await _firestore
+          .collection(FirestoreCollections.unifiedSharedShoppingLists)
+          .where('memberPermissions.$userId', isNotEqualTo: null)
+          .get();
+
+      if (sharedLists.docs.isEmpty) return;
+
+      for (final listDoc in sharedLists.docs) {
+        final data = listDoc.data();
+        final items = data['items'];
+        if (items is! List) continue;
+
+        var changed = false;
+        final scrubbed = items.map((raw) {
+          if (raw is! Map) return raw;
+          final map = Map<String, dynamic>.from(raw);
+          if (map['assignedToUserId'] == userId) {
+            map['assignedToUserId'] = null;
+            map['assignedToDisplayName'] = null;
+            map['assignedAt'] = null;
+            changed = true;
+          }
+          if (map['purchasedByUserId'] == userId) {
+            map['purchasedByUserId'] = null;
+            map['purchasedByDisplayName'] = null;
+            map['purchasedAt'] = null;
+            changed = true;
+          }
+          return map;
+        }).toList();
+
+        if (changed) {
+          await listDoc.reference.update({'items': scrubbed});
+          app_logger.AppLogger.info(
+              '[$_logTag] Scrubbed user $userId from list ${listDoc.id}');
+        }
+      }
+    } catch (e) {
+      // Non-fatal — deletion still proceeds. Scrub is best-effort.
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to scrub collaborative list refs', e);
     }
   }
 

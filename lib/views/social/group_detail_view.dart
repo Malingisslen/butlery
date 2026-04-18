@@ -22,6 +22,7 @@ import 'package:butlery/widgets/common/dialogs/recipe_selection/group_recipe_sha
 import 'package:butlery/widgets/common/dialogs/menu_selection_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/group_shopping_list_selection_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/widgets/messaging/poll_creation_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
@@ -253,10 +254,86 @@ class _GroupDetailViewState extends State<GroupDetailView>
       onShareRecipe: () => _showRecipeSelectionForGroup(group),
       onShareMenu: () => _showMenuSelectionForGroup(group),
       onShareShoppingList: () => _showShoppingListSelectionForGroup(group),
+      onAskWhatToEat: () => _startMealVotePoll(group),
       onEditGroup: () => _showEditGroupDialog(group),
       onDeleteGroup: () => _showDeleteGroupDialog(group),
       onLeaveGroup: () => _leaveGroup(group),
     );
+  }
+
+  /// Opens the "Vad ska vi äta?" flow: pick N recipe suggestions via VM,
+  /// show the prefilled poll creation dialog, then dispatch the poll.
+  Future<void> _startMealVotePoll(FriendCategory group) async {
+    if (!mounted) return;
+
+    if (group.friendUserIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.groupNoMembersToShare),
+          backgroundColor: context.butleryColors.warning,
+        ),
+      );
+      return;
+    }
+
+    final suggestions = await _viewModel.pickMealVoteSuggestions();
+    if (!mounted) return;
+
+    if (suggestions.isEmpty) {
+      // Empty state: no recipes to vote on
+      final shouldImport = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+          ),
+          title: Text(context.l10n.noRecipesToVote),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(context.l10n.pollCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(context.l10n.importFirstCta),
+            ),
+          ],
+        ),
+      );
+      if (shouldImport == true && mounted) {
+        await Navigator.of(context).pushNamed('/add-recipe');
+      }
+      return;
+    }
+
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    if (currentUserId == null || !mounted) return;
+
+    final poll = await showDialog<dynamic>(
+      context: context,
+      builder: (dialogContext) => PollCreationDialog(
+        creatorId: currentUserId,
+        recipeOptions: suggestions,
+      ),
+    );
+
+    if (poll == null || !mounted) return;
+
+    final conversationId = await _viewModel.startMealVotePoll(
+      question: poll.question as String,
+      recipes: suggestions,
+      allowMultipleChoices: poll.allowMultipleChoices as bool,
+    );
+
+    if (!mounted) return;
+    if (conversationId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.errorServiceUnavailable),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 
   /// ✅ REFACTORED: Leave group with ownership succession handling (MVVM pattern)

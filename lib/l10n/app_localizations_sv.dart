@@ -8234,6 +8234,23 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pollClose => 'Stäng omröstning';
 
   @override
+  String get askWhatToEat => 'Vad ska vi äta?';
+
+  @override
+  String get pickRecipesToVote => 'Välj recept att rösta på';
+
+  @override
+  String winnerAddedToMenu(String recipe) {
+    return '$recipe lades till i veckomenyn';
+  }
+
+  @override
+  String get noRecipesToVote => 'Inga recept att rösta om';
+
+  @override
+  String get importFirstCta => 'Importera ditt första recept';
+
+  @override
   String get messageTypeText => 'Textmeddelande';
 
   @override
@@ -12734,4 +12751,47 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get ingredientSearchSharedBadge => 'Delat';
+
+  @override
+  String get tarJag => 'Tar jag';
+
+  @override
+  String get lamnaTillbaka => 'Lämna tillbaka';
+
+  @override
+  String get minDel => 'Min del';
+
+  @override
+  String annasDel(String name) {
+    return '${name}s del';
+  }
+
+  @override
+  String get otilldelat => 'Otilldelat';
+
+  @override
+  String handlarNu(String name) {
+    return '$name handlar nu';
+  }
+
+  @override
+  String get efterZon => 'Efter zon';
+
+  @override
+  String get alla => 'Alla';
+
+  @override
+  String nagonAnnanTogDen(String name) {
+    return '$name tog den — välj en annan';
+  }
+
+  @override
+  String shoppingItemClaimed(String itemName) {
+    return 'Tar hand om \"$itemName\"';
+  }
+
+  @override
+  String shoppingItemUnclaimed(String itemName) {
+    return 'Släppte \"$itemName\"';
+  }
 }

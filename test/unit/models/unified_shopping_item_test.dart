@@ -618,6 +618,154 @@ void main() {
       });
     });
 
+    group('BUT-238: Assignment (Tar jag / Lämna tillbaka)', () {
+      test(
+          'assign() populates the three assignment fields and stamps lastModified',
+          () {
+        final start = UnifiedShoppingItem.collaborative(
+          name: 'Mjölk',
+          amount: 1,
+          addedByUserId: 'alice',
+          addedByDisplayName: 'Alice',
+        );
+
+        final claimed = start.assign(
+          userId: 'bob',
+          displayName: 'Bob',
+        );
+
+        expect(claimed.isAssigned, isTrue);
+        expect(claimed.assignedToUserId, equals('bob'));
+        expect(claimed.assignedToDisplayName, equals('Bob'));
+        expect(claimed.assignedAt, isNotNull);
+        expect(claimed.lastModifiedByUserId, equals('bob'));
+        expect(claimed.lastModifiedByDisplayName, equals('Bob'));
+      });
+
+      test('unassign() clears all three assignment fields', () {
+        final claimed = UnifiedShoppingItem.collaborative(
+          name: 'Bröd',
+          amount: 1,
+          addedByUserId: 'alice',
+          addedByDisplayName: 'Alice',
+        ).assign(userId: 'bob', displayName: 'Bob');
+
+        final released = claimed.unassign(
+          userId: 'bob',
+          displayName: 'Bob',
+        );
+
+        expect(released.isAssigned, isFalse);
+        expect(released.assignedToUserId, isNull);
+        expect(released.assignedToDisplayName, isNull);
+        expect(released.assignedAt, isNull);
+        // Modification metadata updates regardless.
+        expect(released.lastModifiedByUserId, equals('bob'));
+      });
+
+      test('assign() preserves bought / purchased state', () {
+        final purchased = UnifiedShoppingItem.collaborative(
+          name: 'Ägg',
+          amount: 1,
+          addedByUserId: 'alice',
+          addedByDisplayName: 'Alice',
+        ).togglePurchased(userId: 'alice', userDisplayName: 'Alice');
+
+        final claimed = purchased.assign(userId: 'bob', displayName: 'Bob');
+
+        expect(claimed.bought, isTrue);
+        expect(claimed.purchasedByUserId, equals('alice'));
+        expect(claimed.assignedToUserId, equals('bob'));
+      });
+
+      test('togglePurchased preserves assignment fields', () {
+        final claimed = UnifiedShoppingItem.collaborative(
+          name: 'Pasta',
+          amount: 1,
+          addedByUserId: 'alice',
+          addedByDisplayName: 'Alice',
+        ).assign(userId: 'bob', displayName: 'Bob');
+
+        final bought =
+            claimed.togglePurchased(userId: 'bob', userDisplayName: 'Bob');
+
+        expect(bought.bought, isTrue);
+        expect(bought.assignedToUserId, equals('bob'));
+        expect(bought.assignedToDisplayName, equals('Bob'));
+      });
+
+      test('JSON round-trip preserves assignment fields when present', () {
+        final claimedDate = DateTime.utc(2026, 4, 18, 10, 0);
+        final original = UnifiedShoppingItem(
+          id: 'x',
+          name: 'Mjölk',
+          amount: 1,
+          assignedToUserId: 'bob',
+          assignedToDisplayName: 'Bob',
+          assignedAt: claimedDate,
+        );
+        final decoded = UnifiedShoppingItem.fromJson(
+            Map<String, dynamic>.from(original.toJson()));
+
+        expect(decoded.assignedToUserId, equals('bob'));
+        expect(decoded.assignedToDisplayName, equals('Bob'));
+        expect(decoded.assignedAt, equals(claimedDate));
+      });
+
+      test(
+          'JSON round-trip tolerates missing assignment fields (null pass-through)',
+          () {
+        final plain = UnifiedShoppingItem.basic(name: 'Bröd', amount: 1);
+        final decoded = UnifiedShoppingItem.fromJson(
+            Map<String, dynamic>.from(plain.toJson()));
+
+        expect(decoded.assignedToUserId, isNull);
+        expect(decoded.assignedToDisplayName, isNull);
+        expect(decoded.assignedAt, isNull);
+        expect(decoded.isAssigned, isFalse);
+      });
+
+      test('Firestore round-trip preserves assignment Timestamp', () {
+        final claimedDate = DateTime.utc(2026, 4, 18, 10, 0);
+        final original = UnifiedShoppingItem(
+          id: 'y',
+          name: 'Ägg',
+          amount: 1,
+          assignedToUserId: 'bob',
+          assignedToDisplayName: 'Bob',
+          assignedAt: claimedDate,
+        );
+        final firestore = original.toFirestore();
+        expect(firestore['assignedAt'], isA<Timestamp>());
+
+        final decoded = UnifiedShoppingItem.fromFirestore(
+            Map<String, dynamic>.from(firestore));
+        expect(decoded.assignedToUserId, equals('bob'));
+        // Timestamp.toDate() returns local time — compare instant, not wall clock.
+        expect(
+          decoded.assignedAt?.toUtc(),
+          equals(claimedDate.toUtc()),
+        );
+      });
+
+      test('Firestore fromFirestore treats missing fields as null', () {
+        // Simulate a legacy document written before BUT-238.
+        final legacy = {
+          'id': 'legacy',
+          'name': 'Smör',
+          'amount': 1.0,
+          'unit': '',
+          'category': ShoppingCategory.other,
+          'bought': false,
+          'priority': 3,
+          // no assigned* keys
+        };
+        final decoded = UnifiedShoppingItem.fromFirestore(legacy);
+        expect(decoded.assignedToUserId, isNull);
+        expect(decoded.assignedAt, isNull);
+      });
+    });
+
     group('Collaborative Features', () {
       test('should track item modifications correctly', () {
         // Arrange

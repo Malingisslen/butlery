@@ -162,5 +162,49 @@ void main() {
         expect(manager.canViewShoppingList('private-list'), false);
       });
     });
+
+    // -- BUT-238: claim permission gate --
+    //
+    // Claim (Tar jag / Lämna tillbaka) is gated by the same canEdit check
+    // that governs adding/removing/toggling items. View-only members must
+    // not be able to claim — even though they can see assignments.
+
+    group('BUT-238: claim / unclaim gating', () {
+      test('view-only member cannot claim — canEdit returns false', () {
+        // viewer-only permission, explicit default of false.
+        mockPermissionService.setPermissionState(
+          currentUserId: 'viewer-user',
+          permissions: {
+            testListId: {ResourcePermission.viewer: true},
+          },
+          defaultHasPermission: false,
+        );
+
+        expect(manager.canEdit, isFalse,
+            reason: 'view-only member must not be allowed to claim');
+      });
+
+      test('editor member can claim — canEdit returns true', () {
+        mockPermissionService.setPermissionState(
+          currentUserId: 'editor-user',
+          permissions: {
+            testListId: {ResourcePermission.editor: true},
+          },
+        );
+
+        expect(manager.canEdit, isTrue);
+      });
+
+      test('admin member can claim — canEdit returns true', () {
+        mockPermissionService.setPermissionState(
+          currentUserId: 'admin-user',
+          permissions: {
+            testListId: {ResourcePermission.admin: true},
+          },
+        );
+
+        expect(manager.canEdit, isTrue);
+      });
+    });
   });
 }

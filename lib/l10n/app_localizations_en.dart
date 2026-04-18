@@ -8216,6 +8216,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pollClose => 'Close poll';
 
   @override
+  String get askWhatToEat => 'What should we eat?';
+
+  @override
+  String get pickRecipesToVote => 'Pick recipes to vote on';
+
+  @override
+  String winnerAddedToMenu(String recipe) {
+    return '$recipe added to the weekly menu';
+  }
+
+  @override
+  String get noRecipesToVote => 'No recipes to vote on';
+
+  @override
+  String get importFirstCta => 'Import your first recipe';
+
+  @override
   String get messageTypeText => 'Text message';
 
   @override
@@ -12702,4 +12719,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ingredientSearchSharedBadge => 'Shared';
+
+  @override
+  String get tarJag => 'I\'ll get';
+
+  @override
+  String get lamnaTillbaka => 'Give back';
+
+  @override
+  String get minDel => 'My part';
+
+  @override
+  String annasDel(String name) {
+    return '$name\'s part';
+  }
+
+  @override
+  String get otilldelat => 'Unassigned';
+
+  @override
+  String handlarNu(String name) {
+    return '$name is shopping now';
+  }
+
+  @override
+  String get efterZon => 'By zone';
+
+  @override
+  String get alla => 'All';
+
+  @override
+  String nagonAnnanTogDen(String name) {
+    return '$name grabbed that — pick another';
+  }
+
+  @override
+  String shoppingItemClaimed(String itemName) {
+    return 'Claimed \"$itemName\"';
+  }
+
+  @override
+  String shoppingItemUnclaimed(String itemName) {
+    return 'Released \"$itemName\"';
+  }
 }

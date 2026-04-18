@@ -504,6 +504,8 @@ service cloud.firestore {
           && hasRequiredFields(['id', 'name', 'amount', 'unit', 'category', 'bought'])
           && request.resource.data.id == itemId
           && request.resource.data.addedByUserId == request.auth.uid;
+        // BUT-238: update covers claim/unclaim (assignedToUserId/DisplayName/At) — the
+        // lastModifiedByUserId check already enforces the actor is the writer.
         allow update: if isAuthenticated()
           && hasSharedAccess('shared_content', contentId)
           && request.resource.data.lastModifiedByUserId == request.auth.uid;
@@ -633,6 +635,27 @@ service cloud.firestore {
             || exists(/databases/$(database)/documents/recipePresence/$(recipeId)/activeUsers/$(request.auth.uid)));
 
         // Users can write their own presence
+        allow write: if isAuthenticated() && request.auth.uid == userId;
+      }
+    }
+
+    // ========================================
+    // SHOPPING PRESENCE - "Anna handlar nu" indicators (BUT-238)
+    // ========================================
+    // Per-list presence for collaborative shopping. Same pattern as recipePresence.
+
+    match /shoppingPresence/{listId} {
+      // Any member with their own presence entry can read the parent doc.
+      allow read: if isAuthenticated()
+        && exists(/databases/$(database)/documents/shoppingPresence/$(listId)/activeUsers/$(request.auth.uid));
+
+      match /activeUsers/{userId} {
+        // Peers can read each other's presence once they're active themselves.
+        allow read: if isAuthenticated()
+          && (request.auth.uid == userId
+            || exists(/databases/$(database)/documents/shoppingPresence/$(listId)/activeUsers/$(request.auth.uid)));
+
+        // Users can write their own presence document (30s TTL heartbeat).
         allow write: if isAuthenticated() && request.auth.uid == userId;
       }
     }
@@ -776,6 +799,8 @@ service cloud.firestore {
     
     match /unified_shared_shopping_lists/{listId} {
       // Can read if you're the owner or a member (key in memberPermissions map)
+      // BUT-238: read access implicitly covers assignedToUserId/assignedToDisplayName/assignedAt
+      // since items are embedded in the list doc.
       allow read: if isAuthenticated() && (
         request.auth.uid == resource.data.ownerId ||
         request.auth.uid in resource.data.memberPermissions
@@ -787,10 +812,13 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.memberPermissions
         && hasRequiredFields(['ownerId', 'memberPermissions', 'items', 'createdAt']);
 
-      // Can update if you're a member (for real-time collaboration)
+      // Can update if you're a member with edit/admin permission (for real-time collaboration).
+      // BUT-238: claim/unclaim (assignedToUserId/assignedToDisplayName/assignedAt fields on items[])
+      // is just an item-array mutation — allowed for edit/admin. View-only members cannot write.
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.ownerId ||
         (request.auth.uid in resource.data.memberPermissions
+         && resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
          && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['ownerId', 'memberPermissions', 'createdAt']))
       );

@@ -44,12 +44,52 @@ class CollaborativeShoppingHeader extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingXs),
             _buildDescriptionSection(context),
           ],
+          if (viewModel.hasActiveShoppers) ...[
+            const SizedBox(height: AppDimensions.spacingXs),
+            _buildPresenceSection(context),
+          ],
           const SizedBox(height: AppDimensions.spacingM),
           _buildProgressSection(context),
           const SizedBox(height: AppDimensions.spacingM),
           _buildMetadataSection(context),
         ],
       ),
+    );
+  }
+
+  /// BUT-238: "Anna handlar nu" + green dot per active peer.
+  Widget _buildPresenceSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final shoppers = viewModel.activeShoppers;
+    return Wrap(
+      spacing: AppDimensions.spacingS,
+      runSpacing: AppDimensions.spacingXs,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        for (final shopper in shoppers)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: cs.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingXs),
+              Text(
+                context.l10n.handlarNu(
+                  (shopper['displayName'] as String?) ?? '',
+                ),
+                style: AppTextStyles.metadataEmphasized.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 
