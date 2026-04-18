@@ -7,7 +7,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
 import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
-/// Firebase implementation of [GroupWeeklyMenuPlanRepository] (BUT-405).
+/// Firebase implementation of [GroupWeeklyMenuPlanRepository].
 ///
 /// Top-level collection (one doc per group per ISO week). Doc ID is
 /// `{groupId}_{YYYY}-W{WW}`, same shape as the per-user plans so upsert
@@ -84,17 +84,53 @@ class FirebaseGroupWeeklyMenuPlanRepository
   }
 
   @override
-  Future<void> save(GroupWeeklyMenuPlan plan) async {
+  Future<void> save(GroupWeeklyMenuPlan plan, {String? userId}) async {
     // Deterministic upsert — bypass `create` so re-saves of the same
     // group+week update in place rather than throwing on doc collisions.
-    // Self-consistency: doc-ID prefix must match groupId. Caller-level
-    // permission (is the writer an editor?) is enforced by the service.
+    // Self-consistency: doc-ID prefix must match groupId.
     if (!plan.id.startsWith('${plan.groupId}_')) {
       AppLogger.warning(
           'Blocked group menu plan save (id/groupId mismatch): ${plan.id}');
       return;
     }
+    // Belt-and-braces permission check mirroring the per-user plan repo.
+    // The service layer also checks this, and Firestore rules are the
+    // authoritative gate — the duplicate here catches programming errors
+    // (missing service-layer check, test harness mocks, etc.).
+    if (userId != null) {
+      final canWrite = await validateUpdatePermission(userId, plan.id, plan);
+      if (!canWrite) {
+        AppLogger.warning(
+            'Blocked group menu plan save (permission denied for $userId): ${plan.id}');
+        return;
+      }
+    }
     await collection.doc(plan.id).set(toFirestore(plan));
+  }
+
+  @override
+  Stream<GroupWeeklyMenuPlan?> watchForWeek({
+    required String groupId,
+    required DateTime date,
+  }) {
+    final docId = GroupWeeklyMenuPlan.docIdFor(groupId, date);
+    final docRef = collection.doc(docId);
+
+    return docRef.snapshots().map<GroupWeeklyMenuPlan?>((snapshot) {
+      if (!snapshot.exists) return null;
+      final data = snapshot.data();
+      if (data == null) return null;
+      try {
+        return GroupWeeklyMenuPlan.fromMap(snapshot.id, data);
+      } catch (e) {
+        AppLogger.warning('Failed to parse group menu plan ${snapshot.id}: $e');
+        return null;
+      }
+    }).handleError((Object error) {
+      AppLogger.error(
+          'Realtime group menu plan stream error ($groupId / $docId)', error);
+      throw error;
+    });
   }
 
   @override

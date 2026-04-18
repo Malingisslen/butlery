@@ -603,51 +603,51 @@ class MessagingService extends BaseService with StreamManagementMixin {
       // close and the plan write so auto-resolution fires exactly once.
       final existing = await _messagingRepository.getMessage(messageId);
       final existingPoll = _extractPoll(existing);
-      if (existingPoll?.isClosed == true) {
+      if (existingPoll == null || existing == null) {
+        // Message/poll gone — nothing to do.
+        return;
+      }
+      if (existingPoll.isClosed) {
         AppLogger.debug('Poll $messageId already closed — skipping resolve');
         return;
       }
 
+      // Resolve + persist the plan write BEFORE marking the poll closed.
+      // If the plan save fails, the poll stays open so the creator can
+      // retry — the pre-read `isClosed` guard above is the idempotency
+      // anchor, and it must still be false for a retry to reach here.
+      //
+      // Only creator-triggered closes resolve into a plan; non-creator
+      // closes just flip the flag.
+      if (existingPoll.creatorId == currentUserId) {
+        final winner = _resolveWinner(existingPoll);
+        if (winner?.recipeId != null) {
+          final conversation = await _messagingRepository
+              .getConversation(existing.conversationId);
+          final isGroup = conversation?.isGroup ?? false;
+
+          if (isGroup && conversation != null) {
+            await _appendWinnerToGroupPlan(
+              winnerRecipeId: winner!.recipeId!,
+              conversation: conversation,
+              creatorId: currentUserId,
+            );
+          } else if (conversation != null) {
+            await _appendWinnerToWeeklyPlanAndShare(
+              winnerRecipeId: winner!.recipeId!,
+              conversation: conversation,
+            );
+          }
+        }
+      }
+
+      // Plan write succeeded (or there was nothing to write). Now close
+      // the poll — if THIS fails, the plan already has the winner, which
+      // is the preferred failure mode vs. a closed poll with no plan.
       await _messagingRepository.closePoll(
         messageId: messageId,
         closerId: currentUserId,
       );
-
-      // Re-read the message so vote tallies reflect the final state.
-      final finalMessage =
-          await _messagingRepository.getMessage(messageId) ?? existing;
-      final poll = _extractPoll(finalMessage);
-      if (poll == null || finalMessage == null) return;
-
-      if (poll.creatorId != currentUserId) {
-        // Only creator-triggered closes resolve into the creator's plan.
-        return;
-      }
-
-      final winner = _resolveWinner(poll);
-      if (winner?.recipeId == null) return;
-
-      // BUT-405: route by conversation type. Groups get a collaborative
-      // `GroupWeeklyMenuPlan`; 1:1 conversations keep the creator-personal
-      // plan path from BUT-340. The split is deliberately narrow — only
-      // the target collection differs, everything else (winner resolution,
-      // today-anchored slot search, double-fire guard) is shared.
-      final conversation = await _messagingRepository
-          .getConversation(finalMessage.conversationId);
-      final isGroup = conversation?.isGroup ?? false;
-
-      if (isGroup && conversation != null) {
-        await _appendWinnerToGroupPlan(
-          winnerRecipeId: winner!.recipeId!,
-          conversation: conversation,
-          creatorId: currentUserId,
-        );
-      } else {
-        await _appendWinnerToWeeklyPlanAndShare(
-          winnerRecipeId: winner!.recipeId!,
-          conversationId: finalMessage.conversationId,
-        );
-      }
     } catch (e) {
       AppLogger.error('Failed to close poll $messageId', e);
       rethrow;
@@ -682,12 +682,40 @@ class MessagingService extends BaseService with StreamManagementMixin {
     return best;
   }
 
-  /// Appends the winning recipe to the current-week plan at the next empty
-  /// middag slot (today-anchored) and reshares with the group the poll was
-  /// sent to. Creates an empty plan first if the creator has none.
+  /// Find the winner recipe in the local recipe cache. Returns null if
+  /// the recipe is not loaded (stale cache, deleted, etc.); callers treat
+  /// that as a skip-auto-resolution signal.
+  Recipe? _findWinnerRecipe(
+      UnifiedRecipeService recipeService, String winnerRecipeId) {
+    for (final r in recipeService.recipes) {
+      if (r.id == winnerRecipeId) return r;
+    }
+    return null;
+  }
+
+  /// Today-anchored next empty middag slot. Walks today → Sunday; if the
+  /// rest of the week is full, falls back to `(today, ovrigt)` (multi-slot).
+  ({DayOfWeek day, MealSlot slot}) _nextAvailableMiddagSlot(
+    DateTime anchor,
+    bool Function(DayOfWeek day, MealSlot slot) isOccupied,
+  ) {
+    final anchorIndex = DayOfWeek.fromDateTime(anchor).index;
+    for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
+      final candidate = DayOfWeek.values[i];
+      if (!isOccupied(candidate, MealSlot.middag)) {
+        return (day: candidate, slot: MealSlot.middag);
+      }
+    }
+    return (day: DayOfWeek.values[anchorIndex], slot: MealSlot.ovrigt);
+  }
+
+  /// Appends the winning recipe to the creator's current-week personal plan
+  /// at the next empty middag slot (today-anchored) and reshares with the
+  /// group the poll was sent to. Creates an empty plan first if the creator
+  /// has none.
   Future<void> _appendWinnerToWeeklyPlanAndShare({
     required String winnerRecipeId,
-    required String conversationId,
+    required Conversation conversation,
   }) async {
     final planService = ServiceLocator.tryGet<WeeklyMenuPlanService>();
     final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
@@ -698,13 +726,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return;
     }
 
-    Recipe? winnerRecipe;
-    for (final r in recipeService.recipes) {
-      if (r.id == winnerRecipeId) {
-        winnerRecipe = r;
-        break;
-      }
-    }
+    final winnerRecipe = _findWinnerRecipe(recipeService, winnerRecipeId);
     if (winnerRecipe == null) {
       AppLogger.warning(
           'Auto-resolution skipped — winner recipe $winnerRecipeId not found');
@@ -713,25 +735,12 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
     final now = DateTime.now();
     final plan = await planService.getWeek(now);
-
-    // Today-anchored next empty middag slot. Walks today → Sunday.
-    final anchorIndex = DayOfWeek.fromDateTime(now).index;
-    DayOfWeek? targetDay;
-    for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
-      final candidate = DayOfWeek.values[i];
-      if (!plan.isOccupied(candidate, MealSlot.middag)) {
-        targetDay = candidate;
-        break;
-      }
-    }
-    // If the rest of this week is full, fall back to ovrigt (multi-slot).
-    final usedSlot = targetDay == null ? MealSlot.ovrigt : MealSlot.middag;
-    final usedDay = targetDay ?? DayOfWeek.values[anchorIndex];
+    final target = _nextAvailableMiddagSlot(now, plan.isOccupied);
 
     final updatedPlan = planService.addEntry(
       plan: plan,
-      day: usedDay,
-      slot: usedSlot,
+      day: target.day,
+      slot: target.slot,
       recipe: winnerRecipe,
     );
     await planService.save(updatedPlan);
@@ -739,10 +748,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     // Share with the group — for MVP we share the in-progress menu payload
     // with the other participants of the conversation that hosted the poll.
     try {
-      final conversation =
-          await _messagingRepository.getConversation(conversationId);
       final currentUserId = _authRepository.currentUserId;
-      if (conversation != null && conversation.isGroup) {
+      if (conversation.isGroup) {
         final menuPayload = <String, List<Recipe>>{
           'middag': [winnerRecipe],
         };
@@ -762,8 +769,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
   }
 
-  /// BUT-405: group-plan auto-resolution path. Appends the winning recipe
-  /// to a shared `GroupWeeklyMenuPlan` (creates it with all conversation
+  /// Group-plan auto-resolution path. Appends the winning recipe to a
+  /// shared `GroupWeeklyMenuPlan` (creates it with all conversation
   /// participants as editors if none exists for the ISO week).
   ///
   /// Double-fire race: the poll's `isClosed` check in [closePoll] already
@@ -785,13 +792,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return;
     }
 
-    Recipe? winnerRecipe;
-    for (final r in recipeService.recipes) {
-      if (r.id == winnerRecipeId) {
-        winnerRecipe = r;
-        break;
-      }
-    }
+    final winnerRecipe = _findWinnerRecipe(recipeService, winnerRecipeId);
     if (winnerRecipe == null) {
       AppLogger.warning(
           'Auto-resolution (group) skipped — winner recipe $winnerRecipeId not found');
@@ -800,7 +801,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
     final now = DateTime.now();
 
-    // Fetch-or-create the group plan. First-time creation seeds every
+    // Fetch-or-build the group plan. First-time creation seeds every
     // conversation participant as an editor; the closer (creator) is
     // admin. Existing plans keep their membership intact.
     final initialParticipants = <GroupMenuParticipant>[
@@ -813,31 +814,23 @@ class MessagingService extends BaseService with StreamManagementMixin {
           addedAt: now,
         ),
     ];
-    final GroupWeeklyMenuPlan plan = await groupService.getOrCreateWeek(
+    // Build-only (no persist). The single `save()` below persists the
+    // plan WITH the winner entry already appended — saves one Firestore
+    // write per new-group-week vs. create-then-save.
+    final GroupWeeklyMenuPlan plan = await groupService.getOrBuildWeek(
       groupId: conversation.id,
       creatorId: creatorId,
       date: now,
       initialParticipants: initialParticipants,
     );
 
-    // Today-anchored slot search — identical to the personal-plan branch.
-    final anchorIndex = DayOfWeek.fromDateTime(now).index;
-    DayOfWeek? targetDay;
-    for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
-      final candidate = DayOfWeek.values[i];
-      if (!plan.isOccupied(candidate, MealSlot.middag)) {
-        targetDay = candidate;
-        break;
-      }
-    }
-    final usedSlot = targetDay == null ? MealSlot.ovrigt : MealSlot.middag;
-    final usedDay = targetDay ?? DayOfWeek.values[anchorIndex];
+    final target = _nextAvailableMiddagSlot(now, plan.isOccupied);
 
     final updatedPlan = groupService.addEntry(
       plan: plan,
       actorId: creatorId,
-      day: usedDay,
-      slot: usedSlot,
+      day: target.day,
+      slot: target.slot,
       recipe: winnerRecipe,
     );
     await groupService.save(plan: updatedPlan, actorId: creatorId);

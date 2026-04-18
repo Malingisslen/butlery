@@ -197,7 +197,7 @@ void main() {
     when(() => planService.save(any())).thenAnswer((_) async {});
 
     // Group plan service stubs (group path).
-    when(() => groupPlanService.getOrCreateWeek(
+    when(() => groupPlanService.getOrBuildWeek(
           groupId: any(named: 'groupId'),
           creatorId: any(named: 'creatorId'),
           date: any(named: 'date'),
@@ -279,7 +279,7 @@ void main() {
             messageId: messageId,
             closerId: creatorId,
           )).called(1);
-      verify(() => groupPlanService.getOrCreateWeek(
+      verify(() => groupPlanService.getOrBuildWeek(
             groupId: conversationId,
             creatorId: creatorId,
             date: any(named: 'date'),
@@ -354,7 +354,7 @@ void main() {
       verify(() => planService.save(any())).called(1);
 
       // Group path MUST NOT fire on 1:1.
-      verifyNever(() => groupPlanService.getOrCreateWeek(
+      verifyNever(() => groupPlanService.getOrBuildWeek(
             groupId: any(named: 'groupId'),
             creatorId: any(named: 'creatorId'),
             date: any(named: 'date'),
@@ -446,6 +446,52 @@ void main() {
       expect(captured, hasLength(1));
       final recipe = captured.single as Recipe;
       expect(recipe.id, equals('recipe-first'));
+    });
+
+    test(
+        'plan append must happen BEFORE the poll is closed — if the plan '
+        'save fails, the poll stays open so the user can retry', () async {
+      final winnerRecipe = _recipe('recipe-winner', 'Tacos');
+      when(() => recipeService.recipes).thenReturn([winnerRecipe]);
+
+      // Make the group-plan save blow up. The repo close must NOT have
+      // been called — otherwise the poll would be closed with no plan
+      // entry and the idempotency guard would block retry.
+      when(() => groupPlanService.save(
+            plan: any(named: 'plan'),
+            actorId: any(named: 'actorId'),
+          )).thenThrow(Exception('simulated firestore failure'));
+
+      final poll = Poll(
+        id: 'poll-fail',
+        question: 'Vad ska vi äta?',
+        creatorId: creatorId,
+        createdAt: DateTime.now(),
+        options: [
+          PollOption(
+            id: 'opt-1',
+            text: 'Tacos',
+            voterIds: const ['user-2'],
+            recipeId: 'recipe-winner',
+          ),
+        ],
+      );
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+            messageId: messageId, conversationId: conversationId, poll: poll),
+      );
+
+      // Expect the error to propagate.
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsException,
+      );
+
+      // Poll close must NOT have fired — plan write is the first side-effect.
+      verifyNever(() => messagingRepo.closePoll(
+            messageId: any(named: 'messageId'),
+            closerId: any(named: 'closerId'),
+          ));
     });
 
     test('already-closed poll → no plan write (double-fire guard)', () async {

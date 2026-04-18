@@ -1,4 +1,4 @@
-/// Group-scoped weekly menu plan (BUT-405).
+/// Group-scoped weekly menu plan.
 ///
 /// Shares the same day/slot/entry shape as [WeeklyMenuPlan] but is keyed by
 /// `{groupId}_{YYYY}-W{WW}` instead of by owner. Participants carry per-user

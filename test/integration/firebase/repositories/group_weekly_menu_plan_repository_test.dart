@@ -147,6 +147,70 @@ void main() {
       });
 
       test(
+          'should persist when userId is an editor on the plan '
+          '(belt-and-braces permission check mirrors the user-plan repo)',
+          () async {
+        final plan = _buildPlan(
+          groupId: groupId,
+          weekStart: weekStart,
+          participants: [
+            GroupMenuParticipant(
+              userId: 'admin-uid',
+              permission: SharedListPermission.admin,
+              addedAt: DateTime(2026, 4, 1),
+            ),
+            GroupMenuParticipant(
+              userId: 'editor-uid',
+              permission: SharedListPermission.edit,
+              addedAt: DateTime(2026, 4, 1),
+            ),
+          ],
+        );
+
+        await repository.save(plan, userId: 'editor-uid');
+
+        final snapshot = await firestore.collection(_collection).get();
+        expect(snapshot.docs, hasLength(1),
+            reason: 'editor must be allowed to save');
+      });
+
+      test(
+          'should refuse to persist when userId lacks editor permission '
+          '(view-only or non-participant) even if the doc-ID prefix is valid',
+          () async {
+        final plan = _buildPlan(
+          groupId: groupId,
+          weekStart: weekStart,
+          participants: [
+            GroupMenuParticipant(
+              userId: 'admin-uid',
+              permission: SharedListPermission.admin,
+              addedAt: DateTime(2026, 4, 1),
+            ),
+            GroupMenuParticipant(
+              userId: 'viewer-uid',
+              permission: SharedListPermission.view,
+              addedAt: DateTime(2026, 4, 1),
+            ),
+          ],
+        );
+
+        // Viewer — not an editor — must be rejected.
+        await repository.save(plan, userId: 'viewer-uid');
+        var snapshot = await firestore.collection(_collection).get();
+        expect(snapshot.docs, isEmpty,
+            reason:
+                'view-only member must be blocked by save() permission check');
+
+        // Non-participant stranger — also rejected.
+        await repository.save(plan, userId: 'stranger-uid');
+        snapshot = await firestore.collection(_collection).get();
+        expect(snapshot.docs, isEmpty,
+            reason:
+                'non-participant must be blocked by save() permission check');
+      });
+
+      test(
           'should persist the denormalised `memberPermissions` + '
           '`participantUserIds` fields so Firestore rules can enforce '
           'per-user access', () async {

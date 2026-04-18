@@ -1,6 +1,6 @@
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 
-/// Repository interface for group-scoped weekly menu plans (BUT-405).
+/// Repository interface for group-scoped weekly menu plans.
 ///
 /// Storage: top-level `group_weekly_menu_plans` collection. Documents are
 /// keyed by the deterministic `{groupId}_{YYYY}-W{WW}` ID computed via
@@ -20,11 +20,24 @@ abstract class GroupWeeklyMenuPlanRepository {
   });
 
   /// Upsert the plan. Uses the deterministic doc ID; same `(groupId, week)`
-  /// always overwrites the same document. Does NOT check per-participant
-  /// edit permissions — that's the service layer's job.
-  Future<void> save(GroupWeeklyMenuPlan plan);
+  /// always overwrites the same document.
+  ///
+  /// When [userId] is provided, the repo also runs its
+  /// `validateUpdatePermission` check (editor+ on the plan) before
+  /// writing — belt-and-braces alongside Firestore rules. When null, only
+  /// the doc-ID/groupId self-consistency check runs.
+  Future<void> save(GroupWeeklyMenuPlan plan, {String? userId});
 
   /// Delete every group plan belonging to [groupId] (for group cleanup).
   /// Returns the number of documents deleted.
   Future<int> deleteAllByGroup(String groupId);
+
+  /// Stream the plan document for [groupId] + the ISO week containing
+  /// [date]. Emits `null` when the doc does not exist yet (callers render
+  /// an empty-plan state) and a parsed `GroupWeeklyMenuPlan` on every
+  /// subsequent change.
+  Stream<GroupWeeklyMenuPlan?> watchForWeek({
+    required String groupId,
+    required DateTime date,
+  });
 }

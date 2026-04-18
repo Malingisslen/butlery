@@ -48,7 +48,7 @@ class CollectionInsightsCard extends StatelessWidget {
           ),
         ),
         // Show recipe count when collapsed so users know the accordion
-        // has meaningful content before expanding (BUT-401).
+        // has meaningful content before expanding.
         subtitle: Text(
           context.l10n.recipeCountBadge(recipes.length),
           style: AppTextStyles.bodySmall.copyWith(

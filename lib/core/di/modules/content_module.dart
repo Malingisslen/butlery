@@ -520,9 +520,11 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // Live watcher for the group plan doc (BUT-211 pattern, content-only).
+      // Live watcher for the group plan doc (content-only, no presence).
       container.registerLazySingleton<RealtimeGroupMenuModule>(
-        () => RealtimeGroupMenuModule(),
+        () => RealtimeGroupMenuModule(
+          repository: container<GroupWeeklyMenuPlanRepository>(),
+        ),
       );
 
       // Search service for content discovery

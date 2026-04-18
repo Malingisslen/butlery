@@ -7,8 +7,21 @@ import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 class ContentDeletionOperations {
   final FirebaseFirestore _firestore;
   static const String _logTag = 'ContentDeletionOps';
+  // Safety margin under Firestore's 500-op batch limit.
+  static const int _batchLimit = 450;
 
   ContentDeletionOperations(this._firestore);
+
+  /// Commits batch when op count reaches [_batchLimit], returns a fresh
+  /// batch and resets counter.
+  Future<({WriteBatch batch, int count})> _commitIfNeeded(
+      WriteBatch batch, int count) async {
+    if (count >= _batchLimit) {
+      await batch.commit();
+      return (batch: _firestore.batch(), count: 0);
+    }
+    return (batch: batch, count: count);
+  }
 
   Future<bool> deleteRecipes(String userId) async {
     try {
@@ -62,10 +75,10 @@ class ContentDeletionOperations {
 
       await batchDeleteDocs(_firestore, listsSnapshot.docs);
 
-      // BUT-238: cross-user scrub. When this user is removed, null out
-      // any references on OTHER users' collaborative lists:
-      //   - assignedToUserId (BUT-238)
-      //   - purchasedByUserId (pre-existing; no prior scrub path)
+      // Cross-user scrub. When this user is removed, null out any
+      // references on OTHER users' collaborative lists:
+      //   - assignedToUserId
+      //   - purchasedByUserId
       await _scrubCollaborativeListReferences(userId);
 
       return true;
@@ -194,7 +207,7 @@ class ContentDeletionOperations {
     }
   }
 
-  /// Delete weekly menu plans (BUT-211, GDPR Article 17 - Right to Erasure).
+  /// Delete weekly menu plans (GDPR Article 17 - Right to Erasure).
   /// Doc IDs are prefixed with `{userId}_` so a range query gives us only
   /// this user's plans without an additional Firestore index.
   Future<bool> deleteWeeklyMenuPlans(String userId) async {
@@ -209,8 +222,8 @@ class ContentDeletionOperations {
       app_logger.AppLogger.info(
           '[$_logTag] Deleted ${plansSnapshot.docs.length} weekly menu plans');
 
-      // BUT-405: scrub this user from any GROUP plans they were part of.
-      // Those plans belong to the group (other participants), so we never
+      // Scrub this user from any GROUP plans they were part of. Those
+      // plans belong to the group (other participants), so we never
       // cascade-delete — just remove the departing user. If the scrub
       // leaves the plan with zero participants, it's orphaned and gets
       // deleted. Mirrors the collaborative-shopping scrub pattern above.
@@ -246,6 +259,12 @@ class ContentDeletionOperations {
       var orphanedCount = 0;
       var scrubbedCount = 0;
 
+      // Batch updates/deletes into a single commit (one RTT per batch)
+      // instead of one RTT per doc — the same pattern used by
+      // social_deletion_operations.
+      var batch = _firestore.batch();
+      var opCount = 0;
+
       for (final planDoc in groupPlans.docs) {
         final data = planDoc.data();
 
@@ -265,21 +284,25 @@ class ContentDeletionOperations {
 
         if (userIds.isEmpty) {
           // Orphan — no one left to see the plan.
-          await planDoc.reference.delete();
+          batch.delete(planDoc.reference);
           orphanedCount += 1;
         } else {
-          // Use dotted-path `FieldValue.delete()` for the per-user entry
-          // in `memberPermissions` — this cleanly removes the key without
-          // relying on whole-map replacement semantics. Same idiom is
-          // what Firestore's `update()` uses for nested-key deletes.
-          await planDoc.reference.update({
+          // Dotted-path `FieldValue.delete()` cleanly removes the per-user
+          // entry from `memberPermissions` without whole-map replacement.
+          batch.update(planDoc.reference, {
             'participants': participants,
             'participantUserIds': userIds,
             'memberPermissions.$userId': FieldValue.delete(),
           });
           scrubbedCount += 1;
         }
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
       }
+
+      if (opCount > 0) await batch.commit();
 
       app_logger.AppLogger.info(
           '[$_logTag] Group menu scrub: $scrubbedCount updated, '

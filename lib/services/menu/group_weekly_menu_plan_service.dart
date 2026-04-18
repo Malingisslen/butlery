@@ -1,10 +1,10 @@
-/// Service layer for group-scoped weekly menu plans (BUT-405).
+/// Service layer for group-scoped weekly menu plans.
 ///
 /// Mirrors [WeeklyMenuPlanService] but scoped to a group instead of a user,
 /// and adds per-participant permission checks before any mutation. The
 /// service wraps the repository with:
 ///
-/// - Fetch-or-create semantics for `getOrCreateWeek`.
+/// - Fetch-or-build semantics for `getOrBuildWeek` (no persist).
 /// - Permission gates (editor+ for entry mutations, admin for participant
 ///   management + delete).
 /// - Pure helper methods (`addEntry`, `removeEntry`, `moveEntry`) that
@@ -53,10 +53,11 @@ class GroupWeeklyMenuPlanService extends BaseService {
     );
   }
 
-  /// Load the plan, creating an empty one (with [creatorId] as sole admin)
-  /// if none exists. Used by the auto-resolution path after a poll closes
-  /// on a group conversation.
-  Future<GroupWeeklyMenuPlan> getOrCreateWeek({
+  /// Load the plan, or build (in memory only) an empty one with [creatorId]
+  /// as sole admin if none exists. Callers are responsible for calling
+  /// [save] after mutating — this lets callers batch the "add entry +
+  /// persist" flow into a single Firestore write instead of two.
+  Future<GroupWeeklyMenuPlan> getOrBuildWeek({
     required String groupId,
     required String creatorId,
     required DateTime date,
@@ -65,14 +66,12 @@ class GroupWeeklyMenuPlanService extends BaseService {
     final existing = await getWeek(groupId: groupId, date: date);
     if (existing != null) return existing;
 
-    final fresh = GroupWeeklyMenuPlan.empty(
+    return GroupWeeklyMenuPlan.empty(
       groupId: groupId,
       creatorId: creatorId,
       date: date,
       initialParticipants: initialParticipants,
     );
-    await _repository.save(fresh);
-    return fresh;
   }
 
   /// Persist [plan]. Throws [PermissionDeniedException] when [actorId] is
@@ -88,7 +87,7 @@ class GroupWeeklyMenuPlanService extends BaseService {
       lastModifiedBy: actorId,
     );
     await executeServiceOperation(
-      () => _repository.save(stamped),
+      () => _repository.save(stamped, userId: actorId),
       operationName: 'saveGroupWeeklyMenuPlan',
     );
   }

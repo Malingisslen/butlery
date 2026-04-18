@@ -246,6 +246,10 @@ class AppDimensions {
   /// Minimum touch target size (Material Design requirement)
   static const double minTouchTarget = 48.0;
 
+  /// Feedback FAB stacks above other bottom-anchored FABs (shopping /
+  /// menu / add views) so it stays reachable even when those are present.
+  static const double feedbackFabBottomOffset = 150.0;
+
   /// Thin border width
   static const double borderWidthThin = 0.5;
 

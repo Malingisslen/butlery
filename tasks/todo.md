@@ -27,11 +27,11 @@ Theme: high-priority UX bugs from the 2026-04-18 exploratory testing pass + BUT-
 
 ### Post-Sprint Steps
 
-- [ ] Run `dart analyze --fatal-infos`
-- [ ] Targeted tests per agent batch
-- [ ] Commit, push to main
-- [ ] Update Linear: BUT-402, BUT-399, BUT-400, BUT-404, BUT-405, BUT-398, BUT-401 → Done
-- [ ] Housekeeping carry-over: confirm last sprint's Linear (BUT-340, BUT-238, BUT-361 → Done); file "Tighten coverage floor ≥5 CI runs after 2026-04-24"
+- [x] Run `dart analyze --fatal-infos` — clean (no issues)
+- [x] Targeted tests per agent batch — 132/132 green (menu + messaging + tagging + close-poll routing)
+- [x] Commit, push to main — `1483e3b0a`
+- [x] Update Linear: BUT-402, BUT-399, BUT-400, BUT-404, BUT-405, BUT-398, BUT-401 → Done
+- [x] Housekeeping: BUT-340, BUT-238, BUT-361 already Done. "Tighten coverage floor" already tracked as BUT-397 in backlog — no new ticket needed.
 
 ---
 

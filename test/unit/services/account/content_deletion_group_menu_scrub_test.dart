@@ -233,5 +233,74 @@ void main() {
         equals(['user-remaining']),
       );
     });
+
+    test(
+        'should correctly scrub + orphan-delete a mixed set of 5+ plans '
+        'in a single batch commit (regression: prevents per-doc RTT fan-out)',
+        () async {
+      // Mix of orphan candidates (sole-participant) and multi-participant
+      // plans. The batch path must produce the right final state across all
+      // of them — this is the contract the batch refactor preserves.
+      for (var i = 0; i < 3; i++) {
+        await _seedGroupPlan(
+          firestore,
+          docId: 'solo-${i}_2026-W15',
+          groupId: 'solo-$i',
+          participants: [
+            {
+              'userId': departingUser,
+              'permission': 'admin',
+              'addedAt': Timestamp.now(),
+            },
+          ],
+        );
+      }
+      for (var i = 0; i < 4; i++) {
+        await _seedGroupPlan(
+          firestore,
+          docId: 'shared-${i}_2026-W15',
+          groupId: 'shared-$i',
+          participants: [
+            {
+              'userId': departingUser,
+              'permission': 'edit',
+              'addedAt': Timestamp.now(),
+            },
+            {
+              'userId': 'keeper-$i',
+              'permission': 'admin',
+              'addedAt': Timestamp.now(),
+            },
+          ],
+        );
+      }
+
+      final ok = await ops.deleteWeeklyMenuPlans(departingUser);
+      expect(ok, isTrue);
+
+      // All 3 orphans must be gone.
+      final remaining = await firestore
+          .collection(_groupPlansCollection)
+          .where('groupId', whereIn: ['solo-0', 'solo-1', 'solo-2']).get();
+      expect(remaining.docs, isEmpty,
+          reason: 'sole-participant plans must be orphan-deleted');
+
+      // All 4 shared plans must be scrubbed, not deleted.
+      for (var i = 0; i < 4; i++) {
+        final doc = await firestore
+            .collection(_groupPlansCollection)
+            .doc('shared-${i}_2026-W15')
+            .get();
+        expect(doc.exists, isTrue,
+            reason: 'shared plan $i must persist for the remaining member');
+        final userIds =
+            (doc.data()!['participantUserIds'] as List).cast<String>();
+        expect(userIds, equals(['keeper-$i']),
+            reason: 'departing user must be scrubbed from plan $i');
+        final perms =
+            Map<String, dynamic>.from(doc.data()!['memberPermissions']);
+        expect(perms.containsKey(departingUser), isFalse);
+      }
+    });
   });
 }

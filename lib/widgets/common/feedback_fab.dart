@@ -60,9 +60,9 @@ class _FeedbackFABState extends State<FeedbackFAB> {
         // the shopping "Lägg till vara" and veckomeny "Till inköpslistan"
         // buttons). Extended FABs sit roughly at global bottom 76-132 when
         // the main shell's BottomNavigationBar (~60px) is underneath, so
-        // we stack above them at bottom: 150.
+        // we stack above them via the shared offset constant.
         return Positioned(
-          bottom: 150,
+          bottom: AppDimensions.feedbackFabBottomOffset,
           right: 16,
           child: Semantics(
             label: context.l10n.feedbackSendLabel,
