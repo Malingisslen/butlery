@@ -12771,4 +12771,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String shoppingItemUnclaimed(String itemName) {
     return 'Released \"$itemName\"';
   }
+
+  @override
+  String outOfIngredientTitle(String ingredient) {
+    return 'Out of $ingredient? Try…';
+  }
+
+  @override
+  String get ratioSuffix => 'of original amount';
+
+  @override
+  String get replaceInRecipe => 'Replace in recipe';
+
+  @override
+  String get noSubstitutionSuggestions => 'No suggestions yet';
+
+  @override
+  String get suggestAlternative => 'Suggest an alternative';
 }

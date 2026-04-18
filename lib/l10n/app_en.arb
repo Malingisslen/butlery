@@ -8667,5 +8667,28 @@
     "placeholders": {
       "itemName": {"type": "String"}
     }
+  },
+  "outOfIngredientTitle": "Out of {ingredient}? Try…",
+  "@outOfIngredientTitle": {
+    "description": "BUT-202: title of the cooking-mode substitution bottom sheet.",
+    "placeholders": {
+      "ingredient": {"type": "String"}
+    }
+  },
+  "ratioSuffix": "of original amount",
+  "@ratioSuffix": {
+    "description": "BUT-202: secondary text after a ratio badge."
+  },
+  "replaceInRecipe": "Replace in recipe",
+  "@replaceInRecipe": {
+    "description": "BUT-202: primary action on the substitution sheet."
+  },
+  "noSubstitutionSuggestions": "No suggestions yet",
+  "@noSubstitutionSuggestions": {
+    "description": "BUT-202: empty state when no substitutes exist for the ingredient."
+  },
+  "suggestAlternative": "Suggest an alternative",
+  "@suggestAlternative": {
+    "description": "BUT-202: disabled empty-state CTA for a future user-submission feature."
   }
 }

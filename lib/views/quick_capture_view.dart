@@ -94,17 +94,25 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
                       onChanged: vm.setMealType,
                     ),
                     const Spacer(),
-                    FilledButton(
-                      onPressed: vm.isSaving ? null : () => _save(vm),
-                      child: vm.isSaving
-                          ? const SizedBox(
-                              height: AppDimensions.iconSizeS,
-                              width: AppDimensions.iconSizeS,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(context.l10n.quickCaptureSave),
+                    // BUT-403: `btn-quick-save` identifier for browser a11y.
+                    Semantics(
+                      identifier: 'btn-quick-save',
+                      button: true,
+                      enabled: !vm.isSaving,
+                      label: context.l10n.quickCaptureSave,
+                      child: FilledButton(
+                        key: const ValueKey('test-quick-capture-save'),
+                        onPressed: vm.isSaving ? null : () => _save(vm),
+                        child: vm.isSaving
+                            ? const SizedBox(
+                                height: AppDimensions.iconSizeS,
+                                width: AppDimensions.iconSizeS,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(context.l10n.quickCaptureSave),
+                      ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
                   ],

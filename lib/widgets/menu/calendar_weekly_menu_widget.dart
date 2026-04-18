@@ -374,33 +374,42 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     DayOfWeek day,
     MealSlot slot,
   ) {
-    return GestureDetector(
-      onTap: () => _onTapEmptySlot(context, vm, day, slot),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border.all(color: Theme.of(context).dividerColor),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              child: _slotLabel(slot.displayLabel, AppColors.textLight),
-            ),
-            const Center(
-              child: Text(
-                '+',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: AppColors.creamDarker,
-                  fontWeight: FontWeight.w300,
+    // BUT-403: `menu-slot-{weekday}-{mealtype}` identifier. Uses the enum
+    // `name` so the identifier is stable across locale changes.
+    final identifier = 'menu-slot-${day.name}-${slot.name}';
+    return Semantics(
+      identifier: identifier,
+      button: true,
+      label: slot.displayLabel,
+      child: GestureDetector(
+        key: ValueKey('test-$identifier'),
+        onTap: () => _onTapEmptySlot(context, vm, day, slot),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                child: _slotLabel(slot.displayLabel, AppColors.textLight),
+              ),
+              const Center(
+                child: Text(
+                  '+',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: AppColors.creamDarker,
+                    fontWeight: FontWeight.w300,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

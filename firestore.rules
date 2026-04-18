@@ -197,8 +197,25 @@ service cloud.firestore {
         allow read: if isOwner(userId);
 
         // TagResult validation on create/update (allergen safety critical)
-        allow create, update: if isOwner(userId)
+        allow create: if isOwner(userId)
           && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null));
+
+        // Update: tagResult valid AND cookCount, if present, only moves by +1
+        // or stays equal. Handles three legal cases:
+        //   1. new value absent (unchanged on this write) -> always fine
+        //   2. legacy->1: resource.data.core.cookCount was null, new is 1
+        //   3. normal bump: new == old + 1, or equal (no-op/other field edit)
+        // Arbitrary values (e.g. +5, reset to 0) are rejected.
+        allow update: if isOwner(userId)
+          && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null))
+          && (
+            !('cookCount' in request.resource.data.get('core', {}))
+            || request.resource.data.core.cookCount
+                 == resource.data.get('core', {}).get('cookCount', null)
+            || request.resource.data.core.cookCount
+                 == resource.data.get('core', {}).get('cookCount', 0) + 1
+          );
+
         allow delete: if isOwner(userId);
       }
       

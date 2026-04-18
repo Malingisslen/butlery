@@ -166,7 +166,11 @@ class RecipeCore with JsonSerializableMixin {
 
   DateTime? lastCookedAt;
 
-  int cookCount;
+  /// Number of times this recipe has been marked as cooked.
+  /// Null = legacy (recipe existed before the cook counter was introduced);
+  /// do NOT coerce to 0 — the backfill script distinguishes "never counted"
+  /// (null + lastCookedAt present) from "counted-and-zero" (explicit 0).
+  int? cookCount;
 
   /// Normalized ingredient names for search and tagging.
   /// MODUL1 Enhancement: Stores normalized versions of ingredients
@@ -313,7 +317,7 @@ class RecipeCore with JsonSerializableMixin {
     this.createdBy,
     this.isPublic = false,
     this.lastCookedAt,
-    this.cookCount = 0,
+    this.cookCount,
     this.ingredientsNormalized,
     this.ratingCount,
     this.averageRating,
@@ -373,7 +377,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? createdBy = _sentinel,
     bool? isPublic,
     Object? lastCookedAt = _sentinel,
-    int? cookCount,
+    Object? cookCount = _sentinel,
     Object? ingredientsNormalized = _sentinel,
     Object? ratingCount = _sentinel,
     Object? averageRating = _sentinel,
@@ -446,7 +450,7 @@ class RecipeCore with JsonSerializableMixin {
       lastCookedAt: lastCookedAt == _sentinel
           ? this.lastCookedAt
           : lastCookedAt as DateTime?,
-      cookCount: cookCount ?? this.cookCount,
+      cookCount: cookCount == _sentinel ? this.cookCount : cookCount as int?,
       ingredientsNormalized: ingredientsNormalized == _sentinel
           ? this.ingredientsNormalized
           : (ingredientsNormalized as List?)?.cast<String>(),
@@ -538,6 +542,9 @@ class RecipeCore with JsonSerializableMixin {
         'createdBy': createdBy,
         'isPublic': isPublic,
         'lastCookedAt': lastCookedAt?.toIso8601String(),
+        // Omit cookCount when null so legacy recipes stay legacy — readers
+        // treat absence as "pre-counter era," distinct from an explicit 0.
+        if (cookCount != null) 'cookCount': cookCount,
         'ingredientsNormalized': ingredientsNormalized,
         'ratingCount': ratingCount,
         'averageRating': averageRating,
@@ -577,7 +584,9 @@ class RecipeCore with JsonSerializableMixin {
         'isPublic': isPublic,
         'lastCookedAt':
             lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
-        'cookCount': cookCount,
+        // Safe-map: write cookCount only when set so legacy docs are untouched
+        // and the security rule's "null -> 1 on first increment" branch applies.
+        if (cookCount != null) 'cookCount': cookCount,
         'ingredientsNormalized': ingredientsNormalized,
         'ratingCount': ratingCount,
         'averageRating': averageRating,
@@ -658,7 +667,7 @@ class RecipeCore with JsonSerializableMixin {
       createdBy: utils.SerializationUtils.safeNullableString(json, 'createdBy'),
       isPublic: utils.SerializationUtils.safeBool(json, 'isPublic'),
       lastCookedAt: utils.SerializationUtils.safeDateTime(json, 'lastCookedAt'),
-      cookCount: utils.SerializationUtils.safeInt(json, 'cookCount'),
+      cookCount: utils.SerializationUtils.safeNullableInt(json, 'cookCount'),
       ingredientsNormalized: json['ingredientsNormalized'] != null
           ? List<String>.from(json['ingredientsNormalized'])
           : null,
@@ -826,7 +835,7 @@ class RecipeCore with JsonSerializableMixin {
       isPublic: utils.SerializationUtils.safeBool(data, 'isPublic',
           defaultValue: false),
       lastCookedAt: utils.SerializationUtils.safeDateTime(data, 'lastCookedAt'),
-      cookCount: utils.SerializationUtils.safeInt(data, 'cookCount'),
+      cookCount: utils.SerializationUtils.safeNullableInt(data, 'cookCount'),
       ingredientsNormalized:
           utils.SerializationUtils.safeStringList(data, 'ingredientsNormalized')
                   .isNotEmpty
@@ -1084,7 +1093,15 @@ class Recipe {
   String? get createdBy => core.createdBy;
   bool get isPublic => core.isPublic;
   DateTime? get lastCookedAt => core.lastCookedAt;
-  int get cookCount => core.cookCount;
+
+  /// Display-facing cook count — null legacy values surface as 0 so UI,
+  /// sort comparisons, and aggregations work without per-call-site guards.
+  /// Use [cookCountRaw] when the null/zero distinction matters (e.g. backfill).
+  int get cookCount => core.cookCount ?? 0;
+
+  /// Raw cook count including null for legacy recipes (pre-counter era).
+  /// Null means "never tracked" — do NOT confuse with "tracked, value 0".
+  int? get cookCountRaw => core.cookCount;
   bool get isFavorite => core.isFavorite;
   int? get prepTimeMinutes => core.prepTimeMinutes;
   int? get cookTimeMinutes => core.cookTimeMinutes;
@@ -1315,7 +1332,7 @@ class Recipe {
     Object? createdBy = _sentinel,
     bool? isPublic,
     Object? lastCookedAt = _sentinel,
-    int? cookCount,
+    Object? cookCount = _sentinel,
     Object? ingredientsNormalized = _sentinel,
     String? lastEditedByUserId,
     String? lastEditedByDisplayName,

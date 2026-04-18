@@ -21909,6 +21909,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Släppte \"{itemName}\"'**
   String shoppingItemUnclaimed(String itemName);
+
+  /// BUT-202: title of the cooking-mode substitution bottom sheet, shown when long-pressing an ingredient row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slut på {ingredient}? Prova…'**
+  String outOfIngredientTitle(String ingredient);
+
+  /// BUT-202: secondary text after a ratio badge (e.g. '75% av originalmängden').
+  ///
+  /// In sv, this message translates to:
+  /// **'av originalmängden'**
+  String get ratioSuffix;
+
+  /// BUT-202: primary action on the substitution sheet — applies the chosen substitute to the recipe's ingredient list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Byt i receptet'**
+  String get replaceInRecipe;
+
+  /// BUT-202: empty state when the substitution lexicon has no entry for the ingredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga förslag just nu'**
+  String get noSubstitutionSuggestions;
+
+  /// BUT-202: disabled CTA in empty state — future feature for user-submitted substitutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå ett alternativ'**
+  String get suggestAlternative;
 }
 
 class _AppLocalizationsDelegate

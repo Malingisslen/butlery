@@ -5,10 +5,15 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Full-screen landscape cooking mode with ingredients left, instructions right.
@@ -257,31 +262,36 @@ class _IngredientsPanel extends StatelessWidget {
                 final ingredientText = vm.scaledIngredients[index];
                 return Semantics(
                   label: context.l10n.a11yCookingModeIngredient(ingredientText),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingTight,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          margin: const EdgeInsets.only(top: 8, right: 12),
-                          decoration: BoxDecoration(
-                            color: cs.onPrimary,
-                            shape: BoxShape.rectangle,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            ingredientText,
-                            style: AppTextStyles.bodyLarge.copyWith(
+                  // BUT-202: long-press → substitution suggestions sheet.
+                  child: GestureDetector(
+                    onLongPress: () =>
+                        _showSubstitutionSheet(context, vm, index),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppDimensions.spacingTight,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.only(top: 8, right: 12),
+                            decoration: BoxDecoration(
                               color: cs.onPrimary,
+                              shape: BoxShape.rectangle,
                             ),
                           ),
-                        ),
-                      ],
+                          Expanded(
+                            child: Text(
+                              ingredientText,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                color: cs.onPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -290,6 +300,52 @@ class _IngredientsPanel extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// BUT-202: Fetches substitution suggestions and opens the bottom sheet.
+  /// If the user selects a substitute, route the replace through
+  /// [UnifiedRecipeService.updateIngredient] — reuses the existing edit
+  /// path, no new repository method this sprint.
+  Future<void> _showSubstitutionSheet(
+    BuildContext context,
+    CookingModeViewModel vm,
+    int index,
+  ) async {
+    final service = ServiceLocator.tryGet<SubstitutionSuggestionService>();
+    final recipeService = ServiceLocator.tryGet<UnifiedRecipeService>();
+    final ingredientLine = vm.scaledIngredients[index];
+
+    final suggestions = service == null
+        ? const <IngredientSubstitution>[]
+        : await service.suggestFor(ingredientLine);
+
+    if (!context.mounted) return;
+
+    final chosen = await SubstitutionBottomSheet.show(
+      context: context,
+      ingredientName: ingredientLine,
+      suggestions: suggestions,
+    );
+
+    if (chosen == null) return;
+    if (!context.mounted) return;
+
+    // Graceful degradation: if the recipe service isn't resolvable (e.g. in
+    // a constrained test harness), log and toast rather than throwing.
+    if (recipeService == null) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        const SnackBar(
+          content: Text('Öppna redigering för att byta'),
+        ),
+      );
+      return;
+    }
+
+    await recipeService.updateIngredient(
+      vm.recipe.id,
+      index,
+      chosen.name,
     );
   }
 

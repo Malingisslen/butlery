@@ -17,6 +17,13 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
+/// BUT-403 identifier scheme (browser a11y tree hooks):
+///  - `btn-quick-save`  → Snabbspara (top full-width button)
+///  - `btn-import-url`  → "Importera länk" grid button
+///  - `btn-write-manually` → "Skriv manuellt" grid button
+///  - `btn-photo-import` → "Från bild" grid button
+///  - `btn-archive-import` → "Från arkiv" grid button
+///
 /// Recipe addition view with simplified 2x2 grid of import options.
 class LaggTillReceptView extends StatelessWidget {
   const LaggTillReceptView({super.key});
@@ -53,45 +60,51 @@ class LaggTillReceptView extends StatelessWidget {
                   const SizedBox(height: AppDimensions.spacingSm),
                   // Quick capture — full-width entry point. Title + subtitle
                   // clarify that this saves only name + meal type (no import).
-                  FilledButton(
-                    onPressed: () => _navigate(context, Routes.quickCapture),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(
-                        AppDimensions.buttonHeight,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingL,
-                        vertical: AppDimensions.paddingM,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.flash_on),
-                        const SizedBox(width: AppDimensions.spacingSm),
-                        Flexible(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                context.l10n.quickCaptureTitle,
-                                style: AppTextStyles.labelLarge,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                context.l10n.quickCaptureSubtitle,
-                                style: AppTextStyles.labelSmall.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimary
-                                      .withValues(alpha: 0.85),
-                                ),
-                              ),
-                            ],
-                          ),
+                  Semantics(
+                    identifier: 'btn-quick-save',
+                    button: true,
+                    label: context.l10n.quickCaptureTitle,
+                    child: FilledButton(
+                      key: const ValueKey('test-lagg-till-quick-save'),
+                      onPressed: () => _navigate(context, Routes.quickCapture),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(
+                          AppDimensions.buttonHeight,
                         ),
-                      ],
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.paddingL,
+                          vertical: AppDimensions.paddingM,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.flash_on),
+                          const SizedBox(width: AppDimensions.spacingSm),
+                          Flexible(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  context.l10n.quickCaptureTitle,
+                                  style: AppTextStyles.labelLarge,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  context.l10n.quickCaptureSubtitle,
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimary
+                                        .withValues(alpha: 0.85),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppDimensions.spacingMd),
@@ -131,6 +144,8 @@ class LaggTillReceptView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _AddRecipeButton(
+                    key: const ValueKey('test-lagg-till-import-url'),
+                    semanticIdentifier: 'btn-import-url',
                     label: context.l10n.recipeImportLink,
                     icon: Icons.link,
                     color: Theme.of(context).colorScheme.secondary,
@@ -139,6 +154,8 @@ class LaggTillReceptView extends StatelessWidget {
                   ),
                   const SizedBox(width: spacing),
                   _AddRecipeButton(
+                    key: const ValueKey('test-lagg-till-write-manually'),
+                    semanticIdentifier: 'btn-write-manually',
                     label: context.l10n.recipeWriteManually,
                     icon: Icons.edit,
                     color: Theme.of(context).colorScheme.primary,
@@ -153,6 +170,8 @@ class LaggTillReceptView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _AddRecipeButton(
+                    key: const ValueKey('test-lagg-till-photo-import'),
+                    semanticIdentifier: 'btn-photo-import',
                     label: context.l10n.recipeFromImage,
                     icon: Icons.image,
                     color: Theme.of(context).colorScheme.primary,
@@ -161,6 +180,8 @@ class LaggTillReceptView extends StatelessWidget {
                   ),
                   const SizedBox(width: spacing),
                   _AddRecipeButton(
+                    key: const ValueKey('test-lagg-till-archive-import'),
+                    semanticIdentifier: 'btn-archive-import',
                     label: context.l10n.recipeFromArchive,
                     icon: Icons.archive,
                     color: Theme.of(context).colorScheme.secondary,
@@ -180,11 +201,13 @@ class LaggTillReceptView extends StatelessWidget {
 /// Single button in the add recipe grid.
 class _AddRecipeButton extends StatelessWidget {
   const _AddRecipeButton({
+    super.key,
     required this.label,
     required this.icon,
     required this.color,
     required this.size,
     required this.onTap,
+    this.semanticIdentifier,
   });
 
   final String label;
@@ -193,9 +216,12 @@ class _AddRecipeButton extends StatelessWidget {
   final double size;
   final VoidCallback onTap;
 
+  /// BUT-403 — identifier exposed on the browser a11y tree.
+  final String? semanticIdentifier;
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final tile = SizedBox(
       width: size,
       height: size,
       child: Material(
@@ -231,5 +257,15 @@ class _AddRecipeButton extends StatelessWidget {
         ),
       ),
     );
+
+    if (semanticIdentifier != null) {
+      return Semantics(
+        identifier: semanticIdentifier,
+        button: true,
+        label: label,
+        child: tile,
+      );
+    }
+    return tile;
   }
 }

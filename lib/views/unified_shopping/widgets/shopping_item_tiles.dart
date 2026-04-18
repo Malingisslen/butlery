@@ -13,6 +13,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// Static API surface for shopping item tiles.
 ///
 /// Delegates to [ShoppingItemTile] for animated item rendering.
+///
+/// BUT-403 identifier scheme:
+///  - `item-toggle-{index}` on each item row for browser a11y queries
+///  - `test-shopping-item-{index}` ValueKey for Flutter widget tests
 class ShoppingItemTiles {
   /// Builds a draggable item tile with long-press drag + optional category menu.
   static Widget buildDraggableItemTile(
@@ -23,6 +27,7 @@ class ShoppingItemTiles {
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem, {
     VoidCallback? onMoveToCategory,
+    int? visualIndex,
   }) {
     if (isCompleted) {
       return buildItemTile(
@@ -33,6 +38,7 @@ class ShoppingItemTiles {
         onEditItem,
         onDeleteItem,
         onMoveToCategory: onMoveToCategory,
+        visualIndex: visualIndex,
       );
     }
 
@@ -79,6 +85,7 @@ class ShoppingItemTiles {
         onEditItem,
         onDeleteItem,
         onMoveToCategory: onMoveToCategory,
+        visualIndex: visualIndex,
       ),
     );
   }
@@ -92,6 +99,7 @@ class ShoppingItemTiles {
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem, {
     VoidCallback? onMoveToCategory,
+    int? visualIndex,
   }) {
     return ShoppingItemTile(
       key: ValueKey('shopping-item-${item.id}'),
@@ -101,6 +109,7 @@ class ShoppingItemTiles {
       onEditItem: onEditItem,
       onDeleteItem: onDeleteItem,
       onMoveToCategory: onMoveToCategory,
+      visualIndex: visualIndex,
     );
   }
 
@@ -156,6 +165,7 @@ class ShoppingItemTile extends StatefulWidget {
     required this.onEditItem,
     required this.onDeleteItem,
     this.onMoveToCategory,
+    this.visualIndex,
   });
 
   final UnifiedShoppingItem item;
@@ -164,6 +174,10 @@ class ShoppingItemTile extends StatefulWidget {
   final Function(UnifiedShoppingItem) onEditItem;
   final Function(UnifiedShoppingItem) onDeleteItem;
   final VoidCallback? onMoveToCategory;
+
+  /// BUT-403 — 0-based row index within the visible list, used to build
+  /// stable a11y identifiers (`item-toggle-{index}`).
+  final int? visualIndex;
 
   @override
   State<ShoppingItemTile> createState() => _ShoppingItemTileState();
@@ -231,6 +245,9 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           ),
         ),
         child: Semantics(
+          identifier: widget.visualIndex != null
+              ? 'item-toggle-${widget.visualIndex}'
+              : null,
           label: widget.isCompleted
               ? context.l10n.a11yShoppingItemChecked(widget.item.displayText)
               : context.l10n.a11yShoppingItemUnchecked(widget.item.displayText),
@@ -239,6 +256,9 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           child: Material(
             type: MaterialType.transparency,
             child: InkWell(
+              key: widget.visualIndex != null
+                  ? ValueKey('test-shopping-item-${widget.visualIndex}')
+                  : null,
               onTap: () => widget.onItemTap(widget.item),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
               child: Padding(

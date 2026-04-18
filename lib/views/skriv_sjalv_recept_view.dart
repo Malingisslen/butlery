@@ -597,16 +597,27 @@ class _SkrivSjalvReceptViewContentState
           ],
         ),
         bottomNavigationBar: BottomActionContainer(
-          child: UtilityComponents.primaryButton(
-            context,
+          // BUT-403: `btn-save-recipe` identifier for browser a11y tree.
+          child: Semantics(
+            identifier: 'btn-save-recipe',
+            button: true,
+            enabled: !(_isSaving || viewModel.isSaving || !viewModel.isValid),
             label: context.l10n.recipeSave,
-            icon: Icons.save,
-            onPressed: (_isSaving || viewModel.isSaving || !viewModel.isValid)
-                ? null
-                : _saveRecipe,
-            isLoading: _isSaving || viewModel.isSaving,
-            loadingText: context.l10n.statusSaving,
-            isExpanded: true,
+            child: Container(
+              key: const ValueKey('test-skriv-sjalv-save'),
+              child: UtilityComponents.primaryButton(
+                context,
+                label: context.l10n.recipeSave,
+                icon: Icons.save,
+                onPressed:
+                    (_isSaving || viewModel.isSaving || !viewModel.isValid)
+                        ? null
+                        : _saveRecipe,
+                isLoading: _isSaving || viewModel.isSaving,
+                loadingText: context.l10n.statusSaving,
+                isExpanded: true,
+              ),
+            ),
           ),
         ),
       ),

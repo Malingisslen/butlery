@@ -62,6 +62,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 
+/// BUT-403 identifier scheme for this view (browser a11y tree hooks):
+///  - `btn-import-recipe`  → empty state "import" CTA
+///  - `btn-add-recipe`     → empty state "add recipe" link
+///  - `recipe-card-{index}` → each recipe card in the list/grid
+///
 /// Personal recipe management view with multi-provider architecture.
 class MinaReceptView extends StatefulWidget {
   const MinaReceptView({super.key});
@@ -588,8 +593,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   Widget _buildRecipeCard(
     RecipeListViewModel viewModel,
     Recipe recipe,
-    UserAllergenPreferences allergenPrefs,
-  ) {
+    UserAllergenPreferences allergenPrefs, {
+    int? index,
+  }) {
     final isSelected = viewModel.selectedIds.contains(recipe.id);
     final cs = Theme.of(context).colorScheme;
 
@@ -727,6 +733,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       );
     }
 
+    if (index != null) {
+      card = Semantics(
+        identifier: 'recipe-card-$index',
+        button: true,
+        child: card,
+      );
+    }
+
     return card;
   }
 
@@ -775,18 +789,28 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ),
             const SizedBox(height: AppDimensions.spacingXl),
             SizedBox(
+              key: const ValueKey('test-mina-recept-import-recipe'),
               width: double.infinity,
-              child: ActionButtons.primaryButton(
-                context,
-                label: context.l10n.emptyStateImportAction,
-                onPressed: () =>
-                    Navigator.pushNamed(context, Routes.smartImport),
+              child: Semantics(
+                identifier: 'btn-import-recipe',
+                button: true,
+                child: ActionButtons.primaryButton(
+                  context,
+                  label: context.l10n.emptyStateImportAction,
+                  onPressed: () =>
+                      Navigator.pushNamed(context, Routes.smartImport),
+                ),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, Routes.laggTill),
-              child: Text(context.l10n.emptyStateOtherOptions),
+            Semantics(
+              identifier: 'btn-add-recipe',
+              button: true,
+              child: TextButton(
+                key: const ValueKey('test-mina-recept-add-recipe'),
+                onPressed: () => Navigator.pushNamed(context, Routes.laggTill),
+                child: Text(context.l10n.emptyStateOtherOptions),
+              ),
             ),
           ],
         ),
@@ -911,7 +935,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     ),
                     itemCount: recipes.length,
                     itemBuilder: (context, index) => _buildRecipeCard(
-                        viewModel, recipes[index], allergenPrefs),
+                        viewModel, recipes[index], allergenPrefs,
+                        index: index),
                   )
                 : LayoutComponents.responsiveListGrid(
                     items: recipes,
@@ -922,8 +947,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     shrinkWrap: false,
                     gridChildAspectRatio: 0.75,
                     animate: true,
-                    itemBuilder: (context, recipe) =>
-                        _buildRecipeCard(viewModel, recipe, allergenPrefs),
+                    itemBuilder: (context, recipe) => _buildRecipeCard(
+                        viewModel, recipe, allergenPrefs,
+                        index: recipes.indexOf(recipe)),
                   ),
           ),
           if (viewModel.canLoadMore)

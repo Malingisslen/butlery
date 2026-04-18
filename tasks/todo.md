@@ -1,6 +1,60 @@
 # Sprint Backlog
 
-## Sprint: UX polish + menu model upgrade — 2026-04-18
+## Sprint: Cooking depth + Chrome MCP hooks — 2026-04-18
+
+Theme: strategic alignment from `memory/strategic-feature-analysis.md` → *Smart Cooking Mode first*. Ship the first user-visible slice of cooking mode (ingredient substitutions), lay groundwork for BUT-215 Årets Kök (cookCount infra, no UI yet), unblock Chrome MCP automation so `/smoke-test` is reliable, and a tiny seasonal-accent delight. All additive — no migrations.
+
+### Agent A: flutter-developer — Cooking-mode substitutions MVP (BUT-202 slice)
+
+- [x] **A1. `IngredientSubstitution` model + Firestore lexicon** — `lib/models/cooking/ingredient_substitution.dart` with `{name, ratio:double, context}`. Firestore `ingredient_substitutions/{canonicalIngredientId}` doc carries `substitutes: List<Map>`. Parallel to existing `IngredientSubstitutionService` (different shape — flagged for future consolidation). (BUT-202)
+- [x] **A2. `SubstitutionSuggestionService`** — `lib/services/cooking/substitution_suggestion_service.dart`. Uses `IngredientLookupService` for canonical ID resolution, 50-entry LRU cache. DI-registered in `configureUserScope` (user-scoped dependency). Deterministic. (BUT-202)
+- [x] **A3. Cooking-mode UI** — `lib/widgets/cooking/substitution_bottom_sheet.dart` + long-press wiring in `lib/views/cooking_mode_view.dart`. "Slut på {ingredient}? Prova…" with up to 3 suggestions. Replace routes through `UnifiedRecipeService.updateIngredient` with graceful snackbar fallback. Square corners, cream bg, greenDark text. (BUT-202)
+- [x] **A4. Swedish l10n + tests** — 5 keys added (`outOfIngredientTitle`, `ratioSuffix`, `replaceInRecipe`, `noSubstitutionSuggestions`, `suggestAlternative`). `gen-l10n` clean. 16/16 tests green: 7 model + 6 service + 3 widget. (BUT-202)
+
+### Agent B: flutter-developer — Cooking activity foundation (BUT-215 prep, no UI)
+
+Unblocks the Årets Kök screen in a future sprint. No user-facing change this sprint.
+
+- [x] **B1. Add `cookCount` to `Recipe` model** — `lib/models/recipe_unified.dart`: `cookCount` flipped from non-nullable `int = 0` to nullable `int?` on `RecipeCore` (true legacy semantics). Safe-map serialization (omit when null). Sentinel in both `copyWith`s. Facade `Recipe.cookCountRaw` for nullable access; `Recipe.cookCount` keeps `int` (null→0) for sort/aggregation compat. (BUT-215)
+- [x] **B2. Atomic increment on cook event** — new `incrementCookCount(recipeId, cookedAt)` on repo using `FieldValue.increment(1)` + `Timestamp` in a single atomic `update` (dotted path for nested `core.cookCount`). New `lib/services/recipe/recipe_cooking_service.dart` with per-session day-bucketed dedup keyed `recipeId|YYYY-MM-DD` via `package:clock`. `RecipeDetailViewModel.markAsCooked` routed through the new service (was doing full-doc update). (BUT-215)
+- [x] **B3. Firestore rule for counter** — split create/update on recipes; cookCount clause accepts unchanged, null→1, or n→n+1. `firebase deploy --only firestore:rules --dry-run` compiles clean. (BUT-215)
+- [x] **B4. Backfill script** — `scripts/backfill/cook_count.dart` with `--dry-run` + `--user <uid>` flags. Collection-group query for all-users path, 500-op batching. (BUT-215)
+- [x] **B5. Tests** — 23/23 green: 13 model round-trip + 7 cooking-service dedup + 3 backfill dry-run/live. Clean analyze. (BUT-215)
+
+### Agent C: testing-specialist — Flutter canvas automation hooks (BUT-403)
+
+Unblock Chrome MCP/`/smoke-test` — canvas rendering defeats CSS selectors; need semantic labels the browser can query.
+
+- [x] **C1. Main-flow semantic audit** — ~22 `Semantics(identifier:)` additions across 13 lib files: nav drawer + bottom nav (nav-{route}), recipe list (recipe-card-{index}, btn-add/import-recipe), recipe detail hero row (btn-start-cooking, btn-favorite, btn-share-friends, btn-share-recipe, btn-recipe-more, btn-mark-cooked), add-recipe flow (btn-quick-save, btn-import-url, btn-write-manually, btn-photo-import, btn-archive-import, btn-save-recipe), shopping (btn-add-shopping-item, item-toggle-{n}), menu (btn-generate-menu, menu-slot-{day}-{slot}). Existing Semantics merged, not nested. (BUT-403)
+- [x] **C2. ValueKeys for widget tests** — ~21 `ValueKey('test-{view}-{action}')` paired 1:1 with the Semantics additions. (BUT-403)
+- [x] **C3. Smoke-test skill pattern doc** — `.claude/commands/smoke-test.md`: new "Finding widgets via Semantics (BUT-403)" section with identifier-scheme table, `preview_eval` aria-label + flt-semantics query pattern, first-run accessibility-placeholder note, `ensureSemantics()` follow-up reminder. (BUT-403)
+- [x] **C4. Verify** — new `test/smoke/semantic_hooks_smoke_test.dart`: 3/3 smoke tests pass (main-menu nav, recipe-detail mark-cooked, shopping add). Regression runs of `calendar_weekly_menu_widget_test.dart` (7/7) + `shopping_item_tiles_test.dart` (39/39) green. `dart analyze --fatal-infos lib`: 0 issues. (BUT-403)
+
+### Agent D: flutter-developer — Seasonal accent (BUT-347, small delight)
+
+- [x] **D1. `SeasonalAccentService`** — `lib/services/theme/seasonal_accent_service.dart`: month-based `ButleryColors.copyWith` (autumn amber, winter cool-cream, spring soft-green, summer as-is). HSL rotations on semantic slots (`navAccent`, `recipeCardBottomBorder`, `categoryMeatFish`, winter-only `sharedRecipeBackground`). Service-only — wired into `MaterialApp` via `createTheme(butleryColorsOverride:)` in `lib/main.dart`. DI-registered in `core_module.dart`. (BUT-347)
+- [x] **D2. Tests** — 11 tests, all green. 4 month boundaries (Jan/Apr/Jul/Oct 15) + full 12-month season map + summer identity + determinism + injected-base passthrough. Uses `withClock` per `avoid_real_time_in_tests` rule. (BUT-347)
+
+### Post-Sprint Steps
+
+- [ ] Run `dart analyze --fatal-infos` — clean
+- [ ] Targeted tests per agent batch
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-202, BUT-215, BUT-403, BUT-347 → Done (or In Progress if partial)
+
+---
+
+## What this means in plain language
+
+- Cooking mode learns to say "out of smetana? try yogurt or crème fraîche" — three substitutes on long-press.
+- The app starts counting how many times you've cooked each recipe — silent groundwork for a future "2026 recap" screen.
+- My automated browser tests get hooks so they can actually find buttons on Flutter's canvas (currently they can't, which makes `/smoke-test` flaky).
+- Tiny visual treat: rust/green accents shift slightly by season — amber-warm in autumn, cooler in winter.
+- Risk: **Low.** All additive — no migrations, no breaking changes. Each agent is independent; any one can be skipped.
+
+---
+
+## Archive: Sprint UX polish + menu model upgrade — 2026-04-18
 
 Theme: high-priority UX bugs from the 2026-04-18 exploratory testing pass + BUT-340 follow-up promoting group votes from creator-owned to a true group-scoped weekly plan. Dev tooling polish (session-aware stop hook) included.
 

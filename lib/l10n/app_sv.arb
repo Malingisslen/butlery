@@ -8667,5 +8667,28 @@
     "placeholders": {
       "itemName": {"type": "String"}
     }
+  },
+  "outOfIngredientTitle": "Slut på {ingredient}? Prova…",
+  "@outOfIngredientTitle": {
+    "description": "BUT-202: title of the cooking-mode substitution bottom sheet, shown when long-pressing an ingredient row.",
+    "placeholders": {
+      "ingredient": {"type": "String"}
+    }
+  },
+  "ratioSuffix": "av originalmängden",
+  "@ratioSuffix": {
+    "description": "BUT-202: secondary text after a ratio badge (e.g. '75% av originalmängden')."
+  },
+  "replaceInRecipe": "Byt i receptet",
+  "@replaceInRecipe": {
+    "description": "BUT-202: primary action on the substitution sheet — applies the chosen substitute to the recipe's ingredient list."
+  },
+  "noSubstitutionSuggestions": "Inga förslag just nu",
+  "@noSubstitutionSuggestions": {
+    "description": "BUT-202: empty state when the substitution lexicon has no entry for the ingredient."
+  },
+  "suggestAlternative": "Föreslå ett alternativ",
+  "@suggestAlternative": {
+    "description": "BUT-202: disabled CTA in empty state — future feature for user-submitted substitutes."
   }
 }

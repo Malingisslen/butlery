@@ -137,40 +137,48 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       ],
     ));
 
-    // "Lagat idag" chip — disabled after first tap per calendar day
+    // "Lagat idag" chip — disabled after first tap per calendar day.
+    // BUT-403: `btn-mark-cooked` identifier for browser a11y tree queries.
     final cookedToday = widget.viewModel.wasCookedToday;
     final cookCount = widget.viewModel.recipe.cookCount;
     metadataWidgets.add(
-      OutlinedButton.icon(
-        onPressed: cookedToday ? null : () => _markAsCooked(context),
-        icon: Icon(
-          cookedToday ? Icons.check_circle : Icons.check_circle_outline,
-          size: 14,
-        ),
-        label: Text(
-          cookCount > 0
-              ? '${context.l10n.recipeCookedToday} ($cookCount)'
-              : context.l10n.recipeCookedToday,
-          style: AppTextStyles.labelSmall,
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: context.butleryColors.success,
-          disabledForegroundColor:
-              context.butleryColors.success.withValues(alpha: 0.5),
-          side: BorderSide(
-            color: cookedToday
-                ? context.butleryColors.success.withValues(alpha: 0.3)
-                : context.butleryColors.success,
-            width: 0.5,
+      Semantics(
+        identifier: 'btn-mark-cooked',
+        button: true,
+        enabled: !cookedToday,
+        label: context.l10n.recipeCookedToday,
+        child: OutlinedButton.icon(
+          key: const ValueKey('test-recipe-detail-mark-cooked'),
+          onPressed: cookedToday ? null : () => _markAsCooked(context),
+          icon: Icon(
+            cookedToday ? Icons.check_circle : Icons.check_circle_outline,
+            size: 14,
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingSm,
-            vertical: AppDimensions.spacingXxs,
+          label: Text(
+            cookCount > 0
+                ? '${context.l10n.recipeCookedToday} ($cookCount)'
+                : context.l10n.recipeCookedToday,
+            style: AppTextStyles.labelSmall,
           ),
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: context.butleryColors.success,
+            disabledForegroundColor:
+                context.butleryColors.success.withValues(alpha: 0.5),
+            side: BorderSide(
+              color: cookedToday
+                  ? context.butleryColors.success.withValues(alpha: 0.3)
+                  : context.butleryColors.success,
+              width: 0.5,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+              vertical: AppDimensions.spacingXxs,
+            ),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
           ),
         ),
       ),

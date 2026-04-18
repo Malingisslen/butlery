@@ -37,6 +37,7 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 // Content services
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
+import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
@@ -125,6 +126,10 @@ import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.
 // Ingredient substitution service
 import 'package:butlery/services/ingredient_substitution_service.dart';
 
+// BUT-202: cooking-mode substitution suggestions (canonical-ID based)
+import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
+import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+
 // Ingredient registry (enriches static KnownIngredients from Firestore)
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
@@ -154,6 +159,7 @@ class ContentModule implements DIModule {
         UnifiedRecipeService,
         UnifiedMenuService,
         ImportManager,
+        RecipeCookingService,
         MenuService,
         WeeklyMenuPlanRepository,
         WeeklyMenuPlanService,
@@ -208,6 +214,8 @@ class ContentModule implements DIModule {
         NeuralLineClassifier,
         // Ingredient substitution
         IngredientSubstitutionService,
+        // BUT-202: cooking-mode substitution suggestions
+        SubstitutionSuggestionService,
         // Menu lexicon overlay (BUT-370)
         FirebaseMenuLexiconRepository,
         // Ingredient registry (enriches static KnownIngredients from Firestore)
@@ -238,6 +246,16 @@ class ContentModule implements DIModule {
 
     container.registerLazySingleton<ImportManager>(
       () => ImportManager(container<UnifiedRecipeService>().personal),
+    );
+
+    // RecipeCookingService — owns atomic cook-count increments and
+    // per-session dedup. Depends only on RecipeRepository so it stays
+    // testable without a full UnifiedRecipeService graph.
+    container.registerLazySingleton<RecipeCookingService>(
+      () => RecipeCookingService(
+        recipeRepository: app<RecipeRepository>(),
+      ),
+      dispose: (s) => s.dispose(),
     );
 
     container.registerLazySingleton<UnifiedMenuService>(
@@ -290,6 +308,16 @@ class ContentModule implements DIModule {
     container.registerLazySingleton<InstagramPipeline>(
       () => InstagramPipeline(
         llmService: container<LlmEnhancementService>(),
+      ),
+    );
+
+    // BUT-202: substitution suggestions — user-scoped because it depends on
+    // IngredientLookupService (which is user-scoped via TaggingModule for the
+    // UserIngredientRepository override).
+    container.registerLazySingleton<SubstitutionSuggestionService>(
+      () => SubstitutionSuggestionService(
+        firestoreRepository: app<FirestoreRepository>(),
+        lookupService: app<IngredientLookupService>(),
       ),
     );
 

@@ -364,11 +364,13 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
             final isSelected = index == currentIndex;
 
             return Semantics(
+              identifier: 'nav-${item.route}',
               label: item.accessibleLabel,
               button: true,
               enabled: true,
               selected: isSelected,
               child: ListTile(
+                key: ValueKey('test-nav-drawer-${item.route}'),
                 leading: _buildBadgedIcon(
                   isSelected ? item.activeIcon : item.icon,
                   item.badgeCount,
@@ -497,11 +499,16 @@ class _BottomNavItem extends StatelessWidget {
         ? (selectedColor ?? cs.primary)
         : (unselectedColor ?? cs.onSurfaceVariant);
 
+    // BUT-403: identifier `nav-{route}` (e.g. `nav-/`, `nav-/veckomeny`) for
+    // browser a11y tree queries. Route is used verbatim so Chrome MCP can
+    // match by destination rather than translated label.
     return Semantics(
+      identifier: 'nav-${item.route}',
       label: item.accessibleLabel,
       button: true,
       selected: isSelected,
       child: InkWell(
+        key: ValueKey('test-nav-${item.route}'),
         onTap: onTap,
         splashColor: cs.surfaceContainerHighest.withValues(alpha: 0.1),
         highlightColor: cs.surfaceContainerHighest.withValues(alpha: 0.05),

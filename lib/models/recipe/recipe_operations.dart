@@ -275,9 +275,11 @@ class RecipeOperations {
     String? userId,
     String? userDisplayName,
   }) {
+    // Legacy recipes (cookCount == null) move to 1 on first optimistic bump —
+    // matches the Firestore rule branch that accepts null -> 1.
     return recipe.copyWith(
       lastCookedAt: DateTime.now(),
-      cookCount: recipe.cookCount + 1,
+      cookCount: (recipe.core.cookCount ?? 0) + 1,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,
     );

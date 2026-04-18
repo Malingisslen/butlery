@@ -71,4 +71,11 @@ abstract class RecipeRepository extends Repository<Recipe>
   /// Find recipes by title (normalized, case-insensitive match).
   /// Used for duplicate detection during import when no source URL is available.
   Future<List<Recipe>> findByTitle(String title);
+
+  /// Atomically mark a recipe as cooked: bump `core.cookCount` by 1 and set
+  /// `core.lastCookedAt` to [cookedAt] in the same write.
+  /// Uses `FieldValue.increment(1)` so concurrent writers do not clobber each
+  /// other and legacy recipes (null counter) land at 1 on first use.
+  /// Returns true on success, false on permission denial or write failure.
+  Future<bool> incrementCookCount(String recipeId, DateTime cookedAt);
 }

@@ -760,27 +760,35 @@ class _ActionSection extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingL),
         ],
 
-        // Import button
-        FilledButton.icon(
-          onPressed:
-              viewModel.canImport && !viewModel.isImporting ? onImport : null,
-          icon: viewModel.isImporting
-              ? SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(
-                      theme.colorScheme.onPrimary,
+        // Import button.
+        // BUT-403: `btn-import-url` identifier for browser a11y tree.
+        Semantics(
+          identifier: 'btn-import-url',
+          button: true,
+          enabled: viewModel.canImport && !viewModel.isImporting,
+          label: context.l10n.importImport,
+          child: FilledButton.icon(
+            key: const ValueKey('test-smart-import-url'),
+            onPressed:
+                viewModel.canImport && !viewModel.isImporting ? onImport : null,
+            icon: viewModel.isImporting
+                ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(
+                        theme.colorScheme.onPrimary,
+                      ),
                     ),
-                  ),
-                )
-              : const Icon(Icons.download),
-          label: Text(viewModel.isImporting
-              ? context.l10n.importImporting
-              : context.l10n.importImport),
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+                  )
+                : const Icon(Icons.download),
+            label: Text(viewModel.isImporting
+                ? context.l10n.importImporting
+                : context.l10n.importImport),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
           ),
         ),
 

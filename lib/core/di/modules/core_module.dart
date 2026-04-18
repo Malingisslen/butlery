@@ -36,6 +36,7 @@ import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
+import 'package:butlery/services/theme/seasonal_accent_service.dart';
 // Core providers
 import 'package:butlery/core/providers/locale_provider.dart';
 
@@ -93,6 +94,7 @@ class CoreModule implements DIModule {
       // Core providers
       LocaleProvider,
       ThemeService,
+      SeasonalAccentService,
       // Feature flags
       FeatureFlagService,
       // Beta feedback
@@ -142,6 +144,11 @@ class CoreModule implements DIModule {
 
       // ThemeService for dark/light mode management
       container.registerSingleton<ThemeService>(ThemeService());
+
+      // SeasonalAccentService — subtle month-based palette tint (BUT-347)
+      container.registerLazySingleton<SeasonalAccentService>(
+        () => const SeasonalAccentService(),
+      );
 
       // Feature flags for gradual rollouts and kill switches
       container.registerSingleton<FeatureFlagService>(FeatureFlagService());

@@ -62,6 +62,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -76,6 +77,7 @@ class RecipeDetailViewModel extends ChangeNotifier
   StreamSubscription? _recipeServiceSubscription;
   final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
+  final RecipeCookingService _cookingService;
 
   /// Current recipe data with real-time synchronization and state coordination.
   Recipe _recipe;
@@ -94,11 +96,14 @@ class RecipeDetailViewModel extends ChangeNotifier
     required Recipe recipe,
     UnifiedRecipeService? recipeService,
     AnalyticsService? analyticsService,
+    RecipeCookingService? cookingService,
   })  : _recipe = recipe,
         _recipeService =
             recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
         _analyticsService =
-            analyticsService ?? ServiceLocator.get<AnalyticsService>() {
+            analyticsService ?? ServiceLocator.get<AnalyticsService>(),
+        _cookingService =
+            cookingService ?? ServiceLocator.get<RecipeCookingService>() {
     _recipeServiceSubscription =
         _recipeService.stateStream.listen((_) => _onRecipeServiceUpdate());
 
@@ -285,12 +290,15 @@ class RecipeDetailViewModel extends ChangeNotifier
     return await executeAsync(() async {
       final isFirstTime = _recipe.lastCookedAt == null;
 
-      final updatedRecipe = RecipeOperations.markAsCooked(_recipe);
-
-      final success = await _recipeService.updateRecipe(updatedRecipe);
+      // Single atomic Firestore update: FieldValue.increment(1) on cookCount
+      // + lastCookedAt in the same write, keyed per-session to swallow rapid
+      // double-taps. See RecipeCookingService for the dedup contract.
+      final success = await _cookingService.markAsCooked(_recipe.id);
 
       if (success) {
-        _recipe = updatedRecipe;
+        // Optimistic local update — mirrors the atomic Firestore change so UI
+        // reflects new state without waiting for the recipe stream to echo.
+        _recipe = RecipeOperations.markAsCooked(_recipe);
         notifyListeners();
 
         await _analyticsService.logRecipeCooked(

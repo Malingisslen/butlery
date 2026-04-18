@@ -196,11 +196,14 @@ class ShoppingAppBar {
   ) {
     final cs = Theme.of(context).colorScheme;
 
+    // BUT-403: `btn-add-shopping-item` identifier for browser a11y queries.
     return Semantics(
+      identifier: 'btn-add-shopping-item',
       label: context.l10n.a11yAddItem,
       button: true,
       enabled: true,
       child: ElevatedButton.icon(
+        key: const ValueKey('test-shopping-list-add'),
         onPressed: onAddItem,
         style: ComponentThemes.extendedFabStyle(cs),
         icon: Icon(

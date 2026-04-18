@@ -630,6 +630,33 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
+  Future<bool> incrementCookCount(String recipeId, DateTime cookedAt) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.warning(
+          'incrementCookCount: no authenticated user, skipping $recipeId');
+      return false;
+    }
+
+    try {
+      // Single atomic update — FieldValue.increment handles concurrent writers
+      // and the null-legacy case (null + 1 = 1) matches the firestore rule
+      // branch that accepts `null -> 1` on first increment.
+      await getCollectionForUser(userId).doc(recipeId).update({
+        'core.cookCount': FieldValue.increment(1),
+        'core.lastCookedAt': Timestamp.fromDate(cookedAt),
+        'core.updatedAt': Timestamp.fromDate(cookedAt),
+      });
+      AppLogger.info('Recipe cookCount incremented: $recipeId');
+      return true;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+          'Failed to increment cookCount for $recipeId: $e', stackTrace);
+      return false;
+    }
+  }
+
+  @override
   Future<void> addRecipes(List<Recipe> recipes) async {
     // Use the base class batch method
     await createBatch(recipes);

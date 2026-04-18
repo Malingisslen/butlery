@@ -12803,4 +12803,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String shoppingItemUnclaimed(String itemName) {
     return 'Släppte \"$itemName\"';
   }
+
+  @override
+  String outOfIngredientTitle(String ingredient) {
+    return 'Slut på $ingredient? Prova…';
+  }
+
+  @override
+  String get ratioSuffix => 'av originalmängden';
+
+  @override
+  String get replaceInRecipe => 'Byt i receptet';
+
+  @override
+  String get noSubstitutionSuggestions => 'Inga förslag just nu';
+
+  @override
+  String get suggestAlternative => 'Föreslå ett alternativ';
 }

@@ -89,6 +89,9 @@ class MenuContentWidgets {
   }
 
   /// Builds the generate menu button.
+  ///
+  /// BUT-403: wrapped in Semantics with `btn-generate-menu` identifier so
+  /// the browser a11y tree can locate it without CSS selectors.
   static Widget buildGenerateButton(
     BuildContext context, {
     required MenuViewModel viewModel,
@@ -96,17 +99,26 @@ class MenuContentWidgets {
     required VoidCallback onGenerate,
   }) {
     return Center(
-      child: ActionButtons.primaryButton(
-        context,
+      key: const ValueKey('test-veckomeny-generate'),
+      child: Semantics(
+        identifier: 'btn-generate-menu',
+        button: true,
+        enabled: !viewModel.isGenerating && hasPrompt,
         label: viewModel.isGenerating
             ? context.l10n.menuGenerating
-            : (viewModel.hasMenu
-                ? context.l10n.menuGenerateNew
-                : context.l10n.menuGenerate),
-        icon: Icons.restaurant_menu,
-        onPressed: !viewModel.isGenerating && hasPrompt ? onGenerate : null,
-        isLoading: viewModel.isGenerating,
-        loadingText: context.l10n.menuGenerating,
+            : context.l10n.menuGenerate,
+        child: ActionButtons.primaryButton(
+          context,
+          label: viewModel.isGenerating
+              ? context.l10n.menuGenerating
+              : (viewModel.hasMenu
+                  ? context.l10n.menuGenerateNew
+                  : context.l10n.menuGenerate),
+          icon: Icons.restaurant_menu,
+          onPressed: !viewModel.isGenerating && hasPrompt ? onGenerate : null,
+          isLoading: viewModel.isGenerating,
+          loadingText: context.l10n.menuGenerating,
+        ),
       ),
     );
   }

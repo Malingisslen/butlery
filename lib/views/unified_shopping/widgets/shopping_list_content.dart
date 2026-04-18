@@ -229,17 +229,39 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final emptyCategories =
         allCategories.where((cat) => !pendingKeys.contains(cat)).toList();
 
+    // BUT-403: running counter so every item gets a unique `item-toggle-{n}`
+    // regardless of category, in visual order (pending first, then completed).
+    var runningIndex = 0;
+    final pendingSections = <Widget>[];
+    for (final key in pendingKeys) {
+      final items = pendingMap[key]!;
+      pendingSections.add(_buildCategorySection(
+        context,
+        key,
+        items,
+        false,
+        progress: categoryProgress[key],
+        startingIndex: runningIndex,
+      ));
+      runningIndex += items.length;
+    }
+
+    final completedSections = <Widget>[];
+    for (final key in completedKeys) {
+      final items = completedMap[key]!;
+      completedSections.add(_buildCategorySection(
+        context,
+        key,
+        items,
+        true,
+        startingIndex: runningIndex,
+      ));
+      runningIndex += items.length;
+    }
+
     final widgets = <Widget>[
       // Pending items by category
-      ...pendingKeys.map((key) {
-        return _buildCategorySection(
-          context,
-          key,
-          pendingMap[key]!,
-          false,
-          progress: categoryProgress[key],
-        );
-      }),
+      ...pendingSections,
 
       // Empty categories toggle (collapsed by default)
       if (emptyCategories.isNotEmpty) ...[
@@ -252,14 +274,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         const SizedBox(height: AppDimensions.spacingLg),
         _buildCompletedItemsHeader(context, viewModel),
         const SizedBox(height: AppDimensions.spacingSm),
-        ...completedKeys.map((key) {
-          return _buildCategorySection(
-            context,
-            key,
-            completedMap[key]!,
-            true,
-          );
-        }),
+        ...completedSections,
       ],
 
       const SizedBox(height: AppDimensions.spacingHuge),
@@ -278,6 +293,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     List<UnifiedShoppingItem> items,
     bool isCompleted, {
     ({int total, int completed})? progress,
+    int startingIndex = 0,
   }) {
     final cs = Theme.of(context).colorScheme;
     final categoryColor = isCompleted
@@ -402,19 +418,25 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           },
         ),
 
-        // Items in category (hidden when collapsed)
+        // Items in category (hidden when collapsed). `startingIndex` keeps
+        // the `item-toggle-{n}` identifier globally unique across sections.
         if (!isCollapsed)
-          ...items.map((item) => ShoppingItemTiles.buildDraggableItemTile(
-                context,
-                item,
-                isCompleted,
-                widget.onItemTap,
-                widget.onEditItem,
-                widget.onDeleteItem,
-                onMoveToCategory: widget.viewModel.canEditActiveList
-                    ? () => _showCategoryPicker(context, item)
-                    : null,
-              )),
+          ...items.asMap().entries.map((entry) {
+            final localIdx = entry.key;
+            final item = entry.value;
+            return ShoppingItemTiles.buildDraggableItemTile(
+              context,
+              item,
+              isCompleted,
+              widget.onItemTap,
+              widget.onEditItem,
+              widget.onDeleteItem,
+              onMoveToCategory: widget.viewModel.canEditActiveList
+                  ? () => _showCategoryPicker(context, item)
+                  : null,
+              visualIndex: startingIndex + localIdx,
+            );
+          }),
 
         const SizedBox(height: AppDimensions.spacingMd),
       ],

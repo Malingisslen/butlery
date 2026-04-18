@@ -38,6 +38,15 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 
+/// BUT-403 identifier scheme for this view (browser a11y tree hooks):
+///  - `btn-edit-recipe`     → overflow menu → Edit
+///  - `btn-delete-recipe`   → overflow menu → Delete
+///  - `btn-share-recipe`    → hero bar external share
+///  - `btn-share-friends`   → hero bar friend share
+///  - `btn-start-cooking`   → hero bar start cooking-mode
+///  - `btn-mark-cooked`     → "Lagat idag" chip in metadata (handled in
+///     recipe_detail_metadata.dart)
+///
 /// Menu actions for the recipe detail overflow menu.
 enum _MenuAction {
   edit,
@@ -288,202 +297,242 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 actions: [
                   // Start cooking mode
                   Padding(
+                    key: const ValueKey('test-recipe-detail-start-cooking'),
                     padding: AppDimensions.paddingVertical8,
-                    child: _HeroButton(
-                      icon: Icons.restaurant,
-                      onPressed: () => Navigator.pushNamed(
-                        context,
-                        Routes.cookingMode,
-                        arguments: recipe,
+                    child: Semantics(
+                      identifier: 'btn-start-cooking',
+                      button: true,
+                      label: context.l10n.recipeStartCookingTooltip,
+                      child: _HeroButton(
+                        icon: Icons.restaurant,
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          Routes.cookingMode,
+                          arguments: recipe,
+                        ),
+                        tooltip: context.l10n.recipeStartCookingTooltip,
                       ),
-                      tooltip: context.l10n.recipeStartCookingTooltip,
                     ),
                   ),
                   // Favorite toggle
                   Padding(
+                    key: const ValueKey('test-recipe-detail-favorite'),
                     padding: AppDimensions.paddingVertical8,
-                    child: _HeroButton(
-                      icon: recipe.isFavorite
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      onPressed: () => viewModel.toggleFavorite(),
-                      tooltip: recipe.isFavorite
+                    child: Semantics(
+                      identifier: 'btn-favorite-recipe',
+                      button: true,
+                      label: recipe.isFavorite
                           ? context.l10n.favoritesRemove
                           : context.l10n.favoritesAdd,
+                      child: _HeroButton(
+                        icon: recipe.isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        onPressed: () => viewModel.toggleFavorite(),
+                        tooltip: recipe.isFavorite
+                            ? context.l10n.favoritesRemove
+                            : context.l10n.favoritesAdd,
+                      ),
                     ),
                   ),
                   // Internal sharing with friends and groups
                   Padding(
+                    key: const ValueKey('test-recipe-detail-share-friends'),
                     padding: AppDimensions.paddingVertical8,
-                    child: _HeroButton(
-                      icon: Icons.people_outline,
-                      onPressed: () => _actions.showSocialShareDialog(context),
-                      tooltip: context.l10n.recipeShareWithFriends,
+                    child: Semantics(
+                      identifier: 'btn-share-friends',
+                      button: true,
+                      label: context.l10n.recipeShareWithFriends,
+                      child: _HeroButton(
+                        icon: Icons.people_outline,
+                        onPressed: () =>
+                            _actions.showSocialShareDialog(context),
+                        tooltip: context.l10n.recipeShareWithFriends,
+                      ),
                     ),
                   ),
                   // External sharing
                   Padding(
+                    key: const ValueKey('test-recipe-detail-share-recipe'),
                     padding: AppDimensions.paddingVertical8,
-                    child: _HeroButton(
-                      icon: Icons.share_outlined,
-                      onPressed: () => _actions.shareRecipe(context),
-                      tooltip: context.l10n.recipeShareExternal,
+                    child: Semantics(
+                      identifier: 'btn-share-recipe',
+                      button: true,
+                      label: context.l10n.recipeShareExternal,
+                      child: _HeroButton(
+                        icon: Icons.share_outlined,
+                        onPressed: () => _actions.shareRecipe(context),
+                        tooltip: context.l10n.recipeShareExternal,
+                      ),
                     ),
                   ),
                   // More actions menu
                   Padding(
+                    key: const ValueKey('test-recipe-detail-more'),
                     padding: const EdgeInsets.only(
                         top: AppDimensions.spacingSm,
                         bottom: AppDimensions.spacingSm,
                         right: AppDimensions.spacingSm),
-                    child: _HeroMenuButton(
-                      icon: Icons.more_horiz,
-                      itemBuilder: (context) {
-                        final menuCs = Theme.of(context).colorScheme;
-                        return [
-                          PopupMenuItem(
-                            value: _MenuAction.edit,
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit_outlined,
-                                    size: AppDimensions.iconSizeM,
-                                    color: menuCs.primary),
-                                const SizedBox(width: AppDimensions.spacingM),
-                                Text(context.l10n.recipeEdit),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: _MenuAction.fork,
-                            child: Row(
-                              children: [
-                                Icon(Icons.content_copy_outlined,
-                                    size: AppDimensions.iconSizeM,
-                                    color: menuCs.primary),
-                                const SizedBox(width: AppDimensions.spacingM),
-                                Text(context.l10n.recipeCreateCopy),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: _MenuAction.generateShoppingList,
-                            child: Row(
-                              children: [
-                                Icon(Icons.shopping_cart_outlined,
-                                    size: AppDimensions.iconSizeM,
-                                    color: menuCs.primary),
-                                const SizedBox(width: AppDimensions.spacingM),
-                                Text(context.l10n.recipeCreateShoppingList),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: _MenuAction.reTag,
-                            child: Row(
-                              children: [
-                                Icon(Icons.local_offer_outlined,
-                                    size: AppDimensions.iconSizeM,
-                                    color: menuCs.primary),
-                                const SizedBox(width: AppDimensions.spacingM),
-                                Text(context.l10n.recipeUpdateTags),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: _MenuAction.editTags,
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit_note,
-                                    size: AppDimensions.iconSizeM,
-                                    color: menuCs.primary),
-                                const SizedBox(width: AppDimensions.spacingM),
-                                Text(context.l10n.recipeEditTags),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: _MenuAction.delete,
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outlined,
-                                    size: AppDimensions.iconSizeM,
-                                    color: menuCs.error),
-                                const SizedBox(width: AppDimensions.spacingM),
-                                Text(context.l10n.recipeDelete,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: menuCs.error,
-                                        )),
-                              ],
-                            ),
-                          ),
-                          // Collaboration toggle (owner only)
-                          if (recipe.createdBy ==
-                              ServiceLocator.get<PermissionService>()
-                                  .currentUserId)
+                    child: Semantics(
+                      identifier: 'btn-recipe-more',
+                      button: true,
+                      label: context.l10n.recipeEdit,
+                      child: _HeroMenuButton(
+                        icon: Icons.more_horiz,
+                        itemBuilder: (context) {
+                          final menuCs = Theme.of(context).colorScheme;
+                          return [
                             PopupMenuItem(
-                              value: _MenuAction.toggleCollaboration,
+                              key: const ValueKey('test-recipe-detail-edit'),
+                              value: _MenuAction.edit,
                               child: Row(
                                 children: [
-                                  Icon(
-                                    recipe.isCollaborative
-                                        ? Icons.group_off_outlined
-                                        : Icons.group_add_outlined,
-                                    size: AppDimensions.iconSizeM,
-                                    color: menuCs.primary,
-                                  ),
-                                  const SizedBox(width: AppDimensions.spacingM),
-                                  Text(recipe.isCollaborative
-                                      ? context.l10n.recipeCollaborationDisable
-                                      : context.l10n.recipeCollaborationEnable),
-                                ],
-                              ),
-                            ),
-                          if (recipe.sourceUrl != null &&
-                              recipe.sourceUrl!.isNotEmpty)
-                            PopupMenuItem(
-                              value: _MenuAction.source,
-                              child: Row(
-                                children: [
-                                  Icon(Icons.link_outlined,
+                                  Icon(Icons.edit_outlined,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.primary),
                                   const SizedBox(width: AppDimensions.spacingM),
-                                  Text(context.l10n.recipeViewSource),
+                                  Text(context.l10n.recipeEdit),
                                 ],
                               ),
                             ),
-                          if (kIsWeb)
                             PopupMenuItem(
-                              value: _MenuAction.printRecipe,
+                              value: _MenuAction.fork,
                               child: Row(
                                 children: [
-                                  Icon(Icons.print_outlined,
+                                  Icon(Icons.content_copy_outlined,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.primary),
                                   const SizedBox(width: AppDimensions.spacingM),
-                                  Text(context.l10n.recipePrint),
+                                  Text(context.l10n.recipeCreateCopy),
                                 ],
                               ),
                             ),
-                          PopupMenuItem(
-                            value: _MenuAction.report,
-                            child: Row(
-                              children: [
-                                Icon(Icons.flag_outlined,
-                                    size: AppDimensions.iconSizeM,
-                                    color: menuCs.error),
-                                const SizedBox(width: AppDimensions.spacingM),
-                                Text(context.l10n.reportContent),
-                              ],
+                            PopupMenuItem(
+                              value: _MenuAction.generateShoppingList,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.shopping_cart_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(context.l10n.recipeCreateShoppingList),
+                                ],
+                              ),
                             ),
-                          ),
-                        ];
-                      },
-                      onSelected: (action) =>
-                          _handleMenuAction(context, action, viewModel, recipe),
+                            PopupMenuItem(
+                              value: _MenuAction.reTag,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.local_offer_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(context.l10n.recipeUpdateTags),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: _MenuAction.editTags,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_note,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(context.l10n.recipeEditTags),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              key: const ValueKey('test-recipe-detail-delete'),
+                              value: _MenuAction.delete,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.error),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(context.l10n.recipeDelete,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: menuCs.error,
+                                          )),
+                                ],
+                              ),
+                            ),
+                            // Collaboration toggle (owner only)
+                            if (recipe.createdBy ==
+                                ServiceLocator.get<PermissionService>()
+                                    .currentUserId)
+                              PopupMenuItem(
+                                value: _MenuAction.toggleCollaboration,
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      recipe.isCollaborative
+                                          ? Icons.group_off_outlined
+                                          : Icons.group_add_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary,
+                                    ),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(recipe.isCollaborative
+                                        ? context
+                                            .l10n.recipeCollaborationDisable
+                                        : context
+                                            .l10n.recipeCollaborationEnable),
+                                  ],
+                                ),
+                              ),
+                            if (recipe.sourceUrl != null &&
+                                recipe.sourceUrl!.isNotEmpty)
+                              PopupMenuItem(
+                                value: _MenuAction.source,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.link_outlined,
+                                        size: AppDimensions.iconSizeM,
+                                        color: menuCs.primary),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(context.l10n.recipeViewSource),
+                                  ],
+                                ),
+                              ),
+                            if (kIsWeb)
+                              PopupMenuItem(
+                                value: _MenuAction.printRecipe,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.print_outlined,
+                                        size: AppDimensions.iconSizeM,
+                                        color: menuCs.primary),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(context.l10n.recipePrint),
+                                  ],
+                                ),
+                              ),
+                            PopupMenuItem(
+                              value: _MenuAction.report,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.flag_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.error),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(context.l10n.reportContent),
+                                ],
+                              ),
+                            ),
+                          ];
+                        },
+                        onSelected: (action) => _handleMenuAction(
+                            context, action, viewModel, recipe),
+                      ),
                     ),
                   ),
                 ],

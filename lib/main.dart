@@ -43,6 +43,9 @@ import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.da
 
 // Theme service
 import 'package:butlery/services/theme_service.dart';
+import 'package:butlery/services/theme/seasonal_accent_service.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:clock/clock.dart';
 
 // Material You dynamic color
 
@@ -734,6 +737,13 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     _interactionObserver ??=
         InteractionRouteObserver(ServiceLocator.get<InteractionLogger>());
 
+    // Seasonal accent: resolved once per rebuild via package:clock so tests
+    // can override it. Service returns the base palette unmodified in summer.
+    final seasonal = ServiceLocator.get<SeasonalAccentService>();
+    final now = clock.now();
+    final lightAccent = seasonal.getAccentsFor(now, base: ButleryColors.light);
+    final darkAccent = seasonal.getAccentsFor(now, base: ButleryColors.dark);
+
     // Build navigator observers list with performance, snackbar, session activity, and optional analytics observers
     final observers = <NavigatorObserver>[
       _performanceObserver, // Track screen performance with Firebase Performance
@@ -753,8 +763,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         navigatorKey: appNavigatorKey,
         navigatorObservers: observers,
         title: 'Butlery',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
+        theme: AppTheme.lightThemeWith(lightAccent),
+        darkTheme: AppTheme.darkThemeWith(darkAccent),
         themeMode: _themeService?.themeMode ?? ThemeMode.system,
         debugShowCheckedModeBanner: false,
         // Localization configuration

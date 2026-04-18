@@ -77,6 +77,75 @@ explicitly clean up: kill the Firebase process + `preview_stop`.
   cross-platform CI matrix (BUT-396) or a physical device.
 - Not unattended — runs only when invoked; not wired to CI.
 
+## Finding widgets via Semantics (BUT-403)
+
+Flutter web's CanvasKit renderer draws everything into one `<flutter-view>`
+canvas, so plain CSS selectors (`#foo`, `.bar`) match nothing. Widgets must
+be located via the **browser a11y tree** — populated by Flutter once
+accessibility is enabled on the page.
+
+**First-run: enable accessibility.** The Flutter engine ships accessibility
+off by default on web. On the first journey step, click the tiny
+"Enable accessibility" placeholder button (bottom-right of the viewport)
+via `preview_click` OR inject it programmatically:
+
+```js
+// In a preview_eval call — toggles the semantics placeholder button
+document.querySelector('flt-semantics-placeholder')?.click();
+```
+
+Once enabled, every widget with a `Semantics(identifier: ...)` wrapper
+becomes a node in the tree (rendered as `<flt-semantics>` with matching
+`id` / `aria-label` attributes).
+
+**Query pattern — preview_eval:**
+
+```js
+// In a preview_eval call, query the a11y tree:
+const el =
+    document.querySelector('[aria-label="btn-mark-cooked"]')
+ || document.querySelector('flt-semantics[id*="mark-cooked"]');
+el?.click();
+```
+
+### Identifier naming scheme
+
+| Pattern | Example | Where |
+|---|---|---|
+| `nav-{route}` | `nav-/veckomeny` | Bottom nav / drawer items |
+| `btn-{action}` | `btn-mark-cooked`, `btn-save-recipe`, `btn-import-url`, `btn-add-shopping-item`, `btn-generate-menu`, `btn-share-recipe`, `btn-quick-save` | Primary CTAs |
+| `recipe-card-{index}` | `recipe-card-0` | Recipe list / grid cells |
+| `item-toggle-{index}` | `item-toggle-3` | Shopping list rows (0-based, global order) |
+| `menu-slot-{weekday}-{mealtype}` | `menu-slot-monday-lunch` | Weekly menu calendar cells |
+
+Identifiers use enum `name`s (English) so they stay stable when the
+Swedish display labels change. When adding new CTAs, always add both:
+
+```dart
+Semantics(
+  identifier: 'btn-foo',      // browser a11y hook
+  button: true,
+  label: context.l10n.fooLabel, // screen reader text
+  child: ElevatedButton(
+    key: const ValueKey('test-view-foo'), // Flutter widget-test hook
+    onPressed: ...,
+    child: Text(context.l10n.fooLabel),
+  ),
+)
+```
+
+The `ValueKey` is for `find.byKey(...)` inside Flutter widget tests, which
+is a separate discovery mechanism from Semantics. Keep both.
+
+### Known limitations
+
+- Overlay-positioned children (`PopupMenuItem`, dialogs) mount outside the
+  main tree. Query them only after the parent is tapped; rely on the
+  tree settling (1-2 `preview_snapshot` calls) before asserting.
+- `SemanticsBinding.instance.ensureSemantics()` on app startup would
+  eliminate the first-run placeholder click — tracked as a follow-up
+  ticket, do not inline.
+
 ## Adding journeys
 
 Create `test/smoke/journeys/<name>.md` with the template:
