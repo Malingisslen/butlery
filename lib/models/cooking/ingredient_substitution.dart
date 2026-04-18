@@ -3,9 +3,8 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 /// BUT-202: Pure-Dart model for a single substitution suggestion used by
 /// cooking-mode "out of X? try…" bottom sheet.
 ///
-/// Firestore schema (parallel to `ingredient_substitutions` collection used
-/// by `IngredientSubstitutionService`; this one is keyed on canonical
-/// ingredient IDs emitted by `IngredientLookupService.lookupFromRaw`):
+/// Firestore schema — `ingredient_substitutions` collection keyed on
+/// canonical ingredient IDs emitted by `IngredientLookupService.lookupFromRaw`:
 ///
 ///   ingredient_substitutions/{canonicalIngredientId}
 ///     substitutes: [

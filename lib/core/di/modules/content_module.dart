@@ -123,10 +123,7 @@ import 'package:butlery/services/parsing/line_classifier/line_classifier_model_m
 import 'package:butlery/services/parsing/line_classifier/onnx_line_classifier_service.dart';
 import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 
-// Ingredient substitution service
-import 'package:butlery/services/ingredient_substitution_service.dart';
-
-// BUT-202: cooking-mode substitution suggestions (canonical-ID based)
+// Cooking-mode substitution suggestions (canonical-ID based, BUT-202)
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
@@ -212,9 +209,7 @@ class ContentModule implements DIModule {
         LineClassifierModelManager,
         OnnxLineClassifierService,
         NeuralLineClassifier,
-        // Ingredient substitution
-        IngredientSubstitutionService,
-        // BUT-202: cooking-mode substitution suggestions
+        // Cooking-mode substitution suggestions (BUT-202)
         SubstitutionSuggestionService,
         // Menu lexicon overlay (BUT-370)
         FirebaseMenuLexiconRepository,
@@ -491,13 +486,6 @@ class ContentModule implements DIModule {
         () => ParsingCorrectionRepository(),
       );
 
-      // Ingredient substitution service for replacement suggestions
-      container.registerLazySingleton<IngredientSubstitutionService>(
-        () => IngredientSubstitutionService(
-          firestoreRepository: container<FirestoreRepository>(),
-        ),
-      );
-
       // Menu lexicon: code defaults + Firestore overlay (BUT-370)
       container.registerLazySingleton<FirebaseMenuLexiconRepository>(
         () => FirebaseMenuLexiconRepository(),
@@ -690,8 +678,6 @@ class ContentModule implements DIModule {
         'GlobalRecipeCache': container<GlobalRecipeCache>(),
         'ImportRateLimiter': container<ImportRateLimiter>(),
         'SiteConfigRepository': container<SiteConfigRepository>(),
-        'IngredientSubstitutionService':
-            container<IngredientSubstitutionService>(),
       };
 
       // User-scoped services (only after login)

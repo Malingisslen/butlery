@@ -10,9 +10,6 @@ import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 /// to obtain a canonical ingredient ID, then fetches substitutes from
 /// `ingredient_substitutions/{canonicalIngredientId}`. Returns up to 3 rows,
 /// empty list when no lookup match or no doc.
-///
-/// Parallel to the legacy [IngredientSubstitutionService] — this one is
-/// keyed on canonical IDs (stable, index-friendly), not display names.
 class SubstitutionSuggestionService extends BaseService {
   final FirestoreRepository _firestoreRepository;
   final IngredientLookupService _lookupService;

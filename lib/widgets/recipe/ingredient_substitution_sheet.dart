@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/models/ingredient_substitution.dart';
-import 'package:butlery/services/ingredient_substitution_service.dart';
+import 'package:butlery/models/cooking/ingredient_substitution.dart';
+import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// Bottom sheet displaying substitution options for an ingredient.
+/// Bottom sheet displaying substitution options for an ingredient on the
+/// recipe detail page. Read-only — tapping a row does not mutate the recipe
+/// (the cooking-mode sheet in `lib/widgets/cooking/substitution_bottom_sheet.dart`
+/// owns the "replace in recipe" flow).
 class IngredientSubstitutionSheet extends StatefulWidget {
   final String ingredientName;
 
@@ -23,13 +26,13 @@ class IngredientSubstitutionSheet extends StatefulWidget {
 
 class _IngredientSubstitutionSheetState
     extends State<IngredientSubstitutionSheet> {
-  late Future<IngredientSubstitution?> _future;
+  late Future<List<IngredientSubstitution>> _future;
 
   @override
   void initState() {
     super.initState();
-    final service = ServiceLocator.get<IngredientSubstitutionService>();
-    _future = service.getSubstitutions(widget.ingredientName);
+    final service = ServiceLocator.get<SubstitutionSuggestionService>();
+    _future = service.suggestFor(widget.ingredientName);
   }
 
   @override
@@ -41,7 +44,6 @@ class _IngredientSubstitutionSheetState
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
@@ -68,9 +70,7 @@ class _IngredientSubstitutionSheetState
             ),
           ),
           Divider(height: 1, color: cs.surfaceContainerHigh),
-
-          // Content
-          FutureBuilder<IngredientSubstitution?>(
+          FutureBuilder<List<IngredientSubstitution>>(
             future: _future,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -89,12 +89,12 @@ class _IngredientSubstitutionSheetState
                 );
               }
 
-              final substitution = snapshot.data;
-              if (substitution == null || substitution.substitutions.isEmpty) {
+              final options = snapshot.data ?? const [];
+              if (options.isEmpty) {
                 return _buildEmptyState(context);
               }
 
-              return _buildOptionsList(context, substitution.substitutions);
+              return _buildOptionsList(context, options);
             },
           ),
         ],
@@ -120,7 +120,9 @@ class _IngredientSubstitutionSheetState
   }
 
   Widget _buildOptionsList(
-      BuildContext context, List<SubstitutionOption> options) {
+    BuildContext context,
+    List<IngredientSubstitution> options,
+  ) {
     return Flexible(
       child: ListView.separated(
         shrinkWrap: true,
@@ -137,7 +139,10 @@ class _IngredientSubstitutionSheetState
     );
   }
 
-  Widget _buildOptionCard(BuildContext context, SubstitutionOption option) {
+  Widget _buildOptionCard(
+    BuildContext context,
+    IngredientSubstitution option,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
@@ -150,7 +155,6 @@ class _IngredientSubstitutionSheetState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Name + ratio row
           Row(
             children: [
               Expanded(
@@ -162,64 +166,41 @@ class _IngredientSubstitutionSheetState
                   ),
                 ),
               ),
-              if (option.ratio != null)
-                Container(
-                  padding: AppDimensions.paddingSymmetric4x2,
-                  decoration: BoxDecoration(
+              Container(
+                padding: AppDimensions.paddingSymmetric4x2,
+                decoration: BoxDecoration(
+                  color: cs.primary
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  border: Border.all(
                     color: cs.primary
-                        .withValues(alpha: AppDimensions.opacityVeryLight),
-                    border: Border.all(
-                      color: cs.primary
-                          .withValues(alpha: AppDimensions.opacityMediumLight),
-                    ),
-                  ),
-                  child: Text(
-                    option.ratio!,
-                    style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: cs.primary,
-                    ),
+                        .withValues(alpha: AppDimensions.opacityMediumLight),
                   ),
                 ),
+                child: Text(
+                  _formatRatio(option.ratio),
+                  style: AppTextStyles.metadataEmphasized.copyWith(
+                    color: cs.primary,
+                  ),
+                ),
+              ),
             ],
           ),
-
-          // Notes
-          if (option.notes != null) ...[
+          if (option.context != null && option.context!.isNotEmpty) ...[
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
-              option.notes!,
+              option.context!,
               style: AppTextStyles.bodySmall.copyWith(
                 color: cs.onSurfaceVariant,
               ),
-            ),
-          ],
-
-          // Dietary tags
-          if (option.dietaryTags.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
-            Wrap(
-              spacing: AppDimensions.spacingXs,
-              runSpacing: AppDimensions.spacingXs,
-              children: option.dietaryTags.map((tag) {
-                return Container(
-                  padding: AppDimensions.paddingSymmetric4x2,
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerHigh,
-                    border: Border.all(color: cs.surfaceContainerHigh),
-                  ),
-                  child: Text(
-                    tag,
-                    style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: cs.onSurfaceVariant,
-                      fontSize: 11,
-                    ),
-                  ),
-                );
-              }).toList(),
             ),
           ],
         ],
       ),
     );
   }
+
+  // Matches the cooking-mode ratio badge formatting (see _RatioBadge in
+  // substitution_bottom_sheet.dart) so both entry points render the same way.
+  String _formatRatio(double ratio) =>
+      ratio == 1.0 ? '1:1' : '${(ratio * 100).round()}%';
 }
