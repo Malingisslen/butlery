@@ -1,6 +1,43 @@
 # Sprint Backlog
 
-## Sprint: Test Infra Close-Out (BUT-387 Phase 11) — 2026-04-17
+## Sprint: Test Infra Phase 12 — Cross-platform + Patrol MVP — 2026-04-17
+
+### Agent A: testing-specialist — Patrol MVP (BUT-395)
+
+Goal: ONE real-device E2E journey proven end-to-end, not a comprehensive suite.
+
+- [x] **A1. Patrol scaffold** — `integration_test/patrol_test.dart` entry point, `patrol.yaml` config for Android emulator + iOS simulator targets. Verify `patrol_cli` can be installed and referenced. (BUT-395)
+- [x] **A2. First journey: auth → home → recipe create** — convert the happy path from `test/e2e/flows/comprehensive_e2e_test.dart` (currently `skip: Patrol`) into a real Patrol test. Firebase emulator backend. Asserts: register → land on empty state → tap +Create → fill title + one ingredient + save → new recipe visible on home. (BUT-395)
+- [x] **A3. CI wiring** — new `.github/workflows/patrol_e2e.yml` (separate job so it doesn't block PRs on flaky emulator boot). macOS runner for iOS simulator; Android on ubuntu-latest via emulator. Schedule: on PRs to `main` + nightly. (BUT-395)
+- [x] **A4. Audit skipped E2E files** — audit the 10 files in `test/e2e/flows/` — delete duplicates of unit/integration coverage, file follow-up tickets for real journey gaps. (BUT-395)
+
+### Agent B: firebase-backend-security — Cross-platform CI matrix (BUT-396)
+
+- [x] **B1. Matrix the unit-tests job** — `.github/workflows/test.yml`: add `strategy.matrix.os: [ubuntu-latest, macos-latest, windows-latest]`. Expect Windows path-separator issues and macOS file-watcher quirks; fix as they surface. (BUT-396)
+- [x] **B2. Verify real-time guard + coverage script cross-platform** — the bash scripts assume POSIX. Windows runs under Git Bash; validate: Windows job runs `bash scripts/check_test_real_time.sh` and passes. (BUT-396)
+- [x] **B3. Reconcile runtime cost** — matrix triples CI minutes. Add `fail-fast: false` + keep coverage step ubuntu-only (only one platform produces lcov). (BUT-396)
+
+### Post-Sprint Steps
+
+- [x] Run `dart analyze --fatal-infos` — clean
+- [ ] Run Patrol journey locally against emulator — requires human (no emulator in sandbox)
+- [ ] Observe first matrix CI run — verifiable only on GitHub
+- [ ] File follow-up: "tighten coverage floor once ≥5 CI runs are logged (after 2026-04-24)"
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-395, BUT-396 → Done
+
+---
+
+## What this means in plain language
+
+- The app finally gets a real-device end-to-end test: a virtual phone boots, taps through registration, creates a recipe, and asserts it shows up. Catches "works in harness, broke on real phone" bugs.
+- CI runs the unit/widget/view suite on three operating systems instead of one. Catches platform-specific breakage before release.
+- Risk: Medium. Patrol on CI is notoriously finicky (emulator boot flake). Kept in a separate non-blocking CI job so PRs aren't held hostage.
+- Coverage-floor tightening is deferred — needs a week of CI data.
+
+---
+
+## Archive: Sprint Test Infra Close-Out (BUT-387 Phase 11) — 2026-04-17
 
 ### Agent A: testing-specialist — Deterministic time (BUT-394)
 

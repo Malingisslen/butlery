@@ -28,7 +28,11 @@ env:
 jobs:
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
 
     steps:
@@ -51,7 +55,9 @@ jobs:
 
       # lcov isn't preinstalled on ubuntu-latest. Install before we run
       # tests so the summary step below can actually produce a number.
+      # Ubuntu-only: coverage summary + Codecov upload only run on ubuntu.
       - name: Install lcov
+        if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y lcov
 
       # Run unit, widget, and view tests with coverage
@@ -67,7 +73,7 @@ jobs:
       # real baseline from CI, a follow-up PR adds a local floor check
       # that guards against the Codecov token being unavailable.
       - name: Summarise filtered coverage
-        if: always()
+        if: always() && matrix.os == 'ubuntu-latest'
         run: |
           if [ ! -f coverage/lcov.info ]; then
             echo "No coverage/lcov.info — skipping summary" >> "$GITHUB_STEP_SUMMARY"
@@ -109,7 +115,7 @@ jobs:
       # in. Floors are intentionally loose until we've logged ~5 runs and
       # can tighten to observed-baseline-minus-2pp.
       - name: Enforce coverage floors
-        if: always()
+        if: always() && matrix.os == 'ubuntu-latest'
         run: |
           if [ ! -f coverage/lcov_filtered.info ]; then
             echo "No filtered lcov — skipping floor check"
@@ -172,7 +178,7 @@ jobs:
 
       # Upload coverage to Codecov — this is the real gate (see codecov.yml).
       - name: Upload coverage to Codecov
-        if: success()
+        if: success() && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v4
         with:
           files: coverage/lcov_filtered.info
@@ -184,7 +190,7 @@ jobs:
       # Keep the filtered lcov as an artifact so a maintainer can download
       # and inspect line-by-line coverage from any run.
       - name: Upload coverage artifact
-        if: always()
+        if: always() && matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-lcov
@@ -196,7 +202,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-results
+          name: unit-test-results-${{ matrix.os }}
           path: test_results/
   
   integration-tests:
