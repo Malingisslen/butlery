@@ -354,15 +354,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String confirmDeleteItem(String itemName) {
-    return 'Are you sure you want to delete \"$itemName\"?';
+    return 'Confirmation required — remove \"$itemName\"?';
   }
 
   @override
   String get confirmUnsavedChanges =>
-      'You have unsaved changes. Do you want to leave without saving?';
+      'Unsaved changes remain. Depart without saving?';
 
   @override
-  String get confirmIrreversibleAction => 'This action cannot be undone.';
+  String get confirmIrreversibleAction => 'This cannot be reversed.';
 
   @override
   String get draftRecovery => 'Restore draft';
@@ -410,11 +410,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyNoFriends => 'No friends yet';
 
   @override
-  String get emptyNoRecipes => 'No recipes yet';
+  String get emptyNoRecipes => 'The collection awaits its first entry';
 
   @override
   String emptyNoRecipesSubtitle(String addButton) {
-    return 'Add your first recipe by tapping \"$addButton\"';
+    return 'The first recipe is added via \"$addButton\".';
   }
 
   @override
@@ -428,24 +428,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyNoGroupsSearchTitle => 'No groups matched your search';
 
   @override
-  String get emptyNoMenuTitle => 'No menu generated yet';
+  String get emptyNoMenuTitle => 'The menu has not yet been set';
 
   @override
   String get emptyNoMenuSubtitle =>
-      'Type what you want or tap the button below';
+      'State a preference, or use the button below';
 
   @override
-  String get emptyNoShoppingListTitle => 'No menu to create shopping list from';
+  String get emptyNoShoppingListTitle =>
+      'There is no menu from which to derive a shopping list';
 
   @override
   String get emptyNoShoppingListSubtitle =>
-      'Go back and create a weekly menu first';
+      'A weekly menu must be established first';
 
   @override
-  String get emptyNoFriendsTitle => 'No friends yet';
+  String get emptyNoFriendsTitle => 'No one has been introduced yet';
 
   @override
-  String get emptyNoFriendsSubtitle => 'Add friends to share recipes and menus';
+  String get emptyNoFriendsSubtitle =>
+      'Friends may be invited to share recipes and menus';
 
   @override
   String get emptyNoCategoriesTitle => 'No categories created';
@@ -483,11 +485,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'When you collaborate on shopping lists with friends or family, they will appear here.';
 
   @override
-  String get emptyNoTagsTitle => 'No tags yet';
+  String get emptyNoTagsTitle => 'No tags have been arranged yet';
 
   @override
   String get emptyNoTagsSubtitle =>
-      'Create personal tags to organize your recipes your way.';
+      'Personal tags serve to arrange the collection as one prefers.';
 
   @override
   String get emptyNoGroupsTitle => 'No groups yet';
@@ -501,10 +503,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emptyNoConversationsSubtitle =>
-      'Start a conversation with a friend to chat about recipes.';
+      'A conversation with a friend may be commenced here.';
 
   @override
-  String get emptyGenericTitle => 'No content to display';
+  String get emptyGenericTitle => 'No content to present';
 
   @override
   String get recipeName => 'Recipe name';
@@ -11483,7 +11485,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String networkErrorDefault(String operation) {
-    return 'Network error during $operation. Check your connection and try again.';
+    return 'The connection faltered during $operation. Kindly verify and retry.';
   }
 
   @override
@@ -12184,21 +12186,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dormantRecipesTitle => 'Try something you saved';
 
   @override
-  String get emptyStateNewUserTitle => 'Welcome to Butlery!';
+  String get emptyStateNewUserTitle => 'Welcome. Butlery stands ready.';
 
   @override
   String get emptyStateNewUserDescription =>
-      'Import your first recipe from a link or add it manually.';
+      'The first recipe may be imported from a link, or entered by hand.';
 
   @override
   String get emptyStateNewUserWithPrefs =>
       'Your dietary preferences are ready. Import your first recipe and we\'ll filter for you!';
 
   @override
-  String get emptyStateImportAction => 'Import from link';
+  String get emptyStateImportAction => 'Import by link';
 
   @override
-  String get emptyStateOtherOptions => 'More options';
+  String get emptyStateOtherOptions => 'Further options';
 
   @override
   String get cookingModePreviousStep => 'Previous step';

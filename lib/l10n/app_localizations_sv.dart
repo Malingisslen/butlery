@@ -354,15 +354,15 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String confirmDeleteItem(String itemName) {
-    return 'Är du säker på att du vill ta bort \"$itemName\"?';
+    return 'Bekräftelse krävs — ta bort \"$itemName\"?';
   }
 
   @override
   String get confirmUnsavedChanges =>
-      'Du har osparade ändringar. Vill du lämna utan att spara?';
+      'Osparade ändringar föreligger. Lämna utan att spara?';
 
   @override
-  String get confirmIrreversibleAction => 'Denna åtgärd kan inte ångras.';
+  String get confirmIrreversibleAction => 'Åtgärden är slutgiltig.';
 
   @override
   String get draftRecovery => 'Återställ utkast';
@@ -410,11 +410,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get emptyNoFriends => 'Du har inga vänner än.';
 
   @override
-  String get emptyNoRecipes => 'Du har inga recept än.';
+  String get emptyNoRecipes => 'Receptsamlingen är ännu tom.';
 
   @override
   String emptyNoRecipesSubtitle(String addButton) {
-    return 'Lägg till ditt första recept genom att trycka på \"$addButton\"';
+    return 'Första receptet läggs till via \"$addButton\".';
   }
 
   @override
@@ -428,26 +428,24 @@ class AppLocalizationsSv extends AppLocalizations {
   String get emptyNoGroupsSearchTitle => 'Inga grupper matchade din sökning';
 
   @override
-  String get emptyNoMenuTitle => 'Ingen meny genererad ännu';
+  String get emptyNoMenuTitle => 'Ingen meny är ännu uppdukad';
 
   @override
-  String get emptyNoMenuSubtitle =>
-      'Skriv vad du vill ha eller tryck på knappen nedan';
+  String get emptyNoMenuSubtitle => 'Ange önskemål, eller använd knappen nedan';
 
   @override
   String get emptyNoShoppingListTitle =>
-      'Ingen meny att skapa inköpslista från';
+      'Ingen meny finns att avleda en inköpslista från';
 
   @override
-  String get emptyNoShoppingListSubtitle =>
-      'Gå tillbaka och skapa en veckomeny först';
+  String get emptyNoShoppingListSubtitle => 'En veckomeny behövs först';
 
   @override
-  String get emptyNoFriendsTitle => 'Inga vänner ännu';
+  String get emptyNoFriendsTitle => 'Ingen är bjuden ännu';
 
   @override
   String get emptyNoFriendsSubtitle =>
-      'Lägg till vänner för att dela recept och menyer';
+      'Vänner inbjuds för att dela recept och menyer';
 
   @override
   String get emptyNoCategoriesTitle => 'Inga kategorier skapade';
@@ -485,11 +483,11 @@ class AppLocalizationsSv extends AppLocalizations {
       'När du samarbetar på inköpslistor med vänner eller familj visas de här.';
 
   @override
-  String get emptyNoTagsTitle => 'Inga taggar ännu';
+  String get emptyNoTagsTitle => 'Inga taggar är ännu ordnade';
 
   @override
   String get emptyNoTagsSubtitle =>
-      'Skapa personliga taggar för att organisera dina recept.';
+      'Personliga taggar används för att ordna receptsamlingen.';
 
   @override
   String get emptyNoGroupsTitle => 'Inga grupper ännu';
@@ -503,10 +501,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get emptyNoConversationsSubtitle =>
-      'Starta en konversation med en vän för att prata om recept.';
+      'Ett samtal med en vän kan inledas härifrån.';
 
   @override
-  String get emptyGenericTitle => 'Inget innehåll att visa';
+  String get emptyGenericTitle => 'Inget innehåll finns att visa';
 
   @override
   String get recipeName => 'Receptnamn';
@@ -11513,7 +11511,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String networkErrorDefault(String operation) {
-    return 'Nätverksfel under $operation. Kontrollera din anslutning och försök igen.';
+    return 'Nätverket svek under $operation. Kontrollera anslutningen och försök åter.';
   }
 
   @override
@@ -12214,21 +12212,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dormantRecipesTitle => 'Prova något du sparat';
 
   @override
-  String get emptyStateNewUserTitle => 'Välkommen till Butlery!';
+  String get emptyStateNewUserTitle => 'Välkommen. Butlery står redo.';
 
   @override
   String get emptyStateNewUserDescription =>
-      'Importera ditt första recept från en webbadress eller lägg till det manuellt.';
+      'Första receptet kan importeras från en webbadress, eller föras in manuellt.';
 
   @override
   String get emptyStateNewUserWithPrefs =>
       'Vi har dina kostpreferenser redo. Importera ditt första recept så filtrerar vi åt dig!';
 
   @override
-  String get emptyStateImportAction => 'Importera från länk';
+  String get emptyStateImportAction => 'Importera via länk';
 
   @override
-  String get emptyStateOtherOptions => 'Fler alternativ';
+  String get emptyStateOtherOptions => 'Övriga alternativ';
 
   @override
   String get cookingModePreviousStep => 'Föregående steg';

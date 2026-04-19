@@ -263,7 +263,7 @@
       }
     }
   },
-  "confirmDeleteItem": "Are you sure you want to delete \"{itemName}\"?",
+  "confirmDeleteItem": "Confirmation required — remove \"{itemName}\"?",
   "@confirmDeleteItem": {
     "placeholders": {
       "itemName": {
@@ -271,8 +271,8 @@
       }
     }
   },
-  "confirmUnsavedChanges": "You have unsaved changes. Do you want to leave without saving?",
-  "confirmIrreversibleAction": "This action cannot be undone.",
+  "confirmUnsavedChanges": "Unsaved changes remain. Depart without saving?",
+  "confirmIrreversibleAction": "This cannot be reversed.",
   "draftRecovery": "Restore draft",
   "draftRecoverySubtitle": "You have unsaved recipe drafts. Would you like to continue where you left off?",
   "draftRestore": "Restore",
@@ -300,8 +300,8 @@
   "emptyNoItems": "No items found.",
   "emptyNoResults": "No results found.",
   "emptyNoFriends": "No friends yet",
-  "emptyNoRecipes": "No recipes yet",
-  "emptyNoRecipesSubtitle": "Add your first recipe by tapping \"{addButton}\"",
+  "emptyNoRecipes": "The collection awaits its first entry",
+  "emptyNoRecipesSubtitle": "The first recipe is added via \"{addButton}\".",
   "@emptyNoRecipesSubtitle": {
     "placeholders": {
       "addButton": {
@@ -312,12 +312,12 @@
   "emptyNoSearchResultsSubtitle": "Try searching for something else or clear the search",
   "emptyNoFriendsSearchTitle": "No friends matched your search",
   "emptyNoGroupsSearchTitle": "No groups matched your search",
-  "emptyNoMenuTitle": "No menu generated yet",
-  "emptyNoMenuSubtitle": "Type what you want or tap the button below",
-  "emptyNoShoppingListTitle": "No menu to create shopping list from",
-  "emptyNoShoppingListSubtitle": "Go back and create a weekly menu first",
-  "emptyNoFriendsTitle": "No friends yet",
-  "emptyNoFriendsSubtitle": "Add friends to share recipes and menus",
+  "emptyNoMenuTitle": "The menu has not yet been set",
+  "emptyNoMenuSubtitle": "State a preference, or use the button below",
+  "emptyNoShoppingListTitle": "There is no menu from which to derive a shopping list",
+  "emptyNoShoppingListSubtitle": "A weekly menu must be established first",
+  "emptyNoFriendsTitle": "No one has been introduced yet",
+  "emptyNoFriendsSubtitle": "Friends may be invited to share recipes and menus",
   "emptyNoCategoriesTitle": "No categories created",
   "emptyNoCategoriesSubtitle": "Create your first category to organize your friends",
   "emptyNoImagesTitle": "No images added",
@@ -328,13 +328,13 @@
   "emptyNoSavedMenusSubtitle": "Create and save menus to easily load them later",
   "emptyNoSharedShoppingListsTitle": "No shared shopping lists",
   "emptyNoSharedShoppingListsSubtitle": "When you collaborate on shopping lists with friends or family, they will appear here.",
-  "emptyNoTagsTitle": "No tags yet",
-  "emptyNoTagsSubtitle": "Create personal tags to organize your recipes your way.",
+  "emptyNoTagsTitle": "No tags have been arranged yet",
+  "emptyNoTagsSubtitle": "Personal tags serve to arrange the collection as one prefers.",
   "emptyNoGroupsTitle": "No groups yet",
   "emptyNoGroupsSubtitle": "Create a group to share recipes and plan meals together.",
   "emptyNoConversationsTitle": "No conversations yet",
-  "emptyNoConversationsSubtitle": "Start a conversation with a friend to chat about recipes.",
-  "emptyGenericTitle": "No content to display",
+  "emptyNoConversationsSubtitle": "A conversation with a friend may be commenced here.",
+  "emptyGenericTitle": "No content to present",
   "recipeName": "Recipe name",
   "recipeDescription": "Description",
   "recipeIngredients": "Ingredients",
@@ -7860,7 +7860,7 @@
       }
     }
   },
-  "networkErrorDefault": "Network error during {operation}. Check your connection and try again.",
+  "networkErrorDefault": "The connection faltered during {operation}. Kindly verify and retry.",
   "@networkErrorDefault": {
     "placeholders": {
       "operation": {
@@ -8355,11 +8355,11 @@
   },
   "seasonalBannerAction": "Show",
   "dormantRecipesTitle": "Try something you saved",
-  "emptyStateNewUserTitle": "Welcome to Butlery!",
-  "emptyStateNewUserDescription": "Import your first recipe from a link or add it manually.",
+  "emptyStateNewUserTitle": "Welcome. Butlery stands ready.",
+  "emptyStateNewUserDescription": "The first recipe may be imported from a link, or entered by hand.",
   "emptyStateNewUserWithPrefs": "Your dietary preferences are ready. Import your first recipe and we'll filter for you!",
-  "emptyStateImportAction": "Import from link",
-  "emptyStateOtherOptions": "More options",
+  "emptyStateImportAction": "Import by link",
+  "emptyStateOtherOptions": "Further options",
   "recipePrint": "Print",
   "cookingModePreviousStep": "Previous step",
   "cookingModeNextStep": "Next step",

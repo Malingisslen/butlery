@@ -689,19 +689,19 @@ abstract class AppLocalizations {
   /// No description provided for @confirmDeleteItem.
   ///
   /// In sv, this message translates to:
-  /// **'Är du säker på att du vill ta bort \"{itemName}\"?'**
+  /// **'Bekräftelse krävs — ta bort \"{itemName}\"?'**
   String confirmDeleteItem(String itemName);
 
   /// No description provided for @confirmUnsavedChanges.
   ///
   /// In sv, this message translates to:
-  /// **'Du har osparade ändringar. Vill du lämna utan att spara?'**
+  /// **'Osparade ändringar föreligger. Lämna utan att spara?'**
   String get confirmUnsavedChanges;
 
   /// No description provided for @confirmIrreversibleAction.
   ///
   /// In sv, this message translates to:
-  /// **'Denna åtgärd kan inte ångras.'**
+  /// **'Åtgärden är slutgiltig.'**
   String get confirmIrreversibleAction;
 
   /// No description provided for @draftRecovery.
@@ -785,13 +785,13 @@ abstract class AppLocalizations {
   /// No description provided for @emptyNoRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Du har inga recept än.'**
+  /// **'Receptsamlingen är ännu tom.'**
   String get emptyNoRecipes;
 
   /// No description provided for @emptyNoRecipesSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Lägg till ditt första recept genom att trycka på \"{addButton}\"'**
+  /// **'Första receptet läggs till via \"{addButton}\".'**
   String emptyNoRecipesSubtitle(String addButton);
 
   /// No description provided for @emptyNoSearchResultsSubtitle.
@@ -815,37 +815,37 @@ abstract class AppLocalizations {
   /// No description provided for @emptyNoMenuTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Ingen meny genererad ännu'**
+  /// **'Ingen meny är ännu uppdukad'**
   String get emptyNoMenuTitle;
 
   /// No description provided for @emptyNoMenuSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv vad du vill ha eller tryck på knappen nedan'**
+  /// **'Ange önskemål, eller använd knappen nedan'**
   String get emptyNoMenuSubtitle;
 
   /// No description provided for @emptyNoShoppingListTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Ingen meny att skapa inköpslista från'**
+  /// **'Ingen meny finns att avleda en inköpslista från'**
   String get emptyNoShoppingListTitle;
 
   /// No description provided for @emptyNoShoppingListSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Gå tillbaka och skapa en veckomeny först'**
+  /// **'En veckomeny behövs först'**
   String get emptyNoShoppingListSubtitle;
 
   /// No description provided for @emptyNoFriendsTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Inga vänner ännu'**
+  /// **'Ingen är bjuden ännu'**
   String get emptyNoFriendsTitle;
 
   /// No description provided for @emptyNoFriendsSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Lägg till vänner för att dela recept och menyer'**
+  /// **'Vänner inbjuds för att dela recept och menyer'**
   String get emptyNoFriendsSubtitle;
 
   /// No description provided for @emptyNoCategoriesTitle.
@@ -911,13 +911,13 @@ abstract class AppLocalizations {
   /// No description provided for @emptyNoTagsTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Inga taggar ännu'**
+  /// **'Inga taggar är ännu ordnade'**
   String get emptyNoTagsTitle;
 
   /// No description provided for @emptyNoTagsSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Skapa personliga taggar för att organisera dina recept.'**
+  /// **'Personliga taggar används för att ordna receptsamlingen.'**
   String get emptyNoTagsSubtitle;
 
   /// No description provided for @emptyNoGroupsTitle.
@@ -941,13 +941,13 @@ abstract class AppLocalizations {
   /// No description provided for @emptyNoConversationsSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Starta en konversation med en vän för att prata om recept.'**
+  /// **'Ett samtal med en vän kan inledas härifrån.'**
   String get emptyNoConversationsSubtitle;
 
   /// No description provided for @emptyGenericTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Inget innehåll att visa'**
+  /// **'Inget innehåll finns att visa'**
   String get emptyGenericTitle;
 
   /// No description provided for @recipeName.
@@ -19667,7 +19667,7 @@ abstract class AppLocalizations {
   /// No description provided for @networkErrorDefault.
   ///
   /// In sv, this message translates to:
-  /// **'Nätverksfel under {operation}. Kontrollera din anslutning och försök igen.'**
+  /// **'Nätverket svek under {operation}. Kontrollera anslutningen och försök åter.'**
   String networkErrorDefault(String operation);
 
   /// No description provided for @permissionErrorAction.
@@ -20893,13 +20893,13 @@ abstract class AppLocalizations {
   /// No description provided for @emptyStateNewUserTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Välkommen till Butlery!'**
+  /// **'Välkommen. Butlery står redo.'**
   String get emptyStateNewUserTitle;
 
   /// No description provided for @emptyStateNewUserDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Importera ditt första recept från en webbadress eller lägg till det manuellt.'**
+  /// **'Första receptet kan importeras från en webbadress, eller föras in manuellt.'**
   String get emptyStateNewUserDescription;
 
   /// No description provided for @emptyStateNewUserWithPrefs.
@@ -20911,13 +20911,13 @@ abstract class AppLocalizations {
   /// No description provided for @emptyStateImportAction.
   ///
   /// In sv, this message translates to:
-  /// **'Importera från länk'**
+  /// **'Importera via länk'**
   String get emptyStateImportAction;
 
   /// No description provided for @emptyStateOtherOptions.
   ///
   /// In sv, this message translates to:
-  /// **'Fler alternativ'**
+  /// **'Övriga alternativ'**
   String get emptyStateOtherOptions;
 
   /// No description provided for @cookingModePreviousStep.

@@ -263,7 +263,7 @@
       }
     }
   },
-  "confirmDeleteItem": "Är du säker på att du vill ta bort \"{itemName}\"?",
+  "confirmDeleteItem": "Bekräftelse krävs — ta bort \"{itemName}\"?",
   "@confirmDeleteItem": {
     "placeholders": {
       "itemName": {
@@ -271,8 +271,8 @@
       }
     }
   },
-  "confirmUnsavedChanges": "Du har osparade ändringar. Vill du lämna utan att spara?",
-  "confirmIrreversibleAction": "Denna åtgärd kan inte ångras.",
+  "confirmUnsavedChanges": "Osparade ändringar föreligger. Lämna utan att spara?",
+  "confirmIrreversibleAction": "Åtgärden är slutgiltig.",
   "draftRecovery": "Återställ utkast",
   "draftRecoverySubtitle": "Du har osparade receptutkast. Vill du fortsätta där du slutade?",
   "draftRestore": "Återställ",
@@ -300,8 +300,8 @@
   "emptyNoItems": "Inga objekt hittades.",
   "emptyNoResults": "Inga resultat hittades.",
   "emptyNoFriends": "Du har inga vänner än.",
-  "emptyNoRecipes": "Du har inga recept än.",
-  "emptyNoRecipesSubtitle": "Lägg till ditt första recept genom att trycka på \"{addButton}\"",
+  "emptyNoRecipes": "Receptsamlingen är ännu tom.",
+  "emptyNoRecipesSubtitle": "Första receptet läggs till via \"{addButton}\".",
   "@emptyNoRecipesSubtitle": {
     "placeholders": {
       "addButton": {
@@ -312,12 +312,12 @@
   "emptyNoSearchResultsSubtitle": "Prova att söka på något annat eller rensa sökningen",
   "emptyNoFriendsSearchTitle": "Inga vänner matchade din sökning",
   "emptyNoGroupsSearchTitle": "Inga grupper matchade din sökning",
-  "emptyNoMenuTitle": "Ingen meny genererad ännu",
-  "emptyNoMenuSubtitle": "Skriv vad du vill ha eller tryck på knappen nedan",
-  "emptyNoShoppingListTitle": "Ingen meny att skapa inköpslista från",
-  "emptyNoShoppingListSubtitle": "Gå tillbaka och skapa en veckomeny först",
-  "emptyNoFriendsTitle": "Inga vänner ännu",
-  "emptyNoFriendsSubtitle": "Lägg till vänner för att dela recept och menyer",
+  "emptyNoMenuTitle": "Ingen meny är ännu uppdukad",
+  "emptyNoMenuSubtitle": "Ange önskemål, eller använd knappen nedan",
+  "emptyNoShoppingListTitle": "Ingen meny finns att avleda en inköpslista från",
+  "emptyNoShoppingListSubtitle": "En veckomeny behövs först",
+  "emptyNoFriendsTitle": "Ingen är bjuden ännu",
+  "emptyNoFriendsSubtitle": "Vänner inbjuds för att dela recept och menyer",
   "emptyNoCategoriesTitle": "Inga kategorier skapade",
   "emptyNoCategoriesSubtitle": "Skapa din första kategori för att organisera dina vänner",
   "emptyNoImagesTitle": "Inga bilder tillagda",
@@ -328,13 +328,13 @@
   "emptyNoSavedMenusSubtitle": "Skapa och spara menyer för att enkelt ladda dem senare",
   "emptyNoSharedShoppingListsTitle": "Inga delade inköpslistor",
   "emptyNoSharedShoppingListsSubtitle": "När du samarbetar på inköpslistor med vänner eller familj visas de här.",
-  "emptyNoTagsTitle": "Inga taggar ännu",
-  "emptyNoTagsSubtitle": "Skapa personliga taggar för att organisera dina recept.",
+  "emptyNoTagsTitle": "Inga taggar är ännu ordnade",
+  "emptyNoTagsSubtitle": "Personliga taggar används för att ordna receptsamlingen.",
   "emptyNoGroupsTitle": "Inga grupper ännu",
   "emptyNoGroupsSubtitle": "Skapa en grupp för att dela recept och planera måltider tillsammans.",
   "emptyNoConversationsTitle": "Inga konversationer ännu",
-  "emptyNoConversationsSubtitle": "Starta en konversation med en vän för att prata om recept.",
-  "emptyGenericTitle": "Inget innehåll att visa",
+  "emptyNoConversationsSubtitle": "Ett samtal med en vän kan inledas härifrån.",
+  "emptyGenericTitle": "Inget innehåll finns att visa",
   "recipeName": "Receptnamn",
   "recipeDescription": "Beskrivning",
   "recipeIngredients": "Ingredienser",
@@ -7881,7 +7881,7 @@
       }
     }
   },
-  "networkErrorDefault": "Nätverksfel under {operation}. Kontrollera din anslutning och försök igen.",
+  "networkErrorDefault": "Nätverket svek under {operation}. Kontrollera anslutningen och försök åter.",
   "@networkErrorDefault": {
     "placeholders": {
       "operation": {
@@ -8355,11 +8355,11 @@
   },
   "seasonalBannerAction": "Visa",
   "dormantRecipesTitle": "Prova något du sparat",
-  "emptyStateNewUserTitle": "Välkommen till Butlery!",
-  "emptyStateNewUserDescription": "Importera ditt första recept från en webbadress eller lägg till det manuellt.",
+  "emptyStateNewUserTitle": "Välkommen. Butlery står redo.",
+  "emptyStateNewUserDescription": "Första receptet kan importeras från en webbadress, eller föras in manuellt.",
   "emptyStateNewUserWithPrefs": "Vi har dina kostpreferenser redo. Importera ditt första recept så filtrerar vi åt dig!",
-  "emptyStateImportAction": "Importera från länk",
-  "emptyStateOtherOptions": "Fler alternativ",
+  "emptyStateImportAction": "Importera via länk",
+  "emptyStateOtherOptions": "Övriga alternativ",
   "recipePrint": "Skriv ut",
   "cookingModePreviousStep": "Föregående steg",
   "cookingModeNextStep": "Nästa steg",
