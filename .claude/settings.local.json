@@ -22,7 +22,16 @@
       "Bash(rm /c/Users/malla/.claude/projects/C--Butlery-butlery/memory/patterns.md)",
       "Bash(rm /c/Users/malla/.claude/projects/C--Butlery-butlery/memory/friends-screen-freeze-diagnostic.md)",
       "Bash(grep \"E]$\" \"C:\\\\Users\\\\malla\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Butlery-butlery\\\\dc60eca4-2b56-4cc4-97a2-1c13f6787a22\\\\tasks\\\\bznlpacmm.output\")",
-      "Bash(bash .claude/hooks/monitors/ci-watcher.sh 12e2645ecd4d78f2d58e7508a62799d6f80b9e6a)"
+      "Bash(bash .claude/hooks/monitors/ci-watcher.sh 12e2645ecd4d78f2d58e7508a62799d6f80b9e6a)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__resize_window",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer",
+      "Bash(chmod +x .claude/hooks/require-simplify-before-commit.sh)",
+      "Bash(bash .claude/hooks/require-simplify-before-commit.sh)",
+      "Bash(rm -f .claude/state/simplify-done.marker)",
+      "Bash(mkdir -p .claude/state)",
+      "Bash(touch .claude/state/simplify-done.marker)"
     ]
   }
 }
