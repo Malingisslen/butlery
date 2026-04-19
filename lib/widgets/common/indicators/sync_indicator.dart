@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -42,6 +45,14 @@ class _SyncIndicatorState extends State<SyncIndicator>
   late final Animation<double> _pulseAnimation;
   bool _reduceMotion = false;
 
+  /// Firestore returns the first snapshot from cache (`fromCache: true`) for
+  /// a second or two even when online, before the server responds. Showing
+  /// the offline icon for that blink is misleading. We delay committing to
+  /// offline state until the cache flag has persisted past this grace period.
+  static const Duration _offlineGracePeriod = Duration(seconds: 3);
+  Timer? _offlineDebounce;
+  bool _debouncedOffline = false;
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +67,7 @@ class _SyncIndicatorState extends State<SyncIndicator>
       parent: _pulseController,
       curve: Curves.easeInOut,
     ));
+    _syncOfflineDebounce();
     _updateAnimation();
   }
 
@@ -72,10 +84,42 @@ class _SyncIndicatorState extends State<SyncIndicator>
   @override
   void didUpdateWidget(SyncIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.isFromCache != widget.isFromCache) {
+      _syncOfflineDebounce();
+    }
     if (oldWidget.hasPendingWrites != widget.hasPendingWrites ||
         oldWidget.isFromCache != widget.isFromCache) {
       _updateAnimation();
     }
+  }
+
+  /// Only mark the widget as "offline" once `isFromCache` has persisted for
+  /// [_offlineGracePeriod] — prevents the boot-time cache snapshot from
+  /// flashing the offline icon.
+  ///
+  /// On Flutter web, Firestore's web SDK keeps `fromCache: true` on many
+  /// snapshots even while actively talking to the server, so the flag is an
+  /// unreliable offline signal there. We suppress offline state entirely on
+  /// web — Firebase handles sync and surfaces genuine failures through
+  /// per-request errors.
+  void _syncOfflineDebounce() {
+    _offlineDebounce?.cancel();
+    if (kIsWeb || !widget.isFromCache) {
+      // Already cleared — nothing to notify. Guards initState where
+      // setState() is illegal and avoids waking up parent rebuilds.
+      if (!_debouncedOffline) return;
+      if (mounted) {
+        setState(() => _debouncedOffline = false);
+      } else {
+        _debouncedOffline = false;
+      }
+      return;
+    }
+    _offlineDebounce = Timer(_offlineGracePeriod, () {
+      if (mounted && widget.isFromCache) {
+        setState(() => _debouncedOffline = true);
+      }
+    });
   }
 
   void _updateAnimation() {
@@ -89,12 +133,13 @@ class _SyncIndicatorState extends State<SyncIndicator>
 
   SyncStatus get _status {
     if (widget.hasPendingWrites) return SyncStatus.pendingWrites;
-    if (widget.isFromCache) return SyncStatus.offline;
+    if (_debouncedOffline) return SyncStatus.offline;
     return SyncStatus.synced;
   }
 
   @override
   void dispose() {
+    _offlineDebounce?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
