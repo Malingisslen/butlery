@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -195,15 +196,9 @@ class RecipeQueryViewModel extends ChangeNotifier
     if (_seasonalIngredientFilter != null &&
         _seasonalIngredientFilter!.isNotEmpty) {
       final needles = _seasonalIngredientFilter!;
-      recipes = recipes.where((r) {
-        for (final ing in r.ingredients) {
-          final haystack = ing.toLowerCase();
-          for (final needle in needles) {
-            if (haystack.contains(needle)) return true;
-          }
-        }
-        return false;
-      }).toList();
+      recipes = recipes
+          .where((r) => SeasonalHeroService.recipeMatchesAnyNeedle(r, needles))
+          .toList();
     }
 
     // Update cache

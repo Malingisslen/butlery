@@ -4,17 +4,13 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 ///
 /// Loaded from `assets/seasonal/{year}.json` at startup via
 /// `SeasonalHeroService`. A [SeasonalMonth] describes which ingredients are
-/// in season, which vegetable illustration represents the month, and an
-/// optional two-stop gradient for decorative surfaces. The gradient palette
-/// is held as hex strings so the curation file can be edited without
-/// touching Dart code; interpretation is delegated to the widget layer.
+/// in season and which vegetable illustration represents the month.
 class SeasonalMonth {
   const SeasonalMonth({
     required this.monthIndex,
     required this.monthKey,
     required this.ingredients,
     required this.vegetableType,
-    required this.gradient,
   });
 
   /// 1-based month number (1 = January).
@@ -31,21 +27,17 @@ class SeasonalMonth {
   /// Illustration shown in the seasonal header.
   final VegetableType vegetableType;
 
-  /// Two hex colour stops for decorative surfaces. Stored as strings so the
-  /// curation JSON can be edited without rebuilding the app.
-  final List<String> gradient;
-
   /// Parse one month entry from the seasonal JSON asset.
   ///
   /// Throws [FormatException] if required fields are missing or malformed;
   /// the service catches and logs so the UI degrades to "no hero" rather than
-  /// crashing.
+  /// crashing. Unknown keys in the JSON (e.g. `gradient`) are ignored —
+  /// curation data can live alongside what Dart currently reads.
   factory SeasonalMonth.fromJson(Map<String, dynamic> json) {
     final monthIndex = json['monthIndex'];
     final monthKey = json['monthKey'];
     final ingredientsRaw = json['ingredients'];
     final vegetableTypeName = json['vegetableType'];
-    final gradientRaw = json['gradient'];
 
     if (monthIndex is! int || monthIndex < 1 || monthIndex > 12) {
       throw const FormatException('SeasonalMonth: monthIndex must be 1-12');
@@ -59,9 +51,6 @@ class SeasonalMonth {
     if (vegetableTypeName is! String) {
       throw const FormatException('SeasonalMonth: vegetableType required');
     }
-    if (gradientRaw is! List || gradientRaw.length != 2) {
-      throw const FormatException('SeasonalMonth: gradient needs 2 hex stops');
-    }
 
     return SeasonalMonth(
       monthIndex: monthIndex,
@@ -69,7 +58,6 @@ class SeasonalMonth {
       ingredients:
           ingredientsRaw.map((e) => (e as String).toLowerCase()).toList(),
       vegetableType: _parseVegetableType(vegetableTypeName),
-      gradient: gradientRaw.cast<String>(),
     );
   }
 

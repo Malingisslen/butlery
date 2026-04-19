@@ -44,17 +44,24 @@ class SeasonalHeroService extends BaseService {
   /// safe to call synchronously once the month is resolved.
   List<Recipe> matchUserRecipes(SeasonalMonth month, List<Recipe> recipes) {
     if (month.ingredients.isEmpty || recipes.isEmpty) return const [];
-
     final needles = month.ingredients; // already lowercase per fromJson
-    return recipes.where((recipe) {
-      for (final ingredient in recipe.ingredients) {
-        final haystack = ingredient.toLowerCase();
-        for (final needle in needles) {
-          if (haystack.contains(needle)) return true;
-        }
+    return recipes
+        .where((r) => recipeMatchesAnyNeedle(r, needles))
+        .toList(growable: false);
+  }
+
+  /// Shared predicate used by both [matchUserRecipes] and
+  /// `RecipeQueryViewModel.applySeasonalFilter` so the two paths can't drift.
+  /// [lowercaseNeedles] must already be lowercased.
+  static bool recipeMatchesAnyNeedle(
+      Recipe recipe, List<String> lowercaseNeedles) {
+    for (final ingredient in recipe.ingredients) {
+      final haystack = ingredient.toLowerCase();
+      for (final needle in lowercaseNeedles) {
+        if (haystack.contains(needle)) return true;
       }
-      return false;
-    }).toList(growable: false);
+    }
+    return false;
   }
 
   /// Convenience: returns `(month, matchingRecipes)` when at least two user

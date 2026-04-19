@@ -18,7 +18,6 @@ void main() {
         monthKey: 'april',
         ingredients: ['sparris', 'rabarber', 'purjolök'],
         vegetableType: VegetableType.asparagus,
-        gradient: ['#E8F0EA', '#F8F4E8'],
       );
 
   int recipeCounter = 0;
@@ -82,7 +81,6 @@ void main() {
         monthKey: 'april',
         ingredients: [],
         vegetableType: VegetableType.asparagus,
-        gradient: ['#E8F0EA', '#F8F4E8'],
       );
       final r = recipe(ingredients: const ['sparris']);
       expect(service.matchUserRecipes(emptyMonth, [r]), isEmpty);
@@ -136,7 +134,9 @@ void main() {
   });
 
   group('SeasonalMonth.fromJson', () {
-    test('parses a well-formed entry', () {
+    test('parses a well-formed entry and ignores unknown keys', () {
+      // `gradient` is curation-only data kept alongside what Dart reads;
+      // the parser must tolerate it without failing.
       final m = SeasonalMonth.fromJson({
         'monthIndex': 4,
         'monthKey': 'april',
@@ -155,19 +155,6 @@ void main() {
                 'monthKey': 'april',
                 'ingredients': ['x'],
                 'vegetableType': 'asparagus',
-                'gradient': ['#000', '#fff'],
-              }),
-          throwsFormatException);
-    });
-
-    test('rejects gradient with wrong arity', () {
-      expect(
-          () => SeasonalMonth.fromJson({
-                'monthIndex': 4,
-                'monthKey': 'april',
-                'ingredients': ['x'],
-                'vegetableType': 'asparagus',
-                'gradient': ['#000'],
               }),
           throwsFormatException);
     });

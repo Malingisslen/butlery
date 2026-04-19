@@ -16,7 +16,6 @@ void main() {
     monthKey: 'april',
     ingredients: ['sparris', 'rabarber', 'purjolök'],
     vegetableType: VegetableType.asparagus,
-    gradient: ['#E8F0EA', '#F8F4E8'],
   );
 
   Widget harness({required VoidCallback onTap, int matchCount = 5}) {
