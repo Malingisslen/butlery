@@ -37,10 +37,13 @@ Unblock Chrome MCP/`/smoke-test` — canvas rendering defeats CSS selectors; nee
 
 ### Post-Sprint Steps
 
-- [ ] Run `dart analyze --fatal-infos` — clean
-- [ ] Targeted tests per agent batch
-- [ ] Commit, push to main
-- [ ] Update Linear: BUT-202, BUT-215, BUT-403, BUT-347 → Done (or In Progress if partial)
+- [x] Run `dart analyze --fatal-infos` — 0 issues
+- [x] Targeted tests per agent batch — 50 new tests green (11 + 23 + 16)
+- [x] Commit, push to main — `8cf2a4dab`
+- [x] Update Linear: BUT-202, BUT-215, BUT-403, BUT-347 → Done
+- [x] **Follow-up tickets filed as session chips:**
+  - Consolidate `IngredientSubstitutionService` (legacy display-name-keyed) vs new `SubstitutionSuggestionService` (canonical-ID-keyed) — both target same Firestore collection name with different access patterns
+  - Call `SemanticsBinding.instance.ensureSemantics()` on app startup so Chrome MCP queries work without the manual "Enable accessibility" placeholder click
 
 ---
 
