@@ -144,6 +144,7 @@ flutter:
     - assets/data/
     - assets/illustrations/
     - assets/illustrations/arta/
+    - assets/seasonal/
 
   # UI Redesign Fonts
   # - JosefinSans: Headers, navigation (geometric, elegant, vintage feel)

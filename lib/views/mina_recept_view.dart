@@ -56,8 +56,10 @@ import 'package:butlery/theme/app_text_styles.dart';
 // Core services and utilities
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/models/seasonal/seasonal_month.dart';
+import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
+import 'package:butlery/widgets/home/seasonal_hero_header.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -144,6 +146,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   /// Cuisine key → display name map, loaded once in initState.
   Map<String, String> _cuisineDisplayNames = const {};
 
+  /// BUT-409: cached seasonal month future. Resolved once in initState so the
+  /// hero header's FutureBuilder doesn't rebuild a new future each frame.
+  late final Future<SeasonalMonth?> _seasonalMonthFuture;
+  late final SeasonalHeroService _seasonalHeroService;
+
   void _loadCuisineNames() {
     try {
       final config = ServiceLocator.get<TagConfigService>().configOrNull;
@@ -164,6 +171,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     // Load data after widget mount with safety checks
     _loadCuisineNames();
+
+    // BUT-409: seasonal data loads once from bundled asset.
+    _seasonalHeroService = ServiceLocator.get<SeasonalHeroService>();
+    _seasonalMonthFuture = _seasonalHeroService.getCurrentMonth();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -531,15 +542,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 
   Widget _buildDiscoveryShelves(RecipeQueryViewModel queryVm) {
-    final inSeason = queryVm.getInSeasonRecipes();
     return Column(
       children: [
-        if (inSeason.length >= 2) _buildSeasonalBanner(inSeason.length),
-        RecipeShelf(
-          title: context.l10n.seasonalInSeasonNow,
-          recipes: inSeason,
-          onRecipeTap: _navigateToRecipe,
-        ),
+        _buildSeasonalHero(queryVm),
         RecipeShelf(
           title: context.l10n.dormantRecipesTitle,
           recipes: queryVm.getDormantRecipes(),
@@ -554,39 +559,30 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
   }
 
-  Widget _buildSeasonalBanner(int count) {
-    final cs = Theme.of(context).colorScheme;
-    final season = SeasonUtils.currentSeasonTag();
-    final message = switch (season) {
-      'vår' => context.l10n.seasonalBannerSpring(count),
-      'sommar' => context.l10n.seasonalBannerSummer(count),
-      'höst' => context.l10n.seasonalBannerAutumn(count),
-      _ => context.l10n.seasonalBannerWinter(count),
-    };
-    return Container(
-      margin: AppDimensions.responsiveContentPadding(context),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
-      ),
-      decoration: BoxDecoration(
-        color: cs.primaryContainer,
-        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.eco, color: cs.primary, size: 20),
-          const SizedBox(width: AppDimensions.spacingSm),
-          Expanded(
-            child: Text(
-              message,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onPrimaryContainer,
-              ),
-            ),
+  /// BUT-409 seasonal hero — shown only when ≥2 user recipes match this
+  /// month's curated ingredients. Tap applies an OR-ingredient filter via
+  /// `RecipeQueryViewModel.applySeasonalFilter`; clearing happens through
+  /// the normal clear-all-filters flow.
+  Widget _buildSeasonalHero(RecipeQueryViewModel queryVm) {
+    return FutureBuilder<SeasonalMonth?>(
+      future: _seasonalMonthFuture,
+      builder: (_, snap) {
+        final month = snap.data;
+        if (month == null) return const SizedBox.shrink();
+        final matches = _seasonalHeroService.matchUserRecipes(
+          month,
+          queryVm.personalRecipes,
+        );
+        if (matches.length < 2) return const SizedBox.shrink();
+        return SeasonalHeroHeader(
+          month: month,
+          matchCount: matches.length,
+          onTap: () => queryVm.applySeasonalFilter(
+            ingredients: month.ingredients,
+            label: month.monthKey,
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

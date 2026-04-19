@@ -42,12 +42,19 @@ class RecipeQueryViewModel extends ChangeNotifier
   String? _selectedTag;
   RecipeType? _selectedType;
 
+  // BUT-409: seasonal ingredient filter activated by the seasonal hero header.
+  // When non-empty, `filteredRecipes` is narrowed to recipes whose ingredient
+  // list contains ANY of these needles (substring, case-insensitive).
+  List<String>? _seasonalIngredientFilter;
+  String? _seasonalFilterLabel;
+
   // Performance optimization: Cache filtered results
   List<Recipe>? _cachedFilteredRecipes;
   String _lastSearchQuery = '';
   String? _lastMealType;
   String? _lastTag;
   RecipeType? _lastType;
+  List<String>? _lastSeasonalIngredients;
   List<Recipe> get allRecipes => _recipeService.recipes;
   List<Recipe> get personalRecipes => _recipeService.personalRecipes;
   List<Recipe> get collaborativeRecipes => _recipeService.collaborativeRecipes;
@@ -63,6 +70,11 @@ class RecipeQueryViewModel extends ChangeNotifier
   String? get selectedMealType => _selectedMealType;
   String? get selectedTag => _selectedTag;
   RecipeType? get selectedType => _selectedType;
+  List<String>? get seasonalIngredientFilter => _seasonalIngredientFilter;
+  String? get seasonalFilterLabel => _seasonalFilterLabel;
+  bool get hasSeasonalFilter =>
+      _seasonalIngredientFilter != null &&
+      _seasonalIngredientFilter!.isNotEmpty;
   Recipe? getRecipeById(String id) {
     if (ValidationUtils.isNullOrEmpty(id)) return null;
     return allRecipes.where((r) => r.id == id).firstOrNull;
@@ -149,7 +161,8 @@ class RecipeQueryViewModel extends ChangeNotifier
         _lastSearchQuery == _searchQuery &&
         _lastMealType == _selectedMealType &&
         _lastTag == _selectedTag &&
-        _lastType == _selectedType) {
+        _lastType == _selectedType &&
+        listEquals(_lastSeasonalIngredients, _seasonalIngredientFilter)) {
       return _cachedFilteredRecipes!;
     }
 
@@ -178,12 +191,30 @@ class RecipeQueryViewModel extends ChangeNotifier
       recipes = recipes.where((r) => r.type == _selectedType).toList();
     }
 
+    // Apply seasonal ingredient filter (OR-matching across needles).
+    if (_seasonalIngredientFilter != null &&
+        _seasonalIngredientFilter!.isNotEmpty) {
+      final needles = _seasonalIngredientFilter!;
+      recipes = recipes.where((r) {
+        for (final ing in r.ingredients) {
+          final haystack = ing.toLowerCase();
+          for (final needle in needles) {
+            if (haystack.contains(needle)) return true;
+          }
+        }
+        return false;
+      }).toList();
+    }
+
     // Update cache
     _cachedFilteredRecipes = recipes;
     _lastSearchQuery = _searchQuery;
     _lastMealType = _selectedMealType;
     _lastTag = _selectedTag;
     _lastType = _selectedType;
+    _lastSeasonalIngredients = _seasonalIngredientFilter == null
+        ? null
+        : List.unmodifiable(_seasonalIngredientFilter!);
 
     return recipes;
   }
@@ -211,6 +242,8 @@ class RecipeQueryViewModel extends ChangeNotifier
     _selectedMealType = null;
     _selectedTag = null;
     _selectedType = null;
+    _seasonalIngredientFilter = null;
+    _seasonalFilterLabel = null;
     _invalidateCache();
     notifyListeners();
   }
@@ -221,11 +254,35 @@ class RecipeQueryViewModel extends ChangeNotifier
     clearFilters();
   }
 
+  /// Activate the seasonal ingredient filter. Called from the seasonal hero
+  /// header — filters `filteredRecipes` to recipes whose ingredients match
+  /// any of [ingredients] (substring, case-insensitive).
+  void applySeasonalFilter({
+    required List<String> ingredients,
+    required String label,
+  }) {
+    _seasonalIngredientFilter =
+        ingredients.map((e) => e.toLowerCase()).toList(growable: false);
+    _seasonalFilterLabel = label;
+    _invalidateCache();
+    notifyListeners();
+  }
+
+  /// Clear only the seasonal filter, leaving other filters intact.
+  void clearSeasonalFilter() {
+    if (_seasonalIngredientFilter == null) return;
+    _seasonalIngredientFilter = null;
+    _seasonalFilterLabel = null;
+    _invalidateCache();
+    notifyListeners();
+  }
+
   bool get hasActiveFilters =>
       _searchQuery.isNotEmpty ||
       _selectedMealType != null ||
       _selectedTag != null ||
-      _selectedType != null;
+      _selectedType != null ||
+      hasSeasonalFilter;
   List<Recipe> getEditableRecipes() {
     if (currentUserId == null) return [];
 

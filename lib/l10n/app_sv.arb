@@ -8335,25 +8335,27 @@
   "importPendingRetry": "Försök igen",
   "importPendingDismiss": "Avfärda",
   "importSavedForLater": "URL sparad — importeras när du är online igen",
-  "seasonalInSeasonNow": "I säsong just nu",
   "seasonalForgottenFavorites": "Glömda favoriter",
-  "seasonalBannerSpring": "Våren är här! {count} av dina recept passar nu",
-  "@seasonalBannerSpring": {
+  "seasonalHeroTitle": "just nu i säsong · {month}",
+  "@seasonalHeroTitle": {
+    "placeholders": { "month": {"type": "String"} }
+  },
+  "seasonalHeroRecipeCount": "{count, plural, =1{1 recept} other{{count} recept}}",
+  "@seasonalHeroRecipeCount": {
     "placeholders": { "count": {"type": "int"} }
   },
-  "seasonalBannerSummer": "Sommaren är här! {count} av dina recept passar nu",
-  "@seasonalBannerSummer": {
-    "placeholders": { "count": {"type": "int"} }
-  },
-  "seasonalBannerAutumn": "Hösten är här! {count} av dina recept passar nu",
-  "@seasonalBannerAutumn": {
-    "placeholders": { "count": {"type": "int"} }
-  },
-  "seasonalBannerWinter": "Vintern är här! {count} av dina recept passar nu",
-  "@seasonalBannerWinter": {
-    "placeholders": { "count": {"type": "int"} }
-  },
-  "seasonalBannerAction": "Visa",
+  "seasonalMonthJanuary": "januari",
+  "seasonalMonthFebruary": "februari",
+  "seasonalMonthMarch": "mars",
+  "seasonalMonthApril": "april",
+  "seasonalMonthMay": "maj",
+  "seasonalMonthJune": "juni",
+  "seasonalMonthJuly": "juli",
+  "seasonalMonthAugust": "augusti",
+  "seasonalMonthSeptember": "september",
+  "seasonalMonthOctober": "oktober",
+  "seasonalMonthNovember": "november",
+  "seasonalMonthDecember": "december",
   "dormantRecipesTitle": "Prova något du sparat",
   "emptyStateNewUserTitle": "Välkommen. Butlery står redo.",
   "emptyStateNewUserDescription": "Första receptet kan importeras från en webbadress, eller föras in manuellt.",

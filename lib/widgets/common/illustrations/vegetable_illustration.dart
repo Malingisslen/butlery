@@ -13,6 +13,7 @@ enum VegetableType {
   broccoli,
 
   /// Mushroom/champinjon - used for "no search results" state
+  /// Also used for chanterelle season (September–October).
   mushroom,
 
   /// Pea pod/ärtskida - used for "no menu" state (static)
@@ -23,6 +24,30 @@ enum VegetableType {
 
   /// Red onion/rödlök - used for error states
   redOnion,
+
+  // BUT-409: seasonal variants. Asset paths currently map to the closest
+  // visual placeholder from the existing 5 — swap to dedicated illustrations
+  // when they ship.
+  /// Asparagus/sparris - April season.
+  asparagus,
+
+  /// Rhubarb/rabarber - May season.
+  rhubarb,
+
+  /// Berry (strawberry/blueberry) - June–August season.
+  berry,
+
+  /// Pumpkin/pumpa - September season.
+  pumpkin,
+
+  /// Cabbage/kål - January, March, November season.
+  cabbage,
+
+  /// Citrus - February, December season (greenhouse/imported staple).
+  citrus,
+
+  /// Beetroot/rödbeta - November season.
+  beetroot,
 }
 
 /// Displays a vegetable illustration from the assets.
@@ -56,6 +81,10 @@ class VegetableIllustration extends StatelessWidget {
   final double opacity;
 
   /// Returns the asset path for a vegetable type.
+  ///
+  /// Seasonal variants (asparagus, rhubarb, etc.) currently reuse the closest
+  /// visual placeholder from the original five. When dedicated illustrations
+  /// ship, update only this switch — no call-site changes needed.
   static String getAssetPath(VegetableType type) {
     switch (type) {
       case VegetableType.broccoli:
@@ -67,6 +96,21 @@ class VegetableIllustration extends StatelessWidget {
       case VegetableType.carrot:
         return 'assets/illustrations/morot.png';
       case VegetableType.redOnion:
+        return 'assets/illustrations/rodlok.PNG';
+      // Seasonal placeholders — map to nearest existing illustration.
+      case VegetableType.asparagus:
+        return 'assets/illustrations/artskida.PNG';
+      case VegetableType.rhubarb:
+        return 'assets/illustrations/morot.png';
+      case VegetableType.berry:
+        return 'assets/illustrations/rodlok.PNG';
+      case VegetableType.pumpkin:
+        return 'assets/illustrations/morot.png';
+      case VegetableType.cabbage:
+        return 'assets/illustrations/broccoli.png';
+      case VegetableType.citrus:
+        return 'assets/illustrations/morot.png';
+      case VegetableType.beetroot:
         return 'assets/illustrations/rodlok.PNG';
     }
   }
@@ -111,6 +155,16 @@ class VegetableIllustration extends StatelessWidget {
         return Icons.shopping_cart;
       case VegetableType.redOnion:
         return Icons.error_outline;
+      case VegetableType.asparagus:
+      case VegetableType.rhubarb:
+      case VegetableType.cabbage:
+        return Icons.grass;
+      case VegetableType.berry:
+      case VegetableType.citrus:
+        return Icons.circle;
+      case VegetableType.pumpkin:
+      case VegetableType.beetroot:
+        return Icons.eco;
     }
   }
 
@@ -120,6 +174,13 @@ class VegetableIllustration extends StatelessWidget {
     VegetableType.peaPod: AppColors.forestGreen,
     VegetableType.carrot: AppColors.illustrationOrange,
     VegetableType.redOnion: AppColors.illustrationPurpleRed,
+    VegetableType.asparagus: AppColors.forestGreen,
+    VegetableType.rhubarb: AppColors.illustrationPurpleRed,
+    VegetableType.berry: AppColors.illustrationPurpleRed,
+    VegetableType.pumpkin: AppColors.illustrationOrange,
+    VegetableType.cabbage: AppColors.forestGreen,
+    VegetableType.citrus: AppColors.illustrationOrange,
+    VegetableType.beetroot: AppColors.illustrationPurpleRed,
   };
 
   Color _getFallbackColor(VegetableType type) {

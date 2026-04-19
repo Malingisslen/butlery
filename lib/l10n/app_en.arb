@@ -8335,25 +8335,27 @@
   "importPendingRetry": "Retry",
   "importPendingDismiss": "Dismiss",
   "importSavedForLater": "URL saved — will import when you're back online",
-  "seasonalInSeasonNow": "In Season Now",
   "seasonalForgottenFavorites": "Forgotten Favorites",
-  "seasonalBannerSpring": "Spring is here! {count} of your recipes are in season",
-  "@seasonalBannerSpring": {
+  "seasonalHeroTitle": "in season now · {month}",
+  "@seasonalHeroTitle": {
+    "placeholders": { "month": {"type": "String"} }
+  },
+  "seasonalHeroRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
+  "@seasonalHeroRecipeCount": {
     "placeholders": { "count": {"type": "int"} }
   },
-  "seasonalBannerSummer": "Summer is here! {count} of your recipes are in season",
-  "@seasonalBannerSummer": {
-    "placeholders": { "count": {"type": "int"} }
-  },
-  "seasonalBannerAutumn": "Autumn is here! {count} of your recipes are in season",
-  "@seasonalBannerAutumn": {
-    "placeholders": { "count": {"type": "int"} }
-  },
-  "seasonalBannerWinter": "Winter is here! {count} of your recipes are in season",
-  "@seasonalBannerWinter": {
-    "placeholders": { "count": {"type": "int"} }
-  },
-  "seasonalBannerAction": "Show",
+  "seasonalMonthJanuary": "January",
+  "seasonalMonthFebruary": "February",
+  "seasonalMonthMarch": "March",
+  "seasonalMonthApril": "April",
+  "seasonalMonthMay": "May",
+  "seasonalMonthJune": "June",
+  "seasonalMonthJuly": "July",
+  "seasonalMonthAugust": "August",
+  "seasonalMonthSeptember": "September",
+  "seasonalMonthOctober": "October",
+  "seasonalMonthNovember": "November",
+  "seasonalMonthDecember": "December",
   "dormantRecipesTitle": "Try something you saved",
   "emptyStateNewUserTitle": "Welcome. Butlery stands ready.",
   "emptyStateNewUserDescription": "The first recipe may be imported from a link, or entered by hand.",

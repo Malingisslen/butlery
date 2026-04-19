@@ -1,0 +1,91 @@
+{
+  "_comment": "BUT-409 seasonal curation — Swedish growing seasons per Jordbruksverket / LRF.",
+  "_comment_ingredients": "Use lowercase canonical names. Substring-matched against recipe.ingredients (case-insensitive).",
+  "_comment_gradients": "Two hex stops, light + accent. Interpreted by the widget layer.",
+  "months": [
+    {
+      "monthIndex": 1,
+      "monthKey": "january",
+      "ingredients": ["kål", "rotfrukter", "morot", "palsternacka", "päron", "äpple", "lök"],
+      "vegetableType": "cabbage",
+      "gradient": ["#E8F0EA", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 2,
+      "monthKey": "february",
+      "ingredients": ["morot", "rotfrukter", "kålrot", "potatis", "äpple", "citron", "apelsin"],
+      "vegetableType": "citrus",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 3,
+      "monthKey": "march",
+      "ingredients": ["purjolök", "kålrot", "spenat", "vårlök", "rabarber"],
+      "vegetableType": "cabbage",
+      "gradient": ["#E8F0EA", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 4,
+      "monthKey": "april",
+      "ingredients": ["sparris", "rabarber", "purjolök", "rädisa", "vårlök", "spenat"],
+      "vegetableType": "asparagus",
+      "gradient": ["#E8F0EA", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 5,
+      "monthKey": "may",
+      "ingredients": ["sparris", "rabarber", "salladslök", "jordgubbar", "persilja", "dill", "ramslök"],
+      "vegetableType": "rhubarb",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 6,
+      "monthKey": "june",
+      "ingredients": ["jordgubbar", "sallad", "rädisa", "färskpotatis", "dill", "persilja", "rabarber"],
+      "vegetableType": "berry",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 7,
+      "monthKey": "july",
+      "ingredients": ["jordgubbar", "blåbär", "sallad", "dill", "färskpotatis", "tomat", "gurka", "zucchini"],
+      "vegetableType": "berry",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 8,
+      "monthKey": "august",
+      "ingredients": ["hallon", "krusbär", "tomat", "gurka", "zucchini", "potatis", "plommon", "blåbär"],
+      "vegetableType": "berry",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 9,
+      "monthKey": "september",
+      "ingredients": ["pumpa", "kantarell", "äpple", "päron", "plommon", "kål", "rödbeta"],
+      "vegetableType": "pumpkin",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 10,
+      "monthKey": "october",
+      "ingredients": ["pumpa", "kantarell", "äpple", "päron", "svamp", "rödbeta", "kål"],
+      "vegetableType": "mushroom",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 11,
+      "monthKey": "november",
+      "ingredients": ["rotfrukter", "kål", "rödbeta", "päron", "äpple", "palsternacka"],
+      "vegetableType": "beetroot",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    },
+    {
+      "monthIndex": 12,
+      "monthKey": "december",
+      "ingredients": ["rotfrukter", "kål", "nötter", "clementin", "apelsin", "citron", "päron"],
+      "vegetableType": "citrus",
+      "gradient": ["#F0EAD6", "#F8F4E8"]
+    }
+  ]
+}

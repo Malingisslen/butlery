@@ -20842,47 +20842,95 @@ abstract class AppLocalizations {
   /// **'URL sparad — importeras när du är online igen'**
   String get importSavedForLater;
 
-  /// No description provided for @seasonalInSeasonNow.
-  ///
-  /// In sv, this message translates to:
-  /// **'I säsong just nu'**
-  String get seasonalInSeasonNow;
-
   /// No description provided for @seasonalForgottenFavorites.
   ///
   /// In sv, this message translates to:
   /// **'Glömda favoriter'**
   String get seasonalForgottenFavorites;
 
-  /// No description provided for @seasonalBannerSpring.
+  /// No description provided for @seasonalHeroTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Våren är här! {count} av dina recept passar nu'**
-  String seasonalBannerSpring(int count);
+  /// **'just nu i säsong · {month}'**
+  String seasonalHeroTitle(String month);
 
-  /// No description provided for @seasonalBannerSummer.
+  /// No description provided for @seasonalHeroRecipeCount.
   ///
   /// In sv, this message translates to:
-  /// **'Sommaren är här! {count} av dina recept passar nu'**
-  String seasonalBannerSummer(int count);
+  /// **'{count, plural, =1{1 recept} other{{count} recept}}'**
+  String seasonalHeroRecipeCount(int count);
 
-  /// No description provided for @seasonalBannerAutumn.
+  /// No description provided for @seasonalMonthJanuary.
   ///
   /// In sv, this message translates to:
-  /// **'Hösten är här! {count} av dina recept passar nu'**
-  String seasonalBannerAutumn(int count);
+  /// **'januari'**
+  String get seasonalMonthJanuary;
 
-  /// No description provided for @seasonalBannerWinter.
+  /// No description provided for @seasonalMonthFebruary.
   ///
   /// In sv, this message translates to:
-  /// **'Vintern är här! {count} av dina recept passar nu'**
-  String seasonalBannerWinter(int count);
+  /// **'februari'**
+  String get seasonalMonthFebruary;
 
-  /// No description provided for @seasonalBannerAction.
+  /// No description provided for @seasonalMonthMarch.
   ///
   /// In sv, this message translates to:
-  /// **'Visa'**
-  String get seasonalBannerAction;
+  /// **'mars'**
+  String get seasonalMonthMarch;
+
+  /// No description provided for @seasonalMonthApril.
+  ///
+  /// In sv, this message translates to:
+  /// **'april'**
+  String get seasonalMonthApril;
+
+  /// No description provided for @seasonalMonthMay.
+  ///
+  /// In sv, this message translates to:
+  /// **'maj'**
+  String get seasonalMonthMay;
+
+  /// No description provided for @seasonalMonthJune.
+  ///
+  /// In sv, this message translates to:
+  /// **'juni'**
+  String get seasonalMonthJune;
+
+  /// No description provided for @seasonalMonthJuly.
+  ///
+  /// In sv, this message translates to:
+  /// **'juli'**
+  String get seasonalMonthJuly;
+
+  /// No description provided for @seasonalMonthAugust.
+  ///
+  /// In sv, this message translates to:
+  /// **'augusti'**
+  String get seasonalMonthAugust;
+
+  /// No description provided for @seasonalMonthSeptember.
+  ///
+  /// In sv, this message translates to:
+  /// **'september'**
+  String get seasonalMonthSeptember;
+
+  /// No description provided for @seasonalMonthOctober.
+  ///
+  /// In sv, this message translates to:
+  /// **'oktober'**
+  String get seasonalMonthOctober;
+
+  /// No description provided for @seasonalMonthNovember.
+  ///
+  /// In sv, this message translates to:
+  /// **'november'**
+  String get seasonalMonthNovember;
+
+  /// No description provided for @seasonalMonthDecember.
+  ///
+  /// In sv, this message translates to:
+  /// **'december'**
+  String get seasonalMonthDecember;
 
   /// No description provided for @dormantRecipesTitle.
   ///

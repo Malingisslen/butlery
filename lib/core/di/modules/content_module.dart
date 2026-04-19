@@ -131,6 +131,9 @@ import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 
+// BUT-409: seasonal hero (assets-backed, no Firebase — app-scoped)
+import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
+
 /// Content module providing recipe and menu management services.
 /// This module handles all content-related functionality and depends on
 /// the Core Module for foundational services. It provides:
@@ -217,6 +220,8 @@ class ContentModule implements DIModule {
         IngredientRegistryService,
         // Firebase Storage instance for model loaders
         FirebaseStorage,
+        // BUT-409: seasonal hero header data service
+        SeasonalHeroService,
       ];
 
   @override
@@ -596,6 +601,11 @@ class ContentModule implements DIModule {
       // Content detector for intelligent content type detection and classification
       container.registerLazySingleton<ContentDetectorService>(
         () => ContentDetectorService(),
+      );
+
+      // BUT-409: seasonal hero service — reads bundled JSON, no auth/network.
+      container.registerLazySingleton<SeasonalHeroService>(
+        () => SeasonalHeroService(),
       );
     } catch (e) {
       throw DIModuleException(

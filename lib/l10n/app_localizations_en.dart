@@ -12154,33 +12154,59 @@ class AppLocalizationsEn extends AppLocalizations {
       'URL saved — will import when you\'re back online';
 
   @override
-  String get seasonalInSeasonNow => 'In Season Now';
-
-  @override
   String get seasonalForgottenFavorites => 'Forgotten Favorites';
 
   @override
-  String seasonalBannerSpring(int count) {
-    return 'Spring is here! $count of your recipes are in season';
+  String seasonalHeroTitle(String month) {
+    return 'in season now · $month';
   }
 
   @override
-  String seasonalBannerSummer(int count) {
-    return 'Summer is here! $count of your recipes are in season';
+  String seasonalHeroRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+    );
+    return '$_temp0';
   }
 
   @override
-  String seasonalBannerAutumn(int count) {
-    return 'Autumn is here! $count of your recipes are in season';
-  }
+  String get seasonalMonthJanuary => 'January';
 
   @override
-  String seasonalBannerWinter(int count) {
-    return 'Winter is here! $count of your recipes are in season';
-  }
+  String get seasonalMonthFebruary => 'February';
 
   @override
-  String get seasonalBannerAction => 'Show';
+  String get seasonalMonthMarch => 'March';
+
+  @override
+  String get seasonalMonthApril => 'April';
+
+  @override
+  String get seasonalMonthMay => 'May';
+
+  @override
+  String get seasonalMonthJune => 'June';
+
+  @override
+  String get seasonalMonthJuly => 'July';
+
+  @override
+  String get seasonalMonthAugust => 'August';
+
+  @override
+  String get seasonalMonthSeptember => 'September';
+
+  @override
+  String get seasonalMonthOctober => 'October';
+
+  @override
+  String get seasonalMonthNovember => 'November';
+
+  @override
+  String get seasonalMonthDecember => 'December';
 
   @override
   String get dormantRecipesTitle => 'Try something you saved';
