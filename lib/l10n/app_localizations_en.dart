@@ -12816,4 +12816,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get suggestAlternative => 'Suggest an alternative';
+
+  @override
+  String get startTimer => 'Start timer';
+
+  @override
+  String get timerExpired => 'Timer done!';
+
+  @override
+  String get pauseTimer => 'Pause';
+
+  @override
+  String get resumeTimer => 'Resume';
+
+  @override
+  String get resetTimer => 'Reset';
+
+  @override
+  String timerDurationHint(String source) {
+    return 'From \"$source\"';
+  }
+
+  @override
+  String get heirloomToggle => 'This is an heirloom recipe';
+
+  @override
+  String get heirloomWriterLabel => 'Who wrote the recipe?';
+
+  @override
+  String get heirloomYearLabel => 'Which year?';
+
+  @override
+  String get heirloomNoteLabel => 'Short note';
+
+  @override
+  String heirloomFrom(String name, int year) {
+    return 'From $name, $year';
+  }
+
+  @override
+  String get heirloomUploadOffline => 'Saving when you\'re back online';
+
+  @override
+  String get heirloomUploadError => 'Couldn\'t save the image — try again';
+
+  @override
+  String get cookingNowEyebrow => 'cooking right now';
+
+  @override
+  String cookingNowSingle(String name, String recipe) {
+    return '$name is cooking $recipe';
+  }
+
+  @override
+  String cookingNowMerge(String names, String recipe) {
+    return '$names are cooking $recipe';
+  }
 }

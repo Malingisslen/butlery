@@ -926,6 +926,80 @@ body { font-family: var(--font-body); color: var(--text); background: var(--crea
   </div>
 </div>
 
+<!-- ========================================================================
+     Presence / Live indicators (BUT-408, BUT-410)
+     ======================================================================== -->
+<h2>Presence &amp; Live Indicators</h2>
+<div class="lib-grid">
+
+  <!-- CookingSessionCard — single cook -->
+  <div class="lib-item-full">
+    <div class="lib-label">CookingSessionCard — single</div>
+    <div class="lib-class">CookingSessionCard (BUT-408) · lib/widgets/cooking/cooking_session_card.dart</div>
+    <div class="lib-demo">
+      <div style="background:var(--cream);padding:12px">
+        <div style="background:var(--green-dark);border-left:3px solid var(--star-gold);padding:10px 16px;display:flex;align-items:center;gap:12px;color:#fff">
+          <span style="width:10px;height:10px;background:var(--star-gold);display:inline-block;animation:pulse-dot 2s ease-in-out infinite"></span>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--star-gold)">lagar just nu</div>
+            <div style="font-size:14px;font-weight:600">Erik lagar Kycklinggryta</div>
+          </div>
+          <span class="mi" style="color:rgba(255,255,255,0.6);font-size:20px">chevron_right</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CookingSessionCard — merge (two cooks, same recipe) -->
+  <div class="lib-item-full">
+    <div class="lib-label">CookingSessionCard — merge</div>
+    <div class="lib-class">CookingSessionCard (BUT-408) · merge view when N cooks share a recipe</div>
+    <div class="lib-demo">
+      <div style="background:var(--cream);padding:12px">
+        <div style="background:var(--green-dark);border-left:3px solid var(--star-gold);padding:10px 16px;display:flex;align-items:center;gap:12px;color:#fff">
+          <span style="width:10px;height:10px;background:var(--star-gold);display:inline-block;animation:pulse-dot 2s ease-in-out infinite"></span>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--star-gold)">lagar just nu</div>
+            <div style="font-size:14px;font-weight:600">Erik &amp; Sara lagar Kycklinggryta</div>
+          </div>
+          <span class="mi" style="color:rgba(255,255,255,0.6);font-size:20px">chevron_right</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PulseDot — reusable reduce-motion-aware dot -->
+  <div class="lib-item">
+    <div class="lib-label">PulseDot</div>
+    <div class="lib-class">PulseDot (BUT-408) · lib/widgets/common/indicators/pulse_dot.dart</div>
+    <div class="lib-demo" style="display:flex;gap:24px;align-items:center;padding:16px">
+      <span style="width:8px;height:8px;background:var(--green);display:inline-block;animation:pulse-dot 2s ease-in-out infinite"></span>
+      <span style="width:10px;height:10px;background:var(--star-gold);display:inline-block;animation:pulse-dot 2s ease-in-out infinite"></span>
+      <span style="width:12px;height:12px;background:var(--rust);display:inline-block;animation:pulse-dot 2s ease-in-out infinite"></span>
+    </div>
+  </div>
+
+  <!-- HeirloomStamp — rust corner stamp on scanned heirloom images -->
+  <div class="lib-item">
+    <div class="lib-label">HeirloomStamp</div>
+    <div class="lib-class">HeirloomStamp (BUT-410) · lib/widgets/recipe/heirloom_stamp.dart</div>
+    <div class="lib-demo">
+      <div style="position:relative;width:220px;height:180px;background:var(--cream);border:1px dashed var(--cream-dark);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-style:italic">
+        [heirloom scan]
+        <div style="position:absolute;top:8px;right:8px;background:var(--rust);color:var(--cream);padding:4px 8px;font-size:11px;font-weight:600;letter-spacing:0.6px">Från farmor, 1978</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.7); opacity: 0.55; }
+}
+</style>
+
 </div><!-- /lib-body -->
 </body>
 </html>

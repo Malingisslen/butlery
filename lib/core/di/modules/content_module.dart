@@ -124,6 +124,7 @@ import 'package:butlery/services/parsing/line_classifier/onnx_line_classifier_se
 import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 
 // Cooking-mode substitution suggestions (canonical-ID based, BUT-202)
+import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
@@ -214,6 +215,8 @@ class ContentModule implements DIModule {
         NeuralLineClassifier,
         // Cooking-mode substitution suggestions (BUT-202)
         SubstitutionSuggestionService,
+        // Cooking-mode step timer (BUT-406)
+        StepTimerService,
         // Menu lexicon overlay (BUT-370)
         FirebaseMenuLexiconRepository,
         // Ingredient registry (enriches static KnownIngredients from Firestore)
@@ -319,6 +322,12 @@ class ContentModule implements DIModule {
         firestoreRepository: app<FirestoreRepository>(),
         lookupService: app<IngredientLookupService>(),
       ),
+    );
+
+    // BUT-406: in-memory cooking-mode step timer. Local-only, no repository
+    // deps — registered alongside other cooking services for discoverability.
+    container.registerLazySingleton<StepTimerService>(
+      () => StepTimerService(),
     );
 
     // Recipe parser service — depends on LlmService (user-scoped)

@@ -80,40 +80,28 @@ class VegetableIllustration extends StatelessWidget {
   /// Opacity of the illustration (0.0 to 1.0).
   final double opacity;
 
-  /// Returns the asset path for a vegetable type.
-  ///
-  /// Seasonal variants (asparagus, rhubarb, etc.) currently reuse the closest
-  /// visual placeholder from the original five. When dedicated illustrations
-  /// ship, update only this switch — no call-site changes needed.
-  static String getAssetPath(VegetableType type) {
-    switch (type) {
-      case VegetableType.broccoli:
-        return 'assets/illustrations/broccoli.png';
-      case VegetableType.mushroom:
-        return 'assets/illustrations/champinjon.PNG';
-      case VegetableType.peaPod:
-        return 'assets/illustrations/artskida.PNG';
-      case VegetableType.carrot:
-        return 'assets/illustrations/morot.png';
-      case VegetableType.redOnion:
-        return 'assets/illustrations/rodlok.PNG';
-      // Seasonal placeholders — map to nearest existing illustration.
-      case VegetableType.asparagus:
-        return 'assets/illustrations/artskida.PNG';
-      case VegetableType.rhubarb:
-        return 'assets/illustrations/morot.png';
-      case VegetableType.berry:
-        return 'assets/illustrations/rodlok.PNG';
-      case VegetableType.pumpkin:
-        return 'assets/illustrations/morot.png';
-      case VegetableType.cabbage:
-        return 'assets/illustrations/broccoli.png';
-      case VegetableType.citrus:
-        return 'assets/illustrations/morot.png';
-      case VegetableType.beetroot:
-        return 'assets/illustrations/rodlok.PNG';
-    }
-  }
+  /// Filename per vegetable type. Mirrors the `_fallbackColors` idiom in
+  /// this file — cheaper to read and keep in sync than a 12-case switch.
+  static const _assetPaths = {
+    VegetableType.broccoli: 'assets/illustrations/broccoli.png',
+    VegetableType.mushroom: 'assets/illustrations/champinjon.PNG',
+    VegetableType.peaPod: 'assets/illustrations/artskida.PNG',
+    VegetableType.carrot: 'assets/illustrations/morot.png',
+    VegetableType.redOnion: 'assets/illustrations/rodlok.PNG',
+    VegetableType.asparagus: 'assets/illustrations/sparris.png',
+    VegetableType.rhubarb: 'assets/illustrations/rabarber.png',
+    VegetableType.berry: 'assets/illustrations/bar.png',
+    VegetableType.pumpkin: 'assets/illustrations/pumpa.png',
+    VegetableType.cabbage: 'assets/illustrations/kal.png',
+    VegetableType.citrus: 'assets/illustrations/citrus.png',
+    VegetableType.beetroot: 'assets/illustrations/rodbeta.png',
+  };
+
+  /// Returns the asset path for a vegetable type. All seven seasonal
+  /// variants (asparagus, rhubarb, berry, pumpkin, cabbage, citrus,
+  /// beetroot) have dedicated illustrations matching the paper cut-out
+  /// style.
+  static String getAssetPath(VegetableType type) => _assetPaths[type]!;
 
   /// Returns a random vegetable type for placeholder use.
   static VegetableType randomForRecipe(String recipeId) {

@@ -8692,5 +8692,93 @@
   "suggestAlternative": "Föreslå ett alternativ",
   "@suggestAlternative": {
     "description": "BUT-202: disabled CTA in empty state — future feature for user-submitted substitutes."
+  },
+  "startTimer": "Starta timer",
+  "@startTimer": {
+    "description": "BUT-406: label on the long-press sheet CTA that starts a step timer."
+  },
+  "timerExpired": "Timer klar!",
+  "@timerExpired": {
+    "description": "BUT-406: snackbar/label shown when the step timer hits zero."
+  },
+  "pauseTimer": "Pausa",
+  "@pauseTimer": {
+    "description": "BUT-406: pause-button label on the step timer widget."
+  },
+  "resumeTimer": "Återuppta",
+  "@resumeTimer": {
+    "description": "BUT-406: resume-button label on the step timer widget (paused state)."
+  },
+  "resetTimer": "Återställ",
+  "@resetTimer": {
+    "description": "BUT-406: reset-button label on the step timer widget."
+  },
+  "timerDurationHint": "Från \"{source}\"",
+  "@timerDurationHint": {
+    "description": "BUT-406: hint under the timer showing the instruction phrase the duration was parsed from.",
+    "placeholders": {
+      "source": {
+        "type": "String",
+        "example": "Låt koka i 10 min"
+      }
+    }
+  },
+  "heirloomToggle": "Detta är ett arvegods",
+  "@heirloomToggle": {
+    "description": "BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe (Farmors lapp)."
+  },
+  "heirloomWriterLabel": "Vem skrev receptet?",
+  "@heirloomWriterLabel": {
+    "description": "BUT-410: text field label for the name of the original recipe writer."
+  },
+  "heirloomYearLabel": "Vilket år?",
+  "@heirloomYearLabel": {
+    "description": "BUT-410: text field label for the year the recipe was written down."
+  },
+  "heirloomNoteLabel": "Kort notering",
+  "@heirloomNoteLabel": {
+    "description": "BUT-410: multiline text field label for a short heirloom origin note."
+  },
+  "heirloomFrom": "Från {name}, {year}",
+  "@heirloomFrom": {
+    "description": "BUT-410: corner stamp label showing writer and year on heirloom images.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "farmor"
+      },
+      "year": {
+        "type": "int",
+        "example": "1978"
+      }
+    }
+  },
+  "heirloomUploadOffline": "Sparas när du är online igen",
+  "@heirloomUploadOffline": {
+    "description": "BUT-410: banner shown when an heirloom image cannot be uploaded right now because the device is offline."
+  },
+  "heirloomUploadError": "Kunde inte spara bilden — försök igen",
+  "@heirloomUploadError": {
+    "description": "BUT-410: error shown when heirloom image upload fails for a reason other than connectivity."
+  },
+  "cookingNowEyebrow": "lagar just nu",
+  "@cookingNowEyebrow": {
+    "description": "BUT-408: small eyebrow label on the cooking-session presence card."
+  },
+  "cookingNowSingle": "{name} lagar {recipe}",
+  "@cookingNowSingle": {
+    "description": "BUT-408: single-cook presence label (one group member is cooking).",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"},
+      "recipe": {"type": "String", "example": "kycklinggryta"}
+    }
+  },
+  "cookingNowMerge": "{names} lagar {recipe}",
+  "@cookingNowMerge": {
+    "description": "BUT-408: multi-cook merge label. 'names' is pre-joined on the client (e.g. 'Erik & Sara').",
+    "placeholders": {
+      "names": {"type": "String", "example": "Erik & Sara"},
+      "recipe": {"type": "String", "example": "kycklinggryta"}
+    }
   }
 }

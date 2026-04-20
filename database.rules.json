@@ -6,6 +6,14 @@
         ".write": "auth != null && auth.uid === $userId"
       }
     },
+    "cooking_sessions": {
+      "$groupId": {
+        ".read": "auth != null",
+        "$userId": {
+          ".write": "auth != null && auth.uid === $userId"
+        }
+      }
+    },
     ".read": false,
     ".write": false
   }

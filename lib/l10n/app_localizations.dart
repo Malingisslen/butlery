@@ -21987,6 +21987,102 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Föreslå ett alternativ'**
   String get suggestAlternative;
+
+  /// BUT-406: label on the long-press sheet CTA that starts a step timer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Starta timer'**
+  String get startTimer;
+
+  /// BUT-406: snackbar/label shown when the step timer hits zero.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timer klar!'**
+  String get timerExpired;
+
+  /// BUT-406: pause-button label on the step timer widget.
+  ///
+  /// In sv, this message translates to:
+  /// **'Pausa'**
+  String get pauseTimer;
+
+  /// BUT-406: resume-button label on the step timer widget (paused state).
+  ///
+  /// In sv, this message translates to:
+  /// **'Återuppta'**
+  String get resumeTimer;
+
+  /// BUT-406: reset-button label on the step timer widget.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ'**
+  String get resetTimer;
+
+  /// BUT-406: hint under the timer showing the instruction phrase the duration was parsed from.
+  ///
+  /// In sv, this message translates to:
+  /// **'Från \"{source}\"'**
+  String timerDurationHint(String source);
+
+  /// BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe (Farmors lapp).
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta är ett arvegods'**
+  String get heirloomToggle;
+
+  /// BUT-410: text field label for the name of the original recipe writer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vem skrev receptet?'**
+  String get heirloomWriterLabel;
+
+  /// BUT-410: text field label for the year the recipe was written down.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vilket år?'**
+  String get heirloomYearLabel;
+
+  /// BUT-410: multiline text field label for a short heirloom origin note.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kort notering'**
+  String get heirloomNoteLabel;
+
+  /// BUT-410: corner stamp label showing writer and year on heirloom images.
+  ///
+  /// In sv, this message translates to:
+  /// **'Från {name}, {year}'**
+  String heirloomFrom(String name, int year);
+
+  /// BUT-410: banner shown when an heirloom image cannot be uploaded right now because the device is offline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparas när du är online igen'**
+  String get heirloomUploadOffline;
+
+  /// BUT-410: error shown when heirloom image upload fails for a reason other than connectivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara bilden — försök igen'**
+  String get heirloomUploadError;
+
+  /// BUT-408: small eyebrow label on the cooking-session presence card.
+  ///
+  /// In sv, this message translates to:
+  /// **'lagar just nu'**
+  String get cookingNowEyebrow;
+
+  /// BUT-408: single-cook presence label (one group member is cooking).
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} lagar {recipe}'**
+  String cookingNowSingle(String name, String recipe);
+
+  /// BUT-408: multi-cook merge label. 'names' is pre-joined on the client (e.g. 'Erik & Sara').
+  ///
+  /// In sv, this message translates to:
+  /// **'{names} lagar {recipe}'**
+  String cookingNowMerge(String names, String recipe);
 }
 
 class _AppLocalizationsDelegate

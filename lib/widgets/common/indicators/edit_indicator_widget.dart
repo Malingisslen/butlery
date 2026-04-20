@@ -4,8 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
 
-/// Edit indicator widget showing active editor
+/// Edit indicator widget showing active editor.
+///
+/// BUT-408: the pulsing dot portion is now delegated to the reusable
+/// [PulseDot] widget so cooking session cards (and any future live-presence
+/// UI) can share the same reduce-motion-aware animation.
 class EditIndicatorWidget extends StatefulWidget {
   final String editorName;
   final String? editorId;
@@ -29,12 +34,9 @@ class EditIndicatorWidget extends StatefulWidget {
 }
 
 class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late AnimationController _fadeController;
-  late AnimationController _pulseController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _pulseAnimation;
-  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -43,15 +45,8 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
       duration: widget.animationDuration,
       vsync: this,
     );
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
-    );
-    _pulseAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
     if (widget.isVisible) {
       _fadeController.forward();
@@ -61,16 +56,9 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _reduceMotion = !AnimationUtils.shouldAnimate(context);
-    if (_reduceMotion) {
-      _fadeController.duration = Duration.zero;
-      _pulseController.stop();
-    } else {
-      _fadeController.duration = widget.animationDuration;
-      if (widget.isVisible && !_pulseController.isAnimating) {
-        _pulseController.repeat(reverse: true);
-      }
-    }
+    _fadeController.duration = AnimationUtils.shouldAnimate(context)
+        ? widget.animationDuration
+        : Duration.zero;
   }
 
   @override
@@ -79,13 +67,8 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
     if (widget.isVisible != oldWidget.isVisible) {
       if (widget.isVisible) {
         _fadeController.forward();
-        // Only start pulse animation if reduced motion is not enabled
-        if (!_reduceMotion) {
-          _pulseController.repeat(reverse: true);
-        }
       } else {
         _fadeController.reverse();
-        _pulseController.stop();
       }
     }
   }
@@ -114,35 +97,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Show static dot when reduced motion is enabled
-                if (_reduceMotion)
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadius4),
-                    ),
-                  )
-                else
-                  AnimatedBuilder(
-                    animation: _pulseAnimation,
-                    builder: (context, child) {
-                      return Transform.scale(
-                        scale: _pulseAnimation.value,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: color,
-                            borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadius4),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                PulseDot(color: color, size: 8),
                 const SizedBox(width: AppDimensions.spacingTight),
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
@@ -161,7 +116,6 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
   @override
   void dispose() {
     _fadeController.dispose();
-    _pulseController.dispose();
     super.dispose();
   }
 }

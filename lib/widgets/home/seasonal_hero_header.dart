@@ -120,12 +120,8 @@ class SeasonalHeroHeader extends StatelessWidget {
     );
   }
 
-  /// Joins ingredients with the rust-coloured separator used in the mockup.
-  /// Falls back to a comma when the list is surprisingly empty (defensive).
-  String _formatIngredients(List<String> ingredients) {
-    if (ingredients.isEmpty) return '';
-    return ingredients.join(' · ');
-  }
+  String _formatIngredients(List<String> ingredients) =>
+      ingredients.join(' · ');
 
   String _localizedMonthName(AppLocalizations l10n, String monthKey) {
     switch (monthKey) {

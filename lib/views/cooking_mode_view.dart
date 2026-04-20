@@ -8,11 +8,15 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -28,9 +32,14 @@ class CookingModeView extends StatefulWidget {
 }
 
 class _CookingModeViewState extends State<CookingModeView> {
+  // Hoisted out of build() so initState/dispose can wire the BUT-408
+  // session broadcast lifecycle alongside wakelock/orientation setup.
+  late final CookingModeViewModel _vm;
+
   @override
   void initState() {
     super.initState();
+    _vm = CookingModeViewModel(recipe: widget.recipe);
     // Force landscape and keep screen awake
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
@@ -39,10 +48,17 @@ class _CookingModeViewState extends State<CookingModeView> {
     WakelockPlus.enable();
     // Hide system UI for immersive cooking experience
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // BUT-408: broadcast "lagar just nu" to friend groups. Fire-and-forget
+    // — the VM swallows errors so a failed broadcast never blocks the cook.
+    _vm.onEnter();
   }
 
   @override
   void dispose() {
+    // BUT-408: clear broadcast BEFORE disposing the VM. onExit() reads no
+    // VM state, so the ordering is purely about signalling intent.
+    _vm.onExit();
+    _vm.dispose();
     // Restore all orientations and screen sleep
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     WakelockPlus.disable();
@@ -52,8 +68,8 @@ class _CookingModeViewState extends State<CookingModeView> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CookingModeViewModel(recipe: widget.recipe),
+    return ChangeNotifierProvider<CookingModeViewModel>.value(
+      value: _vm,
       child: const _CookingModeContent(),
     );
   }
@@ -459,6 +475,39 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     );
   }
 
+  /// BUT-406: Opens the step-timer bottom sheet. Duration is prefilled from
+  /// the instruction text when a Swedish time phrase is detected; otherwise
+  /// defaults to 5 minutes. The DI-registered [StepTimerService] is reused
+  /// across openings so re-entry doesn't reset a running timer.
+  void _openStepTimer(BuildContext context, String instruction) {
+    final parsed = parseSwedishDuration(instruction);
+    final duration = parsed ?? const Duration(minutes: 5);
+    final service = ServiceLocator.get<StepTimerService>();
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.cream,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (sheetContext) => StepTimerWidget(
+        service: service,
+        initialDuration: duration,
+        sourcePhrase: parsed != null ? instruction : null,
+        onExpired: () {
+          HapticFeedback.mediumImpact();
+          messenger?.showSnackBar(
+            SnackBar(
+              content: Text(l10n.timerExpired),
+              backgroundColor: AppColors.starGold,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -529,14 +578,22 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                 ),
                                 const SizedBox(width: AppDimensions.spacingMd),
                                 Expanded(
-                                  child: Text(
-                                    instruction,
-                                    style: AppTextStyles.titleLarge.copyWith(
-                                      color: cs.onPrimary,
-                                      height: 1.7,
-                                      fontSize:
-                                          AppTextStyles.titleLarge.fontSize! *
-                                              vm.fontScale,
+                                  child: GestureDetector(
+                                    // BUT-406: long-press opens a step timer
+                                    // sheet, pre-filled with the duration
+                                    // parsed from this instruction (5 min
+                                    // default fallback).
+                                    onLongPress: () =>
+                                        _openStepTimer(context, instruction),
+                                    child: Text(
+                                      instruction,
+                                      style: AppTextStyles.titleLarge.copyWith(
+                                        color: cs.onPrimary,
+                                        height: 1.7,
+                                        fontSize:
+                                            AppTextStyles.titleLarge.fontSize! *
+                                                vm.fontScale,
+                                      ),
                                     ),
                                   ),
                                 ),

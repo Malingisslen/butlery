@@ -47,7 +47,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   // When non-empty, `filteredRecipes` is narrowed to recipes whose ingredient
   // list contains ANY of these needles (substring, case-insensitive).
   List<String>? _seasonalIngredientFilter;
-  String? _seasonalFilterLabel;
 
   // Performance optimization: Cache filtered results
   List<Recipe>? _cachedFilteredRecipes;
@@ -72,7 +71,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   String? get selectedTag => _selectedTag;
   RecipeType? get selectedType => _selectedType;
   List<String>? get seasonalIngredientFilter => _seasonalIngredientFilter;
-  String? get seasonalFilterLabel => _seasonalFilterLabel;
   bool get hasSeasonalFilter =>
       _seasonalIngredientFilter != null &&
       _seasonalIngredientFilter!.isNotEmpty;
@@ -238,7 +236,6 @@ class RecipeQueryViewModel extends ChangeNotifier
     _selectedTag = null;
     _selectedType = null;
     _seasonalIngredientFilter = null;
-    _seasonalFilterLabel = null;
     _invalidateCache();
     notifyListeners();
   }
@@ -251,14 +248,13 @@ class RecipeQueryViewModel extends ChangeNotifier
 
   /// Activate the seasonal ingredient filter. Called from the seasonal hero
   /// header — filters `filteredRecipes` to recipes whose ingredients match
-  /// any of [ingredients] (substring, case-insensitive).
-  void applySeasonalFilter({
-    required List<String> ingredients,
-    required String label,
-  }) {
-    _seasonalIngredientFilter =
+  /// any of [ingredients] (substring, case-insensitive). No-op when the
+  /// same filter is already active, so double-taps don't spam listeners.
+  void applySeasonalFilter({required List<String> ingredients}) {
+    final normalized =
         ingredients.map((e) => e.toLowerCase()).toList(growable: false);
-    _seasonalFilterLabel = label;
+    if (listEquals(_seasonalIngredientFilter, normalized)) return;
+    _seasonalIngredientFilter = normalized;
     _invalidateCache();
     notifyListeners();
   }
@@ -267,7 +263,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   void clearSeasonalFilter() {
     if (_seasonalIngredientFilter == null) return;
     _seasonalIngredientFilter = null;
-    _seasonalFilterLabel = null;
     _invalidateCache();
     notifyListeners();
   }

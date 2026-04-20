@@ -12844,4 +12844,60 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get suggestAlternative => 'Föreslå ett alternativ';
+
+  @override
+  String get startTimer => 'Starta timer';
+
+  @override
+  String get timerExpired => 'Timer klar!';
+
+  @override
+  String get pauseTimer => 'Pausa';
+
+  @override
+  String get resumeTimer => 'Återuppta';
+
+  @override
+  String get resetTimer => 'Återställ';
+
+  @override
+  String timerDurationHint(String source) {
+    return 'Från \"$source\"';
+  }
+
+  @override
+  String get heirloomToggle => 'Detta är ett arvegods';
+
+  @override
+  String get heirloomWriterLabel => 'Vem skrev receptet?';
+
+  @override
+  String get heirloomYearLabel => 'Vilket år?';
+
+  @override
+  String get heirloomNoteLabel => 'Kort notering';
+
+  @override
+  String heirloomFrom(String name, int year) {
+    return 'Från $name, $year';
+  }
+
+  @override
+  String get heirloomUploadOffline => 'Sparas när du är online igen';
+
+  @override
+  String get heirloomUploadError => 'Kunde inte spara bilden — försök igen';
+
+  @override
+  String get cookingNowEyebrow => 'lagar just nu';
+
+  @override
+  String cookingNowSingle(String name, String recipe) {
+    return '$name lagar $recipe';
+  }
+
+  @override
+  String cookingNowMerge(String names, String recipe) {
+    return '$names lagar $recipe';
+  }
 }

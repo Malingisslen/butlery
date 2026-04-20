@@ -16,6 +16,9 @@ import 'package:butlery/repositories/interfaces/category_preferences_repository.
 import 'package:butlery/repositories/firebase/firebase_category_preferences_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_presence_repository.dart';
 import 'package:butlery/services/unified/operations/shopping/shopping_presence_module.dart';
+import 'package:butlery/repositories/firebase/firebase_cooking_session_repository.dart';
+import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
@@ -50,6 +53,9 @@ class CollaborationModule implements DIModule {
         // BUT-238: collaborative shopping presence
         FirebaseShoppingPresenceRepository,
         ShoppingPresenceModule,
+        // BUT-408: live cooking session presence ("Erik lagar just nu")
+        FirebaseCookingSessionRepository,
+        CookingSessionModule,
       ];
 
   @override
@@ -98,6 +104,20 @@ class CollaborationModule implements DIModule {
         repository: container<FirebaseShoppingPresenceRepository>(),
       ),
       dispose: (m) => m.dispose(),
+    );
+
+    // BUT-408: cooking session presence repository + module. Registered as
+    // the interface type so tests/alt implementations can swap in cleanly.
+    // RTDB rather than Firestore — we need onDisconnect() for cleanup.
+    container.registerLazySingleton<FirebaseCookingSessionRepository>(
+      () => FirebaseCookingSessionRepository(
+        database: FirebaseDatabase.instance,
+      ),
+    );
+    container.registerLazySingleton<CookingSessionModule>(
+      () => FirebaseCookingSessionModule(
+        repository: container<FirebaseCookingSessionRepository>(),
+      ),
     );
 
     container.registerLazySingleton<RealtimeMenuService>(

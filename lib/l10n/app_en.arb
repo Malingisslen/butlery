@@ -8692,5 +8692,93 @@
   "suggestAlternative": "Suggest an alternative",
   "@suggestAlternative": {
     "description": "BUT-202: disabled empty-state CTA for a future user-submission feature."
+  },
+  "startTimer": "Start timer",
+  "@startTimer": {
+    "description": "BUT-406: label on the long-press sheet CTA that starts a step timer."
+  },
+  "timerExpired": "Timer done!",
+  "@timerExpired": {
+    "description": "BUT-406: snackbar/label shown when the step timer hits zero."
+  },
+  "pauseTimer": "Pause",
+  "@pauseTimer": {
+    "description": "BUT-406: pause-button label on the step timer widget."
+  },
+  "resumeTimer": "Resume",
+  "@resumeTimer": {
+    "description": "BUT-406: resume-button label on the step timer widget (paused state)."
+  },
+  "resetTimer": "Reset",
+  "@resetTimer": {
+    "description": "BUT-406: reset-button label on the step timer widget."
+  },
+  "timerDurationHint": "From \"{source}\"",
+  "@timerDurationHint": {
+    "description": "BUT-406: hint under the timer showing the instruction phrase the duration was parsed from.",
+    "placeholders": {
+      "source": {
+        "type": "String",
+        "example": "Let simmer for 10 min"
+      }
+    }
+  },
+  "heirloomToggle": "This is an heirloom recipe",
+  "@heirloomToggle": {
+    "description": "BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe."
+  },
+  "heirloomWriterLabel": "Who wrote the recipe?",
+  "@heirloomWriterLabel": {
+    "description": "BUT-410: text field label for the name of the original recipe writer."
+  },
+  "heirloomYearLabel": "Which year?",
+  "@heirloomYearLabel": {
+    "description": "BUT-410: text field label for the year the recipe was written down."
+  },
+  "heirloomNoteLabel": "Short note",
+  "@heirloomNoteLabel": {
+    "description": "BUT-410: multiline text field label for a short heirloom origin note."
+  },
+  "heirloomFrom": "From {name}, {year}",
+  "@heirloomFrom": {
+    "description": "BUT-410: corner stamp label showing writer and year on heirloom images.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "grandma"
+      },
+      "year": {
+        "type": "int",
+        "example": "1978"
+      }
+    }
+  },
+  "heirloomUploadOffline": "Saving when you're back online",
+  "@heirloomUploadOffline": {
+    "description": "BUT-410: banner shown when an heirloom image cannot be uploaded right now because the device is offline."
+  },
+  "heirloomUploadError": "Couldn't save the image — try again",
+  "@heirloomUploadError": {
+    "description": "BUT-410: error shown when heirloom image upload fails for a reason other than connectivity."
+  },
+  "cookingNowEyebrow": "cooking right now",
+  "@cookingNowEyebrow": {
+    "description": "BUT-408: small eyebrow label on the cooking-session presence card."
+  },
+  "cookingNowSingle": "{name} is cooking {recipe}",
+  "@cookingNowSingle": {
+    "description": "BUT-408: single-cook presence label.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"},
+      "recipe": {"type": "String", "example": "chicken stew"}
+    }
+  },
+  "cookingNowMerge": "{names} are cooking {recipe}",
+  "@cookingNowMerge": {
+    "description": "BUT-408: multi-cook merge label. 'names' is pre-joined on the client.",
+    "placeholders": {
+      "names": {"type": "String", "example": "Erik & Sara"},
+      "recipe": {"type": "String", "example": "chicken stew"}
+    }
   }
 }

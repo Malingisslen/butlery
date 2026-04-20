@@ -16,6 +16,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_sharing_status.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/widgets/recipe/heirloom_section.dart';
 
 /// Two-column tablet layout for recipe detail content (below the SliverAppBar).
 ///
@@ -68,6 +69,15 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
                   actions: _actions,
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
+                // BUT-410: heirloom scan sits in the narrower left column so
+                // the parsed text has room to breathe on the right.
+                if (recipe.heirloom != null) ...[
+                  HeirloomSection(
+                    heirloom: recipe.heirloom!,
+                    maxHeight: 420,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingMd),
+                ],
                 RecipeDetailSharingStatus(
                   recipe: recipe,
                   onSharingChanged: () => setState(() {}),

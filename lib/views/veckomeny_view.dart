@@ -26,6 +26,12 @@ import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 
+// BUT-408: live cooking session presence
+import 'package:butlery/models/cooking/cooking_session.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
+import 'package:butlery/widgets/cooking/cooking_session_card.dart';
+
 /// View-mode toggle for the Veckomeny screen output.
 enum VeckomenyViewMode { lista, kalender }
 
@@ -312,6 +318,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             child: Column(
               children: [
                 LayoutComponents.offlineIndicator(),
+                // BUT-408: live cooking session card for the user's groups.
+                _buildCookingSessionCard(),
                 Padding(
                   padding: AppDimensions.responsiveContentPadding(context),
                   child: Column(
@@ -386,5 +394,72 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       message: context.l10n.menuGeneratingOverlay,
       subtitle: context.l10n.menuGeneratingSubtitle,
     );
+  }
+
+  /// BUT-408: merges presence streams across every FriendCategory the user
+  /// belongs to. Hidden entirely when no friend is cooking.
+  Widget _buildCookingSessionCard() {
+    final module = ServiceLocator.tryGet<CookingSessionModule>();
+    final userId = _friendsService.currentUserId;
+    if (module == null || userId == null) return const SizedBox.shrink();
+
+    final groups = _friendsService.categoriesList
+        .where((FriendCategory c) =>
+            c.ownerId == userId || c.friendUserIds.contains(userId))
+        .map((g) => g.id)
+        .toList(growable: false);
+    if (groups.isEmpty) return const SizedBox.shrink();
+
+    return StreamBuilder<List<CookingSession>>(
+      stream: _mergeGroupStreams(module, groups, userId),
+      builder: (_, snapshot) {
+        final sessions = snapshot.data ?? const <CookingSession>[];
+        return CookingSessionCard(sessions: sessions);
+      },
+    );
+  }
+
+  Stream<List<CookingSession>> _mergeGroupStreams(
+    CookingSessionModule module,
+    List<String> groupIds,
+    String selfUserId,
+  ) {
+    final perGroupLatest = <String, List<CookingSession>>{
+      for (final id in groupIds) id: const [],
+    };
+    late final StreamController<List<CookingSession>> controller;
+    final subs = <StreamSubscription<List<CookingSession>>>[];
+
+    void emit() {
+      final seen = <String>{};
+      final merged = <CookingSession>[];
+      for (final list in perGroupLatest.values) {
+        for (final s in list) {
+          if (s.userId == selfUserId) continue;
+          if (seen.add(s.userId)) merged.add(s);
+        }
+      }
+      merged.sort((a, b) => a.startedAt.compareTo(b.startedAt));
+      if (!controller.isClosed) controller.add(merged);
+    }
+
+    controller = StreamController<List<CookingSession>>.broadcast(
+      onListen: () {
+        for (final id in groupIds) {
+          subs.add(module.watchGroupSessions(id).listen((sessions) {
+            perGroupLatest[id] = sessions;
+            emit();
+          }));
+        }
+        emit();
+      },
+      onCancel: () {
+        for (final s in subs) {
+          s.cancel();
+        }
+        subs.clear();
+      },
+    );
+    return controller.stream;
   }
 }

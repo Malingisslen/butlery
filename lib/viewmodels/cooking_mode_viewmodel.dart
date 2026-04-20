@@ -1,7 +1,9 @@
 // lib/viewmodels/cooking_mode_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -92,5 +94,30 @@ class CookingModeViewModel extends ChangeNotifier {
       false,
     );
     notifyListeners();
+  }
+
+  /// BUT-408: Called from the view's `initState` when cooking mode opens.
+  /// Broadcasts a live session ("Erik lagar kycklinggryta") to every
+  /// FriendCategory the user is a member of. Failures are swallowed — a
+  /// dropped broadcast must never interrupt the cook.
+  Future<void> onEnter() async {
+    try {
+      final module = ServiceLocator.tryGet<CookingSessionModule>();
+      await module?.startSession(recipe);
+    } catch (e) {
+      AppLogger.warning('Cooking session onEnter broadcast failed: $e');
+    }
+  }
+
+  /// BUT-408: Called from the view's `dispose` when cooking mode closes.
+  /// Clears the broadcast from every group. Safe to call if no session was
+  /// ever started (module handles the no-op path).
+  Future<void> onExit() async {
+    try {
+      final module = ServiceLocator.tryGet<CookingSessionModule>();
+      await module?.endSession();
+    } catch (e) {
+      AppLogger.warning('Cooking session onExit cleanup failed: $e');
+    }
   }
 }

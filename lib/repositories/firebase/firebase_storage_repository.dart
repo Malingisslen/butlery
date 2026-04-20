@@ -201,9 +201,14 @@ class FirebaseStorageRepository extends BaseStorageRepository
     required String path,
     Map<String, String>? metadata,
     Function(double progress)? onProgress,
+    String? cacheControl,
   }) async {
     try {
       AppLogger.info('Starting image upload: ${imageFile.path}');
+
+      // GDPR: files under `users/{userId}/...` are walked automatically by
+      // storage_deletion_operations.dart on account deletion — no per-feature
+      // cascade needed for heirloom scans or any other user-scoped upload.
 
       // 🔒 SECURITY: Validate upload permission before proceeding
       await _validateUploadPermission(userId, path);
@@ -224,6 +229,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
           'compressedSize': compressedBytes.length.toString(),
         },
         onProgress: onProgress,
+        cacheControl: cacheControl,
       );
     } catch (e) {
       AppLogger.error('Image upload failed: $e');
@@ -238,6 +244,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
     required String path,
     Map<String, String>? metadata,
     Function(double progress)? onProgress,
+    String? cacheControl,
   }) async {
     return await FirebasePerformanceService.traceImageUpload(
       (trace) async {
@@ -255,6 +262,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
             imageData,
             SettableMetadata(
               contentType: contentType,
+              cacheControl: cacheControl,
               customMetadata: {
                 'uploadedAt': DateTime.now().toIso8601String(),
                 'uploadedBy': userId, // 🔒 SECURITY: Required by storage.rules

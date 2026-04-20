@@ -9,6 +9,8 @@
 
 // lib/views/main_views/mina_recept_view.dart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -40,9 +42,16 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/recipe/collection_insights_card.dart';
 import 'package:butlery/widgets/recipe/recipe_shelf.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
+
+// BUT-408: live cooking session presence
+import 'package:butlery/models/cooking/cooking_session.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 // Service integration for functionality and data management
 import 'package:butlery/services/search_service.dart';
@@ -463,6 +472,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             hasPendingWrites: viewModel.hasPendingWrites,
             isFromCache: viewModel.isFromCache,
           ),
+          // BUT-408: live cooking session card for the user's friend groups.
+          _buildCookingSessionCard(),
           if (!viewModel.isSelectionMode) ...[
             SearchFilterWidget(
               searchQuery: viewModel.searchQuery,
@@ -523,6 +534,82 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
   }
 
+  /// BUT-408: Live "X lagar just nu" card. Combines all the user's friend
+  /// category groups into a single merged stream so the card shows any
+  /// currently-cooking friend regardless of which group they're in.
+  /// Hidden entirely when no active sessions stream through.
+  Widget _buildCookingSessionCard() {
+    final module = ServiceLocator.tryGet<CookingSessionModule>();
+    final friends = ServiceLocator.tryGet<UnifiedFriendsService>();
+    if (module == null || friends == null) return const SizedBox.shrink();
+
+    final userId = friends.currentUserId;
+    if (userId == null) return const SizedBox.shrink();
+
+    final groups = friends.categoriesList
+        .where((FriendCategory c) =>
+            c.ownerId == userId || c.friendUserIds.contains(userId))
+        .map((g) => g.id)
+        .toList(growable: false);
+    if (groups.isEmpty) return const SizedBox.shrink();
+
+    final merged = _mergeGroupStreams(module, groups, userId);
+
+    return StreamBuilder<List<CookingSession>>(
+      stream: merged,
+      builder: (_, snapshot) {
+        final sessions = snapshot.data ?? const <CookingSession>[];
+        return CookingSessionCard(sessions: sessions);
+      },
+    );
+  }
+
+  /// Merge per-group presence streams into a single list. Own user is
+  /// filtered out — we never show "you are cooking" to yourself.
+  Stream<List<CookingSession>> _mergeGroupStreams(
+    CookingSessionModule module,
+    List<String> groupIds,
+    String selfUserId,
+  ) {
+    final perGroupLatest = <String, List<CookingSession>>{
+      for (final id in groupIds) id: const [],
+    };
+    late final StreamController<List<CookingSession>> controller;
+    final subs = <StreamSubscription<List<CookingSession>>>[];
+
+    void emit() {
+      final seen = <String>{};
+      final merged = <CookingSession>[];
+      for (final list in perGroupLatest.values) {
+        for (final s in list) {
+          if (s.userId == selfUserId) continue;
+          if (seen.add(s.userId)) merged.add(s);
+        }
+      }
+      merged.sort((a, b) => a.startedAt.compareTo(b.startedAt));
+      if (!controller.isClosed) controller.add(merged);
+    }
+
+    controller = StreamController<List<CookingSession>>.broadcast(
+      onListen: () {
+        for (final id in groupIds) {
+          subs.add(module.watchGroupSessions(id).listen((sessions) {
+            perGroupLatest[id] = sessions;
+            emit();
+          }));
+        }
+        emit();
+      },
+      onCancel: () {
+        for (final s in subs) {
+          s.cancel();
+        }
+        subs.clear();
+      },
+    );
+    return controller.stream;
+  }
+
   void _handleDeleteWithUndo(RecipeListViewModel viewModel, Recipe recipe) {
     final id = recipe.id;
     viewModel.deleteRecipe(id);
@@ -577,10 +664,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         return SeasonalHeroHeader(
           month: month,
           matchCount: matches.length,
-          onTap: () => queryVm.applySeasonalFilter(
-            ingredients: month.ingredients,
-            label: month.monthKey,
-          ),
+          onTap: () =>
+              queryVm.applySeasonalFilter(ingredients: month.ingredients),
         );
       },
     );

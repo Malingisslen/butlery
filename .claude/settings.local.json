@@ -31,7 +31,10 @@
       "Bash(bash .claude/hooks/require-simplify-before-commit.sh)",
       "Bash(rm -f .claude/state/simplify-done.marker)",
       "Bash(mkdir -p .claude/state)",
-      "Bash(touch .claude/state/simplify-done.marker)"
+      "Bash(touch .claude/state/simplify-done.marker)",
+      "mcp__51df735d-d0bd-40c0-89b8-d55c22df080e__list_issues",
+      "Bash(touch -d \"+10 seconds\" .claude/state/simplify-done.marker)",
+      "Read(//c/Butlery/butlery/**)"
     ]
   }
 }

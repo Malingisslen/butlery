@@ -32,6 +32,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/widgets/recipe/cook_snap_gallery.dart';
+import 'package:butlery/widgets/recipe/heirloom_section.dart';
 import 'package:butlery/viewmodels/cook_snap_viewmodel.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -590,6 +591,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
               actions: _actions,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
+            // BUT-410: render heirloom scan above recipe content so the
+            // "Farmors lapp" leads visually without losing the parsed text.
+            if (recipe.heirloom != null) ...[
+              HeirloomSection(heirloom: recipe.heirloom!),
+              const SizedBox(height: AppDimensions.spacingMd),
+            ],
             if (recipe.completenessScore < incompleteThreshold)
               RecipeDetailSharedWidgets.buildCompletenessBanner(
                   context, recipe),

@@ -25,10 +25,17 @@
 // lib/viewmodels/photo_import_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:crypto/crypto.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/connectivity_check.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/repositories/interfaces/storage_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Comprehensive photo import ViewModel providing advanced OCR processing and image recognition through ImportManager coordination.
 /// Specializes in photo-based recipe importing from camera captures and gallery images through OCR technology,
@@ -62,6 +69,28 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// Last OCR confidence score from successful extraction (0.0-1.0).
   /// Indicates reliability of extracted text for user confidence and retry decisions.
   double? _lastConfidence;
+
+  // ── BUT-410 heirloom form state ─────────────────────────────────────────
+  // Kept separate from OCR state because heirloom is an opt-in overlay on
+  // the same photo — toggling it shouldn't reset OCR progress and vice versa.
+
+  /// Whether the user has flagged this scan as an heirloom ("Farmors lapp").
+  bool _isHeirloom = false;
+
+  /// Writer attribution — bound to the writerName TextField. Max 100 chars
+  /// (enforced both at the field level and in HeirloomMetadata's ctor).
+  String _heirloomWriterName = '';
+
+  /// Year input parsed from the year TextField. Null until the user types
+  /// a valid 1800..currentYear value; parseable invalid values stay null.
+  int? _heirloomYear;
+
+  /// Short origin note — max 200 chars.
+  String _heirloomNote = '';
+
+  /// True when the device has no internet connection and the heirloom
+  /// upload is queued. Used by the view to show the offline banner.
+  bool _isOfflineQueued = false;
 
   /// Initializes photo import ViewModel with comprehensive ImportManager integration and OCR preparation.
   /// [importManager] ImportManager instance for photo import strategy coordination and recipe parsing
@@ -212,6 +241,135 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// Returns true if image data exists and retry is possible, false otherwise.
   bool get canRetryOcr => _imageBytes != null;
 
+  // ── BUT-410 heirloom getters/setters ────────────────────────────────────
+
+  /// Whether the user has marked this scan as an heirloom recipe.
+  bool get isHeirloom => _isHeirloom;
+
+  /// Writer attribution, as currently typed. Empty string = not provided.
+  String get heirloomWriterName => _heirloomWriterName;
+
+  /// Year parsed from the year field, or null if empty/invalid.
+  int? get heirloomYear => _heirloomYear;
+
+  /// Short origin note, as currently typed.
+  String get heirloomNote => _heirloomNote;
+
+  /// True while an heirloom upload is pending because the device is offline.
+  bool get isOfflineQueued => _isOfflineQueued;
+
+  set isHeirloom(bool value) {
+    if (isDisposed || _isHeirloom == value) return;
+    _isHeirloom = value;
+    notifyListeners();
+  }
+
+  set heirloomWriterName(String value) {
+    if (isDisposed) return;
+    // Guard against very long paste-ins — HeirloomMetadata enforces 100 at
+    // construction time, but we truncate here so the field stays usable.
+    final trimmed = value.length > 100 ? value.substring(0, 100) : value;
+    if (_heirloomWriterName == trimmed) return;
+    _heirloomWriterName = trimmed;
+    notifyListeners();
+  }
+
+  set heirloomYear(int? value) {
+    if (isDisposed || _heirloomYear == value) return;
+    _heirloomYear = value;
+    notifyListeners();
+  }
+
+  set heirloomNote(String value) {
+    if (isDisposed) return;
+    final trimmed = value.length > 200 ? value.substring(0, 200) : value;
+    if (_heirloomNote == trimmed) return;
+    _heirloomNote = trimmed;
+    notifyListeners();
+  }
+
+  /// Upload the current image to Firebase Storage as an heirloom scan and
+  /// return the metadata record ready to attach to a Recipe.
+  ///
+  /// Returns null on failure — the error (offline / generic) is surfaced
+  /// through [BaseViewModel.setError] so the view renders the right banner.
+  ///
+  /// Design:
+  /// - Content-addressed path so re-uploads of the same bytes are idempotent
+  ///   and cache-busting works via a new URL when bytes change.
+  /// - `Cache-Control: public, max-age=31536000, immutable` — the URL is
+  ///   stable (bytes determine it), so caching for a year is safe.
+  Future<HeirloomMetadata?> uploadHeirloomImage(
+      {required String recipeId}) async {
+    if (_imageBytes == null) {
+      setError(AppLocale.current.errorNoImageToProcess);
+      return null;
+    }
+
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    if (userId == null) {
+      setError(AppLocale.current.errorAuthentication);
+      return null;
+    }
+
+    // Offline detection — if we can't reach the internet at all, flag the
+    // queued state so the view shows the "sparas när du är online igen"
+    // banner instead of a generic failure toast.
+    final online = await ConnectivityCheck.hasInternetConnection();
+    if (!online) {
+      if (!isDisposed) {
+        _isOfflineQueued = true;
+        notifyListeners();
+      }
+      return null;
+    }
+
+    if (!isDisposed && _isOfflineQueued) {
+      _isOfflineQueued = false;
+      notifyListeners();
+    }
+
+    HeirloomMetadata? result;
+    await executeAsyncVoid(() async {
+      final storage = ServiceLocator.get<StorageRepository>();
+
+      // Content-addressed filename — first 16 hex chars of SHA-256 keeps
+      // the path short while the collision surface stays negligible for
+      // per-user uploads (≪ 2^64 images per user).
+      final digest = sha256.convert(_imageBytes!).toString().substring(0, 16);
+      final path = 'users/$userId/recipes/$recipeId/heirloom/$digest.jpg';
+
+      final url = await storage.uploadImageData(
+        imageData: _imageBytes!,
+        userId: userId,
+        path: path,
+        cacheControl: 'public, max-age=31536000, immutable',
+        metadata: {
+          'purpose': 'heirloom',
+          'recipeId': recipeId,
+        },
+      );
+
+      if (url == null) {
+        throw Exception(AppLocale.current.errorGeneric);
+      }
+
+      result = HeirloomMetadata(
+        sourceImageUrl: url,
+        writerName: _heirloomWriterName.isEmpty ? null : _heirloomWriterName,
+        year: _heirloomYear,
+        note: _heirloomNote.isEmpty ? null : _heirloomNote,
+        addedAt: DateTime.now(),
+        addedByUserId: userId,
+      );
+    }, errorPrefix: AppLocale.current.errorGeneric);
+
+    if (result == null) {
+      AppLogger.warning('Heirloom upload returned no metadata');
+    }
+    return result;
+  }
+
   /// Clears all photo and OCR data with comprehensive state cleanup and memory management.
   /// Performs complete photo import state cleanup including image data, OCR results,
   /// quality metrics, and imported recipe data with disposal safety checks and memory management.
@@ -234,6 +392,12 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     _lastQualityScore = null;
     _lastRecommendations = null;
     _lastConfidence = null;
+    // Heirloom form clears with the photo — they belong to the same capture.
+    _isHeirloom = false;
+    _heirloomWriterName = '';
+    _heirloomYear = null;
+    _heirloomNote = '';
+    _isOfflineQueued = false;
     clearImportData();
 
     // Also clear OCR cache for testing

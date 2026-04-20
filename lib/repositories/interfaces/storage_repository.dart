@@ -9,24 +9,31 @@ import 'dart:typed_data';
 /// allowing services to depend on this interface rather than concrete Firebase
 /// classes, which significantly improves testability and maintainability.
 abstract class StorageRepository {
-  /// Upload an image file to storage
-  /// Returns the download URL of the uploaded file, or null if upload fails
+  /// Upload an image file to storage.
+  /// Returns the download URL of the uploaded file, or null if upload fails.
+  /// When [cacheControl] is provided it's forwarded as the Cache-Control
+  /// header on the stored object (e.g. `public, max-age=31536000, immutable`
+  /// for content-addressed uploads like heirloom scans).
   Future<String?> uploadImage({
     required File imageFile,
     required String userId,
     required String path,
     Map<String, String>? metadata,
     Function(double progress)? onProgress,
+    String? cacheControl,
   });
 
-  /// Upload image data (bytes) to storage
-  /// Returns the download URL of the uploaded file, or null if upload fails
+  /// Upload image data (bytes) to storage.
+  /// Returns the download URL of the uploaded file, or null if upload fails.
+  /// When [cacheControl] is provided it's forwarded as the Cache-Control
+  /// header on the stored object.
   Future<String?> uploadImageData({
     required Uint8List imageData,
     required String userId,
     required String path,
     Map<String, String>? metadata,
     Function(double progress)? onProgress,
+    String? cacheControl,
   });
 
   /// Upload multiple images in batch

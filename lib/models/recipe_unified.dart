@@ -22,6 +22,7 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/recipe/recipe_serialization.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
 
 /// Sentinel value for copyWith methods — distinguishes "not provided" from null.
 const _sentinel = Object();
@@ -227,6 +228,11 @@ class RecipeCore with JsonSerializableMixin {
   /// Null for recipes that have never been manually edited.
   TagOverrides? tagOverrides;
 
+  /// Optional heirloom OCR metadata ("Farmors lapp") — preserves the original
+  /// hand-written/printed source image alongside the parsed recipe text.
+  /// Null for recipes imported without an heirloom scan.
+  HeirloomMetadata? heirloom;
+
   /// Version of the personal tag rules when tags were last evaluated.
   /// Stored as epoch milliseconds of the latest tag `updatedAt`.
   /// If any tag's `updatedAt` is newer than this, the recipe is stale.
@@ -326,6 +332,7 @@ class RecipeCore with JsonSerializableMixin {
     this.dataChecksum,
     this.tagResult,
     this.tagOverrides,
+    this.heirloom,
     this.personalTagVersion,
     this.isFavorite = false,
     this.prepTimeMinutes,
@@ -386,6 +393,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? dataChecksum = _sentinel,
     Object? tagResult = _sentinel,
     Object? tagOverrides = _sentinel,
+    Object? heirloom = _sentinel,
     Object? personalTagVersion = _sentinel,
     bool? isFavorite,
     Object? prepTimeMinutes = _sentinel,
@@ -471,6 +479,8 @@ class RecipeCore with JsonSerializableMixin {
       tagOverrides: tagOverrides == _sentinel
           ? this.tagOverrides
           : tagOverrides as TagOverrides?,
+      heirloom:
+          heirloom == _sentinel ? this.heirloom : heirloom as HeirloomMetadata?,
       personalTagVersion: personalTagVersion == _sentinel
           ? this.personalTagVersion
           : personalTagVersion as int?,
@@ -553,6 +563,7 @@ class RecipeCore with JsonSerializableMixin {
         'dataChecksum': dataChecksum,
         'tagResult': tagResult?.toJson(),
         'tagOverrides': tagOverrides?.toJson(),
+        'heirloom': heirloom?.toJson(),
         'personalTagVersion': personalTagVersion,
         'isFavorite': isFavorite,
         'prepTimeMinutes': prepTimeMinutes,
@@ -596,6 +607,7 @@ class RecipeCore with JsonSerializableMixin {
         'dataChecksum': dataChecksum,
         'tagResult': tagResult?.toFirestore(),
         'tagOverrides': tagOverrides?.toJson(),
+        'heirloom': heirloom?.toFirestore(),
         'personalTagVersion': personalTagVersion,
         'isFavorite': isFavorite,
         'prepTimeMinutes': prepTimeMinutes,
@@ -680,6 +692,7 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
+      heirloom: _parseHeirloom(json['heirloom']),
       personalTagVersion:
           utils.SerializationUtils.safeNullableInt(json, 'personalTagVersion'),
       isFavorite: utils.SerializationUtils.safeBool(json, 'isFavorite'),
@@ -748,6 +761,24 @@ class RecipeCore with JsonSerializableMixin {
       }
     } catch (e) {
       AppLogger.warning('Failed to parse tagResult: $e');
+    }
+    return null;
+  }
+
+  /// Safely parses heirloom metadata from dynamic value.
+  /// Returns null if parsing fails instead of throwing — preserves
+  /// backward compatibility for recipes saved before heirloom field existed.
+  static HeirloomMetadata? _parseHeirloom(dynamic value) {
+    if (value == null) return null;
+    try {
+      if (value is Map<String, dynamic>) {
+        return HeirloomMetadata.fromMap(value);
+      }
+      if (value is Map) {
+        return HeirloomMetadata.fromMap(Map<String, dynamic>.from(value));
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to parse heirloom: $e');
     }
     return null;
   }
@@ -852,6 +883,7 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(data['tagResult']),
       tagOverrides: _parseTagOverrides(data['tagOverrides']),
+      heirloom: _parseHeirloom(data['heirloom']),
       personalTagVersion:
           utils.SerializationUtils.safeNullableInt(data, 'personalTagVersion'),
       isFavorite: utils.SerializationUtils.safeBool(data, 'isFavorite',
@@ -1120,6 +1152,8 @@ class Recipe {
   String? get lastCookedText => core.lastCookedText;
   TagResult? get tagResult => core.tagResult;
   TagOverrides? get tagOverrides => core.tagOverrides;
+  HeirloomMetadata? get heirloom => core.heirloom;
+  bool get hasHeirloom => core.heirloom != null;
 
   /// Check if recipe was cooked recently (within last 7 days)
   bool get wasCookedRecently {
@@ -1342,6 +1376,7 @@ class Recipe {
     Object? offlineData = _sentinel,
     Object? tagOverrides = _sentinel,
     Object? tagResult = _sentinel,
+    Object? heirloom = _sentinel,
     Object? personalTagVersion = _sentinel,
     bool? isFavorite,
   }) {
@@ -1366,6 +1401,7 @@ class Recipe {
         ingredientsNormalized: ingredientsNormalized,
         tagOverrides: tagOverrides,
         tagResult: tagResult,
+        heirloom: heirloom,
         personalTagVersion: personalTagVersion,
         isFavorite: isFavorite,
         updatedAt: DateTime.now(),
