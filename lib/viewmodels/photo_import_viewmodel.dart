@@ -37,6 +37,14 @@ import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 
+/// BUT-410: Storage custom-metadata tag identifying heirloom uploads. If more
+/// upload purposes are added, promote this to an enum at the repository layer.
+const String _uploadPurposeHeirloom = 'heirloom';
+
+/// Content-addressed heirloom URLs are stable per byte-hash, so a year-long
+/// immutable cache is safe.
+const String _heirloomCacheControl = 'public, max-age=31536000, immutable';
+
 /// Comprehensive photo import ViewModel providing advanced OCR processing and image recognition through ImportManager coordination.
 /// Specializes in photo-based recipe importing from camera captures and gallery images through OCR technology,
 /// image processing, and intelligent text extraction. Extends ImportBaseViewModel to provide complete photo import
@@ -301,7 +309,8 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   ///   stable (bytes determine it), so caching for a year is safe.
   Future<HeirloomMetadata?> uploadHeirloomImage(
       {required String recipeId}) async {
-    if (_imageBytes == null) {
+    final bytes = _imageBytes;
+    if (bytes == null) {
       setError(AppLocale.current.errorNoImageToProcess);
       return null;
     }
@@ -336,16 +345,16 @@ class PhotoImportViewModel extends ImportBaseViewModel {
       // Content-addressed filename — first 16 hex chars of SHA-256 keeps
       // the path short while the collision surface stays negligible for
       // per-user uploads (≪ 2^64 images per user).
-      final digest = sha256.convert(_imageBytes!).toString().substring(0, 16);
+      final digest = sha256.convert(bytes).toString().substring(0, 16);
       final path = 'users/$userId/recipes/$recipeId/heirloom/$digest.jpg';
 
       final url = await storage.uploadImageData(
-        imageData: _imageBytes!,
+        imageData: bytes,
         userId: userId,
         path: path,
-        cacheControl: 'public, max-age=31536000, immutable',
+        cacheControl: _heirloomCacheControl,
         metadata: {
-          'purpose': 'heirloom',
+          'purpose': _uploadPurposeHeirloom,
           'recipeId': recipeId,
         },
       );

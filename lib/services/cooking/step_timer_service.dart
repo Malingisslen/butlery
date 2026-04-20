@@ -46,6 +46,11 @@ class StepTimerService extends BaseService {
 
   Timer? _ticker;
 
+  /// Last `inSeconds` value we emitted — the ticker fires at sub-second
+  /// cadence under `fakeAsync`, so skip emissions that wouldn't change
+  /// the `mm:ss` rendering downstream.
+  int? _lastEmittedSeconds;
+
   /// Starts a new countdown of [duration]. Any existing timer is reset
   /// first — callers that want to guard against this should check
   /// [isRunning]/[isPaused] beforehand. Throws [ArgumentError] if
@@ -120,9 +125,12 @@ class StepTimerService extends BaseService {
       final remaining = _computeRemaining();
       if (remaining <= Duration.zero) {
         _expire(emitZero: true);
-      } else {
-        _emit(remaining);
+        return;
       }
+      // Skip emission if the `mm:ss` rendering wouldn't change — avoids
+      // per-tick widget churn under fakeAsync and sub-second ticker drift.
+      if (_lastEmittedSeconds == remaining.inSeconds) return;
+      _emit(remaining);
     });
   }
 
@@ -159,6 +167,7 @@ class StepTimerService extends BaseService {
 
   void _emit(Duration remaining) {
     if (_remainingController.isClosed) return;
+    _lastEmittedSeconds = remaining.inSeconds;
     _remainingController.add(remaining);
   }
 }

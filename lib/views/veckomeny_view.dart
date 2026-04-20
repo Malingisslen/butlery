@@ -31,6 +31,7 @@ import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
+import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
 
 /// View-mode toggle for the Veckomeny screen output.
 enum VeckomenyViewMode { lista, kalender }
@@ -69,6 +70,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final FocusNode _promptFocusNode = FocusNode();
   final UnifiedFriendsService _friendsService =
       ServiceLocator.get<UnifiedFriendsService>();
+  final CookingSessionStreamHolder _sessionsHolder =
+      CookingSessionStreamHolder();
 
   VeckomenyViewMode _viewMode = VeckomenyViewMode.lista;
 
@@ -88,6 +91,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   @override
   void dispose() {
+    _sessionsHolder.dispose();
     _promptController.removeListener(_onPromptChanged);
     _promptController.dispose();
     _promptFocusNode.dispose();
@@ -410,56 +414,16 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         .toList(growable: false);
     if (groups.isEmpty) return const SizedBox.shrink();
 
+    _sessionsHolder.refresh(module, groups, userId);
+    final stream = _sessionsHolder.stream;
+    if (stream == null) return const SizedBox.shrink();
+
     return StreamBuilder<List<CookingSession>>(
-      stream: _mergeGroupStreams(module, groups, userId),
+      stream: stream,
       builder: (_, snapshot) {
         final sessions = snapshot.data ?? const <CookingSession>[];
         return CookingSessionCard(sessions: sessions);
       },
     );
-  }
-
-  Stream<List<CookingSession>> _mergeGroupStreams(
-    CookingSessionModule module,
-    List<String> groupIds,
-    String selfUserId,
-  ) {
-    final perGroupLatest = <String, List<CookingSession>>{
-      for (final id in groupIds) id: const [],
-    };
-    late final StreamController<List<CookingSession>> controller;
-    final subs = <StreamSubscription<List<CookingSession>>>[];
-
-    void emit() {
-      final seen = <String>{};
-      final merged = <CookingSession>[];
-      for (final list in perGroupLatest.values) {
-        for (final s in list) {
-          if (s.userId == selfUserId) continue;
-          if (seen.add(s.userId)) merged.add(s);
-        }
-      }
-      merged.sort((a, b) => a.startedAt.compareTo(b.startedAt));
-      if (!controller.isClosed) controller.add(merged);
-    }
-
-    controller = StreamController<List<CookingSession>>.broadcast(
-      onListen: () {
-        for (final id in groupIds) {
-          subs.add(module.watchGroupSessions(id).listen((sessions) {
-            perGroupLatest[id] = sessions;
-            emit();
-          }));
-        }
-        emit();
-      },
-      onCancel: () {
-        for (final s in subs) {
-          s.cancel();
-        }
-        subs.clear();
-      },
-    );
-    return controller.stream;
   }
 }

@@ -67,20 +67,18 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
       vsync: this,
       duration: ThemeConstants.durationMedium,
     );
+    // Auto-start once at mount — no need to re-check on every rebuild.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.service.isRunning || widget.service.isPaused) return;
+      widget.service.start(widget.initialDuration);
+    });
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
     super.dispose();
-  }
-
-  /// First-time entry auto-starts the timer with the prefilled duration.
-  /// Subsequent openings (re-entry) do nothing — the caller is expected to
-  /// reuse the same [StepTimerService] instance.
-  void _maybeAutoStart() {
-    if (widget.service.isRunning || widget.service.isPaused) return;
-    widget.service.start(widget.initialDuration);
   }
 
   void _handleExpiry() {
@@ -92,12 +90,6 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
 
   @override
   Widget build(BuildContext context) {
-    // Auto-start on first build only.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _maybeAutoStart();
-    });
-
     return StreamBuilder<Duration>(
       stream: widget.service.remaining,
       initialData: widget.service.currentRemaining == Duration.zero
@@ -109,7 +101,10 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
         final isPaused = widget.service.isPaused;
         final isExpired = !isRunning && !isPaused && remaining == Duration.zero;
 
-        if (isExpired) {
+        // Only schedule the expiry post-frame on the first expired frame —
+        // `_handleExpiry` self-guards via `_hasFiredExpired` anyway, so
+        // the extra check here just avoids the wasted scheduling.
+        if (isExpired && !_hasFiredExpired) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             _handleExpiry();

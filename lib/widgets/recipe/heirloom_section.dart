@@ -14,7 +14,7 @@ import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
+import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/widgets/recipe/heirloom_stamp.dart';
 
 /// Section rendering the original heirloom scan with a rust corner stamp.
@@ -102,14 +102,6 @@ class HeirloomSection extends StatelessWidget {
   }
 
   void _openFullscreen(BuildContext context, String imageUrl) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => FullscreenImageViewer(
-          imageUrls: [imageUrl],
-          initialIndex: 0,
-        ),
-        fullscreenDialog: true,
-      ),
-    );
+    RecipeDetailSharedWidgets.showFullscreenImage(context, [imageUrl], 0);
   }
 }

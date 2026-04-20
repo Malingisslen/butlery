@@ -52,6 +52,7 @@ import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
 
 // Service integration for functionality and data management
 import 'package:butlery/services/search_service.dart';
@@ -159,6 +160,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   /// hero header's FutureBuilder doesn't rebuild a new future each frame.
   late final Future<SeasonalMonth?> _seasonalMonthFuture;
   late final SeasonalHeroService _seasonalHeroService;
+
+  /// BUT-408: merged cooking-session stream, owned by this state so parent
+  /// rebuilds don't re-allocate subscriptions.
+  final CookingSessionStreamHolder _sessionsHolder =
+      CookingSessionStreamHolder();
+
+  @override
+  void dispose() {
+    _sessionsHolder.dispose();
+    super.dispose();
+  }
 
   void _loadCuisineNames() {
     try {
@@ -553,61 +565,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         .toList(growable: false);
     if (groups.isEmpty) return const SizedBox.shrink();
 
-    final merged = _mergeGroupStreams(module, groups, userId);
+    _sessionsHolder.refresh(module, groups, userId);
+    final stream = _sessionsHolder.stream;
+    if (stream == null) return const SizedBox.shrink();
 
     return StreamBuilder<List<CookingSession>>(
-      stream: merged,
+      stream: stream,
       builder: (_, snapshot) {
         final sessions = snapshot.data ?? const <CookingSession>[];
         return CookingSessionCard(sessions: sessions);
       },
     );
-  }
-
-  /// Merge per-group presence streams into a single list. Own user is
-  /// filtered out — we never show "you are cooking" to yourself.
-  Stream<List<CookingSession>> _mergeGroupStreams(
-    CookingSessionModule module,
-    List<String> groupIds,
-    String selfUserId,
-  ) {
-    final perGroupLatest = <String, List<CookingSession>>{
-      for (final id in groupIds) id: const [],
-    };
-    late final StreamController<List<CookingSession>> controller;
-    final subs = <StreamSubscription<List<CookingSession>>>[];
-
-    void emit() {
-      final seen = <String>{};
-      final merged = <CookingSession>[];
-      for (final list in perGroupLatest.values) {
-        for (final s in list) {
-          if (s.userId == selfUserId) continue;
-          if (seen.add(s.userId)) merged.add(s);
-        }
-      }
-      merged.sort((a, b) => a.startedAt.compareTo(b.startedAt));
-      if (!controller.isClosed) controller.add(merged);
-    }
-
-    controller = StreamController<List<CookingSession>>.broadcast(
-      onListen: () {
-        for (final id in groupIds) {
-          subs.add(module.watchGroupSessions(id).listen((sessions) {
-            perGroupLatest[id] = sessions;
-            emit();
-          }));
-        }
-        emit();
-      },
-      onCancel: () {
-        for (final s in subs) {
-          s.cancel();
-        }
-        subs.clear();
-      },
-    );
-    return controller.stream;
   }
 
   void _handleDeleteWithUndo(RecipeListViewModel viewModel, Recipe recipe) {
