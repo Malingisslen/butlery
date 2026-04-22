@@ -1,10 +1,10 @@
 /// Navigator observer that only forwards lifecycle callbacks to the wrapped
 /// [FirebaseAnalyticsObserver] while analytics consent is granted.
 ///
-/// **GDPR Art. 7 (BUT-570):** `FirebaseAnalyticsObserver` emits `screen_view`
-/// events unconditionally. Attaching it at bootstrap — before the user has
-/// answered the consent dialog — leaks screen-navigation telemetry. This
-/// wrapper checks [ConsentService] on every callback and no-ops when denied.
+/// GDPR Art. 7: `FirebaseAnalyticsObserver` emits `screen_view` events
+/// unconditionally. Attaching it at bootstrap — before the user has answered
+/// the consent dialog — leaks screen-navigation telemetry. This wrapper
+/// checks [ConsentService] on every callback and no-ops when denied.
 ///
 /// The consent check is synchronous from the caller's perspective: we cache
 /// the last known result and refresh it opportunistically. Until the first
@@ -63,24 +63,22 @@ class ConsentAwareAnalyticsObserver extends NavigatorObserver {
     });
   }
 
-  bool get _shouldForward => _hasConsent;
-
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     _scheduleConsentRefresh();
-    if (_shouldForward) _inner.didPush(route, previousRoute);
+    if (_hasConsent) _inner.didPush(route, previousRoute);
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     _scheduleConsentRefresh();
-    if (_shouldForward) _inner.didPop(route, previousRoute);
+    if (_hasConsent) _inner.didPop(route, previousRoute);
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     _scheduleConsentRefresh();
-    if (_shouldForward) {
+    if (_hasConsent) {
       _inner.didReplace(newRoute: newRoute, oldRoute: oldRoute);
     }
   }
@@ -88,14 +86,13 @@ class ConsentAwareAnalyticsObserver extends NavigatorObserver {
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     _scheduleConsentRefresh();
-    if (_shouldForward) _inner.didRemove(route, previousRoute);
+    if (_hasConsent) _inner.didRemove(route, previousRoute);
   }
 
-  /// Test hook — lets specs bypass the async refresh and assert the pure
-  /// gating behaviour.
+  /// Test hook — bypass the async refresh and assert pure gating behaviour.
   @visibleForTesting
-  // ignore: use_setters_to_change_properties
-  void debugSetConsent(bool granted) {
-    _hasConsent = granted;
-  }
+  bool get debugConsent => _hasConsent;
+
+  @visibleForTesting
+  set debugConsent(bool granted) => _hasConsent = granted;
 }

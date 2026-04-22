@@ -105,11 +105,8 @@ class RecipeEventsTracker extends BaseTracker {
     );
   }
 
-  /// Log recipe search performed.
-  ///
-  /// **PII (BUT-421):** The raw `searchQuery` is never forwarded. The
-  /// repository's `_sanitize` gate would drop it anyway, but we pre-bucket
-  /// here so the event contains a useful dimension instead of nothing.
+  /// Log recipe search performed. The raw `searchQuery` is dropped + bucketed
+  /// by the repository's `_sanitize` gate — never leaves the device.
   Future<void> logRecipeSearchPerformed({
     required String searchQuery,
     required int resultsCount,
@@ -118,19 +115,11 @@ class RecipeEventsTracker extends BaseTracker {
     await logEvent(
       name: 'recipe_search_performed',
       parameters: {
-        // Bucket raw query length — never send the query itself.
-        'search_query_len_bucket': _bucketQueryLength(searchQuery.length),
+        'search_query': searchQuery,
         'results_count': resultsCount,
         if (filtersApplied != null && filtersApplied.isNotEmpty)
           'filters_applied': filtersApplied.join(','),
       },
     );
-  }
-
-  String _bucketQueryLength(int len) {
-    if (len <= 3) return '1-3';
-    if (len <= 10) return '4-10';
-    if (len <= 20) return '11-20';
-    return '21+';
   }
 }

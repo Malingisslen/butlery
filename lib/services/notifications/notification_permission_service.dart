@@ -1,9 +1,7 @@
-// lib/services/notifications/notification_permission_service.dart
+// Android 13+ POST_NOTIFICATIONS runtime permission handling.
 //
-// BUT-414: Android 13+ POST_NOTIFICATIONS runtime permission handling.
-//
-// iOS and Android 12 or below: permission is implicit or granted at install
-// time — this service short-circuits to `true`. Android 13+: request via
+// iOS and Android 12 or below: permission is implicit or install-time granted
+// — this service short-circuits to `true`. Android 13+: request via
 // `permission_handler` with a rationale on first denial and a settings
 // snackbar on permanent denial. Never hard-gates features.
 

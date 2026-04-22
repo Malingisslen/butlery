@@ -26,7 +26,7 @@ void main() {
     setUp(() {
       inner = _MockFirebaseAnalyticsObserver();
       // Consent service resolver returns null — we drive state via
-      // debugSetConsent, proving the callback-time gate works in isolation.
+      // debugConsent, proving the callback-time gate works in isolation.
       observer = ConsentAwareAnalyticsObserver(
         inner: inner,
         consentServiceResolver: () => null,
@@ -59,13 +59,13 @@ void main() {
     });
 
     test('didPush forwards to inner observer once consent is granted', () {
-      observer.debugSetConsent(true);
+      observer.debugConsent = true;
       observer.didPush(routeA, routeB);
       verify(() => inner.didPush(routeA, routeB)).called(1);
     });
 
     test('didPop forwards to inner observer once consent is granted', () {
-      observer.debugSetConsent(true);
+      observer.debugConsent = true;
       observer.didPop(routeA, routeB);
       verify(() => inner.didPop(routeA, routeB)).called(1);
     });
@@ -73,11 +73,11 @@ void main() {
     test(
         'granting then withdrawing consent toggles forwarding off again (right to withdraw)',
         () {
-      observer.debugSetConsent(true);
+      observer.debugConsent = true;
       observer.didPush(routeA, routeB);
       verify(() => inner.didPush(routeA, routeB)).called(1);
 
-      observer.debugSetConsent(false);
+      observer.debugConsent = false;
       observer.didPush(routeA, routeB);
       // No additional call after withdrawal.
       verifyNever(() => inner.didPush(routeA, routeB));

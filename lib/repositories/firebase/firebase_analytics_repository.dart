@@ -1,17 +1,18 @@
 import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/core/utils/crypto_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation of the AnalyticsRepository interface.
 ///
-/// **GDPR (Art. 7):** `initialize()` explicitly disables Analytics collection
-/// at bootstrap. Enabling collection is the caller's responsibility, gated on
-/// consent via `setAnalyticsCollectionEnabled(true)` — see
-/// `_enableCollectionIfConsented()` in `main.dart`.
+/// GDPR Art. 7: `initialize()` explicitly disables Analytics collection at
+/// bootstrap. Callers re-enable only after consent is verified in
+/// `_enableCollectionIfConsented()`.
 ///
 /// **PII sanitization:** All event parameters pass through `_sanitize()` which
 /// (a) drops unbounded free-text keys (e.g. `search_query`) in favour of a
@@ -59,6 +60,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
 
   /// Cached, lazily-loaded per-install salt. `null` means not yet loaded.
   String? _cachedSalt;
+
+  /// Dedups in-flight salt loads so N concurrent events don't each race
+  /// `SharedPreferences.getInstance()` + write a fresh salt.
+  Future<String>? _saltLoading;
 
   /// Creates a FirebaseAnalyticsRepository with optional custom FirebaseAnalytics instance.
   /// If no instance is provided, it uses the default FirebaseAnalytics.instance.
@@ -395,6 +400,12 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   Future<Map<String, Object>?> _sanitize(Map<String, Object>? params) async {
     if (params == null || params.isEmpty) return params;
 
+    // Fast path: if no key is PII-relevant, skip the salt-load + map copy.
+    final hasPii = params.keys.any(
+      (k) => _piiDropKeys.contains(k) || _piiHashKeys.contains(k),
+    );
+    if (!hasPii) return params;
+
     final salt = await _getSalt();
     final result = <String, Object>{};
 
@@ -402,7 +413,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       final key = entry.key;
       final value = entry.value;
 
-      // 1. Drop unbounded free-text keys.
       if (_piiDropKeys.contains(key)) {
         if (key == 'search_query' && value is String) {
           result['search_query_len_bucket'] = _bucketLength(value.length);
@@ -410,58 +420,55 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         continue;
       }
 
-      // 2. Hash raw identifier keys.
       if (_piiHashKeys.contains(key) && value is String && value.isNotEmpty) {
-        result[key] = _saltedHash(value, salt);
+        result[key] = CryptoUtils.sha256Hash('$salt|$value');
         continue;
       }
 
-      // 3. Everything else passes through.
       result[key] = value;
     }
 
     return result;
   }
 
-  /// Lazy-load the per-install salt. First call writes a fresh 32-byte random
-  /// salt. Not global → hashes can't be joined across user accounts / devices.
-  Future<String> _getSalt() async {
-    if (_saltOverride != null) return _saltOverride;
-    if (_cachedSalt != null) return _cachedSalt!;
+  /// Lazy-load the per-install salt. First call writes a cryptographically
+  /// random 32-byte salt. Not global → hashes can't be joined across users.
+  Future<String> _getSalt() {
+    if (_saltOverride != null) return Future.value(_saltOverride);
+    if (_cachedSalt != null) return Future.value(_cachedSalt!);
+    return _saltLoading ??= _loadOrCreateSalt();
+  }
 
+  Future<String> _loadOrCreateSalt() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       var salt = prefs.getString(_saltPrefsKey);
       if (salt == null || salt.isEmpty) {
-        // 32 bytes of randomness via DateTime microseconds + hashCode mix;
-        // not cryptographic quality, but sufficient to break cross-user
-        // linkage in analytics. Upgrade to Random.secure() if threat model
-        // ever demands it.
-        final seed = '${DateTime.now().microsecondsSinceEpoch}'
-            '-${identityHashCode(this)}'
-            '-${DateTime.now().toIso8601String()}';
-        salt = sha256.convert(utf8.encode(seed)).toString();
+        salt = _generateSalt();
         await prefs.setString(_saltPrefsKey, salt);
       }
       _cachedSalt = salt;
       return salt;
     } catch (e) {
-      // SharedPreferences unavailable (e.g. test runner without binding) —
-      // fall back to an ephemeral in-memory salt. Still hashes, still breaks
-      // linkage within this process, just doesn't survive restart.
+      // SharedPreferences unavailable (e.g. test runner without binding).
+      // Fall back to an ephemeral salt — still breaks linkage within the
+      // process, just doesn't survive restart.
       AppLogger.warning(
         'Analytics salt: SharedPreferences unavailable ($e); '
         'using ephemeral in-memory salt',
       );
-      _cachedSalt = sha256
-          .convert(utf8.encode('ephemeral-${identityHashCode(this)}'))
-          .toString();
+      _cachedSalt = _generateSalt();
       return _cachedSalt!;
     }
   }
 
-  String _saltedHash(String input, String salt) {
-    return sha256.convert(utf8.encode('$salt|$input')).toString();
+  static String _generateSalt() {
+    final rnd = Random.secure();
+    final bytes = Uint8List(32);
+    for (var i = 0; i < bytes.length; i++) {
+      bytes[i] = rnd.nextInt(256);
+    }
+    return base64Url.encode(bytes);
   }
 
   String _bucketLength(int len) {

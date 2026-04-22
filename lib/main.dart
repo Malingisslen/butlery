@@ -276,15 +276,13 @@ Future<void> _initializeModularSystem() async {
   await _enableCollectionIfConsented();
 }
 
-/// Enable Analytics, Crashlytics and Performance collection only when the
+/// Enable Analytics, Crashlytics, and Performance collection only when the
 /// user has granted analytics consent. Safe default: disabled.
 ///
-/// **GDPR Art. 7 (BUT-412):** Analytics collection is also gated here — the
-/// repository's `initialize()` explicitly disables at bootstrap; this function
-/// re-enables collection only after the consent check passes.
-///
-/// Analytics is additionally disabled in debug builds to avoid polluting
-/// production metrics with developer traffic.
+/// GDPR Art. 7: the repository's `initialize()` starts collection DENIED;
+/// this function re-enables only after the consent check passes. Analytics
+/// is additionally disabled in debug builds to keep dev traffic out of
+/// production metrics.
 Future<void> _enableCollectionIfConsented() async {
   try {
     final bootstrap = ApplicationBootstrap();
@@ -735,9 +733,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         final analyticsService = bootstrap.container.get<AnalyticsService>();
         final inner = analyticsService.observer as FirebaseAnalyticsObserver?;
         if (inner != null) {
-          // BUT-570: Wrap the Firebase observer so screen_view events are
-          // suppressed until the user has granted analytics consent. The
-          // resolver pattern keeps us resilient to DI not being ready yet.
+          // Gate screen_view events on analytics consent. The resolver
+          // closure keeps us resilient if DI hasn't populated ConsentService
+          // yet on the very first navigation.
           _analyticsObserver = ConsentAwareAnalyticsObserver(
             inner: inner,
             consentServiceResolver: () {
