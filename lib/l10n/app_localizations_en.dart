@@ -7230,6 +7230,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yAddItem => 'Add item';
 
   @override
+  String a11yTagStatusInfo(String status) {
+    return 'More information about $status';
+  }
+
+  @override
+  String a11yRateStars(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Rate $count stars',
+      one: 'Rate 1 star',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String a11yShoppingItemChecked(String itemText) {
     return '$itemText, checked, tap to uncheck';
   }
@@ -11884,6 +11900,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bulkSelectAll => 'Select All';
 
   @override
+  String get bulkCancelSelection => 'Cancel selection';
+
+  @override
   String get bulkDelete => 'Delete Selected';
 
   @override
@@ -12872,4 +12891,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String cookingNowMerge(String names, String recipe) {
     return '$names are cooking $recipe';
   }
+
+  @override
+  String get notificationPermissionTitle => 'Turn on notifications?';
+
+  @override
+  String get notificationPermissionBody =>
+      'Butlery uses notifications for cooking timers, messages from friends, and activity on your shared recipes. You can change this any time in settings.';
+
+  @override
+  String get notificationPermissionGrant => 'Allow';
+
+  @override
+  String get notificationPermissionOpenSettings => 'Open settings';
+
+  @override
+  String get notificationPermissionPermanentlyDeniedMessage =>
+      'Notifications are turned off. Open settings to enable them.';
 }

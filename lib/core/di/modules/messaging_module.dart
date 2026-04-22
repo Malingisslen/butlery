@@ -37,6 +37,7 @@ import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_permission_service.dart';
 
 // Firestore repository
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -75,6 +76,7 @@ class MessagingModule implements DIModule {
         NotificationBatchRepository,
         DeviceRepository,
         NotificationService,
+        NotificationPermissionService,
       ];
 
   @override
@@ -164,6 +166,12 @@ class MessagingModule implements DIModule {
       );
 
       // NotificationService: registered in configureUserScope
+
+      // BUT-414: Android 13+ POST_NOTIFICATIONS runtime permission gate.
+      // App-scoped because it holds no user state — it only wraps the plugin.
+      container.registerLazySingleton<NotificationPermissionService>(
+        () => NotificationPermissionService(),
+      );
     } catch (e) {
       throw DIModuleException(
         name,

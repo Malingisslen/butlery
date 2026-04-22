@@ -1,6 +1,113 @@
 # Sprint Backlog
 
-## Sprint: Cooking depth + presence + heirloom — 2026-04-19
+## Sprint: Launch readiness — GDPR + a11y + infra — 2026-04-21
+
+**Plan file:** `C:\Users\malla\.claude\plans\plan-elegant-wilkes.md`
+
+Theme: burn down the Urgent launch-readiness cluster (GDPR Art 7, Firestore RPO, Android 13+ notifications, WCAG) + their High-priority companions. No user-visible features this sprint — pure compliance + cleanup floor for the next product sprint.
+
+### Agent A: firebase-backend-security — consent-gated analytics
+
+Coherent cluster: all three tickets concern data collection happening before/around the consent check.
+
+- [x] **A1. Gate `setAnalyticsCollectionEnabled` behind consent** — `lib/repositories/firebase/firebase_analytics_repository.dart:28`: move `setAnalyticsCollectionEnabled(!kDebugMode)` out of `initialize()` into `_enableCollectionIfConsented()` alongside Crashlytics + Performance. Test asserts collection stays off until `ConsentService` reports granted. (BUT-412)
+- [x] **A2. Consent-gate `FirebaseAnalyticsObserver`** — `lib/core/observers/consent_aware_analytics_observer.dart` no-ops when consent denied; wired in `main.dart`. (BUT-570)
+- [x] **A3. Strip PII from Analytics event params** — `_sanitize(Map)` gate in repo + salted SHA-256 IDs; `search_query` replaced with length bucket. (BUT-421)
+
+### Agent B: firebase-backend-security — infra + signing verifies
+
+- [!] **B1. Enable Firestore PITR + weekly GCS export** — runbook written to `docs/ops/backups.md`; **blocked: user must install gcloud + run commands** (no CLI in agent shell). (BUT-418)
+- [x] **B2. Verify `upload-keystore.jks` is gitignored** — CLEAN. `android/.gitignore:14` matches `**/*.jks`; never in history. Log evidence in Linear comment. (BUT-487)
+- [!] **B3. Verify CI release signing** — **TWO DEFECTS FOUND, NOT AUTO-FIXED**: (1) `android/app/build.gradle.kts:11` reads `app/key.properties` but actual file is `android/key.properties` — every local release is debug-signed too; (2) `.github/workflows/build-validation.yml:160-164` never materializes `KEYSTORE_BASE64` or `key.properties` in CI. Both fixes must land together with GitHub secrets; requires user secret-admin access. See Linear comment for paste-ready YAML. (BUT-485)
+
+### Agent C: flutter-developer — Android 13+ notifications
+
+- [x] **C1. Declare `POST_NOTIFICATIONS` permission (Android 13+)** — manifest + `NotificationPermissionService` with rationale dialog + settings snackbar, wired through the settings master-toggle. 8 tests passing. (BUT-414)
+
+### Agent D: flutter-developer — WCAG a11y
+
+- [x] **D1. Semantics labels on icon-only buttons** — `AppIconButton.semanticLabel` required; migrated critical-surface call sites; l10n keys added both locales. (BUT-508)
+- [x] **D2. Enforce 48x48dp minimum touch targets** — `AppDimensions.minTouchTarget = 48.0` + `TappableWrapper`; star-rating + tag-status-badge migrated; golden + unit tests green. (BUT-505)
+
+### Cleanup
+
+- [x] **Z1. Delete analysis report files** — removed 11 untracked files under `docs/analysis/reports/`. Linear carries the findings.
+- [x] **Z2. Cancel BUT-543** — transitioned to Canceled ("empty-grid first-run is intentional").
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos` — expect 0 issues
+- [ ] Targeted tests per agent (analytics-repo consent test, semantics widget tests, permission manifest parse)
+- [ ] Manual verification:
+  - A: fresh install → verify no Analytics event fires before consent dialog answered (Firebase DebugView or `adb logcat | grep Analytics`)
+  - B1: confirm PITR status via `gcloud firestore databases describe`
+  - B2/B3: attach log evidence to Linear tickets
+  - C1: Android 13+ device → first notification triggers permission sheet
+  - D1/D2: TalkBack sweep on nav + FAB; manual tap on chips feels 48dp-sized
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-412, BUT-570, BUT-421, BUT-418, BUT-487, BUT-485, BUT-414, BUT-508, BUT-505 → Done
+- [ ] BUT-407 stays In Progress (untouched)
+
+---
+
+## What this means in plain language
+
+- **No analytics data is collected until you tap "Agree".** Fixed a GDPR Art 7 violation where basic usage stats started before consent.
+- **Firestore backups turn on.** Today, a bad delete is unrecoverable. After this sprint we can roll back to any point in the last 7 days.
+- **Accessibility.** Every icon-only button announces itself to VoiceOver/TalkBack; no tappable area smaller than a fingertip.
+- **Android notifications work on Android 13+.** Today those devices silently drop every notification because we never ask for permission.
+- **Safety checks on release signing.** Confirm the signing key isn't committed; confirm CI builds with the real key, not the debug one.
+- **Cleanup.** 11 analysis-report markdown files deleted (digested into Linear). BUT-543 (sample recipes) cancelled.
+- **Risk: Low.** No user-visible features; additive or constraint-only changes.
+
+---
+
+## Queued Sprint: Store Submission Readiness — 2026-04-22
+
+**Plan file:** `C:\Users\malla\.claude\plans\recursive-baking-petal.md`
+
+Theme: continue launch-readiness with remaining High-priority store-submission blockers (Apple 1.2 UGC, GDPR Ch V, iOS privacy manifest, deep-link verification). Runs after current sprint completes. No user-visible features.
+
+### Agent A: firebase-backend-security — UGC moderation (Apple 1.2 + Google Play)
+
+- [ ] **A1. Reports state machine + moderator admin rule + Cloud Function trigger** — `firestore.rules:1272`: add forward-only `reports/{reportId}.status` state machine (`new → in_review → actioned → closed`). `isAdmin()` helper reads `admins/{uid}`; `admins/` rule-locked vs client writes. Allow admin update on reports + update/delete on reportable collections. New `onReportCreated` Cloud Function in `functions/src/triggers/` → moderator email. Extend report-abuse UI to groups + messages + comments + ratings. Admin-gated in-app moderator screen. Safe-serialization for new field. Tests: 5 named rule+emulator behaviors. (BUT-417, BUT-548)
+- [ ] **A2. Appeal process ToS + Settings link** — `lib/views/legal/terms_of_service_view.dart` appeal section + `appeals@butlery.app` mailto. `lib/views/settings/...` "Appeal a removal" entry. ARB keys both locales: `appealProcessTitle`, `appealProcessBody`, `appealEmailLinkLabel`. (BUT-556)
+- [ ] **A3. Moderator runbook** — `docs/ops/moderation-runbook.md` (1 page): admin UID seeding, action-a-report flow, rollback, 24h SLA. (BUT-417/BUT-548 close-out)
+
+### Agent B: firebase-backend-security — EU data residency (GDPR Ch V)
+
+- [ ] **B1. Verify Firebase region + document** — Console check Firestore + Storage region; record in `firebase.json` comment + `docs/ops/data-residency.md`. If non-EU → **STOP + escalate** (immutable, migration = days). (BUT-607)
+- [ ] **B2. Migrate Gemini → Vertex AI europe-west1** — `functions/src/llm/gemini-client.ts`: swap Google AI Studio endpoint for Vertex AI `@google-cloud/vertexai` in `europe-west1`. Service-account auth. Golden-fixture round-trip test asserts parsed shape unchanged. Update privacy policy data-processor inventory. (BUT-614)
+
+### Agent C: flutter-developer — iOS submission + deep links
+
+- [ ] **C1. PrivacyInfo.xcprivacy audit** — enumerate third-party SDKs from `pubspec.yaml` + `ios/Podfile.lock`; verify `NSPrivacyAccessedAPITypes` matches actual usage. Output: updated `ios/Runner/PrivacyInfo.xcprivacy` + `docs/ops/ios-privacy-manifest-audit.md`. (BUT-568)
+- [ ] **C2. Host `.well-known/assetlinks.json` + AASA on butlery.app** — SHA-256 cert fingerprint (from BUT-487/485) + Team ID/bundle/paths. Host with correct Content-Type. Verify via Google + Apple validators. Also unblocks BUT-434. (BUT-575)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos` — 0 issues
+- [ ] Firestore rules unit tests green
+- [ ] `firebase deploy --only functions --dry-run`
+- [ ] Manual verification per plan file section
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-417, BUT-548, BUT-556, BUT-607, BUT-614, BUT-568, BUT-575 → Done
+- [ ] Paperwork tracked separately (do NOT move to Todo): BUT-561 Data Safety form, BUT-624 age rating
+
+---
+
+## What this means in plain language (queued sprint)
+
+- **Apple and Google require a moderator who can remove bad content within 24 hours.** After this sprint, you can review reports and delete offending content in one tap.
+- **Users get a way to appeal removals** — required by Google Play.
+- **All data stays in Europe.** Recipe parsing currently routes through US AI servers; this sprint moves it to Vertex AI europe-west1.
+- **iOS knows exactly what each library touches** — Apple's been rejecting apps for vague declarations; this sprint matches reality.
+- **Recipe share links open the app, not Safari.** Two tiny well-known files unlock Android auto-verify + iOS universal links.
+- **Risk: Low.** Additive rules + one Cloud Function + config files. Escalation path if Firebase region is non-EU.
+
+---
+
+## Archive: Sprint Cooking depth + presence + heirloom — 2026-04-19
 
 **Plan file:** `C:\Users\malla\.claude\plans\ja-prancy-toast.md`
 
@@ -44,101 +151,18 @@ HTML preview approval gate before Flutter code. Broadcasts to all `FriendCategor
   - BUT-406: open cooking mode, long-press "koka 10 min" line → timer pre-filled at 10:00; background → resume accurate; haptic+snackbar on expiry
   - BUT-408: `firebase emulators:start`; two sessions same group → Session A enters cooking, Session B sees "Anna lagar X" card with amber pulse; session end → card disappears within 60s
   - BUT-410: import heirloom photo, verify content-addressed Storage path + `Cache-Control` header; detail view side-by-side on tablet, swipe-toggle on mobile
-- [ ] Commit, push to main
+- [x] Commit, push to main — `ba08da618` + `272b5bd4b` + `fc8d5062f`
 - [ ] Update Linear: BUT-406, BUT-408, BUT-410 → Done
-
----
-
-## What this means in plain language
-
-- **Cooking mode gets a real timer.** Long-press "koka 10 min" in any recipe → square cream card with 10:00 pre-filled slides up. Survives app switching and phone lock. Haptic buzz when done.
-- **"Erik lagar kycklinggryta" card.** When a family member opens cooking mode, everyone in their group sees a gentle green card with a pulsing amber dot. Hides itself automatically. No notification spam.
-- **Farmors lapp is preserved.** Tick "Detta är ett arvegods" during photo import, add writer + year + note → original scan stays forever, shown side-by-side with parsed text.
-- **All three cost close to nothing at runtime.** Timer is local. Presence is ephemeral. Heirloom images are aggressively cached (~$0.50/mo at 1000 users).
-- **Risk: Low-medium.** Additive only — no migrations. Each agent independent. Heirloom is the most sensitive (Storage + GDPR cascade) but reuses existing `users/{userId}/` deletion prefix.
-
----
-
-## Archive: Sprint Cooking depth + Chrome MCP hooks — 2026-04-18
-
-Theme: strategic alignment from `memory/strategic-feature-analysis.md` → *Smart Cooking Mode first*. Ship the first user-visible slice of cooking mode (ingredient substitutions), lay groundwork for BUT-215 Årets Kök (cookCount infra, no UI yet), unblock Chrome MCP automation so `/smoke-test` is reliable, and a tiny seasonal-accent delight. All additive — no migrations.
-
-### Agent A: flutter-developer — Cooking-mode substitutions MVP (BUT-202 slice)
-
-- [x] **A1. `IngredientSubstitution` model + Firestore lexicon** — `lib/models/cooking/ingredient_substitution.dart` with `{name, ratio:double, context}`. Firestore `ingredient_substitutions/{canonicalIngredientId}` doc carries `substitutes: List<Map>`. Parallel to existing `IngredientSubstitutionService` (different shape — flagged for future consolidation). (BUT-202)
-- [x] **A2. `SubstitutionSuggestionService`** — `lib/services/cooking/substitution_suggestion_service.dart`. Uses `IngredientLookupService` for canonical ID resolution, 50-entry LRU cache. DI-registered in `configureUserScope` (user-scoped dependency). Deterministic. (BUT-202)
-- [x] **A3. Cooking-mode UI** — `lib/widgets/cooking/substitution_bottom_sheet.dart` + long-press wiring in `lib/views/cooking_mode_view.dart`. "Slut på {ingredient}? Prova…" with up to 3 suggestions. Replace routes through `UnifiedRecipeService.updateIngredient` with graceful snackbar fallback. Square corners, cream bg, greenDark text. (BUT-202)
-- [x] **A4. Swedish l10n + tests** — 5 keys added (`outOfIngredientTitle`, `ratioSuffix`, `replaceInRecipe`, `noSubstitutionSuggestions`, `suggestAlternative`). `gen-l10n` clean. 16/16 tests green: 7 model + 6 service + 3 widget. (BUT-202)
-
-### Agent B: flutter-developer — Cooking activity foundation (BUT-215 prep, no UI)
-
-Unblocks the Årets Kök screen in a future sprint. No user-facing change this sprint.
-
-- [x] **B1. Add `cookCount` to `Recipe` model** — `lib/models/recipe_unified.dart`: `cookCount` flipped from non-nullable `int = 0` to nullable `int?` on `RecipeCore` (true legacy semantics). Safe-map serialization (omit when null). Sentinel in both `copyWith`s. Facade `Recipe.cookCountRaw` for nullable access; `Recipe.cookCount` keeps `int` (null→0) for sort/aggregation compat. (BUT-215)
-- [x] **B2. Atomic increment on cook event** — new `incrementCookCount(recipeId, cookedAt)` on repo using `FieldValue.increment(1)` + `Timestamp` in a single atomic `update` (dotted path for nested `core.cookCount`). New `lib/services/recipe/recipe_cooking_service.dart` with per-session day-bucketed dedup keyed `recipeId|YYYY-MM-DD` via `package:clock`. `RecipeDetailViewModel.markAsCooked` routed through the new service (was doing full-doc update). (BUT-215)
-- [x] **B3. Firestore rule for counter** — split create/update on recipes; cookCount clause accepts unchanged, null→1, or n→n+1. `firebase deploy --only firestore:rules --dry-run` compiles clean. (BUT-215)
-- [x] **B4. Backfill script** — `scripts/backfill/cook_count.dart` with `--dry-run` + `--user <uid>` flags. Collection-group query for all-users path, 500-op batching. (BUT-215)
-- [x] **B5. Tests** — 23/23 green: 13 model round-trip + 7 cooking-service dedup + 3 backfill dry-run/live. Clean analyze. (BUT-215)
-
-### Agent C: testing-specialist — Flutter canvas automation hooks (BUT-403)
-
-Unblock Chrome MCP/`/smoke-test` — canvas rendering defeats CSS selectors; need semantic labels the browser can query.
-
-- [x] **C1–C4.** Semantic audit (~22 `Semantics(identifier:)`) + `ValueKey('test-{view}-{action}')` pairs across 13 lib files covering nav, recipe list/detail, add-recipe flow, shopping, menu. `.claude/commands/smoke-test.md` pattern doc updated. `test/smoke/semantic_hooks_smoke_test.dart` 3/3 green; regression 7+39 green; analyze clean. (BUT-403)
-
-### Agent D: flutter-developer — Seasonal accent (BUT-347, small delight)
-
-- [x] **D1–D2.** `lib/services/theme/seasonal_accent_service.dart`: month-based `ButleryColors.copyWith` (autumn amber, winter cool-cream, spring soft-green, summer as-is) on semantic slots. Wired into `MaterialApp` via `createTheme(butleryColorsOverride:)` in `main.dart`. 11 tests green (4 boundaries + 12-month map + summer identity + determinism + injected-base passthrough). (BUT-347)
-
-### Post-Sprint Steps
-
-- [x] Analyze + tests (50 new, 11 + 23 + 16) — all green
-- [x] Commit, push to main — `8cf2a4dab`
-- [x] Linear: BUT-202, BUT-215, BUT-403, BUT-347 → Done
-- [x] Follow-up chips filed (subst consolidation, ensureSemantics startup call)
-
----
-
-## Archive: Sprint UX polish + menu model upgrade — 2026-04-18
-
-Theme: high-priority UX bugs from the 2026-04-18 exploratory testing pass + BUT-340 follow-up promoting group votes from creator-owned to a true group-scoped weekly plan. Dev tooling polish (session-aware stop hook) included.
-
-- [x] Agent A (flutter-developer): FeedbackFab visibility (BUT-402), diet chip neutralization (BUT-399), "Snabbspara recept" subtitle (BUT-400), "overifierad"→"ej verifierad" (BUT-404)
-- [x] Agent B (flutter-developer): `GroupWeeklyMenuPlan` model + repo + service + DI + rules + realtime + poll-close routing + GDPR paths + 132 tests (BUT-405)
-- [x] Agent C (debugger): session-aware stop hook (BUT-398), collection-insights accordion analysis (BUT-401)
-- [x] Analyze clean + 132/132 green + commit `1483e3b0a` + Linear updates
-
----
-
-## Archive: Sprint Shared Menu Decisions — 2026-04-18
-
-**Plan file:** `C:\Users\malla\.claude\plans\without-touching-anything-just-piped-pearl.md`
-
-- [x] Agent A (flutter-developer): BUT-340 Group meal voting MVP (poll recipe metadata + auto-resolve to creator plan)
-- [x] Agent B (flutter-developer): BUT-238 Split-store shopping (`assignedToUserId`, presence module, zone toggle, GDPR)
-- [x] Agent C (testing-specialist): BUT-361 Calendar weekly menu test gap (repo 94%, VM 97%, widget 85%)
-- [x] 128 tests green; commit `12e2645ec`
-
----
-
-## Archive: Sprint Test Infra Phase 12 — Cross-platform + Patrol MVP — 2026-04-17
-
-- [x] B1–B3 (BUT-396). Cross-platform CI matrix (ubuntu + macOS + windows), `fail-fast: false`, coverage ubuntu-only. `627b46458`.
-- [~] A1–A4 (BUT-395). Patrol MVP — abandoned after landing (`b729d66ae`). Replaced by Chrome MCP `/smoke-test` skill. Linear: Won't Do.
-- [ ] Coverage-floor tightening — deferred past 2026-04-24 (needs ≥5 CI runs).
-
----
-
-## Archive: Sprint Test Infra Close-Out (BUT-387 Phase 11) — 2026-04-17
-
-- [x] Agent A (testing-specialist): deterministic time (BUT-394) — rewrote `timestamp_test_helper`, audited `Future.delayed` stragglers, cleaned test_support files
-- [x] Agent B (testing-specialist): Firebase SDK mock migration (BUT-389) — replaced hand-rolled SDK mocks with `FakeFirebaseFirestore` + `firebase_storage_mocks`
-- [x] Agent C (flutter-developer): custom lint enforcement (BUT-393) — `avoid_real_time_in_tests` rule wired into CI
 
 ---
 
 ## Archive: Previous Sprints
 
+- Cooking depth + Chrome MCP hooks (2026-04-18): BUT-202, BUT-215, BUT-403, BUT-347
+- UX polish + menu model upgrade (2026-04-18): BUT-402, BUT-399, BUT-400, BUT-404, BUT-405, BUT-398, BUT-401
+- Shared Menu Decisions (2026-04-18): BUT-340, BUT-238, BUT-361
+- Test Infra Phase 12 — Cross-platform + Patrol MVP (2026-04-17): BUT-396, BUT-395
+- Test Infra Close-Out (BUT-387 Phase 11, 2026-04-17): BUT-394, BUT-389, BUT-393
 - Test Hardening Close-Out (BUT-387 final phase, 2026-04-17): BUT-390, BUT-391, BUT-392, BUT-388, BUT-385, BUT-374
 - Ingredient Search (2026-04-14): BUT-205
 - Stability & Permissions (2026-04-14): BUT-379, BUT-381, BUT-383, BUT-373, BUT-380, BUT-372, BUT-382

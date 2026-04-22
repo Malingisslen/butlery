@@ -11,6 +11,9 @@
     
     <!-- För nyare Android-versioner (API 33+) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- BUT-414: Android 13+ runtime notification permission. Pre-13 devices ignore this. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
     <application
         android:label="butlery"

@@ -252,6 +252,9 @@ class _AuthViewState extends State<AuthView> {
                           size: AppDimensions.iconSizeAction,
                         ),
                         onPressed: viewModel.togglePasswordVisibility,
+                        tooltip: viewModel.isPasswordVisible
+                            ? context.l10n.a11yHidePassword
+                            : context.l10n.a11yShowPassword,
                       ),
                     ),
                   ),

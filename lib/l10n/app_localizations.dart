@@ -12501,6 +12501,18 @@ abstract class AppLocalizations {
   /// **'Lägg till vara'**
   String get a11yAddItem;
 
+  /// No description provided for @a11yTagStatusInfo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mer information om {status}'**
+  String a11yTagStatusInfo(String status);
+
+  /// No description provided for @a11yRateStars.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Sätt 1 stjärna} other{Sätt {count} stjärnor}}'**
+  String a11yRateStars(int count);
+
   /// No description provided for @a11yShoppingItemChecked.
   ///
   /// In sv, this message translates to:
@@ -20350,6 +20362,12 @@ abstract class AppLocalizations {
   /// **'Välj alla'**
   String get bulkSelectAll;
 
+  /// No description provided for @bulkCancelSelection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt val'**
+  String get bulkCancelSelection;
+
   /// No description provided for @bulkDelete.
   ///
   /// In sv, this message translates to:
@@ -22083,6 +22101,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{names} lagar {recipe}'**
   String cookingNowMerge(String names, String recipe);
+
+  /// BUT-414: rationale dialog title shown before Android 13+ system permission prompt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktivera aviseringar?'**
+  String get notificationPermissionTitle;
+
+  /// BUT-414: rationale dialog body explaining why notifications are requested.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery använder aviseringar för att påminna om timers, meddelanden från vänner och aktivitet i dina delade recept. Du kan ändra detta när som helst i inställningarna.'**
+  String get notificationPermissionBody;
+
+  /// BUT-414: primary action in the rationale dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillåt'**
+  String get notificationPermissionGrant;
+
+  /// BUT-414: snackbar action when notifications are permanently denied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna inställningar'**
+  String get notificationPermissionOpenSettings;
+
+  /// BUT-414: snackbar body when the user has permanently denied notifications.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aviseringar är avstängda. Öppna inställningarna för att aktivera dem.'**
+  String get notificationPermissionPermanentlyDeniedMessage;
 }
 
 class _AppLocalizationsDelegate

@@ -36,6 +36,7 @@ import 'package:butlery/core/observers/snackbar_route_observer.dart';
 import 'package:butlery/core/observers/performance_navigator_observer.dart';
 import 'package:butlery/core/observers/session_activity_observer.dart';
 import 'package:butlery/core/observers/interaction_route_observer.dart';
+import 'package:butlery/core/observers/consent_aware_analytics_observer.dart';
 import 'package:butlery/services/feedback/interaction_logger.dart';
 
 // Session timeout
@@ -275,11 +276,16 @@ Future<void> _initializeModularSystem() async {
   await _enableCollectionIfConsented();
 }
 
-/// Enable Crashlytics and Performance collection only when the user
-/// has granted analytics consent. Safe default: disabled.
+/// Enable Analytics, Crashlytics and Performance collection only when the
+/// user has granted analytics consent. Safe default: disabled.
+///
+/// **GDPR Art. 7 (BUT-412):** Analytics collection is also gated here — the
+/// repository's `initialize()` explicitly disables at bootstrap; this function
+/// re-enables collection only after the consent check passes.
+///
+/// Analytics is additionally disabled in debug builds to avoid polluting
+/// production metrics with developer traffic.
 Future<void> _enableCollectionIfConsented() async {
-  if (kIsWeb) return;
-
   try {
     final bootstrap = ApplicationBootstrap();
     if (!bootstrap.isInitialized) return;
@@ -288,14 +294,29 @@ Future<void> _enableCollectionIfConsented() async {
     final hasConsent =
         await consentService.hasConsent(ConsentPurpose.analytics);
 
-    await Future.wait([
-      FirebaseCrashlytics.instance
-          .setCrashlyticsCollectionEnabled(hasConsent && !kDebugMode),
-      FirebasePerformance.instance.setPerformanceCollectionEnabled(hasConsent),
-    ]);
+    final analyticsEnabled = hasConsent && !kDebugMode;
+
+    // Analytics (all platforms — Firebase Analytics supports web + mobile)
+    try {
+      final analyticsService = bootstrap.container.get<AnalyticsService>();
+      await analyticsService.setAnalyticsCollectionEnabled(analyticsEnabled);
+    } catch (e) {
+      AppLogger.warning('Failed to toggle Analytics collection: $e');
+    }
+
+    // Crashlytics + Performance are mobile-only
+    if (!kIsWeb) {
+      await Future.wait([
+        FirebaseCrashlytics.instance
+            .setCrashlyticsCollectionEnabled(hasConsent && !kDebugMode),
+        FirebasePerformance.instance
+            .setPerformanceCollectionEnabled(hasConsent),
+      ]);
+    }
 
     AppLogger.info(
       'Collection consent: analytics=$hasConsent → '
+      'Analytics=$analyticsEnabled, '
       'Crashlytics=${hasConsent && !kDebugMode}, Performance=$hasConsent',
     );
   } catch (e) {
@@ -374,7 +395,7 @@ class ButleryApp extends StatefulWidget {
 }
 
 class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
-  FirebaseAnalyticsObserver? _analyticsObserver;
+  ConsentAwareAnalyticsObserver? _analyticsObserver;
   final SnackbarRouteObserver _snackbarObserver = SnackbarRouteObserver();
   final PerformanceNavigatorObserver _performanceObserver =
       PerformanceNavigatorObserver();
@@ -712,8 +733,22 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
       if (bootstrap.isInitialized) {
         final analyticsService = bootstrap.container.get<AnalyticsService>();
-        _analyticsObserver =
-            analyticsService.observer as FirebaseAnalyticsObserver?;
+        final inner = analyticsService.observer as FirebaseAnalyticsObserver?;
+        if (inner != null) {
+          // BUT-570: Wrap the Firebase observer so screen_view events are
+          // suppressed until the user has granted analytics consent. The
+          // resolver pattern keeps us resilient to DI not being ready yet.
+          _analyticsObserver = ConsentAwareAnalyticsObserver(
+            inner: inner,
+            consentServiceResolver: () {
+              try {
+                return bootstrap.container.get<ConsentService>();
+              } catch (_) {
+                return null;
+              }
+            },
+          );
+        }
       }
     } catch (e) {
       // Analytics setup failed - non-critical

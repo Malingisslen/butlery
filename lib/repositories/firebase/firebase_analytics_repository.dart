@@ -1,34 +1,88 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation of the AnalyticsRepository interface.
-/// This repository provides Firebase Analytics functionality while maintaining
-/// the abstraction required for dependency injection and testability.
-/// It encapsulates all Firebase-specific analytics operations and can be
-/// easily mocked or replaced with alternative implementations.
+///
+/// **GDPR (Art. 7):** `initialize()` explicitly disables Analytics collection
+/// at bootstrap. Enabling collection is the caller's responsibility, gated on
+/// consent via `setAnalyticsCollectionEnabled(true)` — see
+/// `_enableCollectionIfConsented()` in `main.dart`.
+///
+/// **PII sanitization:** All event parameters pass through `_sanitize()` which
+/// (a) drops unbounded free-text keys (e.g. `search_query`) in favour of a
+/// length bucket, and (b) replaces raw identifiers (`recipe_id`, `group_id`,
+/// `user_id`, `friend_id`, `sender_id`, `recipient_id`, `blocked_user_id`,
+/// `menu_id`, `list_id`, `conversation_id`, `content_id`) with a salted
+/// SHA-256 hash. The salt is **per-install, not global**, so IDs cannot be
+/// joined across different users' event streams.
 class FirebaseAnalyticsRepository implements AnalyticsRepository {
   final FirebaseAnalytics _analytics;
   FirebaseAnalyticsObserver? _observer;
 
+  /// Keys whose values are raw identifiers and must be hashed before leaving
+  /// the device. Centralised so new call sites cannot regress.
+  static const Set<String> _piiHashKeys = {
+    'recipe_id',
+    'group_id',
+    'user_id',
+    'friend_id',
+    'sender_id',
+    'recipient_id',
+    'blocked_user_id',
+    'unblocked_user_id',
+    'menu_id',
+    'list_id',
+    'conversation_id',
+    'content_id',
+  };
+
+  /// Keys that must be dropped entirely — unbounded free text → unbounded PII.
+  /// `search_query` is replaced with `search_query_len_bucket` downstream.
+  /// `error_message` is kept (already truncated to 100 chars + platform-origin,
+  /// not user-typed) for aggregated diagnostics.
+  static const Set<String> _piiDropKeys = {
+    'search_query',
+    'comment_text',
+    'note',
+  };
+
+  static const String _saltPrefsKey = 'analytics_pii_salt_v1';
+
+  /// Optional override for tests — accepts a pre-computed salt so the test
+  /// doesn't need to stub SharedPreferences.
+  final String? _saltOverride;
+
+  /// Cached, lazily-loaded per-install salt. `null` means not yet loaded.
+  String? _cachedSalt;
+
   /// Creates a FirebaseAnalyticsRepository with optional custom FirebaseAnalytics instance.
   /// If no instance is provided, it uses the default FirebaseAnalytics.instance.
   /// This allows for dependency injection in tests while maintaining production simplicity.
+  ///
+  /// [saltOverride] — for tests only. Production bootstraps a per-install salt
+  /// from SharedPreferences.
   FirebaseAnalyticsRepository({
     FirebaseAnalytics? analytics,
-  }) : _analytics = analytics ?? FirebaseAnalytics.instance;
+    String? saltOverride,
+  })  : _analytics = analytics ?? FirebaseAnalytics.instance,
+        _saltOverride = saltOverride;
 
   @override
   Future<void> initialize() async {
     try {
       _observer = FirebaseAnalyticsObserver(analytics: _analytics);
 
-      // Disable analytics collection in debug mode
-      await _analytics.setAnalyticsCollectionEnabled(!kDebugMode);
+      // GDPR Art. 7: start DENIED. Caller must re-enable via
+      // `setAnalyticsCollectionEnabled(true)` once consent is verified.
+      await _analytics.setAnalyticsCollectionEnabled(false);
 
       AppLogger.info(
-        '📊 Firebase Analytics initialized (collection ${!kDebugMode ? "enabled" : "disabled"})',
+        '📊 Firebase Analytics initialized (collection disabled pending consent)',
       );
     } catch (e) {
       AppLogger.error('Failed to initialize Firebase Analytics: $e');
@@ -45,9 +99,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     Map<String, Object>? parameters,
   }) async {
     try {
+      final sanitized = await _sanitize(parameters);
       await _analytics.logEvent(
         name: name,
-        parameters: parameters,
+        parameters: sanitized,
       );
     } catch (e) {
       AppLogger.error('Analytics event logging failed: $e');
@@ -268,7 +323,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
 
-    AppLogger.info('📊 Recipe deletion logged: $recipeId ($mealType)');
+    AppLogger.info('📊 Recipe deletion logged: hashed recipe ($mealType)');
   }
 
   @override
@@ -331,6 +386,89 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         value: hasCooked.toString(),
       );
     }
+  }
+
+  // ──────────── PII sanitization ────────────
+
+  /// Defense-in-depth PII gate applied to every `logEvent` parameter map.
+  /// See class-level doc for the full policy.
+  Future<Map<String, Object>?> _sanitize(Map<String, Object>? params) async {
+    if (params == null || params.isEmpty) return params;
+
+    final salt = await _getSalt();
+    final result = <String, Object>{};
+
+    for (final entry in params.entries) {
+      final key = entry.key;
+      final value = entry.value;
+
+      // 1. Drop unbounded free-text keys.
+      if (_piiDropKeys.contains(key)) {
+        if (key == 'search_query' && value is String) {
+          result['search_query_len_bucket'] = _bucketLength(value.length);
+        }
+        continue;
+      }
+
+      // 2. Hash raw identifier keys.
+      if (_piiHashKeys.contains(key) && value is String && value.isNotEmpty) {
+        result[key] = _saltedHash(value, salt);
+        continue;
+      }
+
+      // 3. Everything else passes through.
+      result[key] = value;
+    }
+
+    return result;
+  }
+
+  /// Lazy-load the per-install salt. First call writes a fresh 32-byte random
+  /// salt. Not global → hashes can't be joined across user accounts / devices.
+  Future<String> _getSalt() async {
+    if (_saltOverride != null) return _saltOverride;
+    if (_cachedSalt != null) return _cachedSalt!;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      var salt = prefs.getString(_saltPrefsKey);
+      if (salt == null || salt.isEmpty) {
+        // 32 bytes of randomness via DateTime microseconds + hashCode mix;
+        // not cryptographic quality, but sufficient to break cross-user
+        // linkage in analytics. Upgrade to Random.secure() if threat model
+        // ever demands it.
+        final seed = '${DateTime.now().microsecondsSinceEpoch}'
+            '-${identityHashCode(this)}'
+            '-${DateTime.now().toIso8601String()}';
+        salt = sha256.convert(utf8.encode(seed)).toString();
+        await prefs.setString(_saltPrefsKey, salt);
+      }
+      _cachedSalt = salt;
+      return salt;
+    } catch (e) {
+      // SharedPreferences unavailable (e.g. test runner without binding) —
+      // fall back to an ephemeral in-memory salt. Still hashes, still breaks
+      // linkage within this process, just doesn't survive restart.
+      AppLogger.warning(
+        'Analytics salt: SharedPreferences unavailable ($e); '
+        'using ephemeral in-memory salt',
+      );
+      _cachedSalt = sha256
+          .convert(utf8.encode('ephemeral-${identityHashCode(this)}'))
+          .toString();
+      return _cachedSalt!;
+    }
+  }
+
+  String _saltedHash(String input, String salt) {
+    return sha256.convert(utf8.encode('$salt|$input')).toString();
+  }
+
+  String _bucketLength(int len) {
+    if (len <= 3) return '1-3';
+    if (len <= 10) return '4-10';
+    if (len <= 20) return '11-20';
+    return '21+';
   }
 
   /// Categorize error for analytics

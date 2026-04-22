@@ -187,14 +187,18 @@ class _AdaptiveDestructiveButton extends AdaptiveButton {
 
 /// A platform-adaptive icon button.
 /// Uses CupertinoButton on iOS, IconButton on Android.
+///
+/// [semanticLabel] is required for accessibility (WCAG 4.1.2).
+/// It is used as both the visible tooltip (Android) and the
+/// screen-reader announcement on every platform.
 class AdaptiveIconButton extends StatelessWidget {
   /// Creates a platform-adaptive icon button.
   const AdaptiveIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
+    required this.semanticLabel,
     this.color,
-    this.tooltip,
     this.size = 24.0,
     this.padding,
   });
@@ -208,8 +212,9 @@ class AdaptiveIconButton extends StatelessWidget {
   /// The icon's color.
   final Color? color;
 
-  /// Tooltip text for accessibility.
-  final String? tooltip;
+  /// Required accessibility label — announced by screen readers and shown
+  /// as the tooltip on long-press (Material) or on hover (web/desktop).
+  final String semanticLabel;
 
   /// The icon's size.
   final double size;
@@ -220,33 +225,36 @@ class AdaptiveIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb && Platform.isIOS) {
-      final button = CupertinoButton(
-        onPressed: onPressed,
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),
-        minimumSize: const Size(44.0, 44.0),
-        child: IconTheme(
-          data: IconThemeData(
-            color: color ?? CupertinoColors.activeBlue.resolveFrom(context),
-            size: size,
+      return Tooltip(
+        message: semanticLabel,
+        child: Semantics(
+          label: semanticLabel,
+          button: true,
+          enabled: onPressed != null,
+          child: CupertinoButton(
+            onPressed: onPressed,
+            padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),
+            minimumSize: const Size(
+              AppDimensions.minTouchTarget,
+              AppDimensions.minTouchTarget,
+            ),
+            child: IconTheme(
+              data: IconThemeData(
+                color: color ?? CupertinoColors.activeBlue.resolveFrom(context),
+                size: size,
+              ),
+              child: icon,
+            ),
           ),
-          child: icon,
         ),
       );
-
-      if (tooltip != null) {
-        return Tooltip(
-          message: tooltip!,
-          child: button,
-        );
-      }
-      return button;
     }
 
     return IconButton(
       icon: icon,
       onPressed: onPressed,
       color: color,
-      tooltip: tooltip,
+      tooltip: semanticLabel,
       iconSize: size,
       padding: padding,
     );

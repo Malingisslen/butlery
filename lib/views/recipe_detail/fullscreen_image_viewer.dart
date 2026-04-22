@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -81,6 +82,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: cs.surfaceContainerHighest),
           onPressed: () => Navigator.of(context).pop(),
+          tooltip: context.l10n.commonBack,
         ),
       ),
       body: Builder(builder: (context) {

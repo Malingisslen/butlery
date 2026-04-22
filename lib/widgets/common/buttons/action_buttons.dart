@@ -434,3 +434,49 @@ class FloatingActionButtonWidget extends StatelessWidget {
 
 /// Button style enumeration
 enum ActionButtonStyle { primary, secondary, outlined }
+
+/// Canonical icon-only button for the Butlery design system.
+///
+/// Enforces WCAG 4.1.2 by requiring [semanticLabel]. Wraps [IconButton] so
+/// Material's 48dp minimum touch target (WCAG 2.5.5) is preserved.
+/// Use this in place of raw [IconButton] for any icon-only action.
+class AppIconButton extends StatelessWidget {
+  const AppIconButton({
+    required this.icon,
+    required this.onPressed,
+    required this.semanticLabel,
+    this.color,
+    this.iconSize,
+    this.padding,
+    super.key,
+  });
+
+  /// The icon to render.
+  final IconData icon;
+
+  /// Called when the button is tapped. Null disables the button.
+  final VoidCallback? onPressed;
+
+  /// Required screen-reader label (also used as tooltip).
+  /// Must be provided from `AppLocalizations` — no hardcoded Swedish.
+  final String semanticLabel;
+
+  /// Icon tint. Defaults to the theme's icon theme color.
+  final Color? color;
+
+  /// Icon glyph size. Defaults to [IconButton]'s Material default (24).
+  final double? iconSize;
+
+  /// Padding inside the button; affects visual size but not the 48dp hit area.
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(icon, color: color, size: iconSize),
+      onPressed: onPressed,
+      tooltip: semanticLabel,
+      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),
+    );
+  }
+}

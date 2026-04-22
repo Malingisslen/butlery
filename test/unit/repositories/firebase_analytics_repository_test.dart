@@ -45,9 +45,11 @@ void main() {
             value: any(named: 'value'),
           )).thenAnswer((_) async {});
 
-      // Create repository
+      // Create repository with a fixed salt so hashed values are deterministic
+      // across the suite. Using a literal keeps the tests readable.
       repository = FirebaseAnalyticsRepository(
         analytics: mockAnalytics,
+        saltOverride: 'test-salt',
       );
     });
 
@@ -57,7 +59,8 @@ void main() {
     });
 
     group('initialize', () {
-      test('should create observer and disable analytics in debug mode',
+      test(
+          'initialize disables analytics collection at bootstrap (consent-gated)',
           () async {
         // Arrange
         debugDefaultTargetPlatformOverride = null; // Reset to default
@@ -66,9 +69,12 @@ void main() {
         await repository.initialize();
 
         // Assert
+        // GDPR Art. 7 — bootstrap must start DENIED regardless of debug mode.
+        // The caller re-enables only after consent check in main.dart.
         expect(repository.observer, isNotNull);
-        verify(() => mockAnalytics.setAnalyticsCollectionEnabled(!kDebugMode))
+        verify(() => mockAnalytics.setAnalyticsCollectionEnabled(false))
             .called(1);
+        verifyNever(() => mockAnalytics.setAnalyticsCollectionEnabled(true));
       });
 
       test('should handle initialization errors gracefully', () async {
@@ -414,7 +420,7 @@ void main() {
         expect(captured.containsKey('timestamp'), isTrue);
       });
 
-      test('should log recipe cooked event', () async {
+      test('should log recipe cooked event with hashed recipe id', () async {
         // Arrange
         const recipeId = 'recipe-123';
         const mealType = 'dinner';
@@ -435,7 +441,10 @@ void main() {
               parameters: captureAny(named: 'parameters'),
             )).captured.single as Map<String, Object>;
 
-        expect(captured['recipe_id'], equals(recipeId));
+        // recipe_id must be hashed — never the raw id in BigQuery export.
+        expect(captured['recipe_id'], isNot(equals(recipeId)));
+        expect(captured['recipe_id'], isA<String>());
+        expect((captured['recipe_id'] as String).length, equals(64));
         expect(captured['meal_type'], equals(mealType));
         expect(captured['is_first_time'], equals('false'));
         expect(captured['days_since_last'], equals(daysSinceLastCooked));
@@ -470,7 +479,9 @@ void main() {
               parameters: captureAny(named: 'parameters'),
             )).captured.single as Map<String, Object>;
 
-        expect(captured['recipe_id'], equals(recipeId));
+        // recipe_id hashed; other dimensions pass through.
+        expect(captured['recipe_id'], isNot(equals(recipeId)));
+        expect((captured['recipe_id'] as String).length, equals(64));
         expect(captured['meal_type'], equals(mealType));
         expect(captured['recipe_type'], equals('personal'));
         expect(captured['days_since_created'], equals(daysSinceCreated));
@@ -549,7 +560,9 @@ void main() {
               parameters: captureAny(named: 'parameters'),
             )).captured.single as Map<String, Object>;
 
-        expect(captured['user_id'], equals('user-123'));
+        // user_id is hashed by the PII gate (never raw in event payloads).
+        expect(captured['user_id'], isNot(equals('user-123')));
+        expect((captured['user_id'] as String).length, equals(64));
         expect(captured['account_age_days'], equals(365));
         expect(captured['recipe_count'], equals(42));
         expect(captured['reason'], equals('user_request'));
@@ -574,7 +587,8 @@ void main() {
               parameters: captureAny(named: 'parameters'),
             )).captured.single as Map<String, Object>;
 
-        expect(captured['user_id'], equals('user-456'));
+        expect(captured['user_id'], isNot(equals('user-456')));
+        expect((captured['user_id'] as String).length, equals(64));
         expect(captured['recipe_count'], equals(10));
         expect(captured.containsKey('account_age_days'), isFalse);
         expect(captured.containsKey('reason'), isFalse);
@@ -598,6 +612,132 @@ void main() {
         // Assert
         verify(() => mockAnalytics.setAnalyticsCollectionEnabled(false))
             .called(1);
+      });
+    });
+
+    group('PII sanitization (BUT-421)', () {
+      test(
+          'logEvent with raw recipe_id replaces it with salted SHA-256 hash, not raw value',
+          () async {
+        // Act
+        await repository.logEvent(
+          name: 'recipe_viewed',
+          parameters: {'recipe_id': 'abc123', 'recipe_type': 'personal'},
+        );
+
+        // Assert
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'recipe_viewed',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+
+        expect(captured['recipe_id'], isNot(equals('abc123')));
+        expect((captured['recipe_id'] as String).length, equals(64));
+        expect((captured['recipe_id'] as String),
+            matches(RegExp(r'^[0-9a-f]{64}$')));
+        // Non-PII keys pass through untouched.
+        expect(captured['recipe_type'], equals('personal'));
+      });
+
+      test('same raw id hashes to the same value (cohort retention)', () async {
+        await repository.logEvent(
+          name: 'recipe_viewed',
+          parameters: {'recipe_id': 'abc123'},
+        );
+        await repository.logEvent(
+          name: 'recipe_cooked',
+          parameters: {'recipe_id': 'abc123'},
+        );
+
+        final captures = verify(() => mockAnalytics.logEvent(
+              name: any(named: 'name'),
+              parameters: captureAny(named: 'parameters'),
+            )).captured.cast<Map<String, Object>>();
+
+        expect(captures.length, equals(2));
+        expect(captures[0]['recipe_id'], equals(captures[1]['recipe_id']));
+      });
+
+      test(
+          'search_query is dropped entirely and replaced with length bucket (unbounded PII)',
+          () async {
+        // Act
+        await repository.logEvent(
+          name: 'recipe_search_performed',
+          parameters: {
+            'search_query': 'chicken parmesan recipe with bacon',
+            'results_count': 5,
+          },
+        );
+
+        // Assert
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'recipe_search_performed',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+
+        expect(captured.containsKey('search_query'), isFalse);
+        expect(captured['search_query_len_bucket'], equals('21+'));
+        expect(captured['results_count'], equals(5));
+      });
+
+      test('short search_query falls in 1-3 bucket', () async {
+        await repository.logEvent(
+          name: 'recipe_search_performed',
+          parameters: {'search_query': 'ab'},
+        );
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'recipe_search_performed',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+        expect(captured['search_query_len_bucket'], equals('1-3'));
+      });
+
+      test('all PII id keys are hashed, not raw', () async {
+        final piiPayload = <String, Object>{
+          'group_id': 'g-1',
+          'user_id': 'u-1',
+          'friend_id': 'f-1',
+          'sender_id': 's-1',
+          'recipient_id': 'r-1',
+          'blocked_user_id': 'b-1',
+          'menu_id': 'm-1',
+          'list_id': 'l-1',
+          'conversation_id': 'c-1',
+          'content_id': 'ct-1',
+        };
+
+        await repository.logEvent(name: 'any_event', parameters: piiPayload);
+
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'any_event',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+
+        for (final key in piiPayload.keys) {
+          expect(captured[key], isNot(equals(piiPayload[key])),
+              reason: '$key must not be the raw value');
+          expect((captured[key] as String).length, equals(64),
+              reason: '$key must be a 64-char SHA-256 hex digest');
+        }
+      });
+
+      test('non-PII keys are untouched', () async {
+        await repository.logEvent(
+          name: 'menu_generated',
+          parameters: {
+            'recipe_count': 7,
+            'method': 'auto',
+            'source': 'url',
+          },
+        );
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'menu_generated',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+        expect(captured['recipe_count'], equals(7));
+        expect(captured['method'], equals('auto'));
+        expect(captured['source'], equals('url'));
       });
     });
 

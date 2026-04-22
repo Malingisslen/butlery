@@ -89,6 +89,14 @@ class AnalyticsService extends BaseService {
   /// Get the analytics observer for navigation tracking
   dynamic get observer => _repository.observer;
 
+  /// Toggle the underlying analytics SDK's collection flag.
+  /// Called from `main._enableCollectionIfConsented()` after the consent
+  /// check — not guarded by a consent check here because the caller is the
+  /// gate. Exempt from our in-service consent wrapper by design.
+  Future<void> setAnalyticsCollectionEnabled(bool enabled) async {
+    await _repository.setAnalyticsCollectionEnabled(enabled);
+  }
+
   // Auth events (exempt from consent - necessary for service operation)
 
   Future<void> logLogin({required String method}) async {

@@ -7240,6 +7240,22 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yAddItem => 'Lägg till vara';
 
   @override
+  String a11yTagStatusInfo(String status) {
+    return 'Mer information om $status';
+  }
+
+  @override
+  String a11yRateStars(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sätt $count stjärnor',
+      one: 'Sätt 1 stjärna',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String a11yShoppingItemChecked(String itemText) {
     return '$itemText, avbockad, tryck för att bocka av';
   }
@@ -11910,6 +11926,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get bulkSelectAll => 'Välj alla';
 
   @override
+  String get bulkCancelSelection => 'Avbryt val';
+
+  @override
   String get bulkDelete => 'Ta bort valda';
 
   @override
@@ -12900,4 +12919,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String cookingNowMerge(String names, String recipe) {
     return '$names lagar $recipe';
   }
+
+  @override
+  String get notificationPermissionTitle => 'Aktivera aviseringar?';
+
+  @override
+  String get notificationPermissionBody =>
+      'Butlery använder aviseringar för att påminna om timers, meddelanden från vänner och aktivitet i dina delade recept. Du kan ändra detta när som helst i inställningarna.';
+
+  @override
+  String get notificationPermissionGrant => 'Tillåt';
+
+  @override
+  String get notificationPermissionOpenSettings => 'Öppna inställningar';
+
+  @override
+  String get notificationPermissionPermanentlyDeniedMessage =>
+      'Aviseringar är avstängda. Öppna inställningarna för att aktivera dem.';
 }

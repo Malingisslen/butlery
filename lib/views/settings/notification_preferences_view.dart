@@ -3,6 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -54,6 +55,26 @@ class _NotificationPreferencesViewState
         });
       }
     }
+  }
+
+  /// BUT-414: gate enabling notifications on Android 13+ runtime permission.
+  /// If the OS grant is declined we still persist the preference flip off —
+  /// never hard-gate the rest of the settings surface.
+  Future<void> _onMasterToggle(bool wantEnabled) async {
+    if (wantEnabled) {
+      final permissionService =
+          ServiceLocator.get<NotificationPermissionService>();
+      final granted = await permissionService.requestIfNeeded(context);
+      if (!granted) {
+        // Surface the current OFF state; the service has already shown a
+        // rationale or settings snackbar as appropriate.
+        if (mounted) {
+          setState(() => _preferences = _copyPreferences(enabled: false));
+        }
+        return;
+      }
+    }
+    await _savePreferences(_copyPreferences(enabled: wantEnabled));
   }
 
   Future<void> _savePreferences(NotificationPreferences updated) async {
@@ -140,9 +161,7 @@ class _NotificationPreferencesViewState
         size: AppDimensions.iconSizeL,
       ),
       value: _preferences.enabled,
-      onChanged: (value) => _savePreferences(
-        _copyPreferences(enabled: value),
-      ),
+      onChanged: (value) => _onMasterToggle(value),
       activeTrackColor: cs.primary.withValues(alpha: AppDimensions.opacityHalf),
       thumbColor: _primaryThumbColor(cs),
       contentPadding: EdgeInsets.zero,

@@ -4821,6 +4821,22 @@
   "a11yNoItemsToShare": "Inga artiklar att dela",
   "a11yShareExternally": "Dela externt",
   "a11yAddItem": "Lägg till vara",
+  "a11yTagStatusInfo": "Mer information om {status}",
+  "@a11yTagStatusInfo": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRateStars": "{count, plural, =1{Sätt 1 stjärna} other{Sätt {count} stjärnor}}",
+  "@a11yRateStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "a11yShoppingItemChecked": "{itemText}, avbockad, tryck för att bocka av",
   "@a11yShoppingItemChecked": {
     "placeholders": {
@@ -8194,6 +8210,7 @@
     }
   },
   "bulkSelectAll": "Välj alla",
+  "bulkCancelSelection": "Avbryt val",
   "bulkDelete": "Ta bort valda",
   "bulkShare": "Dela valda",
   "viewModeGrid": "Rutnätsvy",
@@ -8780,5 +8797,25 @@
       "names": {"type": "String", "example": "Erik & Sara"},
       "recipe": {"type": "String", "example": "kycklinggryta"}
     }
+  },
+  "notificationPermissionTitle": "Aktivera aviseringar?",
+  "@notificationPermissionTitle": {
+    "description": "BUT-414: rationale dialog title shown before Android 13+ system permission prompt."
+  },
+  "notificationPermissionBody": "Butlery använder aviseringar för att påminna om timers, meddelanden från vänner och aktivitet i dina delade recept. Du kan ändra detta när som helst i inställningarna.",
+  "@notificationPermissionBody": {
+    "description": "BUT-414: rationale dialog body explaining why notifications are requested."
+  },
+  "notificationPermissionGrant": "Tillåt",
+  "@notificationPermissionGrant": {
+    "description": "BUT-414: primary action in the rationale dialog."
+  },
+  "notificationPermissionOpenSettings": "Öppna inställningar",
+  "@notificationPermissionOpenSettings": {
+    "description": "BUT-414: snackbar action when notifications are permanently denied."
+  },
+  "notificationPermissionPermanentlyDeniedMessage": "Aviseringar är avstängda. Öppna inställningarna för att aktivera dem.",
+  "@notificationPermissionPermanentlyDeniedMessage": {
+    "description": "BUT-414: snackbar body when the user has permanently denied notifications."
   }
 }

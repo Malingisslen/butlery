@@ -1,8 +1,10 @@
 // lib/widgets/common/star_rating_row.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/tappable_wrapper.dart';
 
 /// Shared star rating row supporting display-only and interactive modes.
 ///
@@ -46,19 +48,14 @@ class StarRatingRow extends StatelessWidget {
 
         if (onRatingChanged == null) return star;
 
-        Widget tappableStar = GestureDetector(
+        final label = semanticsLabel != null
+            ? semanticsLabel!(starValue)
+            : context.l10n.a11yRateStars(starValue);
+        return TappableWrapper(
           onTap: () => onRatingChanged!(starValue.toDouble()),
+          semanticLabel: label,
           child: star,
         );
-
-        if (semanticsLabel != null) {
-          tappableStar = Semantics(
-            label: semanticsLabel!(starValue),
-            child: tappableStar,
-          );
-        }
-
-        return tappableStar;
       }),
     );
   }

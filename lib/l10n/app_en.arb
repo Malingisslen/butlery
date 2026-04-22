@@ -4821,6 +4821,22 @@
   "a11yNoItemsToShare": "No items to share",
   "a11yShareExternally": "Share externally",
   "a11yAddItem": "Add item",
+  "a11yTagStatusInfo": "More information about {status}",
+  "@a11yTagStatusInfo": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRateStars": "{count, plural, =1{Rate 1 star} other{Rate {count} stars}}",
+  "@a11yRateStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "a11yShoppingItemChecked": "{itemText}, checked, tap to uncheck",
   "@a11yShoppingItemChecked": {
     "placeholders": {
@@ -8173,6 +8189,7 @@
     }
   },
   "bulkSelectAll": "Select All",
+  "bulkCancelSelection": "Cancel selection",
   "bulkDelete": "Delete Selected",
   "bulkShare": "Share Selected",
   "viewModeGrid": "Grid View",
@@ -8780,5 +8797,25 @@
       "names": {"type": "String", "example": "Erik & Sara"},
       "recipe": {"type": "String", "example": "chicken stew"}
     }
+  },
+  "notificationPermissionTitle": "Turn on notifications?",
+  "@notificationPermissionTitle": {
+    "description": "BUT-414: rationale dialog title shown before Android 13+ system permission prompt."
+  },
+  "notificationPermissionBody": "Butlery uses notifications for cooking timers, messages from friends, and activity on your shared recipes. You can change this any time in settings.",
+  "@notificationPermissionBody": {
+    "description": "BUT-414: rationale dialog body explaining why notifications are requested."
+  },
+  "notificationPermissionGrant": "Allow",
+  "@notificationPermissionGrant": {
+    "description": "BUT-414: primary action in the rationale dialog."
+  },
+  "notificationPermissionOpenSettings": "Open settings",
+  "@notificationPermissionOpenSettings": {
+    "description": "BUT-414: snackbar action when notifications are permanently denied."
+  },
+  "notificationPermissionPermanentlyDeniedMessage": "Notifications are turned off. Open settings to enable them.",
+  "@notificationPermissionPermanentlyDeniedMessage": {
+    "description": "BUT-414: snackbar body when the user has permanently denied notifications."
   }
 }

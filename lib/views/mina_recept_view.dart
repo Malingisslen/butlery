@@ -399,6 +399,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: viewModel.clearSelection,
+        tooltip: context.l10n.bulkCancelSelection,
       ),
       title: Text(
         context.l10n.bulkSelectedCount(viewModel.selectedCount),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/tappable_wrapper.dart';
 
 /// Shared badge widget used by both AllergenStatusBadge and DietaryStatusBadge.
 /// Left-border style with tinted background, icon + label + optional info tap.
@@ -59,8 +61,9 @@ class TagStatusBadge extends StatelessWidget {
             ],
             if (onInfoTap != null) ...[
               const SizedBox(width: AppDimensions.spacing6),
-              GestureDetector(
+              TappableWrapper(
                 onTap: onInfoTap,
+                semanticLabel: context.l10n.a11yTagStatusInfo(semanticLabel),
                 child: Icon(
                   Icons.info_outline,
                   size: AppDimensions.iconSize14,
