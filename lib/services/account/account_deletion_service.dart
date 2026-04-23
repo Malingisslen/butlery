@@ -146,6 +146,8 @@ class AccountDeletionService extends BaseService {
         'shared_content': () => _socialOps.removeFromSharedContent(userId),
         'comments_ratings': () => _socialOps.deleteCommentsAndRatings(userId),
         // shared_menus + shared_shopping_lists deleted via removeFromSharedContent (unified shared_content collection)
+        // BUT-407: pings authored by user — GDPR erasure cascade.
+        'pings': () => _socialOps.deletePingsByUser(userId),
         'reports': () => _socialOps.deleteUserReports(userId),
         'block_records': () => _deleteBlockRecords(userId),
         'preferences': () => _profileOps.deleteUserPreferences(userId),

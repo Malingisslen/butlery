@@ -32,6 +32,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
+import 'package:butlery/widgets/social/family_presence_bar.dart';
 
 /// View-mode toggle for the Veckomeny screen output.
 enum VeckomenyViewMode { lista, kalender }
@@ -322,6 +323,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             child: Column(
               children: [
                 LayoutComponents.offlineIndicator(),
+                // BUT-407: online-members presence bar (union across groups).
+                const FamilyPresenceBar(),
                 // BUT-408: live cooking session card for the user's groups.
                 _buildCookingSessionCard(),
                 Padding(

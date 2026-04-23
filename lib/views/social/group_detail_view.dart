@@ -38,6 +38,8 @@ import 'package:butlery/widgets/social/groups/empty_group_delete_dialog.dart';
 import 'package:butlery/widgets/social/groups/ownership_transfer_dialog.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/views/social/group_detail/group_action_buttons.dart';
+import 'package:butlery/widgets/social/family_presence_bar.dart';
+import 'package:butlery/widgets/social/activity_pings_feed.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Group detail view with member management and sharing capabilities.
@@ -614,8 +616,14 @@ class _GroupDetailViewState extends State<GroupDetailView>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // BUT-407: online-members presence bar for this group.
+                    FamilyPresenceBar(groupId: group.id),
                     _buildGroupHeader(group),
                     const SizedBox(height: AppDimensions.spacingLg),
+                    // BUT-407-C: activity + unacknowledged pings feed for
+                    // this group. Slots above members so recent signals are
+                    // visible before the roster.
+                    ActivityPingsFeed(groupId: group.id),
                     _buildGroupStats(group, members),
                     const SizedBox(height: AppDimensions.spacingLg),
                     _buildMembersSection(members),

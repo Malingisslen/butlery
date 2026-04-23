@@ -8800,22 +8800,114 @@
   },
   "notificationPermissionTitle": "Aktivera aviseringar?",
   "@notificationPermissionTitle": {
-    "description": "BUT-414: rationale dialog title shown before Android 13+ system permission prompt."
+    "description": "Rationale dialog title shown before Android 13+ system permission prompt."
   },
   "notificationPermissionBody": "Butlery använder aviseringar för att påminna om timers, meddelanden från vänner och aktivitet i dina delade recept. Du kan ändra detta när som helst i inställningarna.",
   "@notificationPermissionBody": {
-    "description": "BUT-414: rationale dialog body explaining why notifications are requested."
+    "description": "Rationale dialog body explaining why notifications are requested."
   },
   "notificationPermissionGrant": "Tillåt",
   "@notificationPermissionGrant": {
-    "description": "BUT-414: primary action in the rationale dialog."
+    "description": "Primary action in the notification rationale dialog."
   },
   "notificationPermissionOpenSettings": "Öppna inställningar",
   "@notificationPermissionOpenSettings": {
-    "description": "BUT-414: snackbar action when notifications are permanently denied."
+    "description": "Snackbar action when notifications are permanently denied."
   },
   "notificationPermissionPermanentlyDeniedMessage": "Aviseringar är avstängda. Öppna inställningarna för att aktivera dem.",
   "@notificationPermissionPermanentlyDeniedMessage": {
-    "description": "BUT-414: snackbar body when the user has permanently denied notifications."
+    "description": "Snackbar body when the user has permanently denied notifications."
+  },
+  "familyPresenceTitle": "Online just nu",
+  "@familyPresenceTitle": {
+    "description": "Heading / a11y label for the online-members presence bar."
+  },
+  "familyPresenceEmpty": "Ingen är online just nu",
+  "@familyPresenceEmpty": {
+    "description": "Fallback copy when nobody in the user's groups is online (usually not shown — the bar hides itself)."
+  },
+  "familyPresenceOverflow": "+{count}",
+  "@familyPresenceOverflow": {
+    "description": "Overflow chip label when more members are online than the bar can show (e.g. '+3').",
+    "placeholders": {
+      "count": {"type": "int", "example": "3"}
+    }
+  },
+  "cookingStepSuffix": " · steg {current} av {total}",
+  "@cookingStepSuffix": {
+    "description": "Appended to the cooking presence line to show progress. Includes the middot separator.",
+    "placeholders": {
+      "current": {"type": "int", "example": "3"},
+      "total": {"type": "int", "example": "7"}
+    }
+  },
+  "pingNudge": "Knuffa",
+  "@pingNudge": {
+    "description": "Ping type label — soft nudge / 'börja laga?' prompt."
+  },
+  "pingTimerAlert": "Timer-alarm",
+  "@pingTimerAlert": {
+    "description": "Ping type label — timer went off / step complete alert."
+  },
+  "pingHelpMe": "Hjälp mig",
+  "@pingHelpMe": {
+    "description": "Ping type label — active help request."
+  },
+  "pingComposeTitle": "Skicka en putt",
+  "@pingComposeTitle": {
+    "description": "Title of the ping compose bottom sheet."
+  },
+  "pingComposeMessageHint": "Meddelande (frivilligt)",
+  "@pingComposeMessageHint": {
+    "description": "Placeholder text in the optional ping message input."
+  },
+  "pingComposeSend": "Skicka",
+  "@pingComposeSend": {
+    "description": "Send button label on the ping compose sheet."
+  },
+  "pingComposeSent": "Skickat",
+  "@pingComposeSent": {
+    "description": "Success snackbar after a ping is sent."
+  },
+  "pingRateLimited": "Du har skickat för många puttar den senaste timmen",
+  "@pingRateLimited": {
+    "description": "Inline error when the hourly 5-ping rate limit is hit."
+  },
+  "pingNudgeFrom": "{name} puttar på dig",
+  "@pingNudgeFrom": {
+    "description": "Activity line when someone nudges the current user.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"}
+    }
+  },
+  "pingTimerAlertFrom": "{name} har en timer som ringer",
+  "@pingTimerAlertFrom": {
+    "description": "Activity line when someone's timer alert fires.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"}
+    }
+  },
+  "pingHelpMeFrom": "{name} behöver hjälp",
+  "@pingHelpMeFrom": {
+    "description": "Activity line when someone asks for help.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"}
+    }
+  },
+  "activityAddedIngredient": "{name} lade till {ingredient}",
+  "@activityAddedIngredient": {
+    "description": "Activity line for the addedIngredient event type.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"},
+      "ingredient": {"type": "String", "example": "smör"}
+    }
+  },
+  "activityStartedCooking": "{name} började laga {recipe}",
+  "@activityStartedCooking": {
+    "description": "Activity line for the startedCooking event type.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"},
+      "recipe": {"type": "String", "example": "kycklinggryta"}
+    }
   }
 }

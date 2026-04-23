@@ -147,6 +147,27 @@ Theme: continue launch-readiness with remaining High-priority store-submission b
 
 ---
 
+## Archive: Sprint Family presence + pings + cooking step depth — 2026-04-20
+
+Theme: surface the existing presence infra (RTDB `presence/{userId}`) into UI, add a lightweight ping primitive for in-the-moment family signaling (BUT-407), and finish BUT-408's "steg N av M" promise now that BUT-406's step timer landed. All additive — no schema migrations, no runtime LLM cost.
+
+- [x] Agent A (flutter-developer): `FamilyPresenceBar` widget + header integration in `mina_recept_view`, `veckomeny_view`, `group_detail_view`; tests + l10n (BUT-407)
+- [x] Agent B (firebase-backend-security): `Ping` model + `PingService` with 5/h client rate-limit + 60s rules burst guard, `ActivityEventType` extension, DI, GDPR cascade via `deletePingsByUser` (BUT-407)
+- [x] Agent C (flutter-developer): `ActivityPingsFeed` in `group_detail_view` body, `PingComposeSheet` long-press bottom sheet with haptic + snackbar (BUT-407)
+- [x] Agent D (flutter-developer): `CookingSession.currentStep/totalSteps`, module-owned debounced `updateStep` with change-detection guard, " · steg N av M" suffix on the presence card (BUT-408 follow-up)
+- [x] `/simplify` pass — dropped `dynamic` casts, inline `unawaited` shim, minute-only time-ago reinvention; reused `TimeAgoFormatter`, `firstWhereOrNull`; stripped ticket refs from source
+- [x] Tests: 80/80 green in sprint scope; analyze clean
+- [x] Commit + push to main
+
+Follow-ups filed:
+- Cloud Function sweeper for strict hourly ping cap
+- Dedicated `ping` NotificationStrategy with Swedish copy
+- `FamilyPresenceBar` StatefulWidget conversion (avoid re-subscribing on rebuild)
+- `ActivityPingsFeed` pause-while-backgrounded via RouteObserver
+- `AvatarWidgets` reuse to de-dupe `_Avatar` + `_AvatarThumb`
+
+---
+
 ## Archive: Sprint Cooking depth + presence + heirloom — 2026-04-19
 
 **Plan file:** `C:\Users\malla\.claude\plans\ja-prancy-toast.md`

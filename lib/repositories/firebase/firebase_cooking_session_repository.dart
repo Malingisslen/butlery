@@ -1,16 +1,8 @@
-// lib/repositories/firebase/firebase_cooking_session_repository.dart
+// RTDB (not Firestore) — we need `onDisconnect().remove()` for server-side
+// cleanup when the device drops. Path: cooking_sessions/{groupId}/{userId}.
 //
-// BUT-408: RTDB-backed repository for live cooking session presence.
-// Mirrors the shape of [FirebaseShoppingPresenceRepository] but uses
-// Firebase Realtime Database (not Firestore) because we need
-// `onDisconnect().remove()` for server-side cleanup when the device drops.
-//
-// RTDB path: `cooking_sessions/{groupId}/{userId}`.
-//
-// GDPR: sessions are ephemeral. They are removed by (a) explicit endSession()
-// on cooking mode exit, or (b) RTDB `onDisconnect()` when the device drops.
-// There is no account-deletion cascade — stale rows self-clear within seconds
-// of the user going offline.
+// GDPR: rows are ephemeral; no account-deletion cascade needed — stale rows
+// self-clear within seconds of the user going offline.
 
 import 'package:firebase_database/firebase_database.dart';
 
@@ -18,10 +10,8 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/cooking/cooking_session.dart';
 
-/// RTDB repository for live cooking session presence (BUT-408).
-///
-/// Writes are **best-effort**: offline or permission-denied errors are
-/// swallowed and logged — a missed broadcast must never interrupt the cook.
+// Writes are best-effort — offline or permission-denied errors are swallowed
+// so a missed broadcast never interrupts the cook.
 class FirebaseCookingSessionRepository {
   final FirebaseDatabase _database;
 
@@ -59,6 +49,30 @@ class FirebaseCookingSessionRepository {
     } catch (e) {
       // Best-effort — never surface broadcast failures to the cooking UI.
       AppLogger.warning('Failed to start cooking session presence: $e');
+    }
+  }
+
+  /// Patch just `currentStep` + `totalSteps` on an existing session row.
+  /// Uses RTDB [DatabaseReference.update] so we write only the two fields —
+  /// the rest of the node is untouched. Best-effort: errors are swallowed.
+  ///
+  /// If no session row exists at the path, RTDB creates an orphan node with
+  /// only the two fields set. The module gates this call behind an
+  /// active-session check, so in practice the node always exists already.
+  Future<void> updateStep({
+    required String groupId,
+    required String userId,
+    required int currentStep,
+    required int totalSteps,
+  }) async {
+    try {
+      final ref = _userRef(groupId, userId);
+      await ref.update({
+        'currentStep': currentStep,
+        'totalSteps': totalSteps,
+      });
+    } catch (e) {
+      AppLogger.warning('Failed to update cooking session step: $e');
     }
   }
 

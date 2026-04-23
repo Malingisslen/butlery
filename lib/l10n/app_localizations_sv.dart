@@ -12936,4 +12936,70 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get notificationPermissionPermanentlyDeniedMessage =>
       'Aviseringar är avstängda. Öppna inställningarna för att aktivera dem.';
+
+  @override
+  String get familyPresenceTitle => 'Online just nu';
+
+  @override
+  String get familyPresenceEmpty => 'Ingen är online just nu';
+
+  @override
+  String familyPresenceOverflow(int count) {
+    return '+$count';
+  }
+
+  @override
+  String cookingStepSuffix(int current, int total) {
+    return ' · steg $current av $total';
+  }
+
+  @override
+  String get pingNudge => 'Knuffa';
+
+  @override
+  String get pingTimerAlert => 'Timer-alarm';
+
+  @override
+  String get pingHelpMe => 'Hjälp mig';
+
+  @override
+  String get pingComposeTitle => 'Skicka en putt';
+
+  @override
+  String get pingComposeMessageHint => 'Meddelande (frivilligt)';
+
+  @override
+  String get pingComposeSend => 'Skicka';
+
+  @override
+  String get pingComposeSent => 'Skickat';
+
+  @override
+  String get pingRateLimited =>
+      'Du har skickat för många puttar den senaste timmen';
+
+  @override
+  String pingNudgeFrom(String name) {
+    return '$name puttar på dig';
+  }
+
+  @override
+  String pingTimerAlertFrom(String name) {
+    return '$name har en timer som ringer';
+  }
+
+  @override
+  String pingHelpMeFrom(String name) {
+    return '$name behöver hjälp';
+  }
+
+  @override
+  String activityAddedIngredient(String name, String ingredient) {
+    return '$name lade till $ingredient';
+  }
+
+  @override
+  String activityStartedCooking(String name, String recipe) {
+    return '$name började laga $recipe';
+  }
 }

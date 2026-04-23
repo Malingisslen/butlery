@@ -6,9 +6,17 @@ import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Type of social activity event.
+///
+/// `fromString` falls back to [cooked] for forward-compat with older clients
+/// that don't yet know about newer event types. New types MUST use `.name`
+/// serialization to match the existing wire format.
 enum ActivityEventType {
   cooked,
-  shared;
+  shared,
+  // BUT-407/cooking-depth additions — older clients fall back to `cooked`.
+  addedIngredient,
+  startedCooking,
+  pinged;
 
   static ActivityEventType fromString(String value) {
     return ActivityEventType.values.firstWhere(

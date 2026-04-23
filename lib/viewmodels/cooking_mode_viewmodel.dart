@@ -65,18 +65,38 @@ class CookingModeViewModel extends ChangeNotifier {
     if (!hasNextStep) return;
     _currentStepIndex++;
     notifyListeners();
+    _broadcastStep();
   }
 
   void previousStep() {
     if (!hasPreviousStep) return;
     _currentStepIndex--;
     notifyListeners();
+    _broadcastStep();
   }
 
   void goToStep(int index) {
     if (index < 0 || index >= totalSteps) return;
     _currentStepIndex = index;
     notifyListeners();
+    _broadcastStep();
+  }
+
+  /// Tell the presence module about the current step. The module debounces
+  /// internally, so rapid taps only hit RTDB once.
+  void _broadcastStep() {
+    try {
+      final module = ServiceLocator.tryGet<CookingSessionModule>();
+      if (module == null) return;
+      // `currentStep` broadcast as 1-based to match human-readable subtitle
+      // ("steg 3 av 7"); internal _currentStepIndex stays 0-based.
+      module.updateStep(
+        currentStep: _currentStepIndex + 1,
+        totalSteps: totalSteps,
+      );
+    } catch (e) {
+      AppLogger.warning('Cooking session step broadcast failed: $e');
+    }
   }
 
   static const int minPortions = 1;
@@ -111,7 +131,9 @@ class CookingModeViewModel extends ChangeNotifier {
 
   /// BUT-408: Called from the view's `dispose` when cooking mode closes.
   /// Clears the broadcast from every group. Safe to call if no session was
-  /// ever started (module handles the no-op path).
+  /// ever started (module handles the no-op path). The module also cancels
+  /// its own pending step-debounce timer inside `endSession()`, so no
+  /// viewmodel-side cleanup is needed here.
   Future<void> onExit() async {
     try {
       final module = ServiceLocator.tryGet<CookingSessionModule>();

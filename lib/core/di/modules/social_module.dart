@@ -53,6 +53,7 @@ import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/services/social/ping_service.dart';
 
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -91,6 +92,8 @@ class SocialModule implements DIModule {
         CookSnapService,
         ActivityEventRepository,
         ActivityFeedService,
+        // BUT-407: group-scoped nudge primitive.
+        PingService,
         FirebaseReportRepository,
         ReportService,
         ContentFilterService,
@@ -308,6 +311,15 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<ActivityFeedService>(
         () => ActivityFeedService(
           repository: container<ActivityEventRepository>(),
+        ),
+      );
+
+      // BUT-407: ping primitive service. Registered in the shared container
+      // (not user-scoped) because it reads PermissionService + UnifiedFriendsService
+      // lazily — both are already wired by the time the first ping flies.
+      container.registerLazySingleton<PingService>(
+        () => PingService(
+          firestoreRepository: container<FirestoreRepository>(),
         ),
       );
 

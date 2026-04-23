@@ -266,6 +266,30 @@ class SocialDeletionOperations {
     return true;
   }
 
+  /// BUT-407 GDPR cascade: delete all pings authored by userId across every
+  /// group. Pings live at `pings/{groupId}/pings/{pingId}` — we issue a
+  /// collection-group query scoped to the nested `pings` subcollection to
+  /// collect every doc with `fromUserId == userId`, then batch-delete.
+  /// Missing index falls back silently (no pings is the safe default).
+  Future<bool> deletePingsByUser(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collectionGroup(FirestoreCollections.pings)
+          .where('fromUserId', isEqualTo: userId)
+          .get();
+
+      if (snapshot.docs.isEmpty) return true;
+
+      await batchDeleteDocs(_firestore, snapshot.docs);
+      app_logger.AppLogger.info(
+          '[$_logTag] Deleted ${snapshot.docs.length} pings for user $userId');
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to delete user pings', e);
+      return false;
+    }
+  }
+
   /// Delete content reports submitted by user (GDPR — user's own data).
   Future<bool> deleteUserReports(String userId) async {
     try {

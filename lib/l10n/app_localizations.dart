@@ -22102,35 +22102,137 @@ abstract class AppLocalizations {
   /// **'{names} lagar {recipe}'**
   String cookingNowMerge(String names, String recipe);
 
-  /// BUT-414: rationale dialog title shown before Android 13+ system permission prompt.
+  /// Rationale dialog title shown before Android 13+ system permission prompt.
   ///
   /// In sv, this message translates to:
   /// **'Aktivera aviseringar?'**
   String get notificationPermissionTitle;
 
-  /// BUT-414: rationale dialog body explaining why notifications are requested.
+  /// Rationale dialog body explaining why notifications are requested.
   ///
   /// In sv, this message translates to:
   /// **'Butlery använder aviseringar för att påminna om timers, meddelanden från vänner och aktivitet i dina delade recept. Du kan ändra detta när som helst i inställningarna.'**
   String get notificationPermissionBody;
 
-  /// BUT-414: primary action in the rationale dialog.
+  /// Primary action in the notification rationale dialog.
   ///
   /// In sv, this message translates to:
   /// **'Tillåt'**
   String get notificationPermissionGrant;
 
-  /// BUT-414: snackbar action when notifications are permanently denied.
+  /// Snackbar action when notifications are permanently denied.
   ///
   /// In sv, this message translates to:
   /// **'Öppna inställningar'**
   String get notificationPermissionOpenSettings;
 
-  /// BUT-414: snackbar body when the user has permanently denied notifications.
+  /// Snackbar body when the user has permanently denied notifications.
   ///
   /// In sv, this message translates to:
   /// **'Aviseringar är avstängda. Öppna inställningarna för att aktivera dem.'**
   String get notificationPermissionPermanentlyDeniedMessage;
+
+  /// Heading / a11y label for the online-members presence bar.
+  ///
+  /// In sv, this message translates to:
+  /// **'Online just nu'**
+  String get familyPresenceTitle;
+
+  /// Fallback copy when nobody in the user's groups is online (usually not shown — the bar hides itself).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen är online just nu'**
+  String get familyPresenceEmpty;
+
+  /// Overflow chip label when more members are online than the bar can show (e.g. '+3').
+  ///
+  /// In sv, this message translates to:
+  /// **'+{count}'**
+  String familyPresenceOverflow(int count);
+
+  /// Appended to the cooking presence line to show progress. Includes the middot separator.
+  ///
+  /// In sv, this message translates to:
+  /// **' · steg {current} av {total}'**
+  String cookingStepSuffix(int current, int total);
+
+  /// Ping type label — soft nudge / 'börja laga?' prompt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Knuffa'**
+  String get pingNudge;
+
+  /// Ping type label — timer went off / step complete alert.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timer-alarm'**
+  String get pingTimerAlert;
+
+  /// Ping type label — active help request.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hjälp mig'**
+  String get pingHelpMe;
+
+  /// Title of the ping compose bottom sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka en putt'**
+  String get pingComposeTitle;
+
+  /// Placeholder text in the optional ping message input.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelande (frivilligt)'**
+  String get pingComposeMessageHint;
+
+  /// Send button label on the ping compose sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka'**
+  String get pingComposeSend;
+
+  /// Success snackbar after a ping is sent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickat'**
+  String get pingComposeSent;
+
+  /// Inline error when the hourly 5-ping rate limit is hit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har skickat för många puttar den senaste timmen'**
+  String get pingRateLimited;
+
+  /// Activity line when someone nudges the current user.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} puttar på dig'**
+  String pingNudgeFrom(String name);
+
+  /// Activity line when someone's timer alert fires.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} har en timer som ringer'**
+  String pingTimerAlertFrom(String name);
+
+  /// Activity line when someone asks for help.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} behöver hjälp'**
+  String pingHelpMeFrom(String name);
+
+  /// Activity line for the addedIngredient event type.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} lade till {ingredient}'**
+  String activityAddedIngredient(String name, String ingredient);
+
+  /// Activity line for the startedCooking event type.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} började laga {recipe}'**
+  String activityStartedCooking(String name, String recipe);
 }
 
 class _AppLocalizationsDelegate

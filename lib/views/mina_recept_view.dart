@@ -43,6 +43,7 @@ import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
+import 'package:butlery/widgets/social/family_presence_bar.dart';
 import 'package:butlery/widgets/recipe/collection_insights_card.dart';
 import 'package:butlery/widgets/recipe/recipe_shelf.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
@@ -485,6 +486,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             hasPendingWrites: viewModel.hasPendingWrites,
             isFromCache: viewModel.isFromCache,
           ),
+          // BUT-407: live online-members presence bar (union across groups).
+          const FamilyPresenceBar(),
           // BUT-408: live cooking session card for the user's friend groups.
           _buildCookingSessionCard(),
           if (!viewModel.isSelectionMode) ...[

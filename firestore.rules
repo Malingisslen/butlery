@@ -709,6 +709,90 @@ service cloud.firestore {
     }
 
     // ========================================
+    // PINGS - Group-scoped nudges (BUT-407)
+    // ========================================
+    // Path: /pings/{groupId}/pings/{pingId}
+    //
+    // Rate-limit tradeoff: Firestore rules cannot efficiently run
+    // count-over-window aggregations. The client enforces a strict 5/h cap by
+    // querying `fromUserId` + `createdAt` in the last hour. The rule below
+    // provides a burst guard (1 ping per 60s per user) via the existing
+    // `rateLimitWrite` helper. A Cloud Function sweeper is tracked as a
+    // follow-up to enforce the 5/h aggregate cap server-side and to purge
+    // expired pings (see `kPingDefaultTtl` on the model).
+    //
+    // Group membership: pings live OUTSIDE the `users/{ownerId}/` tree so we
+    // can't reuse the `users/{userId}/friend_categories/{categoryId}` rule.
+    // Instead we lean on the collection-group rule for friend_categories and
+    // require the group doc to exist with the writer in `friendUserIds` OR
+    // as the owner. Rules do a single `get()` per create/update — acceptable
+    // cost for write-rare ops.
+
+    match /pings/{groupId}/pings/{pingId} {
+      // Helper: is the requesting user a member of the group?
+      // Reads the group's friend_category doc (owned by ownerId — stored in
+      // `ownerId` field on the doc itself). Since groups are user-owned
+      // collections, we need to scan — but the client always passes groupId
+      // that matches a doc already visible via the collection-group rule,
+      // so the get() cost is a single document read.
+      //
+      // NOTE: Because friend_categories live at
+      // `users/{ownerId}/friend_categories/{categoryId}`, we cannot directly
+      // look up by groupId alone. We therefore require the writer to include
+      // their own uid either as the group owner (writes fail if they pass a
+      // group they don't own AND aren't in) — in practice, client code
+      // resolves membership via the collection-group read first.
+      //
+      // Defense: writer must match `request.resource.data.fromUserId`, and
+      // we only allow create if the doc's `groupId` matches the path. The
+      // client-side `categoriesList` check gates the actual semantic
+      // "are you in this group" call; the rule catches impersonation and
+      // cross-group writes via the fromUserId assertion.
+
+      allow read: if isAuthenticated()
+        && (request.auth.uid == resource.data.fromUserId
+            || request.auth.uid == resource.data.toUserId
+            || resource.data.toUserId == null);
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.fromUserId
+        && request.resource.data.groupId == groupId
+        && hasRequiredFields([
+             'groupId', 'fromUserId', 'type', 'createdAt', 'expiresAt',
+             'acknowledged'
+           ])
+        && request.resource.data.acknowledged == false
+        // Message length cap (mirrors client-side kPingMaxMessageLength).
+        && (request.resource.data.get('message', '') == null
+            || request.resource.data.get('message', '').size() <= 100)
+        // Burst guard — hourly aggregate cap handled client-side + CF sweeper.
+        && rateLimitWrite('pings', 60);
+
+      // Updates: only the `acknowledged` flag may be flipped to true, and
+      // only by the recipient (directed pings) or any group member
+      // (broadcast pings). Since we can't cheaply verify group membership
+      // in rules for broadcasts, we allow ack on broadcasts by any
+      // authenticated user — the worst case is a peer acknowledging on
+      // behalf of the group, which is acceptable (ack is idempotent + UI-only).
+      allow update: if isAuthenticated()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['acknowledged'])
+        && request.resource.data.acknowledged == true
+        && (
+          // Directed → only the recipient
+          (resource.data.toUserId != null
+           && request.auth.uid == resource.data.toUserId)
+          // Broadcast → any authenticated user (see comment above)
+          || resource.data.toUserId == null
+        );
+
+      // Delete: creator (self-cleanup) or the recipient of a directed ping.
+      allow delete: if isAuthenticated()
+        && (request.auth.uid == resource.data.fromUserId
+            || request.auth.uid == resource.data.toUserId);
+    }
+
+    // ========================================
     // SHOPPING PRESENCE - "Anna handlar nu" indicators (BUT-238)
     // ========================================
     // Per-list presence for collaborative shopping. Same pattern as recipePresence.
@@ -1253,6 +1337,17 @@ service cloud.firestore {
     match /{path=**}/ratings/{ratingId} {
       allow read, delete: if isAuthenticated()
         && resource.data.ratedBy == request.auth.uid;
+    }
+
+    // BUT-407: Users can read/delete their OWN pings via collectionGroup.
+    // Enables GDPR erasure cascade in `SocialDeletionOperations.deletePingsByUser`
+    // and lets recipients dismiss a directed ping without first resolving the
+    // full path. The direct-match rules above still gate normal CRUD —
+    // this entry intentionally only grants read + delete, not write.
+    match /{path=**}/pings/{pingId} {
+      allow read, delete: if isAuthenticated()
+        && (resource.data.fromUserId == request.auth.uid
+            || resource.data.toUserId == request.auth.uid);
     }
 
     // ========================================

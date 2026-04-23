@@ -46,8 +46,8 @@ abstract final class FirestoreCollections {
   static const String ingredientSubstitutions = 'ingredient_substitutions';
   static const String cookSnaps = 'cook_snaps';
   static const String activityEvents = 'activity_events';
+  static const String pings = 'pings';
   static const String weeklyMenuPlans = 'weekly_menu_plans';
-  // BUT-405: group-scoped weekly menu plans (coexist with personal plans).
   static const String groupWeeklyMenuPlans = 'group_weekly_menu_plans';
   static const String menuLexicon = 'menu_lexicon';
 

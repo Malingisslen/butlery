@@ -1,12 +1,3 @@
-// lib/widgets/cooking/cooking_session_card.dart
-//
-// BUT-408: "Erik lagar just nu" card.
-// Appears below MainViewHeader on mina_recept_view and veckomeny_view when
-// one or more friends in the user's FriendCategory groups are currently in
-// cooking mode. Square dark-green panel with a gold pulse dot.
-//
-// Empty/idle state: returns SizedBox.shrink() — no skeleton, no empty copy.
-
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -22,16 +13,33 @@ import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
 
 /// Compose the primary presence line from one or more [names] cooking a
 /// single [recipe].
+///
+/// Step suffix ("· steg N av M") is appended ONLY in the single-cook case
+/// with both [currentStep] and [totalSteps] non-null. The merge case
+/// ("Erik & Sara lagar X") deliberately hides the suffix — different cooks
+/// are on different steps, and picking one is ambiguous.
 String _composeCookingLine(
-    AppLocalizations l10n, List<String> names, String recipe) {
+  AppLocalizations l10n,
+  List<String> names,
+  String recipe, {
+  int? currentStep,
+  int? totalSteps,
+}) {
   if (names.isEmpty) return '';
   if (names.length == 1) {
-    return l10n.cookingNowSingle(names.first, recipe);
+    final base = l10n.cookingNowSingle(names.first, recipe);
+    if (currentStep != null && totalSteps != null) {
+      return '$base${l10n.cookingStepSuffix(currentStep, totalSteps)}';
+    }
+    return base;
   }
-  final joined = names.length == 2
-      ? '${names[0]} & ${names[1]}'
-      : '${names.take(names.length - 1).join(', ')} & ${names.last}';
-  return l10n.cookingNowMerge(joined, recipe);
+  // Merge case: deliberately no step suffix.
+  return l10n.cookingNowMerge(_joinNames(names), recipe);
+}
+
+String _joinNames(List<String> names) {
+  if (names.length == 2) return '${names[0]} & ${names[1]}';
+  return '${names.take(names.length - 1).join(', ')} & ${names.last}';
 }
 
 /// Live cooking presence card. Pass the latest stream value as [sessions].
@@ -68,7 +76,13 @@ class CookingSessionCard extends StatelessWidget {
         .toList(growable: false);
     final names = peers.map((s) => s.userName).toList(growable: false);
 
-    final primaryLine = _composeCookingLine(l10n, names, primary.recipeTitle);
+    final primaryLine = _composeCookingLine(
+      l10n,
+      names,
+      primary.recipeTitle,
+      currentStep: primary.currentStep,
+      totalSteps: primary.totalSteps,
+    );
     final eyebrow = l10n.cookingNowEyebrow;
 
     return Padding(

@@ -8800,22 +8800,114 @@
   },
   "notificationPermissionTitle": "Turn on notifications?",
   "@notificationPermissionTitle": {
-    "description": "BUT-414: rationale dialog title shown before Android 13+ system permission prompt."
+    "description": "Rationale dialog title shown before Android 13+ system permission prompt."
   },
   "notificationPermissionBody": "Butlery uses notifications for cooking timers, messages from friends, and activity on your shared recipes. You can change this any time in settings.",
   "@notificationPermissionBody": {
-    "description": "BUT-414: rationale dialog body explaining why notifications are requested."
+    "description": "Rationale dialog body explaining why notifications are requested."
   },
   "notificationPermissionGrant": "Allow",
   "@notificationPermissionGrant": {
-    "description": "BUT-414: primary action in the rationale dialog."
+    "description": "Primary action in the notification rationale dialog."
   },
   "notificationPermissionOpenSettings": "Open settings",
   "@notificationPermissionOpenSettings": {
-    "description": "BUT-414: snackbar action when notifications are permanently denied."
+    "description": "Snackbar action when notifications are permanently denied."
   },
   "notificationPermissionPermanentlyDeniedMessage": "Notifications are turned off. Open settings to enable them.",
   "@notificationPermissionPermanentlyDeniedMessage": {
-    "description": "BUT-414: snackbar body when the user has permanently denied notifications."
+    "description": "Snackbar body when the user has permanently denied notifications."
+  },
+  "familyPresenceTitle": "Online now",
+  "@familyPresenceTitle": {
+    "description": "Heading / a11y label for the online-members presence bar."
+  },
+  "familyPresenceEmpty": "Nobody online right now",
+  "@familyPresenceEmpty": {
+    "description": "Fallback copy when nobody in the user's groups is online (usually not shown — the bar hides itself)."
+  },
+  "familyPresenceOverflow": "+{count}",
+  "@familyPresenceOverflow": {
+    "description": "Overflow chip label when more members are online than the bar can show (e.g. '+3').",
+    "placeholders": {
+      "count": {"type": "int", "example": "3"}
+    }
+  },
+  "cookingStepSuffix": " · step {current} of {total}",
+  "@cookingStepSuffix": {
+    "description": "Appended to the cooking presence line to show progress. Includes the middot separator.",
+    "placeholders": {
+      "current": {"type": "int", "example": "3"},
+      "total": {"type": "int", "example": "7"}
+    }
+  },
+  "pingNudge": "Nudge",
+  "@pingNudge": {
+    "description": "Ping type label — soft nudge / 'start cooking?' prompt."
+  },
+  "pingTimerAlert": "Timer alert",
+  "@pingTimerAlert": {
+    "description": "Ping type label — timer went off / step complete alert."
+  },
+  "pingHelpMe": "Help me",
+  "@pingHelpMe": {
+    "description": "Ping type label — active help request."
+  },
+  "pingComposeTitle": "Send a ping",
+  "@pingComposeTitle": {
+    "description": "Title of the ping compose bottom sheet."
+  },
+  "pingComposeMessageHint": "Message (optional)",
+  "@pingComposeMessageHint": {
+    "description": "Placeholder text in the optional ping message input."
+  },
+  "pingComposeSend": "Send",
+  "@pingComposeSend": {
+    "description": "Send button label on the ping compose sheet."
+  },
+  "pingComposeSent": "Sent",
+  "@pingComposeSent": {
+    "description": "Success snackbar after a ping is sent."
+  },
+  "pingRateLimited": "You've sent too many pings in the last hour",
+  "@pingRateLimited": {
+    "description": "Inline error when the hourly 5-ping rate limit is hit."
+  },
+  "pingNudgeFrom": "{name} is nudging you",
+  "@pingNudgeFrom": {
+    "description": "Activity line when someone nudges the current user.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"}
+    }
+  },
+  "pingTimerAlertFrom": "{name}'s timer is ringing",
+  "@pingTimerAlertFrom": {
+    "description": "Activity line when someone's timer alert fires.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"}
+    }
+  },
+  "pingHelpMeFrom": "{name} needs help",
+  "@pingHelpMeFrom": {
+    "description": "Activity line when someone asks for help.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"}
+    }
+  },
+  "activityAddedIngredient": "{name} added {ingredient}",
+  "@activityAddedIngredient": {
+    "description": "Activity line for the addedIngredient event type.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"},
+      "ingredient": {"type": "String", "example": "butter"}
+    }
+  },
+  "activityStartedCooking": "{name} started cooking {recipe}",
+  "@activityStartedCooking": {
+    "description": "Activity line for the startedCooking event type.",
+    "placeholders": {
+      "name": {"type": "String", "example": "Erik"},
+      "recipe": {"type": "String", "example": "chicken stew"}
+    }
   }
 }

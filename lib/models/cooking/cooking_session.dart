@@ -1,38 +1,22 @@
-// lib/models/cooking/cooking_session.dart
-//
-// BUT-408: Live "Erik lagar just nu" presence entry for a friend group.
-//
-// Data model for cooking session presence stored in RTDB at
-// `cooking_sessions/{groupId}/{userId}`. Ephemeral — cleared via
-// `onDisconnect().remove()` and an explicit endSession() on cooking mode exit.
-
 import 'package:butlery/core/utils/serialization_utils.dart';
 
-/// A single friend's live cooking session, broadcast to every group the user
-/// is a member of while cooking mode is open.
+// copyWith sentinel — distinguishes "not provided" from "explicit null".
+const Object _sentinel = Object();
+
 class CookingSession {
-  /// Recipe being cooked — used for nav target when the card is tapped.
   final String recipeId;
-
-  /// Recipe title — shown inline in the card ("Erik lagar kycklinggryta").
   final String recipeTitle;
-
-  /// Optional recipe hero image URL. Reserved for future UI; the initial
-  /// card does not render it but repos persist the field for forward-compat.
   final String? recipeImageUrl;
-
-  /// Wall-clock start time. Ordering key when merging multiple sessions.
   final DateTime startedAt;
-
-  /// User broadcasting the session. Matches `auth.uid` of the writer.
   final String userId;
-
-  /// Display name shown in the card's primary line.
   final String userName;
-
-  /// Optional avatar URL — reserved for future UI variants (currently unused
-  /// in the card but persisted for consistency with other presence records).
   final String? userAvatar;
+
+  // Step fields are pair-valid: either both null or both non-null with
+  // `1 <= currentStep <= totalSteps`. Enforced by the assert below so the
+  // card never renders "steg 3 av null" or "steg 5 av 3".
+  final int? currentStep;
+  final int? totalSteps;
 
   const CookingSession({
     required this.recipeId,
@@ -42,10 +26,29 @@ class CookingSession {
     required this.userName,
     this.recipeImageUrl,
     this.userAvatar,
-  });
+    this.currentStep,
+    this.totalSteps,
+  })  : assert(
+          (currentStep == null) == (totalSteps == null),
+          'currentStep and totalSteps must both be null or both be non-null',
+        ),
+        assert(
+          currentStep == null || currentStep >= 1,
+          'currentStep is 1-based and must be >= 1',
+        ),
+        assert(
+          currentStep == null ||
+              totalSteps == null ||
+              currentStep <= totalSteps,
+          'currentStep must not exceed totalSteps',
+        );
 
   /// Serialize for RTDB. `startedAt` goes out as epoch millis so RTDB
   /// (which has no native Timestamp type) can round-trip it losslessly.
+  ///
+  /// Nullable fields are written as `null` entries (matches the original
+  /// "all keys present" style), except `currentStep` / `totalSteps` which
+  /// are elided entirely when null — old clients must not see phantom keys.
   Map<String, dynamic> toMap() {
     return {
       'recipeId': recipeId,
@@ -55,6 +58,8 @@ class CookingSession {
       'userId': userId,
       'userName': userName,
       'userAvatar': userAvatar,
+      if (currentStep != null) 'currentStep': currentStep,
+      if (totalSteps != null) 'totalSteps': totalSteps,
     };
   }
 
@@ -64,6 +69,16 @@ class CookingSession {
   factory CookingSession.fromMap(Map<dynamic, dynamic> data) {
     final typed = <String, dynamic>{};
     data.forEach((k, v) => typed[k.toString()] = v);
+
+    final rawCurrent = SerializationUtils.safeNullableInt(typed, 'currentStep');
+    final rawTotal = SerializationUtils.safeNullableInt(typed, 'totalSteps');
+    // Defensive: a malformed RTDB row with only one of the two set, or an
+    // out-of-range pair, must not crash the stream via the constructor
+    // assertion. Treat any inconsistent pair as "no step data".
+    final keepSteps = rawCurrent != null &&
+        rawTotal != null &&
+        rawCurrent >= 1 &&
+        rawCurrent <= rawTotal;
 
     return CookingSession(
       recipeId: SerializationUtils.safeString(typed, 'recipeId'),
@@ -75,26 +90,40 @@ class CookingSession {
       userId: SerializationUtils.safeString(typed, 'userId'),
       userName: SerializationUtils.safeString(typed, 'userName'),
       userAvatar: SerializationUtils.safeNullableString(typed, 'userAvatar'),
+      currentStep: keepSteps ? rawCurrent : null,
+      totalSteps: keepSteps ? rawTotal : null,
     );
   }
 
   CookingSession copyWith({
     String? recipeId,
     String? recipeTitle,
-    String? recipeImageUrl,
+    Object? recipeImageUrl = _sentinel,
     DateTime? startedAt,
     String? userId,
     String? userName,
-    String? userAvatar,
+    Object? userAvatar = _sentinel,
+    Object? currentStep = _sentinel,
+    Object? totalSteps = _sentinel,
   }) {
     return CookingSession(
       recipeId: recipeId ?? this.recipeId,
       recipeTitle: recipeTitle ?? this.recipeTitle,
-      recipeImageUrl: recipeImageUrl ?? this.recipeImageUrl,
+      recipeImageUrl: identical(recipeImageUrl, _sentinel)
+          ? this.recipeImageUrl
+          : recipeImageUrl as String?,
       startedAt: startedAt ?? this.startedAt,
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
-      userAvatar: userAvatar ?? this.userAvatar,
+      userAvatar: identical(userAvatar, _sentinel)
+          ? this.userAvatar
+          : userAvatar as String?,
+      currentStep: identical(currentStep, _sentinel)
+          ? this.currentStep
+          : currentStep as int?,
+      totalSteps: identical(totalSteps, _sentinel)
+          ? this.totalSteps
+          : totalSteps as int?,
     );
   }
 
@@ -108,7 +137,9 @@ class CookingSession {
         other.startedAt == startedAt &&
         other.userId == userId &&
         other.userName == userName &&
-        other.userAvatar == userAvatar;
+        other.userAvatar == userAvatar &&
+        other.currentStep == currentStep &&
+        other.totalSteps == totalSteps;
   }
 
   @override
@@ -120,6 +151,8 @@ class CookingSession {
         userId,
         userName,
         userAvatar,
+        currentStep,
+        totalSteps,
       );
 
   @override

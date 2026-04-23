@@ -1,13 +1,9 @@
-// lib/services/unified/operations/cooking/cooking_session_module.dart
-//
-// BUT-408: Orchestrates "Erik lagar just nu" presence broadcasts.
 // Mirrors [ShoppingPresenceModule] but scoped to cooking sessions and backed
-// by Realtime Database instead of Firestore.
-//
-// Broadcast model: on cooking mode enter, write one row per FriendCategory
-// the user is a member of (owner OR in `friendUserIds`). Max ~5 writes,
-// capped by the user's actual group count. Errors are swallowed — a dropped
-// broadcast must never block the cook.
+// by RTDB. On enter, writes one presence row per FriendCategory the user
+// belongs to. Errors are swallowed — a dropped broadcast must never block
+// the cook itself.
+
+import 'dart:async';
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -19,20 +15,25 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 
-/// Public contract for cooking session presence — registered as the
-/// interface type so tests can swap in a fake without reaching into RTDB.
 abstract class CookingSessionModule {
-  /// Announce that the current user has entered cooking mode for [recipe].
-  /// Writes one presence row to every FriendCategory the user is a member of.
   Future<void> startSession(Recipe recipe);
-
-  /// Clear the current user's presence from every FriendCategory they belong
-  /// to. Safe to call when no session is active (no-op).
   Future<void> endSession();
 
-  /// Stream of active cooking sessions within a single group, for UI cards.
+  // Patches only the step fields on each active presence row. Debounced —
+  // the returned Future completes when the write is *scheduled*; the write
+  // fires after [stepDebounce] of quiet. Calls with the same pair as the
+  // last-flushed values are suppressed.
+  Future<void> updateStep({
+    required int currentStep,
+    required int totalSteps,
+  });
+
   Stream<List<CookingSession>> watchGroupSessions(String groupId);
 }
+
+/// Window used to coalesce rapid [updateStep] calls into a single RTDB
+/// write. Public to tests so they can `fakeAsync.elapse` past it precisely.
+const Duration stepDebounce = Duration(milliseconds: 500);
 
 /// RTDB-backed implementation used in production.
 class FirebaseCookingSessionModule implements CookingSessionModule {
@@ -40,6 +41,21 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
   final PermissionService? _permissionServiceOverride;
   final UnifiedFriendsService? _friendsServiceOverride;
   final UserService? _userServiceOverride;
+
+  /// Group IDs where the current user currently has an active session row,
+  /// captured at [startSession] time. Used by [updateStep] to target the
+  /// exact nodes without re-resolving friend categories (which may have
+  /// shifted mid-cook due to a concurrent invite accept, etc.).
+  final Set<String> _activeGroupIds = <String>{};
+
+  Timer? _pendingStepTimer;
+  int? _pendingCurrentStep;
+  int? _pendingTotalSteps;
+
+  // Last pair actually flushed to RTDB — used to suppress redundant writes
+  // when the user toggles back to an already-broadcast step.
+  int? _lastFlushedCurrentStep;
+  int? _lastFlushedTotalSteps;
 
   FirebaseCookingSessionModule({
     required FirebaseCookingSessionRepository repository,
@@ -95,6 +111,9 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
           )),
       eagerError: false,
     );
+    _activeGroupIds
+      ..clear()
+      ..addAll(groups.map((g) => g.id));
     AppLogger.info(
       'Cooking session broadcast to ${groups.length} group(s)',
     );
@@ -102,21 +121,104 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
 
   @override
   Future<void> endSession() async {
+    // Cancel any pending step broadcast — otherwise the timer would fire
+    // AFTER we've removed the RTDB node and resurrect an orphan with only
+    // currentStep/totalSteps set (recipe fields would be missing).
+    _cancelPendingStep();
+
     if (!_permissionService.isAuthenticated) return;
     final userId = _permissionService.currentUserId;
     if (userId == null) return;
 
-    final groups = _resolveGroups(userId);
-    if (groups.isEmpty) return;
+    // Clear by the set we actually wrote — not by re-resolving groups, which
+    // could have drifted mid-cook and leave stray rows behind.
+    final targetGroupIds = _activeGroupIds.isNotEmpty
+        ? List<String>.from(_activeGroupIds)
+        : _resolveGroups(userId).map((g) => g.id).toList(growable: false);
+    if (targetGroupIds.isEmpty) {
+      _activeGroupIds.clear();
+      return;
+    }
 
     await Future.wait(
-      groups.map((g) => _repository.endSession(
-            groupId: g.id,
+      targetGroupIds.map((id) => _repository.endSession(
+            groupId: id,
             userId: userId,
           )),
       eagerError: false,
     );
-    AppLogger.info('Cooking session cleared from ${groups.length} group(s)');
+    _activeGroupIds.clear();
+    AppLogger.info(
+      'Cooking session cleared from ${targetGroupIds.length} group(s)',
+    );
+  }
+
+  @override
+  Future<void> updateStep({
+    required int currentStep,
+    required int totalSteps,
+  }) async {
+    // Do NOT schedule for an inactive session — a later startSession would
+    // resurrect the pending write with stale step data.
+    if (_activeGroupIds.isEmpty) return;
+
+    // Skip work when the caller is re-broadcasting the same pair we already
+    // flushed. Guards against rebuild-triggered updateStep storms.
+    if (currentStep == _lastFlushedCurrentStep &&
+        totalSteps == _lastFlushedTotalSteps) {
+      return;
+    }
+
+    _pendingCurrentStep = currentStep;
+    _pendingTotalSteps = totalSteps;
+
+    _pendingStepTimer?.cancel();
+    _pendingStepTimer = Timer(stepDebounce, _flushPendingStep);
+  }
+
+  Future<void> _flushPendingStep() async {
+    _pendingStepTimer = null;
+    final current = _pendingCurrentStep;
+    final total = _pendingTotalSteps;
+    _pendingCurrentStep = null;
+    _pendingTotalSteps = null;
+
+    if (current == null || total == null) return;
+    if (_activeGroupIds.isEmpty) return;
+    if (!_permissionService.isAuthenticated) return;
+    final userId = _permissionService.currentUserId;
+    if (userId == null) return;
+
+    if (current == _lastFlushedCurrentStep && total == _lastFlushedTotalSteps) {
+      return;
+    }
+
+    try {
+      await Future.wait(
+        _activeGroupIds.map((groupId) => _repository.updateStep(
+              groupId: groupId,
+              userId: userId,
+              currentStep: current,
+              totalSteps: total,
+            )),
+        eagerError: false,
+      );
+      _lastFlushedCurrentStep = current;
+      _lastFlushedTotalSteps = total;
+    } catch (e) {
+      // Per-group failures already swallowed in the repo; this catches the
+      // rare case where Future.wait itself throws.
+      AppLogger.warning('Cooking session step flush failed: $e');
+    }
+  }
+
+  void _cancelPendingStep() {
+    _pendingStepTimer?.cancel();
+    _pendingStepTimer = null;
+    _pendingCurrentStep = null;
+    _pendingTotalSteps = null;
+    _lastFlushedCurrentStep = null;
+    _lastFlushedTotalSteps = null;
   }
 
   @override

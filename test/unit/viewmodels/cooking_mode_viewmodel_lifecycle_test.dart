@@ -34,6 +34,16 @@ class _FakeCookingSessionModule implements CookingSessionModule {
     endCalls++;
   }
 
+  final List<({int current, int total})> stepCalls = [];
+
+  @override
+  Future<void> updateStep({
+    required int currentStep,
+    required int totalSteps,
+  }) async {
+    stepCalls.add((current: currentStep, total: totalSteps));
+  }
+
   @override
   Stream<List<CookingSession>> watchGroupSessions(String groupId) =>
       const Stream.empty();
@@ -189,6 +199,14 @@ class _ThrowingModule implements CookingSessionModule {
 
   @override
   Future<void> endSession() async {
+    throw StateError('boom');
+  }
+
+  @override
+  Future<void> updateStep({
+    required int currentStep,
+    required int totalSteps,
+  }) async {
     throw StateError('boom');
   }
 

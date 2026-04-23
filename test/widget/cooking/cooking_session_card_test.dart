@@ -19,6 +19,8 @@ void main() {
     String userId = 'u1',
     String userName = 'Erik',
     DateTime? at,
+    int? currentStep,
+    int? totalSteps,
   }) =>
       CookingSession(
         recipeId: id,
@@ -26,6 +28,8 @@ void main() {
         startedAt: at ?? DateTime(2026, 4, 20, 18),
         userId: userId,
         userName: userName,
+        currentStep: currentStep,
+        totalSteps: totalSteps,
       );
 
   Widget wrap(Widget child, {bool disableAnimations = false}) {
@@ -87,6 +91,75 @@ void main() {
 
       expect(find.text('Erik & Sara lagar Kycklinggryta'), findsOneWidget);
       expect(find.byType(PulseDot), findsOneWidget);
+    });
+
+    // -------------------------------------------------------------------
+    // BUT-408 follow-up: step suffix rendering.
+    // -------------------------------------------------------------------
+
+    testWidgets('single session WITHOUT step fields renders no suffix',
+        (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          CookingSessionCard(sessions: [session()]),
+          disableAnimations: true,
+        ),
+      );
+      await tester.pump();
+
+      // Base line present, no " · steg" appended.
+      expect(find.text('Erik lagar Kycklinggryta'), findsOneWidget);
+      expect(find.textContaining('steg'), findsNothing);
+    });
+
+    testWidgets('single session WITH step fields renders "· steg 3 av 7"',
+        (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          CookingSessionCard(sessions: [
+            session(currentStep: 3, totalSteps: 7),
+          ]),
+          disableAnimations: true,
+        ),
+      );
+      await tester.pump();
+
+      // Whole line is one Text widget — assert the full string so we know the
+      // separator, order, and Swedish copy are all intact.
+      expect(
+        find.text('Erik lagar Kycklinggryta · steg 3 av 7'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('merge case hides the step suffix even when set per-session',
+        (tester) async {
+      // Two cooks on the same recipe; the primary has step tracking but the
+      // merged line must NOT carry the step — different cooks are on
+      // different steps.
+      await tester.pumpWidget(
+        wrap(
+          CookingSessionCard(sessions: [
+            session(
+              userId: 'u1',
+              userName: 'Erik',
+              currentStep: 3,
+              totalSteps: 7,
+            ),
+            session(
+              userId: 'u2',
+              userName: 'Sara',
+              currentStep: 5,
+              totalSteps: 7,
+            ),
+          ]),
+          disableAnimations: true,
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Erik & Sara lagar Kycklinggryta'), findsOneWidget);
+      expect(find.textContaining('steg'), findsNothing);
     });
 
     testWidgets('reduce-motion: pulse dot is rendered but not animated',

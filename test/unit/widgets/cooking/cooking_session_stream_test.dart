@@ -30,6 +30,12 @@ class _FakeModule implements CookingSessionModule {
   @override
   Future<void> endSession() async {}
 
+  @override
+  Future<void> updateStep({
+    required int currentStep,
+    required int totalSteps,
+  }) async {}
+
   void dispose() {
     for (final c in controllers.values) {
       c.close();

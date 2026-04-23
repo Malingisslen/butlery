@@ -12908,4 +12908,69 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notificationPermissionPermanentlyDeniedMessage =>
       'Notifications are turned off. Open settings to enable them.';
+
+  @override
+  String get familyPresenceTitle => 'Online now';
+
+  @override
+  String get familyPresenceEmpty => 'Nobody online right now';
+
+  @override
+  String familyPresenceOverflow(int count) {
+    return '+$count';
+  }
+
+  @override
+  String cookingStepSuffix(int current, int total) {
+    return ' · step $current of $total';
+  }
+
+  @override
+  String get pingNudge => 'Nudge';
+
+  @override
+  String get pingTimerAlert => 'Timer alert';
+
+  @override
+  String get pingHelpMe => 'Help me';
+
+  @override
+  String get pingComposeTitle => 'Send a ping';
+
+  @override
+  String get pingComposeMessageHint => 'Message (optional)';
+
+  @override
+  String get pingComposeSend => 'Send';
+
+  @override
+  String get pingComposeSent => 'Sent';
+
+  @override
+  String get pingRateLimited => 'You\'ve sent too many pings in the last hour';
+
+  @override
+  String pingNudgeFrom(String name) {
+    return '$name is nudging you';
+  }
+
+  @override
+  String pingTimerAlertFrom(String name) {
+    return '$name\'s timer is ringing';
+  }
+
+  @override
+  String pingHelpMeFrom(String name) {
+    return '$name needs help';
+  }
+
+  @override
+  String activityAddedIngredient(String name, String ingredient) {
+    return '$name added $ingredient';
+  }
+
+  @override
+  String activityStartedCooking(String name, String recipe) {
+    return '$name started cooking $recipe';
+  }
 }

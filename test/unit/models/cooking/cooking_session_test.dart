@@ -116,4 +116,132 @@ void main() {
       expect(copy.recipeTitle, 'A');
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // BUT-408 follow-up: currentStep / totalSteps round-trip + validation.
+  // ---------------------------------------------------------------------------
+
+  group('CookingSession step fields', () {
+    final startedAt = DateTime.fromMillisecondsSinceEpoch(1700000000000);
+
+    test('both null round-trips cleanly and omits keys from the map', () {
+      final original = CookingSession(
+        recipeId: 'r1',
+        recipeTitle: 'Pasta',
+        startedAt: startedAt,
+        userId: 'u1',
+        userName: 'Erik',
+      );
+
+      final map = original.toMap();
+      // Omit-when-null keeps old clients free of phantom keys.
+      expect(map.containsKey('currentStep'), isFalse);
+      expect(map.containsKey('totalSteps'), isFalse);
+
+      final roundTripped = CookingSession.fromMap(map);
+      expect(roundTripped.currentStep, isNull);
+      expect(roundTripped.totalSteps, isNull);
+      expect(roundTripped, equals(original));
+    });
+
+    test('both populated round-trip through map with no data loss', () {
+      final original = CookingSession(
+        recipeId: 'r1',
+        recipeTitle: 'Gryta',
+        startedAt: startedAt,
+        userId: 'u1',
+        userName: 'Erik',
+        currentStep: 3,
+        totalSteps: 7,
+      );
+
+      final map = original.toMap();
+      expect(map['currentStep'], 3);
+      expect(map['totalSteps'], 7);
+
+      final roundTripped = CookingSession.fromMap(map);
+      expect(roundTripped.currentStep, 3);
+      expect(roundTripped.totalSteps, 7);
+      expect(roundTripped, equals(original));
+    });
+
+    test('legacy doc missing step fields parses without crashing', () {
+      // Simulates a pre-follow-up client that never wrote the two keys.
+      final legacyMap = <dynamic, dynamic>{
+        'recipeId': 'r1',
+        'recipeTitle': 'Soppa',
+        'startedAt': startedAt.millisecondsSinceEpoch,
+        'userId': 'u1',
+        'userName': 'Ben',
+      };
+
+      final parsed = CookingSession.fromMap(legacyMap);
+      expect(parsed.currentStep, isNull);
+      expect(parsed.totalSteps, isNull);
+      expect(parsed.recipeTitle, 'Soppa');
+    });
+
+    test('malformed half-pair (currentStep only) is normalized to null', () {
+      // Defensive: fromMap must not pass a half-set pair into the constructor
+      // (would trigger the assertion in debug and render "steg 3 av null").
+      final driftedMap = <dynamic, dynamic>{
+        'recipeId': 'r1',
+        'recipeTitle': 'Drift',
+        'startedAt': startedAt.millisecondsSinceEpoch,
+        'userId': 'u1',
+        'userName': 'X',
+        'currentStep': 3,
+        // totalSteps intentionally missing — schema drift.
+      };
+
+      final parsed = CookingSession.fromMap(driftedMap);
+      expect(parsed.currentStep, isNull);
+      expect(parsed.totalSteps, isNull);
+    });
+
+    test('constructor rejects currentStep > totalSteps', () {
+      expect(
+        () => CookingSession(
+          recipeId: 'r1',
+          recipeTitle: 'A',
+          startedAt: startedAt,
+          userId: 'u1',
+          userName: 'Erik',
+          currentStep: 5,
+          totalSteps: 3,
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
+    test('constructor rejects currentStep < 1 (0-based slipup)', () {
+      expect(
+        () => CookingSession(
+          recipeId: 'r1',
+          recipeTitle: 'A',
+          startedAt: startedAt,
+          userId: 'u1',
+          userName: 'Erik',
+          currentStep: 0,
+          totalSteps: 7,
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
+    test('constructor rejects half-set pair (one null, one non-null)', () {
+      expect(
+        () => CookingSession(
+          recipeId: 'r1',
+          recipeTitle: 'A',
+          startedAt: startedAt,
+          userId: 'u1',
+          userName: 'Erik',
+          currentStep: 3,
+          // totalSteps omitted = null
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+  });
 }
