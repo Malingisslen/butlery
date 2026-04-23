@@ -24,8 +24,8 @@ Theme: close out the /simplify-skipped follow-ups from sprint `ec5b8a43a`. Pure 
 
 - [x] `dart analyze --fatal-infos` — 0 issues on touched files
 - [x] `flutter test test/widget/common/ test/unit/core/utils/ test/unit/services/notifications/` — all green except pre-existing `notification_preference_manager_test.dart` failure unrelated to this sprint
-- [ ] Manual: TalkBack on migrated cooking-mode + shopping-tile buttons
-- [ ] Manual: Android 13+ NotificationPermission flow end-to-end
+- [~] Manual: TalkBack on migrated cooking-mode + shopping-tile buttons — SKIPPED by user; widget tests cover the contract (semantic-tree label + 48dp hit region)
+- [~] Manual: Android 13+ NotificationPermission flow end-to-end — SKIPPED by user; unit tests cover all 6 branches of `OsPermissionHelper` + the service short-circuit
 - [ ] `/simplify` pass, commit, push
 - [x] Linear: no ticket closures (pure cleanup on already-Done tickets)
 
