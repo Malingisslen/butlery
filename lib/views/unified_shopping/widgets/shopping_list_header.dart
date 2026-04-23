@@ -9,6 +9,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Header section with list selector and actions
 class ShoppingListHeader {
@@ -102,20 +103,12 @@ class ShoppingListHeader {
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(color: cs.outlineVariant),
             ),
-            child: IconButton(
+            child: AppIconButton(
+              icon: Icons.edit,
               onPressed: onRenameList,
-              icon: Icon(
-                Icons.edit,
-                color:
-                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
-                size: AppDimensions.iconSizeAction,
-              ),
-              tooltip: context.l10n.shoppingRenameList,
-              padding: const EdgeInsets.all(AppDimensions.spacingS),
-              constraints: const BoxConstraints(
-                minWidth: AppDimensions.minTouchTarget,
-                minHeight: AppDimensions.minTouchTarget,
-              ),
+              semanticLabel: context.l10n.shoppingRenameList,
+              color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+              iconSize: AppDimensions.iconSizeAction,
             ),
           ),
 
@@ -129,22 +122,15 @@ class ShoppingListHeader {
                     BorderRadius.circular(AppDimensions.borderRadius12),
                 border: Border.all(color: cs.outlineVariant),
               ),
-              child: IconButton(
+              child: AppIconButton(
+                icon: Icons.swap_horiz,
                 onPressed: onConvertList,
-                icon: Icon(
-                  Icons.swap_horiz,
-                  color:
-                      cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
-                  size: AppDimensions.iconSizeAction,
-                ),
-                tooltip: viewModel.activeList?.isPersonal == true
+                semanticLabel: viewModel.activeList?.isPersonal == true
                     ? context.l10n.shoppingConvertToCollaborative
                     : context.l10n.shoppingConvertToPersonal,
-                padding: const EdgeInsets.all(AppDimensions.spacingS),
-                constraints: const BoxConstraints(
-                  minWidth: AppDimensions.minTouchTarget,
-                  minHeight: AppDimensions.minTouchTarget,
-                ),
+                color:
+                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                iconSize: AppDimensions.iconSizeAction,
               ),
             ),
           ],
@@ -158,20 +144,12 @@ class ShoppingListHeader {
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(color: cs.outlineVariant),
             ),
-            child: IconButton(
+            child: AppIconButton(
+              icon: Icons.delete,
               onPressed: onDeleteList,
-              icon: Icon(
-                Icons.delete,
-                color:
-                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
-                size: AppDimensions.iconSizeAction,
-              ),
-              tooltip: context.l10n.shoppingDeleteList,
-              padding: const EdgeInsets.all(AppDimensions.spacingS),
-              constraints: const BoxConstraints(
-                minWidth: AppDimensions.minTouchTarget,
-                minHeight: AppDimensions.minTouchTarget,
-              ),
+              semanticLabel: context.l10n.shoppingDeleteList,
+              color: cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+              iconSize: AppDimensions.iconSizeAction,
             ),
           ),
         ],

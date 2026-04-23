@@ -1,9 +1,8 @@
 // Android 13+ POST_NOTIFICATIONS runtime permission handling.
 //
 // iOS and Android 12 or below: permission is implicit or install-time granted
-// — this service short-circuits to `true`. Android 13+: request via
-// `permission_handler` with a rationale on first denial and a settings
-// snackbar on permanent denial. Never hard-gates features.
+// — this service short-circuits to `true`. Android 13+: delegates to
+// `OsPermissionHelper` with notification-specific l10n strings.
 
 import 'dart:io';
 
@@ -15,36 +14,17 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/utils/os_permission_helper.dart';
 
-/// Injectable wrapper for `permission_handler` static APIs. Lets tests drive
-/// status transitions without touching plugin channels.
-abstract class NotificationPermissionGateway {
-  Future<PermissionStatus> status();
-  Future<PermissionStatus> request();
-  Future<bool> openSettings();
-}
+// Re-export the shared gateway so existing callers importing this file keep
+// compiling without touching their imports.
+export 'package:butlery/core/utils/os_permission_helper.dart'
+    show PermissionGateway;
 
 /// Injectable wrapper for Android SDK version lookup. Returns null on
 /// non-Android platforms so callers can short-circuit.
 abstract class AndroidSdkVersionProvider {
   Future<int?> sdkInt();
-}
-
-class _DefaultNotificationPermissionGateway
-    implements NotificationPermissionGateway {
-  const _DefaultNotificationPermissionGateway();
-
-  @override
-  Future<PermissionStatus> status() => Permission.notification.status;
-
-  @override
-  Future<PermissionStatus> request() => Permission.notification.request();
-
-  @override
-  Future<bool> openSettings() => openAppSettings();
 }
 
 class _DefaultAndroidSdkVersionProvider implements AndroidSdkVersionProvider {
@@ -63,11 +43,11 @@ class _DefaultAndroidSdkVersionProvider implements AndroidSdkVersionProvider {
   }
 }
 
-/// Rationale dialog presenter — injectable so widget tests can stub the
-/// user's choice without pumping the real dialog.
+/// Rationale dialog presenter — single-arg signature kept for test-seam
+/// compatibility. The service wraps it to feed the helper's richer typedef.
 typedef RationaleDialogPresenter = Future<bool> Function(BuildContext context);
 
-/// Settings-snackbar presenter — injectable for the same reason.
+/// Settings-snackbar presenter — two-arg signature for the same reason.
 typedef SettingsSnackbarPresenter = void Function(
   BuildContext context,
   VoidCallback onOpenSettings,
@@ -80,24 +60,23 @@ const int _androidTiramisuSdkInt = 33;
 
 class NotificationPermissionService extends BaseService {
   NotificationPermissionService({
-    NotificationPermissionGateway? gateway,
+    PermissionGateway? gateway,
     AndroidSdkVersionProvider? sdkVersionProvider,
     RationaleDialogPresenter? rationalePresenter,
     SettingsSnackbarPresenter? settingsSnackbarPresenter,
-  })  : _gateway = gateway ?? const _DefaultNotificationPermissionGateway(),
+  })  : _gateway = gateway ?? const DefaultPermissionGateway(),
         _sdkVersionProvider =
             sdkVersionProvider ?? const _DefaultAndroidSdkVersionProvider(),
-        _rationalePresenter = rationalePresenter ?? _defaultRationalePresenter,
-        _settingsSnackbarPresenter =
-            settingsSnackbarPresenter ?? _defaultSettingsSnackbarPresenter;
+        _rationalePresenter = rationalePresenter,
+        _settingsSnackbarPresenter = settingsSnackbarPresenter;
 
   @override
   String get serviceName => 'NotificationPermissionService';
 
-  final NotificationPermissionGateway _gateway;
+  final PermissionGateway _gateway;
   final AndroidSdkVersionProvider _sdkVersionProvider;
-  final RationaleDialogPresenter _rationalePresenter;
-  final SettingsSnackbarPresenter _settingsSnackbarPresenter;
+  final RationaleDialogPresenter? _rationalePresenter;
+  final SettingsSnackbarPresenter? _settingsSnackbarPresenter;
 
   /// Returns true if the app may post notifications. Never throws; side
   /// effects (rationale dialog, settings snackbar) depend on the current
@@ -112,130 +91,44 @@ class NotificationPermissionService extends BaseService {
     // Null → non-Android. Below Tiramisu → permission granted at install time.
     if (sdk == null || sdk < _androidTiramisuSdkInt) return true;
 
-    final current = await _gateway.status();
-
-    if (current.isGranted || current.isLimited || current.isProvisional) {
-      return true;
-    }
-
-    if (current.isPermanentlyDenied) {
-      if (context.mounted) {
-        _settingsSnackbarPresenter(context, () async {
-          await _gateway.openSettings();
-        });
-      }
-      return false;
-    }
-
-    // First denial path: show our rationale before the OS prompt. We only
-    // call request() when the user taps "Allow" to avoid burning the OS's
-    // "don't ask again" budget on a silent re-prompt.
-    if (current.isDenied) {
-      if (!context.mounted) return false;
-      final wantsToGrant = await _rationalePresenter(context);
-      if (!wantsToGrant) return false;
-
-      final outcome = await _gateway.request();
-      if (outcome.isGranted || outcome.isLimited || outcome.isProvisional) {
-        return true;
-      }
-      if (outcome.isPermanentlyDenied && context.mounted) {
-        _settingsSnackbarPresenter(context, () async {
-          await _gateway.openSettings();
-        });
-      }
-      // Second denial: silent skip. Never hard-gate cooking or other features.
-      return false;
-    }
-
-    // Restricted (device policy) or unknown: nothing we can do.
-    return false;
+    if (!context.mounted) return false;
+    final l10n = context.l10n;
+    return OsPermissionHelper.requestWithRationale(
+      context: context,
+      permission: Permission.notification,
+      rationaleTitle: l10n.notificationPermissionTitle,
+      rationaleBody: l10n.notificationPermissionBody,
+      grantLabel: l10n.notificationPermissionGrant,
+      permanentlyDeniedMessage:
+          l10n.notificationPermissionPermanentlyDeniedMessage,
+      openSettingsLabel: l10n.notificationPermissionOpenSettings,
+      gateway: _gateway,
+      rationalePresenter: _rationalePresenter == null
+          ? null
+          : (ctx, _, __, ___) => _rationalePresenter(ctx),
+      settingsSnackbarPresenter: _settingsSnackbarPresenter == null
+          ? null
+          : (ctx, _, __, onOpenSettings) =>
+              _settingsSnackbarPresenter(ctx, onOpenSettings),
+    );
   }
 }
 
-Future<bool> _defaultRationalePresenter(BuildContext context) async {
-  final result = await showDialog<bool>(
-    context: context,
-    barrierDismissible: true,
-    builder: (dialogContext) => const _NotificationRationaleDialog(),
-  );
-  return result ?? false;
-}
-
-void _defaultSettingsSnackbarPresenter(
-  BuildContext context,
-  VoidCallback onOpenSettings,
-) {
-  final messenger = ScaffoldMessenger.maybeOf(context);
-  if (messenger == null) return;
-  messenger.showSnackBar(
-    SnackBar(
-      content: Text(
-        context.l10n.notificationPermissionPermanentlyDeniedMessage,
-      ),
-      action: SnackBarAction(
-        label: context.l10n.notificationPermissionOpenSettings,
-        onPressed: onOpenSettings,
-      ),
-      behavior: SnackBarBehavior.floating,
-    ),
-  );
-}
-
-/// Rationale dialog shown once before the Android OS prompt. Square corners
-/// per Butlery design language; colors and spacing via theme tokens.
+/// Public wrapper preserved so existing widget tests can pump the dialog
+/// directly. Delegates to the shared [OsPermissionRationaleDialog] with
+/// notification-specific l10n strings.
 @visibleForTesting
 class NotificationRationaleDialog extends StatelessWidget {
   const NotificationRationaleDialog({super.key});
 
   @override
-  Widget build(BuildContext context) => const _NotificationRationaleDialog();
-}
-
-class _NotificationRationaleDialog extends StatelessWidget {
-  const _NotificationRationaleDialog();
-
-  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Dialog(
-      backgroundColor: AppColors.cardWhite,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.notificationPermissionTitle,
-              style: AppTextStyles.titleLarge,
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              l10n.notificationPermissionBody,
-              style: AppTextStyles.bodyLarge,
-            ),
-            const SizedBox(height: AppDimensions.spacingLg),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(l10n.commonCancel),
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(l10n.notificationPermissionGrant),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    return OsPermissionRationaleDialog(
+      title: l10n.notificationPermissionTitle,
+      body: l10n.notificationPermissionBody,
+      grantLabel: l10n.notificationPermissionGrant,
+      cancelLabel: l10n.commonCancel,
     );
   }
 }

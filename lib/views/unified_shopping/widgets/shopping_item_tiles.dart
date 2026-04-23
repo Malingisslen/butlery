@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/theme_constants.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Static API surface for shopping item tiles.
 ///
@@ -368,58 +369,27 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
       mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.onMoveToCategory != null && !widget.isCompleted)
-          IconButton(
-            icon: Icon(
-              Icons.drive_file_move_outline,
-              size: AppDimensions.iconSizeS,
-              color: cs.onSurfaceVariant,
-            ),
+          AppIconButton(
+            icon: Icons.drive_file_move_outline,
             onPressed: widget.onMoveToCategory,
-            tooltip: context.l10n.shoppingMoveToCategory,
-            padding: const EdgeInsets.all(AppDimensions.spacingM),
-            constraints: const BoxConstraints(
-              minWidth: AppDimensions.minTouchTarget,
-              minHeight: AppDimensions.minTouchTarget,
-            ),
+            semanticLabel: context.l10n.shoppingMoveToCategory,
+            color: cs.onSurfaceVariant,
+            iconSize: AppDimensions.iconSizeS,
           ),
-        Semantics(
-          label: context.l10n.a11yEditItem(widget.item.name),
-          button: true,
-          enabled: true,
-          child: IconButton(
-            icon: Icon(
-              Icons.edit,
-              size: AppDimensions.iconSizeS,
-              color: cs.onSurfaceVariant,
-            ),
-            onPressed: () => widget.onEditItem(widget.item),
-            tooltip: context.l10n.commonEdit,
-            padding: const EdgeInsets.all(AppDimensions.spacingM),
-            constraints: const BoxConstraints(
-              minWidth: AppDimensions.minTouchTarget,
-              minHeight: AppDimensions.minTouchTarget,
-            ),
-          ),
+        AppIconButton(
+          icon: Icons.edit,
+          onPressed: () => widget.onEditItem(widget.item),
+          semanticLabel: context.l10n.a11yEditItem(widget.item.name),
+          color: cs.onSurfaceVariant,
+          iconSize: AppDimensions.iconSizeS,
         ),
-        Semantics(
-          label: context.l10n.a11yDeleteItem(widget.item.name),
-          button: true,
-          enabled: true,
-          child: IconButton(
-            icon: Icon(
-              Icons.delete,
-              size: AppDimensions.iconSizeS,
-              color: cs.onSurfaceVariant
-                  .withValues(alpha: AppDimensions.opacityDark),
-            ),
-            onPressed: () => widget.onDeleteItem(widget.item),
-            tooltip: context.l10n.commonDelete,
-            padding: const EdgeInsets.all(AppDimensions.spacingM),
-            constraints: const BoxConstraints(
-              minWidth: AppDimensions.minTouchTarget,
-              minHeight: AppDimensions.minTouchTarget,
-            ),
-          ),
+        AppIconButton(
+          icon: Icons.delete,
+          onPressed: () => widget.onDeleteItem(widget.item),
+          semanticLabel: context.l10n.a11yDeleteItem(widget.item.name),
+          color:
+              cs.onSurfaceVariant.withValues(alpha: AppDimensions.opacityDark),
+          iconSize: AppDimensions.iconSizeS,
         ),
       ],
     );

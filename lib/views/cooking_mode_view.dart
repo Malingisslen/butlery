@@ -16,6 +16,7 @@ import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -147,49 +148,31 @@ class _CookingModeContent extends StatelessWidget {
             ),
           ),
           // Font size toggle
-          Semantics(
-            label: context.l10n.a11yCookingModeFontScale,
-            button: true,
-            child: Material(
-              color: cs.surface,
-              borderRadius: BorderRadius.zero,
-              child: InkWell(
-                onTap: () => vm.cycleFontScale(),
-                child: SizedBox(
-                  width: AppDimensions.minTouchTarget,
-                  height: AppDimensions.minTouchTarget,
-                  child: Center(
-                    child: Text(
-                      'A${vm.fontScale == 1.0 ? '' : vm.fontScale == 1.25 ? '+' : '++'}',
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+          ColoredBox(
+            color: cs.surface,
+            child: TappableWrapper(
+              onTap: () => vm.cycleFontScale(),
+              semanticLabel: context.l10n.a11yCookingModeFontScale,
+              child: Text(
+                'A${vm.fontScale == 1.0 ? '' : vm.fontScale == 1.25 ? '+' : '++'}',
+                style: AppTextStyles.titleMedium.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           // Close button
-          Semantics(
-            label: context.l10n.a11yCookingModeClose,
-            button: true,
-            child: Material(
-              color: cs.surface,
-              borderRadius: BorderRadius.zero,
-              child: InkWell(
-                onTap: () => Navigator.pop(context),
-                child: SizedBox(
-                  width: AppDimensions.minTouchTarget,
-                  height: AppDimensions.minTouchTarget,
-                  child: Icon(
-                    Icons.close,
-                    color: cs.primary,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                ),
+          ColoredBox(
+            color: cs.surface,
+            child: TappableWrapper(
+              onTap: () => Navigator.pop(context),
+              semanticLabel: context.l10n.a11yCookingModeClose,
+              child: Icon(
+                Icons.close,
+                color: cs.primary,
+                size: AppDimensions.iconSizeM,
               ),
             ),
           ),
@@ -670,28 +653,21 @@ class _NavButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final enabled = onPressed != null;
 
-    return Semantics(
-      label: label,
-      button: true,
+    return TappableWrapper(
+      onTap: enabled
+          ? () {
+              HapticFeedback.lightImpact();
+              onPressed!();
+            }
+          : null,
       enabled: enabled,
-      child: GestureDetector(
-        onTap: enabled
-            ? () {
-                HapticFeedback.lightImpact();
-                onPressed!();
-              }
-            : null,
-        child: SizedBox(
-          width: AppDimensions.minTouchTarget,
-          height: AppDimensions.minTouchTarget,
-          child: Icon(
-            icon,
-            color: enabled
-                ? cs.onPrimary
-                : cs.onPrimary.withValues(alpha: AppDimensions.opacityLight),
-            size: AppDimensions.iconSizeL,
-          ),
-        ),
+      semanticLabel: label,
+      child: Icon(
+        icon,
+        color: enabled
+            ? cs.onPrimary
+            : cs.onPrimary.withValues(alpha: AppDimensions.opacityLight),
+        size: AppDimensions.iconSizeL,
       ),
     );
   }

@@ -472,11 +472,19 @@ class AppIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(icon, color: color, size: iconSize),
-      onPressed: onPressed,
-      tooltip: semanticLabel,
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),
+    // Explicit Semantics mirrors the idiom used by the other buttons in this
+    // file — tooltip alone doesn't always surface on the semantic tree when
+    // the IconButton is nested under interactive ancestors.
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      enabled: onPressed != null,
+      child: IconButton(
+        icon: Icon(icon, color: color, size: iconSize),
+        onPressed: onPressed,
+        tooltip: semanticLabel,
+        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingSm),
+      ),
     );
   }
 }

@@ -30,9 +30,10 @@ void main() {
         ),
       );
 
-      // AppIconButton exposes its required label via IconButton.tooltip,
-      // which Flutter maps to the node's semantic label for TalkBack/VoiceOver.
-      expect(find.byTooltip('Dela recept'), findsOneWidget);
+      // AppIconButton wraps IconButton in an explicit Semantics node so the
+      // label is visible in the semantic tree for TalkBack/VoiceOver, not
+      // just in the tooltip overlay.
+      expect(find.bySemanticsLabel('Dela recept'), findsOneWidget);
     });
 
     testWidgets('meets 48dp minimum touch target via Material IconButton',

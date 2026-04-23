@@ -16,7 +16,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 
-class _FakeGateway implements NotificationPermissionGateway {
+// Gateway was renamed to `PermissionGateway` and relocated to
+// `lib/core/utils/os_permission_helper.dart`, but the service file re-exports
+// it, so the import above still resolves it.
+class _FakeGateway implements PermissionGateway {
   _FakeGateway({
     required List<PermissionStatus> statusQueue,
     PermissionStatus requestOutcome = PermissionStatus.granted,
@@ -35,7 +38,7 @@ class _FakeGateway implements NotificationPermissionGateway {
   }
 
   @override
-  Future<PermissionStatus> status() async {
+  Future<PermissionStatus> checkStatus(Permission permission) async {
     statusCalls++;
     return _statusQueue.isNotEmpty
         ? _statusQueue.removeAt(0)
@@ -43,7 +46,7 @@ class _FakeGateway implements NotificationPermissionGateway {
   }
 
   @override
-  Future<PermissionStatus> request() async {
+  Future<PermissionStatus> request(Permission permission) async {
     requestCalls++;
     return _requestOutcome;
   }
@@ -70,6 +73,14 @@ class _HostedContext {
 
 Widget _buildHost(_HostedContext host, {bool withScaffold = true}) {
   return MaterialApp(
+    locale: const Locale('sv'),
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
     home: Builder(
       builder: (ctx) {
         host.context = ctx;

@@ -1,6 +1,46 @@
 # Sprint Backlog
 
-## Sprint: Launch readiness — GDPR + a11y + infra — 2026-04-21
+## Sprint: a11y completion + permission helper — 2026-04-22
+
+**Plan file:** `C:\Users\malla\.claude\plans\plan-elegant-wilkes.md`
+
+Theme: close out the /simplify-skipped follow-ups from sprint `ec5b8a43a`. Pure cleanup: finish BUT-505/BUT-508 migrations, extract OS-permission helper for future permission types.
+
+### Agent A: flutter-developer — AppIconButton Semantics parity + 48dp migration
+
+- [x] **A1. Add explicit `Semantics` wrapper to `AppIconButton`** — `lib/widgets/common/buttons/action_buttons.dart:473-481`. Match the idiom the other 4 buttons in the file already use (`Semantics(label:, button: true, enabled: onPressed != null, child: IconButton(...))`). Update `app_icon_button_test.dart` finder to `find.bySemanticsLabel(...)`.
+- [x] **A2. Migrate raw `IconButton + Semantics + manual constraints` sites to `AppIconButton`** — `shopping_item_tiles.dart:370-430` (3 sites), `shopping_list_header.dart`, `duplicate_merge_sheet.dart:~371`, `feedback_fab.dart`. Each drops ~8 lines.
+- [x] **A3. Migrate custom `InkWell + SizedBox(minTouchTarget)` sites to `TappableWrapper`** — `cooking_mode_view.dart` lines 155-172, 179-195, 387, 553-566, 685. If a site genuinely needs Material ink feedback, leave it and flag in the PR.
+- [x] **A4. Tests** — re-run `app_icon_button_test.dart` (now uses `bySemanticsLabel`); add 1-2 targeted 48dp-survival widget tests on representative migrated sites.
+
+### Agent B: firebase-backend-security — extract OS-permission helper
+
+- [x] **B1. Create `lib/core/utils/os_permission_helper.dart`** — static `requestWithRationale(...)` method encapsulating rationale-then-request-then-settings-snackbar. Inject `PermissionGateway` (rename from `NotificationPermissionGateway`) so both callers share one interface.
+- [x] **B2. Refactor `NotificationPermissionService`** to delegate to the helper — keep the `AndroidSdkVersionProvider` short-circuit, drop inner flow (243 → ~80 lines). Existing 8 tests must pass with minimal gateway-shape changes.
+- [x] **B3. Do NOT migrate `ImagePickerService`** — different flow, out of scope. Flag in PR description only.
+- [x] **B4. Tests** — `os_permission_helper_test.dart` with 6 branches (granted / first-deny-accept / first-deny-decline / OS-deny-after-rationale / permanently-denied / permanently-denied-after-rationale).
+
+### Post-Sprint Steps
+
+- [x] `dart analyze --fatal-infos` — 0 issues on touched files
+- [x] `flutter test test/widget/common/ test/unit/core/utils/ test/unit/services/notifications/` — all green except pre-existing `notification_preference_manager_test.dart` failure unrelated to this sprint
+- [ ] Manual: TalkBack on migrated cooking-mode + shopping-tile buttons
+- [ ] Manual: Android 13+ NotificationPermission flow end-to-end
+- [ ] `/simplify` pass, commit, push
+- [x] Linear: no ticket closures (pure cleanup on already-Done tickets)
+
+---
+
+## What this means in plain language
+
+- Screen readers reliably announce every icon button (fixes a tooltip-only plumbing quirk)
+- Consistent 48dp touch targets across cooking mode + shopping rows
+- Future permission requests (microphone, location) reuse the notification flow for free
+- Risk: Low — drop-in replacements, each migration independently revertable
+
+---
+
+## Archive: Sprint Launch readiness — GDPR + a11y + infra — 2026-04-21
 
 **Plan file:** `C:\Users\malla\.claude\plans\plan-elegant-wilkes.md`
 
