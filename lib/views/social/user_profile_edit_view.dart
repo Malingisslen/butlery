@@ -23,7 +23,11 @@ import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
+import 'package:butlery/services/tagging/tag_config_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/widgets/recipe/collection_insights_card.dart';
 
 class UserProfileEditView extends StatefulWidget {
   const UserProfileEditView({super.key});
@@ -75,6 +79,9 @@ class _UserProfileEditViewContentState
 
   bool _hasInitialized = false;
 
+  Map<String, String> _cuisineDisplayNames = const {};
+  List<Recipe> _recipesSnapshot = const [];
+
   @override
   void initState() {
     super.initState();
@@ -85,6 +92,24 @@ class _UserProfileEditViewContentState
 
     // Listen for focus changes to check display name availability
     _displayNameFocusNode.addListener(_onFocusChanged);
+
+    _loadCollectionData();
+  }
+
+  void _loadCollectionData() {
+    try {
+      final config = ServiceLocator.get<TagConfigService>().configOrNull;
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      _recipesSnapshot = recipeService.recipes;
+      _cuisineDisplayNames = config == null
+          ? const {}
+          : {
+              for (final e in config.cuisines.enabledEntries)
+                e.key: e.getTag('sv'),
+            };
+    } catch (e) {
+      AppLogger.warning('Could not load collection data: $e');
+    }
   }
 
   void _onLocaleChanged() {
@@ -323,6 +348,12 @@ class _UserProfileEditViewContentState
 
           // Cooking identity (skill, cuisines, bio)
           _buildCookingIdentitySection(viewModel),
+          const SizedBox(height: AppDimensions.spacingXl),
+
+          CollectionInsightsCard(
+            recipes: _recipesSnapshot,
+            cuisineDisplayNames: _cuisineDisplayNames,
+          ),
           const SizedBox(height: AppDimensions.spacingXl),
 
           // Privacy settings
