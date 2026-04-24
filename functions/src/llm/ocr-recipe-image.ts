@@ -10,10 +10,11 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 import { isAllowedUrl } from "../shared/url-safety";
+import type { Part } from "@google-cloud/vertexai";
 import {
   getGeminiClient,
   getTextModel,
-  geminiApiKey,
+  extractResponseText,
   PROMPT_VERSION,
   IMAGE_OCR_SYSTEM_PROMPT,
   parseRecipeResponse,
@@ -64,7 +65,7 @@ interface OcrRecipeImageResponse {
  */
 export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
   {
-    secrets: [geminiApiKey],
+    // Vertex AI uses ADC (Cloud Functions service account) — no API key secret needed.
     memory: "1GiB", // Vision needs more memory
     timeoutSeconds: 120,
     cors: ["https://butlery.app", "https://www.butlery.app"],
@@ -109,7 +110,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
         };
       }
 
-      const client = getGeminiClient(geminiApiKey.value());
+      const client = getGeminiClient();
       const model = getTextModel(client);
 
       logger.info(
@@ -127,16 +128,16 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       // Build content parts for Gemini
       const parts = buildContentParts(imageBase64, imageUrl, mimeType, userPrompt);
 
-      // Call Gemini Vision API
+      // Call Vertex AI Gemini Vision (europe-west1, EU residency)
       const result = await model.generateContent({
         contents: [
           { role: "user", parts },
         ],
-        systemInstruction: { role: "model", parts: [{ text: IMAGE_OCR_SYSTEM_PROMPT }] },
+        systemInstruction: IMAGE_OCR_SYSTEM_PROMPT,
       });
 
       const response = result.response;
-      const content = response.text();
+      const content = extractResponseText(response);
 
       // Calculate actual cost from API usage (higher min floor for vision)
       const actualCost = calculateGeminiCost(response.usageMetadata, 0.01);
@@ -201,26 +202,6 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
 // Helper Functions
 // =============================================================================
 
-interface TextPart {
-  text: string;
-}
-
-interface InlineDataPart {
-  inlineData: {
-    mimeType: string;
-    data: string;
-  };
-}
-
-interface FileDataPart {
-  fileData: {
-    mimeType: string;
-    fileUri: string;
-  };
-}
-
-type ContentPart = TextPart | InlineDataPart | FileDataPart;
-
 /**
  * Build content parts array for Gemini multimodal input.
  * Gemini uses inlineData for base64 images (not image_url like Mistral).
@@ -230,8 +211,8 @@ function buildContentParts(
   url?: string,
   mimeType?: string,
   textPrompt?: string
-): ContentPart[] {
-  const parts: ContentPart[] = [];
+): Part[] {
+  const parts: Part[] = [];
 
   if (base64) {
     // Strip data URL prefix if present

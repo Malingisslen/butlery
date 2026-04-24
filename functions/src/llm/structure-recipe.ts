@@ -12,7 +12,7 @@ import {
   getGeminiClient,
   getTextModel,
   getIngredientLinesModel,
-  geminiApiKey,
+  extractResponseText,
   PROMPT_VERSION,
   RECIPE_EXTRACTION_SYSTEM_PROMPT,
   RECIPE_ENHANCEMENT_SYSTEM_PROMPT,
@@ -67,7 +67,7 @@ interface StructureRecipeResponse {
  */
 export const structureRecipe = onCall<StructureRecipeRequest>(
   {
-    secrets: [geminiApiKey],
+    // Vertex AI uses ADC (Cloud Functions service account) — no API key secret needed.
     memory: "512MiB",
     timeoutSeconds: 60,
     cors: ["https://butlery.app", "https://www.butlery.app"],
@@ -107,7 +107,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         };
       }
 
-      const client = getGeminiClient(geminiApiKey.value());
+      const client = getGeminiClient();
       const isIngredientLines = mode === "ingredientLines";
 
       // Get the appropriate model (with schema baked in)
@@ -145,16 +145,16 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${hashUid(request.auth!.uid)} (prompt v${PROMPT_VERSION})`
       );
 
-      // Call Gemini API
+      // Call Vertex AI Gemini (europe-west1, EU residency)
       const result = await model.generateContent({
         contents: [
           { role: "user", parts: [{ text: userPrompt }] },
         ],
-        systemInstruction: { role: "model", parts: [{ text: systemPrompt }] },
+        systemInstruction: systemPrompt,
       });
 
       const response = result.response;
-      const content = response.text();
+      const content = extractResponseText(response);
 
       if (!content) {
         logger.error("[structureRecipe] Empty response from Gemini");

@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 9 april 2026
-**Version:** 1.1.0
+**Senast uppdaterad:** 24 april 2026
+**Version:** 1.2.0
 
 ---
 
@@ -121,11 +121,11 @@ Vi delar dina personuppgifter med följande tredje parter:
 - **Överföring:** USA (EU-USA Data Privacy Framework)
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
-**Google Gemini API (Google LLC, USA)**
-- **Syfte:** AI-baserad receptextrahering och strukturering (OCR och textanalys)
+**Google Cloud Vertex AI (Google Cloud EMEA Limited, Irland)**
+- **Syfte:** AI-baserad receptextrahering och strukturering (OCR och textanalys) via Gemini-modeller
 - **Rättslig grund:** Samtycke (AI-bearbetning kräver uttryckligt samtycke)
-- **Överföring:** USA (EU-USA Data Privacy Framework). Bearbetning initieras från EU-servrar (Belgien).
-- **Policy:** [https://ai.google.dev/terms](https://ai.google.dev/terms)
+- **Överföring:** Inom EU/EES — all bearbetning sker i regionen `europe-west1` (Belgien). Ingen överföring till USA.
+- **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Obs:** Bilder som skickas för OCR-bearbetning kan innehålla personuppgifter som syns i fotografiet. Text rensas från kända PII-mönster före bearbetning; bilder kan inte rensas.
 
 **OCR.space (a]o Software GmbH, Österrike/EU)**
@@ -158,7 +158,7 @@ Vi kan dela information om:
 
 ## 7. Dataöverföringar utanför EU/EES
 
-Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics, Google Gemini API) är belägna i USA. Vi säkerställer att:
+Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är belägna i USA. Vi säkerställer att:
 
 - Överföringar sker enligt EU-USA Data Privacy Framework
 - Lämpliga skyddsåtgärder finns på plats
@@ -289,7 +289,7 @@ Vid väsentliga ändringar:
 - 📱 Vi meddelar dig via push-notis (om aktiverad)
 - ✅ Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 9 april 2026
+**Senaste ändring:** 24 april 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

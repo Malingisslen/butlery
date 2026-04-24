@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "REPLACE_ME_TEAMID.se.butlery.app",
+        "paths": [
+          "/invite/*",
+          "/recipe/*",
+          "/menu/*",
+          "/shopping/*",
+          "/profile/*"
+        ]
+      }
+    ]
+  }
+}

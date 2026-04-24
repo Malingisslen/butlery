@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** April 9, 2026
-**Version:** 1.1.0
+**Last updated:** April 24, 2026
+**Version:** 1.2.0
 
 ---
 
@@ -121,11 +121,11 @@ We share your personal data with the following third parties:
 - **Transfer:** USA (EU-US Data Privacy Framework)
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
-**Google Gemini API (Google LLC, USA)**
-- **Purpose:** AI-based recipe extraction and structuring (OCR and text analysis)
+**Google Cloud Vertex AI (Google Cloud EMEA Limited, Ireland)**
+- **Purpose:** AI-based recipe extraction and structuring (OCR and text analysis) via Gemini models
 - **Legal basis:** Consent (AI processing requires explicit consent)
-- **Transfer:** USA (EU-US Data Privacy Framework). Processing initiated from EU servers (Belgium).
-- **Policy:** [https://ai.google.dev/terms](https://ai.google.dev/terms)
+- **Transfer:** Within EU/EEA — all processing takes place in the `europe-west1` region (Belgium). No transfer to the USA.
+- **Policy:** [https://cloud.google.com/terms/data-processing-addendum](https://cloud.google.com/terms/data-processing-addendum)
 - **Note:** Images submitted for OCR processing may contain personal information visible in the photograph. Text is scrubbed for known PII patterns before processing; images cannot be scrubbed.
 
 **OCR.space (a]o Software GmbH, Austria/EU)**
@@ -158,7 +158,7 @@ We may share information if:
 
 ## 7. Data transfers outside EU/EEA
 
-Some of our service providers (Google Firebase, Google Analytics, Google Gemini API) are located in the USA. We ensure that:
+Some of our service providers (Google Firebase, Google Analytics) are located in the USA. We ensure that:
 
 - Transfers are made according to the EU-US Data Privacy Framework
 - Appropriate safeguards are in place
@@ -289,7 +289,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** April 9, 2026
+**Last change:** April 24, 2026
 **Version history:** Available upon request
 
 ---

@@ -1,45 +1,72 @@
 /**
- * Google Gemini AI client configuration and Swedish recipe prompts.
+ * Vertex AI Gemini client configuration and Swedish recipe prompts.
  *
  * This module provides:
- * - Gemini client with API key from Firebase secrets
+ * - Vertex AI client pinned to europe-west1 (GDPR Chapter V — EU data residency)
+ * - Service-account auth via Application Default Credentials (no API key)
  * - Swedish-language prompts for recipe extraction
  * - Response type definitions and schema enforcement
  * - JSON Schema for server-side structured output validation
+ *
+ * Migration note (BUT-614): switched from Google AI Studio (generativelanguage.googleapis.com,
+ * US egress) to Vertex AI (europe-west1-aiplatform.googleapis.com). All prompts, schemas,
+ * parsers, and exported function signatures are preserved so call sites are unchanged.
  */
 
 import {
-  GoogleGenerativeAI,
+  VertexAI,
   GenerativeModel,
   SchemaType,
   type Schema,
-} from "@google/generative-ai";
-import { defineSecret } from "firebase-functions/params";
-
-// Define the secret for Gemini API key
-export const geminiApiKey = defineSecret("GEMINI_API_KEY");
+  type GenerateContentResponse,
+} from "@google-cloud/vertexai";
 
 /** Prompt version — bump on any prompt change for traceability */
 export const PROMPT_VERSION = "2.0.0";
 
-// Singleton client instance
-let geminiClient: GoogleGenerativeAI | null = null;
+/** Vertex AI region — EU data residency (BUT-607). */
+export const VERTEX_LOCATION = "europe-west1";
+
+// Singleton client instance — keyed by resolved project id so test overrides
+// (via GOOGLE_CLOUD_PROJECT) don't collide with a prior cached client.
+let vertexClient: VertexAI | null = null;
+let vertexClientProject: string | null = null;
 
 /**
- * Get or create the Gemini client instance.
- * Must be called within a function that has access to the secret.
+ * Resolve the GCP project id from runtime environment.
+ * Cloud Functions sets `GCLOUD_PROJECT`; some environments use `GOOGLE_CLOUD_PROJECT`.
  */
-export function getGeminiClient(apiKey: string): GoogleGenerativeAI {
-  if (!geminiClient) {
-    geminiClient = new GoogleGenerativeAI(apiKey);
+function resolveProjectId(): string {
+  const project =
+    process.env.GOOGLE_CLOUD_PROJECT ||
+    process.env.GCLOUD_PROJECT ||
+    process.env.GCP_PROJECT;
+  if (!project) {
+    throw new Error(
+      "Vertex AI project id could not be resolved from environment. " +
+        "Set GOOGLE_CLOUD_PROJECT or run inside a Cloud Functions runtime."
+    );
   }
-  return geminiClient;
+  return project;
+}
+
+/**
+ * Get or create the Vertex AI client instance.
+ * Authentication: Application Default Credentials (Cloud Functions service account).
+ */
+export function getGeminiClient(): VertexAI {
+  const project = resolveProjectId();
+  if (!vertexClient || vertexClientProject !== project) {
+    vertexClient = new VertexAI({ project, location: VERTEX_LOCATION });
+    vertexClientProject = project;
+  }
+  return vertexClient;
 }
 
 /**
  * Get a Gemini model configured for text tasks.
  */
-export function getTextModel(client: GoogleGenerativeAI): GenerativeModel {
+export function getTextModel(client: VertexAI): GenerativeModel {
   return client.getGenerativeModel({
     model: TEXT_MODEL,
     generationConfig: {
@@ -54,7 +81,7 @@ export function getTextModel(client: GoogleGenerativeAI): GenerativeModel {
 /**
  * Get a Gemini model configured for ingredient line parsing.
  */
-export function getIngredientLinesModel(client: GoogleGenerativeAI): GenerativeModel {
+export function getIngredientLinesModel(client: VertexAI): GenerativeModel {
   return client.getGenerativeModel({
     model: TEXT_MODEL,
     generationConfig: {
@@ -64,6 +91,26 @@ export function getIngredientLinesModel(client: GoogleGenerativeAI): GenerativeM
       responseSchema: INGREDIENT_LINES_SCHEMA,
     },
   });
+}
+
+/**
+ * Extract plain text from a Vertex AI GenerateContentResponse.
+ *
+ * The Google AI Studio SDK exposed `response.text()` as a helper; Vertex AI's
+ * response is a plain data object, so callers previously using `response.text()`
+ * must now go through this helper.
+ */
+export function extractResponseText(response: GenerateContentResponse): string {
+  const candidate = response.candidates?.[0];
+  if (!candidate) return "";
+  const parts = candidate.content?.parts ?? [];
+  const texts: string[] = [];
+  for (const part of parts) {
+    if (typeof (part as { text?: unknown }).text === "string") {
+      texts.push((part as { text: string }).text);
+    }
+  }
+  return texts.join("");
 }
 
 // =============================================================================
@@ -532,7 +579,7 @@ export const MAX_TOKENS = 2000;
 /** Temperature for recipe extraction (lower = more deterministic) */
 export const TEMPERATURE = 0.3;
 
-// Gemini 2.0 Flash pricing per 1M tokens
+// Gemini 2.0 Flash pricing per 1M tokens (Vertex AI europe-west1 — same as Google AI Studio)
 const INPUT_COST_PER_M = 0.10;
 const OUTPUT_COST_PER_M = 0.40;
 
