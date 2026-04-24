@@ -1,11 +1,8 @@
 # Firestore Backups & Disaster Recovery
 
-**Status: ACTION REQUIRED — PITR and scheduled exports not yet enabled.**
+**Status: ACTIVE — PITR enabled, weekly GCS exports scheduled.**
 
-This document is the operational runbook for Firestore data protection. It exists because
-`gcloud` was not available in the agent environment at the time BUT-418 was implemented —
-the commands below must be run by a maintainer with authenticated `gcloud` + project
-`butlery-app-1` permissions.
+Operational runbook for Firestore data protection in `butlery-app-1`.
 
 ---
 
@@ -15,22 +12,23 @@ Without PITR (Point-in-Time Recovery) or scheduled exports, any accidental delet
 Cloud Function, or malicious write is permanent. Recovery Point Objective (RPO) is
 effectively **infinite** — we cannot restore yesterday's state.
 
-Target after this runbook is executed:
+After the runbook is executed:
 - **RPO:** 7 days (PITR window) for accidental data loss up to 7 days old
 - **RPO:** 7 days (weekly export) for anything older than the PITR window
 - **RTO:** < 1 hour for PITR restore to a sibling database, < 4 hours for full GCS import
 
 ---
 
-## Current status
+## Current status (as of 2026-04-24)
 
 | Control | Status | Evidence |
 |---|---|---|
-| PITR enabled | UNKNOWN — run `gcloud firestore databases describe` | pending |
-| Weekly GCS export | NOT CONFIGURED | no Cloud Scheduler job present |
-| Backup bucket | NOT CONFIRMED | `gs://butlery-firestore-backups` may not exist |
-| Retention policy | N/A | no bucket to apply policy to |
-| Restore drill | NEVER PERFORMED | post-setup action |
+| PITR enabled | ENABLED — 7-day window | `versionRetentionPeriod: 604800s` |
+| Weekly GCS export | SCHEDULED — Sundays 03:00 UTC | Cloud Scheduler job `firestore-weekly-export` (europe-west3) |
+| Backup bucket | CREATED — `gs://butlery-firestore-backups` | europe-west3, uniform bucket-level access |
+| Retention policy | 30 days auto-delete | lifecycle rule applied via `docs/ops/lifecycle.json` |
+| Firestore region | europe-west3 (Frankfurt, EU) | — |
+| Restore drill | NEVER PERFORMED | schedule one after first successful export |
 
 ---
 
@@ -62,10 +60,10 @@ PITR window is 7 days. Cost: ~$0.10/GB-month of PITR data. Immediate effect.
 
 ```bash
 # Bucket must live in the same region as Firestore (verify with describe above).
-# Butlery Firestore region is europe-west1 — keep exports in-region for GDPR.
+# Butlery Firestore region is europe-west3 — keep exports in-region for GDPR.
 gcloud storage buckets create gs://butlery-firestore-backups \
   --project=butlery-app-1 \
-  --location=europe-west1 \
+  --location=europe-west3 \
   --uniform-bucket-level-access \
   --public-access-prevention
 ```
@@ -115,7 +113,7 @@ Option A — Cloud Scheduler invoking the Firestore export API (simplest, no Fun
 # Off-peak for a Swedish consumer app.
 gcloud scheduler jobs create http firestore-weekly-export \
   --project=butlery-app-1 \
-  --location=europe-west1 \
+  --location=europe-west3 \
   --schedule="0 3 * * 0" \
   --time-zone="UTC" \
   --uri="https://firestore.googleapis.com/v1/projects/butlery-app-1/databases/(default):exportDocuments" \
@@ -141,7 +139,7 @@ Force an immediate run to confirm the pipeline works:
 ```bash
 gcloud scheduler jobs run firestore-weekly-export \
   --project=butlery-app-1 \
-  --location=europe-west1
+  --location=europe-west3
 
 # Wait ~2 minutes, then confirm an export folder landed:
 gcloud storage ls gs://butlery-firestore-backups/weekly/
@@ -180,7 +178,7 @@ gcloud storage ls gs://butlery-firestore-backups/weekly/
 # Import to a recovery database (never into production):
 gcloud firestore databases create \
   --database=recovery-YYYYMMDD \
-  --location=europe-west1 \
+  --location=europe-west3 \
   --project=butlery-app-1
 
 gcloud firestore import \
