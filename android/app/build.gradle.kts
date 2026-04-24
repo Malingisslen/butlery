@@ -8,7 +8,7 @@ plugins {
     id("com.google.gms.google-services")
 }
 
-val keystorePropertiesFile = rootProject.file("app/key.properties")
+val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
@@ -46,7 +46,9 @@ android {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
+                // Resolve storeFile relative to the android/ root, not the
+                // app module, so the JKS can live alongside key.properties.
+                storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
             }
         }
@@ -56,6 +58,14 @@ android {
         release {
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
+            } else if (System.getenv("CI") == "true") {
+                // CI without a keystore would silently ship a debug-signed AAB,
+                // which Play Console rejects. Fail loudly instead.
+                throw GradleException(
+                    "Release build in CI requires android/key.properties. " +
+                    "Ensure KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_PASSWORD, " +
+                    "KEY_ALIAS GitHub Actions secrets are configured."
+                )
             } else {
                 signingConfigs.getByName("debug")
             }

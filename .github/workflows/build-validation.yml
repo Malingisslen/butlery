@@ -149,6 +149,26 @@ jobs:
         echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android/app/google-services.json
         test -s android/app/google-services.json || { echo "::error::google-services.json decode failed or empty — is GOOGLE_SERVICES_JSON_BASE64 set as a repo secret?"; exit 1; }
 
+    - name: Decode release keystore
+      if: matrix.platform == 'android'
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      run: |
+        echo "$KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
+        test -s android/upload-keystore.jks || { echo "::error::KEYSTORE_BASE64 missing or empty — add it as a repo secret (BUT-485)"; exit 1; }
+        : "${KEYSTORE_PASSWORD:?::error::KEYSTORE_PASSWORD secret missing}"
+        : "${KEY_PASSWORD:?::error::KEY_PASSWORD secret missing}"
+        : "${KEY_ALIAS:?::error::KEY_ALIAS secret missing}"
+        cat > android/key.properties << EOF
+        storePassword=$KEYSTORE_PASSWORD
+        keyPassword=$KEY_PASSWORD
+        keyAlias=$KEY_ALIAS
+        storeFile=upload-keystore.jks
+        EOF
+
     - name: Setup Gradle
       if: matrix.platform == 'android'
       uses: gradle/actions/setup-gradle@v3
@@ -167,9 +187,30 @@ jobs:
 
     - name: Build Android App Bundle
       if: matrix.platform == 'android'
+      env:
+        CI: 'true'
       run: |
-        echo "🏗️ Building Android App Bundle with obfuscation..."
+        echo "Building Android App Bundle with obfuscation..."
         flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info --dart-define-from-file=.env
+
+    - name: Verify AAB signed with release key (not debug)
+      if: matrix.platform == 'android'
+      env:
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      run: |
+        AAB=build/app/outputs/bundle/release/app-release.aab
+        test -s "$AAB" || { echo "::error::AAB missing at $AAB"; exit 1; }
+        # Unzip META-INF/*.RSA and inspect via keytool. Debug builds carry
+        # CN=Android Debug — fail hard if we see it.
+        TMP=$(mktemp -d)
+        unzip -p "$AAB" 'META-INF/*.RSA' > "$TMP/cert.rsa"
+        CERT_OWNER=$(keytool -printcert -file "$TMP/cert.rsa" | grep -i "^Owner:")
+        echo "Signing cert owner: $CERT_OWNER"
+        if echo "$CERT_OWNER" | grep -qi "Android Debug"; then
+          echo "::error::AAB is signed with the debug key — release signing is NOT active"
+          exit 1
+        fi
+        echo "Release signing verified."
 
     - name: Build for web
       if: matrix.platform == 'web'
