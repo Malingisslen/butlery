@@ -89,6 +89,7 @@ class Routes {
   static const String settingsNotifications = '/settings/notifications';
   static const String settingsAccountSecurity = '/settings/account-security';
   static const String collectionStats = '/settings/collection-stats';
+  static const String moderatorReview = '/admin/moderation';
 
   // Legal routes
   static const String termsOfService = '/legal/terms';
@@ -185,6 +186,7 @@ class Routes {
     settingsNotifications,
     settingsAccountSecurity,
     collectionStats,
+    moderatorReview,
     faq,
   };
 
@@ -285,6 +287,7 @@ class Routes {
     settingsNotifications,
     settingsAccountSecurity,
     collectionStats,
+    moderatorReview,
 
     // Legal
     termsOfService,

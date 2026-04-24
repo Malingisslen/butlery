@@ -22233,6 +22233,102 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{name} började laga {recipe}'**
   String activityStartedCooking(String name, String recipe);
+
+  /// BUT-417: admin-only moderator review screen title.
+  ///
+  /// In sv, this message translates to:
+  /// **'Granska rapporter'**
+  String get moderatorReviewTitle;
+
+  /// BUT-417: shown to non-admins who reach the moderator screen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte behörighet att se den här sidan.'**
+  String get moderatorNotAuthorized;
+
+  /// BUT-417: empty state on moderator review screen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga öppna rapporter just nu.'**
+  String get moderatorNoOpenReports;
+
+  /// BUT-417: label prefix for the report reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anledning'**
+  String get moderatorReasonLabel;
+
+  /// BUT-417: label prefix for the reporter's user id.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapporterat av'**
+  String get moderatorReporterLabel;
+
+  /// BUT-417: button that advances report status to the next state.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nästa steg'**
+  String get moderatorActionAdvance;
+
+  /// BUT-417: button that closes a report without further action.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng rapport'**
+  String get moderatorActionClose;
+
+  /// BUT-417: button that deletes the reported target content.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort innehåll'**
+  String get moderatorActionDelete;
+
+  /// BUT-417: confirmation dialog title before admin deletes content.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort innehållet?'**
+  String get moderatorDeleteConfirmTitle;
+
+  /// BUT-417: confirmation dialog body before admin deletes content.
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta tar bort det rapporterade innehållet permanent. Åtgärden kan inte ångras från appen.'**
+  String get moderatorDeleteConfirmBody;
+
+  /// BUT-556: section heading in ToS + settings for the appeal process.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaga en borttagning'**
+  String get appealProcessTitle;
+
+  /// BUT-556: body text for the appeal process.
+  ///
+  /// In sv, this message translates to:
+  /// **'Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till appeals@butlery.app. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.'**
+  String get appealProcessBody;
+
+  /// BUT-556: settings tile label that opens the appeal mailto.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaga en borttagning'**
+  String get appealEmailLinkLabel;
+
+  /// BUT-556: mailto subject prefill for appeal emails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan: borttaget innehåll'**
+  String get appealEmailSubject;
+
+  /// BUT-556: mailto body prefill template.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hej Butlery,\n\nJag vill överklaga borttagningen av följande innehåll:\n- Innehållstyp (recept/kommentar/meddelande):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nAnledning till överklagan:\n\nTack.'**
+  String get appealEmailBodyTemplate;
+
+  /// BUT-556: snackbar when mailto launch fails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.app.'**
+  String get appealEmailLaunchFailed;
 }
 
 class _AppLocalizationsDelegate

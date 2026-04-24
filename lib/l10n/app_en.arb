@@ -8909,5 +8909,69 @@
       "name": {"type": "String", "example": "Erik"},
       "recipe": {"type": "String", "example": "chicken stew"}
     }
+  },
+  "moderatorReviewTitle": "Review reports",
+  "@moderatorReviewTitle": {
+    "description": "BUT-417: admin-only moderator review screen title."
+  },
+  "moderatorNotAuthorized": "You are not authorised to view this page.",
+  "@moderatorNotAuthorized": {
+    "description": "BUT-417: shown to non-admins who reach the moderator screen."
+  },
+  "moderatorNoOpenReports": "No open reports right now.",
+  "@moderatorNoOpenReports": {
+    "description": "BUT-417: empty state on moderator review screen."
+  },
+  "moderatorReasonLabel": "Reason",
+  "@moderatorReasonLabel": {
+    "description": "BUT-417: label prefix for the report reason."
+  },
+  "moderatorReporterLabel": "Reported by",
+  "@moderatorReporterLabel": {
+    "description": "BUT-417: label prefix for the reporter's user id."
+  },
+  "moderatorActionAdvance": "Advance",
+  "@moderatorActionAdvance": {
+    "description": "BUT-417: button that advances report status to the next state."
+  },
+  "moderatorActionClose": "Close report",
+  "@moderatorActionClose": {
+    "description": "BUT-417: button that closes a report without further action."
+  },
+  "moderatorActionDelete": "Delete content",
+  "@moderatorActionDelete": {
+    "description": "BUT-417: button that deletes the reported target content."
+  },
+  "moderatorDeleteConfirmTitle": "Delete this content?",
+  "@moderatorDeleteConfirmTitle": {
+    "description": "BUT-417: confirmation dialog title before admin deletes content."
+  },
+  "moderatorDeleteConfirmBody": "This permanently removes the reported content. The action cannot be undone from the app.",
+  "@moderatorDeleteConfirmBody": {
+    "description": "BUT-417: confirmation dialog body before admin deletes content."
+  },
+  "appealProcessTitle": "Appeal a removal",
+  "@appealProcessTitle": {
+    "description": "BUT-556: section heading in ToS + settings for the appeal process."
+  },
+  "appealProcessBody": "If your content was removed and you believe the decision was incorrect, you can appeal by emailing appeals@butlery.app. Include your username, the content type (recipe, comment, message) and a brief description. We respond within 14 days.",
+  "@appealProcessBody": {
+    "description": "BUT-556: body text for the appeal process."
+  },
+  "appealEmailLinkLabel": "Appeal a removal",
+  "@appealEmailLinkLabel": {
+    "description": "BUT-556: settings tile label that opens the appeal mailto."
+  },
+  "appealEmailSubject": "Appeal: removed content",
+  "@appealEmailSubject": {
+    "description": "BUT-556: mailto subject prefill for appeal emails."
+  },
+  "appealEmailBodyTemplate": "Hello Butlery,\n\nI would like to appeal the removal of the following content:\n- Content type (recipe/comment/message):\n- Approximate date:\n- My username:\n\nReason for the appeal:\n\nThank you.",
+  "@appealEmailBodyTemplate": {
+    "description": "BUT-556: mailto body prefill template."
+  },
+  "appealEmailLaunchFailed": "Could not open the email app. Please email appeals@butlery.app manually.",
+  "@appealEmailLaunchFailed": {
+    "description": "BUT-556: snackbar when mailto launch fails."
   }
 }

@@ -1,22 +1,29 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 
-/// Service for submitting and managing content reports.
+/// Service for submitting and managing content reports, including the
+/// admin-gated moderation workflow.
 class ReportService extends BaseService {
   @override
   String get serviceName => 'ReportService';
 
   final FirebaseReportRepository _reportRepository;
   final auth.AuthRepository _authRepository;
+  final FirestoreRepository _firestore;
 
   ReportService({
     required FirebaseReportRepository reportRepository,
     required auth.AuthRepository authRepository,
+    required FirestoreRepository firestoreRepository,
   })  : _reportRepository = reportRepository,
-        _authRepository = authRepository;
+        _authRepository = authRepository,
+        _firestore = firestoreRepository;
 
   /// Submit a content report.
   Future<bool> submitReport({
@@ -67,5 +74,140 @@ class ReportService extends BaseService {
           requiresAuth: true,
         ) ??
         [];
+  }
+
+  // ── Admin / moderation API ─────────────────────────────────────────────
+
+  /// Stream whether the current user is an admin. Listens to
+  /// `admins/{uid}` document existence — rules lock the collection so the
+  /// existence of the doc is the source of truth.
+  Stream<bool> watchIsAdmin() {
+    final userId = _authRepository.currentUserId;
+    if (userId == null) {
+      return Stream<bool>.value(false);
+    }
+    return _firestore
+        .collection('admins')
+        .doc(userId)
+        .snapshots()
+        .map((snap) => snap.exists)
+        .handleError((Object error) {
+      AppLogger.warning(
+          '[ReportService] watchIsAdmin error (treating as non-admin): $error');
+      return false;
+    });
+  }
+
+  /// Stream open reports (status != 'closed') ordered by newest first.
+  /// Admin-only by rules; non-admins will receive a permission-denied
+  /// on the underlying query.
+  Stream<List<ContentReport>> watchOpenReports() {
+    return _firestore
+        .collection(FirestoreCollections.reports)
+        .where('status', whereIn: ['new', 'in_review', 'actioned'])
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((doc) => ContentReport.fromFirestore(doc)).toList());
+  }
+
+  /// Advance a report's status one step forward. Returns `true` on success.
+  /// Rules enforce the forward-only state machine authoritatively; this
+  /// client-side helper just computes the next legal status.
+  Future<bool> advanceReportStatus(ContentReport report) async {
+    final next = switch (report.status) {
+      ReportStatus.newReport => ReportStatus.inReview,
+      ReportStatus.inReview => ReportStatus.actioned,
+      ReportStatus.actioned => ReportStatus.closed,
+      ReportStatus.closed => ReportStatus.closed,
+    };
+    if (next == report.status) return false;
+
+    return await executeServiceOperation(
+          () async {
+            await _firestore
+                .collection(FirestoreCollections.reports)
+                .doc(report.id)
+                .update({'status': next.wireName});
+            return true;
+          },
+          operationName: 'Advance report status',
+          requiresAuth: true,
+        ) ??
+        false;
+  }
+
+  /// Close a report outright (admin decision: not actionable / duplicate).
+  Future<bool> closeReport(ContentReport report) async {
+    if (report.status == ReportStatus.closed) return true;
+    return await executeServiceOperation(
+          () async {
+            await _firestore
+                .collection(FirestoreCollections.reports)
+                .doc(report.id)
+                .update({'status': ReportStatus.closed.wireName});
+            return true;
+          },
+          operationName: 'Close report',
+          requiresAuth: true,
+        ) ??
+        false;
+  }
+
+  /// Delete the content referenced by a report. Collection-specific paths
+  /// are derived from `contentType`. Returns `true` on success; admins must
+  /// be authenticated and the target's rule block must permit admin delete
+  /// (see `firestore.rules`).
+  Future<bool> deleteReportedContent(ContentReport report) async {
+    return await executeServiceOperation(
+          () async {
+            final ref = _resolveContentRef(report);
+            if (ref == null) {
+              AppLogger.warning(
+                  '[ReportService] Unknown contentType ${report.contentType}; cannot delete');
+              return false;
+            }
+            await ref.delete();
+            AppLogger.info(
+                '[ReportService] Admin deleted ${report.contentType}/${report.contentId} via report ${report.id}');
+            return true;
+          },
+          operationName: 'Delete reported content',
+          requiresAuth: true,
+        ) ??
+        false;
+  }
+
+  DocumentReference<Map<String, dynamic>>? _resolveContentRef(
+      ContentReport report) {
+    switch (report.contentType) {
+      case 'recipe':
+        // Recipes live under users/{ownerId}/recipes/{recipeId}.
+        final ownerId = report.contentOwnerId;
+        if (ownerId == null || ownerId.isEmpty) return null;
+        return _firestore
+            .collection(FirestoreCollections.users)
+            .doc(ownerId)
+            .collection(FirestoreCollections.userRecipes)
+            .doc(report.contentId);
+      case 'comment':
+        return _firestore
+            .collection(FirestoreCollections.recipeComments)
+            .doc(report.contentId);
+      case 'message':
+        return _firestore
+            .collection(FirestoreCollections.messages)
+            .doc(report.contentId);
+      case 'rating':
+        return _firestore
+            .collection(FirestoreCollections.recipeRatings)
+            .doc(report.contentId);
+      case 'cook_snap':
+        return _firestore
+            .collection(FirestoreCollections.cookSnaps)
+            .doc(report.contentId);
+      default:
+        return null;
+    }
   }
 }

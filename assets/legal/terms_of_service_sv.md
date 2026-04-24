@@ -48,6 +48,10 @@ Du får inte publicera innehåll som:
 
 Vi förbehåller oss rätten att stänga av eller avsluta ditt konto om du bryter mot dessa villkor. Du kan när som helst radera ditt konto via appens inställningar.
 
+6.1 Överklaga en borttagning
+
+Om vi tar bort innehåll du har publicerat och du anser att beslutet är felaktigt kan du överklaga genom att mejla appeals@butlery.app. Inkludera ditt användarnamn, vilken typ av innehåll (recept, kommentar, meddelande) och en kort beskrivning. Vi behandlar överklaganden inom 14 dagar och återkommer med ett motiverat beslut. Du hittar samma länk under Inställningar → Överklaga en borttagning.
+
 7. ANSVARSBEGRÄNSNING
 
 Tjänsten tillhandahålls "i befintligt skick" utan garantier av något slag. Vi ansvarar inte för:

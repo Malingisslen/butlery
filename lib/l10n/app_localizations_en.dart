@@ -12973,4 +12973,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String activityStartedCooking(String name, String recipe) {
     return '$name started cooking $recipe';
   }
+
+  @override
+  String get moderatorReviewTitle => 'Review reports';
+
+  @override
+  String get moderatorNotAuthorized =>
+      'You are not authorised to view this page.';
+
+  @override
+  String get moderatorNoOpenReports => 'No open reports right now.';
+
+  @override
+  String get moderatorReasonLabel => 'Reason';
+
+  @override
+  String get moderatorReporterLabel => 'Reported by';
+
+  @override
+  String get moderatorActionAdvance => 'Advance';
+
+  @override
+  String get moderatorActionClose => 'Close report';
+
+  @override
+  String get moderatorActionDelete => 'Delete content';
+
+  @override
+  String get moderatorDeleteConfirmTitle => 'Delete this content?';
+
+  @override
+  String get moderatorDeleteConfirmBody =>
+      'This permanently removes the reported content. The action cannot be undone from the app.';
+
+  @override
+  String get appealProcessTitle => 'Appeal a removal';
+
+  @override
+  String get appealProcessBody =>
+      'If your content was removed and you believe the decision was incorrect, you can appeal by emailing appeals@butlery.app. Include your username, the content type (recipe, comment, message) and a brief description. We respond within 14 days.';
+
+  @override
+  String get appealEmailLinkLabel => 'Appeal a removal';
+
+  @override
+  String get appealEmailSubject => 'Appeal: removed content';
+
+  @override
+  String get appealEmailBodyTemplate =>
+      'Hello Butlery,\n\nI would like to appeal the removal of the following content:\n- Content type (recipe/comment/message):\n- Approximate date:\n- My username:\n\nReason for the appeal:\n\nThank you.';
+
+  @override
+  String get appealEmailLaunchFailed =>
+      'Could not open the email app. Please email appeals@butlery.app manually.';
 }

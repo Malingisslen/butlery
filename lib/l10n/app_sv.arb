@@ -8909,5 +8909,69 @@
       "name": {"type": "String", "example": "Erik"},
       "recipe": {"type": "String", "example": "kycklinggryta"}
     }
+  },
+  "moderatorReviewTitle": "Granska rapporter",
+  "@moderatorReviewTitle": {
+    "description": "BUT-417: admin-only moderator review screen title."
+  },
+  "moderatorNotAuthorized": "Du har inte behörighet att se den här sidan.",
+  "@moderatorNotAuthorized": {
+    "description": "BUT-417: shown to non-admins who reach the moderator screen."
+  },
+  "moderatorNoOpenReports": "Inga öppna rapporter just nu.",
+  "@moderatorNoOpenReports": {
+    "description": "BUT-417: empty state on moderator review screen."
+  },
+  "moderatorReasonLabel": "Anledning",
+  "@moderatorReasonLabel": {
+    "description": "BUT-417: label prefix for the report reason."
+  },
+  "moderatorReporterLabel": "Rapporterat av",
+  "@moderatorReporterLabel": {
+    "description": "BUT-417: label prefix for the reporter's user id."
+  },
+  "moderatorActionAdvance": "Nästa steg",
+  "@moderatorActionAdvance": {
+    "description": "BUT-417: button that advances report status to the next state."
+  },
+  "moderatorActionClose": "Stäng rapport",
+  "@moderatorActionClose": {
+    "description": "BUT-417: button that closes a report without further action."
+  },
+  "moderatorActionDelete": "Ta bort innehåll",
+  "@moderatorActionDelete": {
+    "description": "BUT-417: button that deletes the reported target content."
+  },
+  "moderatorDeleteConfirmTitle": "Ta bort innehållet?",
+  "@moderatorDeleteConfirmTitle": {
+    "description": "BUT-417: confirmation dialog title before admin deletes content."
+  },
+  "moderatorDeleteConfirmBody": "Detta tar bort det rapporterade innehållet permanent. Åtgärden kan inte ångras från appen.",
+  "@moderatorDeleteConfirmBody": {
+    "description": "BUT-417: confirmation dialog body before admin deletes content."
+  },
+  "appealProcessTitle": "Överklaga en borttagning",
+  "@appealProcessTitle": {
+    "description": "BUT-556: section heading in ToS + settings for the appeal process."
+  },
+  "appealProcessBody": "Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till appeals@butlery.app. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.",
+  "@appealProcessBody": {
+    "description": "BUT-556: body text for the appeal process."
+  },
+  "appealEmailLinkLabel": "Överklaga en borttagning",
+  "@appealEmailLinkLabel": {
+    "description": "BUT-556: settings tile label that opens the appeal mailto."
+  },
+  "appealEmailSubject": "Överklagan: borttaget innehåll",
+  "@appealEmailSubject": {
+    "description": "BUT-556: mailto subject prefill for appeal emails."
+  },
+  "appealEmailBodyTemplate": "Hej Butlery,\n\nJag vill överklaga borttagningen av följande innehåll:\n- Innehållstyp (recept/kommentar/meddelande):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nAnledning till överklagan:\n\nTack.",
+  "@appealEmailBodyTemplate": {
+    "description": "BUT-556: mailto body prefill template."
+  },
+  "appealEmailLaunchFailed": "Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.app.",
+  "@appealEmailLaunchFailed": {
+    "description": "BUT-556: snackbar when mailto launch fails."
   }
 }

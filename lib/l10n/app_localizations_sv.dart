@@ -13002,4 +13002,57 @@ class AppLocalizationsSv extends AppLocalizations {
   String activityStartedCooking(String name, String recipe) {
     return '$name började laga $recipe';
   }
+
+  @override
+  String get moderatorReviewTitle => 'Granska rapporter';
+
+  @override
+  String get moderatorNotAuthorized =>
+      'Du har inte behörighet att se den här sidan.';
+
+  @override
+  String get moderatorNoOpenReports => 'Inga öppna rapporter just nu.';
+
+  @override
+  String get moderatorReasonLabel => 'Anledning';
+
+  @override
+  String get moderatorReporterLabel => 'Rapporterat av';
+
+  @override
+  String get moderatorActionAdvance => 'Nästa steg';
+
+  @override
+  String get moderatorActionClose => 'Stäng rapport';
+
+  @override
+  String get moderatorActionDelete => 'Ta bort innehåll';
+
+  @override
+  String get moderatorDeleteConfirmTitle => 'Ta bort innehållet?';
+
+  @override
+  String get moderatorDeleteConfirmBody =>
+      'Detta tar bort det rapporterade innehållet permanent. Åtgärden kan inte ångras från appen.';
+
+  @override
+  String get appealProcessTitle => 'Överklaga en borttagning';
+
+  @override
+  String get appealProcessBody =>
+      'Om ditt innehåll har tagits bort och du anser att beslutet är felaktigt kan du överklaga genom att skicka ett mejl till appeals@butlery.app. Inkludera användarnamn, innehållstyp (recept, kommentar, meddelande) och en kort beskrivning. Vi svarar inom 14 dagar.';
+
+  @override
+  String get appealEmailLinkLabel => 'Överklaga en borttagning';
+
+  @override
+  String get appealEmailSubject => 'Överklagan: borttaget innehåll';
+
+  @override
+  String get appealEmailBodyTemplate =>
+      'Hej Butlery,\n\nJag vill överklaga borttagningen av följande innehåll:\n- Innehållstyp (recept/kommentar/meddelande):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nAnledning till överklagan:\n\nTack.';
+
+  @override
+  String get appealEmailLaunchFailed =>
+      'Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.app.';
 }

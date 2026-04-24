@@ -31,6 +31,7 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Settings views
 import 'package:butlery/views/settings/settings_hub_view.dart';
+import 'package:butlery/views/admin/moderator_review_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
@@ -310,6 +311,10 @@ class AppRouter {
 
         case Routes.collectionStats:
           return _buildRoute(const CollectionStatsView(), settings,
+              RouteAnimationType.slideFromRight);
+
+        case Routes.moderatorReview:
+          return _buildRoute(const ModeratorReviewView(), settings,
               RouteAnimationType.slideFromRight);
 
         case Routes.termsOfService:

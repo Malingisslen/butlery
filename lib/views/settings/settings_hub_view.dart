@@ -2,8 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsHubView extends StatelessWidget {
   const SettingsHubView({super.key});
@@ -11,6 +15,7 @@ class SettingsHubView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final reportService = ServiceLocator.get<ReportService>();
 
     return Scaffold(
       appBar: AppBar(
@@ -69,6 +74,25 @@ class SettingsHubView extends StatelessWidget {
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.termsOfService),
                 ),
+                _SettingsTile(
+                  icon: Icons.mail_outline,
+                  title: context.l10n.appealEmailLinkLabel,
+                  onTap: () => _launchAppealEmail(context),
+                ),
+                // Admin-only entry point. StreamBuilder on admins/{uid}
+                // existence — non-admins never see this tile.
+                StreamBuilder<bool>(
+                  stream: reportService.watchIsAdmin(),
+                  builder: (context, snap) {
+                    if (snap.data != true) return const SizedBox.shrink();
+                    return _SettingsTile(
+                      icon: Icons.shield_outlined,
+                      title: context.l10n.moderatorReviewTitle,
+                      onTap: () =>
+                          Navigator.pushNamed(context, Routes.moderatorReview),
+                    );
+                  },
+                ),
                 Padding(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   child: Text(
@@ -85,6 +109,32 @@ class SettingsHubView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _launchAppealEmail(BuildContext context) async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: 'appeals@butlery.app',
+      queryParameters: {
+        'subject': context.l10n.appealEmailSubject,
+        'body': context.l10n.appealEmailBodyTemplate,
+      },
+    );
+    try {
+      final launched = await launchUrl(uri);
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.appealEmailLaunchFailed)),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('[SettingsHub] Failed to launch appeal mailto', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.appealEmailLaunchFailed)),
+        );
+      }
+    }
   }
 }
 

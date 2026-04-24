@@ -1,0 +1,76 @@
+import 'dart:async';
+
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
+
+/// ViewModel powering the admin-only moderator review screen.
+///
+/// Keeps the Firestore listener lifecycle tied to view lifetime: subscribes
+/// in [startListening] and cancels in [dispose]. The underlying stream is
+/// filtered to open reports (status != 'closed').
+class ModeratorReviewViewModel extends BaseViewModel {
+  final ReportService _reportService;
+
+  StreamSubscription<List<ContentReport>>? _reportsSub;
+  List<ContentReport> _reports = const [];
+  bool _hasStarted = false;
+
+  ModeratorReviewViewModel({ReportService? reportService})
+      : _reportService = reportService ?? ServiceLocator.get<ReportService>();
+
+  List<ContentReport> get reports => _reports;
+
+  void startListening() {
+    if (_hasStarted) return;
+    _hasStarted = true;
+    setLoading(true);
+    _reportsSub = _reportService.watchOpenReports().listen(
+      (list) {
+        if (isDisposed) return;
+        _reports = list;
+        setLoading(false);
+        notifyListeners();
+      },
+      onError: (Object err) {
+        if (isDisposed) return;
+        setError(err.toString());
+      },
+    );
+  }
+
+  Future<void> advance(ContentReport report) async {
+    await executeAsyncVoid(
+      () async {
+        await _reportService.advanceReportStatus(report);
+      },
+      errorPrefix: 'advanceReportStatus',
+    );
+  }
+
+  Future<void> close(ContentReport report) async {
+    await executeAsyncVoid(
+      () async {
+        await _reportService.closeReport(report);
+      },
+      errorPrefix: 'closeReport',
+    );
+  }
+
+  Future<void> deleteContent(ContentReport report) async {
+    await executeAsyncVoid(
+      () async {
+        await _reportService.deleteReportedContent(report);
+      },
+      errorPrefix: 'deleteReportedContent',
+    );
+  }
+
+  @override
+  void dispose() {
+    _reportsSub?.cancel();
+    _reportsSub = null;
+    super.dispose();
+  }
+}

@@ -47,6 +47,15 @@ service cloud.firestore {
     function isAuthenticated() {
       return request.auth != null;
     }
+
+    // Check if the authenticated user is a moderator/admin.
+    // Admin UIDs are stored as documents in the `admins/{uid}` collection.
+    // The collection itself is write-locked (seeded server-side via Firebase
+    // Console / Admin SDK only).
+    function isAdmin() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
     
     // Check if user owns the resource
     function isOwner(userId) {
@@ -217,8 +226,13 @@ service cloud.firestore {
           );
 
         allow delete: if isOwner(userId);
+
+        // Moderation override: admins may remove user-owned recipes flagged
+        // via the reports workflow. Read is needed so the moderator view can
+        // fetch a preview before acting.
+        allow read, delete: if isAdmin();
       }
-      
+
       // User's unified shopping lists
       match /unified_shopping_lists/{listId} {
         allow read, write: if isOwner(userId);
@@ -852,6 +866,9 @@ service cloud.firestore {
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.authorId;
 
+      // Moderation override: admins may delete any reported comment.
+      allow delete: if isAdmin();
+
       // Comment likes — users can like/unlike comments
       match /likes/{userId} {
         allow read: if isAuthenticated();
@@ -932,6 +949,9 @@ service cloud.firestore {
 
       // Can delete your own messages
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.senderId;
+
+      // Moderation override: admins may delete any reported message.
+      allow delete: if isAdmin();
     }
     
     // ========================================
@@ -1097,6 +1117,9 @@ service cloud.firestore {
       // Can delete only your own ratings
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.userId;
+
+      // Moderation override: admins may delete any reported rating.
+      allow delete: if isAdmin();
     }
 
     // ========================================
@@ -1355,17 +1378,48 @@ service cloud.firestore {
     // ========================================
 
     match /reports/{reportId} {
-      // Users can only read their own reports
-      allow read: if isAuthenticated()
-        && resource.data.reporterId == request.auth.uid;
+      // Users can read their own reports; admins can read all reports.
+      allow read: if isAuthenticated() && (
+        resource.data.reporterId == request.auth.uid
+        || isAdmin()
+      );
 
       // Authenticated users can create reports (must be reporting as themselves)
+      // and the report must start in the 'new' state of the moderation machine.
       allow create: if isAuthenticated()
         && request.resource.data.reporterId == request.auth.uid
-        && hasRequiredFields(['reporterId', 'contentType', 'contentId', 'reason', 'createdAt']);
+        && request.resource.data.status == 'new'
+        && hasRequiredFields(['reporterId', 'contentType', 'contentId', 'reason', 'status', 'createdAt']);
 
-      // Users cannot update or delete reports
-      allow update, delete: if false;
+      // Admin-only, forward-only state machine:
+      //   new -> in_review -> actioned -> closed
+      // Reject backward transitions and mutations of immutable identity fields.
+      allow update: if isAdmin()
+        && cannotModify(['reporterId', 'contentType', 'contentId', 'createdAt'])
+        && (
+          (resource.data.status == 'new'
+             && request.resource.data.status in ['new', 'in_review'])
+          || (resource.data.status == 'in_review'
+             && request.resource.data.status in ['in_review', 'actioned'])
+          || (resource.data.status == 'actioned'
+             && request.resource.data.status in ['actioned', 'closed'])
+          || (resource.data.status == 'closed'
+             && request.resource.data.status == 'closed')
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    // ========================================
+    // ADMINS - Moderator allow-list (seeded server-side only)
+    // ========================================
+    // Documents here simply mark a UID as an admin. The collection is
+    // write-locked at the rules layer; entries are seeded via Firebase
+    // Console / Admin SDK. Mirror-reads are restricted to admins themselves
+    // to avoid leaking the moderator list to regular users.
+    match /admins/{uid} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // ========================================

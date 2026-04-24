@@ -334,6 +334,7 @@ class SocialModule implements DIModule {
         () => ReportService(
           reportRepository: container<FirebaseReportRepository>(),
           authRepository: container<AuthRepository>(),
+          firestoreRepository: container<FirestoreRepository>(),
         ),
       );
 

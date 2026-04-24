@@ -14,6 +14,7 @@
     "export-ingredients": "ts-node src/admin/export-ingredients.ts",
     "seed-tag-configs": "ts-node src/admin/seed-tag-configs.ts",
     "test:parity": "ts-node src/__tests__/normalization-parity.test.ts",
+    "test:rules": "ts-node src/__tests__/reports-rules.test.ts",
     "reset-user-data": "ts-node src/admin/reset-user-data.ts",
     "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run"
   },
@@ -27,6 +28,7 @@
     "firebase-functions": "7.2.5"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "4.0.1",
     "@types/node": "^22",
     "ts-node": "10.9.2",
     "typescript": "5.9.3"
