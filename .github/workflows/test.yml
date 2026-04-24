@@ -191,7 +191,7 @@ jobs:
       # and inspect line-by-line coverage from any run.
       - name: Upload coverage artifact
         if: always() && matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-lcov
           path: coverage/lcov_filtered.info
@@ -200,7 +200,7 @@ jobs:
       # Upload test results if tests fail
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-test-results-${{ matrix.os }}
           path: test_results/
@@ -285,7 +285,7 @@ jobs:
       # Upload test results if tests fail
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-test-results
           path: test_results/
