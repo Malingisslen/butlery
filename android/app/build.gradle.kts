@@ -46,9 +46,7 @@ android {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
-                // Resolve storeFile relative to the android/ root, not the
-                // app module, so the JKS can live alongside key.properties.
-                storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
+                storeFile = file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
             }
         }

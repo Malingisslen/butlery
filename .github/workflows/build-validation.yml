@@ -157,8 +157,8 @@ jobs:
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       run: |
-        echo "$KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
-        test -s android/upload-keystore.jks || { echo "::error::KEYSTORE_BASE64 missing or empty — add it as a repo secret (BUT-485)"; exit 1; }
+        echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+        test -s android/app/upload-keystore.jks || { echo "::error::KEYSTORE_BASE64 missing or empty — add it as a repo secret (BUT-485)"; exit 1; }
         : "${KEYSTORE_PASSWORD:?::error::KEYSTORE_PASSWORD secret missing}"
         : "${KEY_PASSWORD:?::error::KEY_PASSWORD secret missing}"
         : "${KEY_ALIAS:?::error::KEY_ALIAS secret missing}"
