@@ -179,7 +179,7 @@ jobs:
       # Upload coverage to Codecov — this is the real gate (see codecov.yml).
       - name: Upload coverage to Codecov
         if: success() && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v6
         with:
           files: coverage/lcov_filtered.info
           flags: unittests
