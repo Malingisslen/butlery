@@ -34,7 +34,9 @@
       "Bash(touch .claude/state/simplify-done.marker)",
       "mcp__51df735d-d0bd-40c0-89b8-d55c22df080e__list_issues",
       "Bash(touch -d \"+10 seconds\" .claude/state/simplify-done.marker)",
-      "Read(//c/Butlery/butlery/**)"
+      "Read(//c/Butlery/butlery/**)",
+      "mcp__linear__delete_comment",
+      "Bash(touch C:/Butlery/butlery/.claude/state/simplify-done.marker)"
     ]
   }
 }

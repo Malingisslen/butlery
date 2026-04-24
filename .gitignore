@@ -78,6 +78,7 @@ test/**/results/*.log
 .claude/cache/**
 .claude/hooks/sessions/
 .claude/linear-tracker.json
+.claude/scheduled_tasks.lock
 .claude/state/
 CLAUDE.local.md
 nul

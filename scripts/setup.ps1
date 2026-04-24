@@ -38,15 +38,15 @@ if ($flutterVersion -ne $REQUIRED_FLUTTER) {
 }
 
 # Environment file setup
-if (-not (Test-Path ".env.development")) {
+if (-not (Test-Path ".env")) {
     if (Test-Path ".env.example") {
-        Copy-Item ".env.example" ".env.development"
-        Write-Host "Created .env.development from .env.example" -ForegroundColor Green
+        Copy-Item ".env.example" ".env"
+        Write-Host "Created .env from .env.example - fill in real credentials before running the app" -ForegroundColor Green
     } else {
-        Write-Host "WARNING: No .env.example found, skipping .env.development creation" -ForegroundColor Yellow
+        Write-Host "WARNING: No .env.example found, skipping .env creation" -ForegroundColor Yellow
     }
 } else {
-    Write-Host ".env.development already exists"
+    Write-Host ".env already exists"
 }
 
 # Install Flutter dependencies

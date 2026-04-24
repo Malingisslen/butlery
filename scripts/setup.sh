@@ -35,15 +35,15 @@ else
 fi
 
 # Environment file setup
-if [ ! -f .env.development ]; then
+if [ ! -f .env ]; then
     if [ -f .env.example ]; then
-        cp .env.example .env.development
-        echo "Created .env.development from .env.example"
+        cp .env.example .env
+        echo "Created .env from .env.example — fill in real credentials before running the app"
     else
-        echo "WARNING: No .env.example found, skipping .env.development creation"
+        echo "WARNING: No .env.example found, skipping .env creation"
     fi
 else
-    echo ".env.development already exists"
+    echo ".env already exists"
 fi
 
 # Install Flutter dependencies
