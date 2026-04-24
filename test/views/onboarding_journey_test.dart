@@ -50,8 +50,8 @@ class _MockImportEventsTracker extends Mock implements ImportEventsTracker {}
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 
 /// Extracted onboarding body that watches [OnboardingViewModel] directly.
-/// Mirrors the real onboarding wizard (welcome → allergens → dietary →
-/// import) without pulling in the full production view tree.
+/// Mirrors the real onboarding wizard (age-gate → welcome → allergens →
+/// dietary → import) without pulling in the full production view tree.
 class _OnboardingBody extends StatelessWidget {
   const _OnboardingBody({required this.onCompleted});
 
@@ -71,7 +71,7 @@ class _OnboardingBody extends StatelessWidget {
               key: const Key('page_indicator'),
               padding: const EdgeInsets.all(8),
               color: cs.surfaceContainerHighest,
-              child: Text('Sida ${viewModel.currentPage + 1} / 4'),
+              child: Text('Sida ${viewModel.currentPage + 1} / 5'),
             ),
             Expanded(child: _buildPage(context, viewModel)),
             // Sticky footer with navigation.
@@ -124,11 +124,23 @@ class _OnboardingBody extends StatelessWidget {
   Widget _buildPage(BuildContext context, OnboardingViewModel viewModel) {
     switch (viewModel.currentPage) {
       case 0:
+        // Age-gate stand-in — a button that drops in an adult birth year
+        // directly. Keeps the journey focused on the existing allergen/
+        // dietary/import flow without wrapping a real dropdown.
+        return Center(
+          key: const Key('page_age_gate'),
+          child: ElevatedButton(
+            key: const Key('age_gate_set_adult'),
+            onPressed: () => viewModel.setBirthYear(DateTime.now().year - 25),
+            child: const Text('Välj vuxet födelseår'),
+          ),
+        );
+      case 1:
         return const Center(
           key: Key('page_welcome'),
           child: Text('Välkommen till Butlery'),
         );
-      case 1:
+      case 2:
         return SingleChildScrollView(
           key: const Key('page_allergens'),
           padding: const EdgeInsets.all(16),
@@ -145,7 +157,7 @@ class _OnboardingBody extends StatelessWidget {
             }).toList(),
           ),
         );
-      case 2:
+      case 3:
         return SingleChildScrollView(
           key: const Key('page_dietary'),
           padding: const EdgeInsets.all(16),
@@ -162,7 +174,7 @@ class _OnboardingBody extends StatelessWidget {
             }).toList(),
           ),
         );
-      case 3:
+      case 4:
       default:
         return const Center(
           key: Key('page_import'),
@@ -241,6 +253,7 @@ void main() {
     when(() => mockUserService.completeOnboardingWithPreferences(
           any(),
           onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+          birthYear: any(named: 'birthYear'),
         )).thenAnswer((_) async {});
 
     // Starter-recipe seeding runs fire-and-forget; stub to succeed silently
@@ -278,24 +291,34 @@ void main() {
   });
 
   group('Onboarding journey', () {
-    testWidgets('welcome → allergen tap → dietary tap → complete saves prefs',
+    testWidgets(
+        'age-gate → welcome → allergen tap → dietary tap → complete saves prefs',
         (tester) async {
       await tester.pumpWidget(_testApp(
         viewModel: viewModel,
         onCompleted: () => onboardingCompleted = true,
       ));
 
-      // Page 0 — welcome is visible, no back button yet.
-      expect(find.byKey(const Key('page_welcome')), findsOneWidget);
+      // Page 0 — age gate is first.
+      expect(find.byKey(const Key('page_age_gate')), findsOneWidget);
       expect(find.byKey(const Key('back')), findsNothing);
+      expect(find.text('Sida 1 / 5'), findsOneWidget);
+
+      // Pick an adult year, then advance to the welcome page.
+      await tester.tap(find.byKey(const Key('age_gate_set_adult')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('next')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('page_welcome')), findsOneWidget);
       expect(find.text('Välkommen till Butlery'), findsOneWidget);
-      expect(find.text('Sida 1 / 4'), findsOneWidget);
+      expect(find.text('Sida 2 / 5'), findsOneWidget);
 
       // Advance to allergens.
       await tester.tap(find.byKey(const Key('next')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('page_allergens')), findsOneWidget);
-      expect(find.text('Sida 2 / 4'), findsOneWidget);
+      expect(find.text('Sida 3 / 5'), findsOneWidget);
 
       // Toggle gluten — chip becomes selected, VM tracks it.
       await tester.tap(find.byKey(const Key('allergen_gluten')));
@@ -337,6 +360,7 @@ void main() {
         () => mockUserService.completeOnboardingWithPreferences(
           captureAny(),
           onboardingSkippedAt: captureAny(named: 'onboardingSkippedAt'),
+          birthYear: any(named: 'birthYear'),
         ),
       ).captured;
       final prefs = captured[0] as UserAllergenPreferences?;
@@ -364,10 +388,14 @@ void main() {
         onCompleted: () => onboardingCompleted = true,
       ));
 
-      // Move off welcome so we're on the allergen page.
-      await tester.tap(find.byKey(const Key('next')));
+      // Satisfy the age gate, then advance past welcome to allergens.
+      await tester.tap(find.byKey(const Key('age_gate_set_adult')));
       await tester.pumpAndSettle();
-      expect(viewModel.currentPage, 1);
+      await tester.tap(find.byKey(const Key('next'))); // age-gate → welcome
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('next'))); // welcome → allergens
+      await tester.pumpAndSettle();
+      expect(viewModel.currentPage, 2);
 
       // Skip without selecting anything.
       await tester.tap(find.byKey(const Key('skip')));
@@ -380,6 +408,7 @@ void main() {
         () => mockUserService.completeOnboardingWithPreferences(
           captureAny(),
           onboardingSkippedAt: captureAny(named: 'onboardingSkippedAt'),
+          birthYear: any(named: 'birthYear'),
         ),
       ).captured;
       expect(captured[0], isNull,
@@ -389,7 +418,7 @@ void main() {
 
       verify(() => mockAnalyticsService.logEvent(
             name: 'onboarding_skipped',
-            parameters: {'skipped_at_page': 1},
+            parameters: {'skipped_at_page': 2},
           )).called(1);
     });
   });

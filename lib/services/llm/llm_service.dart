@@ -16,6 +16,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/llm/llm_models.dart';
+import 'package:butlery/services/llm/pii_scrubber.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/services/account/consent_service.dart';
@@ -279,7 +280,12 @@ class LlmService extends BaseService {
           timeout: const Duration(seconds: 60),
         ),
       );
-      final result = await callable.call<Map<String, dynamic>>(requestJson);
+      // Defence-in-depth: scrub PII on the client before the payload hits the
+      // wire so Cloud Logging never ingests raw PII. The server-side scrubber
+      // (functions/src/llm/pii-scrubber.ts) still runs as the second line of
+      // defence; keep the Dart patterns in sync with the TS ones.
+      final scrubbedJson = scrubPayload(requestJson);
+      final result = await callable.call<Map<String, dynamic>>(scrubbedJson);
       final response = parseResponse(result.data);
 
       final success = _isSuccessful(response);

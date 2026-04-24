@@ -8059,6 +8059,33 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingComplete => 'Slutfor';
 
   @override
+  String get onboardingAgeGateTitle => 'Hur gammal ar du?';
+
+  @override
+  String get onboardingAgeGateSubtitle =>
+      'Vi behover veta ditt fodelsear for att folja svenska regler for sociala appar (GDPR Art 8).';
+
+  @override
+  String get onboardingAgeGateBirthYearLabel => 'Fodelsear';
+
+  @override
+  String get onboardingAgeGatePrivacyNote =>
+      'Vi lagrar bara aret, inte hela datumet.';
+
+  @override
+  String get onboardingAgeGateContinue => 'Fortsatt';
+
+  @override
+  String get onboardingAgeGateTooYoungTitle => 'Butlery ar for 15 ar och uppat';
+
+  @override
+  String get onboardingAgeGateTooYoungBody =>
+      'Enligt svensk dataskyddslagstiftning (GDPR Art 8) kravs foraldrasamtycke for att anvanda sociala funktioner under 15 ar. Kom garna tillbaka nar du fyllt 15.';
+
+  @override
+  String get onboardingAgeGateSignOut => 'Logga ut';
+
+  @override
   String get onboardingWelcomeTitle => 'Valkommen till Butlery!';
 
   @override

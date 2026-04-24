@@ -577,11 +577,13 @@ class UserService extends ChangeNotifier
   }
 
   /// Complete onboarding with preferences in a single atomic write.
-  /// When [onboardingSkippedAt] is provided, it records that the user skipped
-  /// onboarding rather than completing all steps.
+  /// [onboardingSkippedAt] records a skip; [birthYear] satisfies the GDPR
+  /// Art 8 age gate and must be pre-validated by the caller (model constructor
+  /// re-throws ArgumentError outside [1900, currentYear-13]).
   Future<void> completeOnboardingWithPreferences(
     UserAllergenPreferences? preferences, {
     DateTime? onboardingSkippedAt,
+    int? birthYear,
   }) async {
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) {
@@ -593,6 +595,7 @@ class UserService extends ChangeNotifier
           preferences ?? _currentUserProfile!.allergenPreferences,
       hasCompletedOnboarding: true,
       onboardingSkippedAt: onboardingSkippedAt,
+      birthYear: birthYear ?? _currentUserProfile!.birthYear,
     );
     await _repository.saveProfile(updated);
 

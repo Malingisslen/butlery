@@ -9,9 +9,14 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 
 class OnboardingViewModel extends ChangeNotifier {
+  // Swedish parental-consent threshold for data processing on social apps
+  // (GDPR Art 8). Under this, sign-up is blocked.
+  static const int minAgeYears = 15;
+
   int _currentPage = 0;
   final Set<String> _selectedAllergens = {};
   final Set<String> _selectedDietaryPrefs = {};
+  int? _selectedBirthYear;
   bool _isCompleting = false;
   bool _started = false;
   late final AnalyticsService? _analytics =
@@ -21,10 +26,31 @@ class OnboardingViewModel extends ChangeNotifier {
   Set<String> get selectedAllergens => Set.unmodifiable(_selectedAllergens);
   Set<String> get selectedDietaryPrefs =>
       Set.unmodifiable(_selectedDietaryPrefs);
+  int? get selectedBirthYear => _selectedBirthYear;
   bool get isCompleting => _isCompleting;
-  static const int _lastPageIndex = 3;
+  // Page order: age-gate (0), welcome (1), allergen (2), dietary (3), import (4)
+  static const int _lastPageIndex = 4;
   bool get isLastPage => _currentPage == _lastPageIndex;
   bool get isFirstPage => _currentPage == 0;
+  bool get isAgeGatePage => _currentPage == 0;
+
+  /// Computed age from selected birth year (using Jan 1 cutoff since we only
+  /// have year granularity — this is conservative: we treat people as their
+  /// lowest possible age for that year).
+  int? get computedAge {
+    if (_selectedBirthYear == null) return null;
+    return DateTime.now().year - _selectedBirthYear!;
+  }
+
+  bool get isAgeGatePassed {
+    final age = computedAge;
+    return age != null && age >= minAgeYears;
+  }
+
+  void setBirthYear(int? year) {
+    _selectedBirthYear = year;
+    notifyListeners();
+  }
 
   void setPage(int page) {
     if (!_started) {
@@ -98,6 +124,7 @@ class OnboardingViewModel extends ChangeNotifier {
       await userService.completeOnboardingWithPreferences(
         prefs,
         onboardingSkippedAt: isSkip ? DateTime.now() : null,
+        birthYear: _selectedBirthYear,
       );
 
       // Seed starter recipes for new users (fire-and-forget, never blocks onboarding)

@@ -354,9 +354,33 @@ service cloud.firestore {
           && rateLimitWrite('conversation_membership', 5);
       }
 
-      // User settings subcollection — owner-only
+      // User settings subcollection — owner-only.
+      // The `preferences` doc carries `birthYear` (GDPR Art 8 age floor).
+      // The 15-year Swedish threshold is enforced in the sign-up flow; rules
+      // enforce a hard floor of 13 so admins can backfill edge cases.
       match /settings/{settingId} {
-        allow read, write: if isOwner(userId);
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && (settingId != 'preferences' || (
+            'birthYear' in request.resource.data.keys()
+            && request.resource.data.birthYear is int
+            && request.resource.data.birthYear >= 1900
+            && request.resource.data.birthYear <= (request.time.year() - 13)
+          ));
+
+        allow update: if isOwner(userId)
+          && (
+            !('birthYear' in request.resource.data.keys())
+            || request.resource.data.birthYear == null
+            || (
+              request.resource.data.birthYear is int
+              && request.resource.data.birthYear >= 1900
+              && request.resource.data.birthYear <= (request.time.year() - 13)
+            )
+          );
+
+        allow delete: if isOwner(userId);
       }
 
       // User's pantry ("skafferi") — owner-only

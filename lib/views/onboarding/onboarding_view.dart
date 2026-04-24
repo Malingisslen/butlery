@@ -8,6 +8,8 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/views/onboarding/onboarding_age_gate_blocked_view.dart';
+import 'package:butlery/views/onboarding/onboarding_age_gate_page.dart';
 import 'package:butlery/views/onboarding/onboarding_welcome_page.dart';
 import 'package:butlery/views/onboarding/onboarding_allergen_page.dart';
 import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
@@ -34,6 +36,9 @@ class _OnboardingContent extends StatefulWidget {
 
 class _OnboardingContentState extends State<_OnboardingContent> {
   late final PageController _pageController;
+  // age-gate → welcome → allergen → dietary → import. Keep in sync with the
+  // PageView children list and the viewmodel's _lastPageIndex (pageCount-1).
+  static const int _pageCount = 5;
 
   @override
   void initState() {
@@ -51,6 +56,11 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
+
+    // Short-circuit before any Firestore write if the picked year is under 15.
+    if (viewModel.selectedBirthYear != null && !viewModel.isAgeGatePassed) {
+      return const OnboardingAgeGateBlockedView();
+    }
 
     return PopScope(
       canPop: false,
@@ -70,6 +80,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                       controller: _pageController,
                       onPageChanged: viewModel.setPage,
                       children: const [
+                        OnboardingAgeGatePage(),
                         OnboardingWelcomePage(),
                         OnboardingAllergenPage(),
                         OnboardingDietaryPage(),
@@ -99,17 +110,19 @@ class _OnboardingContentState extends State<_OnboardingContent> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          TextButton(
-            onPressed: viewModel.isCompleting
-                ? null
-                : () => _skipOnboarding(context, viewModel),
-            child: Text(
-              context.l10n.onboardingSkip,
-              style: AppTextStyles.labelLarge.copyWith(
-                color: cs.onSurfaceVariant,
+          // Age-gating is compliance, not an optional step — no skip.
+          if (!viewModel.isAgeGatePage)
+            TextButton(
+              onPressed: viewModel.isCompleting
+                  ? null
+                  : () => _skipOnboarding(context, viewModel),
+              child: Text(
+                context.l10n.onboardingSkip,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -127,7 +140,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
           // Dot indicators (square style)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (index) {
+            children: List.generate(_pageCount, (index) {
               final isActive = index == viewModel.currentPage;
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -186,7 +199,9 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                 child: SizedBox(
                   height: AppDimensions.buttonHeight,
                   child: ElevatedButton(
-                    onPressed: viewModel.isCompleting
+                    onPressed: viewModel.isCompleting ||
+                            (viewModel.isAgeGatePage &&
+                                viewModel.selectedBirthYear == null)
                         ? null
                         : () => _handleNext(context, viewModel),
                     style: ElevatedButton.styleFrom(

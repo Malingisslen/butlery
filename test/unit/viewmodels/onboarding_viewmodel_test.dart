@@ -67,6 +67,7 @@ void main() {
       when(() => mockUserService.completeOnboardingWithPreferences(
             any(),
             onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+            birthYear: any(named: 'birthYear'),
           )).thenAnswer((_) async {});
 
       when(() => mockAnalyticsService.logEvent(
@@ -102,6 +103,7 @@ void main() {
           () => mockUserService.completeOnboardingWithPreferences(
             captureAny(),
             onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+            birthYear: any(named: 'birthYear'),
           ),
         ).captured;
         final prefs = captured.first as UserAllergenPreferences;
@@ -117,6 +119,7 @@ void main() {
           () => mockUserService.completeOnboardingWithPreferences(
             null,
             onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+            birthYear: any(named: 'birthYear'),
           ),
         ).called(1);
       });
@@ -133,8 +136,7 @@ void main() {
       });
 
       test('fires onboarding_completed analytics on success', () async {
-        // Navigate to last page first
-        viewModel.setPage(3);
+        viewModel.setPage(4);
 
         await viewModel.completeOnboarding();
 

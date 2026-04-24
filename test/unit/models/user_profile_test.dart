@@ -742,5 +742,111 @@ void main() {
         expect(without.cuisineAffinities, isNull);
       });
     });
+
+    group('birthYear (GDPR Art 8 age gate)', () {
+      test('accepts a valid birth year that clears the hard 13-year floor', () {
+        final currentYear = DateTime.now().year;
+        final profile = UserProfile(
+          uid: 'age_ok',
+          displayName: 'Adult User',
+          email: 'adult@example.com',
+          joinedAt: testDate,
+          lastActiveAt: testDate,
+          birthYear: currentYear - 20,
+        );
+        expect(profile.birthYear, equals(currentYear - 20));
+      });
+
+      test('rejects a birth year younger than the 13-year hard floor', () {
+        final currentYear = DateTime.now().year;
+        expect(
+          () => UserProfile(
+            uid: 'too_young',
+            displayName: 'Kid',
+            email: 'k@example.com',
+            joinedAt: testDate,
+            lastActiveAt: testDate,
+            // Under 13 — must throw regardless of the 15-year business rule,
+            // because the model is the last line of defense.
+            birthYear: currentYear - 5,
+          ),
+          throwsArgumentError,
+        );
+      });
+
+      test('rejects pre-1900 birth years as obvious data-entry errors', () {
+        expect(
+          () => UserProfile(
+            uid: 'ancient',
+            displayName: 'Old',
+            email: 'o@example.com',
+            joinedAt: testDate,
+            lastActiveAt: testDate,
+            birthYear: 1850,
+          ),
+          throwsArgumentError,
+        );
+      });
+
+      test('round-trips through toJson/fromJson', () {
+        final currentYear = DateTime.now().year;
+        final profile = UserProfile(
+          uid: 'rt',
+          displayName: 'RT',
+          email: 'rt@example.com',
+          joinedAt: testDate,
+          lastActiveAt: testDate,
+          birthYear: currentYear - 25,
+        );
+        final decoded = UserProfile.fromJson(profile.toJson());
+        expect(decoded.birthYear, equals(profile.birthYear));
+      });
+
+      test('round-trips through toPrivateSettings + fromMap', () {
+        final currentYear = DateTime.now().year;
+        final profile = UserProfile(
+          uid: 'rt2',
+          displayName: 'RT2',
+          email: 'rt2@example.com',
+          joinedAt: testDate,
+          lastActiveAt: testDate,
+          birthYear: currentYear - 40,
+        );
+        // Merge public + private settings to reproduce how the repository
+        // fans a profile across its two storage documents.
+        final merged = <String, dynamic>{
+          ...profile.toFirestore(),
+          ...profile.toPrivateSettings(),
+        };
+        final decoded = UserProfile.fromMap(profile.uid, merged);
+        expect(decoded.birthYear, equals(profile.birthYear));
+      });
+
+      test('fromJson silently drops invalid birthYear values (defensive)', () {
+        final base = {
+          'uid': 'legacy',
+          'displayName': 'Legacy',
+          'email': 'l@example.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+        };
+        // Out-of-range values in persisted data should deserialize to null
+        // rather than throw — we want reads to be resilient to legacy data.
+        final underfloor = UserProfile.fromJson({...base, 'birthYear': 9999});
+        expect(underfloor.birthYear, isNull);
+
+        final garbage = UserProfile.fromJson({...base, 'birthYear': 'abc'});
+        expect(garbage.birthYear, isNull);
+      });
+
+      test('copyWith replaces birthYear but preserves other fields', () {
+        final currentYear = DateTime.now().year;
+        final original = testProfile.copyWith(birthYear: currentYear - 30);
+        final updated = original.copyWith(birthYear: currentYear - 40);
+        expect(updated.birthYear, equals(currentYear - 40));
+        expect(updated.uid, equals(original.uid));
+        expect(updated.displayName, equals(original.displayName));
+      });
+    });
   });
 }

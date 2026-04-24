@@ -1,0 +1,79 @@
+# Dependabot configuration for Butlery.
+# Keeps Flutter (pub), Cloud Functions (npm) and GitHub Actions up to date.
+# Weekly cadence keeps review load manageable for a solo dev.
+
+version: 2
+
+updates:
+  # Flutter / Dart dependencies (root pubspec.yaml)
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependency"
+      - "auto"
+    commit-message:
+      prefix: "deps"
+    groups:
+      firebase:
+        patterns:
+          - "firebase_*"
+          - "cloud_firestore*"
+      flutter-deps:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "firebase_*"
+          - "cloud_firestore*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Major bumps on Dart-SDK-gated packages (intl, rxdart, etc.) are
+    # coordinated manually — Dependabot spamming majors just creates noise.
+    # See BUT-562 for context.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+
+  # Cloud Functions (Node/TypeScript)
+  - package-ecosystem: "npm"
+    directory: "/functions"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependency"
+      - "auto"
+    commit-message:
+      prefix: "deps"
+    groups:
+      firebase-admin:
+        patterns:
+          - "firebase-*"
+          - "@firebase/*"
+          - "@google-cloud/*"
+      others:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "firebase-*"
+          - "@firebase/*"
+          - "@google-cloud/*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions used by workflows in .github/workflows/
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependency"
+      - "auto"
+    commit-message:
+      prefix: "deps"

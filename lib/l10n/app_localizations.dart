@@ -13947,6 +13947,54 @@ abstract class AppLocalizations {
   /// **'Slutfor'**
   String get onboardingComplete;
 
+  /// No description provided for @onboardingAgeGateTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur gammal ar du?'**
+  String get onboardingAgeGateTitle;
+
+  /// No description provided for @onboardingAgeGateSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi behover veta ditt fodelsear for att folja svenska regler for sociala appar (GDPR Art 8).'**
+  String get onboardingAgeGateSubtitle;
+
+  /// No description provided for @onboardingAgeGateBirthYearLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fodelsear'**
+  String get onboardingAgeGateBirthYearLabel;
+
+  /// No description provided for @onboardingAgeGatePrivacyNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi lagrar bara aret, inte hela datumet.'**
+  String get onboardingAgeGatePrivacyNote;
+
+  /// No description provided for @onboardingAgeGateContinue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsatt'**
+  String get onboardingAgeGateContinue;
+
+  /// No description provided for @onboardingAgeGateTooYoungTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery ar for 15 ar och uppat'**
+  String get onboardingAgeGateTooYoungTitle;
+
+  /// No description provided for @onboardingAgeGateTooYoungBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Enligt svensk dataskyddslagstiftning (GDPR Art 8) kravs foraldrasamtycke for att anvanda sociala funktioner under 15 ar. Kom garna tillbaka nar du fyllt 15.'**
+  String get onboardingAgeGateTooYoungBody;
+
+  /// No description provided for @onboardingAgeGateSignOut.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut'**
+  String get onboardingAgeGateSignOut;
+
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In sv, this message translates to:

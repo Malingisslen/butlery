@@ -1,0 +1,97 @@
+name: Dependency Audit
+
+# Scans pub and npm dependencies for known vulnerabilities.
+# Runs on PRs that touch lockfiles, weekly on Monday 05:00 UTC, and on demand.
+# Fails CI on HIGH or CRITICAL findings.
+
+on:
+  pull_request:
+    paths:
+      - "pubspec.lock"
+      - "pubspec.yaml"
+      - "functions/package.json"
+      - "functions/package-lock.json"
+      - ".github/workflows/dep-audit.yml"
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  FLUTTER_VERSION: "3.35.1"
+
+jobs:
+  pub-audit:
+    name: Pub vulnerability scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: List outdated packages (informational)
+        run: dart pub outdated --mode=null-safety --json || true
+
+      - name: Dump dependency tree (informational)
+        run: flutter pub deps || true
+
+      - name: Run OSV Scanner on pubspec.lock
+        id: osv
+        continue-on-error: true
+        uses: google/osv-scanner-action/actions/scanner@v2.0.2
+        with:
+          scan-args: |-
+            --lockfile=pubspec.lock
+            --format=sarif
+            --output=osv-pub.sarif
+
+      - name: Upload OSV SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: osv-pub.sarif
+          category: osv-pub
+
+      # continue-on-error above lets the SARIF upload run even on findings;
+      # this gate re-asserts failure so CI reflects HIGH/CRITICAL correctly.
+      - name: Enforce OSV result
+        if: steps.osv.outcome == 'failure'
+        run: |
+          echo "::error::OSV scanner found vulnerabilities in pubspec.lock"
+          exit 1
+
+  npm-audit:
+    name: NPM vulnerability scan (functions)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: functions
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit (fails on high/critical)
+        run: npm audit --audit-level=high

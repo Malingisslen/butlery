@@ -8047,6 +8047,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingComplete => 'Finish';
 
   @override
+  String get onboardingAgeGateTitle => 'How old are you?';
+
+  @override
+  String get onboardingAgeGateSubtitle =>
+      'We need your birth year to follow Swedish rules for social apps (GDPR Art 8).';
+
+  @override
+  String get onboardingAgeGateBirthYearLabel => 'Birth year';
+
+  @override
+  String get onboardingAgeGatePrivacyNote =>
+      'We only store the year, not the full date.';
+
+  @override
+  String get onboardingAgeGateContinue => 'Continue';
+
+  @override
+  String get onboardingAgeGateTooYoungTitle => 'Butlery is for ages 15 and up';
+
+  @override
+  String get onboardingAgeGateTooYoungBody =>
+      'Swedish data-protection law (GDPR Art 8) requires parental consent for under-15s to use social features. You\'re welcome to come back when you turn 15.';
+
+  @override
+  String get onboardingAgeGateSignOut => 'Sign out';
+
+  @override
   String get onboardingWelcomeTitle => 'Welcome to Butlery!';
 
   @override

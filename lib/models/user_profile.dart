@@ -46,6 +46,12 @@ class UserProfile with JsonSerializableMixin {
   final List<String>? cuisineAffinities;
   final String? bio;
 
+  // Year-only birth year for the GDPR Art 8 age gate. Nullable so pre-gate
+  // users keep working; rules + onboarding require it for new sign-ups. The
+  // 15-year Swedish threshold is enforced at sign-up, not here — model only
+  // enforces a hard floor of 13 so admins can backfill edge cases.
+  final int? birthYear;
+
   UserProfile({
     required this.uid,
     required this.displayName,
@@ -68,7 +74,17 @@ class UserProfile with JsonSerializableMixin {
     this.cookingSkillLevel,
     this.cuisineAffinities,
     this.bio,
-  });
+    this.birthYear,
+  }) {
+    if (birthYear != null) {
+      final currentYear = DateTime.now().year;
+      if (birthYear! < 1900 || birthYear! > currentYear - 13) {
+        throw ArgumentError(
+          'birthYear must be between 1900 and ${currentYear - 13} (got $birthYear)',
+        );
+      }
+    }
+  }
 
   static const _sentinel = Object();
 
@@ -93,6 +109,7 @@ class UserProfile with JsonSerializableMixin {
     Object? cookingSkillLevel = _sentinel,
     Object? cuisineAffinities = _sentinel,
     Object? bio = _sentinel,
+    Object? birthYear = _sentinel,
   }) {
     return UserProfile(
       uid: uid,
@@ -129,6 +146,7 @@ class UserProfile with JsonSerializableMixin {
           ? this.cuisineAffinities
           : cuisineAffinities as List<String>?,
       bio: bio == _sentinel ? this.bio : bio as String?,
+      birthYear: birthYear == _sentinel ? this.birthYear : birthYear as int?,
     );
   }
 
@@ -236,6 +254,7 @@ class UserProfile with JsonSerializableMixin {
           ? AppTimestamp.fromDateTime(onboardingSkippedAt!).toFirestore()
           : null,
       'bio': bio,
+      'birthYear': birthYear,
     };
   }
 
@@ -270,6 +289,7 @@ class UserProfile with JsonSerializableMixin {
       'cookingSkillLevel': cookingSkillLevel?.name,
       'cuisineAffinities': cuisineAffinities,
       'bio': bio,
+      'birthYear': birthYear,
     };
   }
 
@@ -317,6 +337,7 @@ class UserProfile with JsonSerializableMixin {
           ? utils.SerializationUtils.safeStringList(data, 'cuisineAffinities')
           : null,
       bio: utils.SerializationUtils.safeNullableString(data, 'bio'),
+      birthYear: _readBirthYear(data),
     );
   }
 
@@ -363,7 +384,21 @@ class UserProfile with JsonSerializableMixin {
           ? utils.SerializationUtils.safeStringList(json, 'cuisineAffinities')
           : null,
       bio: utils.SerializationUtils.safeNullableString(json, 'bio'),
+      birthYear: _readBirthYear(json),
     );
+  }
+
+  /// Read birthYear defensively: drops invalid values (out of range, wrong type)
+  /// so we never throw on deserialization of legacy / corrupt data — invariant
+  /// is re-enforced by the constructor for valid values.
+  static int? _readBirthYear(Map<String, dynamic> data) {
+    final raw = data['birthYear'];
+    if (raw == null) return null;
+    final parsed = raw is int ? raw : int.tryParse(raw.toString());
+    if (parsed == null) return null;
+    final currentYear = DateTime.now().year;
+    if (parsed < 1900 || parsed > currentYear - 13) return null;
+    return parsed;
   }
 
   @override
