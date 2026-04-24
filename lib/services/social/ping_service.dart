@@ -224,11 +224,8 @@ class PingService extends BaseService with PermissionValidationMixin {
       final group = _friendsService.categoriesList
           .firstWhereOrNull((c) => c.id == ping.groupId);
       if (group != null) {
-        final allMembers = <String>{
-          group.ownerId,
-          ...group.friendUserIds,
-        }..remove(ping.fromUserId);
-        targets.addAll(allMembers);
+        final recipients = group.allMemberIds.toSet()..remove(ping.fromUserId);
+        targets.addAll(recipients);
       }
     }
 

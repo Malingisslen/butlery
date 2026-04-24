@@ -36,6 +36,7 @@ class _FakeModule implements CookingSessionModule {
     required int totalSteps,
   }) async {}
 
+  @override
   void dispose() {
     for (final c in controllers.values) {
       c.close();

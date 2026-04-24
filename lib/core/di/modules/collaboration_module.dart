@@ -118,6 +118,7 @@ class CollaborationModule implements DIModule {
       () => FirebaseCookingSessionModule(
         repository: container<FirebaseCookingSessionRepository>(),
       ),
+      dispose: (m) => m.dispose(),
     );
 
     container.registerLazySingleton<RealtimeMenuService>(

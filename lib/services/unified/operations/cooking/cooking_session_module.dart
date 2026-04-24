@@ -29,6 +29,10 @@ abstract class CookingSessionModule {
   });
 
   Stream<List<CookingSession>> watchGroupSessions(String groupId);
+
+  // Cancel the pending debounce + clear in-memory state. Called on user-scope
+  // teardown (logout) so a mid-cook timer doesn't outlive the DI container.
+  void dispose();
 }
 
 /// Window used to coalesce rapid [updateStep] calls into a single RTDB
@@ -189,10 +193,6 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
     final userId = _permissionService.currentUserId;
     if (userId == null) return;
 
-    if (current == _lastFlushedCurrentStep && total == _lastFlushedTotalSteps) {
-      return;
-    }
-
     try {
       await Future.wait(
         _activeGroupIds.map((groupId) => _repository.updateStep(
@@ -224,6 +224,12 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
   @override
   Stream<List<CookingSession>> watchGroupSessions(String groupId) {
     return _repository.watchSessions(groupId);
+  }
+
+  @override
+  void dispose() {
+    _cancelPendingStep();
+    _activeGroupIds.clear();
   }
 
   /// Every FriendCategory the user participates in — as owner or member.

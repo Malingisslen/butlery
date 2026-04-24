@@ -116,10 +116,9 @@ class CookingModeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// BUT-408: Called from the view's `initState` when cooking mode opens.
-  /// Broadcasts a live session ("Erik lagar kycklinggryta") to every
-  /// FriendCategory the user is a member of. Failures are swallowed — a
-  /// dropped broadcast must never interrupt the cook.
+  // Called from the view's initState. Broadcasts a live session to every
+  // FriendCategory the user is a member of. Failures are swallowed — a
+  // dropped broadcast must never interrupt the cook.
   Future<void> onEnter() async {
     try {
       final module = ServiceLocator.tryGet<CookingSessionModule>();
@@ -129,11 +128,10 @@ class CookingModeViewModel extends ChangeNotifier {
     }
   }
 
-  /// BUT-408: Called from the view's `dispose` when cooking mode closes.
-  /// Clears the broadcast from every group. Safe to call if no session was
-  /// ever started (module handles the no-op path). The module also cancels
-  /// its own pending step-debounce timer inside `endSession()`, so no
-  /// viewmodel-side cleanup is needed here.
+  // Called from the view's dispose. Clears the broadcast from every group;
+  // safe to call if no session was ever started (module handles the no-op
+  // path). The module's endSession() also cancels its pending step-debounce
+  // timer, so no viewmodel-side cleanup is needed here.
   Future<void> onExit() async {
     try {
       final module = ServiceLocator.tryGet<CookingSessionModule>();

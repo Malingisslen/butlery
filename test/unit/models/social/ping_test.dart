@@ -87,14 +87,16 @@ void main() {
       expect(restored.type, equals(PingType.timerAlert));
     });
 
-    test('PingType.fromString falls back to nudge for unknown values', () {
+    test('PingType.fromString falls back to unknown for unrecognized values',
+        () {
       expect(PingType.fromString('nudge'), equals(PingType.nudge));
       expect(PingType.fromString('timerAlert'), equals(PingType.timerAlert));
       expect(PingType.fromString('helpMe'), equals(PingType.helpMe));
-      // Unknown / future types → safe fallback (forward-compat)
-      expect(PingType.fromString('newFutureType'), equals(PingType.nudge));
-      expect(PingType.fromString(null), equals(PingType.nudge));
-      expect(PingType.fromString(''), equals(PingType.nudge));
+      // Unknown / future types → `unknown` sentinel (not silently relabeled
+      // as nudge, which would render wrong copy + wrong semantics).
+      expect(PingType.fromString('newFutureType'), equals(PingType.unknown));
+      expect(PingType.fromString(null), equals(PingType.unknown));
+      expect(PingType.fromString(''), equals(PingType.unknown));
     });
 
     test('message longer than 100 chars is truncated by create()', () {
@@ -133,8 +135,8 @@ void main() {
       expect(restored.groupId, equals(''));
       expect(restored.fromUserId, equals(''));
       expect(restored.toUserId, isNull);
-      expect(restored.type, equals(PingType.nudge),
-          reason: 'fallback for missing type');
+      expect(restored.type, equals(PingType.unknown),
+          reason: 'fallback for missing type — unknown sentinel, not nudge');
       expect(restored.acknowledged, isFalse);
       // expiresAt defaults to createdAt + 10min when absent
       final delta = restored.expiresAt.difference(restored.createdAt);

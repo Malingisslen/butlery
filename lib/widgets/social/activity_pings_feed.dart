@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -7,7 +8,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -45,6 +45,7 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
 
   List<Ping> _pings = const [];
   List<ActivityEvent> _activities = const [];
+  Map<String, UserProfile> _profileById = const {};
   bool _loading = true;
 
   PingService get _pingService =>
@@ -91,6 +92,7 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
         if (!mounted) return;
         setState(() {
           _pings = pings.where((p) => !p.acknowledged).toList();
+          _profileById = _buildProfileMap();
           _loading = false;
         });
       },
@@ -116,42 +118,33 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
         limit: _kMaxItems * 2,
       );
       if (!mounted) return;
-      setState(() => _activities = events);
+      setState(() {
+        _activities = events;
+        _profileById = _buildProfileMap();
+      });
     } catch (e) {
       AppLogger.warning('ActivityPingsFeed: activity fetch failed: $e');
     }
   }
 
-  /// Resolve the non-viewer member ids for the current group. Falls back to
-  /// empty when the group isn't found — the feed then only renders pings.
+  // Empty list = group not found or service unavailable → feed renders pings
+  // only.
   List<String> _resolveGroupMemberIds() {
     final friends = _friendsService;
     if (friends == null) return const [];
-    final myId = friends.currentUserId;
-
-    FriendCategory? group;
-    for (final c in friends.categoriesList) {
-      if (c.id == widget.groupId) {
-        group = c;
-        break;
-      }
-    }
+    final group =
+        friends.categoriesList.firstWhereOrNull((c) => c.id == widget.groupId);
     if (group == null) return const [];
-
-    final ids = <String>{group.ownerId, ...group.friendUserIds};
+    final ids = group.allMemberIds.toSet();
+    final myId = friends.currentUserId;
     if (myId != null) ids.remove(myId);
     return ids.toList(growable: false);
   }
 
-  /// Resolve a member profile by uid from the friends service cache. Returns
-  /// null if the viewer doesn't have the person in their friends list.
-  UserProfile? _profileFor(String uid) {
+  Map<String, UserProfile> _buildProfileMap() {
     final friends = _friendsService;
-    if (friends == null) return null;
-    for (final f in friends.friends) {
-      if (f.uid == uid) return f;
-    }
-    return null;
+    if (friends == null) return const {};
+    return {for (final f in friends.friends) f.uid: f};
   }
 
   Future<void> _acknowledge(Ping ping) async {
@@ -192,25 +185,23 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
             _FeedRow(
               key: ValueKey(item.id),
               item: item,
-              profileResolver: _profileFor,
-              onAcknowledge: () => _acknowledge(item.ping!),
+              profiles: _profileById,
+              onAcknowledge: switch (item) {
+                _PingItem(:final ping) => () => _acknowledge(ping),
+                _ActivityItem() => null,
+              },
             ),
         ],
       ),
     );
   }
 
-  /// Merge pings + activity into a single timeline, newest first, top 5.
   List<_FeedItem> _mergedItems() {
     final merged = <_FeedItem>[
       for (final p in _pings)
-        _FeedItem.ping(
-          id: 'ping-${p.id}',
-          createdAt: p.createdAt,
-          ping: p,
-        ),
+        _PingItem(id: 'ping-${p.id}', createdAt: p.createdAt, ping: p),
       for (final a in _activities)
-        _FeedItem.activity(
+        _ActivityItem(
           id: 'activity-${a.id}',
           createdAt: a.createdAt,
           activity: a,
@@ -223,63 +214,69 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
   }
 }
 
-/// Unified row model — a feed item is either a ping or an activity event.
-/// Keeping this as a closed sum type (rather than a shared base class) lets
-/// the render code pattern-match without introspection.
-class _FeedItem {
+// Sum type for the feed — a row is EITHER a ping OR an activity event.
+// Sealed gives us exhaustive switches + no force-unwraps.
+sealed class _FeedItem {
+  const _FeedItem({required this.id, required this.createdAt});
+
   final String id;
   final DateTime createdAt;
-  final Ping? ping;
-  final ActivityEvent? activity;
 
-  const _FeedItem._({
-    required this.id,
-    required this.createdAt,
-    this.ping,
-    this.activity,
-  });
-
-  factory _FeedItem.ping({
-    required String id,
-    required DateTime createdAt,
-    required Ping ping,
-  }) =>
-      _FeedItem._(id: id, createdAt: createdAt, ping: ping);
-
-  factory _FeedItem.activity({
-    required String id,
-    required DateTime createdAt,
-    required ActivityEvent activity,
-  }) =>
-      _FeedItem._(id: id, createdAt: createdAt, activity: activity);
-
-  bool get isPing => ping != null;
+  String actorId();
 }
 
-/// One row in the activity/pings feed. Fixed-height-ish, avatar left, text
-/// middle, relative timestamp right.
+class _PingItem extends _FeedItem {
+  const _PingItem({
+    required super.id,
+    required super.createdAt,
+    required this.ping,
+  });
+
+  final Ping ping;
+
+  @override
+  String actorId() => ping.fromUserId;
+}
+
+class _ActivityItem extends _FeedItem {
+  const _ActivityItem({
+    required super.id,
+    required super.createdAt,
+    required this.activity,
+  });
+
+  final ActivityEvent activity;
+
+  @override
+  String actorId() => activity.actorId;
+}
+
 class _FeedRow extends StatelessWidget {
   const _FeedRow({
     required this.item,
-    required this.profileResolver,
+    required this.profiles,
     required this.onAcknowledge,
     super.key,
   });
 
   final _FeedItem item;
-  final UserProfile? Function(String uid) profileResolver;
-  final VoidCallback onAcknowledge;
+  final Map<String, UserProfile> profiles;
+  final VoidCallback? onAcknowledge;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final actorId =
-        item.isPing ? item.ping!.fromUserId : item.activity!.actorId;
-    final profile = profileResolver(actorId);
+    final profile = profiles[item.actorId()];
     final actorName = profile?.displayName ??
-        (item.isPing ? '?' : item.activity!.actorDisplayName);
+        switch (item) {
+          _PingItem() => '?',
+          _ActivityItem(:final activity) => activity.actorDisplayName,
+        };
     final primary = _composeLine(l10n, item, actorName);
-    final suffix = item.isPing ? item.ping!.message : null;
+    final suffix = switch (item) {
+      _PingItem(:final ping) => ping.message,
+      _ActivityItem() => null,
+    };
 
     final child = Padding(
       padding: const EdgeInsets.symmetric(
@@ -300,7 +297,8 @@ class _FeedRow extends StatelessWidget {
                   primary,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.textDark,
-                    fontWeight: item.isPing ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight:
+                        item is _PingItem ? FontWeight.w600 : FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -320,7 +318,7 @@ class _FeedRow extends StatelessWidget {
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
-            _relativeLabel(context, item.createdAt),
+            _relativeLabel(item.createdAt),
             style: AppTextStyles.labelSmall.copyWith(
               color: AppColors.textLight,
             ),
@@ -329,9 +327,7 @@ class _FeedRow extends StatelessWidget {
       ),
     );
 
-    if (!item.isPing) return child;
-
-    // Pings: tap anywhere on the row acknowledges.
+    if (onAcknowledge == null) return child;
     return InkWell(
       key: const Key('ping-row-ack'),
       onTap: onAcknowledge,
@@ -344,37 +340,35 @@ class _FeedRow extends StatelessWidget {
     _FeedItem item,
     String actorName,
   ) {
-    if (item.isPing) {
-      final p = item.ping!;
-      switch (p.type) {
-        case PingType.nudge:
-          return l10n.pingNudgeFrom(actorName);
-        case PingType.timerAlert:
-          return l10n.pingTimerAlertFrom(actorName);
-        case PingType.helpMe:
-          return l10n.pingHelpMeFrom(actorName);
-      }
-    }
-
-    final a = item.activity!;
-    switch (a.type) {
-      case ActivityEventType.addedIngredient:
-        final ingredient = (a.extraData['ingredient'] as String?) ?? '';
-        return l10n.activityAddedIngredient(actorName, ingredient);
-      case ActivityEventType.startedCooking:
-        return l10n.activityStartedCooking(actorName, a.recipeTitle);
-      case ActivityEventType.cooked:
-        return '$actorName ${l10n.feedActionCooked} ${a.recipeTitle}';
-      case ActivityEventType.shared:
-        return '$actorName ${l10n.feedActionShared} ${a.recipeTitle}';
-      case ActivityEventType.pinged:
-        // Should render via the _FeedItem.ping path — fall through safety net.
-        return l10n.pingNudgeFrom(actorName);
-    }
+    return switch (item) {
+      _PingItem(:final ping) => switch (ping.type) {
+          PingType.nudge => l10n.pingNudgeFrom(actorName),
+          PingType.timerAlert => l10n.pingTimerAlertFrom(actorName),
+          PingType.helpMe => l10n.pingHelpMeFrom(actorName),
+          // Newer client wrote a type we don't understand — render the
+          // generic nudge copy rather than silently misattributing semantics.
+          PingType.unknown => l10n.pingNudgeFrom(actorName),
+        },
+      _ActivityItem(:final activity) => switch (activity.type) {
+          ActivityEventType.addedIngredient => l10n.activityAddedIngredient(
+              actorName,
+              (activity.extraData['ingredient'] as String?) ?? '',
+            ),
+          ActivityEventType.startedCooking => l10n.activityStartedCooking(
+              actorName,
+              activity.recipeTitle,
+            ),
+          ActivityEventType.cooked =>
+            '$actorName ${l10n.feedActionCooked} ${activity.recipeTitle}',
+          ActivityEventType.shared =>
+            '$actorName ${l10n.feedActionShared} ${activity.recipeTitle}',
+          // Should render via the _PingItem path — fall-through safety net.
+          ActivityEventType.pinged => l10n.pingNudgeFrom(actorName),
+        },
+    };
   }
 
-  String _relativeLabel(BuildContext context, DateTime at) {
-    // Clamp clock-drift (friend's device ahead of ours).
+  String _relativeLabel(DateTime at) {
     final clamped = at.isAfter(DateTime.now()) ? DateTime.now() : at;
     return TimeAgoFormatter.standard(clamped);
   }

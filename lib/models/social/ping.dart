@@ -8,15 +8,18 @@ const int kPingMaxMessageLength = 100;
 enum PingType {
   nudge,
   timerAlert,
-  helpMe;
+  helpMe,
+  // Forward-compat sentinel: a newer client writes a type this build doesn't
+  // know. Surfaces as "unknown" in UI rather than being silently relabeled as
+  // nudge — wrong copy would be worse than generic copy.
+  unknown;
 
-  // Safe fallback keeps older clients forward-compatible with future types.
   static PingType fromString(String? value) {
-    if (value == null) return PingType.nudge;
+    if (value == null) return PingType.unknown;
     return SerializationUtils.safeEnumByName(
       PingType.values,
       value,
-      PingType.nudge,
+      PingType.unknown,
     );
   }
 }

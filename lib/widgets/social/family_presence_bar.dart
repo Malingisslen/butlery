@@ -13,13 +13,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/social/ping_compose_sheet.dart';
 
-/// Max avatars rendered before overflow chip takes over.
 const int _kMaxVisibleAvatars = 5;
-
-/// Size of each avatar (square edge length, logical pixels).
 const double _kAvatarSize = 40.0;
-
-/// Size of the overlay online indicator (small square dot).
 const double _kOnlineDotSize = 10.0;
 
 /// Horizontal presence row. Hides itself when no group member is online.
@@ -85,23 +80,13 @@ class FamilyPresenceBar extends StatelessWidget {
 
     final groups = friends.categoriesList.where((FriendCategory c) {
       if (groupId != null) return c.id == groupId;
-      return c.ownerId == currentUserId ||
-          c.friendUserIds.contains(currentUserId);
+      return c.allMemberIds.contains(currentUserId);
     });
 
-    // Union-dedupe the member ids across matching groups, excluding the
-    // viewer themselves (presence bar is for *others*).
-    final seen = <String>{};
-    final ids = <String>[];
-    for (final g in groups) {
-      for (final id in g.friendUserIds) {
-        if (id == currentUserId) continue;
-        if (seen.add(id)) ids.add(id);
-      }
-      if (g.ownerId != currentUserId && seen.add(g.ownerId)) {
-        ids.add(g.ownerId);
-      }
-    }
+    // Union-dedupe member ids across matching groups, excluding the viewer.
+    final ids = <String>{
+      for (final g in groups) ...g.allMemberIds,
+    }..remove(currentUserId);
     if (ids.isEmpty) return const <UserProfile>[];
 
     // Resolve profiles against the friends list. Friends we don't have a

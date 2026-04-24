@@ -47,6 +47,13 @@ class _FakeCookingSessionModule implements CookingSessionModule {
   @override
   Stream<List<CookingSession>> watchGroupSessions(String groupId) =>
       const Stream.empty();
+
+  int disposeCalls = 0;
+
+  @override
+  void dispose() {
+    disposeCalls++;
+  }
 }
 
 /// Stub PersistenceService — the VM's font-scale loader calls getInt/setInt.
@@ -213,4 +220,7 @@ class _ThrowingModule implements CookingSessionModule {
   @override
   Stream<List<CookingSession>> watchGroupSessions(String groupId) =>
       const Stream.empty();
+
+  @override
+  void dispose() {}
 }
