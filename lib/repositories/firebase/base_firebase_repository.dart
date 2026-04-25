@@ -153,10 +153,12 @@ abstract class BaseFirebaseRepository<T>
     try {
       final userId = requireCurrentUserId();
       final ref = getCollectionRef();
-      final snapshot = await ref.limit(10000).get();
-      if (snapshot.docs.length == 10000) {
+      // Hard ceiling — subclasses that need more should paginate explicitly.
+      const baseReadAllLimit = 10000;
+      final snapshot = await ref.limit(baseReadAllLimit).get();
+      if (snapshot.docs.length == baseReadAllLimit) {
         AppLogger.warning(
-            'readAll() hit 10,000 doc limit for $collectionName — results truncated');
+            'readAll() hit $baseReadAllLimit doc limit for $collectionName — results truncated');
       }
 
       final allowedEntities = <T>[];
