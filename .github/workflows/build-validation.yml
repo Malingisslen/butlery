@@ -92,7 +92,7 @@ jobs:
   # Build job - runs Android, Web and iOS in parallel after validation passes
   build:
     needs: validate
-    timeout-minutes: 35
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
