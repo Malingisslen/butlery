@@ -1,0 +1,87 @@
+name: Firestore Rules
+
+# BUT-448: gates merges that touch firestore.rules or the rules-test files
+# behind the rules-unit-testing suite. The Firestore emulator is started in
+# the background; tests connect to it on 127.0.0.1:8080 (matches the host/port
+# in functions/src/__tests__/*.test.ts).
+
+on:
+  pull_request:
+    paths:
+      - "firestore.rules"
+      - "functions/src/__tests__/firestore-rules*.test.ts"
+      - "functions/src/__tests__/reports-rules.test.ts"
+      - "functions/src/__tests__/age-gate-rules.test.ts"
+      - "functions/package.json"
+      - "functions/package-lock.json"
+      - ".github/workflows/firestore-rules.yml"
+  push:
+    branches: [main]
+    paths:
+      - "firestore.rules"
+      - "functions/src/__tests__/firestore-rules*.test.ts"
+      - "functions/src/__tests__/reports-rules.test.ts"
+      - "functions/src/__tests__/age-gate-rules.test.ts"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rules-tests:
+    name: Rules unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: functions
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      # firebase-tools requires Java 21+ for the Firestore emulator.
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@15.13.0
+
+      - name: Install function deps
+        run: npm ci
+
+      # Start the Firestore emulator on the same host/port the tests expect
+      # (127.0.0.1:8080). `--project demo-test` keeps the emulator from
+      # demanding GCP credentials. The trailing `&` puts it in the
+      # background; the wait-for-it loop blocks until the port answers.
+      - name: Start Firestore emulator
+        working-directory: ${{ github.workspace }}
+        run: |
+          firebase emulators:start --only firestore --project demo-test &
+          echo "Waiting for Firestore emulator on 127.0.0.1:8080..."
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8080 >/dev/null 2>&1; then
+              echo "Emulator is up."
+              break
+            fi
+            sleep 1
+          done
+          # Final assertion — fail loudly if it never came up.
+          curl -sf http://127.0.0.1:8080 >/dev/null
+
+      - name: Run rules unit tests
+        run: npm run test:rules:all
+
+      - name: Stop emulator
+        if: always()
+        run: pkill -f "firebase" || true

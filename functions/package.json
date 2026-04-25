@@ -15,6 +15,11 @@
     "seed-tag-configs": "ts-node src/admin/seed-tag-configs.ts",
     "test:parity": "ts-node src/__tests__/normalization-parity.test.ts",
     "test:rules": "ts-node src/__tests__/reports-rules.test.ts",
+    "test:rules:age-gate": "ts-node src/__tests__/age-gate-rules.test.ts",
+    "test:rules:recipes-users": "ts-node src/__tests__/firestore-rules.test.ts",
+    "test:rules:all": "ts-node src/__tests__/reports-rules.test.ts && ts-node src/__tests__/age-gate-rules.test.ts && ts-node src/__tests__/firestore-rules.test.ts",
+    "test:lapsed-users": "ts-node src/__tests__/detect-lapsed-users.test.ts",
+    "test": "npm run test:parity && npm run test:lapsed-users",
     "reset-user-data": "ts-node src/admin/reset-user-data.ts",
     "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run"
   },

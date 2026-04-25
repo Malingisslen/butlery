@@ -1,6 +1,6 @@
 # Accepted Large Files
 
-**Last Updated**: April 2026 (sprint audit: 8 files accepted)
+**Last Updated**: 2026-04-25 (133 files reviewed and accepted)
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
@@ -8,7 +8,7 @@ Files intentionally exceeding the 500-line guideline. Review this list before pr
 
 - **29 files refactored** across 8 batches (latest: personal_tag_rule.dart decomposition)
 - **8,879 lines reduced** total
-- **116 files currently >500 lines** in lib/ (documented below with reasons)
+- **133 files currently >500 lines** in lib/ (documented below with reasons)
 
 ## Generated / Data Files
 

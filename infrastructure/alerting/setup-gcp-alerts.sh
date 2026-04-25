@@ -12,9 +12,17 @@
 set -e
 
 PROJECT_ID="${GCP_PROJECT_ID:-butlery-app-1}"
-NOTIFICATION_CHANNEL="${NOTIFICATION_CHANNEL_ID:-}" # Set after creating channel
+# Notification channel ID must be set before running. The full resource name
+# looks like `projects/butlery-app-1/notificationChannels/1234567890123456789`.
+# Create one with the gcloud command in docs/ops/gcp-alerting-runbook.md and
+# export it as GCP_NOTIFICATION_CHANNEL_ID before running this script.
+# Bash parameter expansion `:?` aborts the script with a clear message if
+# the variable is unset or empty — fail loudly instead of silently creating
+# alert policies that can never page anyone.
+NOTIFICATION_CHANNEL="${GCP_NOTIFICATION_CHANNEL_ID:?GCP_NOTIFICATION_CHANNEL_ID is required — see docs/ops/gcp-alerting-runbook.md}"
 
 echo "Setting up GCP alerting for project: $PROJECT_ID"
+echo "Using notification channel: $NOTIFICATION_CHANNEL"
 
 # =============================================================================
 # STEP 1: Create Notification Channel (Email)

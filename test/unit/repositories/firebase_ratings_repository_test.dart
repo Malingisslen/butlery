@@ -538,11 +538,21 @@ void main() {
     });
 
     group('Rating Statistics Stream', () {
-      test('should stream statistics updates', () async {
-        // Arrange
+      test('should stream aggregate stats from recipe_social_stats doc',
+          () async {
+        // Arrange — Cloud Functions own writes to recipe_social_stats; the
+        // stream must read the denormalized doc, not aggregate per-rating
+        // snapshots (BUT-430).
         const recipeId = 'recipe-1';
-        await _seedRating(fakeFirestore, '${recipeId}_user-1',
-            _createRating(recipeId, 'user-1', 4.0, id: '${recipeId}_user-1'));
+        await fakeFirestore
+            .collection('recipe_social_stats')
+            .doc(recipeId)
+            .set({
+          'ratingCount': 3,
+          'averageRating': 4.0,
+          'ratingDistribution': {1: 0, 2: 0, 3: 1, 4: 1, 5: 1},
+          'lastRatedAt': Timestamp.fromDate(DateTime(2026, 1, 1)),
+        });
 
         // Act
         final stream = repository.getRatingStatisticsStream(recipeId);
@@ -550,8 +560,24 @@ void main() {
 
         // Assert
         expect(stats.recipeId, equals(recipeId));
-        expect(stats.totalRatings, equals(1));
+        expect(stats.totalRatings, equals(3));
         expect(stats.averageRating, equals(4.0));
+        expect(stats.ratingDistribution[5], equals(1));
+        expect(stats.lastRatedAt, equals(DateTime(2026, 1, 1)));
+      });
+
+      test('should emit empty stats when stats doc missing', () async {
+        // Arrange — no doc in recipe_social_stats means no ratings yet.
+        const recipeId = 'recipe-no-ratings';
+
+        // Act
+        final stream = repository.getRatingStatisticsStream(recipeId);
+        final stats = await stream.first;
+
+        // Assert
+        expect(stats.totalRatings, equals(0));
+        expect(stats.averageRating, equals(0.0));
+        expect(stats.ratingDistribution.values.every((c) => c == 0), isTrue);
       });
     });
 

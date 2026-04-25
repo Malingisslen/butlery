@@ -281,6 +281,8 @@ class AccountDeletionService extends BaseService {
 
   Future<bool> _deleteSearchIndexRecipes(String userId) async {
     try {
+      // note: bounded by per-user account-deletion (one user's recipes,
+      // one-time op). Search-index cleanup must be exhaustive — no pagination.
       final recipesSnapshot = await _firestore
           .collection(FirestoreCollections.recipes)
           .where('userId', isEqualTo: userId)

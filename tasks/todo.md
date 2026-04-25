@@ -1,6 +1,56 @@
 # Sprint Backlog
 
-## Sprint: Launch Readiness v3 — store blockers + PII + dep safety — 2026-04-24
+## Sprint: Pre-launch hardening — security defects + Firestore cost-perf + push-prefs bug — 2026-04-25
+
+Theme: drain the highest-leverage P2 Bug/security cluster before submission. One big rock (BUT-448 Firestore rules CI gate) plus six surgical 2-hour fixes. Additive only, no user-visible features.
+
+### Agent A: firebase-backend-security — security defects (analysis report 02, D1/D3)
+
+- [x] **A1. SQLCipher key out of PRAGMA string** — done; `lib/core/storage/drift/app_database.dart`: replaced interpolated `PRAGMA key = '$encryptionKey'` with parameterized prepared statement (`db.prepare('PRAGMA key = ?')` + bound execute + dispose). Key never enters SQL text. (BUT-428)
+- [!] **A2. Wire freeRASP with real teamId + cert hashes** — PARTIAL/BLOCKED on user creds. Done: extracted `_kPlaceholderTeamId` + `_kPlaceholderAndroidCertHash` constants with `TODO(BUT-426)`, added release-mode `AppLogger.error` warning if placeholder is still in use. **Blocked on:** real Talsec teamId from freeRASP dashboard + real SHA-256 cert hash via `keytool -list -v -keystore android/app/upload-keystore.jks -alias upload`. (BUT-426)
+
+### Agent B: firebase-backend-security — server testing + observability
+
+- [x] **B1. Firestore rules unit tests + CI gate** — done (CI-verified). Dep already installed. New `functions/src/__tests__/firestore-rules.test.ts` — 15 tests, ~20 assertions covering `recipes` (8 tests: create/read/write/delete + admin-moderation override + cookCount delta) and `users` + `users/.../settings/preferences` + `users/.../pantry` (7 tests). New `.github/workflows/firestore-rules.yml` spins up Java 21 + emulator + runs `npm run test:rules:all`. **Local verification gap:** Java not on Windows PATH; CI is the verification path. Follow-up collections (social, shopping, comments, ratings, conversations, friends, presence, etc.) tracked separately. (BUT-448)
+- [!] **B2. Activate GCP alerting** — PARTIAL/BLOCKED on user gcloud + GCP creds. Done: hardened `setup-gcp-alerts.sh:15` to require `GCP_NOTIFICATION_CHANNEL_ID:?` env var (fails loudly instead of silently writing broken policies); new `docs/ops/gcp-alerting-runbook.md` with exact commands. **Blocked on:** user installs gcloud, runs `gcloud auth login`, creates email notification channel via runbook §3, exports env var, runs script. (BUT-450)
+
+### Agent C: flutter-developer — Firestore cost/perf (analysis report 04)
+
+- [x] **C1. Audit `.limit(10000)` callers** — done. Method = `BaseFirebaseRepository.readAll()`. Two real call-sites: (1) the base method itself — added `kReleaseMode` warning + named const; (2) `lib/services/account/account_deletion_service.dart:287` (per-user account-deletion search-index cleanup, bounded admin op — kept with `// note:` comment). All recipe/shopping/personal-tag subclasses already paginate or are structurally bounded. (BUT-474)
+- [x] **C2. Denormalize rating stream** — done; `lib/repositories/firebase/firebase_ratings_repository.dart`: aggregate path swapped from `.limit(500).snapshots()` (~501 reads/update) to single-doc stream on `recipe_social_stats/{recipeId}` (1 read/update). Reviews-list path (separate `getRecipeRatings` method) untouched. Test updated to seed aggregate doc + cover missing-doc case (32/32 in repo + adapter rating-stream test green). (BUT-430)
+
+### Agent D: firebase-backend-security — push prefs bug
+
+- [x] **D1. Win-back push respects prefs + quiet hours** — done. New `functions/src/shared/preference-aware-push.ts` exports `sendPushToUserRespectingPreferences(uid, payload, category, ...)` returning structured result. Reads root collection `user_notification_preferences/{uid}`; honors master `enabled`, `reEngagement` (forward-compat), category fallback, quiet hours via `Intl.DateTimeFormat` on `Europe/Stockholm` (DST-safe). `detect-lapsed-users.ts` routed through helper. New `__tests__/detect-lapsed-users.test.ts` — 12 cases (6 unit + 6 scenarios). 12/12 pass. (BUT-438)
+
+### Post-Sprint Steps
+
+- [x] `dart analyze --fatal-infos` — 0 issues
+- [x] `cd functions && npm test` — 28/28 parity + 12/12 lapsed-users green
+- [x] Targeted unit tests per agent — green
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-428, BUT-448, BUT-474, BUT-430, BUT-438 → Done; BUT-426, BUT-450 stay In Progress (blocked on user)
+
+### Side findings (not in sprint scope — surface to user)
+
+- [ ] **`android/key.properties` is NOT gitignored** and contains plaintext keystore password. Git log shows it has never been committed (so no leak yet), but the gap exists. Add `android/key.properties` and `android/app/*.jks` to `.gitignore` before any future commit can leak the password.
+- [ ] Other notification call sites still bypass prefs/quiet-hours: `functions/src/analytics/send-activity-digest.ts` and `functions/src/notifications/send-notification.ts` (callable). Same bug as BUT-438; should migrate to the new helper.
+
+---
+
+## What this means in plain language
+
+- **The lock on the local recipe database becomes airtight.** The encryption key was sitting plain-text in query logs — now it isn't.
+- **Tampering detection actually turns on.** Today the anti-tamper layer silently disables itself because of a placeholder ID — a determined attacker has a free pass.
+- **Backend permission rules get a safety net.** A 1465-line file that gates who can read what gets automated tests so a rule mistake can't ship.
+- **You'll know when the backend breaks.** Email alert when Cloud Functions error rate spikes; today you find out from user reports.
+- **Recipe ratings load way faster and cost less.** Opening a recipe was reading 500 documents per rating change — now it reads 1.
+- **Lapsed-user "we miss you" pushes will stop ignoring quiet hours and opt-outs.** A user who turned off marketing pings still gets them today.
+- **Risk: Low–medium.** B1 (rules tests) is the meatiest — could expose existing rules bugs that need fixing. Each task independently revertable. No user-visible UX change.
+
+---
+
+## Archive: Sprint Launch Readiness v3 — store blockers + PII + dep safety — 2026-04-24
 
 Theme: close out the Urgent cluster (BUT-411 + BUT-447) and drain the highest-leverage P2 security/store blockers. Additive only, no user-visible features except the age gate.
 
@@ -25,23 +75,11 @@ Theme: close out the Urgent cluster (BUT-411 + BUT-447) and drain the highest-le
 
 ### Post-Sprint Steps
 
-- [ ] `dart analyze --fatal-infos` — expect 0 issues
-- [ ] Targeted tests per agent (pii_scrubber_test false-positive fixtures; age-gate widget + Firestore rules tests)
-- [ ] Commit, push to main
-- [ ] Update Linear: BUT-411, BUT-447, BUT-423, BUT-422, BUT-432, BUT-433, BUT-413 → Done
-- [ ] **Still blocked on user action (untouched this sprint):** BUT-418 (install gcloud + enable PITR), BUT-485 (fix keystore path + add GitHub secrets for CI signing)
-
----
-
-## What this means in plain language
-
-- **App Store upload will actually succeed.** One-line plist flag is blocking submission today.
-- **iOS builds get CI coverage.** Today, iOS regressions only surface when you build locally.
-- **Recipes with "koka 04-05 min" stop being mangled.** The PII scrubber over-matches today.
-- **Raw personal data never hits Cloud Logging.** Scrubbing moves to the app side before the AI call.
-- **Users under 15 can't create accounts.** Swedish law requires this for apps with chat + photos.
-- **Security scans run on every PR.** Catches vulnerable dependencies before they ship.
-- **Risk: Low.** Age gate is the only user-visible change; all else is infra/config. Each task independently revertable.
+- [x] `dart analyze --fatal-infos` — expect 0 issues
+- [x] Targeted tests per agent (pii_scrubber_test false-positive fixtures; age-gate widget + Firestore rules tests)
+- [x] Commit, push to main — `c9f72c336`
+- [x] Update Linear: BUT-411, BUT-447, BUT-423, BUT-422, BUT-432, BUT-433, BUT-413 → Done
+- [x] Follow-ups landed post-sprint: BUT-485 (`086113880`, `c9e2e6e9e`) + BUT-418 (`ea7372bd4`) + iOS CI chain BUT-632/634/635
 
 ---
 

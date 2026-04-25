@@ -351,30 +351,50 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
   @override
   Stream<RatingStatistics> getRatingStatisticsStream(String recipeId) {
-    final baseQuery = collection.where('recipeId', isEqualTo: recipeId);
+    // BUT-430: stream the denormalized aggregate doc maintained server-side
+    // by the onRating{Created,Updated,Deleted} Cloud Functions. One doc read
+    // per update instead of streaming up to 500 rating docs + a count() query.
+    final statsRef = firestore
+        .collection(FirestoreCollections.recipeSocialStats)
+        .doc(recipeId);
 
-    // Stream the first 500 ratings for distribution/average calculation,
-    // then use count() to get the true total when the stream limit is hit
-    return baseQuery.limit(500).snapshots().asyncMap((snapshot) async {
-      final ratings = snapshot.docs.map((doc) => fromFirestore(doc)).toList();
-      final stats = _calculateRatingStatistics(recipeId, ratings);
-
-      // If we hit the 500-doc limit, the true count may be higher
-      if (snapshot.docs.length == 500) {
-        final countSnapshot = await baseQuery.count().get();
-        final trueCount = countSnapshot.count ?? ratings.length;
-        if (trueCount > ratings.length) {
-          return RatingStatistics(
-            recipeId: recipeId,
-            averageRating: stats.averageRating,
-            totalRatings: trueCount,
-            ratingDistribution: stats.ratingDistribution,
-            lastRatedAt: stats.lastRatedAt,
-          );
-        }
+    return statsRef.snapshots().map((snap) {
+      final data = snap.data();
+      if (data == null) {
+        return RatingStatistics(
+          recipeId: recipeId,
+          averageRating: 0.0,
+          totalRatings: 0,
+          ratingDistribution: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+        );
       }
 
-      return stats;
+      final ratingCount = (data['ratingCount'] as num?)?.toInt() ?? 0;
+      final averageRating = (data['averageRating'] as num?)?.toDouble() ?? 0.0;
+
+      // Cloud Functions store distribution with int-string or int keys
+      // depending on Firestore serialization; normalize both.
+      final rawDistribution = data['ratingDistribution'];
+      final distribution = <int, int>{1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+      if (rawDistribution is Map) {
+        rawDistribution.forEach((key, value) {
+          final star = key is int ? key : int.tryParse(key.toString());
+          final count = (value as num?)?.toInt() ?? 0;
+          if (star != null && star >= 1 && star <= 5) {
+            distribution[star] = count;
+          }
+        });
+      }
+
+      final lastRatedTs = data['lastRatedAt'] as Timestamp?;
+
+      return RatingStatistics(
+        recipeId: recipeId,
+        averageRating: averageRating,
+        totalRatings: ratingCount,
+        ratingDistribution: distribution,
+        lastRatedAt: lastRatedTs?.toDate(),
+      );
     });
   }
 

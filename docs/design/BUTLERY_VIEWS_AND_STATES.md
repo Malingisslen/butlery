@@ -1,19 +1,7 @@
 # Butlery App - Complete Views & States Inventory
 
 > **Purpose**: Design mockup reference for all screens, states, components, and flows in the Butlery app.
-> **Generated**: 2026-01-30
-
----
-
-## ⚠️ PLANNED CHANGES
-
-> **REMOVE "Upptäck" (Discovery) Tab**: The "Upptäck" section will be removed from the new design. This includes:
-> - The bottom navigation tab (#5)
-> - The Discovery Dashboard view (`/discovery`)
-> - All discovery-related sub-views and components
-> - Navigation will be reduced to **4 tabs**: Mina recept, Lägg till, Veckomeny, Inköpslista
->
-> Social features (friends, groups, messaging, sharing) will need alternative access points in the new design.
+> **Last Updated**: 2026-04-25
 
 ---
 
@@ -32,15 +20,16 @@
 
 ## Navigation Structure
 
-### Bottom Navigation (Currently 5 Tabs → Changing to 4)
+### Bottom Navigation (4 Tabs)
 
-| Tab | Swedish Label | Icon (Inactive) | Icon (Active) | Route | Status |
-|-----|---------------|-----------------|---------------|-------|--------|
-| 1 | Mina recept | bookOutlined | book | `/` | ✅ Keep |
-| 2 | Lägg till | addOutlined | add | `/laggTill` | ✅ Keep |
-| 3 | Veckomeny | calendarOutlined | calendar | `/veckomeny` | ✅ Keep |
-| 4 | Inköpslista | cartOutlined | cart | `/inkopslista` | ✅ Keep |
-| 5 | Upptäck | exploreOutlined | explore | `/discovery` | ⚠️ **REMOVING** |
+| Tab | Swedish Label | Icon (Inactive) | Icon (Active) | Route |
+|-----|---------------|-----------------|---------------|-------|
+| 1 | Mina recept | bookOutlined | book | `/` |
+| 2 | Lägg till | addOutlined | add | `/laggTill` |
+| 3 | Veckomeny | calendarOutlined | calendar | `/veckomeny` |
+| 4 | Inköpslista | cartOutlined | cart | `/inkopslista` |
+
+Social features (friends, groups, messaging, sharing) are accessed via the profile menu and recipe-level share actions, not from the bottom nav.
 
 ### Responsive Navigation
 
@@ -259,64 +248,6 @@
 - **Delete Confirmation**: "Ta bort X?"
 - **Share List Dialog**: Friend/group selector
 - **List Operations Menu**: Rename, Clear completed, Delete list
-
----
-
-### 5. Upptäck (Discovery) ⚠️ TO BE REMOVED
-
-> **Note**: This entire section will be removed in the new design. Social features will need alternative access points.
-
-**Route:** `/discovery`
-**Tab:** Upptäck
-
-#### States
-
-| State | What's Displayed |
-|-------|------------------|
-| **Loading** | Spinner + "Laddar upptäcktsinnehåll..." |
-| **Empty - No search results** | "Inga resultat för sökningen" |
-| **Error** | Error message + "Uppdatera" button |
-| **Normal** | Tab-based content sections |
-
-#### Components
-
-- **Header (AppBar)**:
-  - Title: "Upptäck"
-  - Search icon → Expandable search field
-  - Profile icon → Navigate to profile
-  - Messages icon → Navigate to messages (with badge count)
-
-- **Tab Bar** (3 tabs):
-  1. **Upptäck** - Trending content
-  2. **Aktivitet** - Friend activity
-  3. **Rekommenderat** - Personalized recommendations
-
-- **Body - Upptäck Tab**:
-  - Trending recipes section (horizontal scroll)
-  - Popular categories section
-  - Featured collections
-
-- **Body - Aktivitet Tab**:
-  - Friend activity feed (who shared what)
-  - Activity cards with timestamps
-
-- **Body - Rekommenderat Tab**:
-  - "Baserat på dina preferenser"
-  - Personalized recipe suggestions
-
-#### Interactions
-
-- **Tap tab** → Switch content view
-- **Tap recipe card** → Navigate to Recipe Detail
-- **Tap friend activity** → Navigate to shared content
-- **Tap search** → Search users and recipes
-- **Scroll to bottom** → Infinite scroll loads more content
-- **Pull down** → Refresh content
-
-#### Modals/Sheets
-
-- **Search Results**: User profiles + recipes
-- **Filter Options**: Content type, time range
 
 ---
 
@@ -614,7 +545,7 @@
 ### 11. Vänner & Grupper (Friends & Groups)
 
 **Route:** `/friends`
-**Tab:** None (accessed from Upptäck)
+**Tab:** None (accessed from profile menu)
 
 #### States (per tab)
 
@@ -1308,15 +1239,14 @@ Same tri-state pattern as allergen, but uses leaf icon (🌿) for FREE state.
 
 ### Refresh/Scroll Behaviors
 
-| View | Pull-to-Refresh | Infinite Scroll | Status |
-|------|-----------------|-----------------|--------|
-| Mina Recept | ✅ Yes | ✅ Yes | Keep |
-| Veckomeny | ❌ No | ❌ No | Keep |
-| Inköpslista | ✅ Yes | ❌ No | Keep |
-| Upptäck | ✅ Yes | ✅ Yes | ⚠️ Removing |
-| Vänner | ✅ Yes | ❌ No | Keep (needs new access) |
-| Meddelanden | ✅ Yes | ❌ No | Keep (needs new access) |
-| Chatt | ❌ No | ✅ Yes (older messages) | Keep
+| View | Pull-to-Refresh | Infinite Scroll |
+|------|-----------------|-----------------|
+| Mina Recept | ✅ Yes | ✅ Yes |
+| Veckomeny | ❌ No | ❌ No |
+| Inköpslista | ✅ Yes | ❌ No |
+| Vänner | ✅ Yes | ❌ No |
+| Meddelanden | ✅ Yes | ❌ No |
+| Chatt | ❌ No | ✅ Yes (older messages) |
 
 ---
 
@@ -1364,15 +1294,10 @@ Same tri-state pattern as allergen, but uses leaf icon (🌿) for FREE state.
 
 ## Summary Statistics
 
-**Current State:**
 - **Total Named Routes**: 30
-- **Main Navigation Tabs**: 5 (→ 4 after removing Upptäck)
-- **Main Views**: 18
+- **Main Navigation Tabs**: 4
+- **Main Views**: 17
 - **Component View Files**: 67+
 - **Deferred Loading Modules**: 3 (Extraction, Social, Messaging)
 - **Total Dialogs/Overlays**: 35+
 - **Total Snackbar Message Types**: 50+
-
-**After Removing Upptäck:**
-- Discovery Dashboard and all sub-components removed
-- Social features need new access points (profile menu, settings, or dedicated section)

@@ -145,9 +145,15 @@ LazyDatabase _openConnection() {
     return NativeDatabase(
       file,
       setup: (db) {
-        // Set the encryption key using SQLCipher PRAGMA
-        // The key must be set before any other database operations
-        db.execute("PRAGMA key = '$encryptionKey'");
+        // Set the encryption key using SQLCipher PRAGMA via a parameterized
+        // statement so the key never enters the SQL text (avoids leaking it
+        // in crash reports / SQL traces and any quote-escape risk).
+        final stmt = db.prepare('PRAGMA key = ?');
+        try {
+          stmt.execute([encryptionKey]);
+        } finally {
+          stmt.dispose();
+        }
       },
     );
   });

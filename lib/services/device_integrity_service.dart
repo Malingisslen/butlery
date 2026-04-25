@@ -1,6 +1,19 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:freerasp/freerasp.dart';
 import 'package:butlery/core/utils/logger.dart';
+
+// TODO(BUT-426): replace with the real Talsec teamId from the freeRASP
+// dashboard (https://docs.talsec.app). Shipping with this placeholder
+// disables iOS bundle/team verification.
+const String _kPlaceholderTeamId = 'BUTLERY_TEAM';
+
+// TODO(BUT-426): replace with the real release-keystore SHA-256 fingerprint
+// computed from android/app/upload-keystore.jks. Run:
+//   keytool -list -v -keystore android/app/upload-keystore.jks -alias upload
+// and base64-encode the SHA-256 fingerprint bytes. Current value is a
+// placeholder and Android signing verification will not work until replaced.
+const String _kPlaceholderAndroidCertHash =
+    'AKoRuyLMM91E7lX/Zqp3u4jMmd0A7hH/Iqo/IWQHKIE=';
 
 /// Service for detecting compromised devices using freeRASP.
 ///
@@ -25,15 +38,24 @@ class DeviceIntegrityService {
       return;
     }
 
+    if (kReleaseMode && _kPlaceholderTeamId == 'BUTLERY_TEAM') {
+      AppLogger.error(
+        'SECURITY: freeRASP shipping with placeholder teamId / cert hash '
+        '(BUT-426). iOS team and Android signing verification are NOT active. '
+        'Replace _kPlaceholderTeamId and _kPlaceholderAndroidCertHash before '
+        'production release.',
+      );
+    }
+
     try {
       final config = TalsecConfig(
         androidConfig: AndroidConfig(
           packageName: 'com.butlery.app',
-          signingCertHashes: ['AKoRuyLMM91E7lX/Zqp3u4jMmd0A7hH/Iqo/IWQHKIE='],
+          signingCertHashes: [_kPlaceholderAndroidCertHash],
         ),
         iosConfig: IOSConfig(
           bundleIds: ['com.butlery.app'],
-          teamId: 'BUTLERY_TEAM',
+          teamId: _kPlaceholderTeamId,
         ),
         watcherMail: 'security@butlery.app',
       );

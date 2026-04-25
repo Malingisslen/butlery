@@ -12,7 +12,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { sendPushToUser } from "../shared/fcm-tokens";
+import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { BATCH_LIMIT } from "../shared/batch-update";
 
 const getDb = () => admin.firestore();
@@ -123,22 +123,37 @@ export const detectLapsedUsers = onSchedule(
           await batch.commit();
         }
 
-        // Send FCM push notifications to lapsed users (concurrent batches of 10)
+        // Send FCM push notifications to lapsed users (concurrent batches of 10).
+        // Routes through the preference-aware helper so users who opted out of
+        // re-engagement, or who are inside their quiet-hours window, are NOT
+        // pinged. The win-back notification document is still written above —
+        // the gate is on the push only, not on the in-app entry.
         let pushSuccessCount = 0;
+        let pushSkippedOptOut = 0;
+        let pushSkippedQuietHours = 0;
         for (let i = 0; i < userIdsToNotify.length; i += 10) {
           const batch = userIdsToNotify.slice(i, i + 10);
           const results = await Promise.allSettled(
             batch.map((userId) =>
-              sendPushToUser(
+              sendPushToUserRespectingPreferences(
                 userId,
                 { title: "Butlery", body: threshold.message },
+                "reEngagement",
                 { type: threshold.type }
               )
             )
           );
           for (const result of results) {
-            if (result.status === "fulfilled" && result.value.successCount > 0) {
+            if (result.status !== "fulfilled") continue;
+            if (result.value.sent) {
               pushSuccessCount++;
+            } else if (result.value.reason === "quiet_hours") {
+              pushSkippedQuietHours++;
+            } else if (
+              result.value.reason === "opted_out" ||
+              result.value.reason === "master_disabled"
+            ) {
+              pushSkippedOptOut++;
             }
           }
         }
@@ -146,7 +161,8 @@ export const detectLapsedUsers = onSchedule(
         totalDetected += thresholdCount;
         logger.info(
           `Detected ${thresholdCount} users lapsed at ${threshold.days} days, ` +
-          `${pushSuccessCount} push notifications delivered`
+          `${pushSuccessCount} push notifications delivered ` +
+          `(${pushSkippedOptOut} opted out, ${pushSkippedQuietHours} in quiet hours)`
         );
       }
 
