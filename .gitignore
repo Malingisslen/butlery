@@ -65,6 +65,11 @@ service-account-key.json
 lib/firebase_options_real.dart
 lib/**/firebase_options_real*.dart
 
+# Android signing artefacts — DO NOT COMMIT (keystore password + private key)
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+
 # Firebase debug logs
 firebase-debug.log
 *-debug.log

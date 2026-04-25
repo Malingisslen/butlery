@@ -296,6 +296,14 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
         isShared: shareWithFriends && (selectedFriendIds?.isNotEmpty ?? false),
       );
 
+      // First-meal-plan milestone fires at most once per user (BUT-576).
+      final userService = ServiceLocator.tryGet<UserService>();
+      await _analyticsService.menu.logFirstMealPlanIfMilestone(
+        userId: userService?.currentUserId,
+        recipeCountInPlan: totalRecipeCount,
+        joinedAt: userService?.currentUserProfile?.joinedAt,
+      );
+
       // Handle social sharing if requested
       if (shareWithFriends &&
           selectedFriendIds != null &&

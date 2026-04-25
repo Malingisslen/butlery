@@ -1345,6 +1345,18 @@ service cloud.firestore {
     }
 
     // ========================================
+    // PARSE CORRECTIONS V2 (BUT-595) — server-write-only per-field log
+    // ========================================
+    // Per-field correction telemetry. Documents are written by the
+    // `logParseCorrection` Cloud Function via the admin SDK only. Userids and
+    // recipeIds arrive pre-hashed; raw IDs never land here. The collection is
+    // append-only and not user-readable — analytics happens server-side.
+    match /parse_corrections_v2/{correctionId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // ========================================
     // COLLECTION GROUP RULES (Issue #014: Unlimited Sharing)
     // Required for collectionGroup('members') queries
     // ========================================

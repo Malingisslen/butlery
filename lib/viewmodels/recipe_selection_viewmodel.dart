@@ -35,10 +35,15 @@
 
 // lib/viewmodels/recipe_selection_viewmodel.dart
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -79,7 +84,15 @@ class RecipeSelectionViewModel extends ChangeNotifier
   RecipeSelectionViewModel({
     required UnifiedRecipeService recipeService,
     required this.targetFriend,
-  }) : _recipeService = recipeService;
+    AnalyticsService? analyticsService,
+    UserService? userService,
+  })  : _recipeService = recipeService,
+        _analyticsService =
+            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
+        _userService = userService ?? ServiceLocator.tryGet<UserService>();
+
+  final AnalyticsService? _analyticsService;
+  final UserService? _userService;
 
   /// Complete recipe collection for selection and sharing coordination.
   /// Stores all available recipes enabling recipe discovery, selection functionality,
@@ -254,6 +267,25 @@ class RecipeSelectionViewModel extends ChangeNotifier
         if (!shareResult) {
           throw Exception(AppLocale.current.errorCouldNotUpdate('recept'));
         }
+      }
+
+      // Friend share = always exactly 1 recipient per share call. Telemetry
+      // is fire-and-forget so it never gates the post-share UI return.
+      final analytics = _analyticsService;
+      if (analytics != null) {
+        unawaited(Future.wait([
+          for (final recipe in recipes)
+            analytics.logRecipeShared(
+              method: 'friend',
+              recipeId: recipe.id,
+              recipientCount: 1,
+            ),
+          analytics.recipe.logFirstShareIfMilestone(
+            userId: _userService?.currentUserId,
+            shareMethod: 'friend',
+            joinedAt: _userService?.currentUserProfile?.joinedAt,
+          ),
+        ]));
       }
 
       // Add shared recipes to already-shared list

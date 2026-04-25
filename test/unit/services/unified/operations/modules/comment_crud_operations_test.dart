@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
@@ -20,6 +21,8 @@ import '../../../../../infrastructure/mocks/production_mocks.dart';
 /// Local pure-Mock AnalyticsService — avoids depending on the concrete
 /// @override methods in production_mocks.dart MockAnalyticsService.
 class _MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class _MockSocialEventsTracker extends Mock implements SocialEventsTracker {}
 
 void main() {
   group('CommentCrudOperations', () {
@@ -50,6 +53,17 @@ void main() {
             recipeId: any(named: 'recipeId'),
             commentLength: any(named: 'commentLength'),
           )).thenAnswer((_) async {});
+
+      // Comment creation also reaches into `.social.logFirstCommentIfMilestone`
+      // (BUT-593). Stub the tracker so the milestone path is a no-op in this
+      // suite — milestone behavior itself is covered in
+      // social_events_tracker_milestone_test.dart.
+      final mockSocialTracker = _MockSocialEventsTracker();
+      when(() => mockSocialTracker.logFirstCommentIfMilestone(
+            userId: any(named: 'userId'),
+            joinedAt: any(named: 'joinedAt'),
+          )).thenAnswer((_) async => false);
+      when(() => mockAnalyticsService.social).thenReturn(mockSocialTracker);
 
       // Pass both deps explicitly — avoids ServiceLocator entirely
       operations = CommentCrudOperations(

@@ -144,6 +144,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/stop-analyze.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/knowledge-freshness.sh"
           }
         ]
       }
@@ -172,6 +176,26 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/track-session-files.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/file-size-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/rules-change-detector.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/regenerate-l10n.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/drift-version-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/firestore-index-verifier.sh"
           }
         ]
       }

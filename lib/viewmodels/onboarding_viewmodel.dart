@@ -7,6 +7,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 
 class OnboardingViewModel extends ChangeNotifier {
   // Swedish parental-consent threshold for data processing on social apps
@@ -185,6 +186,15 @@ class OnboardingViewModel extends ChangeNotifier {
         parameters: {'count': seeds.length},
       );
       AppLogger.info('Seeded ${seeds.length} starter recipes');
+
+      // BUT-618: stamp `first_recipe_source = 'seed'` if this is the user's
+      // first recipe surface. Dedupe is handled inside the helper.
+      final userService = ServiceLocator.tryGet<UserService>();
+      await FirstRecipeSourceMilestone.setIfFirstRecipe(
+        analytics: _analytics,
+        userId: userService?.currentUserId,
+        source: 'seed',
+      );
     } catch (e) {
       AppLogger.warning('Failed to seed starter recipes: $e');
     }

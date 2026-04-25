@@ -21,6 +21,7 @@ import {
   deactivateStaleTokens,
   findInvalidTokens,
 } from "../shared/fcm-tokens";
+import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 
 /**
  * Sanitizes user-provided text by stripping HTML tags.
@@ -142,95 +143,15 @@ export const sendNotification = onCall(
     }
 
     try {
-      // Fetch user's active FCM tokens (per-device document model)
-      const { tokens, tokenDocIds } = await getActiveTokensForUser(targetUserId);
-
-      if (tokens.length === 0) {
-        logger.info(
-          `No active FCM tokens for user ${targetUserId}`
-        );
-        return {
-          success: true,
-          successCount: 0,
-          failureCount: 0,
-        };
-      }
-
-      logger.info(
-        `Sending notification to ${tokens.length} device(s) for user ${targetUserId}`
-      );
-
-      // Build the message
-      const message: admin.messaging.MulticastMessage = {
-        tokens,
-        data: payload || {},
-      };
-
-      // Add notification payload for display notifications
-      if (!silent) {
-        message.notification = {
-          title: sanitizeText(title) || "Butlery",
-          body: sanitizeText(body) || "",
-        };
-
-        if (imageUrl && isAllowedUrl(imageUrl)) {
-          message.notification.imageUrl = imageUrl;
-        }
-
-        // Android-specific configuration
-        message.android = {
-          priority: "high",
-          notification: {
-            channelId: "butlery_notifications",
-            priority: "high",
-            defaultSound: true,
-            defaultVibrateTimings: true,
-          },
-        };
-
-        // iOS-specific configuration
-        message.apns = {
-          payload: {
-            aps: {
-              sound: "default",
-              badge: 1,
-            },
-          },
-        };
-      } else {
-        // Silent notification configuration
-        message.android = {
-          priority: "high",
-        };
-        message.apns = {
-          payload: {
-            aps: {
-              contentAvailable: true,
-            },
-          },
-          headers: {
-            "apns-priority": "5",
-            "apns-push-type": "background",
-          },
-        };
-      }
-
-      // Send to all devices
-      const response = await admin.messaging().sendEachForMulticast(message);
-
-      logger.info(
-        `Notification sent: ${response.successCount} success, ${response.failureCount} failures`
-      );
-
-      // Mark stale tokens as inactive in their per-device documents
-      const invalidTokens = findInvalidTokens(response, tokens);
-      await deactivateStaleTokens(invalidTokens, tokenDocIds, targetUserId);
-
-      return {
-        success: response.failureCount < tokens.length,
-        successCount: response.successCount,
-        failureCount: response.failureCount,
-      };
+      const result = await dispatchNotification({
+        targetUserId,
+        title,
+        body,
+        data: payload,
+        imageUrl,
+        silent,
+      });
+      return result;
     } catch (error) {
       logger.error(
         `Failed to send notification to user ${targetUserId}:`,
@@ -244,6 +165,176 @@ export const sendNotification = onCall(
     }
   }
 );
+
+/**
+ * Core dispatch shared by the single-call and batch paths. Gates non-silent
+ * notifications through `sendPushToUserRespectingPreferences` so the master
+ * toggle and Europe/Stockholm quiet hours are honored (BUT-438 bug class —
+ * C3 side-finding from the 04-25 sprint).
+ *
+ * Silent pushes intentionally bypass the gate: they are background-sync
+ * payloads (`contentAvailable: true`) that never reach the user's lock screen
+ * or sound, so quiet hours don't apply, and a user who has muted visible
+ * notifications still wants their data to sync.
+ *
+ * For non-silent pushes the helper builds a fixed payload shape (title +
+ * body + data only). Optional fields the legacy direct path used —
+ * `imageUrl`, iOS `badge`, Android `defaultVibrateTimings` — are dropped
+ * when the helper handles delivery; that's the cost of the gate. The core
+ * title/body/data still arrives.
+ *
+ * Exposed for testing — call sites use it via the single-call wrapper or
+ * `sendNotificationInternal`.
+ */
+export interface DispatchOptions {
+  targetUserId: string;
+  title?: string;
+  body?: string;
+  data?: Record<string, string>;
+  imageUrl?: string;
+  silent?: boolean;
+  /**
+   * Test seam: override the prefs-aware send. Production resolves to
+   * `sendPushToUserRespectingPreferences` from the shared helper.
+   */
+  preferenceAwareSend?: typeof sendPushToUserRespectingPreferences;
+  /** Test seam: override the silent-path admin send. */
+  silentSend?: (
+    message: admin.messaging.MulticastMessage
+  ) => Promise<admin.messaging.BatchResponse>;
+  /** Test seam: override the token lookup. */
+  getTokens?: typeof getActiveTokensForUser;
+}
+
+export async function dispatchNotification(
+  opts: DispatchOptions
+): Promise<NotificationResponse> {
+  const {
+    targetUserId,
+    title,
+    body,
+    data: payload,
+    imageUrl,
+    silent,
+    preferenceAwareSend = sendPushToUserRespectingPreferences,
+    silentSend = (msg) => admin.messaging().sendEachForMulticast(msg),
+    getTokens = getActiveTokensForUser,
+  } = opts;
+
+  if (silent) {
+    return await dispatchSilent({
+      targetUserId,
+      data: payload,
+      silentSend,
+      getTokens,
+    });
+  }
+
+  // Non-silent: route through the preference-aware gate. The category param
+  // is `reEngagement` because the BUT-438 contract only types that literal;
+  // for callable-driven pushes (friend requests, recipe shares, etc.) the
+  // category gate is N/A — the master toggle + quiet hours are the gates
+  // we actually care about here. The client-side `categorySettings` map
+  // governs whether the callable is invoked at all.
+  const result = await preferenceAwareSend(
+    targetUserId,
+    {
+      title: sanitizeText(title) || "Butlery",
+      body: sanitizeText(body) || "",
+    },
+    "reEngagement",
+    sanitizeData(payload, imageUrl)
+  );
+
+  if (!result.sent) {
+    logger.info(
+      `Notification gated for user ${targetUserId}: ${result.reason}`
+    );
+    return {
+      success: true, // gating is not a failure
+      successCount: 0,
+      failureCount: 0,
+    };
+  }
+
+  return {
+    success: (result.successCount ?? 0) > 0,
+    successCount: result.successCount ?? 0,
+    failureCount: result.failureCount ?? 0,
+  };
+}
+
+/**
+ * Pass-through `imageUrl` into the data payload so the client can still
+ * render rich content if the OS supports it. The helper drops it from the
+ * notification payload itself (no `imageUrl` field in its message), but
+ * surfacing it via data preserves the URL for the client to handle.
+ */
+function sanitizeData(
+  data: Record<string, string> | undefined,
+  imageUrl: string | undefined
+): Record<string, string> {
+  const out: Record<string, string> = { ...(data || {}) };
+  if (imageUrl && isAllowedUrl(imageUrl)) {
+    out.imageUrl = imageUrl;
+  }
+  return out;
+}
+
+interface DispatchSilentOpts {
+  targetUserId: string;
+  data?: Record<string, string>;
+  silentSend: (
+    message: admin.messaging.MulticastMessage
+  ) => Promise<admin.messaging.BatchResponse>;
+  getTokens: typeof getActiveTokensForUser;
+}
+
+async function dispatchSilent(
+  opts: DispatchSilentOpts
+): Promise<NotificationResponse> {
+  const { targetUserId, data: payload, silentSend, getTokens } = opts;
+
+  const { tokens, tokenDocIds } = await getTokens(targetUserId);
+
+  if (tokens.length === 0) {
+    return {
+      success: true,
+      successCount: 0,
+      failureCount: 0,
+    };
+  }
+
+  const message: admin.messaging.MulticastMessage = {
+    tokens,
+    data: payload || {},
+    android: {
+      priority: "high",
+    },
+    apns: {
+      payload: {
+        aps: {
+          contentAvailable: true,
+        },
+      },
+      headers: {
+        "apns-priority": "5",
+        "apns-push-type": "background",
+      },
+    },
+  };
+
+  const response = await silentSend(message);
+
+  const invalidTokens = findInvalidTokens(response, tokens);
+  await deactivateStaleTokens(invalidTokens, tokenDocIds, targetUserId);
+
+  return {
+    success: response.failureCount < tokens.length,
+    successCount: response.successCount,
+    failureCount: response.failureCount,
+  };
+}
 
 /**
  * H14: Validate a single notification request.
@@ -430,7 +521,9 @@ export const sendNotificationBatch = onCall(
 
 /**
  * Internal helper for sending a single notification.
- * Shared logic between single and batch operations.
+ * Shared logic between single and batch operations. Routes through
+ * `dispatchNotification` so the same preference + quiet-hours gates apply
+ * as in the single-call path.
  */
 async function sendNotificationInternal(
   data: NotificationRequest
@@ -447,64 +540,14 @@ async function sendNotificationInternal(
   }
 
   try {
-    // Fetch user's active FCM tokens (per-device document model)
-    const { tokens, tokenDocIds } = await getActiveTokensForUser(targetUserId);
-
-    if (tokens.length === 0) {
-      return {
-        success: true,
-        successCount: 0,
-        failureCount: 0,
-      };
-    }
-
-    const message: admin.messaging.MulticastMessage = {
-      tokens,
-      data: payload || {},
-    };
-
-    if (!silent) {
-      message.notification = {
-        title: sanitizeText(title) || "",
-        body: sanitizeText(body) || "",
-      };
-      if (imageUrl && isAllowedUrl(imageUrl)) {
-        message.notification.imageUrl = imageUrl;
-      }
-      message.android = {
-        priority: "high",
-        notification: {
-          channelId: "butlery_notifications",
-          priority: "high",
-          defaultSound: true,
-        },
-      };
-      message.apns = {
-        payload: {
-          aps: {
-            sound: "default",
-          },
-        },
-      };
-    } else {
-      message.android = { priority: "high" };
-      message.apns = {
-        payload: { aps: { contentAvailable: true } },
-        headers: { "apns-priority": "5", "apns-push-type": "background" },
-      };
-    }
-
-    const response = await admin.messaging().sendEachForMulticast(message);
-
-    // Mark stale tokens as inactive in their per-device documents
-    const invalidTokens = findInvalidTokens(response, tokens);
-    await deactivateStaleTokens(invalidTokens, tokenDocIds, targetUserId);
-
-    return {
-      success: response.failureCount < tokens.length,
-      successCount: response.successCount,
-      failureCount: response.failureCount,
-    };
+    return await dispatchNotification({
+      targetUserId,
+      title,
+      body,
+      data: payload,
+      imageUrl,
+      silent,
+    });
   } catch (error) {
     return {
       success: false,

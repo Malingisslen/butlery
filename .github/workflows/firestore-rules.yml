@@ -12,6 +12,7 @@ on:
       - "functions/src/__tests__/firestore-rules*.test.ts"
       - "functions/src/__tests__/reports-rules.test.ts"
       - "functions/src/__tests__/age-gate-rules.test.ts"
+      - "functions/src/__tests__/parse-corrections-v2-rules.test.ts"
       - "functions/package.json"
       - "functions/package-lock.json"
       - ".github/workflows/firestore-rules.yml"
@@ -22,6 +23,7 @@ on:
       - "functions/src/__tests__/firestore-rules*.test.ts"
       - "functions/src/__tests__/reports-rules.test.ts"
       - "functions/src/__tests__/age-gate-rules.test.ts"
+      - "functions/src/__tests__/parse-corrections-v2-rules.test.ts"
   workflow_dispatch:
 
 concurrency:

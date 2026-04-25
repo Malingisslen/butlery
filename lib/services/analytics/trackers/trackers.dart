@@ -5,4 +5,5 @@ export 'menu_events_tracker.dart';
 export 'shopping_events_tracker.dart';
 export 'social_events_tracker.dart';
 export 'import_events_tracker.dart';
+export 'parse_events_tracker.dart';
 export 'system_events_tracker.dart';

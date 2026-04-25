@@ -13,7 +13,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
-import { sendPushToUser } from "../shared/fcm-tokens";
+import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { BATCH_LIMIT } from "../shared/batch-update";
 
 const getDb = () => admin.firestore();
@@ -138,7 +138,13 @@ export const sendWeeklyActivityDigest = onSchedule(
             await batch.commit();
           }
 
-          // Send FCM push notifications for this sub-batch (concurrent batches of 10)
+          // Send FCM push notifications for this sub-batch (concurrent batches of 10).
+          // Routes through the preference-aware helper so the master notification
+          // toggle and Europe/Stockholm quiet hours are honored. The per-category
+          // gate for digest is the existing `digestFrequency !== "never"` check
+          // above; the helper's category param is `reEngagement` because that's
+          // the only typed value the BUT-438 contract exposes — for digest we
+          // rely on master + quiet-hours gates only.
           for (let i = 0; i < usersToNotifyViaPush.length; i += 10) {
             const pushBatch = usersToNotifyViaPush.slice(i, i + 10);
             await Promise.allSettled(
@@ -146,12 +152,13 @@ export const sendWeeklyActivityDigest = onSchedule(
                 const totalActivity =
                   entry.newRecipeCount + entry.newCommentCount +
                   entry.newRatingCount + entry.newShareCount;
-                return sendPushToUser(
+                return sendPushToUserRespectingPreferences(
                   entry.userId,
                   {
                     title: "Veckans sammanfattning",
                     body: `Du hade ${totalActivity} aktivitet${totalActivity !== 1 ? "er" : ""} den här veckan`,
                   },
+                  "reEngagement",
                   { type: "activity_digest" }
                 );
               })

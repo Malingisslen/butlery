@@ -1,8 +1,14 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
 /// Tracks menu-related analytics events
 class MenuEventsTracker extends BaseTracker {
   MenuEventsTracker({required super.repository});
+
+  /// Per-install dedupe key for the once-per-user `first_meal_plan` milestone.
+  /// Suffixed with the user uid so household devices don't cross-fire.
+  static const String _firstMealPlanPrefsPrefix = 'menu_activated_v1_';
 
   /// Log menu generation
   Future<void> logMenuGenerated({
@@ -49,6 +55,52 @@ class MenuEventsTracker extends BaseTracker {
         'is_shared': isShared,
       },
     );
+  }
+
+  /// Once-per-user `first_meal_plan` milestone (BUT-576). Dedupes via a
+  /// SharedPreferences flag keyed by uid — survives app restarts, no Firestore
+  /// write. If [joinedAt] is null we omit `minutes_since_signup` rather than
+  /// emit a guessed value.
+  ///
+  /// Returns true if the milestone fired, false if skipped (already activated,
+  /// no consent, or no userId).
+  Future<bool> logFirstMealPlanIfMilestone({
+    required String? userId,
+    required int recipeCountInPlan,
+    DateTime? joinedAt,
+  }) async {
+    if (userId == null || userId.isEmpty) return false;
+    if (!await hasAnalyticsConsent()) return false;
+
+    final prefs = await _tryGetPrefs();
+    if (prefs == null) return false;
+
+    final key = '$_firstMealPlanPrefsPrefix$userId';
+    if (prefs.getBool(key) == true) return false;
+
+    final params = <String, Object>{
+      'recipe_count_in_plan': recipeCountInPlan,
+    };
+    if (joinedAt != null) {
+      params['minutes_since_signup'] =
+          DateTime.now().difference(joinedAt).inMinutes;
+    }
+
+    await repository.logEvent(name: 'first_meal_plan', parameters: params);
+    await repository.setUserProperty(name: 'menu_activated', value: 'true');
+    await prefs.setBool(key, true);
+    return true;
+  }
+
+  Future<SharedPreferences?> _tryGetPrefs() async {
+    try {
+      return await SharedPreferences.getInstance();
+    } catch (e) {
+      AppLogger.warning(
+        'first_meal_plan milestone: SharedPreferences unavailable ($e); skipping',
+      );
+      return null;
+    }
   }
 
   /// Log menu loaded

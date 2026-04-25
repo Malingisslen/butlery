@@ -74,3 +74,15 @@ Session-aware: only blocks on errors in files THIS session modified. Ignore erro
 
 **Tier 3 — On Request:**
 - **uiux-designer**, **performance-optimizer**, **flutter-developer**
+
+## Agent Knowledge Files (self-improvement pattern)
+
+Several agents have a sibling `<agent>.knowledge.md` file holding accumulated patterns across sessions. Agents with knowledge files: `firestore-rules-tester`, `uiux-designer`, `firebase-backend-security`, `testing-specialist`, `performance-optimizer`.
+
+**Contract (applies to every knowledge file):**
+- Agent reads it as **Step 0** of every invocation.
+- Agent **APPENDS** a dated entry when it discovers a new pattern, fixes a real bug, or is corrected by the user.
+- **Append-only** — supersede with a newer dated entry; never delete.
+- Distinct from the global self-improvement loop in `tasks/lessons.md` (rule #9): knowledge files are agent-scoped; lessons.md is global.
+
+When creating a new agent, default to giving it a knowledge file unless the agent's domain is so varied that accumulated patterns would become noise (e.g. `debugger`).

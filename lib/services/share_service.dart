@@ -11,8 +11,10 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
 
 /// Recipe sharing formats: complete (full details), compact (messaging/social), markdown (documentation/export).
 enum RecipeShareFormat { complete, compact, markdown }
@@ -362,6 +364,10 @@ class ShareService extends BaseService {
           text: textWithLink,
           subject: recipe.title,
         ));
+        await _trackShareAnalytics(
+          recipeId: recipe.id,
+          method: 'system_share_sheet',
+        );
       },
       operationName: 'Share recipe',
       requiresAuth: false,
@@ -386,10 +392,36 @@ class ShareService extends BaseService {
           text: textWithLink,
           subject: recipe.title,
         ));
+        await _trackShareAnalytics(
+          recipeId: recipe.id,
+          method: 'system_share_sheet',
+        );
       },
       operationName: 'Share recipe with format',
       requiresAuth: false,
       requiresNetwork: false,
+    );
+  }
+
+  /// Emits `recipe_shared` + checks the once-per-user `first_share` milestone.
+  /// Recipient count is unknown for external surfaces (system share sheet,
+  /// clipboard) — analytics-side bucketed as 0.
+  Future<void> _trackShareAnalytics({
+    required String recipeId,
+    required String method,
+  }) async {
+    final analytics = ServiceLocator.tryGet<AnalyticsService>();
+    if (analytics == null) return;
+    await analytics.logRecipeShared(
+      method: method,
+      recipeId: recipeId,
+      recipientCount: 0,
+    );
+    final userService = ServiceLocator.tryGet<UserService>();
+    await analytics.recipe.logFirstShareIfMilestone(
+      userId: userService?.currentUserId,
+      shareMethod: method,
+      joinedAt: userService?.currentUserProfile?.joinedAt,
     );
   }
 
@@ -516,5 +548,9 @@ class ShareService extends BaseService {
           }
         : getSmartFormat(recipe);
     await copyToClipboard(text);
+    await _trackShareAnalytics(
+      recipeId: recipe.id,
+      method: 'link_copy',
+    );
   }
 }

@@ -228,9 +228,22 @@ void main() {
             )).called(1);
       });
 
-      test('should log recipe shared', () async {
-        await service.logRecipeShared(method: 'link');
-        verify(() => mockRepo.logRecipeShared(method: 'link')).called(1);
+      test('should log recipe shared via generic logEvent path', () async {
+        // BUT-532: routes through logEvent (not the dedicated repo method) so
+        // the new method/recipient_count/recipe_id params can ride along, and
+        // recipe_id passes through the repo's PII hash gate.
+        await service.logRecipeShared(
+          method: 'link',
+          recipeId: 'r1',
+          recipientCount: 3,
+        );
+        final captured = verify(() => mockRepo.logEvent(
+              name: 'recipe_shared',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+        expect(captured['method'], 'link');
+        expect(captured['recipe_id'], 'r1');
+        expect(captured['recipient_count_bucket'], '2-5');
       });
 
       test('should log recipe cooked', () async {

@@ -233,6 +233,11 @@ class FriendsViewModel extends ChangeNotifier
       await _analyticsService.logFriendRequestAccepted(
         senderId: request.fromUserId,
       );
+      // First-friend milestone fires at most once per user (BUT-593).
+      await _analyticsService.social.logFirstFriendIfMilestone(
+        userId: _userService.currentUserId,
+        joinedAt: _userService.currentUserProfile?.joinedAt,
+      );
     }
 
     return success;

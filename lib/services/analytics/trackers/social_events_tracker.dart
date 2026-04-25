@@ -1,8 +1,16 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
 /// Tracks social interaction analytics events
 class SocialEventsTracker extends BaseTracker {
   SocialEventsTracker({required super.repository});
+
+  /// Per-install dedupe keys for the once-per-user social milestones (BUT-593).
+  /// Suffixed with the user uid so household devices don't cross-fire.
+  static const String _firstFriendPrefsPrefix = 'has_friend_v1_';
+  static const String _firstCommentPrefsPrefix = 'has_commented_v1_';
+  static const String _firstGroupPrefsPrefix = 'has_group_v1_';
 
   /// Log friend request sent
   Future<void> logFriendRequestSent({
@@ -81,6 +89,94 @@ class SocialEventsTracker extends BaseTracker {
         'source': source,
       },
     );
+  }
+
+  /// Once-per-user `first_friend` milestone (BUT-593). Dedupes via a
+  /// SharedPreferences flag keyed by uid. Returns true if the milestone fired.
+  Future<bool> logFirstFriendIfMilestone({
+    required String? userId,
+    DateTime? joinedAt,
+  }) async {
+    return _logFirstSocialMilestone(
+      userId: userId,
+      joinedAt: joinedAt,
+      eventName: 'first_friend',
+      userPropertyName: 'has_friend',
+      prefsPrefix: _firstFriendPrefsPrefix,
+    );
+  }
+
+  /// Once-per-user `first_comment` milestone (BUT-593). Dedupes via a
+  /// SharedPreferences flag keyed by uid. Returns true if the milestone fired.
+  Future<bool> logFirstCommentIfMilestone({
+    required String? userId,
+    DateTime? joinedAt,
+  }) async {
+    return _logFirstSocialMilestone(
+      userId: userId,
+      joinedAt: joinedAt,
+      eventName: 'first_comment',
+      userPropertyName: 'has_commented',
+      prefsPrefix: _firstCommentPrefsPrefix,
+    );
+  }
+
+  /// Once-per-user `first_group` milestone (BUT-593). Fires on whichever
+  /// happens first: `group_created` or `group_joined`. Dedupes via a
+  /// SharedPreferences flag keyed by uid. Returns true if the milestone fired.
+  Future<bool> logFirstGroupIfMilestone({
+    required String? userId,
+    DateTime? joinedAt,
+  }) async {
+    return _logFirstSocialMilestone(
+      userId: userId,
+      joinedAt: joinedAt,
+      eventName: 'first_group',
+      userPropertyName: 'has_group',
+      prefsPrefix: _firstGroupPrefsPrefix,
+    );
+  }
+
+  /// Shared milestone helper for the three social activation events. They all
+  /// share the same shape (no extra payload beyond `minutes_since_signup`),
+  /// so collapsing them avoids three near-identical copies of A1's pattern.
+  Future<bool> _logFirstSocialMilestone({
+    required String? userId,
+    required DateTime? joinedAt,
+    required String eventName,
+    required String userPropertyName,
+    required String prefsPrefix,
+  }) async {
+    if (userId == null || userId.isEmpty) return false;
+    if (!await hasAnalyticsConsent()) return false;
+
+    final prefs = await _tryGetPrefs(eventName);
+    if (prefs == null) return false;
+
+    final key = '$prefsPrefix$userId';
+    if (prefs.getBool(key) == true) return false;
+
+    final params = <String, Object>{};
+    if (joinedAt != null) {
+      params['minutes_since_signup'] =
+          DateTime.now().difference(joinedAt).inMinutes;
+    }
+
+    await repository.logEvent(name: eventName, parameters: params);
+    await repository.setUserProperty(name: userPropertyName, value: 'true');
+    await prefs.setBool(key, true);
+    return true;
+  }
+
+  Future<SharedPreferences?> _tryGetPrefs(String eventName) async {
+    try {
+      return await SharedPreferences.getInstance();
+    } catch (e) {
+      AppLogger.warning(
+        '$eventName milestone: SharedPreferences unavailable ($e); skipping',
+      );
+      return null;
+    }
   }
 
   /// Log content shared to group

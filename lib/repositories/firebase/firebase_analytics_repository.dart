@@ -52,7 +52,13 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     'note',
   };
 
-  static const String _saltPrefsKey = 'analytics_pii_salt_v1';
+  /// SharedPreferences key for the per-install PII hashing salt.
+  ///
+  /// Public so other PII-hashing surfaces (BUT-595 parse-correction uploader,
+  /// future telemetry) can hash IDs against the same salt — joining hashes
+  /// across services would otherwise re-enable re-identification.
+  static const String saltPrefsKey = 'analytics_pii_salt_v1';
+  static const String _saltPrefsKey = saltPrefsKey;
 
   /// Optional override for tests — accepts a pre-computed salt so the test
   /// doesn't need to stub SharedPreferences.

@@ -31,7 +31,7 @@ import { hashUid } from "../shared/hash-uid";
 // Request/Response Types
 // =============================================================================
 
-interface StructureRecipeRequest {
+export interface StructureRecipeRequest {
   /** Raw text to extract recipe from */
   text: string;
   /** Optional partial data to enhance (for enhancement mode) */
@@ -42,7 +42,7 @@ interface StructureRecipeRequest {
   sourceUrl?: string;
 }
 
-interface StructureRecipeResponse {
+export interface StructureRecipeResponse {
   success: boolean;
   recipe?: ExtractedRecipe;
   error?: string;
@@ -75,182 +75,198 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
   },
   withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
     // Authentication is handled by withRateLimit middleware
-    const { text, partialData, mode = "extract", sourceUrl } = request.data;
+    return runStructureRecipe(request.data, hashUid(request.auth!.uid));
+  })
+);
 
-    // Validate input
-    if (!text || typeof text !== "string") {
-      throw new HttpsError("invalid-argument", "Text krävs för extraktion.");
+/**
+ * Server-callable core of `structureRecipe`. Used by the callable above and
+ * by `ocr-recipe-image.ts` for the in-process OCR retry path (BUT-559) — no
+ * HTTP round-trip, same Functions deployment.
+ *
+ * Throws `HttpsError` for unrecoverable failures (so the callable wrapper
+ * surfaces them correctly). For server-to-server callers, wrap in try/catch
+ * if the caller needs to fall back instead of failing.
+ */
+export async function runStructureRecipe(
+  req: StructureRecipeRequest,
+  authUidHash: string
+): Promise<StructureRecipeResponse> {
+  const { text, partialData, mode = "extract", sourceUrl } = req;
+
+  // Validate input
+  if (!text || typeof text !== "string") {
+    throw new HttpsError("invalid-argument", "Text krävs för extraktion.");
+  }
+
+  if (text.length > 50000) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Texten är för lång (max 50000 tecken)."
+    );
+  }
+
+  if (text.length < 20) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Texten är för kort för att innehålla ett recept."
+    );
+  }
+
+  try {
+    // Check AI kill switch
+    const configDoc = await admin.firestore().doc("system/config").get();
+    if (configDoc.exists && configDoc.data()?.aiEnabled === false) {
+      return {
+        success: false,
+        error: "AI-funktioner är tillfälligt avstängda.",
+        estimatedCost: 0,
+      };
     }
 
-    if (text.length > 50000) {
-      throw new HttpsError(
-        "invalid-argument",
-        "Texten är för lång (max 50000 tecken)."
-      );
+    const client = getGeminiClient();
+    const isIngredientLines = mode === "ingredientLines";
+
+    // Get the appropriate model (with schema baked in)
+    const model = isIngredientLines
+      ? getIngredientLinesModel(client)
+      : getTextModel(client);
+
+    // Scrub PII before sending to LLM
+    const cleanText = scrubPii(text);
+    const cleanSourceUrl = sourceUrl ? scrubUrlParams(sourceUrl) : undefined;
+
+    // Select system prompt based on mode
+    let systemPrompt: string;
+    let userPrompt: string;
+
+    switch (mode) {
+      case "enhance":
+        systemPrompt = RECIPE_ENHANCEMENT_SYSTEM_PROMPT;
+        userPrompt = buildEnhancementPrompt(cleanText, partialData, cleanSourceUrl);
+        break;
+      case "spoken":
+        systemPrompt = SPOKEN_CONTENT_SYSTEM_PROMPT;
+        userPrompt = buildSpokenPrompt(cleanText, cleanSourceUrl);
+        break;
+      case "ingredientLines":
+        systemPrompt = INGREDIENT_LINE_SYSTEM_PROMPT;
+        userPrompt = buildIngredientLinesPrompt(cleanText);
+        break;
+      default:
+        systemPrompt = RECIPE_EXTRACTION_SYSTEM_PROMPT;
+        userPrompt = buildExtractionPrompt(cleanText, cleanSourceUrl);
     }
 
-    if (text.length < 20) {
-      throw new HttpsError(
-        "invalid-argument",
-        "Texten är för kort för att innehålla ett recept."
-      );
+    logger.info(
+      `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${authUidHash} (prompt v${PROMPT_VERSION})`
+    );
+
+    // Call Vertex AI Gemini (europe-west1, EU residency)
+    const result = await model.generateContent({
+      contents: [
+        { role: "user", parts: [{ text: userPrompt }] },
+      ],
+      systemInstruction: systemPrompt,
+    });
+
+    const response = result.response;
+    const content = extractResponseText(response);
+
+    if (!content) {
+      logger.error("[structureRecipe] Empty response from Gemini");
+      return {
+        success: false,
+        error: "Inget svar från AI-tjänsten.",
+        estimatedCost: 0.01,
+      };
     }
 
-    try {
-      // Check AI kill switch
-      const configDoc = await admin.firestore().doc("system/config").get();
-      if (configDoc.exists && configDoc.data()?.aiEnabled === false) {
+    // Calculate actual cost from API usage
+    const actualCost = calculateGeminiCost(response.usageMetadata);
+
+    // Parse response — ingredient lines mode returns array, others return recipe
+    if (isIngredientLines) {
+      const ingredients = parseIngredientLinesResponse(content);
+      if (!ingredients) {
+        logger.error("[structureRecipe] Failed to parse ingredient lines:", content);
         return {
           success: false,
-          error: "AI-funktioner är tillfälligt avstängda.",
-          estimatedCost: 0,
-        };
-      }
-
-      const client = getGeminiClient();
-      const isIngredientLines = mode === "ingredientLines";
-
-      // Get the appropriate model (with schema baked in)
-      const model = isIngredientLines
-        ? getIngredientLinesModel(client)
-        : getTextModel(client);
-
-      // Scrub PII before sending to LLM
-      const cleanText = scrubPii(text);
-      const cleanSourceUrl = sourceUrl ? scrubUrlParams(sourceUrl) : undefined;
-
-      // Select system prompt based on mode
-      let systemPrompt: string;
-      let userPrompt: string;
-
-      switch (mode) {
-        case "enhance":
-          systemPrompt = RECIPE_ENHANCEMENT_SYSTEM_PROMPT;
-          userPrompt = buildEnhancementPrompt(cleanText, partialData, cleanSourceUrl);
-          break;
-        case "spoken":
-          systemPrompt = SPOKEN_CONTENT_SYSTEM_PROMPT;
-          userPrompt = buildSpokenPrompt(cleanText, cleanSourceUrl);
-          break;
-        case "ingredientLines":
-          systemPrompt = INGREDIENT_LINE_SYSTEM_PROMPT;
-          userPrompt = buildIngredientLinesPrompt(cleanText);
-          break;
-        default:
-          systemPrompt = RECIPE_EXTRACTION_SYSTEM_PROMPT;
-          userPrompt = buildExtractionPrompt(cleanText, cleanSourceUrl);
-      }
-
-      logger.info(
-        `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${hashUid(request.auth!.uid)} (prompt v${PROMPT_VERSION})`
-      );
-
-      // Call Vertex AI Gemini (europe-west1, EU residency)
-      const result = await model.generateContent({
-        contents: [
-          { role: "user", parts: [{ text: userPrompt }] },
-        ],
-        systemInstruction: systemPrompt,
-      });
-
-      const response = result.response;
-      const content = extractResponseText(response);
-
-      if (!content) {
-        logger.error("[structureRecipe] Empty response from Gemini");
-        return {
-          success: false,
-          error: "Inget svar från AI-tjänsten.",
-          estimatedCost: 0.01,
-        };
-      }
-
-      // Calculate actual cost from API usage
-      const actualCost = calculateGeminiCost(response.usageMetadata);
-
-      // Parse response — ingredient lines mode returns array, others return recipe
-      if (isIngredientLines) {
-        const ingredients = parseIngredientLinesResponse(content);
-        if (!ingredients) {
-          logger.error("[structureRecipe] Failed to parse ingredient lines:", content);
-          return {
-            success: false,
-            error: "Kunde inte tolka AI-svaret som ingredienser.",
-            estimatedCost: actualCost,
-          };
-        }
-
-        logger.info(
-          `[structureRecipe] Parsed ${ingredients.length} ingredient lines (cost: $${actualCost.toFixed(6)})`
-        );
-
-        // Wrap in minimal recipe so existing response type works
-        return {
-          success: true,
-          recipe: {
-            title: "_ingredientLines",
-            description: null,
-            portions: null,
-            prepTimeMinutes: null,
-            cookTimeMinutes: null,
-            ingredients,
-            instructions: [],
-            tags: [],
-            difficulty: null,
-            source: null,
-          },
-          estimatedCost: actualCost,
-          promptVersion: PROMPT_VERSION,
-        };
-      }
-
-      const recipe = parseRecipeResponse(content);
-      if (!recipe) {
-        logger.error("[structureRecipe] Failed to parse response:", content);
-        return {
-          success: false,
-          error: "Kunde inte tolka AI-svaret som ett recept.",
+          error: "Kunde inte tolka AI-svaret som ingredienser.",
           estimatedCost: actualCost,
         };
       }
 
-      // Add source if provided
-      if (cleanSourceUrl && !recipe.source) {
-        recipe.source = cleanSourceUrl;
-      }
-
       logger.info(
-        `[structureRecipe] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
+        `[structureRecipe] Parsed ${ingredients.length} ingredient lines (cost: $${actualCost.toFixed(6)})`
       );
 
+      // Wrap in minimal recipe so existing response type works
       return {
         success: true,
-        recipe,
+        recipe: {
+          title: "_ingredientLines",
+          description: null,
+          portions: null,
+          prepTimeMinutes: null,
+          cookTimeMinutes: null,
+          ingredients,
+          instructions: [],
+          tags: [],
+          difficulty: null,
+          source: null,
+        },
         estimatedCost: actualCost,
         promptVersion: PROMPT_VERSION,
       };
-    } catch (error) {
-      logger.error("[structureRecipe] Error:", error);
+    }
 
-      if (error instanceof HttpsError) {
-        throw error;
-      }
+    const recipe = parseRecipeResponse(content);
+    if (!recipe) {
+      logger.error("[structureRecipe] Failed to parse response:", content);
+      return {
+        success: false,
+        error: "Kunde inte tolka AI-svaret som ett recept.",
+        estimatedCost: actualCost,
+      };
+    }
 
-      // Check for rate limiting
-      if (error instanceof Error && error.message.includes("rate limit")) {
-        throw new HttpsError(
-          "resource-exhausted",
-          "AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund."
-        );
-      }
+    // Add source if provided
+    if (cleanSourceUrl && !recipe.source) {
+      recipe.source = cleanSourceUrl;
+    }
 
+    logger.info(
+      `[structureRecipe] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
+    );
+
+    return {
+      success: true,
+      recipe,
+      estimatedCost: actualCost,
+      promptVersion: PROMPT_VERSION,
+    };
+  } catch (error) {
+    logger.error("[structureRecipe] Error:", error);
+
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+
+    // Check for rate limiting
+    if (error instanceof Error && error.message.includes("rate limit")) {
       throw new HttpsError(
-        "internal",
-        "Ett fel uppstod vid AI-bearbetning. Försök igen."
+        "resource-exhausted",
+        "AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund."
       );
     }
-  })
-);
+
+    throw new HttpsError(
+      "internal",
+      "Ett fel uppstod vid AI-bearbetning. Försök igen."
+    );
+  }
+}
 
 // =============================================================================
 // Helper Functions

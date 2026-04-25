@@ -1,10 +1,15 @@
 // lib/viewmodels/group_recipe_selection_viewmodel.dart
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -23,7 +28,15 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
     required UnifiedRecipeService recipeService,
     required this.targetGroup,
     required this.groupMembers,
-  }) : _recipeService = recipeService;
+    AnalyticsService? analyticsService,
+    UserService? userService,
+  })  : _recipeService = recipeService,
+        _analyticsService =
+            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
+        _userService = userService ?? ServiceLocator.tryGet<UserService>();
+
+  final AnalyticsService? _analyticsService;
+  final UserService? _userService;
 
   // State
   List<Recipe> _allRecipes = [];
@@ -166,6 +179,26 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
         if (success == null) {
           throw Exception('Could not share recipe: ${recipe.title}');
         }
+      }
+
+      // Group share fans out to all member IDs in one call — recipient count
+      // = group size. Telemetry is fire-and-forget so it never gates the
+      // post-share UI return.
+      final analytics = _analyticsService;
+      if (analytics != null) {
+        unawaited(Future.wait([
+          for (final recipe in recipes)
+            analytics.logRecipeShared(
+              method: 'group',
+              recipeId: recipe.id,
+              recipientCount: memberIds.length,
+            ),
+          analytics.recipe.logFirstShareIfMilestone(
+            userId: _userService?.currentUserId,
+            shareMethod: 'group',
+            joinedAt: _userService?.currentUserProfile?.joinedAt,
+          ),
+        ]));
       }
 
       // Add shared recipes to already-shared list

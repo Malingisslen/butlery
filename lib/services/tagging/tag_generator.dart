@@ -48,6 +48,82 @@ class TagGenerator {
         _phase4 = phase4 ?? _createPhase4(),
         _phase5 = phase5 ?? TagPhase5Cuisine(firebaseConfig: firebaseConfig);
 
+  // BUT-553: per-phase accessors expose individual phase calculation to
+  // `TaggingPipelineRunner` so each phase can be wrapped in its own
+  // Future.timeout. Kept thin — orchestration logic lives in the runner.
+  Phase1Result runPhase1(IngredientLookupResult lookup, Recipe recipe) =>
+      _phase1.calculate(lookup, recipe);
+
+  Phase2Result runPhase2(Phase1Result phase1, Recipe recipe) =>
+      _phase2.calculate(phase1, recipe);
+
+  Phase3Result runPhase3(
+    Phase1Result phase1,
+    Phase2Result phase2,
+    Recipe recipe,
+  ) =>
+      _phase3.calculate(phase1, phase2, recipe);
+
+  Phase4Result runPhase4(
+    Phase1Result phase1,
+    Phase2Result phase2,
+    Phase3Result phase3,
+    Recipe recipe,
+  ) =>
+      _phase4.calculate(phase1, phase2, phase3, recipe);
+
+  Phase5Result runPhase5(Phase4Result phase4, Recipe recipe) =>
+      _phase5.calculate(phase4, recipe);
+
+  /// CRIT-7 fallback path — used by the runner when Phases 2-4 are
+  /// unavailable but Phase 1 succeeded, so we can still surface cuisine tags.
+  Phase5ResultPartial runPhase5FromPhase1(
+    Phase1Result phase1,
+    Recipe recipe,
+  ) =>
+      _phase5.calculateFromPhase1(phase1, recipe);
+
+  /// Combines per-phase results into a final TagResult. Mirrors the
+  /// combination logic at the bottom of [generate], extracted so the
+  /// per-phase runner can produce a result from any subset of phases.
+  TagResult assembleResult({
+    required IngredientLookupResult ingredients,
+    required Recipe recipe,
+    required Phase1Result phase1Result,
+    Phase2Result? phase2Result,
+    Phase3Result? phase3Result,
+    Phase4Result? phase4Result,
+    Phase5Result? phase5Result,
+    Phase5ResultPartial? phase5PartialResult,
+    required bool isPartial,
+  }) {
+    final allTags = <String>{
+      ...phase1Result.tags,
+      if (phase2Result != null) ...phase2Result.tags,
+      if (phase3Result != null) ...phase3Result.tags,
+      if (phase4Result != null) ...phase4Result.tags,
+      if (phase5Result != null) ...phase5Result.tags,
+      if (phase5PartialResult != null) ...phase5PartialResult.tags,
+    };
+
+    final resolvedTags = _resolveTagConflicts(allTags, recipe);
+    final hasDraft = ingredients.matched.any((i) => i.status == 'draft');
+
+    return TagResult(
+      tags: resolvedTags,
+      allergenStatus: phase1Result.allergenStatus,
+      dietaryStatus: phase1Result.dietaryStatus,
+      coverage: ingredients.coverage,
+      unknownIngredients: ingredients.unmatched,
+      generatedAt: DateTime.now(),
+      generatorVersion: kTagGeneratorVersion,
+      isPartial: isPartial,
+      hasDraftIngredients: hasDraft,
+      decisions:
+          phase1Result.decisions.isNotEmpty ? phase1Result.decisions : null,
+    );
+  }
+
   static TagPhase3Complex _createPhase3() {
     final flags = ServiceLocator.tryGet<FeatureFlagService>();
     if (flags == null) return TagPhase3Complex();

@@ -107,6 +107,7 @@ import 'package:butlery/repositories/site_config_repository.dart';
 
 // Parser feedback loop (correction tracking + remote weight updates)
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
+import 'package:butlery/services/parsing/feedback/parse_correction_uploader.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/crf/remote_weight_loader.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
@@ -203,6 +204,7 @@ class ContentModule implements DIModule {
         ParsedRecipeCache,
         RecipeDiffCalculator,
         ParsingCorrectionRepository,
+        ParseCorrectionUploader,
         RemoteWeightLoader,
         IngredientParsingStrategy,
         // On-device BERT NER
@@ -498,6 +500,12 @@ class ContentModule implements DIModule {
 
       container.registerLazySingleton<ParsingCorrectionRepository>(
         () => ParsingCorrectionRepository(),
+      );
+
+      // BUT-595: per-field parse-correction uploader (logParseCorrection
+      // callable). Lazy-Functions instance keeps tests Firebase-free.
+      container.registerLazySingleton<ParseCorrectionUploader>(
+        () => ParseCorrectionUploader(),
       );
 
       // Menu lexicon: code defaults + Firestore overlay (BUT-370)

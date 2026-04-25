@@ -1552,9 +1552,27 @@ class MockOfflineService extends Mock implements OfflineService {
 // All tracker methods return Future<void>. If a tracker adds a non-void
 // return type, this mock will cause a TypeError — add an explicit override.
 class _NoOpFutureMock extends Fake {
+  /// Method names whose return type is `Future<bool>` (milestone helpers added
+  /// for BUT-584 / BUT-576 / BUT-593). Default no-op returns false (= "did not
+  /// fire") so analytics-flow tests don't accidentally claim a milestone fired.
+  static const Set<String> _futureBoolMethodNames = {
+    'logFirstShareIfMilestone',
+    'logFirstMealPlanIfMilestone',
+    'logFirstFriendIfMilestone',
+    'logFirstCommentIfMilestone',
+    'logFirstGroupIfMilestone',
+  };
+
   @override
   dynamic noSuchMethod(Invocation invocation) {
-    if (invocation.isMethod) return Future<void>.value();
+    if (invocation.isMethod) {
+      final name = invocation.memberName.toString();
+      // Symbols stringify as `Symbol("name")` — substring match is enough.
+      for (final m in _futureBoolMethodNames) {
+        if (name.contains(m)) return Future<bool>.value(false);
+      }
+      return Future<void>.value();
+    }
     return super.noSuchMethod(invocation);
   }
 }

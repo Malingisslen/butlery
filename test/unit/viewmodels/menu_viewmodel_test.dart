@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 
@@ -24,6 +25,13 @@ class _MockMenuService extends Mock implements MenuService {}
 // Local pure-Mock AnalyticsService — the centralized one's delegate methods
 // return null instead of Future<void>, crashing await calls.
 class _MockAnalyticsService extends Fake implements AnalyticsService {
+  // Real tracker mock for the `.menu` getter so milestone calls
+  // (`logFirstMealPlanIfMilestone`) resolve to a no-op Future<bool>.
+  final MockMenuEventsTracker _menuTracker = MockMenuEventsTracker();
+
+  @override
+  MenuEventsTracker get menu => _menuTracker;
+
   @override
   dynamic noSuchMethod(Invocation invocation) {
     if (invocation.isMethod) return Future<void>.value();

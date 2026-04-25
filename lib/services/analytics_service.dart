@@ -27,6 +27,7 @@ class AnalyticsService extends BaseService {
   late final ShoppingEventsTracker _shoppingTracker;
   late final SocialEventsTracker _socialTracker;
   late final ImportEventsTracker _importTracker;
+  late final ParseEventsTracker _parseTracker;
   late final SystemEventsTracker _systemTracker;
 
   AnalyticsService({required AnalyticsRepository repository})
@@ -39,6 +40,7 @@ class AnalyticsService extends BaseService {
       repository: _repository,
       parentService: this,
     );
+    _parseTracker = ParseEventsTracker(repository: _repository);
     _systemTracker = SystemEventsTracker(
       repository: _repository,
       parentService: this,
@@ -54,6 +56,7 @@ class AnalyticsService extends BaseService {
   ShoppingEventsTracker get shopping => _shoppingTracker;
   SocialEventsTracker get social => _socialTracker;
   ImportEventsTracker get import => _importTracker;
+  ParseEventsTracker get parse => _parseTracker;
   SystemEventsTracker get system => _systemTracker;
 
   /// Set consent service for GDPR compliance checking
@@ -64,6 +67,7 @@ class AnalyticsService extends BaseService {
     _shoppingTracker.setConsentService(consentService);
     _socialTracker.setConsentService(consentService);
     _importTracker.setConsentService(consentService);
+    _parseTracker.setConsentService(consentService);
     _systemTracker.setConsentService(consentService);
     app_logger.AppLogger.info(
       '[AnalyticsService] Consent service configured for GDPR compliance',
@@ -135,6 +139,17 @@ class AnalyticsService extends BaseService {
       hasSharedRecipe: hasSharedRecipe,
       hasCooked: hasCooked,
     );
+  }
+
+  /// Generic single-property setter for milestone user properties (BUT-618 etc).
+  /// Use `setUserProperties` for the typed bulk path; this one is for ad-hoc
+  /// activation flags that don't belong on the typed API.
+  Future<void> setUserProperty({
+    required String name,
+    required String? value,
+  }) async {
+    if (!await _hasAnalyticsConsent()) return;
+    await _repository.setUserProperty(name: name, value: value);
   }
 
   Future<void> logEvent({
@@ -224,8 +239,16 @@ class AnalyticsService extends BaseService {
           {required String source, bool hasImage = false}) =>
       _recipeTracker.logRecipeCreated(source: source, hasImage: hasImage);
 
-  Future<void> logRecipeShared({required String method}) =>
-      _recipeTracker.logRecipeShared(method: method);
+  Future<void> logRecipeShared({
+    required String method,
+    String? recipeId,
+    int recipientCount = 0,
+  }) =>
+      _recipeTracker.logRecipeShared(
+        method: method,
+        recipeId: recipeId,
+        recipientCount: recipientCount,
+      );
 
   Future<void> logRecipeCooked({
     required String recipeId,

@@ -8,22 +8,14 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
-import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/tagging/config/allergen_config.dart';
-import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:butlery/services/tagging/tagging_events_tracker.dart';
-
-/// Timeout duration for tag generation operations.
-const Duration _tagGenerationTimeout = Duration(seconds: 30);
-
-/// Minimum time required for the generate phase to produce useful results.
-const Duration _minGenerateTime = Duration(seconds: 5);
+import 'package:butlery/services/tagging/tagging_pipeline_runner.dart';
 
 /// Main entry point for the automatic tagging system.
 ///
@@ -34,6 +26,14 @@ class TaggingService extends BaseService {
   final TagGenerator _tagGenerator;
   final UserIngredientRepository? _userIngredientRepository;
   final TaggingEventsTracker? _eventsTracker;
+
+  /// BUT-553: per-phase budgeted pipeline. Replaces the previous single
+  /// 30s wrapper-timeout so a slow Phase doesn't starve downstream phases.
+  /// Built lazily after lookup service is initialised.
+  late final TaggingPipelineRunner _pipelineRunner = TaggingPipelineRunner(
+    lookupService: _lookupService,
+    generator: _tagGenerator,
+  );
 
   /// MED-5: Tracks if config validation failed during initialization.
   /// When true, tagging results may be unreliable.
@@ -90,135 +90,53 @@ class TaggingService extends BaseService {
       return TagResult.empty();
     }
 
-    return await _generateTagsWithTimeout(recipe, ingredients);
+    return await _generateTagsWithBudgets(recipe, ingredients);
   }
 
-  /// CRIT-3: Internal method with timeout that preserves partial results.
+  /// BUT-553: Runs the per-phase-budgeted pipeline (lookup + Phase 1..5)
+  /// via [TaggingPipelineRunner]. Each phase has its own timeout budget,
+  /// so a slow phase no longer starves downstream phases. Replaces the
+  /// previous single 30s wrapper-timeout that fell back to
+  /// `generatePhase1Only` whenever any phase exceeded its share.
   ///
-  /// Uses a two-phase timeout approach:
-  /// 1. Lookup phase: async, can be interrupted by timeout
-  /// 2. Generate phase: sync with internal timeout, returns partial results
-  Future<TagResult> _generateTagsWithTimeout(
+  /// Phase budgets live in `tagging_phase_budgets.dart` so they can be
+  /// tuned without touching orchestration code.
+  Future<TagResult> _generateTagsWithBudgets(
     Recipe recipe,
     List<String> ingredients,
   ) async {
     final totalStopwatch = Stopwatch()..start();
-    final lookupStopwatch = Stopwatch();
-    int? generateMs;
 
-    // Phase 1: Lookup ingredients with timeout
-    IngredientLookupResult lookupResult;
-    try {
-      lookupStopwatch.start();
-      lookupResult = await _lookupService
-          .lookupFromRaw(
-            ingredients,
-            userId: _getCurrentUserId(),
-          )
-          .timeout(_tagGenerationTimeout);
-      lookupStopwatch.stop();
-    } on TimeoutException {
-      lookupStopwatch.stop();
-      // CRIT-4: If lookup times out, return safe defaults for allergens instead of complete failure
-      AppLogger.warning(
-        '⏱️ Ingredient lookup timeout for recipe "${recipe.core.title}" '
-            '(${ingredients.length} ingredients)',
-        'TaggingService',
-      );
-      _logTaggingMetrics(
-        recipeId: recipe.id,
-        totalMs: totalStopwatch.elapsedMilliseconds,
-        lookupMs: lookupStopwatch.elapsedMilliseconds,
-        generateMs: null,
-        ingredientCount: ingredients.length,
-        tagCount: 1, // timeout-warning tag
-        coveragePercent: 0,
-        status: 'lookup_timeout',
-      );
-      // CRIT-4: Return partial result with safe defaults rather than complete failure
-      return TagResult(
-        tags: {'timeout-warning'}, // Visible indicator
-        allergenStatus: _getAllergensSafeDefaults(), // All UNKNOWN
-        dietaryStatus: _getDietarySafeDefaults(), // All UNKNOWN
-        coverage: 0.0,
-        unknownIngredients: ingredients, // Mark all as unknown
-        generatedAt: DateTime.now(),
-        generatorVersion: 'lookup_timeout',
-        isPartial: true,
-        errorReason: 'Ingredient lookup timed out after 30 seconds',
-      );
-    }
-
-    AppLogger.debug(
-      'Ingredient lookup: ${lookupResult.matched.length} matched, '
-      '${lookupResult.unmatched.length} unmatched, '
-      '${(lookupResult.coverage * 100).toStringAsFixed(0)}% coverage',
-    );
-
-    // HIGH-12: Check if ALL ingredients are unknown (distinct from empty recipe)
-    if (lookupResult.matched.isEmpty && lookupResult.unmatched.isNotEmpty) {
-      AppLogger.warning(
-        '⚠️ All ${lookupResult.unmatched.length} ingredients unknown for "${recipe.core.title}"',
-        'TaggingService',
-      );
-      _logTaggingMetrics(
-        recipeId: recipe.id,
-        totalMs: totalStopwatch.elapsedMilliseconds,
-        lookupMs: lookupStopwatch.elapsedMilliseconds,
-        generateMs: 0,
-        ingredientCount: ingredients.length,
-        tagCount: 0,
-        coveragePercent: 0,
-        status: 'all_unknown',
-      );
-      return TagResult.allUnknown(lookupResult.unmatched);
-    }
-
-    // CRIT-3: Calculate remaining time for generation phase
-    final elapsed = totalStopwatch.elapsed;
-    final remainingTime = _tagGenerationTimeout - elapsed;
-
-    if (remainingTime < _minGenerateTime) {
-      // Not enough time for generation, return Phase 1 only for safety
-      AppLogger.warning(
-        '⏱️ Only ${remainingTime.inMilliseconds}ms remaining for generation '
-            '(min ${_minGenerateTime.inSeconds}s), returning Phase 1 only',
-        'TaggingService',
-      );
-      final phase1Result = _tagGenerator.generatePhase1Only(
-        ingredients: lookupResult,
-        recipe: recipe,
-      );
-      totalStopwatch.stop();
-      _logTaggingMetrics(
-        recipeId: recipe.id,
-        totalMs: totalStopwatch.elapsedMilliseconds,
-        lookupMs: lookupStopwatch.elapsedMilliseconds,
-        generateMs: 0,
-        ingredientCount: ingredients.length,
-        tagCount: phase1Result.tags.length,
-        coveragePercent: (phase1Result.coverage * 100).round(),
-        status: 'phase1_only',
-      );
-      return phase1Result;
-    }
-
-    // Generate tags with remaining timeout for graceful degradation
-    final generateStopwatch = Stopwatch()..start();
-    final tagResult = _tagGenerator.generate(
-      ingredients: lookupResult,
+    final pipelineResult = await _pipelineRunner.run(
       recipe: recipe,
-      timeout: remainingTime,
+      ingredients: ingredients,
+      userId: _getCurrentUserId(),
     );
-    generateStopwatch.stop();
-    generateMs = generateStopwatch.elapsedMilliseconds;
-    totalStopwatch.stop();
 
-    final status = tagResult.isPartial ? 'partial' : 'complete';
+    totalStopwatch.stop();
+    final tagResult = pipelineResult.tagResult;
+    final lookupOutcome = pipelineResult.outcomes.firstWhere(
+      (o) => o.phaseIndex == 0,
+      orElse: () => const TaggingPhaseOutcome(
+        phaseName: 'lookup',
+        phaseIndex: 0,
+        elapsedMs: 0,
+        budgetMs: 0,
+        result: 'unknown',
+      ),
+    );
+    final generateMs = pipelineResult.outcomes
+        .where((o) => o.phaseIndex >= 1)
+        .fold<int>(0, (sum, o) => sum + o.elapsedMs);
+
+    // Map outcome → legacy status string so the metrics dashboard keeps
+    // working without a schema change.
+    final status = _statusFromPipeline(pipelineResult);
 
     if (tagResult.isPartial) {
       AppLogger.warning(
-        '⏱️ Tag generation partial (timeout after ${elapsed.inMilliseconds}ms) '
+        '⏱️ Tag generation partial '
+            '(elapsed ${totalStopwatch.elapsedMilliseconds}ms, status=$status) '
             'for recipe "${recipe.core.title}"',
         'TaggingService',
       );
@@ -232,7 +150,7 @@ class TaggingService extends BaseService {
     _logTaggingMetrics(
       recipeId: recipe.id,
       totalMs: totalStopwatch.elapsedMilliseconds,
-      lookupMs: lookupStopwatch.elapsedMilliseconds,
+      lookupMs: lookupOutcome.elapsedMs,
       generateMs: generateMs,
       ingredientCount: ingredients.length,
       tagCount: tagResult.tags.length,
@@ -248,14 +166,39 @@ class TaggingService extends BaseService {
       hasAllergens: tagResult.allergenStatus.isNotEmpty,
       hasDietary: tagResult.dietaryStatus.isNotEmpty,
     );
-    if (lookupResult.hasUnknowns) {
+    if (tagResult.unknownIngredients.isNotEmpty) {
       _eventsTracker?.logUnknownIngredients(
-        unknownIngredients: lookupResult.unmatched,
-        totalIngredients: lookupResult.totalCount,
+        unknownIngredients: tagResult.unknownIngredients,
+        totalIngredients: ingredients.length,
       );
     }
 
     return tagResult;
+  }
+
+  /// Maps a pipeline trace to the legacy status string set
+  /// (`complete`, `partial`, `lookup_timeout`, `phase1_only`,
+  /// `all_unknown`). Keeps `_logTaggingMetrics` schema unchanged so the
+  /// existing dashboard queries still resolve.
+  String _statusFromPipeline(TaggingPipelineResult pipeline) {
+    final lookup =
+        pipeline.outcomes.where((o) => o.phaseIndex == 0).firstOrNull;
+    if (lookup != null && lookup.result == 'timeout') {
+      return 'lookup_timeout';
+    }
+    if (lookup != null && lookup.result == 'error') {
+      return 'lookup_error';
+    }
+    final tags = pipeline.tagResult.tags;
+    if (tags.length == 1 && tags.contains('timeout-warning')) {
+      return 'lookup_timeout';
+    }
+    if (pipeline.tagResult.coverage == 0 &&
+        pipeline.tagResult.unknownIngredients.isNotEmpty &&
+        tags.isEmpty) {
+      return 'all_unknown';
+    }
+    return pipeline.tagResult.isPartial ? 'partial' : 'complete';
   }
 
   /// Logs tagging performance metrics for monitoring.
@@ -562,20 +505,6 @@ class TaggingService extends BaseService {
         .replaceAll(RegExp(r'[^a-z0-9]'), '-')
         .replaceAll(RegExp(r'-+'), '-')
         .replaceAll(RegExp(r'^-|-$'), '');
-  }
-
-  /// CRIT-4: Returns all allergens set to UNKNOWN for safe fallback.
-  Map<String, TriState> _getAllergensSafeDefaults() {
-    return {
-      for (final key in AllergenConfig.allKeys) key: TriState.unknown,
-    };
-  }
-
-  /// CRIT-4: Returns all dietary statuses set to UNKNOWN for safe fallback.
-  Map<String, TriState> _getDietarySafeDefaults() {
-    return {
-      for (final key in DietaryConfig.allKeys) key: TriState.unknown,
-    };
   }
 
   @override

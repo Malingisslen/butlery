@@ -1,6 +1,61 @@
 # Sprint Backlog
 
-## Sprint: Pre-launch hardening — security defects + Firestore cost-perf + push-prefs bug — 2026-04-25
+## Sprint: Pre-launch growth visibility — activation analytics + parse-quality loop + Play Store paperwork — 2026-04-25
+
+Theme: launch is imminent. Make day-1 user behavior measurable (5 activation milestones + sharing instrumentation), close the parse-quality feedback loop so LLM cost doesn't scale linearly with usage, knock out the Google Play Data Safety paperwork (hard submission block), and harden two parsing-pipeline robustness gaps. Plus two carry-over close-outs from the 04-25 hardening sprint side-findings. Additive only, no user-visible UX changes.
+
+### Agent A: flutter-developer — activation analytics (events + user properties)
+
+- [x] **A1. Wire `logRecipeShared` call sites + `first_share` milestone** — `lib/widgets/social/friend_recipe_sharing_dialog.dart`, `lib/widgets/social/group_recipe_sharing_dialog.dart`, `lib/services/social/share_service.dart`: emit `recipe_shared` with `method: 'friend' | 'group' | 'system_share_sheet' | 'link_copy'`, hashed recipe_id (per BUT-421 rules), recipient_count bucket. On first successful share per user, emit `first_share` / `sharing_activated` with `{minutes_since_signup, share_method}` and set user property `sharing_activated=true` (dedupe via user-profile flag). (BUT-532, BUT-584)
+- [x] **A2. `first_meal_plan` + `social_activated` milestones + `first_recipe_source` user prop** — `lib/viewmodels/menu_viewmodel.dart`: on first `menu_saved` (when `menuPlanCount == 0` pre-save), emit `first_meal_plan` with `{minutes_since_signup, recipe_count_in_plan}` and set `menu_activated=true`. Friend/comment/group activation: emit `first_friend` on `friend_request_accepted` (friendCount==0), `first_comment` on `comment_created` (commentCount==0), `first_group` on `group_created`/`group_joined` (groupCount==0); set user props `has_friend`/`has_commented`/`has_group`. In `lib/services/recipe/recipe_persistence_manager.dart:_logRecipeCreated` when `recipeCount==1`, set user property `first_recipe_source = 'import' | 'manual' | 'seed'` (dedupe). Dedupe pattern follows `user_activated` logic at `recipe_persistence_manager.dart:398`. (BUT-576, BUT-593, BUT-618)
+
+### Agent B: flutter-developer + functions/TS — parse-quality + AI-cost telemetry
+
+- [x] **B1. Instrument import per-tier (site_config/regex/llm) for AI cost optimization** — `lib/services/parsing/tiers/`: emit `import_tier_succeeded` / `import_tier_failed` to Firebase Analytics with `{tier, duration_ms, platform (hostname bucketed), session_id}`. Keep the existing Cloud Function `parse_event_logger.dart → logParseEvent` (different use case) but mirror tier outcome to Analytics. Answers "what % of imports required LLM fallback?" — the single most AI-cost-sensitive question. (BUT-552)
+- [x] **B2. Close quality feedback loop — upload `RecipeDiffCalculator` corrections** — `lib/services/parsing/feedback/recipe_diff_calculator.dart` (currently 4 local-only call sites via `recipe_persistence_manager.dart`): pipe diffs through new `logParseCorrection` (or extend `ParseEventLogger`) with schema `{correctedField, fromValue, toValue, sourceTier, promptVersion, domain}`. Persist to aggregatable Firestore collection `parsing_corrections`. Apply `pii-scrubber.ts` server-side before write. (BUT-595)
+
+### Agent C: firebase-backend-security — Play Store paperwork + prior-sprint close-outs
+
+- [x] **C1. Prepare Google Play Data Safety form runbook** — new `docs/ops/play-data-safety-runbook.md`. Enumerate every data type collected: Firebase Auth (email, uid), Firestore (profile, recipes, shopping, groups, comments, ratings, pantry, presence, pings), Analytics (events, user properties), Crashlytics, Performance, FCM tokens, Algolia indexed content, Vertex AI (recipe text). For each: purpose, sharing (none / processor), encryption in transit, deletion request flow. Cross-check against `ios/Runner/PrivacyInfo.xcprivacy` so iOS and Android declarations match. Output: copy-paste-ready answers per Play Console field. (BUT-561) — HARD SUBMISSION BLOCK
+- [x] **C2. Gitignore Android signing artefacts** — `.gitignore`: add `android/key.properties` and `android/app/*.jks`. (Side-finding from 04-25 sprint. Git log shows never committed yet, but the gap exists — one accidental `git add .` leaks the keystore password.)
+- [x] **C3. Migrate remaining notification call sites to `preference-aware-push` helper** — done. `send-activity-digest.ts` now routes through `sendPushToUserRespectingPreferences` (master + quiet-hours gates on top of the existing `digestFrequency` check). `send-notification.ts` callable refactored: `dispatchNotification()` extracted with test seams, non-silent pushes go through the helper, silent pushes (background sync) intentionally bypass the gate. Tests added: 4 scenarios for activity-digest, 7 for the callable (sent / master-disabled / quiet-hours / opted-out / no-token / silent-bypass / unknown-category fallback). Constraint honored: `preference-aware-push.ts` unchanged. No third bypass path found — `Grep sendEachForMulticast` returned only the two target files plus the helper itself. (Side-finding from 04-25 sprint — same bug as BUT-438, just different push paths.)
+
+### Agent D: firebase-backend-security — parsing pipeline robustness
+
+- [x] **D1. Per-phase budget on tagging pipeline** — `lib/services/tagging/tagging_service.dart`: replace single 30s `_tagGenerationTimeout` wrapper with per-phase budgets (P1:2s, P2:5s, P3:10s, P4:5s, P5:8s) and accumulated partial results. On phase timeout, emit structured log with `{phase_index, elapsed_ms}` and continue to next phase using Phase-N-1 result instead of falling back to `generatePhase1Only`. Targeted test: simulate Phase-2 hang, assert Phases 3-5 still run with stale Phase-1 result. (BUT-553)
+- [x] **D2. OCR rawText auto re-extraction** — done. `functions/src/llm/structure-recipe.ts` extracts a server-callable `runStructureRecipe()` core (callable wrapper unchanged). New `functions/src/llm/ocr-retry.ts` orchestrator with budget guard (`MIN_REMAINING_BUDGET_MS = 65_000` against the 120s parent timeout). `functions/src/llm/ocr-recipe-image.ts` refactored: callable delegates to `runOcrRecipeImage()` core with test seams; on image-parse failure with non-empty rawText we invoke `runStructureRecipe(rawText)` in-process and return the structured result with `retryCount: 1` + `retryOutcome: 'success'`. Response gains `retryCount: number` and `retryOutcome: 'success'|'failure'|'skipped_budget'|'skipped_no_text'|null` (existing fields preserved). Structured `console.info` log emits `{retryCount, retryOutcome, elapsed_ms_total, raw_text_length}` for observability. New `functions/src/__tests__/ocr-retry.test.ts` — 10/10 passing: 6 orchestrator-direct + 4 end-to-end (mandatory rawText recovery, happy path no-retry, structureRecipe throws, budget exceeded). `cd functions && npm test` green (44 total). (BUT-559)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos` — 0 issues
+- [ ] `cd functions && npm test` — green
+- [ ] Targeted unit tests per agent — green
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-532, BUT-584, BUT-576, BUT-593, BUT-618, BUT-552, BUT-595, BUT-561, BUT-553, BUT-559 → Done
+
+### Continued blockers from prior sprint (NOT in this sprint scope)
+
+- **BUT-426 freeRASP teamId + cert hashes** — partial done (placeholder constants extracted with release-mode warning). Blocked on real Talsec teamId from freeRASP dashboard + SHA-256 cert hash via `keytool -list -v -keystore android/app/upload-keystore.jks -alias upload`.
+- **BUT-450 GCP alerting** — partial done (script hardened to fail-loud, runbook written). Blocked on user installing gcloud, running `gcloud auth login`, creating email notification channel per `docs/ops/gcp-alerting-runbook.md`, exporting `GCP_NOTIFICATION_CHANNEL_ID`, running script.
+
+---
+
+## What this means in plain language
+
+- **You'll be able to tell who's actually using the app.** Today, sharing-via-friends, sharing-via-group, and sharing-via-system are all invisible — you can't tell which is the growth loop. After this, all three are tracked separately.
+- **You'll know when someone "becomes a user."** Five new milestone events fire once per person — first share, first meal plan, first friend, first comment, first group — plus a "where did your first recipe come from" tag (import / manual / seed). From day one you can answer "what % of new users plan a meal in their first week?".
+- **AI cost gets a cost-driver dashboard.** Right now you can't tell whether 5% or 95% of imports needed the expensive LLM tier. After this you can — so when you expand cheaper tiers, you can prove the savings.
+- **Recipe-edit corrections start being saved.** Every time someone fixes a parsed recipe, that's free training data. Today it's lost. After this, it goes to a Firestore collection you can query for "which sites need better configs."
+- **Google Play submission gets unblocked.** The Data Safety form is a hard rejection criterion. The runbook will give you copy-paste-ready answers for every field.
+- **Two scary-looking files stop being committable.** Your keystore password and signing key live in repo paths that aren't gitignored yet — one accidental `git add .` would leak them to GitHub. After this, they can't be.
+- **The lapsed-user push fix gets applied everywhere.** The "respect quiet hours and opt-outs" helper from yesterday currently only runs on the win-back path. After this, it covers all server-sent pushes.
+- **Tagging gracefully degrades instead of silently dying.** A slow Firestore lookup today kills the whole tag pipeline; after this, each phase has its own time budget, so a Phase-2 hang still lets Phase 3-5 run.
+- **OCR partial successes stop being thrown away.** Today, if a recipe-image parse fails, the OCR text is discarded. After this, the server retries automatically with the raw text.
+- **Risk: Low.** All additive — no UI changes. Each task independently revertable. The form runbook is paperwork, not code. The push-helper migration (C3) is a bug-fix, not a behavior change.
+
+---
+
+## Archive: Pre-launch hardening — security defects + Firestore cost-perf + push-prefs bug — 2026-04-25
 
 Theme: drain the highest-leverage P2 Bug/security cluster before submission. One big rock (BUT-448 Firestore rules CI gate) plus six surgical 2-hour fixes. Additive only, no user-visible features.
 
@@ -11,42 +66,30 @@ Theme: drain the highest-leverage P2 Bug/security cluster before submission. One
 
 ### Agent B: firebase-backend-security — server testing + observability
 
-- [x] **B1. Firestore rules unit tests + CI gate** — done (CI-verified). Dep already installed. New `functions/src/__tests__/firestore-rules.test.ts` — 15 tests, ~20 assertions covering `recipes` (8 tests: create/read/write/delete + admin-moderation override + cookCount delta) and `users` + `users/.../settings/preferences` + `users/.../pantry` (7 tests). New `.github/workflows/firestore-rules.yml` spins up Java 21 + emulator + runs `npm run test:rules:all`. **Local verification gap:** Java not on Windows PATH; CI is the verification path. Follow-up collections (social, shopping, comments, ratings, conversations, friends, presence, etc.) tracked separately. (BUT-448)
-- [!] **B2. Activate GCP alerting** — PARTIAL/BLOCKED on user gcloud + GCP creds. Done: hardened `setup-gcp-alerts.sh:15` to require `GCP_NOTIFICATION_CHANNEL_ID:?` env var (fails loudly instead of silently writing broken policies); new `docs/ops/gcp-alerting-runbook.md` with exact commands. **Blocked on:** user installs gcloud, runs `gcloud auth login`, creates email notification channel via runbook §3, exports env var, runs script. (BUT-450)
+- [x] **B1. Firestore rules unit tests + CI gate** — done (CI-verified). New `functions/src/__tests__/firestore-rules.test.ts` — 15 tests covering `recipes`, `users`, `users/.../settings/preferences`, `users/.../pantry`. New `.github/workflows/firestore-rules.yml`. Local Java not on PATH; CI is the verification path. Follow-up collections tracked separately. (BUT-448)
+- [!] **B2. Activate GCP alerting** — PARTIAL/BLOCKED on user gcloud + GCP creds. Done: hardened `setup-gcp-alerts.sh:15` to require `GCP_NOTIFICATION_CHANNEL_ID:?`; new `docs/ops/gcp-alerting-runbook.md`. (BUT-450)
 
 ### Agent C: flutter-developer — Firestore cost/perf (analysis report 04)
 
-- [x] **C1. Audit `.limit(10000)` callers** — done. Method = `BaseFirebaseRepository.readAll()`. Two real call-sites: (1) the base method itself — added `kReleaseMode` warning + named const; (2) `lib/services/account/account_deletion_service.dart:287` (per-user account-deletion search-index cleanup, bounded admin op — kept with `// note:` comment). All recipe/shopping/personal-tag subclasses already paginate or are structurally bounded. (BUT-474)
-- [x] **C2. Denormalize rating stream** — done; `lib/repositories/firebase/firebase_ratings_repository.dart`: aggregate path swapped from `.limit(500).snapshots()` (~501 reads/update) to single-doc stream on `recipe_social_stats/{recipeId}` (1 read/update). Reviews-list path (separate `getRecipeRatings` method) untouched. Test updated to seed aggregate doc + cover missing-doc case (32/32 in repo + adapter rating-stream test green). (BUT-430)
+- [x] **C1. Audit `.limit(10000)` callers** — done. Method = `BaseFirebaseRepository.readAll()`. Two real call-sites; structurally bounded subclasses. (BUT-474)
+- [x] **C2. Denormalize rating stream** — done; `firebase_ratings_repository.dart`: aggregate path swapped from `.limit(500).snapshots()` (~501 reads/update) to single-doc stream on `recipe_social_stats/{recipeId}` (1 read/update). (BUT-430)
 
 ### Agent D: firebase-backend-security — push prefs bug
 
-- [x] **D1. Win-back push respects prefs + quiet hours** — done. New `functions/src/shared/preference-aware-push.ts` exports `sendPushToUserRespectingPreferences(uid, payload, category, ...)` returning structured result. Reads root collection `user_notification_preferences/{uid}`; honors master `enabled`, `reEngagement` (forward-compat), category fallback, quiet hours via `Intl.DateTimeFormat` on `Europe/Stockholm` (DST-safe). `detect-lapsed-users.ts` routed through helper. New `__tests__/detect-lapsed-users.test.ts` — 12 cases (6 unit + 6 scenarios). 12/12 pass. (BUT-438)
+- [x] **D1. Win-back push respects prefs + quiet hours** — done. New `functions/src/shared/preference-aware-push.ts`. `detect-lapsed-users.ts` routed through helper. 12/12 scenario tests pass. (BUT-438)
 
 ### Post-Sprint Steps
 
 - [x] `dart analyze --fatal-infos` — 0 issues
 - [x] `cd functions && npm test` — 28/28 parity + 12/12 lapsed-users green
 - [x] Targeted unit tests per agent — green
-- [ ] Commit, push to main
-- [ ] Update Linear: BUT-428, BUT-448, BUT-474, BUT-430, BUT-438 → Done; BUT-426, BUT-450 stay In Progress (blocked on user)
+- [x] Commit, push to main — `1a29311f6`, `fe7c168fe`, `8d4a365c7`
+- [ ] Update Linear: BUT-428, BUT-448, BUT-474, BUT-430, BUT-438 → Done; BUT-426, BUT-450 stay In Progress
 
-### Side findings (not in sprint scope — surface to user)
+### Side findings (rolled into next sprint as C2 + C3)
 
-- [ ] **`android/key.properties` is NOT gitignored** and contains plaintext keystore password. Git log shows it has never been committed (so no leak yet), but the gap exists. Add `android/key.properties` and `android/app/*.jks` to `.gitignore` before any future commit can leak the password.
-- [ ] Other notification call sites still bypass prefs/quiet-hours: `functions/src/analytics/send-activity-digest.ts` and `functions/src/notifications/send-notification.ts` (callable). Same bug as BUT-438; should migrate to the new helper.
-
----
-
-## What this means in plain language
-
-- **The lock on the local recipe database becomes airtight.** The encryption key was sitting plain-text in query logs — now it isn't.
-- **Tampering detection actually turns on.** Today the anti-tamper layer silently disables itself because of a placeholder ID — a determined attacker has a free pass.
-- **Backend permission rules get a safety net.** A 1465-line file that gates who can read what gets automated tests so a rule mistake can't ship.
-- **You'll know when the backend breaks.** Email alert when Cloud Functions error rate spikes; today you find out from user reports.
-- **Recipe ratings load way faster and cost less.** Opening a recipe was reading 500 documents per rating change — now it reads 1.
-- **Lapsed-user "we miss you" pushes will stop ignoring quiet hours and opt-outs.** A user who turned off marketing pings still gets them today.
-- **Risk: Low–medium.** B1 (rules tests) is the meatiest — could expose existing rules bugs that need fixing. Each task independently revertable. No user-visible UX change.
+- [→] **`android/key.properties` is NOT gitignored** — rolled to next sprint C2.
+- [→] **Other notification call sites still bypass prefs/quiet-hours** — rolled to next sprint C3.
 
 ---
 

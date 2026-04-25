@@ -12,8 +12,10 @@ import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
+import 'package:butlery/services/parsing/feedback/parse_correction_uploader.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -375,6 +377,14 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     if (recipeCount == 1) {
       _isFirstRecipe = true;
       _trackFirstRecipeMetrics();
+      // BUT-618: stamp `first_recipe_source` user property exactly once per
+      // user. Dedupe via SharedPreferences flag so reload/re-import can't
+      // overwrite the original source attribution.
+      FirstRecipeSourceMilestone.setIfFirstRecipe(
+        analytics: _analyticsService,
+        userId: _recipeService.currentUserId,
+        source: source,
+      );
     }
   }
 
@@ -432,30 +442,22 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   }
 
   /// Track parsing corrections for imported recipes (fire-and-forget).
+  /// Aggregate doc → `parsing_corrections` (alias learning); per-field docs →
+  /// `parse_corrections_v2` via logParseCorrection callable (BUT-595).
   void _trackParsingCorrectionsInBackground(Recipe savedRecipe) {
-    if (savedRecipe.sourceUrl == null || savedRecipe.sourceUrl!.isEmpty) {
-      return;
-    }
-
+    if (savedRecipe.sourceUrl == null || savedRecipe.sourceUrl!.isEmpty) return;
     final originalParsed = _state.originalParsedRecipe;
-    if (originalParsed == null) {
-      return;
-    }
+    if (originalParsed == null) return;
 
     Future(() async {
       try {
         final diffCalculator = ServiceLocator.tryGet<RecipeDiffCalculator>();
         final correctionRepo =
             ServiceLocator.tryGet<ParsingCorrectionRepository>();
-
-        if (diffCalculator == null || correctionRepo == null) {
-          AppLogger.debug(
-              '📊 Parsing correction tracking not available (services not registered)');
-          return;
-        }
-
         final userId = _recipeService.currentUserId;
-        if (userId == null) {
+        if (diffCalculator == null ||
+            correctionRepo == null ||
+            userId == null) {
           return;
         }
 
@@ -464,16 +466,16 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           corrected: savedRecipe,
           userId: userId,
         );
+        if (correction == null) return;
 
-        if (correction != null) {
-          await correctionRepo.save(correction);
-          AppLogger.info(
-            '📊 Tracked ${correction.totalCorrections} parsing corrections '
-            'for ${correction.domain ?? correction.source.name}',
-          );
-        } else {
-          AppLogger.debug('📊 No parsing corrections detected');
-        }
+        await correctionRepo.save(correction);
+        AppLogger.info(
+          '📊 Tracked ${correction.totalCorrections} parsing corrections '
+          'for ${correction.domain ?? correction.source.name}',
+        );
+        // BUT-595: per-field fan-out via logParseCorrection callable.
+        await ServiceLocator.tryGet<ParseCorrectionUploader>()
+            ?.uploadWithSharedSalt(correction: correction);
       } catch (e) {
         AppLogger.warning('Failed to track parsing corrections: $e');
       }

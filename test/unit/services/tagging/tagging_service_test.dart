@@ -6,9 +6,13 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
-import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
+import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
+import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
+import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
+import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 
@@ -35,6 +39,60 @@ void main() {
     registerFallbackValue(_createTestLookupResult());
     registerFallbackValue(const Duration(seconds: 30));
     registerFallbackValue(_createTestIngredientData());
+    // BUT-553: per-phase methods need Phase*Result fallbacks so mocktail
+    // can match `any()` for the new runPhaseN signatures.
+    registerFallbackValue(_createTestPhase1Result(_createTestLookupResult()));
+    registerFallbackValue(Phase2Result(
+      tags: const {},
+      phase1: _createTestPhase1Result(_createTestLookupResult()),
+    ));
+    registerFallbackValue(Phase3Result(
+      tags: const {},
+      phase1: _createTestPhase1Result(_createTestLookupResult()),
+      phase2: Phase2Result(
+        tags: const {},
+        phase1: _createTestPhase1Result(_createTestLookupResult()),
+      ),
+    ));
+    registerFallbackValue(Phase4Result(
+      tags: const {},
+      phase1: _createTestPhase1Result(_createTestLookupResult()),
+      phase2: Phase2Result(
+        tags: const {},
+        phase1: _createTestPhase1Result(_createTestLookupResult()),
+      ),
+      phase3: Phase3Result(
+        tags: const {},
+        phase1: _createTestPhase1Result(_createTestLookupResult()),
+        phase2: Phase2Result(
+          tags: const {},
+          phase1: _createTestPhase1Result(_createTestLookupResult()),
+        ),
+      ),
+    ));
+    registerFallbackValue(Phase5Result(
+      tags: const {},
+      phase4: Phase4Result(
+        tags: const {},
+        phase1: _createTestPhase1Result(_createTestLookupResult()),
+        phase2: Phase2Result(
+          tags: const {},
+          phase1: _createTestPhase1Result(_createTestLookupResult()),
+        ),
+        phase3: Phase3Result(
+          tags: const {},
+          phase1: _createTestPhase1Result(_createTestLookupResult()),
+          phase2: Phase2Result(
+            tags: const {},
+            phase1: _createTestPhase1Result(_createTestLookupResult()),
+          ),
+        ),
+      ),
+    ));
+    registerFallbackValue(Phase5ResultPartial(
+      tags: const {},
+      phase1: _createTestPhase1Result(_createTestLookupResult()),
+    ));
   });
 
   setUp(() {
@@ -56,20 +114,68 @@ void main() {
   group('TaggingService', () {
     group('H20: generateTags', () {
       test('returns TagResult for valid recipe', () async {
+        // BUT-553: Service now delegates to TaggingPipelineRunner which
+        // calls per-phase methods (runPhase1..5) on the generator instead
+        // of `generate()`. The contract from the caller's view is
+        // unchanged — non-null TagResult with tags from the pipeline.
         final recipe = RecipeBuilder()
             .withTitle('Test Recipe')
             .withIngredients(['tomat', 'lök']).build();
         final lookupResult = _createTestLookupResult();
-        final tagResult = _createTestTagResult();
+        final phase1Result = _createTestPhase1Result(lookupResult);
+        final phase2Result = Phase2Result(
+          tags: const {'p2'},
+          phase1: phase1Result,
+        );
+        final phase3Result = Phase3Result(
+          tags: const {'p3'},
+          phase1: phase1Result,
+          phase2: phase2Result,
+        );
+        final phase4Result = Phase4Result(
+          tags: const {'p4'},
+          phase1: phase1Result,
+          phase2: phase2Result,
+          phase3: phase3Result,
+        );
+        final phase5Result = Phase5Result(
+          tags: const {'p5'},
+          phase4: phase4Result,
+        );
+        final fakeAssemble = TagResult(
+          tags: const {'p1', 'p2', 'p3', 'p4', 'p5'},
+          allergenStatus: const {},
+          dietaryStatus: const {},
+          coverage: 1.0,
+          unknownIngredients: const [],
+          generatorVersion: kTagGeneratorVersion,
+          generatedAt: DateTime.now(),
+        );
 
         when(() => mockLookupService.lookupFromRaw(any(),
                 userId: any(named: 'userId')))
             .thenAnswer((_) async => lookupResult);
-        when(() => mockTagGenerator.generate(
+        when(() => mockTagGenerator.runPhase1(any(), any()))
+            .thenReturn(phase1Result);
+        when(() => mockTagGenerator.runPhase2(any(), any()))
+            .thenReturn(phase2Result);
+        when(() => mockTagGenerator.runPhase3(any(), any(), any()))
+            .thenReturn(phase3Result);
+        when(() => mockTagGenerator.runPhase4(any(), any(), any(), any()))
+            .thenReturn(phase4Result);
+        when(() => mockTagGenerator.runPhase5(any(), any()))
+            .thenReturn(phase5Result);
+        when(() => mockTagGenerator.assembleResult(
               ingredients: any(named: 'ingredients'),
               recipe: any(named: 'recipe'),
-              timeout: any(named: 'timeout'),
-            )).thenReturn(tagResult);
+              phase1Result: any(named: 'phase1Result'),
+              phase2Result: any(named: 'phase2Result'),
+              phase3Result: any(named: 'phase3Result'),
+              phase4Result: any(named: 'phase4Result'),
+              phase5Result: any(named: 'phase5Result'),
+              phase5PartialResult: any(named: 'phase5PartialResult'),
+              isPartial: any(named: 'isPartial'),
+            )).thenReturn(fakeAssemble);
 
         final result = await service.generateTags(recipe);
 
@@ -77,11 +183,9 @@ void main() {
         expect(result!.tags, isNotEmpty);
         verify(() => mockLookupService.lookupFromRaw(any(),
             userId: any(named: 'userId'))).called(1);
-        verify(() => mockTagGenerator.generate(
-              ingredients: any(named: 'ingredients'),
-              recipe: any(named: 'recipe'),
-              timeout: any(named: 'timeout'),
-            )).called(1);
+        // Each phase invoked exactly once on the happy path.
+        verify(() => mockTagGenerator.runPhase1(any(), any())).called(1);
+        verify(() => mockTagGenerator.runPhase5(any(), any())).called(1);
       });
 
       test('returns empty TagResult for recipe with no ingredients', () async {
@@ -100,6 +204,9 @@ void main() {
 
       test('returns partial result with safe defaults on lookup timeout',
           () async {
+        // BUT-553: Lookup floor case — when the lookup phase errors
+        // (or times out), the runner returns a safe-defaults TagResult
+        // with `timeout-warning` and skips all downstream phases.
         final recipe = RecipeBuilder()
             .withTitle('Timeout Recipe')
             .withIngredients(['tomat']).build();
@@ -112,48 +219,17 @@ void main() {
         final result = await service.generateTags(recipe);
 
         expect(result, isNotNull);
-        // CRIT-4: Timeout returns partial result with visible indicator
+        // CRIT-4: Lookup error returns partial result with visible indicator.
+        // (BUT-553 changed the generatorVersion from 'lookup_timeout' to
+        // 'lookup_<outcome>' — for a TimeoutException it's still
+        // 'lookup_timeout'; for other errors it's 'lookup_error'.)
         expect(result!.tags, contains('timeout-warning'));
         expect(result.isPartial, isTrue);
         expect(result.generatorVersion, 'lookup_timeout');
         expect(result.coverage, 0.0);
         expect(result.unknownIngredients, ['tomat']);
-        // TagGenerator should not be called on lookup timeout
-        verifyNever(() => mockTagGenerator.generate(
-              ingredients: any(named: 'ingredients'),
-              recipe: any(named: 'recipe'),
-              timeout: any(named: 'timeout'),
-            ));
-      });
-
-      test('passes remaining timeout to TagGenerator', () async {
-        final recipe = RecipeBuilder()
-            .withTitle('Test Recipe')
-            .withIngredients(['tomat']).build();
-        final lookupResult = _createTestLookupResult();
-        final tagResult = _createTestTagResult();
-
-        when(() => mockLookupService.lookupFromRaw(any(),
-                userId: any(named: 'userId')))
-            .thenAnswer((_) async => lookupResult);
-        when(() => mockTagGenerator.generate(
-              ingredients: any(named: 'ingredients'),
-              recipe: any(named: 'recipe'),
-              timeout: any(named: 'timeout'),
-            )).thenReturn(tagResult);
-
-        await service.generateTags(recipe);
-
-        // Verify timeout is passed (will be less than 30 seconds due to lookup time)
-        final captured = verify(() => mockTagGenerator.generate(
-              ingredients: any(named: 'ingredients'),
-              recipe: any(named: 'recipe'),
-              timeout: captureAny(named: 'timeout'),
-            )).captured;
-
-        expect(captured.single, isA<Duration>());
-        final duration = captured.single as Duration;
-        expect(duration.inSeconds, lessThanOrEqualTo(30));
+        // No phases should run when lookup fails.
+        verifyNever(() => mockTagGenerator.runPhase1(any(), any()));
       });
     });
 
@@ -317,14 +393,11 @@ IngredientData _createTestIngredientData({
   );
 }
 
-TagResult _createTestTagResult({Set<String>? tags}) {
-  return TagResult(
-    tags: tags ?? {'tag1', 'tag2'},
-    allergenStatus: {'gluten': TriState.free},
-    dietaryStatus: {'vegansk': TriState.free},
-    coverage: 1.0,
-    unknownIngredients: [],
-    generatorVersion: kTagGeneratorVersion,
-    generatedAt: DateTime.now(),
+Phase1Result _createTestPhase1Result(IngredientLookupResult lookup) {
+  return Phase1Result(
+    tags: const {'p1-test'},
+    allergenStatus: const {},
+    dietaryStatus: const {},
+    lookup: lookup,
   );
 }

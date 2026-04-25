@@ -79,7 +79,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `unified_menu_service.dart` | 662 | Menu service facade |
 | `recipe_discovery_service.dart` | 625 | Recipe discovery/recommendation |
 | `friends_state_manager.dart` | 625 | Friends list state + stream management |
-| `tagging_service.dart` | 609 | Auto-tagging orchestrator |
+| `tagging_service.dart` | 538 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `realtime_recipe_operations.dart` | 605 | Realtime recipe collaboration ops |
 | `user_service.dart` | 604 | User profile + settings service |
 | `messaging_service.dart` | 600 | Chat/messaging service |

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
@@ -54,6 +55,13 @@ class CommentCrudOperations {
     await _analyticsService.logCommentCreated(
       recipeId: recipeId,
       commentLength: content.trim().length,
+    );
+
+    // First-comment milestone fires at most once per user (BUT-593).
+    final userService = ServiceLocator.tryGet<UserService>();
+    await _analyticsService.social.logFirstCommentIfMilestone(
+      userId: authorId,
+      joinedAt: userService?.currentUserProfile?.joinedAt,
     );
 
     return comment.id;

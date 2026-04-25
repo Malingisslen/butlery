@@ -13,6 +13,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
 
 class GroupInvitationsViewModel extends ChangeNotifier
     with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
@@ -419,6 +420,14 @@ class GroupInvitationsViewModel extends ChangeNotifier
       _analytics?.social.logGroupJoined(
         groupId: invitation.groupId,
         source: 'invitation',
+      );
+
+      // First-group milestone fires at most once per user (BUT-593) — covers
+      // both the join path and the create path.
+      final userService = ServiceLocator.tryGet<UserService>();
+      _analytics?.social.logFirstGroupIfMilestone(
+        userId: userService?.currentUserId,
+        joinedAt: userService?.currentUserProfile?.joinedAt,
       );
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte logga accept invitation event: $e');

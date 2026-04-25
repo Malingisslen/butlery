@@ -1,6 +1,9 @@
 import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/services/analytics/platform_bucket.dart';
+import 'package:butlery/services/analytics/trackers/parse_events_tracker.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/circuit_breaker.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/field_result.dart';
@@ -462,6 +465,8 @@ class RecipeParserService extends BaseService {
       final result = await tier.parseWithTimeout(context);
       results.add(result);
 
+      _emitTierAnalytics(result, context);
+
       if (!result.success && result.failureReason != null) {
         _lastTierFailures.add(result);
       }
@@ -754,6 +759,61 @@ class RecipeParserService extends BaseService {
   Future<void> close() async {
     await _cache.close();
     AppLogger.info('$serviceName: Closed');
+  }
+
+  /// Map an internal tier identifier (`SchemaOrg`/`SiteConfig`/`RuleBased`/`LLM`)
+  /// to the analytics-tier label expected by `import_tier_*` events.
+  ///
+  /// Returns null for tiers we don't want to surface in the funnel
+  /// (e.g. SelectiveEnhance — that's an internal optimization, not a tier).
+  String? _analyticsTierFor(String tierName) {
+    switch (tierName) {
+      case SchemaOrgTier.tierIdentifier:
+        return ParseEventsTracker.tierSchemaOrg;
+      case SiteConfigTier.tierIdentifier:
+        return ParseEventsTracker.tierSiteConfig;
+      case RuleBasedTier.tierIdentifier:
+        return ParseEventsTracker.tierRegex;
+      case LlmTier.tierIdentifier:
+        return ParseEventsTracker.tierLlm;
+      default:
+        return null;
+    }
+  }
+
+  /// Fire `import_tier_succeeded` / `import_tier_failed` for a tier outcome.
+  /// Skipped tiers (no work done) are not emitted — only actual outcomes.
+  /// Fire-and-forget; never blocks or throws.
+  void _emitTierAnalytics(TierResult result, ParsingContext context) {
+    final analyticsTier = _analyticsTierFor(result.tierName);
+    if (analyticsTier == null) return;
+    if (result.failureReason == TierFailureReason.skipped) return;
+
+    try {
+      final tracker = ServiceLocator.get<AnalyticsService>().parse;
+      final params = (
+        tier: analyticsTier,
+        durationMs: result.duration.inMilliseconds,
+        platformBucket: PlatformBucket.bucketFor(context.domain),
+      );
+      // TODO(BUT-552 sibling): pass real session_id once the import-session
+      // correlation ticket lands; until then we omit the field by design.
+      if (result.success) {
+        tracker.logTierSucceeded(
+          tier: params.tier,
+          durationMs: params.durationMs,
+          platformBucket: params.platformBucket,
+        );
+      } else {
+        tracker.logTierFailed(
+          tier: params.tier,
+          durationMs: params.durationMs,
+          platformBucket: params.platformBucket,
+        );
+      }
+    } catch (e) {
+      AppLogger.debug('$serviceName: tier analytics emit failed: $e');
+    }
   }
 
   /// Log parse event to server for analytics (fire-and-forget).
