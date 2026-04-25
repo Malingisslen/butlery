@@ -20,16 +20,16 @@ dependencies:
 
   # ==================== FIREBASE & BACKEND ====================
   firebase_core: ^4.2.1        # Updated for CVE-2025-0838 fix
-  firebase_auth: ^6.1.2        # Updated for security patches
-  cloud_firestore: ^6.1.0      # Updated for CVE-2024-7254 fix
-  firebase_database: ^12.1.3   # Realtime Database for presence onDisconnect
-  firebase_storage: ^13.0.4    # Updated for bug fixes
-  firebase_analytics: ^12.0.4  # Updated for tracking improvements
-  firebase_app_check: ^0.4.0
-  firebase_messaging: ^16.0.4  # Updated for FCM improvements
-  firebase_performance: ^0.11.0  # For performance monitoring
-  firebase_crashlytics: ^5.0.4  # Updated for reporting improvements
-  firebase_remote_config: ^6.0.4  # Feature flags and A/B testing
+  firebase_auth: ^6.4.0        # Updated for security patches
+  cloud_firestore: ^6.3.0      # Updated for CVE-2024-7254 fix
+  firebase_database: ^12.3.0   # Realtime Database for presence onDisconnect
+  firebase_storage: ^13.3.0    # Updated for bug fixes
+  firebase_analytics: ^12.3.0  # Updated for tracking improvements
+  firebase_app_check: ^0.4.3
+  firebase_messaging: ^16.2.0  # Updated for FCM improvements
+  firebase_performance: ^0.11.3  # For performance monitoring
+  firebase_crashlytics: ^5.2.0  # Updated for reporting improvements
+  firebase_remote_config: ^6.4.0  # Feature flags and A/B testing
   flutter_local_notifications: ^20.1.0  # For Android notification channels (21.x needs Dart 3.10+)
   device_info_plus: ^12.4.0  # For unique device identification
   freerasp: ^7.5.1  # Root/jailbreak detection + tampering, reverse engineering, Frida detection
