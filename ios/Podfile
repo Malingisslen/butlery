@@ -42,5 +42,12 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    # Flutter's helper applies its own deployment-target floor (often 13.0)
+    # which masks the Podfile's `platform`. Re-pin every pod to match the
+    # app target so deps using iOS 17 APIs (e.g. connectivity_plus's
+    # NWPath.isUltraConstrained) compile cleanly.
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
+    end
   end
 end
