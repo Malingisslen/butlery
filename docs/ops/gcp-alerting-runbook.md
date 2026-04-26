@@ -1,43 +1,64 @@
 # GCP Alerting Setup Runbook
 
-**Status: PENDING — runbook ready, requires user action to execute (gcloud auth + channel creation).**
+**Status: ACTIVE — 2 alert policies live in `butlery-app-1` as of 2026-04-26.**
 
-Operational runbook for wiring Google Cloud Monitoring alerts in
-`butlery-app-1`. Companion to `infrastructure/alerting/setup-gcp-alerts.sh`,
-which generates the alert policy JSON and applies it via `gcloud`.
+Operational runbook for Google Cloud Monitoring alerts in `butlery-app-1`.
+Companion to `infrastructure/alerting/setup-gcp-alerts.sh`, which is
+idempotent and applies the policies directly via `gcloud`.
 
 ---
 
 ## Why this matters
 
-Without alerting, a runaway Cloud Function, a Firestore read storm, or an
-auth-endpoint brute-force attack can burn through quota and budget for
-hours before anyone notices. The script in
-`infrastructure/alerting/setup-gcp-alerts.sh` codifies five baseline
-policies (CF error rate, CF latency, Firestore ops, auth failures, web
-uptime) but cannot run without a notification channel and an authenticated
-gcloud session.
+Without alerting, a runaway Cloud Function or a downstream incident can
+burn through quota and budget for hours before anyone notices. After
+activation:
 
-After this runbook is executed:
-
-- **MTTD** (mean time to detect) for incidents covered by these policies
+- **MTTD** (mean time to detect) for CF errors and CF latency regressions
   drops from "next time the founder logs in" to ~5 minutes.
-- All five policies fire to a single email channel that you control.
-- The script becomes safe to re-run idempotently — if anyone tries to run
-  it without `GCP_NOTIFICATION_CHANNEL_ID` set, it aborts loudly instead
-  of silently creating broken policies.
+- Both policies fire to `info@butlery.se` (the project's ops mailbox).
+- Re-running the script is safe — it skips policies whose `displayName`
+  already exists.
 
 ---
 
-## Current status (as of 2026-04-25)
+## Current status (as of 2026-04-26)
 
 | Control | Status | Evidence |
 |---|---|---|
-| Alert policy script | EXISTS | `infrastructure/alerting/setup-gcp-alerts.sh` |
-| Notification channel | NOT CREATED | runbook section 3 below |
-| Policies applied to project | NONE | runbook section 4 below |
-| gcloud CLI installed locally | UNKNOWN — verify with `gcloud --version` |
-| Budget alerts (separate flow) | NOT CONFIGURED | GCP Console > Billing > Budgets |
+| Alert policy script | ACTIVE + IDEMPOTENT | `infrastructure/alerting/setup-gcp-alerts.sh` |
+| Notification channel | LIVE | `projects/butlery-app-1/notificationChannels/16468429033040673985` (email: info@butlery.se) |
+| `Cloud Functions - High Error Rate` | LIVE, enabled, routed to channel | verified via `gcloud alpha monitoring policies list` |
+| `Cloud Functions - High Latency` | LIVE, enabled, routed to channel | verified via `gcloud alpha monitoring policies list` |
+| Firestore read-rate alert | NOT SHIPPED | metric/resource-type schema churn — see "Deferred policies" below |
+| Firebase Auth failure-rate alert | NOT SHIPPED | legacy metric retired — see "Deferred policies" below |
+| Budget alerts (separate flow) | TODO | GCP Console > Billing > Budgets |
+
+---
+
+## Deferred policies (intentional gaps)
+
+Two policies originally scoped were dropped because their underlying
+metrics moved between schemas faster than gcloud's filter validator
+caught up. Details so future maintainers don't re-fight this:
+
+- **Firestore read-rate**: `firestore.googleapis.com/document/read_count`
+  was rejected with every reasonable `resource.type` filter
+  (`firestore_database`, `firestore.googleapis.com/Database`, omitting
+  it entirely). Cost protection is better served by GCP Billing budget
+  alerts, which fire on the actual signal (€/day spend) rather than a
+  metric proxy. See section 6 below.
+- **Firebase Auth failure-rate**:
+  `firebaseauth.googleapis.com/api/response_count` no longer exists —
+  Firebase Auth metrics moved under Identity Platform and require
+  project enablement. Firebase Auth has built-in throttling, so this is
+  a nice-to-have rather than a must-have.
+
+If either is needed later, add them via GCP Console
+(<https://console.cloud.google.com/monitoring/alerting>) — the metric
+picker resolves resource types automatically. Capture the resulting
+policy JSON via `gcloud alpha monitoring policies describe` and fold it
+back into the script.
 
 ---
 
@@ -107,70 +128,36 @@ unverified channel silently drops alerts.
 ### 4. Export the channel ID and run the script
 
 The script aborts with a clear error if `GCP_NOTIFICATION_CHANNEL_ID` is
-unset, by design — better than silently applying alert policies that
-can never page anyone.
+unset — fail-loud, never silently apply alerts that can't page anyone.
 
 ```bash
-export GCP_NOTIFICATION_CHANNEL_ID="projects/butlery-app-1/notificationChannels/1234567890123456789"
-export GCP_PROJECT_ID="butlery-app-1"
+export GCP_NOTIFICATION_CHANNEL_ID="projects/butlery-app-1/notificationChannels/16468429033040673985"
 
-cd infrastructure/alerting
-bash setup-gcp-alerts.sh
+bash infrastructure/alerting/setup-gcp-alerts.sh
 ```
 
-The script writes policy JSON to `/tmp/` and prints the `gcloud alpha
-monitoring policies create` commands to apply each one. Currently the
-script stops short of applying — finish with:
-
-```bash
-gcloud alpha monitoring policies create \
-  --project=butlery-app-1 \
-  --policy-from-file=/tmp/cf-error-policy.json
-gcloud alpha monitoring policies create \
-  --project=butlery-app-1 \
-  --policy-from-file=/tmp/cf-latency-policy.json
-gcloud alpha monitoring policies create \
-  --project=butlery-app-1 \
-  --policy-from-file=/tmp/firestore-ops-policy.json
-gcloud alpha monitoring policies create \
-  --project=butlery-app-1 \
-  --policy-from-file=/tmp/auth-failure-policy.json
-
-# Uptime check (optional — only useful once web hosting is live).
-gcloud alpha monitoring uptime-check-configs create butlery-web-uptime \
-  --project=butlery-app-1 \
-  --config-from-file=/tmp/uptime-check.json
-```
-
-> Note: each `policies create` command currently creates the policy
-> without attaching it to a notification channel. After section 5
-> verifies the policy IDs, attach the channel using
-> `gcloud alpha monitoring policies update --add-notification-channels`.
-> A follow-up commit can fold this into the script once the JSON
-> generators are extended to embed the channel.
+The script writes policy JSON to a temp dir, applies each policy via
+`gcloud alpha monitoring policies create`, and verifies all expected
+display names exist afterwards. It is idempotent — re-running skips
+policies whose `displayName` already exists.
 
 ### 5. Verify the policies are live
 
 ```bash
 gcloud alpha monitoring policies list \
-  --project=butlery-app-1 \
-  --format='table(displayName, name, enabled)'
+  --format='value(displayName, enabled, notificationChannels[0])'
 ```
 
-You should see four (or five with uptime) policies, all `enabled=True`.
+You should see two rows, both `enabled=True` and routed to the
+notification channel from step 3.
 
-Trigger a test alert to confirm the channel works — easiest is to lower
-one threshold temporarily and let it fire:
+GCP normally sends a verification email when the channel is created
+(step 3) — clicking it confirms the channel works. If no email arrives,
+re-issue verification:
 
 ```bash
-# Or simply send a test notification through the channel directly:
-gcloud alpha monitoring channels verify \
-  "$GCP_NOTIFICATION_CHANNEL_ID" \
-  --project=butlery-app-1
+gcloud alpha monitoring channels verify "$GCP_NOTIFICATION_CHANNEL_ID"
 ```
-
-Confirm the email lands in your inbox before considering the runbook
-complete.
 
 ### 6. Configure budget alerts (separate flow — manual)
 
@@ -185,29 +172,23 @@ the GCP Console:
 4. Thresholds: 50% (email), 80% (email), 100% (email). Add Slack /
    PagerDuty later if the team grows.
 
-### 7. Update this document
-
-After running the above, replace the "Current status" table with real
-timestamps and channel IDs (or just the last 4 chars of the channel ID
-to avoid leaking the full resource name in git), and set the document
-header to "Status: ACTIVE".
-
 ---
 
 ## Re-running the script
 
-The script is safe to re-run as long as `GCP_NOTIFICATION_CHANNEL_ID` is
-exported. Re-applying a policy that already exists creates a duplicate —
-delete the old one first:
+Safe to re-run as long as `GCP_NOTIFICATION_CHANNEL_ID` is exported. The
+`create_policy_if_missing` helper checks `displayName` against existing
+policies and skips matches — no duplicates.
+
+To delete and re-create a policy (e.g. to change the threshold):
 
 ```bash
 gcloud alpha monitoring policies list \
-  --project=butlery-app-1 \
   --filter="displayName='Cloud Functions - High Error Rate'" \
   --format='value(name)'
 # Then:
-gcloud alpha monitoring policies delete <policy-resource-name> \
-  --project=butlery-app-1
+gcloud alpha monitoring policies delete <policy-resource-name>
+# Then re-run the script.
 ```
 
 ---
@@ -222,16 +203,13 @@ import. After two weeks of steady-state data, review:
   cold-start blips dominate the signal.
 - **CF latency p99 > 10s** — generous; lower to 5s once cold starts are
   warmed.
-- **Firestore ops > 10k/min** — tied to user count. Raise as the user
-  base grows; this is primarily a runaway-query guard, not a load alarm.
-- **Auth failures > 10%** — keep tight. A spike here usually means
-  credential stuffing.
 
 ---
 
 ## Related runbooks and tickets
 
 - `docs/ops/backups.md` — Firestore PITR and weekly exports (BUT-418)
+- `docs/ops/storage-lifecycle-runbook.md` — Cloud Storage versioning + 30-day lifecycle (BUT-419)
 - `docs/ops/moderation-runbook.md` — admin actioning of reports
-- BUT-450 — this runbook's parent ticket
-- `infrastructure/alerting/setup-gcp-alerts.sh` — script applied here
+- BUT-450 — this runbook's parent ticket. **Activated 2026-04-26.**
+- `infrastructure/alerting/setup-gcp-alerts.sh` — idempotent setup script

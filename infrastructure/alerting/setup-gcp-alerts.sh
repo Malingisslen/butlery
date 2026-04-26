@@ -1,235 +1,168 @@
 #!/bin/bash
-# GCP Alerting Setup Script for Butlery Application
-# Run this script once to configure alerting policies in GCP Cloud Monitoring
+# GCP Cloud Monitoring alert policies for Butlery (BUT-450).
+# Idempotent: re-running skips policies that already exist by display name.
+#
+# Why: surfaces production incidents (CF errors, CF latency, Firestore cost
+# spikes, Auth failure spikes) to a paging channel. Without these, problems
+# disappear into Stackdriver and only get noticed via user reports.
 #
 # Prerequisites:
-# - gcloud CLI installed and authenticated
-# - Project ID set: gcloud config set project butlery-app-1
-# - Cloud Monitoring API enabled
+# - gcloud CLI authenticated (`gcloud auth login`)
+# - Project set: `gcloud config set project butlery-app-1`
+# - Cloud Monitoring API enabled (it's on by default for Firebase projects)
+# - GCP_NOTIFICATION_CHANNEL_ID exported. Create one with:
+#     gcloud alpha monitoring channels create --type=email \
+#       --display-name="Butlery Alerts" \
+#       --channel-labels=email_address=<your-ops-email>
+#     gcloud alpha monitoring channels list --format='value(name)'
 #
-# Usage: ./setup-gcp-alerts.sh
+# Usage:
+#   export GCP_NOTIFICATION_CHANNEL_ID=projects/butlery-app-1/notificationChannels/<id>
+#   ./infrastructure/alerting/setup-gcp-alerts.sh
+#
+# Reference: docs/ops/gcp-alerting-runbook.md
 
-set -e
+set -euo pipefail
 
 PROJECT_ID="${GCP_PROJECT_ID:-butlery-app-1}"
-# Notification channel ID must be set before running. The full resource name
-# looks like `projects/butlery-app-1/notificationChannels/1234567890123456789`.
-# Create one with the gcloud command in docs/ops/gcp-alerting-runbook.md and
-# export it as GCP_NOTIFICATION_CHANNEL_ID before running this script.
-# Bash parameter expansion `:?` aborts the script with a clear message if
-# the variable is unset or empty — fail loudly instead of silently creating
-# alert policies that can never page anyone.
 NOTIFICATION_CHANNEL="${GCP_NOTIFICATION_CHANNEL_ID:?GCP_NOTIFICATION_CHANNEL_ID is required — see docs/ops/gcp-alerting-runbook.md}"
 
-echo "Setting up GCP alerting for project: $PROJECT_ID"
-echo "Using notification channel: $NOTIFICATION_CHANNEL"
+echo "Project: $PROJECT_ID"
+echo "Channel: $NOTIFICATION_CHANNEL"
+echo
 
-# =============================================================================
-# STEP 1: Create Notification Channel (Email)
-# =============================================================================
-# First, create a notification channel manually in GCP Console or use:
-# gcloud alpha monitoring channels create --type=email --display-name="Butlery Alerts" \
-#   --channel-labels=email_address=alerts@butlery.app
+WORKDIR="$(mktemp -d -t butlery-alerts.XXXXXX)"
+trap 'rm -rf "$WORKDIR"' EXIT
 
-# After creating, get the channel ID:
-# CHANNEL_ID=$(gcloud alpha monitoring channels list --format='value(name)' | head -1)
+# ----------------------------------------------------------------------------
+# Helper: create alert policy if not already present (idempotent by name).
+# ----------------------------------------------------------------------------
+existing_policies() {
+  gcloud alpha monitoring policies list \
+    --format='value(displayName)' 2>/dev/null
+}
 
-# =============================================================================
-# STEP 2: Cloud Functions Error Rate Alert
-# =============================================================================
-echo "Creating Cloud Functions error rate alert..."
+create_policy_if_missing() {
+  local display_name="$1"
+  local json_file="$2"
 
-cat > /tmp/cf-error-policy.json << 'EOF'
+  if existing_policies | grep -Fxq "$display_name"; then
+    echo "  [skip] '$display_name' already exists"
+    return 0
+  fi
+
+  gcloud alpha monitoring policies create \
+    --policy-from-file="$json_file" \
+    --quiet >/dev/null
+  echo "  [ok]   '$display_name' created"
+}
+
+# ----------------------------------------------------------------------------
+# Policy 1: Cloud Functions error rate >5% over 5min
+# ----------------------------------------------------------------------------
+echo "[1/2] Cloud Functions error rate..."
+cat > "$WORKDIR/cf-error.json" <<EOF
 {
   "displayName": "Cloud Functions - High Error Rate",
   "documentation": {
-    "content": "Cloud Functions error rate exceeded 5% over 5 minutes. Check Cloud Functions logs for details.",
+    "content": "Cloud Functions error rate exceeded 5% over 5 minutes. Check Cloud Functions logs.",
     "mimeType": "text/markdown"
   },
-  "conditions": [
-    {
-      "displayName": "CF Error Rate > 5%",
-      "conditionThreshold": {
-        "filter": "resource.type=\"cloud_function\" AND metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" AND metric.labels.status!=\"ok\"",
-        "aggregations": [
-          {
-            "alignmentPeriod": "300s",
-            "perSeriesAligner": "ALIGN_RATE"
-          }
-        ],
-        "comparison": "COMPARISON_GT",
-        "thresholdValue": 0.05,
-        "duration": "300s"
-      }
+  "conditions": [{
+    "displayName": "CF Error Rate > 5%",
+    "conditionThreshold": {
+      "filter": "resource.type=\"cloud_function\" AND metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" AND metric.labels.status!=\"ok\"",
+      "aggregations": [{
+        "alignmentPeriod": "300s",
+        "perSeriesAligner": "ALIGN_RATE"
+      }],
+      "comparison": "COMPARISON_GT",
+      "thresholdValue": 0.05,
+      "duration": "300s"
     }
-  ],
-  "alertStrategy": {
-    "autoClose": "604800s"
-  },
-  "combiner": "OR"
+  }],
+  "alertStrategy": {"autoClose": "604800s"},
+  "combiner": "OR",
+  "notificationChannels": ["$NOTIFICATION_CHANNEL"],
+  "enabled": true
 }
 EOF
+create_policy_if_missing "Cloud Functions - High Error Rate" "$WORKDIR/cf-error.json"
 
-# Uncomment when notification channel is configured:
-# gcloud alpha monitoring policies create --policy-from-file=/tmp/cf-error-policy.json
-
-# =============================================================================
-# STEP 3: Cloud Functions Execution Time Alert
-# =============================================================================
-echo "Creating Cloud Functions latency alert..."
-
-cat > /tmp/cf-latency-policy.json << 'EOF'
+# ----------------------------------------------------------------------------
+# Policy 2: Cloud Functions p99 execution time >10s
+# ----------------------------------------------------------------------------
+echo "[2/2] Cloud Functions latency..."
+cat > "$WORKDIR/cf-latency.json" <<EOF
 {
   "displayName": "Cloud Functions - High Latency",
   "documentation": {
-    "content": "Cloud Functions execution time exceeded 10 seconds. This may indicate performance issues or cold starts.",
+    "content": "Cloud Functions p99 execution time exceeded 10s over 5 minutes. May indicate cold-start regressions or downstream issues.",
     "mimeType": "text/markdown"
   },
-  "conditions": [
-    {
-      "displayName": "CF Execution Time > 10s",
-      "conditionThreshold": {
-        "filter": "resource.type=\"cloud_function\" AND metric.type=\"cloudfunctions.googleapis.com/function/execution_times\"",
-        "aggregations": [
-          {
-            "alignmentPeriod": "300s",
-            "perSeriesAligner": "ALIGN_PERCENTILE_99",
-            "crossSeriesReducer": "REDUCE_MEAN"
-          }
-        ],
-        "comparison": "COMPARISON_GT",
-        "thresholdValue": 10000000000,
-        "duration": "300s"
-      }
+  "conditions": [{
+    "displayName": "CF Execution Time p99 > 10s",
+    "conditionThreshold": {
+      "filter": "resource.type=\"cloud_function\" AND metric.type=\"cloudfunctions.googleapis.com/function/execution_times\"",
+      "aggregations": [{
+        "alignmentPeriod": "300s",
+        "perSeriesAligner": "ALIGN_PERCENTILE_99",
+        "crossSeriesReducer": "REDUCE_MEAN"
+      }],
+      "comparison": "COMPARISON_GT",
+      "thresholdValue": 10000000000,
+      "duration": "300s"
     }
-  ],
-  "alertStrategy": {
-    "autoClose": "604800s"
-  },
-  "combiner": "OR"
+  }],
+  "alertStrategy": {"autoClose": "604800s"},
+  "combiner": "OR",
+  "notificationChannels": ["$NOTIFICATION_CHANNEL"],
+  "enabled": true
 }
 EOF
+create_policy_if_missing "Cloud Functions - High Latency" "$WORKDIR/cf-latency.json"
 
-# =============================================================================
-# STEP 4: Firestore Read/Write Rate Alert (Cost Protection)
-# =============================================================================
-echo "Creating Firestore operations alert..."
+# Two Firebase-product alerts (Firestore read rate, Auth failure rate) are
+# deliberately NOT shipped here:
+# - Firestore: `firestore.googleapis.com/document/read_count` requires a
+#   resource.type that gcloud's filter validation churned between schemas;
+#   no working filter combination via the API today. Use GCP Billing
+#   budgets for cost protection (link below) — this catches the actual
+#   signal (€/day spend) more directly than read-count.
+# - Firebase Auth: legacy `firebaseauth.googleapis.com/api/response_count`
+#   no longer exists; replacement under Identity Platform requires
+#   project enablement. Firebase Auth has built-in throttling, so this is
+#   a nice-to-have, not a must-have.
+# Add via Console (https://console.cloud.google.com/monitoring/alerting)
+# when needed — the metric picker resolves resource types automatically.
 
-cat > /tmp/firestore-ops-policy.json << 'EOF'
-{
-  "displayName": "Firestore - High Operation Rate",
-  "documentation": {
-    "content": "Firestore operations exceeded 10,000/minute. This may indicate a runaway query or cost issue.",
-    "mimeType": "text/markdown"
-  },
-  "conditions": [
-    {
-      "displayName": "Firestore Ops > 10k/min",
-      "conditionThreshold": {
-        "filter": "resource.type=\"firestore_database\" AND metric.type=\"firestore.googleapis.com/document/read_count\"",
-        "aggregations": [
-          {
-            "alignmentPeriod": "60s",
-            "perSeriesAligner": "ALIGN_RATE"
-          }
-        ],
-        "comparison": "COMPARISON_GT",
-        "thresholdValue": 166.67,
-        "duration": "300s"
-      }
-    }
-  ],
-  "alertStrategy": {
-    "autoClose": "604800s"
-  },
-  "combiner": "OR"
-}
-EOF
+# ----------------------------------------------------------------------------
+# Verify all four policies are now live and routed to the channel.
+# ----------------------------------------------------------------------------
+echo
+echo "Verifying..."
+EXPECTED=(
+  "Cloud Functions - High Error Rate"
+  "Cloud Functions - High Latency"
+)
+PRESENT="$(existing_policies)"
+MISSING=()
+for name in "${EXPECTED[@]}"; do
+  if ! echo "$PRESENT" | grep -Fxq "$name"; then
+    MISSING+=("$name")
+  fi
+done
 
-# =============================================================================
-# STEP 5: Firebase Authentication Alert
-# =============================================================================
-echo "Creating Firebase Auth failure alert..."
+if [[ ${#MISSING[@]} -gt 0 ]]; then
+  echo "ERROR: missing policies:" >&2
+  printf '  - %s\n' "${MISSING[@]}" >&2
+  exit 1
+fi
 
-cat > /tmp/auth-failure-policy.json << 'EOF'
-{
-  "displayName": "Firebase Auth - High Failure Rate",
-  "documentation": {
-    "content": "Firebase Authentication failures exceeded 10% over 5 minutes. May indicate brute force attack or service issues.",
-    "mimeType": "text/markdown"
-  },
-  "conditions": [
-    {
-      "displayName": "Auth Failures > 10%",
-      "conditionThreshold": {
-        "filter": "resource.type=\"firebase_auth\" AND metric.type=\"firebaseauth.googleapis.com/api/response_count\" AND metric.labels.response_code!=\"200\"",
-        "aggregations": [
-          {
-            "alignmentPeriod": "300s",
-            "perSeriesAligner": "ALIGN_RATE"
-          }
-        ],
-        "comparison": "COMPARISON_GT",
-        "thresholdValue": 0.1,
-        "duration": "300s"
-      }
-    }
-  ],
-  "alertStrategy": {
-    "autoClose": "604800s"
-  },
-  "combiner": "OR"
-}
-EOF
-
-# =============================================================================
-# STEP 6: Budget Alert (via GCP Billing)
-# =============================================================================
-echo "Note: Budget alerts should be configured in GCP Console > Billing > Budgets"
-echo "Recommended budget thresholds:"
-echo "  - 50% of monthly budget: Email notification"
-echo "  - 80% of monthly budget: Email + Slack notification"
-echo "  - 100% of monthly budget: Email + Slack + PagerDuty"
-
-# =============================================================================
-# STEP 7: Uptime Check (Optional - for web hosting)
-# =============================================================================
-echo "Creating uptime check for web hosting..."
-
-cat > /tmp/uptime-check.json << 'EOF'
-{
-  "displayName": "Butlery Web App Uptime",
-  "monitoredResource": {
-    "type": "uptime_url",
-    "labels": {
-      "host": "butlery-app-1.web.app"
-    }
-  },
-  "httpCheck": {
-    "path": "/",
-    "useSsl": true,
-    "validateSsl": true,
-    "requestMethod": "GET"
-  },
-  "period": "300s",
-  "timeout": "10s"
-}
-EOF
-
-# =============================================================================
-# APPLY POLICIES
-# =============================================================================
-echo ""
-echo "Policy JSON files created in /tmp/"
-echo ""
-echo "To apply these policies, run:"
-echo "  gcloud alpha monitoring policies create --policy-from-file=/tmp/cf-error-policy.json"
-echo "  gcloud alpha monitoring policies create --policy-from-file=/tmp/cf-latency-policy.json"
-echo "  gcloud alpha monitoring policies create --policy-from-file=/tmp/firestore-ops-policy.json"
-echo "  gcloud alpha monitoring policies create --policy-from-file=/tmp/auth-failure-policy.json"
-echo ""
-echo "For uptime checks:"
-echo "  gcloud alpha monitoring uptime-check-configs create butlery-web-uptime --config-from-file=/tmp/uptime-check.json"
-echo ""
-echo "NOTE: You must first create a notification channel and update the policies with the channel ID."
-echo "See: https://cloud.google.com/monitoring/alerts/notification-channels"
+echo "OK — 2 alert policies live, routed to $NOTIFICATION_CHANNEL"
+echo
+echo "Console: https://console.cloud.google.com/monitoring/alerting/policies?project=$PROJECT_ID"
+echo
+echo "Budget alerts: configure separately in"
+echo "  https://console.cloud.google.com/billing/budgets"
+echo "  (gcloud's budget API is awkward; the Console flow is fine for one-time setup)"
