@@ -80,6 +80,34 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
 );
 
 /**
+ * BUT-439: kill-switch flag bag, returned by the test seam below. Both
+ * fields are optional; missing/undefined means "not killed" (fail open).
+ */
+export interface KillSwitchConfig {
+  aiEnabled?: boolean;
+  llmParserEnabled?: boolean;
+}
+
+/**
+ * Test seam for the BUT-439 kill-switch lookup. Production resolves to a
+ * Firestore read of `system/config`; tests inject a stub returning the
+ * desired flag combination.
+ */
+export type LoadKillSwitch = () => Promise<KillSwitchConfig | undefined>;
+
+async function defaultLoadKillSwitch(): Promise<KillSwitchConfig | undefined> {
+  const configDoc = await admin.firestore().doc("system/config").get();
+  if (!configDoc.exists) return undefined;
+  const data = configDoc.data() as KillSwitchConfig | undefined;
+  return data;
+}
+
+export interface RunStructureRecipeDeps {
+  /** Test seam for the kill-switch lookup. */
+  loadKillSwitch?: LoadKillSwitch;
+}
+
+/**
  * Server-callable core of `structureRecipe`. Used by the callable above and
  * by `ocr-recipe-image.ts` for the in-process OCR retry path (BUT-559) — no
  * HTTP round-trip, same Functions deployment.
@@ -87,10 +115,15 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
  * Throws `HttpsError` for unrecoverable failures (so the callable wrapper
  * surfaces them correctly). For server-to-server callers, wrap in try/catch
  * if the caller needs to fall back instead of failing.
+ *
+ * The `deps` parameter is optional and exists only for unit tests
+ * (BUT-439 kill-switch e2e). Production callers pass nothing and the
+ * default Firestore lookup runs.
  */
 export async function runStructureRecipe(
   req: StructureRecipeRequest,
-  authUidHash: string
+  authUidHash: string,
+  deps?: RunStructureRecipeDeps
 ): Promise<StructureRecipeResponse> {
   const { text, partialData, mode = "extract", sourceUrl } = req;
 
@@ -114,12 +147,31 @@ export async function runStructureRecipe(
   }
 
   try {
-    // Check AI kill switch
-    const configDoc = await admin.firestore().doc("system/config").get();
-    if (configDoc.exists && configDoc.data()?.aiEnabled === false) {
+    // BUT-439: dual-control kill switch.
+    //   - `aiEnabled` (master): kills ALL Vertex calls across the app.
+    //   - `llmParserEnabled` (per-feature): kills ONLY the recipe-parse
+    //     pipeline (structureRecipe + the OCR text-mode retry path).
+    //     Use this when AI is functional but a specific prompt regression
+    //     is producing junk output and the parse pipeline must be paused
+    //     without taking down OCR vision and other LLM-fronted features.
+    //
+    // Both flags fail open on missing doc / missing field — this is a
+    // resilience choice (see docs/ops/llm-kill-switch-runbook.md). On
+    // Firestore unreachable the outer catch turns it into an `internal`
+    // HttpsError (fail closed for the user, but not silently bypassed).
+    const loadKillSwitch = deps?.loadKillSwitch ?? defaultLoadKillSwitch;
+    const config = await loadKillSwitch();
+    if (config?.aiEnabled === false) {
       return {
         success: false,
         error: "AI-funktioner är tillfälligt avstängda.",
+        estimatedCost: 0,
+      };
+    }
+    if (config?.llmParserEnabled === false) {
+      return {
+        success: false,
+        error: "AI-receptolkning är tillfälligt avstängd.",
         estimatedCost: 0,
       };
     }

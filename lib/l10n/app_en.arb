@@ -8981,5 +8981,143 @@
   "appealEmailLaunchFailed": "Could not open the email app. Please email appeals@butlery.app manually.",
   "@appealEmailLaunchFailed": {
     "description": "BUT-556: snackbar when mailto launch fails."
+  },
+  "a11yProfileImageEdit": "Profile picture, tap to change",
+  "@a11yProfileImageEdit": {
+    "description": "BUT-697: Semantics label for editable avatar tap target."
+  },
+  "a11yProfileImageReadonly": "Profile picture",
+  "@a11yProfileImageReadonly": {
+    "description": "BUT-697: Semantics label for read-only avatar tap target."
+  },
+  "a11yReactToComment": "React to comment",
+  "@a11yReactToComment": {
+    "description": "BUT-697: Semantics label for the 'add reaction' tap target on a comment."
+  },
+  "a11yShowCommentLikes": "{count, plural, =1{Show 1 like} other{Show {count} likes}}",
+  "@a11yShowCommentLikes": {
+    "description": "BUT-697: Semantics label for the like-count text on a comment.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yLongPressCommentForReactions": "Comment, long press to react",
+  "@a11yLongPressCommentForReactions": {
+    "description": "BUT-697: Semantics label for the comment body long-press target."
+  },
+  "a11yDismissReactionPicker": "Close the reaction picker",
+  "@a11yDismissReactionPicker": {
+    "description": "BUT-697: Semantics label for the dismiss-on-tap-outside overlay behind the reaction picker."
+  },
+  "a11yCommentLikeAction": "Like comment",
+  "@a11yCommentLikeAction": {
+    "description": "BUT-697: Semantics label for the like button on a comment item (legacy threaded view)."
+  },
+  "a11yCommentReplyAction": "Reply to comment",
+  "@a11yCommentReplyAction": {
+    "description": "BUT-697: Semantics label for the reply button on a comment item (legacy threaded view)."
+  },
+  "a11yRetryUpload": "Retry upload",
+  "@a11yRetryUpload": {
+    "description": "BUT-697: Semantics label for the retry-upload action button."
+  },
+  "a11yCancelUpload": "Cancel upload",
+  "@a11yCancelUpload": {
+    "description": "BUT-697: Semantics label for the cancel-upload action button."
+  },
+  "a11yBulkUploadAction": "{label}",
+  "@a11yBulkUploadAction": {
+    "description": "BUT-697: Semantics label pass-through for bulk upload control buttons (retry-all, cancel-all, clear-failed). The label arg is the already-localized human-readable button text.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yEditImageAction": "{label}",
+  "@a11yEditImageAction": {
+    "description": "BUT-697: Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yEmptyImageStateAdd": "Add image, tap to choose",
+  "@a11yEmptyImageStateAdd": {
+    "description": "BUT-697: Semantics label for the empty-state image picker tap target."
+  },
+  "a11yImagePickerOpen": "Choose images",
+  "@a11yImagePickerOpen": {
+    "description": "BUT-697: Semantics label for the image picker open tap target."
+  },
+  "a11yImagePickerRemove": "Remove selected image {index}",
+  "@a11yImagePickerRemove": {
+    "description": "BUT-697: Semantics label for removing a selected image preview by index.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yGalleryAddImage": "Add image to gallery",
+  "@a11yGalleryAddImage": {
+    "description": "BUT-697: Semantics label for the gallery add-image tile."
+  },
+  "recipeCardSemantics": "Recipe: {title}, tap to open",
+  "@recipeCardSemantics": {
+    "description": "BUT-697: Semantics label for the entire recipe card tap target.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeRatingSemantics": "Rating: {rating}",
+  "@recipeRatingSemantics": {
+    "description": "BUT-697: Semantics label for the rating pill on a recipe card.",
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMenuRecipeOpen": "{title}, tap to open the recipe",
+  "@a11yMenuRecipeOpen": {
+    "description": "BUT-697: Semantics label for the menu recipe row tap target.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMenuSectionRegenerate": "Generate a new suggestion for {category}",
+  "@a11yMenuSectionRegenerate": {
+    "description": "BUT-697: Semantics label for the regenerate-section button on menu section header.",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMenuSwapRecipe": "Swap out {title}",
+  "@a11yMenuSwapRecipe": {
+    "description": "BUT-697: Semantics label for the swap-recipe icon on menu rows.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMenuSuggestAlternative": "Suggest an alternative for {title}",
+  "@a11yMenuSuggestAlternative": {
+    "description": "BUT-697: Semantics label for the suggest-vote-alternative icon on menu rows.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

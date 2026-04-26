@@ -221,6 +221,111 @@ When any trigger lands: update this runbook → re-fill both questionnaires → 
 
 ---
 
+## COPPA target audience
+
+**Status:** Butlery is **not directed at children under 13** (BUT-720).
+
+This section is the authoritative answer for both stores' "is this app
+made for kids" questionnaires. Cross-references:
+
+- **Apple App Store Connect:** "Made for Kids" = **NO**.
+- **Google Play Console:** "Target audience and content" → primary audience
+  is **adults**; "Does your app unintentionally appeal to children?" =
+  **No**; appeal questionnaire = **No**.
+
+### Evidence supporting the not-directed-at-children determination
+
+1. **13+ age gate at sign-up (BUT-413).** `OnboardingAgeGatePage` enforces
+   `birthYear ≤ 2013` before account creation succeeds; users who fail the
+   gate are routed to `OnboardingAgeGateBlockedView` and cannot proceed.
+   The same constraint is enforced server-side via Firestore rules on
+   `users/{uid}/settings/preferences` (`birthYear` required, range
+   [1900, 2013]). This satisfies COPPA §312.5 ("verifiable parental
+   consent") by structurally excluding children under 13.
+2. **No child-friendly UI motifs.** Visual identity targets adult home
+   cooks: cream / forest-green / rust palette, Swedish bistro idiom,
+   monochrome line illustrations. No bright primary colors, cartoon
+   mascots, gamification, badges, sticker rewards, animal characters,
+   "kid mode", or any of the GAFAM-toy iconography Apple/Play reviewers
+   flag as child-targeted in their guidance docs.
+3. **Marketing copy in `store_assets/` is aimed at adult home cooks.**
+   Phrases such as "veckomeny", "matplanering", "samla familjens
+   favoriter" position the app as a household meal-planning tool — adult
+   household manager as primary persona. No "fun for kids", "perfect for
+   the family kitchen" with kid imagery, no school-lunch framing.
+4. **No child-targeted features.** No sticker books, no virtual rewards,
+   no homework helpers, no parent dashboards aimed at supervising kids,
+   no "kids' recipes" category that would make it appealing-to-children
+   under Play's "primary OR appealing" two-prong test.
+5. **UGC + messaging surface targets adult-to-adult communication.**
+   Friend graph, group chat, comments, and pings are scoped to people
+   who passed the 13+ age gate. Block + report flow on every UGC surface
+   (cross-ref §2 / §5.4 above).
+
+### Apple App Store Connect — Made for Kids workflow
+
+- App Store Connect → My Apps → Butlery → **App Information** → **Made
+  for Kids** → **No**.
+- This is consistent with the **12+** age rating from §1 (Apple's
+  Made-for-Kids program is separate from the age-rating questionnaire).
+- If reviewers ask follow-up: cite the four evidence points above and
+  the existing `birthYear` age-gate enforcement at the Firestore-rules
+  layer.
+
+### Google Play Console — Target audience and content workflow
+
+- Play Console → Butlery → **Policy** → **App content** → **Target
+  audience and content** → **Manage**.
+- **Target age groups:** select **13–15, 16–17, 18 and over**. Do NOT
+  tick **Ages 5 and under**, **Ages 6–8**, or **Ages 9–12** — those would
+  invoke Play Families policy (Designed for Families program) and force
+  COPPA compliance burdens that don't apply here.
+- **Does your app unintentionally appeal to children?** → **No**.
+  Justification text (paste verbatim into Play's free-text field if
+  required): "Butlery is a meal-planning and recipe app for adult home
+  cooks. The visual identity uses a muted bistro palette and adult
+  typographic style; no cartoon mascots, gamification, or child-targeted
+  artwork. Sign-up enforces a 13+ age gate (`birthYear ≤ 2013`) at the
+  Firestore-rules layer and rejects under-13 users before any data is
+  collected."
+- **Designed for Families program:** **Do not opt in.** This program is
+  for apps explicitly targeting children, which Butlery is not.
+- **Appeal questionnaire (Play "Does your app appeal to children?"):**
+  every sub-question answered **No** based on the evidence above.
+
+### Cross-references
+
+- **§2 (Apple) → "Made for Kids" row** — already says **No**; this
+  section is the long-form justification.
+- **§4 (Submission checklist) → Play Console** — already includes
+  "Target audience and content" with the same age-group selection;
+  this section adds the COPPA-specific evidence pack.
+- **BUT-590** (IARC + Apple equivalents) — closed; the IARC answer set
+  in §5 implicitly defends the not-directed-at-children determination
+  via §5.10 (Mature themes = None) + §5.4 (UGC moderation).
+- **BUT-624** (App Store / Play Console age rating) — closed; the
+  resulting 12+ / Teen rating is consistent with this COPPA stance.
+- **`OnboardingAgeGatePage`** + **`OnboardingAgeGateBlockedView`** —
+  in-app structural enforcement of the 13+ floor.
+
+### When to revisit
+
+Re-read this section if any of the following lands:
+
+- New feature targeting children (kids' recipes section, sticker book,
+  parent-supervised mode, school-lunch planner).
+- Removal or weakening of the 13+ age gate.
+- Visual rebrand toward child-friendly motifs.
+- Marketing campaign aimed at the under-13 demographic.
+- New SDK that collects data from children (e.g., a kids-content network).
+
+Any of those would invalidate the "not directed at children" stance and
+trigger COPPA compliance work (Designed for Families program enrollment
+on Play; Made-for-Kids = Yes on Apple with the associated kid-data
+restrictions).
+
+---
+
 ## 6. Maintenance triggers (parallel to play-data-safety-runbook.md §9)
 
 Re-read this file when any of the following lands:

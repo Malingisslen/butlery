@@ -49,6 +49,9 @@ export { logParseEvent } from "./events/log-parse-event";
 // Parse Correction Logging - per-field correction telemetry (BUT-595)
 export { logParseCorrection } from "./events/log-parse-correction";
 
+// Web Error Logging - Crashlytics-equivalent for Flutter Web (BUT-449)
+export { logWebError } from "./events/log-web-error";
+
 // Admin Functions - Site config management
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
 export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";

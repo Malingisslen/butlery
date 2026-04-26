@@ -184,31 +184,35 @@ class UploadProgressWidgets {
       return Material(
         color: color.withValues(alpha: AppDimensions.opacityExtraDark),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingM,
-              vertical: AppDimensions.paddingS,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: AppDimensions.iconSizeS,
-                  color: cs.surfaceContainerHighest,
-                ),
-                const SizedBox(width: AppDimensions.spacingXs),
-                Text(
-                  label,
-                  style: AppTextStyles.bodySmall.copyWith(
+        child: Semantics(
+          label: context.l10n.a11yBulkUploadAction(label),
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingM,
+                vertical: AppDimensions.paddingS,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: AppDimensions.iconSizeS,
                     color: cs.surfaceContainerHighest,
-                    fontWeight: FontWeight.w600,
                   ),
-                ),
-              ],
+                  const SizedBox(width: AppDimensions.spacingXs),
+                  Text(
+                    label,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: cs.surfaceContainerHighest,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -457,34 +461,38 @@ class UploadProgressWidgets {
   }) {
     return Builder(builder: (context) {
       final cs = Theme.of(context).colorScheme;
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
-          ),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: AppDimensions.opacityExtraDark),
-            borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: cs.surfaceContainerHighest,
-                size: AppDimensions.iconSizeS,
-              ),
-              const SizedBox(width: AppDimensions.spacingXs),
-              Text(
-                label,
-                style: AppTextStyles.metadataEmphasized.copyWith(
+      return Semantics(
+        label: context.l10n.a11yBulkUploadAction(label),
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingM,
+              vertical: AppDimensions.paddingS,
+            ),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: AppDimensions.opacityExtraDark),
+              borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
                   color: cs.surfaceContainerHighest,
+                  size: AppDimensions.iconSizeS,
                 ),
-              ),
-            ],
+                const SizedBox(width: AppDimensions.spacingXs),
+                Text(
+                  label,
+                  style: AppTextStyles.metadataEmphasized.copyWith(
+                    color: cs.surfaceContainerHighest,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );

@@ -221,11 +221,23 @@ class LlmService extends BaseService {
   }
 
   /// Check if LLM service is available (not rate limited, not killed).
+  ///
+  /// BUT-439: dual-control kill switch on the client too:
+  ///   - `ai_enabled` (master) — kills every LLM-fronted feature.
+  ///   - `llm_parser_enabled` (per-feature) — kills only recipe parsing.
+  ///
+  /// Both Remote Config keys default to true via the server `defaults`
+  /// map. We fail open if Remote Config is unreachable: the server-side
+  /// gate inside `structureRecipe` / `ocrRecipeImage` is the authoritative
+  /// enforcement layer; the client check exists to short-circuit UI
+  /// before the user spends rate-limit tokens.
   Future<bool> isAvailable() async {
-    // Optional client-side kill switch via Remote Config
     try {
       final remoteConfig = FirebaseRemoteConfig.instance;
       if (remoteConfig.getBool('ai_enabled') == false) {
+        return false;
+      }
+      if (remoteConfig.getBool('llm_parser_enabled') == false) {
         return false;
       }
     } catch (_) {

@@ -496,6 +496,30 @@ void main() {
         handle.dispose();
       });
 
+      // BUT-697: Recipe card tap target announces as a button via Semantics.
+      testWidgets(
+          'exposes localized button-role label via find.bySemanticsLabel',
+          (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(
+                recipe: testRecipe,
+                onTap: (_) {},
+              ),
+            ),
+          ),
+        );
+
+        expect(
+            find.bySemanticsLabel(RegExp(
+                r'^Recept: Köttbullar med potatismos, tryck för att öppna')),
+            findsWidgets);
+        handle.dispose();
+      });
+
       testWidgets('should have proper contrast for text', (tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(

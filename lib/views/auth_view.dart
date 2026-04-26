@@ -120,7 +120,7 @@ class _AuthViewState extends State<AuthView> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/illustrations/broccoli.png',
+                'assets/illustrations/broccoli.webp',
                 height: 60,
                 excludeFromSemantics: true,
               ),

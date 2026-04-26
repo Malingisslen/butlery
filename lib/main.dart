@@ -84,6 +84,9 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 // Beta feedback
 import 'package:butlery/widgets/common/feedback_fab.dart';
 
+// Web error tracking (BUT-449)
+import 'package:butlery/services/monitoring/web_error_reporter.dart';
+
 // Keyboard shortcuts (BUT-521)
 import 'package:butlery/core/keyboard/app_shortcuts.dart';
 import 'package:butlery/core/keyboard/app_actions.dart';
@@ -135,7 +138,8 @@ Future<void> main() async {
       }
 
       // Limit image cache to prevent unbounded memory growth
-      PaintingBinding.instance.imageCache.maximumSize = 100;
+      // BUT-470: bumped from 100 to reduce grid thrash on tablets/desktop. 50MB byte cap stays.
+      PaintingBinding.instance.imageCache.maximumSize = 300;
       PaintingBinding.instance.imageCache.maximumSizeBytes =
           50 * 1024 * 1024; // 50 MB
 
@@ -315,6 +319,19 @@ Future<void> _enableCollectionIfConsented() async {
         FirebasePerformance.instance
             .setPerformanceCollectionEnabled(hasConsent),
       ]);
+    }
+
+    // Web error tracking (BUT-449): Crashlytics has no web SDK, so we
+    // route web errors through the `logWebError` callable instead.
+    // Same consent gate as native — install only after consent is
+    // confirmed and skip in debug to avoid noise in dev.
+    if (kIsWeb && hasConsent && !kDebugMode) {
+      try {
+        WebErrorReporter(consentService: consentService).install();
+        AppLogger.info('Web error reporter installed');
+      } catch (e) {
+        AppLogger.warning('Failed to install web error reporter: $e');
+      }
     }
 
     AppLogger.info(

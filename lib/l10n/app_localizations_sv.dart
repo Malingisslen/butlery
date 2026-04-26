@@ -13082,4 +13082,97 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get appealEmailLaunchFailed =>
       'Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.app.';
+
+  @override
+  String get a11yProfileImageEdit => 'Profilbild, tryck för att ändra';
+
+  @override
+  String get a11yProfileImageReadonly => 'Profilbild';
+
+  @override
+  String get a11yReactToComment => 'Reagera på kommentar';
+
+  @override
+  String a11yShowCommentLikes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Visa $count gilla-markeringar',
+      one: 'Visa 1 gilla-markering',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get a11yLongPressCommentForReactions =>
+      'Kommentar, långtryck för att reagera';
+
+  @override
+  String get a11yDismissReactionPicker => 'Stäng reaktionsväljaren';
+
+  @override
+  String get a11yCommentLikeAction => 'Gilla kommentar';
+
+  @override
+  String get a11yCommentReplyAction => 'Svara på kommentar';
+
+  @override
+  String get a11yRetryUpload => 'Försök ladda upp igen';
+
+  @override
+  String get a11yCancelUpload => 'Avbryt uppladdning';
+
+  @override
+  String a11yBulkUploadAction(String label) {
+    return '$label';
+  }
+
+  @override
+  String a11yEditImageAction(String label) {
+    return '$label';
+  }
+
+  @override
+  String get a11yEmptyImageStateAdd => 'Lägg till bild, tryck för att välja';
+
+  @override
+  String get a11yImagePickerOpen => 'Välj bilder';
+
+  @override
+  String a11yImagePickerRemove(int index) {
+    return 'Ta bort vald bild $index';
+  }
+
+  @override
+  String get a11yGalleryAddImage => 'Lägg till bild i galleriet';
+
+  @override
+  String recipeCardSemantics(String title) {
+    return 'Recept: $title, tryck för att öppna';
+  }
+
+  @override
+  String recipeRatingSemantics(String rating) {
+    return 'Betyg: $rating';
+  }
+
+  @override
+  String a11yMenuRecipeOpen(String title) {
+    return '$title, tryck för att öppna receptet';
+  }
+
+  @override
+  String a11yMenuSectionRegenerate(String category) {
+    return 'Skapa nytt förslag för $category';
+  }
+
+  @override
+  String a11yMenuSwapRecipe(String title) {
+    return 'Byt ut $title';
+  }
+
+  @override
+  String a11yMenuSuggestAlternative(String title) {
+    return 'Föreslå alternativ för $title';
+  }
 }

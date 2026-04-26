@@ -222,12 +222,15 @@ class _CommentItemContentState extends State<_CommentItemContent> {
     _reactionPickerOverlay = OverlayEntry(
       builder: (context) => Stack(
         children: [
-          // Dismiss on tap outside
+          // Dismiss on tap outside — invisible scrim, kept out of the
+          // a11y tree so screen readers focus the picker itself.
           Positioned.fill(
-            child: GestureDetector(
-              onTap: _removeOverlay,
-              behavior: HitTestBehavior.opaque,
-              child: const SizedBox.expand(),
+            child: ExcludeSemantics(
+              child: GestureDetector(
+                onTap: _removeOverlay,
+                behavior: HitTestBehavior.opaque,
+                child: const SizedBox.expand(),
+              ),
             ),
           ),
           // Position the picker above the comment
@@ -258,171 +261,187 @@ class _CommentItemContentState extends State<_CommentItemContent> {
 
     return CompositedTransformTarget(
       link: _layerLink,
-      child: GestureDetector(
-        onLongPress: _showReactionPicker,
-        child: Container(
-          padding: AppDimensions.paddingAll12,
-          decoration: isReply
-              ? BoxDecoration(
-                  color:
-                      cs.surface.withValues(alpha: AppDimensions.opacityHalf),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
-                )
-              : null,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Comment header
-              Row(
-                children: [
-                  SocialAvatarComponents.avatar(
-                    displayName: widget.authorDisplayName,
-                    imageUrl: widget.authorAvatarUrl,
-                    size: ImageSize.small,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.authorDisplayName,
-                          style: AppTextStyles.labelLarge,
-                        ),
-                        Text(
-                          widget.formattedTime,
-                          style: AppTextStyles.bodySmall,
-                        ),
-                      ],
+      // Long-press surfaces a reaction picker. Drop `button: true` so the
+      // wrapper doesn't swallow the inner reply/like/edit/delete buttons —
+      // a labeled container is enough for screen readers to announce the
+      // long-press affordance.
+      child: Semantics(
+        label: context.l10n.a11yLongPressCommentForReactions,
+        container: true,
+        child: GestureDetector(
+          onLongPress: _showReactionPicker,
+          child: Container(
+            padding: AppDimensions.paddingAll12,
+            decoration: isReply
+                ? BoxDecoration(
+                    color:
+                        cs.surface.withValues(alpha: AppDimensions.opacityHalf),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusM),
+                  )
+                : null,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Comment header
+                Row(
+                  children: [
+                    SocialAvatarComponents.avatar(
+                      displayName: widget.authorDisplayName,
+                      imageUrl: widget.authorAvatarUrl,
+                      size: ImageSize.small,
                     ),
-                  ),
-                  // Reply button
-                  Semantics(
-                    label: context.l10n.a11yReplyToComment,
-                    button: true,
-                    child: IconButton(
-                      onPressed: widget.onReply,
-                      icon: Icon(
-                        Icons.reply,
-                        color: cs.onSurfaceVariant,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                    ),
-                  ),
-                  // Like button
-                  Semantics(
-                    label: widget.isLiked
-                        ? context.l10n.a11yUnlikeComment
-                        : context.l10n.a11yLikeComment,
-                    button: true,
-                    child: IconButton(
-                      onPressed: widget.onToggleLike,
-                      icon: Icon(
-                        widget.isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: widget.isLiked ? cs.error : cs.onSurfaceVariant,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                    ),
-                  ),
-                  if (widget.isOwnComment && widget.onEdit != null)
-                    IconButton(
-                      onPressed: widget.onEdit,
-                      icon: Icon(
-                        Icons.edit_outlined,
-                        color: cs.onSurfaceVariant,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                    ),
-                  if (widget.isOwnComment && widget.onDelete != null)
-                    IconButton(
-                      onPressed: widget.onDelete,
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: cs.onSurfaceVariant,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                    ),
-                  // Report button — visible for comments by other users
-                  if (!widget.isOwnComment)
-                    IconButton(
-                      onPressed: () => ReportContentDialog.show(
-                        context: context,
-                        contentType: 'comment',
-                        contentId: widget.comment.id,
-                        contentOwnerId: widget.comment.authorId,
-                      ),
-                      icon: Icon(
-                        Icons.flag_outlined,
-                        color: cs.onSurfaceVariant,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                    ),
-                ],
-              ),
-
-              const SizedBox(height: AppDimensions.spacingS),
-
-              // Comment content
-              Text(
-                comment.text,
-                style: AppTextStyles.bodyLarge,
-              ),
-
-              // Emoji reaction display or hint
-              if (widget.currentUserId != null &&
-                  widget.onReactionTap != null) ...[
-                if (comment.reactions.values
-                    .any((list) => list.isNotEmpty)) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
-                  EmojiReactionDisplay(
-                    reactions: comment.reactions,
-                    currentUserId: widget.currentUserId!,
-                    onReactionTap: widget.onReactionTap!,
-                  ),
-                ] else ...[
-                  const SizedBox(height: AppDimensions.spacingS),
-                  GestureDetector(
-                    onTap: _showReactionPicker,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.add_reaction_outlined,
-                          size: AppDimensions.iconSizeS,
-                          color: cs.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: AppDimensions.spacingXs),
-                        Text(
-                          context.l10n.commentReact,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.onSurfaceVariant,
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.authorDisplayName,
+                            style: AppTextStyles.labelLarge,
                           ),
+                          Text(
+                            widget.formattedTime,
+                            style: AppTextStyles.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Reply button
+                    Semantics(
+                      label: context.l10n.a11yReplyToComment,
+                      button: true,
+                      child: IconButton(
+                        onPressed: widget.onReply,
+                        icon: Icon(
+                          Icons.reply,
+                          color: cs.onSurfaceVariant,
+                          size: AppDimensions.iconSizeM,
                         ),
-                      ],
+                      ),
+                    ),
+                    // Like button
+                    Semantics(
+                      label: widget.isLiked
+                          ? context.l10n.a11yUnlikeComment
+                          : context.l10n.a11yLikeComment,
+                      button: true,
+                      child: IconButton(
+                        onPressed: widget.onToggleLike,
+                        icon: Icon(
+                          widget.isLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color:
+                              widget.isLiked ? cs.error : cs.onSurfaceVariant,
+                          size: AppDimensions.iconSizeM,
+                        ),
+                      ),
+                    ),
+                    if (widget.isOwnComment && widget.onEdit != null)
+                      IconButton(
+                        onPressed: widget.onEdit,
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          color: cs.onSurfaceVariant,
+                          size: AppDimensions.iconSizeM,
+                        ),
+                      ),
+                    if (widget.isOwnComment && widget.onDelete != null)
+                      IconButton(
+                        onPressed: widget.onDelete,
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: cs.onSurfaceVariant,
+                          size: AppDimensions.iconSizeM,
+                        ),
+                      ),
+                    // Report button — visible for comments by other users
+                    if (!widget.isOwnComment)
+                      IconButton(
+                        onPressed: () => ReportContentDialog.show(
+                          context: context,
+                          contentType: 'comment',
+                          contentId: widget.comment.id,
+                          contentOwnerId: widget.comment.authorId,
+                        ),
+                        icon: Icon(
+                          Icons.flag_outlined,
+                          color: cs.onSurfaceVariant,
+                          size: AppDimensions.iconSizeM,
+                        ),
+                      ),
+                  ],
+                ),
+
+                const SizedBox(height: AppDimensions.spacingS),
+
+                // Comment content
+                Text(
+                  comment.text,
+                  style: AppTextStyles.bodyLarge,
+                ),
+
+                // Emoji reaction display or hint
+                if (widget.currentUserId != null &&
+                    widget.onReactionTap != null) ...[
+                  if (comment.reactions.values
+                      .any((list) => list.isNotEmpty)) ...[
+                    const SizedBox(height: AppDimensions.spacingS),
+                    EmojiReactionDisplay(
+                      reactions: comment.reactions,
+                      currentUserId: widget.currentUserId!,
+                      onReactionTap: widget.onReactionTap!,
+                    ),
+                  ] else ...[
+                    const SizedBox(height: AppDimensions.spacingS),
+                    Semantics(
+                      label: context.l10n.a11yReactToComment,
+                      button: true,
+                      child: GestureDetector(
+                        onTap: _showReactionPicker,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.add_reaction_outlined,
+                              size: AppDimensions.iconSizeS,
+                              color: cs.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: AppDimensions.spacingXs),
+                            Text(
+                              context.l10n.commentReact,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+
+                // Like count (tappable to show who liked)
+                if (comment.likeCount > 0) ...[
+                  const SizedBox(height: AppDimensions.spacingS),
+                  Semantics(
+                    label: context.l10n.a11yShowCommentLikes(comment.likeCount),
+                    button: true,
+                    child: GestureDetector(
+                      onTap: widget.onShowLikes,
+                      child: Text(
+                        context.l10n.socialLikeCount(comment.likeCount),
+                        style: AppTextStyles.metadataEmphasized.copyWith(
+                          color: cs.primary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ],
-
-              // Like count (tappable to show who liked)
-              if (comment.likeCount > 0) ...[
-                const SizedBox(height: AppDimensions.spacingS),
-                Semantics(
-                  button: true,
-                  child: GestureDetector(
-                    onTap: widget.onShowLikes,
-                    child: Text(
-                      context.l10n.socialLikeCount(comment.likeCount),
-                      style: AppTextStyles.metadataEmphasized.copyWith(
-                        color: cs.primary,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),

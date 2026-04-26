@@ -74,15 +74,20 @@ class _EditActionButton extends StatelessWidget {
       child: Material(
         color: isDestructive ? cs.error : cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingSm),
-            child: Icon(
-              icon,
-              size: AppDimensions.iconSizeM,
-              color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
+        child: Semantics(
+          label: context.l10n.a11yEditImageAction(tooltip),
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingSm),
+              child: Icon(
+                icon,
+                size: AppDimensions.iconSizeM,
+                color:
+                    isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
+              ),
             ),
           ),
         ),

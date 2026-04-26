@@ -56,6 +56,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     groupMembershipsRemoved: 0,
     friendCountsUpdated: 0,
     feedbackCleaned: 0,
+    presenceRowsRemoved: 0,
   };
 
   // Fetch friends list once (used by steps 1 and 4)
@@ -85,6 +86,13 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
 
   // 7. Delete public profile
   await db.collection("public_profiles").doc(userId).delete();
+
+  // 8. GDPR (BUT-477): purge per-user presence rows across all collaborative
+  //    surfaces. Per-doc TTL would catch these within 60s, but GDPR Right-to-
+  //    Erasure obliges us to delete on request — we don't get to wait for
+  //    the sweeper. Cooking-session presence lives in RTDB and self-clears
+  //    via onDisconnect, so it isn't included here.
+  results.presenceRowsRemoved = await cleanupPresenceRows(userId);
 
   v1.logger.info(`Cleanup results for ${userId}:`, results);
 }
@@ -239,6 +247,73 @@ async function updateFriendCounts(
   }
 
   return friendsSnapshot.size;
+}
+
+/**
+ * BUT-477: Purge per-user presence rows from collaborative surfaces.
+ *
+ * Two Firestore presence collections own per-user rows keyed by `userId`:
+ *   - `recipePresence/{recipeId}/activeUsers/{userId}`
+ *   - `shoppingPresence/{listId}/activeUsers/{userId}`
+ *
+ * We use a `collectionGroup('activeUsers')` + `where('userId', '==', userId)`
+ * sweep to find every row this user owns across all parent docs, then delete
+ * in batches.
+ *
+ * GDPR rationale: presence rows contain `userId`, `displayName`, and
+ * `avatarUrl` — all linked PII. Right-to-Erasure cannot wait for the 60-s
+ * TTL sweeper.
+ *
+ * RTDB cooking-session presence (`cooking_sessions/{groupId}/{userId}`) is
+ * intentionally NOT included: those rows self-clear via `onDisconnect()`
+ * within seconds of the user going offline (see
+ * `firebase_cooking_session_repository.dart`). Account deletion implies the
+ * device is no longer connected, so RTDB has already cleaned up.
+ */
+async function cleanupPresenceRows(userId: string): Promise<number> {
+  return cleanupPresenceRowsWithDb(db, userId);
+}
+
+/**
+ * Test seam — accepts an injected Firestore instance so the BUT-477
+ * cascade can be exercised against a stub without a live emulator.
+ *
+ * Exported for use only from `__tests__/`. Non-test callers should use
+ * `cleanupPresenceRows(userId)` which closes over the module-level
+ * `db = admin.firestore()`.
+ */
+export async function cleanupPresenceRowsWithDb(
+  database: admin.firestore.Firestore,
+  userId: string
+): Promise<number> {
+  const snapshot = await database
+    .collectionGroup("activeUsers")
+    .where("userId", "==", userId)
+    .get();
+
+  if (snapshot.empty) return 0;
+
+  let batch = database.batch();
+  let batchCount = 0;
+  let total = 0;
+
+  for (const doc of snapshot.docs) {
+    batch.delete(doc.ref);
+    batchCount++;
+    total++;
+
+    if (batchCount >= BATCH_LIMIT) {
+      await batch.commit();
+      batch = database.batch();
+      batchCount = 0;
+    }
+  }
+
+  if (batchCount > 0) {
+    await batch.commit();
+  }
+
+  return total;
 }
 
 /**

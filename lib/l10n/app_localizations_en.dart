@@ -13053,4 +13053,96 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appealEmailLaunchFailed =>
       'Could not open the email app. Please email appeals@butlery.app manually.';
+
+  @override
+  String get a11yProfileImageEdit => 'Profile picture, tap to change';
+
+  @override
+  String get a11yProfileImageReadonly => 'Profile picture';
+
+  @override
+  String get a11yReactToComment => 'React to comment';
+
+  @override
+  String a11yShowCommentLikes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count likes',
+      one: 'Show 1 like',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get a11yLongPressCommentForReactions => 'Comment, long press to react';
+
+  @override
+  String get a11yDismissReactionPicker => 'Close the reaction picker';
+
+  @override
+  String get a11yCommentLikeAction => 'Like comment';
+
+  @override
+  String get a11yCommentReplyAction => 'Reply to comment';
+
+  @override
+  String get a11yRetryUpload => 'Retry upload';
+
+  @override
+  String get a11yCancelUpload => 'Cancel upload';
+
+  @override
+  String a11yBulkUploadAction(String label) {
+    return '$label';
+  }
+
+  @override
+  String a11yEditImageAction(String label) {
+    return '$label';
+  }
+
+  @override
+  String get a11yEmptyImageStateAdd => 'Add image, tap to choose';
+
+  @override
+  String get a11yImagePickerOpen => 'Choose images';
+
+  @override
+  String a11yImagePickerRemove(int index) {
+    return 'Remove selected image $index';
+  }
+
+  @override
+  String get a11yGalleryAddImage => 'Add image to gallery';
+
+  @override
+  String recipeCardSemantics(String title) {
+    return 'Recipe: $title, tap to open';
+  }
+
+  @override
+  String recipeRatingSemantics(String rating) {
+    return 'Rating: $rating';
+  }
+
+  @override
+  String a11yMenuRecipeOpen(String title) {
+    return '$title, tap to open the recipe';
+  }
+
+  @override
+  String a11yMenuSectionRegenerate(String category) {
+    return 'Generate a new suggestion for $category';
+  }
+
+  @override
+  String a11yMenuSwapRecipe(String title) {
+    return 'Swap out $title';
+  }
+
+  @override
+  String a11yMenuSuggestAlternative(String title) {
+    return 'Suggest an alternative for $title';
+  }
 }

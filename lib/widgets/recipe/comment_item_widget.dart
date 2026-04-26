@@ -82,44 +82,52 @@ class CommentItemWidget extends StatelessWidget {
   }
 
   Widget _buildLikeButton(BuildContext context) {
-    return InkWell(
-      onTap: () => socialViewModel.toggleCommentLike(comment.id),
-      child: Padding(
-        padding: AppDimensions.paddingSymmetric4x3,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              socialViewModel.hasLikedComment(comment.id)
-                  ? Icons.favorite
-                  : Icons.favorite_border,
-              size: AppDimensions.iconSizeM,
-              color: socialViewModel.hasLikedComment(comment.id)
-                  ? Theme.of(context).colorScheme.error
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            if (comment.likeCount > 0) ...[
-              const SizedBox(width: AppDimensions.spacingXs),
-              Text(
-                '${comment.likeCount}',
-                style: AppTextStyles.bodySmall,
+    return Semantics(
+      label: context.l10n.a11yCommentLikeAction,
+      button: true,
+      child: InkWell(
+        onTap: () => socialViewModel.toggleCommentLike(comment.id),
+        child: Padding(
+          padding: AppDimensions.paddingSymmetric4x3,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                socialViewModel.hasLikedComment(comment.id)
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                size: AppDimensions.iconSizeM,
+                color: socialViewModel.hasLikedComment(comment.id)
+                    ? Theme.of(context).colorScheme.error
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
+              if (comment.likeCount > 0) ...[
+                const SizedBox(width: AppDimensions.spacingXs),
+                Text(
+                  '${comment.likeCount}',
+                  style: AppTextStyles.bodySmall,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildReplyButton(BuildContext context) {
-    return InkWell(
-      onTap: () => socialViewModel.setReplyTo(comment.id),
-      child: Padding(
-        padding: AppDimensions.paddingSymmetric4x3,
-        child: Text(
-          context.l10n.commentReply,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.primary,
+    return Semantics(
+      label: context.l10n.a11yCommentReplyAction,
+      button: true,
+      child: InkWell(
+        onTap: () => socialViewModel.setReplyTo(comment.id),
+        child: Padding(
+          padding: AppDimensions.paddingSymmetric4x3,
+          child: Text(
+            context.l10n.commentReply,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ),
       ),

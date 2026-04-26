@@ -122,71 +122,76 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: _isLoading ? null : _pickImages,
-          borderRadius: widget.config.effectiveBorderRadius,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_isLoading) ...[
-                  SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        cs.primary,
+        child: Semantics(
+          label: context.l10n.a11yImagePickerOpen,
+          button: true,
+          enabled: !_isLoading,
+          child: InkWell(
+            onTap: _isLoading ? null : _pickImages,
+            borderRadius: widget.config.effectiveBorderRadius,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_isLoading) ...[
+                    SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          cs.primary,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(
-                      height:
-                          (AppDimensions.spacingSm + AppDimensions.spacingXs)),
-                  Text(
-                    context.l10n.imageSelectingImages,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: cs.onSurface
-                          .withValues(alpha: AppDimensions.opacityDark),
+                    const SizedBox(
+                        height: (AppDimensions.spacingSm +
+                            AppDimensions.spacingXs)),
+                    Text(
+                      context.l10n.imageSelectingImages,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: cs.onSurface
+                            .withValues(alpha: AppDimensions.opacityDark),
+                      ),
                     ),
-                  ),
-                ] else ...[
-                  Container(
-                    padding: const EdgeInsets.all(AppDimensions.spacingMd),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: cs.primary
-                          .withValues(alpha: AppDimensions.opacityVeryLight),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cs.primary
+                            .withValues(alpha: AppDimensions.opacityVeryLight),
+                      ),
+                      child: Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: AppDimensions.iconSizeXl,
+                        color: cs.primary,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: AppDimensions.iconSizeXl,
-                      color: cs.primary,
+                    const SizedBox(
+                        height: (AppDimensions.spacingSm +
+                            AppDimensions.spacingXs)),
+                    Text(
+                      widget.allowMultiple
+                          ? context.l10n.imageSelectImages
+                          : context.l10n.imageSelectImage,
+                      style: AppTextStyles.contentTitle,
                     ),
-                  ),
-                  const SizedBox(
-                      height:
-                          (AppDimensions.spacingSm + AppDimensions.spacingXs)),
-                  Text(
-                    widget.allowMultiple
-                        ? context.l10n.imageSelectImages
-                        : context.l10n.imageSelectImage,
-                    style: AppTextStyles.contentTitle,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    widget.allowMultiple
-                        ? context.l10n
-                            .imageTapToSelectUpTo(widget.config.maxImages)
-                        : context.l10n.imageTapToSelectOne,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: cs.onSurface
-                          .withValues(alpha: AppDimensions.opacityDark),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      widget.allowMultiple
+                          ? context.l10n
+                              .imageTapToSelectUpTo(widget.config.maxImages)
+                          : context.l10n.imageTapToSelectOne,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: cs.onSurface
+                            .withValues(alpha: AppDimensions.opacityDark),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
@@ -283,22 +288,26 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         Positioned(
           top: AppDimensions.spacingXs,
           right: AppDimensions.spacingXs,
-          child: GestureDetector(
-            onTap: () => _removeImage(imagePath, index),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingXs),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.error,
-                border: Border.all(
-                  color: cs.surfaceContainerHighest,
-                  width: 1,
+          child: Semantics(
+            label: context.l10n.a11yImagePickerRemove(index + 1),
+            button: true,
+            child: GestureDetector(
+              onTap: () => _removeImage(imagePath, index),
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: cs.error,
+                  border: Border.all(
+                    color: cs.surfaceContainerHighest,
+                    width: 1,
+                  ),
                 ),
-              ),
-              child: Icon(
-                Icons.close,
-                size: AppDimensions.iconSizeS,
-                color: cs.surfaceContainerHighest,
+                child: Icon(
+                  Icons.close,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.surfaceContainerHighest,
+                ),
               ),
             ),
           ),

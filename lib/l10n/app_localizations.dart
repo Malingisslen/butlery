@@ -22377,6 +22377,138 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte öppna e-postappen. Skicka manuellt till appeals@butlery.app.'**
   String get appealEmailLaunchFailed;
+
+  /// BUT-697: Semantics label for editable avatar tap target.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilbild, tryck för att ändra'**
+  String get a11yProfileImageEdit;
+
+  /// BUT-697: Semantics label for read-only avatar tap target.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilbild'**
+  String get a11yProfileImageReadonly;
+
+  /// BUT-697: Semantics label for the 'add reaction' tap target on a comment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Reagera på kommentar'**
+  String get a11yReactToComment;
+
+  /// BUT-697: Semantics label for the like-count text on a comment.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Visa 1 gilla-markering} other{Visa {count} gilla-markeringar}}'**
+  String a11yShowCommentLikes(int count);
+
+  /// BUT-697: Semantics label for the comment body long-press target.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar, långtryck för att reagera'**
+  String get a11yLongPressCommentForReactions;
+
+  /// BUT-697: Semantics label for the dismiss-on-tap-outside overlay behind the reaction picker.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng reaktionsväljaren'**
+  String get a11yDismissReactionPicker;
+
+  /// BUT-697: Semantics label for the like button on a comment item (legacy threaded view).
+  ///
+  /// In sv, this message translates to:
+  /// **'Gilla kommentar'**
+  String get a11yCommentLikeAction;
+
+  /// BUT-697: Semantics label for the reply button on a comment item (legacy threaded view).
+  ///
+  /// In sv, this message translates to:
+  /// **'Svara på kommentar'**
+  String get a11yCommentReplyAction;
+
+  /// BUT-697: Semantics label for the retry-upload action button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök ladda upp igen'**
+  String get a11yRetryUpload;
+
+  /// BUT-697: Semantics label for the cancel-upload action button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt uppladdning'**
+  String get a11yCancelUpload;
+
+  /// BUT-697: Semantics label pass-through for bulk upload control buttons (retry-all, cancel-all, clear-failed). The label arg is the already-localized human-readable button text.
+  ///
+  /// In sv, this message translates to:
+  /// **'{label}'**
+  String a11yBulkUploadAction(String label);
+
+  /// BUT-697: Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).
+  ///
+  /// In sv, this message translates to:
+  /// **'{label}'**
+  String a11yEditImageAction(String label);
+
+  /// BUT-697: Semantics label for the empty-state image picker tap target.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till bild, tryck för att välja'**
+  String get a11yEmptyImageStateAdd;
+
+  /// BUT-697: Semantics label for the image picker open tap target.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj bilder'**
+  String get a11yImagePickerOpen;
+
+  /// BUT-697: Semantics label for removing a selected image preview by index.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort vald bild {index}'**
+  String a11yImagePickerRemove(int index);
+
+  /// BUT-697: Semantics label for the gallery add-image tile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till bild i galleriet'**
+  String get a11yGalleryAddImage;
+
+  /// BUT-697: Semantics label for the entire recipe card tap target.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept: {title}, tryck för att öppna'**
+  String recipeCardSemantics(String title);
+
+  /// BUT-697: Semantics label for the rating pill on a recipe card.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg: {rating}'**
+  String recipeRatingSemantics(String rating);
+
+  /// BUT-697: Semantics label for the menu recipe row tap target.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title}, tryck för att öppna receptet'**
+  String a11yMenuRecipeOpen(String title);
+
+  /// BUT-697: Semantics label for the regenerate-section button on menu section header.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa nytt förslag för {category}'**
+  String a11yMenuSectionRegenerate(String category);
+
+  /// BUT-697: Semantics label for the swap-recipe icon on menu rows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Byt ut {title}'**
+  String a11yMenuSwapRecipe(String title);
+
+  /// BUT-697: Semantics label for the suggest-vote-alternative icon on menu rows.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föreslå alternativ för {title}'**
+  String a11yMenuSuggestAlternative(String title);
 }
 
 class _AppLocalizationsDelegate

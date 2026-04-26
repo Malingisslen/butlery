@@ -35,7 +35,7 @@ import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
-import { scrubPii } from "../llm/pii-scrubber";
+import { scrubPii, redactionRatio } from "../llm/pii-scrubber";
 
 const getDb = () => admin.firestore();
 
@@ -90,28 +90,8 @@ export function isWhitespaceOrCaseOnlyDiff(from: string, to: string): boolean {
   return collapse(from) === collapse(to);
 }
 
-/**
- * Returns the fraction of characters in [original] that the scrubber replaced.
- * Uses replacement-token coverage as the proxy: every emitted [PII-LABEL] token
- * was a redacted span in the input.
- */
-export function redactionRatio(original: string, scrubbed: string): number {
-  if (!original) return 0;
-  const TOKENS = ["[EMAIL]", "[PHONE]", "[PERSONNUMMER]"];
-  let nonTokenLen = scrubbed.length;
-  for (const t of TOKENS) {
-    let idx = 0;
-    while ((idx = scrubbed.indexOf(t, idx)) !== -1) {
-      nonTokenLen -= t.length;
-      idx += t.length;
-    }
-  }
-  const redacted = Math.max(
-    0,
-    Math.min(original.length, original.length - nonTokenLen)
-  );
-  return redacted / original.length;
-}
+// `redactionRatio` is re-exported for tests / downstream consumers.
+export { redactionRatio };
 
 /**
  * Decision outcomes from the validate-and-scrub pipeline. The handler turns

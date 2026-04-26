@@ -16,6 +16,7 @@
 /// - UI state management (handled by ViewModels)
 /// - Permission checks (presence is view-level, not permission-gated)
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/repositories/firebase/_presence_ttl.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -24,6 +25,14 @@ import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for recipe presence tracking operations
+///
+/// **TTL contract (BUT-477):** every write sets an `expiresAt` Firestore
+/// `Timestamp` 60 seconds ahead of the server clock. Clients refresh the
+/// document every 30 s while the user is active (twice within the TTL window
+/// so a single missed tick does not flicker the indicator). Server-side TTL
+/// policy on the `expiresAt` field is the authoritative GC; client read paths
+/// also filter rows where `expiresAt < now` to mask stale data while the
+/// server-side sweeper catches up.
 class FirebaseRecipePresenceRepository {
   final FirestoreRepository _firestoreRepository;
   final TimestampProvider _timestampProvider;
@@ -36,7 +45,6 @@ class FirebaseRecipePresenceRepository {
         _timestampProvider =
             timestampProvider ?? const ServerTimestampProvider();
 
-  /// Get Firestore instance via repository
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   /// Set user presence in a recipe (user starts viewing/editing)
@@ -66,6 +74,7 @@ class FirebaseRecipePresenceRepository {
         'avatarUrl': avatarUrl,
         'joinedAt': _timestampProvider.serverTimestamp(),
         'lastSeen': _timestampProvider.serverTimestamp(),
+        'expiresAt': PresenceTtl.computeExpiresAt(),
         'isActive': true,
       }, SetOptions(merge: true));
 
@@ -97,6 +106,8 @@ class FirebaseRecipePresenceRepository {
           .update({
         'isActive': false,
         'leftAt': _timestampProvider.serverTimestamp(),
+        // Force immediate TTL eviction — the user explicitly left.
+        'expiresAt': Timestamp.fromDate(DateTime.now().toUtc()),
       });
 
       AppLogger.debug(
@@ -126,6 +137,8 @@ class FirebaseRecipePresenceRepository {
           .doc(userId)
           .update({
         'lastSeen': _timestampProvider.serverTimestamp(),
+        // Refresh the TTL window so server-side sweeper does not evict us.
+        'expiresAt': PresenceTtl.computeExpiresAt(),
       });
 
       AppLogger.debug(
@@ -151,7 +164,12 @@ class FirebaseRecipePresenceRepository {
           .where('isActive', isEqualTo: true)
           .get();
 
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      // Client-side TTL filter — masks stale rows while the server-side
+      // sweeper catches up. We can't put `expiresAt > now` in the where()
+      // alongside `isActive == true` without a composite index; one-pass
+      // in-memory filtering is fine for the tiny per-doc result set.
+      return PresenceTtl.filterStaleRows(
+          snapshot.docs.map((doc) => doc.data()));
     } catch (e) {
       AppLogger.error('Failed to get active users: $e');
       return [];
@@ -170,7 +188,8 @@ class FirebaseRecipePresenceRepository {
         .collection(FirestoreCollections.activeUsers)
         .where('isActive', isEqualTo: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+        .map((snapshot) => PresenceTtl.filterStaleRows(
+            snapshot.docs.map((doc) => doc.data())));
   }
 
   /// Delete all presence data for a recipe (cleanup operation)

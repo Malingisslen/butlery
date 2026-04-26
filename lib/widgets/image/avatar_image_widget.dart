@@ -162,7 +162,9 @@ class AvatarImageWidget extends StatelessWidget {
     // Wrap with tap handler
     if (onTap != null || isEditable) {
       avatar = Semantics(
-        label: isEditable ? 'Profilbild, tryck for att andra' : 'Profilbild',
+        label: isEditable
+            ? context.l10n.a11yProfileImageEdit
+            : context.l10n.a11yProfileImageReadonly,
         button: true,
         child: GestureDetector(
           onTap: isEditable ? _handleEditTap : onTap,

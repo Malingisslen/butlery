@@ -13,9 +13,38 @@
  * scrub runs.
  */
 
-const REPLACEMENT_EMAIL = "[EMAIL]";
-const REPLACEMENT_PHONE = "[PHONE]";
-const REPLACEMENT_PERSONNUMMER = "[PERSONNUMMER]";
+export const REPLACEMENT_EMAIL = "[EMAIL]";
+export const REPLACEMENT_PHONE = "[PHONE]";
+export const REPLACEMENT_PERSONNUMMER = "[PERSONNUMMER]";
+
+/** All PII replacement tokens emitted by `scrubPii`. */
+export const PII_TOKENS = [
+  REPLACEMENT_EMAIL,
+  REPLACEMENT_PHONE,
+  REPLACEMENT_PERSONNUMMER,
+] as const;
+
+/**
+ * Fraction of characters in `original` that the scrubber replaced.
+ * Uses replacement-token coverage as the proxy: every emitted token
+ * was a redacted span in the input.
+ */
+export function redactionRatio(original: string, scrubbed: string): number {
+  if (!original) return 0;
+  let nonTokenLen = scrubbed.length;
+  for (const token of PII_TOKENS) {
+    let idx = 0;
+    while ((idx = scrubbed.indexOf(token, idx)) !== -1) {
+      nonTokenLen -= token.length;
+      idx += token.length;
+    }
+  }
+  const redacted = Math.max(
+    0,
+    Math.min(original.length, original.length - nonTokenLen)
+  );
+  return redacted / original.length;
+}
 
 /** Email pattern */
 const EMAIL_REGEX = /[\w.-]+@[\w.-]+\.\w+/g;

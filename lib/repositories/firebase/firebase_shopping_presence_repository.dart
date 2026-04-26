@@ -13,6 +13,7 @@
 /// Per-list (not per-item) presence — one doc per list, one row per active shopper.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/repositories/firebase/_presence_ttl.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -21,6 +22,13 @@ import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for collaborative shopping presence tracking (BUT-238).
+///
+/// **TTL contract (BUT-477):** every write sets `expiresAt = now + 60s`.
+/// Clients refresh at 30 s heartbeat (twice within the TTL window so a
+/// missed tick does not flicker). Server-side TTL policy on `expiresAt`
+/// is the authoritative GC; client read paths also filter rows where
+/// `expiresAt < now` to mask stale data while the server-side sweeper
+/// catches up.
 class FirebaseShoppingPresenceRepository {
   final FirestoreRepository _firestoreRepository;
   final TimestampProvider _timestampProvider;
@@ -55,6 +63,7 @@ class FirebaseShoppingPresenceRepository {
         'avatarUrl': avatarUrl,
         'joinedAt': _timestampProvider.serverTimestamp(),
         'lastSeen': _timestampProvider.serverTimestamp(),
+        'expiresAt': PresenceTtl.computeExpiresAt(),
         'isActive': true,
       }, SetOptions(merge: true));
       AppLogger.debug(
@@ -79,6 +88,8 @@ class FirebaseShoppingPresenceRepository {
           .set({
         'isActive': false,
         'leftAt': _timestampProvider.serverTimestamp(),
+        // Force immediate TTL eviction — the user explicitly left.
+        'expiresAt': Timestamp.fromDate(DateTime.now().toUtc()),
       }, SetOptions(merge: true));
       AppLogger.debug(
           'Shopping presence cleared for ${userId.maskedUserId} on list $listId');
@@ -101,6 +112,7 @@ class FirebaseShoppingPresenceRepository {
           .doc(userId)
           .set({
         'lastSeen': _timestampProvider.serverTimestamp(),
+        'expiresAt': PresenceTtl.computeExpiresAt(),
         'isActive': true,
       }, SetOptions(merge: true));
     } catch (e) {
@@ -118,7 +130,8 @@ class FirebaseShoppingPresenceRepository {
           .collection(FirestoreCollections.activeUsers)
           .where('isActive', isEqualTo: true)
           .get();
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      return PresenceTtl.filterStaleRows(
+          snapshot.docs.map((doc) => doc.data()));
     } catch (e) {
       AppLogger.error('Failed to get active shoppers: $e');
       return [];
@@ -133,6 +146,7 @@ class FirebaseShoppingPresenceRepository {
         .collection(FirestoreCollections.activeUsers)
         .where('isActive', isEqualTo: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+        .map((snapshot) => PresenceTtl.filterStaleRows(
+            snapshot.docs.map((doc) => doc.data())));
   }
 }

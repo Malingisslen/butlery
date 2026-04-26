@@ -221,26 +221,30 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: widget.onAddImage,
-          borderRadius: widget.config.effectiveBorderRadius,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.add_photo_alternate_outlined,
-                  size: AppDimensions.iconSizeXl,
-                  color: cs.primary,
-                ),
-                const SizedBox(height: AppDimensions.spacingXs),
-                Text(
-                  context.l10n.commonAdd,
-                  style: AppTextStyles.bodySmall.copyWith(
+        child: Semantics(
+          label: context.l10n.a11yGalleryAddImage,
+          button: true,
+          child: InkWell(
+            onTap: widget.onAddImage,
+            borderRadius: widget.config.effectiveBorderRadius,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: AppDimensions.iconSizeXl,
                     color: cs.primary,
                   ),
-                ),
-              ],
+                  const SizedBox(height: AppDimensions.spacingXs),
+                  Text(
+                    context.l10n.commonAdd,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: cs.primary,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

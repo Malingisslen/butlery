@@ -298,20 +298,26 @@ class MenuContentWidgets {
                 color: cs.surface,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusS),
-                child: InkWell(
-                  onTap: viewModel.isGenerating
-                      ? null
-                      : () => viewModel.regenerateSection(category),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.spacingSm),
-                    child: Icon(
-                      Icons.refresh,
-                      size: AppDimensions.iconSizeM,
-                      color: viewModel.isGenerating
-                          ? cs.onSurfaceVariant
-                          : cs.primary,
+                child: Semantics(
+                  label: context.l10n.a11yMenuSectionRegenerate(
+                      MenuViewHelpers.capitalizeCategory(category)),
+                  button: true,
+                  enabled: !viewModel.isGenerating,
+                  child: InkWell(
+                    onTap: viewModel.isGenerating
+                        ? null
+                        : () => viewModel.regenerateSection(category),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                      child: Icon(
+                        Icons.refresh,
+                        size: AppDimensions.iconSizeM,
+                        color: viewModel.isGenerating
+                            ? cs.onSurfaceVariant
+                            : cs.primary,
+                      ),
                     ),
                   ),
                 ),
@@ -467,141 +473,160 @@ class _MenuRecipeCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Material(
         color: cs.surfaceContainerHighest,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm,
-            ),
-            child: Row(
-              children: [
-                // Recipe title + metadata per mockup
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        recipe.title,
-                        style: AppTextStyles.titleMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (recipe.timeMinutes != null || recipe.portions != null)
+        child: Semantics(
+          label: context.l10n.a11yMenuRecipeOpen(recipe.title),
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingMd,
+                vertical: AppDimensions.spacingSm,
+              ),
+              child: Row(
+                children: [
+                  // Recipe title + metadata per mockup
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          [
-                            if (recipe.timeMinutes != null)
-                              '${recipe.timeMinutes} ${context.l10n.unitMinutesShort}',
-                            if (recipe.portions != null)
-                              '${recipe.portions} ${context.l10n.recipePortionsPlural}',
-                          ].join(' · '),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.onSurfaceVariant,
+                          recipe.title,
+                          style: AppTextStyles.titleMedium.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                // Vote button (collaborative menus only)
-                if (votingViewModel != null) ...[
-                  Material(
-                    color: cs.surface,
-                    borderRadius: BorderRadius.zero,
-                    child: InkWell(
-                      onTap: () async {
-                        final selectedRecipe =
-                            await SuggestAlternativeSheet.show(
-                          context,
-                          availableRecipes: viewModel.availableRecipes,
-                          excludeRecipeIds: [recipe.id],
-                        );
-                        if (selectedRecipe != null) {
-                          final userId = ServiceLocator.get<PermissionService>()
-                                  .currentUserId ??
-                              '';
-                          final currentOption = VoteOption(
-                            id: recipe.id,
-                            recipeId: recipe.id,
-                            recipeName: recipe.title,
-                            recipeImageUrl: recipe.imageUrls.isNotEmpty
-                                ? recipe.imageUrls.first
-                                : null,
-                            suggestedByUserId: userId,
-                          );
-                          final newOption = VoteOption(
-                            id: selectedRecipe.id,
-                            recipeId: selectedRecipe.id,
-                            recipeName: selectedRecipe.title,
-                            recipeImageUrl: selectedRecipe.imageUrls.isNotEmpty
-                                ? selectedRecipe.imageUrls.first
-                                : null,
-                            suggestedByUserId: userId,
-                          );
-                          votingViewModel!.createVote(
-                            category: category,
-                            slotIndex: slotIndex,
-                            alternatives: [currentOption, newOption],
-                          );
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                        child: Icon(
-                          Icons.how_to_vote,
-                          size: AppDimensions.iconSizeS,
-                          color: cs.primary,
-                        ),
-                      ),
+                        if (recipe.timeMinutes != null ||
+                            recipe.portions != null)
+                          Text(
+                            [
+                              if (recipe.timeMinutes != null)
+                                '${recipe.timeMinutes} ${context.l10n.unitMinutesShort}',
+                              if (recipe.portions != null)
+                                '${recipe.portions} ${context.l10n.recipePortionsPlural}',
+                            ].join(' · '),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingXxs),
-                ],
-                // Swap button
-                Material(
-                  color: cs.surface,
-                  borderRadius: BorderRadius.zero,
-                  child: InkWell(
-                    onTap: viewModel.isGenerating
-                        ? null
-                        : () async {
-                            final result =
-                                await viewModel.swapRecipe(recipe, category);
-                            if (result.recipe == null && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(result.exhaustedMessage ??
-                                      context.l10n.menuNoMoreRecipes),
-                                  backgroundColor: cs.secondary,
-                                ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  // Vote button (collaborative menus only)
+                  if (votingViewModel != null) ...[
+                    Material(
+                      color: cs.surface,
+                      borderRadius: BorderRadius.zero,
+                      child: Semantics(
+                        label: context.l10n
+                            .a11yMenuSuggestAlternative(recipe.title),
+                        button: true,
+                        child: InkWell(
+                          onTap: () async {
+                            final selectedRecipe =
+                                await SuggestAlternativeSheet.show(
+                              context,
+                              availableRecipes: viewModel.availableRecipes,
+                              excludeRecipeIds: [recipe.id],
+                            );
+                            if (selectedRecipe != null) {
+                              final userId =
+                                  ServiceLocator.get<PermissionService>()
+                                          .currentUserId ??
+                                      '';
+                              final currentOption = VoteOption(
+                                id: recipe.id,
+                                recipeId: recipe.id,
+                                recipeName: recipe.title,
+                                recipeImageUrl: recipe.imageUrls.isNotEmpty
+                                    ? recipe.imageUrls.first
+                                    : null,
+                                suggestedByUserId: userId,
                               );
-                            } else if (result.recipe != null &&
-                                context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(context.l10n
-                                      .menuSwapAlternatives(
-                                          result.alternativesRemaining)),
-                                  duration: const Duration(seconds: 2),
-                                ),
+                              final newOption = VoteOption(
+                                id: selectedRecipe.id,
+                                recipeId: selectedRecipe.id,
+                                recipeName: selectedRecipe.title,
+                                recipeImageUrl:
+                                    selectedRecipe.imageUrls.isNotEmpty
+                                        ? selectedRecipe.imageUrls.first
+                                        : null,
+                                suggestedByUserId: userId,
+                              );
+                              votingViewModel!.createVote(
+                                category: category,
+                                slotIndex: slotIndex,
+                                alternatives: [currentOption, newOption],
                               );
                             }
                           },
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                      child: Icon(
-                        Icons.swap_horiz,
-                        size: AppDimensions.iconSizeS,
-                        color: viewModel.isGenerating
-                            ? cs.onSurfaceVariant
-                            : cs.primary,
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.all(AppDimensions.spacingXs),
+                            child: Icon(
+                              Icons.how_to_vote,
+                              size: AppDimensions.iconSizeS,
+                              color: cs.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingXxs),
+                  ],
+                  // Swap button
+                  Material(
+                    color: cs.surface,
+                    borderRadius: BorderRadius.zero,
+                    child: Semantics(
+                      label: context.l10n.a11yMenuSwapRecipe(recipe.title),
+                      button: true,
+                      enabled: !viewModel.isGenerating,
+                      child: InkWell(
+                        onTap: viewModel.isGenerating
+                            ? null
+                            : () async {
+                                final result = await viewModel.swapRecipe(
+                                    recipe, category);
+                                if (result.recipe == null && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(result.exhaustedMessage ??
+                                          context.l10n.menuNoMoreRecipes),
+                                      backgroundColor: cs.secondary,
+                                    ),
+                                  );
+                                } else if (result.recipe != null &&
+                                    context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(context.l10n
+                                          .menuSwapAlternatives(
+                                              result.alternativesRemaining)),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                }
+                              },
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.all(AppDimensions.spacingXs),
+                          child: Icon(
+                            Icons.swap_horiz,
+                            size: AppDimensions.iconSizeS,
+                            color: viewModel.isGenerating
+                                ? cs.onSurfaceVariant
+                                : cs.primary,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

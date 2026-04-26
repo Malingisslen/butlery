@@ -98,6 +98,13 @@ const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 10,
     refillIntervalMs: 60000,
   },
+  // BUT-449: Web error reporting. Slightly tighter than logParseEvent —
+  // a runaway error loop could otherwise flood Cloud Logging cheaply.
+  logWebError: {
+    maxTokens: 20,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+  },
 
   // Default for unspecified operations
   default: {

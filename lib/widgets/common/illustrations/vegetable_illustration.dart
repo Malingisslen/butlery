@@ -83,18 +83,18 @@ class VegetableIllustration extends StatelessWidget {
   /// Filename per vegetable type. Mirrors the `_fallbackColors` idiom in
   /// this file — cheaper to read and keep in sync than a 12-case switch.
   static const _assetPaths = {
-    VegetableType.broccoli: 'assets/illustrations/broccoli.png',
-    VegetableType.mushroom: 'assets/illustrations/champinjon.PNG',
-    VegetableType.peaPod: 'assets/illustrations/artskida.PNG',
-    VegetableType.carrot: 'assets/illustrations/morot.png',
-    VegetableType.redOnion: 'assets/illustrations/rodlok.PNG',
-    VegetableType.asparagus: 'assets/illustrations/sparris.png',
-    VegetableType.rhubarb: 'assets/illustrations/rabarber.png',
-    VegetableType.berry: 'assets/illustrations/bar.png',
-    VegetableType.pumpkin: 'assets/illustrations/pumpa.png',
-    VegetableType.cabbage: 'assets/illustrations/kal.png',
-    VegetableType.citrus: 'assets/illustrations/citrus.png',
-    VegetableType.beetroot: 'assets/illustrations/rodbeta.png',
+    VegetableType.broccoli: 'assets/illustrations/broccoli.webp',
+    VegetableType.mushroom: 'assets/illustrations/champinjon.webp',
+    VegetableType.peaPod: 'assets/illustrations/artskida.webp',
+    VegetableType.carrot: 'assets/illustrations/morot.webp',
+    VegetableType.redOnion: 'assets/illustrations/rodlok.webp',
+    VegetableType.asparagus: 'assets/illustrations/sparris.webp',
+    VegetableType.rhubarb: 'assets/illustrations/rabarber.webp',
+    VegetableType.berry: 'assets/illustrations/bar.webp',
+    VegetableType.pumpkin: 'assets/illustrations/pumpa.webp',
+    VegetableType.cabbage: 'assets/illustrations/kal.webp',
+    VegetableType.citrus: 'assets/illustrations/citrus.webp',
+    VegetableType.beetroot: 'assets/illustrations/rodbeta.webp',
   };
 
   /// Returns the asset path for a vegetable type. All seven seasonal

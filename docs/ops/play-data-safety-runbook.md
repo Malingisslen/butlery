@@ -220,3 +220,23 @@ Update this file (and re-submit Data Safety form) whenever any of the following 
 - App Store Privacy Manifest (`PrivacyInfo.xcprivacy`) is updated.
 
 The maintenance trigger list maps 1:1 to the audit cross-references at the top of this file. If any of those files change without this runbook being updated, treat the iOS manifest / Play Data Safety declarations as drift and reconcile before the next release.
+
+---
+
+## 10. Filing status
+
+**Status (2026-04-26):** Pending user action — form to be filed via Play
+Console using the answers below; screenshot to be saved at
+`docs/store-submission/play-data-safety/2026-04-26-submitted.png`
+(or substitute the actual submission date if it slips). After filing,
+update §8 (Submission History) with the date and outcome, and flip this
+status line to "Submitted YYYY-MM-DD".
+
+The runbook content (sections 1–7) is the authoritative answer set; this
+is purely a tracker of whether the form has been submitted. Filing
+instructions live at `docs/store-submission/play-data-safety/README.md`,
+and the top-level tracker at
+`docs/store-submission/STORE_SUBMISSION_CHECKLIST.md` mirrors this state.
+
+Cross-reference: BUT-646 (filing — awaiting user) tracks the
+console-side action; BUT-561 (runbook authoring) is closed.

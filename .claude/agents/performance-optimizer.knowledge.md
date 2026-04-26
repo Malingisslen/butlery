@@ -77,3 +77,63 @@ Knowledge file seeded from `performance-optimizer.md` and standard Flutter
 perf guidance. Future entries should record real bottlenecks found in
 this codebase with measurements, not generic advice — generic advice
 already lives in the main agent file.
+
+### 2026-04-26 — image cache size + WebP conversion (BUT-470, BUT-429)
+
+**Device class**: tablets/desktop (large grid views) — primary win;
+Android phones see incremental relief. Measurements taken on developer
+workstation only — install-size delta and runtime cache-thrash deltas
+from real devices to be confirmed by next-build CI metrics.
+
+**Bottleneck 1 — image-cache thrash on grids**:
+- `PaintingBinding.imageCache.maximumSize` was 100. On a tablet grid
+  rendering ~150 thumbnails on screen + scroll, the LRU cache would evict
+  before the offscreen items came back into view, causing redundant
+  decode work and visible flicker on fast scroll-up.
+- Fix: bumped maximumSize 100 → 300 in `lib/main.dart` line 142.
+  `maximumSizeBytes` (50 MB) unchanged — that's still the hard ceiling.
+- Why 300, not unbounded: the byte cap is the real safety net; the count
+  cap just prevents thrash on small thumbnails. 300 is a heuristic that
+  matches the largest realistic on-screen count (recipe grid + cards
+  above + cards below the fold).
+
+**Bottleneck 2 — illustration asset weight**:
+- 12 PNGs in `assets/illustrations/` totaled 11,042,648 bytes
+  (~10.5 MB). Bundled into APK + web build per shipped variant.
+- Converted to WebP at quality 85 via Pillow 12.2.0
+  (`img.save(dst, "WEBP", quality=85, method=6)`).
+- After: 663,926 bytes (~650 KB). **Saved 10,378,722 bytes (94.0%)** of
+  illustration weight.
+- Per-file deltas (PNG → WebP):
+  - rodbeta: 2,176,586 → 110,068 (94.9%)
+  - bar:     2,147,600 → 106,230 (95.1%)
+  - sparris: 1,473,618 → 101,704 (93.1%)
+  - kal:     1,303,209 →  89,708 (93.1%)
+  - citrus:  1,156,022 →  59,898 (94.8%)
+  - pumpa:   1,056,210 →  62,224 (94.1%)
+  - rabarber:  924,104 →  63,590 (93.1%)
+  - broccoli:  244,423 →  18,128 (92.6%)
+  - rodlok:    157,552 →  13,090 (91.7%)
+  - champinjon:156,068 →  12,256 (92.1%)
+  - morot:     153,002 →  15,812 (89.7%)
+  - artskida:   94,254 →  11,218 (88.1%)
+
+**Pattern: when to skip WebP conversion**:
+- Animation frames (e.g. `assets/illustrations/arta/artskida{0..5}.PNG`)
+  — quality-85 lossy compression can introduce small artifacts that
+  compound visually across rapidly cycling frames. Leave PNG.
+- App icons / splash images — toolchain expects PNG, switching costs
+  more than it saves.
+- Photos with very fine detail (text, grids) — verify visually before
+  shipping; q=85 is fine for hand-drawn illustrations but can be too
+  aggressive for photographic content.
+
+**Pubspec note**: directory-level asset declarations (`assets/foo/`)
+auto-pick up format changes. No `pubspec.yaml` edit required when files
+swap extension within an already-declared directory. Saved a class of
+"forgot to update pubspec" CI failures.
+
+**Tooling note**: `cwebp` not on Windows dev boxes by default. Pillow
+fallback (`pip install Pillow` then `Image.open(...).save(..., "WEBP",
+quality=85, method=6)`) is reliable and ~94% size reduction matches
+cwebp at the same quality.

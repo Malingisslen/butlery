@@ -166,6 +166,10 @@ async function defaultPerformOcr(
 }
 
 async function defaultIsAiDisabled(): Promise<boolean> {
+  // BUT-439: master kill only. The per-feature `llmParserEnabled` flag is
+  // checked inside `runStructureRecipe` (the OCR retry path passes
+  // through it), so OCR vision can stay live even when the parser is
+  // paused.
   const configDoc = await admin.firestore().doc("system/config").get();
   return configDoc.exists && configDoc.data()?.aiEnabled === false;
 }

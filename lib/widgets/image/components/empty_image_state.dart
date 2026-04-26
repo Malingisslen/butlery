@@ -33,15 +33,20 @@ class EmptyImageState extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: isLoading ? null : onTap,
-          borderRadius: borderRadius,
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children:
-                    isLoading ? _buildLoadingContent() : _buildIdleContent(),
+        child: Semantics(
+          label: context.l10n.a11yEmptyImageStateAdd,
+          button: true,
+          enabled: !isLoading,
+          child: InkWell(
+            onTap: isLoading ? null : onTap,
+            borderRadius: borderRadius,
+            child: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      isLoading ? _buildLoadingContent() : _buildIdleContent(),
+                ),
               ),
             ),
           ),

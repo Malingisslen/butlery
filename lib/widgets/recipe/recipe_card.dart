@@ -88,7 +88,8 @@ class RecipeCard extends StatelessWidget {
 
     return RepaintBoundary(
       child: Semantics(
-        label: 'Recept: ${recipe.title}',
+        label: context.l10n.recipeCardSemantics(recipe.title),
+        button: onTap != null,
         child: Container(
           margin: margin ??
               const EdgeInsets.symmetric(
@@ -444,7 +445,8 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: 'Betyg: ${recipe.rating!.toStringAsFixed(1)}',
+      label:
+          context.l10n.recipeRatingSemantics(recipe.rating!.toStringAsFixed(1)),
       child: Container(
         padding: AppDimensions.paddingSymmetric6x2,
         decoration: BoxDecoration(

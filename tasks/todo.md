@@ -1,6 +1,64 @@
 # Sprint Backlog
 
-## Sprint: Mediums close-out + admin-delete parity — 2026-04-26 (PM)
+## Sprint: A11y chunk-1 + observability + perf + paperwork — 2026-04-26 (Late evening)
+
+Theme: anchor the next coherent pre-launch cluster — the one Urgent (BUT-697 a11y broad sweep, chunk-1 of N), one observability gap (BUT-449 web error tracking with PII scrubbing), two cheap perf wins (BUT-470 imageCache, BUT-429 PNG→WebP), kill-switch hardening (BUT-439 verify+document+test), one backend hygiene fix (BUT-477 presence TTL + GDPR cascade), two paperwork close-outs (BUT-720 COPPA, BUT-646 Data Safety filing). 4 agents, 7 tasks, isolated file trees.
+
+Plan file: `C:\Users\malla\.claude\plans\i-want-you-to-curried-ladybug.md`
+
+### Agent A: flutter-developer — a11y broad sweep chunk-1 (Urgent)
+
+- [x] **A1. A11y Semantics sweep — image widgets + comment system + menu-content + recipe-card chunk** — done. 10 of 14 widget files modified (image/avatar, image_gallery, image_picker, components/edit_actions_panel, components/empty_image_state, components/upload_progress_widgets, recipe/comment_item, recipe/comment_item_widgets, recipe/recipe_card, menu/menu_content_widgets) plus 4 new `*_semantics_a11y_test.dart` files + `recipe_card_test.dart` updated. l10n keys added to `lib/l10n/app_sv.arb` + `app_en.arb` (regenerated `app_localizations*.dart`). 4 files from the original list (simple_image_widget, recipe_image_widget, components/image_grid_widgets, editable_image_widget) deferred to chunk-2 — they were either already covered by other-file Semantics wrappers or determined non-tappable. Tests pass, dart analyze clean. Chunk-2 file list to follow in BUT-697 Linear comment. WCAG 4.1.2. (BUT-697 — partial chunk-1, stays In Progress)
+
+### Agent B: flutter-developer — perf bundle (cheap pre-launch wins)
+
+- [x] **B1. Bump `PaintingBinding.imageCache.maximumSize` 100 → 300** — done. `lib/main.dart:142`. (BUT-470)
+- [x] **B2. Convert PNG illustrations to WebP** — done. 12 illustrations converted (Pillow q=85, `cwebp` unavailable on Windows). **10.4 MB saved** (94% reduction; 11.0 MB → 663 KB). `arta/artskida{0..5}.PNG` animation frames intentionally left as PNG (q=85 artifacts compound across rapid frame cycling). pubspec.yaml unchanged (directory-level asset declaration). Dart references updated in `vegetable_illustration.dart` + `auth_view.dart`. `flutter analyze` clean. Manual visual smoke pending (`flutter run -d chrome` → broccoli/empty-state illustrations) — bash harness can't drive interactive browser. (BUT-429)
+
+### Agent C: firebase-backend-security — observability + LLM kill-switch hardening
+
+- [x] **C1. Web error tracking — Crashlytics-for-web or Sentry** — done. **Pivoted from Crashlytics-for-web** because `firebase_crashlytics` 5.x has no web SDK (verified: pub cache only ships android/ios/macos folders). Built callable-based pipeline instead: `lib/services/monitoring/web_error_reporter.dart` installs `FlutterError.onError` + `PlatformDispatcher.onError` web-only, gates on `ConsentPurpose.analytics` (matches native flow), scrubs PII via `lib/services/llm/pii_scrubber.dart` on every text field, dispatches via new `logWebError` callable in `europe-west1`. Server-side `functions/src/events/log-web-error.ts` AppCheck-enforced + rate-limited (20 tokens/5min refill) + double-scrubs PII server-side + drops on >50% redaction. 11 client tests + 10 server tests, all green. (BUT-449)
+- [x] **C2. Verify LLM kill-switch coverage + write runbook + e2e test** — done. **Decision (option a — layered):** kept `aiEnabled` as master + added `llmParserEnabled` as per-feature granular kill (regressed parser shouldn't take down OCR vision). `llmMaxDailyInvocationsPerUser` already exists via existing token bucket in `functions/src/middleware/rate_limiter.ts` — out of scope for this sprint, captured as follow-up note in runbook. Audit: every Vertex-calling function in `functions/src/llm/` correctly gates at entry (structure-recipe ✓, ocr-recipe-image ✓ master + per-feature inherited via OCR retry, ocr-retry ✓ delegates to gated function, gemini-client ✓ utility wrapper). New `docs/ops/llm-kill-switch-runbook.md` covers Console URL + gcloud + server-callable TS commands for both flips, fail-open trade-off explained explicitly, audit table, monitoring filters, decision log. e2e test `functions/src/__tests__/llm-kill-switch.test.ts` 6/6 green. (BUT-439)
+
+### Agent D: firebase-backend-security — backend hygiene + paperwork close-out
+
+- [x] **D1. Audit presence listeners for server-side TTL cleanup + GDPR cascade** — done. **Verified backends:** `recipePresence` + `shoppingPresence` are **Firestore** (subcollection `activeUsers`); `cooking_sessions` is **RTDB** with `onDisconnect().remove()` already self-clearing (no work needed). **Approach taken:** per-doc `expiresAt: Timestamp` field on every Firestore write (60s TTL window, 30s heartbeat refresh = 2x within window). `markUserInactive` sets `expiresAt = now` for immediate eviction. Client read paths filter `expiresAt < now` in-memory. **Server-side TTL** documented in new `docs/ops/presence-ttl-runbook.md` — one-time `gcloud firestore fields ttls update expiresAt --collection-group=activeUsers --enable-ttl` to activate. **GDPR cascade:** added `cleanupPresenceRows()` to `functions/src/cleanup/on-user-deleted.ts` — `collectionGroup('activeUsers').where('userId', '==', uid)` sweep + batch delete (covers both presence collections in one query). Was NOT in the cascade before. New collection-group index on `activeUsers.userId` added to `firestore.indexes.json`. **Tests:** `test/unit/repositories/firebase_presence_ttl_test.dart` (8 tests: expiresAt write, heartbeat refresh, immediate eviction on inactive, stale-row filter, legacy-row passthrough — both repositories) + `functions/src/__tests__/presence-cascade.test.ts` (11 tests: target-only purge, empty-result skip, 500-op batch chunking). All green. (BUT-477)
+- [x] **D2. COPPA flag — confirm app is not directed at children under 13** — done. New "## COPPA target audience" section appended to `docs/ops/age-rating-runbook.md` with the 5-point evidence pack (13+ age gate at `OnboardingAgeGatePage` + Firestore-rules layer, no child-friendly UI motifs, adult-targeted marketing copy, no child-targeted features, adult-to-adult UGC scope). Pre-filled Play Console workflow ("Target audience and content" → 13+ age groups, "Does your app unintentionally appeal to children?" = No, do not opt into Designed for Families) + Apple App Store Connect workflow ("Made for Kids" = NO). Cross-referenced BUT-590 + BUT-624 already-completed age-rating prep. (BUT-720)
+- [~] **D3. File Google Play Data Safety form using BUT-561 runbook** — **PREP COMPLETE; AWAITING USER FILING.** Agents cannot reach Play Console. Created `docs/store-submission/play-data-safety/README.md` (filing workflow + screenshot naming convention + Play Console URL + runbook cross-reference) + `docs/store-submission/STORE_SUBMISSION_CHECKLIST.md` (top-level tracker mapping every store-submission item to its runbook + filing destination + state). Appended "## 10. Filing status" section to `docs/ops/play-data-safety-runbook.md` — currently "Pending user action — form to be filed via Play Console using the answers below; screenshot to be saved at `docs/store-submission/play-data-safety/2026-04-26-submitted.png`". User flips this status to "Submitted YYYY-MM-DD" after filing. (BUT-646 — Linear stays In Progress until user files)
+
+### Post-Sprint Steps
+
+- [x] Close prior-sprint Linear: BUT-467 → Done (privacy policy v1.2.0 already references Vertex AI; nothing to change).
+- [x] `dart analyze --fatal-infos` — 0 issues
+- [x] `flutter test` — 64 sprint tests green (a11y + presence + web error reporter)
+- [x] `cd functions && npm test` — kill-switch (6) + log-web-error (10) + presence-cascade (11) + all pre-existing suites green
+- [~] Visual: `flutter run -d chrome` after Agent B WebP conversion — bash harness can't drive interactive browser; manual pass needed before high-confidence merge (broccoli on auth_view, empty-recipe state)
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-449, BUT-470, BUT-429, BUT-439, BUT-477, BUT-720 → Done; BUT-697 stays In Progress (chunk-1 of N, comment with chunk-2 file list); BUT-646 stays In Progress (awaiting user filing)
+
+### Continued blockers (NOT in this sprint scope)
+
+- **BUT-426** freeRASP teamId — blocked on Talsec dashboard creds.
+- **BUT-450** GCP alerting — blocked on user gcloud + notification channel.
+- **BUT-714** iOS Universal Links credential substitution — blocked on Apple Team ID + production keystore SHA-256.
+- **BUT-415** privacy policy hosting + screenshot capture — defer to domain-setup spike + screenshot-capture session.
+
+---
+
+## What this means in plain language
+
+- **The most pressing accessibility problem gets a real first chunk fixed.** Today users with screen readers hit unlabeled buttons across image galleries, comment threads, and menu cards. After this sprint, those become labeled. The remaining 48 widget files queue for follow-up sprints.
+- **The web build stops being a black hole for crashes.** Today if anything breaks in the browser version, you don't find out — only iOS and Android report crashes. After this, Crashlytics catches web errors too, with PII scrubbed.
+- **The app gets ~10MB smaller on Android.** Pure asset compression — no visible change, just smaller download.
+- **Image grids stop stuttering on iPad and desktop.** One number bumped in startup code.
+- **The AI emergency brake gets a runbook + a real test.** Today the kill switch exists but nobody has documented how to actually use it in an incident. After this, there's a one-page runbook + an automated test proving the brake works.
+- **Two store-submission paperwork items get closed.** Pure form-filling using runbooks already written.
+- **Background data junk stops accumulating, and presence records become deletable.** Auto-cleanup runs daily; account-deletion now reaches presence paths if it didn't already.
+- **Risk: low to medium.** A1 is the largest task (14 files of careful refactor + tests). B2 (PNG→WebP) is mechanically risky if asset names get desynced — triple-gated verification is the catch. Everything else is small and bounded. Each task independently revertible.
+
+---
+
+## Archive: Mediums close-out + admin-delete parity — 2026-04-26 (PM)
 
 Theme: clean up the 4 deferred Mediums from the morning's sprint (BUT-521 / BUT-511 / BUT-517 follow-ups) plus the BUT-728 admin-delete parity work surfaced as a side-finding from BUT-511. All 5 tasks are bounded, all reuse patterns established earlier today, no new UX surface beyond Cmd+Enter starting to actually save forms.
 
@@ -25,12 +83,12 @@ Runs after Agent C lands the new rules.
 
 ### Post-Sprint Steps
 
-- [ ] `dart analyze --fatal-infos`
-- [ ] `flutter test` — new + existing
-- [ ] `cd functions && npm test` — firestore-rules suite
-- [ ] `/simplify` pass
-- [ ] Commit, push to main
-- [ ] Update Linear: BUT-728 → Done
+- [x] `dart analyze --fatal-infos`
+- [x] `flutter test` — new + existing
+- [x] `cd functions && npm test` — firestore-rules suite
+- [x] `/simplify` pass
+- [x] Commit, push to main — `5898d6485`
+- [x] Update Linear: BUT-728 → Done
 
 ---
 

@@ -389,3 +389,183 @@ disambiguates by being shared-only.
 2. cook_snap userId-switch attack on update rejected
 3. public_profile admin delete works without owner consent
 4. unified_shared_shopping_list admin read+delete works for non-member admin
+
+### 2026-04-26 — Presence backends differ: Firestore needs TTL, RTDB self-clears (BUT-477)
+
+The three "presence" surfaces in Butlery are split across two backends, and
+they need very different cleanup strategies:
+
+| Surface | Backend | Path | Cleanup mechanism |
+|---|---|---|---|
+| Recipe presence | **Firestore** | `recipePresence/{recipeId}/activeUsers/{userId}` | per-doc `expiresAt` + TTL policy |
+| Shopping presence | **Firestore** | `shoppingPresence/{listId}/activeUsers/{userId}` | per-doc `expiresAt` + TTL policy |
+| Cooking session | **RTDB** | `cooking_sessions/{groupId}/{userId}` | `onDisconnect().remove()` (already self-clears in seconds) |
+
+The naming `recipe_presence` / `shopping_presence` (snake_case) in Linear /
+docs is a slight misnomer — the actual collection-name constants in
+`firestore_collections.dart` are camelCase (`recipePresence`,
+`shoppingPresence`). The subcollection name `activeUsers` is the
+collection-group target for any cross-list query.
+
+**Pattern for client-side TTL:**
+
+- Add `expiresAt: Timestamp` field to every write (`set` / `update` /
+  heartbeat). Compute as `Timestamp.fromDate(now + 60s)` — using
+  `serverTimestamp()` would force a second read to compare in client
+  filters.
+- Refresh cadence is **half the TTL window** (30s for a 60s TTL) so a
+  single missed heartbeat does not flicker the indicator.
+- On `markUserInactive`, set `expiresAt = now` to force immediate
+  eviction (don't wait for the sweeper).
+- Client read paths filter `expiresAt < now` in-memory — Firestore
+  composite index on `(isActive, expiresAt)` would be needed to put
+  this in the `where()` clause, and the row-count is small enough
+  that in-memory filtering is fine.
+- Legacy rows (no `expiresAt` field) optimistically pass the filter —
+  the server-side TTL sweeper catches them; surfacing a stale user is
+  the lesser harm vs. dropping a real one because of missing data.
+
+**TTL policy is NOT in `firestore.indexes.json`.** The `firebase deploy
+--only firestore:indexes` flow does not configure TTL — that's a separate
+admin API. Two options:
+
+1. `gcloud firestore fields ttls update <field> --collection-group=<col>
+   --enable-ttl --project=<id>` (one-time, document in a runbook).
+2. Firebase Console → Firestore → TTL tab → Add policy.
+
+I created `docs/ops/presence-ttl-runbook.md` documenting the gcloud
+command. TTL deletes are free of read quota but DO count against delete
+quota at standard pricing. First sweeper run can take up to 24 h after
+activation.
+
+**GDPR cascade on presence:** presence rows contain `userId`,
+`displayName`, and `avatarUrl` — all linked PII. Right-to-Erasure
+cannot wait for the 60s TTL sweeper. Add to
+`functions/src/cleanup/on-user-deleted.ts`:
+
+```ts
+const snapshot = await db
+  .collectionGroup("activeUsers")
+  .where("userId", "==", userId)
+  .get();
+// batch.delete each doc, BATCH_LIMIT=500 chunking
+```
+
+Requires a collection-group index on `activeUsers.userId` in
+`firestore.indexes.json` (added). The `collectionGroup('activeUsers')`
+sweep covers BOTH presence surfaces in one query because they share
+the same subcollection name.
+
+**RTDB cooking_session does NOT need cascade work.** It already
+self-clears via `onDisconnect().remove()` (see
+`firebase_cooking_session_repository.dart`). Account deletion implies
+the device is no longer connected, so RTDB has cleared the row by
+the time `onUserDeleted` fires. The repository's docstring is
+explicit: "no account-deletion cascade needed — stale rows
+self-clear within seconds of the user going offline."
+
+**Test pattern for the cascade:** `functions/src/__tests__/presence-cascade.test.ts`
+implements a minimal in-memory `FakeFirestore` stub supporting only
+`collectionGroup → where(==) → get` and `batch → delete → commit`. No
+emulator needed. The stub scans path strings and matches the second-to-
+last segment against the collection-group name. This pattern (no
+emulator, narrow stub) is preferred over `@firebase/rules-unit-testing`
+for pure data-manipulation logic — emulator-based tests are reserved
+for actual rule enforcement. Module-level `admin.firestore()` calls
+require `admin.initializeApp({ projectId: ... })` early in the test
+setup, otherwise import-time `app/no-app` errors fire before any test
+code runs.
+
+**Test seam pattern for cleanup functions:** `cleanupPresenceRows(uid)`
+calls `cleanupPresenceRowsWithDb(db, uid)` where the With-Db variant is
+`export`-ed. Tests inject a stub `db`; production code uses the
+module-level `admin.firestore()`. Same pattern as `runOcrRecipeImage` /
+`runStructureRecipe` test seams (BUT-559).
+
+### 2026-04-26 — firebase_crashlytics has NO web SDK (BUT-449)
+
+`firebase_crashlytics: ^5.x` only ships `android/`, `ios/`, and `macos/`
+folders — there is no `web/`. Wiring `kIsWeb` branches to call
+`FirebaseCrashlytics.instance.recordError(...)` does nothing on web; the
+calls silently no-op. Confirmed by inspecting the package contents at
+`~/.pub-cache/hosted/pub.dev/firebase_crashlytics-5.0.4/`.
+
+For Flutter Web error tracking, the working pattern is:
+
+1. Cloud Function `logWebError` (callable, AppCheck-enforced, rate-limited
+   via existing `enforceRateLimit`) that re-emits the payload as a
+   structured `logger.write({ severity, labels: { event: 'web_error' }})`
+   into Cloud Logging.
+2. Client-side `WebErrorReporter` installed only when `kIsWeb &&
+   hasConsent && !kDebugMode` (mirrors the native Crashlytics consent
+   gate at `main.dart:_enableCollectionIfConsented`).
+3. Both `FlutterError.onError` (framework errors) and
+   `PlatformDispatcher.instance.onError` (uncaught async / zone errors)
+   chain through the reporter; we preserve the prior handler so
+   `presentError` still runs for dev overlays.
+4. Every text field (message, stack, context) routes through
+   `lib/services/llm/pii_scrubber.dart` (the BUT-421/422/423 client
+   scrubber) before leaving the device. Server-side `log-web-error.ts`
+   re-scrubs as defence-in-depth and DROPS the report when redaction
+   ratio >50% (heavy-PII guard, mirrors `log-parse-correction.ts`).
+
+**Why not Sentry:** would have meant a new heavy dependency, separate
+secrets management, and a second cost line. The callable approach uses
+infra Butlery already operates and pays for.
+
+### 2026-04-26 — LLM kill-switch dual-control pattern (BUT-439)
+
+Two independent gates, both deliberately layered, both fail open on
+missing config (resilience > strict-deny):
+
+| Gate | Source | Path | Latency |
+|------|--------|------|---------|
+| Server (authoritative) | Firestore | `system/config.aiEnabled`, `system/config.llmParserEnabled` | <1 min |
+| Client (UX shortcut) | Remote Config | `ai_enabled`, `llm_parser_enabled` | up to 12 h |
+
+Both flags exist for a reason:
+- `aiEnabled` (master) — kills EVERY Vertex call. Cost spike, regulatory
+  pause, full Vertex outage.
+- `llmParserEnabled` (per-feature) — kills only the recipe-parse
+  pipeline (`structureRecipe` + the OCR text-mode retry that delegates
+  to it). OCR vision (`ocrRecipeImage` first pass) stays live. Use for
+  prompt regression on the parser specifically.
+
+**Audit at the time of BUT-439:** only two Vertex-calling functions in
+`functions/src/llm/`:
+- `structure-recipe.ts:117-145` — checks BOTH flags, gate at
+  `runStructureRecipe` entry, before any `getGeminiClient()` call.
+- `ocr-recipe-image.ts:218-226` — checks `aiEnabled` only via the
+  `defaultIsAiDisabled` test seam. Per-feature flag enforcement comes
+  via the OCR retry path delegating to `runStructureRecipe`.
+- `ocr-retry.ts` is an orchestrator — calls `runStructureRecipe`,
+  inherits the gate.
+- `gemini-client.ts` is a utility wrapper, no entry point.
+
+**Test seam pattern:** `runStructureRecipe(req, authUidHash, deps?)`
+where `deps?.loadKillSwitch` is a `() => Promise<KillSwitchConfig |
+undefined>` injectable. Default reads `system/config`. Tests pass a
+stub returning the desired flag combo. This mirrors the pre-existing
+`isAiDisabled` seam on `runOcrRecipeImage` — added belatedly to
+`runStructureRecipe` for parity. **Don't try to stub `admin.firestore`
+directly** — it's a getter on the FirebaseNamespace, not a writable
+property; `Object.defineProperty` workarounds are racy across tests.
+Inject the seam.
+
+**Per-user cap (`llmMaxDailyInvocationsPerUser`):** already covered by
+`functions/src/middleware/rate_limiter.ts` token bucket. Daily ceiling
+is implicit from refill rate × 1440 min. If a strict calendar-day cap
+is later required, extend `RateLimitConfig` with `dailyMaxInvocations`
+and a 24-h rolling counter. **Out of scope for BUT-439** — current rate
+limiter is sufficient for the launch envelope.
+
+**Fail-open trade-off documented:** Firestore doc missing → AI on. This
+is intentional — first-day deployment shouldn't block users while ops
+seeds the doc. Firestore unreachable mid-call → outer `catch` in
+`runStructureRecipe` turns the exception into an `internal` HttpsError,
+so the user sees an error (fail closed for the user). Bypass is not
+silent.
+
+Runbook: `docs/ops/llm-kill-switch-runbook.md` — operator commands for
+both flips (Firebase Console URL, gcloud, server-side TS snippet),
+monitoring filters, decision log.
