@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -84,7 +85,16 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
   void _handleExpiry() {
     if (_hasFiredExpired) return;
     _hasFiredExpired = true;
-    _pulseController.repeat(reverse: true);
+    // BUT-527: when the OS "Reduce Motion" setting is on, snap to the
+    // expired end-state instead of looping the attention-grabbing pulse.
+    // The static gold tint still conveys the expired state — see
+    // `_TimerDisplay.build` where `pulseController.value` drives the
+    // background colour lerp.
+    if (isReducedMotion(context)) {
+      _pulseController.value = 1.0;
+    } else {
+      _pulseController.repeat(reverse: true);
+    }
     widget.onExpired?.call();
   }
 

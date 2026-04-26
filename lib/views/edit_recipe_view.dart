@@ -404,6 +404,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           FormValidators.required(context.l10n.recipeTitle),
           FormValidators.minLength(3, context.l10n.recipeTitle),
           FormValidators.maxLength(100, context.l10n.recipeTitle),
+          // BUT-517: block profanity at validator level (BEFORE the API call).
+          FormValidators.contentFilter(context.l10n.recipeTitle),
         ]),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
@@ -416,8 +418,11 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         style: AppTextStyles.bodyMedium,
         textInputAction: TextInputAction.next,
         onChanged: viewModel.setDescription,
-        validator:
-            FormValidators.maxLength(500, context.l10n.recipeDescription),
+        validator: FormValidators.combine([
+          FormValidators.maxLength(500, context.l10n.recipeDescription),
+          // BUT-517
+          FormValidators.contentFilter(context.l10n.recipeDescription),
+        ]),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 

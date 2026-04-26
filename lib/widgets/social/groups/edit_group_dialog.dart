@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 
 /// Dialog for editing an existing group
@@ -153,7 +154,12 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                           labelText: '${context.l10n.socialGroupName} *',
                           prefixIcon: const Icon(Icons.group),
                         ),
-                        validator: ValidationUtils.validateGroupName,
+                        // BUT-517: chain content-filter onto group-name rules.
+                        validator: FormValidators.combine([
+                          (v) => ValidationUtils.validateGroupName(v),
+                          FormValidators.contentFilter(
+                              context.l10n.socialGroupName),
+                        ]),
                         maxLength: 50,
                         textCapitalization: TextCapitalization.words,
                       ),
@@ -168,6 +174,9 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                           hintText: context.l10n.groupDescriptionHint,
                           prefixIcon: const Icon(Icons.description),
                         ),
+                        // BUT-517
+                        validator: FormValidators.contentFilter(
+                            context.l10n.groupDescriptionLabel),
                         maxLines: 3,
                         maxLength: 200,
                         textCapitalization: TextCapitalization.sentences,

@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/recipe_form/contextual_error_handler.dart';
 import 'package:butlery/core/errors/contextual_error_engine.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 
 /// Core state management for recipe form with intelligent auto-save
 class RecipeFormState extends ChangeNotifier {
@@ -69,6 +70,11 @@ class RecipeFormState extends ChangeNotifier {
   }
 
   void _initializeFormFields() {
+    // BUT-517 validators built once so the ContentFilterService lookup
+    // doesn't repeat per keystroke.
+    final ingredientCleanCheck = FormValidators.contentFilter('ingredient');
+    final instructionCleanCheck = FormValidators.contentFilter('instruction');
+
     // CRITICAL FIX: Initialize managers with enhanced validation consistency
     _ingredientsManager = FormFieldsManager(
       initialItems: [''], // Start with one empty field
@@ -80,7 +86,7 @@ class RecipeFormState extends ChangeNotifier {
         if (ingredient.length > 200) {
           return AppLocale.current.formValidationIngredientTooLong;
         }
-        return null; // Valid
+        return ingredientCleanCheck(ingredient);
       },
       onValueChanged: (index, value) {
         // CRITICAL FIX: Validation-aware change handling
@@ -101,7 +107,7 @@ class RecipeFormState extends ChangeNotifier {
         if (instruction.length > 500) {
           return AppLocale.current.formValidationInstructionTooLong;
         }
-        return null; // Valid
+        return instructionCleanCheck(instruction);
       },
       onValueChanged: (index, value) {
         // CRITICAL FIX: Validation-aware change handling

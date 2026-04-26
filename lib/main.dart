@@ -84,6 +84,10 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 // Beta feedback
 import 'package:butlery/widgets/common/feedback_fab.dart';
 
+// Keyboard shortcuts (BUT-521)
+import 'package:butlery/core/keyboard/app_shortcuts.dart';
+import 'package:butlery/core/keyboard/app_actions.dart';
+
 // Services for auth wrapper
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -825,19 +829,32 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         // Universal fix for Android nav bar overlay + beta feedback FAB overlay
         builder: (context, child) {
           if (child == null) return const SizedBox.shrink();
-          return SafeArea(
-            top: false, // Let AppBar handle top
-            bottom: true, // Always protect bottom from system nav bar
-            left: false,
-            right: false,
-            child: Stack(
-              children: [
-                RepaintBoundary(
-                  key: feedbackRepaintBoundaryKey,
-                  child: child,
+          // Keyboard layer (BUT-521): Shortcuts + Actions wrap the entire
+          // navigator subtree so Esc / Cmd+K / Cmd+1-3 etc. work on every
+          // route. `Focus(autofocus)` is required so the Shortcuts widget
+          // is the focus root that receives unhandled key events.
+          return Shortcuts(
+            shortcuts: AppShortcuts.bindings,
+            child: Actions(
+              actions: AppActions.dispatch(),
+              child: Focus(
+                autofocus: true,
+                child: SafeArea(
+                  top: false, // Let AppBar handle top
+                  bottom: true, // Always protect bottom from system nav bar
+                  left: false,
+                  right: false,
+                  child: Stack(
+                    children: [
+                      RepaintBoundary(
+                        key: feedbackRepaintBoundaryKey,
+                        child: child,
+                      ),
+                      const FeedbackFAB(),
+                    ],
+                  ),
                 ),
-                const FeedbackFAB(),
-              ],
+              ),
             ),
           );
         },

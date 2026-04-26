@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -29,6 +30,24 @@ class GroupDetailActions {
       ),
     );
     return result ?? false;
+  }
+
+  /// Report a member's profile / behavior within a group context.
+  ///
+  /// BUT-511 (Apple 1.2 / Play UGC): every member surface needs a report
+  /// entry-point. Member-level reports use `contentType: 'profile'` since the
+  /// target is the user themselves (not the group). The reviewer/admin
+  /// workflow surfaces these alongside other profile reports.
+  static Future<void> reportMember(
+    BuildContext context,
+    UserProfile member,
+  ) async {
+    await ReportContentDialog.show(
+      context: context,
+      contentType: 'profile',
+      contentId: member.uid,
+      contentOwnerId: member.uid,
+    );
   }
 
   /// Remove member from group

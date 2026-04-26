@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -326,9 +327,11 @@ class StyledInput extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: BorderSide(
-            color: cs.primary,
-            width: AppDimensions.borderWidthThick,
+          // BUT-533: rust focus ring at 3px — matches global InputDecoration
+          // theme so keyboard navigation is visibly trackable on cream.
+          borderSide: const BorderSide(
+            color: AppColors.rust,
+            width: AppDimensions.borderWidthThick + 1,
           ),
         ),
         errorBorder: OutlineInputBorder(
@@ -360,11 +363,16 @@ class StyledInput extends StatelessWidget {
       ),
     );
 
-    // Only add Semantics wrapper when there is no visible label and a
-    // semantic label was explicitly provided or falls back to hint
+    // BUT-539: When no visible label is provided, Material's TextField cannot
+    // synthesize a screen-reader label from labelText, so an explicit Semantics
+    // wrapper carries label + hint + current value. When a visible label IS
+    // present, TextField's built-in Semantics already covers all three slots —
+    // wrapping again would double-announce.
     if (effectiveSemanticLabel != null && label == null) {
       return Semantics(
         label: effectiveSemanticLabel,
+        hint: hint,
+        value: controller?.text,
         textField: true,
         child: field,
       );

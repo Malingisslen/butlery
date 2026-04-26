@@ -75,6 +75,15 @@ class AppTheme {
 
       scaffoldBackgroundColor: colorScheme.surface,
 
+      // BUT-533: keyboard focus must be visible on cream surfaces. Material 3
+      // default focus tint is ~12% primary, which renders near-invisible
+      // against #F8F4E8. Rust accent at full alpha gives ≥5.3:1 contrast on
+      // cream and ≥3:1 against the inner button surface — well over the
+      // WCAG 1.4.11 (3:1) non-text floor. Per-component focus rings are
+      // declared in button_themes / input_themes.
+      focusColor: AppColors.rust,
+      highlightColor: AppColors.rust.withValues(alpha: 0.12),
+
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),

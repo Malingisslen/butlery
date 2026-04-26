@@ -14,6 +14,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -451,10 +452,14 @@ class _UserProfileEditViewContentState
                   ? Icon(Icons.check_circle,
                       color: context.butleryColors.success)
                   : null,
-          validator: (value) => ValidationUtils.validateRequired(
-            value,
-            fieldName: context.l10n.profileDisplayName,
-          ),
+          // BUT-517: required + content-filter chain on displayName.
+          validator: FormValidators.combine([
+            (value) => ValidationUtils.validateRequired(
+                  value,
+                  fieldName: context.l10n.profileDisplayName,
+                ),
+            FormValidators.contentFilter(context.l10n.profileDisplayName),
+          ]),
           onChanged: (value) {
             viewModel.updateDisplayName(value);
             // Clear previous validation errors when user types
@@ -591,6 +596,8 @@ class _UserProfileEditViewContentState
           keyboardType: TextInputType.multiline,
           textInputAction: TextInputAction.newline,
           onChanged: viewModel.updateBio,
+          // BUT-517: profanity gate on bio (optional field — empty passes).
+          validator: FormValidators.contentFilter(context.l10n.profileBio),
         ),
       ],
     );

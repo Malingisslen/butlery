@@ -178,6 +178,81 @@ flag any of these as Critical:
 These also force a re-fill of both store age-rating questionnaires
 (see `docs/ops/age-rating-runbook.md` §5.11 + §6).
 
+### 2026-04-26 — ReportContentDialog uses STRING contentType, not an enum (BUT-511)
+The reusable `ReportContentDialog.show(...)` API takes `contentType: String`,
+not an enum. The two `enum ContentType` definitions in the codebase
+(`lib/services/content_detector_service.dart`,
+`lib/viewmodels/shared_content/shared_content_search_viewmodel.dart`) are
+**unrelated** to reports. Don't try to "wire ContentType.group through" — it
+doesn't exist as an enum and shouldn't be added.
+
+Allowed string values are documented in the comment on
+`ContentReport.contentType` (`lib/models/social/content_report.dart`):
+`'recipe' | 'comment' | 'message' | 'profile' | 'shopping_list' |
+'cook_snap' | 'rating' | 'group'`. New values just need to be appended to
+that comment list AND handled in `ReportService._resolveContentRef` if
+admins should be able to delete the content from the moderator UI. Without
+a `_resolveContentRef` case, admins can still close/dismiss the report —
+they just can't delete the underlying content.
+
+Firestore rules `match /reports/{reportId}` does NOT whitelist
+`contentType` values — any string passes the create rule. The
+content-side delete rule is what matters: the target collection's rule
+block must have `allow delete: if isAdmin();` for moderation to work.
+
+For `'group'` (BUT-511), the content lives at
+`users/{ownerId}/friend_categories/{categoryId}` — same shape as
+`'recipe'`. So the `_resolveContentRef` case needs `report.contentOwnerId`
+(group ownerId) AND `report.contentId` (categoryId), and the
+`friend_categories` rule needed an `allow read, delete: if isAdmin();`
+moderation override added (it didn't have one). Pre-existing partial
+coverage to flag for follow-up: `'profile'`, `'cook_snap'`, and
+`'shopping_list'` content types also lack admin-delete rule branches —
+admins can close those reports but not delete the content.
+
+UI placement rule: never show "Report" to the content owner reporting
+themselves. For groups: hide if `currentUserId == group.ownerId`. For
+member tiles: hide if `member.uid == currentUserId`. Mirrors
+`friend_profile_view.dart` pattern.
+
+### 2026-04-26 — ContentFilterService.ensureClean is the pre-publish UGC gate (BUT-517)
+`lib/services/moderation/content_filter_service.dart` is the canonical
+client-side trust-and-safety gate for every UGC text surface. Use the new
+`ensureClean(text, fieldName: …) -> ContentFilterResult` API. The legacy
+`containsProfanity()` boolean stays as a non-blocking warning surface for
+chat compose + comment compose (`chat_viewmodel.dart:92`,
+`social_comments_manager.dart:57`); do NOT delete it.
+
+Wiring rules (BUT-517 enforced this baseline):
+
+- **TextFormField surfaces**: compose `FormValidators.contentFilter(fieldName)`
+  into the existing `FormValidators.combine([...])` chain. The validator
+  returns `null` when ContentFilterService isn't registered (narrow widget
+  tests), so adding it doesn't break unrelated tests.
+- **`DialogFormFields.buildTextFormField` (lib/widgets/common/dialogs)**
+  bakes the gate into its default validator chain → every dialog
+  name/description field (group create, shopping list, menu save, etc.)
+  inherits the gate for free. Don't re-add it on top.
+- **Service-level gates** (cook_snap_service, etc.): call `ensureClean`
+  and throw `Exception(result.reason!)`. Don't bypass with raw
+  `containsProfanity` or you lose the localized message string.
+- **FormFieldsManager validators** (recipe_form_state ingredients +
+  instructions): use a private `_ensureClean(value, fieldName: …)` wrapper
+  that does `ServiceLocator.tryGet<ContentFilterService>()` so dynamic
+  list rows get the gate too. The static FormValidators path doesn't
+  reach FormFieldsManager because that manager owns its own validator.
+
+Localization: re-use `contentFilterWarning` already in `app_en.arb` +
+`app_sv.arb`. Never invent a per-field rejection message — Apple/Play
+review reads the same string everywhere and a generic warning works in
+both inline `errorText` and SnackBar without leaking the field name.
+
+`ContentFilterResult.fieldName` is preserved for telemetry only — the
+user-facing `reason` deliberately omits it. The test
+`test/unit/services/moderation/content_filter_service_test.dart`
+documents this contract; if a future agent makes the rejection message
+field-specific, that test will fail with a clear "UI-safe" reason.
+
 ### 2026-04-25 — reviewer demo seeding pattern (BUT-416)
 Apple/Play reviewers reject empty-state social apps as "unable to
 evaluate functionality" (Apple Guideline 2.1 / Play UGC compliance).

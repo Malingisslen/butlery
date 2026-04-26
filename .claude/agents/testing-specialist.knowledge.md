@@ -90,3 +90,32 @@ entry: [Bug found] / [Pattern discovered] / [Helper added] / [User correction].*
 Knowledge file seeded from `testing-specialist.md`, `MEMORY.md` (test
 infrastructure patterns 2026-02-09), and the BUT-368/369 bug list. Future
 entries should record genuinely new test patterns, helpers, or bugs caught.
+
+### 2026-04-26 — A11y P2 + social safety sprint coverage [Pattern discovered]
+Sprint added 6 new test files (37 tests, all green): A1 `app_colors_contrast_test`
+(WCAG AA contrast ratios for `textLight` against cream/white/creamDark), A2
+`styled_input_semantics_test` (labelText / search-variant hint / explicit
+semanticLabel surface as screen-reader labels), A4 `reduced_motion_test`
+(MediaQuery.disableAnimations + `Duration.respectingMotion` extension —
+clean pattern for animation a11y), A5 `app_shortcuts_test` (keyboard
+Intent dispatch + `mainTabSwitchRequest` ValueNotifier bridge), B1
+`group_detail_report_tiles_test` (overflow menu Report tile owner-vs-non-owner
+visibility), B2 `content_filter_service_test` (Swedish + English profanity,
+word-boundary, case-insensitive, fieldName-doesn't-leak).
+
+Coverage gaps worth tracking for a follow-up sprint:
+- `lib/services/cook_snap_service.dart` switched `containsProfanity` →
+  `ensureClean` with no direct service test. Behaviour is covered indirectly
+  by `content_filter_service_test`, but the wiring (does CookSnap surface
+  `result.reason` to the user?) isn't asserted. Next time a CookSnap test
+  is touched, add the ensureClean-rejects-upload assertion.
+- `lib/services/moderation/report_service.dart` added a `'group'` case in
+  `_resolveContentRef` for `users/{ownerId}/friend_categories/{categoryId}`.
+  The UI flow (dialog opens) is tested by `group_detail_report_tiles_test`,
+  but the doc-ref resolution itself is untested. Worth a small unit test
+  asserting the resolved path matches `users/{ownerId}/friend_categories/{groupId}`.
+
+Pattern reminder enforced this run: `lib/views/*` modifications do NOT
+require new view tests (BUT-387 Phase 6 deleted that lane). Theme files
+are covered by golden tests + targeted contrast assertions, not by structural
+"uses AppColors.X" tests.

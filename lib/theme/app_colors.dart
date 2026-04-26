@@ -63,8 +63,10 @@ class AppColors {
   /// Placeholder icon color - for avatar/icon placeholders
   static const Color placeholderIcon = Color(0xFF4B5563);
 
-  /// Light text - tertiary text, placeholders (WCAG AA ≥4.5:1 on white — caution on cream)
-  static const Color textLight = Color(0xFF767676);
+  /// Light text - tertiary text, placeholders.
+  /// Darkened from #767676 (BUT-514) to satisfy WCAG 1.4.3 AA on cream surfaces.
+  /// Measured contrast: ≥6.2:1 on cream (#F8F4E8), ≥6.8:1 on white.
+  static const Color textLight = Color(0xFF5A5A5A);
   static const Color textTertiary = Color(0xFFD1D5DB);
   static const Color textSecondary = textMedium;
 

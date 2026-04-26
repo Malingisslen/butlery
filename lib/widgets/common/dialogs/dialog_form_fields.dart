@@ -72,6 +72,9 @@ class DialogFormFields {
                   minLength: minLength,
                   maxLength: maxLengthLimit,
                   fieldName: labelText),
+              // BUT-517: content-filter gate on every dialog name/description
+              // text field (group create, shopping list, menu save, etc.).
+              FormValidators.contentFilter(labelText),
             ]),
       ),
     );

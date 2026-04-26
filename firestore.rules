@@ -315,6 +315,11 @@ service cloud.firestore {
             .hasOnly(['friendUserIds', 'updatedAt'])
         && request.resource.data.friendUserIds.size() <= 200
         && rateLimitWrite('friend_category_member', 5);
+
+        // Moderation override (BUT-511): admins may read + delete any
+        // reported group via the reports workflow. Read is needed so the
+        // moderator review view can show a preview before acting.
+        allow read, delete: if isAdmin();
       }
       
       // User's conversations metadata (read receipts, per-user settings)

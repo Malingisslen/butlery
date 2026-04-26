@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 /// Utility class for accessibility-aware animations.
 ///
 /// Respects the user's "Reduce Motion" system setting (WCAG 2.3.3).
+///
+/// See also: `lib/core/utils/reduced_motion.dart` for the extension-based
+/// surface (`Duration.respectingMotion(context)`) used by declarative
+/// `AnimatedX` widgets. This class remains the right tool for
+/// `AnimationController`-driven custom animations.
 class AnimationUtils {
   AnimationUtils._();
 

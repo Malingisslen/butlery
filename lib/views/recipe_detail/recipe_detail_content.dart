@@ -3,6 +3,7 @@
 // Ingredients and instructions render inline (no tabs) for immediate visibility.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
@@ -318,7 +319,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     final cs = Theme.of(context).colorScheme;
 
     return AnimatedContainer(
-      duration: AppDimensions.animationDurationFast,
+      duration: AppDimensions.animationDurationFast.respectingMotion(context),
       width: 28,
       height: 28,
       decoration: BoxDecoration(

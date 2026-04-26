@@ -12,6 +12,11 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 
+/// BUT-533: keyboard-focus ring for text fields. Rust accent at 3px gives
+/// ≥3:1 contrast against cream and against the field's own fill color —
+/// satisfies WCAG 1.4.11 (non-text contrast) and 2.4.7 (focus visible).
+const double _kFocusRingWidth = 3.0;
+
 /// Input, card, and data display component themes.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
 class InputThemes {
@@ -38,9 +43,11 @@ class InputThemes {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        borderSide: BorderSide(
-          color: cs.primary,
-          width: 2,
+        // BUT-533: rust ring at 3px — visible on cream where the previous
+        // 2px primary-color border faded into the surrounding surface.
+        borderSide: const BorderSide(
+          color: AppColors.rust,
+          width: _kFocusRingWidth,
         ),
       ),
       errorBorder: OutlineInputBorder(

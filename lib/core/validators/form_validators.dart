@@ -33,6 +33,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/moderation/content_filter_service.dart';
 
 /// Comprehensive form validation utility class that provides standardized validation patterns for all application forms.
 /// This class consolidates validation logic including basic field validation, Swedish-localized error messages,
@@ -416,5 +418,24 @@ class FormValidators {
       required(AppLocale.current.validationCommentLabel),
       comment(),
     ]);
+  }
+
+  /// Content-filter validator (BUT-517). Composes with `combine([...])` to
+  /// block submit at the validator level on every UGC text surface (recipe
+  /// titles + instructions, group names + descriptions, profile displayName +
+  /// bio, cook-snap captions). Empty/whitespace passes — required-ness is the
+  /// caller's separate concern. Returns `null` when ContentFilterService isn't
+  /// registered (e.g. in narrow widget tests) so unrelated tests don't break.
+  ///
+  /// The ContentFilterService lookup is captured once at validator-build
+  /// time so per-keystroke validation doesn't repeat the GetIt probe.
+  static FormFieldValidator<String> contentFilter(String fieldName) {
+    final filter = ServiceLocator.tryGet<ContentFilterService>();
+    if (filter == null) return (_) => null;
+    return (value) {
+      if (value == null || value.trim().isEmpty) return null;
+      final result = filter.ensureClean(value, fieldName: fieldName);
+      return result.isClean ? null : result.reason;
+    };
   }
 }

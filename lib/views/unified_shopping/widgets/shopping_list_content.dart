@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -334,7 +335,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                 });
               },
               child: AnimatedContainer(
-                duration: ThemeConstants.durationFast,
+                duration: ThemeConstants.durationFast.respectingMotion(context),
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingMd,
@@ -545,7 +546,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
       },
       builder: (context, candidateData, rejectedData) {
         return AnimatedContainer(
-          duration: ThemeConstants.durationFast,
+          duration: ThemeConstants.durationFast.respectingMotion(context),
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,

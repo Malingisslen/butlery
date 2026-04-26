@@ -4,6 +4,7 @@
 // Animated check-off: scale pulse on checkbox, smooth fill transition
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/theme_constants.dart';
@@ -220,7 +221,11 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
   void didUpdateWidget(ShoppingItemTile oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isCompleted != widget.isCompleted) {
-      _pulseController.forward(from: 0);
+      // Skip the decorative scale-pulse when the user has reduced motion on.
+      // The fill-color change still happens (informational), just instantly.
+      if (!isReducedMotion(context)) {
+        _pulseController.forward(from: 0);
+      }
     }
   }
 
@@ -285,7 +290,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     return ScaleTransition(
       scale: _pulseAnimation,
       child: AnimatedContainer(
-        duration: ThemeConstants.durationStandard,
+        duration: ThemeConstants.durationStandard.respectingMotion(context),
         curve: ThemeConstants.standardCurve,
         width: _checkboxSize,
         height: _checkboxSize,
@@ -298,7 +303,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           color: widget.isCompleted ? cs.primary : cs.surfaceContainerHighest,
         ),
         child: AnimatedSwitcher(
-          duration: ThemeConstants.durationFast,
+          duration: ThemeConstants.durationFast.respectingMotion(context),
           switchInCurve: ThemeConstants.standardCurve,
           switchOutCurve: ThemeConstants.standardCurve,
           child: widget.isCompleted

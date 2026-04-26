@@ -6,6 +6,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/social/report_content_dialog.dart';
 
 /// GroupDetailAppBar - App bar component
 /// Provides group-specific app bar with menu actions based on permissions.
@@ -52,10 +53,28 @@ class GroupDetailAppBar {
     final permissionService = ServiceLocator.get<PermissionService>();
     final isAdmin = permissionService.isGroupAdmin(group.id);
     final canAddMembers = permissionService.canInviteToGroup(group.id);
+    // BUT-511: Apple 1.2 / Play UGC requires a report entry-point on every
+    // user-generated surface (group name + description). Owner-of-group
+    // reporting their own group is meaningless, so we only show the tile to
+    // non-owners.
+    final currentUserId = permissionService.currentUserId;
+    final canReportGroup =
+        currentUserId != null && currentUserId != group.ownerId;
 
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert),
-      onSelected: onMenuAction,
+      onSelected: (value) {
+        if (value == 'report') {
+          ReportContentDialog.show(
+            context: context,
+            contentType: 'group',
+            contentId: group.id,
+            contentOwnerId: group.ownerId,
+          );
+          return;
+        }
+        onMenuAction(value);
+      },
       itemBuilder: (context) => [
         // Add members - admin only
         if (canAddMembers)
@@ -118,6 +137,21 @@ class GroupDetailAppBar {
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
                 ),
+              ],
+            ),
+          ),
+        // Report group - non-owners only (BUT-511, Apple 1.2 / Play UGC)
+        if (canReportGroup)
+          PopupMenuItem(
+            value: 'report',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.flag_outlined,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(context.l10n.reportContent),
               ],
             ),
           ),

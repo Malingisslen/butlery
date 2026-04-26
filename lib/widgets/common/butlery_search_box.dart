@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/input_themes.dart';
@@ -126,7 +127,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return AnimatedContainer(
-      duration: AppDimensions.animationDurationFast,
+      duration: AppDimensions.animationDurationFast.respectingMotion(context),
       decoration: _isFocused
           ? InputThemes.searchBoxDecorationFocused
           : InputThemes.searchBoxDecoration,

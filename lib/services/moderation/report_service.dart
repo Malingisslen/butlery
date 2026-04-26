@@ -206,6 +206,17 @@ class ReportService extends BaseService {
         return _firestore
             .collection(FirestoreCollections.cookSnaps)
             .doc(report.contentId);
+      case 'group':
+        // Groups (FriendCategory) live under
+        // users/{ownerId}/friend_categories/{categoryId}. Same shape as
+        // 'recipe' — we need ownerId to resolve the doc.
+        final groupOwnerId = report.contentOwnerId;
+        if (groupOwnerId == null || groupOwnerId.isEmpty) return null;
+        return _firestore
+            .collection(FirestoreCollections.users)
+            .doc(groupOwnerId)
+            .collection(FirestoreCollections.userFriendCategories)
+            .doc(report.contentId);
       default:
         return null;
     }

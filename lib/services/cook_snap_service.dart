@@ -47,12 +47,17 @@ class CookSnapService extends BaseService {
           throw Exception('Cannot upload photos while offline');
         }
 
-        // Validate caption
+        // Validate caption — gate via ContentFilterService.ensureClean to
+        // share the canonical pre-publish path with recipe titles, group
+        // names, and profile bios (BUT-517).
         var validCaption = caption;
         if (validCaption != null && validCaption.trim().isNotEmpty) {
           final filter = ServiceLocator.get<ContentFilterService>();
-          if (filter.containsProfanity(validCaption)) {
-            throw Exception('Caption contains inappropriate language');
+          final result =
+              filter.ensureClean(validCaption, fieldName: 'cook_snap_caption');
+          if (!result.isClean) {
+            throw Exception(
+                result.reason ?? 'Caption contains inappropriate language');
           }
           if (validCaption.length > CookSnap.maxCaptionLength) {
             validCaption = validCaption.substring(0, CookSnap.maxCaptionLength);

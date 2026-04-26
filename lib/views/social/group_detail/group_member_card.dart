@@ -22,6 +22,14 @@ class GroupMemberCard {
   ) {
     final permissionService = ServiceLocator.get<PermissionService>();
     final canRemoveMember = _canRemoveMember(member, group, permissionService);
+    // BUT-511: Apple 1.2 / Play UGC requires a report entry-point on every
+    // user-generated surface. Member tiles are a UGC surface (the user picked
+    // their own displayName + avatar). Report is visible to everyone except
+    // the user themselves — self-report is meaningless.
+    final currentUserId = permissionService.currentUserId;
+    final canReportMember =
+        currentUserId != null && member.uid != currentUserId;
+    final showMenu = canRemoveMember || canReportMember;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -90,7 +98,7 @@ class GroupMemberCard {
             ),
           ],
         ),
-        trailing: canRemoveMember
+        trailing: showMenu
             ? PopupMenuButton<String>(
                 onSelected: (value) async {
                   if (value == 'remove') {
@@ -102,29 +110,49 @@ class GroupMemberCard {
                     if (success) {
                       onRemoved();
                     }
+                  } else if (value == 'report') {
+                    await GroupDetailActions.reportMember(context, member);
                   }
                 },
                 itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'remove',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.person_remove,
-                          size: AppDimensions.iconSizeM,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                        const SizedBox(width: AppDimensions.spacingXs),
-                        Text(
-                          context.l10n.groupRemoveFromGroup,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                        ),
-                      ],
+                  if (canRemoveMember)
+                    PopupMenuItem(
+                      value: 'remove',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.person_remove,
+                            size: AppDimensions.iconSizeM,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingXs),
+                          Text(
+                            context.l10n.groupRemoveFromGroup,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  if (canReportMember)
+                    PopupMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.flag_outlined,
+                            size: AppDimensions.iconSizeM,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingXs),
+                          Text(context.l10n.reportContent),
+                        ],
+                      ),
+                    ),
                 ],
               )
             : null,

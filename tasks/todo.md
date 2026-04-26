@@ -1,6 +1,41 @@
 # Sprint Backlog
 
-## Sprint: Final store-submission close-out — age rating + iOS PrivacyInfo + reviewer paths — 2026-04-26
+## Sprint: A11y P2 close-out + social safety completion — 2026-04-26
+
+Theme: pre-launch hardening backlog is drained; no Urgent items remain. The next coherent cluster is the High-priority accessibility ring (5 P2 items, EN 301 549 / WCAG 2.1 AA — required for EU app distribution) plus the two remaining social-safety P2 gaps Apple 1.2 / Play Console care about. No new features, no UX surface change beyond an existing Report tile reused from the BUT-417 sprint.
+
+### Agent A: flutter-developer — A11y P2 cluster
+
+- [x] **A1. textLight contrast on cream surfaces** — `lib/theme/app_colors.dart`: `textLight` is `#767676`, fails 4.5:1 against cream backgrounds. Audit cream-surface call sites; either darken `textLight` or substitute a cream-safe token. WCAG 1.4.3 Level AA. (BUT-514)
+- [x] **A2. Semantics coverage on styled_input + custom form fields** — `lib/widgets/styled/styled_input.dart` + `lib/widgets/common/dialogs/dialog_form_fields.dart` (20 hintText/labelText sites): confirm each field renders a native `TextField` with `decoration.labelText` (auto-Semantics) OR wrap custom-drawn variants with explicit `Semantics(textField: true, label, hint, value)`. Widget test asserting `find.bySemanticsLabel`. WCAG 4.1.2. (BUT-539)
+- [x] **A3. Custom focus indicator ring** — `lib/theme/`: Material 3 default focus ring is invisible on cream. Add `FocusTheme` (or per-widget `Focus(canRequestFocus, ..)` decoration) using rust accent for visibility. WCAG 2.4.7. (BUT-533)
+- [x] **A4. Respect MediaQuery.disableAnimations** — sweep `AnimationController` / `AnimatedX` widgets; gate non-essential animations behind `MediaQuery.disableAnimationsOf(context)`. Vestibular accessibility. WCAG 2.3.3. (BUT-527)
+- [x] **A5. Keyboard navigation layer (Shortcuts/Actions) for web/desktop** — `lib/main.dart` app shell wraps the navigator subtree in `Shortcuts` + `Actions` + `Focus(autofocus: true)`. New `lib/core/keyboard/{app_shortcuts,app_actions}.dart` declare 7 intents (CloseDialog/NavigateBack/OpenSearch/GoToRecipes/GoToMenu/GoToShopping/SubmitForm) bound to Esc / Backspace / Cmd-or-Ctrl+(K, 1, 2, 3, Enter). Tab switching bridged via top-level `mainTabSwitchRequest` ValueNotifier listened to in `_MainMenuLayoutState`. All 7 bindings end-to-end (no stubs). WCAG 2.1.1. (BUT-521)
+
+### Agent B: firebase-backend-security — social safety completion
+
+- [x] **B1. Wire ReportContentDialog to groups (name + description + members)** — `lib/views/social/group_detail/group_detail_app_bar.dart` (overflow menu) + `lib/views/social/group_detail/group_detail_actions.dart` (member action sheet): call `ReportContentDialog.show` with existing `ContentType.group` (or add one). Reuses BUT-417 dialog. (BUT-511)
+- [x] **B2. Expand ContentFilterService coverage** — `lib/services/moderation/content_filter_service.dart` (current call sites: `chat_viewmodel.dart:92`, `social_comments_manager.dart:57`): add `BaseService`-level `ensureClean(text, field)` helper, wire into recipe create/edit, group create/edit, profile update, cook-snap caption input. Block submit at validator level. (BUT-517)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos`
+- [ ] Targeted unit + widget tests per agent
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-514, 539, 533, 527, 521, 511, 517 → Done
+
+---
+
+## What this means in plain language
+
+- **Five small accessibility fixes** the EU expects every app shipping in 2025+ to have. Right now if a user taps Tab on a keyboard, navigates with a screen reader, or has motion-sickness settings on, parts of Butlery feel broken. After this sprint, those parts work.
+- **Two social-safety surfaces get the Report button you already have elsewhere.** Today you can report a comment but you can't report a group name or a recipe title. Apple/Google care about this for store review.
+- **Risk: low.** Four of the five a11y tasks are theme-token edits (one color, one focus ring, one animation guard, one Semantics wrapper). The keyboard navigation task (A5) is bigger; if it grows, we split it out. Social-safety tasks reuse components that already shipped.
+- **What you'll notice:** focus rings appear when navigating with keyboard, Settings → "Reduce motion" actually reduces motion, the cream-background text is slightly darker, and a "Report" tile appears on group menus.
+
+---
+
+## Archive: Final store-submission close-out — age rating + iOS PrivacyInfo + reviewer paths — 2026-04-26
 
 Theme: Five sprints of pre-launch hardening have drained the security/privacy/observability backlog. The only cluster left between `main` and a real App Store / Play Console submission is **age rating + iOS PrivacyInfo completion + App Review demo path**. Pure paperwork + small file edits, no UX changes.
 
@@ -27,8 +62,8 @@ Theme: Five sprints of pre-launch hardening have drained the security/privacy/ob
 - [x] `dart analyze --fatal-infos` — 0 issues
 - [x] `flutter test` — green (4/4 auth_view_legal_links_test passing)
 - [~] `flutter build apk --debug` — skipped (compileSdk=36/targetSdk=36 already verified above 35; no gradle changes)
-- [ ] Commit, push to main
-- [ ] Update Linear: BUT-624, BUT-590, BUT-416, BUT-587, BUT-596, BUT-603, BUT-563, BUT-541, BUT-583 → Done
+- [x] Commit, push to main — `cafe75107`
+- [x] Update Linear: BUT-624, BUT-590, BUT-416, BUT-587, BUT-596, BUT-603, BUT-563, BUT-541, BUT-583 → Done
 
 ### Continued blockers from prior sprints (NOT in this sprint scope)
 

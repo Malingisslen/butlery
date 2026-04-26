@@ -7,8 +7,40 @@
 /// - FAB: Forest green
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+
+/// BUT-533: shared focus-ring side. Rust at full alpha, 2.5px wide — visible
+/// on cream and on button-fill surfaces. WidgetStateProperty so non-focused
+/// states keep their existing borders (transparent for filled buttons,
+/// primary for outlined).
+WidgetStateProperty<BorderSide?> _focusSide({
+  required BorderSide unfocused,
+}) {
+  return WidgetStateProperty.resolveWith<BorderSide?>((states) {
+    if (states.contains(WidgetState.focused)) {
+      return const BorderSide(
+        color: AppColors.rust,
+        width: 2.5,
+      );
+    }
+    return unfocused;
+  });
+}
+
+/// BUT-533: rust-tinted overlay shown on the focused state of buttons whose
+/// shape would otherwise hide the side ring (filled / text / icon).
+/// `alpha` defaults to 0.12 — bumped to 0.16 for IconButton because its
+/// circular shape gives the ring less visual weight on its own.
+WidgetStateProperty<Color?> _focusOverlay({double alpha = 0.12}) {
+  return WidgetStateProperty.resolveWith<Color?>((states) {
+    if (states.contains(WidgetState.focused)) {
+      return AppColors.rust.withValues(alpha: alpha);
+    }
+    return null;
+  });
+}
 
 /// Button-specific theme configurations.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
@@ -18,20 +50,26 @@ class ButtonThemes {
   /// Elevated button theme
   static ElevatedButtonThemeData elevatedButtonTheme(ColorScheme cs) {
     return ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: cs.primary,
-        foregroundColor: cs.onPrimary,
-        elevation: 0,
-        shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      style: ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(cs.primary),
+        foregroundColor: WidgetStatePropertyAll(cs.onPrimary),
+        elevation: const WidgetStatePropertyAll(0),
+        shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+        // BUT-533: keyboard focus ring on cream surfaces.
+        side: _focusSide(unfocused: BorderSide.none),
+        overlayColor: _focusOverlay(),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+          ),
         ),
-        minimumSize: const Size(double.infinity, AppDimensions.minTouchTarget),
-        padding: const EdgeInsets.symmetric(
+        minimumSize: const WidgetStatePropertyAll(
+            Size(double.infinity, AppDimensions.minTouchTarget)),
+        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingLg,
           vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        ),
-        textStyle: AppTextStyles.buttonText,
+        )),
+        textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
   }
@@ -39,18 +77,23 @@ class ButtonThemes {
   /// Filled button theme
   static FilledButtonThemeData filledButtonTheme(ColorScheme cs) {
     return FilledButtonThemeData(
-      style: FilledButton.styleFrom(
-        backgroundColor: cs.primary,
-        foregroundColor: cs.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      style: ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(cs.primary),
+        foregroundColor: WidgetStatePropertyAll(cs.onPrimary),
+        // BUT-533: keyboard focus ring on cream surfaces.
+        side: _focusSide(unfocused: BorderSide.none),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+          ),
         ),
-        minimumSize: const Size(double.infinity, AppDimensions.minTouchTarget),
-        padding: const EdgeInsets.symmetric(
+        minimumSize: const WidgetStatePropertyAll(
+            Size(double.infinity, AppDimensions.minTouchTarget)),
+        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingLg,
           vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        ),
-        textStyle: AppTextStyles.buttonText,
+        )),
+        textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
   }
@@ -58,22 +101,26 @@ class ButtonThemes {
   /// Outlined button theme
   static OutlinedButtonThemeData outlinedButtonTheme(ColorScheme cs) {
     return OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: cs.primary,
-        backgroundColor: Colors.transparent,
-        side: BorderSide(
-          color: cs.primary,
-          width: 1.5,
+      style: ButtonStyle(
+        foregroundColor: WidgetStatePropertyAll(cs.primary),
+        backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+        // BUT-533: focus ring overrides the unfocused outline border for
+        // keyboard navigation visibility.
+        side: _focusSide(
+          unfocused: BorderSide(color: cs.primary, width: 1.5),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+          ),
         ),
-        minimumSize: const Size(double.infinity, AppDimensions.minTouchTarget),
-        padding: const EdgeInsets.symmetric(
+        minimumSize: const WidgetStatePropertyAll(
+            Size(double.infinity, AppDimensions.minTouchTarget)),
+        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingLg,
           vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        ),
-        textStyle: AppTextStyles.buttonText,
+        )),
+        textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
   }
@@ -81,18 +128,25 @@ class ButtonThemes {
   /// Text button theme
   static TextButtonThemeData textButtonTheme(ColorScheme cs) {
     return TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: cs.primary,
-        backgroundColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+      style: ButtonStyle(
+        foregroundColor: WidgetStatePropertyAll(cs.primary),
+        backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+        // BUT-533: text buttons get a focus ring via side (visible because
+        // shape borderRadius is non-zero) plus a rust-tinted overlay.
+        side: _focusSide(unfocused: BorderSide.none),
+        overlayColor: _focusOverlay(),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+          ),
         ),
-        minimumSize: const Size(0, AppDimensions.minTouchTarget),
-        padding: const EdgeInsets.symmetric(
+        minimumSize:
+            const WidgetStatePropertyAll(Size(0, AppDimensions.minTouchTarget)),
+        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingMd,
           vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        ),
-        textStyle: AppTextStyles.buttonText,
+        )),
+        textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
   }
@@ -100,12 +154,16 @@ class ButtonThemes {
   /// Icon button theme
   static IconButtonThemeData iconButtonTheme(ColorScheme cs) {
     return IconButtonThemeData(
-      style: IconButton.styleFrom(
-        foregroundColor: cs.onSurfaceVariant,
-        backgroundColor: Colors.transparent,
-        minimumSize: const Size(
-            AppDimensions.minTouchTarget, AppDimensions.minTouchTarget),
-        iconSize: AppDimensions.iconSizeL,
+      style: ButtonStyle(
+        foregroundColor: WidgetStatePropertyAll(cs.onSurfaceVariant),
+        backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+        // BUT-533: focus ring + tint. IconButton renders shape as a circle,
+        // so the side is what becomes a visible focus outline.
+        side: _focusSide(unfocused: BorderSide.none),
+        overlayColor: _focusOverlay(alpha: 0.16),
+        minimumSize: const WidgetStatePropertyAll(
+            Size(AppDimensions.minTouchTarget, AppDimensions.minTouchTarget)),
+        iconSize: const WidgetStatePropertyAll(AppDimensions.iconSizeL),
       ),
     );
   }
