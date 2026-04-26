@@ -40,9 +40,12 @@ Sister runbooks for the same DR tier:
   gcloud config set project butlery-app-1
   ```
 - The bucket name. Open Firebase Console → Storage; the **Files** tab shows
-  the canonical bucket reference (e.g. `butlery-app-1.appspot.com`). This is
-  the value to export as `STORAGE_BUCKET`. Do NOT use the project ID by
-  itself.
+  the canonical bucket reference. Newer Firebase projects (created after
+  late 2024) use the `<project>.firebasestorage.app` domain — for Butlery
+  this is `butlery-app-1.firebasestorage.app`. Older projects still use
+  `<project>.appspot.com`. Confirm against `lib/firebase_options.dart`
+  (`storageBucket` field) — the live bucket name is whatever the SDK uses.
+  Do NOT use the project ID by itself.
 - IAM: the executing principal needs `roles/storage.admin` on the bucket (or
   on the project). The Firebase Owner role covers this.
 
@@ -52,7 +55,7 @@ Sister runbooks for the same DR tier:
 
 ```bash
 # From repo root, on a maintainer workstation with gcloud authenticated.
-export STORAGE_BUCKET=butlery-app-1.appspot.com   # replace with the real bucket
+export STORAGE_BUCKET=butlery-app-1.firebasestorage.app
 ./infrastructure/storage/setup-storage-versioning.sh
 ```
 
@@ -179,8 +182,20 @@ versions that linger up to 30 days.** Two options:
 
 ---
 
+## Activation status
+
+**Activated 2026-04-26 on `gs://butlery-app-1.firebasestorage.app`.**
+Versioning enabled + 30-day noncurrent-version delete lifecycle in effect.
+Verified via `gcloud storage buckets describe` — `versioning_enabled=True`,
+`lifecycle_config.rule[0]={action:Delete, age:30, isLive:false}`.
+
+The bucket also has a 7-day soft-delete policy (Firebase Storage default
+since 2024) layered underneath — recovery window is now effectively 30 days
+for overwrites and deletes. Script is idempotent: re-running it is safe and
+re-applies the same policies.
+
 ## Related Linear tickets
 
-- BUT-419 — this runbook's parent ticket.
+- BUT-419 — this runbook's parent ticket. **Closed 2026-04-26.**
 - BUT-418 — sibling DR pattern for Firestore (PITR + GCS exports).
 - BUT-450 — sibling fail-loud script pattern for GCP alerting.

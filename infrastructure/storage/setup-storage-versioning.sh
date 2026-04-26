@@ -67,20 +67,24 @@ gcloud storage buckets update "gs://${BUCKET}" --lifecycle-file="${LIFECYCLE_FIL
 # ----------------------------------------------------------------------------
 # STEP 3: Verify both policies are in effect
 # ----------------------------------------------------------------------------
+# Typed field extraction via --format='value(...)' — schema-agnostic, so
+# this survives gcloud's drift between nested-versioning-object and the flat
+# versioning_enabled shape.
 echo "[3/3] Verifying policies..."
-DESCRIBE_OUT="$(gcloud storage buckets describe "gs://${BUCKET}" --format=json)"
+VERSIONING="$(gcloud storage buckets describe "gs://${BUCKET}" \
+  --format='value(versioning_enabled)' 2>/dev/null | tr '[:upper:]' '[:lower:]')"
+LIFECYCLE_ACTION="$(gcloud storage buckets describe "gs://${BUCKET}" \
+  --format='value(lifecycle_config.rule[0].action.type)' 2>/dev/null)"
 
-# Versioning check — `versioning.enabled` must be true.
-if ! echo "$DESCRIBE_OUT" | grep -q '"enabled": true'; then
+if [[ "$VERSIONING" != "true" ]]; then
   echo "ERROR: versioning is NOT enabled on gs://${BUCKET}" >&2
-  echo "$DESCRIBE_OUT" >&2
+  echo "  versioning_enabled=$VERSIONING" >&2
   exit 1
 fi
 
-# Lifecycle check — at least one rule with action.type=Delete must be present.
-if ! echo "$DESCRIBE_OUT" | grep -q '"type": "Delete"'; then
+if [[ "$LIFECYCLE_ACTION" != "Delete" ]]; then
   echo "ERROR: lifecycle delete rule is NOT present on gs://${BUCKET}" >&2
-  echo "$DESCRIBE_OUT" >&2
+  echo "  rule[0].action.type=$LIFECYCLE_ACTION" >&2
   exit 1
 fi
 
