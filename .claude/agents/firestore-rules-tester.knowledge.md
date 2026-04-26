@@ -106,3 +106,71 @@ Knowledge file created from `firestore-rules.test.ts` patterns observed at
 agent setup time. Builders, actor conventions, and coverage rules above are
 the baseline; future entries should record genuinely new shapes (new
 collections, new validators, new actor types).
+
+### 2026-04-26 — moderation-rules.test.ts created (BUT-511 + BUT-728)
+
+New test file `functions/src/__tests__/moderation-rules.test.ts` covers the
+admin-delete moderation overrides for four content types:
+
+| Path | Builder | Tests |
+|------|---------|-------|
+| `users/{uid}/friend_categories/{id}` | `validFriendCategoryBody` | 3 |
+| `public_profiles/{uid}` | `validPublicProfileBody` | 3 |
+| `unified_shared_shopping_lists/{id}` | `validSharedShoppingListBody(ownerId)` | 3 |
+| `cook_snaps/{id}` | `validCookSnapBody(userId)` | 12 |
+
+Wired into `package.json` as `test:rules:moderation` + appended to
+`test:rules:all`, and added to the `firestore-rules.yml` workflow path
+filters. Uses `PROJECT_ID = "butlery-rules-moderation"` to keep the
+emulator namespace clean.
+
+### 2026-04-26 — rate-limit deny pattern via rate_limits subcollection
+
+`rateLimitWrite(collection, seconds)` reads
+`users/{auth.uid}/rate_limits/{collection}`. To prove the deny path:
+
+```ts
+await env.withSecurityRulesDisabled(async (admin) => {
+  await admin
+    .firestore()
+    .doc(`users/${OWNER_UID}/rate_limits/cook_snaps`)
+    .set({ lastWrite: new Date() });
+});
+// Now any cook_snaps create within 5s by OWNER_UID is rejected.
+```
+
+Note: the rate-limit sub-doc must use `lastWrite` as the field name. The
+helper does `get(limitsPath).data.lastWrite + duration.value(seconds, 's')`
+— mistaking the field name results in a `NoSuchFieldException` that is
+treated as "no rate limit doc" and the write succeeds (false negative
+for the test). Always use `lastWrite`.
+
+### 2026-04-26 — userId-switch attack pattern for set()-based collections
+
+For collections written via `BaseFirebaseRepository` (full-doc rewrite via
+`set()`), the rule pins both `resource.data.userId` AND
+`request.resource.data.userId` against `auth.uid`. To prove the deny:
+
+```ts
+// Seed with the legitimate owner
+await admin.firestore().doc("cook_snaps/x").set(validCookSnapBody(OWNER_UID));
+// Owner authenticated, but rewrites the doc with userId = OTHER_UID
+const ownerCtx = env.authenticatedContext(OWNER_UID);
+await assertFails(
+  ownerCtx.firestore().doc("cook_snaps/x").set(validCookSnapBody(OTHER_UID))
+);
+```
+
+This single test covers both halves of the dual pin — without the
+`request.resource.data.userId == auth.uid` clause this assertion would
+PASS (incorrectly), which is exactly the regression we want to catch.
+
+### 2026-04-26 — Java/emulator gap on Windows dev workstation
+
+The hardcoded fact: this dev machine has no Java on PATH (verified
+`java -version` → command not found). `ensure-firestore-emulator.sh`
+errors out with `Could not spawn 'java -version'`. The CI workflow
+(`.github/workflows/firestore-rules.yml`) sets up Temurin 21 explicitly,
+so it's the verification path. Don't waste time trying to coax the
+local emulator up — type-check the test (`npx tsc --noEmit src/__tests__/<file>.ts`)
+and let CI run the suite.

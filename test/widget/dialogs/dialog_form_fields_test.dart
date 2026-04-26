@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -781,6 +785,137 @@ void main() {
         await tester.pump();
 
         expect(find.text('Felaktig e-post'), findsOneWidget);
+      });
+    });
+
+    // BUT-517 follow-up: regression coverage for the contentFilter-bypass
+    // foot-gun. Before the fix, passing a `customValidator` silently dropped
+    // the profanity gate (`validator: customValidator ?? combine([...])`).
+    // After the fix, customValidator and contentFilter compose so a UGC field
+    // can never be opted out of moderation by mistake.
+    group('Content filter bypass prevention (BUT-517 follow-up)', () {
+      setUp(() {
+        // Both production ServiceLocator and TestServiceLocator share
+        // GetIt.instance, so registering directly on GetIt makes
+        // `ServiceLocator.tryGet<ContentFilterService>()` resolve.
+        ServiceLocator.initialize(DIContainer());
+        if (GetIt.instance.isRegistered<ContentFilterService>()) {
+          GetIt.instance.unregister<ContentFilterService>();
+        }
+        GetIt.instance
+            .registerSingleton<ContentFilterService>(ContentFilterService());
+      });
+
+      tearDown(() {
+        if (GetIt.instance.isRegistered<ContentFilterService>()) {
+          GetIt.instance.unregister<ContentFilterService>();
+        }
+        ServiceLocator.reset();
+      });
+
+      testWidgets(
+          'profanity is rejected even when customValidator returns null',
+          (WidgetTester tester) async {
+        // The bug: a permissive customValidator used to short-circuit the
+        // entire chain — including the profanity gate. This test pins that
+        // contract: customValidator returning null must NOT bypass
+        // FormValidators.contentFilter.
+        final controller = TextEditingController();
+        final formKey = GlobalKey<FormState>();
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Form(
+              key: formKey,
+              child: DialogFormFields.buildTextFormField(
+                controller: controller,
+                labelText: 'Beskrivning',
+                customValidator: (_) => null,
+              ),
+            ),
+          ),
+        );
+
+        // 'fan' is a Swedish profanity token in ContentFilterService's list,
+        // matched as a standalone word by the word-boundary regex.
+        await tester.enterText(find.byType(TextFormField), 'vad fan');
+        formKey.currentState!.validate();
+        await tester.pump();
+
+        // The localized contentFilterWarning (Swedish locale is the test
+        // default in createLocalizedTestApp) must surface as the field error.
+        expect(
+          find.textContaining('olämpligt språk'),
+          findsOneWidget,
+          reason: 'contentFilter must run even when customValidator '
+              'returns null — otherwise UGC fields can be opted out of '
+              'moderation by passing a permissive customValidator.',
+        );
+      });
+
+      testWidgets(
+          'customValidator error wins on its own concern with clean input',
+          (WidgetTester tester) async {
+        // Compose order: customValidator runs FIRST so its domain-specific
+        // error (e.g. "must contain @") still surfaces ahead of length /
+        // required / contentFilter. Verifies the new order doesn't suppress
+        // legitimate customValidator errors.
+        final controller = TextEditingController();
+        final formKey = GlobalKey<FormState>();
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Form(
+              key: formKey,
+              child: DialogFormFields.buildTextFormField(
+                controller: controller,
+                labelText: 'Email',
+                customValidator: (value) {
+                  if (value == null || !value.contains('@')) {
+                    return 'Saknar @-tecken';
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ),
+        );
+
+        await tester.enterText(find.byType(TextFormField), 'utan-snabel-a');
+        formKey.currentState!.validate();
+        await tester.pump();
+
+        expect(find.text('Saknar @-tecken'), findsOneWidget);
+      });
+
+      testWidgets('clean input passes when customValidator also passes',
+          (WidgetTester tester) async {
+        // Round-trip sanity: when both customValidator and contentFilter are
+        // happy with the input, the field validates. Guards against the fix
+        // accidentally turning every form into a permanent error state.
+        final controller = TextEditingController();
+        final formKey = GlobalKey<FormState>();
+        bool? validatorReturn;
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Form(
+              key: formKey,
+              child: DialogFormFields.buildTextFormField(
+                controller: controller,
+                labelText: 'Beskrivning',
+                customValidator: (_) => null,
+              ),
+            ),
+          ),
+        );
+
+        await tester.enterText(
+            find.byType(TextFormField), 'En helt vanlig beskrivning');
+        validatorReturn = formKey.currentState!.validate();
+        await tester.pump();
+
+        expect(validatorReturn, isTrue);
       });
     });
   });

@@ -23,6 +23,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -334,8 +335,12 @@ class _UserProfileEditViewContentState
       );
     }
 
-    return Form(
-      key: _formKey,
+    return KeyboardSubmittableForm(
+      formKey: _formKey,
+      onSubmit: () {
+        if (viewModel.isLoading || !viewModel.isFormValid) return;
+        _saveProfile();
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -47,6 +47,7 @@ import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatefulWidget {
@@ -159,8 +160,14 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                       child: Padding(
                         padding:
                             AppDimensions.responsiveContentPadding(context),
-                        child: Form(
-                          key: _formKey,
+                        child: KeyboardSubmittableForm(
+                          formKey: _formKey,
+                          onSubmit: () {
+                            if (viewModel.isSaving || !viewModel.isValid) {
+                              return;
+                            }
+                            _saveRecipe(context);
+                          },
                           child: ListView(
                             children: _buildFormFields(context, viewModel),
                           ),

@@ -24,6 +24,7 @@ import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
@@ -353,8 +354,16 @@ class _SkrivSjalvReceptViewContentState
                 ),
                 child: Padding(
                   padding: AppDimensions.responsiveContentPadding(context),
-                  child: Form(
-                    key: _formKey,
+                  child: KeyboardSubmittableForm(
+                    formKey: _formKey,
+                    onSubmit: () {
+                      if (_isSaving ||
+                          viewModel.isSaving ||
+                          !viewModel.isValid) {
+                        return;
+                      }
+                      _saveRecipe();
+                    },
                     child: ListView(
                       children: [
                         // Parse quality warning for imported recipes
@@ -393,7 +402,9 @@ class _SkrivSjalvReceptViewContentState
                                   )
                                   .toList(),
                               onChanged: (value) {
-                                if (value != null) viewModel.setMealType(value);
+                                if (value != null) {
+                                  viewModel.setMealType(value);
+                                }
                               },
                             ),
                           ],

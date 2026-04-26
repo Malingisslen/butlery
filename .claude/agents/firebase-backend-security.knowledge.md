@@ -273,3 +273,119 @@ checklist by hand for now. Future agents adding reviewer-related
 infra: respect the **temporary admin grant must be revoked within 7
 days** rule (admins can hard-delete content; leaked admin = data
 loss vector).
+
+### 2026-04-26 — admin-delete rules tracking vs. ReportService coverage (BUT-728)
+
+`ReportContentDialog` accepts these contentType strings (per
+`ContentReport` model comment): `'recipe' | 'comment' | 'message' |
+'profile' | 'shopping_list' | 'cook_snap' | 'rating' | 'group'`.
+
+Admin-delete works only when **two** things are true:
+1. `ReportService._resolveContentRef` has a case for the contentType
+   (otherwise `deleteReportedContent` returns false with "Unknown
+   contentType" warning).
+2. The Firestore rule block for that path has `allow read, delete:
+   if isAdmin();` (otherwise the delete returns permission-denied).
+
+Coverage matrix as of 2026-04-26:
+
+| contentType      | `_resolveContentRef` | rule block exists | admin override |
+|------------------|----------------------|-------------------|----------------|
+| `recipe`         | yes                  | yes (line 204)    | yes (line 233) |
+| `comment`        | yes                  | yes (line 862)    | yes (line 899) |
+| `message`        | yes                  | yes (line 959)    | yes (line 983) |
+| `rating`         | yes                  | yes (line 1126)   | yes (line 1151)|
+| `group`          | yes                  | yes (line 288)    | yes (line 322) |
+| `cook_snap`      | yes (line 205)       | **NO RULE BLOCK** | n/a — entire `cook_snaps` collection is default-denied |
+| `profile`        | **MISSING**          | yes (line 420)    | n/a            |
+| `shopping_list`  | **MISSING**          | yes (lines 237, 1002) | n/a        |
+
+**Gap to fix BEFORE adding admin-delete rules:**
+
+- `cook_snaps`: needs a full rule block (owner read/write, plus
+  admin read+delete moderation override). The collection IS used
+  (`firebase_cook_snap_repository.dart`) so the absence of any rule
+  is a Critical-severity bug — current writes must be failing or
+  bypassed via Cloud Functions admin SDK. Investigate before
+  patching rules-only.
+- `profile`: `_resolveContentRef` needs a case mapping to the
+  `public_profiles/{userId}` doc (NOT the `users/{userId}` private
+  doc — moderation should not nuke private settings/consent).
+  `public_profiles` already has `allow delete: if isOwner(userId);`
+  on line 455 — needs `|| isAdmin()` extension OR a separate
+  admin-override allow line.
+- `shopping_list`: `_resolveContentRef` needs to disambiguate
+  between `users/{ownerId}/unified_shopping_lists/{listId}` (private)
+  and `unified_shared_shopping_lists/{listId}` (shared). Reports
+  flow likely targets the shared list (only shared lists are visible
+  to others to be reportable in the first place). Then add admin
+  override to whichever rule block.
+
+**Lesson: don't add admin-delete rules for paths that
+`_resolveContentRef` can't resolve.** A rule without the resolver
+is dead code; a resolver without the rule is a permission-denied
+crash for the moderator. They MUST land together. The pre-existing
+"already partial coverage to flag for follow-up" note in the
+2026-04-26 BUT-511 entry above slightly overstates current coverage
+— `profile` and `shopping_list` lack BOTH halves, not just rules.
+
+### 2026-04-26 — BUT-728 closes the moderation coverage matrix; cook_snaps prod gap fixed
+
+Resolved the gaps flagged in the BUT-728 entry above. New coverage:
+
+| contentType      | `_resolveContentRef`         | rule block + admin override |
+|------------------|------------------------------|------------------------------|
+| `profile`        | added (public_profiles/{uid})| public_profiles delete admin override added (line ~459) |
+| `shopping_list`  | added (unified_shared_…)     | unified_shared_shopping_lists `allow read, delete: if isAdmin();` (line ~1041) |
+| `cook_snap`      | already present              | **NEW full rule block added** (lines ~1166-1208) — was missing entirely |
+
+**Cook_snap prod gap (Critical) — root cause:** the `cook_snaps`
+top-level collection is written directly by `firebase_cook_snap_repository.dart`
+via `BaseFirebaseRepository.create()` → `collection.doc(id).set(...)`.
+There is NO Cloud Function intermediary (verified: zero matches for
+`cook_snap` in `functions/src`). With no `match /cook_snaps/{id}`
+block, the default-deny `match /{document=**}` at end of rules was
+catching every write. Either cook-snap creation has been silently
+failing in production, or the bug existed only in client paths that
+were never exercised. Either way, the new block uses set()-style
+update permission (full doc rewrite is the repo's actual behavior),
+not field-diff style.
+
+**Pattern for collections written via `BaseFirebaseRepository`:**
+- `create` rule: check `request.auth.uid == request.resource.data.userId`
+  and `hasRequiredFields([…])` matching the model's `toFirestore()`.
+- `update` rule: check BOTH `resource.data.userId` AND
+  `request.resource.data.userId` against `request.auth.uid` — because
+  base repo overwrites the whole doc via `set()`, both sides are
+  populated, and pinning both blocks userId-switch attacks even though
+  the update is a full rewrite.
+- `delete` rule: `request.auth.uid == resource.data.userId`.
+- Required-fields list: only include fields that the model's
+  `toFirestore()` always emits (skip nullable optionals — for
+  CookSnap that means `userAvatarUrl`, `thumbnailUrl`, `caption`).
+
+**Caption length validation in rules** (CookSnap.maxCaptionLength=200):
+mirrored in the rule via `request.resource.data.get('caption', '').size() <= 200`
+with a null-tolerant guard. The model's `_sanitizeCaption` clamps to
+200 already; the rule enforces server-side defense in depth against
+clients that bypass the model.
+
+**Profile reports correctly target `public_profiles/{uid}`, NOT
+`users/{uid}`.** The private `users/{uid}` root holds settings,
+consent records, and rate_limit subcollections — moderator-deletion
+of that doc would orphan or destroy GDPR-relevant private data. The
+public_profiles mirror is the right surface: it's what other users
+actually see, and the rule already had owner-delete (now augmented
+with admin-delete).
+
+**Shopping-list reports correctly target only
+`unified_shared_shopping_lists`, NOT `users/{uid}/unified_shopping_lists`.**
+Private user-scoped lists are never visible to other users — they
+literally cannot be reported in the first place. The resolver
+disambiguates by being shared-only.
+
+**Hand-off note:** the rules-tester agent should add coverage for:
+1. cook_snap owner CRUD happy path + admin delete
+2. cook_snap userId-switch attack on update rejected
+3. public_profile admin delete works without owner consent
+4. unified_shared_shopping_list admin read+delete works for non-member admin

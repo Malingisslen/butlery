@@ -1,6 +1,51 @@
 # Sprint Backlog
 
-## Sprint: A11y P2 close-out + social safety completion — 2026-04-26
+## Sprint: Mediums close-out + admin-delete parity — 2026-04-26 (PM)
+
+Theme: clean up the 4 deferred Mediums from the morning's sprint (BUT-521 / BUT-511 / BUT-517 follow-ups) plus the BUT-728 admin-delete parity work surfaced as a side-finding from BUT-511. All 5 tasks are bounded, all reuse patterns established earlier today, no new UX surface beyond Cmd+Enter starting to actually save forms.
+
+### Agent A: flutter-developer — keyboard layer mediums (BUT-521 follow-ups)
+
+- [x] **A1. Cmd+Enter actually submits forms** — today `SubmitFormIntent` calls `Form.validate() + Form.save()` but no form in the codebase uses `Form.save()` (saves go through ViewModel methods triggered by explicit Save buttons). New widget `lib/core/keyboard/keyboard_submittable_form.dart` registers an `Actions<SubmitFormIntent>` override at the form root with a caller-supplied `onSubmit` callback. Migrate 3 high-traffic forms: `lib/views/edit_recipe_view.dart`, `lib/views/skriv_sjalv_recept_view.dart`, `lib/views/social/user_profile_edit_view.dart`. Update `app_actions.dart` docstring + `app_shortcuts.dart` `SubmitFormIntent` doc to reflect override pattern. Test: pump form wrapped in `KeyboardSubmittableForm`, send Cmd+Enter, assert `onSubmit` fired. (BUT-521 follow-up)
+- [x] **A2. Cmd+K route dedupe** — register `RouteObserver<ModalRoute<dynamic>>` in `lib/main.dart` and pass to `MaterialApp.navigatorObservers`. New `lib/core/keyboard/route_tracker.dart` exposes `currentRouteName` getter. In `app_actions.dart:_pushSearch`, no-op when current route name is the search route. Test: pump app with shortcuts, push search route once, send Cmd+K again, assert navigator stack length unchanged. (BUT-521 follow-up)
+
+### Agent B: flutter-developer — DialogFormFields hardening (BUT-517 follow-up)
+
+- [x] **B1. DialogFormFields contentFilter no longer bypassable** — `lib/widgets/common/dialogs/dialog_form_fields.dart:66-78`: today `customValidator ?? combine([...])` silently drops the contentFilter gate when caller provides a customValidator. Fix: always compose `combine([if (customValidator != null) customValidator, ...defaults, FormValidators.contentFilter(labelText)])`. Test: provide a customValidator that returns `null` for input containing profanity; assert the field validator returns the rejection reason. (BUT-517 follow-up)
+
+### Agent C: firebase-backend-security — admin-delete parity rules (BUT-728)
+
+- [x] **C1. Admin-delete parity rules + cook_snaps full block + resolver gaps closed** — scope expanded after gap analysis: `_resolveContentRef` was missing `'profile'` and `'shopping_list'` cases (added — point at `public_profiles/{contentOwnerId}` and `unified_shared_shopping_lists/{contentId}` respectively). Admin-delete overrides added to existing `public_profiles` (line 459) and `unified_shared_shopping_lists` (line 1041) rule blocks. Net new `cook_snaps` rule block (lines 1166-1209) — owner CRUD + auth read + admin moderation, with userId-pin on update to block impersonation. The cook_snaps block also fixes a pre-existing P0: `firebase_cook_snap_repository.dart` writes directly to a default-denied collection; without this rule block client-side cook-snap creation was failing in production. (BUT-728 + side-effect fix)
+
+### Agent D: firestore-rules-tester — rules test coverage (BUT-511 + BUT-728 follow-up)
+
+Runs after Agent C lands the new rules.
+
+- [x] **D1. Test coverage for friend_categories + admin-delete paths + cook_snaps CRUD** — new `functions/src/__tests__/moderation-rules.test.ts` (4 suites, 21 tests). Covers admin moderation + owner regression + non-admin deny for each of `friend_categories`, `public_profiles`, `unified_shared_shopping_lists`, plus full new-block coverage for `cook_snaps`. Local Java unavailable; CI workflow `.github/workflows/firestore-rules.yml` is the verification path (added file to its path filter + `test:rules:moderation` script). (BUT-511 + BUT-728 follow-ups)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos`
+- [ ] `flutter test` — new + existing
+- [ ] `cd functions && npm test` — firestore-rules suite
+- [ ] `/simplify` pass
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-728 → Done
+
+---
+
+## What this means in plain language
+
+- **Cmd+Enter now actually saves** the recipe / profile / group you're editing. Today it pretends to.
+- **Cmd+K stops opening duplicate search screens** — repeated Cmd+K is a no-op when search is already up.
+- **The dialog-form helper can no longer accidentally lose its profanity filter** when a developer adds a custom validator.
+- **The new moderation rule for groups gets a test** that proves it works.
+- **Admins can now actually take down reported profiles, cook-snaps, and shopping lists** — today they can mark the report as resolved but the offending content stays up. Same Apple 1.2 / Play UGC concern that drove the Groups Report wiring earlier.
+- **Risk: very low.** Five small targeted edits. M3+M5 are test + rules-only (zero production app code). M4 is one method. M1 is additive. M2 adds one observer + one if-check.
+
+---
+
+## Archive: A11y P2 close-out + social safety completion — 2026-04-26
 
 Theme: pre-launch hardening backlog is drained; no Urgent items remain. The next coherent cluster is the High-priority accessibility ring (5 P2 items, EN 301 549 / WCAG 2.1 AA — required for EU app distribution) plus the two remaining social-safety P2 gaps Apple 1.2 / Play Console care about. No new features, no UX surface change beyond an existing Report tile reused from the BUT-417 sprint.
 

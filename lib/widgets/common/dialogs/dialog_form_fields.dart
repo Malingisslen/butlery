@@ -63,19 +63,30 @@ class DialogFormFields {
         enabled: enabled,
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
-        validator: customValidator ??
-            FormValidators.combine([
-              if (required)
-                (value) => ValidationUtils.validateRequired(value,
-                    fieldName: labelText),
-              (value) => ValidationUtils.validateLength(value,
-                  minLength: minLength,
-                  maxLength: maxLengthLimit,
-                  fieldName: labelText),
-              // BUT-517: content-filter gate on every dialog name/description
-              // text field (group create, shopping list, menu save, etc.).
-              FormValidators.contentFilter(labelText),
-            ]),
+        // BUT-517 follow-up: contentFilter must NEVER be bypassable. The old
+        // shape `customValidator ?? combine([...defaults, contentFilter])`
+        // silently dropped the profanity gate whenever a caller passed a
+        // customValidator (foot-gun for any future UGC-bearing dialog field).
+        // Always compose; customValidator runs first so its error wins on its
+        // own concern, and contentFilter is the unconditional final step.
+        validator: FormValidators.combine([
+          if (customValidator != null) customValidator,
+          if (required)
+            (value) =>
+                ValidationUtils.validateRequired(value, fieldName: labelText),
+          // Length only applies when there IS content — otherwise an optional
+          // field with the default minLength=1 would always reject empty
+          // input (regression caught when buildPhoneField etc. compose this
+          // chain without explicitly opting out of length-checking).
+          (value) {
+            if (value == null || value.isEmpty) return null;
+            return ValidationUtils.validateLength(value,
+                minLength: minLength,
+                maxLength: maxLengthLimit,
+                fieldName: labelText);
+          },
+          FormValidators.contentFilter(labelText),
+        ]),
       ),
     );
   }

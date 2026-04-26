@@ -87,6 +87,7 @@ import 'package:butlery/widgets/common/feedback_fab.dart';
 // Keyboard shortcuts (BUT-521)
 import 'package:butlery/core/keyboard/app_shortcuts.dart';
 import 'package:butlery/core/keyboard/app_actions.dart';
+import 'package:butlery/core/observers/route_tracker.dart';
 
 // Services for auth wrapper
 import 'package:butlery/services/user_service.dart';
@@ -796,6 +797,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       _performanceObserver, // Track screen performance with Firebase Performance
       _snackbarObserver,
       _interactionObserver!,
+      // BUT-521 follow-up: feeds `appRouteTracker.currentRouteName` so the
+      // keyboard layer can dedupe shortcut-driven navigation (e.g. Cmd+K).
+      appRouteTracker,
       if (_sessionActivityObserver != null) _sessionActivityObserver!,
       if (_analyticsObserver != null) _analyticsObserver!,
     ];

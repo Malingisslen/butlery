@@ -50,10 +50,13 @@ class GoToShoppingIntent extends Intent {
   const GoToShoppingIntent();
 }
 
-/// Trigger form submission. The handler walks `Form.maybeOf(focusedContext)`
-/// and runs `validate()` + `save()`. ViewModels that need bespoke submit
-/// semantics can register an `Actions.maybeFind<SubmitFormIntent>` override
-/// in their subtree.
+/// Trigger form submission. The default top-level handler walks
+/// `Form.maybeOf(focusedContext)` and runs `validate()` + `save()`, which
+/// only works for forms whose state is reflected back via `onSaved`.
+/// Most forms in this codebase save through ViewModel methods bound to an
+/// explicit Save button — those wrap themselves in `KeyboardSubmittableForm`
+/// (see `lib/core/keyboard/keyboard_submittable_form.dart`) to override
+/// this intent with the same callback the Save button calls.
 class SubmitFormIntent extends Intent {
   const SubmitFormIntent();
 }

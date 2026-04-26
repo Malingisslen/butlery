@@ -17,6 +17,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/keyboard/app_shortcuts.dart';
+import 'package:butlery/core/observers/route_tracker.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 
 /// Shared notifier read by the main scaffold (`_MainMenuLayoutState`) to
@@ -69,9 +70,11 @@ class AppActions {
   }
 
   static Object? _pushSearch(String route) {
-    // Spamming Cmd+K stacks duplicate search routes; back must be pressed
-    // N times to escape. Acceptable for now since search is a leaf view —
-    // dedupe via RouteObserver if a real complaint surfaces.
+    // Dedupe Cmd+K spam: if the search route is already on top, don't push
+    // another copy. `appRouteTracker.currentRouteName` is fed by the
+    // observer registered in `main.dart`. Without this, repeated Cmd+K
+    // stacks N copies and the user presses Back N times to escape.
+    if (appRouteTracker.currentRouteName == route) return null;
     appNavigatorKey.currentState?.pushNamed(route);
     return null;
   }
@@ -87,10 +90,13 @@ class AppActions {
   }
 
   static Object? _submitFocusedForm() {
-    // Walk up from the currently focused element to find the nearest Form.
-    // If found, run validation + the form's `onChanged`/save flow. Form
-    // owners that need bespoke submit semantics can override
-    // `Actions.invoke<SubmitFormIntent>` lower in the tree.
+    // Default fallback for forms that haven't opted in to a custom submit
+    // path: walk up from the focused element to the nearest `Form`, run
+    // `validate()` + `save()`. In this codebase most saves go through
+    // ViewModel methods triggered by explicit Save buttons (so `Form.save`
+    // is a no-op there) — those forms wrap themselves in
+    // `KeyboardSubmittableForm` to register their own Save callback as the
+    // canonical override. See `lib/core/keyboard/keyboard_submittable_form.dart`.
     final focused = FocusManager.instance.primaryFocus;
     final ctx = focused?.context;
     if (ctx == null) return null;
