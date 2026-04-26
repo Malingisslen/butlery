@@ -25,6 +25,15 @@
       ]
     },
     {
+      "collectionGroup": "public_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isSearchable", "order": "ASCENDING" },
+        { "fieldPath": "isHidden", "order": "ASCENDING" },
+        { "fieldPath": "displayNameLower", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "friend_requests",
       "queryScope": "COLLECTION",
       "fields": [

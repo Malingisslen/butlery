@@ -52,6 +52,14 @@ class UserProfile with JsonSerializableMixin {
   // enforces a hard floor of 13 so admins can backfill edge cases.
   final int? birthYear;
 
+  // Moderation hide flag. Admin-only writeable (rules-enforced). When true,
+  // the profile is excluded from search and rendered as a placeholder in
+  // friend/group/comment surfaces. Existing data is preserved so a
+  // moderator can reverse the decision; reversal sets `isHidden = false`
+  // and clears `hiddenAt`.
+  final bool isHidden;
+  final DateTime? hiddenAt;
+
   UserProfile({
     required this.uid,
     required this.displayName,
@@ -75,6 +83,8 @@ class UserProfile with JsonSerializableMixin {
     this.cuisineAffinities,
     this.bio,
     this.birthYear,
+    this.isHidden = false,
+    this.hiddenAt,
   }) {
     if (birthYear != null) {
       final currentYear = DateTime.now().year;
@@ -110,6 +120,8 @@ class UserProfile with JsonSerializableMixin {
     Object? cuisineAffinities = _sentinel,
     Object? bio = _sentinel,
     Object? birthYear = _sentinel,
+    bool? isHidden,
+    Object? hiddenAt = _sentinel,
   }) {
     return UserProfile(
       uid: uid,
@@ -147,6 +159,8 @@ class UserProfile with JsonSerializableMixin {
           : cuisineAffinities as List<String>?,
       bio: bio == _sentinel ? this.bio : bio as String?,
       birthYear: birthYear == _sentinel ? this.birthYear : birthYear as int?,
+      isHidden: isHidden ?? this.isHidden,
+      hiddenAt: hiddenAt == _sentinel ? this.hiddenAt : hiddenAt as DateTime?,
     );
   }
 
@@ -236,6 +250,10 @@ class UserProfile with JsonSerializableMixin {
       'isOnline': isOnline,
       'cookingSkillLevel': cookingSkillLevel?.name,
       'cuisineAffinities': cuisineAffinities,
+      'isHidden': isHidden,
+      'hiddenAt': hiddenAt != null
+          ? AppTimestamp.fromDateTime(hiddenAt!).toFirestore()
+          : null,
     };
   }
 
@@ -290,6 +308,8 @@ class UserProfile with JsonSerializableMixin {
       'cuisineAffinities': cuisineAffinities,
       'bio': bio,
       'birthYear': birthYear,
+      'isHidden': isHidden,
+      'hiddenAt': hiddenAt != null ? serializeDateTime(hiddenAt!) : null,
     };
   }
 
@@ -338,6 +358,8 @@ class UserProfile with JsonSerializableMixin {
           : null,
       bio: utils.SerializationUtils.safeNullableString(data, 'bio'),
       birthYear: _readBirthYear(data),
+      isHidden: utils.SerializationUtils.safeBool(data, 'isHidden'),
+      hiddenAt: utils.SerializationUtils.safeDateTime(data, 'hiddenAt'),
     );
   }
 
@@ -385,6 +407,8 @@ class UserProfile with JsonSerializableMixin {
           : null,
       bio: utils.SerializationUtils.safeNullableString(json, 'bio'),
       birthYear: _readBirthYear(json),
+      isHidden: utils.SerializationUtils.safeBool(json, 'isHidden'),
+      hiddenAt: utils.SerializationUtils.parseDateTimeValue(json['hiddenAt']),
     );
   }
 

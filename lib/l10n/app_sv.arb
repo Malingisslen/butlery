@@ -8958,6 +8958,18 @@
   "@moderatorDeleteConfirmBody": {
     "description": "BUT-417: confirmation dialog body before admin deletes content."
   },
+  "moderatorActionHide": "Dölj profil",
+  "@moderatorActionHide": {
+    "description": "BUT-729: button that hides a reported profile (reversible suspend, not hard delete)."
+  },
+  "moderatorHideConfirmTitle": "Dölj den här profilen?",
+  "@moderatorHideConfirmTitle": {
+    "description": "BUT-729: confirmation dialog title before admin hides a profile."
+  },
+  "moderatorHideConfirmBody": "Profilen tas bort från sök och vänlistor. Användaren kan fortfarande logga in men visas som en platshållare för andra. Du kan ångra det senare.",
+  "@moderatorHideConfirmBody": {
+    "description": "BUT-729: confirmation dialog body before admin hides a profile."
+  },
   "appealProcessTitle": "Överklaga en borttagning",
   "@appealProcessTitle": {
     "description": "BUT-556: section heading in ToS + settings for the appeal process."

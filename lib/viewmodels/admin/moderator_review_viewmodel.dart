@@ -58,14 +58,29 @@ class ModeratorReviewViewModel extends BaseViewModel {
     );
   }
 
-  Future<void> deleteContent(ContentReport report) async {
+  /// Dispatches the moderator's takedown action for [report]:
+  /// - `'profile'` → suspend (hide flag, reversible)
+  /// - everything else → hard delete
+  ///
+  /// The dashboard binds a single button to this method; the verb in the
+  /// confirmation dialog should reflect [actionLabelFor].
+  Future<void> takeDown(ContentReport report) async {
     await executeAsyncVoid(
       () async {
-        await _reportService.deleteReportedContent(report);
+        if (report.contentType == 'profile') {
+          await _reportService.suspendReportedProfile(report);
+        } else {
+          await _reportService.deleteReportedContent(report);
+        }
       },
-      errorPrefix: 'deleteReportedContent',
+      errorPrefix: 'takeDown',
     );
   }
+
+  /// Whether the takedown action for [report] is reversible (true for
+  /// profile suspend; false for hard-delete content types).
+  bool isReversibleAction(ContentReport report) =>
+      report.contentType == 'profile';
 
   @override
   void dispose() {

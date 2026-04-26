@@ -13034,6 +13034,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'This permanently removes the reported content. The action cannot be undone from the app.';
 
   @override
+  String get moderatorActionHide => 'Hide profile';
+
+  @override
+  String get moderatorHideConfirmTitle => 'Hide this profile?';
+
+  @override
+  String get moderatorHideConfirmBody =>
+      'The profile will be removed from search and friend lists. The user can still log in but appears as a placeholder to others. You can reverse this later.';
+
+  @override
   String get appealProcessTitle => 'Appeal a removal';
 
   @override

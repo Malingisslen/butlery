@@ -8958,6 +8958,18 @@
   "@moderatorDeleteConfirmBody": {
     "description": "BUT-417: confirmation dialog body before admin deletes content."
   },
+  "moderatorActionHide": "Hide profile",
+  "@moderatorActionHide": {
+    "description": "BUT-729: button that hides a reported profile (reversible suspend, not hard delete)."
+  },
+  "moderatorHideConfirmTitle": "Hide this profile?",
+  "@moderatorHideConfirmTitle": {
+    "description": "BUT-729: confirmation dialog title before admin hides a profile."
+  },
+  "moderatorHideConfirmBody": "The profile will be removed from search and friend lists. The user can still log in but appears as a placeholder to others. You can reverse this later.",
+  "@moderatorHideConfirmBody": {
+    "description": "BUT-729: confirmation dialog body before admin hides a profile."
+  },
   "appealProcessTitle": "Appeal a removal",
   "@appealProcessTitle": {
     "description": "BUT-556: section heading in ToS + settings for the appeal process."

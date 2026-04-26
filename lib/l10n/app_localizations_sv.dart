@@ -13063,6 +13063,16 @@ class AppLocalizationsSv extends AppLocalizations {
       'Detta tar bort det rapporterade innehållet permanent. Åtgärden kan inte ångras från appen.';
 
   @override
+  String get moderatorActionHide => 'Dölj profil';
+
+  @override
+  String get moderatorHideConfirmTitle => 'Dölj den här profilen?';
+
+  @override
+  String get moderatorHideConfirmBody =>
+      'Profilen tas bort från sök och vänlistor. Användaren kan fortfarande logga in men visas som en platshållare för andra. Du kan ångra det senare.';
+
+  @override
   String get appealProcessTitle => 'Överklaga en borttagning';
 
   @override

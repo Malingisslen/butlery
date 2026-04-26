@@ -22342,6 +22342,24 @@ abstract class AppLocalizations {
   /// **'Detta tar bort det rapporterade innehållet permanent. Åtgärden kan inte ångras från appen.'**
   String get moderatorDeleteConfirmBody;
 
+  /// BUT-729: button that hides a reported profile (reversible suspend, not hard delete).
+  ///
+  /// In sv, this message translates to:
+  /// **'Dölj profil'**
+  String get moderatorActionHide;
+
+  /// BUT-729: confirmation dialog title before admin hides a profile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dölj den här profilen?'**
+  String get moderatorHideConfirmTitle;
+
+  /// BUT-729: confirmation dialog body before admin hides a profile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen tas bort från sök och vänlistor. Användaren kan fortfarande logga in men visas som en platshållare för andra. Du kan ångra det senare.'**
+  String get moderatorHideConfirmBody;
+
   /// BUT-556: section heading in ToS + settings for the appeal process.
   ///
   /// In sv, this message translates to:

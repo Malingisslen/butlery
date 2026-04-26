@@ -440,7 +440,10 @@ service cloud.firestore {
       allow update: if (isOwner(userId)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'fcmToken', 'fcmTokenUpdatedAt', 'notificationsEnabled',
-          'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale'
+          'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale',
+          // Moderation-controlled fields — owner can read but never write,
+          // so a hidden user cannot un-hide themselves.
+          'isHidden', 'hiddenAt'
         ])
       ) || (
         isAuthenticated() &&
@@ -453,6 +456,13 @@ service cloud.firestore {
         rateLimitWrite('friendsCount', 5)
       );
       allow delete: if isOwner(userId);
+
+      // Hard delete is intentionally NOT granted — hide is reversible;
+      // delete would orphan the auth account and break friendships/groups.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['isHidden', 'hiddenAt'])
+        && request.resource.data.isHidden is bool;
     }
 
     // ========================================

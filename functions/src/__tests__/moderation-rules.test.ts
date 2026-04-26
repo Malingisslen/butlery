@@ -75,6 +75,16 @@ function validFriendCategoryBody(extra: Record<string, unknown> = {}): Record<st
   };
 }
 
+function validPublicProfileBody(extra: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    displayName: "Anna",
+    email: "anna@example.com",
+    isSearchable: true,
+    isHidden: false,
+    ...extra,
+  };
+}
+
 // ============================================================================
 // FRIEND_CATEGORIES — admin moderation override (BUT-511 follow-up)
 // 3 tests covering admin-allow, owner regression guard, non-admin deny.
@@ -162,9 +172,120 @@ test(
   }
 );
 
+// ============================================================================
+// PUBLIC_PROFILES — admin moderation HIDE override (BUT-729 Phase 2)
+// 5 tests covering admin allow/deny for the hide-flag update + owner
+// regression guard. Hard delete is intentionally NOT granted to admins
+// (would orphan auth account + dangling friendships); reversible hide is
+// the takedown primitive.
+// ============================================================================
+
+// admin can flip isHidden + hiddenAt on a flagged profile.
+test(
+  "public_profiles: admin can hide a reported profile (isHidden + hiddenAt)",
+  async () => {
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .set(validPublicProfileBody());
+    });
+    const adminCtx = env.authenticatedContext(ADMIN_UID);
+    await assertSucceeds(
+      adminCtx
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .update({ isHidden: true, hiddenAt: new Date() })
+    );
+  }
+);
+
+// admin update is restricted to {isHidden, hiddenAt} only — touching any
+// other field via the admin branch is denied (no end-run around the rule).
+test(
+  "public_profiles: admin cannot update other fields via the admin branch",
+  async () => {
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .set(validPublicProfileBody());
+    });
+    const adminCtx = env.authenticatedContext(ADMIN_UID);
+    await assertFails(
+      adminCtx
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .update({ isHidden: true, displayName: "renamed by admin" })
+    );
+  }
+);
+
+// owner cannot un-hide themselves (or set isHidden at all). Without this
+// guard, a user could just flip the moderation flag back to false.
+test(
+  "public_profiles: owner cannot set isHidden on their own profile",
+  async () => {
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .set(validPublicProfileBody({ isHidden: true, hiddenAt: new Date() }));
+    });
+    const ownerCtx = env.authenticatedContext(OWNER_UID);
+    await assertFails(
+      ownerCtx
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .update({ isHidden: false })
+    );
+  }
+);
+
+// non-admin non-owner cannot touch isHidden either (defence-in-depth).
+test(
+  "public_profiles: non-admin non-owner cannot set isHidden",
+  async () => {
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .set(validPublicProfileBody());
+    });
+    const strangerCtx = env.authenticatedContext(OTHER_UID);
+    await assertFails(
+      strangerCtx
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .update({ isHidden: true })
+    );
+  }
+);
+
+// regression: owner can still update other profile fields. Confirms the
+// new isHidden blocklist entry didn't accidentally tighten owner CRUD.
+test(
+  "public_profiles: owner can still update displayName (regression)",
+  async () => {
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .set(validPublicProfileBody());
+    });
+    const ownerCtx = env.authenticatedContext(OWNER_UID);
+    await assertSucceeds(
+      ownerCtx
+        .firestore()
+        .doc(`public_profiles/${OWNER_UID}`)
+        .update({ displayName: "Anna B." })
+    );
+  }
+);
+
 async function run(): Promise<void> {
-  console.log("friend_categories admin moderation rules tests\n");
-  console.log("==============================================\n");
+  console.log("moderation rules tests (friend_categories + public_profiles)\n");
+  console.log("============================================================\n");
   await setup();
   let failed = 0;
   for (const t of tests) {

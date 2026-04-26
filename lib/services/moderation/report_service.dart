@@ -178,6 +178,40 @@ class ReportService extends BaseService {
         false;
   }
 
+  /// Reversible profile takedown. Hard-delete is intentionally avoided so a
+  /// moderator can un-hide and so the auth account / friendships stay intact.
+  /// Returns `false` on contentType mismatch or missing owner.
+  Future<bool> suspendReportedProfile(ContentReport report) async {
+    return await executeServiceOperation(
+          () async {
+            if (report.contentType != 'profile') {
+              AppLogger.warning(
+                  '[ReportService] suspendReportedProfile called on contentType ${report.contentType}; refusing');
+              return false;
+            }
+            final ownerId = report.contentOwnerId;
+            if (ownerId == null || ownerId.isEmpty) {
+              AppLogger.warning(
+                  '[ReportService] profile report ${report.id} missing contentOwnerId');
+              return false;
+            }
+            await _firestore
+                .collection(FirestoreCollections.publicProfiles)
+                .doc(ownerId)
+                .update({
+              'isHidden': true,
+              'hiddenAt': FieldValue.serverTimestamp(),
+            });
+            AppLogger.info(
+                '[ReportService] Admin hid profile $ownerId via report ${report.id}');
+            return true;
+          },
+          operationName: 'Suspend reported profile',
+          requiresAuth: true,
+        ) ??
+        false;
+  }
+
   DocumentReference<Map<String, dynamic>>? _resolveContentRef(
       ContentReport report) {
     switch (report.contentType) {
@@ -217,9 +251,8 @@ class ReportService extends BaseService {
             .doc(groupOwnerId)
             .collection(FirestoreCollections.userFriendCategories)
             .doc(report.contentId);
-      // 'profile' and 'shopping_list' are tracked in BUT-729 Phase 2 / 3 —
-      // profile needs a hide-flag primitive (not hard delete); shopping_list
-      // has no UI caller yet.
+      // 'profile' uses a separate primitive — see suspendReportedProfile.
+      // 'shopping_list' has no UI caller; tracked in BUT-729 Phase 3.
       default:
         return null;
     }

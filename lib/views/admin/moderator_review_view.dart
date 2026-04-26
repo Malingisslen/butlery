@@ -5,6 +5,7 @@ import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
+import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -185,8 +186,10 @@ class _ReportCard extends StatelessWidget {
                     child: Text(context.l10n.moderatorActionAdvance),
                   ),
                 OutlinedButton(
-                  onPressed: () => _confirmDelete(context, vm),
-                  child: Text(context.l10n.moderatorActionDelete),
+                  onPressed: () => _confirmTakeDown(context, vm),
+                  child: Text(vm.isReversibleAction(report)
+                      ? context.l10n.moderatorActionHide
+                      : context.l10n.moderatorActionDelete),
                 ),
                 if (report.status != ReportStatus.closed)
                   TextButton(
@@ -201,27 +204,40 @@ class _ReportCard extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDelete(
+  Future<void> _confirmTakeDown(
       BuildContext context, ModeratorReviewViewModel vm) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.moderatorDeleteConfirmTitle),
-        content: Text(context.l10n.moderatorDeleteConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(context.l10n.moderatorActionDelete),
-          ),
-        ],
-      ),
-    );
+    final reversible = vm.isReversibleAction(report);
+    final l10n = context.l10n;
+    final title = reversible
+        ? l10n.moderatorHideConfirmTitle
+        : l10n.moderatorDeleteConfirmTitle;
+    final body = reversible
+        ? l10n.moderatorHideConfirmBody
+        : l10n.moderatorDeleteConfirmBody;
+    final confirm =
+        reversible ? l10n.moderatorActionHide : l10n.moderatorActionDelete;
+    final cancel = l10n.commonCancel;
+
+    // Construct the Future synchronously so the analyzer doesn't flag the
+    // `context` argument as being used across an async gap.
+    final dialogFuture = reversible
+        ? ConfirmationDialogs.showConfirmationDialog(
+            context,
+            title: title,
+            message: body,
+            confirmText: confirm,
+            cancelText: cancel,
+          )
+        : ConfirmationDialogs.showDestructiveConfirmationDialog(
+            context,
+            title: title,
+            message: body,
+            confirmText: confirm,
+            cancelText: cancel,
+          );
+    final ok = await dialogFuture;
     if (ok == true) {
-      await vm.deleteContent(report);
+      await vm.takeDown(report);
     }
   }
 }

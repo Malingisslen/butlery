@@ -286,8 +286,14 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       AppLogger.debug(
           'searchProfiles: Attempting indexed search for query: $normalizedQuery');
 
+      // Server-side isHidden filter avoids paying read cost on suspended
+      // profiles AND keeps the result count honest \u2014 a client-side drop
+      // would silently shrink the returned set below `limit`. The fallback
+      // paths below still client-filter as defence in depth (e.g., legacy
+      // profiles missing the field).
       final nameQuery = await collection
           .where('isSearchable', isEqualTo: true)
+          .where('isHidden', isEqualTo: false)
           .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
           .where('displayNameLower', isLessThan: '$normalizedQuery\uf8ff')
           .limit(limit)
@@ -319,6 +325,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
         for (final doc in slowQuery.docs) {
           if (doc.id == uid) continue;
           final profile = fromFirestore(doc);
+          if (profile.isHidden) continue;
           if (profile.displayName.toLowerCase().contains(normalizedQuery) &&
               !seen.contains(profile.uid)) {
             results.add(profile);
@@ -343,6 +350,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
               final profile = fromFirestore(doc);
               // Check if profile is searchable and matches query
               if (profile.isSearchable &&
+                  !profile.isHidden &&
                   profile.displayName.toLowerCase().contains(normalizedQuery) &&
                   !seen.contains(profile.uid)) {
                 results.add(profile);
