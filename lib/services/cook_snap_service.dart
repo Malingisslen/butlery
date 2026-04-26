@@ -1,13 +1,16 @@
 /// Service orchestrating CookSnap photo uploads, CRUD, and notifications.
 library;
 
+import 'package:collection/collection.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rxdart/rxdart.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
+import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
@@ -21,9 +24,13 @@ import 'package:butlery/models/social/activity_event.dart';
 
 class CookSnapService extends BaseService {
   final CookSnapRepository _repository;
+  final FriendsRepository _friendsRepository;
 
-  CookSnapService({required CookSnapRepository repository})
-      : _repository = repository;
+  CookSnapService({
+    required CookSnapRepository repository,
+    required FriendsRepository friendsRepository,
+  })  : _repository = repository,
+        _friendsRepository = friendsRepository;
 
   @override
   String get serviceName => 'CookSnapService';
@@ -142,18 +149,46 @@ class CookSnapService extends BaseService {
     );
   }
 
-  /// Gets cook snaps for a recipe.
+  /// Gets cook snaps for a recipe, friends-gated. Fetches the caller's
+  /// friend ids and passes [self + friend ids] as the allow-list. Returns
+  /// an empty list when not authenticated.
   Future<List<CookSnap>> getCookSnapsForRecipe(
     String recipeId, {
     int limit = 20,
   }) async {
-    return await _repository.getCookSnapsForRecipe(recipeId, limit: limit);
+    final userId = _currentUserId();
+    if (userId == null) return const [];
+    final friendIds = await _friendsRepository.fetchFriendIds(userId);
+    return _repository.getCookSnapsForRecipe(
+      recipeId,
+      allowedUserIds: _allowedFor(userId, friendIds),
+      limit: limit,
+    );
   }
 
-  /// Watches cook snaps for a recipe in real-time.
+  /// Watches cook snaps for a recipe in real-time. Re-queries when the
+  /// caller's friend list changes (debounced via `distinct`); identical
+  /// friend-set emissions don't trigger a resubscribe.
   Stream<List<CookSnap>> watchCookSnaps(String recipeId, {int limit = 20}) {
-    return _repository.watchCookSnaps(recipeId, limit: limit);
+    final userId = _currentUserId();
+    if (userId == null) return Stream<List<CookSnap>>.value(const []);
+
+    return _friendsRepository
+        .friendIdsStream(userId)
+        .map((ids) => _allowedFor(userId, ids))
+        .distinct(const SetEquality<String>().equals)
+        .switchMap((allowed) => _repository.watchCookSnaps(
+              recipeId,
+              allowedUserIds: allowed,
+              limit: limit,
+            ));
   }
+
+  String? _currentUserId() =>
+      ServiceLocator.get<PermissionService>().currentUserId;
+
+  Set<String> _allowedFor(String userId, List<String> friendIds) =>
+      {userId, ...friendIds};
 
   /// Gets all cook snaps by a user (for GDPR export).
   Future<List<CookSnap>> getCookSnapsByUser(String userId) async {

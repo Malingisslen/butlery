@@ -300,6 +300,11 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   @override
+  Stream<List<String>> friendIdsStream(String userId) {
+    return _friendRelationshipRepo.friendIdsStream(userId);
+  }
+
+  @override
   Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
     return await _friendRelationshipRepo.fetchFriendProfiles(userIds);
   }

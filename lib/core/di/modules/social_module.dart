@@ -298,6 +298,7 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<CookSnapService>(
         () => CookSnapService(
           repository: container<CookSnapRepository>(),
+          friendsRepository: container<FriendsRepository>(),
         ),
       );
 

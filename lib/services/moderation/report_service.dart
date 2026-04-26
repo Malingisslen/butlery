@@ -217,25 +217,9 @@ class ReportService extends BaseService {
             .doc(groupOwnerId)
             .collection(FirestoreCollections.userFriendCategories)
             .doc(report.contentId);
-      case 'profile':
-        // Profiles are reportable via their PUBLIC mirror, not the private
-        // users/{uid} root (which holds settings/consent — never moderator-
-        // readable). The reported document is the public_profile of the
-        // content owner; contentId may also carry the userId, but
-        // contentOwnerId is the canonical source for "whose profile".
-        final profileOwnerId = report.contentOwnerId;
-        if (profileOwnerId == null || profileOwnerId.isEmpty) return null;
-        return _firestore
-            .collection(FirestoreCollections.publicProfiles)
-            .doc(profileOwnerId);
-      case 'shopping_list':
-        // Only SHARED shopping lists are visible to non-owners (and thus
-        // reportable). Private user-scoped lists at
-        // users/{uid}/unified_shopping_lists are never seen by other users
-        // and cannot be reported.
-        return _firestore
-            .collection(FirestoreCollections.unifiedSharedShoppingLists)
-            .doc(report.contentId);
+      // 'profile' and 'shopping_list' are tracked in BUT-729 Phase 2 / 3 —
+      // profile needs a hide-flag primitive (not hard delete); shopping_list
+      // has no UI caller yet.
       default:
         return null;
     }

@@ -1,15 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:butlery/models/cook_snap.dart';
-import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
-import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:rxdart/rxdart.dart';
+
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/cook_snap.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Firebase implementation for CookSnap storage.
 ///
-/// CookSnaps are stored as a top-level collection (not subcollection)
-/// for easier cross-recipe queries during GDPR export/deletion.
+/// CookSnaps are stored as a top-level collection (not subcollection) for
+/// easier cross-recipe queries during GDPR export/deletion.
 class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     implements CookSnapRepository {
   FirebaseCookSnapRepository({
@@ -18,6 +20,9 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     super.auditRepository,
     super.timestampProvider,
   });
+
+  // Firestore whereIn cap.
+  static const int _whereInBatchSize = 30;
 
   @override
   String get collectionName => FirestoreCollections.cookSnaps;
@@ -40,7 +45,8 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   @override
   Future<bool> validateReadPermission(
       String userId, String resourceId, CookSnap? entity) async {
-    return true; // All authenticated users can read cook snaps
+    // Authorisation enforced at rules layer.
+    return true;
   }
 
   @override
@@ -64,15 +70,68 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   @override
   Future<List<CookSnap>> getCookSnapsForRecipe(
     String recipeId, {
+    required Set<String> allowedUserIds,
     int limit = 20,
   }) async {
-    final snapshot = await collection
-        .where('recipeId', isEqualTo: recipeId)
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .get();
+    if (allowedUserIds.isEmpty) return const [];
 
-    return snapshot.docs.map((doc) => fromFirestore(doc)).toList();
+    final chunks = _chunk(allowedUserIds.toList(), _whereInBatchSize);
+    // Per-chunk over-fetch buffer: each chunk needs at most `limit` of its
+    // own to contribute to a global top-N, but we allow a small buffer for
+    // ties. Caps total reads at `limit + chunks*buf` instead of `limit*chunks`.
+    final perChunkLimit =
+        chunks.length == 1 ? limit : (limit ~/ chunks.length) + 5;
+
+    final snapshots = await Future.wait(chunks
+        .map((chunk) => _chunkQuery(recipeId, chunk, perChunkLimit).get()));
+
+    return _mergeAndRank(snapshots, limit);
+  }
+
+  @override
+  Stream<List<CookSnap>> watchCookSnaps(
+    String recipeId, {
+    required Set<String> allowedUserIds,
+    int limit = 20,
+  }) {
+    if (allowedUserIds.isEmpty) return Stream<List<CookSnap>>.value(const []);
+
+    final chunks = _chunk(allowedUserIds.toList(), _whereInBatchSize);
+    final perChunkLimit =
+        chunks.length == 1 ? limit : (limit ~/ chunks.length) + 5;
+
+    final streams = chunks
+        .map((chunk) => _chunkQuery(recipeId, chunk, perChunkLimit).snapshots())
+        .toList();
+
+    // combineLatestList waits for every chunk's first emission before
+    // producing output (no partial-state UI flashes), and propagates cancel
+    // to every inner subscription.
+    return Rx.combineLatestList(streams)
+        .map((snaps) => _mergeAndRank(snaps, limit));
+  }
+
+  Query<Map<String, dynamic>> _chunkQuery(
+    String recipeId,
+    List<String> chunk,
+    int limit,
+  ) =>
+      collection
+          .where('recipeId', isEqualTo: recipeId)
+          .where('userId', whereIn: chunk)
+          .orderBy('createdAt', descending: true)
+          .limit(limit);
+
+  List<CookSnap> _mergeAndRank(
+    List<QuerySnapshot<Map<String, dynamic>>> snapshots,
+    int limit,
+  ) {
+    final merged = snapshots
+        .expand((s) => s.docs)
+        .map((doc) => fromFirestore(doc))
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return merged.take(limit).toList();
   }
 
   @override
@@ -95,17 +154,6 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   }
 
   @override
-  Stream<List<CookSnap>> watchCookSnaps(String recipeId, {int limit = 20}) {
-    return collection
-        .where('recipeId', isEqualTo: recipeId)
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => fromFirestore(doc)).toList());
-  }
-
-  @override
   Future<List<CookSnap>> getCookSnapsByUser(String userId) async {
     final snapshot = await collection
         .where('userId', isEqualTo: userId)
@@ -118,12 +166,19 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   @override
   Future<int> deleteAllByUser(String userId) async {
     final snapshot = await collection.where('userId', isEqualTo: userId).get();
-
     if (snapshot.docs.isEmpty) return 0;
-
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
         'Deleted ${snapshot.docs.length} cook snaps for user $userId');
     return snapshot.docs.length;
+  }
+
+  static List<List<T>> _chunk<T>(List<T> list, int size) {
+    if (list.length <= size) return [list];
+    final chunks = <List<T>>[];
+    for (var i = 0; i < list.length; i += size) {
+      chunks.add(list.sublist(i, (i + size).clamp(0, list.length)));
+    }
+    return chunks;
   }
 }

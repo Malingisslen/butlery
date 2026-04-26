@@ -82,6 +82,11 @@ abstract class FriendsRepository extends Repository<UserProfile> {
   /// Fetch ids of all friends for a user
   Future<List<String>> fetchFriendIds(String userId);
 
+  /// Stream friend ids for a user with real-time updates.
+  /// Used by privacy-gated features (e.g. cook-snap gallery) that must
+  /// re-query when the friend list changes.
+  Stream<List<String>> friendIdsStream(String userId);
+
   /// Fetch profiles for a set of user ids
   Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds);
 

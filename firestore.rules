@@ -453,11 +453,6 @@ service cloud.firestore {
         rateLimitWrite('friendsCount', 5)
       );
       allow delete: if isOwner(userId);
-
-      // Moderation override (BUT-728): admins may delete a reported public
-      // profile. Read is already covered by the public `allow read: if
-      // isAuthenticated();` clause above, so no extra read rule is needed.
-      allow delete: if isAdmin();
     }
 
     // ========================================
@@ -915,10 +910,54 @@ service cloud.firestore {
       }
     }
 
+    // Friends-only read: caller must be the snap-owner or in the snap-owner's
+    // /users/{ownerId}/friends/ subcollection. Pair queries with a
+    // userId-in-[self+friends] whereIn — rules eval per-doc, so any stranger
+    // snap in a result set fails the entire query.
+    match /cook_snaps/{snapId} {
+      // Read: snap-owner OR friend-of-snap-owner. Admin override below.
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId
+        || exists(/databases/$(database)/documents/users/$(resource.data.userId)/friends/$(request.auth.uid))
+      );
+
+      // Create: caller must be the snap-owner. Structural validation prevents
+      // oversized documents and forged identity.
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.userId
+        && hasRequiredFields(['recipeId', 'userId', 'userDisplayName', 'photoUrl', 'createdAt'])
+        && request.resource.data.recipeId is string
+        && request.resource.data.userId is string
+        && request.resource.data.userDisplayName is string
+        && request.resource.data.userDisplayName.size() <= 100
+        && request.resource.data.photoUrl is string
+        && request.resource.data.photoUrl.size() <= 1000
+        && (
+          !('caption' in request.resource.data)
+          || request.resource.data.caption == null
+          || (request.resource.data.caption is string
+              && request.resource.data.caption.size() <= 200)
+        )
+        && rateLimitWrite('cook_snaps', 5);
+
+      // Update: only the snap-owner. Identity fields are immutable.
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.userId
+        && cannotModify(['recipeId', 'userId', 'createdAt']);
+
+      // Delete: only the snap-owner.
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+
+      // Moderation override: admins may read + delete any reported snap.
+      // Read needed for moderator preview before takedown.
+      allow read, delete: if isAdmin();
+    }
+
     // ========================================
     // BUTLERY ARCHIVE - Read-only community recipes
     // ========================================
-    
+
     match /butlery_archive/{recipeId} {
       allow read: if isAuthenticated();
       allow write: if false;
@@ -984,8 +1023,10 @@ service cloud.firestore {
       // Can delete your own messages
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.senderId;
 
-      // Moderation override: admins may delete any reported message.
-      allow delete: if isAdmin();
+      // Moderation override: admins may read + delete any reported message.
+      // Read needed for moderator preview — base read rule restricts to
+      // conversation participants, which excludes admins by default.
+      allow read, delete: if isAdmin();
     }
     
     // ========================================
@@ -1033,13 +1074,6 @@ service cloud.firestore {
       // Can delete if you're the owner
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.ownerId;
-
-      // Moderation override (BUT-728): admins may read + delete any reported
-      // shared shopping list. Read is needed so the moderator review view
-      // can show a preview before acting. Only SHARED lists are reportable
-      // (private lists at users/{uid}/unified_shopping_lists are not
-      // visible to other users).
-      allow read, delete: if isAdmin();
     }
 
     // ========================================
@@ -1160,52 +1194,6 @@ service cloud.firestore {
 
       // Moderation override: admins may delete any reported rating.
       allow delete: if isAdmin();
-    }
-
-    // ========================================
-    // COOK SNAPS - Photos posted by users who cooked a recipe (BUT-728)
-    // ========================================
-    //
-    // Top-level collection (not subcollection) so cross-recipe queries
-    // for GDPR export/deletion are efficient. Repository:
-    // lib/repositories/firebase/firebase_cook_snap_repository.dart
-    // Mirrors the validate*Permission contract enforced there.
-
-    match /cook_snaps/{cookSnapId} {
-      // All authenticated users can read cook snaps (public social feature
-      // analogous to recipe_ratings / recipe_comments).
-      allow read: if isAuthenticated();
-
-      // Owner can create their own cook snap. Required fields match
-      // CookSnap.toFirestore() — userAvatarUrl, thumbnailUrl, caption are
-      // nullable and intentionally not required.
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.userId
-        && hasRequiredFields(['recipeId', 'userId', 'userDisplayName',
-                              'photoUrl', 'createdAt'])
-        && request.resource.data.userDisplayName is string
-        && request.resource.data.photoUrl is string
-        && (request.resource.data.get('caption', '') == null
-            || request.resource.data.get('caption', '').size() <= 200)
-        && rateLimitWrite('cook_snaps', 5);
-
-      // Owner can update their own cook snap. Repository overwrites the
-      // doc via set(), so userId is always present in request.resource.data
-      // — pin it on both sides to block userId switch.
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.userId
-        && request.auth.uid == request.resource.data.userId
-        && (request.resource.data.get('caption', '') == null
-            || request.resource.data.get('caption', '').size() <= 200);
-
-      // Owner can delete their own cook snap.
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.userId;
-
-      // Moderation override (BUT-728): admins may read + delete any reported
-      // cook snap via the reports workflow. Read is already public to
-      // authenticated users above, but the explicit clause documents intent.
-      allow read, delete: if isAdmin();
     }
 
     // ========================================
