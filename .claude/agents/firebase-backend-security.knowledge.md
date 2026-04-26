@@ -120,3 +120,81 @@ principles), the existing agent description, and `MEMORY.md` gotchas
 (Firestore batch limit). Future entries should record genuinely new
 permission patterns, GDPR decisions, query patterns, or surprising
 Firestore/Firebase behavior — not re-derivations of what's already here.
+
+### 2026-04-25 — iOS PrivacyInfo.xcprivacy required-reason codes (BUT-587/596/603)
+Apple required-reason API codes that map to Butlery's actual SDK usage:
+
+- **FileTimestamp**: `C617.1` = display timestamps to the user (image_picker
+  EXIF for recipe photo). `3B52.1` = read mtimes for app-internal cache
+  eviction (cached_network_image, flutter_image_compress, sqlcipher).
+- **UserDefaults**: `CA92.1` covers freerasp internal state + flutter_inappwebview
+  cookie/session store (worst-case fallback even if pods ship own manifest).
+- **DiskSpace**: `E174.1` = optimise size of user-generated files (Firestore
+  LRU GC, Crashlytics). `85F4.1` = display to user (we don't do that).
+- **SystemBootTime**: `35F9.1` = telemetry timing (Firebase Performance,
+  Analytics session timing). All on-device until consent.
+
+Decision rule: declare at app level **defensively** even when the linked
+pod ships its own bundled manifest, because Apple's auto-merge produces a
+combined report that's clearer if the app-level declarations enumerate
+the reason explicitly. NEVER declare a reason that has no genuine usage —
+false declarations are themselves an Apple review risk.
+
+`NSPrivacyCollectedDataTypeUserID` for Firebase Auth UID: `Linked=true`
+(it IS the user's identity), `Tracking=false` (not used cross-app),
+purpose `AppFunctionality` only. Never list under `Analytics` purpose
+even though analytics events include the UID — Apple separates "data
+collected" from "purpose of collection".
+
+CocoaPods on Windows: `ios/Pods/` and `ios/Podfile.lock` are macOS-only
+artefacts. Audit docs must use `pubspec.yaml` versions and mark every
+"can't verify locally" pod as UNVERIFIED_LOCAL with app-level fallback
+coverage, then enforce verification on the macOS CI runner.
+
+### 2026-04-25 — store-submission rating defense triad (BUT-624/590/416)
+The **UGC + messaging + 24-h moderation SLA** triad is what keeps Butlery
+at Apple 12+ / Play Teen instead of 17+/Mature. If any of the three
+weakens, the rating must move up or the app gets rejected:
+
+- **UGC surfaces** (recipes / comments / ratings / group messages /
+  friend pings) — every one needs a report entry-point that lands in
+  `reports/` and surfaces in `Settings → Granska rapporter` for admins.
+- **Messaging** — confined to friend-graph + group membership. Opening
+  DM to non-friends would push Apple to 17+ (see
+  `docs/ops/age-rating-runbook.md` §5.11 re-submission triggers).
+- **24-h moderation SLA** — `docs/ops/moderation-runbook.md` is the
+  written defense Apple Guideline 1.2 + Play UGC policy require.
+
+Practical implication for this agent: when reviewing changes that touch
+report/block/moderation rules or that introduce a new UGC surface,
+flag any of these as Critical:
+- Removing a report entry-point.
+- Opening DM to non-friends.
+- Lowering or silencing the report → admin notification path.
+- Removing the age gate (`birthYear ≤ 2013`) at sign-up.
+- Adding location data to user-to-user surfaces (presence is currently
+  online/offline only — pure presence; no geo).
+
+These also force a re-fill of both store age-rating questionnaires
+(see `docs/ops/age-rating-runbook.md` §5.11 + §6).
+
+### 2026-04-25 — reviewer demo seeding pattern (BUT-416)
+Apple/Play reviewers reject empty-state social apps as "unable to
+evaluate functionality" (Apple Guideline 2.1 / Play UGC compliance).
+Butlery's seed contract is in `docs/ops/app-review-demo.md`:
+
+- Two reviewer accounts (`reviewer-apple@butlery.app`,
+  `reviewer-google@butlery.app`) — credentials rotated per submission.
+- Two seeded "friend" accounts (`demo-friend-1@…`, `demo-friend-2@…`)
+  with pre-accepted friend relationships.
+- One Demo Family group with shared weekly menu.
+- 3 sample comments, 1 rating, 1 sample report (benign reason — spam
+  duplicate) so reviewer can verify the flow without producing
+  offensive content.
+
+The reviewer-demo seeding script does not yet exist
+(`functions/src/admin/seed-reviewer-data.ts`); the founder runs the
+checklist by hand for now. Future agents adding reviewer-related
+infra: respect the **temporary admin grant must be revoked within 7
+days** rule (admins can hard-delete content; leaked admin = data
+loss vector).

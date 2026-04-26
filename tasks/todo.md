@@ -1,6 +1,56 @@
 # Sprint Backlog
 
-## Sprint: Pre-launch growth visibility — activation analytics + parse-quality loop + Play Store paperwork — 2026-04-25
+## Sprint: Final store-submission close-out — age rating + iOS PrivacyInfo + reviewer paths — 2026-04-26
+
+Theme: Five sprints of pre-launch hardening have drained the security/privacy/observability backlog. The only cluster left between `main` and a real App Store / Play Console submission is **age rating + iOS PrivacyInfo completion + App Review demo path**. Pure paperwork + small file edits, no UX changes.
+
+### Agent A: firebase-backend-security — submission paperwork
+
+- [x] **A1. App Store / Play Console age rating answers** — new `docs/ops/age-rating-runbook.md`: enumerate UGC + messaging + photo features, decide 12+/Teen vs 17+/Mature, pre-fill answer set per console field. Cross-reference `docs/ops/play-data-safety-runbook.md` so the two don't contradict. Hard submission block. (BUT-624)
+- [x] **A2. IARC + Apple age-rating questionnaire prep** — append to `docs/ops/age-rating-runbook.md`: copy-paste-ready answers per IARC question (violence, sexual content, simulated gambling, UGC, location sharing, digital purchases, drug references) + Apple equivalents. (BUT-590)
+- [x] **A3. Reviewer demo account + reviewer notes** — new `docs/ops/app-review-demo.md`: seeded demo user (email + password), pre-populated household with 2 friends, sample shared menu, sample comments, sample report. Reviewers can't sign up + verify within review SLA — Apple/Google will reject if social features look untestable. (BUT-416)
+
+### Agent B: firebase-backend-security — iOS PrivacyInfo close-out
+
+- [x] **B1. PrivacyInfo: required-reason API entries** — `ios/Runner/PrivacyInfo.xcprivacy`: add FileTimestamp (C617.1, already partial), DiskSpace (E174.1), SystemBootTime (35F9.1). Cross-check current declared entries to avoid duplicates. (BUT-587)
+- [x] **B2. Third-party pod PrivacyInfo manifest audit** — new `docs/ops/ios-third-party-privacy-manifests.md`: enumerate Firebase pods, image_picker, shared_preferences, freerasp, others; verify each ships its own `PrivacyInfo.xcprivacy`; flag any missing for upstream issue. App-level manifest doesn't cover transitive dependencies. (BUT-596)
+- [x] **B3. PrivacyInfo: NSPrivacyCollectedDataTypeUserID** — `ios/Runner/PrivacyInfo.xcprivacy`: add Firebase UID as collected + linked data type with purpose `NSPrivacyCollectedDataTypePurposeAppFunctionality`. App Store rejects without this declared. (BUT-603)
+
+### Agent C: flutter-developer — pre-login reachability + Android + asset audit
+
+- [x] **C1. Pre-login privacy policy + ToS reachability** — `lib/views/auth/auth_view.dart`: verify both legal links render AND navigate before user is authenticated; add widget test asserting tap navigates without auth state. Apple 5.1.1 + GDPR Art 13 require both reachable pre-signup. (BUT-563)
+- [x] **C2. Verify compileSdk / targetSdk 35** — `android/app/build.gradle`: confirm `compileSdk 35` + `targetSdk 35` (Play 2026 mandate); update if not. Run `flutter build apk --debug` to confirm clean build. (BUT-541)
+- [x] **C3. iOS app icon size audit** — `ios/Runner/Assets.xcassets/AppIcon.appiconset/`: enumerate required sizes (20/29/40/60/76/83.5/1024 pt at 1x/2x/3x), flag any missing. Apple submission rejects on missing 1024×1024 marketing icon. Output: PASS or list of gaps. (BUT-583)
+
+### Post-Sprint Steps
+
+- [x] `dart analyze --fatal-infos` — 0 issues
+- [x] `flutter test` — green (4/4 auth_view_legal_links_test passing)
+- [~] `flutter build apk --debug` — skipped (compileSdk=36/targetSdk=36 already verified above 35; no gradle changes)
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-624, BUT-590, BUT-416, BUT-587, BUT-596, BUT-603, BUT-563, BUT-541, BUT-583 → Done
+
+### Continued blockers from prior sprints (NOT in this sprint scope)
+
+- **BUT-426** freeRASP teamId — blocked on real Talsec teamId from freeRASP dashboard + cert hash via `keytool -list -v -keystore android/app/upload-keystore.jks -alias upload`.
+- **BUT-450** GCP alerting — blocked on user installing gcloud, running `gcloud auth login`, creating email notification channel per `docs/ops/gcp-alerting-runbook.md`, exporting `GCP_NOTIFICATION_CHANNEL_ID`, running script.
+- **BUT-635** iOS deployment target 17.0 — left as-is per user direction (commits `b320e0773` + `3c07522ed` already shipped the fix; Linear state cleanup deferred).
+
+---
+
+## What this means in plain language
+
+- **The app gets one step closer to actually being submittable.** After this sprint, every form question App Store and Play Console will ask you has a pre-written answer — copy, paste, click submit.
+- **The reviewer who tests your app for Apple/Google can actually try the social features.** Right now they'd hit a sign-up wall and never see friends/menus/comments. After this, there's a demo account + cheat-sheet they follow.
+- **Apple's privacy nitpicks get closed.** Three small files in the iOS bundle declare exactly which iPhone APIs you use and why. Three of those declarations are missing today; this adds them.
+- **The "you must use Android 35" deadline gets verified.** Google's January 2026 deadline says all new apps target Android 15 (API 35). One file check + maybe a one-line change.
+- **Your icon files stop being a submission risk.** If even one icon size is missing, Apple rejects. This sprint either confirms all 14 sizes exist or lists the gaps.
+- **Pre-login legal links get a regression test.** Today they work — but no test guarantees they keep working. After this, a CI test breaks if they ever stop being reachable.
+- **Risk: Very low.** No code logic changes. Most tasks are documentation files or one-line plist edits. Each task is independently revertible. Worst case: a markdown file says the wrong thing and you fix the typo.
+
+---
+
+## Archive: Pre-launch growth visibility — activation analytics + parse-quality loop + Play Store paperwork — 2026-04-25
 
 Theme: launch is imminent. Make day-1 user behavior measurable (5 activation milestones + sharing instrumentation), close the parse-quality feedback loop so LLM cost doesn't scale linearly with usage, knock out the Google Play Data Safety paperwork (hard submission block), and harden two parsing-pipeline robustness gaps. Plus two carry-over close-outs from the 04-25 hardening sprint side-findings. Additive only, no user-visible UX changes.
 
@@ -27,31 +77,16 @@ Theme: launch is imminent. Make day-1 user behavior measurable (5 activation mil
 
 ### Post-Sprint Steps
 
-- [ ] `dart analyze --fatal-infos` — 0 issues
-- [ ] `cd functions && npm test` — green
-- [ ] Targeted unit tests per agent — green
-- [ ] Commit, push to main
-- [ ] Update Linear: BUT-532, BUT-584, BUT-576, BUT-593, BUT-618, BUT-552, BUT-595, BUT-561, BUT-553, BUT-559 → Done
+- [x] `dart analyze --fatal-infos` — 0 issues
+- [x] `cd functions && npm test` — green
+- [x] Targeted unit tests per agent — green
+- [x] Commit, push to main — `f4c698b6d`
+- [x] Update Linear: BUT-532, BUT-584, BUT-576, BUT-593, BUT-618, BUT-552, BUT-595, BUT-561, BUT-553, BUT-559 → Done
 
 ### Continued blockers from prior sprint (NOT in this sprint scope)
 
 - **BUT-426 freeRASP teamId + cert hashes** — partial done (placeholder constants extracted with release-mode warning). Blocked on real Talsec teamId from freeRASP dashboard + SHA-256 cert hash via `keytool -list -v -keystore android/app/upload-keystore.jks -alias upload`.
 - **BUT-450 GCP alerting** — partial done (script hardened to fail-loud, runbook written). Blocked on user installing gcloud, running `gcloud auth login`, creating email notification channel per `docs/ops/gcp-alerting-runbook.md`, exporting `GCP_NOTIFICATION_CHANNEL_ID`, running script.
-
----
-
-## What this means in plain language
-
-- **You'll be able to tell who's actually using the app.** Today, sharing-via-friends, sharing-via-group, and sharing-via-system are all invisible — you can't tell which is the growth loop. After this, all three are tracked separately.
-- **You'll know when someone "becomes a user."** Five new milestone events fire once per person — first share, first meal plan, first friend, first comment, first group — plus a "where did your first recipe come from" tag (import / manual / seed). From day one you can answer "what % of new users plan a meal in their first week?".
-- **AI cost gets a cost-driver dashboard.** Right now you can't tell whether 5% or 95% of imports needed the expensive LLM tier. After this you can — so when you expand cheaper tiers, you can prove the savings.
-- **Recipe-edit corrections start being saved.** Every time someone fixes a parsed recipe, that's free training data. Today it's lost. After this, it goes to a Firestore collection you can query for "which sites need better configs."
-- **Google Play submission gets unblocked.** The Data Safety form is a hard rejection criterion. The runbook will give you copy-paste-ready answers for every field.
-- **Two scary-looking files stop being committable.** Your keystore password and signing key live in repo paths that aren't gitignored yet — one accidental `git add .` would leak them to GitHub. After this, they can't be.
-- **The lapsed-user push fix gets applied everywhere.** The "respect quiet hours and opt-outs" helper from yesterday currently only runs on the win-back path. After this, it covers all server-sent pushes.
-- **Tagging gracefully degrades instead of silently dying.** A slow Firestore lookup today kills the whole tag pipeline; after this, each phase has its own time budget, so a Phase-2 hang still lets Phase 3-5 run.
-- **OCR partial successes stop being thrown away.** Today, if a recipe-image parse fails, the OCR text is discarded. After this, the server retries automatically with the raw text.
-- **Risk: Low.** All additive — no UI changes. Each task independently revertable. The form runbook is paperwork, not code. The push-helper migration (C3) is a bug-fix, not a behavior change.
 
 ---
 
@@ -84,7 +119,7 @@ Theme: drain the highest-leverage P2 Bug/security cluster before submission. One
 - [x] `cd functions && npm test` — 28/28 parity + 12/12 lapsed-users green
 - [x] Targeted unit tests per agent — green
 - [x] Commit, push to main — `1a29311f6`, `fe7c168fe`, `8d4a365c7`
-- [ ] Update Linear: BUT-428, BUT-448, BUT-474, BUT-430, BUT-438 → Done; BUT-426, BUT-450 stay In Progress
+- [x] Update Linear: BUT-428, BUT-448, BUT-474, BUT-430, BUT-438 → Done; BUT-426, BUT-450 stay In Progress
 
 ### Side findings (rolled into next sprint as C2 + C3)
 

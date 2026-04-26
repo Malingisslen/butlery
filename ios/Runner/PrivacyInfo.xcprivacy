@@ -41,10 +41,13 @@
 			</array>
 		</dict>
 		<!--
-			File timestamp — image_picker and image_cropper read EXIF /
-			creation timestamps when the user selects a recipe photo.
-			Reason C617.1: "Inspecting timestamps of files inside the
-			app's own container / files the user has granted access to."
+			FileTimestamp C617.1 + 3B52.1:
+			  C617.1 — image_picker / image_cropper read EXIF / creation
+			  timestamps that are surfaced to the user (e.g. recipe photo
+			  metadata).
+			  3B52.1 — cached_network_image, flutter_image_compress, and
+			  sqlcipher_flutter_libs read mtimes to manage app-internal
+			  caches (LRU eviction by file age) — does not leave the device.
 		-->
 		<dict>
 			<key>NSPrivacyAccessedAPIType</key>
@@ -52,6 +55,38 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>C617.1</string>
+				<string>3B52.1</string>
+			</array>
+		</dict>
+		<!--
+			DiskSpace E174.1: Firestore's on-device persistence cache
+			(LRU garbage collector) and Firebase Crashlytics check
+			available disk space before writing additional cache pages /
+			crash reports. Firebase ships its own bundled manifest covering
+			this; we declare it at app level defensively so the merged
+			App Store privacy report enumerates the reason explicitly.
+		-->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>E174.1</string>
+			</array>
+		</dict>
+		<!--
+			SystemBootTime 35F9.1: Firebase Performance Monitoring uses
+			mach_absolute_time / boot-relative timestamps to compute trace
+			durations and Firebase Analytics derives session timing from
+			the same source. All measurement stays on-device until the
+			user has consented to analytics (BUT-412).
+		-->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
 			</array>
 		</dict>
 	</array>
@@ -89,7 +124,13 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
-		<!-- User ID — Firebase Auth UID, Firestore document keys -->
+		<!--
+			UserID (BUT-603) — Firebase Auth UID is collected, linked to
+			the user (it IS the user's identity), and never used for
+			cross-app tracking. Purpose: app functionality only — UID is
+			the document key for every per-user Firestore subtree and the
+			payload of every authenticated request.
+		-->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeUserID</string>

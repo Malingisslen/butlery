@@ -11,6 +11,7 @@ Widget createLocalizedTestApp({
   required Widget child,
   bool wrapInScaffold = true,
   bool wrapInScrollView = false,
+  Route<dynamic>? Function(RouteSettings)? onGenerateRoute,
 }) {
   Widget body = child;
   if (wrapInScrollView) {
@@ -31,5 +32,6 @@ Widget createLocalizedTestApp({
     ],
     theme: AppTheme.lightTheme,
     home: body,
+    onGenerateRoute: onGenerateRoute,
   );
 }
