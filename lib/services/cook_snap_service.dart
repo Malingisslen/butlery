@@ -17,6 +17,7 @@ import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
@@ -158,7 +159,7 @@ class CookSnapService extends BaseService {
   }) async {
     final userId = _currentUserId();
     if (userId == null) return const [];
-    final friendIds = await _friendsRepository.fetchFriendIds(userId);
+    final friendIds = await _resolveFriendIds(userId);
     return _repository.getCookSnapsForRecipe(
       recipeId,
       allowedUserIds: _allowedFor(userId, friendIds),
@@ -187,7 +188,18 @@ class CookSnapService extends BaseService {
   String? _currentUserId() =>
       ServiceLocator.get<PermissionService>().currentUserId;
 
-  Set<String> _allowedFor(String userId, List<String> friendIds) =>
+  /// Friend ids — read from the in-memory `UnifiedFriendsService` cache
+  /// when available (saves a Firestore round-trip on the recipe-detail
+  /// hot path) and fall back to a fresh repo fetch on cold start.
+  Future<Iterable<String>> _resolveFriendIds(String userId) async {
+    final unified = ServiceLocator.tryGet<UnifiedFriendsService>();
+    if (unified != null && unified.isInitialized) {
+      return unified.friends.map((u) => u.uid);
+    }
+    return _friendsRepository.fetchFriendIds(userId);
+  }
+
+  Set<String> _allowedFor(String userId, Iterable<String> friendIds) =>
       {userId, ...friendIds};
 
   /// Gets all cook snaps by a user (for GDPR export).

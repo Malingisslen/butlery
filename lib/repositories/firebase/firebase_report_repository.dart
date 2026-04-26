@@ -18,7 +18,7 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
 
   @override
   ContentReport fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    return ContentReport.fromFirestore(doc);
+    return ContentReport.fromFirestoreOrThrow(doc);
   }
 
   @override
@@ -72,8 +72,11 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
           .orderBy('createdAt', descending: true)
           .get();
 
+      // Tolerant parse — legacy reports submitted under since-retired
+      // contentTypes are skipped rather than crashing the user's whole list.
       return snapshot.docs
-          .map((doc) => ContentReport.fromFirestore(doc))
+          .map(ContentReport.fromFirestore)
+          .whereType<ContentReport>()
           .toList();
     } catch (e) {
       AppLogger.error('[ReportRepository] Failed to get user reports', e);

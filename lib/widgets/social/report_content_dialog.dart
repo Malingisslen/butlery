@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
@@ -10,7 +11,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 /// ```dart
 /// ReportContentDialog.show(
 ///   context: context,
-///   contentType: 'recipe',
+///   contentType: ContentType.recipe,
 ///   contentId: recipe.id,
 ///   contentOwnerId: recipe.userId,
 /// );
@@ -18,7 +19,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 class ReportContentDialog {
   static Future<void> show({
     required BuildContext context,
-    required String contentType,
+    required ContentType contentType,
     required String contentId,
     String? contentOwnerId,
   }) async {

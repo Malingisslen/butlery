@@ -14,6 +14,7 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -73,7 +74,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
               if (value == 'report') {
                 ReportContentDialog.show(
                   context: context,
-                  contentType: 'profile',
+                  contentType: ContentType.profile,
                   contentId: friend.uid,
                   contentOwnerId: friend.uid,
                 );

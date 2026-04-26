@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -44,7 +45,7 @@ class GroupDetailActions {
   ) async {
     await ReportContentDialog.show(
       context: context,
-      contentType: 'profile',
+      contentType: ContentType.profile,
       contentId: member.uid,
       contentOwnerId: member.uid,
     );

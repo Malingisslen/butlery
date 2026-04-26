@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -67,7 +68,7 @@ class GroupDetailAppBar {
         if (value == 'report') {
           ReportContentDialog.show(
             context: context,
-            contentType: 'group',
+            contentType: ContentType.group,
             contentId: group.id,
             contentOwnerId: group.ownerId,
           );

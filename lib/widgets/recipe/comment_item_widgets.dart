@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
@@ -361,7 +362,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       IconButton(
                         onPressed: () => ReportContentDialog.show(
                           context: context,
-                          contentType: 'comment',
+                          contentType: ContentType.comment,
                           contentId: widget.comment.id,
                           contentOwnerId: widget.comment.authorId,
                         ),

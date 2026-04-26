@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
@@ -59,15 +60,15 @@ class ModeratorReviewViewModel extends BaseViewModel {
   }
 
   /// Dispatches the moderator's takedown action for [report]:
-  /// - `'profile'` → suspend (hide flag, reversible)
+  /// - profile → suspend (hide flag, reversible)
   /// - everything else → hard delete
   ///
   /// The dashboard binds a single button to this method; the verb in the
-  /// confirmation dialog should reflect [actionLabelFor].
+  /// confirmation dialog should reflect [isReversibleAction].
   Future<void> takeDown(ContentReport report) async {
     await executeAsyncVoid(
       () async {
-        if (report.contentType == 'profile') {
+        if (report.contentType == ContentType.profile) {
           await _reportService.suspendReportedProfile(report);
         } else {
           await _reportService.deleteReportedContent(report);
@@ -80,7 +81,7 @@ class ModeratorReviewViewModel extends BaseViewModel {
   /// Whether the takedown action for [report] is reversible (true for
   /// profile suspend; false for hard-delete content types).
   bool isReversibleAction(ContentReport report) =>
-      report.contentType == 'profile';
+      report.contentType == ContentType.profile;
 
   @override
   void dispose() {

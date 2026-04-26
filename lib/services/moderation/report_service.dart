@@ -3,6 +3,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
@@ -27,7 +28,7 @@ class ReportService extends BaseService {
 
   /// Submit a content report.
   Future<bool> submitReport({
-    required String contentType,
+    required ContentType contentType,
     required String contentId,
     required String reason,
     String? contentOwnerId,
@@ -107,8 +108,10 @@ class ReportService extends BaseService {
         .where('status', whereIn: ['new', 'in_review', 'actioned'])
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((doc) => ContentReport.fromFirestore(doc)).toList());
+        .map((snap) => snap.docs
+            .map(ContentReport.fromFirestore)
+            .whereType<ContentReport>()
+            .toList());
   }
 
   /// Advance a report's status one step forward. Returns `true` on success.
@@ -184,7 +187,7 @@ class ReportService extends BaseService {
   Future<bool> suspendReportedProfile(ContentReport report) async {
     return await executeServiceOperation(
           () async {
-            if (report.contentType != 'profile') {
+            if (report.contentType != ContentType.profile) {
               AppLogger.warning(
                   '[ReportService] suspendReportedProfile called on contentType ${report.contentType}; refusing');
               return false;
@@ -215,7 +218,7 @@ class ReportService extends BaseService {
   DocumentReference<Map<String, dynamic>>? _resolveContentRef(
       ContentReport report) {
     switch (report.contentType) {
-      case 'recipe':
+      case ContentType.recipe:
         // Recipes live under users/{ownerId}/recipes/{recipeId}.
         final ownerId = report.contentOwnerId;
         if (ownerId == null || ownerId.isEmpty) return null;
@@ -224,26 +227,21 @@ class ReportService extends BaseService {
             .doc(ownerId)
             .collection(FirestoreCollections.userRecipes)
             .doc(report.contentId);
-      case 'comment':
+      case ContentType.comment:
         return _firestore
             .collection(FirestoreCollections.recipeComments)
             .doc(report.contentId);
-      case 'message':
+      case ContentType.message:
         return _firestore
             .collection(FirestoreCollections.messages)
             .doc(report.contentId);
-      case 'rating':
-        return _firestore
-            .collection(FirestoreCollections.recipeRatings)
-            .doc(report.contentId);
-      case 'cook_snap':
+      case ContentType.cookSnap:
         return _firestore
             .collection(FirestoreCollections.cookSnaps)
             .doc(report.contentId);
-      case 'group':
-        // Groups (FriendCategory) live under
-        // users/{ownerId}/friend_categories/{categoryId}. Same shape as
-        // 'recipe' — we need ownerId to resolve the doc.
+      case ContentType.group:
+        // FriendCategory lives under users/{ownerId}/friend_categories/{id};
+        // we need the ownerId to resolve the path.
         final groupOwnerId = report.contentOwnerId;
         if (groupOwnerId == null || groupOwnerId.isEmpty) return null;
         return _firestore
@@ -251,9 +249,8 @@ class ReportService extends BaseService {
             .doc(groupOwnerId)
             .collection(FirestoreCollections.userFriendCategories)
             .doc(report.contentId);
-      // 'profile' uses a separate primitive — see suspendReportedProfile.
-      // 'shopping_list' has no UI caller; tracked in BUT-729 Phase 3.
-      default:
+      case ContentType.profile:
+        // Profile uses a separate primitive — see suspendReportedProfile.
         return null;
     }
   }

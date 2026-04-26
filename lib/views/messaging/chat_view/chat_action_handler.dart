@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_sele
 import 'package:butlery/views/messaging/group_detail_view.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -71,7 +72,7 @@ class ChatActionHandler {
       case 'report':
         ReportContentDialog.show(
           context: context,
-          contentType: 'message',
+          contentType: ContentType.message,
           contentId: message.id,
           contentOwnerId: message.senderId,
         );

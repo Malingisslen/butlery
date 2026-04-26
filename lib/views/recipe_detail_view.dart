@@ -36,6 +36,7 @@ import 'package:butlery/widgets/recipe/heirloom_section.dart';
 import 'package:butlery/viewmodels/cook_snap_viewmodel.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 
@@ -665,7 +666,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             onDelete: (snapId) => vm.deleteSnap(snapId),
             onReport: (snap) => ReportContentDialog.show(
               context: context,
-              contentType: 'cook_snap',
+              contentType: ContentType.cookSnap,
               contentId: snap.id,
               contentOwnerId: snap.userId,
             ),
@@ -731,7 +732,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       case _MenuAction.report:
         ReportContentDialog.show(
           context: context,
-          contentType: 'recipe',
+          contentType: ContentType.recipe,
           contentId: recipe.id,
           contentOwnerId: recipe.createdBy,
         );

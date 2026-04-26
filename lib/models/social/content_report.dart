@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/social/content_type.dart';
 
 /// Moderation lifecycle state for a report. Forward-only transitions enforced
 /// by Firestore rules: newReport -> inReview -> actioned -> closed.
@@ -42,8 +44,7 @@ enum ReportStatus {
 class ContentReport {
   final String id;
   final String reporterId;
-  final String
-      contentType; // 'recipe', 'comment', 'message', 'profile', 'shopping_list', 'cook_snap', 'rating', 'group'
+  final ContentType contentType;
   final String contentId;
   final String? contentOwnerId;
   final String reason;
@@ -63,12 +64,25 @@ class ContentReport {
     required this.createdAt,
   });
 
-  factory ContentReport.fromFirestore(DocumentSnapshot doc) {
+  /// Best-effort parse. Returns null when the persisted contentType is
+  /// unknown — e.g. a legacy report submitted under a since-retired type.
+  /// Callers iterating reports must `.whereType<ContentReport>()` to filter
+  /// these out. Follows Dart/Flutter convention where the unprefixed
+  /// `fromX` is the safe/total variant; use [fromFirestoreOrThrow] when
+  /// the caller controls the input and a malformed doc indicates a bug.
+  static ContentReport? fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    final wire = SerializationUtils.safeNullableString(data, 'contentType');
+    final type = ContentType.fromWire(wire);
+    if (type == null) {
+      AppLogger.warning(
+          '[ContentReport] Skipping report ${doc.id} with unknown contentType: $wire');
+      return null;
+    }
     return ContentReport(
       id: doc.id,
       reporterId: SerializationUtils.safeString(data, 'reporterId'),
-      contentType: SerializationUtils.safeString(data, 'contentType'),
+      contentType: type,
       contentId: SerializationUtils.safeString(data, 'contentId'),
       contentOwnerId:
           SerializationUtils.safeNullableString(data, 'contentOwnerId'),
@@ -82,10 +96,21 @@ class ContentReport {
     );
   }
 
+  /// Strict parse — throws `FormatException` on unknown contentType. Use
+  /// from contracts that require non-null (e.g. `BaseFirebaseRepository`).
+  static ContentReport fromFirestoreOrThrow(DocumentSnapshot doc) {
+    final report = fromFirestore(doc);
+    if (report == null) {
+      throw FormatException(
+          'ContentReport ${doc.id} has unknown or missing contentType');
+    }
+    return report;
+  }
+
   Map<String, dynamic> toFirestore() {
     return {
       'reporterId': reporterId,
-      'contentType': contentType,
+      'contentType': contentType.wireName,
       'contentId': contentId,
       'contentOwnerId': contentOwnerId,
       'reason': reason,

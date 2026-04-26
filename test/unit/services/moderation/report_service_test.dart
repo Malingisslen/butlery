@@ -15,6 +15,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -68,7 +69,7 @@ void main() {
 
     ContentReport profileReport({
       String? contentOwnerId = ownerUid,
-      String contentType = 'profile',
+      ContentType contentType = ContentType.profile,
     }) {
       return ContentReport(
         id: 'report-1',
@@ -100,11 +101,12 @@ void main() {
       await service.suspendReportedProfile(profileReport());
 
       // Contract = the WRITE shape (rules enforce hasOnly([isHidden,
-      // hiddenAt]); the dashboard reads the resulting doc). The bool return
-      // value of executeServiceOperation isn't asserted on the happy path
-      // because safeExecute behaviour in this test env yields a false
-      // negative even when the underlying update lands. The negative paths
-      // below cover the dispatcher's refusal contract.
+      // hiddenAt]); the dashboard reads the resulting doc). Return value
+      // isn't asserted because production calls FieldValue.serverTimestamp(),
+      // and fake_cloud_firestore throws MethodChannelFieldValue-cast on it
+      // — same project-wide quirk documented in firebase_audit_repository_test.
+      // The fake applies the non-FieldValue fields of the update before
+      // throwing, so isHidden + displayName below ARE the proof.
       final after =
           await fakeFirestore.collection('public_profiles').doc(ownerUid).get();
       expect(after.data()?['isHidden'], isTrue);
@@ -118,8 +120,8 @@ void main() {
 
     test('returns false when contentType is not "profile" (refuses dispatch)',
         () async {
-      final ok = await service
-          .suspendReportedProfile(profileReport(contentType: 'recipe'));
+      final ok = await service.suspendReportedProfile(
+          profileReport(contentType: ContentType.recipe));
       expect(ok, isFalse);
     });
 

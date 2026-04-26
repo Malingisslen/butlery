@@ -147,7 +147,7 @@ class _ReportCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${report.contentType.toUpperCase()} · ${report.contentId}',
+                    '${report.contentType.wireName.toUpperCase()} · ${report.contentId}',
                     style: AppTextStyles.bodyMedium,
                     overflow: TextOverflow.ellipsis,
                   ),
