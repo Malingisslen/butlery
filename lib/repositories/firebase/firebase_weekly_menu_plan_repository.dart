@@ -88,6 +88,16 @@ class FirebaseWeeklyMenuPlanRepository
 
   @override
   Future<int> deleteAllByUser(String userId) async {
+    // GDPR cascade: caller must be deleting their own data. The doc-ID
+    // prefix already binds rows to userId, but client-side ownership
+    // assertion guards against a misuse where a caller passes a
+    // different userId after authenticating.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
     // Doc IDs are prefixed with userId, so a range query bounded by the
     // prefix gives us only this user's docs without an extra index.
     final snapshot = await collection

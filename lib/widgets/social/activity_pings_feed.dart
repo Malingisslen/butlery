@@ -328,10 +328,14 @@ class _FeedRow extends StatelessWidget {
     );
 
     if (onAcknowledge == null) return child;
-    return InkWell(
-      key: const Key('ping-row-ack'),
-      onTap: onAcknowledge,
-      child: child,
+    return Semantics(
+      label: context.l10n.a11yPingAcknowledge(actorName),
+      button: true,
+      child: InkWell(
+        key: const Key('ping-row-ack'),
+        onTap: onAcknowledge,
+        child: child,
+      ),
     );
   }
 

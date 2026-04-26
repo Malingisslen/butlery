@@ -31,7 +31,9 @@ import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 /// - **Audit Logging**: Logs permission checks for security monitoring
 /// - **Field Validation**: Validates required fields and data integrity
 /// **Performance Optimizations:**
-/// - **Streaming Limits**: Caps recipe streams at 500 most recent recipes
+/// - **Streaming Limits**: Live watcher caps at [_defaultWatchPageSize] (100)
+///   most recent recipes; older pages are fetched via [loadMoreRecipes]
+///   cursor-paginated against `core.updatedAt`
 /// - **Search Limits**: Limits search scope to 200 most recent recipes for performance
 /// - **Archive Limits**: Restricts archive queries to 100 recipes maximum
 /// - **Efficient Queries**: Uses server-side ordering and filtering where possible
@@ -49,9 +51,10 @@ import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 /// // Create with validation
 /// final newRecipe = Recipe(title: 'Pasta', createdBy: userId);
 /// await recipeRepo.create(newRecipe);
-/// // Stream with performance limits
+/// // Stream with bounded initial page (100 most recent); call
+/// // loadMoreRecipes(...) to fetch older recipes as the user scrolls.
 /// recipeRepo.watchRecipes(userId).listen((recipes) {
-///   // Receives max 500 most recent recipes
+///   // Receives the 100 most recent recipes
 /// });
 /// // Search with scope limits
 /// final results = await recipeRepo.searchRecipes('chicken');
@@ -60,6 +63,10 @@ import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     with StreamManagementMixin, UserScopedFirebaseRepository<Recipe>
     implements RecipeRepository {
+  /// Default page size for the live watcher and cursor-paginated tail.
+  /// Older pages are reachable via [loadMoreRecipes].
+  static const int _defaultWatchPageSize = 100;
+
   late final RecipeLegacyValidator _legacyValidator;
 
   FirebaseRecipeRepository({
@@ -356,15 +363,49 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
-  Stream<List<Recipe>> watchRecipes(String userId) {
-    // Use the mixin method to get user-specific collection
-    // ✅ PERFORMANCE FIX: Added limit to prevent streaming large datasets
+  Stream<List<Recipe>> watchRecipes(String userId,
+      {int pageSize = _defaultWatchPageSize}) {
     return getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
-        .limit(
-            500) // Stream up to 500 recipes — UI has its own display pagination
+        .limit(pageSize)
         .snapshots()
         .map((snap) => snap.docs.map(fromFirestore).toList());
+  }
+
+  @override
+  Future<List<Recipe>> loadMoreRecipes(
+    String userId, {
+    required DateTime afterUpdatedAt,
+    required String afterRecipeId,
+    int pageSize = _defaultWatchPageSize,
+  }) async {
+    // Two recipes can share the same `core.updatedAt` (bulk imports), and
+    // `startAfterDocument` is the only race-safe disambiguator Firestore
+    // offers without a stored secondary sort key. If the boundary recipe was
+    // deleted between pages we fall back to a value-cursor on `updatedAt`
+    // alone — worst case re-emits one row already in the live page; the
+    // consumer dedupes by id.
+    try {
+      final boundary =
+          await getCollectionForUser(userId).doc(afterRecipeId).get();
+      if (!boundary.exists) {
+        final snap = await getCollectionForUser(userId)
+            .orderBy('core.updatedAt', descending: true)
+            .startAfter([Timestamp.fromDate(afterUpdatedAt)])
+            .limit(pageSize)
+            .get();
+        return snap.docs.map(fromFirestore).toList();
+      }
+      final snap = await getCollectionForUser(userId)
+          .orderBy('core.updatedAt', descending: true)
+          .startAfterDocument(boundary)
+          .limit(pageSize)
+          .get();
+      return snap.docs.map(fromFirestore).toList();
+    } catch (e) {
+      AppLogger.warning('Failed to load more recipes after $afterRecipeId: $e');
+      return const <Recipe>[];
+    }
   }
 
   @override
@@ -668,10 +709,11 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     void Function(List<RecipeChange>) onData, {
     Function? onError,
     void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
+    int pageSize = _defaultWatchPageSize,
   }) {
     return getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
-        .limit(500)
+        .limit(pageSize)
         .snapshots()
         .listen((snapshot) {
       onSyncStatusChanged?.call(

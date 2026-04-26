@@ -196,3 +196,19 @@ cd functions && npm run test:kill-switch
 - **2026-04-26 (BUT-439):** per-user cap deemed already covered by the
   existing rate-limiter. No new flag introduced. If a calendar-day hard
   cap is later required, separate ticket.
+
+## SDK migration history
+
+- **2026-04-22 (BUT-614):** swapped Cloud Functions LLM SDK to
+  `@google-cloud/vertexai` (Vertex AI EU region). Replaced the Gemini
+  Developer API path so all inference runs in `europe-west4` for GDPR
+  data-residency. `getGeminiClient()` (`functions/src/llm/gemini-client.ts`)
+  is the canonical wrapper; every Vertex call routes through it.
+- **2026-04-27 (BUT-499):** verified cleanup of the deprecated
+  `@google/generative-ai` package. Confirmed zero source imports
+  (`functions/src/`) and zero entries in `functions/package.json` /
+  `package-lock.json`. The Linear ticket called out `@google/genai` as a
+  successor, but the project's chosen SDK is `@google-cloud/vertexai`
+  (per BUT-614) — no further migration required. Task resolved as
+  no-op cleanup verification; kill-switch + structureRecipe + ocr
+  test suites unchanged.

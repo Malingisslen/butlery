@@ -71,12 +71,16 @@ class ParsedExtractionChips extends StatelessWidget {
           ],
           if (trace.hasGaps && onRefinePrompt != null) ...[
             const SizedBox(height: AppDimensions.spacingS),
-            GestureDetector(
-              onTap: onRefinePrompt,
-              child: Text(
-                l10n.weeklyMenuChipsRefinePrompt,
-                style: AppTextStyles.linkSmall.copyWith(
-                  color: scheme.primary,
+            Semantics(
+              label: l10n.a11yRefineMenuPrompt,
+              button: true,
+              child: GestureDetector(
+                onTap: onRefinePrompt,
+                child: Text(
+                  l10n.weeklyMenuChipsRefinePrompt,
+                  style: AppTextStyles.linkSmall.copyWith(
+                    color: scheme.primary,
+                  ),
                 ),
               ),
             ),

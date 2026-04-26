@@ -80,45 +80,54 @@ class MenuVoteCard extends StatelessWidget {
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-                child: InkWell(
-                  onTap: hasVoted || onVote == null
-                      ? null
-                      : () => onVote!(option.id),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingM),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? cs.primary
-                              .withValues(alpha: AppDimensions.opacityLight)
-                          : cs.surfaceContainer,
-                      border: isSelected ? Border.all(color: cs.primary) : null,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          option.recipeName,
-                          style: AppTextStyles.titleSmall.copyWith(
-                            color: isSelected ? cs.primary : cs.onSurface,
+                child: Semantics(
+                  label: isSelected
+                      ? context.l10n
+                          .a11yMenuVoteOptionSelected(option.recipeName)
+                      : context.l10n.a11yMenuVoteOption(option.recipeName),
+                  button: true,
+                  selected: isSelected,
+                  child: InkWell(
+                    onTap: hasVoted || onVote == null
+                        ? null
+                        : () => onVote!(option.id),
+                    child: Container(
+                      padding: const EdgeInsets.all(AppDimensions.paddingM),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? cs.primary
+                                .withValues(alpha: AppDimensions.opacityLight)
+                            : cs.surfaceContainer,
+                        border:
+                            isSelected ? Border.all(color: cs.primary) : null,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            option.recipeName,
+                            style: AppTextStyles.titleSmall.copyWith(
+                              color: isSelected ? cs.primary : cs.onSurface,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        ClipRRect(
-                          child: LinearProgressIndicator(
-                            value: fraction,
-                            backgroundColor: cs.surfaceContainerHighest,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(cs.primary),
-                            minHeight: AppDimensions.spacingXs,
+                          const SizedBox(height: AppDimensions.spacingXs),
+                          ClipRRect(
+                            child: LinearProgressIndicator(
+                              value: fraction,
+                              backgroundColor: cs.surfaceContainerHighest,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(cs.primary),
+                              minHeight: AppDimensions.spacingXs,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingXxs),
-                        Text(
-                          context.l10n.menuVoteCount(count),
-                          style: AppTextStyles.labelSmall
-                              .copyWith(color: cs.onSurfaceVariant),
-                        ),
-                      ],
+                          const SizedBox(height: AppDimensions.spacingXxs),
+                          Text(
+                            context.l10n.menuVoteCount(count),
+                            style: AppTextStyles.labelSmall
+                                .copyWith(color: cs.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

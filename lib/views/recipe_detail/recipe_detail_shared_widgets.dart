@@ -47,13 +47,16 @@ abstract final class RecipeDetailSharedWidgets {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            recipe.title.toLowerCase(),
-            style: AppTextStyles.titleLarge.copyWith(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: cs.primary,
-              letterSpacing: 1,
+          Semantics(
+            header: true,
+            child: Text(
+              recipe.title.toLowerCase(),
+              style: AppTextStyles.titleLarge.copyWith(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: cs.primary,
+                letterSpacing: 1,
+              ),
             ),
           ),
           if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) ...[

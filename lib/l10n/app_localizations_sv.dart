@@ -13185,4 +13185,56 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yMenuSuggestAlternative(String title) {
     return 'Föreslå alternativ för $title';
   }
+
+  @override
+  String a11yShelfRecipeOpen(String title) {
+    return '$title, tryck för att öppna';
+  }
+
+  @override
+  String a11yCookSnapOptions(String name) {
+    return 'Matlagningsbild av $name, långtryck för alternativ';
+  }
+
+  @override
+  String a11yConversationOpen(String name) {
+    return 'Konversation med $name, tryck för att öppna';
+  }
+
+  @override
+  String a11yMenuVoteOption(String name) {
+    return 'Rösta på $name';
+  }
+
+  @override
+  String a11yMenuVoteOptionSelected(String name) {
+    return '$name, vald. Tryck för att ändra röst.';
+  }
+
+  @override
+  String a11yPingAcknowledge(String name) {
+    return 'Bekräfta notis från $name';
+  }
+
+  @override
+  String a11yMenuPlanRecipeOpen(String title) {
+    return '$title, tryck för att öppna receptet';
+  }
+
+  @override
+  String a11yMenuPlanOvrigtAddMore(String day) {
+    return 'Lägg till mer i övrigt för $day';
+  }
+
+  @override
+  String get a11yRefineMenuPrompt => 'Förbättra menyprompten';
+
+  @override
+  String get a11yHeadingIngredients => 'Ingredienser';
+
+  @override
+  String get a11yHeadingInstructions => 'Instruktioner';
+
+  @override
+  String get a11yHeadingComments => 'Kommentarer';
 }

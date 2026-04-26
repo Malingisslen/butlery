@@ -216,10 +216,13 @@ class MenuContentWidgets {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      context.l10n.menuYourWeeklyMenu,
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: cs.onPrimaryContainer,
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        context.l10n.menuYourWeeklyMenu,
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: cs.onPrimaryContainer,
+                        ),
                       ),
                     ),
                     Text(
@@ -282,14 +285,17 @@ class MenuContentWidgets {
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  MenuViewHelpers.capitalizeCategory(category).toUpperCase(),
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.headerFont,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 3,
-                    color: cs.primary,
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    MenuViewHelpers.capitalizeCategory(category).toUpperCase(),
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.headerFont,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 3,
+                      color: cs.primary,
+                    ),
                   ),
                 ),
               ),

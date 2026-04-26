@@ -150,10 +150,13 @@ class _SectionHeader extends StatelessWidget {
         horizontal: AppDimensions.paddingL,
         vertical: AppDimensions.paddingS,
       ),
-      child: Text(
-        title,
-        style: AppTextStyles.metadataEmphasized.copyWith(
-          color: cs.primary,
+      child: Semantics(
+        header: true,
+        child: Text(
+          title,
+          style: AppTextStyles.metadataEmphasized.copyWith(
+            color: cs.primary,
+          ),
         ),
       ),
     );

@@ -8996,19 +8996,19 @@
   },
   "a11yProfileImageEdit": "Profilbild, tryck för att ändra",
   "@a11yProfileImageEdit": {
-    "description": "BUT-697: Semantics label for editable avatar tap target."
+    "description": "Semantics label for editable avatar tap target."
   },
   "a11yProfileImageReadonly": "Profilbild",
   "@a11yProfileImageReadonly": {
-    "description": "BUT-697: Semantics label for read-only avatar tap target."
+    "description": "Semantics label for read-only avatar tap target."
   },
   "a11yReactToComment": "Reagera på kommentar",
   "@a11yReactToComment": {
-    "description": "BUT-697: Semantics label for the 'add reaction' tap target on a comment."
+    "description": "Semantics label for the 'add reaction' tap target on a comment."
   },
   "a11yShowCommentLikes": "{count, plural, =1{Visa 1 gilla-markering} other{Visa {count} gilla-markeringar}}",
   "@a11yShowCommentLikes": {
-    "description": "BUT-697: Semantics label for the like-count text on a comment.",
+    "description": "Semantics label for the like-count text on a comment.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -9017,31 +9017,31 @@
   },
   "a11yLongPressCommentForReactions": "Kommentar, långtryck för att reagera",
   "@a11yLongPressCommentForReactions": {
-    "description": "BUT-697: Semantics label for the comment body long-press target."
+    "description": "Semantics label for the comment body long-press target."
   },
   "a11yDismissReactionPicker": "Stäng reaktionsväljaren",
   "@a11yDismissReactionPicker": {
-    "description": "BUT-697: Semantics label for the dismiss-on-tap-outside overlay behind the reaction picker."
+    "description": "Semantics label for the dismiss-on-tap-outside overlay behind the reaction picker."
   },
   "a11yCommentLikeAction": "Gilla kommentar",
   "@a11yCommentLikeAction": {
-    "description": "BUT-697: Semantics label for the like button on a comment item (legacy threaded view)."
+    "description": "Semantics label for the like button on a comment item (legacy threaded view)."
   },
   "a11yCommentReplyAction": "Svara på kommentar",
   "@a11yCommentReplyAction": {
-    "description": "BUT-697: Semantics label for the reply button on a comment item (legacy threaded view)."
+    "description": "Semantics label for the reply button on a comment item (legacy threaded view)."
   },
   "a11yRetryUpload": "Försök ladda upp igen",
   "@a11yRetryUpload": {
-    "description": "BUT-697: Semantics label for the retry-upload action button."
+    "description": "Semantics label for the retry-upload action button."
   },
   "a11yCancelUpload": "Avbryt uppladdning",
   "@a11yCancelUpload": {
-    "description": "BUT-697: Semantics label for the cancel-upload action button."
+    "description": "Semantics label for the cancel-upload action button."
   },
   "a11yBulkUploadAction": "{label}",
   "@a11yBulkUploadAction": {
-    "description": "BUT-697: Semantics label pass-through for bulk upload control buttons (retry-all, cancel-all, clear-failed). The label arg is the already-localized human-readable button text.",
+    "description": "Semantics label pass-through for bulk upload control buttons (retry-all, cancel-all, clear-failed). The label arg is the already-localized human-readable button text.",
     "placeholders": {
       "label": {
         "type": "String"
@@ -9050,7 +9050,7 @@
   },
   "a11yEditImageAction": "{label}",
   "@a11yEditImageAction": {
-    "description": "BUT-697: Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).",
+    "description": "Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).",
     "placeholders": {
       "label": {
         "type": "String"
@@ -9059,15 +9059,15 @@
   },
   "a11yEmptyImageStateAdd": "Lägg till bild, tryck för att välja",
   "@a11yEmptyImageStateAdd": {
-    "description": "BUT-697: Semantics label for the empty-state image picker tap target."
+    "description": "Semantics label for the empty-state image picker tap target."
   },
   "a11yImagePickerOpen": "Välj bilder",
   "@a11yImagePickerOpen": {
-    "description": "BUT-697: Semantics label for the image picker open tap target."
+    "description": "Semantics label for the image picker open tap target."
   },
   "a11yImagePickerRemove": "Ta bort vald bild {index}",
   "@a11yImagePickerRemove": {
-    "description": "BUT-697: Semantics label for removing a selected image preview by index.",
+    "description": "Semantics label for removing a selected image preview by index.",
     "placeholders": {
       "index": {
         "type": "int"
@@ -9076,11 +9076,11 @@
   },
   "a11yGalleryAddImage": "Lägg till bild i galleriet",
   "@a11yGalleryAddImage": {
-    "description": "BUT-697: Semantics label for the gallery add-image tile."
+    "description": "Semantics label for the gallery add-image tile."
   },
   "recipeCardSemantics": "Recept: {title}, tryck för att öppna",
   "@recipeCardSemantics": {
-    "description": "BUT-697: Semantics label for the entire recipe card tap target.",
+    "description": "Semantics label for the entire recipe card tap target.",
     "placeholders": {
       "title": {
         "type": "String"
@@ -9089,7 +9089,7 @@
   },
   "recipeRatingSemantics": "Betyg: {rating}",
   "@recipeRatingSemantics": {
-    "description": "BUT-697: Semantics label for the rating pill on a recipe card.",
+    "description": "Semantics label for the rating pill on a recipe card.",
     "placeholders": {
       "rating": {
         "type": "String"
@@ -9098,7 +9098,7 @@
   },
   "a11yMenuRecipeOpen": "{title}, tryck för att öppna receptet",
   "@a11yMenuRecipeOpen": {
-    "description": "BUT-697: Semantics label for the menu recipe row tap target.",
+    "description": "Semantics label for the menu recipe row tap target.",
     "placeholders": {
       "title": {
         "type": "String"
@@ -9107,7 +9107,7 @@
   },
   "a11yMenuSectionRegenerate": "Skapa nytt förslag för {category}",
   "@a11yMenuSectionRegenerate": {
-    "description": "BUT-697: Semantics label for the regenerate-section button on menu section header.",
+    "description": "Semantics label for the regenerate-section button on menu section header.",
     "placeholders": {
       "category": {
         "type": "String"
@@ -9116,7 +9116,7 @@
   },
   "a11yMenuSwapRecipe": "Byt ut {title}",
   "@a11yMenuSwapRecipe": {
-    "description": "BUT-697: Semantics label for the swap-recipe icon on menu rows.",
+    "description": "Semantics label for the swap-recipe icon on menu rows.",
     "placeholders": {
       "title": {
         "type": "String"
@@ -9125,11 +9125,99 @@
   },
   "a11yMenuSuggestAlternative": "Föreslå alternativ för {title}",
   "@a11yMenuSuggestAlternative": {
-    "description": "BUT-697: Semantics label for the suggest-vote-alternative icon on menu rows.",
+    "description": "Semantics label for the suggest-vote-alternative icon on menu rows.",
     "placeholders": {
       "title": {
         "type": "String"
       }
     }
+  },
+  "a11yShelfRecipeOpen": "{title}, tryck för att öppna",
+  "@a11yShelfRecipeOpen": {
+    "description": "Semantics label for a recipe shelf card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yCookSnapOptions": "Matlagningsbild av {name}, långtryck för alternativ",
+  "@a11yCookSnapOptions": {
+    "description": "Semantics label for a cook snap thumbnail with long-press menu.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yConversationOpen": "Konversation med {name}, tryck för att öppna",
+  "@a11yConversationOpen": {
+    "description": "Semantics label for a conversation list item.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMenuVoteOption": "Rösta på {name}",
+  "@a11yMenuVoteOption": {
+    "description": "Semantics label for a menu vote option tile.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMenuVoteOptionSelected": "{name}, vald. Tryck för att ändra röst.",
+  "@a11yMenuVoteOptionSelected": {
+    "description": "Semantics label for a menu vote option that is currently selected.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPingAcknowledge": "Bekräfta notis från {name}",
+  "@a11yPingAcknowledge": {
+    "description": "Semantics label for the activity-ping acknowledge row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMenuPlanRecipeOpen": "{title}, tryck för att öppna receptet",
+  "@a11yMenuPlanRecipeOpen": {
+    "description": "Semantics label for an assigned recipe cell in the calendar weekly menu.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMenuPlanOvrigtAddMore": "Lägg till mer i övrigt för {day}",
+  "@a11yMenuPlanOvrigtAddMore": {
+    "description": "Semantics label for the add-more row inside the ovrigt cell of the weekly menu.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRefineMenuPrompt": "Förbättra menyprompten",
+  "@a11yRefineMenuPrompt": {
+    "description": "Semantics label for the refine-prompt link in the parsed-extraction trace."
+  },
+  "a11yHeadingIngredients": "Ingredienser",
+  "@a11yHeadingIngredients": {
+    "description": "Heading marker label for the ingredients section on recipe detail."
+  },
+  "a11yHeadingInstructions": "Instruktioner",
+  "@a11yHeadingInstructions": {
+    "description": "Heading marker label for the instructions section on recipe detail."
+  },
+  "a11yHeadingComments": "Kommentarer",
+  "@a11yHeadingComments": {
+    "description": "Heading marker label for the comments section on recipe detail."
   }
 }

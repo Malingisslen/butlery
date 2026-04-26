@@ -238,7 +238,19 @@ This is negligible and vastly below the cost of a single lost user's trust.
 
 ---
 
+## Storage versioning
+
+Firestore PITR + weekly exports cover the structured-data DR tier. Cloud
+Storage (recipe images, avatars, OCR uploads) has its own independent
+recovery story — object versioning + a 30-day noncurrent-version lifecycle —
+documented in `docs/ops/storage-lifecycle-runbook.md` (BUT-419). Same
+30-day retention window as the weekly Firestore export so the operational
+story is uniform across data tiers.
+
+---
+
 ## Related Linear tickets
 
 - BUT-418 — this runbook's parent ticket (Urgent, launch-readiness)
+- BUT-419 — sibling Cloud Storage versioning + lifecycle (`storage-lifecycle-runbook.md`)
 - BUT-607 — EU data residency verification (shares the region decision in step 3)

@@ -125,8 +125,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.l10n.socialComments,
-                      style: AppTextStyles.titleMedium),
+                  Semantics(
+                    header: true,
+                    child: Text(context.l10n.socialComments,
+                        style: AppTextStyles.titleMedium),
+                  ),
                   if ((vm.commentCount ?? 0) > 0) ...[
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(

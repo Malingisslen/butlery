@@ -497,9 +497,12 @@ class _UserProfileEditViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.profileCookingIdentity,
-          style: AppTextStyles.titleMedium,
+        Semantics(
+          header: true,
+          child: Text(
+            context.l10n.profileCookingIdentity,
+            style: AppTextStyles.titleMedium,
+          ),
         ),
         const SizedBox(height: AppDimensions.spacingL),
 
@@ -612,9 +615,12 @@ class _UserProfileEditViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.profilePrivacySettings,
-          style: AppTextStyles.titleMedium,
+        Semantics(
+          header: true,
+          child: Text(
+            context.l10n.profilePrivacySettings,
+            style: AppTextStyles.titleMedium,
+          ),
         ),
         const SizedBox(height: AppDimensions.spacingL),
         BorderedContainer(
@@ -647,9 +653,12 @@ class _UserProfileEditViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.profileLanguage,
-          style: AppTextStyles.titleMedium,
+        Semantics(
+          header: true,
+          child: Text(
+            context.l10n.profileLanguage,
+            style: AppTextStyles.titleMedium,
+          ),
         ),
         const SizedBox(height: AppDimensions.spacingL),
         BorderedContainer(
@@ -697,9 +706,12 @@ class _UserProfileEditViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.profileTheme,
-          style: AppTextStyles.titleMedium,
+        Semantics(
+          header: true,
+          child: Text(
+            context.l10n.profileTheme,
+            style: AppTextStyles.titleMedium,
+          ),
         ),
         const SizedBox(height: AppDimensions.spacingL),
         BorderedContainer(

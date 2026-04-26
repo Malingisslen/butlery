@@ -420,45 +420,49 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     WeeklyMenuPlanViewModel vm,
     WeeklyMenuPlanEntry entry,
   ) {
-    final cell = GestureDetector(
-      onTap: () => _navigateToRecipe(context, entry.recipeId),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: _accentedBorder(AppColors.forestGreen),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _slotLabel(entry.slot.displayLabel, AppColors.forestGreenDark),
-            const SizedBox(height: 4),
-            Container(
-              height: 28,
-              color: AppColors.cream,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.restaurant_outlined,
-                size: 18,
-                color: AppColors.greenMuted,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Expanded(
-              child: Text(
-                entry.recipeTitle.toLowerCase(),
-                style: AppTextStyles.labelSmall.copyWith(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
-                  height: 1.15,
+    final cell = Semantics(
+      label: context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+      button: true,
+      child: GestureDetector(
+        onTap: () => _navigateToRecipe(context, entry.recipeId),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            border: _accentedBorder(AppColors.forestGreen),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _slotLabel(entry.slot.displayLabel, AppColors.forestGreenDark),
+              const SizedBox(height: 4),
+              Container(
+                height: 28,
+                color: AppColors.cream,
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.restaurant_outlined,
+                  size: 18,
+                  color: AppColors.greenMuted,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Expanded(
+                child: Text(
+                  entry.recipeTitle.toLowerCase(),
+                  style: AppTextStyles.labelSmall.copyWith(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                    height: 1.15,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

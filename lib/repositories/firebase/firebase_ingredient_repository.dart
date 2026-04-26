@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -8,38 +10,44 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation of the ingredient repository.
 ///
-/// Provides read-only access to the global ingredients collection.
-/// Uses in-memory caching for fast lookups (2230 ingredients fit easily).
-/// Automatically invalidates cache when ingredients are synced.
+/// Read-only access to the global ingredients collection. The cache uses a
+/// TTL with stale-while-revalidate semantics: cold-cache reads await a
+/// fetch; stale reads serve immediately and refresh in the background.
+/// A one-shot `.get()` (not `.snapshots()`) is used because the collection
+/// is admin-managed and a permanent listener streamed the full set on
+/// every Firestore reconnect.
 class FirebaseIngredientRepository
     with ErrorHandlingMixin
     implements IngredientRepository {
   final FirebaseFirestore _firestore;
 
-  /// In-memory cache for all ingredients.
   final Map<String, IngredientData> _cache = {};
-
-  /// Index of normalized Swedish names → ingredient ID.
   final Map<String, String> _swedishNameIndex = {};
-
-  /// Index of normalized English names → ingredient ID.
   final Map<String, String> _englishNameIndex = {};
-
-  /// Index of normalized aliases → ingredient ID.
   final Map<String, String> _aliasIndex = {};
-
-  /// Set of compound ingredient names (from Firestore isCompoundName field).
   final Set<String> _compoundNames = {};
 
-  /// Whether the cache has been loaded.
-  bool _cacheLoaded = false;
+  /// When the cache was last populated. `null` means uninitialized.
+  DateTime? _cacheLoadedAt;
+
+  /// In-flight refresh so concurrent callers coalesce to one fetch.
+  Future<void>? _inFlightLoad;
+
+  final DateTime Function() _now;
+
+  /// How long the cache is considered fresh before a background refresh.
+  final Duration cacheTtl;
 
   /// Callbacks to notify when cache is invalidated.
   final List<void Function()> _onCacheInvalidatedListeners = [];
 
   FirebaseIngredientRepository({
     FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+    Duration? cacheTtl,
+    DateTime Function()? now,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        cacheTtl = cacheTtl ?? const Duration(hours: 1),
+        _now = now ?? DateTime.now;
 
   /// Adds a listener to be notified when the ingredient cache is invalidated.
   ///
@@ -86,8 +94,7 @@ class FirebaseIngredientRepository
   ///
   /// Use when admin has updated the ingredients collection mid-session.
   Future<void> forceRefresh() async {
-    _cacheLoaded = false;
-    await loadCache();
+    await loadCache(forceReload: true);
     _notifyCacheInvalidated();
   }
 
@@ -95,36 +102,68 @@ class FirebaseIngredientRepository
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection(FirestoreCollections.ingredients);
 
-  /// Ensures the cache is loaded before querying.
-  Future<void> _ensureCacheLoaded() async {
-    if (_cacheLoaded) return;
-    await loadCache();
+  bool get _cacheLoaded => _cacheLoadedAt != null;
+
+  bool get _isCacheStale {
+    final loadedAt = _cacheLoadedAt;
+    if (loadedAt == null) return false;
+    return _now().difference(loadedAt) >= cacheTtl;
   }
 
-  /// Loads all ingredients into memory cache.
-  ///
-  /// Call this during app initialization for best performance.
-  Future<void> loadCache() async {
-    if (_cacheLoaded) return;
+  /// Cold-cache reads await a fetch; stale reads return immediately and
+  /// kick off a background refresh.
+  Future<void> _ensureCacheLoaded() async {
+    if (!_cacheLoaded) {
+      await loadCache();
+      return;
+    }
+    if (_isCacheStale) {
+      // ignore: unawaited_futures
+      _refreshCacheInBackground();
+    }
+  }
 
+  Future<void> _refreshCacheInBackground() async {
+    if (_inFlightLoad != null) return;
     try {
-      AppLogger.info('Loading ingredient cache...');
-      final stopwatch = Stopwatch()..start();
+      await loadCache(forceReload: true);
+    } catch (_) {
+      // loadCache already logged. Stale data continues to serve.
+    }
+  }
 
+  /// Loads all ingredients into memory.
+  ///
+  /// [forceReload] re-fetches even if already loaded (used by TTL refresh
+  /// and [forceRefresh]).
+  Future<void> loadCache({bool forceReload = false}) async {
+    if (_cacheLoaded && !forceReload) return;
+    final inFlight = _inFlightLoad;
+    if (inFlight != null) return inFlight;
+
+    final future = _doLoadCache();
+    _inFlightLoad = future;
+    try {
+      await future;
+    } finally {
+      _inFlightLoad = null;
+    }
+  }
+
+  Future<void> _doLoadCache() async {
+    AppLogger.info('Loading ingredient cache...');
+    final stopwatch = Stopwatch()..start();
+    try {
       final snapshot = await _collection.get();
-
       _cache.clear();
       _swedishNameIndex.clear();
       _englishNameIndex.clear();
       _aliasIndex.clear();
       _compoundNames.clear();
-
       for (final doc in snapshot.docs) {
-        final ingredient = IngredientData.fromFirestore(doc);
-        _addToCache(ingredient);
+        _addToCache(IngredientData.fromFirestore(doc));
       }
-
-      _cacheLoaded = true;
+      _cacheLoadedAt = _now();
       stopwatch.stop();
       AppLogger.info(
         'Ingredient cache loaded: ${_cache.length} ingredients in ${stopwatch.elapsedMilliseconds}ms',
@@ -469,21 +508,12 @@ class FirebaseIngredientRepository
   }
 
   @override
-  Stream<List<IngredientData>> watchAll() {
-    return _collection.snapshots().map((snapshot) {
-      final ingredients = snapshot.docs
-          .map((doc) => IngredientData.fromFirestore(doc))
-          .toList();
-
-      // Update cache
-      _cache.clear();
-      for (final ingredient in ingredients) {
-        _addToCache(ingredient);
-      }
-      _cacheLoaded = true;
-
-      return ingredients;
-    });
+  Stream<List<IngredientData>> watchAll() async* {
+    // ingredients collection — it streamed ~2230 docs on every reconnect.
+    // Instead, emit the cached snapshot once. The TTL-driven background
+    // refresh in _ensureCacheLoaded keeps the cache fresh across calls.
+    await _ensureCacheLoaded();
+    yield _cache.values.toList();
   }
 
   @override
@@ -511,7 +541,7 @@ class FirebaseIngredientRepository
     _englishNameIndex.clear();
     _aliasIndex.clear();
     _compoundNames.clear();
-    _cacheLoaded = false;
+    _cacheLoadedAt = null;
   }
 
   /// Disposes resources.

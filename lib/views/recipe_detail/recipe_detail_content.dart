@@ -106,9 +106,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-          child: Text(
-            context.l10n.recipeIngredients,
-            style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
+          child: Semantics(
+            header: true,
+            child: Text(
+              context.l10n.recipeIngredients,
+              style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
+            ),
           ),
         ),
         _buildIngredientsContent(context),
@@ -126,9 +129,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-          child: Text(
-            context.l10n.recipeInstructions,
-            style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
+          child: Semantics(
+            header: true,
+            child: Text(
+              context.l10n.recipeInstructions,
+              style: AppTextStyles.titleBold.copyWith(color: cs.onSurface),
+            ),
           ),
         ),
         _buildInstructionsContent(context),

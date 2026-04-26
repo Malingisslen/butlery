@@ -151,44 +151,49 @@ class _SnapThumbnail extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final imageUrl = snap.thumbnailUrl ?? snap.photoUrl;
 
-    return GestureDetector(
-      onLongPress: () => _showOptions(context),
-      child: SizedBox(
-        width: 100,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 100,
-              height: 100,
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => ColoredBox(
-                  color: colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.broken_image,
-                    color: colorScheme.onSurfaceVariant,
+    final actorName = isOwn ? context.l10n.cookSnapMe : snap.userDisplayName;
+    return Semantics(
+      label: context.l10n.a11yCookSnapOptions(actorName),
+      button: true,
+      child: GestureDetector(
+        onLongPress: () => _showOptions(context),
+        child: SizedBox(
+          width: 100,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => ColoredBox(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: Icon(
+                      Icons.broken_image,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              isOwn ? context.l10n.cookSnapMe : snap.userDisplayName,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: colorScheme.onSurface,
+              const SizedBox(height: 4),
+              Text(
+                actorName,
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              TimeAgoFormatter.compact(snap.createdAt),
-              style: AppTextStyles.labelSmall.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              Text(
+                TimeAgoFormatter.compact(snap.createdAt),
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

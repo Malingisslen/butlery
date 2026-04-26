@@ -165,6 +165,13 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
 
   @override
   Future<int> deleteAllByUser(String userId) async {
+    // GDPR cascade: caller must be deleting their own data.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
     final snapshot = await collection.where('userId', isEqualTo: userId).get();
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);

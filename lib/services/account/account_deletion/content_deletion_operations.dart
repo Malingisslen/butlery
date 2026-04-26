@@ -1,16 +1,50 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
+import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
+import 'package:butlery/repositories/interfaces/pantry_repository.dart';
+import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
-/// Handles deletion of user content (recipes, menus, shopping lists).
+/// GDPR Article 17 cascade for user-owned content (recipes, menus, shopping
+/// lists, cook snaps, activity events, weekly menus, pantry, personal tags).
+///
+/// Per-resource collections delete via their repositories. Cross-user scrub
+/// paths (collaborative-list references, group weekly menus) patch foreign
+/// docs and stay direct on Firestore by design.
 class ContentDeletionOperations {
   final FirebaseFirestore _firestore;
+  // Test seams: production resolves via ServiceLocator on first use; tests
+  // inject fakes that share the same FakeFirebaseFirestore as [_firestore].
+  final CookSnapRepository? _cookSnapRepo;
+  final ActivityEventRepository? _activityRepo;
+  final WeeklyMenuPlanRepository? _weeklyMenuRepo;
+  final PantryRepository? _pantryRepo;
   static const String _logTag = 'ContentDeletionOps';
   // Safety margin under Firestore's 500-op batch limit.
   static const int _batchLimit = 450;
 
-  ContentDeletionOperations(this._firestore);
+  ContentDeletionOperations(
+    this._firestore, {
+    CookSnapRepository? cookSnapRepository,
+    ActivityEventRepository? activityEventRepository,
+    WeeklyMenuPlanRepository? weeklyMenuPlanRepository,
+    PantryRepository? pantryRepository,
+  })  : _cookSnapRepo = cookSnapRepository,
+        _activityRepo = activityEventRepository,
+        _weeklyMenuRepo = weeklyMenuPlanRepository,
+        _pantryRepo = pantryRepository;
+
+  CookSnapRepository get _cookSnapRepository =>
+      _cookSnapRepo ?? ServiceLocator.get<CookSnapRepository>();
+  ActivityEventRepository get _activityEventRepository =>
+      _activityRepo ?? ServiceLocator.get<ActivityEventRepository>();
+  WeeklyMenuPlanRepository get _weeklyMenuPlanRepository =>
+      _weeklyMenuRepo ?? ServiceLocator.get<WeeklyMenuPlanRepository>();
+  PantryRepository get _pantryRepository =>
+      _pantryRepo ?? ServiceLocator.get<PantryRepository>();
 
   /// Commits batch when op count reaches [_batchLimit], returns a fresh
   /// batch and resets counter.
@@ -170,17 +204,13 @@ class ContentDeletionOperations {
     }
   }
 
-  /// Delete cook snaps (GDPR Article 17 - Right to Erasure)
+  /// Delete cook snaps (GDPR Article 17 - Right to Erasure).
+  /// Routes through [CookSnapRepository.deleteAllByUser] which enforces
+  /// `validateOwnership` (PermissionValidationMixin).
   Future<bool> deleteCookSnaps(String userId) async {
     try {
-      final snapsSnapshot = await _firestore
-          .collection(FirestoreCollections.cookSnaps)
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      await batchDeleteDocs(_firestore, snapsSnapshot.docs);
-      app_logger.AppLogger.info(
-          '[$_logTag] Deleted ${snapsSnapshot.docs.length} cook snaps');
+      final count = await _cookSnapRepository.deleteAllByUser(userId);
+      app_logger.AppLogger.info('[$_logTag] Deleted $count cook snaps');
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete cook snaps', e);
@@ -188,17 +218,13 @@ class ContentDeletionOperations {
     }
   }
 
-  /// Delete activity events (GDPR Article 17 - Right to Erasure)
+  /// Delete activity events (GDPR Article 17 - Right to Erasure).
+  /// Routes through [ActivityEventRepository.deleteAllByUser] which
+  /// enforces `validateOwnership` (PermissionValidationMixin).
   Future<bool> deleteActivityEvents(String userId) async {
     try {
-      final eventsSnapshot = await _firestore
-          .collection(FirestoreCollections.activityEvents)
-          .where('actorId', isEqualTo: userId)
-          .get();
-
-      await batchDeleteDocs(_firestore, eventsSnapshot.docs);
-      app_logger.AppLogger.info(
-          '[$_logTag] Deleted ${eventsSnapshot.docs.length} activity events');
+      final count = await _activityEventRepository.deleteAllByUser(userId);
+      app_logger.AppLogger.info('[$_logTag] Deleted $count activity events');
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
@@ -208,19 +234,13 @@ class ContentDeletionOperations {
   }
 
   /// Delete weekly menu plans (GDPR Article 17 - Right to Erasure).
-  /// Doc IDs are prefixed with `{userId}_` so a range query gives us only
-  /// this user's plans without an additional Firestore index.
+  /// Routes the per-user delete through [WeeklyMenuPlanRepository.deleteAllByUser]
+  /// (validates ownership). The cross-user GROUP-plan scrub stays here -
+  /// it patches OTHER users' plans and so doesn't fit a per-resource repo.
   Future<bool> deleteWeeklyMenuPlans(String userId) async {
     try {
-      final plansSnapshot = await _firestore
-          .collection(FirestoreCollections.weeklyMenuPlans)
-          .where(FieldPath.documentId, isGreaterThanOrEqualTo: '${userId}_')
-          .where(FieldPath.documentId, isLessThan: '${userId}_\uf8ff')
-          .get();
-
-      await batchDeleteDocs(_firestore, plansSnapshot.docs);
-      app_logger.AppLogger.info(
-          '[$_logTag] Deleted ${plansSnapshot.docs.length} weekly menu plans');
+      final count = await _weeklyMenuPlanRepository.deleteAllByUser(userId);
+      app_logger.AppLogger.info('[$_logTag] Deleted $count weekly menu plans');
 
       // Scrub this user from any GROUP plans they were part of. Those
       // plans belong to the group (other participants), so we never
@@ -314,18 +334,13 @@ class ContentDeletionOperations {
     }
   }
 
-  /// Delete pantry items (GDPR Article 17 - Right to Erasure)
+  /// Delete pantry items (GDPR Article 17 - Right to Erasure).
+  /// Routes through [PantryRepository.deleteAll]. Ownership is enforced
+  /// structurally (subcollection under `users/{uid}`) at the rules layer.
   Future<bool> deletePantryItems(String userId) async {
     try {
-      final pantrySnapshot = await _firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.pantry)
-          .get();
-
-      await batchDeleteDocs(_firestore, pantrySnapshot.docs);
-      app_logger.AppLogger.info(
-          '[$_logTag] Deleted ${pantrySnapshot.docs.length} pantry items');
+      await _pantryRepository.deleteAll(userId);
+      app_logger.AppLogger.info('[$_logTag] Deleted pantry items');
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete pantry items', e);

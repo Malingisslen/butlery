@@ -362,16 +362,19 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                         ),
                         const SizedBox(width: AppDimensions.spacingSm),
                         Expanded(
-                          child: Text(
-                            ShoppingCategory.displayName(category)
-                                .toUpperCase(),
-                            style: AppTextStyles.labelMedium.copyWith(
-                              color: cs.onPrimary,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 2,
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              ShoppingCategory.displayName(category)
+                                  .toUpperCase(),
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: cs.onPrimary,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         // Progress badge: X/Y format

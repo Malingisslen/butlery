@@ -75,8 +75,8 @@ class ConversationListItem extends StatelessWidget {
           ),
         ),
         child: Semantics(
-          label:
-              'Konversation med ${conversation.getDisplayTitle(currentUserId)}',
+          label: context.l10n.a11yConversationOpen(
+              conversation.getDisplayTitle(currentUserId)),
           button: true,
           child: InkWell(
             onTap: onTap,

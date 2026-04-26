@@ -34,11 +34,14 @@ class GroupDetailHeader {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      group.name,
-                      style: AppTextStyles.sectionHeader,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        group.name,
+                        style: AppTextStyles.sectionHeader,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(

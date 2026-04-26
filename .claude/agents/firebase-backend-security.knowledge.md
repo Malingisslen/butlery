@@ -569,3 +569,128 @@ silent.
 Runbook: `docs/ops/llm-kill-switch-runbook.md` — operator commands for
 both flips (Firebase Console URL, gcloud, server-side TS snippet),
 monitoring filters, decision log.
+
+### 2026-04-27 — Recipe live watcher is now bounded; older pages cursor-paginated (BUT-484)
+
+`FirebaseRecipeRepository.watchRecipes` and `subscribeToUserRecipes`
+previously capped at `.limit(500)` — silently dropping recipes #501+.
+Replaced with a default-100 live page plus a new
+`loadMoreRecipes(userId, afterUpdatedAt, afterRecipeId, pageSize)` cursor
+method on the `RecipeRepository` interface.
+
+**Why a doc-cursor (`startAfterDocument`) and not a value-cursor:**
+multiple recipes can share the same `core.updatedAt` (bulk imports
+write the same `serverTimestamp()` to many docs in the same batch).
+Value-based `startAfter([Timestamp])` would either miss or double-emit
+the boundary's tied siblings depending on which side of the cursor the
+ordering put them. `startAfterDocument` is the only race-safe
+disambiguator Firestore offers when ties on the order-by field are
+possible. Fallback to value-cursor is kept for the case where the
+boundary doc was deleted between pages — caller must dedupe by id.
+
+**Live watcher must stay bounded.** Don't be tempted to remove the
+limit entirely "since pagination exists now": the live listener cost
+scales with `pageSize` for every snapshot delta, and an unbounded watch
+on a 5000-recipe collection costs 5000 reads on first attach plus the
+delta cost. The live page should approximate one viewport-of-recipes;
+older history is paginated by explicit user action ("Visa fler recept"
+button or scroll-end).
+
+**Pattern for similar live-list collections:**
+- Watcher: `.orderBy(<sortField>, descending: true).limit(pageSize).snapshots()`.
+- Pager: `.orderBy(<sortField>, descending: true).startAfterDocument(boundary).limit(pageSize).get()`.
+- Boundary refresh on delete-between-pages: `.startAfter([sortFieldValue])`
+  fallback with caller-side id dedup.
+- Interface change is non-breaking when the new param is named-optional
+  with a default — existing callers don't need updates, mocktail stubs
+  with `any()` matchers still match.
+
+The `RecipeListViewModel.canLoadMore` / `loadMore()` is currently a
+**display-window pager** over already-fetched recipes; wiring it into
+the new repo `loadMoreRecipes` is a follow-up VM/service change. The
+backend cap is the immediate fix — display-window is fine until users
+have >100 recipes loaded into memory at once.
+
+### 2026-04-27 — Cloud Storage versioning + lifecycle infra (BUT-419)
+
+Mirrors the BUT-450 alerting / BUT-418 backups pattern: hardened
+`infrastructure/storage/setup-storage-versioning.sh` + runbook at
+`docs/ops/storage-lifecycle-runbook.md`. User runs the script with
+authenticated gcloud after pull.
+
+**Lifecycle rule shape that matters:** `{age:30, isLive:false}`
+applied alongside `--versioning`. `isLive:false` is the critical
+guard — without it the rule would auto-delete LIVE objects after 30
+days, which is the opposite of recoverability. Verified the rule via
+`gcloud storage buckets describe --format=json` and grep for both
+`"enabled": true` (versioning) and `"type": "Delete"` (lifecycle) so
+the script fails non-zero if either policy silently no-oped.
+
+**GDPR cascade nuance for storage:** when versioning is enabled, the
+existing `on-user-deleted.ts` cascade `gsutil rm` only deletes LIVE
+generations — noncurrent versions linger up to 30d. Documented as
+accepted posture (same retention tier as Firestore PITR + weekly
+exports). If a future regulator demands strict immediate erasure, the
+follow-up is a generation-aware cascade (list + remove by
+`#GENERATION` ID under the user's prefix). Out of scope for BUT-419.
+
+**Bucket name disambiguation:** `STORAGE_BUCKET` is the Firebase
+Storage bucket name (e.g. `butlery-app-1.appspot.com`), NOT the
+project ID. Easy mistake — runbook explicitly calls this out under
+Prerequisites.
+
+### 2026-04-27 — account-deletion repo migration is partial-by-design (BUT-498)
+
+The `lib/services/account/account_deletion/` services were originally
+written with `FirebaseFirestore`-direct queries because of the
+**cross-user scrub paths** that legitimately don't fit a per-resource
+repository:
+
+- `_scrubCollaborativeListReferences` — patches `items[].assignedToUserId`
+  and `items[].purchasedByUserId` on OTHER users' shared shopping lists.
+- `_scrubGroupWeeklyMenuPlans` — patches `participants[]`,
+  `participantUserIds[]`, and `memberPermissions{}` on OTHER users' group
+  menu plans, with orphan-deletion when zero participants remain.
+- `removeFromSharedContent` — collectionGroup query on `members`
+  subcollections + `arrayRemove` on parent `sharedToUserIds` arrays
+  across multiple owners.
+- Recipe-comments anonymization (NOT deletion) — preserves thread
+  structure by patching `authorId='deleted'` instead of deleting docs.
+
+**Scope of the BUT-498 migration**: only the four collections that
+already have a clean per-user repo `deleteAllByUser` method got wired:
+`cook_snaps` (CookSnapRepository), `activity_events`
+(ActivityEventRepository), `weekly_menu_plans` (WeeklyMenuPlanRepository),
+and `pantry` (PantryRepository.deleteAll). Three of the four gained an
+explicit `validateOwnership` guard inside `deleteAllByUser`.
+PantryRepository doesn't extend `BaseFirebaseRepository` — its
+ownership is structural via the subcollection path under `users/{uid}`.
+
+**Constructor pattern for testability**: `ContentDeletionOperations`
+now takes optional repo injections (`cookSnapRepository:`,
+`activityEventRepository:`, `weeklyMenuPlanRepository:`,
+`pantryRepository:`). Production passes none → falls through to
+`ServiceLocator.get<X>()` lazy-resolution. Tests pass fakes wired to
+the same `FakeFirebaseFirestore` so end-to-end behaviour assertions
+still work. The pattern is applied in
+`test/unit/services/account/content_deletion_group_menu_scrub_test.dart`:
+`MockAuthRepository.setAuthState(userId: …)` satisfies the new
+`validateOwnership` precondition; the real
+`FirebaseWeeklyMenuPlanRepository` is wired with the same fake
+firestore the test seeds against.
+
+**Residual direct Firestore use after BUT-498** (intentional):
+content_deletion (recipes / menus / shopping-lists / personal_tags /
+personal_tag_groups + 2 scrub paths), all of social_deletion (6
+methods including the 2 cross-user paths), all of profile_deletion
+(9 collections), all of storage_deletion (realtime + presence), and
+private/public profile reads in data_export_service.
+
+**Lesson for future migrations:** don't try to push the cross-user
+scrub paths into per-resource repos. Those operations cross ownership
+boundaries by design (GDPR Art-17 cascade), and burying them inside
+e.g. `friend_repository.deleteAllForUser()` would lose the audit
+trail. The right follow-up is to add `deleteAllByUser(userId)` (with
+ownership validation) to the per-user-subcollection repos: recipes,
+menus, shopping lists, personal tags, personal tag groups, FCM tokens,
+notifications. The scrubs stay in the deletion-service layer.

@@ -13155,4 +13155,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yMenuSuggestAlternative(String title) {
     return 'Suggest an alternative for $title';
   }
+
+  @override
+  String a11yShelfRecipeOpen(String title) {
+    return '$title, tap to open';
+  }
+
+  @override
+  String a11yCookSnapOptions(String name) {
+    return 'Cooking photo by $name, long press for options';
+  }
+
+  @override
+  String a11yConversationOpen(String name) {
+    return 'Conversation with $name, tap to open';
+  }
+
+  @override
+  String a11yMenuVoteOption(String name) {
+    return 'Vote for $name';
+  }
+
+  @override
+  String a11yMenuVoteOptionSelected(String name) {
+    return '$name, selected. Tap to change vote.';
+  }
+
+  @override
+  String a11yPingAcknowledge(String name) {
+    return 'Acknowledge notification from $name';
+  }
+
+  @override
+  String a11yMenuPlanRecipeOpen(String title) {
+    return '$title, tap to open the recipe';
+  }
+
+  @override
+  String a11yMenuPlanOvrigtAddMore(String day) {
+    return 'Add more to other for $day';
+  }
+
+  @override
+  String get a11yRefineMenuPrompt => 'Refine the menu prompt';
+
+  @override
+  String get a11yHeadingIngredients => 'Ingredients';
+
+  @override
+  String get a11yHeadingInstructions => 'Instructions';
+
+  @override
+  String get a11yHeadingComments => 'Comments';
 }

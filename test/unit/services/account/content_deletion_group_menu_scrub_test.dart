@@ -15,7 +15,10 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 import 'package:butlery/services/account/account_deletion/content_deletion_operations.dart';
+
+import '../../../infrastructure/mocks/production_mocks.dart';
 
 const _groupPlansCollection = FirestoreCollections.groupWeeklyMenuPlans;
 const _personalPlansCollection = FirestoreCollections.weeklyMenuPlans;
@@ -53,7 +56,19 @@ void main() {
 
     setUp(() {
       firestore = FakeFirebaseFirestore();
-      ops = ContentDeletionOperations(firestore);
+      // BUT-498: ContentDeletionOperations now routes weekly_menu_plans
+      // through WeeklyMenuPlanRepository (which validates ownership).
+      // Wire a fake-firestore-backed repo so the scrub-path test still
+      // exercises end-to-end behaviour against the same fake DB.
+      final mockAuth = MockAuthRepository();
+      mockAuth.setAuthState(userId: departingUser);
+      ops = ContentDeletionOperations(
+        firestore,
+        weeklyMenuPlanRepository: FirebaseWeeklyMenuPlanRepository(
+          firestore: firestore,
+          authRepository: mockAuth,
+        ),
+      );
     });
 
     test(

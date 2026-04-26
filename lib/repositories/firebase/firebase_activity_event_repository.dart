@@ -112,6 +112,14 @@ class FirebaseActivityEventRepository
 
   @override
   Future<int> deleteAllByUser(String userId) async {
+    // GDPR cascade: caller must be deleting their own data. Admin-driven
+    // moderator deletes go through `delete()` per-doc, not this bulk path.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
     final snapshot = await collection.where('actorId', isEqualTo: userId).get();
 
     if (snapshot.docs.isEmpty) return 0;

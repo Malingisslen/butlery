@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -73,42 +74,48 @@ class _ShelfCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final thumbnail = recipe.displayThumbnailUrl;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: AppDimensions.imageSizeThumbnail + AppDimensions.spacingMd,
-        margin: const EdgeInsets.only(right: AppDimensions.spacingSm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: AppDimensions.imageSizeThumbnail + AppDimensions.spacingMd,
-              height: AppDimensions.imageSizeThumbnail,
-              color: cs.surfaceContainerHighest,
-              child: thumbnail != null
-                  ? SimpleImageWidget(
-                      imageUrl: thumbnail,
-                      fit: BoxFit.cover,
-                      config: ImageConfig.thumbnail(),
-                    )
-                  : Center(
-                      child: VegetableIllustration(
-                        type: VegetableIllustration.randomForRecipe(recipe.id),
-                        size: AppDimensions.imageSizeThumbnail / 2,
-                        opacity: AppDimensions.opacityDark,
+    return Semantics(
+      label: context.l10n.a11yShelfRecipeOpen(recipe.title),
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: AppDimensions.imageSizeThumbnail + AppDimensions.spacingMd,
+          margin: const EdgeInsets.only(right: AppDimensions.spacingSm),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width:
+                    AppDimensions.imageSizeThumbnail + AppDimensions.spacingMd,
+                height: AppDimensions.imageSizeThumbnail,
+                color: cs.surfaceContainerHighest,
+                child: thumbnail != null
+                    ? SimpleImageWidget(
+                        imageUrl: thumbnail,
+                        fit: BoxFit.cover,
+                        config: ImageConfig.thumbnail(),
+                      )
+                    : Center(
+                        child: VegetableIllustration(
+                          type:
+                              VegetableIllustration.randomForRecipe(recipe.id),
+                          size: AppDimensions.imageSizeThumbnail / 2,
+                          opacity: AppDimensions.opacityDark,
+                        ),
                       ),
-                    ),
-            ),
-            const SizedBox(height: AppDimensions.spacingXs),
-            Text(
-              recipe.title,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: cs.onSurface,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+              const SizedBox(height: AppDimensions.spacingXs),
+              Text(
+                recipe.title,
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: cs.onSurface,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );

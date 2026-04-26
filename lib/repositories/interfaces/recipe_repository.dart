@@ -8,14 +8,40 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 abstract class RecipeRepository extends Repository<Recipe>
     with StreamManagementMixin {
   /// Stream of recipes for the specified user.
-  Stream<List<Recipe>> watchRecipes(String userId);
+  ///
+  /// Returns the most recent [pageSize] recipes ordered by `core.updatedAt` desc
+  /// (default 100). Use [loadMoreRecipes] to fetch the next page when the user
+  /// scrolls past the initial set. The watcher itself stays bounded so account-
+  /// level pagination doesn't multiply listener cost.
+  Stream<List<Recipe>> watchRecipes(String userId, {int pageSize = 100});
 
   /// Subscribe to recipe changes for real-time collaboration.
+  ///
+  /// Bounded to [pageSize] most recent recipes (default 100) for the same
+  /// reason as [watchRecipes]: the live listener should not stream unbounded
+  /// history. Older recipes are reachable via [loadMoreRecipes].
   StreamSubscription subscribeToUserRecipes(
     String userId,
     void Function(List<RecipeChange>) onData, {
     Function? onError,
     void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
+    int pageSize = 100,
+  });
+
+  /// Cursor-paginated next-page fetch for a user's recipe collection.
+  ///
+  /// Order matches [watchRecipes] (`core.updatedAt` desc). Pass the
+  /// `core.updatedAt` of the oldest currently-loaded recipe as
+  /// [afterUpdatedAt] (and its id as [afterRecipeId] to disambiguate ties).
+  /// Returns up to [pageSize] older recipes; an empty list signals exhaustion.
+  ///
+  /// Replaces the previous arbitrary 500-cap on [watchRecipes] — callers
+  /// stitch the live initial page with this paginated tail.
+  Future<List<Recipe>> loadMoreRecipes(
+    String userId, {
+    required DateTime afterUpdatedAt,
+    required String afterRecipeId,
+    int pageSize = 100,
   });
 
   /// Search recipes by query text.
