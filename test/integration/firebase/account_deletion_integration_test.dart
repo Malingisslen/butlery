@@ -14,6 +14,9 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Production imports
+import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/presence_service.dart';
 
@@ -27,6 +30,15 @@ import '../../infrastructure/mocks/production_mocks.dart';
 class MockUser extends Mock implements User {}
 
 class _MockPresenceService extends Mock implements PresenceService {}
+
+class _MockNotificationsRepository extends Mock
+    implements NotificationsRepository {}
+
+class _MockNotificationHistoryRepository extends Mock
+    implements NotificationHistoryRepository {}
+
+class _MockNotificationBatchRepository extends Mock
+    implements NotificationBatchRepository {}
 
 // Fake classes for fallback values
 class FakeException extends Fake implements Exception {}
@@ -43,6 +55,9 @@ void main() {
     late MockUnifiedRecipeService mockRecipeService;
     late MockOfflineService mockOfflineService;
     late _MockPresenceService mockPresenceService;
+    late _MockNotificationsRepository mockNotificationsRepository;
+    late _MockNotificationHistoryRepository mockNotificationHistoryRepository;
+    late _MockNotificationBatchRepository mockNotificationBatchRepository;
     late MockAnalyticsService mockAnalyticsService;
     late MockUser mockUser;
 
@@ -69,6 +84,17 @@ void main() {
       mockPresenceService = _MockPresenceService();
       when(() => mockPresenceService.deleteUserPresence(any()))
           .thenAnswer((_) async => true);
+      mockNotificationsRepository = _MockNotificationsRepository();
+      when(() => mockNotificationsRepository.deleteAllByUser(any()))
+          .thenAnswer((_) async => 0);
+      when(() => mockNotificationsRepository.deletePreferencesForUser(any()))
+          .thenAnswer((_) async => true);
+      mockNotificationHistoryRepository = _MockNotificationHistoryRepository();
+      when(() => mockNotificationHistoryRepository.deleteAllByUser(any()))
+          .thenAnswer((_) async => 0);
+      mockNotificationBatchRepository = _MockNotificationBatchRepository();
+      when(() => mockNotificationBatchRepository.deleteAllByUser(any()))
+          .thenAnswer((_) async => 0);
       mockAnalyticsService = MockAnalyticsService();
 
       // Setup mock user
@@ -109,6 +135,9 @@ void main() {
         recipeService: mockRecipeService,
         offlineService: mockOfflineService,
         presenceService: mockPresenceService,
+        notificationsRepository: mockNotificationsRepository,
+        notificationHistoryRepository: mockNotificationHistoryRepository,
+        notificationBatchRepository: mockNotificationBatchRepository,
         analyticsService: mockAnalyticsService,
       );
     });

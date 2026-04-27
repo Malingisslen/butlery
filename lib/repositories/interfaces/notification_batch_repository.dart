@@ -14,4 +14,8 @@ abstract class NotificationBatchRepository {
   Future<NotificationBatch?> getBatchByKey(String batchKey);
 
   Future<void> removeBatch(String batchKey);
+
+  /// Delete every `notification_batches` doc owned by [userId]. GDPR Art. 17.
+  /// Returns the number of docs deleted (0 if none).
+  Future<int> deleteAllByUser(String userId);
 }

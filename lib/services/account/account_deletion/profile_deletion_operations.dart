@@ -1,14 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Handles deletion of user profile data (user profile, public profile, preferences, notifications).
 class ProfileDeletionOperations {
   final FirebaseFirestore _firestore;
+  final NotificationsRepository _notificationsRepo;
+  final NotificationHistoryRepository _notificationHistoryRepo;
+  final NotificationBatchRepository _notificationBatchRepo;
   static const String _logTag = 'ProfileDeletionOps';
 
-  ProfileDeletionOperations(this._firestore);
+  ProfileDeletionOperations(
+    this._firestore, {
+    required NotificationsRepository notificationsRepository,
+    required NotificationHistoryRepository notificationHistoryRepository,
+    required NotificationBatchRepository notificationBatchRepository,
+  })  : _notificationsRepo = notificationsRepository,
+        _notificationHistoryRepo = notificationHistoryRepository,
+        _notificationBatchRepo = notificationBatchRepository;
 
   Future<bool> deleteUserProfile(String userId) async {
     try {
@@ -70,15 +83,7 @@ class ProfileDeletionOperations {
 
   Future<bool> deleteNotificationPreferences(String userId) async {
     try {
-      final prefs = await _firestore
-          .collection(FirestoreCollections.userNotificationPreferences)
-          .doc(userId)
-          .get();
-
-      if (prefs.exists) {
-        await prefs.reference.delete();
-      }
-      return true;
+      return await _notificationsRepo.deletePreferencesForUser(userId);
     } catch (e) {
       app_logger.AppLogger.error(
           '[$_logTag] Failed to delete notification preferences', e);
@@ -88,12 +93,7 @@ class ProfileDeletionOperations {
 
   Future<bool> deleteNotifications(String userId) async {
     try {
-      final notifications = await _firestore
-          .collection(FirestoreCollections.userNotifications)
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      await batchDeleteDocs(_firestore, notifications.docs);
+      await _notificationsRepo.deleteAllByUser(userId);
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
@@ -127,22 +127,26 @@ class ProfileDeletionOperations {
   }
 
   /// Delete notification history, batch records, and analytics data.
+  ///
+  /// `notification_history` and `notification_batches` go through their
+  /// repos (single-collection scrub with `validateOwnership`).
+  /// `notification_engagement` and `notification_delivery` stay direct —
+  /// the engagement collection has no repo, and `notification_delivery`
+  /// needs a multi-field query (senderId OR targetUserId) that doesn't
+  /// fit the single-collection-by-userId repo shape.
   Future<bool> deleteNotificationAnalytics(String userId) async {
     try {
-      final userIdCollections = [
-        FirestoreCollections.notificationHistory,
-        FirestoreCollections.notificationBatches,
-        FirestoreCollections.notificationEngagement,
-      ];
-      for (final collection in userIdCollections) {
-        final docs = await _firestore
-            .collection(collection)
-            .where('userId', isEqualTo: userId)
-            .get();
-        await batchDeleteDocs(_firestore, docs.docs);
-      }
+      await _notificationHistoryRepo.deleteAllByUser(userId);
+      await _notificationBatchRepo.deleteAllByUser(userId);
 
-      // notification_delivery uses senderId and targetUserId
+      final engagement = await _firestore
+          .collection(FirestoreCollections.notificationEngagement)
+          .where('userId', isEqualTo: userId)
+          .get();
+      await batchDeleteDocs(_firestore, engagement.docs);
+
+      // notification_delivery uses senderId and targetUserId — multi-field
+      // query that doesn't fit the single-collection-by-userId repo shape.
       for (final field in ['senderId', 'targetUserId']) {
         final docs = await _firestore
             .collection(FirestoreCollections.notificationDelivery)

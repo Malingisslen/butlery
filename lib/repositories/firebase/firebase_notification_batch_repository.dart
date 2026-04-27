@@ -5,6 +5,7 @@ import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Firebase implementation for notification batch aggregation.
 /// Uses `notification_batches` collection.
@@ -127,5 +128,22 @@ class FirebaseNotificationBatchRepository
       AppLogger.error('Failed to remove batch', e);
       rethrow;
     }
+  }
+
+  @override
+  Future<int> deleteAllByUser(String userId) async {
+    // GDPR cascade: caller must be deleting their own data.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection.where('userId', isEqualTo: userId).get();
+    if (snapshot.docs.isEmpty) return 0;
+    await batchDeleteDocs(firestore, snapshot.docs);
+    AppLogger.info(
+        'Deleted ${snapshot.docs.length} notification_batches for user $userId');
+    return snapshot.docs.length;
   }
 }

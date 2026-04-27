@@ -23,4 +23,8 @@ abstract class NotificationHistoryRepository {
     int limit = 20,
     DateTime? before,
   });
+
+  /// Delete every `notification_history` doc owned by [userId]. GDPR Art. 17.
+  /// Returns the number of docs deleted (0 if none).
+  Future<int> deleteAllByUser(String userId);
 }

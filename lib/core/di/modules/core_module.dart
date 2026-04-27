@@ -227,6 +227,11 @@ class CoreModule implements DIModule {
           recipeService: container(), // Will be provided by content module
           offlineService: container(), // Will be provided by content module
           presenceService: container(), // Provided by messaging module
+          notificationsRepository: container(), // Provided by messaging module
+          notificationHistoryRepository:
+              container(), // Provided by messaging module
+          notificationBatchRepository:
+              container(), // Provided by messaging module
           analyticsService: container<AnalyticsService>(),
           searchRepository: container.isRegistered<SearchRepository>()
               ? container<SearchRepository>()

@@ -57,6 +57,16 @@ abstract class NotificationsRepository extends Repository<UserNotification> {
 
   /// Get notification preferences
   Future<NotificationPreferences> getNotificationPreferences(String userId);
+
+  /// Delete every `user_notifications` doc owned by [userId]. GDPR Art. 17.
+  /// Returns the number of docs deleted (0 if none). Caller must be the
+  /// owner; ownership is enforced inside the implementation via
+  /// `validateOwnership`.
+  Future<int> deleteAllByUser(String userId);
+
+  /// Delete the `user_notification_preferences/{userId}` document.
+  /// Idempotent: returns true even if the doc didn't exist.
+  Future<bool> deletePreferencesForUser(String userId);
 }
 
 /// User notification model

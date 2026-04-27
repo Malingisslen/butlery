@@ -5,6 +5,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Firebase implementation for notification dedup and delivery tracking.
 /// Uses `notification_history` collection.
@@ -140,5 +141,22 @@ class FirebaseNotificationHistoryRepository
       AppLogger.error('Failed to fetch notification history', e);
       return [];
     }
+  }
+
+  @override
+  Future<int> deleteAllByUser(String userId) async {
+    // GDPR cascade: caller must be deleting their own data.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection.where('userId', isEqualTo: userId).get();
+    if (snapshot.docs.isEmpty) return 0;
+    await batchDeleteDocs(firestore, snapshot.docs);
+    AppLogger.info(
+        'Deleted ${snapshot.docs.length} notification_history for user $userId');
+    return snapshot.docs.length;
   }
 }
