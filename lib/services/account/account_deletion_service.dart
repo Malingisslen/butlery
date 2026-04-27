@@ -285,9 +285,9 @@ class AccountDeletionService extends BaseService {
   Future<void> _probeResidualData(
       String userId, Map<String, dynamic> result) async {
     const probedCollections = [
-      'recipes',
-      'user_notifications',
-      'user_fcm_tokens',
+      FirestoreCollections.recipes,
+      FirestoreCollections.userNotifications,
+      FirestoreCollections.userFcmTokens,
     ];
 
     var residual = 0;

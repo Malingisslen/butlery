@@ -83,7 +83,7 @@ class StorageDeletionOperations extends BaseStorageRepository {
 
   /// Delete presence document for the user. Delegates to [PresenceService]
   /// which owns the `presence/{uid}` collection — keeps this deletion path
-  /// consistent with how presence is read/written elsewhere (BUT-498).
+  /// consistent with how presence is read/written elsewhere.
   Future<bool> deletePresence(String userId) =>
       _presenceService.deleteUserPresence(userId);
 

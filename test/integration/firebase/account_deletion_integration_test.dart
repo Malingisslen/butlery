@@ -486,19 +486,22 @@ void main() {
         expect(result['failedCollections'], contains('residual_data_detected'));
       });
 
-      test('probe failure on one collection still flags + does not abort',
+      test(
+          'happy path runs even when probe-failure code exists '
+          '(coverage gap: cannot force FakeFirebaseFirestore.count() to throw)',
           () async {
-        // We can't easily make FakeFirebaseFirestore .count() throw, so this
-        // test exercises the no-residual path and asserts the deletion
-        // completed normally. The error-handling branch in _probeResidualData
-        // is exercised in production; pinning that branch via an injected
-        // throwing collection would require splitting _firestore further.
+        // GAP: this test does NOT exercise the probe's try/catch branch.
+        // FakeFirebaseFirestore exposes no hook to make .count() throw, and
+        // _probeResidualData currently uses the service's _firestore field
+        // directly. Pinning the error branch requires either:
+        //   (a) extracting probe to take an injectable counter, or
+        //   (b) wrapping _firestore in a thin seam that supports throw-stubs.
+        // Filed as follow-up; do not infer coverage of the catch block from
+        // this test passing.
         final result = await service.deleteUserAccount(reason: 'no-error');
 
         expect(result['success'], isTrue,
-            reason:
-                'probe wraps each collection in try/catch — never aborts the '
-                'wider deletion, even if a count() query fails');
+            reason: 'no-residual happy path completes normally');
       });
     });
   });

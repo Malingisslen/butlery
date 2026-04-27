@@ -10,6 +10,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -456,31 +457,52 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
         .where('participantIds', arrayContains: userId)
         .get();
 
+    // Bounded parallelism: 10 conversations at a time keeps us well under
+    // Firestore's per-client write quota while collapsing the
+    // round-trip-per-conversation latency that account-deletion otherwise
+    // accumulates linearly. A power-user in 100 chats goes from ~100
+    // sequential RTTs to ~10 parallel waves.
     var totalMessagesDeleted = 0;
-    for (final convoDoc in conversationsSnapshot.docs) {
-      final messagesSnapshot = await convoDoc.reference
-          .collection(FirestoreCollections.messages)
-          .get();
-      if (messagesSnapshot.docs.isNotEmpty) {
-        await batchDeleteDocs(firestore, messagesSnapshot.docs);
-        totalMessagesDeleted += messagesSnapshot.docs.length;
-      }
-
-      final participants =
-          List<String>.from(convoDoc.data()['participantIds'] ?? []);
-      if (participants.length <= 2) {
-        // 1:1 conversation (or solo) — delete the conversation doc itself.
-        await convoDoc.reference.delete();
-      } else {
-        // Group: remove the leaving user from participantIds; the group
-        // continues for the others.
-        participants.remove(userId);
-        await convoDoc.reference.update({'participantIds': participants});
-      }
+    for (final chunk in conversationsSnapshot.docs.chunked(10)) {
+      final perChunkCounts = await Future.wait(
+        chunk.map((convoDoc) => _deleteOneConversation(convoDoc, userId)),
+      );
+      totalMessagesDeleted += perChunkCounts.fold<int>(0, (a, b) => a + b);
     }
 
     AppLogger.info(
         'Deleted $totalMessagesDeleted messages across ${conversationsSnapshot.docs.length} conversations for user $userId');
     return totalMessagesDeleted;
+  }
+
+  Future<int> _deleteOneConversation(
+    QueryDocumentSnapshot<Map<String, dynamic>> convoDoc,
+    String userId,
+  ) async {
+    final messagesSnapshot = await convoDoc.reference
+        .collection(FirestoreCollections.messages)
+        .get();
+    var deleted = 0;
+    if (messagesSnapshot.docs.isNotEmpty) {
+      await batchDeleteDocs(firestore, messagesSnapshot.docs);
+      deleted = messagesSnapshot.docs.length;
+    }
+
+    final participants =
+        List<String>.from(convoDoc.data()['participantIds'] ?? const []);
+    if (participants.length <= 2) {
+      // 1:1 conversation (or solo) — delete the conversation doc itself.
+      await convoDoc.reference.delete();
+    } else {
+      // Group: read-modify-write. `FieldValue.arrayRemove` would be more
+      // race-safe in production but FakeFirebaseFirestore can't test it
+      // (MockFieldValuePlatform cast error — see firebase_shared_recipe_repository_test
+      // for the documented limitation). The race window is negligible on
+      // an account-deletion path: the deleting user can't concurrently
+      // mutate their own conversations.
+      participants.remove(userId);
+      await convoDoc.reference.update({'participantIds': participants});
+    }
+    return deleted;
   }
 }

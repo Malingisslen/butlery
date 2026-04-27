@@ -126,13 +126,9 @@ class ProfileDeletionOperations {
   }
 
   /// Delete notification history, batch records, and analytics data.
-  ///
-  /// `notification_history` and `notification_batches` go through their
-  /// repos (single-collection scrub with `validateOwnership`).
-  /// `notification_engagement` and `notification_delivery` stay direct —
-  /// the engagement collection has no repo, and `notification_delivery`
-  /// needs a multi-field query (senderId OR targetUserId) that doesn't
-  /// fit the single-collection-by-userId repo shape.
+  /// `notification_engagement` and `notification_delivery` stay on direct
+  /// Firestore — the latter needs a multi-field (senderId OR targetUserId)
+  /// query that doesn't fit a single-collection-by-userId repo shape.
   Future<bool> deleteNotificationAnalytics(String userId) async {
     try {
       await _notificationHistoryRepo.deleteAllByUser(userId);
