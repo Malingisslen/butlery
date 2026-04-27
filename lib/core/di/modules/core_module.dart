@@ -232,6 +232,7 @@ class CoreModule implements DIModule {
               container(), // Provided by messaging module
           notificationBatchRepository:
               container(), // Provided by messaging module
+          deviceRepository: container(), // Provided by messaging module
           analyticsService: container<AnalyticsService>(),
           searchRepository: container.isRegistered<SearchRepository>()
               ? container<SearchRepository>()

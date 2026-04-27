@@ -22,4 +22,8 @@ abstract class DeviceRepository {
 
   /// Cleanup old devices for a user
   Future<void> cleanupOldDevices(String userId, DateTime olderThan);
+
+  /// Delete every `user_fcm_tokens` doc owned by [userId]. GDPR Art. 17.
+  /// Returns the number of docs deleted (0 if none).
+  Future<int> deleteAllByUser(String userId);
 }

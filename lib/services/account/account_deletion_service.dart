@@ -14,6 +14,7 @@ import 'package:butlery/services/account/account_deletion/profile_deletion_opera
 import 'package:butlery/services/account/account_deletion/storage_deletion_operations.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
+import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -61,6 +62,7 @@ class AccountDeletionService extends BaseService {
     required NotificationsRepository notificationsRepository,
     required NotificationHistoryRepository notificationHistoryRepository,
     required NotificationBatchRepository notificationBatchRepository,
+    required DeviceRepository deviceRepository,
     AnalyticsService?
         analyticsService, // Optional - may not be available on web
     SearchRepository? searchRepository,
@@ -77,6 +79,7 @@ class AccountDeletionService extends BaseService {
       notificationsRepository: notificationsRepository,
       notificationHistoryRepository: notificationHistoryRepository,
       notificationBatchRepository: notificationBatchRepository,
+      deviceRepository: deviceRepository,
     );
     _storageOps = StorageDeletionOperations(
       firestore: firestore,

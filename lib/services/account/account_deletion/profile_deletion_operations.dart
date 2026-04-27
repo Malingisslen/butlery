@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -12,6 +13,7 @@ class ProfileDeletionOperations {
   final NotificationsRepository _notificationsRepo;
   final NotificationHistoryRepository _notificationHistoryRepo;
   final NotificationBatchRepository _notificationBatchRepo;
+  final DeviceRepository _deviceRepo;
   static const String _logTag = 'ProfileDeletionOps';
 
   ProfileDeletionOperations(
@@ -19,9 +21,11 @@ class ProfileDeletionOperations {
     required NotificationsRepository notificationsRepository,
     required NotificationHistoryRepository notificationHistoryRepository,
     required NotificationBatchRepository notificationBatchRepository,
+    required DeviceRepository deviceRepository,
   })  : _notificationsRepo = notificationsRepository,
         _notificationHistoryRepo = notificationHistoryRepository,
-        _notificationBatchRepo = notificationBatchRepository;
+        _notificationBatchRepo = notificationBatchRepository,
+        _deviceRepo = deviceRepository;
 
   Future<bool> deleteUserProfile(String userId) async {
     try {
@@ -68,12 +72,7 @@ class ProfileDeletionOperations {
 
   Future<bool> deleteFcmTokens(String userId) async {
     try {
-      final tokens = await _firestore
-          .collection(FirestoreCollections.userFcmTokens)
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      await batchDeleteDocs(_firestore, tokens.docs);
+      await _deviceRepo.deleteAllByUser(userId);
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete FCM tokens', e);

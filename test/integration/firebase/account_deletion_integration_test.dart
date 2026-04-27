@@ -14,6 +14,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Production imports
+import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -40,6 +41,8 @@ class _MockNotificationHistoryRepository extends Mock
 class _MockNotificationBatchRepository extends Mock
     implements NotificationBatchRepository {}
 
+class _MockDeviceRepository extends Mock implements DeviceRepository {}
+
 // Fake classes for fallback values
 class FakeException extends Fake implements Exception {}
 
@@ -58,6 +61,7 @@ void main() {
     late _MockNotificationsRepository mockNotificationsRepository;
     late _MockNotificationHistoryRepository mockNotificationHistoryRepository;
     late _MockNotificationBatchRepository mockNotificationBatchRepository;
+    late _MockDeviceRepository mockDeviceRepository;
     late MockAnalyticsService mockAnalyticsService;
     late MockUser mockUser;
 
@@ -94,6 +98,9 @@ void main() {
           .thenAnswer((_) async => 0);
       mockNotificationBatchRepository = _MockNotificationBatchRepository();
       when(() => mockNotificationBatchRepository.deleteAllByUser(any()))
+          .thenAnswer((_) async => 0);
+      mockDeviceRepository = _MockDeviceRepository();
+      when(() => mockDeviceRepository.deleteAllByUser(any()))
           .thenAnswer((_) async => 0);
       mockAnalyticsService = MockAnalyticsService();
 
@@ -138,6 +145,7 @@ void main() {
         notificationsRepository: mockNotificationsRepository,
         notificationHistoryRepository: mockNotificationHistoryRepository,
         notificationBatchRepository: mockNotificationBatchRepository,
+        deviceRepository: mockDeviceRepository,
         analyticsService: mockAnalyticsService,
       );
     });

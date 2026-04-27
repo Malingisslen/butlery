@@ -16,6 +16,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/firebase/firebase_device_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_notification_batch_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_notification_history_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_notifications_repository.dart';
@@ -251,6 +252,68 @@ void main() {
       final remaining =
           await fakeFirestore.collection('notification_batches').get();
       expect(remaining.docs.length, equals(3));
+      expect(
+        remaining.docs.every((d) => d.data()['userId'] == _strangerUid),
+        isTrue,
+      );
+    });
+
+    test('empty path — no docs match, returns 0', () async {
+      final count = await repo.deleteAllByUser(_ownerUid);
+      expect(count, equals(0));
+    });
+
+    test('permission denial — caller != target userId throws', () async {
+      expect(
+        () => repo.deleteAllByUser(_strangerUid),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+    });
+  });
+
+  group('FirebaseDeviceRepository.deleteAllByUser (user_fcm_tokens)', () {
+    late FakeFirebaseFirestore fakeFirestore;
+    late MockAuthRepository mockAuth;
+    late FirebaseDeviceRepository repo;
+
+    setUpAll(() async {
+      await BaseUnitTest.setupUnit();
+    });
+
+    setUp(() {
+      fakeFirestore = FakeFirebaseFirestore();
+      mockAuth = MockAuthRepository();
+      mockAuth.setAuthState(userId: _ownerUid, isAuthenticated: true);
+      repo = FirebaseDeviceRepository(
+        firestore: fakeFirestore,
+        authRepository: mockAuth,
+      );
+    });
+
+    Future<void> seedTokens(String userId, int count) async {
+      for (var i = 0; i < count; i++) {
+        await fakeFirestore
+            .collection('user_fcm_tokens')
+            .doc('${userId}_device-$i')
+            .set({
+          'userId': userId,
+          'docId': '${userId}_device-$i',
+          'token': 'token-$i',
+          'isActive': true,
+        });
+      }
+    }
+
+    test('happy path — owner scrub returns count, leaves others alone',
+        () async {
+      await seedTokens(_ownerUid, 3);
+      await seedTokens(_strangerUid, 2);
+
+      final count = await repo.deleteAllByUser(_ownerUid);
+
+      expect(count, equals(3));
+      final remaining = await fakeFirestore.collection('user_fcm_tokens').get();
+      expect(remaining.docs.length, equals(2));
       expect(
         remaining.docs.every((d) => d.data()['userId'] == _strangerUid),
         isTrue,

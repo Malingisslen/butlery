@@ -1252,8 +1252,16 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
 
       // Can create/update only your own token documents
-      allow write: if isAuthenticated()
+      allow create, update: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid;
+
+      // Can delete only your own token documents (GDPR Art. 17 — needed by
+      // the account-deletion cascade). The previous `allow write` clause
+      // also covered delete in name, but its predicate referenced
+      // `request.resource.data` which is null on delete — silently rejected
+      // every delete. BUT-498.
+      allow delete: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
     }
 
     // ========================================
