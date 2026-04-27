@@ -2,18 +2,22 @@ import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:freerasp/freerasp.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-// TODO(BUT-426): replace with the real Talsec teamId from the freeRASP
-// dashboard (https://docs.talsec.app). Shipping with this placeholder
-// disables iOS bundle/team verification.
+// TODO(BUT-426): replace with the real Apple Developer Team ID once enrolled
+// in the Apple Developer Program. The value is a 10-char alphanumeric string
+// from developer.apple.com → Membership. Until enrollment, iOS bundle/team
+// verification is inactive — that's safe because we don't distribute on
+// iOS yet (no TestFlight, no App Store). The runtime warning at line 41
+// fires only on iOS where the unset teamId would matter.
 const String _kPlaceholderTeamId = 'BUTLERY_TEAM';
 
-// TODO(BUT-426): replace with the real release-keystore SHA-256 fingerprint
-// computed from android/app/upload-keystore.jks. Run:
+// SHA-256 fingerprint of android/app/upload-keystore.jks (alias `upload`),
+// base64-encoded. Computed via:
 //   keytool -list -v -keystore android/app/upload-keystore.jks -alias upload
-// and base64-encode the SHA-256 fingerprint bytes. Current value is a
-// placeholder and Android signing verification will not work until replaced.
-const String _kPlaceholderAndroidCertHash =
-    'AKoRuyLMM91E7lX/Zqp3u4jMmd0A7hH/Iqo/IWQHKIE=';
+// then `xxd -r -p | base64` over the colon-stripped hex. Used by freeRASP
+// to verify at runtime that the running APK was signed by this exact key —
+// repackaged or sideloaded copies fail the check.
+const String _kAndroidUploadCertHash =
+    '1V4sCqD8sS+CuMNYsixjbTUz0FE7FOMULGCvw2n4380=';
 
 /// Service for detecting compromised devices using freeRASP.
 ///
@@ -40,10 +44,9 @@ class DeviceIntegrityService {
 
     if (kReleaseMode && _kPlaceholderTeamId == 'BUTLERY_TEAM') {
       AppLogger.error(
-        'SECURITY: freeRASP shipping with placeholder teamId / cert hash '
-        '(BUT-426). iOS team and Android signing verification are NOT active. '
-        'Replace _kPlaceholderTeamId and _kPlaceholderAndroidCertHash before '
-        'production release.',
+        'SECURITY: freeRASP iOS teamId is a placeholder (BUT-426). iOS team '
+        'verification is NOT active until Apple Developer Program enrollment '
+        'replaces _kPlaceholderTeamId. Android signing verification is active.',
       );
     }
 
@@ -51,13 +54,13 @@ class DeviceIntegrityService {
       final config = TalsecConfig(
         androidConfig: AndroidConfig(
           packageName: 'com.butlery.app',
-          signingCertHashes: [_kPlaceholderAndroidCertHash],
+          signingCertHashes: [_kAndroidUploadCertHash],
         ),
         iosConfig: IOSConfig(
           bundleIds: ['com.butlery.app'],
           teamId: _kPlaceholderTeamId,
         ),
-        watcherMail: 'security@butlery.app',
+        watcherMail: 'malin.gisslen1@gmail.com',
       );
 
       final callback = ThreatCallback(
