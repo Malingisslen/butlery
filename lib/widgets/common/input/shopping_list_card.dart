@@ -46,22 +46,26 @@ class ShoppingListCard extends StatelessWidget {
         color: isSelected
             ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
             : null,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildListHeader(context),
-                const SizedBox(height: AppDimensions.spacingM),
-                _buildListMetadata(context),
-                if (list.itemCount > 0) ...[
+        child: Semantics(
+          label: context.l10n.a11yShoppingList(list.name),
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildListHeader(context),
                   const SizedBox(height: AppDimensions.spacingM),
-                  _buildListPreview(context),
+                  _buildListMetadata(context),
+                  if (list.itemCount > 0) ...[
+                    const SizedBox(height: AppDimensions.spacingM),
+                    _buildListPreview(context),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

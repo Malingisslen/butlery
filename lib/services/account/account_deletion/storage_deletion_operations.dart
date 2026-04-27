@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/repositories/base/base_storage_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -12,16 +13,19 @@ import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 class StorageDeletionOperations extends BaseStorageRepository {
   final FirebaseFirestore _firestore;
   final OfflineService _offlineService;
+  final PresenceService _presenceService;
   static const String _logTag = 'StorageDeletionOps';
 
   StorageDeletionOperations({
     required FirebaseFirestore firestore,
     required OfflineService offlineService,
+    required PresenceService presenceService,
     super.storage,
     required super.authRepository,
     super.auditRepository,
   })  : _firestore = firestore,
-        _offlineService = offlineService;
+        _offlineService = offlineService,
+        _presenceService = presenceService;
 
   /// Delete all Firebase Storage files for a user (GDPR Article 17 - Right to Erasure)
   /// **Security:** No permission validation needed - this is a system-level deletion operation
@@ -88,19 +92,11 @@ class StorageDeletionOperations extends BaseStorageRepository {
   Future<bool> deleteRealtimeRecipes(String userId) =>
       _deleteRealtimeCollection(userId, FirestoreCollections.realtimeRecipes);
 
-  /// Delete presence document for the user
-  Future<bool> deletePresence(String userId) async {
-    try {
-      await _firestore
-          .collection(FirestoreCollections.presence)
-          .doc(userId)
-          .delete();
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete presence', e);
-      return false;
-    }
-  }
+  /// Delete presence document for the user. Delegates to [PresenceService]
+  /// which owns the `presence/{uid}` collection — keeps this deletion path
+  /// consistent with how presence is read/written elsewhere (BUT-498).
+  Future<bool> deletePresence(String userId) =>
+      _presenceService.deleteUserPresence(userId);
 
   /// Clear offline cached data for the user (local storage cleanup)
   /// **Note:** This is local cache (not Firebase Storage), so it doesn't use BaseStorageRepository methods

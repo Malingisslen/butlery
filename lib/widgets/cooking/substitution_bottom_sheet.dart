@@ -141,14 +141,18 @@ class _SuggestionRow extends StatelessWidget {
               color: AppColors.forestGreen,
               // Square — sharp corners everywhere.
               borderRadius: BorderRadius.zero,
-              child: InkWell(
-                onTap: onReplace,
-                child: Center(
-                  child: Text(
-                    context.l10n.replaceInRecipe,
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: AppColors.textOnPrimary,
-                      fontWeight: FontWeight.w700,
+              child: Semantics(
+                label: context.l10n.a11yReplaceWithSubstitute(suggestion.name),
+                button: true,
+                child: InkWell(
+                  onTap: onReplace,
+                  child: Center(
+                    child: Text(
+                      context.l10n.replaceInRecipe,
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: AppColors.textOnPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -245,19 +249,23 @@ class _CancelButton extends StatelessWidget {
       height: AppDimensions.minTouchTarget,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          child: Container(
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              border: Border.fromBorderSide(
-                BorderSide(color: AppColors.greenMuted, width: 1),
+        child: Semantics(
+          label: context.l10n.commonCancel,
+          button: true,
+          child: InkWell(
+            onTap: onPressed,
+            child: Container(
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                border: Border.fromBorderSide(
+                  BorderSide(color: AppColors.greenMuted, width: 1),
+                ),
               ),
-            ),
-            child: Text(
-              context.l10n.commonCancel,
-              style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.forestGreenDark,
+              child: Text(
+                context.l10n.commonCancel,
+                style: AppTextStyles.titleMedium.copyWith(
+                  color: AppColors.forestGreenDark,
+                ),
               ),
             ),
           ),

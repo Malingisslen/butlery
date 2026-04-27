@@ -15,6 +15,7 @@ import 'package:mocktail/mocktail.dart';
 
 // Production imports
 import 'package:butlery/services/account/account_deletion_service.dart';
+import 'package:butlery/services/presence_service.dart';
 
 // Test infrastructure
 import '../../test_support/base_unit_test.dart';
@@ -24,6 +25,8 @@ import '../../infrastructure/mocks/production_mocks.dart';
 
 // Local mocks for Firebase sealed classes
 class MockUser extends Mock implements User {}
+
+class _MockPresenceService extends Mock implements PresenceService {}
 
 // Fake classes for fallback values
 class FakeException extends Fake implements Exception {}
@@ -39,6 +42,7 @@ void main() {
     late MockUserService mockUserService;
     late MockUnifiedRecipeService mockRecipeService;
     late MockOfflineService mockOfflineService;
+    late _MockPresenceService mockPresenceService;
     late MockAnalyticsService mockAnalyticsService;
     late MockUser mockUser;
 
@@ -62,6 +66,9 @@ void main() {
       mockUserService = MockUserService();
       mockRecipeService = MockUnifiedRecipeService();
       mockOfflineService = MockOfflineService();
+      mockPresenceService = _MockPresenceService();
+      when(() => mockPresenceService.deleteUserPresence(any()))
+          .thenAnswer((_) async => true);
       mockAnalyticsService = MockAnalyticsService();
 
       // Setup mock user
@@ -101,6 +108,7 @@ void main() {
         userService: mockUserService,
         recipeService: mockRecipeService,
         offlineService: mockOfflineService,
+        presenceService: mockPresenceService,
         analyticsService: mockAnalyticsService,
       );
     });

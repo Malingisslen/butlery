@@ -1,23 +1,45 @@
-import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
+import 'package:flutter/foundation.dart'
+    show
+        kIsWeb,
+        kReleaseMode,
+        defaultTargetPlatform,
+        TargetPlatform,
+        visibleForTesting;
 import 'package:freerasp/freerasp.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-// TODO(BUT-426): replace with the real Apple Developer Team ID once enrolled
-// in the Apple Developer Program. The value is a 10-char alphanumeric string
-// from developer.apple.com → Membership. Until enrollment, iOS bundle/team
-// verification is inactive — that's safe because we don't distribute on
-// iOS yet (no TestFlight, no App Store). The runtime warning at line 41
-// fires only on iOS where the unset teamId would matter.
+/// freeRASP credentials.
+///
+/// **Android cert hash** is committed: a SHA-256 of the current
+/// `android/app/upload-keystore.jks` (alias `upload`), base64-encoded.
+/// Computed via:
+///   keytool -list -v -keystore android/app/upload-keystore.jks -alias upload
+/// then `xxd -r -p | base64` over the colon-stripped hex. Used by freeRASP
+/// to verify at runtime that the running APK was signed by this exact key —
+/// repackaged or sideloaded copies fail the check. Rotate the constant
+/// (or override via dart-define) if the upload keystore rotates.
+///
+/// **iOS teamId** is a placeholder until Apple Developer Program enrollment
+/// (free Apple ID gives no Team ID). The `assertReleaseConfig` guard treats
+/// this as a hard fail in release builds **only when running on iOS**, so
+/// Android-only releases ship today without enrollment. When iOS shipping
+/// starts, set `--dart-define=FREE_RASP_TEAM_ID=<real>` in the release
+/// pipeline.
+///
+/// Both values can be overridden at build time via `--dart-define` — see
+/// `docs/ops/freerasp-runbook.md`.
 const String _kPlaceholderTeamId = 'BUTLERY_TEAM';
-
-// SHA-256 fingerprint of android/app/upload-keystore.jks (alias `upload`),
-// base64-encoded. Computed via:
-//   keytool -list -v -keystore android/app/upload-keystore.jks -alias upload
-// then `xxd -r -p | base64` over the colon-stripped hex. Used by freeRASP
-// to verify at runtime that the running APK was signed by this exact key —
-// repackaged or sideloaded copies fail the check.
 const String _kAndroidUploadCertHash =
     '1V4sCqD8sS+CuMNYsixjbTUz0FE7FOMULGCvw2n4380=';
+
+const String _kTalsecTeamId = String.fromEnvironment(
+  'FREE_RASP_TEAM_ID',
+  defaultValue: _kPlaceholderTeamId,
+);
+const String _kTalsecAndroidCertHash = String.fromEnvironment(
+  'FREE_RASP_ANDROID_CERT_HASH',
+  defaultValue: _kAndroidUploadCertHash,
+);
 
 /// Service for detecting compromised devices using freeRASP.
 ///
@@ -42,7 +64,7 @@ class DeviceIntegrityService {
       return;
     }
 
-    if (kReleaseMode && _kPlaceholderTeamId == 'BUTLERY_TEAM') {
+    if (kReleaseMode && _kTalsecTeamId == _kPlaceholderTeamId) {
       AppLogger.error(
         'SECURITY: freeRASP iOS teamId is a placeholder (BUT-426). iOS team '
         'verification is NOT active until Apple Developer Program enrollment '
@@ -50,15 +72,22 @@ class DeviceIntegrityService {
       );
     }
 
+    assertReleaseConfig(
+      isReleaseMode: kReleaseMode,
+      runtimePlatform: defaultTargetPlatform,
+      teamId: _kTalsecTeamId,
+      androidCertHash: _kTalsecAndroidCertHash,
+    );
+
     try {
       final config = TalsecConfig(
         androidConfig: AndroidConfig(
           packageName: 'com.butlery.app',
-          signingCertHashes: [_kAndroidUploadCertHash],
+          signingCertHashes: [_kTalsecAndroidCertHash],
         ),
         iosConfig: IOSConfig(
           bundleIds: ['com.butlery.app'],
-          teamId: _kPlaceholderTeamId,
+          teamId: _kTalsecTeamId,
         ),
         watcherMail: 'malin.gisslen1@gmail.com',
       );
@@ -139,6 +168,49 @@ class DeviceIntegrityService {
     _isCompromised = false;
     _isDeveloperMode = false;
     _isInitialized = false;
+  }
+}
+
+/// Throws `StateError` if a release build is shipping with placeholder
+/// freeRASP credentials that matter for the runtime platform.
+///
+/// - Android: a release build crashes if [androidCertHash] equals the
+///   well-known `BUTLERY_ANDROID_PLACEHOLDER_HASH`. The committed default
+///   is the real upload-keystore hash, so this only fires if someone
+///   intentionally restored the placeholder OR the dart-define forces it.
+/// - iOS: a release build crashes if [teamId] equals
+///   [_kPlaceholderTeamId] **and** the runtime platform is iOS.
+///   Android-only releases ship today without Apple Developer Program
+///   enrollment; the iOS guard activates the moment iOS distribution
+///   starts (TestFlight, App Store) and forces the dart-define to land.
+///
+/// Inputs are passed in (rather than read from top-level constants) so
+/// the function is testable from a debug-mode unit test.
+@visibleForTesting
+const String kAndroidPlaceholderCertHash =
+    'AKoRuyLMM91E7lX/Zqp3u4jMmd0A7hH/Iqo/IWQHKIE=';
+
+@visibleForTesting
+void assertReleaseConfig({
+  required bool isReleaseMode,
+  required TargetPlatform runtimePlatform,
+  required String teamId,
+  required String androidCertHash,
+}) {
+  if (!isReleaseMode) return;
+  if (androidCertHash == kAndroidPlaceholderCertHash) {
+    throw StateError(
+      'BUT-426: FREE_RASP_ANDROID_CERT_HASH is the well-known placeholder. '
+      'See docs/ops/freerasp-runbook.md.',
+    );
+  }
+  if (runtimePlatform == TargetPlatform.iOS && teamId == _kPlaceholderTeamId) {
+    throw StateError(
+      'BUT-426: FREE_RASP_TEAM_ID dart-define missing in iOS release '
+      'build. Apple Developer Program enrollment + the dart-define are '
+      'required before shipping to TestFlight / App Store. See '
+      'docs/ops/freerasp-runbook.md.',
+    );
   }
 }
 

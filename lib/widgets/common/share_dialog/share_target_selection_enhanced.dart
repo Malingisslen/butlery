@@ -145,41 +145,46 @@ class ShareTargetSelectionEnhanced {
   ) {
     final isSelected = selectedTab == type;
 
-    return GestureDetector(
-      onTap: () => onTabChanged(type),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.paddingM,
-          horizontal: AppDimensions.paddingL,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: AppDimensions.iconSizeM,
-              color: isSelected
-                  ? Theme.of(context).colorScheme.onPrimary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              label,
-              style: isSelected
-                  ? AppTextStyles.bodyBold.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    )
-                  : AppTextStyles.contentLabel.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-            ),
-          ],
+    return Semantics(
+      label: context.l10n.a11yShareTabSwitch(label),
+      button: true,
+      selected: isSelected,
+      child: GestureDetector(
+        onTap: () => onTabChanged(type),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppDimensions.paddingM,
+            horizontal: AppDimensions.paddingL,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: AppDimensions.iconSizeM,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                label,
+                style: isSelected
+                    ? AppTextStyles.bodyBold.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      )
+                    : AppTextStyles.contentLabel.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

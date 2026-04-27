@@ -33,6 +33,14 @@ void main() {
       String allOptionLabel = 'Alla',
     }) {
       return MaterialApp(
+        locale: const Locale('sv'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: Scaffold(
           body: QuickFilterChips(
             options: options ?? defaultOptions,

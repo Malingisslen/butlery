@@ -174,45 +174,53 @@ class _QuickChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
-        child: AnimatedContainer(
-          duration: AnimationUtils.getDuration(
-              context, AppDimensions.animationDurationFast),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
-          ),
-          decoration: BoxDecoration(
-            color: isSelected ? cs.primary : cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
-            border: Border.all(
-              color: isSelected ? cs.primary : cs.outlineVariant,
-              width: 1.5,
+      child: Semantics(
+        label: isSelected
+            ? context.l10n.a11yQuickFilterSelected(label)
+            : context.l10n.a11yQuickFilter(label),
+        button: true,
+        selected: isSelected,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+          child: AnimatedContainer(
+            duration: AnimationUtils.getDuration(
+                context, AppDimensions.animationDurationFast),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm,
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: AppDimensions.iconSizeS,
-                  color: isSelected
-                      ? cs.surfaceContainerHighest
-                      : cs.onSurfaceVariant,
-                ),
-                const SizedBox(width: AppDimensions.spacingXs),
-              ],
-              Text(
-                label,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: isSelected ? cs.surfaceContainerHighest : cs.onSurface,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
+            decoration: BoxDecoration(
+              color: isSelected ? cs.primary : cs.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+              border: Border.all(
+                color: isSelected ? cs.primary : cs.outlineVariant,
+                width: 1.5,
               ),
-            ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    size: AppDimensions.iconSizeS,
+                    color: isSelected
+                        ? cs.surfaceContainerHighest
+                        : cs.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingXs),
+                ],
+                Text(
+                  label,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color:
+                        isSelected ? cs.surfaceContainerHighest : cs.onSurface,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

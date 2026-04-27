@@ -22599,6 +22599,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kommentarer'**
   String get a11yHeadingComments;
+
+  /// Semantics label for an ingredient suggestion row in the autocomplete list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till {name}'**
+  String a11yAddIngredient(String name);
+
+  /// Semantics label for an unselected quick-filter chip on a list view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Filtrera på {label}'**
+  String a11yQuickFilter(String label);
+
+  /// Semantics label for a selected quick-filter chip on a list view.
+  ///
+  /// In sv, this message translates to:
+  /// **'{label}, valt filter'**
+  String a11yQuickFilterSelected(String label);
+
+  /// Semantics label for the tap surface over the heirloom scan image on recipe detail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna originalskanning i fullskärm'**
+  String get a11yHeirloomScanOpenFullscreen;
+
+  /// Semantics label for the replace-with-substitute action in the cooking-mode substitution sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Byt ut mot {name} i receptet'**
+  String a11yReplaceWithSubstitute(String name);
+
+  /// Semantics label for the friends/groups tab buttons in the share-target picker.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa {label}'**
+  String a11yShareTabSwitch(String label);
 }
 
 class _AppLocalizationsDelegate

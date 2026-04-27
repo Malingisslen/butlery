@@ -9219,5 +9219,54 @@
   "a11yHeadingComments": "Comments",
   "@a11yHeadingComments": {
     "description": "Heading marker label for the comments section on recipe detail."
+  },
+  "a11yAddIngredient": "Add {name}",
+  "@a11yAddIngredient": {
+    "description": "Semantics label for an ingredient suggestion row in the autocomplete list.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yQuickFilter": "Filter by {label}",
+  "@a11yQuickFilter": {
+    "description": "Semantics label for an unselected quick-filter chip on a list view.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yQuickFilterSelected": "{label}, selected filter",
+  "@a11yQuickFilterSelected": {
+    "description": "Semantics label for a selected quick-filter chip on a list view.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yHeirloomScanOpenFullscreen": "Open original scan in fullscreen",
+  "@a11yHeirloomScanOpenFullscreen": {
+    "description": "Semantics label for the tap surface over the heirloom scan image on recipe detail."
+  },
+  "a11yReplaceWithSubstitute": "Replace with {name} in recipe",
+  "@a11yReplaceWithSubstitute": {
+    "description": "Semantics label for the replace-with-substitute action in the cooking-mode substitution sheet.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yShareTabSwitch": "Show {label}",
+  "@a11yShareTabSwitch": {
+    "description": "Semantics label for the friends/groups tab buttons in the share-target picker.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
   }
 }

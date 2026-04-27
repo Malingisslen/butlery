@@ -399,4 +399,21 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     return Rx.combineLatestList(streams)
         .map((lists) => lists.expand((l) => l).toList());
   }
+
+  /// Delete the user's `presence/{uid}` document. Called from the
+  /// account-deletion path (BUT-498 / GDPR Art. 17). Swallows and logs
+  /// errors so a transient failure here doesn't abort the wider deletion
+  /// pipeline — the deletion-service caller records the per-step outcome.
+  Future<bool> deleteUserPresence(String userId) async {
+    try {
+      await _firestore
+          .collection(FirestoreCollections.presence)
+          .doc(userId)
+          .delete();
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to delete presence for $userId', e);
+      return false;
+    }
+  }
 }

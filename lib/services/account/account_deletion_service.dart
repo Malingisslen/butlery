@@ -6,6 +6,7 @@ import 'package:butlery/services/notifications/notification_service.dart'
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/account/account_deletion/content_deletion_operations.dart';
 import 'package:butlery/services/account/account_deletion/social_deletion_operations.dart';
@@ -53,6 +54,7 @@ class AccountDeletionService extends BaseService {
     required user_svc.UserService userService,
     required UnifiedRecipeService recipeService,
     required OfflineService offlineService,
+    required PresenceService presenceService,
     AnalyticsService?
         analyticsService, // Optional - may not be available on web
     SearchRepository? searchRepository,
@@ -68,6 +70,7 @@ class AccountDeletionService extends BaseService {
     _storageOps = StorageDeletionOperations(
       firestore: firestore,
       offlineService: offlineService,
+      presenceService: presenceService,
       authRepository: authRepository,
       // Note: audit repository could be injected here for GDPR Article 30 compliance
     );

@@ -13237,4 +13237,33 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yHeadingComments => 'Kommentarer';
+
+  @override
+  String a11yAddIngredient(String name) {
+    return 'Lägg till $name';
+  }
+
+  @override
+  String a11yQuickFilter(String label) {
+    return 'Filtrera på $label';
+  }
+
+  @override
+  String a11yQuickFilterSelected(String label) {
+    return '$label, valt filter';
+  }
+
+  @override
+  String get a11yHeirloomScanOpenFullscreen =>
+      'Öppna originalskanning i fullskärm';
+
+  @override
+  String a11yReplaceWithSubstitute(String name) {
+    return 'Byt ut mot $name i receptet';
+  }
+
+  @override
+  String a11yShareTabSwitch(String label) {
+    return 'Visa $label';
+  }
 }

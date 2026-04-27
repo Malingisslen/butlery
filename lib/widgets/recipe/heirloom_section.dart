@@ -10,6 +10,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -67,8 +68,12 @@ class HeirloomSection extends StatelessWidget {
             Positioned.fill(
               child: Material(
                 color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _openFullscreen(context, imageUrl),
+                child: Semantics(
+                  label: context.l10n.a11yHeirloomScanOpenFullscreen,
+                  button: true,
+                  child: InkWell(
+                    onTap: () => _openFullscreen(context, imageUrl),
+                  ),
                 ),
               ),
             ),

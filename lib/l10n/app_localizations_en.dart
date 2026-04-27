@@ -13207,4 +13207,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yHeadingComments => 'Comments';
+
+  @override
+  String a11yAddIngredient(String name) {
+    return 'Add $name';
+  }
+
+  @override
+  String a11yQuickFilter(String label) {
+    return 'Filter by $label';
+  }
+
+  @override
+  String a11yQuickFilterSelected(String label) {
+    return '$label, selected filter';
+  }
+
+  @override
+  String get a11yHeirloomScanOpenFullscreen =>
+      'Open original scan in fullscreen';
+
+  @override
+  String a11yReplaceWithSubstitute(String name) {
+    return 'Replace with $name in recipe';
+  }
+
+  @override
+  String a11yShareTabSwitch(String label) {
+    return 'Show $label';
+  }
 }

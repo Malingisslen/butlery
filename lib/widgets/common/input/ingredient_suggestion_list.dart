@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -31,17 +32,21 @@ class IngredientSuggestionList extends StatelessWidget {
         itemCount: results.length,
         itemBuilder: (context, index) {
           final ingredient = results[index];
-          return InkWell(
-            key: ValueKey(ingredient.id),
-            onTap: () => onTap(ingredient),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm,
-              ),
-              child: Text(
-                ingredient.swedish,
-                style: AppTextStyles.bodyMedium,
+          return Semantics(
+            label: context.l10n.a11yAddIngredient(ingredient.swedish),
+            button: true,
+            child: InkWell(
+              key: ValueKey(ingredient.id),
+              onTap: () => onTap(ingredient),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingMd,
+                  vertical: AppDimensions.spacingSm,
+                ),
+                child: Text(
+                  ingredient.swedish,
+                  style: AppTextStyles.bodyMedium,
+                ),
               ),
             ),
           );
