@@ -213,6 +213,12 @@ class AccountDeletionService extends BaseService {
         );
       }
 
+      // GDPR canary: re-query the highest-risk collections AFTER the cascade.
+      // Any non-zero count means a deletion path silently dropped data.
+      // Surfaces both regressions in this migration AND any future bug that
+      // adds a userId-keyed collection without wiring it into the cascade.
+      await _probeResidualData(userId, result);
+
       // Audit log AFTER auth deletion succeeds — no lying audit on failure
       if (createAuditLog) {
         result['auditLogId'] = await _createDeletionAuditLog(
@@ -262,6 +268,56 @@ class AccountDeletionService extends BaseService {
       }
 
       return result;
+    }
+  }
+
+  /// GDPR canary — fires `.count()` queries against the highest-risk
+  /// collections after the cascade completes. Any non-zero count means
+  /// a deletion path silently dropped data. Appends
+  /// `'residual_data_detected'` to `failedCollections` so the audit log
+  /// records `gdprCompliant: false`. Errors are logged but never abort
+  /// the wider deletion (the probe is the safety net, not the cascade).
+  ///
+  /// The collections probed are the ones a regression here would be
+  /// most painful for: long-term content (`recipes`), unbounded notification
+  /// streams, and the rotating-secret token cluster. Adding a new high-risk
+  /// collection? Add it here too.
+  Future<void> _probeResidualData(
+      String userId, Map<String, dynamic> result) async {
+    const probedCollections = [
+      'recipes',
+      'user_notifications',
+      'user_fcm_tokens',
+    ];
+
+    var residual = 0;
+    for (final col in probedCollections) {
+      try {
+        final snapshot = await _firestore
+            .collection(col)
+            .where('userId', isEqualTo: userId)
+            .count()
+            .get();
+        final count = snapshot.count ?? 0;
+        if (count > 0) {
+          residual += count;
+          app_logger.AppLogger.warning(
+            '[$_logTag] Residual data in $col after deletion: $count docs',
+          );
+        }
+      } catch (e) {
+        // Probe failure is itself suspicious — record it but don't abort.
+        residual += 1;
+        app_logger.AppLogger.error(
+          '[$_logTag] Residual probe failed for $col',
+          e,
+        );
+      }
+    }
+
+    if (residual > 0 &&
+        !result['failedCollections'].contains('residual_data_detected')) {
+      result['failedCollections'].add('residual_data_detected');
     }
   }
 
