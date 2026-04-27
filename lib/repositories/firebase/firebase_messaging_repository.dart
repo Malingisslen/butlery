@@ -10,6 +10,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -419,5 +420,67 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   void dispose() {
     stopAllAutoHealers();
     AppLogger.debug('FirebaseMessagingRepository disposed');
+  }
+
+  /// Cascade-delete [userId]'s message participation. GDPR Art. 17.
+  ///
+  /// For each conversation [userId] participates in:
+  /// - All messages in the conversation's `messages` subcollection are
+  ///   deleted (irrespective of sender — the user's read receipts and
+  ///   conversation context are also their data).
+  /// - 1:1 conversations (≤2 participants) are deleted entirely.
+  /// - Group conversations (>2 participants) have [userId] removed from
+  ///   `participantIds` so the remaining group continues. The user
+  ///   "leaves" without nuking the others' chat history.
+  ///
+  /// More involved than other repos' `deleteAllByUser` because messages
+  /// live in subcollections under each conversation, and ownership is on
+  /// the conversation's `participantIds` array — not a flat field on the
+  /// message doc.
+  ///
+  /// Returns the total number of message docs deleted (conversation docs
+  /// and participant-list updates are NOT counted in the return value —
+  /// matches the prior `social_deletion_operations.deleteMessages`
+  /// behaviour this replaces).
+  @override
+  Future<int> deleteAllMessagesForUser(String userId) async {
+    // GDPR cascade: caller must be deleting their own data.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: FirestoreCollections.conversations,
+    );
+
+    final conversationsSnapshot = await firestore
+        .collection(FirestoreCollections.conversations)
+        .where('participantIds', arrayContains: userId)
+        .get();
+
+    var totalMessagesDeleted = 0;
+    for (final convoDoc in conversationsSnapshot.docs) {
+      final messagesSnapshot = await convoDoc.reference
+          .collection(FirestoreCollections.messages)
+          .get();
+      if (messagesSnapshot.docs.isNotEmpty) {
+        await batchDeleteDocs(firestore, messagesSnapshot.docs);
+        totalMessagesDeleted += messagesSnapshot.docs.length;
+      }
+
+      final participants =
+          List<String>.from(convoDoc.data()['participantIds'] ?? []);
+      if (participants.length <= 2) {
+        // 1:1 conversation (or solo) — delete the conversation doc itself.
+        await convoDoc.reference.delete();
+      } else {
+        // Group: remove the leaving user from participantIds; the group
+        // continues for the others.
+        participants.remove(userId);
+        await convoDoc.reference.update({'participantIds': participants});
+      }
+    }
+
+    AppLogger.info(
+        'Deleted $totalMessagesDeleted messages across ${conversationsSnapshot.docs.length} conversations for user $userId');
+    return totalMessagesDeleted;
   }
 }

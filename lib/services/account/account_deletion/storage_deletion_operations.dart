@@ -1,31 +1,29 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/repositories/base/base_storage_repository.dart';
-import 'package:butlery/core/constants/firestore_collections.dart';
-import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Handles deletion of storage and cached data (Firebase Storage, realtime recipes, offline cache).
 /// **Architecture:** Extends BaseStorageRepository for proper repository pattern and GDPR compliance
 /// **Security:** Uses BaseStorageRepository security validation and audit logging
 /// **GDPR:** Article 17 - Right to Erasure (comprehensive user data deletion)
 class StorageDeletionOperations extends BaseStorageRepository {
-  final FirebaseFirestore _firestore;
   final OfflineService _offlineService;
   final PresenceService _presenceService;
+  final CollaborativeRecipeRepository _collaborativeRecipeRepo;
   static const String _logTag = 'StorageDeletionOps';
 
   StorageDeletionOperations({
-    required FirebaseFirestore firestore,
     required OfflineService offlineService,
     required PresenceService presenceService,
+    required CollaborativeRecipeRepository collaborativeRecipeRepository,
     super.storage,
     required super.authRepository,
     super.auditRepository,
-  })  : _firestore = firestore,
-        _offlineService = offlineService,
-        _presenceService = presenceService;
+  })  : _offlineService = offlineService,
+        _presenceService = presenceService,
+        _collaborativeRecipeRepo = collaborativeRecipeRepository;
 
   /// Delete all Firebase Storage files for a user (GDPR Article 17 - Right to Erasure)
   /// **Security:** No permission validation needed - this is a system-level deletion operation
@@ -72,25 +70,16 @@ class StorageDeletionOperations extends BaseStorageRepository {
     }
   }
 
-  /// Delete all realtime documents owned by the user for a given collection.
-  Future<bool> _deleteRealtimeCollection(
-      String userId, String collection) async {
+  Future<bool> deleteRealtimeRecipes(String userId) async {
     try {
-      final docs = await _firestore
-          .collection(collection)
-          .where('ownerId', isEqualTo: userId)
-          .get();
-
-      await batchDeleteDocs(_firestore, docs.docs);
+      await _collaborativeRecipeRepo.deleteAllByUser(userId);
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete $collection', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete realtime_recipes', e);
       return false;
     }
   }
-
-  Future<bool> deleteRealtimeRecipes(String userId) =>
-      _deleteRealtimeCollection(userId, FirestoreCollections.realtimeRecipes);
 
   /// Delete presence document for the user. Delegates to [PresenceService]
   /// which owns the `presence/{uid}` collection — keeps this deletion path

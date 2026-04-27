@@ -14,8 +14,10 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Production imports
+import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
+import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -50,6 +52,11 @@ class _MockUserRepository extends Mock implements UserRepository {}
 class _MockConsentRepository extends Mock
     implements FirebaseConsentRepository {}
 
+class _MockMessagingRepository extends Mock implements MessagingRepository {}
+
+class _MockCollaborativeRecipeRepository extends Mock
+    implements CollaborativeRecipeRepository {}
+
 // Fake classes for fallback values
 class FakeException extends Fake implements Exception {}
 
@@ -71,6 +78,8 @@ void main() {
     late _MockDeviceRepository mockDeviceRepository;
     late _MockUserRepository mockUserRepository;
     late _MockConsentRepository mockConsentRepository;
+    late _MockMessagingRepository mockMessagingRepository;
+    late _MockCollaborativeRecipeRepository mockCollaborativeRecipeRepository;
     late MockAnalyticsService mockAnalyticsService;
     late MockUser mockUser;
 
@@ -130,6 +139,12 @@ void main() {
       mockConsentRepository = _MockConsentRepository();
       when(() => mockConsentRepository.deleteConsent(any()))
           .thenAnswer((_) async => true);
+      mockMessagingRepository = _MockMessagingRepository();
+      when(() => mockMessagingRepository.deleteAllMessagesForUser(any()))
+          .thenAnswer((_) async => 0);
+      mockCollaborativeRecipeRepository = _MockCollaborativeRecipeRepository();
+      when(() => mockCollaborativeRecipeRepository.deleteAllByUser(any()))
+          .thenAnswer((_) async => 0);
       mockAnalyticsService = MockAnalyticsService();
 
       // Setup mock user
@@ -176,6 +191,8 @@ void main() {
         deviceRepository: mockDeviceRepository,
         userRepository: mockUserRepository,
         consentRepository: mockConsentRepository,
+        messagingRepository: mockMessagingRepository,
+        collaborativeRecipeRepository: mockCollaborativeRecipeRepository,
         analyticsService: mockAnalyticsService,
       );
     });

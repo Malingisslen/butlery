@@ -2,16 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Handles deletion of social data (friends, messages, shared content, comments/ratings).
 class SocialDeletionOperations {
   final FirebaseFirestore _firestore;
+  final MessagingRepository _messagingRepo;
   static const String _logTag = 'SocialDeletionOps';
   static const int _batchLimit =
       450; // Safety margin under Firestore's 500-op limit
 
-  SocialDeletionOperations(this._firestore);
+  SocialDeletionOperations(
+    this._firestore, {
+    required MessagingRepository messagingRepository,
+  }) : _messagingRepo = messagingRepository;
 
   /// Delete all docs in a collection owned by userId, draining member subcollections first.
   Future<void> _deleteOwnedSharedContent(
@@ -108,41 +113,7 @@ class SocialDeletionOperations {
 
   Future<bool> deleteMessages(String userId) async {
     try {
-      final conversationsSnapshot = await _firestore
-          .collection(FirestoreCollections.conversations)
-          .where('participantIds', arrayContains: userId)
-          .get();
-
-      var batch = _firestore.batch();
-      var opCount = 0;
-
-      for (final doc in conversationsSnapshot.docs) {
-        final messagesSnapshot =
-            await doc.reference.collection(FirestoreCollections.messages).get();
-
-        for (final msgDoc in messagesSnapshot.docs) {
-          batch.delete(msgDoc.reference);
-          opCount++;
-          final state = await _commitIfNeeded(batch, opCount);
-          batch = state.batch;
-          opCount = state.count;
-        }
-
-        final participants =
-            List<String>.from(doc.data()['participantIds'] ?? []);
-        if (participants.length <= 2) {
-          batch.delete(doc.reference);
-        } else {
-          participants.remove(userId);
-          batch.update(doc.reference, {'participantIds': participants});
-        }
-        opCount++;
-        final state = await _commitIfNeeded(batch, opCount);
-        batch = state.batch;
-        opCount = state.count;
-      }
-
-      if (opCount > 0) await batch.commit();
+      await _messagingRepo.deleteAllMessagesForUser(userId);
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete messages', e);

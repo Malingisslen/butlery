@@ -1,11 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/services/account/account_deletion/social_deletion_operations.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
+class _MockMessagingRepository extends Mock implements MessagingRepository {}
+
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
+  late _MockMessagingRepository mockMessagingRepo;
   late SocialDeletionOperations operations;
 
   const testUserId = 'deleted-user';
@@ -13,7 +18,13 @@ void main() {
 
   setUp(() {
     fakeFirestore = FakeFirebaseFirestore();
-    operations = SocialDeletionOperations(fakeFirestore);
+    mockMessagingRepo = _MockMessagingRepository();
+    when(() => mockMessagingRepo.deleteAllMessagesForUser(any()))
+        .thenAnswer((_) async => 0);
+    operations = SocialDeletionOperations(
+      fakeFirestore,
+      messagingRepository: mockMessagingRepo,
+    );
   });
 
   group('removeFriendConnections', () {

@@ -37,6 +37,7 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Firebase implementation for real-time collaborative recipe editing with comprehensive presence management.
 /// This repository provides complete real-time collaboration functionality using Firebase Firestore
@@ -416,5 +417,27 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     }
 
     await batch.commit();
+  }
+
+  /// Delete every realtime_recipe owned by [userId]. GDPR Art. 17.
+  /// `realtime_recipes` uses `ownerId` (not `userId`) for ownership —
+  /// matches the rule's `allow delete` predicate.
+  /// Returns the number of docs deleted (0 if none).
+  Future<int> deleteAllByUser(String userId) async {
+    await validateOwnership(
+      currentUserId: _requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: FirestoreCollections.realtimeRecipes,
+    );
+
+    final snapshot = await _firestore
+        .collection(FirestoreCollections.realtimeRecipes)
+        .where('ownerId', isEqualTo: userId)
+        .get();
+    if (snapshot.docs.isEmpty) return 0;
+    await batchDeleteDocs(_firestore, snapshot.docs);
+    AppLogger.info(
+        'Deleted ${snapshot.docs.length} realtime_recipes for user $userId');
+    return snapshot.docs.length;
   }
 }

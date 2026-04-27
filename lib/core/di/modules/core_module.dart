@@ -235,6 +235,9 @@ class CoreModule implements DIModule {
           deviceRepository: container(), // Provided by messaging module
           userRepository: container(), // Provided by social module
           consentRepository: container<FirebaseConsentRepository>(),
+          messagingRepository: container(), // Provided by messaging module
+          collaborativeRecipeRepository:
+              container(), // Provided by content module
           analyticsService: container<AnalyticsService>(),
           searchRepository: container.isRegistered<SearchRepository>()
               ? container<SearchRepository>()

@@ -201,4 +201,9 @@ abstract class MessagingRepository {
     required String userId,
     required Map<String, dynamic> settings,
   });
+
+  /// Delete every message in conversations [userId] participates in, and
+  /// remove conversations with ≤2 participants entirely. GDPR Art. 17.
+  /// Returns the total messages deleted.
+  Future<int> deleteAllMessagesForUser(String userId);
 }
