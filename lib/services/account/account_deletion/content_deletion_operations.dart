@@ -6,7 +6,7 @@ import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
-import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
+import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// GDPR Article 17 cascade for user-owned content (recipes, menus, shopping
 /// lists, cook snaps, activity events, weekly menus, pantry, personal tags).

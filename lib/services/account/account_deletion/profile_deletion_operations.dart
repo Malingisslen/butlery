@@ -7,7 +7,7 @@ import 'package:butlery/repositories/interfaces/notification_batch_repository.da
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
-import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
+import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// Handles deletion of user profile data (user profile, public profile, preferences, notifications).
 class ProfileDeletionOperations {

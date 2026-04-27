@@ -3,7 +3,7 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
+import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// Handles deletion of social data (friends, messages, shared content, comments/ratings).
 class SocialDeletionOperations {

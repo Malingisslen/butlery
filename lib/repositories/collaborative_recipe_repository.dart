@@ -37,7 +37,7 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
-import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
+import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// Firebase implementation for real-time collaborative recipe editing with comprehensive presence management.
 /// This repository provides complete real-time collaboration functionality using Firebase Firestore

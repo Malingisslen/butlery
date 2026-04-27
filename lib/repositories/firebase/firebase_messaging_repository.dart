@@ -11,7 +11,7 @@ import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
-import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
+import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 

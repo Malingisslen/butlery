@@ -5,7 +5,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
-import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
+import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// Firebase implementation of [GroupWeeklyMenuPlanRepository].
 ///
