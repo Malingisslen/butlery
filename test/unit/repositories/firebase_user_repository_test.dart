@@ -613,6 +613,97 @@ void main() {
         expect(firestoreData['friendsCount'], equals(profile.friendsCount));
       });
     });
+
+    group('GDPR cascade (BUT-498)', () {
+      test('deletePublicProfile removes the public_profiles/{uid} doc',
+          () async {
+        await _seedUserProfile(fakeFirestore, 'user-123', {
+          'displayName': 'Test',
+          'email': 'test@example.com',
+        });
+        // Sanity: doc exists.
+        final before = await fakeFirestore
+            .collection('public_profiles')
+            .doc('user-123')
+            .get();
+        expect(before.exists, isTrue);
+
+        final ok = await repository.deletePublicProfile('user-123');
+
+        expect(ok, isTrue);
+        final after = await fakeFirestore
+            .collection('public_profiles')
+            .doc('user-123')
+            .get();
+        expect(after.exists, isFalse);
+      });
+
+      test(
+          'deleteUserRootDoc targets the users/ collection (not public_profiles)',
+          () async {
+        // Seed BOTH collections to prove the method picks the right one.
+        await fakeFirestore
+            .collection('users')
+            .doc('user-123')
+            .set({'baseDoc': true});
+        await _seedUserProfile(fakeFirestore, 'user-123', {
+          'displayName': 'Test',
+          'email': 'test@example.com',
+        });
+
+        final ok = await repository.deleteUserRootDoc('user-123');
+
+        expect(ok, isTrue);
+        final usersDoc =
+            await fakeFirestore.collection('users').doc('user-123').get();
+        expect(usersDoc.exists, isFalse,
+            reason: 'users/{uid} root doc should be gone');
+        final publicProfileDoc = await fakeFirestore
+            .collection('public_profiles')
+            .doc('user-123')
+            .get();
+        expect(publicProfileDoc.exists, isTrue,
+            reason: 'public_profiles must NOT be touched by deleteUserRootDoc');
+      });
+
+      test('deletePublicProfile rejects non-owner caller', () async {
+        await _seedUserProfile(fakeFirestore, 'stranger-uid', {
+          'displayName': 'Stranger',
+          'email': 'stranger@example.com',
+        });
+
+        await expectLater(
+          repository.deletePublicProfile('stranger-uid'),
+          throwsA(isA<Exception>()),
+          reason:
+              'validateOwnership should throw PermissionDeniedException when '
+              'caller != target userId',
+        );
+
+        // Stranger doc untouched.
+        final after = await fakeFirestore
+            .collection('public_profiles')
+            .doc('stranger-uid')
+            .get();
+        expect(after.exists, isTrue);
+      });
+
+      test('deleteUserRootDoc rejects non-owner caller', () async {
+        await fakeFirestore
+            .collection('users')
+            .doc('stranger-uid')
+            .set({'baseDoc': true});
+
+        await expectLater(
+          repository.deleteUserRootDoc('stranger-uid'),
+          throwsA(isA<Exception>()),
+        );
+
+        final after =
+            await fakeFirestore.collection('users').doc('stranger-uid').get();
+        expect(after.exists, isTrue);
+      });
+    });
   });
 }
 

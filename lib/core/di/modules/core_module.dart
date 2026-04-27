@@ -233,6 +233,8 @@ class CoreModule implements DIModule {
           notificationBatchRepository:
               container(), // Provided by messaging module
           deviceRepository: container(), // Provided by messaging module
+          userRepository: container(), // Provided by social module
+          consentRepository: container<FirebaseConsentRepository>(),
           analyticsService: container<AnalyticsService>(),
           searchRepository: container.isRegistered<SearchRepository>()
               ? container<SearchRepository>()

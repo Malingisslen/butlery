@@ -578,4 +578,33 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       granted: true,
     );
   }
+
+  @override
+  Future<bool> deletePublicProfile(String userId) async {
+    // GDPR cascade: caller must own this profile.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+    // `collection` points at `public_profiles` (per `collectionName` above).
+    await collection.doc(userId).delete();
+    AppLogger.info('Deleted public_profiles/$userId');
+    return true;
+  }
+
+  @override
+  Future<bool> deleteUserRootDoc(String userId) async {
+    // GDPR cascade: caller must own this user document.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: FirestoreCollections.users,
+    );
+    // The `collection` getter points at `public_profiles` (collectionName).
+    // Root user doc lives in `users/{userId}` — explicit reference here.
+    await firestore.collection(FirestoreCollections.users).doc(userId).delete();
+    AppLogger.info('Deleted users/$userId');
+    return true;
+  }
 }

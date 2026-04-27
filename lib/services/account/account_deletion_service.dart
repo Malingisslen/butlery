@@ -12,6 +12,7 @@ import 'package:butlery/services/account/account_deletion/content_deletion_opera
 import 'package:butlery/services/account/account_deletion/social_deletion_operations.dart';
 import 'package:butlery/services/account/account_deletion/profile_deletion_operations.dart';
 import 'package:butlery/services/account/account_deletion/storage_deletion_operations.dart';
+import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/repositories/interfaces/device_repository.dart';
@@ -19,6 +20,7 @@ import 'package:butlery/repositories/interfaces/notification_batch_repository.da
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -63,6 +65,8 @@ class AccountDeletionService extends BaseService {
     required NotificationHistoryRepository notificationHistoryRepository,
     required NotificationBatchRepository notificationBatchRepository,
     required DeviceRepository deviceRepository,
+    required UserRepository userRepository,
+    required FirebaseConsentRepository consentRepository,
     AnalyticsService?
         analyticsService, // Optional - may not be available on web
     SearchRepository? searchRepository,
@@ -80,6 +84,8 @@ class AccountDeletionService extends BaseService {
       notificationHistoryRepository: notificationHistoryRepository,
       notificationBatchRepository: notificationBatchRepository,
       deviceRepository: deviceRepository,
+      userRepository: userRepository,
+      consentRepository: consentRepository,
     );
     _storageOps = StorageDeletionOperations(
       firestore: firestore,

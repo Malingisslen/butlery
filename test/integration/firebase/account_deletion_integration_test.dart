@@ -14,10 +14,12 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Production imports
+import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/presence_service.dart';
 
@@ -43,6 +45,11 @@ class _MockNotificationBatchRepository extends Mock
 
 class _MockDeviceRepository extends Mock implements DeviceRepository {}
 
+class _MockUserRepository extends Mock implements UserRepository {}
+
+class _MockConsentRepository extends Mock
+    implements FirebaseConsentRepository {}
+
 // Fake classes for fallback values
 class FakeException extends Fake implements Exception {}
 
@@ -62,6 +69,8 @@ void main() {
     late _MockNotificationHistoryRepository mockNotificationHistoryRepository;
     late _MockNotificationBatchRepository mockNotificationBatchRepository;
     late _MockDeviceRepository mockDeviceRepository;
+    late _MockUserRepository mockUserRepository;
+    late _MockConsentRepository mockConsentRepository;
     late MockAnalyticsService mockAnalyticsService;
     late MockUser mockUser;
 
@@ -102,6 +111,25 @@ void main() {
       mockDeviceRepository = _MockDeviceRepository();
       when(() => mockDeviceRepository.deleteAllByUser(any()))
           .thenAnswer((_) async => 0);
+      mockUserRepository = _MockUserRepository();
+      // The integration test asserts on real `FakeFirebaseFirestore` state
+      // (e.g., `userDoc.exists == false`). Stubs must side-effect or those
+      // post-deletion assertions fail despite the mock returning `true`.
+      when(() => mockUserRepository.deletePublicProfile(any()))
+          .thenAnswer((invocation) async {
+        final uid = invocation.positionalArguments.first as String;
+        await firestore.collection('public_profiles').doc(uid).delete();
+        return true;
+      });
+      when(() => mockUserRepository.deleteUserRootDoc(any()))
+          .thenAnswer((invocation) async {
+        final uid = invocation.positionalArguments.first as String;
+        await firestore.collection('users').doc(uid).delete();
+        return true;
+      });
+      mockConsentRepository = _MockConsentRepository();
+      when(() => mockConsentRepository.deleteConsent(any()))
+          .thenAnswer((_) async => true);
       mockAnalyticsService = MockAnalyticsService();
 
       // Setup mock user
@@ -146,6 +174,8 @@ void main() {
         notificationHistoryRepository: mockNotificationHistoryRepository,
         notificationBatchRepository: mockNotificationBatchRepository,
         deviceRepository: mockDeviceRepository,
+        userRepository: mockUserRepository,
+        consentRepository: mockConsentRepository,
         analyticsService: mockAnalyticsService,
       );
     });

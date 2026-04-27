@@ -88,4 +88,13 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// Update allergen preferences for a user
   Future<void> updateAllergenPreferences(
       String userId, UserAllergenPreferences preferences);
+
+  /// Delete the `public_profiles/{userId}` document. GDPR Art. 17.
+  /// Caller must own the profile (enforced via `validateOwnership`).
+  Future<bool> deletePublicProfile(String userId);
+
+  /// Delete the `users/{userId}` root document. GDPR Art. 17.
+  /// Note: this targets the `users` collection (not `public_profiles`,
+  /// where `collectionName` points). Caller must own the document.
+  Future<bool> deleteUserRootDoc(String userId);
 }

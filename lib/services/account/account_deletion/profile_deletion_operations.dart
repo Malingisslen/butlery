@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
 /// Handles deletion of user profile data (user profile, public profile, preferences, notifications).
@@ -14,6 +16,8 @@ class ProfileDeletionOperations {
   final NotificationHistoryRepository _notificationHistoryRepo;
   final NotificationBatchRepository _notificationBatchRepo;
   final DeviceRepository _deviceRepo;
+  final UserRepository _userRepo;
+  final FirebaseConsentRepository _consentRepo;
   static const String _logTag = 'ProfileDeletionOps';
 
   ProfileDeletionOperations(
@@ -22,18 +26,18 @@ class ProfileDeletionOperations {
     required NotificationHistoryRepository notificationHistoryRepository,
     required NotificationBatchRepository notificationBatchRepository,
     required DeviceRepository deviceRepository,
+    required UserRepository userRepository,
+    required FirebaseConsentRepository consentRepository,
   })  : _notificationsRepo = notificationsRepository,
         _notificationHistoryRepo = notificationHistoryRepository,
         _notificationBatchRepo = notificationBatchRepository,
-        _deviceRepo = deviceRepository;
+        _deviceRepo = deviceRepository,
+        _userRepo = userRepository,
+        _consentRepo = consentRepository;
 
   Future<bool> deleteUserProfile(String userId) async {
     try {
-      await _firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .delete();
-      return true;
+      return await _userRepo.deleteUserRootDoc(userId);
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete user profile', e);
       return false;
@@ -42,11 +46,7 @@ class ProfileDeletionOperations {
 
   Future<bool> deletePublicProfile(String userId) async {
     try {
-      await _firestore
-          .collection(FirestoreCollections.publicProfiles)
-          .doc(userId)
-          .delete();
-      return true;
+      return await _userRepo.deletePublicProfile(userId);
     } catch (e) {
       app_logger.AppLogger.error(
           '[$_logTag] Failed to delete public profile', e);
@@ -162,17 +162,12 @@ class ProfileDeletionOperations {
     }
   }
 
-  /// Delete consent subcollection under user document.
+  /// Delete the consent doc under the user document. The consent subcollection
+  /// holds at most one doc (`current`) per user — see
+  /// [FirebaseConsentRepository] data-structure docs.
   Future<bool> deleteConsentRecords(String userId) async {
     try {
-      final consents = await _firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.userConsent)
-          .get();
-
-      await batchDeleteDocs(_firestore, consents.docs);
-      return true;
+      return await _consentRepo.deleteConsent(userId);
     } catch (e) {
       app_logger.AppLogger.error(
           '[$_logTag] Failed to delete consent records', e);

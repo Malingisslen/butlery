@@ -62,7 +62,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_shared_shopping_repository.dart` | 770 | Shared shopping — member management + item ops |
 | `base_shared_content_repository.dart` | 740 | Base class for shared content metadata |
 | `firebase_storage_repository.dart` | 601 | Storage operations — upload, resize, cache |
-| `firebase_user_repository.dart` | 574 | User profile CRUD + settings |
+| `firebase_user_repository.dart` | 610 | User profile CRUD + settings + GDPR cascade methods (BUT-498) |
 | `firebase_ingredient_repository.dart` | 521 | Ingredient CRUD + batch operations |
 | `firebase_friends_repository.dart` | 515 | Friends CRUD + query |
 
