@@ -41,4 +41,13 @@ abstract class CookSnapRepository extends Repository<CookSnap> {
 
   /// Deletes all cook snaps by a specific user (for account deletion).
   Future<int> deleteAllByUser(String userId);
+
+  /// Export all cook snaps authored by [userId] for GDPR Article 20.
+  /// Returns raw `{id, data}` shapes (NOT typed [CookSnap]) so the export
+  /// pipeline can sanitize timestamps without round-tripping. Implementations
+  /// MUST validate the caller owns [userId].
+  Future<List<Map<String, dynamic>>> exportCookSnapsByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  });
 }

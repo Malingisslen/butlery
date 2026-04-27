@@ -37,6 +37,7 @@
 
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/utils/retry_policy.dart';
 
 /// Central extraction coordinator managing multi-platform content extraction with intelligent pipeline orchestration.
 /// This service orchestrates the complete content extraction process from platform detection through
@@ -107,10 +108,12 @@ class ExtractionManager extends BaseService {
           );
         }
 
-        // Step 3: Perform extraction
-        final result = await _webScraper.performExtraction(webUrl, platform);
-
-        return result;
+        // Step 3: Perform extraction with retry — share-extract is read-only
+        // (idempotent), so it's safe to retry transient network failures.
+        return withRetry<ExtractionResult>(
+          () => _webScraper.performExtraction(webUrl, platform),
+          maxAttempts: 3,
+        );
       },
       operationName: 'Extract from URL',
     );

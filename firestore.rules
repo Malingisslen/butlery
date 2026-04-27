@@ -870,22 +870,46 @@ service cloud.firestore {
     // ========================================
 
     match /recipe_comments/{commentId} {
-      // S3 tradeoff: Comments are readable by any authenticated user.
-      // Recipe-level access control is enforced client-side (users only
-      // see recipes they own or have been shared). A server-side recipe
-      // ownership check is not feasible here because recipes live under
-      // users/{userId}/recipes and there is no efficient way to look up
-      // the owner from just a recipeId in rules. Blocked user filtering
-      // is also enforced client-side in comment streams.
-      allow read: if isAuthenticated();
+      // BUT-458: Read access is now restricted to the recipe owner, the
+      // recipe's shared recipients, the comment author, and admins.
+      // Possible because the comment doc carries denormalized
+      // `recipeOwnerId` and `sharedWithUserIds` written at create time.
+      //
+      // Legacy comments (pre-BUT-458, no `recipeOwnerId` field) fall
+      // through to author-only read — this is a deliberate, one-time
+      // degradation; the backfill migration restores recipe-owner /
+      // shared-recipient visibility once it runs. Admin moderation
+      // override below covers reports flagged against legacy rows.
+      allow read: if isAuthenticated() && (
+        // Author can always read their own comment.
+        request.auth.uid == resource.data.authorId
+        // New comments: recipe owner gets read access.
+        || ('recipeOwnerId' in resource.data
+            && request.auth.uid == resource.data.recipeOwnerId)
+        // New comments: shared recipients get read access.
+        || ('sharedWithUserIds' in resource.data
+            && request.auth.uid in resource.data.sharedWithUserIds)
+      );
 
-      // Can create if authenticated, not blocked, and within rate limit
+      // Moderation override: admins can read any comment for review.
+      allow read: if isAdmin();
+
+      // Can create if authenticated, not blocked by the recipe owner,
+      // and within rate limit. The blocking gate (BUT-459) needs the
+      // denormalized recipeOwnerId; if absent (legacy callers), we
+      // fall back to skipping the gate — but the create rule still
+      // requires the author to be the auth uid and the rate limit to
+      // hold, so spam vectors stay closed.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.authorId
         && hasRequiredFields(['authorId', 'recipeId', 'text', 'createdAt'])
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 2000
         && isServerTimestamp('createdAt')
+        && (
+          !('recipeOwnerId' in request.resource.data)
+          || isNotBlockedBy(request.resource.data.recipeOwnerId)
+        )
         && rateLimitWrite('comments', 5);
 
       // Can update only your own comments — immutable fields protected
@@ -1182,14 +1206,22 @@ service cloud.firestore {
       // Can read all ratings (public social feature)
       allow read: if isAuthenticated();
 
-      // Can create if authenticated and rating as yourself
+      // Can create if authenticated and rating as yourself.
       // Rating ID format: {recipeId}_{userId}
+      // BUT-459: when the new optional `recipeOwnerId` field is present,
+      // the rater must not be blocked by the recipe owner. Legacy
+      // callers without the field skip the gate (rest of validation
+      // still applies; rate limit + auth uid pinning prevent spam).
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && hasRequiredFields(['recipeId', 'userId', 'rating', 'createdAt'])
         && isServerTimestamp('createdAt')
+        && (
+          !('recipeOwnerId' in request.resource.data)
+          || isNotBlockedBy(request.resource.data.recipeOwnerId)
+        )
         && rateLimitWrite('recipe_ratings', 5);
 
       // Can update only your own ratings
@@ -1217,17 +1249,22 @@ service cloud.firestore {
 
       // Users can create notifications if:
       // - Sending to themselves (system notifications), OR
-      // - They are friends with the recipient
-      // This prevents notification spam attacks
+      // - They are friends with the recipient AND not blocked by them (BUT-459)
+      // This prevents notification spam attacks — blocking has to gate
+      // notification creation OR a blocked user can pierce the block via
+      // notifications that the blocker still sees.
       allow create: if isAuthenticated()
         && hasRequiredFields(["userId", "senderId", "type", "title", "body", "createdAt"])
         && isServerTimestamp('createdAt')
         && request.resource.data.senderId == request.auth.uid
         && (
-          // Allow self-notification (system events)
+          // Allow self-notification (system events) — never blocked.
           request.resource.data.userId == request.auth.uid ||
-          // Or sender and recipient are friends
-          exists(/databases/$(database)/documents/users/$(request.auth.uid)/friends/$(request.resource.data.userId))
+          // Or sender and recipient are friends AND not blocked.
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)/friends/$(request.resource.data.userId))
+            && isNotBlockedBy(request.resource.data.userId)
+          )
         );
 
       // Can update only your own notifications (mark as read)
@@ -1275,13 +1312,21 @@ service cloud.firestore {
     // ========================================
 
     match /audit_logs/{logId} {
-      // Users can read their own audit logs (GDPR Article 15 - Right of Access)
-      allow read: if isAuthenticated()
-        && request.auth.uid == resource.data.userId;
+      // BUT-424: Audit logs are admin-only readable from the client.
+      // Allowing users to read their own audit trail defeats the
+      // tamper-detection purpose (a compromised account could enumerate
+      // exactly which operations were observed and craft attacks around
+      // gaps). The repository docstring says so explicitly:
+      // "Users CANNOT read their own audit logs (prevents tampering
+      //  detection). Only admins can read audit logs (via backend tools)."
+      // GDPR Article 15 (Right of Access) is satisfied via a server-side
+      // export Cloud Function that uses the Admin SDK to bypass these
+      // rules — see follow-up: /functions/src/exports/audit-logs.ts (TBD).
+      allow read: if isAdmin();
 
-      // Only system/server can create audit logs (fire-and-forget from app)
-      // In practice, client-side creates are allowed but validated
-      // SECURITY: User can only create audit logs for themselves (prevents tampering)
+      // Client-side fire-and-forget creates remain allowed: users can
+      // log their own permission checks, but they can't read them back.
+      // SECURITY: User can only create audit logs for themselves (prevents tampering).
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
         && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp'])

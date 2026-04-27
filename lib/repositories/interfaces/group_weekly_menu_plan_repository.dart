@@ -40,4 +40,15 @@ abstract class GroupWeeklyMenuPlanRepository {
     required String groupId,
     required DateTime date,
   });
+
+  /// Export every group plan that [userId] is a participant on, for
+  /// GDPR Article 20. Match is via the denormalised
+  /// `memberPermissions.{userId}` map. Returns raw `{id, data}` shapes.
+  /// Implementations MUST validate that the caller IS [userId] (a user
+  /// can only export their own portability scope, not someone else's
+  /// group memberships).
+  Future<List<Map<String, dynamic>>> exportPlansForParticipant(
+    String userId, {
+    int maxDocuments = 260,
+  });
 }

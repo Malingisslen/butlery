@@ -57,6 +57,7 @@ dependencies:
   cached_network_image: ^3.4.1
   permission_handler: ^12.0.1
   flutter_image_compress: ^2.3.0
+  image: ^4.3.0               # Pure-Dart image processing (EXIF, resize, JPEG encode) for OCR preprocessing — pinned to 4.3.x to keep compat with archive 3.6.x
 
   # ==================== PLATFORM INFO ====================
   package_info_plus: ^9.0.1

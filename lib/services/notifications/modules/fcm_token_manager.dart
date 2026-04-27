@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
@@ -58,9 +59,15 @@ class FCMTokenManager {
   DateTime? _lastTokenRefresh;
   StreamSubscription<String>? _tokenRefreshSubscription;
 
-  // Local storage keys
+  // Secure storage keys (BUT-457: SecureStorage is the ONLY store for tokens —
+  // historical SharedPreferences plaintext storage was removed. The legacy
+  // SharedPreferences keys are read once at init for migration, then deleted.)
   static const String _tokenStorageKey = 'fcm_token';
   static const String _tokenTimestampKey = 'fcm_token_timestamp';
+
+  /// One-time migration flag stored in SecureStorage so the SharedPreferences
+  /// scrub runs at most once per install (no-op after first successful run).
+  static const String _spMigrationDoneKey = 'fcm_token_sp_migration_done';
 
   // Secure storage instance for sensitive FCM token data
   static const _secureStorage = FlutterSecureStorage(
@@ -82,6 +89,12 @@ class FCMTokenManager {
     try {
       AppLogger.info(
           '🔔 Initializing FCM token management for user: ${_userId.maskedUserId}');
+
+      // BUT-457: One-time migration — sweep any FCM token left in
+      // SharedPreferences from older app versions over to SecureStorage,
+      // then delete the SharedPreferences entries. SecureStorage is the
+      // only token store going forward.
+      await _migrateFromSharedPreferencesIfNeeded();
 
       // Request permission for notifications
       final permission = await _messaging.requestPermission(
@@ -330,7 +343,12 @@ class FCMTokenManager {
     }
   }
 
-  /// Save token locally for offline access using secure storage
+  /// Save token locally for offline access using secure storage.
+  ///
+  /// BUT-457: SecureStorage is the ONLY local store for FCM tokens.
+  /// On failure we log and move on — we MUST NOT fall back to
+  /// SharedPreferences (plaintext on disk = security risk). The next
+  /// `_refreshToken` call will retry the secure-storage write.
   Future<void> _saveTokenLocally(String token) async {
     try {
       await _secureStorage.write(key: _tokenStorageKey, value: token);
@@ -339,6 +357,62 @@ class FCMTokenManager {
       AppLogger.debug('Saved FCM token to secure storage');
     } catch (e) {
       AppLogger.warning('Failed to save token to secure storage: $e');
+      // Intentional no-op on failure: do NOT mirror to SharedPreferences.
+    }
+  }
+
+  /// One-time migration from legacy SharedPreferences storage to SecureStorage.
+  ///
+  /// Older app versions persisted the FCM token in SharedPreferences, which
+  /// stores values in plaintext. BUT-457 moves the canonical store to
+  /// SecureStorage. This method runs at most once per install:
+  ///
+  /// 1. If SecureStorage already has the migration sentinel set, skip.
+  /// 2. Read both legacy keys from SharedPreferences.
+  /// 3. If a token is present and SecureStorage doesn't already hold one,
+  ///    copy it over (timestamp too, when present).
+  /// 4. Remove both keys from SharedPreferences regardless of whether a copy
+  ///    was made — the keys must not linger.
+  /// 5. Set the sentinel in SecureStorage so subsequent inits skip.
+  ///
+  /// Failures are non-fatal: if SharedPreferences itself can't be opened,
+  /// the next initialize() will retry. Sentinel is only set on success.
+  Future<void> _migrateFromSharedPreferencesIfNeeded() async {
+    try {
+      final alreadyMigrated =
+          await _secureStorage.read(key: _spMigrationDoneKey);
+      if (alreadyMigrated == 'true') return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final legacyToken = prefs.getString(_tokenStorageKey);
+      final legacyTimestamp = prefs.getString(_tokenTimestampKey);
+
+      if (legacyToken != null && legacyToken.isNotEmpty) {
+        // Don't clobber a SecureStorage value that's already present.
+        final existing = await _secureStorage.read(key: _tokenStorageKey);
+        if (existing == null || existing.isEmpty) {
+          await _secureStorage.write(key: _tokenStorageKey, value: legacyToken);
+          if (legacyTimestamp != null) {
+            await _secureStorage.write(
+                key: _tokenTimestampKey, value: legacyTimestamp);
+          }
+          AppLogger.info(
+              'Migrated legacy FCM token from SharedPreferences to SecureStorage');
+        } else {
+          AppLogger.debug(
+              'SecureStorage already has FCM token; dropping legacy SP copy');
+        }
+      }
+
+      // Always scrub the legacy keys — even if there was nothing to migrate,
+      // we don't want stragglers.
+      await prefs.remove(_tokenStorageKey);
+      await prefs.remove(_tokenTimestampKey);
+
+      await _secureStorage.write(key: _spMigrationDoneKey, value: 'true');
+    } catch (e) {
+      AppLogger.warning(
+          'FCM SharedPreferences migration failed (will retry next init): $e');
     }
   }
 

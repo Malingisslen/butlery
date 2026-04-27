@@ -4,6 +4,14 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
+import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
+import 'package:butlery/repositories/interfaces/feedback_repository.dart';
+import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
+import 'package:butlery/repositories/interfaces/pantry_repository.dart';
+import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
@@ -45,12 +53,33 @@ class DataExportService extends BaseService {
   DataExportService({
     required auth_repo.AuthRepository authRepository,
     required FirestoreRepository firestoreRepository,
+    // BUT-501: optional repo injections for tests; production resolves
+    // via ServiceLocator on first use inside each manager.
+    CommentsRepository? commentsRepository,
+    RatingsRepository? ratingsRepository,
+    FeedbackRepository? feedbackRepository,
+    CookSnapRepository? cookSnapRepository,
+    ActivityEventRepository? activityEventRepository,
+    WeeklyMenuPlanRepository? weeklyMenuPlanRepository,
+    GroupWeeklyMenuPlanRepository? groupWeeklyMenuPlanRepository,
+    PantryRepository? pantryRepository,
   })  : _authRepository = authRepository,
         _firestoreRepository = firestoreRepository {
     final firestore = _firestoreRepository.firestore;
-    _contentManager = ContentExportManager(firestore: firestore);
+    _contentManager = ContentExportManager(
+      firestore: firestore,
+      cookSnapRepository: cookSnapRepository,
+      activityEventRepository: activityEventRepository,
+      weeklyMenuPlanRepository: weeklyMenuPlanRepository,
+      groupWeeklyMenuPlanRepository: groupWeeklyMenuPlanRepository,
+      pantryRepository: pantryRepository,
+    );
     _socialManager = SocialExportManager(firestore: firestore);
-    _activityManager = ActivityExportManager(firestore: firestore);
+    _activityManager = ActivityExportManager(
+      commentsRepository: commentsRepository,
+      ratingsRepository: ratingsRepository,
+      feedbackRepository: feedbackRepository,
+    );
     _complianceManager = ComplianceExportManager(firestore: firestore);
     _preferencesManager = PreferencesExportManager(firestore: firestore);
   }

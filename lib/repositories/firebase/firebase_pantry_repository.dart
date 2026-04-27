@@ -125,6 +125,26 @@ class FirebasePantryRepository
   }
 
   @override
+  Future<List<Map<String, dynamic>>> exportAllByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    // Ownership is structural — the path is `users/{userId}/pantry/{id}`.
+    // Firestore rules enforce that only the authenticated owner can read
+    // this subcollection. Caller (data_export_service) confirms the
+    // userId matches the auth uid before invoking this method.
+    try {
+      final snapshot = await _col(userId).limit(maxDocuments).get();
+      return snapshot.docs
+          .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+          .toList();
+    } catch (e, stack) {
+      AppLogger.error('Failed to export pantry items: $e', stack);
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> deleteAll(String userId) async {
     try {
       final ref = _col(userId);

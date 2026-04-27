@@ -139,3 +139,43 @@ Knowledge file seeded from `functions/src/index.ts`, `functions/package.json`,
 the v2 SDK conventions in use, and standard Cloud Functions cost/idempotency
 guidance. Future entries should record real bugs caught, project-specific
 function patterns, cost surprises, or new function families.
+
+### 2026-04-27 — BUT-425 OCR URL SSRF guard [Bug fixed]
+
+`functions/src/llm/ocr-recipe-image.ts` previously passed any client-supplied
+`imageUrl` straight into Gemini's `fileData.fileUri`. The basic
+`isAllowedUrl()` SSRF check (private IPs / HTTPS-only) was insufficient —
+attacker-controlled HTTPS domains were still accepted, turning the function
+into an exfiltration relay (Gemini fetches the URL server-side from Google's
+network).
+
+Fix: new `functions/src/shared/ocr-url-validator.ts` doing
+1. host pin to `<project>.firebasestorage.app` (or googleapis path-pinned to
+   that bucket, plus legacy `<project>.appspot.com`),
+2. HEAD pre-flight (5s timeout, `redirect: "manual"`) verifying allowlisted
+   Content-Type (image/jpeg|png|webp|heic, application/pdf) and
+   Content-Length ≤ 10 MB,
+3. INFO audit log with origin + size + content-type + authUidHash. Full URL
+   is NOT logged because Firebase download URLs carry `?token=` query params
+   that grant read access — logging them would defeat the access control.
+
+Wired into `runOcrRecipeImage` as a `validateImageUrl` test seam. Rejection
+becomes `HttpsError("invalid-argument", ...)` with Swedish copy, never
+`internal` (no retry will help). Tests in
+`functions/src/__tests__/ocr-validation.test.ts` (21 cases) cover host
+allowlist, accepted/rejected paths, network errors, and the integration seam
+proving the validator runs BEFORE `performOcr`.
+
+Patterns worth remembering:
+- **Node 22 has native `fetch`** — no need to add `node-fetch`/`axios`. Just
+  inject a `fetchImpl` test seam (typed as `typeof fetch`).
+- **`redirect: "manual"`** is essential for any HEAD-based host check; without
+  it a 302 to `evil.com` defeats the allowlist.
+- **Project ID resolution**: `process.env.GCLOUD_PROJECT` is set in Cloud
+  Functions runtime; mirror `gemini-client.ts` and fall back to a string
+  literal so unit tests work without env wiring.
+- **Don't log download URLs** — Firebase Storage tokens are bearer
+  credentials. Log origin + path-shape only.
+- **Test harness**: hijack the `firebase-functions/logger` module surface by
+  reassigning `logger.info`/`warn`/`error` to a capture array. Assertion-
+  ready, no jest needed.

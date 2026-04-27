@@ -134,6 +134,28 @@ class FirebaseGroupWeeklyMenuPlanRepository
   }
 
   @override
+  Future<List<Map<String, dynamic>>> exportPlansForParticipant(
+    String userId, {
+    int maxDocuments = 260,
+  }) async {
+    // GDPR Article 20: caller must be exporting their own participation.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection
+        .where('memberPermissions.$userId', isNotEqualTo: null)
+        .limit(maxDocuments)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
+  }
+
+  @override
   Future<int> deleteAllByGroup(String groupId) async {
     // Doc IDs are prefixed with groupId, so a range query bounded by the
     // prefix gives us only this group's docs without an extra index.

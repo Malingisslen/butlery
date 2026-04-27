@@ -8,6 +8,14 @@ import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_cook_snap_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_feedback_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 import 'dart:convert';
 
 import '../../../test_support/base_unit_test.dart';
@@ -48,9 +56,43 @@ void main() {
 
       when(() => mockFirestoreRepository.firestore).thenReturn(fakeFirestore);
 
+      // BUT-501: wire fake-firestore-backed repos so the new export-via-repo
+      // paths exercise end-to-end instead of falling through to ServiceLocator
+      // and silently turning into `{'error': ...}` payloads.
       service = DataExportService(
         authRepository: mockAuthRepository,
         firestoreRepository: mockFirestoreRepository,
+        commentsRepository: FirebaseCommentsRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        ratingsRepository: FirebaseRatingsRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        feedbackRepository: FirebaseFeedbackRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        cookSnapRepository: FirebaseCookSnapRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        activityEventRepository: FirebaseActivityEventRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        weeklyMenuPlanRepository: FirebaseWeeklyMenuPlanRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        groupWeeklyMenuPlanRepository: FirebaseGroupWeeklyMenuPlanRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        pantryRepository: FirebasePantryRepository(
+          firestore: fakeFirestore,
+        ),
       );
     });
 
@@ -184,6 +226,46 @@ void main() {
         final data = json.decode(jsonString) as Map<String, dynamic>;
 
         expect(data['comments_and_ratings'], isNotNull);
+      });
+
+      test(
+          'BUT-501: export-via-repo paths return real data (not error '
+          'payload) for cook_snaps, activity_events, weekly_menu_plans, '
+          'and pantry', () async {
+        // Seed a row in each migrated collection so the repo-backed
+        // exporters return a populated list. If the validateOwnership
+        // guard or the test-time wiring regresses, these collections
+        // will fall back to `{'error': ...}` and the test fails.
+        await fakeFirestore.collection('cook_snaps').doc('snap-1').set({
+          'userId': testUserId,
+          'recipeId': 'r1',
+          'createdAt': DateTime.now(),
+        });
+        await fakeFirestore
+            .collection('activity_events')
+            .doc('evt-1')
+            .set({'actorId': testUserId, 'kind': 'cook'});
+        await fakeFirestore
+            .collection('weekly_menu_plans')
+            .doc('${testUserId}_2026-W17')
+            .set({'userId': testUserId, 'entries': []});
+        await fakeFirestore
+            .collection('users')
+            .doc(testUserId)
+            .collection('pantry')
+            .doc('item-1')
+            .set({'name': 'mjölk'});
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        // Each migrated section MUST surface its row, proving the repo
+        // path is live (and the `validateOwnership` guard accepts the
+        // self-export case).
+        expect(data['cook_snaps']['total_count'], equals(1));
+        expect(data['activity_events']['total_count'], equals(1));
+        expect(data['weekly_menu_plans']['total_count'], equals(1));
+        expect(data['pantry_items']['total_count'], equals(1));
       });
     });
 
