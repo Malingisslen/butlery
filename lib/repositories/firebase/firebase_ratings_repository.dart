@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase Firestore implementation for recipe rating system and statistics management.
@@ -326,10 +327,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       List<String> recipeIds) async {
     final Map<String, RatingStatistics> results = {};
 
-    // Process in batches of 10 (Firestore limit for 'in' queries)
-    for (int i = 0; i < recipeIds.length; i += 10) {
-      final batch = recipeIds.skip(i).take(10).toList();
-
+    for (final batch in recipeIds.chunked(kFirestoreWhereInLimit)) {
       final ratingsQuery =
           await collection.where('recipeId', whereIn: batch).get();
 

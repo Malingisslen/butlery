@@ -8,6 +8,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 /// Utility operations for friends service providing helper methods for:
 /// - Blocked users synchronization
@@ -183,8 +184,7 @@ class FriendsUtilityOperations {
 
     final profileMap = <String, UserProfile>{};
 
-    for (var i = 0; i < userIds.length; i += 30) {
-      final chunk = userIds.skip(i).take(30).toList();
+    for (final chunk in userIds.chunked(kFirestoreWhereInLimit)) {
       final querySnapshot = await firestore
           .collection(FirestoreCollections.users)
           .where(FieldPath.documentId, whereIn: chunk)

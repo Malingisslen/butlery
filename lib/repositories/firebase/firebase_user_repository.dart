@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 /// Firebase Firestore implementation for user profile management and social discovery.
 /// This repository implements the [UserRepository] interface using Firebase Firestore,
@@ -192,16 +193,14 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     return profile;
   }
 
-  /// Fetch multiple profiles in batches (Firestore limit 10 per query).
+  /// Fetch multiple profiles in batches (Firestore `whereIn` cap).
   @override
   Future<List<UserProfile>> fetchProfiles(List<String> userIds) async {
     if (userIds.isEmpty) return [];
 
-    const batchSize = 10;
     final results = <UserProfile>[];
 
-    for (var i = 0; i < userIds.length; i += batchSize) {
-      final batch = userIds.skip(i).take(batchSize).toList();
+    for (final batch in userIds.chunked(kFirestoreWhereInLimit)) {
       final query =
           await collection.where(FieldPath.documentId, whereIn: batch).get();
       for (final doc in query.docs) {

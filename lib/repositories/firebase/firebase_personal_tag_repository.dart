@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 
+import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
-import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for user-defined personal tags.
 ///
@@ -124,11 +125,9 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     return maxOrder + 1;
   }
 
-  /// Gets multiple tags by their IDs efficiently.
-  ///
-  /// Returns only tags that exist. Missing IDs are silently ignored.
-  /// Useful for resolving recipe.personalTagIds to full PersonalTag objects.
-  /// Batches into whereIn queries of 30 (Firestore limit) to reduce reads.
+  /// Gets multiple tags by their IDs efficiently. Missing IDs are silently
+  /// ignored. Used to resolve `recipe.personalTagIds` to full PersonalTag
+  /// objects via batched `whereIn` queries.
   Future<List<PersonalTag>> getByIds(List<String> tagIds) async {
     if (tagIds.isEmpty) return [];
 
@@ -136,13 +135,7 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     final ref = getCollectionRef();
     final results = <PersonalTag>[];
 
-    // Firestore whereIn supports max 30 values per query
-    const batchSize = 30;
-    for (var i = 0; i < tagIds.length; i += batchSize) {
-      final batch = tagIds.sublist(
-        i,
-        (i + batchSize).clamp(0, tagIds.length),
-      );
+    for (final batch in tagIds.chunked(kFirestoreWhereInLimit)) {
       final snapshot =
           await ref.where(FieldPath.documentId, whereIn: batch).get();
       results.addAll(snapshot.docs.map(fromFirestore));

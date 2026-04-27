@@ -6,6 +6,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 /// Social menu operations for friend-based and group sharing with import/export and activity tracking.
 /// Follows SRP - handles only social menu interactions (not basic CRUD or recipe operations).
@@ -227,8 +228,7 @@ class SocialMenuOperations {
       if (sharedMenuIds.isEmpty) return [];
 
       final menuDocsById = <String, Map<String, dynamic>>{};
-      for (var i = 0; i < sharedMenuIds.length; i += 30) {
-        final chunk = sharedMenuIds.skip(i).take(30).toList();
+      for (final chunk in sharedMenuIds.chunked(kFirestoreWhereInLimit)) {
         final menuQuery = await _firestore
             .collection(FirestoreCollections.sharedContent)
             .where(FieldPath.documentId, whereIn: chunk)

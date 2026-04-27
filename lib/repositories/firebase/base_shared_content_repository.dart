@@ -13,6 +13,7 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/shared_content_member.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 abstract class BaseSharedContentRepository<T>
     extends BaseFirebaseRepository<T> {
@@ -657,16 +658,8 @@ abstract class BaseSharedContentRepository<T>
         return [];
       }
 
-      final batches = <List<String>>[];
-      final contentIdList = contentIds.toList();
-      for (var i = 0; i < contentIdList.length; i += 10) {
-        final end =
-            (i + 10 < contentIdList.length) ? i + 10 : contentIdList.length;
-        batches.add(contentIdList.sublist(i, end));
-      }
-
       final allContent = <T>[];
-      for (final batch in batches) {
+      for (final batch in contentIds.chunked(kFirestoreWhereInLimit)) {
         final docFutures = batch.map((id) => getCollectionRef().doc(id).get());
         final docs = await Future.wait(docFutures);
         // Filter by contentType discriminator to return only matching type

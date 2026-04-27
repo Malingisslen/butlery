@@ -12,8 +12,6 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
@@ -37,22 +35,10 @@ void main() {
 
     const ownerUid = 'profile-owner-uid';
 
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-    });
-
     setUp(() async {
-      await TestServiceLocator.initialize();
-      // Bridge: BaseService._isAuthenticated() reads from the production
-      // ServiceLocator, which TestServiceLocator intentionally doesn't
-      // initialize. Both share the same GetIt singleton, so pointing
-      // production at DIContainer() picks up TestServiceLocator's mocks.
-      prod.ServiceLocator.initialize(DIContainer());
+      await BaseUnitTest.setupUnitWithProductionLocator();
       fakeFirestore = FakeFirebaseFirestore();
       firestoreRepo = FirestoreRepository(firestore: fakeFirestore);
-      // The same MockAuthRepository instance the production ServiceLocator
-      // resolves inside BaseService._isAuthenticated() — without this, the
-      // requiresAuth gate fails and executeServiceOperation short-circuits.
       mockAuth = ServiceLocator.get<AuthRepository>() as MockAuthRepository;
       mockAuth.setAuthState(userId: 'admin-uid', isAuthenticated: true);
       mockReportRepo = _MockReportRepository();
@@ -89,14 +75,9 @@ void main() {
           .doc(ownerUid)
           .set({'displayName': 'Anna', 'isHidden': false});
 
-      // Sanity-check the auth bridge so a wiring regression surfaces here
-      // rather than as a confusing service-returns-false symptom.
+      // Sanity-check: surface auth-wiring regressions here rather than as
+      // a silent service-returns-false symptom downstream.
       expect(mockAuth.currentUserId, equals('admin-uid'));
-      expect(
-        prod.ServiceLocator.get<AuthRepository>().currentUserId,
-        equals('admin-uid'),
-        reason: 'production locator must resolve to the same configured mock',
-      );
 
       await service.suspendReportedProfile(profileReport());
 

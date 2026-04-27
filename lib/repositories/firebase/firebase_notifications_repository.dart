@@ -4,8 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation for notification management with FCM integration.
@@ -247,10 +248,9 @@ class FirebaseNotificationsRepository
         .where('isRead', isEqualTo: false)
         .get();
 
-    final docs = unreadQuery.docs;
-    for (var i = 0; i < docs.length; i += 500) {
+    for (final chunk in unreadQuery.docs.chunked(kFirestoreBatchOpLimit)) {
       final batch = firestore.batch();
-      for (final doc in docs.skip(i).take(500)) {
+      for (final doc in chunk) {
         batch.update(doc.reference, {
           'isRead': true,
           'readAt': timestampProvider.serverTimestamp(),

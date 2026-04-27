@@ -6,7 +6,12 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
+
 import 'base_test.dart';
+import '../infrastructure/di/test_service_locator.dart';
 import '../infrastructure/mocks/firestore_singleton.dart';
 
 /// Base class for all unit tests
@@ -51,6 +56,16 @@ abstract class BaseUnitTest extends BaseTest {
     resetMocks(); // Reset mocks between tests
     // Clear Firestore data at the start of each test for isolation
     await FirestoreSingleton.clearData();
+  }
+
+  /// Use when the SUT calls services that go through `requiresAuth: true`
+  /// (most service-layer SUTs). Both locators share the same GetIt singleton.
+  ///
+  /// Pair with `tearDown(() async => TestServiceLocator.reset())`.
+  static Future<void> setupUnitWithProductionLocator() async {
+    await setupUnit();
+    await TestServiceLocator.initialize();
+    prod.ServiceLocator.initialize(DIContainer());
   }
 
   /// Enhanced teardown for unit tests

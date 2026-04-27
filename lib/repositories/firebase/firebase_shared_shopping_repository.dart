@@ -59,6 +59,7 @@ import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 /// Firebase repository for shared shopping list operations with consistent API patterns
 class FirebaseSharedShoppingRepository
@@ -326,11 +327,7 @@ class FirebaseSharedShoppingRepository
 
       // Batch fetch shopping list documents (max 10 per query)
       final joinedLists = <SharedShoppingList>[];
-      final listIdList = listIds.toList();
-      for (var i = 0; i < listIdList.length; i += 10) {
-        final end = (i + 10 < listIdList.length) ? i + 10 : listIdList.length;
-        final batch = listIdList.sublist(i, end);
-
+      for (final batch in listIds.chunked(kFirestoreWhereInLimit)) {
         final batchSnapshot = await getCollectionRef()
             .where(FieldPath.documentId, whereIn: batch)
             .get();

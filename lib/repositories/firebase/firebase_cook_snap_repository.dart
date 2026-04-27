@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
@@ -20,9 +21,6 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     super.auditRepository,
     super.timestampProvider,
   });
-
-  // Firestore whereIn cap.
-  static const int _whereInBatchSize = 30;
 
   @override
   String get collectionName => FirestoreCollections.cookSnaps;
@@ -75,7 +73,7 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   }) async {
     if (allowedUserIds.isEmpty) return const [];
 
-    final chunks = _chunk(allowedUserIds.toList(), _whereInBatchSize);
+    final chunks = allowedUserIds.chunked(kFirestoreWhereInLimit);
     // Per-chunk over-fetch buffer: each chunk needs at most `limit` of its
     // own to contribute to a global top-N, but we allow a small buffer for
     // ties. Caps total reads at `limit + chunks*buf` instead of `limit*chunks`.
@@ -96,7 +94,7 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   }) {
     if (allowedUserIds.isEmpty) return Stream<List<CookSnap>>.value(const []);
 
-    final chunks = _chunk(allowedUserIds.toList(), _whereInBatchSize);
+    final chunks = allowedUserIds.chunked(kFirestoreWhereInLimit);
     final perChunkLimit =
         chunks.length == 1 ? limit : (limit ~/ chunks.length) + 5;
 
@@ -178,14 +176,5 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     AppLogger.info(
         'Deleted ${snapshot.docs.length} cook snaps for user $userId');
     return snapshot.docs.length;
-  }
-
-  static List<List<T>> _chunk<T>(List<T> list, int size) {
-    if (list.length <= size) return [list];
-    final chunks = <List<T>>[];
-    for (var i = 0; i < list.length; i += size) {
-      chunks.add(list.sublist(i, (i + size).clamp(0, list.length)));
-    }
-    return chunks;
   }
 }

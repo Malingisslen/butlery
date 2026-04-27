@@ -58,6 +58,7 @@ import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 /// Firebase repository for shared recipe operations with consistent API patterns
 class FirebaseSharedRecipeRepository
@@ -323,12 +324,7 @@ class FirebaseSharedRecipeRepository
 
       // Batch fetch recipe documents (max 10 per query)
       final importedRecipes = <SharedRecipe>[];
-      final recipeIdList = recipeIds.toList();
-      for (var i = 0; i < recipeIdList.length; i += 10) {
-        final end =
-            (i + 10 < recipeIdList.length) ? i + 10 : recipeIdList.length;
-        final batch = recipeIdList.sublist(i, end);
-
+      for (final batch in recipeIds.chunked(kFirestoreWhereInLimit)) {
         final batchSnapshot = await getCollectionRef()
             .where(FieldPath.documentId, whereIn: batch)
             .get();

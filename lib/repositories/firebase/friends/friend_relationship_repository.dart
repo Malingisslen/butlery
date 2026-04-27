@@ -29,6 +29,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation for friend relationship management with bidirectional consistency and analytics.
@@ -276,10 +277,8 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   /// Retrieve user profiles for a list of ids.
   Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
     if (userIds.isEmpty) return [];
-    const batchSize = 10;
     final futures = <Future<QuerySnapshot<Map<String, dynamic>>>>[];
-    for (var i = 0; i < userIds.length; i += batchSize) {
-      final batch = userIds.skip(i).take(batchSize).toList();
+    for (final batch in userIds.chunked(kFirestoreWhereInLimit)) {
       futures.add(collection.where(FieldPath.documentId, whereIn: batch).get());
     }
     final snapshots = await Future.wait(futures);
@@ -297,20 +296,17 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   /// Get mutual friends between two users.
   ///
-  /// Fetches user1's friend IDs and checks them against user2's friends subcollection
-  /// using `whereIn` batches of 10 (Firestore limit). This avoids downloading user2's
-  /// entire friend list. Capped at 300 of user1's IDs (30 batches) to bound cost.
+  /// Fetches user1's friend IDs and checks them against user2's friends
+  /// subcollection via batched `whereIn` (avoids downloading user2's entire
+  /// friend list). Capped at 300 of user1's IDs to bound query cost.
   Future<List<String>> getMutualFriends(String userId1, String userId2) async {
     final friends1 = await fetchFriendIds(userId1);
     if (friends1.isEmpty) return [];
 
-    // Cap at 300 IDs (30 batches of 10) to bound query cost
     final cappedFriends = friends1.take(300).toList();
     final mutualIds = <String>[];
 
-    const batchSize = 10;
-    for (var i = 0; i < cappedFriends.length; i += batchSize) {
-      final batch = cappedFriends.skip(i).take(batchSize).toList();
+    for (final batch in cappedFriends.chunked(kFirestoreWhereInLimit)) {
       final snapshot = await _userFriendsRef(userId2)
           .where(FieldPath.documentId, whereIn: batch)
           .get();

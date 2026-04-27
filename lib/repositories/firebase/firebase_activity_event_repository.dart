@@ -3,6 +3,7 @@ import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/account/account_deletion/deletion_utils.dart';
 
@@ -71,12 +72,9 @@ class FirebaseActivityEventRepository
   }) async {
     if (friendIds.isEmpty) return [];
 
-    // Batch whereIn in chunks of 10 (Firestore limit)
-    const batchSize = 10;
     final futures = <Future<QuerySnapshot<Map<String, dynamic>>>>[];
 
-    for (var i = 0; i < friendIds.length; i += batchSize) {
-      final batch = friendIds.skip(i).take(batchSize).toList();
+    for (final batch in friendIds.chunked(kFirestoreWhereInLimit)) {
       Query<Map<String, dynamic>> query = collection
           .where('actorId', whereIn: batch)
           .orderBy('createdAt', descending: true)

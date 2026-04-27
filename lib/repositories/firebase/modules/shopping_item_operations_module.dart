@@ -8,6 +8,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 /// Module handling shopping item operations with dual storage support.
 /// Supports two storage strategies:
@@ -358,9 +359,7 @@ class ShoppingItemOperationsModule {
           .doc(listId)
           .collection(FirestoreCollections.items);
 
-      // Chunk at 500 (Firestore batch limit)
-      for (var i = 0; i < itemIds.length; i += 500) {
-        final chunk = itemIds.sublist(i, (i + 500).clamp(0, itemIds.length));
+      for (final chunk in itemIds.chunked(kFirestoreBatchOpLimit)) {
         final batch = firestore.batch();
         for (final itemId in chunk) {
           batch.delete(itemsCollection.doc(itemId));

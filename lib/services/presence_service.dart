@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -290,12 +291,8 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       String conversationId, List<String> participantIds) {
     if (participantIds.isEmpty) return Stream.value([]);
 
-    // Typing data is in Firestore — batch query with whereIn (max 10)
-    final batches = <List<String>>[];
-    for (var i = 0; i < participantIds.length; i += 10) {
-      batches.add(participantIds.sublist(
-          i, i + 10 > participantIds.length ? participantIds.length : i + 10));
-    }
+    // Typing data is in Firestore — batch query via `whereIn`.
+    final batches = participantIds.chunked(kFirestoreWhereInLimit);
 
     final streams = batches.map((batch) {
       return _firestore
