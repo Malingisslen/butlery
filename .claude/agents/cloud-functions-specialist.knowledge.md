@@ -179,3 +179,48 @@ Patterns worth remembering:
 - **Test harness**: hijack the `firebase-functions/logger` module surface by
   reassigning `logger.info`/`warn`/`error` to a capture array. Assertion-
   ready, no jest needed.
+
+### 2026-04-27 — BUT-641 notification payload schema [Pattern discovered]
+
+Push notifications were landing users on home and bouncing because the
+`data` payload had no consistent deep-link contract. Standardised on a
+3-field schema enforced by a shared helper:
+
+- `route` — one of `/recipe`, `/friend_request`, `/comment_thread`,
+  `/cooking_session`, `/menu_voting`, `/winback`
+- `targetId` — entity id, or empty string for inbox-style routes
+- `notificationType` — analytics tag
+
+Helper: `functions/src/shared/notification-payload.ts` →
+`buildNotificationPayload({route, targetId, notificationType, additionalData})`
+returns `Record<string, string>`. Schema fields **win** on collision with
+`additionalData` so legacy senders can't override them. Throws on
+missing/unknown route — surfaced as `HttpsError("invalid-argument")`
+in callable wrappers, not `internal`, because retrying won't help.
+
+Choke points wired through the helper:
+- `notifications/send-notification.ts:sanitizeData` — both non-silent
+  (prefs-aware) and silent (background-sync) paths funnel through it.
+  Silent push also gets schema fields — the client needs `route`/
+  `notificationType` to dispatch background work and attribute it.
+- `analytics/detect-lapsed-users.ts` → win-back, route `/winback`.
+- `analytics/send-activity-digest.ts` → digest, route `/winback` (it's
+  effectively a re-engagement ping; `notificationType=activity_digest`
+  separates it for analytics).
+
+Patterns worth remembering:
+- **FCM data payload is string-only.** A stray `null`/`undefined`/`Number`
+  slipping through causes `messaging/invalid-argument` at delivery — billed
+  but undelivered. The helper coerces via `String()` and drops nullish
+  values defensively.
+- **Allowlist drift is silent.** Without a typed `as const` array + test,
+  a typo (`/recipes` vs `/recipe`) routes users to home. Test
+  `notification-payload.test.ts` includes a "no drift" check that pins the
+  exact 6 routes.
+- **Throw early, surface clearly.** Helper throws plain `Error` with a
+  prefix (`buildNotificationPayload:`) so the callable wrapper can
+  recognise and convert to `HttpsError("invalid-argument")` instead of
+  the generic `internal` (which would also trigger client retry storms).
+- **Activity digest doesn't fit a unique route.** Reused `/winback`
+  because both are re-engagement pings with no specific entity target.
+  `notificationType` keeps them distinguishable for CTR analysis.

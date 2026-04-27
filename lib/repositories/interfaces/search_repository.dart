@@ -16,6 +16,14 @@ import 'package:butlery/models/recipe_unified.dart';
 /// final results = await searchRepo.searchRecipes('pasta carbonara');
 /// ```
 abstract class SearchRepository {
+  /// Whether this repo provides server-side search (e.g. Algolia, Meilisearch)
+  /// that scans the full corpus. False for the Firestore fallback, which
+  /// applies a client-side filter on a 200-row prefix.
+  ///
+  /// [RecipeSearchRouter] uses this to decide whether to bypass the legacy
+  /// `RecipeRepository.searchRecipes` 200-cap path.
+  bool get usesExternalSearch => false;
+
   /// Search recipes with optional filters.
   /// Returns paginated results with metadata.
   Future<SearchResult<RecipeSearchHit>> searchRecipes(

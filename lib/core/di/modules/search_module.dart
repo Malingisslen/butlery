@@ -6,10 +6,13 @@ import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/algolia/algolia_search_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_search_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/search/recipe_search_router.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Search module providing search functionality with provider abstraction.
@@ -31,7 +34,7 @@ class SearchModule implements DIModule {
   List<Type> get dependencies => [CoreModule];
 
   @override
-  List<Type> get provides => [SearchRepository];
+  List<Type> get provides => [SearchRepository, RecipeSearchRouter];
 
   @override
   int get priority => 15; // After Core (1), before Content (10)
@@ -48,6 +51,23 @@ class SearchModule implements DIModule {
       container.registerLazySingleton<SearchRepository>(() => _proxy!);
       AppLogger.info(
           'SearchModule: Registered default Firestore search provider');
+
+      // BUT-475: router that prefers Algolia (uncapped) over the legacy
+      // Firestore client-side filter (200-cap) for recipe text search.
+      // Lazy because RecipeRepository is registered by ContentModule,
+      // which initialises before us (priority 10 < 15).
+      container.registerLazySingleton<RecipeSearchRouter>(
+        () => RecipeSearchRouter(
+          recipeRepository: container<RecipeRepository>(),
+          searchRepository: container<SearchRepository>(),
+          analytics: container.isRegistered<AnalyticsService>()
+              ? container<AnalyticsService>()
+              : null,
+          featureFlags: container.isRegistered<FeatureFlagService>()
+              ? container<FeatureFlagService>()
+              : null,
+        ),
+      );
     } catch (e) {
       throw DIModuleException(
         name,
@@ -127,6 +147,9 @@ class SearchModuleFactory {
 class _DelegatingSearchRepository implements SearchRepository {
   SearchRepository delegate;
   _DelegatingSearchRepository(this.delegate);
+
+  @override
+  bool get usesExternalSearch => delegate.usesExternalSearch;
 
   @override
   Future<SearchResult<RecipeSearchHit>> searchRecipes(String query,

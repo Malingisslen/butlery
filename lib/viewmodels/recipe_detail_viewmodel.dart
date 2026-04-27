@@ -62,6 +62,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/in_app_review_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -346,6 +347,7 @@ class RecipeDetailViewModel extends ChangeNotifier
           notifyListeners();
           throw Exception(AppLocale.current.errorCouldNotUpdate('betyg'));
         }
+        await _maybeRequestInAppReview(rating);
         return true;
       } else {
         // Shared/collaborative — use social rating system
@@ -356,12 +358,24 @@ class RecipeDetailViewModel extends ChangeNotifier
         if (success) {
           _recipe = _recipe.copyWith(rating: rating);
           notifyListeners();
+          await _maybeRequestInAppReview(rating);
           return true;
         } else {
           throw Exception(AppLocale.current.errorCouldNotUpdate('betyg'));
         }
       }
     });
+  }
+
+  /// BUT-678: trigger in-app review prompt at the happy moment.
+  /// Best-effort — never propagates failures back into the rating flow.
+  Future<void> _maybeRequestInAppReview(double rating) async {
+    try {
+      final reviewService = ServiceLocator.tryGet<InAppReviewService>();
+      await reviewService?.maybeRequest(rating: rating);
+    } catch (_) {
+      // Courtesy prompt failure must never affect rating success.
+    }
   }
 
   /// Removes the current user's rating from this recipe.

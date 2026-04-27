@@ -26,6 +26,8 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_feedback_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
+import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_acquisition_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
@@ -34,6 +36,7 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/in_app_review_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/services/theme/seasonal_accent_service.dart';
@@ -83,11 +86,13 @@ class CoreModule implements DIModule {
       SessionTimeoutService,
       FirebaseAuditRepository,
       FirebaseConsentRepository,
+      AcquisitionRepository,
       FirestoreRepository,
       PersistenceService,
       // Analytics services are available on all platforms (NoOp on web)
       AnalyticsRepository,
       AnalyticsService,
+      InAppReviewService,
       AccountDeletionService,
       DataExportService,
       ConsentService,
@@ -169,6 +174,15 @@ class CoreModule implements DIModule {
         ),
       );
 
+      // BUT-612: Acquisition attribution repository — first-write-wins
+      // mirror of the campaign_click UTM data for server-side cohorting.
+      container.registerLazySingleton<AcquisitionRepository>(
+        () => FirebaseAcquisitionRepository(
+          authRepository: container<AuthRepository>(),
+          auditRepository: container<FirebaseAuditRepository>(),
+        ),
+      );
+
       // FirestoreRepository provides centralized Firestore access
       container.registerSingleton<FirestoreRepository>(FirestoreRepository());
 
@@ -183,6 +197,14 @@ class CoreModule implements DIModule {
       // Analytics service for monitoring and tracking (available on all platforms)
       container.registerSingleton<AnalyticsService>(
         AnalyticsService(repository: container<AnalyticsRepository>()),
+      );
+
+      // BUT-678: in-app review prompt service (App Store / Play Store).
+      // Lazy — only constructed when first rating is submitted.
+      container.registerLazySingleton<InAppReviewService>(
+        () => InAppReviewService(
+          analytics: container<AnalyticsService>(),
+        ),
       );
 
       // Authentication service is critical and needed by many other services

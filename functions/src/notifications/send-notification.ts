@@ -22,6 +22,7 @@ import {
   findInvalidTokens,
 } from "../shared/fcm-tokens";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
+import { buildNotificationPayload } from "../shared/notification-payload";
 
 /**
  * Sanitizes user-provided text by stripping HTML tags.
@@ -153,6 +154,19 @@ export const sendNotification = onCall(
       });
       return result;
     } catch (error) {
+      // BUT-641: helper throws on missing/unknown schema fields. Surface
+      // as `invalid-argument` so the client sees a useful error instead
+      // of a generic `internal` (which would also trigger client retry).
+      if (
+        error instanceof Error &&
+        error.message.startsWith("buildNotificationPayload:")
+      ) {
+        logger.warn(
+          `Rejected notification to ${targetUserId}: ${error.message}`
+        );
+        throw new HttpsError("invalid-argument", error.message);
+      }
+
       logger.error(
         `Failed to send notification to user ${targetUserId}:`,
         error
@@ -265,20 +279,47 @@ export async function dispatchNotification(
 }
 
 /**
- * Pass-through `imageUrl` into the data payload so the client can still
- * render rich content if the OS supports it. The helper drops it from the
- * notification payload itself (no `imageUrl` field in its message), but
- * surfacing it via data preserves the URL for the client to handle.
+ * Funnels the client-supplied `data` map through `buildNotificationPayload`
+ * (BUT-641) so every push carries a consistent `{route, targetId,
+ * notificationType}` triple. The client is the source of truth for these
+ * three values; everything else in `data` is preserved as additional data.
+ *
+ * `imageUrl` is appended to the additional-data slot so the client can
+ * still render rich content if the OS supports it. The notification
+ * payload itself drops `imageUrl` (no rich-image FCM field) but surfacing
+ * it through `data` preserves the URL for the client to handle.
+ *
+ * Throws via `buildNotificationPayload` if any of the schema fields are
+ * missing or `route` is unknown — surfaced as `HttpsError("invalid-
+ * argument", ...)` by the callable wrapper.
  */
 function sanitizeData(
   data: Record<string, string> | undefined,
   imageUrl: string | undefined
 ): Record<string, string> {
-  const out: Record<string, string> = { ...(data || {}) };
+  const incoming: Record<string, string> = { ...(data || {}) };
+
+  // Pull schema fields out so they don't end up in `additionalData` AND
+  // get re-applied by the helper (the latter would be redundant but
+  // harmless). Empty `targetId` is allowed for routes that don't need
+  // one, so we only require it to be present (non-undefined).
+  const route = incoming.route;
+  const targetId = incoming.targetId ?? "";
+  const notificationType = incoming.notificationType;
+  delete incoming.route;
+  delete incoming.targetId;
+  delete incoming.notificationType;
+
   if (imageUrl && isAllowedUrl(imageUrl)) {
-    out.imageUrl = imageUrl;
+    incoming.imageUrl = imageUrl;
   }
-  return out;
+
+  return buildNotificationPayload({
+    route,
+    targetId,
+    notificationType,
+    additionalData: incoming,
+  });
 }
 
 interface DispatchSilentOpts {
@@ -305,9 +346,12 @@ async function dispatchSilent(
     };
   }
 
+  // Silent pushes go through the schema funnel too (BUT-641). Even
+  // background-sync payloads need a `route`/`notificationType` so the
+  // client can dispatch the work and attribute it for analytics.
   const message: admin.messaging.MulticastMessage = {
     tokens,
-    data: payload || {},
+    data: sanitizeData(payload, undefined),
     android: {
       priority: "high",
     },

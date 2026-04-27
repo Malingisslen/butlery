@@ -14,6 +14,7 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { BATCH_LIMIT } from "../shared/batch-update";
+import { buildNotificationPayload } from "../shared/notification-payload";
 
 const getDb = () => admin.firestore();
 
@@ -139,7 +140,13 @@ export const detectLapsedUsers = onSchedule(
                 userId,
                 { title: "Butlery", body: threshold.message },
                 "reEngagement",
-                { type: threshold.type }
+                buildNotificationPayload({
+                  route: "/winback",
+                  // Win-back has no target entity — it just opens the app.
+                  targetId: "",
+                  notificationType: threshold.type,
+                  additionalData: { type: threshold.type },
+                })
               )
             )
           );

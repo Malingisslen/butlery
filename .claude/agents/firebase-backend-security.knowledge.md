@@ -971,3 +971,95 @@ the legacy `butlery_fallback_device_id` reader gets a literal
 in `setUp()` resets the in-memory backing store between tests — no
 platform-channel handler needed. To assert that a key was scrubbed,
 just `getInstance().getString(key)` and check for null.
+
+### 2026-04-27 — third-party HTTPS pinning (BUT-427)
+
+`http_certificate_pinning ^3.0.1` is the package; the SDK constraint is
+satisfied by 3.0.x. The package ships a `SecureHttpClient` and a Dio
+`CertificatePinningInterceptor` — **neither is sufficient on its own**:
+
+- `SecureHttpClient.send(BaseRequest)` falls through unconditionally and
+  only the non-streaming `get/post/...` helpers run the pin check.
+  HttpContentFetcher and OCRExtractionService both use `client.send(...)`
+  directly (size-capped streaming reads, multipart uploads) — using the
+  package's send() bypass would silently disable pinning on the hottest
+  third-party paths. Roll our own `BaseClient` that overrides `send()`.
+- The Dio interceptor takes a single static fingerprint list. Algolia
+  uses 4-5 different host URLs (`*-dsn.algolia.net`,
+  `*.algolia.net`, three shuffled `*.algolianet.com`) — needs a per-host
+  variant that reads pins from a config map.
+
+**Architecture:**
+
+| File | Role |
+|---|---|
+| `lib/services/security/cert_pin_config.dart` | Global host → pin list map. Empty list = wired but inactive. |
+| `lib/services/security/pinned_http_client.dart` | `BaseClient` wrapper for `package:http` callers (OCR + URL scrape). Overrides `send()` so streaming requests are pinned. |
+| `lib/services/security/pinned_http_client_factory.dart` | Builds the http client and wires the analytics callback. |
+| `lib/repositories/algolia/algolia_pinning_interceptor.dart` | Per-host Dio interceptor for Algolia. Lives next to the algolia repo because `dio` is a transitive dep of `algoliasearch` only — keeping it there avoids needing dio as a top-level dependency. |
+
+**Telemetry contract (`ssl_pin_mismatch`):** logs `host` and `error_kind`
+(`'mismatch'`, `'check_failed'`, `'non_https_pinned_host'`). The request
+still throws — soft-fail means the app does not crash, NOT that we accept
+an unverified cert.
+
+**Empty pin list = no-op fall through.** Hosts with no configured pins
+(or with a TODO placeholder list) fall through to the platform trust
+store. This keeps the wrapper safe to install everywhere — a misconfigured
+pin map cannot itself break unrelated requests, and the ops rotation task
+can populate real fingerprints without a code change at the call sites.
+
+**Pin lookup contract:** `pinsForHost(host)` returns `List<String>` —
+empty (NOT null) for unknown hosts. Callers rely on the empty-list
+contract and would crash on null. Unit-tested explicitly so a future
+contributor doesn't change the return type.
+
+### 2026-04-27 — push notification deep-link routing (BUT-641)
+
+The pre-BUT-641 wiring was an inline lambda in main.dart that pushed
+whatever `route` came in `RemoteMessage.data`. Two regression risks:
+1. legacy in-flight payloads without `route` crashed (null pushed to
+   `pushNamed`),
+2. no analytics → push CTR was unmeasurable.
+
+**Pattern: dedicated router class with route constants.**
+`NotificationRoutes.{recipe, friendRequest, commentThread,
+cookingSession, menuVoting, winback}` are the canonical strings the
+Cloud Functions sender must align against. Adding a route requires
+adding the constant AND the `case` branch in `handle()`.
+
+**Three-state outcome model:**
+
+| Input | Behavior | Analytics event |
+|---|---|---|
+| `route == null \|\| empty` (legacy) | push home (and clear stack) | `notification_payload_missing_route` |
+| `route` not in known set (drift) | push home (and clear stack) | `notification_payload_unknown_route` |
+| Known route | navigator action | `notification_opened` |
+
+The unknown-route guard is the early-warning signal for client-server
+drift: a Cloud Functions sender shipping a new route string before the
+client knows about it is exactly what BUT-641 is meant to surface, not
+crash on.
+
+**Wired in main.dart `_onApplicationReady`:**
+```dart
+final notificationRouter = NotificationDeepLinkRouter(
+  navigatorResolver: () => appNavigatorKey.currentState,
+  analyticsResolver: () => ServiceLocator.tryGet<AnalyticsService>(),
+);
+NotificationService.onNotificationTapped = notificationRouter.handle;
+```
+
+`NotificationService._handleMessageOpened` extracts `route`, `targetId`,
+`notificationType` from `RemoteMessage.data` and forwards them. When
+`route` is null it forwards `''` so the router (not the wrapper) owns
+the missing-route default. `getInitialMessage` (terminated-app launch)
+flows through the same `_onMessageOpenedApp` callback already, no
+separate wiring needed.
+
+**Test pattern: `Mock implements NavigatorState` needs an explicit
+`toString({DiagnosticLevel minLevel})` override.** NavigatorState mixes
+in Diagnosticable; mocktail's default `toString() => '$runtimeType'`
+doesn't satisfy that signature and produces a compile-time error. The
+override is one line — but a `Fake implements NavigatorState` hits the
+same wall.

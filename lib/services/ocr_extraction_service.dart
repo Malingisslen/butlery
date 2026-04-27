@@ -12,6 +12,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
+import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
 class OCRResult {
@@ -202,11 +203,15 @@ class OCRExtractionService extends BaseService {
   static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
   static const double _minConfidenceThreshold = 0.6;
 
-  // Lazily-created HTTP client (reused across calls, closed on dispose)
+  // Lazily-created HTTP client (reused across calls, closed on dispose).
+  // BUT-427: third-party OCR fallbacks (OCR.space, Google Vision, Tesseract)
+  // are wrapped in PinnedHttpClient so a hostile-wifi attacker cannot
+  // intercept upload bytes via a forged TLS cert. Pinning is no-op for hosts
+  // without configured pins in CertPinConfig (TODO placeholders).
   http.Client? _cachedHttpClient;
   http.Client get _httpClient {
     if (_testHttpClient != null) return _testHttpClient;
-    return _cachedHttpClient ??= http.Client();
+    return _cachedHttpClient ??= PinnedHttpClientFactory.create();
   }
 
   String get _ocrApiKey {

@@ -1,6 +1,5 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/utils/shared_preferences_safe.dart';
 
 /// Sets the once-per-user `first_recipe_source` analytics user property
 /// (BUT-618). Mirrors the SharedPreferences-flag dedupe pattern from A1's
@@ -24,7 +23,8 @@ class FirstRecipeSourceMilestone {
     if (analytics == null) return false;
     if (userId == null || userId.isEmpty) return false;
 
-    final prefs = await _tryGetPrefs();
+    final prefs =
+        await tryGetSharedPreferences(logTag: 'FirstRecipeSourceMilestone');
     if (prefs == null) return false;
 
     final key = '$_prefsPrefix$userId';
@@ -36,16 +36,5 @@ class FirstRecipeSourceMilestone {
     );
     await prefs.setBool(key, true);
     return true;
-  }
-
-  static Future<SharedPreferences?> _tryGetPrefs() async {
-    try {
-      return await SharedPreferences.getInstance();
-    } catch (e) {
-      AppLogger.warning(
-        'first_recipe_source milestone: SharedPreferences unavailable ($e); skipping',
-      );
-      return null;
-    }
   }
 }

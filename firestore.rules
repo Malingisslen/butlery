@@ -1353,6 +1353,28 @@ service cloud.firestore {
     }
 
     // ========================================
+    // ACQUISITION ATTRIBUTION (BUT-612)
+    // First-write-wins UTM data mirroring `campaign_click` events for
+    // server-side cohort/retention analysis. Owner reads + creates only;
+    // updates are blocked so original-source attribution is immutable.
+    // Deletes go through admin tooling, not the client.
+    // ========================================
+    match /users/{userId}/acquisition/{acquisitionDoc} {
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && hasRequiredFields(['source', 'medium', 'campaign', 'firstSeenAt'])
+        && request.resource.data.firstSeenAt == request.time;
+
+      // First-write-wins: clients cannot modify or delete acquisition data
+      // once written. Admin/server flows handle erasure (GDPR Art. 17).
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ========================================
     // MENU TEMPLATES - Reusable menu templates
     // ========================================
 

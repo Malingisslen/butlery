@@ -95,6 +95,7 @@ import 'package:butlery/core/observers/route_tracker.dart';
 // Services for auth wrapper
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_deep_link_router.dart';
 
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
@@ -941,10 +942,16 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       handler.processPendingDeepLink(context);
     }
 
-    // Wire notification tap → navigator so taps actually navigate
-    NotificationService.onNotificationTapped = (route, data) {
-      appNavigatorKey.currentState?.pushNamed(route, arguments: data);
-    };
+    // BUT-641: wire notification tap → deep-link router so taps land on
+    // the right screen (recipe / friend request / comment / cooking / menu /
+    // winback) and `notification_opened` analytics fires for CTR
+    // attribution. Replaces the previous inline lambda which had no
+    // analytics and crashed on legacy in-flight payloads without `route`.
+    final notificationRouter = NotificationDeepLinkRouter(
+      navigatorResolver: () => appNavigatorKey.currentState,
+      analyticsResolver: () => ServiceLocator.tryGet<AnalyticsService>(),
+    );
+    NotificationService.onNotificationTapped = notificationRouter.handle;
   }
 }
 

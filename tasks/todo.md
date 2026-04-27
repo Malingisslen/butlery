@@ -1,6 +1,61 @@
 # Sprint Backlog
 
-## Sprint: Security rules tighten + repo-layer close-out + OCR fixes — 2026-04-27
+## Sprint: SSL pinning + push deep-linking + analytics + theme sweep — 2026-04-27
+
+Theme: drain the next batch of High-priority tickets across security, growth instrumentation, and theme cleanup. **4 agents, 8 tasks, isolated file trees** (Algolia/OCR HTTP clients · Cloud Functions notification senders · views/widgets theme tokens · analytics events).
+
+Prior sprint (`6fdac5724`) shipped — security rules tightened, repo-layer further drained, OCR validated, retry policy added. Carry-overs **BUT-501 / BUT-458** stay In Progress (partial-by-design residuals to settle one cycle); **BUT-498 / BUT-697** also stay In Progress per standing skip-direction.
+
+### Agent A: firebase-backend-security — SSL pinning + push payload deep-linking
+
+- [x] **A1. Add SSL certificate pinning for third-party HTTPS** — done. Added `http_certificate_pinning: ^3.0.1`. New `lib/services/security/cert_pin_config.dart` (per-host SHA-256 SPKI pin map; TODO placeholders for fingerprints — values come from a separate ops task), `pinned_http_client.dart` (BaseClient wrapper that pins on every send), `pinned_http_client_factory.dart` (factory wiring `ssl_pin_mismatch` analytics). Algolia: per-host Dio interceptor in `algolia_pinning_interceptor.dart` (dio reached transitively via algoliasearch — no new top-level dep). OCR (`ocr_extraction_service.dart`) and URL scraper (`http_content_fetcher.dart`) wrap their lazy HTTP clients via `PinnedHttpClientFactory.create()`. 15 tests green. (BUT-427)
+- [x] **A2. Add `route` + `targetId` to all push notification payloads** — done. **Server**: new `functions/src/shared/notification-payload.ts` (`buildNotificationPayload` + 6-route allowlist `/recipe`/`/friend_request`/`/comment_thread`/`/cooking_session`/`/menu_voting`/`/winback`). 3 senders funnel through it (`sendNotification` callable + silent path, `detectLapsedUsers`, `sendWeeklyActivityDigest`). `HttpsError("invalid-argument")` on schema violation (avoids client retry storm). 12 new tests + extended `send-notification.test.ts`. **Client**: `notification_deep_link_router.dart` with route constants + analytics for missing/unknown routes (legacy-tolerant default-to-home). main.dart wired to instance; `notification_service._handleMessageOpened` forwards `route/targetId/notificationType`. 12 router tests green. (BUT-641)
+
+### Agent B: flutter-developer — Recipe search routing + in-app review
+
+- [x] **B1. Route recipe search through Algolia (fix 200-cap silent miss)** — done. New `lib/services/search/recipe_search_router.dart` — routes through `AlgoliaSearchRepository` when (a) `enable_algolia_search` Remote Config flag is on AND (b) the live `SearchRepository` delegate is Algolia (creds-resolution stays in `SearchModule`, the single source of truth — router observes the result). Falls back to legacy `RecipeRepository.searchRecipes` on flag-off, missing-creds, or Algolia exception. Wired into `RecipeServiceAdapter.searchRecipes` via `tryGet` (transparent for tests/partial DI). `has_algolia_search` user property fires once. 8 tests green. **Note:** `searchByTitle`/`findByIngredient` (the 200-cap methods at lines 865, 885) are unreferenced outside the file (0 external callers); the actively-used path is `searchRecipes:412` which the router now bypasses when Algolia is active. Dead-code cleanup left for follow-up. (BUT-475)
+- [x] **B2. In-app review prompt** — done. Added `in_app_review: ^2.0.10`. New `lib/services/in_app_review_service.dart` with 4 gates: rating ≥ 4, cumulative ≥ 3 happy cooks (not just count), ≥ 7 days since first-seen, > 90 days since last prompt. **Decision**: no `firstInstallTime` tracker existed — self-bootstrapped `first_seen_at` timestamp on first `maybeRequest` call. Wired into `RecipeDetailViewModel.rateRecipe` post-success (covers both personal-rating and social-rating branches via single call site). Failures swallowed in try/catch. Analytics: `in_app_review_requested` fires on success. 8 tests green. (BUT-678)
+
+### Agent C: flutter-developer — Theme tokens + dual-source string audit
+
+- [x] **C1. Sweep `Colors.*` references → theme tokens** — done. **Reality check**: actual literal `Colors.*` count was 38 across 35 files, of which 35 were `Colors.transparent` (kept per spec). The "361" figure in the ticket included `AppColors.*` matches. Two substantive migrations: `veckomeny_view.dart` (2× `Colors.white` → `AppColors.cardWhite` on translucent green-header toggle) + `vegetable_illustration.dart` (1× kept as `Color(0xFFFFFFFF)` literal — identity `BlendMode.modulate`, truly always-white). Final state: zero non-transparent `Colors.*` in `lib/views/` and `lib/widgets/`. (BUT-689)
+- [x] **C2. Audit `app_strings.dart` for user-facing strings** — done. **Pre-existing state**: file already migrated in prior sweeps. Zero plain user-facing constants remained — only computed helpers (`formatDuration`, `permissionContextualError`, etc.) that delegate to `AppLocale.current` or `context.l10n`. Added contract comment at file top forbidding user-facing text. Only 1 external caller (`contextual_error_handler.dart`) and it uses computed helpers correctly. No ARB regen needed. (BUT-585)
+
+### Agent D: flutter-developer — Acquisition + parse-quality analytics
+
+- [x] **D1. Persist UTM params as user properties** — done. Real handler is `lib/core/bootstrap/handlers/deep_link_handler.dart` (not `lib/services/deep_link_service.dart` — ticket path was stale). On first UTM arrival, sets Firebase user properties `acquisition_source/medium/campaign` + mirrors to Firestore `users/{uid}/acquisition/current` via new `AcquisitionRepository` (interface + firebase impl with PermissionValidationMixin). Two-layer dedup: SharedPreferences flags (per-uid + `__anon__` for pre-auth) + repo-level read-before-write. Anonymous users get user properties immediately; Firestore mirror deferred until uid exists. Firestore rules added: owner read/create with `firstSeenAt == request.time`; updates and deletes blocked client-side (first-write-wins immutability + admin-only erasure). 17 unit tests + 9 rules tests (rules tests need emulator). (BUT-612)
+- [x] **D2. Track post-import recipe edits for parse quality** — done. `kPostImportEditWindowDays = 30`. New `lib/utils/recipe_diff.dart` (pure diff helper, snake_case field names) + `lib/services/analytics/post_import_edit_decider.dart` (pure-function decision logic). `recipe_persistence_manager._logRecipeEdited` delegates to decider; on top of existing `recipe_edited`, emits `post_import_edit` with `recipe_id`, `fields_changed`, `hours_since_import`, `tier_used` when available. `recipeImportedAt` uses `recipe.createdAt` as proxy (Recipe has no `importedAt` field). **Honest gap**: `tier_used` is captured from `originalParsedRecipe.metadata.successfulTier` and is only available on the FIRST edit after import (parsed-recipe state clears post-save). Subsequent edits within 30-day window emit `post_import_edit` with `tier_used` omitted rather than guessed. 17 tests green. (BUT-569)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos`
+- [ ] `flutter test` (Algolia routing + theme regression + analytics emitters)
+- [ ] `cd functions && npm test` (push payload schema + senders)
+- [ ] Commit, push to main
+- [ ] Update Linear: completed sprint tickets → Done
+
+### Continued blockers (NOT in scope per memory)
+
+- BUT-415 / BUT-731 / BUT-714 / BUT-646 — store/play submission deferred (Apple Dev enrollment + Play Data Safety filing + Universal Links + hosted privacy)
+- BUT-501 / BUT-458 — partial-by-design from prior sprint; let work bed in one cycle
+- BUT-498 / BUT-697 — explicitly skipped per standing direction
+
+---
+
+## What this means in plain language
+
+- **Search actually finds your stuff.** Today, if you have 500+ recipes, search silently skips 300+. After this, search routes through Algolia and finds them all.
+- **Tapping a notification takes you somewhere useful.** Today notifications drop you on the home screen; after this they open the recipe / friend request / comment they're about.
+- **Happy users get a nudge to leave a review** at the right moment (after a good cook, only once, OS-rate-limited).
+- **Network calls get safer.** Algolia / OCR / scraping requests now refuse to talk to a fake server impersonating those hosts on a hostile wifi.
+- **Theme cleanup makes dark mode less broken.** ~360 hardcoded white/black colors get swapped to theme-aware tokens.
+- **Marketing finally measurable.** UTM params from "where did this user come from" now stick to the user, so retention can be sliced by acquisition channel.
+- **Parse-quality loop closes.** When you edit an imported recipe, that signal feeds back to "which sites need better parsing rules" — completing the loop BUT-552 just opened.
+- **Risk: low.** A1/A2 are additive (soft-fail SSL telemetry; payload fields default-empty). B1 is feature-flagged. B2 is a one-line OS prompt. C1-C2 + D1-D2 are mechanical. Easy to revert any single task — one commit per task.
+
+---
+
+## Archived Sprint: Security rules tighten + repo-layer close-out + OCR fixes — 2026-04-27 (shipped `6fdac5724`)
 
 Theme: drain the High-priority security/permissions cluster while one agent finishes the Firestore-bypass migration started in BUT-498's sister ticket BUT-501. Cloud Functions agent fixes the OCR fileData URL gap and the no-op preprocess stub. Flutter agent audits user-facing network calls. **4 agents, 8 tasks, isolated file trees** (rules · services/account · functions/src/ocr · widgets/views).
 
@@ -27,31 +82,6 @@ Linear hygiene flipped at sprint kickoff: BUT-450, BUT-635, BUT-419 → Done (wo
 
 - [x] **D1. Implement client-side OCR `_preprocessImage`** — done. Located at `lib/services/ocr_extraction_service.dart:525` (was a no-op stub). All 4 steps applied: `bakeOrientation()` for EXIF rotation, `copyResize` linear interpolation to ≤2048px long edge (aspect preserved, no upscale), `grayscale()` + `contrast(115)` (~1.15×), JPEG re-encode q=85. Defensive: `decodeImage` wrapped in try/catch — corrupted bytes (the existing `OCRTestImages.invalidFormat` fixture) trigger an internal `RangeError` in the `image` package's ICO detector; falls back to original bytes. **Pubspec:** added `image: ^4.3.0` (pinned 4.3.x; 4.5+ requires `archive ^4.0.7` which conflicts with project's `archive: ^3.6.1`). 8 new tests in `test/unit/services/ocr_preprocess_test.dart` including a tagged-orientation-6 sideways JPEG (200×100 → 100×200 after preprocess). Existing 117 OCR tests still green. (BUT-652)
 - [x] **D2. Network resilience audit on user-initiated calls** — done. New `lib/utils/retry_policy.dart` — top-level `withRetry<T>()` (chose top-level over mixin since call sites are async functions, not class methods). 3 attempts default, exponential 1s/2s/4s with ±25% symmetric jitter, max-delay cap 30s. Default `isRetryable`: `SocketException`, `TimeoutException`, `HttpException`, `http.ClientException`, `FirebaseException` codes `unavailable`/`deadline-exceeded`/`internal`. Does NOT retry `permission-denied`, `not-found`, validation, cancellations. Test injection points (`random`, `sleeper`) make tests deterministic. 11 tests, all green. **Wrapped 3 idempotent call sites:** image upload (`uploadImageFromBytes` in `image_upload_service.dart`), recipe save (`saveRecipeRaw` + `updateRecipe` in `personal_recipe_crud.dart`), share-extract (`_webScraper.performExtraction` in `extraction_manager.dart`). **Flagged non-idempotent (NOT wrapped):** `personalModule.createPersonalRecipe(...)` generates server-side doc IDs — needs client-generated UUID or server-side dedup-on-idempotency-key before retry-safe. UX surface: new `showErrorSnackbarWithRetry` helper in `snackbar_widgets.dart` + `utility_components.dart` using existing l10n key `commonRetry` ("Försök igen"); wired to `skriv_sjalv_recept_view.dart` save-failure path. 3 other views could migrate to retry variant — left as mechanical follow-up. (BUT-726)
-
-### Post-Sprint Steps
-
-- [ ] `dart analyze --fatal-infos`
-- [ ] `flutter test` (rules tests + repo tests + retry helper tests)
-- [ ] `cd functions && npm test`
-- [ ] Commit, push to main
-- [ ] Update Linear: completed sprint tickets → Done
-
-### Continued blockers (NOT in scope per memory)
-
-- BUT-415 / BUT-426 (iOS half) / BUT-646 / BUT-714 — store/play submission deferred
-- BUT-498 / BUT-697 — explicitly skipped this sprint, remain In Progress
-
----
-
-## What this means in plain language
-
-- **Comments and audit logs get safer.** Today any logged-in user can read every comment in the app, and users can read their own audit trail (which they shouldn't). This sprint locks both down.
-- **Block-lists actually work everywhere.** Today, blocking someone stops them messaging you but not commenting on your recipes or sending you notifications. After this sprint, blocking blocks everything.
-- **Account-export finishes routing through the secure layer.** Same pattern as last sprint's deletion work, applied to the GDPR-export path. No user-visible change — but the export-my-data path stops bypassing the safety net.
-- **Recipe scanning gets sharper.** OCR currently skips image cleanup entirely. Adding contrast/deskew/grey-scale should noticeably improve "I scanned a cookbook page and it got 80% right" → closer to 95%.
-- **Recipe scanning gets safer too.** A small backend hole let arbitrary URLs be forwarded to Google's OCR — now validated for size and content-type first.
-- **Image upload, recipe save, and share-import stop failing on flaky wifi.** Adds 3-attempt retry with backoff, then a clear error if it really fails.
-- **Risk: low.** A1-A3 are rules-only and proven via deny-tests before merge. B1 follows the playbook last sprint validated. B2 removes a fallback, so worth a manual smoke-test on token rotation. C1-C2 are server-side only. D1 is additive. Easy to revert any single task — git reset of one commit per task.
 
 ---
 
