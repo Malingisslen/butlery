@@ -16,7 +16,7 @@ activation:
 
 - **MTTD** (mean time to detect) for CF errors and CF latency regressions
   drops from "next time the founder logs in" to ~5 minutes.
-- Both policies fire to `info@butlery.se` (the project's ops mailbox).
+- Both policies fire to `malin.gisslen1@gmail.com` (the project's ops mailbox).
 - Re-running the script is safe — it skips policies whose `displayName`
   already exists.
 
@@ -27,7 +27,7 @@ activation:
 | Control | Status | Evidence |
 |---|---|---|
 | Alert policy script | ACTIVE + IDEMPOTENT | `infrastructure/alerting/setup-gcp-alerts.sh` |
-| Notification channel | LIVE | `projects/butlery-app-1/notificationChannels/16468429033040673985` (email: info@butlery.se) |
+| Notification channel | LIVE | `projects/butlery-app-1/notificationChannels/11860390942781239556` (email: malin.gisslen1@gmail.com) |
 | `Cloud Functions - High Error Rate` | LIVE, enabled, routed to channel | verified via `gcloud alpha monitoring policies list` |
 | `Cloud Functions - High Latency` | LIVE, enabled, routed to channel | verified via `gcloud alpha monitoring policies list` |
 | Firestore read-rate alert | NOT SHIPPED | metric/resource-type schema churn — see "Deferred policies" below |
@@ -131,7 +131,7 @@ The script aborts with a clear error if `GCP_NOTIFICATION_CHANNEL_ID` is
 unset — fail-loud, never silently apply alerts that can't page anyone.
 
 ```bash
-export GCP_NOTIFICATION_CHANNEL_ID="projects/butlery-app-1/notificationChannels/16468429033040673985"
+export GCP_NOTIFICATION_CHANNEL_ID="projects/butlery-app-1/notificationChannels/11860390942781239556"
 
 bash infrastructure/alerting/setup-gcp-alerts.sh
 ```
