@@ -22635,6 +22635,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Visa {label}'**
   String a11yShareTabSwitch(String label);
+
+  /// Semantics label for the add-pantry-item floating action button on the pantry view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ny vara'**
+  String get a11yPantryAddItem;
+
+  /// Semantics label for a tappable pantry item card row.
+  ///
+  /// In sv, this message translates to:
+  /// **'{itemName}, tryck för att redigera'**
+  String a11yPantryEditItem(String itemName);
+
+  /// Semantics label for the expiry-date picker tile in the add-pantry-item sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj utgångsdatum'**
+  String get a11yPantryPickExpiry;
+
+  /// Semantics label for a tappable draft recovery list tile.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title}, tryck för att återställa'**
+  String a11yDraftRecoverTile(String title);
+
+  /// Semantics label for the static-copy share-mode option in the universal share dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Statisk kopia, tryck för att välja'**
+  String get a11yShareModeStaticCopy;
+
+  /// Semantics label for the realtime sharing option in the universal share dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Realtidsdelning, tryck för att välja'**
+  String get a11yShareModeRealtime;
 }
 
 class _AppLocalizationsDelegate

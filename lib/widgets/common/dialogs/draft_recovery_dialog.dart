@@ -97,70 +97,64 @@ class DraftRecoveryDialog extends StatelessWidget {
 
   /// Build individual draft tile
   Widget _buildDraftTile(BuildContext context, DraftMetadata draft) {
+    final draftTitle =
+        draft.title.isEmpty ? context.l10n.draftUnnamedRecipe : draft.title;
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        onTap: () => Navigator.of(context).pop(draft.draftId),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
-          child: Row(
-            children: [
-              // Recipe icon
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingS),
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .primary
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
+      child: Semantics(
+        label: context.l10n.a11yDraftRecoverTile(draftTitle),
+        button: true,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          onTap: () => Navigator.of(context).pop(draft.draftId),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AppDimensions.paddingS),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: AppDimensions.opacityVeryLight),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                  ),
+                  child: Icon(
+                    Icons.article_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: AppDimensions.iconSizeM,
+                  ),
                 ),
-                child: Icon(
-                  Icons.article_outlined,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: AppDimensions.iconSizeM,
-                ),
-              ),
-
-              const SizedBox(width: AppDimensions.spacingM),
-
-              // Draft details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title
-                    Text(
-                      draft.title.isEmpty
-                          ? context.l10n.draftUnnamedRecipe
-                          : draft.title,
-                      style: AppTextStyles.contentTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    const SizedBox(height: AppDimensions.spacingXxs),
-
-                    // Metadata (time and field count)
-                    Text(
-                      '${draft.timeAgo} • ${context.l10n.draftFieldsFilledCount(draft.fieldCount)}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                const SizedBox(width: AppDimensions.spacingM),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        draftTitle,
+                        style: AppTextStyles.contentTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: AppDimensions.spacingXxs),
+                      Text(
+                        '${draft.timeAgo} • ${context.l10n.draftFieldsFilledCount(draft.fieldCount)}',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-
-              // Selection indicator
-              Icon(
-                Icons.arrow_forward_ios,
-                size: AppDimensions.iconSizeS,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ],
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: AppDimensions.iconSizeS,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),

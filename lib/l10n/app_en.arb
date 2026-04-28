@@ -9268,5 +9268,39 @@
         "type": "String"
       }
     }
+  },
+  "a11yPantryAddItem": "Add new item",
+  "@a11yPantryAddItem": {
+    "description": "Semantics label for the add-pantry-item floating action button on the pantry view."
+  },
+  "a11yPantryEditItem": "{itemName}, press to edit",
+  "@a11yPantryEditItem": {
+    "description": "Semantics label for a tappable pantry item card row.",
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPantryPickExpiry": "Pick expiry date",
+  "@a11yPantryPickExpiry": {
+    "description": "Semantics label for the expiry-date picker tile in the add-pantry-item sheet."
+  },
+  "a11yDraftRecoverTile": "{title}, press to restore",
+  "@a11yDraftRecoverTile": {
+    "description": "Semantics label for a tappable draft recovery list tile.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yShareModeStaticCopy": "Static copy, press to select",
+  "@a11yShareModeStaticCopy": {
+    "description": "Semantics label for the static-copy share-mode option in the universal share dialog."
+  },
+  "a11yShareModeRealtime": "Realtime sharing, press to select",
+  "@a11yShareModeRealtime": {
+    "description": "Semantics label for the realtime sharing option in the universal share dialog."
   }
 }

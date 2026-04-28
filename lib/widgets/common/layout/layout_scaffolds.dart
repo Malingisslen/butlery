@@ -218,27 +218,32 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
       child: Material(
         color: color,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: AppDimensions.iconSizeXl, color: cs.onPrimary),
-                const SizedBox(height: AppDimensions.spacingSm),
-                Text(
-                  label,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onPrimary,
-                    fontWeight: FontWeight.w600,
+        child: Semantics(
+          label: label,
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon,
+                      size: AppDimensions.iconSizeXl, color: cs.onPrimary),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  Text(
+                    label,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: cs.onPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

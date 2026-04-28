@@ -45,6 +45,12 @@ class DebouncedButton extends StatefulWidget {
   /// Whether the button is currently disabled (external control).
   final bool disabled;
 
+  /// Optional Semantics label for screen readers. The custom GestureDetector
+  /// path below gives the screen reader nothing to read on its own — pass
+  /// a localized label whenever the visible child is decorative or sits
+  /// behind an `IgnorePointer` that strips inherent semantics.
+  final String? semanticLabel;
+
   const DebouncedButton({
     super.key,
     required this.onPressed,
@@ -53,6 +59,7 @@ class DebouncedButton extends StatefulWidget {
     this.showLoadingIndicator = false,
     this.loadingIndicator,
     this.disabled = false,
+    this.semanticLabel,
   });
 
   @override
@@ -123,7 +130,7 @@ class _DebouncedButtonState extends State<DebouncedButton> {
           );
     }
 
-    return GestureDetector(
+    final detector = GestureDetector(
       onTap: _canPress ? _handlePressed : null,
       behavior: HitTestBehavior.opaque,
       child: IgnorePointer(
@@ -133,6 +140,13 @@ class _DebouncedButtonState extends State<DebouncedButton> {
           child: widget.child,
         ),
       ),
+    );
+    if (widget.semanticLabel == null) return detector;
+    return Semantics(
+      label: widget.semanticLabel,
+      button: true,
+      enabled: _canPress,
+      child: detector,
     );
   }
 }

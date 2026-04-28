@@ -262,26 +262,30 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               },
             ),
             const SizedBox(height: AppDimensions.spacingLg),
-            InkWell(
-              onTap: _pickExpiryDate,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: l10n.pantryExpiryLabel,
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.zero,
+            Semantics(
+              label: l10n.a11yPantryPickExpiry,
+              button: true,
+              child: InkWell(
+                onTap: _pickExpiryDate,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: l10n.pantryExpiryLabel,
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    suffixIcon: _expiryDate != null
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () => setState(() => _expiryDate = null),
+                          )
+                        : const Icon(Icons.calendar_today_outlined),
                   ),
-                  suffixIcon: _expiryDate != null
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () => setState(() => _expiryDate = null),
-                        )
-                      : const Icon(Icons.calendar_today_outlined),
-                ),
-                child: Text(
-                  _expiryDate == null
-                      ? l10n.pantryExpiryNone
-                      : '${_expiryDate!.day}/${_expiryDate!.month}/${_expiryDate!.year}',
-                  style: AppTextStyles.bodyMedium,
+                  child: Text(
+                    _expiryDate == null
+                        ? l10n.pantryExpiryNone
+                        : '${_expiryDate!.day}/${_expiryDate!.month}/${_expiryDate!.year}',
+                    style: AppTextStyles.bodyMedium,
+                  ),
                 ),
               ),
             ),

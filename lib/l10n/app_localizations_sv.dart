@@ -13266,4 +13266,26 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yShareTabSwitch(String label) {
     return 'Visa $label';
   }
+
+  @override
+  String get a11yPantryAddItem => 'Lägg till ny vara';
+
+  @override
+  String a11yPantryEditItem(String itemName) {
+    return '$itemName, tryck för att redigera';
+  }
+
+  @override
+  String get a11yPantryPickExpiry => 'Välj utgångsdatum';
+
+  @override
+  String a11yDraftRecoverTile(String title) {
+    return '$title, tryck för att återställa';
+  }
+
+  @override
+  String get a11yShareModeStaticCopy => 'Statisk kopia, tryck för att välja';
+
+  @override
+  String get a11yShareModeRealtime => 'Realtidsdelning, tryck för att välja';
 }

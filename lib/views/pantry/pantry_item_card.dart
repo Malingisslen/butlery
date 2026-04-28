@@ -36,48 +36,52 @@ class PantryItemCard extends StatelessWidget {
             const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
         child: Icon(Icons.delete, color: cs.onError),
       ),
-      child: InkWell(
-        onTap: () => _showEditSheet(context, viewModel),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: AppDimensions.spacingMd,
-          ),
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(
-                color: cs.outlineVariant.withValues(alpha: 0.4),
-                width: 1,
-              ),
+      child: Semantics(
+        label: context.l10n.a11yPantryEditItem(item.ingredientName),
+        button: true,
+        child: InkWell(
+          onTap: () => _showEditSheet(context, viewModel),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingLg,
+              vertical: AppDimensions.spacingMd,
             ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.ingredientName,
-                      style: AppTextStyles.bodyLarge
-                          .copyWith(fontWeight: FontWeight.w600),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${item.formattedQuantity} ${item.unit}',
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: cs.onSurfaceVariant),
-                    ),
-                  ],
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: cs.outlineVariant.withValues(alpha: 0.4),
+                  width: 1,
                 ),
               ),
-              if (item.expiryDate != null) ...[
-                const SizedBox(width: AppDimensions.spacingSm),
-                _ExpiryBadge(item: item),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.ingredientName,
+                        style: AppTextStyles.bodyLarge
+                            .copyWith(fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${item.formattedQuantity} ${item.unit}',
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: cs.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                if (item.expiryDate != null) ...[
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  _ExpiryBadge(item: item),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

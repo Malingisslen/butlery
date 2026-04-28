@@ -124,46 +124,50 @@ class _DraftListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final draftTitle =
+        draft.title.isNotEmpty ? draft.title : context.l10n.draftUnnamedRecipe;
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: AppDimensions.paddingSymmetric4x12,
-        child: Row(
-          children: [
-            Icon(
-              Icons.description_outlined,
-              size: AppDimensions.iconSizeM,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: AppDimensions.width12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    draft.title.isNotEmpty
-                        ? draft.title
-                        : context.l10n.draftUnnamedRecipe,
-                    style: AppTextStyles.contentLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXxs),
-                  Text(
-                    '${context.l10n.draftFieldsFilledCount(draft.fieldCount)} • ${draft.timeAgo}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+    return Semantics(
+      label: context.l10n.a11yDraftRecoverTile(draftTitle),
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: AppDimensions.paddingSymmetric4x12,
+          child: Row(
+            children: [
+              Icon(
+                Icons.description_outlined,
+                size: AppDimensions.iconSizeM,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ],
+              const SizedBox(width: AppDimensions.width12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      draftTitle,
+                      style: AppTextStyles.contentLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXxs),
+                    Text(
+                      '${context.l10n.draftFieldsFilledCount(draft.fieldCount)} • ${draft.timeAgo}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );

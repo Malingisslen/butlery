@@ -13236,4 +13236,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yShareTabSwitch(String label) {
     return 'Show $label';
   }
+
+  @override
+  String get a11yPantryAddItem => 'Add new item';
+
+  @override
+  String a11yPantryEditItem(String itemName) {
+    return '$itemName, press to edit';
+  }
+
+  @override
+  String get a11yPantryPickExpiry => 'Pick expiry date';
+
+  @override
+  String a11yDraftRecoverTile(String title) {
+    return '$title, press to restore';
+  }
+
+  @override
+  String get a11yShareModeStaticCopy => 'Static copy, press to select';
+
+  @override
+  String get a11yShareModeRealtime => 'Realtime sharing, press to select';
 }

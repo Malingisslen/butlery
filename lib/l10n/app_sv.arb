@@ -9268,5 +9268,39 @@
         "type": "String"
       }
     }
+  },
+  "a11yPantryAddItem": "Lägg till ny vara",
+  "@a11yPantryAddItem": {
+    "description": "Semantics label for the add-pantry-item floating action button on the pantry view."
+  },
+  "a11yPantryEditItem": "{itemName}, tryck för att redigera",
+  "@a11yPantryEditItem": {
+    "description": "Semantics label for a tappable pantry item card row.",
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPantryPickExpiry": "Välj utgångsdatum",
+  "@a11yPantryPickExpiry": {
+    "description": "Semantics label for the expiry-date picker tile in the add-pantry-item sheet."
+  },
+  "a11yDraftRecoverTile": "{title}, tryck för att återställa",
+  "@a11yDraftRecoverTile": {
+    "description": "Semantics label for a tappable draft recovery list tile.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yShareModeStaticCopy": "Statisk kopia, tryck för att välja",
+  "@a11yShareModeStaticCopy": {
+    "description": "Semantics label for the static-copy share-mode option in the universal share dialog."
+  },
+  "a11yShareModeRealtime": "Realtidsdelning, tryck för att välja",
+  "@a11yShareModeRealtime": {
+    "description": "Semantics label for the realtime sharing option in the universal share dialog."
   }
 }

@@ -239,15 +239,19 @@ class _PantryFab extends StatelessWidget {
       color: cs.primary,
       elevation: 4,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      child: InkWell(
-        onTap: onPressed,
-        child: SizedBox(
-          width: 56,
-          height: 56,
-          child: Icon(
-            Icons.add,
-            color: cs.onPrimary,
-            size: AppDimensions.iconSizeL,
+      child: Semantics(
+        label: context.l10n.a11yPantryAddItem,
+        button: true,
+        child: InkWell(
+          onTap: onPressed,
+          child: SizedBox(
+            width: 56,
+            height: 56,
+            child: Icon(
+              Icons.add,
+              color: cs.onPrimary,
+              size: AppDimensions.iconSizeL,
+            ),
           ),
         ),
       ),

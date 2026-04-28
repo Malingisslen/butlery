@@ -31,21 +31,90 @@ class ShareModeSelection {
             // Static Copy Option
             Container(
               margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              child: Semantics(
+                label: context.l10n.a11yShareModeStaticCopy,
+                button: true,
+                selected: selectedMode == ShareMode.staticCopy,
+                child: InkWell(
+                  onTap: () => onModeChanged(ShareMode.staticCopy),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: selectedMode == ShareMode.staticCopy
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.outline,
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusM),
+                      color: selectedMode == ShareMode.staticCopy
+                          ? Theme.of(context)
+                              .colorScheme
+                              .primaryContainer
+                              .withValues(
+                                  alpha: AppDimensions.opacityMediumLight)
+                          : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          selectedMode == ShareMode.staticCopy
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          color: selectedMode == ShareMode.staticCopy
+                              ? Theme.of(context).colorScheme.primary
+                              : null,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingM),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                context.l10n.shareStaticCopy,
+                                style: AppTextStyles.contentTitle,
+                              ),
+                              const SizedBox(height: AppDimensions.spacingXs),
+                              Text(
+                                context.l10n.shareStaticCopyDescription,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Realtime Sharing Option
+            Semantics(
+              label: context.l10n.a11yShareModeRealtime,
+              button: true,
+              selected: selectedMode == ShareMode.realtime,
               child: InkWell(
-                onTap: () => onModeChanged(ShareMode.staticCopy),
+                onTap: () => onModeChanged(ShareMode.realtime),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 child: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: selectedMode == ShareMode.staticCopy
+                      color: selectedMode == ShareMode.realtime
                           ? Theme.of(context).colorScheme.primary
                           : Theme.of(context).colorScheme.outline,
                     ),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusM),
-                    color: selectedMode == ShareMode.staticCopy
+                    color: selectedMode == ShareMode.realtime
                         ? Theme.of(context)
                             .colorScheme
                             .primaryContainer
@@ -55,10 +124,10 @@ class ShareModeSelection {
                   child: Row(
                     children: [
                       Icon(
-                        selectedMode == ShareMode.staticCopy
+                        selectedMode == ShareMode.realtime
                             ? Icons.radio_button_checked
                             : Icons.radio_button_unchecked,
-                        color: selectedMode == ShareMode.staticCopy
+                        color: selectedMode == ShareMode.realtime
                             ? Theme.of(context).colorScheme.primary
                             : null,
                       ),
@@ -68,12 +137,16 @@ class ShareModeSelection {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              context.l10n.shareStaticCopy,
+                              context.l10n.shareRealtimeSharing,
                               style: AppTextStyles.contentTitle,
                             ),
                             const SizedBox(height: AppDimensions.spacingXs),
                             Text(
-                              context.l10n.shareStaticCopyDescription,
+                              contentType == ShareContentType.shoppingList
+                                  ? context
+                                      .l10n.shareRealtimeShoppingDescription
+                                  : context
+                                      .l10n.shareRealtimeSharingDescription,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: Theme.of(context)
                                     .colorScheme
@@ -85,65 +158,6 @@ class ShareModeSelection {
                       ),
                     ],
                   ),
-                ),
-              ),
-            ),
-
-            // Realtime Sharing Option
-            InkWell(
-              onTap: () => onModeChanged(ShareMode.realtime),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              child: Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: selectedMode == ShareMode.realtime
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
-                  color: selectedMode == ShareMode.realtime
-                      ? Theme.of(context)
-                          .colorScheme
-                          .primaryContainer
-                          .withValues(alpha: AppDimensions.opacityMediumLight)
-                      : null,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      selectedMode == ShareMode.realtime
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_unchecked,
-                      color: selectedMode == ShareMode.realtime
-                          ? Theme.of(context).colorScheme.primary
-                          : null,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingM),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.shareRealtimeSharing,
-                            style: AppTextStyles.contentTitle,
-                          ),
-                          const SizedBox(height: AppDimensions.spacingXs),
-                          Text(
-                            contentType == ShareContentType.shoppingList
-                                ? context.l10n.shareRealtimeShoppingDescription
-                                : context.l10n.shareRealtimeSharingDescription,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),
