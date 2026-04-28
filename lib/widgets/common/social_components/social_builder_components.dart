@@ -347,6 +347,9 @@ class SocialBuilderComponents {
 
   /// Build social card wrapper
   /// Consistent card styling for social content
+  ///
+  /// Pass `semanticLabel` whenever the card is tappable (`onTap != null`)
+  /// — the bare InkWell gives screen readers no description on its own.
   static Widget socialCard({
     required Widget child,
     VoidCallback? onTap,
@@ -356,37 +359,48 @@ class SocialBuilderComponents {
     double? elevation,
     BorderRadius? borderRadius,
     Border? border,
+    String? semanticLabel,
   }) {
     return Builder(
-      builder: (context) => Container(
-        margin: margin ??
-            const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm),
-        child: Material(
-          color: backgroundColor ??
-              Theme.of(context).colorScheme.surfaceContainerHighest,
-          elevation: elevation ?? AppDimensions.elevationLow,
+      builder: (context) {
+        final inkwell = InkWell(
+          onTap: onTap,
           borderRadius: borderRadius ??
               BorderRadius.circular(AppDimensions.borderRadius8),
-          child: InkWell(
-            onTap: onTap,
+          child: Container(
+            padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+            decoration: border != null
+                ? BoxDecoration(
+                    border: border,
+                    borderRadius: borderRadius ??
+                        BorderRadius.circular(AppDimensions.borderRadius8),
+                  )
+                : null,
+            child: child,
+          ),
+        );
+        return Container(
+          margin: margin ??
+              const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingMd,
+                  vertical: AppDimensions.spacingSm),
+          child: Material(
+            color: backgroundColor ??
+                Theme.of(context).colorScheme.surfaceContainerHighest,
+            elevation: elevation ?? AppDimensions.elevationLow,
             borderRadius: borderRadius ??
                 BorderRadius.circular(AppDimensions.borderRadius8),
-            child: Container(
-              padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
-              decoration: border != null
-                  ? BoxDecoration(
-                      border: border,
-                      borderRadius: borderRadius ??
-                          BorderRadius.circular(AppDimensions.borderRadius8),
-                    )
-                  : null,
-              child: child,
-            ),
+            child: semanticLabel == null
+                ? inkwell
+                : Semantics(
+                    label: semanticLabel,
+                    button: true,
+                    enabled: onTap != null,
+                    child: inkwell,
+                  ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

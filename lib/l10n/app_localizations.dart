@@ -22671,6 +22671,48 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Realtidsdelning, tryck för att välja'**
   String get a11yShareModeRealtime;
+
+  /// Semantics label for an incoming friend-request card row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänförfrågan från {name}, tryck för att markera'**
+  String a11yFriendRequestIncoming(String name);
+
+  /// Semantics label for a sent friend-request card row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickad förfrågan till {name}, tryck för att markera'**
+  String a11yFriendRequestSent(String name);
+
+  /// Semantics label for a feed filter chip in the friends activity feed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Filtrera flödet på {label}'**
+  String a11yFeedFilter(String label);
+
+  /// Semantics label for the recipe preview tile inside an activity feed event card.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa receptet {title}'**
+  String a11yFeedRecipePreview(String title);
+
+  /// Semantics label for a recipe card on a public profile view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna receptet {title}'**
+  String a11yPublicProfileRecipeCard(String title);
+
+  /// Semantics label for the collapsible header of the blocked users section in privacy settings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Blockerade användare, tryck för att visa eller dölja listan'**
+  String get a11yBlockedUsersToggle;
+
+  /// Semantics label for an invitation target card (friend or group) in the invite picker.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bjud in {name}'**
+  String a11yInvitationTargetCard(String name);
 }
 
 class _AppLocalizationsDelegate

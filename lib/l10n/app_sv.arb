@@ -9302,5 +9302,63 @@
   "a11yShareModeRealtime": "Realtidsdelning, tryck för att välja",
   "@a11yShareModeRealtime": {
     "description": "Semantics label for the realtime sharing option in the universal share dialog."
+  },
+  "a11yFriendRequestIncoming": "Vänförfrågan från {name}, tryck för att markera",
+  "@a11yFriendRequestIncoming": {
+    "description": "Semantics label for an incoming friend-request card row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yFriendRequestSent": "Skickad förfrågan till {name}, tryck för att markera",
+  "@a11yFriendRequestSent": {
+    "description": "Semantics label for a sent friend-request card row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yFeedFilter": "Filtrera flödet på {label}",
+  "@a11yFeedFilter": {
+    "description": "Semantics label for a feed filter chip in the friends activity feed.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yFeedRecipePreview": "Visa receptet {title}",
+  "@a11yFeedRecipePreview": {
+    "description": "Semantics label for the recipe preview tile inside an activity feed event card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPublicProfileRecipeCard": "Öppna receptet {title}",
+  "@a11yPublicProfileRecipeCard": {
+    "description": "Semantics label for a recipe card on a public profile view.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBlockedUsersToggle": "Blockerade användare, tryck för att visa eller dölja listan",
+  "@a11yBlockedUsersToggle": {
+    "description": "Semantics label for the collapsible header of the blocked users section in privacy settings."
+  },
+  "a11yInvitationTargetCard": "Bjud in {name}",
+  "@a11yInvitationTargetCard": {
+    "description": "Semantics label for an invitation target card (friend or group) in the invite picker.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

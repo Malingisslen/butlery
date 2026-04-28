@@ -127,26 +127,31 @@ class FeedTab {
     bool selected,
     VoidCallback onTap,
   ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm,
-        ),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.forestGreen : Colors.transparent,
-          border: Border.all(
-            color: selected
-                ? AppColors.forestGreen
-                : Theme.of(context).dividerColor,
+    return Semantics(
+      label: context.l10n.a11yFeedFilter(label),
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
           ),
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.labelSmall.copyWith(
-            color: selected ? AppColors.cream : AppColors.textDark,
-            fontWeight: FontWeight.w600,
+          decoration: BoxDecoration(
+            color: selected ? AppColors.forestGreen : Colors.transparent,
+            border: Border.all(
+              color: selected
+                  ? AppColors.forestGreen
+                  : Theme.of(context).dividerColor,
+            ),
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: selected ? AppColors.cream : AppColors.textDark,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
@@ -280,47 +285,51 @@ class FeedTab {
   }
 
   static Widget _buildRecipePreview(BuildContext context, ActivityEvent event) {
-    return GestureDetector(
-      onTap: () => _navigateToRecipe(context, event.recipeId),
-      child: Container(
-        padding: const EdgeInsets.all(AppDimensions.spacingSm),
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              color: Theme.of(context).dividerColor,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.restaurant_outlined,
-                color: AppColors.greenMuted,
-                size: AppDimensions.iconSizeM,
+    return Semantics(
+      label: context.l10n.a11yFeedRecipePreview(event.recipeTitle),
+      button: true,
+      child: GestureDetector(
+        onTap: () => _navigateToRecipe(context, event.recipeId),
+        child: Container(
+          padding: const EdgeInsets.all(AppDimensions.spacingSm),
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                color: Theme.of(context).dividerColor,
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.restaurant_outlined,
+                  color: AppColors.greenMuted,
+                  size: AppDimensions.iconSizeM,
+                ),
               ),
-            ),
-            const SizedBox(
-                width: AppDimensions.spacingSm + AppDimensions.spacingXs),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    event.recipeTitle.toLowerCase(),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
+              const SizedBox(
+                  width: AppDimensions.spacingSm + AppDimensions.spacingXs),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.recipeTitle.toLowerCase(),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              size: AppDimensions.iconSizeS,
-              color: AppColors.textLight,
-            ),
-          ],
+              const Icon(
+                Icons.chevron_right,
+                size: AppDimensions.iconSizeS,
+                color: AppColors.textLight,
+              ),
+            ],
+          ),
         ),
       ),
     );

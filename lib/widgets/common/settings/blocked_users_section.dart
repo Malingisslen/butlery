@@ -92,39 +92,44 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
       child: Column(
         children: [
           // Collapsible header
-          InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.block,
-                    color: cs.onSurfaceVariant,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          context.l10n.blockedUsersTitle,
-                          style: AppTextStyles.titleBold,
-                        ),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        Text(
-                          '${_blockedUserIds.length} blockerade',
-                          style: AppTextStyles.metadataEmphasized,
-                        ),
-                      ],
+          Semantics(
+            label: context.l10n.a11yBlockedUsersToggle,
+            button: true,
+            expanded: _isExpanded,
+            child: InkWell(
+              onTap: () => setState(() => _isExpanded = !_isExpanded),
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.block,
+                      color: cs.onSurfaceVariant,
+                      size: AppDimensions.iconSizeM,
                     ),
-                  ),
-                  Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ],
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.l10n.blockedUsersTitle,
+                            style: AppTextStyles.titleBold,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingXs),
+                          Text(
+                            '${_blockedUserIds.length} blockerade',
+                            style: AppTextStyles.metadataEmphasized,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      _isExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

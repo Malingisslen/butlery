@@ -307,63 +307,68 @@ class _PublicRecipeCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
       child: CardContent(
         padding: EdgeInsets.zero,
-        child: InkWell(
-          onTap: () {
-            Navigator.of(context).pushNamed(
-              Routes.receptDetalj,
-              arguments: recipe,
-            );
-          },
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingM),
-            child: Row(
-              children: [
-                // Recipe image or placeholder
-                ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
-                  child: SizedBox(
-                    width: 64,
-                    height: 64,
-                    child: recipe.primaryImageUrl != null
-                        ? Image.network(
-                            recipe.primaryImageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _imagePlaceholder(cs),
-                          )
-                        : _imagePlaceholder(cs),
+        child: Semantics(
+          label: context.l10n.a11yPublicProfileRecipeCard(recipe.title),
+          button: true,
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).pushNamed(
+                Routes.receptDetalj,
+                arguments: recipe,
+              );
+            },
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              child: Row(
+                children: [
+                  // Recipe image or placeholder
+                  ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                    child: SizedBox(
+                      width: 64,
+                      height: 64,
+                      child: recipe.primaryImageUrl != null
+                          ? Image.network(
+                              recipe.primaryImageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  _imagePlaceholder(cs),
+                            )
+                          : _imagePlaceholder(cs),
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppDimensions.spacingM),
-                // Title and meal type
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        recipe.title,
-                        style: AppTextStyles.titleMedium,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (recipe.mealType.isNotEmpty) ...[
-                        const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  // Title and meal type
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          recipe.mealType,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
+                          recipe.title,
+                          style: AppTextStyles.titleMedium,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                        if (recipe.mealType.isNotEmpty) ...[
+                          const SizedBox(height: AppDimensions.spacingXs),
+                          Text(
+                            recipe.mealType,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: cs.onSurfaceVariant,
-                ),
-              ],
+                  Icon(
+                    Icons.chevron_right,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

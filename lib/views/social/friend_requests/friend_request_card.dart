@@ -42,135 +42,144 @@ class FriendRequestCard {
               .primaryContainer
               .withValues(alpha: AppDimensions.opacityMediumLight)
           : null,
-      child: InkWell(
-        onTap: () => onSelectionChanged(!isSelected),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  // Selection checkbox
-                  Checkbox(
-                    value: isSelected,
-                    onChanged: (value) => onSelectionChanged(value ?? false),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingS),
+      child: Semantics(
+        label: context.l10n.a11yFriendRequestIncoming(displayName),
+        button: true,
+        selected: isSelected,
+        child: InkWell(
+          onTap: () => onSelectionChanged(!isSelected),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isSelected,
+                      onChanged: (value) => onSelectionChanged(value ?? false),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingS),
 
-                  // User avatar with online indicator
-                  Stack(
-                    children: [
-                      SocialAvatarComponents.avatar(
-                        size: ImageSize.small,
-                        imageUrl: avatarUrl,
-                        displayName: displayName,
-                      ),
-                      if (isOnline)
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: context.butleryColors.success,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.surface,
-                                width: 2,
+                    // User avatar with online indicator
+                    Stack(
+                      children: [
+                        SocialAvatarComponents.avatar(
+                          size: ImageSize.small,
+                          imageUrl: avatarUrl,
+                          displayName: displayName,
+                        ),
+                        if (isOnline)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: context.butleryColors.success,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  width: 2,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(width: AppDimensions.spacingL),
+                      ],
+                    ),
+                    const SizedBox(width: AppDimensions.spacingL),
 
-                  // Request info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          displayName,
-                          style: AppTextStyles.titleMedium,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          context.l10n.socialWantsToBeFriend,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                    // Request info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            style: AppTextStyles.titleMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        if (request.message?.isNotEmpty == true) ...[
-                          const SizedBox(height: AppDimensions.spacingXs),
-                          Container(
-                            padding:
-                                const EdgeInsets.all(AppDimensions.spacingS),
-                            decoration: BoxDecoration(
+                          Text(
+                            context.l10n.socialWantsToBeFriend,
+                            style: AppTextStyles.bodyMedium.copyWith(
                               color: Theme.of(context)
                                   .colorScheme
-                                  .surfaceContainerHighest
-                                  .withValues(alpha: AppDimensions.opacityHalf),
-                              borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadius8),
+                                  .onSurfaceVariant,
                             ),
-                            child: Text(
-                              '"${request.message!}"',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                fontStyle: FontStyle.italic,
+                          ),
+                          if (request.message?.isNotEmpty == true) ...[
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            Container(
+                              padding:
+                                  const EdgeInsets.all(AppDimensions.spacingS),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(
+                                        alpha: AppDimensions.opacityHalf),
+                                borderRadius: BorderRadius.circular(
+                                    AppDimensions.borderRadius8),
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              child: Text(
+                                '"${request.message!}"',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: AppDimensions.spacingXs),
+                          Text(
+                            request.timeAgoText,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                           ),
                         ],
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        Text(
-                          request.timeAgoText,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              // Actions (not shown during bulk selection)
-              if (!isSelected) ...[
-                const SizedBox(height: AppDimensions.spacingL),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ActionButtons.outlinedButton(
-                        context,
-                        label: context.l10n.socialDecline,
-                        icon: Icons.close,
-                        onPressed: viewModel.isLoading
-                            ? null
-                            : () => _rejectRequest(context, request, viewModel),
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingL),
-                    Expanded(
-                      child: StyledButton.primary(
-                        text: context.l10n.commonAccept,
-                        icon: const Icon(Icons.check),
-                        onPressed: viewModel.isLoading
-                            ? null
-                            : () => _acceptRequest(context, request, viewModel),
                       ),
                     ),
                   ],
                 ),
+
+                // Actions (not shown during bulk selection)
+                if (!isSelected) ...[
+                  const SizedBox(height: AppDimensions.spacingL),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ActionButtons.outlinedButton(
+                          context,
+                          label: context.l10n.socialDecline,
+                          icon: Icons.close,
+                          onPressed: viewModel.isLoading
+                              ? null
+                              : () =>
+                                  _rejectRequest(context, request, viewModel),
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingL),
+                      Expanded(
+                        child: StyledButton.primary(
+                          text: context.l10n.commonAccept,
+                          icon: const Icon(Icons.check),
+                          onPressed: viewModel.isLoading
+                              ? null
+                              : () =>
+                                  _acceptRequest(context, request, viewModel),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -229,110 +238,116 @@ class FriendRequestCard {
               .primaryContainer
               .withValues(alpha: AppDimensions.opacityMediumLight)
           : null,
-      child: InkWell(
-        onTap: () => onSelectionChanged(!isSelected),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
-          child: Row(
-            children: [
-              // Selection checkbox (only for pending requests)
-              if (request.isPending)
-                Checkbox(
-                  value: isSelected,
-                  onChanged: (value) => onSelectionChanged(value ?? false),
-                )
-              else
-                const SizedBox(
-                    width:
-                        AppDimensions.spacingXxxl), // Placeholder for alignment
+      child: Semantics(
+        label: context.l10n.a11yFriendRequestSent(displayName),
+        button: true,
+        selected: isSelected,
+        child: InkWell(
+          onTap: () => onSelectionChanged(!isSelected),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            child: Row(
+              children: [
+                if (request.isPending)
+                  Checkbox(
+                    value: isSelected,
+                    onChanged: (value) => onSelectionChanged(value ?? false),
+                  )
+                else
+                  const SizedBox(
+                      width: AppDimensions
+                          .spacingXxxl), // Placeholder for alignment
 
-              const SizedBox(width: AppDimensions.spacingS),
+                const SizedBox(width: AppDimensions.spacingS),
 
-              // User avatar with online indicator
-              Stack(
-                children: [
-                  SocialAvatarComponents.avatar(
-                    size: ImageSize.small,
-                    imageUrl: avatarUrl,
-                    displayName: displayName,
-                  ),
-                  if (isOnline)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: context.butleryColors.success,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.surface,
-                            width: 2,
+                // User avatar with online indicator
+                Stack(
+                  children: [
+                    SocialAvatarComponents.avatar(
+                      size: ImageSize.small,
+                      imageUrl: avatarUrl,
+                      displayName: displayName,
+                    ),
+                    if (isOnline)
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: context.butleryColors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.surface,
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(width: AppDimensions.spacingL),
+                  ],
+                ),
+                const SizedBox(width: AppDimensions.spacingL),
 
-              // Request info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayName,
-                      style: AppTextStyles.titleMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (request.message?.isNotEmpty == true)
+                // Request info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        request.message!,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          fontStyle: FontStyle.italic,
-                        ),
+                        displayName,
+                        style: AppTextStyles.titleMedium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Row(
-                      children: [
-                        Icon(statusIcon,
-                            size: AppDimensions.iconSizeS, color: statusColor),
-                        const SizedBox(width: AppDimensions.spacingXs),
+                      if (request.message?.isNotEmpty == true)
                         Text(
-                          statusText,
-                          style: AppTextStyles.metadataEmphasized.copyWith(
-                            color: statusColor,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          request.timeAgoText,
+                          request.message!,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontStyle: FontStyle.italic,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ],
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Row(
+                        children: [
+                          Icon(statusIcon,
+                              size: AppDimensions.iconSizeS,
+                              color: statusColor),
+                          const SizedBox(width: AppDimensions.spacingXs),
+                          Text(
+                            statusText,
+                            style: AppTextStyles.metadataEmphasized.copyWith(
+                              color: statusColor,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            request.timeAgoText,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              // Cancel button for pending requests (not during selection)
-              if (request.isPending && !isSelected)
-                IconButton(
-                  onPressed: () =>
-                      _cancelSentRequest(context, request, viewModel),
-                  icon: Icon(Icons.cancel, color: cs.error),
-                  tooltip: context.l10n.socialCancelRequest,
-                ),
-            ],
+                // Cancel button for pending requests (not during selection)
+                if (request.isPending && !isSelected)
+                  IconButton(
+                    onPressed: () =>
+                        _cancelSentRequest(context, request, viewModel),
+                    icon: Icon(Icons.cancel, color: cs.error),
+                    tooltip: context.l10n.socialCancelRequest,
+                  ),
+              ],
+            ),
           ),
         ),
       ),

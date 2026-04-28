@@ -174,27 +174,33 @@ class InvitationLists {
           return SizedBox(
             width: itemWidth,
             child: Card(
-              child: InkWell(
-                onTap: onTargetTap != null ? () => onTargetTap(target) : null,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingSm),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        target.type == InvitationTargetType.group
-                            ? Icons.group
-                            : Icons.person,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        target.displayName,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
+              child: Semantics(
+                label:
+                    context.l10n.a11yInvitationTargetCard(target.displayName),
+                button: true,
+                enabled: onTargetTap != null,
+                child: InkWell(
+                  onTap: onTargetTap != null ? () => onTargetTap(target) : null,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          target.type == InvitationTargetType.group
+                              ? Icons.group
+                              : Icons.person,
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        Text(
+                          target.displayName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -228,36 +234,42 @@ class InvitationLists {
       itemBuilder: (context, index) {
         final target = targets[index];
         return Card(
-          child: InkWell(
-            onTap: onTargetTap != null ? () => onTargetTap(target) : null,
-            child: Padding(
-              padding: const EdgeInsets.all(
-                  (AppDimensions.spacingSm + AppDimensions.spacingXs)),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    target.type == InvitationTargetType.group
-                        ? Icons.group
-                        : Icons.person,
-                    size: 32,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingSm),
-                  Text(
-                    target.displayName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.contentLabel,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    '${target.memberCount ?? 0} medlemmar',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
+          child: Semantics(
+            label: context.l10n.a11yInvitationTargetCard(target.displayName),
+            button: true,
+            enabled: onTargetTap != null,
+            child: InkWell(
+              onTap: onTargetTap != null ? () => onTargetTap(target) : null,
+              child: Padding(
+                padding: const EdgeInsets.all(
+                    (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      target.type == InvitationTargetType.group
+                          ? Icons.group
+                          : Icons.person,
+                      size: 32,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingSm),
+                    Text(
+                      target.displayName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.contentLabel,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      '${target.memberCount ?? 0} medlemmar',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

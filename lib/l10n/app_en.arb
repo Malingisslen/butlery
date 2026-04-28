@@ -9302,5 +9302,63 @@
   "a11yShareModeRealtime": "Realtime sharing, press to select",
   "@a11yShareModeRealtime": {
     "description": "Semantics label for the realtime sharing option in the universal share dialog."
+  },
+  "a11yFriendRequestIncoming": "Friend request from {name}, press to select",
+  "@a11yFriendRequestIncoming": {
+    "description": "Semantics label for an incoming friend-request card row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yFriendRequestSent": "Sent request to {name}, press to select",
+  "@a11yFriendRequestSent": {
+    "description": "Semantics label for a sent friend-request card row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yFeedFilter": "Filter feed by {label}",
+  "@a11yFeedFilter": {
+    "description": "Semantics label for a feed filter chip in the friends activity feed.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yFeedRecipePreview": "Open recipe {title}",
+  "@a11yFeedRecipePreview": {
+    "description": "Semantics label for the recipe preview tile inside an activity feed event card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPublicProfileRecipeCard": "Open recipe {title}",
+  "@a11yPublicProfileRecipeCard": {
+    "description": "Semantics label for a recipe card on a public profile view.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yBlockedUsersToggle": "Blocked users, press to expand or collapse the list",
+  "@a11yBlockedUsersToggle": {
+    "description": "Semantics label for the collapsible header of the blocked users section in privacy settings."
+  },
+  "a11yInvitationTargetCard": "Invite {name}",
+  "@a11yInvitationTargetCard": {
+    "description": "Semantics label for an invitation target card (friend or group) in the invite picker.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

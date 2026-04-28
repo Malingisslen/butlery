@@ -13288,4 +13288,38 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yShareModeRealtime => 'Realtidsdelning, tryck för att välja';
+
+  @override
+  String a11yFriendRequestIncoming(String name) {
+    return 'Vänförfrågan från $name, tryck för att markera';
+  }
+
+  @override
+  String a11yFriendRequestSent(String name) {
+    return 'Skickad förfrågan till $name, tryck för att markera';
+  }
+
+  @override
+  String a11yFeedFilter(String label) {
+    return 'Filtrera flödet på $label';
+  }
+
+  @override
+  String a11yFeedRecipePreview(String title) {
+    return 'Visa receptet $title';
+  }
+
+  @override
+  String a11yPublicProfileRecipeCard(String title) {
+    return 'Öppna receptet $title';
+  }
+
+  @override
+  String get a11yBlockedUsersToggle =>
+      'Blockerade användare, tryck för att visa eller dölja listan';
+
+  @override
+  String a11yInvitationTargetCard(String name) {
+    return 'Bjud in $name';
+  }
 }

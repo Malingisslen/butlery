@@ -13258,4 +13258,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yShareModeRealtime => 'Realtime sharing, press to select';
+
+  @override
+  String a11yFriendRequestIncoming(String name) {
+    return 'Friend request from $name, press to select';
+  }
+
+  @override
+  String a11yFriendRequestSent(String name) {
+    return 'Sent request to $name, press to select';
+  }
+
+  @override
+  String a11yFeedFilter(String label) {
+    return 'Filter feed by $label';
+  }
+
+  @override
+  String a11yFeedRecipePreview(String title) {
+    return 'Open recipe $title';
+  }
+
+  @override
+  String a11yPublicProfileRecipeCard(String title) {
+    return 'Open recipe $title';
+  }
+
+  @override
+  String get a11yBlockedUsersToggle =>
+      'Blocked users, press to expand or collapse the list';
+
+  @override
+  String a11yInvitationTargetCard(String name) {
+    return 'Invite $name';
+  }
 }
