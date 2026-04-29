@@ -15,6 +15,7 @@ import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
 import 'package:butlery/services/parsing/feedback/parse_correction_uploader.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 import 'package:butlery/services/analytics/post_import_edit_decider.dart';
 import 'package:butlery/services/user_service.dart';
@@ -407,13 +408,13 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
       // P8-20: Time-to-first-value
       _analyticsService?.logEvent(
-        name: 'time_to_first_recipe',
+        name: AnalyticsEvents.timeToFirstRecipe,
         parameters: {'minutes_since_signup': minutesSinceSignup},
       );
 
       // P8-10: Activation metric (recipe within 7 days of signup)
       if (now.difference(joinedAt).inDays <= 7) {
-        _analyticsService?.logEvent(name: 'user_activated');
+        _analyticsService?.logEvent(name: AnalyticsEvents.userActivated);
       }
     } catch (e) {
       AppLogger.warning('Failed to track first recipe metrics: $e');
@@ -468,7 +469,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     if (params == null) return;
 
     _analyticsService?.logEvent(
-      name: 'post_import_edit',
+      name: AnalyticsEvents.postImportEdit,
       parameters: params,
     );
   }

@@ -6,8 +6,9 @@ import 'package:butlery/data/recipes/recipe_seeds.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 class OnboardingViewModel extends ChangeNotifier {
   // Swedish parental-consent threshold for data processing on social apps
@@ -56,7 +57,7 @@ class OnboardingViewModel extends ChangeNotifier {
   void setPage(int page) {
     if (!_started) {
       _started = true;
-      _analytics?.logEvent(name: 'onboarding_started');
+      _analytics?.logEvent(name: AnalyticsEvents.onboardingStarted);
     }
     _currentPage = page;
     _analytics?.logEvent(

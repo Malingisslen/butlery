@@ -1,3 +1,4 @@
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
 /// Tracks shopping list-related analytics events
@@ -11,7 +12,7 @@ class ShoppingEventsTracker extends BaseTracker {
     int? initialItemCount,
   }) async {
     await logEvent(
-      name: 'shopping_list_created',
+      name: AnalyticsEvents.shoppingListCreated,
       parameters: {
         'list_id': listId,
         'list_type': listType,
@@ -26,7 +27,7 @@ class ShoppingEventsTracker extends BaseTracker {
     String? source,
   }) async {
     await logEvent(
-      name: 'shopping_list_item_added',
+      name: AnalyticsEvents.shoppingListItemAdded,
       parameters: {'list_id': listId, if (source != null) 'source': source},
     );
   }
@@ -37,7 +38,7 @@ class ShoppingEventsTracker extends BaseTracker {
     required int itemCount,
   }) async {
     await logEvent(
-      name: 'shopping_list_item_checked',
+      name: AnalyticsEvents.shoppingListItemChecked,
       parameters: {'list_id': listId, 'item_count': itemCount},
     );
   }
@@ -49,7 +50,7 @@ class ShoppingEventsTracker extends BaseTracker {
     String? shareMethod,
   }) async {
     await logEvent(
-      name: 'shopping_list_shared',
+      name: AnalyticsEvents.shoppingListShared,
       parameters: {
         'list_id': listId,
         'recipient_count': recipientCount,
@@ -65,7 +66,7 @@ class ShoppingEventsTracker extends BaseTracker {
     int? timeToCompleteMinutes,
   }) async {
     await logEvent(
-      name: 'shopping_list_completed',
+      name: AnalyticsEvents.shoppingListCompleted,
       parameters: {
         'list_id': listId,
         'item_count': itemCount,

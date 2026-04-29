@@ -1,3 +1,4 @@
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
 /// Tracks per-tier parse outcomes for the 3-tier import pipeline (BUT-552).
@@ -9,8 +10,8 @@ import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 class ParseEventsTracker extends BaseTracker {
   ParseEventsTracker({required super.repository});
 
-  static const String eventTierSucceeded = 'import_tier_succeeded';
-  static const String eventTierFailed = 'import_tier_failed';
+  static const String eventTierSucceeded = AnalyticsEvents.importTierSucceeded;
+  static const String eventTierFailed = AnalyticsEvents.importTierFailed;
 
   /// Internal tier identifiers used in event params.
   ///

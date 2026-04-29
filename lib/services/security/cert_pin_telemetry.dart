@@ -7,6 +7,7 @@ library;
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 
 /// Logs `ssl_pin_mismatch` analytics event. Best-effort — never throws.
@@ -17,7 +18,7 @@ void reportSslPinMismatch(String host, String errorKind, Object? error) {
   try {
     final analytics = ServiceLocator.tryGet<AnalyticsService>();
     analytics?.logEvent(
-      name: 'ssl_pin_mismatch',
+      name: AnalyticsEvents.sslPinMismatch,
       parameters: <String, Object>{
         'host': host,
         'error_kind': errorKind,

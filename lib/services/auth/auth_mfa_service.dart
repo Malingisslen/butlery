@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -155,7 +156,7 @@ class AuthMfaService extends ChangeNotifier
       await user.multiFactor.unenroll(multiFactorInfo: firebaseFactor);
       AppLogger.info(
           'MFA factor unenrolled: ${firebaseFactor.uid.maskedUserId}');
-      await _analyticsService.logEvent(name: 'mfa_unenrolled');
+      await _analyticsService.logEvent(name: AnalyticsEvents.mfaUnenrolled);
       return true;
     } on FirebaseAuthException catch (e) {
       AppLogger.error('MFA unenroll failed: ${e.code}');

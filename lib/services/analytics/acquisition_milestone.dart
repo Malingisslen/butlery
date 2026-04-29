@@ -13,6 +13,7 @@ library;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/acquisition_attribution.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/utils/shared_preferences_safe.dart';
 
@@ -56,15 +57,15 @@ class AcquisitionMilestone {
       if (analytics != null) {
         await Future.wait<void>([
           analytics.setUserProperty(
-            name: 'acquisition_source',
+            name: AnalyticsUserProperties.acquisitionSource,
             value: utmSource,
           ),
           analytics.setUserProperty(
-            name: 'acquisition_medium',
+            name: AnalyticsUserProperties.acquisitionMedium,
             value: medium.isEmpty ? null : medium,
           ),
           analytics.setUserProperty(
-            name: 'acquisition_campaign',
+            name: AnalyticsUserProperties.acquisitionCampaign,
             value: campaign.isEmpty ? null : campaign,
           ),
         ]);

@@ -1,5 +1,6 @@
-import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
 /// Tracks system and error-related analytics events
 /// Error events exempt from consent check (service operation tracking)
@@ -18,7 +19,7 @@ class SystemEventsTracker extends BaseTracker {
   }) async {
     Future<void> doLog() async {
       await repository.logEvent(
-        name: 'error_occurred',
+        name: AnalyticsEvents.errorOccurred,
         parameters: {
           'error_code': errorCode,
           'error_type': errorType,
@@ -51,7 +52,7 @@ class SystemEventsTracker extends BaseTracker {
     String? errorMessage,
   }) async {
     await logEvent(
-      name: 'network_error',
+      name: AnalyticsEvents.networkError,
       parameters: {
         'endpoint': endpoint,
         'status_code': statusCode,
@@ -67,7 +68,7 @@ class SystemEventsTracker extends BaseTracker {
     int? thresholdMs,
   }) async {
     await logEvent(
-      name: 'slow_operation',
+      name: AnalyticsEvents.slowOperation,
       parameters: {
         'operation_name': operationName,
         'duration_ms': durationMs,

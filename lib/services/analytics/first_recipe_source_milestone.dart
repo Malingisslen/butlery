@@ -1,3 +1,4 @@
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/utils/shared_preferences_safe.dart';
 
@@ -31,7 +32,7 @@ class FirstRecipeSourceMilestone {
     if (prefs.getBool(key) == true) return false;
 
     await analytics.setUserProperty(
-      name: 'first_recipe_source',
+      name: AnalyticsUserProperties.firstRecipeSource,
       value: source,
     );
     await prefs.setBool(key, true);

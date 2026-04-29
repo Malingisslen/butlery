@@ -4,9 +4,10 @@ import 'dart:typed_data';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/core/utils/crypto_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 
 /// Firebase implementation of the AnalyticsRepository interface.
 ///
@@ -141,7 +142,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   @override
   Future<void> logLogout() async {
     try {
-      await _analytics.logEvent(name: 'logout');
+      await _analytics.logEvent(name: AnalyticsEvents.logout);
     } catch (e) {
       AppLogger.error('Analytics logout logging failed: $e');
     }
@@ -175,7 +176,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     String? sessionId,
   }) async {
     await logEvent(
-      name: 'import_started',
+      name: AnalyticsEvents.importStarted,
       parameters: {
         'source': source,
         if (platform != null) 'platform': platform,
@@ -193,7 +194,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     String? sessionId,
   }) async {
     await logEvent(
-      name: 'import_success',
+      name: AnalyticsEvents.importSuccess,
       parameters: {
         'source': source,
         if (platform != null) 'platform': platform,
@@ -214,7 +215,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     final String category = _categorizeError(error);
 
     await logEvent(
-      name: 'extraction_error',
+      name: AnalyticsEvents.extractionError,
       parameters: {
         'platform': platform,
         'error_category': category,
@@ -237,7 +238,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     String? reason,
   }) async {
     await logEvent(
-      name: 'manual_copy_fallback',
+      name: AnalyticsEvents.manualCopyFallback,
       parameters: {
         'platform': platform,
         if (reason != null) 'reason': reason,
@@ -252,7 +253,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     bool hasImage = false,
   }) async {
     await logEvent(
-      name: 'recipe_created',
+      name: AnalyticsEvents.recipeCreated,
       parameters: {
         'source': source,
         'has_image': hasImage,
@@ -266,7 +267,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     required String method,
   }) async {
     await logEvent(
-      name: 'recipe_shared',
+      name: AnalyticsEvents.recipeShared,
       parameters: {
         'method': method,
         'timestamp': DateTime.now().toUtc().toIso8601String(),
@@ -282,7 +283,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     int? daysSinceLastCooked,
   }) async {
     await logEvent(
-      name: 'recipe_cooked',
+      name: AnalyticsEvents.recipeCooked,
       parameters: {
         'recipe_id': recipeId,
         'meal_type': mealType,
@@ -292,7 +293,8 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
 
-    await setUserProperty(name: 'has_marked_cooked', value: 'true');
+    await setUserProperty(
+        name: AnalyticsUserProperties.hasMarkedCooked, value: 'true');
   }
 
   @override
@@ -301,7 +303,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     required String method,
   }) async {
     await logEvent(
-      name: 'menu_generated',
+      name: AnalyticsEvents.menuGenerated,
       parameters: {
         'recipe_count': recipeCount,
         'method': method,
@@ -323,7 +325,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         daysSinceCreated ?? now.difference(createdAt).inDays;
 
     await logEvent(
-      name: 'recipe_deleted',
+      name: AnalyticsEvents.recipeDeleted,
       parameters: {
         'recipe_id': recipeId,
         'meal_type': mealType,
@@ -348,7 +350,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     });
 
     await logEvent(
-      name: 'account_deleted',
+      name: AnalyticsEvents.accountDeleted,
       parameters: analyticsParams,
     );
   }
@@ -370,30 +372,31 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         userType = 'casual';
       }
 
-      await setUserProperty(name: 'user_type', value: userType);
       await setUserProperty(
-        name: 'recipe_count_range',
+          name: AnalyticsUserProperties.userType, value: userType);
+      await setUserProperty(
+        name: AnalyticsUserProperties.recipeCountRange,
         value: _getRecipeCountRange(recipeCount),
       );
     }
 
     if (hasUsedImport != null) {
       await setUserProperty(
-        name: 'has_used_import',
+        name: AnalyticsUserProperties.hasUsedImport,
         value: hasUsedImport.toString(),
       );
     }
 
     if (hasSharedRecipe != null) {
       await setUserProperty(
-        name: 'has_shared_recipe',
+        name: AnalyticsUserProperties.hasSharedRecipe,
         value: hasSharedRecipe.toString(),
       );
     }
 
     if (hasCooked != null) {
       await setUserProperty(
-        name: 'has_marked_cooked',
+        name: AnalyticsUserProperties.hasMarkedCooked,
         value: hasCooked.toString(),
       );
     }

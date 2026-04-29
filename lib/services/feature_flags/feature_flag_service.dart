@@ -3,8 +3,10 @@
 import 'dart:async';
 
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
 
@@ -22,6 +24,19 @@ class FeatureFlagService {
   final FirebaseRemoteConfig _remoteConfig;
   bool _initialized = false;
   StreamSubscription<RemoteConfigUpdate>? _configUpdateSubscription;
+
+  /// (flagName, variant) tuples already emitted as `feature_flag_evaluated`
+  /// in the current session. A flag read inside a build method or stream
+  /// listener can fire thousands of times; without dedup we'd blow through
+  /// Firebase Analytics quotas with no extra signal. Reset by
+  /// [resetSessionDedup] on session start (app foreground after >30 min
+  /// background — wire from the lifecycle observer).
+  final Set<String> _evaluatedTuples = <String>{};
+
+  /// Soft cap on the dedup set to avoid unbounded growth if [resetSessionDedup]
+  /// is never called. The realistic distinct (flag, variant) count is well
+  /// under 100; this is a safety net, not a tuning knob.
+  static const int _evaluatedTuplesMaxSize = 256;
 
   FeatureFlagService({FirebaseRemoteConfig? remoteConfig})
       : _remoteConfig = remoteConfig ?? FirebaseRemoteConfig.instance;
@@ -171,19 +186,49 @@ class FeatureFlagService {
     }
     final result = (hash % 100) < percentage;
 
-    // P8-19: Log feature flag assignment as user property
-    try {
-      final analytics = ServiceLocator.tryGet<AnalyticsService>();
-      analytics?.logEvent(
-        name: 'feature_flag_evaluated',
-        parameters: {'flag': flag, 'enabled': result.toString()},
-      );
-    } catch (_) {
-      // Analytics not critical for feature flag evaluation
-    }
+    _maybeLogFlagEvaluated(flag, result.toString());
 
     return result;
   }
+
+  /// Emit `feature_flag_evaluated` once per (flag, variant) per session.
+  /// Repeat calls with the same tuple are dropped silently. (BUT-663)
+  void _maybeLogFlagEvaluated(String flag, String variant) {
+    final tuple = '$flag:$variant';
+    if (_evaluatedTuples.contains(tuple)) return;
+
+    if (_evaluatedTuples.length >= _evaluatedTuplesMaxSize) {
+      // Defensive: skip emit if we somehow accumulated more variants than
+      // the cap (extreme bug or pathological flag churn). Better silence
+      // than runaway growth.
+      return;
+    }
+    _evaluatedTuples.add(tuple);
+
+    try {
+      final analytics = ServiceLocator.tryGet<AnalyticsService>();
+      analytics?.logEvent(
+        name: AnalyticsEvents.featureFlagEvaluated,
+        parameters: {'flag': flag, 'enabled': variant},
+      );
+    } catch (_) {
+      // Analytics not critical for feature flag evaluation. If logEvent
+      // throws, the tuple stays in the set so we don't retry-spam — the
+      // failure mode is "silently lose this one event," matching the
+      // pre-dedup behavior.
+    }
+  }
+
+  /// Clear the per-session dedup so subsequent flag reads emit again.
+  /// Call from the app-lifecycle hook on foreground after >30 min idle.
+  void resetSessionDedup() {
+    _evaluatedTuples.clear();
+  }
+
+  /// Test seam: number of distinct (flag, variant) tuples captured this
+  /// session. Lets unit tests verify dedup without mocking AnalyticsService.
+  @visibleForTesting
+  int get evaluatedTupleCount => _evaluatedTuples.length;
 
   /// Get all current flag values for debugging.
   Map<String, dynamic> getAllFlags() {

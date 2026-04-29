@@ -16,6 +16,7 @@ import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.da
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/analytics/acquisition_milestone.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 
 /// Deep link handler for processing incoming shared content.
@@ -170,7 +171,7 @@ class DeepLinkHandler {
     try {
       final analytics = ServiceLocator.tryGet<AnalyticsService>();
       analytics?.logEvent(
-        name: 'campaign_click',
+        name: AnalyticsEvents.campaignClick,
         parameters: {
           'utm_source': utmSource,
           'utm_medium': utmMedium,

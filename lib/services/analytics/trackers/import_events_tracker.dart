@@ -1,6 +1,7 @@
-import 'package:butlery/services/content_detector_service.dart';
-import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/analytics/trackers/base_tracker.dart';
+import 'package:butlery/services/content_detector_service.dart';
 
 /// Tracks import-related analytics events
 class ImportEventsTracker extends BaseTracker {
@@ -61,7 +62,7 @@ class ImportEventsTracker extends BaseTracker {
     String? sessionId,
   }) async {
     await logEvent(
-      name: 'import_cancelled',
+      name: AnalyticsEvents.importCancelled,
       parameters: {
         'source': source,
         if (sessionId != null) 'session_id': sessionId,

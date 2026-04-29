@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
 /// Tracks recipe-related analytics events
@@ -30,7 +31,7 @@ class RecipeEventsTracker extends BaseTracker {
   }) async {
     if (!await hasAnalyticsConsent()) return;
     await repository.logEvent(
-      name: 'recipe_shared',
+      name: AnalyticsEvents.recipeShared,
       parameters: {
         'method': method,
         'recipient_count_bucket': _bucketRecipientCount(recipientCount),
@@ -69,9 +70,10 @@ class RecipeEventsTracker extends BaseTracker {
           DateTime.now().difference(joinedAt).inMinutes;
     }
 
-    await repository.logEvent(name: 'first_share', parameters: params);
+    await repository.logEvent(
+        name: AnalyticsEvents.firstShare, parameters: params);
     await repository.setUserProperty(
-      name: 'sharing_activated',
+      name: AnalyticsUserProperties.sharingActivated,
       value: 'true',
     );
     await prefs.setBool(key, true);
@@ -139,7 +141,7 @@ class RecipeEventsTracker extends BaseTracker {
     String? source,
   }) async {
     await logEvent(
-      name: 'recipe_viewed',
+      name: AnalyticsEvents.recipeViewed,
       parameters: {
         'recipe_id': recipeId,
         'recipe_type': recipeType,
@@ -154,7 +156,7 @@ class RecipeEventsTracker extends BaseTracker {
     List<String>? fieldsChanged,
   }) async {
     await logEvent(
-      name: 'recipe_edited',
+      name: AnalyticsEvents.recipeEdited,
       parameters: {
         'recipe_id': recipeId,
         if (fieldsChanged != null && fieldsChanged.isNotEmpty)
@@ -165,7 +167,9 @@ class RecipeEventsTracker extends BaseTracker {
 
   /// Log recipe copied
   Future<void> logRecipeCopied({required String recipeId}) async {
-    await logEvent(name: 'recipe_copied', parameters: {'recipe_id': recipeId});
+    await logEvent(
+        name: AnalyticsEvents.recipeCopied,
+        parameters: {'recipe_id': recipeId});
   }
 
   /// Log recipe image uploaded
@@ -175,7 +179,7 @@ class RecipeEventsTracker extends BaseTracker {
     String? uploadSource,
   }) async {
     await logEvent(
-      name: 'recipe_image_uploaded',
+      name: AnalyticsEvents.recipeImageUploaded,
       parameters: {
         'recipe_id': recipeId,
         'image_count': imageCount,
@@ -192,7 +196,7 @@ class RecipeEventsTracker extends BaseTracker {
     List<String>? filtersApplied,
   }) async {
     await logEvent(
-      name: 'recipe_search_performed',
+      name: AnalyticsEvents.recipeSearchPerformed,
       parameters: {
         'search_query': searchQuery,
         'results_count': resultsCount,

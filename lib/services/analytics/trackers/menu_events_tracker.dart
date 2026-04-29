@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
 /// Tracks menu-related analytics events
@@ -22,7 +23,7 @@ class MenuEventsTracker extends BaseTracker {
   /// Log menu generation started
   Future<void> logMenuGenerationStarted({int? promptLength}) async {
     await logEvent(
-      name: 'menu_generation_started',
+      name: AnalyticsEvents.menuGenerationStarted,
       parameters: {if (promptLength != null) 'prompt_length': promptLength},
     );
   }
@@ -33,7 +34,7 @@ class MenuEventsTracker extends BaseTracker {
     String? errorMessage,
   }) async {
     await logEvent(
-      name: 'menu_generation_failed',
+      name: AnalyticsEvents.menuGenerationFailed,
       parameters: {
         'error_code': errorCode,
         if (errorMessage != null) 'error_message': errorMessage,
@@ -48,7 +49,7 @@ class MenuEventsTracker extends BaseTracker {
     bool isShared = false,
   }) async {
     await logEvent(
-      name: 'menu_saved',
+      name: AnalyticsEvents.menuSaved,
       parameters: {
         'menu_id': menuId,
         'recipe_count': recipeCount,
@@ -86,8 +87,10 @@ class MenuEventsTracker extends BaseTracker {
           DateTime.now().difference(joinedAt).inMinutes;
     }
 
-    await repository.logEvent(name: 'first_meal_plan', parameters: params);
-    await repository.setUserProperty(name: 'menu_activated', value: 'true');
+    await repository.logEvent(
+        name: AnalyticsEvents.firstMealPlan, parameters: params);
+    await repository.setUserProperty(
+        name: AnalyticsUserProperties.menuActivated, value: 'true');
     await prefs.setBool(key, true);
     return true;
   }
@@ -109,7 +112,7 @@ class MenuEventsTracker extends BaseTracker {
     bool isOwned = true,
   }) async {
     await logEvent(
-      name: 'menu_loaded',
+      name: AnalyticsEvents.menuLoaded,
       parameters: {'menu_id': menuId, 'is_owned': isOwned},
     );
   }
@@ -121,7 +124,7 @@ class MenuEventsTracker extends BaseTracker {
     String? shareMethod,
   }) async {
     await logEvent(
-      name: 'menu_shared',
+      name: AnalyticsEvents.menuShared,
       parameters: {
         'menu_id': menuId,
         'recipient_count': recipientCount,
@@ -133,7 +136,7 @@ class MenuEventsTracker extends BaseTracker {
   /// Log menu deleted
   Future<void> logMenuDeleted({required String menuId, String? reason}) async {
     await logEvent(
-      name: 'menu_deleted',
+      name: AnalyticsEvents.menuDeleted,
       parameters: {'menu_id': menuId, if (reason != null) 'reason': reason},
     );
   }

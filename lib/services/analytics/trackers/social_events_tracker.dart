@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
 /// Tracks social interaction analytics events
@@ -18,7 +19,7 @@ class SocialEventsTracker extends BaseTracker {
     String? source,
   }) async {
     await logEvent(
-      name: 'friend_request_sent',
+      name: AnalyticsEvents.friendRequestSent,
       parameters: {
         'recipient_id': recipientId,
         if (source != null) 'source': source,
@@ -29,7 +30,7 @@ class SocialEventsTracker extends BaseTracker {
   /// Log friend request accepted
   Future<void> logFriendRequestAccepted({required String senderId}) async {
     await logEvent(
-      name: 'friend_request_accepted',
+      name: AnalyticsEvents.friendRequestAccepted,
       parameters: {'sender_id': senderId},
     );
   }
@@ -40,7 +41,7 @@ class SocialEventsTracker extends BaseTracker {
     required int commentLength,
   }) async {
     await logEvent(
-      name: 'comment_created',
+      name: AnalyticsEvents.commentCreated,
       parameters: {'recipe_id': recipeId, 'comment_length': commentLength},
     );
   }
@@ -52,7 +53,7 @@ class SocialEventsTracker extends BaseTracker {
     int? previousRating,
   }) async {
     await logEvent(
-      name: 'recipe_rated',
+      name: AnalyticsEvents.recipeRated,
       parameters: {
         'recipe_id': recipeId,
         'rating': rating,
@@ -68,7 +69,7 @@ class SocialEventsTracker extends BaseTracker {
     int memberCount = 0,
   }) async {
     await logEvent(
-      name: 'group_created',
+      name: AnalyticsEvents.groupCreated,
       parameters: {
         'group_id': groupId,
         'group_type': groupType,
@@ -83,7 +84,7 @@ class SocialEventsTracker extends BaseTracker {
     required String source,
   }) async {
     await logEvent(
-      name: 'group_joined',
+      name: AnalyticsEvents.groupJoined,
       parameters: {
         'group_id': groupId,
         'source': source,
@@ -100,8 +101,8 @@ class SocialEventsTracker extends BaseTracker {
     return _logFirstSocialMilestone(
       userId: userId,
       joinedAt: joinedAt,
-      eventName: 'first_friend',
-      userPropertyName: 'has_friend',
+      eventName: AnalyticsEvents.firstFriend,
+      userPropertyName: AnalyticsUserProperties.hasFriend,
       prefsPrefix: _firstFriendPrefsPrefix,
     );
   }
@@ -115,8 +116,8 @@ class SocialEventsTracker extends BaseTracker {
     return _logFirstSocialMilestone(
       userId: userId,
       joinedAt: joinedAt,
-      eventName: 'first_comment',
-      userPropertyName: 'has_commented',
+      eventName: AnalyticsEvents.firstComment,
+      userPropertyName: AnalyticsUserProperties.hasCommented,
       prefsPrefix: _firstCommentPrefsPrefix,
     );
   }
@@ -131,8 +132,8 @@ class SocialEventsTracker extends BaseTracker {
     return _logFirstSocialMilestone(
       userId: userId,
       joinedAt: joinedAt,
-      eventName: 'first_group',
-      userPropertyName: 'has_group',
+      eventName: AnalyticsEvents.firstGroup,
+      userPropertyName: AnalyticsUserProperties.hasGroup,
       prefsPrefix: _firstGroupPrefsPrefix,
     );
   }
@@ -185,7 +186,7 @@ class SocialEventsTracker extends BaseTracker {
     required String contentType,
   }) async {
     await logEvent(
-      name: 'content_shared_to_group',
+      name: AnalyticsEvents.contentSharedToGroup,
       parameters: {
         'group_id': groupId,
         'content_type': contentType,
@@ -196,7 +197,7 @@ class SocialEventsTracker extends BaseTracker {
   /// Log friend removed
   Future<void> logFriendRemoved({required String friendId}) async {
     await logEvent(
-      name: 'friend_removed',
+      name: AnalyticsEvents.friendRemoved,
       parameters: {'friend_id': friendId},
     );
   }
@@ -204,7 +205,7 @@ class SocialEventsTracker extends BaseTracker {
   /// Log friend request rejected
   Future<void> logFriendRequestRejected({required String senderId}) async {
     await logEvent(
-      name: 'friend_request_rejected',
+      name: AnalyticsEvents.friendRequestRejected,
       parameters: {'sender_id': senderId},
     );
   }
@@ -212,7 +213,7 @@ class SocialEventsTracker extends BaseTracker {
   /// Log friend request cancelled
   Future<void> logFriendRequestCancelled({required String recipientId}) async {
     await logEvent(
-      name: 'friend_request_cancelled',
+      name: AnalyticsEvents.friendRequestCancelled,
       parameters: {'recipient_id': recipientId},
     );
   }
@@ -220,7 +221,7 @@ class SocialEventsTracker extends BaseTracker {
   /// Log user blocked
   Future<void> logUserBlocked({required String blockedUserId}) async {
     await logEvent(
-      name: 'user_blocked',
+      name: AnalyticsEvents.userBlocked,
       parameters: {'blocked_user_id': blockedUserId},
     );
   }
@@ -228,7 +229,7 @@ class SocialEventsTracker extends BaseTracker {
   /// Log user unblocked
   Future<void> logUserUnblocked({required String unblockedUserId}) async {
     await logEvent(
-      name: 'user_unblocked',
+      name: AnalyticsEvents.userUnblocked,
       parameters: {'unblocked_user_id': unblockedUserId},
     );
   }
@@ -239,7 +240,7 @@ class SocialEventsTracker extends BaseTracker {
     required String messageType,
   }) async {
     await logEvent(
-      name: 'message_sent',
+      name: AnalyticsEvents.messageSent,
       parameters: {
         'conversation_id': conversationId,
         'message_type': messageType,
@@ -250,7 +251,7 @@ class SocialEventsTracker extends BaseTracker {
   /// Log group left
   Future<void> logGroupLeft({required String groupId}) async {
     await logEvent(
-      name: 'group_left',
+      name: AnalyticsEvents.groupLeft,
       parameters: {'group_id': groupId},
     );
   }
@@ -258,7 +259,7 @@ class SocialEventsTracker extends BaseTracker {
   /// Log group deleted
   Future<void> logGroupDeleted({required String groupId}) async {
     await logEvent(
-      name: 'group_deleted',
+      name: AnalyticsEvents.groupDeleted,
       parameters: {'group_id': groupId},
     );
   }
@@ -269,7 +270,7 @@ class SocialEventsTracker extends BaseTracker {
     required String contentType,
   }) async {
     await logEvent(
-      name: 'content_unshared',
+      name: AnalyticsEvents.contentUnshared,
       parameters: {
         'content_id': contentId,
         'content_type': contentType,

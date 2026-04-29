@@ -3,6 +3,7 @@
 import 'package:in_app_review/in_app_review.dart';
 
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/utils/shared_preferences_safe.dart';
 
@@ -122,11 +123,11 @@ class InAppReviewService {
     // OS call shouldn't suppress future attempts for 90 days.
     if (prompted) {
       await prefs.setInt(_prefsLastPromptAtKey, nowMs);
-      await _logEvent('in_app_review_requested', rating);
+      await _logEvent(AnalyticsEvents.inAppReviewRequested, rating);
       // The package gives no dismissal callback — fire a paired event
       // optimistically; OS dialogs auto-close, so for analytics purposes
       // we treat "requested" and "dismissed" as a pair.
-      await _logEvent('in_app_review_dismissed', rating);
+      await _logEvent(AnalyticsEvents.inAppReviewDismissed, rating);
     }
 
     return prompted;

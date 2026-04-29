@@ -25,6 +25,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 
 /// Notification payload route strings. These MUST stay in sync with the
@@ -91,7 +92,7 @@ class NotificationDeepLinkRouter {
           '🔔 Notification tap with no route — defaulting to home screen');
       _logEvent(
         analytics,
-        name: 'notification_payload_missing_route',
+        name: AnalyticsEvents.notificationPayloadMissingRoute,
         notificationType: notificationType,
       );
       _goHome(navigator);
@@ -103,7 +104,7 @@ class NotificationDeepLinkRouter {
           '🔔 Notification tap with unknown route "$route" — defaulting to home');
       _logEvent(
         analytics,
-        name: 'notification_payload_unknown_route',
+        name: AnalyticsEvents.notificationPayloadUnknownRoute,
         route: route,
         notificationType: notificationType,
       );
@@ -113,7 +114,7 @@ class NotificationDeepLinkRouter {
 
     _logEvent(
       analytics,
-      name: 'notification_opened',
+      name: AnalyticsEvents.notificationOpened,
       route: route,
       notificationType: notificationType,
     );
