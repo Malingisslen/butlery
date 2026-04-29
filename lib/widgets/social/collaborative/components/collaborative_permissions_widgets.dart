@@ -1,6 +1,7 @@
 // lib/widgets/social/collaborative/components/collaborative_permissions_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -29,26 +30,30 @@ class CollaborativePermissionsWidgets {
           width: 1,
         ),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
-        child: Row(
-          children: [
-            Icon(
-              EditModeUIHelper.getIcon(editMode),
-              color: color,
-              size: AppDimensions.iconSizeAction,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Expanded(
-              child: Text(
-                editMode.description,
-                style: AppTextStyles.contentTitle.copyWith(
-                  color: color,
+      child: Semantics(
+        label: context.l10n.a11yPermissionsBanner(editMode.description),
+        button: onTap != null,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+          child: Row(
+            children: [
+              Icon(
+                EditModeUIHelper.getIcon(editMode),
+                color: color,
+                size: AppDimensions.iconSizeAction,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Expanded(
+                child: Text(
+                  editMode.description,
+                  style: AppTextStyles.contentTitle.copyWith(
+                    color: color,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

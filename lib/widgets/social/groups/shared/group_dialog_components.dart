@@ -75,31 +75,36 @@ class EmojiSelector extends StatelessWidget {
               final emoji = GroupEmojiConstants.availableEmojis[index];
               final isSelected = emoji == selectedEmoji;
 
-              return GestureDetector(
-                onTap: () => onEmojiSelected(emoji),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  margin: const EdgeInsets.only(
-                    right: AppDimensions.spacingS,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : null,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadius8),
-                    border: isSelected
-                        ? Border.all(
-                            color: Theme.of(context).colorScheme.primary,
-                            width: 2,
-                          )
-                        : null,
-                  ),
-                  child: Center(
-                    child: Text(
-                      emoji,
-                      style: AppTextStyles.groupTitle,
+              return Semantics(
+                label: context.l10n.a11yEmojiPicker(emoji),
+                button: true,
+                selected: isSelected,
+                child: GestureDetector(
+                  onTap: () => onEmojiSelected(emoji),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    margin: const EdgeInsets.only(
+                      right: AppDimensions.spacingS,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : null,
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadius8),
+                      border: isSelected
+                          ? Border.all(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 2,
+                            )
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        emoji,
+                        style: AppTextStyles.groupTitle,
+                      ),
                     ),
                   ),
                 ),

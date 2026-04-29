@@ -13322,4 +13322,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yInvitationTargetCard(String name) {
     return 'Bjud in $name';
   }
+
+  @override
+  String a11yPermissionsBanner(String description) {
+    return 'Behörighet: $description';
+  }
+
+  @override
+  String a11yCollaborativeBanner(String title, String subtitle) {
+    return '$title, $subtitle';
+  }
+
+  @override
+  String a11yEmojiPicker(String emoji) {
+    return 'Välj $emoji som ikon';
+  }
 }

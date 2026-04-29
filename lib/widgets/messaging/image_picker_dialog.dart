@@ -110,39 +110,44 @@ class _SourceOption extends StatelessWidget {
     return Material(
       color: color.withValues(alpha: AppDimensions.opacityVeryLight),
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingM),
-                decoration: BoxDecoration(
+      child: Semantics(
+        label: label,
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AppDimensions.paddingM),
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    size: AppDimensions.iconSizeL,
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.spacingL),
+                Text(
+                  label,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: color,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.arrow_forward_ios,
                   color: color,
-                  shape: BoxShape.circle,
+                  size: AppDimensions.iconSizeS,
                 ),
-                child: Icon(
-                  icon,
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  size: AppDimensions.iconSizeL,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacingL),
-              Text(
-                label,
-                style: AppTextStyles.titleMedium.copyWith(
-                  color: color,
-                ),
-              ),
-              const Spacer(),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: color,
-                size: AppDimensions.iconSizeS,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

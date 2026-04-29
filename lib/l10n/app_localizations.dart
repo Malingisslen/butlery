@@ -22713,6 +22713,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Bjud in {name}'**
   String a11yInvitationTargetCard(String name);
+
+  /// Semantics label for the collaborative permissions banner on a recipe or menu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behörighet: {description}'**
+  String a11yPermissionsBanner(String description);
+
+  /// Semantics label for the collaborative-context banner showing title + subtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title}, {subtitle}'**
+  String a11yCollaborativeBanner(String title, String subtitle);
+
+  /// Semantics label for an emoji option in the group icon picker.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj {emoji} som ikon'**
+  String a11yEmojiPicker(String emoji);
 }
 
 class _AppLocalizationsDelegate

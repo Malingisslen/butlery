@@ -88,56 +88,60 @@ class CollaborativeStatusWidgets {
               ),
             ),
           ),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.people,
-                  color: cs.primary,
-                  size: AppDimensions.iconSizeAction,
-                ),
-                const SizedBox(width: AppDimensions.spacingS),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.bodyLargeBold.copyWith(
-                          color: cs.primary,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: cs.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // USE REAL PARTICIPANTS if context and contentId exist
-                if (context != null && contentId != null)
-                  CollaborativeParticipantsWidgets.participantsList(
-                    context: context,
-                    contentId: contentId,
-                    contentType: contentType,
-                    maxVisible: 3,
-                    avatarSize: 24,
-                  )
-                // FALLBACK to trailing widget
-                else if (trailing != null)
-                  trailing
-                // LAST FALLBACK - show just an icon
-                else
+          child: Semantics(
+            label: builderContext.l10n.a11yCollaborativeBanner(title, subtitle),
+            button: onTap != null,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              child: Row(
+                children: [
                   Icon(
-                    Icons.people_outline,
-                    size: AppDimensions.iconSizeL,
+                    Icons.people,
                     color: cs.primary,
+                    size: AppDimensions.iconSizeAction,
                   ),
-              ],
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: AppTextStyles.bodyLargeBold.copyWith(
+                            color: cs.primary,
+                          ),
+                        ),
+                        Text(
+                          subtitle,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: cs.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // USE REAL PARTICIPANTS if context and contentId exist
+                  if (context != null && contentId != null)
+                    CollaborativeParticipantsWidgets.participantsList(
+                      context: context,
+                      contentId: contentId,
+                      contentType: contentType,
+                      maxVisible: 3,
+                      avatarSize: 24,
+                    )
+                  // FALLBACK to trailing widget
+                  else if (trailing != null)
+                    trailing
+                  // LAST FALLBACK - show just an icon
+                  else
+                    Icon(
+                      Icons.people_outline,
+                      size: AppDimensions.iconSizeL,
+                      color: cs.primary,
+                    ),
+                ],
+              ),
             ),
           ),
         );

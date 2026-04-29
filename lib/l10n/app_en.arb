@@ -9360,5 +9360,35 @@
         "type": "String"
       }
     }
+  },
+  "a11yPermissionsBanner": "Permission: {description}",
+  "@a11yPermissionsBanner": {
+    "description": "Semantics label for the collaborative permissions banner on a recipe or menu.",
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yCollaborativeBanner": "{title}, {subtitle}",
+  "@a11yCollaborativeBanner": {
+    "description": "Semantics label for the collaborative-context banner showing title + subtitle.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "subtitle": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yEmojiPicker": "Select {emoji} as icon",
+  "@a11yEmojiPicker": {
+    "description": "Semantics label for an emoji option in the group icon picker.",
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    }
   }
 }
