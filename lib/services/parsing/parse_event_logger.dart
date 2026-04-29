@@ -28,6 +28,7 @@ class ParseEventLogger {
     double? totalCostSek,
     List<Map<String, dynamic>>? tierAttempts,
     bool unknownDomain = false,
+    String? promptVersion,
   }) {
     try {
       final payload = <String, dynamic>{
@@ -44,6 +45,7 @@ class ParseEventLogger {
         if (totalCostSek != null) 'totalCostSek': totalCostSek,
         if (tierAttempts != null) 'tierAttempts': tierAttempts,
         if (unknownDomain) 'unknownDomain': true,
+        if (promptVersion != null) 'promptVersion': promptVersion,
       };
 
       unawaited(

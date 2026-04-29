@@ -1,6 +1,62 @@
 # Sprint Backlog
 
-## Sprint: SSL pinning + push deep-linking + analytics + theme sweep — 2026-04-27
+## Sprint: Parsing cost wins + BUT-427 concurrency bugs + analytics polish — 2026-04-29
+
+Theme: drain (a) the parsing/OCR cost-leverage cluster, (b) two concurrency bugs that fell out of the simplify pass on the SSL-pinning sprint, (c) two analytics polish items, and (d) two A11y/theme residuals from BUT-697 chunk-8 audit + BUT-689. **4 agents, 9 tasks, isolated file trees** (functions/src/llm + Firestore prompt doc · interceptor concurrency + import http client · views/widgets a11y wraps + theme tokens · analytics constants registry + flag-eval dedup).
+
+Prior sprint (`842400fca`) shipped — SSL pinning, push deep-linking, in-app review, recipe-search routing, theme/strings audits, UTM persistence, post-import edit logger. Carry-overs **BUT-501 / BUT-458** stay In Progress (partial-by-design from prior cycle); **BUT-498 / BUT-697** stay In Progress per standing skip-direction. Linear hygiene at sprint kickoff: flip **BUT-708 → Duplicate** (in_app_review work shipped under BUT-678).
+
+### Agent A: cloud-functions-specialist — Parsing cost leverage
+
+- [x] **A1. Move LLM prompts to Remote Config** — done. New `functions/src/llm/prompts-config.ts` (184 lines) with module-scope TTL cache, Firestore loader, fallback + observability. `structure-recipe.ts` and `ocr-recipe-image.ts` swapped from static imports to `getPromptsConfig()`. Fallback bundle on any failure (Firestore unreachable / doc missing / malformed / empty). 5-min TTL per CF instance. PROMPT_VERSION="2.0.0" retained as fallback seed. Single `logger.warn` per cache fill (no log storm). Recovery automatic: post-TTL flips back to firestore source. 11/11 new tests in `prompts-config.test.ts` green. (BUT-621)
+- [x] **A2. Include `promptVersion` in ParseEventLogger payload** — done. Added `promptVersion: String?` to `StructureRecipeResponse` + `OcrRecipeImageResponse` (`lib/services/llm/llm_models.dart`) parsing from JSON. Added `promptVersion` to `TierResult` (model + factory + copyWith). `LlmTier.parse` propagates `response.promptVersion` into every TierResult branch (success / partial / validation-failed / suspicious / no-data). `parse_event_logger.dart` accepts new `String? promptVersion` parameter, included in payload only when non-null. `recipe_parser_service.dart._logParseEvent` extracts version from successful tier (fallback: any tier with version). 2 new tests in `llm_tier_test.dart` (success-path threading + failed-path threading). 13/13 LlmTier tests green. (BUT-606)
+- [x] **A3. Move OCR SHA256 cache key after preprocessing** — done. `ocr_extraction_service.dart::extractText` reordered: assess → preprocess → hash preprocessed → cache lookup. Same image with different EXIF / quality / container now collapses to one cache key. `cache_hit_rate` metric already surfaced via `OCRUsageTracker.calculateCacheHitRate` + `getUsageStats['cache_hit_rate']` (no new plumbing needed). New BUT-666 test in `ocr_preprocess_test.dart` proves two JPEG inputs at different quality → identical preprocessed bytes (cache-key collapse). 108/108 OCR tests green. (BUT-666)
+
+### Agent B: firebase-backend-security — BUT-427 follow-up concurrency bugs
+
+- [ ] **B1. Fix `PinningDioInterceptor._inflight` concurrency** — `lib/repositories/algolia/algolia_pinning_interceptor.dart:44,92-143` uses a single `Future<String>? _inflight` field as iOS Alamofire serialization guard; under parallel requests, request B overwrites request A's reference and the `finally { _inflight = null; }` clobbers it — silently disables serialization for subsequent requests. Replace with `Map<String, Future<String>> _inflightByHost` keyed per host (Option A in ticket). New `test/unit/services/security/algolia_pinning_interceptor_concurrency_test.dart` fires N parallel requests with asymmetric `_pinCheck` delays. (BUT-736)
+- [ ] **B2. Cache pinned `http.Client` in `HttpContentFetcher`** — `lib/services/import/fetchers/http_content_fetcher.dart:121` allocates a fresh client + TLS handshake per import (URL imports re-handshake the same host every time). Register a singleton `http.Client` in `lib/core/di/modules/core_module.dart` via `PinnedHttpClientFactory.create()`; inject into `HttpContentFetcher`. Existing `_httpClient ?? PinnedHttpClientFactory.create()` constructor fallback stays for tests. Add reuse-across-calls test. (BUT-735)
+
+### Agent C: flutter-developer — A11y + theme residuals
+
+- [ ] **C1. Wrap residual unwrapped tap targets** — run `dart tools/audit_unwrapped_tap_targets.dart` (the audit tool added in BUT-697 chunk-8 commit `24b05a17b`). 24 candidates, ~17-18 real wraps after stripping false positives (parent-Semantics > 10 lines away, optional `semanticLabel` params). Highest-impact targets: `lib/widgets/recipe/recipe_card.dart:114` (every recipe-card tap currently unlabeled), `lib/views/messaging/conversations_list_view.dart:260` (archived-expand). Apply the BUT-697 chunk-4-8 pattern: `Semantics(label: context.l10n.a11y…, button: true, child: …)`. Add `a11y*` keys to both ARB files, regen l10n. Per-chunk widget tests for the user-facing wraps. (BUT-739)
+- [ ] **C2. Move hardcoded `Color(0x…)` literals from theme files into AppColors** — `lib/theme/theme_constants.dart` and `lib/theme/brand_colors.dart` carry literal hex values; lift to named tokens in `lib/theme/app_colors.dart` and reference back. Skip the legitimate cases (`vegetable_illustration.dart` SVG palette, `personal_tag_color_picker.dart` palette, `social_formatters.dart`, `butlery_colors_extension.dart`). Closes the BUT-689 sweep loop. (BUT-690)
+
+### Agent D: flutter-developer — Analytics polish
+
+- [ ] **D1. Extract centralized `AnalyticsEvents` + `AnalyticsUserProperties` registry** — new `lib/services/analytics/analytics_events.dart` with `abstract final class AnalyticsEvents { static const notificationOpened = 'notification_opened'; … }` and `abstract final class AnalyticsUserProperties { static const acquisitionSource = 'acquisition_source'; … }`. Sweep ~7 known call sites: `notification_deep_link_router.dart`, `in_app_review_service.dart`, `recipe_persistence_manager.dart`, `deep_link_handler.dart`, `acquisition_milestone.dart`, `cert_pin_telemetry.dart`, `first_recipe_source_milestone.dart` + older event-name literals. One typo can no longer silently kill a funnel. (BUT-737)
+- [ ] **D2. Per-session dedup for `feature_flag_evaluated` events** — add `Set<String>` of `(flagName, variant)` tuples to the flag-evaluation wrapper; skip emit if already present in current session. Reset on session start (app foreground after >30 min background). Prevents thousands of events/session from flag reads inside build methods or stream listeners. (BUT-663)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos`
+- [ ] `flutter test` (a11y wraps + theme tokens + analytics dedup + interceptor concurrency)
+- [ ] `cd functions && npm test` (Remote Config prompt fallback + structure-recipe schema)
+- [ ] Commit, push to main
+- [ ] Update Linear: completed sprint tickets → Done; flip BUT-708 → Duplicate (already done at kickoff)
+
+### Continued blockers (NOT in scope per memory)
+
+- BUT-415 / BUT-731 / BUT-714 / BUT-646 — store/play submission deferred (Apple Dev enrollment + Play Data Safety filing + Universal Links + hosted privacy)
+- BUT-501 / BUT-458 — partial-by-design carry-over; let bed in one cycle
+- BUT-498 / BUT-697 — explicitly skipped per standing direction (BUT-697 chunk-8 close-out shipped 2026-04-28)
+
+---
+
+## What this means in plain language
+
+- **Recipe imports get cheaper to fix when they go wrong.** Today, fixing a bad import prompt needs a 15-minute backend redeploy. After this you can change the prompt by editing one Firestore field — fix takes seconds, no deploy. (A1)
+- **You'll be able to tell which prompt version produced a bad import.** Every parse event now carries the prompt version, so when a site starts producing junk you can bisect to the prompt change. (A2)
+- **OCR runs less often on the same image.** Today, rotating or re-saving an image bypasses the cache and pays Mistral again. After this, identical-looking images hit cache. Direct money saving. (A3)
+- **Search and URL imports get a quiet safety + speed fix.** Two sneaky bugs from the SSL-pinning sprint: parallel Algolia searches could silently disable iOS pin-checking, and every URL import did a fresh TLS handshake. Both fixed. (B1, B2)
+- **More buttons announce themselves to screen readers.** Recipe cards, archived-conversations expand, ~15 other tap targets. Continues the BUT-697 sweep. (C1)
+- **Theme cleanup completes.** A few hex values in theme files get moved into the same `AppColors` tokens used everywhere else. Pure plumbing. (C2)
+- **Analytics get harder to break.** Event names stop being scattered string literals — one typo can no longer silently kill a funnel. Plus flag-evaluation events stop spamming Analytics from inside build methods. (D1, D2)
+- **Risk: low.** All tasks are mechanical or have ticket-level fix recipes. A1 has a fallback to the compiled prompt; B1/B2 are bounded to two files each; C1/C2/D1/D2 are sweep-style. Easy to revert any single task — one commit per task.
+
+---
+
+## Archived Sprint: SSL pinning + push deep-linking + analytics + theme sweep — 2026-04-27 (shipped `842400fca`)
 
 Theme: drain the next batch of High-priority tickets across security, growth instrumentation, and theme cleanup. **4 agents, 8 tasks, isolated file trees** (Algolia/OCR HTTP clients · Cloud Functions notification senders · views/widgets theme tokens · analytics events).
 
@@ -25,33 +81,6 @@ Prior sprint (`6fdac5724`) shipped — security rules tightened, repo-layer furt
 
 - [x] **D1. Persist UTM params as user properties** — done. Real handler is `lib/core/bootstrap/handlers/deep_link_handler.dart` (not `lib/services/deep_link_service.dart` — ticket path was stale). On first UTM arrival, sets Firebase user properties `acquisition_source/medium/campaign` + mirrors to Firestore `users/{uid}/acquisition/current` via new `AcquisitionRepository` (interface + firebase impl with PermissionValidationMixin). Two-layer dedup: SharedPreferences flags (per-uid + `__anon__` for pre-auth) + repo-level read-before-write. Anonymous users get user properties immediately; Firestore mirror deferred until uid exists. Firestore rules added: owner read/create with `firstSeenAt == request.time`; updates and deletes blocked client-side (first-write-wins immutability + admin-only erasure). 17 unit tests + 9 rules tests (rules tests need emulator). (BUT-612)
 - [x] **D2. Track post-import recipe edits for parse quality** — done. `kPostImportEditWindowDays = 30`. New `lib/utils/recipe_diff.dart` (pure diff helper, snake_case field names) + `lib/services/analytics/post_import_edit_decider.dart` (pure-function decision logic). `recipe_persistence_manager._logRecipeEdited` delegates to decider; on top of existing `recipe_edited`, emits `post_import_edit` with `recipe_id`, `fields_changed`, `hours_since_import`, `tier_used` when available. `recipeImportedAt` uses `recipe.createdAt` as proxy (Recipe has no `importedAt` field). **Honest gap**: `tier_used` is captured from `originalParsedRecipe.metadata.successfulTier` and is only available on the FIRST edit after import (parsed-recipe state clears post-save). Subsequent edits within 30-day window emit `post_import_edit` with `tier_used` omitted rather than guessed. 17 tests green. (BUT-569)
-
-### Post-Sprint Steps
-
-- [ ] `dart analyze --fatal-infos`
-- [ ] `flutter test` (Algolia routing + theme regression + analytics emitters)
-- [ ] `cd functions && npm test` (push payload schema + senders)
-- [ ] Commit, push to main
-- [ ] Update Linear: completed sprint tickets → Done
-
-### Continued blockers (NOT in scope per memory)
-
-- BUT-415 / BUT-731 / BUT-714 / BUT-646 — store/play submission deferred (Apple Dev enrollment + Play Data Safety filing + Universal Links + hosted privacy)
-- BUT-501 / BUT-458 — partial-by-design from prior sprint; let work bed in one cycle
-- BUT-498 / BUT-697 — explicitly skipped per standing direction
-
----
-
-## What this means in plain language
-
-- **Search actually finds your stuff.** Today, if you have 500+ recipes, search silently skips 300+. After this, search routes through Algolia and finds them all.
-- **Tapping a notification takes you somewhere useful.** Today notifications drop you on the home screen; after this they open the recipe / friend request / comment they're about.
-- **Happy users get a nudge to leave a review** at the right moment (after a good cook, only once, OS-rate-limited).
-- **Network calls get safer.** Algolia / OCR / scraping requests now refuse to talk to a fake server impersonating those hosts on a hostile wifi.
-- **Theme cleanup makes dark mode less broken.** ~360 hardcoded white/black colors get swapped to theme-aware tokens.
-- **Marketing finally measurable.** UTM params from "where did this user come from" now stick to the user, so retention can be sliced by acquisition channel.
-- **Parse-quality loop closes.** When you edit an imported recipe, that signal feeds back to "which sites need better parsing rules" — completing the loop BUT-552 just opened.
-- **Risk: low.** A1/A2 are additive (soft-fail SSL telemetry; payload fields default-empty). B1 is feature-flagged. B2 is a one-line OS prompt. C1-C2 + D1-D2 are mechanical. Easy to revert any single task — one commit per task.
 
 ---
 

@@ -264,12 +264,14 @@ class StructureRecipeResponse {
   final ExtractedRecipe? recipe;
   final String? error;
   final double estimatedCost;
+  final String? promptVersion;
 
   const StructureRecipeResponse({
     required this.success,
     this.recipe,
     this.error,
     required this.estimatedCost,
+    this.promptVersion,
   });
 
   factory StructureRecipeResponse.fromJson(Map<String, dynamic> json) {
@@ -280,6 +282,7 @@ class StructureRecipeResponse {
           : null,
       error: json['error'] as String?,
       estimatedCost: (json['estimatedCost'] as num?)?.toDouble() ?? 0.0,
+      promptVersion: json['promptVersion'] as String?,
     );
   }
 }
@@ -291,6 +294,7 @@ class OcrRecipeImageResponse {
   final String? rawText;
   final String? error;
   final double estimatedCost;
+  final String? promptVersion;
 
   const OcrRecipeImageResponse({
     required this.success,
@@ -298,6 +302,7 @@ class OcrRecipeImageResponse {
     this.rawText,
     this.error,
     required this.estimatedCost,
+    this.promptVersion,
   });
 
   factory OcrRecipeImageResponse.fromJson(Map<String, dynamic> json) {
@@ -309,6 +314,7 @@ class OcrRecipeImageResponse {
       rawText: json['rawText'] as String?,
       error: json['error'] as String?,
       estimatedCost: (json['estimatedCost'] as num?)?.toDouble() ?? 0.0,
+      promptVersion: json['promptVersion'] as String?,
     );
   }
 }

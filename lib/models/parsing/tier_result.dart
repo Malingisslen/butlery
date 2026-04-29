@@ -65,6 +65,10 @@ class TierResult {
   /// Number of tokens used (for LLM tier).
   final int? tokensUsed;
 
+  /// Prompt version that produced this result (LLM/OCR tiers only).
+  /// Threads from server response → analytics for per-version quality bisection.
+  final String? promptVersion;
+
   const TierResult({
     required this.tierName,
     required this.success,
@@ -74,6 +78,7 @@ class TierResult {
     this.costSek,
     this.failureReason,
     this.tokensUsed,
+    this.promptVersion,
   });
 
   /// Creates a successful tier result.
@@ -83,6 +88,7 @@ class TierResult {
     required Duration duration,
     double? costSek,
     int? tokensUsed,
+    String? promptVersion,
   }) =>
       TierResult(
         tierName: tierName,
@@ -92,6 +98,7 @@ class TierResult {
         duration: duration,
         costSek: costSek,
         tokensUsed: tokensUsed,
+        promptVersion: promptVersion,
       );
 
   /// Creates a failed tier result.
@@ -171,6 +178,7 @@ class TierResult {
     double? costSek,
     TierFailureReason? failureReason,
     int? tokensUsed,
+    String? promptVersion,
   }) =>
       TierResult(
         tierName: tierName ?? this.tierName,
@@ -181,6 +189,7 @@ class TierResult {
         costSek: costSek ?? this.costSek,
         failureReason: failureReason ?? this.failureReason,
         tokensUsed: tokensUsed ?? this.tokensUsed,
+        promptVersion: promptVersion ?? this.promptVersion,
       );
 
   /// Whether this tier was skipped.

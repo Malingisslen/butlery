@@ -197,7 +197,15 @@ class OCRExtractionService extends BaseService {
   late final CircuitBreaker _googleVisionCircuitBreaker;
   late final CircuitBreaker _tesseractCircuitBreaker;
   late final OCRUsageTracker _usageTracker;
+
+  /// Primary cache: keyed by SHA-256 of *preprocessed* bytes (BUT-666 — same
+  /// logical image with different EXIF/quality collapses to one entry).
   final Map<String, OCRResult> _cache = {};
+
+  /// Fast-path index: SHA-256 of *raw* bytes → preprocessed-bytes hash. Lets
+  /// repeat-of-same-bytes (the common case) skip the preprocess pipeline and
+  /// jump straight to `_cache`. Bounded the same way as `_cache`.
+  final Map<String, String> _rawHashToPreprocessedHash = {};
   static const int _maxCacheSize = 100;
   static const Duration _cacheExpiry = Duration(hours: 24);
   static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
@@ -247,20 +255,41 @@ class OCRExtractionService extends BaseService {
   /// Get usage statistics (for monitoring dashboard)
   Map<String, dynamic> getUsageStats() => _usageTracker.getUsageStats();
 
-  /// Extract text from image using multi-tier OCR strategy
+  /// Extract text from image using multi-tier OCR strategy.
+  ///
+  /// Two-level cache:
+  /// 1. Fast path: SHA-256 of raw bytes → preprocessed-bytes hash. Repeat
+  ///    of the exact same input skips preprocessing entirely.
+  /// 2. Slow path: preprocess → SHA-256 of preprocessed bytes. Same logical
+  ///    image with different EXIF/quality/container collapses to one cache
+  ///    entry (BUT-666 — old raw-bytes-only hash spent OCR budget on
+  ///    visually identical images).
   Future<OCRResult> extractText(Uint8List imageBytes) async {
-    final imageHash = _generateImageHash(imageBytes);
+    final rawHash = _generateImageHash(imageBytes);
 
-    final cachedResult = _getCachedResult(imageHash);
-    if (cachedResult != null) {
-      _recordUsage('cache_hits');
-      return cachedResult;
+    final knownPreprocessedHash = _rawHashToPreprocessedHash[rawHash];
+    if (knownPreprocessedHash != null) {
+      final cached = _getCachedResult(knownPreprocessedHash);
+      if (cached != null) {
+        _recordUsage('cache_hits');
+        return cached;
+      }
+      _rawHashToPreprocessedHash.remove(rawHash);
     }
+
     final qualityAssessment = await assessImageQuality(imageBytes);
     final preprocessedImage = await _preprocessImage(
       imageBytes,
       qualityAssessment,
     );
+
+    final imageHash = _generateImageHash(preprocessedImage);
+    final cachedResult = _getCachedResult(imageHash);
+    if (cachedResult != null) {
+      _rawHashToPreprocessedHash[rawHash] = imageHash;
+      _recordUsage('cache_hits');
+      return cachedResult;
+    }
     OCRResult result;
 
     if (_ocrSpaceCircuitBreaker.canExecute && _ocrApiKey.isNotEmpty) {
@@ -270,7 +299,7 @@ class OCRExtractionService extends BaseService {
             result.confidence >= _minConfidenceThreshold) {
           _ocrSpaceCircuitBreaker.recordSuccess();
           _recordUsage('ocr_space');
-          _cacheResult(imageHash, result);
+          _cacheResult(imageHash, result, rawHash: rawHash);
           return result;
         }
       } catch (e) {
@@ -285,7 +314,7 @@ class OCRExtractionService extends BaseService {
             result.confidence >= _minConfidenceThreshold) {
           _googleVisionCircuitBreaker.recordSuccess();
           _recordUsage('google_vision');
-          _cacheResult(imageHash, result);
+          _cacheResult(imageHash, result, rawHash: rawHash);
           return result;
         }
       } catch (e) {
@@ -300,7 +329,7 @@ class OCRExtractionService extends BaseService {
             result.confidence >= _minConfidenceThreshold) {
           _tesseractCircuitBreaker.recordSuccess();
           _recordUsage('tesseract');
-          _cacheResult(imageHash, result);
+          _cacheResult(imageHash, result, rawHash: rawHash);
           return result;
         }
       } catch (e) {
@@ -660,8 +689,10 @@ class OCRExtractionService extends BaseService {
     return null;
   }
 
-  /// Cache OCR result with size management
-  void _cacheResult(String imageHash, OCRResult result) {
+  /// Cache OCR result with size management. When a [rawHash] is supplied,
+  /// also populates the fast-path index so a repeat of the exact same input
+  /// bytes can skip preprocessing.
+  void _cacheResult(String imageHash, OCRResult result, {String? rawHash}) {
     if (_cache.length >= _maxCacheSize) {
       final sortedEntries = _cache.entries.toList()
         ..sort((a, b) => a.value.timestamp.compareTo(b.value.timestamp));
@@ -670,6 +701,18 @@ class OCRExtractionService extends BaseService {
       }
     }
     _cache[imageHash] = result;
+    if (rawHash != null) {
+      if (_rawHashToPreprocessedHash.length >= _maxCacheSize) {
+        // Drop a few oldest mappings — order is insertion order in Dart's
+        // default Map. Cheap maintenance to keep the index bounded.
+        final toRemove =
+            _rawHashToPreprocessedHash.keys.take(_maxCacheSize ~/ 4).toList();
+        for (final k in toRemove) {
+          _rawHashToPreprocessedHash.remove(k);
+        }
+      }
+      _rawHashToPreprocessedHash[rawHash] = imageHash;
+    }
   }
 
   /// Get comprehensive OCR service status

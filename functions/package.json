@@ -33,7 +33,8 @@
     "test:presence-cascade": "ts-node src/__tests__/presence-cascade.test.ts",
     "test:ocr-validation": "ts-node src/__tests__/ocr-validation.test.ts",
     "test:notification-payload": "ts-node src/__tests__/notification-payload.test.ts",
-    "test": "npm run test:parity && npm run test:lapsed-users && npm run test:parse-correction && npm run test:activity-digest && npm run test:send-notification && npm run test:ocr-retry && npm run test:kill-switch && npm run test:web-error && npm run test:presence-cascade && npm run test:ocr-validation && npm run test:notification-payload",
+    "test:prompts-config": "ts-node src/__tests__/prompts-config.test.ts",
+    "test": "npm run test:parity && npm run test:lapsed-users && npm run test:parse-correction && npm run test:activity-digest && npm run test:send-notification && npm run test:ocr-retry && npm run test:kill-switch && npm run test:web-error && npm run test:presence-cascade && npm run test:ocr-validation && npm run test:notification-payload && npm run test:prompts-config",
     "reset-user-data": "ts-node src/admin/reset-user-data.ts",
     "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run"
   },

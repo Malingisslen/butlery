@@ -127,6 +127,8 @@ class LlmTier extends ParsingTier with QualityScoring {
         maxRetries: 2,
       );
 
+      final pv = response.promptVersion;
+
       if (!response.success || response.recipe == null) {
         return TierResult(
           tierName: tierName,
@@ -136,6 +138,7 @@ class LlmTier extends ParsingTier with QualityScoring {
           duration: stopwatch.elapsed,
           costSek: response.estimatedCost,
           failureReason: TierFailureReason.noData,
+          promptVersion: pv,
         );
       }
 
@@ -153,6 +156,7 @@ class LlmTier extends ParsingTier with QualityScoring {
           duration: stopwatch.elapsed,
           costSek: response.estimatedCost,
           failureReason: TierFailureReason.invalidResponse,
+          promptVersion: pv,
         );
       }
 
@@ -177,6 +181,7 @@ class LlmTier extends ParsingTier with QualityScoring {
             recipe: recipe,
             duration: stopwatch.elapsed,
             costSek: response.estimatedCost,
+            promptVersion: pv,
           );
         }
 
@@ -188,6 +193,7 @@ class LlmTier extends ParsingTier with QualityScoring {
           duration: stopwatch.elapsed,
           costSek: response.estimatedCost,
           failureReason: TierFailureReason.schemaValidationFailed,
+          promptVersion: pv,
         );
       }
 
@@ -206,6 +212,7 @@ class LlmTier extends ParsingTier with QualityScoring {
         recipe: recipe,
         duration: stopwatch.elapsed,
         costSek: response.estimatedCost,
+        promptVersion: pv,
       );
     } on LlmException catch (e) {
       if (e.isRateLimited) {

@@ -834,6 +834,22 @@ class RecipeParserService extends BaseService {
     List<TierResult>? tierResults,
     bool unknownDomain = false,
   }) {
+    // Prefer a successful tier's promptVersion; fall back to any tier that
+    // got far enough to receive a version from the server.
+    String? promptVersion;
+    String? fallbackPromptVersion;
+    if (tierResults != null) {
+      for (final t in tierResults) {
+        if (t.promptVersion == null) continue;
+        if (t.success) {
+          promptVersion = t.promptVersion;
+        } else {
+          fallbackPromptVersion = t.promptVersion;
+        }
+      }
+      promptVersion ??= fallbackPromptVersion;
+    }
+
     _parseEventLogger.logEvent(
       url: url,
       source: source,
@@ -855,6 +871,7 @@ class RecipeParserService extends BaseService {
               })
           .toList(),
       unknownDomain: unknownDomain,
+      promptVersion: promptVersion,
     );
   }
 }

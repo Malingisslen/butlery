@@ -224,3 +224,69 @@ Patterns worth remembering:
 - **Activity digest doesn't fit a unique route.** Reused `/winback`
   because both are re-engagement pings with no specific entity target.
   `notificationType` keeps them distinguishable for CTR analysis.
+
+### 2026-04-29 — BUT-621 Remote-Config-style LLM prompts [Pattern discovered]
+
+Compile-time prompt constants in `gemini-client.ts` meant a regressed prompt
+required a Cloud Functions redeploy (≈15 min) to roll back. Moved the five
+LLM system prompts (`RECIPE_EXTRACTION`, `RECIPE_ENHANCEMENT`,
+`IMAGE_OCR`, `SPOKEN_CONTENT`, `INGREDIENT_LINE`) to Firestore at
+`system/prompts`, with the compile-time constants kept verbatim as fallback.
+
+**Cache pattern**: module-scope `let cache: { prompts, fetchedAt } | null` in
+`functions/src/llm/prompts-config.ts`. TTL = 5 min. No global singleton class
+— each CF isolate gets its own cache, cold starts naturally invalidate. No
+promise-coalescing on TTL miss (concurrent callers may each issue a read);
+`system/prompts` is one Firestore doc (~$0.000036/read) and the savings
+weren't worth the complexity.
+
+**Firestore doc shape** (operators bump `promptVersion` on every edit so
+analytics keys off it):
+```
+system/prompts {
+  recipeExtractionSystemPrompt: string,
+  recipeEnhancementSystemPrompt: string,
+  imageOcrSystemPrompt: string,
+  spokenContentSystemPrompt: string,
+  ingredientLineSystemPrompt: string,
+  promptVersion: string,
+  updatedAt: Timestamp,
+}
+```
+
+**Validation is all-or-nothing.** A partial overlay (mixing fallback +
+remote strings) creates a debugging nightmare where the `promptVersion`
+reported to analytics doesn't match the prompt actually sent. Any
+missing/non-string/empty-string field ⇒ wholesale fallback + a single
+`logger.warn` per cache window.
+
+**Three failure modes are distinguished in logs** (matters for triage):
+- `Firestore doc missing` (no doc)
+- `Firestore doc malformed` (doc exists but shape invalid — includes
+  `keys: Object.keys(raw)` so an operator can spot a typo immediately)
+- `Firestore read failed` (network / permission error — includes `err`)
+
+**Patterns worth remembering**:
+- **`PROMPT_VERSION` becomes the seed**, not the source of truth. Kept as
+  exported const for backward compat (other modules import it as the
+  fallback default) but the runtime `promptVersion` returned from
+  `getPromptsConfig()` flows downstream into analytics + responses.
+- **Test seam shape**: `getPromptsConfig({ loader, now, ttlMs })` mirrors
+  the BUT-439 kill-switch convention (`loadKillSwitch` seam). Production
+  passes nothing; tests inject everything.
+- **Fallback isn't a permanent latch.** Cache TTL applies to the fallback
+  too — after 5 min, a recovered Firestore doc flips the cache back to
+  `source: "firestore"` automatically. Tested at
+  `__tests__/prompts-config.test.ts` case [8].
+- **Vision prompt threading**: `defaultPerformOcr` in `ocr-recipe-image.ts`
+  used to read `IMAGE_OCR_SYSTEM_PROMPT` directly. Refactored to accept it
+  via `OcrPerformArgs.systemPrompt` so the Firestore-backed prompts cache
+  governs the vision branch uniformly with the text branch. Default falls
+  back to the compiled-in const for older test seams.
+- **Test harness pattern for logger assertions**: reassign
+  `logger.info`/`warn`/`error` to a capture array in module scope, restore
+  in a `restoreLogger()` finalizer. Same pattern as `ocr-validation.test.ts`.
+- **Module-scope cache survives across tests in the same file.** Added an
+  `__resetPromptsCacheForTests()` export that test cases call between
+  cases. Don't forget — without it, case [2]'s cache hit will pollute case
+  [3]'s cache miss assertions.

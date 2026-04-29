@@ -238,5 +238,36 @@ void main() {
       final context = createContext();
       expect(nullTier.shouldSkip(context), isTrue);
     });
+
+    test('threads promptVersion from response into successful TierResult',
+        () async {
+      mockLlmService.nextResponse = StructureRecipeResponse(
+        success: true,
+        recipe: validRecipe(),
+        estimatedCost: 0.01,
+        promptVersion: 'v3.1',
+      );
+
+      final context = createContext();
+      final result = await tier.parse(context);
+
+      expect(result.success, isTrue);
+      expect(result.promptVersion, 'v3.1');
+    });
+
+    test('threads promptVersion into failed TierResult (no recipe path)',
+        () async {
+      mockLlmService.nextResponse = const StructureRecipeResponse(
+        success: false,
+        estimatedCost: 0.01,
+        promptVersion: 'v3.1',
+      );
+
+      final context = createContext();
+      final result = await tier.parse(context);
+
+      expect(result.success, isFalse);
+      expect(result.promptVersion, 'v3.1');
+    });
   });
 }

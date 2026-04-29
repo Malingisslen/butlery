@@ -20,12 +20,12 @@ import {
   getGeminiClient,
   getTextModel,
   extractResponseText,
-  PROMPT_VERSION,
-  IMAGE_OCR_SYSTEM_PROMPT,
   parseRecipeResponse,
   calculateGeminiCost,
   ExtractedRecipe,
+  IMAGE_OCR_SYSTEM_PROMPT,
 } from "./gemini-client";
+import { getPromptsConfig } from "./prompts-config";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii } from "./pii-scrubber";
 import { runStructureRecipe } from "./structure-recipe";
@@ -139,6 +139,13 @@ export interface OcrPerformArgs {
   imageUrl?: string;
   mimeType?: string;
   context?: string;
+  /**
+   * BUT-621: vision system prompt to use. Threaded in by the caller so the
+   * Firestore-backed prompts cache governs both branches uniformly.
+   * Optional for backward compatibility with older test seams; defaults to
+   * the compiled-in `IMAGE_OCR_SYSTEM_PROMPT` from `gemini-client.ts`.
+   */
+  systemPrompt?: string;
 }
 
 export interface OcrPerformResult {
@@ -170,7 +177,7 @@ async function defaultPerformOcr(
 
   const result = await model.generateContent({
     contents: [{ role: "user", parts }],
-    systemInstruction: IMAGE_OCR_SYSTEM_PROMPT,
+    systemInstruction: args.systemPrompt ?? IMAGE_OCR_SYSTEM_PROMPT,
   });
 
   const response = result.response;
@@ -265,8 +272,13 @@ export async function runOcrRecipeImage(
       };
     }
 
+    // BUT-621: prompts come from Firestore (5-min per-instance cache).
+    // Falls back to compiled-in defaults on read failure.
+    const prompts = await getPromptsConfig();
+    const promptVersion = prompts.promptVersion;
+
     logger.info(
-      `[ocrRecipeImage] Processing image for user ${authUidHash} (prompt v${PROMPT_VERSION})`,
+      `[ocrRecipeImage] Processing image for user ${authUidHash} (prompt v${promptVersion}, source=${prompts.source})`,
       { inputType: imageUrl ? "url" : "base64" }
     );
 
@@ -275,6 +287,7 @@ export async function runOcrRecipeImage(
       imageUrl,
       mimeType,
       context,
+      systemPrompt: prompts.imageOcrSystemPrompt,
     });
 
     if (!content) {
@@ -283,6 +296,7 @@ export async function runOcrRecipeImage(
         success: false,
         error: "Inget svar från AI-tjänsten.",
         estimatedCost: ocrCost,
+        promptVersion,
         retryCount: 0,
         retryOutcome: null,
       };
@@ -298,7 +312,7 @@ export async function runOcrRecipeImage(
         success: true,
         recipe,
         estimatedCost: ocrCost,
-        promptVersion: PROMPT_VERSION,
+        promptVersion,
         retryCount: 0,
         retryOutcome: null,
       };
@@ -332,7 +346,7 @@ export async function runOcrRecipeImage(
         recipe: retryResult.recipe,
         rawText: content,
         estimatedCost: totalCost,
-        promptVersion: retryResult.promptVersion ?? PROMPT_VERSION,
+        promptVersion: retryResult.promptVersion ?? promptVersion,
         retryCount: retryResult.retryCount,
         retryOutcome: retryResult.retryOutcome,
       };
@@ -345,6 +359,7 @@ export async function runOcrRecipeImage(
       rawText: content,
       error: "Kunde inte strukturera texten som ett recept.",
       estimatedCost: totalCost,
+      promptVersion: retryResult.promptVersion ?? promptVersion,
       retryCount: retryResult.retryCount,
       retryOutcome: retryResult.retryOutcome,
     };

@@ -13,16 +13,12 @@ import {
   getTextModel,
   getIngredientLinesModel,
   extractResponseText,
-  PROMPT_VERSION,
-  RECIPE_EXTRACTION_SYSTEM_PROMPT,
-  RECIPE_ENHANCEMENT_SYSTEM_PROMPT,
-  SPOKEN_CONTENT_SYSTEM_PROMPT,
-  INGREDIENT_LINE_SYSTEM_PROMPT,
   parseRecipeResponse,
   parseIngredientLinesResponse,
   calculateGeminiCost,
   ExtractedRecipe,
 } from "./gemini-client";
+import { getPromptsConfig } from "./prompts-config";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
 import { hashUid } from "../shared/hash-uid";
@@ -188,30 +184,35 @@ export async function runStructureRecipe(
     const cleanText = scrubPii(text);
     const cleanSourceUrl = sourceUrl ? scrubUrlParams(sourceUrl) : undefined;
 
+    // BUT-621: prompts come from Firestore (5-min per-instance cache).
+    // Falls back to compiled-in defaults on read failure.
+    const prompts = await getPromptsConfig();
+    const promptVersion = prompts.promptVersion;
+
     // Select system prompt based on mode
     let systemPrompt: string;
     let userPrompt: string;
 
     switch (mode) {
       case "enhance":
-        systemPrompt = RECIPE_ENHANCEMENT_SYSTEM_PROMPT;
+        systemPrompt = prompts.recipeEnhancementSystemPrompt;
         userPrompt = buildEnhancementPrompt(cleanText, partialData, cleanSourceUrl);
         break;
       case "spoken":
-        systemPrompt = SPOKEN_CONTENT_SYSTEM_PROMPT;
+        systemPrompt = prompts.spokenContentSystemPrompt;
         userPrompt = buildSpokenPrompt(cleanText, cleanSourceUrl);
         break;
       case "ingredientLines":
-        systemPrompt = INGREDIENT_LINE_SYSTEM_PROMPT;
+        systemPrompt = prompts.ingredientLineSystemPrompt;
         userPrompt = buildIngredientLinesPrompt(cleanText);
         break;
       default:
-        systemPrompt = RECIPE_EXTRACTION_SYSTEM_PROMPT;
+        systemPrompt = prompts.recipeExtractionSystemPrompt;
         userPrompt = buildExtractionPrompt(cleanText, cleanSourceUrl);
     }
 
     logger.info(
-      `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${authUidHash} (prompt v${PROMPT_VERSION})`
+      `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${authUidHash} (prompt v${promptVersion}, source=${prompts.source})`
     );
 
     // Call Vertex AI Gemini (europe-west1, EU residency)
@@ -231,6 +232,7 @@ export async function runStructureRecipe(
         success: false,
         error: "Inget svar från AI-tjänsten.",
         estimatedCost: 0.01,
+        promptVersion,
       };
     }
 
@@ -246,6 +248,7 @@ export async function runStructureRecipe(
           success: false,
           error: "Kunde inte tolka AI-svaret som ingredienser.",
           estimatedCost: actualCost,
+          promptVersion,
         };
       }
 
@@ -269,7 +272,7 @@ export async function runStructureRecipe(
           source: null,
         },
         estimatedCost: actualCost,
-        promptVersion: PROMPT_VERSION,
+        promptVersion,
       };
     }
 
@@ -280,6 +283,7 @@ export async function runStructureRecipe(
         success: false,
         error: "Kunde inte tolka AI-svaret som ett recept.",
         estimatedCost: actualCost,
+        promptVersion,
       };
     }
 
@@ -296,7 +300,7 @@ export async function runStructureRecipe(
       success: true,
       recipe,
       estimatedCost: actualCost,
-      promptVersion: PROMPT_VERSION,
+      promptVersion,
     };
   } catch (error) {
     logger.error("[structureRecipe] Error:", error);
