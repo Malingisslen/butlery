@@ -13307,4 +13307,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yEmojiPicker(String emoji) {
     return 'Select $emoji as icon';
   }
+
+  @override
+  String a11yRemoveIngredientChip(String label) {
+    return 'Remove $label';
+  }
+
+  @override
+  String get a11yToggleFullscreenChrome => 'Show or hide controls';
+
+  @override
+  String get a11yCommentsToggle => 'Comments';
+
+  @override
+  String a11yShowSubstitutionsFor(String ingredient) {
+    return 'Show substitutions for $ingredient';
+  }
+
+  @override
+  String a11yToggleStepDone(int step) {
+    return 'Mark step $step as done or undone';
+  }
+
+  @override
+  String get a11yRemoveOwnRating => 'Remove my rating';
+
+  @override
+  String a11yPickTime(String label, String time) {
+    return 'Pick $label: current time $time';
+  }
 }

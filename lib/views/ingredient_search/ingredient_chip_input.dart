@@ -132,12 +132,16 @@ class _IngredientChip extends StatelessWidget {
             style: AppTextStyles.labelMedium.copyWith(color: cs.primary),
           ),
           const SizedBox(width: AppDimensions.spacingXs),
-          InkWell(
-            onTap: onRemove,
-            child: Icon(
-              Icons.close,
-              size: AppDimensions.iconSizeS,
-              color: cs.primary,
+          Semantics(
+            label: context.l10n.a11yRemoveIngredientChip(label),
+            button: true,
+            child: InkWell(
+              onTap: onRemove,
+              child: Icon(
+                Icons.close,
+                size: AppDimensions.iconSizeS,
+                color: cs.primary,
+              ),
             ),
           ),
         ],

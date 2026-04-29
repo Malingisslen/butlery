@@ -13337,4 +13337,33 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yEmojiPicker(String emoji) {
     return 'Välj $emoji som ikon';
   }
+
+  @override
+  String a11yRemoveIngredientChip(String label) {
+    return 'Ta bort $label';
+  }
+
+  @override
+  String get a11yToggleFullscreenChrome => 'Visa eller dölj kontroller';
+
+  @override
+  String get a11yCommentsToggle => 'Kommentarer';
+
+  @override
+  String a11yShowSubstitutionsFor(String ingredient) {
+    return 'Visa substitut för $ingredient';
+  }
+
+  @override
+  String a11yToggleStepDone(int step) {
+    return 'Markera steg $step som klart eller oavslutat';
+  }
+
+  @override
+  String get a11yRemoveOwnRating => 'Ta bort mitt betyg';
+
+  @override
+  String a11yPickTime(String label, String time) {
+    return 'Välj $label: nuvarande tid $time';
+  }
 }

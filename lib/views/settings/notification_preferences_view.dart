@@ -363,28 +363,32 @@ class _NotificationPreferencesViewState
   }) {
     final cs = Theme.of(context).colorScheme;
 
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        decoration: BoxDecoration(
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style:
-                  AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-            ),
-            const SizedBox(height: AppDimensions.spacingXs),
-            Text(
-              time,
-              style: AppTextStyles.headlineSmall.copyWith(
-                color: cs.primary,
+    return Semantics(
+      label: context.l10n.a11yPickTime(label, time),
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          decoration: BoxDecoration(
+            border: Border.all(color: cs.outlineVariant),
+          ),
+          child: Column(
+            children: [
+              Text(
+                label,
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: cs.onSurfaceVariant),
               ),
-            ),
-          ],
+              const SizedBox(height: AppDimensions.spacingXs),
+              Text(
+                time,
+                style: AppTextStyles.headlineSmall.copyWith(
+                  color: cs.primary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

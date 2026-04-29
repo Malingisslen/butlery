@@ -9390,5 +9390,56 @@
         "type": "String"
       }
     }
+  },
+  "a11yRemoveIngredientChip": "Remove {label}",
+  "@a11yRemoveIngredientChip": {
+    "description": "Semantics label for the close icon on an ingredient chip in the search input.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yToggleFullscreenChrome": "Show or hide controls",
+  "@a11yToggleFullscreenChrome": {
+    "description": "Semantics label for tapping the fullscreen image to toggle the app bar."
+  },
+  "a11yCommentsToggle": "Comments",
+  "@a11yCommentsToggle": {
+    "description": "Semantics label for the comments-section toggle. Expanded/collapsed state is announced separately via Semantics(toggled:)."
+  },
+  "a11yShowSubstitutionsFor": "Show substitutions for {ingredient}",
+  "@a11yShowSubstitutionsFor": {
+    "description": "Semantics label for tapping an ingredient row to open its substitution sheet.",
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yToggleStepDone": "Mark step {step} as done or undone",
+  "@a11yToggleStepDone": {
+    "description": "Semantics label for tapping an instruction row to toggle its completion.",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yRemoveOwnRating": "Remove my rating",
+  "@a11yRemoveOwnRating": {
+    "description": "Semantics label for the close icon next to the user's own recipe rating."
+  },
+  "a11yPickTime": "Pick {label}: current time {time}",
+  "@a11yPickTime": {
+    "description": "Semantics label for a quiet-hours time tile in notification preferences.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
   }
 }

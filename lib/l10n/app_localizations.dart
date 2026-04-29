@@ -22731,6 +22731,48 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Välj {emoji} som ikon'**
   String a11yEmojiPicker(String emoji);
+
+  /// Semantics label for the close icon on an ingredient chip in the search input.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {label}'**
+  String a11yRemoveIngredientChip(String label);
+
+  /// Semantics label for tapping the fullscreen image to toggle the app bar.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa eller dölj kontroller'**
+  String get a11yToggleFullscreenChrome;
+
+  /// Semantics label for the comments-section toggle. Expanded/collapsed state is announced separately via Semantics(toggled:).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentarer'**
+  String get a11yCommentsToggle;
+
+  /// Semantics label for tapping an ingredient row to open its substitution sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa substitut för {ingredient}'**
+  String a11yShowSubstitutionsFor(String ingredient);
+
+  /// Semantics label for tapping an instruction row to toggle its completion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera steg {step} som klart eller oavslutat'**
+  String a11yToggleStepDone(int step);
+
+  /// Semantics label for the close icon next to the user's own recipe rating.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort mitt betyg'**
+  String get a11yRemoveOwnRating;
+
+  /// Semantics label for a quiet-hours time tile in notification preferences.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj {label}: nuvarande tid {time}'**
+  String a11yPickTime(String label, String time);
 }
 
 class _AppLocalizationsDelegate

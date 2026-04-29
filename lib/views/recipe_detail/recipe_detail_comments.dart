@@ -95,69 +95,76 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   Widget _buildHeader(BuildContext context, SocialRecipeViewModel vm) {
     final cs = Theme.of(context).colorScheme;
 
-    return InkWell(
-      onTap: () {
-        if (!mounted) return;
-        setState(() => _isExpanded = !_isExpanded);
-        if (_isExpanded) {
-          vm.startWatchingComments(widget.recipe.id);
-        } else {
-          vm.stopWatchingComments();
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.comment_outlined,
-              color: cs.primary,
-              size: AppDimensions.iconSizeAction,
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Semantics(
-                    header: true,
-                    child: Text(context.l10n.socialComments,
-                        style: AppTextStyles.titleMedium),
-                  ),
-                  if ((vm.commentCount ?? 0) > 0) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      context.l10n.socialCommentsCount(vm.commentCount!),
-                      style: AppTextStyles.titleMedium,
-                    ),
-                  ],
-                  // Preview snippet when collapsed
-                  if (!_isExpanded && vm.topLevelComments.isNotEmpty) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      vm.topLevelComments.first.text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
+    return Semantics(
+      label: context.l10n.a11yCommentsToggle,
+      button: true,
+      toggled: _isExpanded,
+      child: InkWell(
+        onTap: () {
+          if (!mounted) return;
+          setState(() => _isExpanded = !_isExpanded);
+          if (_isExpanded) {
+            vm.startWatchingComments(widget.recipe.id);
+          } else {
+            vm.stopWatchingComments();
+          }
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+            border: Border.all(color: cs.outlineVariant),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.comment_outlined,
+                color: cs.primary,
+                size: AppDimensions.iconSizeAction,
               ),
-            ),
-            Icon(
-              _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-              color: cs.onSurfaceVariant,
-              size: AppDimensions.iconSizeAction,
-            ),
-          ],
+              const SizedBox(width: AppDimensions.spacingM),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(context.l10n.socialComments,
+                          style: AppTextStyles.titleMedium),
+                    ),
+                    if ((vm.commentCount ?? 0) > 0) ...[
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Text(
+                        context.l10n.socialCommentsCount(vm.commentCount!),
+                        style: AppTextStyles.titleMedium,
+                      ),
+                    ],
+                    // Preview snippet when collapsed
+                    if (!_isExpanded && vm.topLevelComments.isNotEmpty) ...[
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Text(
+                        vm.topLevelComments.first.text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Icon(
+                _isExpanded
+                    ? Icons.keyboard_arrow_up
+                    : Icons.keyboard_arrow_down,
+                color: cs.onSurfaceVariant,
+                size: AppDimensions.iconSizeAction,
+              ),
+            ],
+          ),
         ),
       ),
     );

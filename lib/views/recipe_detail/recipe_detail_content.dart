@@ -183,64 +183,69 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                     thickness: 1,
                     color: cs.surfaceContainerHigh,
                   ),
-                InkWell(
-                  onTap: () => _showSubstitutionSheet(context, parsed.name),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: AppDimensions.spacingModerate),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Quantity + unit column
-                        SizedBox(
-                          width: 70,
-                          child: Text(
-                            parsed.unit.isNotEmpty
-                                ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                                : parsed.quantity > 0
-                                    ? _formatQuantity(parsed.quantity)
-                                    : '',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: cs.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                        const SizedBox(width: AppDimensions.spacingXl),
-                        // Ingredient name (tap for substitutions)
-                        Expanded(
-                          child: Row(
-                            children: [
-                              if (isAllergen)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    right: AppDimensions.spacingXs,
-                                  ),
-                                  child: Icon(
-                                    Icons.warning_amber,
-                                    size: AppDimensions.iconSizeS,
-                                    color: cs.error,
-                                  ),
-                                ),
-                              Expanded(
-                                child: Text(
-                                  parsed.name,
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: isAllergen ? cs.error : cs.onSurface,
-                                  ),
-                                ),
+                Semantics(
+                  label: context.l10n.a11yShowSubstitutionsFor(parsed.name),
+                  button: true,
+                  child: InkWell(
+                    onTap: () => _showSubstitutionSheet(context, parsed.name),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: AppDimensions.spacingModerate),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Quantity + unit column
+                          SizedBox(
+                            width: 70,
+                            child: Text(
+                              parsed.unit.isNotEmpty
+                                  ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                                  : parsed.quantity > 0
+                                      ? _formatQuantity(parsed.quantity)
+                                      : '',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: cs.primary,
+                                fontWeight: FontWeight.w600,
                               ),
-                            ],
+                              textAlign: TextAlign.right,
+                            ),
                           ),
-                        ),
-                        Icon(
-                          Icons.swap_horiz,
-                          size: AppDimensions.iconSizeS,
-                          color: cs.onSurfaceVariant.withValues(
-                              alpha: AppDimensions.opacityMediumLight),
-                        ),
-                      ],
+                          const SizedBox(width: AppDimensions.spacingXl),
+                          // Ingredient name (tap for substitutions)
+                          Expanded(
+                            child: Row(
+                              children: [
+                                if (isAllergen)
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      right: AppDimensions.spacingXs,
+                                    ),
+                                    child: Icon(
+                                      Icons.warning_amber,
+                                      size: AppDimensions.iconSizeS,
+                                      color: cs.error,
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: Text(
+                                    parsed.name,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color:
+                                          isAllergen ? cs.error : cs.onSurface,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.swap_horiz,
+                            size: AppDimensions.iconSizeS,
+                            color: cs.onSurfaceVariant.withValues(
+                                alpha: AppDimensions.opacityMediumLight),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -283,34 +288,40 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
               bottom:
                   index < instructions.length - 1 ? AppDimensions.spacingMd : 0,
             ),
-            child: InkWell(
-              onTap: () => _toggleStepCompletion(index),
-              borderRadius: BorderRadius.zero,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingXs,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Checkable step indicator
-                    _buildStepCheckbox(context, index + 1, isCompleted),
-                    const SizedBox(width: AppDimensions.spacingMd),
+            child: Semantics(
+              label: context.l10n.a11yToggleStepDone(index + 1),
+              button: true,
+              toggled: isCompleted,
+              child: InkWell(
+                onTap: () => _toggleStepCompletion(index),
+                borderRadius: BorderRadius.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppDimensions.spacingXs,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Checkable step indicator
+                      _buildStepCheckbox(context, index + 1, isCompleted),
+                      const SizedBox(width: AppDimensions.spacingMd),
 
-                    // Instruction text
-                    Expanded(
-                      child: Text(
-                        instruction,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          color:
-                              isCompleted ? cs.onSurfaceVariant : cs.onSurface,
-                          decoration: isCompleted
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
+                      // Instruction text
+                      Expanded(
+                        child: Text(
+                          instruction,
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            color: isCompleted
+                                ? cs.onSurfaceVariant
+                                : cs.onSurface,
+                            decoration: isCompleted
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

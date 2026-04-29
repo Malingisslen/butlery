@@ -142,7 +142,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_list_viewmodel.dart` | 790 | Recipe list with filtering, search, tags |
 | `recipe_detail_view.dart` | 777 | Recipe detail screen |
 | `personal_tag_viewmodel.dart` | 715 | Personal tag management VM |
-| `recipe_detail_content.dart` | 710 | Body content widget for recipe detail |
+| `recipe_detail_content.dart` | 734 | Body content widget for recipe detail |
 | `mina_recept_view.dart` | 687 | Main recipe list screen |
 | `recipe_card.dart` | 674 | Recipe list card widget |
 | `adaptive_icon.dart` | 652 | Platform-adaptive icon widget |
@@ -179,6 +179,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `social_collaborative_components.dart` | 504 | Collaborative social UI components |
 | `menu_preview_view.dart` | 504 | Shared menu preview screen |
 | `chat_action_handler.dart` | 503 | Chat action handling |
+| `notification_preferences_view.dart` | 513 | Notification preferences settings screen — category toggles + quiet hours |
 | `smart_import_viewmodel.dart` | 611 | Smart import pipeline VM — delegates to ImportManager |
 | `shopping_list_content.dart` | 604 | Shopping list UI — drag/reorder, categories, collaborative |
 | `cooking_mode_view.dart` | 585 | Full cooking mode screen — timer, steps, landscape layout |

@@ -124,12 +124,16 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           // Remove own rating — only when the user has rated
           if (_checkedUserRating && _hasUserRating) ...[
             const SizedBox(width: AppDimensions.spacingXs),
-            GestureDetector(
-              onTap: () => _removeMyRating(context),
-              child: Icon(
-                Icons.close,
-                size: 14,
-                color: cs.onSurfaceVariant,
+            Semantics(
+              label: context.l10n.a11yRemoveOwnRating,
+              button: true,
+              child: GestureDetector(
+                onTap: () => _removeMyRating(context),
+                child: Icon(
+                  Icons.close,
+                  size: 14,
+                  color: cs.onSurfaceVariant,
+                ),
               ),
             ),
           ],
