@@ -110,7 +110,12 @@ The theme system is the single source of truth for all visual properties. Read t
 - Debounced ViewModel methods need fake async with time advancement
 - The ServiceLocator bridge pattern is needed for ViewModel tests
 
-**Verification steps** — Does the plan include: static analysis pass, relevant test execution, and manual verification for UI changes?
+**Verification steps** — The plan must explicitly list its verification steps as part of the work, not leave them implicit. Required (when applicable):
+- `flutter analyze --fatal-infos` passes
+- Specific tests named (file paths or test names) — not "add tests"
+- For UI changes: manual verification step (Chrome MCP or device run) before declaring done
+- For Firestore rules / repository changes: rules-test execution against emulator
+A plan that says "implement X" without listing how it will verify X is done is incomplete (CLAUDE.md Rule #5: "Plans = execute + verify").
 
 ## 7. Edge Cases & Resilience
 
@@ -157,3 +162,19 @@ The theme system is the single source of truth for all visual properties. Read t
 **Comment quality** — Comments explain WHY, not WHAT. No section dividers. All in English.
 
 **Proportional complexity** — Is the solution complexity proportional to the problem? Would a staff engineer approve this scope?
+
+**Cost discipline** — Per CLAUDE.md Cost Principles:
+- New LLM calls must be justified: would deterministic code (rules, regex, lookup tables, algorithms) work? LLMs only for genuinely free-text understanding or creative generation.
+- New Firebase reads/writes must consider batching, caching, and query efficiency. Plans that add per-item writes where a batch would do should be flagged.
+- If the plan adds either, it should say WHY the cheaper alternative doesn't work — not just propose the expensive one silently.
+
+## 11. Plain-Language Summary (mandatory section in plan)
+
+Per `.claude/rules/workflow-discipline.md`, every plan MUST end with a section called **"What this means in plain language"** that:
+
+- Explains what the user will notice changing (new button, different behavior, etc.)
+- Uses zero technical jargon — no "viewmodel", "repository", "mixin", "provider", "widget tree"
+- Summarizes the risk: what could break, and how easy it is to undo
+- Is max 5-8 bullet points, written as if explaining to a friend who doesn't code
+
+**Audit rule:** if this section is missing, that's a 🔴 RED — the plan is incomplete regardless of technical merit. If the section exists but uses banned jargon or exceeds 8 bullets, that's a 🟡 YELLOW — fix the wording before exit.
