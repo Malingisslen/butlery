@@ -3,8 +3,14 @@
 ///
 /// Usage: Import this file when displaying platform-specific UI elements
 /// like badges, icons, or links to external recipe sources.
+///
+/// BUT-690: hex literals live in `AppColors.brand*`; this class is the
+/// stable platform-semantic API surface so callers don't need to know
+/// the underlying token names.
 
 import 'package:flutter/material.dart';
+
+import 'package:butlery/theme/app_colors.dart';
 
 /// Central repository for platform and service brand colors.
 /// Ensures visual consistency when displaying third-party platform elements.
@@ -13,69 +19,69 @@ abstract class BrandColors {
 
   // Social Media Platforms
   /// YouTube brand red
-  static const Color youtube = Color(0xFFFF0000);
+  static const Color youtube = AppColors.brandYoutube;
 
   /// TikTok brand cyan
-  static const Color tiktok = Color(0xFF00F2EA);
+  static const Color tiktok = AppColors.brandTiktok;
 
   /// Instagram brand pink
-  static const Color instagram = Color(0xFFE1306C);
+  static const Color instagram = AppColors.brandInstagram;
 
   /// Twitter (X) brand blue
-  static const Color twitter = Color(0xFF1DA1F2);
+  static const Color twitter = AppColors.brandTwitter;
 
   /// Pinterest brand red
-  static const Color pinterest = Color(0xFFE60023);
+  static const Color pinterest = AppColors.brandPinterest;
 
   /// WhatsApp brand green
-  static const Color whatsapp = Color(0xFF25D366);
+  static const Color whatsapp = AppColors.brandWhatsapp;
 
   /// Telegram brand blue
-  static const Color telegram = Color(0xFF0088CC);
+  static const Color telegram = AppColors.brandTelegram;
 
   /// Facebook brand blue
-  static const Color facebook = Color(0xFF1877F2);
+  static const Color facebook = AppColors.brandFacebook;
 
   /// Reddit brand orange
-  static const Color reddit = Color(0xFFFF4500);
+  static const Color reddit = AppColors.brandReddit;
 
   // Swedish Recipe Platforms
   /// AllRecipes brand red
-  static const Color allrecipes = Color(0xFFBD081C);
+  static const Color allrecipes = AppColors.brandAllrecipes;
 
   /// ICA brand orange
-  static const Color ica = Color(0xFFFF6600);
+  static const Color ica = AppColors.brandIca;
 
   /// Coop brand green
-  static const Color coop = Color(0xFF006341);
+  static const Color coop = AppColors.brandCoop;
 
   /// Arla brand red
-  static const Color arla = Color(0xFFE30613);
+  static const Color arla = AppColors.brandArla;
 
   /// Koket.se brand black
-  static const Color koketSe = Color(0xFF000000);
+  static const Color koketSe = AppColors.brandKoketSe;
 
   // Generic fallback for unknown platforms
   /// Generic platform color (neutral gray)
-  static const Color generic = Color(0xFF6B7280);
+  static const Color generic = AppColors.brandGeneric;
 
   // Platform-specific background colors (light tints for badges)
   /// YouTube light background (light red tint)
-  static const Color youtubeBackground = Color(0xFFFFE0E0);
+  static const Color youtubeBackground = AppColors.brandYoutubeBackground;
 
   /// TikTok light background (light cyan tint)
-  static const Color tiktokBackground = Color(0xFFE0F7FA);
+  static const Color tiktokBackground = AppColors.brandTiktokBackground;
 
   /// Instagram light background (light pink tint)
-  static const Color instagramBackground = Color(0xFFFCE4EC);
+  static const Color instagramBackground = AppColors.brandInstagramBackground;
 
   // Platform-specific text colors (darker shades for readability)
   /// YouTube dark text color
-  static const Color youtubeText = Color(0xFFCC0000);
+  static const Color youtubeText = AppColors.brandYoutubeText;
 
   /// TikTok dark text color (black per brand guidelines)
-  static const Color tiktokText = Color(0xFF161823);
+  static const Color tiktokText = AppColors.brandTiktokText;
 
   /// Instagram dark text color
-  static const Color instagramText = Color(0xFFC13584);
+  static const Color instagramText = AppColors.brandInstagramText;
 }

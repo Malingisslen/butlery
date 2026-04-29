@@ -309,4 +309,87 @@ class AppColors {
 
   /// Unselected nav item text/icon - muted green on cream bg
   static const Color navUnselectedItem = greenMuted;
+
+  // BUT-690: Overlay colors lifted from theme_constants. Pre-multiplied
+  // alpha is intentional — withValues(alpha:) at every callsite would
+  // be deprecation-thrash without saving any cycles.
+  /// White overlay with 40% opacity (used for layered tint over images)
+  static const Color overlayWhite40 = Color(0x66FFFFFF);
+
+  /// Black overlay with 10% opacity (subtle scrim)
+  static const Color overlayBlack10 = Color(0x1A000000);
+
+  /// Black overlay with 20% opacity (light scrim)
+  static const Color overlayBlack20 = Color(0x33000000);
+
+  /// Black overlay with 40% opacity (medium scrim)
+  static const Color overlayBlack40 = Color(0x66000000);
+
+  /// Black overlay with 60% opacity (heavy scrim)
+  static const Color overlayBlack60 = Color(0x99000000);
+
+  // BUT-690: Brand colors centralized for theme-aware token discoverability.
+  // BrandColors is preserved as the public API and re-exports these.
+  /// YouTube brand red
+  static const Color brandYoutube = Color(0xFFFF0000);
+
+  /// TikTok brand cyan
+  static const Color brandTiktok = Color(0xFF00F2EA);
+
+  /// Instagram brand pink
+  static const Color brandInstagram = Color(0xFFE1306C);
+
+  /// Twitter (X) brand blue
+  static const Color brandTwitter = Color(0xFF1DA1F2);
+
+  /// Pinterest brand red
+  static const Color brandPinterest = Color(0xFFE60023);
+
+  /// WhatsApp brand green
+  static const Color brandWhatsapp = Color(0xFF25D366);
+
+  /// Telegram brand blue
+  static const Color brandTelegram = Color(0xFF0088CC);
+
+  /// Facebook brand blue
+  static const Color brandFacebook = Color(0xFF1877F2);
+
+  /// Reddit brand orange
+  static const Color brandReddit = Color(0xFFFF4500);
+
+  /// AllRecipes brand red
+  static const Color brandAllrecipes = Color(0xFFBD081C);
+
+  /// ICA brand orange
+  static const Color brandIca = Color(0xFFFF6600);
+
+  /// Coop brand green
+  static const Color brandCoop = Color(0xFF006341);
+
+  /// Arla brand red
+  static const Color brandArla = Color(0xFFE30613);
+
+  /// Koket.se brand black
+  static const Color brandKoketSe = Color(0xFF000000);
+
+  /// Generic platform color (neutral gray)
+  static const Color brandGeneric = Color(0xFF6B7280);
+
+  /// YouTube light background tint
+  static const Color brandYoutubeBackground = Color(0xFFFFE0E0);
+
+  /// TikTok light background tint
+  static const Color brandTiktokBackground = Color(0xFFE0F7FA);
+
+  /// Instagram light background tint
+  static const Color brandInstagramBackground = Color(0xFFFCE4EC);
+
+  /// YouTube dark text color
+  static const Color brandYoutubeText = Color(0xFFCC0000);
+
+  /// TikTok dark text color (black per brand guidelines)
+  static const Color brandTiktokText = Color(0xFF161823);
+
+  /// Instagram dark text color
+  static const Color brandInstagramText = Color(0xFFC13584);
 }

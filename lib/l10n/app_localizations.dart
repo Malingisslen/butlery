@@ -22773,6 +22773,72 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Välj {label}: nuvarande tid {time}'**
   String a11yPickTime(String label, String time);
+
+  /// Semantics label for the cooking-mode instruction text where long-press opens a step timer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Steg {step}, långtryck för att starta timer'**
+  String a11yCookingStepLongPressTimer(int step);
+
+  /// Semantics label for the archived-conversations expand/collapse row in the messaging list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Arkiverade konversationer'**
+  String get a11yArchivedConversationsToggle;
+
+  /// Semantics label for the recipe detail hero image which opens a fullscreen viewer when tapped.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa receptbild i fullskärm'**
+  String get a11yRecipeImageFullscreen;
+
+  /// Semantics label fallback for a recipe-detail hero icon button — uses the tooltip text.
+  ///
+  /// In sv, this message translates to:
+  /// **'{tooltip}'**
+  String a11yHeroButton(String tooltip);
+
+  /// Semantics label for the close icon on the recipe import parse-quality warning banner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avfärda varning om importkvalitet'**
+  String get a11yDismissParseQualityWarning;
+
+  /// Semantics label for the collapsible category header in the shopping list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kategori {category}'**
+  String a11yToggleShoppingCategory(String category);
+
+  /// Semantics label for the show/hide empty categories row in the shopping list.
+  ///
+  /// In sv, this message translates to:
+  /// **'Övriga kategorier'**
+  String get a11yToggleEmptyCategories;
+
+  /// Semantics label for the list/calendar view-mode toggle in the weekly menu.
+  ///
+  /// In sv, this message translates to:
+  /// **'{label}'**
+  String a11yWeeklyMenuViewModeToggle(String label);
+
+  /// Semantics label for a poll option tap target in chat messages.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rösta på {label}'**
+  String a11yPollVoteOption(String label);
+
+  /// Semantics label for the recipe thumbnail tappable in poll options.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa receptet {title}'**
+  String a11yPollRecipeThumbnail(String title);
+
+  /// Semantics label for the send button in the ping compose sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka notis'**
+  String get a11yPingComposeSend;
 }
 
 class _AppLocalizationsDelegate

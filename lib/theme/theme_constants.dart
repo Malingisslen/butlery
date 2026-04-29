@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/theme/app_colors.dart';
+
 /// Central repository for specialized theme constants.
 class ThemeConstants {
   /// Private constructor to prevent instantiation of utility class
@@ -65,19 +67,19 @@ class ThemeConstants {
   static const double spreadRadiusLarge = 4.0;
 
   /// White overlay with 40% opacity
-  static const Color whiteOverlay40 = Color(0x66FFFFFF);
+  static const Color whiteOverlay40 = AppColors.overlayWhite40;
 
   /// Black overlay with 10% opacity
-  static const Color blackOverlay10 = Color(0x1A000000);
+  static const Color blackOverlay10 = AppColors.overlayBlack10;
 
   /// Black overlay with 20% opacity
-  static const Color blackOverlay20 = Color(0x33000000);
+  static const Color blackOverlay20 = AppColors.overlayBlack20;
 
   /// Black overlay with 40% opacity
-  static const Color blackOverlay40 = Color(0x66000000);
+  static const Color blackOverlay40 = AppColors.overlayBlack40;
 
   /// Black overlay with 60% opacity
-  static const Color blackOverlay60 = Color(0x99000000);
+  static const Color blackOverlay60 = AppColors.overlayBlack60;
 
   /// Standard ease in out curve
   static const Curve standardCurve = Curves.easeInOut;

@@ -824,12 +824,16 @@ class _SkrivSjalvReceptViewContentState
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => setState(() => _showQualityWarning = false),
-                  child: Icon(
-                    Icons.close,
-                    size: AppDimensions.iconSizeS,
-                    color: colors.onWarningContainer,
+                Semantics(
+                  label: context.l10n.a11yDismissParseQualityWarning,
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () => setState(() => _showQualityWarning = false),
+                    child: Icon(
+                      Icons.close,
+                      size: AppDimensions.iconSizeS,
+                      color: colors.onWarningContainer,
+                    ),
                   ),
                 ),
               ],

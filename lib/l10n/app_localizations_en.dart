@@ -13336,4 +13336,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yPickTime(String label, String time) {
     return 'Pick $label: current time $time';
   }
+
+  @override
+  String a11yCookingStepLongPressTimer(int step) {
+    return 'Step $step, long-press to start timer';
+  }
+
+  @override
+  String get a11yArchivedConversationsToggle => 'Archived conversations';
+
+  @override
+  String get a11yRecipeImageFullscreen => 'Show recipe image in fullscreen';
+
+  @override
+  String a11yHeroButton(String tooltip) {
+    return '$tooltip';
+  }
+
+  @override
+  String get a11yDismissParseQualityWarning => 'Dismiss import quality warning';
+
+  @override
+  String a11yToggleShoppingCategory(String category) {
+    return 'Category $category';
+  }
+
+  @override
+  String get a11yToggleEmptyCategories => 'Other categories';
+
+  @override
+  String a11yWeeklyMenuViewModeToggle(String label) {
+    return '$label';
+  }
+
+  @override
+  String a11yPollVoteOption(String label) {
+    return 'Vote for $label';
+  }
+
+  @override
+  String a11yPollRecipeThumbnail(String title) {
+    return 'Open recipe $title';
+  }
+
+  @override
+  String get a11yPingComposeSend => 'Send ping';
 }

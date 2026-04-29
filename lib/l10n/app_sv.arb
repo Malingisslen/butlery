@@ -9441,5 +9441,79 @@
         "type": "String"
       }
     }
+  },
+  "a11yCookingStepLongPressTimer": "Steg {step}, långtryck för att starta timer",
+  "@a11yCookingStepLongPressTimer": {
+    "description": "Semantics label for the cooking-mode instruction text where long-press opens a step timer.",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yArchivedConversationsToggle": "Arkiverade konversationer",
+  "@a11yArchivedConversationsToggle": {
+    "description": "Semantics label for the archived-conversations expand/collapse row in the messaging list."
+  },
+  "a11yRecipeImageFullscreen": "Visa receptbild i fullskärm",
+  "@a11yRecipeImageFullscreen": {
+    "description": "Semantics label for the recipe detail hero image which opens a fullscreen viewer when tapped."
+  },
+  "a11yHeroButton": "{tooltip}",
+  "@a11yHeroButton": {
+    "description": "Semantics label fallback for a recipe-detail hero icon button — uses the tooltip text.",
+    "placeholders": {
+      "tooltip": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDismissParseQualityWarning": "Avfärda varning om importkvalitet",
+  "@a11yDismissParseQualityWarning": {
+    "description": "Semantics label for the close icon on the recipe import parse-quality warning banner."
+  },
+  "a11yToggleShoppingCategory": "Kategori {category}",
+  "@a11yToggleShoppingCategory": {
+    "description": "Semantics label for the collapsible category header in the shopping list.",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yToggleEmptyCategories": "Övriga kategorier",
+  "@a11yToggleEmptyCategories": {
+    "description": "Semantics label for the show/hide empty categories row in the shopping list."
+  },
+  "a11yWeeklyMenuViewModeToggle": "{label}",
+  "@a11yWeeklyMenuViewModeToggle": {
+    "description": "Semantics label for the list/calendar view-mode toggle in the weekly menu.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPollVoteOption": "Rösta på {label}",
+  "@a11yPollVoteOption": {
+    "description": "Semantics label for a poll option tap target in chat messages.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPollRecipeThumbnail": "Visa receptet {title}",
+  "@a11yPollRecipeThumbnail": {
+    "description": "Semantics label for the recipe thumbnail tappable in poll options.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPingComposeSend": "Skicka notis",
+  "@a11yPingComposeSend": {
+    "description": "Semantics label for the send button in the ping compose sheet."
   }
 }

@@ -561,21 +561,28 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                 ),
                                 const SizedBox(width: AppDimensions.spacingMd),
                                 Expanded(
-                                  child: GestureDetector(
-                                    // BUT-406: long-press opens a step timer
-                                    // sheet, pre-filled with the duration
-                                    // parsed from this instruction (5 min
-                                    // default fallback).
-                                    onLongPress: () =>
-                                        _openStepTimer(context, instruction),
-                                    child: Text(
-                                      instruction,
-                                      style: AppTextStyles.titleLarge.copyWith(
-                                        color: cs.onPrimary,
-                                        height: 1.7,
-                                        fontSize:
-                                            AppTextStyles.titleLarge.fontSize! *
-                                                vm.fontScale,
+                                  child: Semantics(
+                                    label: context.l10n
+                                        .a11yCookingStepLongPressTimer(
+                                            stepNumber),
+                                    button: true,
+                                    child: GestureDetector(
+                                      // BUT-406: long-press opens a step timer
+                                      // sheet, pre-filled with the duration
+                                      // parsed from this instruction (5 min
+                                      // default fallback).
+                                      onLongPress: () =>
+                                          _openStepTimer(context, instruction),
+                                      child: Text(
+                                        instruction,
+                                        style:
+                                            AppTextStyles.titleLarge.copyWith(
+                                          color: cs.onPrimary,
+                                          height: 1.7,
+                                          fontSize: AppTextStyles
+                                                  .titleLarge.fontSize! *
+                                              vm.fontScale,
+                                        ),
                                       ),
                                     ),
                                   ),

@@ -324,46 +324,56 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
             _handleItemDrop(details.data.id, category);
           },
           builder: (context, candidateData, rejectedData) {
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  if (isCollapsed) {
-                    _collapsedCategories.remove(category);
-                  } else {
-                    _collapsedCategories.add(category);
-                  }
-                });
-              },
-              child: AnimatedContainer(
-                duration: ThemeConstants.durationFast.respectingMotion(context),
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
-                ),
-                margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-                decoration: BoxDecoration(
-                  color: categoryColor,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
-                  border: isDragOver
-                      ? Border.all(color: cs.onPrimary, width: 2)
-                      : null,
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        // Chevron icon
-                        Icon(
-                          isCollapsed ? Icons.expand_more : Icons.expand_less,
-                          color: cs.onPrimary,
-                          size: AppDimensions.iconSizeM,
-                        ),
-                        const SizedBox(width: AppDimensions.spacingSm),
-                        Expanded(
-                          child: Semantics(
-                            header: true,
+            return Semantics(
+              label: context.l10n.a11yToggleShoppingCategory(
+                  ShoppingCategory.displayName(category)),
+              button: true,
+              toggled: !isCollapsed,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (isCollapsed) {
+                      _collapsedCategories.remove(category);
+                    } else {
+                      _collapsedCategories.add(category);
+                    }
+                  });
+                },
+                child: AnimatedContainer(
+                  duration:
+                      ThemeConstants.durationFast.respectingMotion(context),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingMd,
+                    vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+                  ),
+                  margin:
+                      const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+                  decoration: BoxDecoration(
+                    color: categoryColor,
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                    border: isDragOver
+                        ? Border.all(color: cs.onPrimary, width: 2)
+                        : null,
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          // Chevron icon
+                          Icon(
+                            isCollapsed ? Icons.expand_more : Icons.expand_less,
+                            color: cs.onPrimary,
+                            size: AppDimensions.iconSizeM,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingSm),
+                          Expanded(
+                            // Outer Semantics on the GestureDetector announces
+                            // this row as a toggle button; nesting `header:
+                            // true` here would make TalkBack stutter through
+                            // both roles. The button-with-toggled state is
+                            // more informative for the actionable case.
                             child: Text(
                               ShoppingCategory.displayName(category)
                                   .toUpperCase(),
@@ -376,46 +386,47 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ),
-                        // Progress badge: X/Y format
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.spacingSm,
-                            vertical: AppDimensions.spacingXxs,
+                          // Progress badge: X/Y format
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppDimensions.spacingSm,
+                              vertical: AppDimensions.spacingXxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: cs.onPrimary.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(
+                                  AppDimensions.borderRadiusS),
+                            ),
+                            child: Text(
+                              progress != null
+                                  ? '${progress.completed}/${progress.total}'
+                                  : '${items.length}',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: cs.onPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                          decoration: BoxDecoration(
-                            color: cs.onPrimary.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusS),
-                          ),
-                          child: Text(
-                            progress != null
-                                ? '${progress.completed}/${progress.total}'
-                                : '${items.length}',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: cs.onPrimary,
-                              fontWeight: FontWeight.w600,
+                        ],
+                      ),
+                      // Progress indicator
+                      if (progress != null && progress.total > 0) ...[
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: LinearProgressIndicator(
+                            value: progress.completed / progress.total,
+                            minHeight: 3,
+                            backgroundColor:
+                                cs.onPrimary.withValues(alpha: 0.2),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              cs.onPrimary.withValues(alpha: 0.7),
                             ),
                           ),
                         ),
                       ],
-                    ),
-                    // Progress indicator
-                    if (progress != null && progress.total > 0) ...[
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(2),
-                        child: LinearProgressIndicator(
-                          value: progress.completed / progress.total,
-                          minHeight: 3,
-                          backgroundColor: cs.onPrimary.withValues(alpha: 0.2),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            cs.onPrimary.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ),
                     ],
-                  ],
+                  ),
                 ),
               ),
             );
@@ -491,25 +502,30 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: () => setState(() {
-            _showEmptyCategories = !_showEmptyCategories;
-          }),
-          child: Row(
-            children: [
-              Icon(
-                _showEmptyCategories ? Icons.expand_less : Icons.expand_more,
-                color: cs.onSurfaceVariant,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Text(
-                context.l10n.shoppingOtherCategories,
-                style: AppTextStyles.labelMedium.copyWith(
+        Semantics(
+          label: context.l10n.a11yToggleEmptyCategories,
+          button: true,
+          toggled: _showEmptyCategories,
+          child: GestureDetector(
+            onTap: () => setState(() {
+              _showEmptyCategories = !_showEmptyCategories;
+            }),
+            child: Row(
+              children: [
+                Icon(
+                  _showEmptyCategories ? Icons.expand_less : Icons.expand_more,
                   color: cs.onSurfaceVariant,
+                  size: AppDimensions.iconSizeM,
                 ),
-              ),
-            ],
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(
+                  context.l10n.shoppingOtherCategories,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         if (_showEmptyCategories) ...[

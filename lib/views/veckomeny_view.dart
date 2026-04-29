@@ -288,19 +288,24 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     required bool active,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        color: active ? AppColors.cream : Colors.transparent,
-        child: Text(
-          label.toLowerCase(),
-          style: AppTextStyles.labelSmall.copyWith(
-            color: active
-                ? AppColors.forestGreenDark
-                : Theme.of(context).colorScheme.onPrimary,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
+    return Semantics(
+      label: context.l10n.a11yWeeklyMenuViewModeToggle(label),
+      button: true,
+      selected: active,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          color: active ? AppColors.cream : Colors.transparent,
+          child: Text(
+            label.toLowerCase(),
+            style: AppTextStyles.labelSmall.copyWith(
+              color: active
+                  ? AppColors.forestGreenDark
+                  : Theme.of(context).colorScheme.onPrimary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ),

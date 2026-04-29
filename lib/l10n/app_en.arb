@@ -9441,5 +9441,79 @@
         "type": "String"
       }
     }
+  },
+  "a11yCookingStepLongPressTimer": "Step {step}, long-press to start timer",
+  "@a11yCookingStepLongPressTimer": {
+    "description": "Semantics label for the cooking-mode instruction text where long-press opens a step timer.",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yArchivedConversationsToggle": "Archived conversations",
+  "@a11yArchivedConversationsToggle": {
+    "description": "Semantics label for the archived-conversations expand/collapse row in the messaging list."
+  },
+  "a11yRecipeImageFullscreen": "Show recipe image in fullscreen",
+  "@a11yRecipeImageFullscreen": {
+    "description": "Semantics label for the recipe detail hero image which opens a fullscreen viewer when tapped."
+  },
+  "a11yHeroButton": "{tooltip}",
+  "@a11yHeroButton": {
+    "description": "Semantics label fallback for a recipe-detail hero icon button — uses the tooltip text.",
+    "placeholders": {
+      "tooltip": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDismissParseQualityWarning": "Dismiss import quality warning",
+  "@a11yDismissParseQualityWarning": {
+    "description": "Semantics label for the close icon on the recipe import parse-quality warning banner."
+  },
+  "a11yToggleShoppingCategory": "Category {category}",
+  "@a11yToggleShoppingCategory": {
+    "description": "Semantics label for the collapsible category header in the shopping list.",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yToggleEmptyCategories": "Other categories",
+  "@a11yToggleEmptyCategories": {
+    "description": "Semantics label for the show/hide empty categories row in the shopping list."
+  },
+  "a11yWeeklyMenuViewModeToggle": "{label}",
+  "@a11yWeeklyMenuViewModeToggle": {
+    "description": "Semantics label for the list/calendar view-mode toggle in the weekly menu.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPollVoteOption": "Vote for {label}",
+  "@a11yPollVoteOption": {
+    "description": "Semantics label for a poll option tap target in chat messages.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPollRecipeThumbnail": "Open recipe {title}",
+  "@a11yPollRecipeThumbnail": {
+    "description": "Semantics label for the recipe thumbnail tappable in poll options.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yPingComposeSend": "Send ping",
+  "@a11yPingComposeSend": {
+    "description": "Semantics label for the send button in the ping compose sheet."
   }
 }

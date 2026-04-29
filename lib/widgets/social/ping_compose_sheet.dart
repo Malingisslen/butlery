@@ -395,31 +395,36 @@ class _SendButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final bg = enabled ? AppColors.forestGreenDark : AppColors.greenMuted;
 
-    return InkWell(
-      key: const Key('ping-send-button'),
-      onTap: enabled ? onPressed : null,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingMd,
+    return Semantics(
+      label: context.l10n.a11yPingComposeSend,
+      button: true,
+      enabled: enabled,
+      child: InkWell(
+        key: const Key('ping-send-button'),
+        onTap: enabled ? onPressed : null,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppDimensions.spacingMd,
+          ),
+          decoration: BoxDecoration(color: bg),
+          alignment: Alignment.center,
+          child: isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.cream),
+                  ),
+                )
+              : Text(
+                  context.l10n.pingComposeSend,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: AppColors.cream,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
         ),
-        decoration: BoxDecoration(color: bg),
-        alignment: Alignment.center,
-        child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.cream),
-                ),
-              )
-            : Text(
-                context.l10n.pingComposeSend,
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.cream,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
       ),
     );
   }

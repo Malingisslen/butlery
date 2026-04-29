@@ -131,53 +131,61 @@ class PollMessageWidget extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-      child: GestureDetector(
-        onTap: poll.isActive ? () => onVote?.call(option.id) : null,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingS,
-            vertical: AppDimensions.spacingXs + 2,
-          ),
-          decoration: BoxDecoration(
-            color: hasVoted
-                ? (isFromCurrentUser
-                    ? cs.onPrimary.withValues(alpha: AppDimensions.opacityLight)
-                    : cs.primary
-                        .withValues(alpha: AppDimensions.opacityVeryLight))
-                : (isFromCurrentUser
-                    ? cs.onPrimary
-                        .withValues(alpha: AppDimensions.opacityVeryLight)
-                    : cs.surface.withValues(alpha: AppDimensions.opacityHalf)),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            border: Border.all(
+      child: Semantics(
+        label: context.l10n.a11yPollVoteOption(option.text),
+        button: true,
+        selected: hasVoted,
+        enabled: poll.isActive,
+        child: GestureDetector(
+          onTap: poll.isActive ? () => onVote?.call(option.id) : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingS,
+              vertical: AppDimensions.spacingXs + 2,
+            ),
+            decoration: BoxDecoration(
               color: hasVoted
                   ? (isFromCurrentUser
                       ? cs.onPrimary
-                          .withValues(alpha: AppDimensions.opacityMediumLight)
+                          .withValues(alpha: AppDimensions.opacityLight)
                       : cs.primary
-                          .withValues(alpha: AppDimensions.opacityMediumLight))
-                  : Colors.transparent,
+                          .withValues(alpha: AppDimensions.opacityVeryLight))
+                  : (isFromCurrentUser
+                      ? cs.onPrimary
+                          .withValues(alpha: AppDimensions.opacityVeryLight)
+                      : cs.surface
+                          .withValues(alpha: AppDimensions.opacityHalf)),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              border: Border.all(
+                color: hasVoted
+                    ? (isFromCurrentUser
+                        ? cs.onPrimary
+                            .withValues(alpha: AppDimensions.opacityMediumLight)
+                        : cs.primary.withValues(
+                            alpha: AppDimensions.opacityMediumLight))
+                    : Colors.transparent,
+              ),
             ),
+            child: isRecipeOption
+                ? _buildRecipeOptionContent(
+                    context: context,
+                    option: option,
+                    totalVotes: totalVotes,
+                    textColor: textColor,
+                    subtleColor: subtleColor,
+                    hasVoted: hasVoted,
+                    percentage: percentage,
+                  )
+                : _buildTextOptionContent(
+                    context: context,
+                    option: option,
+                    totalVotes: totalVotes,
+                    textColor: textColor,
+                    subtleColor: subtleColor,
+                    hasVoted: hasVoted,
+                    percentage: percentage,
+                  ),
           ),
-          child: isRecipeOption
-              ? _buildRecipeOptionContent(
-                  context: context,
-                  option: option,
-                  totalVotes: totalVotes,
-                  textColor: textColor,
-                  subtleColor: subtleColor,
-                  hasVoted: hasVoted,
-                  percentage: percentage,
-                )
-              : _buildTextOptionContent(
-                  context: context,
-                  option: option,
-                  totalVotes: totalVotes,
-                  textColor: textColor,
-                  subtleColor: subtleColor,
-                  hasVoted: hasVoted,
-                  percentage: percentage,
-                ),
         ),
       ),
     );
@@ -272,19 +280,24 @@ class PollMessageWidget extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            GestureDetector(
-              onTap: option.recipeId != null && onRecipeTap != null
-                  ? () => onRecipeTap!(option.recipeId!)
-                  : null,
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: option.recipeImageUrl != null
-                    ? SimpleImageWidget.thumbnail(
-                        imageUrl: option.recipeImageUrl!,
-                      )
-                    : _RecipeFallbackThumbnail(
-                        isFromCurrent: isFromCurrentUser),
+            Semantics(
+              label: context.l10n.a11yPollRecipeThumbnail(option.text),
+              button: true,
+              enabled: option.recipeId != null && onRecipeTap != null,
+              child: GestureDetector(
+                onTap: option.recipeId != null && onRecipeTap != null
+                    ? () => onRecipeTap!(option.recipeId!)
+                    : null,
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: option.recipeImageUrl != null
+                      ? SimpleImageWidget.thumbnail(
+                          imageUrl: option.recipeImageUrl!,
+                        )
+                      : _RecipeFallbackThumbnail(
+                          isFromCurrent: isFromCurrentUser),
+                ),
               ),
             ),
             const SizedBox(width: AppDimensions.spacingSm),

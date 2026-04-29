@@ -33,9 +33,39 @@ fi
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 cd "$REPO_ROOT"
 
-# `git commit -a` commits modified-tracked without `git add`, so union
-# staged + unstaged when deciding both scope and staleness.
-CHANGED_FILES="$({ git diff --cached --name-only; git diff --name-only; } 2>/dev/null | sort -u)"
+# Determine actual commit scope:
+#   `git commit`           → only staged files (--cached)
+#   `git commit -a`/--all  → staged ∪ modified-tracked (git stages-then-commits)
+# Including unstaged unconditionally over-blocks during parallel-session work
+# (another session's uncommitted .dart edits would trip the marker check on
+# this session's unrelated commit).
+INCLUDE_UNSTAGED="$(printf '%s' "$CMD" | python3 -c '
+import sys, shlex
+try:
+    args = shlex.split(sys.stdin.read())
+    i = args.index("commit")
+except Exception:
+    print(0); sys.exit()
+flags = args[i+1:]
+takes_arg = {"-m","--message","-F","--file","-C","--reuse-message","-c","--reedit-message","-t","--template","--author","--date","-S","--gpg-sign"}
+skip_next = False
+for a in flags:
+    if skip_next:
+        skip_next = False; continue
+    if a in takes_arg:
+        skip_next = True; continue
+    if a == "-a" or a == "--all":
+        print(1); sys.exit()
+    if a.startswith("-") and not a.startswith("--") and "a" in a[1:]:
+        print(1); sys.exit()
+print(0)
+' 2>/dev/null || echo 0)"
+
+if [[ "$INCLUDE_UNSTAGED" == "1" ]]; then
+  CHANGED_FILES="$({ git diff --cached --name-only; git diff --name-only; } 2>/dev/null | sort -u)"
+else
+  CHANGED_FILES="$(git diff --cached --name-only 2>/dev/null | sort -u)"
+fi
 
 # Scope: only fire when a .dart file is part of the change set.
 printf '%s\n' "$CHANGED_FILES" | grep -Eq '\.dart$' || exit 0

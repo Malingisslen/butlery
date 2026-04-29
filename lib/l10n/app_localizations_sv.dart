@@ -13366,4 +13366,50 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yPickTime(String label, String time) {
     return 'Välj $label: nuvarande tid $time';
   }
+
+  @override
+  String a11yCookingStepLongPressTimer(int step) {
+    return 'Steg $step, långtryck för att starta timer';
+  }
+
+  @override
+  String get a11yArchivedConversationsToggle => 'Arkiverade konversationer';
+
+  @override
+  String get a11yRecipeImageFullscreen => 'Visa receptbild i fullskärm';
+
+  @override
+  String a11yHeroButton(String tooltip) {
+    return '$tooltip';
+  }
+
+  @override
+  String get a11yDismissParseQualityWarning =>
+      'Avfärda varning om importkvalitet';
+
+  @override
+  String a11yToggleShoppingCategory(String category) {
+    return 'Kategori $category';
+  }
+
+  @override
+  String get a11yToggleEmptyCategories => 'Övriga kategorier';
+
+  @override
+  String a11yWeeklyMenuViewModeToggle(String label) {
+    return '$label';
+  }
+
+  @override
+  String a11yPollVoteOption(String label) {
+    return 'Rösta på $label';
+  }
+
+  @override
+  String a11yPollRecipeThumbnail(String title) {
+    return 'Visa receptet $title';
+  }
+
+  @override
+  String get a11yPingComposeSend => 'Skicka notis';
 }

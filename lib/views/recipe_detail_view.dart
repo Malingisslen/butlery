@@ -238,47 +238,52 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   background: Hero(
                     tag: ImageConfig.recipeHeroTag(recipe.id),
                     child: recipe.imageUrls.isNotEmpty
-                        ? GestureDetector(
-                            onTap: () =>
-                                RecipeDetailSharedWidgets.showFullscreenImage(
-                                    context, recipe.imageUrls, 0),
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    cs.onSurface.withValues(
-                                        alpha:
-                                            AppDimensions.opacityMediumLight),
-                                  ],
-                                ),
-                              ),
-                              child: CachedNetworkImage(
-                                imageUrl: recipe.imageUrls.first,
-                                cacheKey: FirebaseUrlUtils.stableCacheKey(
-                                    recipe.imageUrls.first),
-                                fit: BoxFit.cover,
-                                memCacheWidth: (600 *
-                                        MediaQuery.of(context).devicePixelRatio)
-                                    .round(),
-                                placeholder: (context, url) => ColoredBox(
-                                  color: cs.surfaceContainerHighest,
-                                  child: const Center(
-                                    child: CircularProgressIndicator(),
+                        ? Semantics(
+                            label: context.l10n.a11yRecipeImageFullscreen,
+                            button: true,
+                            child: GestureDetector(
+                              onTap: () =>
+                                  RecipeDetailSharedWidgets.showFullscreenImage(
+                                      context, recipe.imageUrls, 0),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      cs.onSurface.withValues(
+                                          alpha:
+                                              AppDimensions.opacityMediumLight),
+                                    ],
                                   ),
                                 ),
-                                errorWidget: (context, url, error) {
-                                  return ColoredBox(
+                                child: CachedNetworkImage(
+                                  imageUrl: recipe.imageUrls.first,
+                                  cacheKey: FirebaseUrlUtils.stableCacheKey(
+                                      recipe.imageUrls.first),
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: (600 *
+                                          MediaQuery.of(context)
+                                              .devicePixelRatio)
+                                      .round(),
+                                  placeholder: (context, url) => ColoredBox(
                                     color: cs.surfaceContainerHighest,
-                                    child: Icon(
-                                      Icons.restaurant,
-                                      size: AppDimensions.iconSizeHero,
-                                      color: cs.onSurfaceVariant,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
                                     ),
-                                  );
-                                },
+                                  ),
+                                  errorWidget: (context, url, error) {
+                                    return ColoredBox(
+                                      color: cs.surfaceContainerHighest,
+                                      child: Icon(
+                                        Icons.restaurant,
+                                        size: AppDimensions.iconSizeHero,
+                                        color: cs.onSurfaceVariant,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           )
@@ -757,7 +762,10 @@ class _HeroButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    final button = Material(
+    // Tooltip alone gives screen readers a hint, not a "button" role —
+    // wrap explicitly so callers without their own Semantics ancestor
+    // (e.g. the back button at AppBar.leading) still announce correctly.
+    final tappable = Material(
       color: cs.surface,
       borderRadius: BorderRadius.zero,
       child: InkWell(
@@ -777,10 +785,15 @@ class _HeroButton extends StatelessWidget {
       ),
     );
 
-    if (tooltip != null && tooltip!.isNotEmpty) {
-      return Tooltip(message: tooltip!, child: button);
-    }
-    return button;
+    final hasTooltip = tooltip != null && tooltip!.isNotEmpty;
+    final labelled = hasTooltip
+        ? Semantics(
+            label: context.l10n.a11yHeroButton(tooltip!),
+            button: true,
+            child: Tooltip(message: tooltip!, child: tappable),
+          )
+        : tappable;
+    return labelled;
   }
 }
 

@@ -64,16 +64,24 @@ Session-aware: only blocks on errors in files THIS session modified. Ignore erro
 
 ## Agent Usage Rules
 
-**Tier 1 — Strongly Recommended:**
+**Tier 1 — Strongly Recommended (debugging / investigation):**
 - **debugger** — bug reports, errors, test failures, unexpected behavior
-- **firebase-backend-security** — lib/repositories/, Firebase/Firestore/auth, user data
 
-**Tier 2 — Commit Enforced (automatic):**
-- **code-reviewer** — reviews staged .dart changes
-- **testing-specialist** — verifies test coverage for modified lib/ files
+**Tier 2 — Commit Enforced (hook-backed via `.claude/hooks/require-review-before-commit.sh`):**
+
+The hook blocks `git commit` until a fresh marker exists at `.claude/state/<name>-done.marker` for each specialist whose path pattern matches the staged diff. Markers are stale-checked by mtime: newest changed-file mtime > marker mtime → re-review required.
+
+| Trigger pattern | Required agent | Marker |
+|---|---|---|
+| Any `*.dart` | `code-reviewer` | `code-review-done.marker` |
+| Any `lib/**/*.dart` | `testing-specialist` | `testing-review-done.marker` |
+| `lib/repositories/`, `lib/services/{firebase\|firestore\|auth\|user\|gdpr}`, `functions/src/` (excl. tests) | `firebase-backend-security` | `firebase-security-done.marker` |
+| `firestore.rules`, `functions/src/__tests__/*-rules.test.ts` | `firestore-rules-tester` | `rules-tester-done.marker` |
+
+**Marker workflow:** dispatch the named agent against the staged diff → after it reports clean, run `touch .claude/state/<marker>` → retry commit. Hook is silent when no triggers match (doc-only commits, etc.). Per `memory/feedback_agent_timeout.md`, agents stall on >3 files — split commits or run in batches.
 
 **Tier 3 — On Request:**
-- **uiux-designer**, **performance-optimizer**, **flutter-developer**
+- **uiux-designer**, **performance-optimizer**, **flutter-developer** — invoke explicitly when the diff warrants a specialist beyond Tier 2.
 
 ## Agent Knowledge Files (self-improvement pattern)
 

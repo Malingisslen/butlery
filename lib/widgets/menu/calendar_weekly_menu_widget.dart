@@ -494,23 +494,28 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
                   _buildOvrigtEntry(context, entry),
                   const SizedBox(height: 3),
                 ],
-                GestureDetector(
-                  onTap: () =>
-                      _onTapEmptySlot(context, vm, day, MealSlot.ovrigt),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.creamDarker,
+                Semantics(
+                  label:
+                      context.l10n.a11yMenuPlanOvrigtAddMore(day.displayLabel),
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () =>
+                        _onTapEmptySlot(context, vm, day, MealSlot.ovrigt),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.creamDarker,
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      context.l10n.weeklyMenuOvrigtAddMore,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        fontSize: 9,
-                        color: AppColors.rust,
-                        fontWeight: FontWeight.w600,
+                      child: Text(
+                        context.l10n.weeklyMenuOvrigtAddMore,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.labelSmall.copyWith(
+                          fontSize: 9,
+                          color: AppColors.rust,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -531,44 +536,48 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     BuildContext context,
     WeeklyMenuPlanEntry entry,
   ) {
-    final chip = GestureDetector(
-      onTap: () => _navigateToRecipe(context, entry.recipeId),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-        decoration: const BoxDecoration(
-          color: AppColors.cream,
-          border: Border(
-            left: BorderSide(color: AppColors.rust, width: 2),
+    final chip = Semantics(
+      label: context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+      button: true,
+      child: GestureDetector(
+        onTap: () => _navigateToRecipe(context, entry.recipeId),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+          decoration: const BoxDecoration(
+            color: AppColors.cream,
+            border: Border(
+              left: BorderSide(color: AppColors.rust, width: 2),
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 16,
-              height: 16,
-              color: AppColors.cardWhite,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.cake_outlined,
-                size: 11,
-                color: AppColors.greenMuted,
-              ),
-            ),
-            const SizedBox(width: 3),
-            Expanded(
-              child: Text(
-                entry.recipeTitle.toLowerCase(),
-                style: AppTextStyles.labelSmall.copyWith(
-                  fontSize: 8,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
-                  height: 1.1,
+          child: Row(
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                color: AppColors.cardWhite,
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.cake_outlined,
+                  size: 11,
+                  color: AppColors.greenMuted,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+              const SizedBox(width: 3),
+              Expanded(
+                child: Text(
+                  entry.recipeTitle.toLowerCase(),
+                  style: AppTextStyles.labelSmall.copyWith(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                    height: 1.1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
