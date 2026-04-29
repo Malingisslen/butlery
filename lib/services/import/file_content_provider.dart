@@ -30,7 +30,7 @@ class DefaultFileContentProvider implements FileContentProvider {
     bool withData = true,
     bool withReadStream = false,
   }) async {
-    return await FilePicker.platform.pickFiles(
+    return await FilePicker.pickFiles(
       type: type,
       allowedExtensions: allowedExtensions,
       allowMultiple: allowMultiple,

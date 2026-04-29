@@ -10,13 +10,13 @@
 ///    - The strategy only works through FilePicker UI interaction
 ///
 /// 2. import() method ignores the input parameter
-///    - It calls FilePicker.platform.pickFiles() directly
+///    - It calls FilePicker.pickFiles() directly
 ///    - This requires actual UI interaction which isn't available in unit tests
 ///    - Tests will fail with LateInitializationError for FilePicker
 ///
 /// 3. To properly test FileImportStrategy would require:
 ///    - Integration tests with actual UI
-///    - Or mocking FilePicker.platform (complex setup)
+///    - Or mocking FilePicker (complex setup)
 ///    - Or refactoring the strategy to accept file content injection
 ///
 /// Current tests verify:
@@ -195,7 +195,7 @@ void main() {
 
         // NOTE: FileImportStrategy uses FilePicker which can't be tested in unit tests
         // The import() method ignores the input parameter and opens a file picker dialog
-        // This would require integration testing or mocking FilePicker.platform
+        // This would require integration testing or mocking FilePicker
         const input = 'file://recipes.csv';
 
         // Act

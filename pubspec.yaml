@@ -71,7 +71,7 @@ dependencies:
   clock: ^1.1.1  # For testable time-dependent code
   share_plus: ^12.0.2        # För utgående sharing (skicka till andra appar)
   path_provider: ^2.1.4
-  file_picker: ^10.3.3            # Blocked: 11.x has breaking API changes (static methods, PlatformFile removed)
+  file_picker: ^11.0.2
   path: ^1.9.0
   crypto: ^3.0.5             # För OCR service image hashing och caching
 
