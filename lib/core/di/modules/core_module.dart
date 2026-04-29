@@ -57,6 +57,9 @@ import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/feedback/interaction_logger.dart';
 import 'package:butlery/services/feedback/feedback_service.dart';
 
+// Security (SSL pinning factory for the shared HTTP client)
+import 'package:butlery/services/security/pinned_http_client_factory.dart';
+
 // PWA
 import 'package:butlery/services/pwa_install_service.dart';
 
@@ -138,9 +141,14 @@ class CoreModule implements DIModule {
       container.registerSingleton<SharedPreferences>(sharedPreferences);
 
       // Shared HTTP client for import pipeline and external API calls.
-      // Reusing one client enables HTTP keep-alive connection pooling.
+      // Reusing one client enables HTTP keep-alive connection pooling —
+      // BUT-735: previously [HttpContentFetcher] allocated a fresh pinned
+      // client per import (TLS handshake + DNS each call). This singleton
+      // is now PinnedHttpClient-wrapped (BUT-427) so pinning still applies
+      // to every consumer; pinning is a no-op for hosts without configured
+      // pins.
       container.registerSingleton<http.Client>(
-        http.Client(),
+        PinnedHttpClientFactory.create(),
         dispose: (client) => client.close(),
       );
 

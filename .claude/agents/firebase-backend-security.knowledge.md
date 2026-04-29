@@ -1063,3 +1063,100 @@ in Diagnosticable; mocktail's default `toString() => '$runtimeType'`
 doesn't satisfy that signature and produces a compile-time error. The
 override is one line — but a `Fake implements NavigatorState` hits the
 same wall.
+
+### 2026-04-29 — concurrency-safe per-host serialization guard (BUT-736)
+
+**Anti-pattern caught in `PinningDioInterceptor`:** a single nullable
+instance field `Future<X>? _inflight` used as a "wait for the previous
+in-flight call" guard collapses under concurrent callers:
+
+```dart
+// BROKEN — request B clobbers request A's reference;
+// A's `finally { _inflight = null }` then nulls B's slot →
+// any later request C bypasses the guard entirely.
+Future<X>? _inflight;
+if (Platform.isIOS && _inflight != null) await _inflight;
+try {
+  _inflight = doWork();
+  result = await _inflight;
+} finally {
+  _inflight = null;
+}
+```
+
+**Fix pattern:** key by the discriminator that the underlying
+serialization actually requires (host, in this case — Alamofire's
+constraint is per-host on iOS, NOT global). Store futures in a
+`Map<Key, Future<X>>` and clear the entry only if it still points to
+*this* call's future:
+
+```dart
+final Map<String, Future<X>> _inflightByKey = {};
+
+if (Platform.isIOS) {
+  final pending = _inflightByKey[key];
+  if (pending != null) await pending;
+}
+final future = doWork();
+_inflightByKey[key] = future;
+try {
+  result = await future;
+} finally {
+  if (identical(_inflightByKey[key], future)) {
+    _inflightByKey.remove(key); // don't clobber a later concurrent call
+  }
+}
+```
+
+**Test seam pattern for race regressions:** inject a stub that returns
+`Completer<T>().future` so the test controls completion order. Fire N
+requests concurrently, wait for all stub completers to be REGISTERED
+(`_pumpUntil(() => completers.length == N)`), then complete them in
+*reverse* order. If the production code crosses futures, the wrong
+request will see the wrong outcome — exactly the failure mode that a
+"all tests passed because everything ran sequentially" suite would
+miss.
+
+### 2026-04-29 — DI singleton pattern for pinned HTTP clients (BUT-735)
+
+**Anti-pattern caught in `HttpContentFetcher`:** allocating a fresh
+`PinnedHttpClientFactory.create()` per call and tearing it down in a
+`finally` block. Each call paid TLS handshake + DNS, no keep-alive
+across calls.
+
+**Reference good pattern in same codebase:** `OcrExtractionService`
+caches its pinned client in `_cachedHttpClient ??=
+PinnedHttpClientFactory.create()` (lazy init, reused for the lifetime
+of the service).
+
+**Best pattern for app-shared infra HTTP:** register a singleton
+`http.Client` in `core_module.dart` built via
+`PinnedHttpClientFactory.create()`, with `dispose: (c) => c.close()`
+so GetIt owns the lifecycle:
+
+```dart
+container.registerSingleton<http.Client>(
+  PinnedHttpClientFactory.create(),
+  dispose: (client) => client.close(),
+);
+```
+
+Inject into consumers via constructor with the
+`_httpClient ?? PinnedHttpClientFactory.create()` fallback preserved
+for ad-hoc/test construction. The
+`shouldCloseClient = _httpClient == null` rule keeps semantics
+correct — the injected DI client is NEVER closed by the consumer
+(GetIt closes it once on app shutdown), only the per-call fallback is.
+
+**Why pinning is no-op-safe at this layer:** `PinnedHttpClient`
+short-circuits to the inner client for hosts without configured pins
+in `CertPinConfig.hostPins`. So registering a pinned wrapper as the
+shared `http.Client` doesn't break consumers that hit unpinned
+third-parties — pinning only fires for hosts that opted in.
+
+**Test the contract, not the implementation:** wrap the injected
+client in a `_TrackingClient extends http.BaseClient` that counts
+`close()` calls. Two `fetchHtmlWithTimeout` calls + zero closes =
+reuse confirmed. A future contributor tempted to "simplify" by
+re-introducing per-call construction will fail this test before
+shipping the regression.

@@ -39,9 +39,11 @@ class PinningDioInterceptor extends Interceptor {
   final PinMismatchTelemetry? _onPinMismatch;
   final Map<String, List<String>> _pinOverrides;
 
-  /// iOS Alamofire serialization guard — same approach the upstream
-  /// CertificatePinningInterceptor uses.
-  Future<String>? _inflight;
+  /// iOS Alamofire serialization guard, keyed by host. Each host serializes
+  /// independently — a single shared field would race under concurrent Dio
+  /// requests (BUT-736): request A's `finally` would clobber request B's
+  /// reference and silently disable the guard for any subsequent request C.
+  final Map<String, Future<String>> _inflightByHost = {};
 
   PinningDioInterceptor({
     PinCheckFn? pinCheck,
@@ -90,25 +92,31 @@ class PinningDioInterceptor extends Interceptor {
     }
 
     try {
-      if (Platform.isIOS && _inflight != null) {
-        await _inflight;
+      // Wait for any in-flight check on the SAME host before issuing a new
+      // one — Alamofire on iOS rejects parallel pin checks against the same
+      // host. Different hosts proceed concurrently.
+      if (Platform.isIOS) {
+        final pending = _inflightByHost[host];
+        if (pending != null) {
+          await pending;
+        }
       }
     } on UnsupportedError {
       // Non-mobile platforms (web/desktop) — ignore.
     }
 
-    String? checkResult;
+    String checkResult;
+    final pinFuture = _pinCheck(
+      serverURL: fullUrl,
+      headerHttp: const <String, String>{},
+      sha: SHA.SHA256,
+      allowedSHAFingerprints: pins,
+      timeout: 50,
+    );
+    _inflightByHost[host] = pinFuture;
     try {
-      _inflight = _pinCheck(
-        serverURL: fullUrl,
-        headerHttp: const <String, String>{},
-        sha: SHA.SHA256,
-        allowedSHAFingerprints: pins,
-        timeout: 50,
-      );
-      checkResult = await _inflight;
+      checkResult = await pinFuture;
     } on PlatformException catch (e) {
-      _inflight = null;
       if (e.code == 'NO_INTERNET') {
         return handler.reject(
           DioException.connectionError(
@@ -127,7 +135,6 @@ class PinningDioInterceptor extends Interceptor {
         ),
       );
     } catch (e) {
-      _inflight = null;
       AppLogger.warning(
           'PinningDioInterceptor: pin check failed for $host: $e — failing closed');
       _onPinMismatch?.call(host, 'check_failed', e);
@@ -139,10 +146,15 @@ class PinningDioInterceptor extends Interceptor {
         ),
       );
     } finally {
-      _inflight = null;
+      // Only clear the entry if it still points to *this* request's future.
+      // A later concurrent request to the same host may have replaced it
+      // already; clobbering would re-introduce the BUT-736 race.
+      if (identical(_inflightByHost[host], pinFuture)) {
+        _inflightByHost.remove(host);
+      }
     }
 
-    if (checkResult == null || !checkResult.contains('CONNECTION_SECURE')) {
+    if (!checkResult.contains('CONNECTION_SECURE')) {
       AppLogger.warning(
           'PinningDioInterceptor: pin mismatch for $host (result=$checkResult)');
       _onPinMismatch?.call(host, 'mismatch', null);
