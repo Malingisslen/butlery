@@ -40,7 +40,9 @@
       "mcp__Claude_in_Chrome__list_connected_browsers",
       "mcp__Claude_in_Chrome__select_browser",
       "mcp__Claude_in_Chrome__browser_batch",
-      "mcp__Claude_in_Chrome__find"
+      "mcp__Claude_in_Chrome__find",
+      "Bash(git branch -D *)",
+      "Bash(git push origin --delete *)"
     ]
   }
 }
