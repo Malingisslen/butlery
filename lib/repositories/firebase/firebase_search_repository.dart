@@ -23,6 +23,9 @@ class FirestoreSearchRepository implements SearchRepository {
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
+  bool get usesExternalSearch => false;
+
+  @override
   Future<SearchResult<RecipeSearchHit>> searchRecipes(
     String query, {
     SearchFilters? filters,

@@ -37,7 +37,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
@@ -78,7 +78,7 @@ jobs:
         
     - name: Upload architecture report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: architecture-validation-report
         path: |
@@ -88,7 +88,7 @@ jobs:
         
     - name: Comment PR with validation results
       if: github.event_name == 'pull_request' && always()
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const fs = require('fs');

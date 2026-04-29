@@ -16,8 +16,16 @@ import 'package:butlery/services/parsing/feedback/parse_correction_uploader.dart
 import 'package:butlery/repositories/parsing_correction_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
+import 'package:butlery/services/analytics/post_import_edit_decider.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/utils/recipe_diff.dart';
+
+/// BUT-569: window after import during which a `recipe_edited` event also
+/// fires the dedicated `post_import_edit` event. Tunable knob — long enough
+/// to capture genuine post-import cleanup, short enough that ordinary
+/// long-term edits don't pollute parse-quality metrics.
+const int kPostImportEditWindowDays = 30;
 
 /// Manages recipe persistence with atomic save, fork, and delete operations.
 class RecipePersistenceManager with ErrorHandlingMixin {
@@ -183,7 +191,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
                 await _recipeService.personal.updateUnifiedRecipe(recipe);
             if (result.isSuccess) {
               savedRecipe = recipe;
-              _logRecipeEdited(recipeId);
+              _logRecipeEdited(recipeId, savedRecipe);
             } else {
               throw Exception(result.message ?? 'Failed to update recipe');
             }
@@ -412,23 +420,56 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     }
   }
 
-  void _logRecipeEdited(String recipeId) {
+  void _logRecipeEdited(String recipeId, Recipe savedRecipe) {
     final original = _state.originalRecipe;
     if (original == null) return;
 
-    final changed = <String>[];
-    final current = _state;
-    if (current.title != original.title) changed.add('title');
-    if (current.description != original.description) {
-      changed.add('description');
-    }
-    if (current.mealType != original.mealType) changed.add('mealType');
-    if (current.portions != original.portions) changed.add('portions');
-    if (current.timeMinutes != original.timeMinutes) changed.add('timeMinutes');
+    final changed = diffRecipeFields(original, savedRecipe);
 
     _analyticsService?.recipe.logRecipeEdited(
       recipeId: recipeId,
       fieldsChanged: changed.isEmpty ? null : changed,
+    );
+
+    // BUT-569: emit `post_import_edit` for imported recipes still inside the
+    // post-import window. Runs alongside (not in place of) `recipe_edited`
+    // because the two events feed different funnels.
+    _logPostImportEditIfApplicable(
+      recipeId: recipeId,
+      original: original,
+      changed: changed,
+    );
+  }
+
+  /// BUT-569: emit `post_import_edit` when the edited recipe was imported
+  /// (has a non-empty sourceUrl) and was created within the configured
+  /// window. Decision logic lives in [PostImportEditDecider] so it can be
+  /// unit-tested independently of the form-viewmodel stack.
+  void _logPostImportEditIfApplicable({
+    required String recipeId,
+    required Recipe original,
+    required List<String> changed,
+  }) {
+    // BUT-552: tier_used lives on the parsed-recipe metadata captured at
+    // import time. Available only on the first edit after import (the
+    // `originalParsedRecipe` is cleared post-save). Omit when unknown
+    // rather than guessing.
+    final tierUsed = _state.originalParsedRecipe?.metadata.successfulTier;
+
+    final params = PostImportEditDecider.build(
+      recipeId: recipeId,
+      fieldsChanged: changed,
+      sourceUrl: original.sourceUrl,
+      importedAt: original.createdAt,
+      now: DateTime.now(),
+      tierUsed: tierUsed,
+      windowDays: kPostImportEditWindowDays,
+    );
+    if (params == null) return;
+
+    _analyticsService?.logEvent(
+      name: 'post_import_edit',
+      parameters: params,
     );
   }
 

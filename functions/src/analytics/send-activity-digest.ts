@@ -15,6 +15,7 @@ import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { BATCH_LIMIT } from "../shared/batch-update";
+import { buildNotificationPayload } from "../shared/notification-payload";
 
 const getDb = () => admin.firestore();
 
@@ -159,7 +160,16 @@ export const sendWeeklyActivityDigest = onSchedule(
                     body: `Du hade ${totalActivity} aktivitet${totalActivity !== 1 ? "er" : ""} den här veckan`,
                   },
                   "reEngagement",
-                  { type: "activity_digest" }
+                  // Digest is a re-engagement-style ping that just opens the
+                  // app to the notifications inbox — same destination as the
+                  // win-back route. The `notificationType` distinguishes it
+                  // for analytics attribution.
+                  buildNotificationPayload({
+                    route: "/winback",
+                    targetId: "",
+                    notificationType: "activity_digest",
+                    additionalData: { type: "activity_digest" },
+                  })
                 );
               })
             );

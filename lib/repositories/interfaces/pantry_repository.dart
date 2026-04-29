@@ -27,4 +27,13 @@ abstract class PantryRepository {
 
   /// Removes every item in the user's pantry. Used by GDPR deletion.
   Future<void> deleteAll(String userId);
+
+  /// Export every pantry item for [userId] for GDPR Article 20.
+  /// Returns raw `{id, data}` shapes. Ownership is structural (subcollection
+  /// under `users/{userId}`); the implementation must still verify the
+  /// authenticated caller IS [userId].
+  Future<List<Map<String, dynamic>>> exportAllByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  });
 }

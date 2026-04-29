@@ -198,8 +198,14 @@ class _SkrivSjalvReceptViewContentState
           }
           if (mounted) Navigator.of(context).pop(savedRecipe);
         } else {
-          UtilityComponents.showErrorSnackbar(
-              context, viewModel.error ?? context.l10n.recipeCouldNotSave);
+          // After in-helper retries are exhausted (`withRetry` in the
+          // recipe-save path), surface "Försök igen" so the user can try again
+          // without re-typing the form.
+          UtilityComponents.showErrorSnackbarWithRetry(
+            context,
+            viewModel.error ?? context.l10n.recipeCouldNotSave,
+            onRetry: _saveRecipe,
+          );
         }
       }
     } finally {

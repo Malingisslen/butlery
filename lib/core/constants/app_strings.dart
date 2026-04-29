@@ -1,5 +1,11 @@
 /// String utility methods for the Butlery cooking application.
 ///
+/// CONTRACT: Developer-only computed helpers — formatting, contextual errors,
+/// and bridge methods to l10n. NEVER add user-facing text as plain string
+/// constants here. User-facing text must go through the l10n pipeline
+/// (`lib/l10n/app_sv.arb` + `app_en.arb` + `context.l10n.someKey` or
+/// `AppLocale.current.someKey`).
+///
 /// For simple string access, prefer `context.l10n.stringKey` or
 /// `AppLocale.current.stringKey` directly. This class provides computed
 /// string helpers (formatting, contextual errors) that go beyond simple lookups.

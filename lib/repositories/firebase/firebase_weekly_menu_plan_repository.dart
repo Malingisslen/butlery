@@ -113,4 +113,29 @@ class FirebaseWeeklyMenuPlanRepository
     );
     return snapshot.docs.length;
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> exportAllByUser(
+    String userId, {
+    int maxDocuments = 260,
+  }) async {
+    // GDPR Article 20: caller must be exporting their own data. Doc-ID
+    // prefix already binds rows to userId, but ownership assertion here
+    // guards against a misuse where a caller passes another userId.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection
+        .where(FieldPath.documentId, isGreaterThanOrEqualTo: '${userId}_')
+        .where(FieldPath.documentId, isLessThan: '${userId}_')
+        .limit(maxDocuments)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
+  }
 }

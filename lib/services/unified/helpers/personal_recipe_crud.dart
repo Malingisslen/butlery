@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
+import 'package:butlery/utils/retry_policy.dart';
 
 /// Helper class for personal recipe CRUD operations.
 /// Delegates to PersonalRecipeModule and manages local recipe list updates.
@@ -75,8 +76,14 @@ class PersonalRecipeCrud {
   }
 
   /// Save recipe directly without re-tagging (for batch retag operations).
+  ///
+  /// Idempotent: writes to a known recipe-ID document, so retrying transient
+  /// network failures is safe (would just rewrite the same data).
   Future<void> saveRecipeRaw(Recipe recipe) async {
-    await personalModule.saveRecipeRaw(recipe);
+    await withRetry(
+      () => personalModule.saveRecipeRaw(recipe),
+      maxAttempts: 3,
+    );
 
     final index = recipes.indexWhere((r) => r.id == recipe.id);
     if (index != -1) {
@@ -86,8 +93,13 @@ class PersonalRecipeCrud {
   }
 
   /// Update a recipe and update local list.
+  ///
+  /// Idempotent: targets an existing recipe by ID, retrying is safe.
   Future<bool> updateRecipe(Recipe updatedRecipe) async {
-    final success = await personalModule.updatePersonalRecipe(updatedRecipe);
+    final success = await withRetry(
+      () => personalModule.updatePersonalRecipe(updatedRecipe),
+      maxAttempts: 3,
+    );
 
     if (success) {
       // Update local list

@@ -5,6 +5,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/repositories/algolia/algolia_pinning_interceptor.dart';
+import 'package:butlery/services/security/cert_pin_telemetry.dart';
 
 /// Algolia implementation of SearchRepository.
 ///
@@ -31,9 +33,26 @@ class AlgoliaSearchRepository implements SearchRepository {
     required String apiKey,
     String recipesIndex = 'recipes',
     String usersIndex = 'users',
-  })  : _searchClient = SearchClient(appId: appId, apiKey: apiKey),
+  })  : _searchClient = SearchClient(
+          appId: appId,
+          apiKey: apiKey,
+          // BUT-427: per-host SSL pinning interceptor. Pinning is no-op for
+          // hosts without configured pins (CertPinConfig). The interceptor
+          // logs `ssl_pin_mismatch` analytics events and rejects the request
+          // on mismatch — soft-fail at the app level, not at the cert level.
+          options: ClientOptions(
+            interceptors: [
+              PinningDioInterceptor(
+                onPinMismatch: reportSslPinMismatch,
+              ),
+            ],
+          ),
+        ),
         _recipesIndex = recipesIndex,
         _usersIndex = usersIndex;
+
+  @override
+  bool get usesExternalSearch => true;
 
   @override
   Future<SearchResult<RecipeSearchHit>> searchRecipes(

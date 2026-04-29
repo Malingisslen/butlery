@@ -6,6 +6,7 @@ import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation for recipe comments with threaded replies and like tracking.
 /// Supports recipe access validation via optional [RecipeAccessValidator] constructor parameter.
@@ -17,6 +18,7 @@ typedef RecipeAccessValidator = Future<bool> Function(
 class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     implements CommentsRepository {
   final RecipeAccessValidator? _recipeAccessValidator;
+  final RecipeOwnershipResolver? _recipeOwnershipResolver;
 
   FirebaseCommentsRepository({
     super.firestore,
@@ -24,7 +26,9 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     super.auditRepository,
     super.timestampProvider,
     RecipeAccessValidator? recipeAccessValidator,
-  }) : _recipeAccessValidator = recipeAccessValidator;
+    RecipeOwnershipResolver? recipeOwnershipResolver,
+  })  : _recipeAccessValidator = recipeAccessValidator,
+        _recipeOwnershipResolver = recipeOwnershipResolver;
 
   @override
   String get collectionName => FirestoreCollections.recipeComments;
@@ -156,7 +160,24 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     // Get the actual display name from the current user
     final displayName = authRepository.currentUser?.displayName ?? 'Anonymous';
 
-    final commentData = {
+    // BUT-458: Resolve the recipe-ownership snapshot so we can denormalize
+    // onto the comment doc. Failures are non-blocking — the comment still
+    // writes (without the new fields) and rules fall back to author-only
+    // read. Missing-snapshot is logged for ops visibility.
+    RecipeOwnershipSnapshot? ownership;
+    if (_recipeOwnershipResolver != null) {
+      try {
+        ownership = await _recipeOwnershipResolver(recipeId);
+      } catch (e) {
+        AppLogger.warning(
+          '[Comments] ownership resolver failed for recipe $recipeId: $e — '
+          'comment will write without denorm fields, read falls back to author-only',
+        );
+        ownership = null;
+      }
+    }
+
+    final commentData = <String, dynamic>{
       'recipeId': recipeId,
       'authorId': userId,
       'authorDisplayName': displayName,
@@ -167,7 +188,13 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       'isDeleted': false,
       'likesCount': 0,
       'replyCount': 0,
+      // Always write sharedWithUserIds (even empty) so the rule's `in`
+      // operator does not crash on a missing field.
+      'sharedWithUserIds': ownership?.sharedWithUserIds ?? <String>[],
     };
+    if (ownership?.recipeOwnerId != null) {
+      commentData['recipeOwnerId'] = ownership!.recipeOwnerId;
+    }
 
     // Batch write: comment + rate limit doc + parent replyCount increment
     final batch = firestore.batch();
@@ -455,5 +482,28 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       totalLikes: totalLikes,
       lastCommentAt: lastCommentAt,
     );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> exportCommentsByAuthor(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    // GDPR Article 20: caller must be exporting their own comments.
+    // Mirrors the deleteAllByUser-style ownership guard added in BUT-498.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection
+        .where('authorId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
   }
 }

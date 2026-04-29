@@ -48,6 +48,17 @@ abstract class CommentsRepository extends Repository<RecipeComment> {
 
   /// Get comment statistics for a recipe
   Future<CommentStatistics> getCommentStatistics(String recipeId);
+
+  /// Export all comments authored by [userId] for GDPR Article 20.
+  ///
+  /// Returns raw `{id, data}` shapes (NOT typed [RecipeComment]) so the
+  /// data-export pipeline can sanitize timestamps without round-tripping
+  /// through the model. Implementations MUST validate that the caller
+  /// owns [userId] (cannot export someone else's comments).
+  Future<List<Map<String, dynamic>>> exportCommentsByAuthor(
+    String userId, {
+    int maxDocuments = 1000,
+  });
 }
 
 /// Paginated result for comments with cursor for next page
@@ -75,5 +86,24 @@ class CommentStatistics {
     required this.totalReplies,
     required this.totalLikes,
     this.lastCommentAt,
+  });
+}
+
+/// Resolves the denormalized ownership snapshot for a recipe so the comment
+/// doc can carry `recipeOwnerId` + `sharedWithUserIds` and security rules
+/// can enforce read access without an N+1 lookup. Callers without access to
+/// the recipe ownership graph may pass null — the comment then writes
+/// without these fields and reads fall back to author-only.
+typedef RecipeOwnershipResolver = Future<RecipeOwnershipSnapshot?> Function(
+    String recipeId);
+
+/// Plain snapshot of the recipe-ownership fields needed to denormalize onto
+/// a comment doc at write time.
+class RecipeOwnershipSnapshot {
+  final String recipeOwnerId;
+  final List<String> sharedWithUserIds;
+  const RecipeOwnershipSnapshot({
+    required this.recipeOwnerId,
+    this.sharedWithUserIds = const [],
   });
 }

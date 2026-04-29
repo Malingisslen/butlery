@@ -26,6 +26,21 @@ class RecipeComment {
   final bool isDeleted;
   final Map<String, List<String>> reactions;
 
+  /// BUT-458: Denormalized recipe ownership for server-side rule enforcement.
+  /// Comments live in a top-level `recipe_comments` collection, but recipes
+  /// live under `users/{userId}/recipes/{recipeId}` — security rules cannot
+  /// efficiently look up the owner from just the recipeId. Storing it on
+  /// the comment itself lets the read rule restrict access to recipe
+  /// owner + shared recipients + comment author. Legacy comments without
+  /// these fields read as null and the rule falls back to author-only read.
+  final String? recipeOwnerId;
+
+  /// BUT-458: Denormalized recipe-share recipient list. Mirror of the
+  /// `shared_content/{contentId}.sharedToUserIds` for the share record
+  /// that exposed this recipe. Updated when the recipe is (re-)shared
+  /// or unshared. Empty list = unshared / personal recipe.
+  final List<String> sharedWithUserIds;
+
   RecipeComment({
     required this.id,
     required this.recipeId,
@@ -40,6 +55,8 @@ class RecipeComment {
     this.replyCount = 0,
     this.isDeleted = false,
     this.reactions = const {},
+    this.recipeOwnerId,
+    this.sharedWithUserIds = const [],
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory RecipeComment.create({
@@ -49,6 +66,8 @@ class RecipeComment {
     String? authorAvatarUrl,
     required String text,
     String? parentCommentId,
+    String? recipeOwnerId,
+    List<String> sharedWithUserIds = const [],
   }) {
     return RecipeComment(
       id: const Uuid().v4(),
@@ -59,6 +78,8 @@ class RecipeComment {
       text: text,
       createdAt: DateTime.now(),
       parentCommentId: parentCommentId,
+      recipeOwnerId: recipeOwnerId,
+      sharedWithUserIds: sharedWithUserIds,
     );
   }
 
@@ -159,6 +180,12 @@ class RecipeComment {
       'replyCount': replyCount,
       'isDeleted': isDeleted,
       'reactions': reactions,
+      // BUT-458: Denormalized ownership fields for rule enforcement.
+      // Only emit when populated — legacy paths that don't have access
+      // to the recipe owner pass null and the rule falls back to author-
+      // only read.
+      if (recipeOwnerId != null) 'recipeOwnerId': recipeOwnerId,
+      'sharedWithUserIds': sharedWithUserIds,
     };
   }
 
@@ -185,6 +212,10 @@ class RecipeComment {
       isDeleted: SerializationUtils.safeBool(data, 'isDeleted'),
       reactions:
           SerializationUtils.safeStringListMap(data, 'reactions') ?? const {},
+      recipeOwnerId:
+          SerializationUtils.safeNullableString(data, 'recipeOwnerId'),
+      sharedWithUserIds:
+          SerializationUtils.safeStringList(data, 'sharedWithUserIds'),
     );
   }
 

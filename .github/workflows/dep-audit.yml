@@ -50,7 +50,7 @@ jobs:
       - name: Run OSV Scanner on pubspec.lock
         id: osv
         continue-on-error: true
-        uses: google/osv-scanner-action/actions/scanner@v2.0.2
+        uses: google/osv-scanner-action/actions/scanner@v2.3.5
         with:
           scan-args: |-
             --lockfile=pubspec.lock
@@ -59,7 +59,7 @@ jobs:
 
       - name: Upload OSV SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: osv-pub.sarif
           category: osv-pub

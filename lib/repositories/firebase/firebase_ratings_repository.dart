@@ -442,4 +442,26 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       lastRatedAt: lastRatedAt,
     );
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> exportRatingsByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    // GDPR Article 20: caller must be exporting their own ratings.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection
+        .where('userId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
+  }
 }

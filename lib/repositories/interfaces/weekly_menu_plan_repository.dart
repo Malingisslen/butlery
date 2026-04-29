@@ -22,4 +22,12 @@ abstract class WeeklyMenuPlanRepository {
   /// Delete every weekly plan owned by [userId] (for GDPR cascade).
   /// Returns the number of documents deleted.
   Future<int> deleteAllByUser(String userId);
+
+  /// Export every weekly plan owned by [userId] for GDPR Article 20.
+  /// Returns raw `{id, data}` shapes for the export pipeline. Implementations
+  /// MUST validate that the caller owns [userId].
+  Future<List<Map<String, dynamic>>> exportAllByUser(
+    String userId, {
+    int maxDocuments = 260,
+  });
 }

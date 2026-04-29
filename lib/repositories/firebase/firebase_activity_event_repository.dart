@@ -109,6 +109,28 @@ class FirebaseActivityEventRepository
   }
 
   @override
+  Future<List<Map<String, dynamic>>> exportEventsByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    // GDPR Article 20: caller must be exporting their own events.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection
+        .where('actorId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
+  }
+
+  @override
   Future<int> deleteAllByUser(String userId) async {
     // GDPR cascade: caller must be deleting their own data. Admin-driven
     // moderator deletes go through `delete()` per-doc, not this bulk path.

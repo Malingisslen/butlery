@@ -10,6 +10,11 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 import { isAllowedUrl } from "../shared/url-safety";
+import {
+  validateOcrImageUrl,
+  OcrUrlValidationResult,
+  OcrUrlRejectionReason,
+} from "../shared/ocr-url-validator";
 import type { Part } from "@google-cloud/vertexai";
 import {
   getGeminiClient,
@@ -116,6 +121,15 @@ export interface OcrCoreOptions {
   ) => Promise<OcrPerformResult>;
   /** Test seam: AI kill-switch lookup. Default reads `system/config`. */
   isAiDisabled?: () => Promise<boolean>;
+  /**
+   * BUT-425: Test seam for the OCR URL validator (host allowlist + HEAD
+   * pre-flight). Production resolves to `validateOcrImageUrl` from
+   * `../shared/ocr-url-validator`.
+   */
+  validateImageUrl?: (
+    url: string,
+    authUidHash: string
+  ) => Promise<OcrUrlValidationResult>;
   /** Test seam: clock. Default `Date.now`. */
   now?: () => number;
 }
@@ -192,6 +206,7 @@ export async function runOcrRecipeImage(
   const performOcr = opts.performOcr ?? defaultPerformOcr;
   const isAiDisabled = opts.isAiDisabled ?? defaultIsAiDisabled;
   const structureRecipe = opts.structureRecipe ?? runStructureRecipe;
+  const validateImageUrl = opts.validateImageUrl ?? validateOcrImageUrl;
   const now = opts.now ?? Date.now;
 
   const ocrStartMs = now();
@@ -207,6 +222,27 @@ export async function runOcrRecipeImage(
   // Validate URL if provided
   if (imageUrl && !isAllowedUrl(imageUrl)) {
     throw new HttpsError("invalid-argument", "Ogiltig bild-URL.");
+  }
+
+  // BUT-425: Strict URL validation. The basic `isAllowedUrl` SSRF gate above
+  // rejects obvious abuse (private IPs, non-HTTPS) but still allows ANY
+  // public HTTPS host — including attacker-controlled domains. Gemini fetches
+  // `fileData.fileUri` server-side from Google's network, so an unbounded URL
+  // turns this function into an SSRF/exfiltration relay.
+  //
+  // The validator pins the host to *this* project's Firebase Storage bucket
+  // and runs a HEAD pre-flight to verify content-type + content-length before
+  // passing the URL to Gemini.
+  if (imageUrl) {
+    const validation = await validateImageUrl(imageUrl, authUidHash);
+    if (!validation.ok) {
+      // Surface as `invalid-argument` (not `internal`) — the request is
+      // structurally rejected, no retry will help.
+      throw new HttpsError(
+        "invalid-argument",
+        mapValidationReasonToSwedish(validation.reason)
+      );
+    }
   }
 
   // Validate image size (base64 is ~33% larger than binary)
@@ -384,6 +420,31 @@ function buildContentParts(
   }
 
   return parts;
+}
+
+/**
+ * BUT-425: Convert a validator rejection reason into a Swedish-language
+ * client-facing message. Kept terse — the structured `logger.warn` inside the
+ * validator already captured the operator-facing detail (origin, status,
+ * authUidHash). The client only needs to know the bucket of the failure so
+ * the UI can prompt the user accordingly.
+ */
+function mapValidationReasonToSwedish(reason: OcrUrlRejectionReason): string {
+  switch (reason) {
+    case "malformed_url":
+    case "disallowed_host":
+      return "Ogiltig bild-URL.";
+    case "head_request_failed":
+      return "Bilden gick inte att nå. Kontrollera länken och försök igen.";
+    case "missing_content_type":
+    case "disallowed_content_type":
+      return "Filtypen stöds inte. Använd JPEG, PNG, WebP, HEIC eller PDF.";
+    case "missing_content_length":
+    case "oversized":
+      return "Bilden är för stor (max 10 MB).";
+    default:
+      return "Ogiltig bild-URL.";
+  }
 }
 
 /**

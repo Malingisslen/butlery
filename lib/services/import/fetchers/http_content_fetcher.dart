@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/http_constants.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
+import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
 /// Handles HTTP fetching and web scraping for URL imports.
 class HttpContentFetcher {
@@ -115,7 +116,9 @@ class HttpContentFetcher {
         return null;
       }
 
-      final client = _httpClient ?? http.Client();
+      // BUT-427: when the caller didn't inject a client, build a pinned one.
+      // Pinning is per-host via CertPinConfig (no-op for hosts without pins).
+      final client = _httpClient ?? PinnedHttpClientFactory.create();
       final shouldCloseClient = _httpClient == null;
 
       try {

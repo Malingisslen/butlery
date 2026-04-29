@@ -694,3 +694,372 @@ trail. The right follow-up is to add `deleteAllByUser(userId)` (with
 ownership validation) to the per-user-subcollection repos: recipes,
 menus, shopping lists, personal tags, personal tag groups, FCM tokens,
 notifications. The scrubs stay in the deletion-service layer.
+
+### 2026-04-27 — audit_logs read tightening (BUT-424); GDPR Art-15 must move to a Cloud Function
+
+`audit_logs/{logId}` previously allowed `request.auth.uid ==
+resource.data.userId` to read. The repository docstring at
+`lib/repositories/firebase/firebase_audit_repository.dart` already
+contradicted this ("Users CANNOT read their own audit logs — prevents
+tampering detection"). The intent is correct: a compromised account
+should not be able to enumerate the audit trail and craft attacks
+around the gaps.
+
+Read rule is now `if isAdmin();`. Create remains an authenticated
+self-uid-pinned write with a 2-second rate limit (the fire-and-forget
+client path is unchanged). Update + delete stay denied (immutable
+trail).
+
+**Side-effect this fix exposes:**
+`lib/services/account/export/compliance_export_manager.dart`
+`exportAuditLogs(userId)` reads from the client SDK directly. With
+the tightened rule, that read returns permission-denied → the
+client-side GDPR Art-15 audit-log export breaks. The catch block
+in that method already swallows errors into an `{error, note}`
+shape, so the broader export job continues — but the audit-log
+section will be empty for end-users.
+
+**Mandatory follow-up before the next GDPR data subject access
+request lands:** add a callable Cloud Function at
+`functions/src/exports/audit-logs.ts` that uses the Admin SDK to
+bypass the rule and returns the user's own audit slice. Mirror the
+existing parsing-correction export shape. Until that function ships,
+the export JSON's `audit_logs.error` field surfaces "permission
+denied" — UX-acceptable for now (no GDPR request in the queue) but
+genuinely broken if a regulator asks tomorrow.
+
+**Test pattern for `isAdmin()` rules:** seed
+`/admins/{uid}` via `withSecurityRulesDisabled` in setUpAll (the
+collection itself is rules-locked — no client-side admin grant). The
+admin context is just `env.authenticatedContext(adminUid)` — the
+rule's `exists()` check resolves against the seeded doc. Pattern is
+identical across cook-snaps, friend_categories, and audit_logs tests.
+
+### 2026-04-27 — recipe_comments ownership denormalisation (BUT-458)
+
+The pre-BUT-458 recipe_comments read rule was `allow read: if
+isAuthenticated();` — **any logged-in user could read every
+comment in the global collection**. The original tradeoff comment
+acknowledged this as an intentional S3 because recipes live under
+`users/{ownerId}/recipes/{recipeId}` and the rule has no efficient
+way to look up the owner from just a `recipeId`.
+
+**Pattern: denormalise ownership onto the child doc at write time.**
+Two new fields on every new recipe_comment:
+- `recipeOwnerId: string` — the recipe owner's uid.
+- `sharedWithUserIds: string[]` — mirror of the share record's
+  `sharedToUserIds` (the recipe's recipients).
+
+New read rule:
+```
+allow read: if isAuthenticated() && (
+  request.auth.uid == resource.data.authorId
+  || ('recipeOwnerId' in resource.data
+      && request.auth.uid == resource.data.recipeOwnerId)
+  || ('sharedWithUserIds' in resource.data
+      && request.auth.uid in resource.data.sharedWithUserIds)
+);
+allow read: if isAdmin();
+```
+
+**Legacy fallback:** the `'recipeOwnerId' in resource.data` guards
+make legacy comments (no denorm fields) fall through to author-only
+read — a deliberate one-time degradation. A backfill migration
+restores recipe-owner / shared-recipient visibility on legacy rows.
+
+**Backfill is a follow-up.** Pattern for it: `collectionGroup
+queries are not feasible (recipe_comments is a top-level
+collection, not a subcollection). Direct collection scan with
+`recipe_comments.where('recipeOwnerId', '==', null).limit(500).get()`
+chunked, then per-row look up the recipe owner via
+`shared_content/{contentId}` (since most comments are on shared
+recipes; personal-recipe comments stamp their author == owner).
+Alternative if the recipe is no longer accessible: stamp
+`recipeOwnerId = authorId, sharedWithUserIds = []` so the row stays
+author-only-readable forever (graceful degradation for orphans).
+
+**Repository contract:** `FirebaseCommentsRepository` now takes an
+optional `RecipeOwnershipResolver` typedef returning a
+`RecipeOwnershipSnapshot {recipeOwnerId, sharedWithUserIds}`. The
+resolver is invoked in `addComment` before the write; failures are
+non-blocking (the comment writes without the new fields, and the
+rule degrades to author-only read for that row). Wire the resolver
+in `social_module.dart` next to the existing
+`recipeAccessValidator` callback — both surfaces share the same
+underlying recipe-graph access. **NOT YET WIRED** in DI as of
+2026-04-27 — the field is plumbed but the production resolver
+implementation is still pending. Wiring it makes new comments
+production-correct; legacy comments need the backfill.
+
+### 2026-04-27 — blocking gate placement: target-uid field is the discriminator (BUT-459)
+
+`isNotBlockedBy(targetUserId)` was already wired on `social_requests
+create`. BUT-459 extended it to comment / rating / notification
+creates. The pattern is uniform:
+
+| Collection | Target-uid field | Notes |
+|---|---|---|
+| `social_requests` | `request.resource.data.toUserId` | already had the gate |
+| `user_notifications` | `request.resource.data.userId` | recipient field is direct |
+| `recipe_comments` | `request.resource.data.recipeOwnerId` | requires BUT-458 denorm |
+| `recipe_ratings` | `request.resource.data.recipeOwnerId` | requires BUT-458 denorm |
+
+**Self-notify must remain unblocked.** The user_notifications rule
+has an OR-branch for `request.resource.data.userId == request.auth.uid`
+(system events) that bypasses both the friendship check and the
+new blocking gate. Without this, every system-driven self-event
+write (welcome notification, kill-switch ack, etc.) would deny.
+
+**Block-doc id format is `${blockerUid}_${blockedUid}`** —
+`isNotBlockedBy(t)` checks `exists(/blocks/$(t + '_' +
+request.auth.uid))`, i.e. "the actor's uid concatenated AFTER the
+target's uid". Tests must seed in this exact order or the gate
+no-ops. Caught the first time when the test passed when it should
+have failed — the seed had the parts reversed.
+
+**Backwards-compatible-by-field-presence pattern:** for ratings
+(where the existing model has been deployed), the new
+`recipeOwnerId` field is OPTIONAL — the rule reads as
+`!('recipeOwnerId' in request.resource.data) ||
+isNotBlockedBy(request.resource.data.recipeOwnerId)`. Legacy
+clients without the field skip the gate (auth uid pinning + rate
+limit still hold). New clients populate the field and the gate
+fires. This avoids forcing a coordinated client-rules deploy and
+is the right shape for any "add a denormalised field for rule
+enforcement" migration on a deployed collection.
+
+**Test seeding pattern for blocking:** seed the friendship pair
+(both directions) AND the block doc, then the test discriminates
+on the block — not on the friendship. Without the friendship,
+the user_notifications test would deny on the wrong predicate
+(friendship gate) and you'd think the blocking gate worked when
+it didn't.
+
+### 2026-04-27 — data-export repo migration is partial-by-design (BUT-501)
+
+Mirrors the BUT-498 deletion pattern: only collections with a clean
+`per-user-export` symmetry get migrated to a repo method this run.
+Cross-user reads, top-level shared graphs, and user-subcollections
+without a typed repo stay direct on Firestore — same architectural
+decision as the deletion side, for the same reasons.
+
+**Migrated** (8 collections / 5 repos extended with an
+`exportXxxByUser` method, all guarded by `validateOwnership`):
+
+| Manager | Collection | Repo method |
+|---|---|---|
+| activity_export_manager | `recipe_comments` | `CommentsRepository.exportCommentsByAuthor` |
+| activity_export_manager | `recipe_ratings` | `RatingsRepository.exportRatingsByUser` |
+| activity_export_manager | `feedback` | `FeedbackRepository.exportFeedbackByUser` |
+| content_export_manager | `cook_snaps` | `CookSnapRepository.exportCookSnapsByUser` |
+| content_export_manager | `activity_events` | `ActivityEventRepository.exportEventsByUser` |
+| content_export_manager | `weekly_menu_plans` | `WeeklyMenuPlanRepository.exportAllByUser` |
+| content_export_manager | `group_weekly_menu_plans` | `GroupWeeklyMenuPlanRepository.exportPlansForParticipant` |
+| content_export_manager | `pantry` (subcoll) | `PantryRepository.exportAllByUser` |
+
+**Residual (still direct-Firestore — explicitly out of scope this
+sprint, per the same prioritisation as BUT-498):**
+
+- `content_export_manager`: recipes (both `users/{uid}/recipes` and
+  top-level `recipes` shapes), menus (both shapes), shopping_lists,
+  personal_tags, personal_tag_groups. Five collections; the
+  `RecipeRepository`, `ShoppingRepository`, etc. don't yet have a
+  bulk-export-by-owner method matching the export shape (they have
+  watchers and per-item reads). Adding them is the obvious next step.
+- `social_export_manager` (entire file — 7 collections): `friends`
+  subcollection, `social_requests` (sent + received), `conversations`
+  + nested `messages`, `shared_content`, `blocks` (in + out),
+  `friend_categories`, `conversation_memberships`. These cross
+  ownership boundaries by design (you query other people's docs to
+  find your participation). Same structural reason BUT-498's social
+  deletion path stays direct.
+- `compliance_export_manager`: `audit_logs` (already broken at the
+  rules layer per the BUT-424 entry above — needs a Cloud Function
+  exporter), `users/{uid}/consent` subcollection. The consent path
+  could fit a `ConsentRepository` later.
+- `preferences_export_manager` (5 collections): `users/{uid}/settings`,
+  `user_notifications`, `user_notification_preferences`,
+  `user_fcm_tokens`, `users/{uid}/category_preferences`,
+  `users/{uid}/list_category_orders`. Mostly user-subcollection
+  shapes that don't have typed repos.
+- `data_export_service._exportUserProfile`: 2-doc read on
+  `users/{uid}` and `public_profiles/{uid}`. The public side could
+  use `UserRepository.fetchProfile`; the private side has no clean
+  repo (it's owned by the Auth/Session services). Left direct for
+  now since ownership is implicit (auth uid IS the doc id).
+
+**Pattern that worked for the read-side migration:**
+- Add a method `exportXxxByUser(String userId, {int maxDocuments})`
+  to the existing repo interface. Returns `List<Map<String, dynamic>>`
+  shaped as `[{id, data}]`, NOT typed entities — the export pipeline
+  needs the raw Firestore map for its `sanitizeForJson` step (which
+  walks `Timestamp`/`GeoPoint`/`DocumentReference`). Round-tripping
+  via the model class would lose timestamp precision.
+- Implementation pattern (mirrors `deleteAllByUser`):
+  ```dart
+  await validateOwnership(
+    currentUserId: requireCurrentUserId(),
+    resourceOwnerId: userId,
+    resourceType: collectionName,
+  );
+  final snapshot = await collection
+      .where('<owner-field>', isEqualTo: userId)
+      .limit(maxDocuments)
+      .get();
+  return snapshot.docs.map((d) => {'id': d.id, 'data': d.data()}).toList();
+  ```
+- For doc-id-prefix-binding collections (weekly_menu_plans), use the
+  same `where(FieldPath.documentId, isGreaterThanOrEqualTo: '${uid}_')`
+  + `` upper-bound trick the `deleteAllByUser` version uses.
+- For map-key-binding collections (group_weekly_menu_plans —
+  participation is `memberPermissions.${uid} != null`), use the
+  same dotted-key `isNotEqualTo: null` query.
+
+**Test wiring pattern:** `data_export_service_test.dart` wires
+fake-firestore-backed `Firebase*Repository` instances via the new
+optional constructor params. Production passes none → falls through
+to `ServiceLocator.get<X>()`. The new BUT-501 test seeds one row in
+each migrated collection and asserts `total_count == 1` — proves the
+repo path is live and `validateOwnership` accepts the self-export
+case. Without this assertion, the export's existing `try/catch` wraps
+any failure into `{'error': ...}` and the legacy "should export X
+section" smoke tests pass even if the migration regresses.
+
+**FeedbackRepository gotcha:** the repo's constructor previously
+called `FirebaseStorage.instance` eagerly. Tests that wire only the
+read path (export) but never the write path (uploadScreenshot) blew
+up with `[core/no-app] No Firebase App` because Storage init pulls
+in the platform Firebase app at construction time. Fix: lazy-init
+the storage getter — `final FirebaseStorage? _injectedStorage; get
+_storage => _injectedStorage ?? FirebaseStorage.instance;`. Same
+pattern is worth applying preemptively to any repo that pulls in a
+heavyweight Firebase service the read path doesn't need.
+
+### 2026-04-27 — FCM token store hardening (BUT-457)
+
+`fcm_token_manager.dart` already used `FlutterSecureStorage` as the
+local token store — the SharedPreferences fallback the ticket warned
+about was a historical artifact in the constants (the `_tokenStorageKey
+= 'fcm_token'` name suggested SharedPreferences but the actual writes
+went to SecureStorage). Fix:
+
+1. Added a one-time migration `_migrateFromSharedPreferencesIfNeeded()`
+   that runs on every `initialize()`. Reads the legacy `fcm_token` and
+   `fcm_token_timestamp` keys from SharedPreferences, copies a present
+   token to SecureStorage (only if SecureStorage doesn't already have
+   one — never clobber the canonical store), then `prefs.remove()`s
+   both keys regardless. A sentinel `fcm_token_sp_migration_done` in
+   SecureStorage gates re-runs.
+2. Annotated `_saveTokenLocally()` to make the contract explicit: on
+   secure-storage write failure, log and move on — **MUST NOT**
+   mirror to SharedPreferences (regression guard for a future
+   contributor tempted to add a fallback "for resilience").
+3. Three new BUT-457 test cases: migration scrubs SP and sets the
+   sentinel; sentinel makes a second-init no-op; on Firestore save
+   failure no plaintext write to SP happens.
+
+**Test infrastructure gotcha:** the existing FCM test file's
+SecureStorage method-channel handler was a flat "always return
+test-device-id for read, true for write" — that doesn't simulate
+the per-key sentinel needed for migration tests. Replaced with a
+per-test `Map<String, String?>` keyed off `args['key']`, which is
+also what the real plugin uses. Default for an unknown key is null;
+the legacy `butlery_fallback_device_id` reader gets a literal
+`'test-device-id'` to keep the existing device-id tests green.
+
+**SharedPreferences mocking pattern:** `SharedPreferences.setMockInitialValues({...})`
+in `setUp()` resets the in-memory backing store between tests — no
+platform-channel handler needed. To assert that a key was scrubbed,
+just `getInstance().getString(key)` and check for null.
+
+### 2026-04-27 — third-party HTTPS pinning (BUT-427)
+
+`http_certificate_pinning ^3.0.1` is the package; the SDK constraint is
+satisfied by 3.0.x. The package ships a `SecureHttpClient` and a Dio
+`CertificatePinningInterceptor` — **neither is sufficient on its own**:
+
+- `SecureHttpClient.send(BaseRequest)` falls through unconditionally and
+  only the non-streaming `get/post/...` helpers run the pin check.
+  HttpContentFetcher and OCRExtractionService both use `client.send(...)`
+  directly (size-capped streaming reads, multipart uploads) — using the
+  package's send() bypass would silently disable pinning on the hottest
+  third-party paths. Roll our own `BaseClient` that overrides `send()`.
+- The Dio interceptor takes a single static fingerprint list. Algolia
+  uses 4-5 different host URLs (`*-dsn.algolia.net`,
+  `*.algolia.net`, three shuffled `*.algolianet.com`) — needs a per-host
+  variant that reads pins from a config map.
+
+**Architecture:**
+
+| File | Role |
+|---|---|
+| `lib/services/security/cert_pin_config.dart` | Global host → pin list map. Empty list = wired but inactive. |
+| `lib/services/security/pinned_http_client.dart` | `BaseClient` wrapper for `package:http` callers (OCR + URL scrape). Overrides `send()` so streaming requests are pinned. |
+| `lib/services/security/pinned_http_client_factory.dart` | Builds the http client and wires the analytics callback. |
+| `lib/repositories/algolia/algolia_pinning_interceptor.dart` | Per-host Dio interceptor for Algolia. Lives next to the algolia repo because `dio` is a transitive dep of `algoliasearch` only — keeping it there avoids needing dio as a top-level dependency. |
+
+**Telemetry contract (`ssl_pin_mismatch`):** logs `host` and `error_kind`
+(`'mismatch'`, `'check_failed'`, `'non_https_pinned_host'`). The request
+still throws — soft-fail means the app does not crash, NOT that we accept
+an unverified cert.
+
+**Empty pin list = no-op fall through.** Hosts with no configured pins
+(or with a TODO placeholder list) fall through to the platform trust
+store. This keeps the wrapper safe to install everywhere — a misconfigured
+pin map cannot itself break unrelated requests, and the ops rotation task
+can populate real fingerprints without a code change at the call sites.
+
+**Pin lookup contract:** `pinsForHost(host)` returns `List<String>` —
+empty (NOT null) for unknown hosts. Callers rely on the empty-list
+contract and would crash on null. Unit-tested explicitly so a future
+contributor doesn't change the return type.
+
+### 2026-04-27 — push notification deep-link routing (BUT-641)
+
+The pre-BUT-641 wiring was an inline lambda in main.dart that pushed
+whatever `route` came in `RemoteMessage.data`. Two regression risks:
+1. legacy in-flight payloads without `route` crashed (null pushed to
+   `pushNamed`),
+2. no analytics → push CTR was unmeasurable.
+
+**Pattern: dedicated router class with route constants.**
+`NotificationRoutes.{recipe, friendRequest, commentThread,
+cookingSession, menuVoting, winback}` are the canonical strings the
+Cloud Functions sender must align against. Adding a route requires
+adding the constant AND the `case` branch in `handle()`.
+
+**Three-state outcome model:**
+
+| Input | Behavior | Analytics event |
+|---|---|---|
+| `route == null \|\| empty` (legacy) | push home (and clear stack) | `notification_payload_missing_route` |
+| `route` not in known set (drift) | push home (and clear stack) | `notification_payload_unknown_route` |
+| Known route | navigator action | `notification_opened` |
+
+The unknown-route guard is the early-warning signal for client-server
+drift: a Cloud Functions sender shipping a new route string before the
+client knows about it is exactly what BUT-641 is meant to surface, not
+crash on.
+
+**Wired in main.dart `_onApplicationReady`:**
+```dart
+final notificationRouter = NotificationDeepLinkRouter(
+  navigatorResolver: () => appNavigatorKey.currentState,
+  analyticsResolver: () => ServiceLocator.tryGet<AnalyticsService>(),
+);
+NotificationService.onNotificationTapped = notificationRouter.handle;
+```
+
+`NotificationService._handleMessageOpened` extracts `route`, `targetId`,
+`notificationType` from `RemoteMessage.data` and forwards them. When
+`route` is null it forwards `''` so the router (not the wrapper) owns
+the missing-route default. `getInitialMessage` (terminated-app launch)
+flows through the same `_onMessageOpenedApp` callback already, no
+separate wiring needed.
+
+**Test pattern: `Mock implements NavigatorState` needs an explicit
+`toString({DiagnosticLevel minLevel})` override.** NavigatorState mixes
+in Diagnosticable; mocktail's default `toString() => '$runtimeType'`
+doesn't satisfy that signature and produces a compile-time error. The
+override is one line — but a `Fake implements NavigatorState` hits the
+same wall.

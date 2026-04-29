@@ -258,8 +258,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          color: AppColors.cardWhite.withValues(alpha: 0.12),
+          border: Border.all(color: AppColors.cardWhite.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

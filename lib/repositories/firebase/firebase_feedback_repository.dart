@@ -15,14 +15,17 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// Uses Firestore for feedback entries and Firebase Storage for screenshots.
 class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
     implements FeedbackRepository {
-  final FirebaseStorage _storage;
+  // Lazy resolve so unit tests that only exercise the export read path don't
+  // need a real FirebaseStorage instance (uploadScreenshot still uses it).
+  final FirebaseStorage? _injectedStorage;
+  FirebaseStorage get _storage => _injectedStorage ?? FirebaseStorage.instance;
 
   FirebaseFeedbackRepository({
     super.firestore,
     required super.authRepository,
     super.auditRepository,
     FirebaseStorage? storage,
-  }) : _storage = storage ?? FirebaseStorage.instance;
+  }) : _injectedStorage = storage;
 
   @override
   String get collectionName => FirestoreCollections.feedback;
@@ -74,6 +77,27 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
       AppLogger.error('Failed to save feedback: $e', stackTrace);
       rethrow;
     }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> exportFeedbackByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    // GDPR Article 20: caller must be exporting their own feedback.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection
+        .where('userId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
   }
 
   @override

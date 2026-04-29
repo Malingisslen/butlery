@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -27,6 +28,10 @@ class _NullTokenMessaging extends MockFirebaseMessaging {
 }
 
 void main() {
+  // Shared SecureStorage simulation map — wired into the platform-channel
+  // handler in setUpAll, cleared per-test in setUp.
+  final Map<String, String?> secureStore = <String, String?>{};
+
   group('FCMTokenManager', () {
     late FCMTokenManager tokenManager;
     late _MockDeviceRepo mockRepo;
@@ -36,17 +41,32 @@ void main() {
       TestWidgetsFlutterBinding.ensureInitialized();
 
       // Mock FlutterSecureStorage platform channel (used by _getDeviceId
-      // and _saveTokenLocally in production code)
+      // and _saveTokenLocally in production code). The handler is keyed
+      // by `arguments.options.key` so the per-test secureStore map can
+      // simulate the migration sentinel correctly.
       const channel =
           MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall call) async {
+        final args = (call.arguments as Map?) ?? const {};
+        final key = args['key'] as String?;
         switch (call.method) {
           case 'read':
-            return 'test-device-id';
+            // Provide deterministic values for known keys; default is the
+            // legacy device-id fallback used by `_getDeviceId`.
+            if (key == null) return null;
+            if (secureStore.containsKey(key)) return secureStore[key];
+            // The fallback device-id reader uses `butlery_fallback_device_id`.
+            // Anything we haven't written yet → null (matches real plugin).
+            if (key == 'butlery_fallback_device_id') return 'test-device-id';
+            return null;
           case 'write':
+            if (key != null) {
+              secureStore[key] = args['value'] as String?;
+            }
             return true;
           case 'delete':
+            if (key != null) secureStore.remove(key);
             return true;
           default:
             return null;
@@ -58,6 +78,11 @@ void main() {
     });
 
     setUp(() {
+      // Reset SecureStorage simulation between tests.
+      secureStore.clear();
+      // Default SharedPreferences mock — empty store unless a test seeds it.
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+
       mockRepo = _MockDeviceRepo();
       mockMessaging = MockFirebaseMessaging();
 
@@ -264,6 +289,86 @@ void main() {
         final age = tokenManager.tokenAgeMinutes;
         expect(age, isNotNull);
         expect(age, greaterThanOrEqualTo(0));
+      });
+
+      test(
+          'BUT-457: should migrate legacy token from SharedPreferences and '
+          'scrub the legacy keys on first init', () async {
+        // Seed a legacy SharedPreferences token (simulates a user upgrading
+        // from a build that wrote the FCM token in plaintext).
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'fcm_token': 'legacy-token-xyz',
+          'fcm_token_timestamp': '2024-01-01T00:00:00.000',
+        });
+
+        await tokenManager.initialize();
+
+        // SharedPreferences must be scrubbed.
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString('fcm_token'), isNull,
+            reason: 'legacy SP token must be removed');
+        expect(prefs.getString('fcm_token_timestamp'), isNull,
+            reason: 'legacy SP timestamp must be removed');
+
+        // SecureStorage now holds the migrated token (until _refreshToken
+        // overwrites it with the freshly-fetched value), or at minimum the
+        // migration sentinel.
+        expect(secureStore['fcm_token_sp_migration_done'], equals('true'),
+            reason: 'migration sentinel must be set');
+      });
+
+      test(
+          'BUT-457: migration must run only once — sentinel keeps subsequent '
+          'inits a no-op against SharedPreferences', () async {
+        // Seed legacy token + run init once to set the sentinel.
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'fcm_token': 'legacy-token-xyz',
+        });
+        await tokenManager.initialize();
+
+        // Now reset SharedPreferences with a NEW value and a fresh manager.
+        // A second init would re-scrub if the sentinel didn't gate it; we
+        // assert that the new SP value SURVIVES because the sentinel skips.
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'fcm_token': 'someone-elses-key-please-leave-alone',
+        });
+
+        final secondManager = FCMTokenManager(
+          userId: 'test-user-456',
+          repository: mockRepo,
+          messaging: mockMessaging,
+        );
+        await secondManager.initialize();
+        secondManager.dispose();
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString('fcm_token'),
+            equals('someone-elses-key-please-leave-alone'),
+            reason: 'sentinel must stop a second migration sweep');
+      });
+
+      test(
+          'BUT-457: on Firestore save failure, no plaintext write to '
+          'SharedPreferences happens (token never falls back)', () async {
+        // Make every Firestore save fail.
+        when(() => mockRepo.saveTokenToFirestore(any(), any()))
+            .thenThrow(Exception('simulated Firestore outage'));
+
+        // initialize() rethrows the wrapped exception — that's fine; the
+        // assertion is that no plaintext SP write smuggles the token to
+        // disk on the failure path.
+        try {
+          await tokenManager.initialize();
+        } catch (_) {
+          // expected — Firestore save failed
+        }
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString('fcm_token'), isNull,
+            reason: 'token MUST NOT be mirrored to SharedPreferences on '
+                'Firestore failure (security regression guard)');
+        expect(prefs.getString('fcm_token_timestamp'), isNull,
+            reason: 'timestamp MUST NOT be mirrored either');
       });
 
       test('should clear state on dispose', () async {

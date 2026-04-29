@@ -182,19 +182,62 @@ async function runScenarioTests(): Promise<number> {
       targetUserId: "user-callable-1",
       title: "Hej",
       body: "En vän har skickat dig ett recept",
-      data: { type: "recipe_shared" },
+      data: {
+        type: "recipe_shared",
+        route: "/recipe",
+        targetId: "recipe-123",
+        notificationType: "recipe_shared",
+      },
       silent: s.silent,
       ...deps,
     });
 
     const a = assertScenario(s, state, result);
-    if (a.ok) {
-      console.log(`  PASS  ${s.name}`);
-    } else {
+    if (!a.ok) {
       failed++;
       console.log(`  FAIL  ${s.name}`);
       if (a.detail) console.log(`        ${a.detail}`);
+      continue;
     }
+
+    // BUT-641: schema fields must arrive on the gated path.
+    if (s.expectGated) {
+      const call = state.prefAwareCalls[0];
+      const data = call.data ?? {};
+      const schemaOk =
+        data.route === "/recipe" &&
+        data.targetId === "recipe-123" &&
+        data.notificationType === "recipe_shared";
+      if (!schemaOk) {
+        failed++;
+        console.log(`  FAIL  ${s.name}`);
+        console.log(
+          `        BUT-641 schema missing: route=${data.route}, ` +
+            `targetId=${data.targetId}, notificationType=${data.notificationType}`
+        );
+        continue;
+      }
+    }
+
+    // Schema fields must also arrive on the silent (background-sync) path.
+    if (s.expectSilentSend) {
+      const data = state.silentCalls[0].message.data ?? {};
+      const schemaOk =
+        data.route === "/recipe" &&
+        data.targetId === "recipe-123" &&
+        data.notificationType === "recipe_shared";
+      if (!schemaOk) {
+        failed++;
+        console.log(`  FAIL  ${s.name}`);
+        console.log(
+          `        BUT-641 schema missing on silent path: route=${data.route}, ` +
+            `targetId=${data.targetId}, notificationType=${data.notificationType}`
+        );
+        continue;
+      }
+    }
+
+    console.log(`  PASS  ${s.name}`);
   }
   return failed;
 }
@@ -226,7 +269,12 @@ async function runUnknownCategoryFallback(): Promise<number> {
     targetUserId: "user-unknown-cat",
     title: "Okänd kategori",
     body: "Test av okänd typ",
-    data: { type: "totally_made_up_category_xyz" },
+    data: {
+      type: "totally_made_up_category_xyz",
+      route: "/recipe",
+      targetId: "recipe-xyz",
+      notificationType: "totally_made_up_category_xyz",
+    },
     ...deps,
   });
 

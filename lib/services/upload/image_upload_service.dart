@@ -19,6 +19,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/utils/retry_policy.dart';
 
 /// Result of an upload operation
 class UploadResult {
@@ -386,11 +387,19 @@ class ImageUploadService extends BaseService {
         );
       }
 
-      final url = await _storageService.uploadImageBytes(
-        bytes,
-        userId,
-        fileName,
-        prefix: prefix,
+      // Bytes upload is idempotent — same userId+fileName+prefix maps to the
+      // same storage path, so retrying overwrites rather than duplicating.
+      // Wrap with withRetry so transient network glitches don't bubble up to
+      // the UI as hard failures (the File-based path uses UploadRetryManager
+      // for the same reason, but this path bypasses that machinery).
+      final url = await withRetry<String?>(
+        () => _storageService.uploadImageBytes(
+          bytes,
+          userId,
+          fileName,
+          prefix: prefix,
+        ),
+        maxAttempts: 3,
       );
 
       if (url == null) {

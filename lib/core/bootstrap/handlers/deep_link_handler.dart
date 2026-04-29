@@ -13,7 +13,9 @@ import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/analytics/acquisition_milestone.dart';
 import 'package:butlery/services/analytics_service.dart';
 
 /// Deep link handler for processing incoming shared content.
@@ -153,9 +155,17 @@ class DeepLinkHandler {
   }
 
   /// P8-21: Track UTM campaign attribution from deep links.
+  ///
+  /// BUT-612: also persists first-arrival UTM as Firebase user properties
+  /// AND mirrors to Firestore (users/{uid}/acquisition/current) so retention
+  /// can be sliced by acquisition channel. First-write-wins — later UTM
+  /// clicks log the `campaign_click` event but do not overwrite attribution.
   void _trackCampaignAttribution(Map<String, String> params) {
     final utmSource = params['utm_source'];
-    if (utmSource == null) return;
+    if (utmSource == null || utmSource.isEmpty) return;
+
+    final utmMedium = params['utm_medium'] ?? '';
+    final utmCampaign = params['utm_campaign'] ?? '';
 
     try {
       final analytics = ServiceLocator.tryGet<AnalyticsService>();
@@ -163,9 +173,22 @@ class DeepLinkHandler {
         name: 'campaign_click',
         parameters: {
           'utm_source': utmSource,
-          'utm_medium': params['utm_medium'] ?? '',
-          'utm_campaign': params['utm_campaign'] ?? '',
+          'utm_medium': utmMedium,
+          'utm_campaign': utmCampaign,
         },
+      );
+
+      // BUT-612: persist as user properties + Firestore subdoc for cohorting.
+      // Fire-and-forget — never block deep-link routing on attribution work.
+      final repo = ServiceLocator.tryGet<AcquisitionRepository>();
+      final authRepo = ServiceLocator.tryGet<AuthRepository>();
+      AcquisitionMilestone.recordIfFirst(
+        analytics: analytics,
+        repository: repo,
+        userId: authRepo?.currentUserId,
+        utmSource: utmSource,
+        utmMedium: utmMedium,
+        utmCampaign: utmCampaign,
       );
     } catch (e) {
       // Campaign tracking not critical

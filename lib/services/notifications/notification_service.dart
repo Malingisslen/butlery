@@ -443,11 +443,22 @@ class NotificationService extends BaseService {
         );
       }
 
-      // P8-16: Route to appropriate screen based on notification data
-      final route = message.data['route'] as String?;
-      if (route != null && onNotificationTapped != null) {
-        final targetId = message.data['targetId'] as String?;
-        onNotificationTapped!(route, {'id': targetId});
+      // BUT-641: forward route + targetId + notificationType to the
+      // notification deep-link router. We forward unconditionally (even
+      // when route is null) so the router can log the
+      // `notification_payload_missing_route` event and default to home.
+      // Legacy in-flight notifications that pre-date BUT-641 stamp
+      // neither route nor notificationType — that's fine, the router
+      // tolerates missing fields.
+      if (onNotificationTapped != null) {
+        final data = message.data;
+        final route = data['route'] as String?;
+        final targetId = data['targetId'] as String?;
+        final notificationType = data['notificationType'] as String?;
+        onNotificationTapped!(route ?? '', <String, String?>{
+          'id': targetId,
+          'notificationType': notificationType,
+        });
       }
     } catch (e) {
       AppLogger.error('❌ Failed to handle message opened', e);

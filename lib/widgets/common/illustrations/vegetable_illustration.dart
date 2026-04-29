@@ -208,8 +208,10 @@ class HeaderGhostIllustration extends StatelessWidget {
         child: Opacity(
           opacity: 0.12,
           child: ColorFiltered(
+            // Identity modulate (white = preserve source colors); not
+            // theme-dependent — modulating with anything else would tint.
             colorFilter: const ColorFilter.mode(
-              Colors.white,
+              Color(0xFFFFFFFF),
               BlendMode.modulate,
             ),
             child: Image.asset(

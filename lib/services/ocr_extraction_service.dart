@@ -5,12 +5,14 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
+import 'package:image/image.dart' as img;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
+import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
 class OCRResult {
@@ -201,11 +203,15 @@ class OCRExtractionService extends BaseService {
   static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
   static const double _minConfidenceThreshold = 0.6;
 
-  // Lazily-created HTTP client (reused across calls, closed on dispose)
+  // Lazily-created HTTP client (reused across calls, closed on dispose).
+  // BUT-427: third-party OCR fallbacks (OCR.space, Google Vision, Tesseract)
+  // are wrapped in PinnedHttpClient so a hostile-wifi attacker cannot
+  // intercept upload bytes via a forged TLS cert. Pinning is no-op for hosts
+  // without configured pins in CertPinConfig (TODO placeholders).
   http.Client? _cachedHttpClient;
   http.Client get _httpClient {
     if (_testHttpClient != null) return _testHttpClient;
-    return _cachedHttpClient ??= http.Client();
+    return _cachedHttpClient ??= PinnedHttpClientFactory.create();
   }
 
   String get _ocrApiKey {
@@ -521,13 +527,87 @@ class OCRExtractionService extends BaseService {
     );
   }
 
-  /// Preprocess image for optimal OCR results
+  /// Preprocess image for optimal OCR results.
+  ///
+  /// Pure-function pipeline (deterministic — same input bytes always produce
+  /// identical output bytes, enabling stable cache keys):
+  /// 1. EXIF-orientation correction via `bakeOrientation()` so phone photos
+  ///    taken sideways are uprighted before OCR.
+  /// 2. Downscale so the long edge is at most [_maxLongEdge]. Mistral / OCR.space
+  ///    don't benefit beyond ~2K and uploading larger only burns bandwidth/cost.
+  /// 3. Greyscale + mild contrast stretch — helps OCR on low-light and
+  ///    low-contrast cookbook photos.
+  /// 4. JPEG re-encode at quality [_jpegQuality] to cap upload size and match
+  ///    the OCR backends' expected input format.
+  ///
+  /// On decode failure (corrupted bytes, unsupported format) the original
+  /// bytes are returned so the OCR providers still get a chance — they may
+  /// have format-specific handling we don't.
   Future<Uint8List> _preprocessImage(
     Uint8List imageBytes,
     ImageQualityAssessment assessment,
   ) async {
-    // Future: orientation correction, contrast enhancement, noise reduction
-    return imageBytes;
+    return preprocessImageForOcr(imageBytes);
+  }
+
+  /// Maximum long-edge in pixels after downscale. OCR engines don't gain
+  /// accuracy beyond ~2K and larger inputs only inflate cost/latency.
+  static const int _maxLongEdge = 2048;
+
+  /// JPEG quality for re-encode. 85 is the standard "visually lossless,
+  /// half the file size" sweet spot.
+  static const int _jpegQuality = 85;
+
+  /// Pure-function preprocessing entry point — exposed for unit tests.
+  ///
+  /// Idempotent in the sense that running it on already-preprocessed bytes
+  /// will produce a different (re-encoded) result, but for any single input
+  /// the output is deterministic.
+  @visibleForTesting
+  static Uint8List preprocessImageForOcr(Uint8List imageBytes) {
+    img.Image? decoded;
+    try {
+      decoded = img.decodeImage(imageBytes);
+    } catch (_) {
+      // Some malformed inputs (notably tiny garbage) can throw out-of-range
+      // errors from individual decoders inside the `image` package's
+      // detection loop. Treat any decode error the same as a null decode:
+      // hand the original bytes through and let the OCR provider decide.
+      return imageBytes;
+    }
+    if (decoded == null) {
+      // Couldn't decode — let the upstream provider try the raw bytes
+      return imageBytes;
+    }
+
+    // Step 1: bake EXIF orientation into pixels
+    var image = img.bakeOrientation(decoded);
+
+    // Step 2: downscale long edge to _maxLongEdge if larger
+    final longEdge = math.max(image.width, image.height);
+    if (longEdge > _maxLongEdge) {
+      if (image.width >= image.height) {
+        image = img.copyResize(
+          image,
+          width: _maxLongEdge,
+          interpolation: img.Interpolation.linear,
+        );
+      } else {
+        image = img.copyResize(
+          image,
+          height: _maxLongEdge,
+          interpolation: img.Interpolation.linear,
+        );
+      }
+    }
+
+    // Step 3: greyscale + mild contrast stretch
+    image = img.grayscale(image);
+    image = img.contrast(image, contrast: 115); // ~1.15x contrast
+
+    // Step 4: re-encode as JPEG q=85
+    final jpegBytes = img.encodeJpg(image, quality: _jpegQuality);
+    return Uint8List.fromList(jpegBytes);
   }
 
   /// Calculate confidence score from extracted text (universal method)

@@ -1,6 +1,10 @@
 # Dependabot configuration for Butlery.
 # Keeps Flutter (pub), Cloud Functions (npm) and GitHub Actions up to date.
-# Weekly cadence keeps review load manageable for a solo dev.
+# Weekly Monday cadence + grouping keeps review load manageable for a solo dev.
+#
+# Major bumps are ignored across all ecosystems — they require hands-on review
+# (SDK gates, breaking-change migrations, ToS changes for closed-source actions).
+# Coordinate manually when ready. See BUT-562 for context.
 
 version: 2
 
@@ -10,17 +14,21 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+      day: "monday"
+    open-pull-requests-limit: 5
     labels:
       - "dependency"
       - "auto"
     commit-message:
-      prefix: "deps"
+      prefix: "chore"
     groups:
       firebase:
         patterns:
           - "firebase_*"
           - "cloud_firestore*"
+        update-types:
+          - "minor"
+          - "patch"
       flutter-deps:
         patterns:
           - "*"
@@ -30,9 +38,6 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # Major bumps on Dart-SDK-gated packages (intl, rxdart, etc.) are
-    # coordinated manually — Dependabot spamming majors just creates noise.
-    # See BUT-562 for context.
     ignore:
       - dependency-name: "*"
         update-types:
@@ -43,18 +48,22 @@ updates:
     directory: "/functions"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+      day: "monday"
+    open-pull-requests-limit: 5
     labels:
       - "dependency"
       - "auto"
     commit-message:
-      prefix: "deps"
+      prefix: "chore"
     groups:
       firebase-admin:
         patterns:
           - "firebase-*"
           - "@firebase/*"
           - "@google-cloud/*"
+        update-types:
+          - "minor"
+          - "patch"
       others:
         patterns:
           - "*"
@@ -65,15 +74,31 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
 
   # GitHub Actions used by workflows in .github/workflows/
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+      day: "monday"
+    open-pull-requests-limit: 5
     labels:
       - "dependency"
       - "auto"
     commit-message:
-      prefix: "deps"
+      prefix: "chore"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"

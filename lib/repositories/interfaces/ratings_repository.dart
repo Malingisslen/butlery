@@ -48,6 +48,17 @@ abstract class RatingsRepository extends Repository<RecipeRating> {
 
   /// Get user's ratings across all recipes
   Future<List<RecipeRating>> getUserRatings(String userId);
+
+  /// Export all ratings authored by [userId] for GDPR Article 20.
+  ///
+  /// Returns raw `{id, data}` shapes (NOT typed [RecipeRating]) so the
+  /// data-export pipeline can sanitize timestamps without round-tripping
+  /// through the model. Implementations MUST validate that the caller
+  /// owns [userId] (cannot export someone else's ratings).
+  Future<List<Map<String, dynamic>>> exportRatingsByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  });
 }
 
 /// Individual recipe rating
@@ -60,6 +71,13 @@ class RecipeRating {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// BUT-459: Denormalized recipe owner so security rules can enforce
+  /// `isNotBlockedBy(recipeOwnerId)` on create. Optional — legacy
+  /// callers that can't resolve the owner write a rating without this
+  /// field and the rule's blocking-gate predicate is skipped (the rest
+  /// of the create checks still apply).
+  final String? recipeOwnerId;
+
   RecipeRating({
     required this.id,
     required this.recipeId,
@@ -68,6 +86,7 @@ class RecipeRating {
     this.review,
     required this.createdAt,
     required this.updatedAt,
+    this.recipeOwnerId,
   });
 
   Map<String, dynamic> toFirestore() => {
@@ -77,6 +96,7 @@ class RecipeRating {
         'review': review,
         'createdAt': Timestamp.fromDate(createdAt),
         'updatedAt': Timestamp.fromDate(updatedAt),
+        if (recipeOwnerId != null) 'recipeOwnerId': recipeOwnerId,
       };
 
   factory RecipeRating.fromFirestore(Map<String, dynamic> data, String id) =>
@@ -90,6 +110,7 @@ class RecipeRating {
             (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
         updatedAt:
             (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        recipeOwnerId: data['recipeOwnerId'] as String?,
       );
 }
 

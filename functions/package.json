@@ -20,7 +20,9 @@
     "test:rules:parse-corrections-v2": "ts-node src/__tests__/parse-corrections-v2-rules.test.ts",
     "test:rules:moderation": "ts-node src/__tests__/moderation-rules.test.ts",
     "test:rules:cook-snaps-and-message-mod": "ts-node src/__tests__/cook-snaps-and-message-mod-rules.test.ts",
-    "test:rules:all": "ts-node src/__tests__/reports-rules.test.ts && ts-node src/__tests__/age-gate-rules.test.ts && ts-node src/__tests__/firestore-rules.test.ts && ts-node src/__tests__/parse-corrections-v2-rules.test.ts && ts-node src/__tests__/moderation-rules.test.ts && ts-node src/__tests__/cook-snaps-and-message-mod-rules.test.ts",
+    "test:rules:audit-logs": "ts-node src/__tests__/audit-logs-rules.test.ts",
+    "test:rules:recipe-comments": "ts-node src/__tests__/recipe-comments-rules.test.ts",
+    "test:rules:all": "ts-node src/__tests__/reports-rules.test.ts && ts-node src/__tests__/age-gate-rules.test.ts && ts-node src/__tests__/firestore-rules.test.ts && ts-node src/__tests__/parse-corrections-v2-rules.test.ts && ts-node src/__tests__/moderation-rules.test.ts && ts-node src/__tests__/cook-snaps-and-message-mod-rules.test.ts && ts-node src/__tests__/audit-logs-rules.test.ts && ts-node src/__tests__/recipe-comments-rules.test.ts",
     "test:lapsed-users": "ts-node src/__tests__/detect-lapsed-users.test.ts",
     "test:parse-correction": "ts-node src/__tests__/log-parse-correction.test.ts",
     "test:activity-digest": "ts-node src/__tests__/send-activity-digest.test.ts",
@@ -29,7 +31,9 @@
     "test:kill-switch": "ts-node src/__tests__/llm-kill-switch.test.ts",
     "test:web-error": "ts-node src/__tests__/log-web-error.test.ts",
     "test:presence-cascade": "ts-node src/__tests__/presence-cascade.test.ts",
-    "test": "npm run test:parity && npm run test:lapsed-users && npm run test:parse-correction && npm run test:activity-digest && npm run test:send-notification && npm run test:ocr-retry && npm run test:kill-switch && npm run test:web-error && npm run test:presence-cascade",
+    "test:ocr-validation": "ts-node src/__tests__/ocr-validation.test.ts",
+    "test:notification-payload": "ts-node src/__tests__/notification-payload.test.ts",
+    "test": "npm run test:parity && npm run test:lapsed-users && npm run test:parse-correction && npm run test:activity-digest && npm run test:send-notification && npm run test:ocr-retry && npm run test:kill-switch && npm run test:web-error && npm run test:presence-cascade && npm run test:ocr-validation && npm run test:notification-payload",
     "reset-user-data": "ts-node src/admin/reset-user-data.ts",
     "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run"
   },
@@ -43,7 +47,7 @@
     "firebase-functions": "7.2.5"
   },
   "devDependencies": {
-    "@firebase/rules-unit-testing": "4.0.1",
+    "@firebase/rules-unit-testing": "5.0.0",
     "@types/node": "^22",
     "ts-node": "10.9.2",
     "typescript": "5.9.3"

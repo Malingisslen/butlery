@@ -17,4 +17,12 @@ abstract class ActivityEventRepository {
 
   /// Delete all events by a specific user (for GDPR deletion).
   Future<int> deleteAllByUser(String userId);
+
+  /// Export all activity events authored by [userId] for GDPR Article 20.
+  /// Returns raw `{id, data}` shapes. Implementations MUST validate the
+  /// caller owns [userId].
+  Future<List<Map<String, dynamic>>> exportEventsByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  });
 }

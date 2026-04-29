@@ -298,6 +298,23 @@ class UtilityComponents {
     SnackbarWidgets.showErrorSnackbar(context, message);
   }
 
+  /// Show error snackbar with "Försök igen" action that re-runs [onRetry].
+  ///
+  /// Use after an operation has already exhausted in-helper retries
+  /// (e.g. `withRetry`) so the user can manually trigger another attempt
+  /// without re-navigating.
+  static void showErrorSnackbarWithRetry(
+    BuildContext context,
+    String message, {
+    required VoidCallback onRetry,
+  }) {
+    SnackbarWidgets.showErrorSnackbarWithRetry(
+      context,
+      message,
+      onRetry: onRetry,
+    );
+  }
+
   /// Show warning snackbar.
   static void showWarningSnackbar(BuildContext context, String message) {
     SnackbarWidgets.showWarningSnackbar(context, message);

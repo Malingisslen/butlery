@@ -139,3 +139,88 @@ Knowledge file seeded from `functions/src/index.ts`, `functions/package.json`,
 the v2 SDK conventions in use, and standard Cloud Functions cost/idempotency
 guidance. Future entries should record real bugs caught, project-specific
 function patterns, cost surprises, or new function families.
+
+### 2026-04-27 — BUT-425 OCR URL SSRF guard [Bug fixed]
+
+`functions/src/llm/ocr-recipe-image.ts` previously passed any client-supplied
+`imageUrl` straight into Gemini's `fileData.fileUri`. The basic
+`isAllowedUrl()` SSRF check (private IPs / HTTPS-only) was insufficient —
+attacker-controlled HTTPS domains were still accepted, turning the function
+into an exfiltration relay (Gemini fetches the URL server-side from Google's
+network).
+
+Fix: new `functions/src/shared/ocr-url-validator.ts` doing
+1. host pin to `<project>.firebasestorage.app` (or googleapis path-pinned to
+   that bucket, plus legacy `<project>.appspot.com`),
+2. HEAD pre-flight (5s timeout, `redirect: "manual"`) verifying allowlisted
+   Content-Type (image/jpeg|png|webp|heic, application/pdf) and
+   Content-Length ≤ 10 MB,
+3. INFO audit log with origin + size + content-type + authUidHash. Full URL
+   is NOT logged because Firebase download URLs carry `?token=` query params
+   that grant read access — logging them would defeat the access control.
+
+Wired into `runOcrRecipeImage` as a `validateImageUrl` test seam. Rejection
+becomes `HttpsError("invalid-argument", ...)` with Swedish copy, never
+`internal` (no retry will help). Tests in
+`functions/src/__tests__/ocr-validation.test.ts` (21 cases) cover host
+allowlist, accepted/rejected paths, network errors, and the integration seam
+proving the validator runs BEFORE `performOcr`.
+
+Patterns worth remembering:
+- **Node 22 has native `fetch`** — no need to add `node-fetch`/`axios`. Just
+  inject a `fetchImpl` test seam (typed as `typeof fetch`).
+- **`redirect: "manual"`** is essential for any HEAD-based host check; without
+  it a 302 to `evil.com` defeats the allowlist.
+- **Project ID resolution**: `process.env.GCLOUD_PROJECT` is set in Cloud
+  Functions runtime; mirror `gemini-client.ts` and fall back to a string
+  literal so unit tests work without env wiring.
+- **Don't log download URLs** — Firebase Storage tokens are bearer
+  credentials. Log origin + path-shape only.
+- **Test harness**: hijack the `firebase-functions/logger` module surface by
+  reassigning `logger.info`/`warn`/`error` to a capture array. Assertion-
+  ready, no jest needed.
+
+### 2026-04-27 — BUT-641 notification payload schema [Pattern discovered]
+
+Push notifications were landing users on home and bouncing because the
+`data` payload had no consistent deep-link contract. Standardised on a
+3-field schema enforced by a shared helper:
+
+- `route` — one of `/recipe`, `/friend_request`, `/comment_thread`,
+  `/cooking_session`, `/menu_voting`, `/winback`
+- `targetId` — entity id, or empty string for inbox-style routes
+- `notificationType` — analytics tag
+
+Helper: `functions/src/shared/notification-payload.ts` →
+`buildNotificationPayload({route, targetId, notificationType, additionalData})`
+returns `Record<string, string>`. Schema fields **win** on collision with
+`additionalData` so legacy senders can't override them. Throws on
+missing/unknown route — surfaced as `HttpsError("invalid-argument")`
+in callable wrappers, not `internal`, because retrying won't help.
+
+Choke points wired through the helper:
+- `notifications/send-notification.ts:sanitizeData` — both non-silent
+  (prefs-aware) and silent (background-sync) paths funnel through it.
+  Silent push also gets schema fields — the client needs `route`/
+  `notificationType` to dispatch background work and attribute it.
+- `analytics/detect-lapsed-users.ts` → win-back, route `/winback`.
+- `analytics/send-activity-digest.ts` → digest, route `/winback` (it's
+  effectively a re-engagement ping; `notificationType=activity_digest`
+  separates it for analytics).
+
+Patterns worth remembering:
+- **FCM data payload is string-only.** A stray `null`/`undefined`/`Number`
+  slipping through causes `messaging/invalid-argument` at delivery — billed
+  but undelivered. The helper coerces via `String()` and drops nullish
+  values defensively.
+- **Allowlist drift is silent.** Without a typed `as const` array + test,
+  a typo (`/recipes` vs `/recipe`) routes users to home. Test
+  `notification-payload.test.ts` includes a "no drift" check that pins the
+  exact 6 routes.
+- **Throw early, surface clearly.** Helper throws plain `Error` with a
+  prefix (`buildNotificationPayload:`) so the callable wrapper can
+  recognise and convert to `HttpsError("invalid-argument")` instead of
+  the generic `internal` (which would also trigger client retry storms).
+- **Activity digest doesn't fit a unique route.** Reused `/winback`
+  because both are re-engagement pings with no specific entity target.
+  `notificationType` keeps them distinguishable for CTR analysis.

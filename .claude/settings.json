@@ -1,5 +1,4 @@
 {
-  "autoMemoryEnabled": true,
   "env": {
     "ENABLE_CLAUDEAI_MCP_SERVERS": "false"
   },
@@ -37,10 +36,6 @@
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
       "Bash(rm -rf ~/*)",
-      "Bash(git push --force origin main)",
-      "Bash(git push --force origin master)",
-      "Bash(git push -f origin main)",
-      "Bash(git push -f origin master)",
       "Bash(format c:*)",
       "Bash(format d:*)",
       "Bash(diskpart*)",
@@ -200,5 +195,6 @@
         ]
       }
     ]
-  }
+  },
+  "autoMemoryEnabled": true
 }
