@@ -1655,7 +1655,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeCountBadge.
   ///
   /// In sv, this message translates to:
-  /// **'{count} recept'**
+  /// **'{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}'**
   String recipeCountBadge(int count);
 
   /// No description provided for @scalerPortionsLabel.
@@ -1739,7 +1739,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuRecipeCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} recept'**
+  /// **'{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}'**
   String menuRecipeCount(int count);
 
   /// No description provided for @menuChooseManually.
@@ -3534,7 +3534,7 @@ abstract class AppLocalizations {
   /// No description provided for @friendFriendsCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} vänner'**
+  /// **'{count, plural, =0{Inga vänner} =1{1 vän} other{{count} vänner}}'**
   String friendFriendsCount(int count);
 
   /// No description provided for @friendFriendsLabel.
@@ -5562,7 +5562,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDataBackup.
   ///
   /// In sv, this message translates to:
-  /// **'Data & Backup'**
+  /// **'Data & säkerhetskopior'**
   String get profileDataBackup;
 
   /// No description provided for @profileExportData.
@@ -6378,7 +6378,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuCardRecipeCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} recept'**
+  /// **'{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}'**
   String menuCardRecipeCount(int count);
 
   /// No description provided for @menuCardRecipesInMenu.
@@ -6486,7 +6486,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatMemberCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} medlemmar'**
+  /// **'{count, plural, =0{Inga medlemmar} =1{1 medlem} other{{count} medlemmar}}'**
   String chatMemberCount(int count);
 
   /// No description provided for @chatMute.
@@ -6564,7 +6564,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataExportShareSubject.
   ///
   /// In sv, this message translates to:
-  /// **'Butlery Data Export'**
+  /// **'Butlery dataexport'**
   String get dataExportShareSubject;
 
   /// No description provided for @dataExportShareText.
@@ -7680,7 +7680,7 @@ abstract class AppLocalizations {
   /// No description provided for @importViaUrl.
   ///
   /// In sv, this message translates to:
-  /// **'Import via URL'**
+  /// **'Importera via URL'**
   String get importViaUrl;
 
   /// No description provided for @indicatorOfflineMode.
@@ -7770,8 +7770,8 @@ abstract class AppLocalizations {
   /// No description provided for @menuVoteCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} röster'**
-  String menuVoteCount(Object count);
+  /// **'{count, plural, =0{Inga röster} =1{1 röst} other{{count} röster}}'**
+  String menuVoteCount(num count);
 
   /// No description provided for @menuVoteExpired.
   ///
@@ -9432,7 +9432,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialMembersCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} medlemmar'**
+  /// **'{count, plural, =0{Inga medlemmar} =1{1 medlem} other{{count} medlemmar}}'**
   String socialMembersCount(int count);
 
   /// No description provided for @socialNoCategories.
@@ -9462,7 +9462,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialCommentsCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} kommentarer'**
+  /// **'{count, plural, =0{Inga kommentarer} =1{1 kommentar} other{{count} kommentarer}}'**
   String socialCommentsCount(int count);
 
   /// No description provided for @socialCouldNotCreateProfile.
@@ -11028,7 +11028,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipePortionsCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} portioner'**
+  /// **'{count, plural, =1{1 portion} other{{count} portioner}}'**
   String recipePortionsCount(int count);
 
   /// No description provided for @shoppingAddedWithEditPermission.
@@ -11634,13 +11634,13 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingMembersAdded.
   ///
   /// In sv, this message translates to:
-  /// **'{count} medlemmar tillagda'**
+  /// **'{count, plural, =1{1 medlem tillagd} other{{count} medlemmar tillagda}}'**
   String shoppingMembersAdded(int count);
 
   /// No description provided for @shoppingMembersCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} medlemmar'**
+  /// **'{count, plural, =0{Inga medlemmar} =1{1 medlem} other{{count} medlemmar}}'**
   String shoppingMembersCount(int count);
 
   /// No description provided for @shoppingMinutesAgo.
@@ -13206,7 +13206,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuCommentsCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} kommentarer'**
+  /// **'{count, plural, =0{Inga kommentarer} =1{1 kommentar} other{{count} kommentarer}}'**
   String menuCommentsCount(int count);
 
   /// No description provided for @menuNoCommentsYet.
@@ -13440,7 +13440,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuTemplateRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'{count} recept'**
+  /// **'{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}'**
   String menuTemplateRecipes(int count);
 
   /// No description provided for @menuTemplateUsedCount.
@@ -16410,7 +16410,7 @@ abstract class AppLocalizations {
   /// No description provided for @contentSummaryIngredients.
   ///
   /// In sv, this message translates to:
-  /// **'{count} ingredienser'**
+  /// **'{count, plural, =1{1 ingrediens} other{{count} ingredienser}}'**
   String contentSummaryIngredients(int count);
 
   /// No description provided for @contentSummarySteps.
@@ -16422,13 +16422,13 @@ abstract class AppLocalizations {
   /// No description provided for @contentSummaryMinutes.
   ///
   /// In sv, this message translates to:
-  /// **'{count} minuter'**
+  /// **'{count, plural, =1{1 minut} other{{count} minuter}}'**
   String contentSummaryMinutes(int count);
 
   /// No description provided for @contentSummaryPortions.
   ///
   /// In sv, this message translates to:
-  /// **'{count} portioner'**
+  /// **'{count, plural, =1{1 portion} other{{count} portioner}}'**
   String contentSummaryPortions(int count);
 
   /// No description provided for @collaborationPrivateRecipe.
@@ -16488,7 +16488,7 @@ abstract class AppLocalizations {
   /// No description provided for @activityDaysAgo.
   ///
   /// In sv, this message translates to:
-  /// **'{count} dagar sedan'**
+  /// **'{count, plural, =1{1 dag sedan} other{{count} dagar sedan}}'**
   String activityDaysAgo(int count);
 
   /// No description provided for @activityWeeksAgo.
@@ -17052,13 +17052,13 @@ abstract class AppLocalizations {
   /// No description provided for @notificationDigestRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'{count} recept'**
+  /// **'{count, plural, =1{1 recept} other{{count} recept}}'**
   String notificationDigestRecipes(int count);
 
   /// No description provided for @notificationDigestFriendActivities.
   ///
   /// In sv, this message translates to:
-  /// **'{count} vänaktiviteter'**
+  /// **'{count, plural, =1{1 vänaktivitet} other{{count} vänaktiviteter}}'**
   String notificationDigestFriendActivities(int count);
 
   /// No description provided for @notificationDigestShoppingLists.
@@ -18690,7 +18690,7 @@ abstract class AppLocalizations {
   /// No description provided for @timeAgoDays.
   ///
   /// In sv, this message translates to:
-  /// **'{count} dagar sedan'**
+  /// **'{count, plural, =1{1 dag sedan} other{{count} dagar sedan}}'**
   String timeAgoDays(int count);
 
   /// No description provided for @timeAgoWeeks.
@@ -18708,7 +18708,7 @@ abstract class AppLocalizations {
   /// No description provided for @timeAgoMinutesFull.
   ///
   /// In sv, this message translates to:
-  /// **'{count} minuter sedan'**
+  /// **'{count, plural, =1{1 minut sedan} other{{count} minuter sedan}}'**
   String timeAgoMinutesFull(int count);
 
   /// No description provided for @timeAgoHoursFull.
@@ -18744,7 +18744,7 @@ abstract class AppLocalizations {
   /// No description provided for @expiresDaysRemaining.
   ///
   /// In sv, this message translates to:
-  /// **'{count} dagar kvar'**
+  /// **'{count, plural, =1{1 dag kvar} other{{count} dagar kvar}}'**
   String expiresDaysRemaining(int count);
 
   /// No description provided for @expiresHoursRemaining.
@@ -18756,7 +18756,7 @@ abstract class AppLocalizations {
   /// No description provided for @expiresMinutesRemaining.
   ///
   /// In sv, this message translates to:
-  /// **'{count} minuter kvar'**
+  /// **'{count, plural, =1{1 minut kvar} other{{count} minuter kvar}}'**
   String expiresMinutesRemaining(int count);
 
   /// No description provided for @expiresSoon.
@@ -19770,7 +19770,7 @@ abstract class AppLocalizations {
   /// No description provided for @formatPortionPlural.
   ///
   /// In sv, this message translates to:
-  /// **'{count} portioner'**
+  /// **'{count, plural, =1{1 portion} other{{count} portioner}}'**
   String formatPortionPlural(int count);
 
   /// No description provided for @validationFailedWith.
@@ -20227,13 +20227,13 @@ abstract class AppLocalizations {
   /// No description provided for @userStatusAway.
   ///
   /// In sv, this message translates to:
-  /// **'Away'**
+  /// **'Borta'**
   String get userStatusAway;
 
   /// No description provided for @userStatusBusy.
   ///
   /// In sv, this message translates to:
-  /// **'Busy'**
+  /// **'Upptagen'**
   String get userStatusBusy;
 
   /// No description provided for @participantsCount.
@@ -22839,6 +22839,48 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Skicka notis'**
   String get a11yPingComposeSend;
+
+  /// Snackbar shown when ingredient substitution can't be applied because the recipe service isn't resolvable; tells user to open the recipe editor instead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna redigering för att byta'**
+  String get cookingModeOpenEditToSwap;
+
+  /// Hint text inside the optional email field on the in-app feedback dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'din@email.se'**
+  String get feedbackEmailHint;
+
+  /// Hint text showing example phone number format in MFA SMS enrollment field.
+  ///
+  /// In sv, this message translates to:
+  /// **'+46 70 123 45 67'**
+  String get mfaPhoneHint;
+
+  /// Default label for email TextFormField inside generic dialogs (DialogFormFields.buildEmailField).
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post'**
+  String get dialogEmailLabel;
+
+  /// Default hint for email TextFormField inside generic dialogs.
+  ///
+  /// In sv, this message translates to:
+  /// **'din@email.se'**
+  String get dialogEmailHint;
+
+  /// Default label for URL TextFormField inside generic dialogs (DialogFormFields.buildUrlField).
+  ///
+  /// In sv, this message translates to:
+  /// **'URL'**
+  String get dialogUrlLabel;
+
+  /// Default hint showing example URL format inside generic URL fields.
+  ///
+  /// In sv, this message translates to:
+  /// **'https://exempel.se'**
+  String get dialogUrlHint;
 }
 
 class _AppLocalizationsDelegate

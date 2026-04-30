@@ -350,7 +350,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 labelText: context.l10n.mfaPhoneNumber,
-                hintText: '+46701234567',
+                hintText: context.l10n.mfaPhoneHint,
                 prefixIcon: const Icon(Icons.phone),
                 border: const OutlineInputBorder(),
               ),

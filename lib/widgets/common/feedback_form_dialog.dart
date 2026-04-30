@@ -126,9 +126,9 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 maxLength: 100,
-                decoration: const InputDecoration(
-                  hintText: 'din@email.se',
-                  border: OutlineInputBorder(
+                decoration: InputDecoration(
+                  hintText: context.l10n.feedbackEmailHint,
+                  border: const OutlineInputBorder(
                     borderRadius: BorderRadius.zero,
                   ),
                 ),

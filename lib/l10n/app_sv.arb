@@ -526,7 +526,7 @@
   "recipeAnalyzingA11y": "Ingredienser analyseras",
   "recipeSearchHint": "sök bland recepten...",
   "recipeShowMore": "Visa fler recept",
-  "recipeCountBadge": "{count} recept",
+  "recipeCountBadge": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
   "@recipeCountBadge": {
     "placeholders": {
       "count": {
@@ -557,7 +557,7 @@
   "menuGenerateNew": "Generera ny meny",
   "menuGenerate": "Generera meny",
   "menuYourWeeklyMenu": "Din veckomeny",
-  "menuRecipeCount": "{count} recept",
+  "menuRecipeCount": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
   "@menuRecipeCount": {
     "placeholders": {
       "count": {
@@ -1291,7 +1291,7 @@
       }
     }
   },
-  "friendFriendsCount": "{count} vänner",
+  "friendFriendsCount": "{count, plural, =0{Inga vänner} =1{1 vän} other{{count} vänner}}",
   "@friendFriendsCount": {
     "placeholders": {
       "count": {
@@ -2011,7 +2011,7 @@
       }
     }
   },
-  "profileDataBackup": "Data & Backup",
+  "profileDataBackup": "Data & säkerhetskopior",
   "profileExportData": "Exportera mina data",
   "profileExportDataSubtitle": "Ladda ner all din data i JSON-format (GDPR)",
   "profileManageConsent": "Hantera samtycken",
@@ -2303,7 +2303,7 @@
     }
   },
   "menuCardNoRecipes": "Inga recept i menyn",
-  "menuCardRecipeCount": "{count} recept",
+  "menuCardRecipeCount": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
   "@menuCardRecipeCount": {
     "placeholders": {
       "count": {
@@ -2377,7 +2377,7 @@
       }
     }
   },
-  "chatMemberCount": "{count} medlemmar",
+  "chatMemberCount": "{count, plural, =0{Inga medlemmar} =1{1 medlem} other{{count} medlemmar}}",
   "@chatMemberCount": {
     "placeholders": {
       "count": {
@@ -2425,7 +2425,7 @@
       }
     }
   },
-  "dataExportShareSubject": "Butlery Data Export",
+  "dataExportShareSubject": "Butlery dataexport",
   "dataExportShareText": "Min exporterade data från Butlery app",
   "dialogAmountHint": "Ange antal...",
   "dialogAmountInvalid": "Ogiltigt antal",
@@ -2817,7 +2817,7 @@
   "importTipsContent": "Klistra in hela receptet inklusive ingredienser. Se till att ingredienser kommer före instruktioner. Texten kan komma från Instagram, TikTok, Facebook etc.",
   "importTipsTitle": "Tips för bästa resultat",
   "importTryAdjustFilters": "Prova att justera sökning eller filter",
-  "importViaUrl": "Import via URL",
+  "importViaUrl": "Importera via URL",
   "indicatorOfflineMode": "Offline-läge - Ändringar sparas lokalt",
   "indicatorBackOnline": "Ansluten igen",
   "householdLabel": "Hushåll",
@@ -2832,7 +2832,7 @@
   "menuVoteResolved": "Omröstning avgjord",
   "menuVoteDeadline": "Sista dag att rösta",
   "menuVoteWinner": "Vinnare: {recipeName}",
-  "menuVoteCount": "{count} röster",
+  "menuVoteCount": "{count, plural, =0{Inga röster} =1{1 röst} other{{count} röster}}",
   "menuVoteExpired": "Omröstningen har gått ut",
   "menuVoteNoAlternatives": "Inga förslag ännu",
   "invitationCheckConnectionAndRetry": "Kontrollera din internetanslutning och försök igen.",
@@ -3417,7 +3417,7 @@
   "socialCategories": "Kategorier",
   "socialCategoryStatistics": "Kategoristatistik",
   "socialCreateCategory": "Skapa kategori",
-  "socialMembersCount": "{count} medlemmar",
+  "socialMembersCount": "{count, plural, =0{Inga medlemmar} =1{1 medlem} other{{count} medlemmar}}",
   "@socialMembersCount": {
     "placeholders": {
       "count": {
@@ -3429,7 +3429,7 @@
   "socialBeFirstToComment": "Var först med att kommentera detta recept!",
   "socialCommentPosted": "Kommentar postad",
   "socialComments": "Kommentarer",
-  "socialCommentsCount": "{count} kommentarer",
+  "socialCommentsCount": "{count, plural, =0{Inga kommentarer} =1{1 kommentar} other{{count} kommentarer}}",
   "@socialCommentsCount": {
     "placeholders": {
       "count": {
@@ -4075,7 +4075,7 @@
       }
     }
   },
-  "recipePortionsCount": "{count} portioner",
+  "recipePortionsCount": "{count, plural, =1{1 portion} other{{count} portioner}}",
   "@recipePortionsCount": {
     "placeholders": {
       "count": {
@@ -4355,7 +4355,7 @@
       }
     }
   },
-  "shoppingMembersAdded": "{count} medlemmar tillagda",
+  "shoppingMembersAdded": "{count, plural, =1{1 medlem tillagd} other{{count} medlemmar tillagda}}",
   "@shoppingMembersAdded": {
     "placeholders": {
       "count": {
@@ -4363,7 +4363,7 @@
       }
     }
   },
-  "shoppingMembersCount": "{count} medlemmar",
+  "shoppingMembersCount": "{count, plural, =0{Inga medlemmar} =1{1 medlem} other{{count} medlemmar}}",
   "@shoppingMembersCount": {
     "placeholders": {
       "count": {
@@ -5118,7 +5118,7 @@
   },
   "unshareFailed": "Kunde inte sluta dela. Försök igen.",
   "menuCommentsTitle": "Kommentarer",
-  "menuCommentsCount": "{count} kommentarer",
+  "menuCommentsCount": "{count, plural, =0{Inga kommentarer} =1{1 kommentar} other{{count} kommentarer}}",
   "@menuCommentsCount": {
     "placeholders": {
       "count": {
@@ -5185,7 +5185,7 @@
   },
   "menuTemplateNoTemplates": "Inga mallar",
   "menuTemplateNoTemplatesDescription": "Du har inga sparade menymmallar. Spara en meny som mall för att återanvända kategoristrukturen.",
-  "menuTemplateRecipes": "{count} recept",
+  "menuTemplateRecipes": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
   "@menuTemplateRecipes": {
     "placeholders": {
       "count": {
@@ -5990,7 +5990,7 @@
   "difficultyHard": "Svår",
   "difficultyVeryHard": "Mycket svår",
   "difficultyUnknown": "Okänd",
-  "contentSummaryIngredients": "{count} ingredienser",
+  "contentSummaryIngredients": "{count, plural, =1{1 ingrediens} other{{count} ingredienser}}",
   "@contentSummaryIngredients": {
     "placeholders": {
       "count": {
@@ -6006,7 +6006,7 @@
       }
     }
   },
-  "contentSummaryMinutes": "{count} minuter",
+  "contentSummaryMinutes": "{count, plural, =1{1 minut} other{{count} minuter}}",
   "@contentSummaryMinutes": {
     "placeholders": {
       "count": {
@@ -6014,7 +6014,7 @@
       }
     }
   },
-  "contentSummaryPortions": "{count} portioner",
+  "contentSummaryPortions": "{count, plural, =1{1 portion} other{{count} portioner}}",
   "@contentSummaryPortions": {
     "placeholders": {
       "count": {
@@ -6086,7 +6086,7 @@
       }
     }
   },
-  "activityDaysAgo": "{count} dagar sedan",
+  "activityDaysAgo": "{count, plural, =1{1 dag sedan} other{{count} dagar sedan}}",
   "@activityDaysAgo": {
     "placeholders": {
       "count": {
@@ -6372,7 +6372,7 @@
   "notificationActionOpenApp": "Öppna app",
   "notificationDefaultTitle": "Ny aktivitet",
   "notificationDefaultBody": "Du har ny aktivitet i Butlery",
-  "notificationDigestRecipes": "{count} recept",
+  "notificationDigestRecipes": "{count, plural, =1{1 recept} other{{count} recept}}",
   "@notificationDigestRecipes": {
     "placeholders": {
       "count": {
@@ -6380,7 +6380,7 @@
       }
     }
   },
-  "notificationDigestFriendActivities": "{count} vänaktiviteter",
+  "notificationDigestFriendActivities": "{count, plural, =1{1 vänaktivitet} other{{count} vänaktiviteter}}",
   "@notificationDigestFriendActivities": {
     "placeholders": {
       "count": {
@@ -7280,7 +7280,7 @@
       }
     }
   },
-  "timeAgoDays": "{count} dagar sedan",
+  "timeAgoDays": "{count, plural, =1{1 dag sedan} other{{count} dagar sedan}}",
   "@timeAgoDays": {
     "placeholders": {
       "count": {
@@ -7297,7 +7297,7 @@
     }
   },
   "timeAgoJustNow": "Nyss",
-  "timeAgoMinutesFull": "{count} minuter sedan",
+  "timeAgoMinutesFull": "{count, plural, =1{1 minut sedan} other{{count} minuter sedan}}",
   "@timeAgoMinutesFull": {
     "placeholders": {
       "count": {
@@ -7338,7 +7338,7 @@
     }
   },
   "expiresExpired": "Utgången",
-  "expiresDaysRemaining": "{count} dagar kvar",
+  "expiresDaysRemaining": "{count, plural, =1{1 dag kvar} other{{count} dagar kvar}}",
   "@expiresDaysRemaining": {
     "placeholders": {
       "count": {
@@ -7354,7 +7354,7 @@
       }
     }
   },
-  "expiresMinutesRemaining": "{count} minuter kvar",
+  "expiresMinutesRemaining": "{count, plural, =1{1 minut kvar} other{{count} minuter kvar}}",
   "@expiresMinutesRemaining": {
     "placeholders": {
       "count": {
@@ -7966,7 +7966,7 @@
     }
   },
   "formatPortionSingle": "1 portion",
-  "formatPortionPlural": "{count} portioner",
+  "formatPortionPlural": "{count, plural, =1{1 portion} other{{count} portioner}}",
   "@formatPortionPlural": {
     "placeholders": {
       "count": {
@@ -8145,8 +8145,8 @@
   "shoppingListEditPermissionDenied": "Du har inte behörighet att redigera denna delade inköpslista",
   "tagShareError": "Kunde inte dela taggen",
   "userStatusOffline": "Offline",
-  "userStatusAway": "Away",
-  "userStatusBusy": "Busy",
+  "userStatusAway": "Borta",
+  "userStatusBusy": "Upptagen",
   "participantsCount": "Deltagare ({count})",
   "@participantsCount": {
     "placeholders": {
@@ -9515,5 +9515,33 @@
   "a11yPingComposeSend": "Skicka notis",
   "@a11yPingComposeSend": {
     "description": "Semantics label for the send button in the ping compose sheet."
+  },
+  "cookingModeOpenEditToSwap": "Öppna redigering för att byta",
+  "@cookingModeOpenEditToSwap": {
+    "description": "Snackbar shown when ingredient substitution can't be applied because the recipe service isn't resolvable; tells user to open the recipe editor instead."
+  },
+  "feedbackEmailHint": "din@email.se",
+  "@feedbackEmailHint": {
+    "description": "Hint text inside the optional email field on the in-app feedback dialog."
+  },
+  "mfaPhoneHint": "+46 70 123 45 67",
+  "@mfaPhoneHint": {
+    "description": "Hint text showing example phone number format in MFA SMS enrollment field."
+  },
+  "dialogEmailLabel": "E-post",
+  "@dialogEmailLabel": {
+    "description": "Default label for email TextFormField inside generic dialogs (DialogFormFields.buildEmailField)."
+  },
+  "dialogEmailHint": "din@email.se",
+  "@dialogEmailHint": {
+    "description": "Default hint for email TextFormField inside generic dialogs."
+  },
+  "dialogUrlLabel": "URL",
+  "@dialogUrlLabel": {
+    "description": "Default label for URL TextFormField inside generic dialogs (DialogFormFields.buildUrlField)."
+  },
+  "dialogUrlHint": "https://exempel.se",
+  "@dialogUrlHint": {
+    "description": "Default hint showing example URL format inside generic URL fields."
   }
 }

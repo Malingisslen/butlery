@@ -314,8 +314,11 @@ void main() {
 
         await tester.pumpWidget(
           createLocalizedTestApp(
-            child: DialogFormFields.buildEmailField(
-              controller: controller,
+            child: Builder(
+              builder: (context) => DialogFormFields.buildEmailField(
+                context: context,
+                controller: controller,
+              ),
             ),
           ),
         );

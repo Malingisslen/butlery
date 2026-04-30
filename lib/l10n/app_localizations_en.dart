@@ -902,7 +902,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String recipeCountBadge(int count) {
-    return '$count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+      zero: 'No recipes',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -948,7 +955,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String menuRecipeCount(int count) {
-    return '$count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+      zero: 'No recipes',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2008,7 +2022,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String friendFriendsCount(int count) {
-    return '$count friends';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count friends',
+      one: '1 friend',
+      zero: 'No friends',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3638,7 +3659,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String menuCardRecipeCount(int count) {
-    return '$count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+      zero: 'No recipes',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3708,7 +3736,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chatMemberCount(int count) {
-    return '$count members';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+      zero: 'No members',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -4444,8 +4479,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String menuVoteCount(Object count) {
-    return '$count votes';
+  String menuVoteCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count votes',
+      one: '1 vote',
+      zero: 'No votes',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -5393,7 +5435,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String socialMembersCount(int count) {
-    return '$count members';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+      zero: 'No members',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -5411,7 +5460,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String socialCommentsCount(int count) {
-    return '$count comments';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count comments',
+      one: '1 comment',
+      zero: 'No comments',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6340,7 +6396,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String recipePortionsCount(int count) {
-    return '$count servings';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count servings',
+      one: '1 serving',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6699,12 +6761,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shoppingMembersAdded(int count) {
-    return '$count members added';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members added',
+      one: '1 member added',
+    );
+    return '$_temp0';
   }
 
   @override
   String shoppingMembersCount(int count) {
-    return '$count members';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+      zero: 'No members',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -7637,7 +7712,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String menuCommentsCount(int count) {
-    return '$count comments';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count comments',
+      one: '1 comment',
+      zero: 'No comments',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -7768,7 +7850,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String menuTemplateRecipes(int count) {
-    return '$count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+      zero: 'No recipes',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9431,7 +9520,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String contentSummaryIngredients(int count) {
-    return '$count ingredients';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ingredients',
+      one: '1 ingredient',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9441,12 +9536,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String contentSummaryMinutes(int count) {
-    return '$count minutes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
   }
 
   @override
   String contentSummaryPortions(int count) {
-    return '$count servings';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count servings',
+      one: '1 serving',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9492,7 +9599,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String activityDaysAgo(int count) {
-    return '$count days ago';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9843,12 +9956,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationDigestRecipes(int count) {
-    return '$count recipes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+    );
+    return '$_temp0';
   }
 
   @override
   String notificationDigestFriendActivities(int count) {
-    return '$count friend activities';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count friend activities',
+      one: '1 friend activity',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10877,7 +11002,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String timeAgoDays(int count) {
-    return '$count days ago';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10890,7 +11021,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String timeAgoMinutesFull(int count) {
-    return '$count minutes ago';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes ago',
+      one: '1 minute ago',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10918,7 +11055,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String expiresDaysRemaining(int count) {
-    return '$count days left';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10928,7 +11071,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String expiresMinutesRemaining(int count) {
-    return '$count minutes left';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes left',
+      one: '1 minute left',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -11562,7 +11711,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String formatPortionPlural(int count) {
-    return '$count portions';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count portions',
+      one: '1 portion',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -13381,4 +13536,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yPingComposeSend => 'Send ping';
+
+  @override
+  String get cookingModeOpenEditToSwap => 'Open edit mode to swap';
+
+  @override
+  String get feedbackEmailHint => 'you@email.com';
+
+  @override
+  String get mfaPhoneHint => '+46 70 123 45 67';
+
+  @override
+  String get dialogEmailLabel => 'Email';
+
+  @override
+  String get dialogEmailHint => 'you@email.com';
+
+  @override
+  String get dialogUrlLabel => 'URL';
+
+  @override
+  String get dialogUrlHint => 'https://example.com';
 }

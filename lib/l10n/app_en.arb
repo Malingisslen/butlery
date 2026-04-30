@@ -526,7 +526,7 @@
   "recipeAnalyzingA11y": "Ingredients being analyzed",
   "recipeSearchHint": "search recipes...",
   "recipeShowMore": "Show more recipes",
-  "recipeCountBadge": "{count} recipes",
+  "recipeCountBadge": "{count, plural, =0{No recipes} =1{1 recipe} other{{count} recipes}}",
   "@recipeCountBadge": {
     "placeholders": {
       "count": {
@@ -557,7 +557,7 @@
   "menuGenerateNew": "Generate new menu",
   "menuGenerate": "Generate menu",
   "menuYourWeeklyMenu": "Your weekly menu",
-  "menuRecipeCount": "{count} recipes",
+  "menuRecipeCount": "{count, plural, =0{No recipes} =1{1 recipe} other{{count} recipes}}",
   "@menuRecipeCount": {
     "placeholders": {
       "count": {
@@ -1291,7 +1291,7 @@
       }
     }
   },
-  "friendFriendsCount": "{count} friends",
+  "friendFriendsCount": "{count, plural, =0{No friends} =1{1 friend} other{{count} friends}}",
   "@friendFriendsCount": {
     "placeholders": {
       "count": {
@@ -2303,7 +2303,7 @@
     }
   },
   "menuCardNoRecipes": "No recipes in menu",
-  "menuCardRecipeCount": "{count} recipes",
+  "menuCardRecipeCount": "{count, plural, =0{No recipes} =1{1 recipe} other{{count} recipes}}",
   "@menuCardRecipeCount": {
     "placeholders": {
       "count": {
@@ -2377,7 +2377,7 @@
       }
     }
   },
-  "chatMemberCount": "{count} members",
+  "chatMemberCount": "{count, plural, =0{No members} =1{1 member} other{{count} members}}",
   "@chatMemberCount": {
     "placeholders": {
       "count": {
@@ -2832,7 +2832,7 @@
   "menuVoteResolved": "Vote resolved",
   "menuVoteDeadline": "Voting deadline",
   "menuVoteWinner": "Winner: {recipeName}",
-  "menuVoteCount": "{count} votes",
+  "menuVoteCount": "{count, plural, =0{No votes} =1{1 vote} other{{count} votes}}",
   "menuVoteExpired": "Voting has expired",
   "menuVoteNoAlternatives": "No suggestions yet",
   "invitationCheckConnectionAndRetry": "Check your internet connection and try again.",
@@ -3417,7 +3417,7 @@
   "socialCategories": "Categories",
   "socialCategoryStatistics": "Category statistics",
   "socialCreateCategory": "Create category",
-  "socialMembersCount": "{count} members",
+  "socialMembersCount": "{count, plural, =0{No members} =1{1 member} other{{count} members}}",
   "@socialMembersCount": {
     "placeholders": {
       "count": {
@@ -3429,7 +3429,7 @@
   "socialBeFirstToComment": "Be the first to comment on this recipe!",
   "socialCommentPosted": "Comment posted",
   "socialComments": "Comments",
-  "socialCommentsCount": "{count} comments",
+  "socialCommentsCount": "{count, plural, =0{No comments} =1{1 comment} other{{count} comments}}",
   "@socialCommentsCount": {
     "placeholders": {
       "count": {
@@ -4075,7 +4075,7 @@
       }
     }
   },
-  "recipePortionsCount": "{count} servings",
+  "recipePortionsCount": "{count, plural, =1{1 serving} other{{count} servings}}",
   "@recipePortionsCount": {
     "placeholders": {
       "count": {
@@ -4355,7 +4355,7 @@
       }
     }
   },
-  "shoppingMembersAdded": "{count} members added",
+  "shoppingMembersAdded": "{count, plural, =1{1 member added} other{{count} members added}}",
   "@shoppingMembersAdded": {
     "placeholders": {
       "count": {
@@ -4363,7 +4363,7 @@
       }
     }
   },
-  "shoppingMembersCount": "{count} members",
+  "shoppingMembersCount": "{count, plural, =0{No members} =1{1 member} other{{count} members}}",
   "@shoppingMembersCount": {
     "placeholders": {
       "count": {
@@ -5118,7 +5118,7 @@
   },
   "unshareFailed": "Could not stop sharing. Try again.",
   "menuCommentsTitle": "Comments",
-  "menuCommentsCount": "{count} comments",
+  "menuCommentsCount": "{count, plural, =0{No comments} =1{1 comment} other{{count} comments}}",
   "@menuCommentsCount": {
     "placeholders": {
       "count": {
@@ -5185,7 +5185,7 @@
   },
   "menuTemplateNoTemplates": "No templates",
   "menuTemplateNoTemplatesDescription": "You have no saved menu templates. Save a menu as a template to reuse the category structure.",
-  "menuTemplateRecipes": "{count} recipes",
+  "menuTemplateRecipes": "{count, plural, =0{No recipes} =1{1 recipe} other{{count} recipes}}",
   "@menuTemplateRecipes": {
     "placeholders": {
       "count": {
@@ -5969,7 +5969,7 @@
   "difficultyHard": "Hard",
   "difficultyVeryHard": "Very hard",
   "difficultyUnknown": "Unknown",
-  "contentSummaryIngredients": "{count} ingredients",
+  "contentSummaryIngredients": "{count, plural, =1{1 ingredient} other{{count} ingredients}}",
   "@contentSummaryIngredients": {
     "placeholders": {
       "count": {
@@ -5985,7 +5985,7 @@
       }
     }
   },
-  "contentSummaryMinutes": "{count} minutes",
+  "contentSummaryMinutes": "{count, plural, =1{1 minute} other{{count} minutes}}",
   "@contentSummaryMinutes": {
     "placeholders": {
       "count": {
@@ -5993,7 +5993,7 @@
       }
     }
   },
-  "contentSummaryPortions": "{count} servings",
+  "contentSummaryPortions": "{count, plural, =1{1 serving} other{{count} servings}}",
   "@contentSummaryPortions": {
     "placeholders": {
       "count": {
@@ -6065,7 +6065,7 @@
       }
     }
   },
-  "activityDaysAgo": "{count} days ago",
+  "activityDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
   "@activityDaysAgo": {
     "placeholders": {
       "count": {
@@ -6351,7 +6351,7 @@
   "notificationActionOpenApp": "Open app",
   "notificationDefaultTitle": "New activity",
   "notificationDefaultBody": "You have new activity in Butlery",
-  "notificationDigestRecipes": "{count} recipes",
+  "notificationDigestRecipes": "{count, plural, =1{1 recipe} other{{count} recipes}}",
   "@notificationDigestRecipes": {
     "placeholders": {
       "count": {
@@ -6359,7 +6359,7 @@
       }
     }
   },
-  "notificationDigestFriendActivities": "{count} friend activities",
+  "notificationDigestFriendActivities": "{count, plural, =1{1 friend activity} other{{count} friend activities}}",
   "@notificationDigestFriendActivities": {
     "placeholders": {
       "count": {
@@ -7259,7 +7259,7 @@
       }
     }
   },
-  "timeAgoDays": "{count} days ago",
+  "timeAgoDays": "{count, plural, =1{1 day ago} other{{count} days ago}}",
   "@timeAgoDays": {
     "placeholders": {
       "count": {
@@ -7276,7 +7276,7 @@
     }
   },
   "timeAgoJustNow": "Just now",
-  "timeAgoMinutesFull": "{count} minutes ago",
+  "timeAgoMinutesFull": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
   "@timeAgoMinutesFull": {
     "placeholders": {
       "count": {
@@ -7317,7 +7317,7 @@
     }
   },
   "expiresExpired": "Expired",
-  "expiresDaysRemaining": "{count} days left",
+  "expiresDaysRemaining": "{count, plural, =1{1 day left} other{{count} days left}}",
   "@expiresDaysRemaining": {
     "placeholders": {
       "count": {
@@ -7333,7 +7333,7 @@
       }
     }
   },
-  "expiresMinutesRemaining": "{count} minutes left",
+  "expiresMinutesRemaining": "{count, plural, =1{1 minute left} other{{count} minutes left}}",
   "@expiresMinutesRemaining": {
     "placeholders": {
       "count": {
@@ -7945,7 +7945,7 @@
     }
   },
   "formatPortionSingle": "1 portion",
-  "formatPortionPlural": "{count} portions",
+  "formatPortionPlural": "{count, plural, =1{1 portion} other{{count} portions}}",
   "@formatPortionPlural": {
     "placeholders": {
       "count": {
@@ -9515,5 +9515,33 @@
   "a11yPingComposeSend": "Send ping",
   "@a11yPingComposeSend": {
     "description": "Semantics label for the send button in the ping compose sheet."
+  },
+  "cookingModeOpenEditToSwap": "Open edit mode to swap",
+  "@cookingModeOpenEditToSwap": {
+    "description": "Snackbar shown when ingredient substitution can't be applied because the recipe service isn't resolvable; tells user to open the recipe editor instead."
+  },
+  "feedbackEmailHint": "you@email.com",
+  "@feedbackEmailHint": {
+    "description": "Hint text inside the optional email field on the in-app feedback dialog."
+  },
+  "mfaPhoneHint": "+46 70 123 45 67",
+  "@mfaPhoneHint": {
+    "description": "Hint text showing example phone number format in MFA SMS enrollment field."
+  },
+  "dialogEmailLabel": "Email",
+  "@dialogEmailLabel": {
+    "description": "Default label for email TextFormField inside generic dialogs (DialogFormFields.buildEmailField)."
+  },
+  "dialogEmailHint": "you@email.com",
+  "@dialogEmailHint": {
+    "description": "Default hint for email TextFormField inside generic dialogs."
+  },
+  "dialogUrlLabel": "URL",
+  "@dialogUrlLabel": {
+    "description": "Default label for URL TextFormField inside generic dialogs (DialogFormFields.buildUrlField)."
+  },
+  "dialogUrlHint": "https://example.com",
+  "@dialogUrlHint": {
+    "description": "Default hint showing example URL format inside generic URL fields."
   }
 }

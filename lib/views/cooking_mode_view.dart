@@ -334,8 +334,8 @@ class _IngredientsPanel extends StatelessWidget {
     // a constrained test harness), log and toast rather than throwing.
     if (recipeService == null) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(
-          content: Text('Öppna redigering för att byta'),
+        SnackBar(
+          content: Text(context.l10n.cookingModeOpenEditToSwap),
         ),
       );
       return;

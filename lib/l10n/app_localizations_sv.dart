@@ -901,7 +901,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String recipeCountBadge(int count) {
-    return '$count recept';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '1 recept',
+      zero: 'Inga recept',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -948,7 +955,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuRecipeCount(int count) {
-    return '$count recept';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '1 recept',
+      zero: 'Inga recept',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2009,7 +2023,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String friendFriendsCount(int count) {
-    return '$count vänner';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vänner',
+      one: '1 vän',
+      zero: 'Inga vänner',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3168,7 +3189,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get profileDataBackup => 'Data & Backup';
+  String get profileDataBackup => 'Data & säkerhetskopior';
 
   @override
   String get profileExportData => 'Exportera mina data';
@@ -3640,7 +3661,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuCardRecipeCount(int count) {
-    return '$count recept';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '1 recept',
+      zero: 'Inga recept',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3710,7 +3738,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String chatMemberCount(int count) {
-    return '$count medlemmar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+      zero: 'Inga medlemmar',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3759,7 +3794,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get dataExportShareSubject => 'Butlery Data Export';
+  String get dataExportShareSubject => 'Butlery dataexport';
 
   @override
   String get dataExportShareText => 'Min exporterade data från Butlery app';
@@ -4397,7 +4432,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importTryAdjustFilters => 'Prova att justera sökning eller filter';
 
   @override
-  String get importViaUrl => 'Import via URL';
+  String get importViaUrl => 'Importera via URL';
 
   @override
   String get indicatorOfflineMode => 'Offline-läge - Ändringar sparas lokalt';
@@ -4447,8 +4482,15 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String menuVoteCount(Object count) {
-    return '$count röster';
+  String menuVoteCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count röster',
+      one: '1 röst',
+      zero: 'Inga röster',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -5393,7 +5435,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialMembersCount(int count) {
-    return '$count medlemmar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+      zero: 'Inga medlemmar',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -5411,7 +5460,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialCommentsCount(int count) {
-    return '$count kommentarer';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kommentarer',
+      one: '1 kommentar',
+      zero: 'Inga kommentarer',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6342,7 +6398,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String recipePortionsCount(int count) {
-    return '$count portioner';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count portioner',
+      one: '1 portion',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6703,12 +6765,25 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String shoppingMembersAdded(int count) {
-    return '$count medlemmar tillagda';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar tillagda',
+      one: '1 medlem tillagd',
+    );
+    return '$_temp0';
   }
 
   @override
   String shoppingMembersCount(int count) {
-    return '$count medlemmar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+      zero: 'Inga medlemmar',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -7648,7 +7723,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuCommentsCount(int count) {
-    return '$count kommentarer';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kommentarer',
+      one: '1 kommentar',
+      zero: 'Inga kommentarer',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -7781,7 +7863,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String menuTemplateRecipes(int count) {
-    return '$count recept';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '1 recept',
+      zero: 'Inga recept',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9454,7 +9543,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String contentSummaryIngredients(int count) {
-    return '$count ingredienser';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ingredienser',
+      one: '1 ingrediens',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9464,12 +9559,24 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String contentSummaryMinutes(int count) {
-    return '$count minuter';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minuter',
+      one: '1 minut',
+    );
+    return '$_temp0';
   }
 
   @override
   String contentSummaryPortions(int count) {
-    return '$count portioner';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count portioner',
+      one: '1 portion',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9515,7 +9622,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String activityDaysAgo(int count) {
-    return '$count dagar sedan';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dagar sedan',
+      one: '1 dag sedan',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9867,12 +9980,24 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String notificationDigestRecipes(int count) {
-    return '$count recept';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '1 recept',
+    );
+    return '$_temp0';
   }
 
   @override
   String notificationDigestFriendActivities(int count) {
-    return '$count vänaktiviteter';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vänaktiviteter',
+      one: '1 vänaktivitet',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10904,7 +11029,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String timeAgoDays(int count) {
-    return '$count dagar sedan';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dagar sedan',
+      one: '1 dag sedan',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10917,7 +11048,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String timeAgoMinutesFull(int count) {
-    return '$count minuter sedan';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minuter sedan',
+      one: '1 minut sedan',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10945,7 +11082,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String expiresDaysRemaining(int count) {
-    return '$count dagar kvar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dagar kvar',
+      one: '1 dag kvar',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10955,7 +11098,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String expiresMinutesRemaining(int count) {
-    return '$count minuter kvar';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minuter kvar',
+      one: '1 minut kvar',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -11588,7 +11737,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String formatPortionPlural(int count) {
-    return '$count portioner';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count portioner',
+      one: '1 portion',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -11846,10 +12001,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get userStatusOffline => 'Offline';
 
   @override
-  String get userStatusAway => 'Away';
+  String get userStatusAway => 'Borta';
 
   @override
-  String get userStatusBusy => 'Busy';
+  String get userStatusBusy => 'Upptagen';
 
   @override
   String participantsCount(int count) {
@@ -13412,4 +13567,25 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yPingComposeSend => 'Skicka notis';
+
+  @override
+  String get cookingModeOpenEditToSwap => 'Öppna redigering för att byta';
+
+  @override
+  String get feedbackEmailHint => 'din@email.se';
+
+  @override
+  String get mfaPhoneHint => '+46 70 123 45 67';
+
+  @override
+  String get dialogEmailLabel => 'E-post';
+
+  @override
+  String get dialogEmailHint => 'din@email.se';
+
+  @override
+  String get dialogUrlLabel => 'URL';
+
+  @override
+  String get dialogUrlHint => 'https://exempel.se';
 }

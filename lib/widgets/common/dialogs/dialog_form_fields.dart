@@ -185,6 +185,7 @@ class DialogFormFields {
 
   /// Email field with email validation
   static Widget buildEmailField({
+    required BuildContext context,
     required TextEditingController controller,
     String? labelText,
     String? hintText,
@@ -192,8 +193,8 @@ class DialogFormFields {
   }) {
     return buildTextFormField(
       controller: controller,
-      labelText: labelText ?? 'E-post',
-      hintText: hintText ?? 'din@email.com',
+      labelText: labelText ?? context.l10n.dialogEmailLabel,
+      hintText: hintText ?? context.l10n.dialogEmailHint,
       prefixIcon: Icons.email_outlined,
       enabled: enabled,
       keyboardType: TextInputType.emailAddress,
@@ -206,15 +207,16 @@ class DialogFormFields {
   static Widget buildUrlField({
     required BuildContext context,
     required TextEditingController controller,
-    String labelText = 'URL',
+    String? labelText,
     String? hintText,
     bool enabled = true,
     bool required = false,
   }) {
+    final effectiveLabelText = labelText ?? context.l10n.dialogUrlLabel;
     return buildTextFormField(
       controller: controller,
-      labelText: labelText,
-      hintText: hintText ?? 'https://exempel.se',
+      labelText: effectiveLabelText,
+      hintText: hintText ?? context.l10n.dialogUrlHint,
       prefixIcon: Icons.link,
       enabled: enabled,
       keyboardType: TextInputType.url,
@@ -225,7 +227,8 @@ class DialogFormFields {
         }
 
         if (required) {
-          final requiredResult = FormValidators.required(labelText)(value);
+          final requiredResult =
+              FormValidators.required(effectiveLabelText)(value);
           if (requiredResult != null) return requiredResult;
         }
 
@@ -359,7 +362,7 @@ class DialogFormFields {
         validator: validator ??
             (required
                 ? (value) => value == null
-                    ? '$labelText ${context.l10n.dialogFieldRequired}'
+                    ? context.l10n.dialogFieldRequired(labelText)
                     : null
                 : null),
       ),
