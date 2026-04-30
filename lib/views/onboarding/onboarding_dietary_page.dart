@@ -53,7 +53,9 @@ class OnboardingDietaryPage extends StatelessWidget {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    return Padding(
+    // Scrollable so landscape phones (~360dp height) don't overflow the
+    // 7 dietary cards + title block. Portrait already fits — scroll is a no-op.
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,6 +88,7 @@ class OnboardingDietaryPage extends StatelessWidget {
               ),
             );
           }),
+          const SizedBox(height: AppDimensions.spacingMd),
         ],
       ),
     );

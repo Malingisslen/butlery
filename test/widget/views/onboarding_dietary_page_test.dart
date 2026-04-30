@@ -13,8 +13,9 @@ const _dietaryOptionCount = 7;
 Widget _testApp({required OnboardingViewModel viewModel}) {
   return ChangeNotifierProvider<OnboardingViewModel>.value(
     value: viewModel,
+    // Page now wraps its own SingleChildScrollView (BUT-725 landscape fix);
+    // do not wrap again here or constraints become unbounded.
     child: createLocalizedTestApp(
-      wrapInScrollView: true,
       child: const OnboardingDietaryPage(),
     ),
   );

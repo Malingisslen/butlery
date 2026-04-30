@@ -14,6 +14,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
@@ -77,25 +78,45 @@ class _CreateSharedShoppingListViewState
       ],
       child: Consumer<CreateSharedListViewModel>(
         builder: (context, viewModel, child) {
-          return Scaffold(
-            appBar: _buildAppBar(context, viewModel),
-            body: SafeArea(
-              // ✅ RESPONSIVE: Center and constrain content on large screens
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 700,
-                      desktop: 800,
+          // BUT-727: guard accidental dismiss after typing a title/description
+          // or selecting friends. Skip the prompt while the create call is in
+          // flight — we don't want to interrupt that.
+          final isDirty = !viewModel.isCreating &&
+              (viewModel.title.trim().isNotEmpty ||
+                  viewModel.description.trim().isNotEmpty ||
+                  viewModel.hasFriendsSelected);
+          return PopScope(
+            canPop: !isDirty,
+            onPopInvokedWithResult: (didPop, result) async {
+              if (didPop) return;
+              final shouldLeave =
+                  await CommonDialogActions.showUnsavedChangesConfirmation(
+                context: context,
+              );
+              if (shouldLeave == true && context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+            child: Scaffold(
+              appBar: _buildAppBar(context, viewModel),
+              body: SafeArea(
+                // ✅ RESPONSIVE: Center and constrain content on large screens
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: LayoutComponents.valueFor(
+                        context: context,
+                        mobile: double.infinity,
+                        tablet: 700,
+                        desktop: 800,
+                      ),
                     ),
+                    child: _buildBody(context, viewModel),
                   ),
-                  child: _buildBody(context, viewModel),
                 ),
               ),
+              bottomNavigationBar: _buildBottomBar(context, viewModel),
             ),
-            bottomNavigationBar: _buildBottomBar(context, viewModel),
           );
         },
       ),
@@ -109,7 +130,9 @@ class _CreateSharedShoppingListViewState
           '${context.l10n.commonShare} ${context.l10n.shoppingList.toLowerCase()}'),
       leading: IconButton(
         icon: const Icon(Icons.close),
-        onPressed: () => Navigator.pop(context),
+        // Route through Navigator.maybePop so the same PopScope guard applies
+        // to the explicit close button as to the system-back gesture.
+        onPressed: () => Navigator.of(context).maybePop(),
       ),
     );
   }

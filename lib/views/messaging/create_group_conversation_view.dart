@@ -17,6 +17,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 
 /// View for creating new group conversations with friend selection.
 /// Provides comprehensive interface for users to create group messaging conversations
@@ -71,25 +72,44 @@ class _CreateGroupConversationViewState
       },
       child: Consumer<CreateGroupConversationViewModel>(
         builder: (context, viewModel, child) {
-          return Scaffold(
-            appBar: _buildAppBar(context, viewModel),
-            body: SafeArea(
-              // ✅ RESPONSIVE: Center and constrain content on large screens
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 700,
-                      desktop: 800,
+          // BUT-727: guard accidental dismiss after typing a name or picking
+          // members. Don't block while creating — that flow already returns
+          // a value, so canPop should be true once create starts.
+          final isDirty = !viewModel.isCreatingGroup &&
+              (viewModel.groupName.trim().isNotEmpty ||
+                  viewModel.hasSelectedMembers);
+          return PopScope(
+            canPop: !isDirty,
+            onPopInvokedWithResult: (didPop, result) async {
+              if (didPop) return;
+              final shouldLeave =
+                  await CommonDialogActions.showUnsavedChangesConfirmation(
+                context: context,
+              );
+              if (shouldLeave == true && context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+            child: Scaffold(
+              appBar: _buildAppBar(context, viewModel),
+              body: SafeArea(
+                // ✅ RESPONSIVE: Center and constrain content on large screens
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: LayoutComponents.valueFor(
+                        context: context,
+                        mobile: double.infinity,
+                        tablet: 700,
+                        desktop: 800,
+                      ),
                     ),
+                    child: _buildBody(context, viewModel),
                   ),
-                  child: _buildBody(context, viewModel),
                 ),
               ),
+              bottomNavigationBar: _buildBottomBar(context, viewModel),
             ),
-            bottomNavigationBar: _buildBottomBar(context, viewModel),
           );
         },
       ),
