@@ -1,4 +1,6 @@
 /// ViewModel for the onboarding wizard flow.
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -9,13 +11,35 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 
 class OnboardingViewModel extends ChangeNotifier {
   // Swedish parental-consent threshold for data processing on social apps
   // (GDPR Art 8). Under this, sign-up is blocked.
   static const int minAgeYears = 15;
 
-  int _currentPage = 0;
+  /// Optional: resume index injected when AuthWrapper detects an in-progress
+  /// onboarding doc (BUT-675). The view's PageController jumps here on first
+  /// frame so the user lands on the next-incomplete step.
+  final int initialPage;
+
+  /// Optional progress-service hook. When null we skip the persist writes —
+  /// keeps existing tests that didn't register the service from breaking.
+  final OnboardingProgressService? _progressService;
+
+  /// Current user id, captured at construction so we don't have to thread it
+  /// through every step-complete call site.
+  final String? _userId;
+
+  OnboardingViewModel({
+    this.initialPage = 0,
+    OnboardingProgressService? progressService,
+    String? userId,
+  })  : _currentPage = initialPage,
+        _progressService = progressService,
+        _userId = userId;
+
+  int _currentPage;
   final Set<String> _selectedAllergens = {};
   final Set<String> _selectedDietaryPrefs = {};
   int? _selectedBirthYear;
@@ -59,12 +83,34 @@ class OnboardingViewModel extends ChangeNotifier {
       _started = true;
       _analytics?.logEvent(name: AnalyticsEvents.onboardingStarted);
     }
+    // BUT-675: persist progress when advancing forward. We only mark the
+    // step that's being LEFT (the previous _currentPage), since that's the
+    // step the user just finished. Backwards/skip-jumps don't downgrade.
+    if (page > _currentPage) {
+      _persistStepCompletion(_currentPage);
+    }
     _currentPage = page;
     _analytics?.logEvent(
-      name: 'onboarding_page_viewed',
+      name: AnalyticsEvents.onboardingPageViewed,
       parameters: {'page': _currentPage},
     );
     notifyListeners();
+  }
+
+  /// Best-effort persist of the step the user just finished. Fire-and-forget.
+  void _persistStepCompletion(int finishedPageIndex) {
+    final svc = _progressService;
+    final uid = _userId;
+    if (svc == null || uid == null) return;
+    final step = OnboardingStep.fromPageIndex(finishedPageIndex);
+    if (step == null) return;
+    // The full-completion (`completed: true`) flag is written from
+    // [completeOnboarding]; intermediate steps stay false.
+    svc.markStepComplete(
+      userId: uid,
+      step: step,
+      isFinalStep: false,
+    );
   }
 
   void nextPage() {
@@ -129,17 +175,27 @@ class OnboardingViewModel extends ChangeNotifier {
         birthYear: _selectedBirthYear,
       );
 
+      // BUT-675: stamp `completed: true` on the progress doc so AuthWrapper
+      // routes home (not back into onboarding) on the next cold start.
+      if (_progressService != null && _userId != null) {
+        unawaited(_progressService.markStepComplete(
+          userId: _userId,
+          step: OnboardingStep.firstRecipe,
+          isFinalStep: true,
+        ));
+      }
+
       // Seed starter recipes for new users (fire-and-forget, never blocks onboarding)
       _seedStarterRecipes();
 
       if (isSkip) {
         _analytics?.logEvent(
-          name: 'onboarding_skipped',
+          name: AnalyticsEvents.onboardingSkipped,
           parameters: {'skipped_at_page': _currentPage},
         );
       } else {
         _analytics?.logEvent(
-          name: 'onboarding_completed',
+          name: AnalyticsEvents.onboardingCompleted,
           parameters: {
             'allergen_count': _selectedAllergens.length,
             'dietary_count': _selectedDietaryPrefs.length,
@@ -183,7 +239,7 @@ class OnboardingViewModel extends ChangeNotifier {
       }
 
       _analytics?.logEvent(
-        name: 'onboarding_recipes_seeded',
+        name: AnalyticsEvents.onboardingRecipesSeeded,
         parameters: {'count': seeds.length},
       );
       AppLogger.info('Seeded ${seeds.length} starter recipes');

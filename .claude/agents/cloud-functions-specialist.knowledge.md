@@ -560,3 +560,51 @@ account.
   everything into the message string — searchable but not
   filterable. Spotted in BUT-458 at the per-batch progress log;
   not blocking but inconsistent with house style.
+
+### 2026-04-30 — BUT-605 retention extension to D14/90/180 [Pattern discovered]
+
+`track-retention.ts` previously emitted auto-id'd docs at
+`/analytics/retention/events/{auto}` for D1/7/30. Two issues with that
+shape became blockers when extending to D14/90/180:
+
+1. **Auto-id breaks the "set, not create" idempotency promise.** A
+   re-run on the same UTC day appended duplicate rows, doubling
+   downstream cohort counts. Fix: switch to deterministic
+   `<userId>_d<N>` ids — per-(user, day-bucket) doc, `set()` overwrites
+   on re-run. Mirrors the BUT-638 north-star idempotency pattern.
+
+2. **Lifecycle slicing without an N+1.** Spec asked to filter by
+   `analytics_user_properties.lifecycle_stage` (BUT-639), but BUT-639
+   only emits to Firebase Analytics SDK — no Firestore mirror. Two
+   options: (a) introduce a new `analytics_user_properties` collection
+   + writers, (b) compute lifecycleStage server-side from the user
+   doc's `joinedAt`+`lastActiveAt`. Picked (b) — single read per user
+   already in flight, no new producers, and the recency-dominated
+   classifier rules (`churned`/`dormant`) are intact. The Dart
+   classifier's `cooksLast14Days` input is approximated via signup
+   age + recent activity (no per-user cook count query), which cannot
+   distinguish habitual from activated for users with rare-but-recent
+   cooking patterns. Acceptable for cohort-level dashboards.
+   Documented the divergence in `classifyLifecycleStageServer`'s
+   docstring so future readers know not to treat the server output
+   as canonical.
+
+**Patterns worth remembering**:
+- **Refactor pattern: `runX(deps)` test seam alongside `onSchedule`
+  wrapper.** Existing CFs that lack a test seam (whole body inside
+  the `onSchedule` callback) can't be unit-tested without firing
+  the scheduler. When extending such a CF, lift the body into
+  `runX(deps)` first, leave the schedule wrapper as a one-liner that
+  delegates. Costs nothing at runtime, unlocks tests immediately.
+
+- **Deterministic doc id pattern for time-bucketed events**:
+  `<userId>_d<N>` for "user hit day N" rows, `<userId>_<entityId>` for
+  "user did X to entity" (e.g. notification_opened). Both make `set()`
+  idempotent without transactions; the latter dedupes double-taps,
+  the former dedupes scheduler re-runs.
+
+- **`!=` queries cost a real index in production.** The original
+  `where("lastActiveAt", "!=", null)` line works in the emulator but
+  requires a single-field index exemption in prod. Kept as-is since
+  it was already shipped; flag for future review if the user
+  collection grows enough to make the index cost matter.

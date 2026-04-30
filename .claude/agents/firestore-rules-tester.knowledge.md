@@ -165,6 +165,17 @@ This single test covers both halves of the dual pin — without the
 `request.resource.data.userId == auth.uid` clause this assertion would
 PASS (incorrectly), which is exactly the regression we want to catch.
 
+### 2026-04-30 — onboarding progress (BUT-675) added to firestore-rules.test.ts
+
+`/users/{userId}/onboarding/{progressDoc}` is a sibling of `consent` and
+`acquisition` and follows the same owner-only `request.auth.uid == userId`
+pattern. Tests live in `firestore-rules.test.ts` under section banner
+`ONBOARDING PROGRESS (BUT-675)` with comment IDs `O1`–`O5`. Five tests:
+owner read (O1), owner create+update (O2), unauth read deny (O3),
+stranger read deny (O4), stranger write deny (O5). No schema validator
+on the rule, so all assertions are identity-scoping checks. No new test
+file or `package.json` script needed — covered by `test:rules:recipes-users`.
+
 ### 2026-04-26 — Java/emulator gap on Windows dev workstation
 
 The hardcoded fact: this dev machine has no Java on PATH (verified

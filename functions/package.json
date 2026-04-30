@@ -41,7 +41,9 @@
     "test:deliver-scheduled": "ts-node src/__tests__/deliver-scheduled-notifications.test.ts",
     "test:notification-gdpr": "ts-node src/__tests__/notification-queues-gdpr.test.ts",
     "test:backfill-recipe-comments": "ts-node src/__tests__/backfill-recipe-comments.test.ts",
-    "test": "npm run test:parity && npm run test:lapsed-users && npm run test:parse-correction && npm run test:activity-digest && npm run test:send-notification && npm run test:ocr-retry && npm run test:kill-switch && npm run test:web-error && npm run test:presence-cascade && npm run test:ocr-validation && npm run test:notification-payload && npm run test:prompts-config && npm run test:quiet-hours && npm run test:notification-effectiveness && npm run test:north-star && npm run test:record-opened && npm run test:deliver-scheduled && npm run test:notification-gdpr && npm run test:backfill-recipe-comments",
+    "test:track-retention": "ts-node src/__tests__/track-retention.test.ts",
+    "test:purge-audit-logs": "ts-node src/__tests__/purge-audit-logs.test.ts",
+    "test": "npm run test:parity && npm run test:lapsed-users && npm run test:parse-correction && npm run test:activity-digest && npm run test:send-notification && npm run test:ocr-retry && npm run test:kill-switch && npm run test:web-error && npm run test:presence-cascade && npm run test:ocr-validation && npm run test:notification-payload && npm run test:prompts-config && npm run test:quiet-hours && npm run test:notification-effectiveness && npm run test:north-star && npm run test:record-opened && npm run test:deliver-scheduled && npm run test:notification-gdpr && npm run test:backfill-recipe-comments && npm run test:track-retention && npm run test:purge-audit-logs",
     "reset-user-data": "ts-node src/admin/reset-user-data.ts",
     "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run"
   },

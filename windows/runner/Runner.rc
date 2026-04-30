@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "Butlery" "\0"
-            VALUE "FileDescription", "butlery" "\0"
+            VALUE "FileDescription", "Butlery" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "butlery" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 Butlery. All rights reserved." "\0"
             VALUE "OriginalFilename", "butlery.exe" "\0"
-            VALUE "ProductName", "butlery" "\0"
+            VALUE "ProductName", "Butlery" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

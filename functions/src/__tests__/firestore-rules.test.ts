@@ -382,6 +382,133 @@ test(
   }
 );
 
+// ============================================================================
+// ONBOARDING PROGRESS (BUT-675) — 5 assertions across 5 tests
+// Resume-onboarding state at /users/{uid}/onboarding/{progressDoc}.
+// Owner-only read/write. No schema validator on the rule, so tests
+// focus purely on identity scoping.
+// ============================================================================
+
+// O1: owner can read their own onboarding progress.
+test(
+  "onboarding: owner can read their own progress doc",
+  async () => {
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`users/${OWNER_UID}/onboarding/progress`)
+        .set({
+          step: "allergens",
+          completedAt: new Date(),
+          completed: false,
+        });
+    });
+    const ctx = env.authenticatedContext(OWNER_UID);
+    await assertSucceeds(
+      ctx.firestore().doc(`users/${OWNER_UID}/onboarding/progress`).get()
+    );
+  }
+);
+
+// O2: owner can write (create + update) their own onboarding progress.
+//     Covers both branches of `write` since there's no separate
+//     create/update split in the rule.
+test(
+  "onboarding: owner can create and update their own progress doc",
+  async () => {
+    const ctx = env.authenticatedContext(OWNER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${OWNER_UID}/onboarding/progress`)
+        .set({
+          step: "allergens",
+          completedAt: new Date(),
+          completed: false,
+        })
+    );
+    // Update path — same rule branch, exercised separately so a future
+    // tightening that splits write into create-only is caught.
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${OWNER_UID}/onboarding/progress`)
+        .set(
+          {
+            step: "first_recipe",
+            completed: true,
+          },
+          { merge: true }
+        )
+    );
+  }
+);
+
+// O3: signed-out user cannot read another user's onboarding progress.
+//     Privacy-sensitive: leaks which onboarding stage a user reached.
+test(
+  "onboarding: signed-out user cannot read someone else's progress",
+  async () => {
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`users/${OWNER_UID}/onboarding/progress`)
+        .set({
+          step: "allergens",
+          completedAt: new Date(),
+          completed: false,
+        });
+    });
+    const ctx = env.unauthenticatedContext();
+    await assertFails(
+      ctx.firestore().doc(`users/${OWNER_UID}/onboarding/progress`).get()
+    );
+  }
+);
+
+// O4: signed-in stranger cannot read another user's onboarding progress.
+//     Catches a wildcard `isAuthenticated()` regression that drops the
+//     `request.auth.uid == userId` clause.
+test(
+  "onboarding: signed-in stranger cannot read another user's progress",
+  async () => {
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`users/${OWNER_UID}/onboarding/progress`)
+        .set({
+          step: "allergens",
+          completedAt: new Date(),
+          completed: false,
+        });
+    });
+    const ctx = env.authenticatedContext(OTHER_UID);
+    await assertFails(
+      ctx.firestore().doc(`users/${OWNER_UID}/onboarding/progress`).get()
+    );
+  }
+);
+
+// O5: signed-in stranger cannot write another user's onboarding progress.
+//     Forging completion state on someone else's account would let a
+//     malicious actor short-circuit allergen capture for the victim.
+test(
+  "onboarding: signed-in stranger cannot write another user's progress",
+  async () => {
+    const ctx = env.authenticatedContext(OTHER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${OWNER_UID}/onboarding/progress`)
+        .set({
+          step: "first_recipe",
+          completedAt: new Date(),
+          completed: true,
+        })
+    );
+  }
+);
+
 async function run(): Promise<void> {
   console.log("BUT-448: recipes + users rules tests\n");
   console.log("====================================\n");

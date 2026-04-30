@@ -97,9 +97,12 @@ import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/observers/route_tracker.dart';
 
 // Services for auth wrapper
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_deep_link_router.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
@@ -1104,7 +1107,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
       if (!profile.hasCompletedOnboarding) {
         AppLogger.debug('AuthWrapper: User needs onboarding');
-        return OnboardingView(key: ValueKey('onboarding_${user.uid}'));
+        return _OnboardingResumeGate(
+          key: ValueKey('onboarding_${user.uid}'),
+          userId: user.uid,
+        );
       }
 
       AppLogger.debug(
@@ -1119,4 +1125,126 @@ class _AuthWrapperState extends State<AuthWrapper> {
     AppLogger.debug('AuthWrapper: No user logged in, showing auth view');
     return const AuthView();
   }
+}
+
+/// BUT-675: One-shot Firestore lookup to resolve the next-incomplete onboarding
+/// step for resume support. Fires the `onboarding_resumed` analytics event when
+/// the user re-enters mid-flow, and the `onboarding_abandoned` event + a
+/// bottom-sheet nudge when the last step is older than 24h.
+class _OnboardingResumeGate extends StatefulWidget {
+  final String userId;
+
+  const _OnboardingResumeGate({super.key, required this.userId});
+
+  @override
+  State<_OnboardingResumeGate> createState() => _OnboardingResumeGateState();
+}
+
+class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
+  late final Future<_ResumeResolution> _future;
+  bool _nudgeShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _resolve();
+  }
+
+  Future<_ResumeResolution> _resolve() async {
+    final svc = OnboardingProgressService(
+      firestore: FirebaseFirestore.instance,
+      analytics: ServiceLocator.tryGet<AnalyticsService>(),
+    );
+    final progress = await svc.readProgress(widget.userId);
+    final pageIndex = svc.resolveResumePageIndex(progress);
+    final showNudge = svc.shouldShowAbandonedNudge(progress, DateTime.now());
+    // Fire-and-forget analytics — never block UI.
+    if (progress.hasProgress && (pageIndex ?? 0) > 0) {
+      unawaited(svc.logResumed(lastStep: progress.lastCompletedStep));
+    }
+    if (showNudge) {
+      unawaited(svc.logAbandoned(lastStep: progress.lastCompletedStep));
+    }
+    return _ResumeResolution(
+      pageIndex: pageIndex ?? 0,
+      showNudge: showNudge,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<_ResumeResolution>(
+      future: _future,
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
+        }
+        final resolution = snap.data!;
+        // Schedule nudge for after first frame so we have a Scaffold context.
+        if (resolution.showNudge && !_nudgeShown) {
+          _nudgeShown = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _showResumeNudge(context);
+          });
+        }
+        return OnboardingView(initialPage: resolution.pageIndex);
+      },
+    );
+  }
+
+  Future<void> _showResumeNudge(BuildContext context) async {
+    final l10n = context.l10n;
+    await showModalBottomSheet<void>(
+      context: context,
+      isDismissible: true,
+      builder: (ctx) {
+        final cs = Theme.of(ctx).colorScheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.onboardingResumeTitle,
+                  style: AppTextStyles.headlineSmall.copyWith(
+                    color: cs.primary,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                Text(
+                  l10n.onboardingResumeBody,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingLg),
+                SizedBox(
+                  width: double.infinity,
+                  height: AppDimensions.buttonHeight,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cs.primary,
+                      foregroundColor: cs.surfaceContainerHighest,
+                      shape: const RoundedRectangleBorder(),
+                    ),
+                    child: Text(l10n.onboardingResumeCta),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ResumeResolution {
+  final int pageIndex;
+  final bool showNudge;
+  const _ResumeResolution({required this.pageIndex, required this.showNudge});
 }

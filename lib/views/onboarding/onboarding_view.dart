@@ -1,10 +1,15 @@
 /// Main onboarding wizard view with PageView navigation.
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -16,19 +21,37 @@ import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
 import 'package:butlery/views/onboarding/onboarding_import_page.dart';
 
 class OnboardingView extends StatelessWidget {
-  const OnboardingView({super.key});
+  /// When non-null, the wizard jumps to this page index on first frame
+  /// (BUT-675 resume). null/0 starts the user at the age-gate as before.
+  final int initialPage;
+
+  const OnboardingView({super.key, this.initialPage = 0});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => OnboardingViewModel(),
-      child: const _OnboardingContent(),
+      create: (_) {
+        final progressService = OnboardingProgressService(
+          firestore: FirebaseFirestore.instance,
+          analytics: ServiceLocator.tryGet<AnalyticsService>(),
+        );
+        final userId =
+            ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+        return OnboardingViewModel(
+          initialPage: initialPage,
+          progressService: progressService,
+          userId: userId,
+        );
+      },
+      child: _OnboardingContent(initialPage: initialPage),
     );
   }
 }
 
 class _OnboardingContent extends StatefulWidget {
-  const _OnboardingContent();
+  final int initialPage;
+
+  const _OnboardingContent({this.initialPage = 0});
 
   @override
   State<_OnboardingContent> createState() => _OnboardingContentState();
@@ -43,7 +66,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(initialPage: widget.initialPage);
   }
 
   @override

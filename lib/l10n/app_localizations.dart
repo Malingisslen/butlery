@@ -14223,6 +14223,24 @@ abstract class AppLocalizations {
   /// **'Du kan hoppa over detta steg och importera senare.'**
   String get onboardingImportSkipNote;
 
+  /// No description provided for @onboardingResumeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avsluta din profil'**
+  String get onboardingResumeTitle;
+
+  /// No description provided for @onboardingResumeBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'30 sekunder kvar'**
+  String get onboardingResumeBody;
+
+  /// No description provided for @onboardingResumeCta.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fortsatt'**
+  String get onboardingResumeCta;
+
   /// No description provided for @cookingModePortions.
   ///
   /// In sv, this message translates to:

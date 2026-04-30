@@ -8301,6 +8301,15 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du kan hoppa over detta steg och importera senare.';
 
   @override
+  String get onboardingResumeTitle => 'Avsluta din profil';
+
+  @override
+  String get onboardingResumeBody => '30 sekunder kvar';
+
+  @override
+  String get onboardingResumeCta => 'Fortsatt';
+
+  @override
   String get cookingModePortions => 'Portioner';
 
   @override

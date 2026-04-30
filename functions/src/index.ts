@@ -31,6 +31,7 @@ export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
 // Cleanup Functions - Scheduled
 export { cleanupExpiredCache } from "./cleanup/cleanup-cache";
 export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-logs";
+export { purgeExpiredAuditLogs } from "./audit_logs/purge-expired";
 export { cleanupDeletedIngredients, getDeletedIngredientStats } from "./cleanup/cleanup-deleted-ingredients";
 export { cleanupOldNotifications } from "./cleanup/cleanup-old-notifications";
 export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";

@@ -1588,3 +1588,118 @@ gateway handles collections that lack a typed repo today, the typed
 repos own their own data. New work should prefer adding the method
 to the typed repo and removing the gateway counterpart, per the
 docstring on `FirebaseDataExportRepository`.
+
+---
+
+### 2026-04-30 — production-ServiceLocator bridge for unit tests that drive the deletion cascade
+
+When writing a unit test that constructs the real `AccountDeletionService`
+and exercises its full cascade against `FakeFirebaseFirestore`, you MUST
+bridge the production `ServiceLocator` to the test GetIt instance:
+
+```dart
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+
+setUpAll(() async {
+  await BaseUnitTest.setupUnit();
+  production.ServiceLocator.initialize(DIContainer());
+});
+```
+
+Without this bridge, internal calls like
+`ServiceLocator.get<FirebaseBlockRepository>()` inside
+`AccountDeletionService._deleteBlockRecords` throw "ServiceLocator not
+initialized" — caught by the helper's try/catch — and the step silently
+lands in `failedCollections` with no residual deletion. Result: a
+green-looking test that proves nothing about the block-deletion path.
+
+After the bridge, register typed repos that the cascade resolves via
+ServiceLocator (BlockRepository in particular) against the same
+`FakeFirebaseFirestore` your seed uses. See
+`test/unit/services/account/account_deletion_residual_test.dart` (BUT-671).
+
+---
+
+### 2026-04-30 — production residuals surfaced by BUT-671 (filed for follow-up)
+
+The post-deletion residual test surfaced three real production GDPR
+gaps. Each is asserted POSITIVELY in the test (as a tripwire) so a
+future fix will turn the assertion red and force a documentation update:
+
+1. **`menus` (top-level) where `sharedByUserId == deletedUid`** is NOT
+   wiped by `ContentDeletionOperations.deleteMenus`. That method only
+   touches the `users/{uid}/menus` subcollection. The
+   `FirebaseDataExportRepository.exportSharedMenusByOwner` query that
+   reads top-level menus shared BY the user has no symmetric delete.
+2. **`menus.sharedToUserIds` arrays** are not scrubbed of the deleted
+   UID on inbound shared menus. The shopping-list cascade has the
+   symmetric scrub (`assignedToUserId`/`purchasedByUserId`), but menus
+   don't. Means the deleted user's UID lingers in array fields on
+   other users' menu docs after Art 17 erasure.
+3. **`blocks` field-name inconsistency** — `FirebaseBlockRepository`
+   writes/queries `blockedId`; `FirebaseDataExportRepository.exportIncomingBlocks`
+   queries `blockedUserId`. They cannot both be right; the export will
+   silently return zero incoming blocks. Pick one, migrate, update both.
+
+Worth filing as separate Linear tickets when scope allows. Do NOT fix
+in the same commit as the test (per BUT-671 scope guard).
+
+---
+
+### 2026-04-30 — audit-log retention windows (BUT-665)
+
+Documented retention policy for `audit_logs/{id}`:
+
+- **Consent events** (operation startsWith `consent_`): **24 months** —
+  Art 7(1) requires controller to demonstrate consent across complaint-
+  resolution horizons.
+- **General events**: **6 months** — Art 5(1)(c) data minimisation,
+  sized to cover SOC2-style incident MTTD (~200 days industry, 180 day floor).
+
+Enforced by `functions/src/audit_logs/purge-expired.ts`
+(`purgeExpiredAuditLogs`), Sunday 05:00 UTC, region `europe-west1`.
+
+Implementation note: Firestore can't NOT-IN against a prefix in a query,
+so the CF queries by `timestamp < cutoff` once and filters
+consent-vs-general client-side. Acceptable because batch size is bounded
+(`MAX_DOCS_PER_RUN_PER_CATEGORY = 10000`).
+
+The general bucket runs FIRST so consent events older than 6mo (but
+younger than 24mo) are not accidentally purged — the general filter
+excludes anything starting with `consent_`. Pinning regression test:
+`generalBucketIgnoresFreshConsent` in
+`functions/src/__tests__/purge-audit-logs.test.ts`.
+
+Co-exists with the legacy `cleanupOldAuditLogs` (flat 90-day default
+from Remote Config) at 03:00 UTC. The legacy CF should be retired once
+the new one has been observed for a full retention cycle.
+
+Privacy review: as of 2026-04-30, no production call site to
+`logPermissionCheck` / `logTagModification` passes `ip` or `userAgent`
+in metadata. Repo-wide grep confirmed. The doc-comment example showing
+`{'ip': '192.168.1.1'}` is aspirational. If/when IP/UA capture is
+added, the truncation contract (IPv4 -> /24, UA family+major) is
+documented in `docs/security/audit-logs-retention.md` Privacy review section.
+
+### 2026-04-30 — Deterministic doc id is the idempotency primitive for daily aggregators (BUT-605)
+When a scheduled CF emits one row per (entity, bucket) per UTC day, use
+`<entityId>_<bucketKey>` as the doc id and `set()` (full overwrite),
+not `add()` with a generated id. Re-running the CF on the same UTC day
+becomes a no-op overwrite instead of producing duplicate rows. Pattern
+applied in `functions/src/analytics/track-retention.ts` (`<userId>_d<N>`).
+**Single-writer invariant** — if a second writer ever targets the same
+collection path it will silently last-write-wins; add a comment at the
+collection's first writer documenting the single-writer assumption.
+
+### 2026-04-30 — `where('operation', 'not-in', [...])` is the right shape for category-split purge
+`purgeAuditCategoryWithDb` currently does `where('timestamp', '<', cutoff)
+.limit(10k)` then filters consent vs general client-side. This is
+correct for current volume but degrades when one category dominates the
+timestamp ordering — the wasted rows are still subtracted from the
+per-run budget. Future refactor: use `where('operation', 'not-in', [...consentOps])`
+for the general bucket (Firestore allows up to 10 values in `not-in`;
+the consent vocabulary is `consent_updated`, `consent_granted`,
+`consent_revoked` plus a small headroom). Composite index needed:
+`(operation asc, timestamp asc)`. Not urgent — flag during the legacy
+`cleanupOldAuditLogs` retirement work.

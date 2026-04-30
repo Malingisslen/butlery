@@ -1,102 +1,209 @@
 /**
- * Track Day-N Retention
+ * Track Day-N Retention (BUT-605 extends BUT prior).
  *
  * Scheduled daily at 4 AM UTC. For each user, computes days since signup
- * and writes a retention event if the user hits day 1, 7, or 30.
+ * and writes a retention event when the user hits day 1, 7, 14, 30, 90,
+ * or 180. Each event is sliced by `lifecycleStage` so cohort dashboards
+ * can filter `new_/activated/habitual/dormant/churned`.
  *
  * Firestore writes:
- * /analytics/retention/events/{auto} — {userId, day, timestamp, wasActive}
+ *   /analytics/retention/events/{userId}_d{N}
+ *     — { userId, day, timestamp, wasActive, lifecycleStage }
+ *
+ * Idempotency: deterministic doc id `<userId>_d<day>` + `set()` (latest
+ * wins). A re-run on the same UTC day overwrites the same path rather
+ * than producing duplicate auto-id rows. Mirrors the BUT-638 north-star
+ * convention.
+ *
+ * Lifecycle stage is computed from the user doc's `joinedAt` +
+ * `lastActiveAt` fields using the same rule order as
+ * `lib/services/analytics/lifecycle_stage_classifier.dart`. Server side
+ * we don't have an exact "cooks last 14 days" count without an N+1
+ * query against `activity_events`, so the server-side rule degrades
+ * `habitual` to `activated/new_` based on recency only — that's
+ * acceptable because dashboards aggregate at cohort level and the
+ * recency-dominated rules (`churned`/`dormant`) are the ones that
+ * drive re-engagement filtering.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
-const getDb = () => admin.firestore();
-
-const RETENTION_DAYS = [1, 7, 30];
+const RETENTION_DAYS = [1, 7, 14, 30, 90, 180] as const;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const BATCH_LIMIT = 500;
+const PAGE_SIZE = 500;
+
+export type RetentionDay = (typeof RETENTION_DAYS)[number];
+
+/** Mirror of LifecycleStage.wireValue in the Dart classifier. */
+export type LifecycleStage =
+  | "new"
+  | "activated"
+  | "habitual"
+  | "dormant"
+  | "churned";
+
+/**
+ * Server-side lifecycle classifier. Recency-first, mirrors the Dart
+ * classifier's priority order. Inputs are millisecond timestamps
+ * (or null) so the function is pure / unit-testable.
+ *
+ * Differs from the Dart side: no `cooksLast14Days` input. We can't
+ * cheaply count cook events per user inside a daily aggregator, so we
+ * approximate `habitual` by "active within 7 days AND signed up >7
+ * days ago" — captures the "returning, not just new" intent without
+ * an N+1.
+ */
+export function classifyLifecycleStageServer(args: {
+  joinedAtMs: number | null;
+  lastActiveAtMs: number | null;
+  nowMs: number;
+}): LifecycleStage {
+  const { joinedAtMs, lastActiveAtMs, nowMs } = args;
+  if (joinedAtMs == null) return "new";
+
+  const daysSinceSignup = Math.floor((nowMs - joinedAtMs) / MS_PER_DAY);
+
+  if (lastActiveAtMs != null) {
+    const daysSinceActive = Math.floor((nowMs - lastActiveAtMs) / MS_PER_DAY);
+    if (daysSinceActive > 30) return "churned";
+    if (daysSinceActive >= 14) return "dormant";
+    // Recent activity. If user signed up more than a week ago and is
+    // still active in the last week, treat as habitual; if newer,
+    // count as activated (first cook within first week proxy).
+    if (daysSinceSignup > 7 && daysSinceActive <= 7) return "habitual";
+    if (daysSinceSignup <= 7) return "activated";
+    return "activated";
+  }
+
+  // Never active — only signup date informs the stage.
+  if (daysSinceSignup > 30) return "churned";
+  if (daysSinceSignup >= 14) return "dormant";
+  return "new";
+}
+
+export interface RunDeps {
+  db?: admin.firestore.Firestore;
+  now?: Date;
+}
+
+const getDb = () => admin.firestore();
+
+/**
+ * Test-seam entrypoint. Production schedule wrapper just calls
+ * `runTrackRetention()` with no overrides; tests pass `{db, now}` to
+ * pin time and inject a fake Firestore.
+ */
+export async function runTrackRetention(deps: RunDeps = {}): Promise<{
+  processedUsers: number;
+  eventsWritten: number;
+}> {
+  const db = deps.db ?? getDb();
+  const now =
+    deps.now != null
+      ? admin.firestore.Timestamp.fromDate(deps.now)
+      : admin.firestore.Timestamp.now();
+  const nowMs = now.toMillis();
+
+  logger.info("track_retention_start", { days: RETENTION_DAYS });
+
+  let processedUsers = 0;
+  let eventsWritten = 0;
+  let batch = db.batch();
+  let batchCount = 0;
+
+  let query = db
+    .collection("users")
+    .where("lastActiveAt", "!=", null)
+    .orderBy("lastActiveAt")
+    .limit(PAGE_SIZE);
+  let usersSnapshot = await query.get();
+
+  while (usersSnapshot.size > 0) {
+    for (const userDoc of usersSnapshot.docs) {
+      const data = userDoc.data();
+      const joinedAt = data.joinedAt as admin.firestore.Timestamp | undefined;
+      const lastActiveAt = data.lastActiveAt as
+        | admin.firestore.Timestamp
+        | undefined;
+
+      if (!joinedAt || !lastActiveAt) {
+        continue;
+      }
+
+      const daysSinceSignup = Math.floor(
+        (nowMs - joinedAt.toMillis()) / MS_PER_DAY
+      );
+
+      const matchedDay = RETENTION_DAYS.find((d) => d === daysSinceSignup);
+      if (matchedDay === undefined) {
+        continue;
+      }
+
+      const wasActiveWithin24h =
+        nowMs - lastActiveAt.toMillis() < MS_PER_DAY;
+
+      const lifecycleStage = classifyLifecycleStageServer({
+        joinedAtMs: joinedAt.toMillis(),
+        lastActiveAtMs: lastActiveAt.toMillis(),
+        nowMs,
+      });
+
+      // Deterministic id: re-run on same UTC day overwrites instead of
+      // duplicating. The day bucket is part of the id so a single user
+      // can have multiple events across the lifecycle (D1, D7, ... D180).
+      const eventId = `${userDoc.id}_d${matchedDay}`;
+      const eventRef = db
+        .collection("analytics")
+        .doc("retention")
+        .collection("events")
+        .doc(eventId);
+      batch.set(eventRef, {
+        userId: userDoc.id,
+        day: matchedDay,
+        timestamp: now,
+        wasActive: wasActiveWithin24h,
+        lifecycleStage,
+      });
+
+      batchCount++;
+      eventsWritten++;
+
+      if (batchCount >= BATCH_LIMIT) {
+        await batch.commit();
+        batch = db.batch();
+        batchCount = 0;
+      }
+
+      processedUsers++;
+    }
+
+    const lastDoc = usersSnapshot.docs[usersSnapshot.docs.length - 1];
+    usersSnapshot = await query.startAfter(lastDoc).get();
+  }
+
+  if (batchCount > 0) {
+    await batch.commit();
+  }
+
+  logger.info("track_retention_complete", {
+    processedUsers,
+    eventsWritten,
+  });
+
+  return { processedUsers, eventsWritten };
+}
 
 export const trackDayNRetention = onSchedule(
   { schedule: "0 4 * * *", timeZone: "UTC" },
   async () => {
-    const db = getDb();
-    const now = admin.firestore.Timestamp.now();
-    const nowMs = now.toMillis();
-
-    logger.info("Starting day-N retention tracking...");
-
     try {
-      let processedUsers = 0;
-      let eventsWritten = 0;
-      let batch = db.batch();
-      let batchCount = 0;
-
-      const PAGE_SIZE = 500;
-      let query = db
-        .collection("users")
-        .where("lastActiveAt", "!=", null)
-        .orderBy("lastActiveAt")
-        .limit(PAGE_SIZE);
-      let usersSnapshot = await query.get();
-
-      while (usersSnapshot.size > 0) {
-        for (const userDoc of usersSnapshot.docs) {
-          const data = userDoc.data();
-          const joinedAt = data.joinedAt as admin.firestore.Timestamp | undefined;
-          const lastActiveAt = data.lastActiveAt as admin.firestore.Timestamp | undefined;
-
-          if (!joinedAt || !lastActiveAt) {
-            continue;
-          }
-
-          const daysSinceSignup = Math.floor(
-            (nowMs - joinedAt.toMillis()) / MS_PER_DAY
-          );
-
-          if (!RETENTION_DAYS.includes(daysSinceSignup)) {
-            continue;
-          }
-
-          const wasActiveWithin24h =
-            nowMs - lastActiveAt.toMillis() < MS_PER_DAY;
-
-          const eventRef = db.collection("analytics").doc("retention").collection("events").doc();
-          batch.set(eventRef, {
-            userId: userDoc.id,
-            day: daysSinceSignup,
-            timestamp: now,
-            wasActive: wasActiveWithin24h,
-          });
-
-          batchCount++;
-          eventsWritten++;
-
-          if (batchCount >= BATCH_LIMIT) {
-            await batch.commit();
-            batch = db.batch();
-            batchCount = 0;
-          }
-
-          processedUsers++;
-        }
-
-        const lastDoc = usersSnapshot.docs[usersSnapshot.docs.length - 1];
-        usersSnapshot = await query.startAfter(lastDoc).get();
-      }
-
-      if (batchCount > 0) {
-        await batch.commit();
-      }
-
-      logger.info(
-        `Processed ${processedUsers} users, wrote ${eventsWritten} retention events`
-      );
+      await runTrackRetention();
     } catch (error) {
-      logger.error("Failed to track retention:", error);
+      logger.error("track_retention_failed", { err: error });
       throw error;
     }
-
   }
 );

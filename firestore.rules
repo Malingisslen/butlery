@@ -1383,6 +1383,17 @@ service cloud.firestore {
     }
 
     // ========================================
+    // ONBOARDING PROGRESS (BUT-675)
+    // Resume-onboarding state: which step the user finished, when, and
+    // whether onboarding has been completed. Owner-only read/write.
+    // Doc shape: { step: string, completedAt: timestamp, completed: bool }
+    // ========================================
+    match /users/{userId}/onboarding/{progressDoc} {
+      allow read, write: if isAuthenticated()
+        && request.auth.uid == userId;
+    }
+
+    // ========================================
     // MENU TEMPLATES - Reusable menu templates
     // ========================================
 

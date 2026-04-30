@@ -8287,6 +8287,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can skip this step and import later.';
 
   @override
+  String get onboardingResumeTitle => 'Finish your profile';
+
+  @override
+  String get onboardingResumeBody => '30 seconds left';
+
+  @override
+  String get onboardingResumeCta => 'Continue';
+
+  @override
   String get cookingModePortions => 'Portions';
 
   @override

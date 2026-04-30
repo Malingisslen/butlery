@@ -22,6 +22,13 @@ abstract final class AnalyticsEvents {
   static const accountDeleted = 'account_deleted';
   static const onboardingStarted = 'onboarding_started';
   static const onboardingPageViewed = 'onboarding_page_viewed';
+  // BUT-675: emitted when a user re-enters onboarding mid-flow (resume) and
+  // when the 24h-no-progress nudge bottom-sheet is shown (abandoned).
+  static const onboardingResumed = 'onboarding_resumed';
+  static const onboardingAbandoned = 'onboarding_abandoned';
+  static const onboardingSkipped = 'onboarding_skipped';
+  static const onboardingCompleted = 'onboarding_completed';
+  static const onboardingRecipesSeeded = 'onboarding_recipes_seeded';
   static const screenViewed = 'screen_viewed';
   static const userActivated = 'user_activated';
   static const timeToFirstRecipe = 'time_to_first_recipe';
@@ -110,6 +117,11 @@ abstract final class AnalyticsEvents {
 
   // --- Security telemetry ---
   static const sslPinMismatch = 'ssl_pin_mismatch';
+
+  // --- Experiments (BUT-657) ---
+  /// Logged once per session per experiment when a variant is assigned.
+  /// Parameters: `{ experiment_name, variant }`.
+  static const experimentAssigned = 'experiment_assigned';
 }
 
 /// All `setUserProperty(name: ...)` values used in the app.
@@ -148,4 +160,15 @@ abstract final class AnalyticsUserProperties {
   /// Lifecycle cohort bucket: `new | activated | habitual | dormant | churned`.
   /// Recomputed on cold start + after each cook completion.
   static const lifecycleStage = 'lifecycle_stage';
+
+  // --- Experiments (BUT-657) ---
+  /// Prefix for per-experiment user properties. Concrete property name is
+  /// `<prefix><sanitized_experiment_name>` and the value is the variant
+  /// (`control`, `treatment`, etc). Set by
+  /// [ExperimentAssignment.setExperimentAssignment].
+  ///
+  /// Firebase Analytics user-property names cap at 24 chars and only allow
+  /// `[A-Za-z0-9_]`, must start with a letter — the prefix consumes 4 of
+  /// those, leaving 20 for the experiment name.
+  static const experimentPrefix = 'exp_';
 }
