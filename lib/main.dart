@@ -75,6 +75,10 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
+// Analytics user-property bootstrap (BUT-636 / 637 / 639)
+import 'package:butlery/services/analytics/user_property_bootstrap.dart';
+import 'package:butlery/models/user_profile.dart';
+
 // Views
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
@@ -426,6 +430,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   DateTime? _sessionStartTime;
   final LocaleProvider _localeProvider = LocaleProvider();
   ThemeService? _themeService;
+  UserPropertyBootstrap? _userPropertyBootstrap;
   String? _lastPromptedClipboardUrl;
   static final _inputDetector = InputDetector();
 
@@ -453,6 +458,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   /// Handle locale change
   void _onLocaleChanged() {
     AppLocale.updateLocale(_localeProvider.locale);
+    // Re-fire `language` user property (BUT-636) so segmentation reflects
+    // the user's new locale immediately — fire-and-forget; failures logged.
+    _userPropertyBootstrap?.emitLanguage(_localeProvider.locale);
     if (mounted) {
       setState(() {});
     }
@@ -770,6 +778,25 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
             },
           );
         }
+
+        // Session-start user properties (BUT-636 / 637 / 639). Routed via
+        // AnalyticsService so the existing GDPR consent gate applies — when
+        // consent is denied these calls silently no-op. lifecycle_stage uses
+        // whatever profile data is loaded; if no UserService session yet
+        // (cold start before login), classifier falls back to `new_`.
+        _userPropertyBootstrap = UserPropertyBootstrap(analyticsService);
+        UserProfile? profile;
+        try {
+          profile = bootstrap.container.get<UserService>().currentUserProfile;
+        } catch (_) {
+          // UserService unavailable at this point — fine, classifier handles null.
+        }
+        await _userPropertyBootstrap!.emitAtSessionStart(
+          locale: _localeProvider.locale,
+          profile: profile,
+          lastCookAt: null,
+          cooksLast14Days: 0,
+        );
       }
     } catch (e) {
       // Analytics setup failed - non-critical

@@ -1,3 +1,7 @@
+import 'dart:ui' show Locale;
+
+import 'package:butlery/services/analytics/lifecycle_stage_classifier.dart';
+
 /// Analytics repository interface for abstracting analytics operations.
 /// This interface provides a contract for analytics implementations, enabling
 /// dependency injection and testability while maintaining flexibility to switch
@@ -110,4 +114,17 @@ abstract class AnalyticsRepository {
     bool? hasSharedRecipe,
     bool? hasCooked,
   });
+
+  /// Emit the `language` user property from a [Locale] (BUT-636).
+  /// Only [Locale.languageCode] is sent — region (e.g. `sv_FI`) is dropped
+  /// to keep cardinality low and avoid leaking finer-grained device locale.
+  Future<void> setLanguageUserProperty(Locale locale);
+
+  /// Emit the `platform` user property (BUT-637).
+  /// Value is one of `ios | android | macos | windows | linux | web`.
+  /// Caller-free: the implementation reads `defaultTargetPlatform` + `kIsWeb`.
+  Future<void> setPlatformUserProperty();
+
+  /// Emit the `lifecycle_stage` user property (BUT-639).
+  Future<void> setLifecycleStage(LifecycleStage stage);
 }

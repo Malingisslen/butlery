@@ -137,4 +137,15 @@ abstract final class AnalyticsUserProperties {
 
   // --- Capability flags ---
   static const hasAlgoliaSearch = 'has_algolia_search';
+
+  // --- Locale / device / lifecycle (BUT-636 / BUT-637 / BUT-639) ---
+  /// User's active app locale (`sv`, `en`). Re-emitted on locale change.
+  static const language = 'language';
+
+  /// Device/runtime platform bucket: `ios | android | macos | windows | linux | web`.
+  static const platform = 'platform';
+
+  /// Lifecycle cohort bucket: `new | activated | habitual | dormant | churned`.
+  /// Recomputed on cold start + after each cook completion.
+  static const lifecycleStage = 'lifecycle_stage';
 }

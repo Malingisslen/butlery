@@ -4,7 +4,10 @@
 /// All methods complete successfully but perform no actual analytics tracking.
 /// **Use Case**: Registered on web platform (`kIsWeb`) to replace FirebaseAnalyticsRepository
 
+import 'dart:ui' show Locale;
+
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/services/analytics/lifecycle_stage_classifier.dart';
 
 /// No-operation analytics repository for platforms without analytics support.
 class NoOpAnalyticsRepository implements AnalyticsRepository {
@@ -145,6 +148,21 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
     bool? hasSharedRecipe,
     bool? hasCooked,
   }) async {
+    // No-op: Analytics not supported
+  }
+
+  @override
+  Future<void> setLanguageUserProperty(Locale locale) async {
+    // No-op: Analytics not supported
+  }
+
+  @override
+  Future<void> setPlatformUserProperty() async {
+    // No-op: Analytics not supported
+  }
+
+  @override
+  Future<void> setLifecycleStage(LifecycleStage stage) async {
     // No-op: Analytics not supported
   }
 }

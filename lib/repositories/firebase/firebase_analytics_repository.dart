@@ -1,13 +1,13 @@
-import 'dart:convert';
-import 'dart:math';
-import 'dart:typed_data';
+import 'dart:ui' show Locale;
 
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/crypto_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/firebase/firebase_analytics_helpers.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/analytics/lifecycle_stage_classifier.dart';
 
 /// Firebase implementation of the AnalyticsRepository interface.
 ///
@@ -58,19 +58,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   /// Public so other PII-hashing surfaces (BUT-595 parse-correction uploader,
   /// future telemetry) can hash IDs against the same salt — joining hashes
   /// across services would otherwise re-enable re-identification.
-  static const String saltPrefsKey = 'analytics_pii_salt_v1';
-  static const String _saltPrefsKey = saltPrefsKey;
+  static const String saltPrefsKey = AnalyticsSaltManager.saltPrefsKey;
 
-  /// Optional override for tests — accepts a pre-computed salt so the test
-  /// doesn't need to stub SharedPreferences.
-  final String? _saltOverride;
-
-  /// Cached, lazily-loaded per-install salt. `null` means not yet loaded.
-  String? _cachedSalt;
-
-  /// Dedups in-flight salt loads so N concurrent events don't each race
-  /// `SharedPreferences.getInstance()` + write a fresh salt.
-  Future<String>? _saltLoading;
+  /// Salt manager extracted to a helper to keep this file under the 500-line cap.
+  final AnalyticsSaltManager _saltManager;
 
   /// Creates a FirebaseAnalyticsRepository with optional custom FirebaseAnalytics instance.
   /// If no instance is provided, it uses the default FirebaseAnalytics.instance.
@@ -82,7 +73,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     FirebaseAnalytics? analytics,
     String? saltOverride,
   })  : _analytics = analytics ?? FirebaseAnalytics.instance,
-        _saltOverride = saltOverride;
+        _saltManager = AnalyticsSaltManager(override: saltOverride);
 
   @override
   Future<void> initialize() async {
@@ -212,7 +203,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     required String error,
     String? errorType,
   }) async {
-    final String category = _categorizeError(error);
+    final String category = AnalyticsBuckets.categorizeError(error);
 
     await logEvent(
       name: AnalyticsEvents.extractionError,
@@ -376,7 +367,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
           name: AnalyticsUserProperties.userType, value: userType);
       await setUserProperty(
         name: AnalyticsUserProperties.recipeCountRange,
-        value: _getRecipeCountRange(recipeCount),
+        value: AnalyticsBuckets.recipeCountRange(recipeCount),
       );
     }
 
@@ -402,6 +393,53 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     }
   }
 
+  // ──────────── User-property setters (BUT-636 / 637 / 639) ────────────
+
+  @override
+  Future<void> setLanguageUserProperty(Locale locale) async {
+    // languageCode only — drop region (`sv_FI`) to keep cardinality low.
+    await setUserProperty(
+      name: AnalyticsUserProperties.language,
+      value: locale.languageCode,
+    );
+  }
+
+  @override
+  Future<void> setPlatformUserProperty() async {
+    await setUserProperty(
+      name: AnalyticsUserProperties.platform,
+      value: _resolvePlatformBucket(),
+    );
+  }
+
+  @override
+  Future<void> setLifecycleStage(LifecycleStage stage) async {
+    await setUserProperty(
+      name: AnalyticsUserProperties.lifecycleStage,
+      value: stage.wireValue,
+    );
+  }
+
+  /// `defaultTargetPlatform` + `kIsWeb` → wire bucket.
+  /// `kIsWeb` wins over `TargetPlatform.macOS` etc. when running web on a Mac.
+  static String _resolvePlatformBucket() {
+    if (kIsWeb) return 'web';
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return 'ios';
+      case TargetPlatform.android:
+        return 'android';
+      case TargetPlatform.macOS:
+        return 'macos';
+      case TargetPlatform.windows:
+        return 'windows';
+      case TargetPlatform.linux:
+        return 'linux';
+      case TargetPlatform.fuchsia:
+        return 'linux';
+    }
+  }
+
   // ──────────── PII sanitization ────────────
 
   /// Defense-in-depth PII gate applied to every `logEvent` parameter map.
@@ -415,7 +453,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     );
     if (!hasPii) return params;
 
-    final salt = await _getSalt();
+    final salt = await _saltManager.get();
     final result = <String, Object>{};
 
     for (final entry in params.entries) {
@@ -424,7 +462,8 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
 
       if (_piiDropKeys.contains(key)) {
         if (key == 'search_query' && value is String) {
-          result['search_query_len_bucket'] = _bucketLength(value.length);
+          result['search_query_len_bucket'] =
+              AnalyticsBuckets.lengthBucket(value.length);
         }
         continue;
       }
@@ -438,83 +477,5 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     }
 
     return result;
-  }
-
-  /// Lazy-load the per-install salt. First call writes a cryptographically
-  /// random 32-byte salt. Not global → hashes can't be joined across users.
-  Future<String> _getSalt() {
-    if (_saltOverride != null) return Future.value(_saltOverride);
-    if (_cachedSalt != null) return Future.value(_cachedSalt!);
-    return _saltLoading ??= _loadOrCreateSalt();
-  }
-
-  Future<String> _loadOrCreateSalt() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      var salt = prefs.getString(_saltPrefsKey);
-      if (salt == null || salt.isEmpty) {
-        salt = _generateSalt();
-        await prefs.setString(_saltPrefsKey, salt);
-      }
-      _cachedSalt = salt;
-      return salt;
-    } catch (e) {
-      // SharedPreferences unavailable (e.g. test runner without binding).
-      // Fall back to an ephemeral salt — still breaks linkage within the
-      // process, just doesn't survive restart.
-      AppLogger.warning(
-        'Analytics salt: SharedPreferences unavailable ($e); '
-        'using ephemeral in-memory salt',
-      );
-      _cachedSalt = _generateSalt();
-      return _cachedSalt!;
-    }
-  }
-
-  static String _generateSalt() {
-    final rnd = Random.secure();
-    final bytes = Uint8List(32);
-    for (var i = 0; i < bytes.length; i++) {
-      bytes[i] = rnd.nextInt(256);
-    }
-    return base64Url.encode(bytes);
-  }
-
-  String _bucketLength(int len) {
-    if (len <= 3) return '1-3';
-    if (len <= 10) return '4-10';
-    if (len <= 20) return '11-20';
-    return '21+';
-  }
-
-  /// Categorize error for analytics
-  String _categorizeError(String error) {
-    final errorLower = error.toLowerCase();
-
-    if (errorLower.contains('timeout')) {
-      return 'timeout';
-    } else if (errorLower.contains('ingen text')) {
-      return 'no_content_found';
-    } else if (errorLower.contains('kunde inte ladda')) {
-      return 'page_load_error';
-    } else if (errorLower.contains('okänd plattform')) {
-      return 'unknown_platform';
-    } else if (errorLower.contains('tekniskt fel')) {
-      return 'technical_error';
-    } else if (errorLower.contains('cors') || errorLower.contains('webben')) {
-      return 'web_limitation';
-    } else {
-      return 'other';
-    }
-  }
-
-  /// Get recipe count range for analytics
-  String _getRecipeCountRange(int count) {
-    if (count == 0) return '0';
-    if (count <= 5) return '1-5';
-    if (count <= 10) return '6-10';
-    if (count <= 20) return '11-20';
-    if (count <= 50) return '21-50';
-    return '50+';
   }
 }
