@@ -5,13 +5,15 @@ import 'package:butlery/theme/app_theme.dart';
 
 /// Creates a localized MaterialApp wrapper for widget tests.
 ///
-/// Provides Swedish locale, all 4 l10n delegates, and Butlery's light theme.
+/// Defaults to Swedish locale; pass [locale] to test other locales (e.g. en).
+/// Provides all 4 l10n delegates and Butlery's light theme.
 /// Replaces the private `_testApp()` helpers duplicated across 9+ widget test files.
 Widget createLocalizedTestApp({
   required Widget child,
   bool wrapInScaffold = true,
   bool wrapInScrollView = false,
   Route<dynamic>? Function(RouteSettings)? onGenerateRoute,
+  Locale locale = const Locale('sv'),
 }) {
   Widget body = child;
   if (wrapInScrollView) {
@@ -22,7 +24,7 @@ Widget createLocalizedTestApp({
   }
 
   return MaterialApp(
-    locale: const Locale('sv'),
+    locale: locale,
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: const [
       AppLocalizations.delegate,

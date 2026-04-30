@@ -24,8 +24,11 @@ class GroupInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // BUT-622: Use the active locale so non-Swedish users see localized month/time formatting.
+    // Hardcoding 'sv_SE' previously rendered "15 jan 2026" for English users.
+    final localeName = Localizations.localeOf(context).toString();
     final createdDateStr = createdAt != null
-        ? DateFormat('d MMM yyyy, HH:mm', 'sv_SE').format(createdAt!)
+        ? DateFormat.yMMMd(localeName).add_Hm().format(createdAt!)
         : context.l10n.commonUnknown;
 
     return CardContent.standard(
