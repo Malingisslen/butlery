@@ -174,3 +174,85 @@ No production bugs caught this run — the algorithm was already battle-tested
 through `SwedishLineClassifier` integration tests. The dedicated unit tests
 are insurance against a transition-matrix or emission-weight refactor
 silently regressing edge cases.
+
+### 2026-04-30 — BUT-611 Viterbi calibration close-out [Pattern discovered]
+Cluster D added `viterbi_calibration_test.dart` (6 tests), companion
+`viterbi_calibration_fixtures.dart` (4 held-out Swedish recipes, 59 hand-labeled
+lines, all scorable), and `viterbi_calibration_baseline.md` committed reference
+numbers. Production change: three `static const` thresholds in
+`ViterbiContextProcessor` (`_highConfidenceThreshold = 0.75`,
+`_highEmissionWeight = 2.5`, `_lowEmissionWeight = 1.0`) promoted to
+constructor parameters with `_default*` fallbacks so calibration tests can
+sweep without mutating production state. `const ViterbiContextProcessor()`
+call-sites compile unchanged.
+
+Patterns worth reusing for any "is this hardcoded threshold actually right?"
+investigation:
+
+1. **Held-out corpus as overfitting check.** Golden set (110 lines) tunes the
+   algorithm; held-out set (59 lines) authored *after* and intentionally
+   chosen to be lexically distinct catches drift. Decision rule: a non-default
+   value "wins" only when the gap exceeds the noise floor (2pp) on *both*
+   corpora and at the *same* threshold value. Single-corpus wins are dismissed
+   as small-corpus noise. This is the right shape for any hyperparameter
+   sweep — it's strictly stronger than "best on golden" and also catches
+   "this fixture was tuned to make the test pass."
+
+2. **Promote `static const` → constructor parameters with named defaults
+   matching the constants** when calibration tests need to sweep. `const
+   ViterbiContextProcessor()` keeps working at every call site. The doc
+   comment ("production code should not pass these arguments") tells
+   readers the new API exists for tests, not for runtime configuration.
+   Don't go further (e.g. environment-driven threshold) unless production
+   actually needs it — keep the surface minimal.
+
+3. **Print-then-assert calibration tables.** Each test emits a
+   formatted table to stdout (band/n/correct/accuracy or
+   threshold/above/accuracy/P/R/F1) before asserting loose invariants
+   (monotonicity allowing 1 inversion, top-vs-bottom band ≤5pp, held-out vs
+   golden aggregate ≤5pp). Tables give a "free regression diff" in test
+   logs when a refactor drifts the numbers — same pattern as BUT-696,
+   reapplied to a multi-axis sweep.
+
+4. **Decision metric ≠ diagnostic metric.** The threshold gates emission
+   anchoring, so the right success metric is end-to-end post-Viterbi
+   *accuracy*, not P/R/F1. F1 with "above-threshold" as the positive class
+   would have flagged 0.60 as the winner, but the gain is mechanical
+   (recall inflates because almost every line is correctly classified, so
+   widening the positive set inflates recall regardless of whether
+   anchoring helped). Test still prints F1 as a diagnostic so future
+   readers can see why it's not the decision driver. The same anti-pattern
+   surfaces in any "threshold + structurally-imbalanced classes" scenario:
+   pick the metric the *system* optimizes for, not whichever metric is
+   easiest to compute.
+
+5. **Calibration baseline as a committed `.md` next to the test.** The
+   baseline file documents the actual numbers, the decision, the honest
+   residuals (sparse confidence range, small-corpus artifact in the
+   `[0.80, 0.90)` band on golden), and explicitly why F1 is not used. This
+   is documentation that the test itself can't carry — assertions must
+   be loose to avoid brittleness, but the prose can be specific. When a
+   future engineer asks "why is the threshold 0.75?", the baseline file
+   answers in one read.
+
+6. **Header-phrasing reuse is intentional, not leakage.** Held-out set
+   shares one header phrase ("Det här behövs:") with the golden set, but
+   pairs it with completely different food vocabulary (yeast dough vs
+   creamed spinach). This is a *generalization probe*: does the
+   classifier+Viterbi handle the structural pattern when the surrounding
+   words are unfamiliar? Vocabulary, recipe names, and dish types are
+   fully distinct between corpora. When reviewing held-out corpora, look
+   for vocabulary overlap (would be leakage), not phrase overlap (often
+   intentional generalization probes).
+
+Determinism note: tests run in <1s with no random sampling, no clock
+calls, no I/O — pure functions over fixture corpora. Re-running yields
+byte-identical numbers. Verified: 6/6 green, `flutter analyze` clean.
+
+No production bugs caught this run. The calibration measurement
+*confirmed* the hardcoded 0.75 was already correct (end-to-end accuracy
+flat across `[0.70, 0.90]` on both corpora; only 0.60 materially
+degrades). The value of the test is now twofold: (a) it's the
+empirical evidence for the constant the next reviewer will ask about,
+and (b) it's a regression gate if a future transition-matrix tweak
+shifts the calibration curve.

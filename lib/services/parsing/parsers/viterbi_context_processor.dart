@@ -1,13 +1,30 @@
 import 'dart:math' as math;
 
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 /// Re-labels classified lines using Viterbi decoding over a transition
 /// probability matrix. The per-line classifier is context-free; this
 /// post-processor exploits sequential structure (ingredient runs, instruction
 /// runs) to fix ambiguous lines that context makes obvious.
 class ViterbiContextProcessor {
-  const ViterbiContextProcessor();
+  final double highConfidenceThreshold;
+  final double highEmissionWeight;
+  final double lowEmissionWeight;
+
+  const ViterbiContextProcessor()
+      : highConfidenceThreshold = _defaultHighConfidenceThreshold,
+        highEmissionWeight = _defaultHighEmissionWeight,
+        lowEmissionWeight = _defaultLowEmissionWeight;
+
+  /// Test-only escape hatch for calibration sweeps. See
+  /// `test/unit/services/parsing/parsers/viterbi_calibration_test.dart`.
+  @visibleForTesting
+  const ViterbiContextProcessor.withTuning({
+    this.highConfidenceThreshold = _defaultHighConfidenceThreshold,
+    this.highEmissionWeight = _defaultHighEmissionWeight,
+    this.lowEmissionWeight = _defaultLowEmissionWeight,
+  });
 
   // Transition probabilities P(state_t | state_{t-1}).
   // Tuned for Swedish recipe text where ingredients and instructions
@@ -96,13 +113,19 @@ class ViterbiContextProcessor {
     RegExp(r'metod:', caseSensitive: false),
   ];
 
-  // Confidence-adaptive emission weight: high-confidence lines (>= 0.75)
+  // Confidence-adaptive emission weight: high-confidence lines (>= threshold)
   // get amplified emissions so transitions cannot override them, while
   // low-confidence / ambiguous lines use standard weighting so context
   // can pull them toward their neighbors.
-  static const _highConfidenceThreshold = 0.75;
-  static const _highEmissionWeight = 2.5;
-  static const _lowEmissionWeight = 1.0;
+  //
+  // Threshold = 0.75 is the empirically-validated calibration point; see
+  // `test/unit/services/parsing/parsers/viterbi_calibration_test.dart` for
+  // the F1-by-threshold sweep on the 10-recipe golden corpus + 4-recipe
+  // held-out corpus. Held-out F1 is maximized at this threshold within the
+  // 2pp noise floor.
+  static const _defaultHighConfidenceThreshold = 0.75;
+  static const _defaultHighEmissionWeight = 2.5;
+  static const _defaultLowEmissionWeight = 1.0;
 
   /// Re-labels [lines] using the Viterbi algorithm, combining per-line
   /// emission probabilities with sequential transition probabilities.
@@ -278,9 +301,9 @@ class ViterbiContextProcessor {
   // High-confidence lines resist context override; low-confidence lines
   // are easily pulled by surrounding context.
   double _emissionWeightFor(ClassifiedLine line) {
-    return line.confidence >= _highConfidenceThreshold
-        ? _highEmissionWeight
-        : _lowEmissionWeight;
+    return line.confidence >= highConfidenceThreshold
+        ? highEmissionWeight
+        : lowEmissionWeight;
   }
 
   double _transitionLogProb(LineType from, LineType to) {
