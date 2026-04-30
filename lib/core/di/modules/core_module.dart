@@ -26,6 +26,7 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_feedback_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_acquisition_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
@@ -275,11 +276,22 @@ class CoreModule implements DIModule {
         );
       });
 
+      // BUT-501: residual-Firestore gateway for the data-export pipeline.
+      // Used by every export manager that still touches collections without
+      // a typed repository.
+      container.registerLazySingleton<FirebaseDataExportRepository>(
+        () => FirebaseDataExportRepository(
+          firestore: container<FirestoreRepository>().firestore,
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
       // Data export service for GDPR Article 20 (Right to Data Portability)
       container.registerLazySingleton<DataExportService>(
         () => DataExportService(
           authRepository: container<AuthRepository>(),
           firestoreRepository: container<FirestoreRepository>(),
+          dataExportRepository: container<FirebaseDataExportRepository>(),
         ),
       );
 

@@ -1,49 +1,60 @@
 // lib/services/account/export/content_export_manager.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
-import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of user content: recipes, menus, shopping lists.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
 ///
-/// BUT-501: cook_snaps, activity_events, weekly_menu_plans,
-/// group_weekly_menu_plans, and pantry route through their owning
-/// repositories (with validateOwnership guards). Recipes, menus,
-/// shopping_lists, personal_tags, and personal_tag_groups remain on
-/// direct Firestore for this run — see knowledge file for residual.
+/// BUT-501 (closed): All direct Firestore reads are routed through typed
+/// repositories or [FirebaseDataExportRepository] (the residual gateway
+/// for collections without typed interfaces). Each repo method enforces
+/// `validateOwnership` defence-in-depth on top of Firestore rules.
 class ContentExportManager {
-  final FirebaseFirestore _firestore;
   // Test seams: production resolves via ServiceLocator on first use.
   final CookSnapRepository? _cookSnapRepo;
   final ActivityEventRepository? _activityEventRepo;
   final WeeklyMenuPlanRepository? _weeklyMenuRepo;
   final GroupWeeklyMenuPlanRepository? _groupMenuRepo;
   final PantryRepository? _pantryRepo;
+  final RecipeRepository? _recipeRepo;
+  final FirebasePersonalTagRepository? _personalTagRepo;
+  final FirebasePersonalTagGroupRepository? _personalTagGroupRepo;
+  final FirebaseDataExportRepository? _exportRepo;
 
   static const String _logTag = 'ContentExportManager';
 
   ContentExportManager({
-    required FirebaseFirestore firestore,
     CookSnapRepository? cookSnapRepository,
     ActivityEventRepository? activityEventRepository,
     WeeklyMenuPlanRepository? weeklyMenuPlanRepository,
     GroupWeeklyMenuPlanRepository? groupWeeklyMenuPlanRepository,
     PantryRepository? pantryRepository,
-  })  : _firestore = firestore,
-        _cookSnapRepo = cookSnapRepository,
+    RecipeRepository? recipeRepository,
+    FirebasePersonalTagRepository? personalTagRepository,
+    FirebasePersonalTagGroupRepository? personalTagGroupRepository,
+    FirebaseDataExportRepository? dataExportRepository,
+  })  : _cookSnapRepo = cookSnapRepository,
         _activityEventRepo = activityEventRepository,
         _weeklyMenuRepo = weeklyMenuPlanRepository,
         _groupMenuRepo = groupWeeklyMenuPlanRepository,
-        _pantryRepo = pantryRepository;
+        _pantryRepo = pantryRepository,
+        _recipeRepo = recipeRepository,
+        _personalTagRepo = personalTagRepository,
+        _personalTagGroupRepo = personalTagGroupRepository,
+        _exportRepo = dataExportRepository;
 
   CookSnapRepository get _cookSnaps =>
       _cookSnapRepo ?? ServiceLocator.get<CookSnapRepository>();
@@ -55,45 +66,49 @@ class ContentExportManager {
       _groupMenuRepo ?? ServiceLocator.get<GroupWeeklyMenuPlanRepository>();
   PantryRepository get _pantry =>
       _pantryRepo ?? ServiceLocator.get<PantryRepository>();
+  RecipeRepository get _recipes =>
+      _recipeRepo ?? ServiceLocator.get<RecipeRepository>();
+  FirebasePersonalTagRepository get _personalTags =>
+      _personalTagRepo ?? ServiceLocator.get<FirebasePersonalTagRepository>();
+  FirebasePersonalTagGroupRepository get _personalTagGroups =>
+      _personalTagGroupRepo ??
+      ServiceLocator.get<FirebasePersonalTagGroupRepository>();
+  FirebaseDataExportRepository get _exports =>
+      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
-  /// Export all user recipes (personal and unified)
+  /// Export all user recipes (personal subcollection + top-level legacy shape).
   Future<Map<String, dynamic>> exportRecipes(String userId) async {
     try {
       final recipes = <Map<String, dynamic>>[];
       final recipeLimit = ExportPaginationHelper.getLimitForType('recipes');
 
-      // Personal recipes in user's subcollection (paginated)
-      final personalRecipes =
-          await ExportPaginationHelper.paginatedCollectionExport(
-        collection: _firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.recipes),
-        maxDocuments: recipeLimit,
-      );
+      // Personal recipes in user's subcollection — RecipeRepository concrete.
+      final repoConcrete = _recipes;
+      if (repoConcrete is FirebaseRecipeRepository) {
+        final personal = await repoConcrete.exportPersonalRecipesByUser(
+          userId,
+          maxDocuments: recipeLimit,
+        );
+        for (final entry in personal) {
+          recipes.add({
+            'recipe_id': entry['id'],
+            'type': 'personal',
+            'data': sanitizeForJson(entry['data']),
+          });
+        }
 
-      for (final doc in personalRecipes) {
-        recipes.add({
-          'recipe_id': doc.id,
-          'type': 'personal',
-          'data': sanitizeForJson(doc.data()),
-        });
-      }
-
-      // Unified recipes where user is owner (paginated)
-      final unifiedRecipes = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.recipes)
-            .where('userId', isEqualTo: userId),
-        maxDocuments: recipeLimit,
-      );
-
-      for (final doc in unifiedRecipes) {
-        recipes.add({
-          'recipe_id': doc.id,
-          'type': 'unified',
-          'data': sanitizeForJson(doc.data()),
-        });
+        // Top-level recipes where user is owner (legacy `userId` field).
+        final unified = await repoConcrete.exportTopLevelRecipesByOwner(
+          userId,
+          maxDocuments: recipeLimit,
+        );
+        for (final entry in unified) {
+          recipes.add({
+            'recipe_id': entry['id'],
+            'type': 'unified',
+            'data': sanitizeForJson(entry['data']),
+          });
+        }
       }
 
       return {
@@ -107,42 +122,34 @@ class ContentExportManager {
     }
   }
 
-  /// Export all user menus (personal and shared)
+  /// Export all user menus (personal subcollection + shared top-level).
   Future<Map<String, dynamic>> exportMenus(String userId) async {
     try {
       final menus = <Map<String, dynamic>>[];
       final menuLimit = ExportPaginationHelper.getLimitForType('menus');
 
-      // Get personal menus (paginated)
-      final menusSnapshot =
-          await ExportPaginationHelper.paginatedCollectionExport(
-        collection: _firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.menus),
+      // Personal menus subcollection.
+      final personal = await _exports.exportPersonalMenus(
+        userId,
         maxDocuments: menuLimit,
       );
-
-      for (final doc in menusSnapshot) {
+      for (final entry in personal) {
         menus.add({
-          'menu_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'menu_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
-      // Get menus from menus collection where user is owner (paginated)
-      final sharedMenus = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.menus)
-            .where('sharedByUserId', isEqualTo: userId),
+      // Top-level menus where the user is owner (sharedByUserId == userId).
+      final shared = await _exports.exportSharedMenusByOwner(
+        userId,
         maxDocuments: menuLimit,
       );
-
-      for (final doc in sharedMenus) {
+      for (final entry in shared) {
         menus.add({
-          'menu_id': doc.id,
+          'menu_id': entry['id'],
           'type': 'shared',
-          'data': sanitizeForJson(doc.data()),
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
@@ -157,51 +164,32 @@ class ContentExportManager {
     }
   }
 
-  /// Export all user shopping lists with items
+  /// Export all user shopping lists with items.
   Future<Map<String, dynamic>> exportShoppingLists(String userId) async {
     try {
       final lists = <Map<String, dynamic>>[];
       final listLimit =
           ExportPaginationHelper.getLimitForType('shopping_lists');
 
-      // Get personal shopping lists (paginated)
-      final shoppingLists =
-          await ExportPaginationHelper.paginatedCollectionExport(
-        collection: _firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userShoppingLists),
-        maxDocuments: listLimit,
+      final results = await _exports.exportPersonalShoppingLists(
+        userId,
+        maxLists: listLimit,
       );
 
-      for (final listDoc in shoppingLists) {
-        final itemsList = <Map<String, dynamic>>[];
-        final listData = {
-          'list_id': listDoc.id,
-          'list_info': listDoc.data(),
-          'items': itemsList,
-        };
+      for (final entry in results) {
+        final items = (entry['items'] as List)
+            .cast<Map<String, dynamic>>()
+            .map((item) => {
+                  'item_id': item['id'],
+                  'data': sanitizeForJson(item['data']),
+                })
+            .toList();
 
-        // Get items for this list (if they exist as subcollection)
-        // Items are limited to prevent timeout on very large lists
-        try {
-          final items = await listDoc.reference
-              .collection(FirestoreCollections.items)
-              .limit(500)
-              .get();
-          for (final itemDoc in items.docs) {
-            itemsList.add({
-              'item_id': itemDoc.id,
-              'data': itemDoc.data(),
-            });
-          }
-        } catch (e) {
-          // Items might be embedded in the list document
-          app_logger.AppLogger.debug(
-              '[$_logTag] No items subcollection for list ${listDoc.id}');
-        }
-
-        lists.add(listData);
+        lists.add({
+          'list_id': entry['id'],
+          'list_info': entry['data'],
+          'items': items,
+        });
       }
 
       return {
@@ -216,25 +204,20 @@ class ContentExportManager {
     }
   }
 
-  /// Export all personal tags with embedded rules (GDPR Article 20)
+  /// Export all personal tags with embedded rules (GDPR Article 20).
   Future<Map<String, dynamic>> exportPersonalTags(String userId) async {
     try {
       final tags = <Map<String, dynamic>>[];
       final tagLimit = ExportPaginationHelper.getLimitForType('personal_tags');
 
-      final tagsSnapshot =
-          await ExportPaginationHelper.paginatedCollectionExport(
-        collection: _firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userPersonalTags),
+      final entries = await _personalTags.exportAllByUser(
+        userId,
         maxDocuments: tagLimit,
       );
-
-      for (final doc in tagsSnapshot) {
+      for (final entry in entries) {
         tags.add({
-          'tag_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'tag_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
@@ -257,19 +240,14 @@ class ContentExportManager {
       final groupLimit =
           ExportPaginationHelper.getLimitForType('personal_tag_groups');
 
-      final groupsSnapshot =
-          await ExportPaginationHelper.paginatedCollectionExport(
-        collection: _firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userPersonalTagGroups),
+      final entries = await _personalTagGroups.exportAllByUser(
+        userId,
         maxDocuments: groupLimit,
       );
-
-      for (final doc in groupsSnapshot) {
+      for (final entry in entries) {
         groups.add({
-          'group_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'group_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
@@ -373,8 +351,6 @@ class ContentExportManager {
   }
 
   /// Export all weekly menu plans (BUT-211, GDPR Article 20).
-  /// Doc IDs are prefixed with `{userId}_` so a range query gives us only
-  /// this user's plans without an additional Firestore index.
   Future<Map<String, dynamic>> exportWeeklyMenuPlans(String userId) async {
     try {
       final plans = <Map<String, dynamic>>[];
@@ -405,15 +381,7 @@ class ContentExportManager {
     }
   }
 
-  /// Export all group weekly menu plans the user is a participant on
-  /// (BUT-405, GDPR Article 20). Query hinges on the denormalised
-  /// `memberPermissions` map — `memberPermissions.{userId} != null`
-  /// matches any plan the user is in, regardless of permission level.
-  ///
-  /// Does NOT export plans for groups the user isn't in (obviously).
-  /// Does NOT strip other participants from the exported doc — GDPR
-  /// portability covers the user's copy of the shared data; the
-  /// collaborative context is part of the data's meaning.
+  /// Export all group weekly menu plans the user is a participant on.
   Future<Map<String, dynamic>> exportGroupWeeklyMenuPlans(String userId) async {
     try {
       final plans = <Map<String, dynamic>>[];

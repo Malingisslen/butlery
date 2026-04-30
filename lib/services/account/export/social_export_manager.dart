@@ -1,19 +1,26 @@
 // lib/services/account/export/social_export_manager.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
-import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of social data: friends, messages, shared content.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
+///
+/// BUT-501 (closed): All direct Firestore reads route through
+/// [FirebaseDataExportRepository] which enforces `validateOwnership`
+/// defence-in-depth on top of Firestore rules.
 class SocialExportManager {
-  final FirebaseFirestore _firestore;
+  final FirebaseDataExportRepository? _exportRepo;
   static const String _logTag = 'SocialExportManager';
 
-  SocialExportManager({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  SocialExportManager({FirebaseDataExportRepository? dataExportRepository})
+      : _exportRepo = dataExportRepository;
+
+  FirebaseDataExportRepository get _exports =>
+      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
   /// Export friends, friend requests, and friend categories
   Future<Map<String, dynamic>> exportFriends(String userId) async {
@@ -28,65 +35,44 @@ class SocialExportManager {
       final requestLimit =
           ExportPaginationHelper.getLimitForType('friend_requests');
 
-      // Get friends from user's subcollection (paginated)
-      final friendsSnapshot =
-          await ExportPaginationHelper.paginatedCollectionExport(
-        collection: _firestore
-            .collection(FirestoreCollections.users)
-            .doc(userId)
-            .collection(FirestoreCollections.userFriends),
+      final friends = await _exports.exportFriendsSubcollection(
+        userId,
         maxDocuments: friendLimit,
       );
-
-      for (final doc in friendsSnapshot) {
+      for (final entry in friends) {
         friendsData['friends'].add({
-          'friend_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'friend_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
-      // Get friend requests sent (paginated)
-      final sentRequests = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.socialRequests)
-            .where('fromUserId', isEqualTo: userId),
+      final sentRequests = await _exports.exportSocialRequestsSent(
+        userId,
         maxDocuments: requestLimit,
       );
-
-      for (final doc in sentRequests) {
+      for (final entry in sentRequests) {
         friendsData['friend_requests_sent'].add({
-          'request_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'request_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
-      // Get friend requests received (paginated)
-      final receivedRequests = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.socialRequests)
-            .where('toUserId', isEqualTo: userId),
+      final receivedRequests = await _exports.exportSocialRequestsReceived(
+        userId,
         maxDocuments: requestLimit,
       );
-
-      for (final doc in receivedRequests) {
+      for (final entry in receivedRequests) {
         friendsData['friend_requests_received'].add({
-          'request_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'request_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
-      // Get friend categories/groups (limited)
-      final categories = await _firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.userFriendCategories)
-          .limit(100)
-          .get();
-
-      for (final doc in categories.docs) {
+      final categories = await _exports.exportFriendCategories(userId);
+      for (final entry in categories) {
         friendsData['friend_categories'].add({
-          'category_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'category_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
@@ -117,45 +103,38 @@ class SocialExportManager {
       final messageLimit =
           ExportPaginationHelper.getLimitForType('messages_per_conversation');
 
-      // Get conversations where user is participant (paginated)
-      final conversations = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.conversations)
-            .where('participantIds', arrayContains: userId),
-        maxDocuments: conversationLimit,
+      final conversations = await _exports.exportConversationsAndMessages(
+        userId,
+        maxConversations: conversationLimit,
+        maxMessagesPerConversation: messageLimit,
       );
 
-      for (final conversationDoc in conversations) {
+      for (final convo in conversations) {
         final messagesList = <Map<String, dynamic>>[];
-        final conversationData = {
-          'conversation_id': conversationDoc.id,
-          'conversation_info': sanitizeForJson(conversationDoc.data()),
-          'messages': messagesList,
-        };
+        final rawMessages =
+            (convo['messages'] as List).cast<Map<String, dynamic>>();
 
-        // Get messages in this conversation (limited per conversation)
-        final messages = await conversationDoc.reference
-            .collection(FirestoreCollections.messages)
-            .orderBy('timestamp', descending: false)
-            .limit(messageLimit)
-            .get();
-
-        for (final messageDoc in messages.docs) {
-          // Only include messages sent by this user or received by this user
+        for (final msg in rawMessages) {
+          // Only include messages sent by this user or received by this user.
           final messageData =
-              sanitizeForJson(messageDoc.data()) as Map<String, dynamic>;
+              sanitizeForJson(msg['data']) as Map<String, dynamic>;
           final recipientIds = messageData['recipientIds'] as List?;
           if (messageData['senderId'] == userId ||
               (recipientIds != null && recipientIds.contains(userId))) {
             messagesList.add({
-              'message_id': messageDoc.id,
+              'message_id': msg['id'],
               'data': messageData,
             });
           }
         }
 
-        conversationData['message_count'] = messagesList.length;
-        if (messages.docs.length >= messageLimit) {
+        final conversationData = <String, dynamic>{
+          'conversation_id': convo['id'],
+          'conversation_info': sanitizeForJson(convo['data']),
+          'messages': messagesList,
+          'message_count': messagesList.length,
+        };
+        if (convo['messages_truncated'] == true) {
           conversationData['messages_truncated'] = true;
         }
         messagesData['conversations'].add(conversationData);
@@ -182,34 +161,25 @@ class SocialExportManager {
       final recipeLimit = ExportPaginationHelper.getLimitForType('recipes');
       final menuLimit = ExportPaginationHelper.getLimitForType('menus');
 
-      // Get recipes shared with user (paginated)
-      final sharedRecipes = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.sharedContent)
-            .where('contentType', isEqualTo: 'recipe')
-            .where('sharedWithUserIds', arrayContains: userId),
+      final sharedRecipes = await _exports.exportSharedRecipesReceived(
+        userId,
         maxDocuments: recipeLimit,
       );
-
-      for (final doc in sharedRecipes) {
+      for (final entry in sharedRecipes) {
         sharedData['shared_recipes_received'].add({
-          'share_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'share_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
-      // Get menus shared with user (paginated)
-      final sharedMenus = await ExportPaginationHelper.paginatedQuery(
-        query: _firestore
-            .collection(FirestoreCollections.menus)
-            .where('sharedToUserIds', arrayContains: userId),
+      final sharedMenus = await _exports.exportSharedMenusReceived(
+        userId,
         maxDocuments: menuLimit,
       );
-
-      for (final doc in sharedMenus) {
+      for (final entry in sharedMenus) {
         sharedData['shared_menus_received'].add({
-          'menu_id': doc.id,
-          'data': sanitizeForJson(doc.data()),
+          'menu_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
         });
       }
 
@@ -229,21 +199,12 @@ class SocialExportManager {
   /// Export blocked users (both directions)
   Future<Map<String, dynamic>> exportBlocks(String userId) async {
     try {
-      final outgoing = await _firestore
-          .collection(FirestoreCollections.blocks)
-          .where('blockerId', isEqualTo: userId)
-          .get();
-
-      final incoming = await _firestore
-          .collection(FirestoreCollections.blocks)
-          .where('blockedUserId', isEqualTo: userId)
-          .get();
+      final outgoing = await _exports.exportOutgoingBlocks(userId);
+      final incoming = await _exports.exportIncomingBlocks(userId);
 
       return {
-        'outgoing_blocks':
-            outgoing.docs.map((d) => sanitizeForJson(d.data())).toList(),
-        'incoming_blocks':
-            incoming.docs.map((d) => sanitizeForJson(d.data())).toList(),
+        'outgoing_blocks': outgoing.map(sanitizeForJson).toList(),
+        'incoming_blocks': incoming.map(sanitizeForJson).toList(),
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export blocks', e);
@@ -255,15 +216,9 @@ class SocialExportManager {
   Future<Map<String, dynamic>> exportConversationMemberships(
       String userId) async {
     try {
-      final memberships = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('conversation_memberships')
-          .get();
-
+      final memberships = await _exports.exportConversationMemberships(userId);
       return {
-        'memberships':
-            memberships.docs.map((d) => sanitizeForJson(d.data())).toList(),
+        'memberships': memberships.map(sanitizeForJson).toList(),
       };
     } catch (e) {
       app_logger.AppLogger.error(

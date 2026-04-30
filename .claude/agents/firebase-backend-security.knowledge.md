@@ -1353,3 +1353,238 @@ test that exercises the actual query would close this.
 **Acceptance:** approved for commit. The remaining items (C1
 length-cap on route, gcloud TTL doc on the new producer) are
 follow-up Medium polish, not commit-blockers.
+
+### 2026-04-30 — BUT-501 closed: ExportRepo gateway pattern
+
+The third-cycle "partial-by-design" residual finally drained. Strategy
+was a single dedicated `FirebaseDataExportRepository` (under
+`lib/repositories/firebase/`) that owns every direct-Firestore read the
+GDPR export pipeline still needs. Each method calls `validateOwnership`
+at entry, then performs the read.
+
+**Why this beat the "split into a dozen new typed repos" alternative:**
+- `users/{uid}/settings`, `user_notification_preferences`, FCM token
+  shapes (top-level + subcoll), `friend_categories`, `category_preferences`,
+  `list_category_orders`, `users/{uid}/conversation_memberships`, blocks
+  (in/out), social_requests (sent/received), conversations + nested
+  messages, shared_content (recipe slice), shared menus
+  (sent/received), users/{uid} private profile, public_profiles/{uid}
+  — these are 16+ collection shapes that don't have natural typed
+  models. Building 16 new `XxxRepository` interfaces just to satisfy
+  "no direct Firestore in managers" would be repository-cargoculting.
+- One gateway funnels every "export-only direct read" through a single
+  `validateOwnership` choke point — defence-in-depth on top of the
+  rules layer at exactly one place to audit.
+- Methods on the gateway return raw `{id, data}` (or single `data`)
+  shapes — the export pipeline needs the raw Firestore map for its
+  `sanitizeForJson` step (Timestamps, GeoPoints). Round-tripping
+  through typed models would lose precision.
+
+**Migrated to the gateway:** all 28 direct-Firestore calls across the
+five export manager files. Final grep confirms `_firestore.` field
+access is gone except the documented BUT-424 audit_logs read in
+`compliance_export_manager.dart` (audit_logs is admin-only at the
+rules layer; user-side export needs a Cloud Function exporter — that's
+still the BUT-424 follow-up, not a BUT-501 residual).
+
+**Migrated to typed repos** (when the natural home existed):
+- `users/{uid}/recipes` → `FirebaseRecipeRepository.exportPersonalRecipesByUser`
+- top-level `recipes` filtered by `userId` → `FirebaseRecipeRepository.exportTopLevelRecipesByOwner`
+- `users/{uid}/personal_tags` → `FirebasePersonalTagRepository.exportAllByUser`
+- `users/{uid}/personal_tag_groups` → `FirebasePersonalTagGroupRepository.exportAllByUser`
+
+**Test wiring change:** `data_export_service_test.dart` now also
+constructs and injects `FirebaseRecipeRepository`,
+`FirebasePersonalTagRepository`, `FirebasePersonalTagGroupRepository`,
+and `FirebaseDataExportRepository` — all backed by the same fake
+firestore. The "should export recipes" test was the canary that
+caught the missing wire (had been silently returning `error` payload
+because there was no test seam to a real RecipeRepository before).
+
+**DI:** `FirebaseDataExportRepository` registered in `core_module.dart`
+in the same scope as `DataExportService`, since the latter holds it
+as a `late final` and passes it down to every manager constructor.
+
+### 2026-04-30 — BUT-458 closed: RecipeOwnershipResolver wired + backfill CF
+
+**Resolver wiring:** `FirebaseRecipeOwnershipResolver` is the production
+implementation of the `RecipeOwnershipResolver` typedef in
+`comments_repository.dart`. It takes `getRecipe: Future<Recipe?> Function`
+and resolves ownership as: collaborative → `socialData.ownerId` +
+`memberPermissions.keys` (excluding owner); personal → `createdBy` + empty.
+Wired in `social_module.dart` lazily via `UnifiedRecipeService.getRecipeById`
+(the service is user-scoped — registered post-login — so the resolver
+checks `container.isRegistered<UnifiedRecipeService>()` and returns null
+when unregistered, which is the existing fallback contract: comments
+write without denorm fields and rules degrade to author-only read).
+
+**Why `UnifiedRecipeService.getRecipeById` and not the coordinator's
+getRecipe**: `SocialRecipeCoordinator` takes `getRecipe` as a
+constructor arg but doesn't expose it publicly. UnifiedRecipeService
+exposes a `Recipe? getRecipeById(String)` directly (synchronous, from
+its in-memory cache + Firestore fallback) which is what we want here.
+
+**Backfill Cloud Function** (`functions/src/migrations/backfill-recipe-comments-denorm.ts`):
+admin-only callable (gated by `requireAdmin` from `shared/`), region
+`europe-west1`, paginated by `__name__` cursor (no collectionGroup
+index needed for `recipe_comments` itself — it's top-level). For each
+unmigrated comment, uses `collectionGroup('recipes')` + `where(documentId, ==, recipeId)`
+to find the owning recipe; resolves owner from `socialData.ownerId`
+or `core.createdBy` or path-derived parent uid. Orphan comments
+(recipe gone) get stamped `recipeOwnerId = authorId, sharedWithUserIds = []`
+so they stay readable by the comment author forever — graceful
+degradation per the original BUT-424 entry's recommendation.
+
+**Idempotency contract:** comments with non-empty `recipeOwnerId` are
+skipped. The Test in `__tests__/backfill-recipe-comments.test.ts`
+re-runs against an already-migrated state and asserts `migrated == 0,
+skipped == 1`.
+
+**Region pin:** `onCall({ region: "europe-west1" }, ...)` — Butlery
+convention. Same region as the rest of the functions.
+
+**Hard ceiling:** `MAX_BATCHES_PER_INVOCATION = 50` × `BATCH_SIZE = 200`
+= 10k comments per invocation. The `hasMore` flag in the response
+signals when re-invocation is needed (a follow-up cron / manual
+re-call). For the current beta scale this is way more than needed
+in one call.
+
+---
+
+### 2026-04-30 — BUT-501 close-out: data-export gateway pattern
+
+**Pattern: read-only query gateway for typeless export collections.**
+
+When a feature (here: GDPR export) needs to read many user-scoped
+collections that don't have proper typed `Repository<Model>` interfaces
+yet, the right move is a single gateway repo, not scattered
+`FirebaseFirestore.instance` calls in services.
+
+`FirebaseDataExportRepository` (`lib/repositories/firebase/firebase_data_export_repository.dart`)
+demonstrates the contract:
+
+1. Extends `BaseFirebaseRepository<Object>` to inherit `firestore`,
+   `requireCurrentUserId()`, and the `PermissionValidationMixin`.
+2. CRUD methods (`fromFirestore`, `toFirestore`, `getId`, all four
+   `validate*Permission`) throw / return false — gateway is read-only.
+3. Single private `_guardSelfExport(userId, resourceType)` that calls
+   `validateOwnership(currentUserId: requireCurrentUserId(), resourceOwnerId: userId, ...)`.
+   Every public method calls this **first**, before any Firestore read.
+4. Public methods return raw `{id, data}` shapes — no model layer because
+   each export-manager re-shapes for the JSON output anyway.
+
+**Why this is acceptable defence-in-depth:** Firestore rules already
+gate user-scoped reads, but the gateway adds an in-process check that
+the *authenticated* uid matches the *requested* userId before any
+network call. Cheaper than a rules-deny round-trip and gives a clean
+log line on attempted cross-user export.
+
+**Spot-check verdict (3 methods, all clean):**
+- `exportPersonalMenus` — `users/{uid}/menus`, guarded, path uses the
+  same `userId` that was just validated → no path-substitution risk.
+- `exportSharedMenusByOwner` — top-level `menus where sharedByUserId == userId`,
+  guarded; the `where` clause uses the *same validated userId* → no
+  read-time bypass.
+- `exportConversationsAndMessages` — top-level `conversations where
+  participantIds arrayContains userId`, guarded; the per-conversation
+  `messages` subcollection inherits the parent doc's access decision.
+  Note: this returns *all* messages in conversations the user
+  participates in, including messages from other participants. That is
+  correct for GDPR Article 15 (right of access — the user did receive
+  these messages) but `social_export_manager.exportMessages` then
+  filters to `senderId == userId || recipientIds contains userId` as
+  belt-and-braces. Good.
+
+**Residual direct-Firestore call:** exactly one — `compliance_export_manager.dart:49`
+reading `audit_logs`. By design per BUT-424: rules deny user-side
+reads of `audit_logs` (admin-only), so the call exists to *attempt*
+the read and degrade gracefully when denied. A Cloud Function
+exporter is the long-term fix. The class docstring documents this.
+
+**Lingering `cloud_firestore` imports (not bypasses):**
+- `compliance_export_manager.dart:3` — needed for the audit_logs
+  `FirebaseFirestore` field.
+- `preferences_export_manager.dart:3` — needed for the `Timestamp`
+  type-check on `fcmData['updatedAt']` (untyped Map value).
+Both legitimate; not regressions.
+
+**DI wiring:** `core_module.dart:282` registers
+`FirebaseDataExportRepository` as a lazy singleton; `DataExportService`
+constructs the gateway with the shared `firestore` + `authRepository`
+and passes it down to every manager. Test seam: each manager accepts
+optional `dataExportRepository` and falls back to `ServiceLocator.get`.
+This matches the project pattern.
+
+**Anti-pattern this replaced:** five managers each holding their own
+`FirebaseFirestore _firestore` field with 28 unguarded direct calls.
+That is exactly the "direct Firestore = bypasses
+PermissionValidationMixin" failure mode CLAUDE.md rule #3 prohibits.
+
+### 2026-04-30 — BUT-458 ownership-resolver: lazy DI gating for user-scoped services
+
+The recipe-comments denorm pipeline needs an ownership snapshot
+(`recipeOwnerId`, `sharedWithUserIds`) at comment-create time. The
+resolver depends on `UnifiedRecipeService`, which is **user-scoped**
+(registered post-login in `social_module.configureUserScope`), but the
+comments repository is **app-scoped** (registered pre-login in
+`configure`). Naive `container<UnifiedRecipeService>()` would throw
+during cold-start or pre-login comment attempts.
+
+**Pattern (verified in `social_module.dart:273-286`):**
+```dart
+recipeOwnershipResolver: (recipeId) async {
+  try {
+    if (!container.isRegistered<UnifiedRecipeService>()) return null;
+    final recipeService = container<UnifiedRecipeService>();
+    final resolver = FirebaseRecipeOwnershipResolver(
+      getRecipe: (id) async => recipeService.getRecipeById(id),
+    );
+    return await resolver.resolve(recipeId);
+  } catch (_) { return null; }
+}
+```
+
+Three layers of fail-soft:
+1. `isRegistered<T>()` gate — returns null pre-login.
+2. Outer try/catch — catches any GetIt resolution race.
+3. Resolver's own try/catch (`firebase_recipe_ownership_resolver.dart:67`)
+   — catches Firestore exceptions, doc-missing, malformed docs.
+
+**No race condition concern:** even if `isRegistered` flips between
+the check and the lookup (it cannot in single-threaded Dart, but if it
+could), the outer try/catch catches the resulting GetIt exception.
+Defensive belt-and-braces is correct here because comment-write must
+NEVER fail because of an ownership-resolution failure — the comment
+writes without denorm fields and rules degrade to author-only read.
+
+**`isCollaborative` is keyed off `RecipeType.collaborative`, NOT
+`socialData != null`** (verified: `recipe_unified.dart:1167`
+`bool get isCollaborative => type == RecipeType.collaborative`). This
+matters because legacy recipes can have a `socialData` blob for
+historical reasons without being collaborative. Always go through
+`Recipe.collaborative(...)` factory or `recipe.isCollaborative` getter
+— never test `recipe.socialData != null` directly when deciding
+ownership semantics. The resolver follows this correctly:
+- collaborative → try `socialData.ownerId`, fall back to `createdBy`
+- personal → straight to `createdBy`
+
+**Shared-list filter:** `_resolveSharedIds` filters out the owner from
+the `memberPermissions.keys` list (lines 99-105). This is a
+correctness optimization, not just cosmetic — without it the rule's
+owner-branch and member-branch would both fire and you'd get
+duplicate-evaluation cost on every comment read.
+
+**Export-method discipline (BUT-501 sibling work in this sprint):**
+`exportPersonalRecipesByUser`, `exportTopLevelRecipesByOwner` (recipe
+repo), and `exportAllByUser` (personal_tag, personal_tag_group, pantry,
+weekly_menu_plan repos) all call `validateOwnership` BEFORE the
+collection read. Pattern verified across all six call sites — none
+of the typed-repo export methods bypass the mixin. Use this as the
+template when adding new `exportXxxByUser` methods on typed repos.
+
+The `FirebaseDataExportRepository` gateway (BUT-501) and the typed
+repos with `exportXxxByUser` are complementary, not competing — the
+gateway handles collections that lack a typed repo today, the typed
+repos own their own data. New work should prefer adding the method
+to the typed repo and removing the gateway counterpart, per the
+docstring on `FirebaseDataExportRepository`.

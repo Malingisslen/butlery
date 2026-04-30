@@ -1048,4 +1048,45 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       await update(updatedRecipe);
     }
   }
+
+  /// BUT-501: Export every personal recipe under `users/{userId}/recipes`
+  /// for GDPR Article 20. Ownership is structural — caller must verify
+  /// the authenticated uid matches [userId] before calling.
+  Future<List<Map<String, dynamic>>> exportPersonalRecipesByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: 'recipes',
+    );
+    final snapshot =
+        await getCollectionForUser(userId).limit(maxDocuments).get();
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
+  }
+
+  /// BUT-501: Export every top-level `recipes` doc owned by [userId]
+  /// (legacy `userId` field). Used alongside [exportPersonalRecipesByUser]
+  /// to fully cover both storage shapes.
+  Future<List<Map<String, dynamic>>> exportTopLevelRecipesByOwner(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: 'recipes',
+    );
+    final snapshot = await firestore
+        .collection(FirestoreCollections.recipes)
+        .where('userId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
+  }
 }

@@ -162,4 +162,23 @@ class FirebasePersonalTagGroupRepository
     final ref = getCollectionRef();
     batch.delete(ref.doc(groupId));
   }
+
+  /// BUT-501: Export every personal tag group for [userId] for GDPR
+  /// Article 20. Ownership is structural (user subcollection); caller
+  /// must verify the authenticated uid matches [userId].
+  Future<List<Map<String, dynamic>>> exportAllByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+    final snapshot =
+        await getCollectionForUser(userId).limit(maxDocuments).get();
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
+  }
 }

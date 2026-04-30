@@ -2,32 +2,34 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show sanitizeForJson;
-import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of user preferences: settings, notifications.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
+///
+/// BUT-501 (closed): All direct Firestore reads route through
+/// [FirebaseDataExportRepository] which enforces `validateOwnership`.
 class PreferencesExportManager {
-  final FirebaseFirestore _firestore;
+  final FirebaseDataExportRepository? _exportRepo;
   static const String _logTag = 'PreferencesExportManager';
 
-  PreferencesExportManager({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  PreferencesExportManager({
+    FirebaseDataExportRepository? dataExportRepository,
+  }) : _exportRepo = dataExportRepository;
+
+  FirebaseDataExportRepository get _exports =>
+      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
   /// Export user preferences and settings
   Future<Map<String, dynamic>> exportPreferences(String userId) async {
     try {
-      final prefsDoc = await _firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.userSettings)
-          .doc('preferences')
-          .get();
-
+      final prefs = await _exports.exportSettingsPreferences(userId);
       return {
-        'preferences': sanitizeForJson(prefsDoc.data() ?? {}),
-        'preferences_exist': prefsDoc.exists,
+        'preferences': sanitizeForJson(prefs ?? {}),
+        'preferences_exist': prefs != null,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export preferences', e);
@@ -41,18 +43,12 @@ class PreferencesExportManager {
     try {
       final notifications = <Map<String, dynamic>>[];
 
-      // Get all user notifications
-      final notificationsSnapshot = await _firestore
-          .collection(FirestoreCollections.userNotifications)
-          .where('userId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
-          .limit(500) // Limit to last 500 notifications
-          .get();
+      final entries = await _exports.exportUserNotifications(userId);
 
-      for (final doc in notificationsSnapshot.docs) {
-        final data = doc.data();
+      for (final entry in entries) {
+        final data = entry['data'] as Map<String, dynamic>;
         notifications.add({
-          'notification_id': doc.id,
+          'notification_id': entry['id'],
           'type': data['type'] ?? 'unknown',
           'title': data['title'] ?? '',
           'body': data['body'] ?? '',
@@ -101,34 +97,21 @@ class PreferencesExportManager {
   Future<Map<String, dynamic>> exportNotificationPreferences(
       String userId) async {
     try {
-      // Get notification preferences
-      final prefsDoc = await _firestore
-          .collection(FirestoreCollections.userNotificationPreferences)
-          .doc(userId)
-          .get();
-
-      // Get FCM token (if exists)
-      final fcmDoc = await _firestore
-          .collection(FirestoreCollections.userFcmTokens)
-          .doc(userId)
-          .get();
+      final prefs = await _exports.exportNotificationPreferences(userId);
+      final fcmData = await _exports.exportFcmTokensTopLevel(userId);
 
       String? fcmTokenUpdatedAt;
-      if (fcmDoc.exists) {
-        final fcmData = fcmDoc.data();
-        if (fcmData != null && fcmData['updatedAt'] != null) {
-          final updatedAt = fcmData['updatedAt'];
-          if (updatedAt is Timestamp) {
-            fcmTokenUpdatedAt = updatedAt.toDate().toIso8601String();
-          }
+      if (fcmData != null && fcmData['updatedAt'] != null) {
+        final updatedAt = fcmData['updatedAt'];
+        if (updatedAt is Timestamp) {
+          fcmTokenUpdatedAt = updatedAt.toDate().toIso8601String();
         }
       }
 
       return {
-        'preferences':
-            prefsDoc.exists ? sanitizeForJson(prefsDoc.data()) : null,
-        'preferences_exist': prefsDoc.exists,
-        'fcm_token_registered': fcmDoc.exists,
+        'preferences': prefs != null ? sanitizeForJson(prefs) : null,
+        'preferences_exist': prefs != null,
+        'fcm_token_registered': fcmData != null,
         'fcm_token_updated_at': fcmTokenUpdatedAt,
         'note': 'FCM token is not included for security reasons',
       };
@@ -145,22 +128,17 @@ class PreferencesExportManager {
   /// Export FCM token metadata (token value redacted for security)
   Future<Map<String, dynamic>> exportFcmTokens(String userId) async {
     try {
-      final tokens = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('fcm_tokens')
-          .get();
+      final tokens = await _exports.exportFcmTokensSubcollection(userId);
 
       return {
-        'tokens': tokens.docs.map((d) {
-          final data = sanitizeForJson(d.data());
-          // Redact actual token value, keep metadata
-          if (data.containsKey('token') && data['token'] is String) {
-            final token = data['token'] as String;
-            data['token'] =
+        'tokens': tokens.map((data) {
+          final sanitized = sanitizeForJson(data) as Map<String, dynamic>;
+          if (sanitized.containsKey('token') && sanitized['token'] is String) {
+            final token = sanitized['token'] as String;
+            sanitized['token'] =
                 '${token.substring(0, 10.clamp(0, token.length))}...[redacted]';
           }
-          return data;
+          return sanitized;
         }).toList(),
       };
     } catch (e) {
@@ -172,23 +150,12 @@ class PreferencesExportManager {
   /// Export shopping category preferences and list category orders
   Future<Map<String, dynamic>> exportCategoryPreferences(String userId) async {
     try {
-      final catPrefs = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('category_preferences')
-          .get();
-
-      final listOrders = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('list_category_orders')
-          .get();
+      final catPrefs = await _exports.exportCategoryPreferences(userId);
+      final listOrders = await _exports.exportListCategoryOrders(userId);
 
       return {
-        'category_preferences':
-            catPrefs.docs.map((d) => sanitizeForJson(d.data())).toList(),
-        'list_category_orders':
-            listOrders.docs.map((d) => sanitizeForJson(d.data())).toList(),
+        'category_preferences': catPrefs.map(sanitizeForJson).toList(),
+        'list_category_orders': listOrders.map(sanitizeForJson).toList(),
       };
     } catch (e) {
       app_logger.AppLogger.error(

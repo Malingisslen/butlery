@@ -15,6 +15,10 @@ import 'package:butlery/repositories/firebase/firebase_feedback_repository.dart'
 import 'package:butlery/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 import 'dart:convert';
 
@@ -92,6 +96,22 @@ void main() {
         ),
         pantryRepository: FirebasePantryRepository(
           firestore: fakeFirestore,
+        ),
+        recipeRepository: FirebaseRecipeRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        personalTagRepository: FirebasePersonalTagRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        personalTagGroupRepository: FirebasePersonalTagGroupRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        ),
+        dataExportRepository: FirebaseDataExportRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
         ),
       );
     });

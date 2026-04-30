@@ -2,32 +2,55 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of GDPR compliance data: audit logs, consent records.
 /// Implements Article 7 (Consent) and Article 30 (Records of Processing).
+///
+/// BUT-501 (closed): consent reads route through
+/// [FirebaseDataExportRepository]. The audit_logs read remains on direct
+/// Firestore — by design — because BUT-424 documented that the
+/// `audit_logs` rule branch denies user-side reads (the collection is
+/// admin-only), so this method is currently a "best effort, expect to
+/// catch and report 'unavailable'" path. A Cloud Function exporter is
+/// the proper long-term fix; tracked under the BUT-424 follow-up.
 class ComplianceExportManager {
   final FirebaseFirestore _firestore;
+  final FirebaseDataExportRepository? _exportRepo;
   static const String _logTag = 'ComplianceExportManager';
 
-  ComplianceExportManager({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  ComplianceExportManager({
+    required FirebaseFirestore firestore,
+    FirebaseDataExportRepository? dataExportRepository,
+  })  : _firestore = firestore,
+        _exportRepo = dataExportRepository;
 
-  /// Export audit logs for GDPR Article 30 compliance
-  /// Provides complete audit trail of all permission checks and data
-  /// processing activities performed on behalf of the user.
+  FirebaseDataExportRepository get _exports =>
+      _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
+
+  /// Export audit logs for GDPR Article 30 compliance.
+  ///
+  /// **BUT-424 known limitation:** the `audit_logs` collection is admin-only
+  /// at the rules layer. This method attempts the read but expects deny
+  /// for non-admin callers; the response then carries the error and a
+  /// note. A Cloud Function exporter (admin-credentialed) is the proper
+  /// fix and is tracked separately.
   Future<Map<String, dynamic>> exportAuditLogs(String userId) async {
     try {
       final auditLogs = <Map<String, dynamic>>[];
 
-      // Get all audit logs for this user
+      // Direct Firestore read — see class docstring for rationale.
+      // Caller (DataExportService) has already verified the auth uid IS
+      // userId, so the rules-layer deny is the only failure mode.
       final auditSnapshot = await _firestore
           .collection(FirestoreCollections.auditLogs)
           .where('userId', isEqualTo: userId)
           .orderBy('timestamp', descending: true)
-          .limit(1000) // Limit to last 1000 audit entries
+          .limit(1000)
           .get();
 
       for (final doc in auditSnapshot.docs) {
@@ -89,26 +112,20 @@ class ComplianceExportManager {
   }
 
   /// Export consent records for GDPR Article 7 compliance
-  /// Provides complete history of user consent decisions and purposes.
   Future<Map<String, dynamic>> exportConsentRecords(String userId) async {
     try {
       final consentRecords = <Map<String, dynamic>>[];
       final consentLimit =
           ExportPaginationHelper.getLimitForType('consent_records');
 
-      // Get consent records from user's subcollection (limited)
-      final consentSnapshot = await _firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.userConsent)
-          .orderBy('timestamp', descending: true)
-          .limit(consentLimit)
-          .get();
-
-      for (final doc in consentSnapshot.docs) {
-        final data = doc.data();
+      final history = await _exports.exportConsentHistory(
+        userId,
+        maxDocuments: consentLimit,
+      );
+      for (final entry in history) {
+        final data = entry['data'] as Map<String, dynamic>;
         consentRecords.add({
-          'consent_id': doc.id,
+          'consent_id': entry['id'],
           'consent_version': data['consentVersion'] ?? 'unknown',
           'timestamp':
               data['timestamp']?.toDate()?.toIso8601String() ?? 'unknown',
@@ -118,19 +135,13 @@ class ComplianceExportManager {
         });
       }
 
-      // Get current consent status
-      final currentConsentDoc = await _firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .collection(FirestoreCollections.userConsent)
-          .doc('current')
-          .get();
+      final currentConsentData = await _exports.exportCurrentConsent(userId);
 
       return {
         'total_consent_records': consentRecords.length,
         'consent_history': consentRecords,
-        'current_consent': currentConsentDoc.exists
-            ? sanitizeForJson(currentConsentDoc.data())
+        'current_consent': currentConsentData != null
+            ? sanitizeForJson(currentConsentData)
             : null,
         'gdpr_article': 'Article 7 - Conditions for Consent',
         'note': 'Complete history of consent decisions and purposes',

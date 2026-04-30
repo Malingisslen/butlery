@@ -42,7 +42,12 @@
       "mcp__Claude_in_Chrome__browser_batch",
       "mcp__Claude_in_Chrome__find",
       "Bash(git branch -D *)",
-      "Bash(git push origin --delete *)"
+      "Bash(git push origin --delete *)",
+      "Bash(touch .claude/state/code-review-done.marker .claude/state/testing-review-done.marker .claude/state/firebase-security-done.marker)",
+      "Bash(git reset *)",
+      "Bash(touch .claude/state/code-review-done.marker .claude/state/testing-review-done.marker)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

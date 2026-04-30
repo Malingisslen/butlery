@@ -16,6 +16,7 @@ import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_ownership_resolver.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
@@ -262,6 +263,25 @@ class SocialModule implements DIModule {
               return await coordinator.canViewRecipe(recipeId, userId);
             } catch (_) {
               return false;
+            }
+          },
+          // BUT-458: production wiring of the ownership resolver. The
+          // recipe service is user-scoped (registered post-login in
+          // `configureUserScope`), so we resolve it lazily on each call
+          // — pre-login attempts return null and the comment writes
+          // without denorm fields (rules degrade to author-only read).
+          recipeOwnershipResolver: (recipeId) async {
+            try {
+              if (!container.isRegistered<UnifiedRecipeService>()) {
+                return null;
+              }
+              final recipeService = container<UnifiedRecipeService>();
+              final resolver = FirebaseRecipeOwnershipResolver(
+                getRecipe: (id) async => recipeService.getRecipeById(id),
+              );
+              return await resolver.resolve(recipeId);
+            } catch (_) {
+              return null;
             }
           },
         ),

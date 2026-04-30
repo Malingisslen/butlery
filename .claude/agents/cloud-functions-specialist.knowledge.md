@@ -485,3 +485,78 @@ with `failureReason: "max_attempts_exceeded"` if `>= MAX`. Emit
 - **npm script chains** — when adding a new test, append both the
   granular `test:foo` script AND extend the composite `test` chain.
   Easy to forget the second; CI then runs partial coverage.
+
+### 2026-04-30 — BUT-458 one-shot migration patterns [Pattern discovered]
+
+`functions/src/migrations/backfill-recipe-comments-denorm.ts` —
+admin-gated `onCall` backfill stamping `recipeOwnerId` +
+`sharedWithUserIds` on legacy `recipe_comments` docs. Reviewed clean
+with one Medium finding (lifecycle comment) and three Lows.
+
+**New family**: `migrations/` — one-shot `onCall` scripts that ship
+deployed (vs `admin/` which runs via local `ts-node` against prod
+creds). Distinguishing factor: `migrations/` are admin-only callables
+designed to run from a deployed environment so an operator can invoke
+with `httpsCallable` from a privileged client; `admin/` scripts run
+from a workstation with `firebase-admin` initialized via service
+account.
+
+| Path | Concern | Trigger | Test |
+|---|---|---|---|
+| `migrations/` | Idempotent, paginated, admin-gated, lifecycle-bound | onCall (admin only) | per-script `test:<name>` |
+
+**Patterns worth remembering**:
+
+- **Lifecycle comment is mandatory for `migrations/`**. One-shot
+  CFs without a removal-trigger comment become permanent zombie
+  endpoints. The doc-block header MUST specify: (1) the data
+  condition that signals completion (e.g. "all `recipe_comments`
+  have `recipeOwnerId`"), (2) the soak window before deletion
+  (typically 7d), (3) the Linear ticket. Mirror a one-line "REMOVE
+  after BUT-XXX soak" in `index.ts` at the export site. Without
+  this, future maintainers won't know if it's safe to delete.
+
+- **`hasMore` continuation flag for per-invocation ceilings** —
+  any migration with a wall-clock or doc-count ceiling MUST return
+  a structured response containing `hasMore: boolean` so the
+  caller knows to re-invoke. Two ceiling paths in the BUT-458
+  script: per-doc `maxComments` (caller-supplied) and per-batch
+  `MAX_BATCHES_PER_INVOCATION` (hard-coded at 50 batches × 200
+  docs = 10k). Both flip `hasMore`. Silent termination = footgun.
+
+- **Pagination cursor on `__name__`** — `orderBy(FieldPath.documentId())`
+  + `startAfter(lastDocId)` is the cheapest cursor (no extra
+  index, deterministic, total-order). Update cursor *after*
+  consuming the snapshot; combined with `snapshot.size < BATCH_SIZE`
+  exit, eliminates infinite-loop risk on a malformed doc. Wrap
+  the per-doc work in try/catch so a single bad doc increments
+  `failed` and the loop continues.
+
+- **Idempotency via field-presence guard**, not transaction.
+  `if (typeof data.recipeOwnerId === "string" && data.recipeOwnerId)
+  { skipped++; continue; }` short-circuits BEFORE the expensive
+  collectionGroup lookup. Type-narrowing + truthiness check
+  prevents partial migrations (empty string) from masquerading
+  as done. Re-running the migration is then near-free
+  (1 read per skipped doc).
+
+- **Orphan handling — graceful degrade, don't fail**. When the
+  recipe-ownership lookup returns null (recipe deleted, or
+  unindexed shape), stamp `recipeOwnerId = authorId,
+  sharedWithUserIds = []`. The row stays author-only-readable
+  (matches the rules' fallback path). Track in a separate
+  `orphanedAuthorOnly` counter so ops can see how many fell
+  through. Throwing here would mean the same orphan blocks every
+  subsequent invocation forever.
+
+- **N+1 cost for one-shots is acceptable; for ongoing CFs, batch.**
+  10k × `collectionGroup.where(documentId, '==', X)` = ~$0.006 +
+  ~50s of latency. Fine for one-shot. For an ongoing trigger,
+  use `where(documentId, 'in', [...30 ids])` to cut reads ~30×.
+
+- **Structured-log second-arg, not `JSON.stringify`**. Cloud
+  Logging indexes the second arg as a JSON object (queryable via
+  `jsonPayload.migrated > 0`). `JSON.stringify` collapses
+  everything into the message string — searchable but not
+  filterable. Spotted in BUT-458 at the per-batch progress log;
+  not blocking but inconsistent with house style.

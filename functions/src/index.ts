@@ -56,6 +56,12 @@ export { logWebError } from "./events/log-web-error";
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
 export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
 
+// BUT-458: One-time backfill of recipe_comments denorm fields.
+// REMOVE this export (and the source file) once a `hasMore: false` invocation
+// has held for 30 days without rule-error reports. See file header for full
+// lifecycle conditions.
+export { backfillRecipeCommentsDenorm } from "./migrations/backfill-recipe-comments-denorm";
+
 // Notification Functions - FCM push notifications
 export { sendNotification, sendNotificationBatch } from "./notifications/send-notification";
 export { deliverScheduledNotifications } from "./notifications/deliver-scheduled-notifications";

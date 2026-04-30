@@ -256,3 +256,51 @@ degrades). The value of the test is now twofold: (a) it's the
 empirical evidence for the constant the next reviewer will ask about,
 and (b) it's a regression gate if a future transition-matrix tweak
 shifts the calibration curve.
+
+### 2026-04-30 — BUT-458 fail-soft resolver test pattern [Pattern discovered]
+`firebase_recipe_ownership_resolver_test.dart` (8 tests, all green) covers
+a resolver that **never throws** — every failure mode (missing recipe,
+orphaned recipe, callback exception, empty member map) returns `null`.
+This is intentional: the caller (`FirebaseCommentsRepository.addComment`)
+treats null as "skip denorm fields, let security rules degrade to
+author-only read." The comment write must succeed even if ownership
+resolution fails.
+
+Test-shape implications, distinct from typical "throw on bad input"
+repos:
+
+1. **Test the null contract per failure mode, not just one.** Four
+   separate tests pin null returns for four different upstream
+   failures (recipe absent, recipe present but no owner data, callback
+   throws, empty memberPermissions). A single "returns null on bad
+   input" test would let a refactor that handles only one failure
+   slip through. Each null path corresponds to a different production
+   degrade-mode (recipe deleted vs. legacy schema vs. Firestore error
+   vs. fresh collab-recipe with no members) — they look identical to
+   the test but have different debug paths in production.
+
+2. **Pair the unit tests with one happy-path + one fallback wiring
+   test through the real caller.** The two `addComment with resolver
+   wired` tests instantiate the real `FirebaseCommentsRepository`
+   against `FakeFirebaseFirestore` and assert the doc-level effect:
+   when resolver returns a snapshot, `recipeOwnerId` +
+   `sharedWithUserIds` land on the doc; when resolver returns null,
+   `data.containsKey('recipeOwnerId') == false` AND
+   `sharedWithUserIds == []`. This is the right shape because the
+   *security rule's `in []` operator* depends on the empty-list
+   fallback being present rather than missing — a "didn't crash" test
+   would miss that.
+
+3. **Owner is in `recipeOwnerId`, not in `sharedWithUserIds`.** The
+   collaborative-recipe test explicitly asserts `isNot(contains('owner-uid'))`
+   on the shared list. This pins the contract that drives the rule
+   structure (owner-branch vs. shared-branch are mutually exclusive
+   in the rule's `allow read` predicate). Future refactors that
+   "helpfully" duplicate the owner into the shared list to simplify
+   the rule would surface here.
+
+Pattern is reusable for any resolver/coordinator that's intentionally
+fail-soft (returns null/empty rather than throwing) because the
+*caller* needs the operation to keep going. Don't apply this to
+resolvers where missing data should be a hard error — those want
+`throwsA(...)` tests instead.

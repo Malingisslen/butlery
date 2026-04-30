@@ -1,7 +1,9 @@
 // lib/services/account/data_export_service.dart
 
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
@@ -11,6 +13,7 @@ import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -22,7 +25,6 @@ import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show sanitizeForJson;
-import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// GDPR Compliance - Right to Data Portability (Article 20) and Right of Access (Article 15)
 /// Exports all user data including:
@@ -50,6 +52,11 @@ class DataExportService extends BaseService {
   late final ComplianceExportManager _complianceManager;
   late final PreferencesExportManager _preferencesManager;
 
+  // BUT-501: residual-Firestore gateway used by every manager that still
+  // touches collections without a typed repository. Held here so the
+  // profile read can use it directly.
+  late final FirebaseDataExportRepository _exportRepo;
+
   DataExportService({
     required auth_repo.AuthRepository authRepository,
     required FirestoreRepository firestoreRepository,
@@ -63,29 +70,42 @@ class DataExportService extends BaseService {
     WeeklyMenuPlanRepository? weeklyMenuPlanRepository,
     GroupWeeklyMenuPlanRepository? groupWeeklyMenuPlanRepository,
     PantryRepository? pantryRepository,
+    RecipeRepository? recipeRepository,
+    FirebasePersonalTagRepository? personalTagRepository,
+    FirebasePersonalTagGroupRepository? personalTagGroupRepository,
+    FirebaseDataExportRepository? dataExportRepository,
   })  : _authRepository = authRepository,
         _firestoreRepository = firestoreRepository {
-    final firestore = _firestoreRepository.firestore;
+    _exportRepo = dataExportRepository ??
+        FirebaseDataExportRepository(
+          firestore: _firestoreRepository.firestore,
+          authRepository: authRepository,
+        );
     _contentManager = ContentExportManager(
-      firestore: firestore,
       cookSnapRepository: cookSnapRepository,
       activityEventRepository: activityEventRepository,
       weeklyMenuPlanRepository: weeklyMenuPlanRepository,
       groupWeeklyMenuPlanRepository: groupWeeklyMenuPlanRepository,
       pantryRepository: pantryRepository,
+      recipeRepository: recipeRepository,
+      personalTagRepository: personalTagRepository,
+      personalTagGroupRepository: personalTagGroupRepository,
+      dataExportRepository: _exportRepo,
     );
-    _socialManager = SocialExportManager(firestore: firestore);
+    _socialManager = SocialExportManager(dataExportRepository: _exportRepo);
     _activityManager = ActivityExportManager(
       commentsRepository: commentsRepository,
       ratingsRepository: ratingsRepository,
       feedbackRepository: feedbackRepository,
     );
-    _complianceManager = ComplianceExportManager(firestore: firestore);
-    _preferencesManager = PreferencesExportManager(firestore: firestore);
+    _complianceManager = ComplianceExportManager(
+      firestore: _firestoreRepository.firestore,
+      dataExportRepository: _exportRepo,
+    );
+    _preferencesManager = PreferencesExportManager(
+      dataExportRepository: _exportRepo,
+    );
   }
-
-  /// Access Firestore instance from repository
-  FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   /// Export all user data in GDPR-compliant JSON format
   /// Returns a comprehensive JSON string containing all user personal data.
@@ -194,22 +214,16 @@ class DataExportService extends BaseService {
   Future<Map<String, dynamic>> _exportUserProfile(String userId) async {
     return await safeExecute(
           () async {
-            // Get private profile
-            final userDoc = await _firestore
-                .collection(FirestoreCollections.users)
-                .doc(userId)
-                .get();
-
-            // Get public profile
-            final publicProfileDoc = await _firestore
-                .collection(FirestoreCollections.publicProfiles)
-                .doc(userId)
-                .get();
+            // BUT-501: profile reads route through FirebaseDataExportRepository
+            // which validates ownership before each fetch.
+            final privateProfile =
+                await _exportRepo.exportPrivateProfile(userId);
+            final publicProfile = await _exportRepo.exportPublicProfile(userId);
 
             final currentUser = _authRepository.currentUser;
             return {
-              'private_profile': sanitizeForJson(userDoc.data() ?? {}),
-              'public_profile': sanitizeForJson(publicProfileDoc.data() ?? {}),
+              'private_profile': sanitizeForJson(privateProfile ?? {}),
+              'public_profile': sanitizeForJson(publicProfile ?? {}),
               'firebase_auth': {
                 'uid': userId,
                 'email': currentUser?.email,
