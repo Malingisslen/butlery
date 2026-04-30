@@ -73,6 +73,13 @@ function makeDeps(state: TestState) {
       tokens: ["fake-token"],
       tokenDocIds: new Map([["fake-token", "fake-doc-id"]]),
     }),
+    // BUT-647 + BUT-645: stub the pre-send gate to always proceed. The
+    // gate's behavior is covered by `quiet-hours.test.ts`; here we only
+    // care that `dispatchNotification` reaches the prefs-aware send path.
+    gate: async () =>
+      ({ action: "proceed", reason: "test-stub" }) as const,
+    // Stub the send-event recorder so it doesn't try to hit firestore.
+    recordEvent: async () => undefined,
   };
 }
 

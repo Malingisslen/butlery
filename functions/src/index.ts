@@ -58,6 +58,8 @@ export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
 
 // Notification Functions - FCM push notifications
 export { sendNotification, sendNotificationBatch } from "./notifications/send-notification";
+export { deliverScheduledNotifications } from "./notifications/deliver-scheduled-notifications";
+export { recordNotificationOpened } from "./notifications/record-notification-opened";
 
 // Ingredient Functions - Cascade updates
 export { onIngredientSoftDeleted } from "./ingredients/on-ingredient-soft-deleted";
@@ -74,6 +76,10 @@ export { detectLapsedUsers } from "./analytics/detect-lapsed-users";
 export { sendWeeklyActivityDigest } from "./analytics/send-activity-digest";
 export { trackDayNRetention } from "./analytics/track-retention";
 export { correlateNotificationEffectiveness } from "./analytics/correlate-notifications";
+export { suppressLowPerformers } from "./analytics/suppress-low-performers";
+
+// Scheduled Aggregations - North Star metrics
+export { northStarWeekly } from "./scheduled/north-star-weekly";
 
 // Correction Analytics - Alias learning and domain stats
 export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corrections";

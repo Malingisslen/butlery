@@ -21,6 +21,7 @@
 /// in analytics.
 library;
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -62,17 +63,53 @@ abstract final class NotificationRoutes {
   };
 }
 
+/// Type of the test-seam callback that records a notification-open event
+/// server-side. Production wiring resolves to the `recordNotificationOpened`
+/// callable; tests inject a fake to assert the call shape without hitting
+/// Firebase.
+typedef RecordNotificationOpenedFn = Future<void> Function({
+  required String notificationId,
+  required String notificationType,
+  String? route,
+});
+
 /// Handles a notification tap by navigating using [navigator] and logging
 /// a `notification_opened` analytics event.
 class NotificationDeepLinkRouter {
   final NavigatorState? Function() _navigatorResolver;
   final AnalyticsService? Function() _analyticsResolver;
+  final RecordNotificationOpenedFn _recordOpened;
 
   NotificationDeepLinkRouter({
     required NavigatorState? Function() navigatorResolver,
     required AnalyticsService? Function() analyticsResolver,
+    RecordNotificationOpenedFn? recordOpened,
   })  : _navigatorResolver = navigatorResolver,
-        _analyticsResolver = analyticsResolver;
+        _analyticsResolver = analyticsResolver,
+        _recordOpened = recordOpened ?? _defaultRecordOpened;
+
+  /// Default production wiring — invokes the `recordNotificationOpened`
+  /// callable in the europe-west1 region (where every Cloud Function for
+  /// this project is deployed).
+  ///
+  /// Failure handling lives at the [handle] call site, not here, so the
+  /// fire-and-forget contract holds for ANY [RecordNotificationOpenedFn]
+  /// implementation (including injected test seams or future custom
+  /// recorders). A rejected Future from any recorder is caught and logged;
+  /// it does not propagate to the unhandled-async-error zone.
+  static Future<void> _defaultRecordOpened({
+    required String notificationId,
+    required String notificationType,
+    String? route,
+  }) async {
+    final callable = FirebaseFunctions.instanceFor(region: 'europe-west1')
+        .httpsCallable('recordNotificationOpened');
+    await callable.call<Map<String, dynamic>>(<String, dynamic>{
+      'notificationId': notificationId,
+      'notificationType': notificationType,
+      if (route != null) 'route': route,
+    });
+  }
 
   /// Entry point matching `NotificationService.onNotificationTapped`.
   ///
@@ -86,6 +123,53 @@ class NotificationDeepLinkRouter {
     final analytics = _analyticsResolver();
     final targetId = data['id'];
     final notificationType = data['notificationType'];
+    final notificationId = data['notificationId'];
+
+    // Security-review C1: mirror the open to the server-side
+    // `notification_opened_events` stream. Without this, CTR
+    // aggregation in `suppressLowPerformers` reads 0 opens / N sends
+    // and disables every notification type within a week.
+    //
+    // Dedup is server-side (deterministic doc id), so it's safe to
+    // call this on every tap including duplicates.
+    if (notificationId != null &&
+        notificationId.isNotEmpty &&
+        notificationType != null &&
+        notificationType.isNotEmpty) {
+      // Fire-and-forget — don't await before navigation. The callable
+      // is region-pinned to europe-west1 so the round-trip latency
+      // doesn't gate UI responsiveness.
+      //
+      // The try/catch lives HERE (call site), not inside the default
+      // recorder, so failure-tolerance covers ANY injected
+      // RecordNotificationOpenedFn — test seams and future custom
+      // implementations alike. Without this, an injected recorder that
+      // returned a rejected Future would emit an unhandled-async-error
+      // to the zone instead of being silently logged.
+      try {
+        // ignore: discarded_futures
+        _recordOpened(
+          notificationId: notificationId,
+          notificationType: notificationType,
+          route: route,
+        ).catchError((Object e) {
+          // Open-events are CTR signal — we'd rather miss one than
+          // break the user's deep-link tap. Log so a systemic outage
+          // is visible in Crashlytics-equivalent.
+          AppLogger.warning(
+            '🔔 recordNotificationOpened failed (open not recorded): $e',
+          );
+        });
+      } catch (e) {
+        // Synchronous throw from a misbehaving recorder (rare, but
+        // possible if e.g. an injected fn does input validation
+        // synchronously). Treat the same as an async failure.
+        AppLogger.warning(
+          '🔔 recordNotificationOpened threw synchronously '
+          '(open not recorded): $e',
+        );
+      }
+    }
 
     if (route == null || route.isEmpty) {
       AppLogger.info(

@@ -1160,3 +1160,196 @@ client in a `_TrackingClient extends http.BaseClient` that counts
 reuse confirmed. A future contributor tempted to "simplify" by
 re-introducing per-call construction will fail this test before
 shipping the regression.
+
+### 2026-04-30 — server-side notification gate review patterns (BUT-647 / BUT-645 / BUT-638)
+
+Three recurring failure modes when a Cloud Function reads from a
+Firestore collection it expects "the client" to populate:
+
+1. **Producer-consumer drift.** `suppress-low-performers.ts` reads
+   `notification_opened_events` to compute CTR. Header comment says
+   "client writes" — but no Flutter code writes to that collection,
+   and the default-deny `match /{document=**}` rule would block it
+   even if it tried. Verified by greppping `lib/` for the collection
+   string and finding zero hits. **Pattern: when a Cloud Function
+   header says "X writes here", grep for the producer in the same
+   commit.** No producer = the consumer ships dead. For analytics
+   events that already land in BigQuery via the Analytics export,
+   prefer reading from BigQuery to avoid the dual-write trap. If
+   Firestore is required, ship a callable `recordX` Cloud Function
+   alongside the consumer (App-Check + rate-limited) and wire the
+   client in the same sprint.
+
+2. **PII-bearing queue collections need `expireAt` AND a GDPR
+   cascade — neither is automatic.** `scheduled_notifications` stores
+   payload `title`/`body`/`data` indefinitely (no TTL field, no
+   sweeper). `notification_send_events` writes `expireAt` and
+   relies on the operator-configured TTL policy (which itself is
+   manual: gcloud or Firebase Console — see BUT-477 presence-TTL
+   runbook for the command). **Checklist for any new server-written
+   collection that contains userId or other PII:** (a) `expireAt`
+   field on the doc, (b) gcloud TTL policy in a runbook, (c)
+   `on-user-deleted.ts` cascade (`collectionGroup` query + batched
+   delete with BATCH_LIMIT=500 chunking), (d) single-field index on
+   `userId` for the cascade query.
+
+3. **Compound-equality + range queries need composite indexes —
+   single-field auto-indexing is not enough.** `deliver-scheduled-
+   notifications.ts` runs `where("status","==","pending").where
+   ("deliverAt","<=",now)`. That's `==` + range on different fields,
+   so it needs a composite index in `firestore.indexes.json`. Grep
+   `firestore.indexes.json` for the collection name in the same
+   review pass; missing entry = first scheduled invocation throws
+   `FAILED_PRECONDITION` and keeps throwing on the schedule until
+   noticed.
+
+**Drainer poison-pill rule.** When a scheduled drainer claims a doc
+via transaction `pending → delivered`, then sends, then rolls back
+to `pending` on send failure: the bounce is unbounded. Permanent
+failures (revoked tokens, malformed payloads) loop forever. Always
+add a max-attempts cutoff that flips to `status: "failed"` with
+`failedAt` and `lastError` so the dead-letter rate is observable.
+Pattern: `attempts >= MAX_ATTEMPTS ? "failed" : "pending"` in the
+catch arm.
+
+**Region pinning verification.** `setGlobalOptions({ region:
+"europe-west1" })` in `functions/src/index.ts` (currently line 20)
+covers every export. New `onSchedule` exports inherit it
+automatically — no per-function region override needed. If a future
+agent removes the global option to override per-function, every
+unconverted export silently flips to `us-central1` (default) which
+is a privacy regression for EU users. Treat removal of that line
+as Critical without the matching per-function migration.
+
+**Fail-open vs fail-closed on RC reads.** Notification flags fail
+open (`notification-rc-flags.ts:91-95`) — RC outage doesn't mute
+the entire app. This is the right call for pushes specifically: a
+flaky RC fetch silently muting all notifications is far worse than
+sending a few extra during an outage. Contrast: `system/config`
+LLM kill-switch also fails open at the gate (BUT-439) but the
+outer `runStructureRecipe` catch turns Firestore-unreachable into
+an `internal` HttpsError so the user sees an error. Per-domain
+trade-off: pushes are tolerable to over-send, LLM calls are
+expensive to over-send.
+
+**Gate placement in `dispatchNotification` skips legacy callers
+that don't pass `notificationType`.** `send-notification.ts:259`
+gates only when `payload?.notificationType` is truthy. Acceptable
+as a migration step — but once all callers stamp the type field,
+the conditional should become an assertion, not a fall-through.
+Otherwise legacy paths permanently bypass the BUT-647/645 system.
+
+### 2026-04-30 — server-side notification gate fixes round 2 (C1/C2/H1/M1)
+
+Round-2 review of Agent A's fixes to the BUT-647/645 review findings.
+All four fixes are functionally correct; documenting the patterns that
+worked and the still-open Medium gaps:
+
+**C1 — `recordNotificationOpened` callable.** Pattern that worked:
+- Internal core `runRecordNotificationOpened(userId, req, deps?)`
+  takes uid as a parameter; wrapper enforces `request.auth` and maps
+  validation `Error.message.includes("required"|"maximum length"|...)`
+  to `HttpsError("invalid-argument", ...)`. The string-match approach
+  is brittle but acceptable; a future refactor that renames a
+  validation message could silently degrade to `internal` — a typed
+  `class ValidationError extends Error` would be tidier.
+- Deterministic doc id `<userId>_<notificationId>` with slash
+  sanitization (`replace(/[/]/g, "_")`). Read-then-set lets the call
+  honestly report `recorded=false` on dedup vs blind set.
+- Client wired via `FirebaseFunctions.instanceFor(region: 'europe-west1')`
+  — the `.instance` default would silently 404 against us-central1
+  in production. **This is a recurring footgun for region-pinned
+  projects.** When reviewing any new callable client wiring, grep
+  for `FirebaseFunctions.instance` (without `For`) — that's the bug
+  shape.
+- Regression-guard test `producerConsumerEndToEnd()` correctly goes
+  red if the writer call is removed: producer writes 10 docs into
+  shared `openedDocs` map → consumer reads via `Array.from(map.values())`
+  → 50 sends + 0 opens (if writer removed) → CTR=0 → flips=1 → fail.
+  Test wires the *real* writer + *real* aggregator with a shared
+  fake DB — neither side is mocked.
+
+**Still-Medium for C1:**
+1. No length cap on `route` field — `notificationId` capped at 256,
+   `notificationType` at 64, but `route` is unbounded (callable
+   hard-cap of 10MB is the only ceiling). Add `route.length > 256`
+   check matching the others.
+2. No rate limit (the codebase's `enforceRateLimit` middleware
+   pattern is not applied). Auth + dedup + 30d TTL + small doc size
+   bound the abuse vector, but parity with other callables would
+   add the token bucket. Acceptable for ship; track as a follow-up.
+3. No `enforceAppCheck: true`. Most callables in this project don't
+   set it (only LLM + log-web-error do), so this is parity with
+   convention rather than a regression — but fully closing the
+   "cheap signal flooding" vector means App Check + rate limit.
+
+**C2 — GDPR cascade on `notification_opened_events`.** Confirmed
+the three-collection sweep in `cleanupNotificationQueuesWithDb`
+uses BATCH_LIMIT=500 chunking (not naive single-write). One-loop-
+per-collection, fresh batch per collection, batch.commit on
+chunk-full and on tail. Pattern correct.
+
+**Still-Medium for C2:** the new producer
+`record-notification-opened.ts` does NOT carry the gcloud TTL
+command in its module docstring. `scheduled-notifications.ts`
+and `notification-send-events.ts` both document the operator
+command inline. Add to record-notification-opened header:
+
+```
+gcloud firestore fields ttls update expireAt \
+  --collection-group=notification_opened_events --enable-ttl
+```
+
+Without it, an operator reads only the cleanup cascade comment
+(line 102-108 of on-user-deleted.ts) and may not realize
+`notification_opened_events` itself needs a manual TTL policy
+flip — same passive-expiry trap as scheduled_notifications.
+
+**H1 — composite index.** Entry at `firestore.indexes.json:245-252`
+is in `indexes[]` (correct top-level array, NOT inside
+`fieldOverrides`). Schema matches the existing entries: same
+`collectionGroup` / `queryScope: "COLLECTION"` / `fields[]` shape.
+`firebase deploy --only firestore:indexes` will accept it. The
+query `where("status","==","pending").where("deliverAt","<=",now)`
+is supported by an `(status ASC, deliverAt ASC)` composite — `==`
+on the leading field plus range on the trailing field is the
+canonical compound shape.
+
+**M1 — drainer poison-pill.** Refactor to
+`runDeliverScheduledNotifications(deps?)` (db, now, send injectable).
+MAX_ATTEMPTS=5 is exported. Transaction at line 85-97 reads doc,
+verifies `status === "pending"`, atomically stamps
+`status="delivered"`, `deliveredAt`, `attempts=attemptsBefore+1`.
+
+**Race analysis (the explicit concern):** if attempt 5 succeeds at
+FCM, the transaction has already stamped `delivered` BEFORE the
+send; the catch arm at 134-166 only fires on send failure. So
+attempt 5 success → doc stays `delivered` (no flip to `failed`).
+Correct. The doc is "claimed-delivered-then-sent", which is the
+deliberate at-most-once trade-off documented in
+`scheduled-notifications.ts` lines 57-65.
+
+Failure-arm rollback at line 163 sets `status: "pending"` but does
+NOT reset `attempts` — the bumped counter is the loop guard so
+the next run picks up the same doc with attempts=N+1 after the
+transaction's next bump. Math: 0 → claim bump 1 → fail rollback
+to pending(1) → claim bump 2 → fail rollback to pending(2) → ...
+→ claim bump 5 → fail at 5==MAX → park at `failed`. Five tries
+exactly, as intended.
+
+Malformed branch at 115-124 parks immediately without rolling back
+the bump — also correct (a malformed doc never recovers).
+
+**M1 test-fake limitation worth noting (not a fix request):** the
+fake DB's `get()` at deliver-scheduled-notifications.test.ts:49-55
+returns ALL store docs without filtering by `status` or `deliverAt`.
+That's fine for a contract test of the transaction logic (which
+re-checks status before claiming), but it means the test cannot
+catch a regression where the production query filter is removed
+(e.g. accidentally dropping the `where("status","==","pending")`
+clause). For a defense-in-depth follow-up, an emulator-backed
+test that exercises the actual query would close this.
+
+**Acceptance:** approved for commit. The remaining items (C1
+length-cap on route, gcloud TTL doc on the new producer) are
+follow-up Medium polish, not commit-blockers.

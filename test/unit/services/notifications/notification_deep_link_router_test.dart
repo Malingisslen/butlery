@@ -257,7 +257,120 @@ void main() {
 
       expect(nav.calls.single.route, Routes.home);
     });
+
+    // -----------------------------------------------------------------
+    // Security-review C1 follow-up: server-side open-event recording.
+    // The recordOpened seam is fire-and-forget — assert on call shape
+    // (correct fields), conditional invocation (skipped without id),
+    // and failure-tolerance (navigation proceeds even on rejection).
+    // -----------------------------------------------------------------
+
+    test('records server-side open event with id, type, and route', () async {
+      final calls = <_RecordedOpen>[];
+      Future<void> seam({
+        required String notificationId,
+        required String notificationType,
+        String? route,
+      }) async {
+        calls.add(_RecordedOpen(notificationId, notificationType, route));
+      }
+
+      final routerWithSeam = NotificationDeepLinkRouter(
+        navigatorResolver: () => nav,
+        analyticsResolver: () => analytics,
+        recordOpened: seam,
+      );
+
+      routerWithSeam.handle('/recipe', const {
+        'id': 'recipe-1',
+        'notificationId': 'msg-abc',
+        'notificationType': 'recipe_shared',
+      });
+      // One microtask for the fire-and-forget recorder.
+      await Future<void>.delayed(Duration.zero);
+
+      expect(calls, hasLength(1));
+      expect(calls.single.notificationId, 'msg-abc');
+      expect(calls.single.notificationType, 'recipe_shared');
+      expect(calls.single.route, '/recipe');
+      // Navigation still happened.
+      expect(nav.calls.single.route, Routes.receptDetalj);
+    });
+
+    test('skips server-side recording when notificationId is missing',
+        () async {
+      final calls = <_RecordedOpen>[];
+      Future<void> seam({
+        required String notificationId,
+        required String notificationType,
+        String? route,
+      }) async {
+        calls.add(_RecordedOpen(notificationId, notificationType, route));
+      }
+
+      final routerWithSeam = NotificationDeepLinkRouter(
+        navigatorResolver: () => nav,
+        analyticsResolver: () => analytics,
+        recordOpened: seam,
+      );
+
+      // No `notificationId` key — server-side dedup requires one,
+      // so we must NOT call the recorder at all.
+      routerWithSeam.handle('/recipe', const {
+        'id': 'recipe-1',
+        'notificationType': 'recipe_shared',
+      });
+      await Future<void>.delayed(Duration.zero);
+
+      expect(calls, isEmpty);
+      // Navigation still happened — analytics path unaffected.
+      expect(nav.calls.single.route, Routes.receptDetalj);
+    });
+
+    test('navigates even when recordOpened throws', () async {
+      // Simulates a rejected Future from the callable — the kind of
+      // failure mode FirebaseFunctionsException(code: "unavailable")
+      // produces in production. Without the call-site try/catch this
+      // would emit an unhandled-async-error to the test zone and the
+      // test would fail with a "test completed with errors" warning.
+      Future<void> failingSeam({
+        required String notificationId,
+        required String notificationType,
+        String? route,
+      }) {
+        return Future<void>.error(
+          Exception('FirebaseFunctionsException(code: "unavailable")'),
+        );
+      }
+
+      final routerWithSeam = NotificationDeepLinkRouter(
+        navigatorResolver: () => nav,
+        analyticsResolver: () => analytics,
+        recordOpened: failingSeam,
+      );
+
+      routerWithSeam.handle('/recipe', const {
+        'id': 'recipe-1',
+        'notificationId': 'msg-abc',
+        'notificationType': 'recipe_shared',
+      });
+      // Navigation is synchronous — assert immediately.
+      expect(nav.calls.single.route, Routes.receptDetalj);
+
+      // Drain the rejected Future so .catchError fires before the test
+      // ends. Two microtasks: one for the seam, one for the catchError.
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+    });
   });
+}
+
+/// Record-shape capture for the recordOpened seam tests.
+class _RecordedOpen {
+  _RecordedOpen(this.notificationId, this.notificationType, this.route);
+  final String notificationId;
+  final String notificationType;
+  final String? route;
 }
 
 /// Minimal consent stub that always grants — keeps AnalyticsService from

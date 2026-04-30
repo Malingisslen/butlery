@@ -57,6 +57,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     friendCountsUpdated: 0,
     feedbackCleaned: 0,
     presenceRowsRemoved: 0,
+    notificationQueuesPurged: 0,
   };
 
   // Fetch friends list once (used by steps 1 and 4)
@@ -94,7 +95,77 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   //    via onDisconnect, so it isn't included here.
   results.presenceRowsRemoved = await cleanupPresenceRows(userId);
 
+  // 9. GDPR (BUT-647 / BUT-645 — security review C2): purge per-user rows
+  //    from the two notification analytics/queue collections. Both carry
+  //    `userId`, and `scheduled_notifications` additionally carries the
+  //    push payload (title/body) which can include comment snippets,
+  //    recipe titles, friend display names — all linked PII. TTL alone
+  //    isn't sufficient for Right-to-Erasure; we have to delete on demand.
+  //
+  //    Also purges `notification_opened_events` (added in C1 fix) which
+  //    keys by `userId`.
+  results.notificationQueuesPurged =
+    await cleanupNotificationQueues(userId);
+
   v1.logger.info(`Cleanup results for ${userId}:`, results);
+}
+
+/**
+ * BUT-647 / BUT-645 (security-review C2): cascade-delete user rows in
+ * the three notification-related queues/streams.
+ *
+ *   - `scheduled_notifications` — pending/delivered delayed pushes.
+ *     Carries title+body PII.
+ *   - `notification_send_events` — per-send analytics row. Carries
+ *     `userId` + type only, but still PII-linked.
+ *   - `notification_opened_events` — per-tap analytics row from
+ *     `recordNotificationOpened`. Same shape as send-events.
+ *
+ * Returns the total number of docs deleted across all three.
+ */
+async function cleanupNotificationQueues(userId: string): Promise<number> {
+  return cleanupNotificationQueuesWithDb(db, userId);
+}
+
+/**
+ * Test seam — accepts an injected Firestore so the cascade can be
+ * exercised against a stub.
+ */
+export async function cleanupNotificationQueuesWithDb(
+  database: admin.firestore.Firestore,
+  userId: string
+): Promise<number> {
+  const collections = [
+    "scheduled_notifications",
+    "notification_send_events",
+    "notification_opened_events",
+  ] as const;
+
+  let total = 0;
+  for (const collection of collections) {
+    const snapshot = await database
+      .collection(collection)
+      .where("userId", "==", userId)
+      .get();
+    if (snapshot.empty) continue;
+
+    let batch = database.batch();
+    let batchCount = 0;
+    for (const doc of snapshot.docs) {
+      batch.delete(doc.ref);
+      batchCount++;
+      total++;
+      if (batchCount >= BATCH_LIMIT) {
+        await batch.commit();
+        batch = database.batch();
+        batchCount = 0;
+      }
+    }
+    if (batchCount > 0) {
+      await batch.commit();
+    }
+  }
+  return total;
 }
 
 /**

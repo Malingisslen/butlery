@@ -15,6 +15,8 @@ import * as admin from "firebase-admin";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { BATCH_LIMIT } from "../shared/batch-update";
 import { buildNotificationPayload } from "../shared/notification-payload";
+import { evaluateSendGate } from "../shared/notification-gate";
+import { recordNotificationSendEvent } from "../shared/notification-send-events";
 
 const getDb = () => admin.firestore();
 
@@ -135,30 +137,59 @@ export const detectLapsedUsers = onSchedule(
         for (let i = 0; i < userIdsToNotify.length; i += 10) {
           const batch = userIdsToNotify.slice(i, i + 10);
           const results = await Promise.allSettled(
-            batch.map((userId) =>
-              sendPushToUserRespectingPreferences(
+            batch.map(async (userId) => {
+              // BUT-647 + BUT-645: gate before send. Win-back is low
+              // importance, so the gate will DROP for users in their
+              // quiet window (rather than delay). Outside-window or no
+              // quiet hours configured ⇒ proceed.
+              const data = buildNotificationPayload({
+                route: "/winback",
+                targetId: "",
+                notificationType: threshold.type,
+                additionalData: { type: threshold.type },
+              });
+              const decision = await evaluateSendGate({
+                userId,
+                notificationType: threshold.type,
+                payload: {
+                  title: "Butlery",
+                  body: threshold.message,
+                  data,
+                },
+              });
+              if (decision.action !== "proceed") {
+                return { sent: false, reason: decision.action } as const;
+              }
+              const result = await sendPushToUserRespectingPreferences(
                 userId,
                 { title: "Butlery", body: threshold.message },
                 "reEngagement",
-                buildNotificationPayload({
-                  route: "/winback",
-                  // Win-back has no target entity — it just opens the app.
-                  targetId: "",
+                data
+              );
+              if (result.sent) {
+                await recordNotificationSendEvent({
+                  userId,
                   notificationType: threshold.type,
-                  additionalData: { type: threshold.type },
-                })
-              )
-            )
+                  channel: "fcm",
+                });
+              }
+              return result;
+            })
           );
           for (const result of results) {
             if (result.status !== "fulfilled") continue;
             if (result.value.sent) {
               pushSuccessCount++;
-            } else if (result.value.reason === "quiet_hours") {
+            } else if (
+              result.value.reason === "quiet_hours" ||
+              result.value.reason === "dropped" ||
+              result.value.reason === "delayed"
+            ) {
               pushSkippedQuietHours++;
             } else if (
               result.value.reason === "opted_out" ||
-              result.value.reason === "master_disabled"
+              result.value.reason === "master_disabled" ||
+              result.value.reason === "type_disabled"
             ) {
               pushSkippedOptOut++;
             }

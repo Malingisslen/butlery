@@ -16,6 +16,8 @@ import { Collections } from "../shared/collections";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { BATCH_LIMIT } from "../shared/batch-update";
 import { buildNotificationPayload } from "../shared/notification-payload";
+import { evaluateSendGate } from "../shared/notification-gate";
+import { recordNotificationSendEvent } from "../shared/notification-send-events";
 
 const getDb = () => admin.firestore();
 
@@ -149,28 +151,44 @@ export const sendWeeklyActivityDigest = onSchedule(
           for (let i = 0; i < usersToNotifyViaPush.length; i += 10) {
             const pushBatch = usersToNotifyViaPush.slice(i, i + 10);
             await Promise.allSettled(
-              pushBatch.map((entry) => {
+              pushBatch.map(async (entry) => {
                 const totalActivity =
                   entry.newRecipeCount + entry.newCommentCount +
                   entry.newRatingCount + entry.newShareCount;
-                return sendPushToUserRespectingPreferences(
+                const title = "Veckans sammanfattning";
+                const body = `Du hade ${totalActivity} aktivitet${totalActivity !== 1 ? "er" : ""} den här veckan`;
+                const data = buildNotificationPayload({
+                  route: "/winback",
+                  targetId: "",
+                  notificationType: "activity_digest",
+                  additionalData: { type: "activity_digest" },
+                });
+                // BUT-647 + BUT-645: gate. Digest is low-importance, so
+                // a user inside their quiet window will be DROPPED (the
+                // notification doc was already written above).
+                const decision = await evaluateSendGate({
+                  userId: entry.userId,
+                  notificationType: "activity_digest",
+                  payload: { title, body, data },
+                });
+                if (decision.action !== "proceed") return;
+                const result = await sendPushToUserRespectingPreferences(
                   entry.userId,
-                  {
-                    title: "Veckans sammanfattning",
-                    body: `Du hade ${totalActivity} aktivitet${totalActivity !== 1 ? "er" : ""} den här veckan`,
-                  },
+                  { title, body },
                   "reEngagement",
                   // Digest is a re-engagement-style ping that just opens the
                   // app to the notifications inbox — same destination as the
                   // win-back route. The `notificationType` distinguishes it
                   // for analytics attribution.
-                  buildNotificationPayload({
-                    route: "/winback",
-                    targetId: "",
-                    notificationType: "activity_digest",
-                    additionalData: { type: "activity_digest" },
-                  })
+                  data
                 );
+                if (result.sent) {
+                  await recordNotificationSendEvent({
+                    userId: entry.userId,
+                    notificationType: "activity_digest",
+                    channel: "fcm",
+                  });
+                }
               })
             );
           }

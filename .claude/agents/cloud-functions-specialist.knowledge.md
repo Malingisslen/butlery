@@ -290,3 +290,198 @@ missing/non-string/empty-string field ⇒ wholesale fallback + a single
   `__resetPromptsCacheForTests()` export that test cases call between
   cases. Don't forget — without it, case [2]'s cache hit will pollute case
   [3]'s cache miss assertions.
+
+### 2026-04-30 — BUT-647/BUT-645/BUT-638 sprint [Pattern discovered]
+
+**Sprint scope**: server-side quiet-hours enforcement (BUT-647), per-type
+notification effectiveness + RC auto-suppression (BUT-645), North-Star
+weekly aggregation (BUT-638). Three new functions, six new shared modules,
+three new test suites (21 cases total, all passing).
+
+**Key files added**:
+- `functions/src/shared/analytics-server.ts` — `logAnalyticsEvent(name, fields)`
+  emits structured `event=<name>` log → BigQuery export → Looker dashboards.
+  Cloud Functions can't call the FA SDK directly; this is the server-side
+  equivalent.
+- `functions/src/shared/notification-importance.ts` — static allowlist
+  splitting `low` (drop) from `high` (delay) importance. Default low so
+  unknown types err on NOT disturbing the user.
+- `functions/src/shared/quiet-hours.ts` — DST-safe `Intl`-based local
+  hour/minute resolver, supports per-user IANA timezone, falls open on
+  prefs read errors.
+- `functions/src/shared/scheduled-notifications.ts` — Firestore-backed
+  delayed-push queue.
+- `functions/src/shared/notification-rc-flags.ts` — RC flag reader for
+  `notifications.enabled.<type>` with 5-min cache and **fail-open** on
+  any error (RC outage must not silently mute pushes).
+- `functions/src/shared/notification-send-events.ts` — best-effort write
+  of `notification_send_events` row per push (30-day TTL). Failures are
+  logged at warn but never block the actual send.
+- `functions/src/shared/notification-gate.ts` — central pre-send gate
+  combining the above. Three senders (`sendNotification` callable,
+  `detectLapsedUsers`, `sendWeeklyActivityDigest`) all call this.
+- `functions/src/notifications/deliver-scheduled-notifications.ts` —
+  `every 5 minutes` scheduler draining the queue. Transaction-flips
+  `pending → delivered` BEFORE the FCM send (at-most-once contract).
+- `functions/src/analytics/suppress-low-performers.ts` — weekly job
+  flipping RC flags when CTR < 5% over ≥50 sends.
+- `functions/src/scheduled/north-star-weekly.ts` — Mondays 06:00 UTC
+  aggregator writing `metrics/weekly_north_star/snapshots/{isoWeek}`.
+
+**Patterns worth remembering**:
+
+- **Cloud Tasks vs Firestore queue trade-off**: spec asked for Cloud
+  Tasks. Repo has zero existing Cloud Tasks usage → adding it means new
+  top-level dep (`@google-cloud/tasks`), new IAM role (`Cloud Tasks
+  Enqueuer`), queue resource in `firebase.json`, and a separate HTTP
+  receiver function. For our beta scale (hundreds/night) a Firestore
+  queue + 5-min scheduler is cheaper, simpler, and avoids the new dep.
+  Architectural deviation flagged in the file's docstring with the
+  inflection point (~10k delayed pushes/night) at which the trade
+  reverses.
+
+- **Fail-open is the right default for notification gates.** RC fetch
+  errors, prefs read errors, send-event write errors all log + continue
+  rather than block. The cost of fail-closed during an infra blip is
+  silently muting all notifications (worse than a few extra pushes).
+
+- **DST-safe local-time resolution**: `new Intl.DateTimeFormat("en-GB",
+  { timeZone, hour, minute, hour12: false })` + `formatToParts()`. No
+  date library needed. Tested at 02:30 UTC on 2026-03-29 (Stockholm
+  spring-forward) — correctly resolves to 04:30 CEST.
+
+- **`metrics/{collection}/{doc}` is invalid Firestore.** Spec said
+  `metrics/weekly_north_star/{isoWeek}` (3 segments = doc path) but
+  `weekly_north_star` would have to be a doc, leaving `{isoWeek}` as a
+  subcollection name (which is wrong). Resolved via subcollection:
+  `metrics/weekly_north_star/snapshots/{isoWeek}`. Always count
+  segments — odd = collection, even = doc.
+
+- **Activity-event schema drift in production**: spec used `userId` +
+  `eventType == "recipe_cooked"` but client (`activity_event.dart`)
+  writes `actorId` + `type == "cooked"`. Aggregator accepts BOTH via
+  `||` fallbacks so it works against live data without a coordinated
+  client refactor. Document the dual-shape in the function header so
+  future readers know it's intentional.
+
+- **Test seam pattern for new senders/aggregators**: every new function
+  exposes a `runX(deps)` plain async function alongside the `onSchedule`
+  export. The schedule wrapper is one line that delegates to `runX()`.
+  Tests exercise `runX(deps)` with fake `db`, `now`, and helper-function
+  injections. Avoids spinning up the emulator for unit-level tests.
+
+- **Existing `send-notification.test.ts` must opt out of the gate.**
+  Adding `gate` + `recordEvent` to `DispatchOptions` broke the existing
+  test because its `makeDeps` didn't pass them, so the real
+  `evaluateSendGate` ran and tried to read `admin.firestore()` without
+  an app initialized. Updated the test's `makeDeps` to stub both seams
+  with `{action: "proceed", reason: "test-stub"}`. Lesson: any time you
+  add a new test seam to `DispatchOptions`, audit existing tests and
+  give them a default stub.
+
+- **Aggregator queries: cap window-fetch in parallel, NOT serial.**
+  North Star fetches W0/W1/W2/W3 windows concurrently via
+  `Promise.all([...])` — single round-trip latency rather than 4×.
+  Each window is one Firestore range query.
+
+- **Idempotent re-run = `set()`, not `create()`.** Test idempotency by
+  asserting `writeCount=2` but `Set<docPath>.size=1` (one path written
+  twice). `set()` overwrites; `create()` would throw on second call.
+
+### 2026-04-30 — security review fixes (C1/C2/H1/M1) [Bug fixed]
+
+Security review of the BUT-647/BUT-645/BUT-638 sprint caught four
+wiring gaps. All four were "architecture sound, plumbing missing"
+class — useful patterns for future sprints.
+
+**C1 — producerless aggregator (CRITICAL)**: `suppressLowPerformers`
+read `notification_opened_events` but no code wrote it. CTR computed
+0/N for every type → every notification type would auto-disable in week 1.
+
+Fix: new callable `recordNotificationOpened` in
+`functions/src/notifications/record-notification-opened.ts`. Deterministic
+doc id (`<userId>_<notificationId>`, slash-sanitized) provides server-side
+dedup so double-taps don't inflate CTR. Client wired in
+`lib/services/notifications/notification_deep_link_router.dart` via
+`FirebaseFunctions.instanceFor(region: 'europe-west1')` (NOT
+`.instance` — `.instance` defaults to us-central1 and silently fails
+against europe-west1 functions). Fire-and-forget; failures logged at
+warn but never block navigation.
+
+**Regression guard pattern (worth remembering)**: any time an
+aggregator reads collection X, add a test that wires the *real* X
+producer to the *real* aggregator with a shared fake DB. The
+"producer→consumer end-to-end" case in `notification-effectiveness.test.ts`
+demonstrates this — if anyone removes the writer, the test goes red
+because the consumer sees 0 opens and tries to disable a healthy type.
+Pure unit tests would never catch a producerless gap.
+
+**C2 — GDPR cascade + TTL on PII queues (CRITICAL)**:
+`scheduled_notifications` carries push body (comment snippets, recipe
+titles, friend names — PII). `notification_send_events` and
+`notification_opened_events` carry `userId` (linked PII). All three
+needed:
+1. `expireAt` field stamped at write-time (7d for scheduled-queue,
+   30d for analytics streams). The TTL POLICY itself must be enabled
+   manually — `gcloud firestore fields ttls update expireAt
+   --collection-group=<col> --enable-ttl`. Document this as an
+   environment-setup step in the writer module's docstring.
+2. Cascade in `on-user-deleted.ts`. Added
+   `cleanupNotificationQueuesWithDb(database, userId)` (test seam) +
+   `cleanupNotificationQueues(userId)` (production wrapper). Iterates
+   `[scheduled_notifications, notification_send_events,
+   notification_opened_events]`, batches deletes per `BATCH_LIMIT`.
+
+**H1 — composite index for drainer**: `where('status', '==',
+'pending').where('deliverAt', '<=', now)` is a compound query.
+Without an entry in `firestore.indexes.json`, the first scheduler run
+throws `FAILED_PRECONDITION`. Always check `firestore.indexes.json`
+when introducing a multi-`where` query — the emulator silently
+auto-creates the index, but production deployment doesn't.
+
+**M1 — drainer poison-pill loop**: a permanently-failing FCM token
+(expired/invalid recipient) bounced docs through
+`pending → delivered → pending → ...` forever. Fix: `MAX_ATTEMPTS = 5`
+constant, increment counter inside the claim transaction, on send-failure
+compare post-bump count: rollback if `< MAX`, park at `status="failed"`
+with `failureReason: "max_attempts_exceeded"` if `>= MAX`. Emit
+`scheduled_notification_max_attempts_exceeded` analytics for ops.
+
+**Patterns worth remembering**:
+
+- **Region pinning on the client side**: `FirebaseFunctions.instance`
+  defaults to us-central1. Project functions are pinned to europe-west1.
+  Always use `FirebaseFunctions.instanceFor(region: 'europe-west1')`.
+  `notification_service.dart:487` is a latent bug doing the wrong thing
+  (out of scope for this sprint to fix).
+
+- **Module-load admin.firestore() is import-poison for tests**: the
+  pre-existing `const db = admin.firestore()` at top of
+  `on-user-deleted.ts` requires an initialized default app. Tests that
+  only need an exported pure helper (test-seam) must
+  `admin.initializeApp({projectId: 'butlery-test-X'})` then
+  `require()` the module dynamically. See `presence-cascade.test.ts`
+  and `notification-queues-gdpr.test.ts` for the pattern. Lazy
+  initialization (`const getDb = () => admin.firestore()`) is the
+  better fix but pre-existing files use eager init.
+
+- **Manual one-shot setup steps belong in the writer's docstring**:
+  TTL policies aren't auto-deployed by `firebase deploy`. Document the
+  `gcloud firestore fields ttls update` invocation right where the
+  field is written, so the next reader knows the policy is required
+  but not in CI.
+
+- **Server-side write callable vs client-direct write trade-off**:
+  for new analytics-style collections, prefer a callable
+  (`record*` family). Keeps Firestore-rules surface narrow (no new
+  client-writable collection), centralizes auth + dedup +
+  schema-validation in TypeScript, and makes the data flow auditable
+  (one entry point to grep for).
+
+- **Deterministic doc id for dedup**: `<userId>_<entityId>` is the
+  go-to pattern. `set()` becomes idempotent, no transactions needed,
+  no race conditions on concurrent writes for the same key.
+
+- **npm script chains** — when adding a new test, append both the
+  granular `test:foo` script AND extend the composite `test` chain.
+  Easy to forget the second; CI then runs partial coverage.

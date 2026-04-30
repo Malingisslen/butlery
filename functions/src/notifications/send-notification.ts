@@ -23,6 +23,8 @@ import {
 } from "../shared/fcm-tokens";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
 import { buildNotificationPayload } from "../shared/notification-payload";
+import { evaluateSendGate } from "../shared/notification-gate";
+import { recordNotificationSendEvent } from "../shared/notification-send-events";
 
 /**
  * Sanitizes user-provided text by stripping HTML tags.
@@ -218,6 +220,13 @@ export interface DispatchOptions {
   ) => Promise<admin.messaging.BatchResponse>;
   /** Test seam: override the token lookup. */
   getTokens?: typeof getActiveTokensForUser;
+  /**
+   * Test seam: override the BUT-647/BUT-645 pre-send gate. Production
+   * resolves to `evaluateSendGate` from the shared helper.
+   */
+  gate?: typeof evaluateSendGate;
+  /** Test seam: override the send-event recorder. */
+  recordEvent?: typeof recordNotificationSendEvent;
 }
 
 export async function dispatchNotification(
@@ -233,6 +242,8 @@ export async function dispatchNotification(
     preferenceAwareSend = sendPushToUserRespectingPreferences,
     silentSend = (msg) => admin.messaging().sendEachForMulticast(msg),
     getTokens = getActiveTokensForUser,
+    gate = evaluateSendGate,
+    recordEvent = recordNotificationSendEvent,
   } = opts;
 
   if (silent) {
@@ -242,6 +253,30 @@ export async function dispatchNotification(
       silentSend,
       getTokens,
     });
+  }
+
+  // BUT-647 + BUT-645: server-side pre-send gate. Drops if the type's RC
+  // flag is off; drops or delays if the user is inside their quiet-hours
+  // window. The gate handles its own analytics + scheduled-queue enqueue
+  // so the dispatcher doesn't have to know about either subsystem.
+  const notificationType = payload?.notificationType;
+  if (notificationType) {
+    const decision = await gate({
+      userId: targetUserId,
+      notificationType,
+      payload: {
+        title: sanitizeText(title) || "Butlery",
+        body: sanitizeText(body) || "",
+        data: sanitizeData(payload, imageUrl),
+      },
+    });
+    if (decision.action !== "proceed") {
+      return {
+        success: true, // gate decisions are not failures
+        successCount: 0,
+        failureCount: 0,
+      };
+    }
   }
 
   // Non-silent: route through the preference-aware gate. The category param
@@ -269,6 +304,17 @@ export async function dispatchNotification(
       successCount: 0,
       failureCount: 0,
     };
+  }
+
+  // BUT-645: record send-event for CTR analytics. Best-effort — failure
+  // here is logged but does not propagate. Skipped if no notification type
+  // (legacy callers without the BUT-641 schema field).
+  if (notificationType) {
+    await recordEvent({
+      userId: targetUserId,
+      notificationType,
+      channel: "fcm",
+    });
   }
 
   return {
