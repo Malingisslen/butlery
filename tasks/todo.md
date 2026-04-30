@@ -1,6 +1,62 @@
 # Sprint Backlog
 
-## Sprint: Parsing cost wins + BUT-427 concurrency bugs + analytics polish — 2026-04-29
+## Sprint: Notification backend + analytics signals + form/landscape bugs + Viterbi tests — 2026-04-30
+
+Theme: drain the analytics/notification cluster (server-side mirrors + per-user dimensions for cohort reports), close two Bug-labeled UX defects, and pay one parsing test debt. **4 agents, 9 tasks, isolated file trees** (`functions/src/notifications` + `functions/src/scheduled` · `lib/services/analytics` + bootstrap · `lib/views/**` form+landscape · `test/unit/services/parsing`).
+
+Prior sprint (`753065f07`) shipped — Remote Config prompts, OCR cache key fix, push interceptor concurrency, A11y chunk-9 + theme tokens, AnalyticsEvents registry + flag-eval dedup. Carry-overs **BUT-501 / BUT-458** stay In Progress (partial-by-design — let bed one more cycle); **BUT-498 / BUT-697** stay In Progress per standing skip-direction.
+
+### Agent A: cloud-functions-specialist — Notification backend + North Star
+
+- [x] **A1. Server-side quiet-hours mirroring for push send** — done. New `functions/src/shared/{quiet-hours,notification-importance,notification-gate,scheduled-notifications,notification-rc-flags,notification-send-events,analytics-server}.ts` + `functions/src/notifications/deliver-scheduled-notifications.ts` (5-min drainer). `dispatchNotification` in `send-notification.ts` runs all sends through the central gate. **Architectural choice:** Firestore queue (transactional claim-then-send, at-most-once) instead of Cloud Tasks — avoids new top-level dep + IAM/queue setup; cheaper for beta scale; inflection point ~10k delayed/night documented. Storage extends existing `user_notification_preferences/{uid}` (BUT-438) with optional `timezone` field rather than new sub-collection. 8 new tests in `quiet-hours.test.ts` (DST, missing-prefs default-allow, low-importance drop, high-importance delay). (BUT-647)
+- [x] **A2. Per-type notification effectiveness tracking** — done. `notification-rc-flags.ts` reads `notifications.enabled.<type>` (fail-open on RC fetch failure — fail-closed would silently mute the app). `notification-send-events.ts` writes to `notification_send_events` stream best-effort. New `functions/src/analytics/suppress-low-performers.ts` (weekly Sunday 03:00 UTC): for `sent >= 50 && ctr < 0.05` flips RC flag to `false` via Admin SDK + emits `notification_type_auto_suppressed`. Idempotent (already-disabled types skip). 8 tests in `notification-effectiveness.test.ts`. (BUT-645)
+- [x] **A3. North Star weekly aggregation Cloud Function** — done. New `functions/src/scheduled/north-star-weekly.ts` — Pub/Sub Monday 06:00 UTC, region europe-west1. Computes WAU + totalCooks + cooksPerActiveUser + retention W1/W2/W3. **Path correction:** spec's `metrics/weekly_north_star/{isoWeek}` is invalid (3-segment = doc not collection); used 4-segment `metrics/weekly_north_star/snapshots/{isoWeek}`. **Schema fallback:** activity_events real shape is `actorId` + `type=="cooked"` (not `userId`/`recipe_cooked`); aggregator accepts both via `||`. Idempotent re-run (set, not create). Emits `north_star_snapshot` analytics. 5 tests including empty-week + retention-across-boundary. (BUT-638)
+
+### Agent B: flutter-developer — Analytics user-property baseline
+
+- [x] **B1. Set `language` user property** — done. New `lib/services/analytics/user_property_bootstrap.dart` (116 lines, facade for session-start + locale-change re-fire + post-cook re-classify). Routes through `AnalyticsService.setUserProperty` so the existing GDPR consent gate applies (emitting `language=en` pre-consent would itself be a leak — repo-level setter remains on interface per spec but bypasses gate; bootstrap uses gated path). Wired into `main.dart::_setupModularAnalytics` + `_onLocaleChanged`. Constant `AnalyticsUserProperties.language` added to `analytics_events.dart`. 10 tests in `user_property_setters_test.dart`. (BUT-636)
+- [x] **B2. Set `platform` user property** — done. Same `UserPropertyBootstrap.emitAtSessionStart` emits `ios | android | macos | windows | linux | web` from `defaultTargetPlatform`/`kIsWeb`. **Decision:** `TargetPlatform.fuchsia` mapped to `linux` (Fuchsia ships Flutter-on-Linux runtime; no install base) — keeps switch exhaustive without `default` branch. Constant added. (BUT-637)
+- [~] **B3. Set `lifecycle_stage` user property** — PARTIAL by design. New `lib/services/analytics/lifecycle_stage_classifier.dart` (93 lines) — pure `classifyLifecycleStage()` + `LifecycleStage` enum with 5 stages (`new_/activated/habitual/dormant/churned`). `wireValue` strips trailing `_` for `new_` → `"new"`. Priority order: churned (>30d) > dormant (14-30d) > habitual (3+ cooks/14d) > activated (first cook within 7d of signup) > new_. 15 tests covering all stages + boundary days 7/14/30/31. **Honest gap:** `cooksLast14Days` is a parameter; bootstrap call site currently passes `0` (no Firestore query exists for "cooks in last 14 days"). Post-cook re-classify hook NOT wired into `recipe_detail_viewmodel.markAsCooked()` — would need either ViewModel injection or `RecipeCookingService` stream fan-out + the missing 14d-window query. Classifier + emitter are unit-tested and ready; wiring is a follow-up. **Deferred per spec:** nightly Cloud Function for downgrade transitions (dormant/churned). **File-size fix:** `firebase_analytics_repository.dart` was already 520 lines (not on accepted-large-files list); extracted `AnalyticsSaltManager` + `AnalyticsBuckets` to new `firebase_analytics_helpers.dart`. Final: 481 lines. (BUT-639)
+
+### Agent C: flutter-developer — Form + landscape bug fixes
+
+- [x] **C1. Audit unsaved-changes exit guard coverage beyond 8 PopScope adopters** — done. 2 highest-leverage views wrapped: `create_group_conversation_view.dart` (group name + member selection) + `create_shared_shopping_list_view.dart` (title + description + friends). Both reuse `CommonDialogActions.showUnsavedChangesConfirmation` (Swedish copy "Osparade ändringar" / "Avbryt utan att spara") for consistency with prior 8 adopters. **Decision:** dirtiness predicate stays in views, not VMs — coupling two concerns adds VM test churn without payoff. New `unsaved_changes_guard_test.dart` (4 widget tests on `PopScope.canPop` state tracking). **Skipped (follow-up candidates documented):** `recipe_detail_comments` edit-comment dialog (low blast radius), `shopping_item_dialogs` (multi-field, larger refactor), `mfa_settings_view` / `account_security_view` (auto-persist, no save step), `friend_category_manager` (out of `lib/views/` scope). (BUT-727)
+- [x] **C2. Landscape overflow audit on non-cooking views** — done. 2 highest-leverage onboarding pages fixed: `onboarding_welcome_page.dart` wrapped in `LayoutBuilder + SingleChildScrollView + ConstrainedBox(minHeight: constraints.maxHeight)` so portrait still vertically centres but landscape (~360dp) scrolls; `onboarding_dietary_page.dart` wrapped in plain `SingleChildScrollView` (top-aligned, no centering needed). New `onboarding_landscape_overflow_test.dart` (2 widget tests at `Size(800, 360)` asserting no overflow + `SingleChildScrollView` in tree). Adjusted existing `onboarding_dietary_page_test.dart` to drop `wrapInScrollView: true` (would nest scrollables now). **Skipped (verified safe statically):** `auth_view` (already `Expanded(SingleChildScrollView)` with bounded header/footer), `onboarding_age_gate_page` (short content fits), `onboarding_allergen_page` (`GridView.builder` internally scrollable), recipe-detail (`SliverAppBar` inherently scroll-aware). (BUT-725)
+
+### Agent D: testing-specialist — Parsing test debt
+
+- [x] **D1. ViterbiContextProcessor unit tests** — done. New `test/unit/services/parsing/parsers/viterbi_context_processor_test.dart` (20 tests across 6 groups: contract + edge cases + state transitions + emission scoring + section-header boost + golden set) + `viterbi_context_processor_fixtures.dart` (10 Swedish recipes, 110 scorable lines). **Baseline accuracy 98.2% (108/110); gate set at 95%** for refactor-regression detection with 3pp drift buffer. Per-recipe accuracy: 8/10 at 100%, 1 at 92.3% (decimal-comma quantity), 1 at 90.9%. **Contract surprises pinned with `identical()` assertions:** (a) classifier returns input ref unchanged when `length<=1`, (b) override path skips `copyWith` for unchanged lines (a "helpful" wrap refactor would surface), (c) section-header boost is regex-keyed on text not on `LineType.sectionHeader` enum. Knowledge file appended. (BUT-696)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos`
+- [ ] `flutter test` (B1–B3, C1, C2, D1)
+- [ ] `cd functions && npm test` (A1–A3 quiet-hours + effectiveness + north-star)
+- [ ] Commit, push to main
+- [ ] Update Linear: completed sprint tickets → Done
+
+### Continued blockers (NOT in scope per memory)
+
+- BUT-415 / BUT-731 / BUT-714 / BUT-646 — store/play submission deferred (Apple Dev enrollment + Play Data Safety filing + Universal Links + hosted privacy)
+- BUT-501 / BUT-458 — partial-by-design carry-over; let bed one more cycle
+- BUT-498 / BUT-697 — explicitly skipped per standing direction
+
+---
+
+## What this means in plain language
+
+- **Quiet hours actually become quiet.** Today, push notifications get sent during quiet hours and the phone silences them on arrival; with poor signal they can still buzz. After this, the server skips sending entirely. (A1)
+- **You'll know which notification types are working.** Recipe-share-pings might have 80% open rate, friend-request notifications 5% — A2 captures this and can auto-mute the noisy ones via Remote Config without a redeploy. (A2)
+- **A weekly health check.** Every Monday morning, a tiny scheduled job will write down how many users were active and how many recipes they cooked — the "are we growing" signal you've been wanting in one Firestore doc. (A3)
+- **Cohort reports start working.** Today, every user looks the same in Firebase Analytics. After B1–B3, you'll be able to filter by language (sv vs en), platform (iOS vs Android vs Web), and lifecycle stage (new/activated/habitual/churned). Same data, finally sliceable. (B1, B2, B3)
+- **No more accidental data loss in forms.** Some forms beyond recipe-edit don't warn you when you back out with unsaved changes — C1 finds and fixes those. (C1)
+- **Sideways phones stop breaking layouts.** A few non-cooking views overflow when the phone rotates. C2 sweeps and fixes. (C2)
+- **One pile of untested parsing logic gets covered.** Pure code-quality — the Viterbi step in the Swedish ingredient parser had no tests. D1 adds them. (D1)
+- **Risk: low.** A1/A2/A3 are server-side and behind Remote Config gates; B1–B3 are write-only telemetry (can't break anything user-facing); C1/C2 are mechanical sweeps; D1 only adds tests. Each task is its own commit and revertible.
+
+---
+
+## Archived Sprint: Parsing cost wins + BUT-427 concurrency bugs + analytics polish — 2026-04-29 (shipped `753065f07`)
 
 Theme: drain (a) the parsing/OCR cost-leverage cluster, (b) two concurrency bugs that fell out of the simplify pass on the SSL-pinning sprint, (c) two analytics polish items, and (d) two A11y/theme residuals from BUT-697 chunk-8 audit + BUT-689. **4 agents, 9 tasks, isolated file trees** (functions/src/llm + Firestore prompt doc · interceptor concurrency + import http client · views/widgets a11y wraps + theme tokens · analytics constants registry + flag-eval dedup).
 
@@ -40,19 +96,6 @@ Prior sprint (`842400fca`) shipped — SSL pinning, push deep-linking, in-app re
 - BUT-415 / BUT-731 / BUT-714 / BUT-646 — store/play submission deferred (Apple Dev enrollment + Play Data Safety filing + Universal Links + hosted privacy)
 - BUT-501 / BUT-458 — partial-by-design carry-over; let bed in one cycle
 - BUT-498 / BUT-697 — explicitly skipped per standing direction (BUT-697 chunk-8 close-out shipped 2026-04-28)
-
----
-
-## What this means in plain language
-
-- **Recipe imports get cheaper to fix when they go wrong.** Today, fixing a bad import prompt needs a 15-minute backend redeploy. After this you can change the prompt by editing one Firestore field — fix takes seconds, no deploy. (A1)
-- **You'll be able to tell which prompt version produced a bad import.** Every parse event now carries the prompt version, so when a site starts producing junk you can bisect to the prompt change. (A2)
-- **OCR runs less often on the same image.** Today, rotating or re-saving an image bypasses the cache and pays Mistral again. After this, identical-looking images hit cache. Direct money saving. (A3)
-- **Search and URL imports get a quiet safety + speed fix.** Two sneaky bugs from the SSL-pinning sprint: parallel Algolia searches could silently disable iOS pin-checking, and every URL import did a fresh TLS handshake. Both fixed. (B1, B2)
-- **More buttons announce themselves to screen readers.** Recipe cards, archived-conversations expand, ~15 other tap targets. Continues the BUT-697 sweep. (C1)
-- **Theme cleanup completes.** A few hex values in theme files get moved into the same `AppColors` tokens used everywhere else. Pure plumbing. (C2)
-- **Analytics get harder to break.** Event names stop being scattered string literals — one typo can no longer silently kill a funnel. Plus flag-evaluation events stop spamming Analytics from inside build methods. (D1, D2)
-- **Risk: low.** All tasks are mechanical or have ticket-level fix recipes. A1 has a fallback to the compiled prompt; B1/B2 are bounded to two files each; C1/C2/D1/D2 are sweep-style. Easy to revert any single task — one commit per task.
 
 ---
 

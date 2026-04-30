@@ -119,3 +119,58 @@ Pattern reminder enforced this run: `lib/views/*` modifications do NOT
 require new view tests (BUT-387 Phase 6 deleted that lane). Theme files
 are covered by golden tests + targeted contrast assertions, not by structural
 "uses AppColors.X" tests.
+
+### 2026-04-30 — BUT-696 Viterbi golden-set fixture pattern [Pattern discovered]
+Added `viterbi_context_processor_test.dart` (20 tests) + sibling
+`viterbi_context_processor_fixtures.dart` for the line-classifier post-processor.
+Patterns worth reusing:
+
+1. **Sibling fixtures file for golden sets.** `*_fixtures.dart` next to the
+   test holds typed records (`GoldenLine` / `GoldenRecipe`) with an explicit
+   `expected: LineType?` per line. `null` opts a line out of scoring — use it
+   only for genuinely ambiguous lines, not as a green-test escape hatch.
+   Fixture sanity test (`every fixture has >= N scorable lines`) prevents
+   the fixture from rotting into uselessness.
+
+2. **Print-then-assert accuracy as the regression gate.** The accuracy test
+   prints the per-recipe number AND the aggregate, then asserts against a
+   baseline tuned ~3pp below the actual measured number. First run measured
+   98.2% (108/110), baseline pinned at 95%. The print line gives future
+   refactorers a free regression diff in test logs without needing a
+   separate snapshot file.
+
+3. **Test the contract directly with synthetic `ClassifiedLine` inputs.**
+   Most existing Viterbi coverage went through `SwedishLineClassifier`,
+   which makes "high-confidence anchoring" hard to assert (you can't dial
+   confidence). Constructing `ClassifiedLine` literals lets you write
+   "low-confidence (0.4) line in the middle of high-confidence (0.9) run
+   gets pulled" as a single-axis test — clean isolation of the algorithm
+   from the per-line classifier's lexicon.
+
+4. **`identical()` for short-circuit assertions.** When code returns the
+   same instance for unchanged-type lines, `identical(output[0], input[0])`
+   pins that contract. Future refactors that "helpfully" wrap in copyWith
+   surface immediately. (Not paranoid — this matters because `secondaryType`
+   semantics depend on this short-circuit: only overridden lines get
+   `secondaryType` populated.)
+
+5. **Boundary-survival tests, not value tests, for edge mechanics.** The
+   "boost decays after ~15 lines" test only asserts length-preservation +
+   no-crash at the boundary, not the resulting type at line 16. Asserting
+   the exact post-boundary classification would couple the test to the
+   transition-matrix tuning; asserting "didn't crash at the boundary"
+   pins the algorithmic invariant without locking the numbers.
+
+Contract surprises found while reading the source:
+- `classifyWithContext` returns the `lines` argument *unchanged* (same
+  reference) when `length <= 1`. Tests assert this with `identical()`.
+- The override path only writes `secondaryType` when the type changes —
+  unchanged lines pass through verbatim. No `copyWith` allocation churn.
+- The `_negInf = -1e9` sentinel is used both for unreachable transitions
+  AND uninitialized cells. Not a bug, but worth knowing if any future
+  test needs to construct adversarial probabilities.
+
+No production bugs caught this run — the algorithm was already battle-tested
+through `SwedishLineClassifier` integration tests. The dedicated unit tests
+are insurance against a transition-matrix or emission-weight refactor
+silently regressing edge cases.
