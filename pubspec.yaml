@@ -49,7 +49,7 @@ dependencies:
 
   # ==================== NETWORKING ====================
   http: ^1.2.2
-  connectivity_plus: ^7.1.0
+  connectivity_plus: 7.0.0  # PINNED — 7.1.0+ ships a NWPath.isUltraConstrained call gated on iOS 26.0 (a non-existent SDK), same speculative-API gambit as device_info_plus 12.4.0. Fails iOS Build Validation. See BUT-750.
 
   # ==================== IMAGE HANDLING ====================
   image_picker: ^1.1.2

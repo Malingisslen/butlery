@@ -42,11 +42,14 @@ updates:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
-      # BUT-750: device_info_plus 12.4.0+ ships a call to a non-existent
-      # Apple API (`isiOSAppOnVision` gated on iOS 26.1) that fails iOS
-      # Build Validation. Pinned at 12.3.0 in pubspec.yaml; ignore all
-      # bumps here until upstream issue #3811/#3814 is resolved.
+      # BUT-750: plus_plugins maintainers shipped speculative calls to
+      # non-existent iOS 26.0/26.1 Apple APIs that fail iOS Build
+      # Validation. Both packages pinned to last safe version in
+      # pubspec.yaml; ignore here until upstream resolves the gambit.
+      #   device_info_plus 12.4.0+: isiOSAppOnVision (issue #3811/#3814)
+      #   connectivity_plus 7.1.0+: NWPath.isUltraConstrained (#3787/#3816)
       - dependency-name: "device_info_plus"
+      - dependency-name: "connectivity_plus"
 
   # Cloud Functions (Node/TypeScript)
   - package-ecosystem: "npm"
