@@ -23,33 +23,83 @@ import 'package:butlery/services/security/cert_pin_telemetry.dart';
 /// - App ID and API keys should be stored in .env or Firebase Remote Config
 /// - Write API key for indexing (server-side or secure storage)
 /// - Search API key for client-side queries (public, rate-limited)
+///
+/// GDPR (BUT-580):
+/// - We do NOT pass `userToken`, `clickAnalytics`, or `analyticsTags` on any
+///   `SearchForHits` request — queries reach Algolia anonymously.
+/// - `assertEuCluster` enforces an EU-cluster app id at construction. Algolia
+///   routes by app id; an EU app id keeps queries inside the EU region. If
+///   the app id cannot be confirmed as EU, construction throws to surface a
+///   Chapter V cross-border-transfer misconfiguration loudly rather than
+///   silently leaking traffic to a US/AP cluster. Toggle off only for tests
+///   that intentionally exercise the assertion path.
 class AlgoliaSearchRepository implements SearchRepository {
   final SearchClient _searchClient;
   final String _recipesIndex;
   final String _usersIndex;
+
+  /// Throws [ArgumentError] when the appId is not recognised as EU.
+  ///
+  /// Algolia EU dedicated clusters expose an app id ending in `-eu`
+  /// (e.g. `XYZ123-eu`). Shared clusters cannot be region-asserted from the
+  /// app id alone and require an explicit `assertEuCluster: false` plus an
+  /// out-of-band region confirmation in the dashboard.
+  static bool isLikelyEuAppId(String appId) {
+    final lower = appId.toLowerCase();
+    return lower.endsWith('-eu');
+  }
 
   AlgoliaSearchRepository({
     required String appId,
     required String apiKey,
     String recipesIndex = 'recipes',
     String usersIndex = 'users',
-  })  : _searchClient = SearchClient(
+    bool assertEuCluster = true,
+  })  : _searchClient = _buildClient(
           appId: appId,
           apiKey: apiKey,
-          // BUT-427: per-host SSL pinning interceptor. Pinning is no-op for
-          // hosts without configured pins (CertPinConfig). The interceptor
-          // logs `ssl_pin_mismatch` analytics events and rejects the request
-          // on mismatch — soft-fail at the app level, not at the cert level.
-          options: ClientOptions(
-            interceptors: [
-              PinningDioInterceptor(
-                onPinMismatch: reportSslPinMismatch,
-              ),
-            ],
-          ),
+          assertEuCluster: assertEuCluster,
         ),
         _recipesIndex = recipesIndex,
         _usersIndex = usersIndex;
+
+  /// Build the underlying SearchClient, enforcing the EU-cluster invariant.
+  ///
+  /// Runtime check (not `assert`) so release builds enforce too — a mis-
+  /// configured app id silently routing to a US cluster would be a GDPR
+  /// Chapter V breach. Throws [ArgumentError] loudly so the DI module can
+  /// catch and fall back to Firestore search.
+  static SearchClient _buildClient({
+    required String appId,
+    required String apiKey,
+    required bool assertEuCluster,
+  }) {
+    if (assertEuCluster && !isLikelyEuAppId(appId)) {
+      throw ArgumentError.value(
+        appId,
+        'appId',
+        'BUT-580: Algolia appId is not recognised as EU. GDPR Chapter V '
+            'forbids unverified cross-border transfer. Use an EU dedicated '
+            'cluster (app id ending in "-eu") or pass assertEuCluster: '
+            'false after confirming region in the Algolia dashboard.',
+      );
+    }
+    return SearchClient(
+      appId: appId,
+      apiKey: apiKey,
+      // BUT-427: per-host SSL pinning interceptor. Pinning is no-op for
+      // hosts without configured pins (CertPinConfig). The interceptor
+      // logs `ssl_pin_mismatch` analytics events and rejects the request
+      // on mismatch — soft-fail at the app level, not at the cert level.
+      options: ClientOptions(
+        interceptors: [
+          PinningDioInterceptor(
+            onPinMismatch: reportSslPinMismatch,
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   bool get usesExternalSearch => true;

@@ -604,17 +604,26 @@ service cloud.firestore {
 
       // Owner: full update with the standard immutability guard.
       // Recipient (BUT-747): may ONLY shrink `sharedToUserIds` to remove
-      // themselves — `hasOnly([sharedToUserIds])` blocks any other field
-      // mutation, and the in/!in pair ensures they're removing self,
-      // not adding/swapping other users.
+      // themselves. The in/!in pair ensures self was a member and is gone
+      // after the write; `hasOnly([sharedToUserIds])` blocks other field
+      // mutations. BUT-749 adds two further constraints to close a griefing
+      // gap (recipient could previously boot OTHER recipients in the same
+      // update): the new array must be a subset of the old (no additions),
+      // and the only element removed must be auth.uid (no booting others).
       allow update: if isAuthenticated() && (
         (request.auth.uid == resource.data.sharedByUserId
           && cannotModify(['sharedByUserId', 'sharedAt']))
         || (resource.data.sharedToUserIds is list
+          && request.resource.data.sharedToUserIds is list
           && request.auth.uid in resource.data.sharedToUserIds
           && !(request.auth.uid in request.resource.data.sharedToUserIds)
           && request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['sharedToUserIds']))
+              .hasOnly(['sharedToUserIds'])
+          && request.resource.data.sharedToUserIds
+              .removeAll(resource.data.sharedToUserIds).size() == 0
+          && resource.data.sharedToUserIds
+              .removeAll(request.resource.data.sharedToUserIds)
+              .hasOnly([request.auth.uid]))
       );
 
       allow delete: if isAuthenticated()

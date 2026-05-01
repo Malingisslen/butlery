@@ -235,3 +235,32 @@ Coverage requires four deny tests on the recipient branch alone:
 Plus one allow: clean self-removal with no other changes. Same pattern
 will recur on any future "leave-a-shared-doc" feature
 (`unified_shared_shopping_lists` already has the analog).
+
+### 2026-05-01 — paired removeAll() check closes self-scrub griefing (BUT-749)
+
+The 2026-05-01 self-scrub branch (above) had a gap: a recipient could submit
+ANY new array missing themselves, including one that also dropped other
+recipients. The `!(auth.uid in NEW)` check passed but did not constrain what
+ELSE could change in the array. Fix is a paired `removeAll` sandwich:
+
+```
+&& request.resource.data.sharedToUserIds
+    .removeAll(resource.data.sharedToUserIds).size() == 0   // no additions
+&& resource.data.sharedToUserIds
+    .removeAll(request.resource.data.sharedToUserIds)
+    .hasOnly([request.auth.uid])                            // only self removed
+```
+
+Plus a defensive `request.resource.data.sharedToUserIds is list` to keep CEL
+type-safe before calling `removeAll` on it.
+
+Reusable on any "self-leave a list-of-UIDs" rule. Coverage requires two new
+deny tests: (1) scrub-self + remove-another, (2) scrub-self + empty-list.
+The original "remove someone else WITHOUT scrubbing self" test (M12) is still
+covered by the older `!(auth.uid in NEW)` clause (recipient still in NEW),
+so it remains a separate assertion.
+
+The `unified_shared_shopping_lists` collection uses a `memberPermissions`
+MAP (not a UID list) and has no self-leave branch at all — different shape,
+no analogous tightening needed. Any future GDPR-scrub work there must add a
+NEW branch and gets its own test cluster.

@@ -154,6 +154,20 @@ We may share information if:
 - We do not send spam
 - We do not use your data for advertising other than what you have consented to
 
+### 6.4 Data Processor Inventory (GDPR Art. 13.1.f)
+
+The following is a complete list of the data processors that receive your data, the categories of data they process, where processing takes place, and the legal basis for any third-country transfer (Chapter V GDPR).
+
+| Processor | Data received | Hosting region | Legal basis for transfer |
+|-----------|---------------|----------------|--------------------------|
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data | `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
+| **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | `europe-west1` (Belgium) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **OCR.space** (a]o Software GmbH) | Recipe images during fallback OCR; deleted immediately after processing | EU (Austria) — no third-country transfer | Processing within EU/EEA. [Policy](https://ocr.space/privacypolicy) |
+| **Algolia** (Algolia SAS) | Search index containing recipe titles, descriptions, tags, and public display name | EU cluster (France) | Standard Contractual Clauses (SCCs). [Policy](https://www.algolia.com/policies/privacy/) |
+
+We do not engage any other data processors. This list is updated whenever our subprocessor chain changes.
+
 ---
 
 ## 7. Data transfers outside EU/EEA

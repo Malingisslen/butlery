@@ -251,6 +251,44 @@ test("menus: recipient cannot remove another user's UID from sharedToUserIds", a
   );
 });
 
+// M18: DENY — recipient cannot scrub self AND simultaneously remove
+// another recipient. Without this, a malicious recipient could grief the
+// share by booting other recipients in the same update.
+test("menus: recipient cannot scrub self AND remove another recipient (BUT-749)", async () => {
+  await seedMenu(
+    "m-recipient-double-scrub",
+    validMenuBody(OWNER_UID, {
+      sharedToUserIds: [RECIPIENT_UID, OTHER_RECIPIENT_UID, STRANGER_UID],
+    })
+  );
+  const ctx = env.authenticatedContext(RECIPIENT_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`menus/m-recipient-double-scrub`)
+      .update({ sharedToUserIds: [STRANGER_UID] })
+  );
+});
+
+// M19: DENY — recipient cannot scrub self AND empty the array entirely.
+// Subset of M18 but worth its own assertion — emptying the array is the
+// strongest form of the griefing vector.
+test("menus: recipient cannot scrub self AND empty the recipients list (BUT-749)", async () => {
+  await seedMenu(
+    "m-recipient-empty-list",
+    validMenuBody(OWNER_UID, {
+      sharedToUserIds: [RECIPIENT_UID, OTHER_RECIPIENT_UID],
+    })
+  );
+  const ctx = env.authenticatedContext(RECIPIENT_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`menus/m-recipient-empty-list`)
+      .update({ sharedToUserIds: [] })
+  );
+});
+
 // M13: DENY — recipient cannot delete the whole menu doc. The delete rule
 // is owner-only (sharedByUserId match).
 test("menus: recipient cannot delete the menu doc", async () => {

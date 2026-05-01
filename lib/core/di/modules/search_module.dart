@@ -10,6 +10,8 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/algolia/algolia_search_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_search_repository.dart';
+import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/search/recipe_search_router.dart';
@@ -91,19 +93,45 @@ class SearchModule implements DIModule {
           featureFlags?.isEnabled(FeatureFlags.enableAlgoliaSearch) ?? false;
 
       if (useAlgolia) {
-        const appId = String.fromEnvironment('ALGOLIA_APP_ID');
-        const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
-
-        if (appId.isNotEmpty && apiKey.isNotEmpty) {
-          _proxy!.delegate = AlgoliaSearchRepository(
-            appId: appId,
-            apiKey: apiKey,
-          );
-          AppLogger.info(
-              'SearchModule: Switched to Algolia search provider (feature flag)');
+        // BUT-580: Algolia search-personalisation qualifies as analytics
+        // under our consent model. Even though we never pass `userToken`,
+        // `clickAnalytics`, or `analyticsTags` (queries reach Algolia
+        // anonymously), the query text + IP-level metadata reaching a
+        // third-party EU processor still requires the analytics consent
+        // bucket. If consent is missing or denied, we keep the Firestore
+        // fallback (already wired as the default delegate above).
+        //
+        // ConsentService is registered in `configureUserScope` (post-sign-
+        // in). If it isn't registered yet, treat as "consent unknown" and
+        // hold off on Algolia init until a re-evaluation after sign-in.
+        final hasAnalyticsConsent = await _hasAnalyticsConsent(container);
+        if (!hasAnalyticsConsent) {
+          AppLogger.info('SearchModule: Analytics consent missing/denied, '
+              'keeping Firestore search (BUT-580)');
         } else {
-          AppLogger.warning(
-              'SearchModule: Algolia enabled but credentials missing, keeping Firestore');
+          const appId = String.fromEnvironment('ALGOLIA_APP_ID');
+          const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
+
+          if (appId.isNotEmpty && apiKey.isNotEmpty) {
+            try {
+              _proxy!.delegate = AlgoliaSearchRepository(
+                appId: appId,
+                apiKey: apiKey,
+              );
+              AppLogger.info(
+                  'SearchModule: Switched to Algolia search provider '
+                  '(feature flag + analytics consent)');
+            } on ArgumentError catch (e) {
+              // BUT-580: EU-cluster invariant violated. Refuse to init and
+              // stay on Firestore — better degraded search than a Chapter V
+              // cross-border breach.
+              AppLogger.warning('SearchModule: Algolia init refused — $e. '
+                  'Keeping Firestore search.');
+            }
+          } else {
+            AppLogger.warning(
+                'SearchModule: Algolia enabled but credentials missing, keeping Firestore');
+          }
         }
       }
 
@@ -134,6 +162,21 @@ class SearchModule implements DIModule {
 
       return true;
     } catch (e) {
+      return false;
+    }
+  }
+
+  /// Returns `true` only when ConsentService is registered AND the user has
+  /// explicitly granted analytics consent. "Not registered" and "no consent
+  /// doc" both resolve to `false` (deny by default) so a pre-sign-in
+  /// `initialize()` can never enable Algolia.
+  Future<bool> _hasAnalyticsConsent(GetIt container) async {
+    if (!container.isRegistered<ConsentService>()) return false;
+    try {
+      return await container<ConsentService>()
+          .hasConsent(ConsentPurpose.analytics);
+    } catch (e) {
+      AppLogger.warning('SearchModule: consent check failed, denying: $e');
       return false;
     }
   }

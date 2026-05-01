@@ -1849,3 +1849,38 @@ Consent gate path for the BUT-662 emit sites:
 The error-event consent exemption is a standing GDPR question: is "error tracking" a legitimate-interests basis under Art. 6(1)(f), or does it need consent? Current posture: errors are exempt and parameter values are bounded (URL host only, error truncated to 100 chars, error category bucketed, no user content). The new `image_format` parameter does not change that posture — it's a closed-set enum.
 
 `AnalyticsRepository` is a non-Firestore repository (wraps the Firebase Analytics SDK, not a `BaseFirebaseRepository<Model>`). It has no `validateCreatePermission` etc. and is not subject to PermissionValidationMixin — that requirement targets Firestore-backed repos. Don't flag the absence of the mixin here as Critical.
+
+### 2026-05-01 — Algolia EU cluster + analytics-consent gate (BUT-580)
+Three concerns settled for any third-party search/analytics processor:
+
+**1. EU cluster invariant (GDPR Chapter V).** `AlgoliaSearchRepository` now
+runs an EU-cluster runtime check at construction (NOT `assert`, which would
+no-op in release): app id must end in `-eu`. Non-EU app id throws
+`ArgumentError` and `SearchModule.initialize()` catches it and stays on
+Firestore. Escape hatch `assertEuCluster: false` for shared-cluster apps
+where region is verified out-of-band in the dashboard. Pattern applies to
+any third-party EU-region service: never trust `assert` for cross-border
+guards — it disappears in release builds.
+
+**2. PII in queries.** Audited `searchRecipes`, `searchUsers`,
+`getSuggestions` — none pass `userToken`, `clickAnalytics`, or
+`analyticsTags`. Grep across `lib/` for those three identifiers came up
+empty, confirming no upstream wrapper bundles them. Algolia queries reach
+the cluster anonymously. Re-grep on any future Algolia change.
+
+**3. Consent gate placement for analytics-class third parties.** Algolia
+search-personalisation lives in the `analytics` consent bucket
+(`ConsentPurpose.analytics`). Gate placed in `SearchModule.initialize()`
+via a private `_hasAnalyticsConsent(GetIt)` helper that returns `false`
+when `ConsentService` isn't registered yet (pre-sign-in) OR when consent
+is denied. Default delegate is `FirestoreSearchRepository`, so denied
+consent silently falls back — no UI break. Tradeoff: consent granted
+*after* startup needs an app restart to flip on Algolia (acceptable in
+beta). For future "live consent flip" needs, hook
+`ConsentService.onConsentChanged` from the module.
+
+**Test pattern.** Don't try to test `SearchModule.initialize()` end-to-end
+— it reads `String.fromEnvironment` (compile-time) and instantiates
+Firebase. Test the load-bearing invariant (the constructor's EU check)
+directly in `test/unit/repositories/algolia/`. The DI module's role is
+just "catch ArgumentError → keep Firestore", which is a one-liner.

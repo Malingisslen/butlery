@@ -386,7 +386,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         onTap: () => _onTapEmptySlot(context, vm, day, slot),
         child: Container(
           constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(AppDimensions.spacing6),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             border: Border.all(color: Theme.of(context).dividerColor),

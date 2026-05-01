@@ -154,6 +154,20 @@ Vi kan dela information om:
 - ❌ Vi skickar inte spam
 - ❌ Vi använder inte dina uppgifter för annan annonsering än den du samtyckt till
 
+### 6.4 Sammanställning av personuppgiftsbiträden (GDPR Art. 13.1.f)
+
+Nedan finns en fullständig förteckning över de personuppgiftsbiträden som tar emot dina uppgifter, vilka kategorier av data de behandlar, var behandlingen sker och rättslig grund för eventuell tredjelandsöverföring (Kapitel V GDPR).
+
+| Biträde | Mottagna data | Hostingregion | Rättslig grund för överföring |
+|---------|---------------|---------------|-------------------------------|
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata | `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Analytics for Firebase** | Pseudonymiserad användningsstatistik (endast vid samtycke); IP-adressen trunkeras före lagring | EU-region; aggregering kan ske i USA | EU-USA Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
+| **Google Cloud Vertex AI (Gemini)** | Receptbilder och extraherad text vid OCR-import | `europe-west1` (Belgien) — ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **OCR.space** (a]o Software GmbH) | Receptbilder vid fallback-OCR; raderas direkt efter behandling | EU (Österrike) — ingen tredjelandsöverföring | Behandling inom EU/EES. [Policy](https://ocr.space/privacypolicy) |
+| **Algolia** (Algolia SAS) | Sökindex med recepttitlar, beskrivningar, taggar och publikt visningsnamn | EU-kluster (Frankrike) | Standardavtalsklausuler (SCC). [Policy](https://www.algolia.com/policies/privacy/) |
+
+Vi anlitar inga andra personuppgiftsbiträden. Listan uppdateras vid varje förändring av vår leverantörskedja.
+
 ---
 
 ## 7. Dataöverföringar utanför EU/EES
