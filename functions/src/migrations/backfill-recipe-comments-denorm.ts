@@ -50,12 +50,23 @@ import {
 } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import pLimit from "p-limit";
 
 import { requireAdmin } from "../shared/require-admin";
 
 const REGION = "europe-west1";
-const BATCH_SIZE = 200;
-const MAX_BATCHES_PER_INVOCATION = 50; // ~10k comments per call ceiling
+// BATCH_SIZE bumped from 200 → 450 (BUT-741): Firestore writeBatch hard cap
+// is 500 ops; previous setting wasted ~55% of per-batch capacity, doubling
+// the number of round-trips needed.
+const BATCH_SIZE = 450;
+// Hard ceiling on doc count per invocation: 23 × 450 = 10,350 docs. The
+// effective cap is the request's `maxComments` (default 10,000) which
+// short-circuits via `totalScanned > maxComments` before hitting this.
+const MAX_BATCHES_PER_INVOCATION = 23;
+// Concurrency cap on resolveRecipeOwnership (BUT-741). Each resolve issues a
+// `collectionGroup('recipes')` read; capped at 20 in-flight to stay well
+// under Firestore's per-second per-database read quota during the burst.
+const RESOLVE_CONCURRENCY = 20;
 
 const getDb = () => admin.firestore();
 
@@ -167,8 +178,18 @@ export async function runBackfill(
       break;
     }
 
-    const writeBatch = db.batch();
-    let batchWrites = 0;
+    // Pre-pass (BUT-741): walk the batch once to bucket comments by
+    // outcome-of-the-pre-checks. We avoid the expensive resolve for any
+    // already-migrated/malformed/over-cap comment, and we DEDUP recipeIds
+    // so each unique recipeId hits Firestore exactly once even when many
+    // comments reference the same recipe (chatty recipes are common).
+    interface Pending {
+      commentDoc: (typeof snapshot.docs)[number];
+      recipeId: string;
+      authorId: string;
+    }
+    const pending: Pending[] = [];
+    const uniqueRecipeIds = new Set<string>();
 
     for (const commentDoc of snapshot.docs) {
       totalScanned += 1;
@@ -196,38 +217,71 @@ export async function runBackfill(
         continue;
       }
 
-      try {
-        const ownership = await resolveRecipeOwnership(recipeId, db);
+      pending.push({ commentDoc, recipeId, authorId });
+      uniqueRecipeIds.add(recipeId);
+    }
 
-        let recipeOwnerId: string;
-        let sharedWithUserIds: string[];
+    // Resolve each unique recipeId once, in parallel up to
+    // RESOLVE_CONCURRENCY. Failures are captured per-id so they fan out
+    // to every comment referencing that id (counted as `failed` below).
+    const limit = pLimit(RESOLVE_CONCURRENCY);
+    type OwnershipResult =
+      | { ok: true; value: Awaited<ReturnType<typeof resolveRecipeOwnership>> }
+      | { ok: false; err: unknown };
+    const ownershipMap = new Map<string, OwnershipResult>();
+    await Promise.all(
+      Array.from(uniqueRecipeIds).map((recipeId) =>
+        limit(async () => {
+          try {
+            const ownership = await resolveRecipeOwnership(recipeId, db);
+            ownershipMap.set(recipeId, { ok: true, value: ownership });
+          } catch (err) {
+            ownershipMap.set(recipeId, { ok: false, err });
+          }
+        })
+      )
+    );
 
-        if (ownership === null) {
-          // Orphan: recipe gone or in a shape we don't index. Stamp
-          // author-only so the row stays readable by the comment author
-          // but invisible to others — graceful degradation.
-          recipeOwnerId = authorId;
-          sharedWithUserIds = [];
-          orphanedAuthorOnly += 1;
-        } else {
-          recipeOwnerId = ownership.recipeOwnerId;
-          sharedWithUserIds = ownership.sharedWithUserIds;
-        }
+    const writeBatch = db.batch();
+    let batchWrites = 0;
 
-        if (!dryRun) {
-          writeBatch.update(commentDoc.ref, {
-            recipeOwnerId,
-            sharedWithUserIds,
-          });
-          batchWrites += 1;
-        }
-        migrated += 1;
-      } catch (e) {
+    for (const { commentDoc, recipeId, authorId } of pending) {
+      const result = ownershipMap.get(recipeId);
+      if (!result || !result.ok) {
         failed += 1;
+        const errStr = result
+          ? String((result as { err: unknown }).err)
+          : "missing-ownership-result";
         logger.warn(
-          `[backfill-recipe-comments] resolve failed for comment ${commentDoc.id} (recipe ${recipeId}): ${e}`
+          `[backfill-recipe-comments] resolve failed for comment ${commentDoc.id} (recipe ${recipeId}): ${errStr}`
         );
+        continue;
       }
+
+      const ownership = result.value;
+      let recipeOwnerId: string;
+      let sharedWithUserIds: string[];
+
+      if (ownership === null) {
+        // Orphan: recipe gone or in a shape we don't index. Stamp
+        // author-only so the row stays readable by the comment author
+        // but invisible to others — graceful degradation.
+        recipeOwnerId = authorId;
+        sharedWithUserIds = [];
+        orphanedAuthorOnly += 1;
+      } else {
+        recipeOwnerId = ownership.recipeOwnerId;
+        sharedWithUserIds = ownership.sharedWithUserIds;
+      }
+
+      if (!dryRun) {
+        writeBatch.update(commentDoc.ref, {
+          recipeOwnerId,
+          sharedWithUserIds,
+        });
+        batchWrites += 1;
+      }
+      migrated += 1;
     }
 
     if (!dryRun && batchWrites > 0) {

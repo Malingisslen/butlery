@@ -52,22 +52,43 @@ interface FakeComment {
   sharedWithUserIds?: string[];
 }
 
+/** Optional hooks for per-test instrumentation (BUT-741 parallelism asserts). */
+interface FakeDbHooks {
+  /** Called every time `collectionGroup('recipes').get()` is invoked. */
+  onResolveStart?: (recipeId: string) => void;
+  /** Called when that resolve completes (after the artificial delay, if any). */
+  onResolveEnd?: (recipeId: string) => void;
+  /** Per-resolve artificial delay in ms (forces parallelism windows). */
+  resolveDelayMs?: number;
+}
+
 /**
  * In-memory firestore stub matching only the surface used by runBackfill.
  * The shape mirrors `admin.firestore.Firestore` for the methods we call.
  */
-function makeFakeDb(comments: FakeComment[], recipes: FakeRecipe[]) {
+function makeFakeDb(
+  comments: FakeComment[],
+  recipes: FakeRecipe[],
+  hooks: FakeDbHooks = {}
+) {
   // Track writes for assertions.
   const writes: Array<{ id: string; update: Record<string, unknown> }> = [];
 
+  // Symbol-keyed back-pointer: each commentDoc.ref carries an opaque
+  // pointer to its FakeComment so `batch.update(ref, data)` can mutate
+  // the right entry even when the loop runs out of declaration order.
+  const COMMENT_REF = Symbol("commentRef");
+
   function buildCommentDocSnap(c: FakeComment) {
+    const ref: Record<string | symbol, unknown> = {
+      update: async (_data: Record<string, unknown>) => {
+        // Real firestore would write directly; we only inspect via batch.
+      },
+    };
+    ref[COMMENT_REF] = c;
     return {
       id: c.id,
-      ref: {
-        update: async (_data: Record<string, unknown>) => {
-          // Real firestore would write directly; we only inspect via batch.
-        },
-      },
+      ref,
       data() {
         const d: Record<string, unknown> = {
           recipeId: c.recipeId,
@@ -150,7 +171,16 @@ function makeFakeDb(comments: FakeComment[], recipes: FakeRecipe[]) {
           return q;
         },
         async get() {
+          hooks.onResolveStart?.(targetId ?? "");
+          if (hooks.resolveDelayMs && hooks.resolveDelayMs > 0) {
+            await new Promise((r) => setTimeout(r, hooks.resolveDelayMs));
+          } else {
+            // Yield once even with no delay so parallel scheduling has
+            // a chance to interleave (microtask boundary).
+            await new Promise((r) => setImmediate(r));
+          }
           const found = recipes.filter((r) => r.id === targetId);
+          hooks.onResolveEnd?.(targetId ?? "");
           return {
             empty: found.length === 0,
             docs: found.map(buildRecipeDocSnap),
@@ -163,19 +193,11 @@ function makeFakeDb(comments: FakeComment[], recipes: FakeRecipe[]) {
     batch() {
       return {
         update(ref: unknown, data: Record<string, unknown>) {
-          // Reverse-look up the comment id from the snapshot ref by searching
-          // the comments array for an entry whose ref matches. We piggy-back
-          // identity on the ref reference; simplest is to record by data only.
           writes.push({ id: "<batch>", update: data });
-          // Mutate in-place so a subsequent run sees the new state (idempotency
-          // test). We need to find which comment doc was passed. Since our
-          // fake snapshot's `ref` is a fresh object, we instead match on the
-          // recipeId in the update payload — but the update doesn't carry it.
-          // So: find the first comment without recipeOwnerId and stamp it.
-          // The tests sequence calls so there's always a deterministic target.
-          const target = comments.find(
-            (c) => c.recipeOwnerId === undefined && c.recipeId !== "__migrated__"
-          );
+          // Resolve the back-pointer the snapshot stamped onto the ref.
+          const target = (ref as Record<symbol, FakeComment | undefined>)[
+            COMMENT_REF
+          ];
           if (target) {
             target.recipeOwnerId = data.recipeOwnerId as string;
             target.sharedWithUserIds = data.sharedWithUserIds as string[];
@@ -432,8 +454,149 @@ async function requireAdminRejectsUnauthenticated(): Promise<void> {
   );
 }
 
+// =====================================================================
+// BUT-741: parallelism + dedup tests
+// =====================================================================
+
+/**
+ * Dedup pre-pass: 100 comments referencing 5 unique recipeIds should
+ * trigger exactly 5 calls to resolveRecipeOwnership (via the
+ * collectionGroup('recipes') stub), not 100.
+ */
+async function dedupResolvesEachRecipeOnce(): Promise<void> {
+  const recipeIds = ["r1", "r2", "r3", "r4", "r5"];
+  const comments: FakeComment[] = [];
+  for (let i = 0; i < 100; i++) {
+    const recipeId = recipeIds[i % recipeIds.length];
+    comments.push({
+      // Zero-pad so localeCompare orders lexically with numeric id.
+      id: `c${String(i).padStart(3, "0")}`,
+      recipeId,
+      authorId: `author-${i}`,
+    });
+  }
+  const recipes: FakeRecipe[] = recipeIds.map((id) => ({
+    ownerUid: `owner-${id}`,
+    id,
+    data: { core: { createdBy: `owner-${id}` } },
+  }));
+
+  const resolveCalls: string[] = [];
+  const db = makeFakeDb(comments, recipes, {
+    onResolveStart: (recipeId) => resolveCalls.push(recipeId),
+  });
+  const result = await runBackfill(db as never, {
+    dryRun: false,
+    maxComments: 1000,
+  });
+
+  const ok =
+    result.migrated === 100 &&
+    resolveCalls.length === 5 &&
+    new Set(resolveCalls).size === 5;
+  record(
+    "dedup: 100 comments / 5 unique recipes → 5 resolve calls",
+    ok,
+    `migrated=${result.migrated} resolveCalls=${resolveCalls.length} unique=${new Set(resolveCalls).size}`
+  );
+}
+
+/**
+ * Concurrency observed: with multiple unique recipeIds and an artificial
+ * delay inside the resolve, max-in-flight must exceed 1 — proving the
+ * resolves are not strictly sequential.
+ */
+async function resolvesRunInterleaved(): Promise<void> {
+  // 8 unique recipeIds, one comment each.
+  const recipes: FakeRecipe[] = [];
+  const comments: FakeComment[] = [];
+  for (let i = 0; i < 8; i++) {
+    const id = `r${i}`;
+    recipes.push({
+      ownerUid: `owner-${i}`,
+      id,
+      data: { core: { createdBy: `owner-${i}` } },
+    });
+    comments.push({
+      id: `c${i}`,
+      recipeId: id,
+      authorId: `author-${i}`,
+    });
+  }
+
+  let inFlight = 0;
+  let maxInFlight = 0;
+  const db = makeFakeDb(comments, recipes, {
+    resolveDelayMs: 5,
+    onResolveStart: () => {
+      inFlight += 1;
+      if (inFlight > maxInFlight) maxInFlight = inFlight;
+    },
+    onResolveEnd: () => {
+      inFlight -= 1;
+    },
+  });
+  const result = await runBackfill(db as never, {
+    dryRun: false,
+    maxComments: 1000,
+  });
+
+  const ok = result.migrated === 8 && maxInFlight > 1;
+  record(
+    "concurrency: resolves are interleaved (max-in-flight > 1)",
+    ok,
+    `migrated=${result.migrated} maxInFlight=${maxInFlight}`
+  );
+}
+
+/**
+ * Concurrency cap: with 50 unique recipeIds, max-in-flight must stay
+ * within RESOLVE_CONCURRENCY (20). Hits the p-limit guard.
+ */
+async function concurrencyRespectsCap(): Promise<void> {
+  const recipes: FakeRecipe[] = [];
+  const comments: FakeComment[] = [];
+  for (let i = 0; i < 50; i++) {
+    const id = `rcap${String(i).padStart(3, "0")}`;
+    recipes.push({
+      ownerUid: `owner-${i}`,
+      id,
+      data: { core: { createdBy: `owner-${i}` } },
+    });
+    comments.push({
+      id: `ccap${String(i).padStart(3, "0")}`,
+      recipeId: id,
+      authorId: `author-${i}`,
+    });
+  }
+
+  let inFlight = 0;
+  let maxInFlight = 0;
+  const db = makeFakeDb(comments, recipes, {
+    resolveDelayMs: 10,
+    onResolveStart: () => {
+      inFlight += 1;
+      if (inFlight > maxInFlight) maxInFlight = inFlight;
+    },
+    onResolveEnd: () => {
+      inFlight -= 1;
+    },
+  });
+  const result = await runBackfill(db as never, {
+    dryRun: false,
+    maxComments: 1000,
+  });
+
+  const ok = result.migrated === 50 && maxInFlight <= 20 && maxInFlight > 1;
+  record(
+    "concurrency cap: max-in-flight ≤ 20 across 50 unique recipes",
+    ok,
+    `migrated=${result.migrated} maxInFlight=${maxInFlight}`
+  );
+}
+
 async function runAll(): Promise<void> {
-  console.log("BUT-458: backfill-recipe-comments-denorm tests\n");
+  console.log("BUT-458 / BUT-741: backfill-recipe-comments-denorm tests\n");
   console.log("==============================================\n");
   await migratesCollabRecipeComment();
   await migratesPersonalRecipeComment();
@@ -443,6 +606,9 @@ async function runAll(): Promise<void> {
   await requireAdminRejectsNonAdmin();
   await requireAdminAllowsAdmin();
   await requireAdminRejectsUnauthenticated();
+  await dedupResolvesEachRecipeOnce();
+  await resolvesRunInterleaved();
+  await concurrencyRespectsCap();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +

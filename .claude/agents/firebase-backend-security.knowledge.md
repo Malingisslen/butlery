@@ -1703,3 +1703,133 @@ the consent vocabulary is `consent_updated`, `consent_granted`,
 `consent_revoked` plus a small headroom). Composite index needed:
 `(operation asc, timestamp asc)`. Not urgent — flag during the legacy
 `cleanupOldAuditLogs` retirement work.
+
+### 2026-05-01 — `FieldValue.arrayRemove` doesn't survive batched updates in fake_cloud_firestore
+While implementing BUT-747 (`_scrubInboundSharedMenus`), used
+`batch.update(ref, {'sharedToUserIds': FieldValue.arrayRemove([uid])})`.
+The fake-firestore harness silently dropped the transform — the doc
+still contained the UID after `batch.commit()` and the residual
+tripwire failed. Switched to read-modify-write
+(`raw.where((id) => id != uid).toList()` then `batch.update` with the
+plain list). Same single-update cost on real Firestore, but the test
+fake actually applies it. Same lesson as the `_scrubGroupWeeklyMenuPlans`
+note in this file ("dotted-field idiom works on real Firestore but
+misbehaves in test fakes; explicit list rewrite is unambiguous").
+**Pattern:** for any cross-user array scrub in cascade code, prefer
+explicit list rewrites over `FieldValue.arrayRemove` so test fakes
+exercise the same branch.
+
+### 2026-05-01 — Field-name canonicalisation between writer + read-only gateway
+BUT-748 root cause: `FirebaseBlockRepository` writes `blockedId` (via
+`BlockRecord.toFirestore()`); `FirebaseDataExportRepository.exportIncomingBlocks`
+queried `blockedUserId`. Production export silently returned zero
+incoming blocks for every GDPR Art-15 export ever issued. **No data
+migration was needed** because the wrong field was only ever READ —
+nothing wrote it. **Diagnostic for similar cases:** grep the literal
+field-name string (with quotes) across `lib/` + `functions/src/`. If
+the only hit outside the broken reader is the broken reader itself,
+no migration is required; the fix is read-side only. If hits include
+a writer using the alternate name, plan a migration step.
+
+### 2026-05-01 — Read-only gateway repos: shape-grouping refactor pattern
+`FirebaseDataExportRepository` (BUT-740) had 23 near-identical methods,
+each `_guardSelfExport → query.limit(n).get() → map → toList`. Three
+shapes: A (`[{id, data}]`), B (`[data]`), C (`data?`). Collapsed to
+two private helpers (`_queryList(query, userId, resource, {limit,
+includeIds})` and `_readDoc(ref, userId, resource)`) plus an
+`ExportResourceType` enum to retire 16 stringly-typed `resourceType`
+literals. Public method bodies became 3-7 lines of fat-arrow
+delegation. Bespoke shapes (shopping-list nested-items, conversations
++ messages join) kept as-is — the helper extraction is for the
+copy-paste majority, not every method. **Net:** ~150 lines saved
+without behavioural change; data_export_service_test.dart unchanged
+and still 16/16 green. **When applying this pattern:** keep the
+`includeIds` flag binary (don't add a third "id-only" branch — fork
+the helper if a fourth shape appears).
+
+### 2026-05-01 — Recipient self-scrub rule pattern (BUT-747)
+
+When a collection holds shared docs with a `recipients` array (here:
+`menus.sharedToUserIds`), GDPR Art 17 erasure requires the recipient
+to be able to remove their own UID from foreign-owned docs. Pattern
+that landed in `firestore.rules:610-618` for the `menus` collection:
+
+```
+allow update: if isAuthenticated() && (
+  (request.auth.uid == resource.data.sharedByUserId
+    && cannotModify(['sharedByUserId', 'sharedAt']))
+  || (resource.data.sharedToUserIds is list
+    && request.auth.uid in resource.data.sharedToUserIds
+    && !(request.auth.uid in request.resource.data.sharedToUserIds)
+    && request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['sharedToUserIds']))
+);
+```
+
+Three guards on the recipient branch:
+1. `in` BEFORE — recipient must currently be on the share.
+2. `!in` AFTER — recipient must NOT be on the share after.
+3. `affectedKeys().hasOnly(['sharedToUserIds'])` — no other field may
+   change in the same update.
+
+**Known residual gap (filed as Medium, not Critical):** the rule does
+NOT enforce that *other* UIDs in the array are preserved. A malicious
+recipient can submit `sharedToUserIds: []` and simultaneously remove
+themselves AND boot every other recipient. Owner remains in control
+(can re-add) so this is a griefing vector, not data loss. Tightening
+would require something like:
+`request.resource.data.sharedToUserIds.toSet() ==
+ resource.data.sharedToUserIds.toSet().difference(
+ [request.auth.uid].toSet())` — feasible in CEL but adds rule cost.
+The corresponding `menus-rules.test.ts` coverage explicitly tests
+"recipient cannot ADD" (M11) and "recipient cannot remove OTHER while
+keeping self" (M12), but does NOT test the simultaneous-self+other
+removal case. If you tighten the rule, add an M18 first.
+
+**Important:** the production cascade (`_scrubInboundSharedMenus` in
+`content_deletion_operations.dart`) does the right thing — it always
+writes `raw.where((id) => id != userId).toList()`, preserving every
+other recipient. The rule gap only matters against a malicious
+client.
+
+### 2026-05-01 — Production-rule-vs-fake-Firestore lesson (BUT-746/747)
+
+Two distinct sub-lessons surfaced this sprint:
+
+(1) Production residuals are NOT visible to `FakeFirebaseFirestore`
+    when the cascade writes against a production-side collection
+    (here: top-level `menus`) but the test fake doesn't run the rules.
+    The BUT-671 residual test was designed exactly to be a tripwire
+    on this — assert positively that the residual exists, so a future
+    fix flips it red. Pattern: `_expectMatchingExists` (TRIPWIRE),
+    converted to `_expectNoMatching` once the fix lands. Keep this
+    file-header comment style (link the ticket, name the cascade
+    method, explain why the assert flipped) so the test reads as a
+    history of the bug not just a green check.
+
+(2) Cascade code that writes to top-level (cross-user) collections
+    MUST handle `permission-denied` separately from transient errors,
+    because the rules engine is the *only* line of defense against
+    cross-user write bypass. Pattern (verified in
+    `_deleteSharedMenusOwnedBy` and `_scrubInboundSharedMenus`):
+
+    ```dart
+    } on FirebaseException catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed (${e.code})', e);
+      if (e.code == 'permission-denied') rethrow;
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed', e);
+    }
+    ```
+
+    Permission-denied bubbles up so the parent `deleteMenus` returns
+    false → entry in `failedCollections` → user-visible deletion
+    failure → operator pages a real human. Network/quota gets the
+    legacy best-effort swallow (cascade keeps going). The split is
+    the difference between "audit log shows we tried" and "audit
+    log shows we silently failed Art 17".
+
+    `cloud_firestore` is the right import (top of file already), and
+    `FirebaseException` is the type — same one Firestore throws on
+    rule rejection in flutter SDK.

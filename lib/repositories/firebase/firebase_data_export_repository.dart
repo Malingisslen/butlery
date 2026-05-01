@@ -5,6 +5,39 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 
+/// Resource-type tag passed to [validateOwnership] for log/exception
+/// breadcrumbs. Replaces the 16+ stringly-typed `resourceType` literals
+/// that were previously copy-pasted across every export method.
+///
+/// BUT-740: two distinct top-level collections previously both passed
+/// `'menus'` (personal subcollection vs shared top-level). They keep the
+/// same tag because [validateOwnership] only uses it for log strings, not
+/// authorization decisions — but the enum makes the collision explicit
+/// and easy to split later if needed.
+enum ExportResourceType {
+  menus('menus'),
+  shoppingLists('shopping_lists'),
+  friends('friends'),
+  friendCategories('friend_categories'),
+  socialRequests('social_requests'),
+  conversations('conversations'),
+  sharedContent('shared_content'),
+  blocks('blocks'),
+  conversationMemberships('conversation_memberships'),
+  userConsent('user_consent'),
+  userSettings('user_settings'),
+  userNotifications('user_notifications'),
+  userNotificationPreferences('user_notification_preferences'),
+  userFcmTokens('user_fcm_tokens'),
+  categoryPreferences('category_preferences'),
+  listCategoryOrders('list_category_orders'),
+  users('users'),
+  publicProfiles('public_profiles');
+
+  const ExportResourceType(this.tag);
+  final String tag;
+}
+
 /// Single repository that owns the residual user-scoped Firestore reads
 /// needed by the GDPR data-export pipeline.
 ///
@@ -77,12 +110,47 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
 
   /// Guard helper: confirm the authenticated caller is exporting their
   /// own data. Every public method funnels through this.
-  Future<void> _guardSelfExport(String userId, String resourceType) async {
+  Future<void> _guardSelfExport(
+      String userId, ExportResourceType resource) async {
     await validateOwnership(
       currentUserId: requireCurrentUserId(),
       resourceOwnerId: userId,
-      resourceType: resourceType,
+      resourceType: resource.tag,
     );
+  }
+
+  /// BUT-740: list-shape helper. Runs [query] after self-export guard,
+  /// returns either `[{id, data}]` (when [includeIds] is true) or `[data]`
+  /// (when false). Replaces the ~16 near-identical
+  /// `_guardSelfExport → query.limit(n).get() → map → toList` blocks.
+  Future<List<Map<String, dynamic>>> _queryList(
+    Query<Map<String, dynamic>> query,
+    String userId,
+    ExportResourceType resource, {
+    int limit = 500,
+    bool includeIds = true,
+  }) async {
+    await _guardSelfExport(userId, resource);
+    final snapshot = await query.limit(limit).get();
+    if (includeIds) {
+      return snapshot.docs
+          .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+          .toList();
+    }
+    return snapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  /// BUT-740: single-doc-shape helper. Runs `[ref].get()` after self-export
+  /// guard, returns the data map or null. Replaces the 6 single-doc
+  /// `_guardSelfExport → ref.get() → exists ? data : null` blocks.
+  Future<Map<String, dynamic>?> _readDoc(
+    DocumentReference<Map<String, dynamic>> ref,
+    String userId,
+    ExportResourceType resource,
+  ) async {
+    await _guardSelfExport(userId, resource);
+    final doc = await ref.get();
+    return doc.exists ? doc.data() : null;
   }
 
   // ── content_export_manager residuals ──
@@ -91,35 +159,31 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportPersonalMenus(
     String userId, {
     int maxDocuments = 1000,
-  }) async {
-    await _guardSelfExport(userId, 'menus');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.menus)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.menus),
+        userId,
+        ExportResourceType.menus,
+        limit: maxDocuments,
+      );
 
   /// Top-level `menus` where `sharedByUserId == userId` — menus the user
   /// has shared with others.
   Future<List<Map<String, dynamic>>> exportSharedMenusByOwner(
     String userId, {
     int maxDocuments = 1000,
-  }) async {
-    await _guardSelfExport(userId, 'menus');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.menus)
-        .where('sharedByUserId', isEqualTo: userId)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.menus)
+            .where('sharedByUserId', isEqualTo: userId),
+        userId,
+        ExportResourceType.menus,
+        limit: maxDocuments,
+      );
 
   /// `users/{uid}/shopping_lists` with each list's nested `items` subcoll.
   /// Returns `{id, data, items: [{id, data}]}` shapes.
@@ -128,7 +192,7 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     int maxLists = 1000,
     int maxItemsPerList = 500,
   }) async {
-    await _guardSelfExport(userId, 'shopping_lists');
+    await _guardSelfExport(userId, ExportResourceType.shoppingLists);
     final listsSnapshot = await firestore
         .collection(FirestoreCollections.users)
         .doc(userId)
@@ -172,69 +236,61 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportFriendsSubcollection(
     String userId, {
     int maxDocuments = 1000,
-  }) async {
-    await _guardSelfExport(userId, 'friends');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userFriends)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.userFriends),
+        userId,
+        ExportResourceType.friends,
+        limit: maxDocuments,
+      );
 
   /// `users/{uid}/friend_categories` subcollection.
   Future<List<Map<String, dynamic>>> exportFriendCategories(
     String userId, {
     int maxDocuments = 100,
-  }) async {
-    await _guardSelfExport(userId, 'friend_categories');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userFriendCategories)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.userFriendCategories),
+        userId,
+        ExportResourceType.friendCategories,
+        limit: maxDocuments,
+      );
 
   /// Top-level `social_requests` where `fromUserId == userId`
   /// (sent friend / group requests).
   Future<List<Map<String, dynamic>>> exportSocialRequestsSent(
     String userId, {
     int maxDocuments = 500,
-  }) async {
-    await _guardSelfExport(userId, 'social_requests');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.socialRequests)
-        .where('fromUserId', isEqualTo: userId)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.socialRequests)
+            .where('fromUserId', isEqualTo: userId),
+        userId,
+        ExportResourceType.socialRequests,
+        limit: maxDocuments,
+      );
 
   /// Top-level `social_requests` where `toUserId == userId`
   /// (received friend / group requests).
   Future<List<Map<String, dynamic>>> exportSocialRequestsReceived(
     String userId, {
     int maxDocuments = 500,
-  }) async {
-    await _guardSelfExport(userId, 'social_requests');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.socialRequests)
-        .where('toUserId', isEqualTo: userId)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.socialRequests)
+            .where('toUserId', isEqualTo: userId),
+        userId,
+        ExportResourceType.socialRequests,
+        limit: maxDocuments,
+      );
 
   /// `conversations` where `participantIds arrayContains userId`,
   /// each carrying its `messages` subcollection (limited).
@@ -243,7 +299,7 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     int maxConversations = 100,
     int maxMessagesPerConversation = 500,
   }) async {
-    await _guardSelfExport(userId, 'conversations');
+    await _guardSelfExport(userId, ExportResourceType.conversations);
     final convoSnapshot = await firestore
         .collection(FirestoreCollections.conversations)
         .where('participantIds', arrayContains: userId)
@@ -281,78 +337,84 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportSharedRecipesReceived(
     String userId, {
     int maxDocuments = 1000,
-  }) async {
-    await _guardSelfExport(userId, 'shared_content');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.sharedContent)
-        .where('contentType', isEqualTo: 'recipe')
-        .where('sharedWithUserIds', arrayContains: userId)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.sharedContent)
+            .where('contentType', isEqualTo: 'recipe')
+            .where('sharedWithUserIds', arrayContains: userId),
+        userId,
+        ExportResourceType.sharedContent,
+        limit: maxDocuments,
+      );
 
   /// Top-level `menus` where `sharedToUserIds arrayContains userId` —
   /// menus shared TO the user.
   Future<List<Map<String, dynamic>>> exportSharedMenusReceived(
     String userId, {
     int maxDocuments = 500,
-  }) async {
-    await _guardSelfExport(userId, 'menus');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.menus)
-        .where('sharedToUserIds', arrayContains: userId)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.menus)
+            .where('sharedToUserIds', arrayContains: userId),
+        userId,
+        ExportResourceType.menus,
+        limit: maxDocuments,
+      );
 
   /// Outgoing blocks (`blocks` where `blockerId == userId`).
   Future<List<Map<String, dynamic>>> exportOutgoingBlocks(
     String userId, {
     int maxDocuments = 500,
-  }) async {
-    await _guardSelfExport(userId, 'blocks');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.blocks)
-        .where('blockerId', isEqualTo: userId)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs.map((doc) => doc.data()).toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.blocks)
+            .where('blockerId', isEqualTo: userId),
+        userId,
+        ExportResourceType.blocks,
+        limit: maxDocuments,
+        includeIds: false,
+      );
 
-  /// Incoming blocks (`blocks` where `blockedUserId == userId`).
+  /// Incoming blocks (`blocks` where `blockedId == userId`).
+  ///
+  /// BUT-748: Field name canonicalised to `blockedId` to match
+  /// [FirebaseBlockRepository] (which writes/queries `blockedId`). Earlier
+  /// code queried `blockedUserId` here, returning zero rows in production.
+  /// No data migration is needed because no production write path ever
+  /// emitted `blockedUserId` — `FirebaseBlockRepository.blockUser` has
+  /// always written `blockedId` via `BlockRecord.toFirestore()`.
   Future<List<Map<String, dynamic>>> exportIncomingBlocks(
     String userId, {
     int maxDocuments = 500,
-  }) async {
-    await _guardSelfExport(userId, 'blocks');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.blocks)
-        .where('blockedUserId', isEqualTo: userId)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs.map((doc) => doc.data()).toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.blocks)
+            .where('blockedId', isEqualTo: userId),
+        userId,
+        ExportResourceType.blocks,
+        limit: maxDocuments,
+        includeIds: false,
+      );
 
   /// `users/{uid}/conversation_memberships` subcollection.
   Future<List<Map<String, dynamic>>> exportConversationMemberships(
     String userId, {
     int maxDocuments = 500,
-  }) async {
-    await _guardSelfExport(userId, 'conversation_memberships');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userConversationMemberships)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs.map((doc) => doc.data()).toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.userConversationMemberships),
+        userId,
+        ExportResourceType.conversationMemberships,
+        limit: maxDocuments,
+        includeIds: false,
+      );
 
   // ── compliance_export_manager residuals ──
 
@@ -360,153 +422,138 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   Future<List<Map<String, dynamic>>> exportConsentHistory(
     String userId, {
     int maxDocuments = 100,
-  }) async {
-    await _guardSelfExport(userId, 'user_consent');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userConsent)
-        .orderBy('timestamp', descending: true)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.userConsent)
+            .orderBy('timestamp', descending: true),
+        userId,
+        ExportResourceType.userConsent,
+        limit: maxDocuments,
+      );
 
   /// `users/{uid}/consent/current` single-doc fetch.
-  Future<Map<String, dynamic>?> exportCurrentConsent(String userId) async {
-    await _guardSelfExport(userId, 'user_consent');
-    final doc = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userConsent)
-        .doc('current')
-        .get();
-    return doc.exists ? doc.data() : null;
-  }
+  Future<Map<String, dynamic>?> exportCurrentConsent(String userId) => _readDoc(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.userConsent)
+            .doc('current'),
+        userId,
+        ExportResourceType.userConsent,
+      );
 
   // ── preferences_export_manager residuals ──
 
   /// `users/{uid}/settings/preferences` single-doc fetch.
-  Future<Map<String, dynamic>?> exportSettingsPreferences(
-    String userId,
-  ) async {
-    await _guardSelfExport(userId, 'user_settings');
-    final doc = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.userSettings)
-        .doc('preferences')
-        .get();
-    return doc.exists ? doc.data() : null;
-  }
+  Future<Map<String, dynamic>?> exportSettingsPreferences(String userId) =>
+      _readDoc(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.userSettings)
+            .doc('preferences'),
+        userId,
+        ExportResourceType.userSettings,
+      );
 
   /// `user_notifications` where `userId == userId`.
   Future<List<Map<String, dynamic>>> exportUserNotifications(
     String userId, {
     int maxDocuments = 500,
-  }) async {
-    await _guardSelfExport(userId, 'user_notifications');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.userNotifications)
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.userNotifications)
+            .where('userId', isEqualTo: userId)
+            .orderBy('createdAt', descending: true),
+        userId,
+        ExportResourceType.userNotifications,
+        limit: maxDocuments,
+      );
 
   /// `user_notification_preferences/{userId}` single-doc fetch.
-  Future<Map<String, dynamic>?> exportNotificationPreferences(
-    String userId,
-  ) async {
-    await _guardSelfExport(userId, 'user_notification_preferences');
-    final doc = await firestore
-        .collection(FirestoreCollections.userNotificationPreferences)
-        .doc(userId)
-        .get();
-    return doc.exists ? doc.data() : null;
-  }
+  Future<Map<String, dynamic>?> exportNotificationPreferences(String userId) =>
+      _readDoc(
+        firestore
+            .collection(FirestoreCollections.userNotificationPreferences)
+            .doc(userId),
+        userId,
+        ExportResourceType.userNotificationPreferences,
+      );
 
   /// `user_fcm_tokens/{userId}` single-doc fetch (top-level shape).
-  Future<Map<String, dynamic>?> exportFcmTokensTopLevel(
-    String userId,
-  ) async {
-    await _guardSelfExport(userId, 'user_fcm_tokens');
-    final doc = await firestore
-        .collection(FirestoreCollections.userFcmTokens)
-        .doc(userId)
-        .get();
-    return doc.exists ? doc.data() : null;
-  }
+  Future<Map<String, dynamic>?> exportFcmTokensTopLevel(String userId) =>
+      _readDoc(
+        firestore.collection(FirestoreCollections.userFcmTokens).doc(userId),
+        userId,
+        ExportResourceType.userFcmTokens,
+      );
 
   /// `users/{uid}/fcm_tokens` subcollection (multi-device shape).
   Future<List<Map<String, dynamic>>> exportFcmTokensSubcollection(
     String userId, {
     int maxDocuments = 50,
-  }) async {
-    await _guardSelfExport(userId, 'user_fcm_tokens');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection('fcm_tokens')
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs.map((doc) => doc.data()).toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection('fcm_tokens'),
+        userId,
+        ExportResourceType.userFcmTokens,
+        limit: maxDocuments,
+        includeIds: false,
+      );
 
   /// `users/{uid}/category_preferences` subcollection.
   Future<List<Map<String, dynamic>>> exportCategoryPreferences(
     String userId, {
     int maxDocuments = 200,
-  }) async {
-    await _guardSelfExport(userId, 'category_preferences');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.categoryPreferences)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs.map((doc) => doc.data()).toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.categoryPreferences),
+        userId,
+        ExportResourceType.categoryPreferences,
+        limit: maxDocuments,
+        includeIds: false,
+      );
 
   /// `users/{uid}/list_category_orders` subcollection.
   Future<List<Map<String, dynamic>>> exportListCategoryOrders(
     String userId, {
     int maxDocuments = 200,
-  }) async {
-    await _guardSelfExport(userId, 'list_category_orders');
-    final snapshot = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .collection(FirestoreCollections.listCategoryOrders)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs.map((doc) => doc.data()).toList();
-  }
+  }) =>
+      _queryList(
+        firestore
+            .collection(FirestoreCollections.users)
+            .doc(userId)
+            .collection(FirestoreCollections.listCategoryOrders),
+        userId,
+        ExportResourceType.listCategoryOrders,
+        limit: maxDocuments,
+        includeIds: false,
+      );
 
   // ── data_export_service profile residuals ──
 
-  /// `users/{uid}` private profile single-doc fetch.
-  Future<Map<String, dynamic>?> exportPrivateProfile(String userId) async {
-    await _guardSelfExport(userId, 'users');
-    final doc = await firestore
-        .collection(FirestoreCollections.users)
-        .doc(userId)
-        .get();
-    return doc.data();
-  }
+  /// `users/{uid}` private profile single-doc fetch. Returns null when the
+  /// doc is missing (via [_readDoc]'s `doc.exists` short-circuit).
+  Future<Map<String, dynamic>?> exportPrivateProfile(String userId) => _readDoc(
+        firestore.collection(FirestoreCollections.users).doc(userId),
+        userId,
+        ExportResourceType.users,
+      );
 
   /// `public_profiles/{uid}` single-doc fetch.
-  Future<Map<String, dynamic>?> exportPublicProfile(String userId) async {
-    await _guardSelfExport(userId, 'public_profiles');
-    final doc = await firestore
-        .collection(FirestoreCollections.publicProfiles)
-        .doc(userId)
-        .get();
-    return doc.data();
-  }
+  Future<Map<String, dynamic>?> exportPublicProfile(String userId) => _readDoc(
+        firestore.collection(FirestoreCollections.publicProfiles).doc(userId),
+        userId,
+        ExportResourceType.publicProfiles,
+      );
 }

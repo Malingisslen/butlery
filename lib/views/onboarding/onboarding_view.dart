@@ -1,5 +1,4 @@
 /// Main onboarding wizard view with PageView navigation.
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -7,9 +6,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
-import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -29,19 +25,17 @@ class OnboardingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    // BUT-744: VM is constructed via the DI factory (single source of truth
+    // for service wiring). `initialPage` is page-level state — it's applied
+    // to the VM via [setInitialPage] so the wizard's currentPage matches the
+    // PageController's starting index without re-running step-completion logic.
+    return ChangeNotifierProvider<OnboardingViewModel>(
       create: (_) {
-        final progressService = OnboardingProgressService(
-          firestore: FirebaseFirestore.instance,
-          analytics: ServiceLocator.tryGet<AnalyticsService>(),
-        );
-        final userId =
-            ServiceLocator.tryGet<PermissionService>()?.currentUserId;
-        return OnboardingViewModel(
-          initialPage: initialPage,
-          progressService: progressService,
-          userId: userId,
-        );
+        final vm = ServiceLocator.get<OnboardingViewModel>();
+        if (initialPage != 0) {
+          vm.setInitialPage(initialPage);
+        }
+        return vm;
       },
       child: _OnboardingContent(initialPage: initialPage),
     );

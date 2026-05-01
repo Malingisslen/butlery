@@ -608,3 +608,73 @@ shape became blockers when extending to D14/90/180:
   requires a single-field index exemption in prod. Kept as-is since
   it was already shipped; flag for future review if the user
   collection grows enough to make the index cost matter.
+
+### 2026-05-01 — BUT-741 backfill parallelization [Pattern discovered]
+
+`backfill-recipe-comments-denorm` resolved recipe ownership sequentially per
+comment (≤10k serial `collectionGroup('recipes')` reads → callable timeout
+risk on chatty datasets). Fixed by adding two layers inside each batch loop:
+
+1. **Pre-pass dedup**: walk the batch once, classify
+   skipped/malformed/over-cap, collect distinct `recipeId`s into a `Set`.
+   For datasets where many comments target the same recipe, this alone
+   slashes resolve count by 2-5×.
+2. **Bounded parallel resolve**: `pLimit(20)` over the unique-id set,
+   `Promise.all(ids.map(id => limit(() => resolveRecipeOwnership(id))))`.
+   Errors captured per-id in a `Map<recipeId, OwnershipResult>` so a
+   resolve failure for one recipeId fans out cleanly to every comment
+   referencing it (counted as `failed`, not silently dropped).
+
+Adjacent quick wins shipped in the same change:
+- `BATCH_SIZE` 200 → 450 (Firestore writeBatch hard cap is 500; previous
+  setting wasted ~55% of capacity, doubling round-trips).
+- `MAX_BATCHES_PER_INVOCATION` 50 → 23 to keep the doc-count ceiling at
+  ~10k (23 × 450 = 10350 ≈ 10k; the inner `maxComments` guard enforces
+  the precise hard ceiling).
+
+**Patterns worth remembering**:
+
+- **`p-limit@3` is the right pin for this repo.** `tsconfig.json` uses
+  `module: "node16"` but the Functions runtime + `ts-node` operate as
+  CommonJS in practice. `p-limit@4+` is ESM-only and forces dynamic
+  `await import()` (works but adds a top-level-await wrapper). v3.1.0 is
+  CJS, exports a default function, plays cleanly with
+  `import pLimit from "p-limit"` under `esModuleInterop: true`. v3.1.0
+  was already on disk as a transitive — promoted to a direct dep at
+  `^3.1.0` so the dependency is explicit and survives prune cycles.
+
+- **Dedup BEFORE parallelize.** Concurrency without dedup still issues
+  N reads for N comments referencing the same recipe — just faster.
+  Pre-pass with a `Set<string>` of recipeIds reduces both Firestore
+  reads ($) and per-resolve latency contention. Apply this to any
+  fan-out trigger that may reference the same upstream entity multiple
+  times.
+
+- **Per-id error capture, not per-comment.** When a parallel resolve
+  fails, you must remember WHICH id failed so the fan-out step counts
+  every dependent comment as failed. A `Map<id, {ok, value|err}>`
+  tagged-union is the cleanest type for this; rejection-as-value
+  pattern keeps `Promise.all` from short-circuiting on one failure.
+
+- **Test seam for parallelism assertions**: extend the in-memory db
+  fake with optional `onResolveStart`/`onResolveEnd` hooks plus a
+  `resolveDelayMs` knob. Tests increment a shared `inFlight` counter
+  on start, decrement on end, track `maxInFlight` between yields.
+  Two assertions become trivial: `maxInFlight > 1` proves concurrent
+  execution; `maxInFlight ≤ CAP` proves the limiter is wired.
+  `setImmediate(r)` as a default microtask yield is enough to expose
+  parallelism without artificial delays for fast-path tests.
+
+- **Symbol-keyed back-pointer on the fake `ref`** lets the fake
+  `batch.update(ref, data)` mutate the right `FakeComment` even when
+  writes arrive out of declaration order. The previous fake's
+  "find-first-unmigrated-comment" heuristic only worked under strict
+  sequential order — broken by parallel resolve. Pattern:
+  `ref[COMMENT_REF] = c` at snap construction, lookup on update.
+  Survives any reordering the SUT might introduce.
+
+- **Lifecycle comment unchanged.** This is still BUT-458's one-shot
+  migration — BUT-741 just made it faster/safer. The lifecycle
+  removal trigger ("hasMore: false + 30d soak") is preserved verbatim.
+  When extending one-shot migrations, never extend the lifecycle
+  without reason; you'd be re-introducing zombie-endpoint risk.

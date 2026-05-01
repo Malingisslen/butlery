@@ -18,11 +18,6 @@ class OnboardingViewModel extends ChangeNotifier {
   // (GDPR Art 8). Under this, sign-up is blocked.
   static const int minAgeYears = 15;
 
-  /// Optional: resume index injected when AuthWrapper detects an in-progress
-  /// onboarding doc (BUT-675). The view's PageController jumps here on first
-  /// frame so the user lands on the next-incomplete step.
-  final int initialPage;
-
   /// Optional progress-service hook. When null we skip the persist writes —
   /// keeps existing tests that didn't register the service from breaking.
   final OnboardingProgressService? _progressService;
@@ -31,11 +26,13 @@ class OnboardingViewModel extends ChangeNotifier {
   /// through every step-complete call site.
   final String? _userId;
 
+  // BUT-744: initial page is page-level state, set by the view post-construction
+  // via [setInitialPage]. The constructor takes only service-shaped dependencies
+  // so the DI factory in ui_module.dart can be the single source of truth.
   OnboardingViewModel({
-    this.initialPage = 0,
     OnboardingProgressService? progressService,
     String? userId,
-  })  : _currentPage = initialPage,
+  })  : _currentPage = 0,
         _progressService = progressService,
         _userId = userId;
 
@@ -75,6 +72,15 @@ class OnboardingViewModel extends ChangeNotifier {
 
   void setBirthYear(int? year) {
     _selectedBirthYear = year;
+    notifyListeners();
+  }
+
+  /// Resume jump applied by the view post-construction. Bypasses `setPage`'s
+  /// analytics + step-completion side-effects — the user is _arriving_ at
+  /// this page (resume), not _finishing_ a previous one.
+  void setInitialPage(int page) {
+    if (_currentPage == page) return;
+    _currentPage = page;
     notifyListeners();
   }
 

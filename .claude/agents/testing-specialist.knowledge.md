@@ -304,3 +304,87 @@ fail-soft (returns null/empty rather than throwing) because the
 *caller* needs the operation to keep going. Don't apply this to
 resolvers where missing data should be a hard error — those want
 `throwsA(...)` tests instead.
+
+### 2026-05-01 — BUT-746/747/748 GDPR cascade close-out [Pattern discovered + Bug found]
+Sprint 2026-05-01 closed three documented residuals from the BUT-671 GDPR
+cascade work. Test side: `account_deletion_residual_test.dart` flipped
+two `_expectMatchingExists` tripwires to `_expectNoMatching` (BUT-746
+top-level `menus` orphans, BUT-747 `sharedToUserIds` array scrub) and
+re-pointed the incoming-blocks query to canonical `blockedId` (BUT-748).
+Sibling `data_export_service_test.dart` got a new
+`exportIncomingBlocks queries canonical blockedId field` test that would
+have failed under the prior `blockedUserId` query — proper regression
+gate, not a smoke test.
+
+Patterns / gotchas worth not losing:
+
+1. **Documented-residual tripwire pattern works.** BUT-671's original
+   author pinned three `_expectMatchingExists` assertions with
+   "TRIPWIRE: when this fails, the bug is fixed — flip to
+   `_expectNoMatching`" comments. That's exactly what happened in this
+   sprint: production code closed the gap, the assertion went red, the
+   author flipped the matcher and updated the file header. Comment
+   prose carries the *next action* the test alone can't express.
+   Reusable for any "we know this is wrong, but the fix is out of
+   scope for this commit" situation.
+
+2. **`FieldValue.arrayRemove` + `fake_cloud_firestore` + batched
+   `update` = silent no-op.** Agent A's BUT-747 fix uses an explicit
+   read-modify-write (`raw.where((id) => id != userId).toList()`)
+   inside the batch update rather than `arrayRemove`. Production code
+   carries a comment naming the fake-firestore behaviour: "some
+   fake-Firestore versions don't honour the array transform inside a
+   batched update; the explicit list rewrite is unambiguous and the
+   per-doc cost is identical on real Firestore." When writing array-scrub
+   code that must be testable under `FakeFirebaseFirestore`, prefer
+   read-modify-write. If `arrayRemove` is non-negotiable (e.g. you need
+   the atomic semantics under contention), test on the emulator lane
+   instead. Symmetric `arrayUnion` has the same caveat — verify before
+   relying on it inside a batch.
+
+3. **Field-name canonicalisation is a real GDPR risk surface.** BUT-748
+   was a pure naming bug: `FirebaseBlockRepository` writes/queries
+   `blockedId`, but `FirebaseDataExportRepository.exportIncomingBlocks`
+   queried `blockedUserId`. The export path silently returned zero
+   incoming blocks for every user — a GDPR Art 15 (right of access)
+   violation that no behavioural test caught for months. Lesson: when a
+   field name appears in *two* repos, write at least one cross-repo
+   integration test that round-trips the field (writer-repo writes,
+   reader-repo reads, asserts non-empty). Don't trust string-equality
+   review alone — it's the test category that catches typos and rename
+   drift. Add this to repo-pair test checklists going forward.
+
+4. **Test-only `_expectNoMatching` after a tripwire flip should keep
+   the same `field` argument and just change the matcher.** Agent A
+   could have moved or rewritten the assertion block; instead they
+   surgical-edited the matcher + the `why` string. Clean diff, easy
+   review, and the test's intent is unchanged ("after deletion, no
+   menus should exist with sharedByUserId == deletedUid"). Don't take
+   the opportunity to refactor unrelated structure when flipping a
+   tripwire — the diff is the proof of "this was a known bug, now
+   fixed" and a noisy diff dilutes that signal.
+
+Sprint coverage on the staged files:
+- `lib/repositories/firebase/firebase_data_export_repository.dart`:
+  16/16 in `data_export_service_test.dart` (incl. new BUT-748 test).
+- `lib/services/account/account_deletion/content_deletion_operations.dart`:
+  1/1 in `account_deletion_residual_test.dart` (single integration-style
+  test iterating all collections — tripwires now flipped green).
+- `lib/viewmodels/onboarding_viewmodel.dart`: 8/8 in
+  `onboarding_viewmodel_test.dart`.
+- `lib/views/onboarding/onboarding_view.dart`: 15/15 across four widget
+  tests (`onboarding_age_gate_page_test.dart`,
+  `onboarding_allergen_page_test.dart`,
+  `onboarding_dietary_page_test.dart`,
+  `onboarding_landscape_overflow_test.dart`) + 2/2 in
+  `onboarding_journey_test.dart`.
+- `lib/core/di/modules/{core,ui}_module.dart` and `lib/main.dart`:
+  no direct tests (DI/bootstrap — covered transitively by every
+  ViewModel test that goes through `production.ServiceLocator.initialize`).
+  No coverage gap to file.
+
+Total: 42/42 green for the sprint. Two production bugs caught by the
+cascade re-test (BUT-746 + BUT-747) — both surfaced by the tripwire
+pattern when the production cascade was extended. BUT-748 caught by
+the new direct-query test, which is the kind of cross-repo
+field-name regression that's worth seeding as a checklist item.

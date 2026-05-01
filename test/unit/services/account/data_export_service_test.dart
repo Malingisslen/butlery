@@ -329,5 +329,37 @@ void main() {
         expect(service.serviceName, 'DataExportService');
       });
     });
+
+    group('FirebaseDataExportRepository — direct queries (BUT-748)', () {
+      test('exportIncomingBlocks queries canonical `blockedId` field',
+          () async {
+        // BUT-748: prior code queried `blockedUserId`, returning zero rows
+        // because FirebaseBlockRepository writes `blockedId`. This test
+        // would have failed under the old field name.
+        final repo = FirebaseDataExportRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+        );
+
+        await fakeFirestore.collection('blocks').doc('in1').set({
+          'blockerId': 'other-user',
+          'blockedId': testUserId,
+        });
+        await fakeFirestore.collection('blocks').doc('in2').set({
+          'blockerId': 'another-user',
+          'blockedId': testUserId,
+        });
+        // Outgoing — must NOT appear in incoming results.
+        await fakeFirestore.collection('blocks').doc('out1').set({
+          'blockerId': testUserId,
+          'blockedId': 'someone-else',
+        });
+
+        final incoming = await repo.exportIncomingBlocks(testUserId);
+
+        expect(incoming, hasLength(2),
+            reason: 'incoming blocks where blockedId == userId');
+      });
+    });
   });
 }

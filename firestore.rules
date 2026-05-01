@@ -588,18 +588,34 @@ service cloud.firestore {
     // ========================================
 
     match /menus/{menuId} {
-      // Can read if you're the owner
-      allow read: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
+      // Owner OR recipient can read. Mirrors unified_shared_shopping_lists.
+      // BUT-747: recipient access also unblocks the GDPR scrub
+      // (recipient must be able to read+update to remove their own UID).
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.sharedByUserId
+        || (resource.data.sharedToUserIds is list
+            && request.auth.uid in resource.data.sharedToUserIds)
+      );
 
       // Can create if you're the sharedByUserId
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'menuTitle', 'sharedAt']);
 
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId
-        && cannotModify(['sharedByUserId', 'sharedAt']);
+      // Owner: full update with the standard immutability guard.
+      // Recipient (BUT-747): may ONLY shrink `sharedToUserIds` to remove
+      // themselves — `hasOnly([sharedToUserIds])` blocks any other field
+      // mutation, and the in/!in pair ensures they're removing self,
+      // not adding/swapping other users.
+      allow update: if isAuthenticated() && (
+        (request.auth.uid == resource.data.sharedByUserId
+          && cannotModify(['sharedByUserId', 'sharedAt']))
+        || (resource.data.sharedToUserIds is list
+          && request.auth.uid in resource.data.sharedToUserIds
+          && !(request.auth.uid in request.resource.data.sharedToUserIds)
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['sharedToUserIds']))
+      );
 
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;

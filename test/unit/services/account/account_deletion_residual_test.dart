@@ -23,27 +23,19 @@
 ///     fully deletes ratings authored by the deleted user (no anonymization
 ///     branch in current production code).
 ///
-/// **PRODUCTION RESIDUALS SURFACED BY THIS TEST (filed for follow-up — do
-/// NOT fix in the same commit per BUT-671 scope guard):**
-///   - `menus` (top-level) where `sharedByUserId == deletedUid` — NOT wiped.
-///     [ContentDeletionOperations.deleteMenus] only deletes the
-///     `users/{uid}/menus` subcollection; the top-level `menus` collection
-///     that [FirebaseDataExportRepository.exportSharedMenusByOwner] reads
-///     is never touched. This is a GDPR Art 17 gap. Asserted positively
-///     below so a future fix flips the assertion red and forces this
-///     comment to be updated.
-///   - `menus` (top-level) where `sharedToUserIds arrayContains deletedUid`
-///     — UID is NOT removed from arrays on inbound shared menus.
-///     [ContentDeletionOperations] has no scrub path for this; the
-///     symmetric scrub for shopping lists exists but for menus it doesn't.
-///     Same handling: asserted positively as residual.
-///   - `blocks` field-name inconsistency:
-///     [FirebaseBlockRepository] writes/reads/deletes `blockedId`;
-///     [FirebaseDataExportRepository.exportIncomingBlocks] queries
-///     `blockedUserId`. The export will return zero incoming blocks in
-///     production. Seed mirrors BOTH names so cascade deletion (which uses
-///     `blockedId`) works in this test, but the production data-export
-///     gap remains. Fix: align field names in both repos and migrate.
+/// **PRODUCTION RESIDUALS PREVIOUSLY DOCUMENTED — NOW FIXED (sprint
+/// 2026-05-01 close-out of BUT-671 carry-overs):**
+///   - BUT-746: `menus` (top-level) where `sharedByUserId == deletedUid`
+///     are now wiped by [ContentDeletionOperations._deleteSharedMenusOwnedBy].
+///     Assertion below is `_expectNoMatching` (was `_expectMatchingExists`).
+///   - BUT-747: `menus.sharedToUserIds` arrays now have the deleted UID
+///     removed by [ContentDeletionOperations._scrubInboundSharedMenus],
+///     mirroring the symmetric collaborative-shopping-list scrub.
+///     Assertion below is `_expectNoMatching` with arrayContains.
+///   - BUT-748: `blocks` field-name canonicalised to `blockedId`.
+///     [FirebaseDataExportRepository.exportIncomingBlocks] now queries
+///     `blockedId` to match [FirebaseBlockRepository]. No data migration
+///     needed — production never wrote `blockedUserId`.
 ///
 /// **Honest gaps in coverage (FakeFirebaseFirestore + harness limitations):**
 ///   - `FieldValue.serverTimestamp()` in audit-log writes can throw on
@@ -421,19 +413,15 @@ void main() {
           why:
               'personal menus should be wiped by ContentDeletionOps.deleteMenus',
         );
-        // PRODUCTION RESIDUAL — see file header. ContentDeletionOps.deleteMenus
-        // does NOT scrub the top-level `menus` collection. Assert the bug
-        // still exists so a future fix flips this red and forces the file
-        // header to be updated. Treat as a tripwire, not a regression.
-        await _expectMatchingExists(
+        // BUT-746 fix: top-level `menus` where sharedByUserId == deletedUid
+        // MUST be deleted by the cascade (was a documented residual; now
+        // wired through ContentDeletionOps._deleteSharedMenusOwnedBy).
+        await _expectNoMatching(
           firestore,
           collection: FirestoreCollections.menus,
           field: 'sharedByUserId',
           value: _deletedUid,
-          why: 'TRIPWIRE: top-level menus where sharedByUserId == deletedUid '
-              'are NOT scrubbed by current cascade. When this fails, the '
-              'production bug has been fixed — flip to _expectNoMatching '
-              'and update the file header.',
+          why: 'top-level shared menus owned by deleted user wiped (BUT-746)',
         );
         await _expectNoSubcollection(
           firestore,
@@ -488,18 +476,16 @@ void main() {
                 'conversation ${c.id}',
           );
         }
-        // PRODUCTION RESIDUAL — see file header. The cascade has no scrub
-        // for `sharedToUserIds` arrays on top-level menus. Tripwire: when
-        // this fails, the bug is fixed — flip to _expectNoMatching with
-        // arrayContains.
-        await _expectMatchingExists(
+        // BUT-747 fix: top-level menus.sharedToUserIds arrays MUST be
+        // scrubbed of the deleted UID (was a documented residual; now
+        // wired through ContentDeletionOps._scrubInboundSharedMenus).
+        await _expectNoMatching(
           firestore,
           collection: FirestoreCollections.menus,
           field: 'sharedToUserIds',
           value: _deletedUid,
           arrayContains: true,
-          why: 'TRIPWIRE: top-level menus.sharedToUserIds arrays are NOT '
-              'scrubbed of deleted UID. Fix the cascade and flip this red.',
+          why: 'inbound shared menus scrubbed of deleted UID (BUT-747)',
         );
         await _expectNoMatching(
           firestore,
@@ -508,12 +494,15 @@ void main() {
           value: _deletedUid,
           why: 'outgoing blocks wiped',
         );
+        // BUT-748 fix: canonical field is `blockedId` (matches
+        // FirebaseBlockRepository writer + delete query). Was previously
+        // `blockedUserId`, mirrored in the seed for vacuous compatibility.
         await _expectNoMatching(
           firestore,
           collection: FirestoreCollections.blocks,
-          field: 'blockedUserId',
+          field: 'blockedId',
           value: _deletedUid,
-          why: 'incoming blocks wiped',
+          why: 'incoming blocks wiped (BUT-748 — canonical field blockedId)',
         );
         await _expectNoSubcollection(
           firestore,
@@ -810,22 +799,17 @@ Future<void> _seedAllCollections(
       .set({'senderId': otherUid, 'text': 'hello'});
 
   // Blocks (outgoing + incoming).
-  // FIELD-NAME INCONSISTENCY (filed as production residual):
-  // FirebaseBlockRepository writes `blockedId` (and queries that field on
-  // delete), but FirebaseDataExportRepository.exportIncomingBlocks queries
-  // `blockedUserId`. They cannot both be right. Seed BOTH field names so
-  // the cascade (which uses `blockedId`) actually deletes its own data,
-  // and the data-export field-name mismatch is documented in the test
-  // header. Production fix: pick one, migrate, update both repos.
+  // BUT-748 RESOLVED: field name canonicalised to `blockedId` everywhere.
+  // FirebaseDataExportRepository.exportIncomingBlocks now queries
+  // `blockedId` (was `blockedUserId`). No migration needed — no production
+  // write path ever emitted `blockedUserId`. Seed uses canonical field only.
   await fs.collection(FirestoreCollections.blocks).doc('block-out').set({
     'blockerId': deletedUid,
     'blockedId': otherUid,
-    'blockedUserId': otherUid, // mirror for export-repo's query
   });
   await fs.collection(FirestoreCollections.blocks).doc('block-in').set({
     'blockerId': otherUid,
     'blockedId': deletedUid,
-    'blockedUserId': deletedUid, // mirror for export-repo's query
   });
 
   // Conversation memberships subcollection.

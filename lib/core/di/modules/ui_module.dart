@@ -59,6 +59,8 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
+import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
+import 'package:butlery/services/permission_service.dart';
 
 // Dependencies from other modules
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -355,9 +357,19 @@ class UIModule implements DIModule {
       // Personal Tag ViewModel - Singleton (holds Firestore stream)
       // PersonalTagViewModel: registered in configureUserScope
 
-      // Onboarding ViewModel
+      // Onboarding ViewModel — BUT-744 single source of truth.
+      // Wires the progress service (BUT-743) so the wizard can persist
+      // step-completion writes; userId is captured from PermissionService when
+      // available so step writes don't have to thread it through every call.
       container.registerFactory<OnboardingViewModel>(
-        () => OnboardingViewModel(),
+        () => OnboardingViewModel(
+          progressService: container.isRegistered<OnboardingProgressService>()
+              ? container<OnboardingProgressService>()
+              : null,
+          userId: container.isRegistered<PermissionService>()
+              ? container<PermissionService>().currentUserId
+              : null,
+        ),
       );
     } catch (e) {
       throw DIModuleException(

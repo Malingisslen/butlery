@@ -58,6 +58,9 @@ import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/feedback/interaction_logger.dart';
 import 'package:butlery/services/feedback/feedback_service.dart';
 
+// Onboarding (BUT-743 — DI-injected; no FirebaseFirestore.instance reads)
+import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
+
 // Security (SSL pinning factory for the shared HTTP client)
 import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
@@ -113,6 +116,8 @@ class CoreModule implements DIModule {
       // Auth MFA and device integrity
       AuthMfaService,
       DeviceIntegrityService,
+      // Onboarding progress (BUT-743)
+      OnboardingProgressService,
     ];
 
     return services;
@@ -320,6 +325,20 @@ class CoreModule implements DIModule {
       );
       container.registerLazySingleton<FeedbackService>(
         () => FeedbackService(),
+      );
+
+      // BUT-743: Onboarding progress service. Lazy because the cold-start
+      // resume gate is the first consumer — no point constructing earlier.
+      // Routed through FirestoreRepository so the residual
+      // FirebaseFirestore.instance call-sites in main.dart and OnboardingView
+      // can be removed.
+      container.registerLazySingleton<OnboardingProgressService>(
+        () => OnboardingProgressService(
+          firestore: container<FirestoreRepository>().firestore,
+          analytics: container.isRegistered<AnalyticsService>()
+              ? container<AnalyticsService>()
+              : null,
+        ),
       );
     } catch (e) {
       throw DIModuleException(

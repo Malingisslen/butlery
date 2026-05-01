@@ -185,3 +185,53 @@ errors out with `Could not spawn 'java -version'`. The CI workflow
 so it's the verification path. Don't waste time trying to coax the
 local emulator up — type-check the test (`npx tsc --noEmit src/__tests__/<file>.ts`)
 and let CI run the suite.
+
+### 2026-05-01 — menus-rules.test.ts created (BUT-746 + BUT-747)
+
+New test file `functions/src/__tests__/menus-rules.test.ts` (17 tests),
+wired in as `test:rules:menus` and appended to `test:rules:all`. Also
+added to the `firestore-rules.yml` workflow path filters (PR + push).
+Project id: `butlery-rules-menus`.
+
+Map row to add:
+
+| `/menus/{menuId}` | `menus-rules.test.ts` | `test:rules:menus` |
+
+Builder shape — `validMenuBody(ownerUid, extra?)`:
+
+```ts
+{
+  sharedByUserId: ownerUid,        // immutable
+  menuTitle: "veckomeny v18",
+  sharedAt: new Date(),            // immutable
+  sharedToUserIds: [],
+  ...extra,
+}
+```
+
+Required fields per `hasRequiredFields` in the create rule:
+`['sharedByUserId', 'menuTitle', 'sharedAt']`.
+
+### 2026-05-01 — recipient self-scrub rule pattern (reusable)
+
+Pattern for "recipient may shrink an array to remove themselves but
+nothing else" (BUT-747 GDPR scrub on `/menus`). Encoded as the
+secondary branch in `allow update`:
+
+```
+(resource.data.sharedToUserIds is list
+ && request.auth.uid in resource.data.sharedToUserIds
+ && !(request.auth.uid in request.resource.data.sharedToUserIds)
+ && request.resource.data.diff(resource.data).affectedKeys()
+     .hasOnly(['sharedToUserIds']))
+```
+
+Coverage requires four deny tests on the recipient branch alone:
+1. Recipient mutates a non-`sharedToUserIds` field → blocked by `hasOnly`.
+2. Recipient ADDS a UID (still in afterwards) → blocked by `!in`.
+3. Recipient removes SOMEONE ELSE's UID (still in afterwards) → blocked by `!in`.
+4. Recipient tries to delete the doc → falls through to owner-only delete.
+
+Plus one allow: clean self-removal with no other changes. Same pattern
+will recur on any future "leave-a-shared-doc" feature
+(`unified_shared_shopping_lists` already has the analog).

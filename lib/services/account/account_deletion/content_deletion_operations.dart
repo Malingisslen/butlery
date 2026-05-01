@@ -92,10 +92,94 @@ class ContentDeletionOperations {
           .get();
 
       await batchDeleteDocs(_firestore, menusSnapshot.docs);
+
+      // BUT-746: top-level `menus` orphans owned by the deleted user.
+      // The unified menus collection holds shared menus that
+      // FirebaseDataExportRepository.exportSharedMenusByOwner reads via
+      // `sharedByUserId == uid`. These docs would otherwise outlive their
+      // owner — GDPR Art 17 violation.
+      await _deleteSharedMenusOwnedBy(userId);
+
+      // BUT-747: top-level `menus` where deleted user is a recipient.
+      // Mirrors the symmetric scrub for collaborative shopping lists
+      // (`_scrubCollaborativeListReferences` above). Removes the deleted
+      // UID from `sharedToUserIds` arrays on every inbound shared menu.
+      await _scrubInboundSharedMenus(userId);
+
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete menus', e);
       return false;
+    }
+  }
+
+  /// Delete top-level `menus` documents owned by [userId].
+  /// Rethrows `permission-denied` so the parent cascade surfaces the failure
+  /// in `failedCollections`; transient errors stay best-effort.
+  Future<void> _deleteSharedMenusOwnedBy(String userId) async {
+    try {
+      final ownedMenus = await _firestore
+          .collection(FirestoreCollections.menus)
+          .where('sharedByUserId', isEqualTo: userId)
+          .get();
+
+      if (ownedMenus.docs.isEmpty) return;
+      await batchDeleteDocs(_firestore, ownedMenus.docs);
+
+      app_logger.AppLogger.info(
+          '[$_logTag] Deleted ${ownedMenus.docs.length} top-level shared menus '
+          '(sharedByUserId=$userId)');
+    } on FirebaseException catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete top-level shared menus (${e.code})', e);
+      if (e.code == 'permission-denied') rethrow;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete top-level shared menus', e);
+    }
+  }
+
+  /// Remove [userId] from `sharedToUserIds` on every top-level menu they're
+  /// a recipient of. Read-modify-write rather than `FieldValue.arrayRemove`
+  /// because `fake_cloud_firestore` drops the array transform inside a
+  /// batched update (the residual test then can't observe the scrub).
+  /// Trade-off accepted: tiny lost-update window if a concurrent share
+  /// adds a member to the same menu between read and commit; unlikely
+  /// during account deletion (singleton operation per user).
+  Future<void> _scrubInboundSharedMenus(String userId) async {
+    try {
+      final inboundMenus = await _firestore
+          .collection(FirestoreCollections.menus)
+          .where('sharedToUserIds', arrayContains: userId)
+          .get();
+
+      if (inboundMenus.docs.isEmpty) return;
+
+      var batch = _firestore.batch();
+      var opCount = 0;
+      for (final doc in inboundMenus.docs) {
+        final raw = doc.data()['sharedToUserIds'];
+        final scrubbed = raw is List
+            ? raw.where((id) => id != userId).toList()
+            : <dynamic>[];
+        batch.update(doc.reference, {'sharedToUserIds': scrubbed});
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
+      }
+      if (opCount > 0) await batch.commit();
+
+      app_logger.AppLogger.info(
+          '[$_logTag] Scrubbed user $userId from ${inboundMenus.docs.length} '
+          'inbound shared menus');
+    } on FirebaseException catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to scrub inbound shared menus (${e.code})', e);
+      if (e.code == 'permission-denied') rethrow;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to scrub inbound shared menus', e);
     }
   }
 

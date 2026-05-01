@@ -1107,6 +1107,21 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
       if (!profile.hasCompletedOnboarding) {
         AppLogger.debug('AuthWrapper: User needs onboarding');
+        // BUT-745: Skip the resume Firestore round-trip for users who just
+        // signed up — there can't be a progress doc yet, so the gate's
+        // FutureBuilder spinner is pure flicker. Heuristic: auth-account is
+        // fresh (creationTime within ~5s of now). Falls through to the gate
+        // when creationTime is null/unknown so returning users still resume
+        // correctly.
+        final createdAt = user.metadata.creationTime;
+        final isFreshSignup = createdAt != null &&
+            DateTime.now().difference(createdAt) < const Duration(seconds: 5);
+        if (isFreshSignup) {
+          return KeyedSubtree(
+            key: ValueKey('onboarding_${user.uid}'),
+            child: const OnboardingView(initialPage: 0),
+          );
+        }
         return _OnboardingResumeGate(
           key: ValueKey('onboarding_${user.uid}'),
           userId: user.uid,
@@ -1151,10 +1166,8 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
   }
 
   Future<_ResumeResolution> _resolve() async {
-    final svc = OnboardingProgressService(
-      firestore: FirebaseFirestore.instance,
-      analytics: ServiceLocator.tryGet<AnalyticsService>(),
-    );
+    // BUT-743: resolved via DI; no FirebaseFirestore.instance here.
+    final svc = ServiceLocator.get<OnboardingProgressService>();
     final progress = await svc.readProgress(widget.userId);
     final pageIndex = svc.resolveResumePageIndex(progress);
     final showNudge = svc.shouldShowAbandonedNudge(progress, DateTime.now());
