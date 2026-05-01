@@ -678,3 +678,172 @@ Adjacent quick wins shipped in the same change:
   removal trigger ("hasMore: false + 30d soak") is preserved verbatim.
   When extending one-shot migrations, never extend the lifecycle
   without reason; you'd be re-introducing zombie-endpoint risk.
+
+### 2026-05-01 — BUT-688 win-back A/B via Remote Config [Pattern discovered]
+
+`functions/src/analytics/winback-variant.ts` — Remote Config-backed
+push copy for `detect-lapsed-users` with deterministic SHA-256 bucket
+assignment. Refactored `detect-lapsed-users.ts` from inline-body
+`onSchedule` into the standard `runDetectLapsedUsers(deps)` test seam
+(mirrors `track-retention.ts` shape).
+
+**Why server-side bucket assignment?** Cloud Functions cannot set
+Firebase Analytics user properties directly. The bridge to FA is the
+user doc: when the server sends a win-back push it merges
+`lastWinBackVariant`, `lastWinBackBucket`, `lastWinBackChannel: "push"`,
+and `lastWinBackSentAt`. The Dart `ExperimentAssignment` helper
+(BUT-657) reads those at session start and stamps `exp_winback_copy`
+onto FA. This split is correct: bucket consistency lives where the
+push actually sends, not where it's received.
+
+**Patterns worth remembering**:
+
+- **Hash 6 bytes of SHA-256, not 4 or 8.** 4 bytes (32 bits) is fine
+  for ≤2 variants but skews on small variant counts that don't
+  evenly divide 2^32. 6 bytes (48 bits) gives a uniform distribution
+  far larger than any plausible variants.length without needing
+  `bigint` arithmetic — number is safe up to 2^53. 10k-uid
+  distribution test confirmed ~50/50 within ±5%.
+
+- **Deterministic bucket key = `${uid}:${thresholdType}`, not just
+  `uid`.** Mixing the threshold type into the hash makes mild /
+  moderate / strong independent experiments. A user can be `baseline`
+  for mild and `curiosity` for strong, which is what you want for
+  cross-bucket attribution analysis.
+
+- **All-or-nothing RC validation, same as BUT-621 prompts.** Partial
+  overlay (RC has title but body missing) ⇒ falls back to baseline
+  WHOLESALE for that (threshold, variant) pair. Otherwise the
+  variant attribution downstream lies — analytics says "curiosity"
+  but the user saw half-baseline. Cleaner: log the partial-overlay
+  as a warn so an operator notices the typo, return baseline.
+
+- **RC Server SDK access pattern**: `admin.remoteConfig().getTemplate()`
+  returns `RemoteConfigTemplate` with `.parameters: {[key]:
+  {defaultValue: ExplicitParameterValue}}`. Project the template
+  down to a flat `{paramKey: defaultValue.value}` map at the cache
+  layer — keeps the consumer surface small and makes the test seam
+  trivial (`async () => Record<string, string> | null`).
+
+- **Cache TTL = 10 min for daily-scheduled CFs.** Higher than the
+  prompts-config 5 min because (a) RC propagation latency is minutes
+  anyway, and (b) the win-back CF runs once a day, so within-run
+  cache reuse is the only thing TTL governs. All 3 thresholds in a
+  single `runDetectLapsedUsers` call hit the same cached template —
+  one network round-trip per CF cold start, not three.
+
+- **OPS_PER_USER bookkeeping for batch reservations.** Adding the
+  user-doc bridge write bumped per-user ops from 2 (analytics +
+  notification) to 3. The reservation `BATCH_LIMIT - OPS_PER_USER`
+  must track this exactly; under-reserving overflows the batch
+  silently and Firestore rejects the commit with `INVALID_ARGUMENT`.
+
+- **`lastWinBackSentAt` is NOT an idempotency gate.** The same user
+  can legitimately get pinged at mild → moderate → strong as they
+  progress through dormancy stages. The field is a session-bridge
+  for the client, not a "did we already ping". Comment says so
+  loudly to prevent future-me from "fixing" the apparent re-ping.
+
+- **Test seam for orchestration over collaborators**: when the
+  function under test calls 3+ other modules (RC fetch + variant
+  resolve + push + gate + recordEvent), inject ALL of them via
+  `RunDeps`. The integration test then exercises real ordering /
+  data-flow / batch-reservation logic without spinning up admin SDK,
+  RC, or FCM. `runDetectLapsedUsers({db, fetchCopy, sendPush, gate,
+  recordEvent, now})` is the canonical shape.
+
+- **Fake Firestore for batch-set tests**: model `batch.set(ref, data,
+  options)` with merge-aware semantics by reading the existing
+  store entry on `merge: true`. Without that, the test for
+  `lastWinBackVariant` (which is a merge write) silently overwrites
+  the test's earlier user-doc seed and gives false positives.
+
+- **RC parameter naming convention**: `winback_<thresholdType>_<variant>_<title|body>`.
+  Underscores throughout, lowercase, threshold type baked-in (not
+  abbreviated). The keys are literal strings in code, not built
+  via template — easier to grep when an operator asks "is this RC
+  param actually being read?".
+
+### 2026-05-01 — BUT-599 per-feature retention aggregator [Pattern discovered]
+
+`functions/src/analytics/compute-feature-retention.ts` — daily 04:30 UTC
+scheduler (30 min after `track-retention.ts` to avoid colliding on the
+same `users` collection scan). Computes per-user-per-day boolean flags
+across 5 features (cooked / imported / shared / mealPlanned / shopped) and
+a daily aggregate doc with DAU + rolling WAU 7d/28d. `wau28d` doubles as
+the MAU proxy — strict 28-day rolling window is functionally equivalent
+to MAU for cohort dashboards and avoids a second pass with different
+boundaries. Documented that semantics in the field name.
+
+**Feature → source mapping (verified against codebase 2026-05-01)**:
+
+| Flag | Source | Time field |
+|---|---|---|
+| cooked | `cook_snaps` (top-level), userId == uid | `createdAt` |
+| imported | `users/{uid}/recipes` | `core.createdAt` |
+| shared | `shared_recipes`, sharedByUserId == uid | `sharedAt` |
+| mealPlanned | `users/{uid}/menus` (personal subcoll, not top-level) | `createdAt` |
+| shopped | `users/{uid}/shopping_lists` | `updatedAt` |
+
+**Patterns worth remembering**:
+
+- **`shopped` uses `updatedAt`, not `createdAt`.** Shopping lists are
+  long-lived (created once, updated as items are checked off).
+  `createdAt` would dramatically undercount actual feature usage.
+  `updatedAt` better captures "user touched a shopping list today" even
+  though it conflates check-off with metadata edit. For other features
+  the create event IS the activity, so `createdAt` is correct.
+
+- **Probe with `limit(1)`**, not `count()`. We only care whether the user
+  did the thing at least once — exact count is irrelevant for DAU/WAU
+  flags. `limit(1).get()` is the cheapest possible probe; `count()`
+  aggregations cost the same as a full read in practice and add a query
+  shape that needs a separate index.
+
+- **`Promise.all` the 5 probes per user.** Five `where(...).limit(1)`
+  queries fan out concurrently with no contention — same SDK round-trip
+  budget as one. Sequential would 5× the latency for no benefit.
+
+- **WAU rollup reads prior days; today comes from in-memory.** We just
+  wrote today's flag doc — no point reading it back. Seed the
+  per-user `seenAnyIn7/28` with the in-memory result, then read days
+  1..27 from `analytics/feature_retention/users/{uid}_{yyyy-mm-dd}`.
+  Saves 1 read per scanned user.
+
+- **WAU historical reads are sequential per user, not parallelized.** At
+  10k active users the `Promise.all`(28 reads) per user would issue 280k
+  concurrent reads, blowing past the SDK's connection pool. Sequential
+  per-user with `Promise.all` only across the 5 same-user same-day
+  probes keeps concurrency bounded. If users grows past ~10k consider
+  switching from per-user history reads to a single daily counter doc
+  per feature (massive read reduction, slight write overhead).
+
+- **Graceful probe degradation**: per-flag try/catch around each probe
+  query. If a feature collection is missing or its index isn't built,
+  the flag falls back to `false` and a `feature_retention_probe_failed`
+  warn is emitted. The run does NOT crash. Better to ship 4 of 5
+  working flags than to ship 5 with one bricking the daily aggregate.
+  Tested at `compute-feature-retention.test.ts` case 5.
+
+- **Active-user filter aligns with the WAU window.** Only scan users
+  with `lastActiveAt >= now - 28d`. A user inactive past 28d would
+  contribute zero to all DAU/WAU windows anyway — reading them wastes
+  Firestore quota. Aligning the scan boundary with the longest WAU
+  window is the right cutoff.
+
+- **Read budget back-of-envelope**: at ~1k active users, ~34k reads/day
+  ≈ $0.012/day. Documented in the file header so future cost-tuning
+  knows what they're optimizing.
+
+- **Test-seam shape mirrors `runTrackRetention`/`runDetectLapsedUsers`**:
+  pure `runComputeFeatureRetention(deps: {db?, now?})`; the schedule
+  wrapper is a one-liner that delegates. Production passes nothing;
+  tests pin both. This is now the canonical shape for any new analytics
+  CF in this codebase.
+
+- **Schedule offset matters when two CFs scan `users`.** Pinned 04:30
+  UTC because `trackDayNRetention` runs at 04:00 UTC and also iterates
+  the entire users collection. Co-running risks 2× connection-pool
+  pressure during the most expensive part of both runs. 30-min offset
+  is generous (each CF finishes in <5 min at current scale) but cheap
+  insurance against future growth.

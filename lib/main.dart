@@ -77,6 +77,8 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 // Analytics user-property bootstrap (BUT-636 / 637 / 639)
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
+// Win-back attribution session-start hook (BUT-691)
+import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/models/user_profile.dart';
 
 // Views
@@ -800,6 +802,26 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           lastCookAt: null,
           cooksLast14Days: 0,
         );
+
+        // BUT-691: bootstrap win-back conversion attribution. Reads the
+        // four `lastWinBack*` bridge fields written server-side by the
+        // win-back push CF; if a recent send is detected, slices the FA
+        // session via ExperimentAssignment and arms the next-meaningful-
+        // action probe in AnalyticsService.logEvent. Fire-and-forget so
+        // the cold-start critical path isn't blocked on a Firestore
+        // round-trip — events emitted before bootstrap completes simply
+        // miss attribution (acceptable: 99% of users never received a
+        // win-back; the read returns "no context" anyway).
+        try {
+          final userId = bootstrap.container.get<UserService>().currentUserId;
+          if (userId != null && userId.isNotEmpty) {
+            unawaited(bootstrap.container
+                .get<WinbackAttributionService>()
+                .bootstrap(userId: userId));
+          }
+        } catch (_) {
+          // Non-critical.
+        }
       }
     } catch (e) {
       // Analytics setup failed - non-critical

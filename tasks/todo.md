@@ -1,47 +1,68 @@
 # Sprint Backlog
 
-## Sprint: GDPR tripwires red→green + onboarding follow-ups + simplify-pass cleanup — 2026-05-01
+## Sprint: Retention measurement loop + import HEIC fix — 2026-05-01
 
-Theme: close the loop on last sprint's deliberately-deferred residuals. B1's tripwires (BUT-746/747/748) become the close-out: flip them from "documented bug" → "fixed + test now passes the right way". C1's deferred follow-ups (BUT-743/744/745) drain in the same cycle. Plus the two simplify-pass items (BUT-740/741) that touch the same `FirebaseDataExportRepository` file as BUT-748, so doing them together avoids a second pass over the same file. **3 agents, 8 tasks, isolated file trees** (`lib/services/account/` + `lib/repositories/{block,data_export}/` · `lib/views/onboarding/` + `lib/viewmodels/onboarding_viewmodel.dart` + `lib/main.dart` · `functions/src/migrations/backfill-recipe-comments-denorm.ts`).
+Theme: now that GDPR tripwires + onboarding follow-ups have shipped (`e52a1ebb4`), ship the **retention measurement half** of the win-back loop (A1, A3, A4, A5 — covers Remote Config copy migration, conversion event, monetization-cohort property, feature-level retention CF) plus a single import-side fix (B2 — explicit HEIC conversion). **Tightened from the original 8-task plan after reconnaissance found 3 from-scratch tasks (A2 email channel, B1 image-quality gate, B3 PII scrubber) that need feature-level brainstorming, not sprint execution.** **2 agents, 5 tasks.**
 
-Prior sprint (`b121ed0a2`) shipped — analytics retention cohorts (BUT-605), A/B rails (BUT-657), GDPR audit-log retention CF (BUT-665), account-deletion residual integrity tests (BUT-671 — produced the tripwires this sprint closes), onboarding resume (BUT-675 — produced the follow-ups this sprint closes), tech-debt cluster (BUT-693/707/742). **No remaining carry-overs.** Backlog has zero Urgent. **BUT-498 / BUT-697** stay In Progress per standing skip-direction.
+Prior sprint (`e52a1ebb4`) shipped the GDPR tripwires close-out (BUT-746/747/748 — high priority, all bugs), onboarding follow-ups (BUT-743/744/745), `FirebaseDataExportRepository` simplify pass (BUT-740), and migration parallelization (BUT-741). **No remaining carry-overs.** **BUT-498 / BUT-697** stay In Progress per standing skip-direction.
 
-### Agent A: firebase-backend-security — GDPR tripwires + DataExportRepository simplify
+**Reconnaissance findings (2026-05-01) — 3 tasks deferred from original sprint:**
+- **A2 (BUT-686, email channel)** deferred — `functions/package.json` has no email-provider library (Resend / Postmark / SendGrid). Provider choice is a business decision (cost, account, SPF/DKIM); needs brainstorming session before implementation.
+- **B1 (BUT-660, image-quality gate)** deferred — grep finds no existing image-quality gate in `lib/services/import/`. Ticket body said "advisory-only" but advisory gate doesn't exist. Build-from-scratch task; needs scope/threshold decisions before implementation.
+- **B3 (BUT-694, PII scrubber)** deferred — grep finds no existing scrubber in `lib/services/import/` (regex or otherwise). Ticket body said "regex-based" but no regex scrubber exists. Build-from-scratch task; needs entity-coverage + false-positive tolerance decisions before implementation.
 
-- [x] **A1. Scrub `menus.sharedToUserIds` on inbound-share deletion** — `lib/services/account/content_deletion_operations.dart` (`deleteMenus` method). When deleting a user, also `arrayRemove(deletedUid)` from `menus.sharedToUserIds` on every menu where they're a recipient. Mirror the symmetric pattern from shopping-list cascade. Flip the B1 tripwire assertion in `account_deletion_residual_test.dart` red → green. (BUT-747)
-- [x] **A2. Delete top-level menus orphans (`sharedByUserId == deletedUid`)** — same file. Add a top-level `collectionGroup('menus').where('sharedByUserId', '==', uid)` cleanup pass (or `.collection('menus')` if not subcollection-only — verify path first). Flip B1 tripwire assertion red → green. (BUT-746)
-- [x] **A3. Reconcile `blocks` field-name inconsistency** — `lib/repositories/firebase_data_export_repository.dart` (`exportIncomingBlocks` method) uses `blockedUserId` while `FirebaseBlockRepository` writes/queries `blockedId`. Decide canonical name (likely `blockedId` since that's the writer + queryer used in production), update the export query to match. Verify zero incoming-blocks regression with a test against fake-Firestore. Flip B1 tripwire assertion red → green. (BUT-748) (Bug)
-- [x] **A4. Collapse 23 export-method boilerplate in `FirebaseDataExportRepository`** — `lib/repositories/firebase_data_export_repository.dart`. Extract a private `_exportCollection(String path, String ownerField, {Query Function(Query)? extraFilter})` helper; collapse the 16+ near-identical methods that just `validateOwnership` + `where(ownerField == uid).get()` + map. Keep methods with bespoke shape (menus, conversations, messages) as-is. ~150 line net reduction expected. (BUT-740)
+All three reverted to Backlog with comments documenting the recon finding.
 
-### Agent B: flutter-developer — onboarding follow-up cluster
+**Verify-before-starting flags:**
+- **A1 (BUT-688)** — win-back send code is in `functions/src/analytics/{detect-lapsed-users,send-activity-digest}.ts` (NOT `functions/src/winback/` — corrected from initial plan). BUT-657 experiment scaffolding from `b121ed0a2` is in place; A1 proceeds at full scope.
+- **A4 (BUT-623)** — file is `lib/services/analytics/user_property_bootstrap.dart` (NOT `analytics_user_properties.dart` — corrected from initial plan).
 
-- [x] **B1. Reconcile OnboardingViewModel DI factory direction** — `lib/services/di/personal_module.dart` (or wherever the OnboardingViewModel factory lives) + production constructor call-sites. BUT-675 added `progressService` + `userId` + `initialPage` to the constructor; the factory + call-site picture is half-migrated. Pick one direction: either factory always builds with `progressService.resolveResumePage()`, or all call-sites pass `initialPage` explicitly. Document the decision in the docstring. (BUT-744)
-- [x] **B2. Replace `FirebaseFirestore.instance` in onboarding with `FirestoreRepository` injection** — two new call-sites added by BUT-675 violate the project rule (`CLAUDE.md` § Code Style — "Never use FirebaseFirestore.instance directly"). Inject `FirestoreRepository` through DI. Verify with grep `FirebaseFirestore.instance` in `lib/services/onboarding/` returns 0. (BUT-743)
-- [x] **B3. Remove blank+spinner flicker in `_OnboardingResumeGate`** — `lib/main.dart:1180`. Currently first frame on cold launch shows `Scaffold(body: Center(CircularProgressIndicator()))` for the duration of the Firestore round-trip. Either (a) hold the splash screen until resolved, or (b) render the page-0 onboarding instantly and quietly jump if resume fires. Option (b) is preferred — page 0 is correct ~95% of the time (new users). (BUT-745) (Bug)
+### Agent A: cloud-functions-specialist — retention measurement loop
 
-### Agent C: cloud-functions-specialist — backfill perf
+- [x] **A1. Move win-back push copy from hardcoded strings → Remote Config template** — `functions/src/analytics/send-activity-digest.ts` (and any sibling lapsed-user notification path). Define `winback_push_{title,body}_<variant>` Remote Config keys with 2-3 variants (e.g. `curiosity`, `value`, `social`). Bucket users via hash-of-uid OR Firebase A/B Testing (whichever BUT-657 scaffolding exposes). Set user property `exp_winback_copy = <variant>` so A3's conversion event can be sliced per variant. **Email-side keys (`winback_email_*`) deferred until A2 is brainstormed.** (BUT-688)
+- [x] **A3. Track `winback_converted` event** — `lib/services/analytics/analytics_events.dart` (registry added in BUT-737) + appropriate tracker(s). Emit on first meaningful action (cook complete, recipe import, menu generate) within 7d of `lastWinBackSentAt`. Store `lastWinBackSentAt`/`Channel`/`Variant` on user doc when A1's CF fires; clear after attribution to avoid double-count. Event params: `channel`, `variant`, `hours_since_send`, `action_type`. Closes the measurement loop for A1 + future A2. (BUT-691)
+- [x] **A4. Set `subscription_tier` user property** — `lib/services/analytics/user_property_bootstrap.dart`. Default to `"free"` for now (no monetization yet). Wired through the existing user-properties registry. Costless now, blocks retroactive cohort backfill later. (BUT-623)
+- [x] **A5. Add feature-level retention CF (DAU/WAU per feature)** — `functions/src/analytics/compute-feature-retention.ts`. Scheduled daily at 04:30 UTC. Per-user per-day flags: `cooked_today`, `imported_today`, `shared_today`, `meal_planned_today`, `shopped_today`. Writes `/analytics/feature_retention/daily/{yyyy-mm-dd}` with DAU + rolling 7-day/28-day WAU/MAU per feature. Respect 500-op Firestore batch limit. Mirrors the user-level retention CF shape from `track-retention.ts`. (BUT-599) (High)
 
-- [x] **C1. Parallelize `backfill-recipe-comments-denorm` migration loop** — `functions/src/migrations/backfill-recipe-comments-denorm.ts`. Currently sequential per-batch. Use `Promise.all` over batches with a concurrency cap (e.g. 5 in flight). Preserve `__name__` cursor + idempotent skip-if-fields-present + 10k per-invocation ceiling. Expected ~10× speedup. Update the existing test to assert concurrent behavior + concurrency-limit boundary case. (BUT-741)
+### Agent B: flutter-developer — import HEIC fix
+
+- [x] **B2. Convert HEIC → JPEG explicitly on iOS import path + tag analytics** — entry at `lib/services/image_picker_service.dart` (or `lib/services/import/photo_import_strategy.dart` — verify which is the import boundary first). Magic-byte detect HEIC (don't rely on file extension). Convert via `flutter_image_compress` (verify it's a dep first; if not, add it). Document supported formats in the OCR import doc comment. Add `image_format` field to existing OCR analytics events (in `import_events_tracker.dart`) to measure prevalence. Mistral's vision endpoint accepts HEIC inconsistently across SDK versions — explicit conversion removes the silent-failure class entirely. (BUT-662)
 
 ### Post-Sprint Steps
 
 - [ ] `dart analyze --fatal-infos`
-- [ ] `flutter test test/unit/services/account/account_deletion_residual_test.dart` (verify tripwires now green by their own assertions, not by the old "documents the bug" wording — update test docstring to "verifies the fix")
-- [ ] `cd functions && npm test` (C1 parallelized backfill)
+- [ ] `flutter test test/unit/services/analytics/` (A3, A4)
+- [ ] `flutter test test/unit/services/import/` or relevant photo-import test path (B2)
+- [ ] `cd functions && npm run test:lapsed-users && npm run test:track-retention` (A1, A5 — plus add a `test:compute-feature-retention` script)
 - [ ] Commit, push to main
-- [ ] Update Linear: BUT-740/741/743/744/745/746/747/748 → Done
+- [ ] Update Linear: BUT-599/623/662/688/691 → Done
+
+### Deferred — re-plan as standalone feature work (NOT in this sprint)
+
+- **BUT-686** — Email win-back channel. Needs brainstorming: provider choice (Resend / Postmark / SendGrid), cost approval, SPF/DKIM domain setup, opt-in/opt-out flow, abuse-prevention. Estimated 1-2 days after decision unblocks.
+- **BUT-660** — Image-quality gate. Needs brainstorming: detection algorithm (Laplacian variance? on-device ML?), threshold values (UX-tested or arbitrary?), middle-tier UX (warn vs block), Remote Config flag.
+- **BUT-694** — PII scrubber. Needs brainstorming: Swedish entity coverage scope, false-positive tolerance (recipes mention real-sounding place names like "Skånsk äggakaka"), placement in the import pipeline.
 
 ### Continued blockers (NOT in scope per memory)
 
-- BUT-415 / BUT-714 — store/play submission deferred (Apple Dev enrollment + Universal Links)
+- BUT-415 / BUT-714 / BUT-646 — store/play submission deferred (Apple Dev enrollment + Universal Links + listing copy)
 - BUT-498 / BUT-697 — explicitly skipped per standing direction
+- BUT-731 — blocked on Apple Developer Program enrollment ($99/year business decision); same gate as BUT-415/714
+- BUT-620 / BUT-674 / BUT-721 — GDPR backlog items, excluded pending verification that `b121ed0a2`'s GDPR-hardening half didn't already close them
 
 ---
 
 ## What this means in plain language
 
-- **Three real privacy bugs get fixed.** Last sprint discovered that account deletion was leaving small bits of data behind in three places (menu shares, menu orphans, the blocked-users list). We documented them rather than fixing them. Now we fix them. Important for GDPR.
-- **Three small onboarding rough edges go away.** The cold-launch flicker (blank screen → spinner → first onboarding page), and two internal cleanups from the resume-onboarding work that we deliberately deferred.
-- **One backend cleanup + one perf win.** A migration script becomes ~10× faster. A repository file with 23 near-identical copy-pasted methods becomes shorter and easier to read.
-- **No new user-facing features.** This is a close-out sprint — finishing what last sprint deliberately left as "fix in next cycle" rather than starting anything new.
-- **Risk: low.** Each fix has a tripwire test that already exists from last sprint — they tell us immediately if we broke or fixed the behavior. No UI changes, no schema changes, no Firestore-rules changes.
+- **The win-back loop becomes measurable.** We can now A/B-test the wording of "we miss you" push notifications from a Firebase dashboard instead of redeploying code, and we'll have a counter that tells us when those notifications actually bring someone back to the app. Without the counter we're just guessing whether any of this works.
+- **One useful piece of data starts being collected.** Even though monetization is post-beta, a tiny user-property tag (`subscription_tier = "free"`) goes in now so that the day we add paid plans, we can answer "do paid users stick around longer than free users?" without waiting another six months for fresh data.
+- **Per-feature usage stats start being measured.** A scheduled job runs every night at 04:30 UTC and writes daily counts of "people who cooked something" / "people who imported a recipe" / etc. — so we can see which features lose users fastest and prioritize accordingly.
+- **iPhone photo import gets more reliable.** iPhones default to HEIC format (Apple's image format) — currently the OCR pipeline doesn't explicitly convert them, so some iPhone imports may silently fail. This sprint adds an explicit convert-to-JPEG step.
+- **Three originally-planned tasks were deferred.** A 30-minute reconnaissance pass before implementation found that the email-channel + image-quality-gate + PII-scrubber tasks all assumed code that doesn't exist. They're now standalone feature work to be brainstormed properly before implementation.
+- **Risk: low.** All five remaining tasks extend code that already exists — no new external services, no new schemas, no UI changes.
+
+---
+
+## ARCHIVED — Sprint: GDPR tripwires red→green + onboarding follow-ups + simplify-pass cleanup — 2026-05-01
+
+Shipped as `e52a1ebb4` ("fix(gdpr): close BUT-746/747/748 + onboarding follow-ups + migration perf"). All 8 tasks complete. BUT-740/741/743/744/745/746/747/748 → Done in Linear.

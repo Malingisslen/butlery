@@ -388,3 +388,96 @@ cascade re-test (BUT-746 + BUT-747) — both surfaced by the tripwire
 pattern when the production cascade was extended. BUT-748 caught by
 the new direct-query test, which is the kind of cross-repo
 field-name regression that's worth seeding as a checklist item.
+
+### 2026-05-01 — BUT-688/691/623/599/662 sprint review [Pattern discovered]
+Sprint added five new test files (47 tests, all green): win-back
+attribution service (10), user-property bootstrap (5), analytics-service
+typed-probe group (3), image-format detector (13), HEIC converter (7).
+Reviewed for "tests verify behavior, not structure" — passed. Patterns
+worth not losing:
+
+1. **Pluggable callable typedef beats plugin-channel mocks.**
+   `HeicConverter` exposes a `typedef HeicCompressFn = Future<Uint8List?>
+   Function(Uint8List bytes, {required int quality})` with a default that
+   wires `FlutterImageCompress.compressWithList`. Tests pass an inline
+   closure that captures `quality` and returns canned bytes. Zero plugin
+   channel mocks, zero `setMockMessageHandler`, runs in <1s. Apply this
+   pattern any time a service wraps a Flutter plugin where you only need
+   to assert the input/output contract, not the plugin's behavior.
+
+2. **Inline byte-fixture pattern for binary-format detectors.** Magic-byte
+   tests construct `Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, ...])`
+   inline rather than loading real image files from disk. Same idea as
+   the Viterbi `*_fixtures.dart` pattern but inverted: when fixtures are
+   tiny and self-documenting (4-12 bytes per case), inline them; when
+   fixtures are large and hand-curated (full Swedish recipes), sibling
+   `_fixtures.dart` file. Don't load real `.heic`/`.jpg` files for
+   detector tests — the detector reads exactly the first ~16 bytes
+   anyway, and disk I/O is dead weight in unit tests.
+
+3. **`ServiceLocator.get<T>()` swap-with-GetIt for mocking lazy
+   singletons.** When production code does
+   `ServiceLocator.get<WinbackAttributionService>().attemptAttribution(...)`
+   inside a fire-and-forget call, you can't constructor-inject a mock.
+   Test infrastructure pattern:
+   ```dart
+   setUpAll(() => prod.ServiceLocator.initialize(DIContainer()));
+   setUp(() {
+     final getIt = GetIt.instance;
+     if (getIt.isRegistered<WinbackAttributionService>()) {
+       getIt.unregister<WinbackAttributionService>();
+     }
+     getIt.registerSingleton<WinbackAttributionService>(mockWinback);
+   });
+   tearDown(() {
+     if (getIt.isRegistered<WinbackAttributionService>()) {
+       getIt.unregister<WinbackAttributionService>();
+     }
+   });
+   ```
+   The two ServiceLocators (production wraps DIContainer, test uses GetIt
+   direct) share the same `GetIt.instance`, so registering against GetIt
+   makes the production `ServiceLocator.get<T>()` resolve to the mock.
+   Confirmed working in `analytics_service_test.dart` "Win-back probe on
+   typed delegate paths" group. Same pattern documented in MEMORY.md
+   2026-02-09.
+
+4. **`Future.delayed(Duration.zero)` IS acceptable in tests for
+   fire-and-forget probes.** General rule still stands ("no
+   `Future.delayed(Duration(seconds: N))` in tests") but `Duration.zero`
+   is just an event-loop pump — needed when production code uses
+   `// ignore: discarded_futures` to fire-and-forget a probe. The test
+   awaits zero-delay, then `verify()` against the mocked dependency.
+   Don't reach for `fakeAsync` here — there's no actual clock dependency
+   on the production path; it's just async-microtask scheduling.
+
+5. **`debugClearFieldsCalls` counter beats asserting deleted-field
+   doc shape.** The `WinbackAttributionService` exposes
+   `int get debugClearFieldsCalls` so tests can assert "we attempted to
+   clear the bridge fields" without depending on `fake_cloud_firestore`'s
+   `FieldValue.delete()` semantics (which drift across versions —
+   confirmed in BUT-746/747 sprint notes). When you need to test "the
+   side effect was attempted" but the post-effect state is fragile under
+   a fake, count invocations on a `// visible for testing` getter on the
+   subject. Cleaner than capturing `verify(() => mockRepo.update(any()))`
+   when the production code doesn't go through a mockable boundary.
+
+Coverage gaps documented for follow-up sprint:
+- `PhotoImportStrategy` HEIC integration: detector + converter tested
+  in isolation but the `import()` method's wiring (does it call the
+  converter when format is HEIC, does it populate `image_format` /
+  `image_format_sent` in metadata?) is untested. Existing
+  `photo_import_strategy_test.dart` was not updated this sprint.
+- 7-day boundary in `WinbackAttributionService` uses strict `>` — no
+  test pins the exact `now - 7d ± 1s` boundary. A future refactor to
+  `>=` would silently change behavior with no test failure. Would
+  require a clock seam (`package:clock`) for deterministic boundary
+  testing, which the production code doesn't currently support.
+- 5 of 8 HEIC fourcc brands untested (`hevc`, `hevx`, `msf1`, `heis`,
+  `hevs`). `mif1` covers ~95% of iPhone photo libraries so impact is
+  low; a parameterized test iterating all 8 would close this for ~10
+  LoC.
+
+No production bugs caught this run — all sprint changes are additive
+(new attribution service, new format detector, new typed probe sites).
+Tests verify the new contracts cleanly. Sprint approved.

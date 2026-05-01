@@ -82,6 +82,7 @@ export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analyt
 export { detectLapsedUsers } from "./analytics/detect-lapsed-users";
 export { sendWeeklyActivityDigest } from "./analytics/send-activity-digest";
 export { trackDayNRetention } from "./analytics/track-retention";
+export { computeFeatureRetention } from "./analytics/compute-feature-retention";
 export { correlateNotificationEffectiveness } from "./analytics/correlate-notifications";
 export { suppressLowPerformers } from "./analytics/suppress-low-performers";
 

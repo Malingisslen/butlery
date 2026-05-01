@@ -60,6 +60,7 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
     required String source,
     String? platform,
     String? sessionId,
+    String imageFormat = 'unknown',
   }) async {
     // No-op: Analytics not supported
   }
@@ -70,6 +71,8 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
     String? platform,
     int? recipeLength,
     String? sessionId,
+    String imageFormat = 'unknown',
+    String imageFormatSent = 'unknown',
   }) async {
     // No-op: Analytics not supported
   }
@@ -80,6 +83,7 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
     required String platform,
     required String error,
     String? errorType,
+    String imageFormat = 'unknown',
   }) async {
     // No-op: Analytics not supported
   }

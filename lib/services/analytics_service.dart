@@ -8,8 +8,11 @@ import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/trackers.dart';
+import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// Analytics service facade that delegates to specialized tracker modules.
@@ -164,6 +167,43 @@ class AnalyticsService extends BaseService {
       requiresAuth: false,
       requiresNetwork: false,
     );
+
+    _probeWinbackAttribution(name);
+  }
+
+  /// Cached handle to the singleton — resolved on first probe, then
+  /// reused. Keeps the analytics hot path off the ServiceLocator map.
+  /// `_winbackResolved` is set even on lookup failure so unit tests that
+  /// don't register the service don't pay the try/catch cost on every
+  /// event.
+  WinbackAttributionService? _winbackAttribution;
+  bool _winbackResolved = false;
+
+  /// BUT-691: probe an event for win-back conversion attribution.
+  ///
+  /// Fire-and-forget — we MUST NOT block the event path on a Firestore
+  /// round-trip. Self-recursion (winback_converted re-triggering this
+  /// probe) is guarded inside the service. Called from `logEvent` AND
+  /// the three typed delegates (`logImportSuccess`, `logRecipeCooked`,
+  /// `logMenuGenerated`) — those bypass `logEvent` entirely.
+  ///
+  /// Hot-path optimization: when the service has no win-back context
+  /// (the 99% case — user never received a win-back, or already
+  /// attributed this session), we skip the call entirely.
+  void _probeWinbackAttribution(String eventName) {
+    if (!_winbackResolved) {
+      try {
+        _winbackAttribution = ServiceLocator.get<WinbackAttributionService>();
+      } catch (_) {
+        // Service unregistered — typical in unit tests.
+      }
+      _winbackResolved = true;
+    }
+    final service = _winbackAttribution;
+    if (service == null || !service.hasContext) return;
+    // ignore: discarded_futures — intentional fire-and-forget; the
+    // service swallows its own errors so this future cannot leak.
+    service.attemptAttribution(eventName);
   }
 
   Future<void> logScreenView({
@@ -190,11 +230,13 @@ class AnalyticsService extends BaseService {
     required String source,
     String? platform,
     String? sessionId,
+    String imageFormat = 'unknown',
   }) =>
       _importTracker.logImportStarted(
         source: source,
         platform: platform,
         sessionId: sessionId,
+        imageFormat: imageFormat,
       );
 
   Future<void> logImportSuccess({
@@ -202,13 +244,20 @@ class AnalyticsService extends BaseService {
     String? platform,
     int? recipeLength,
     String? sessionId,
-  }) =>
-      _importTracker.logImportSuccess(
-        source: source,
-        platform: platform,
-        recipeLength: recipeLength,
-        sessionId: sessionId,
-      );
+    String imageFormat = 'unknown',
+    String imageFormatSent = 'unknown',
+  }) async {
+    await _importTracker.logImportSuccess(
+      source: source,
+      platform: platform,
+      recipeLength: recipeLength,
+      sessionId: sessionId,
+      imageFormat: imageFormat,
+      imageFormatSent: imageFormatSent,
+    );
+    // BUT-691: typed path bypasses `logEvent`, so probe directly here.
+    _probeWinbackAttribution(AnalyticsEvents.importSuccess);
+  }
 
   Future<void> logImportCancelled({
     required String source,
@@ -221,12 +270,14 @@ class AnalyticsService extends BaseService {
     required SourcePlatform platform,
     required String error,
     String? errorType,
+    String imageFormat = 'unknown',
   }) =>
       _importTracker.logExtractionError(
         url: url,
         platform: platform,
         error: error,
         errorType: errorType,
+        imageFormat: imageFormat,
       );
 
   Future<void> logManualCopyFallback({
@@ -255,13 +306,16 @@ class AnalyticsService extends BaseService {
     required String mealType,
     bool isFirstTime = true,
     int? daysSinceLastCooked,
-  }) =>
-      _recipeTracker.logRecipeCooked(
-        recipeId: recipeId,
-        mealType: mealType,
-        isFirstTime: isFirstTime,
-        daysSinceLastCooked: daysSinceLastCooked,
-      );
+  }) async {
+    await _recipeTracker.logRecipeCooked(
+      recipeId: recipeId,
+      mealType: mealType,
+      isFirstTime: isFirstTime,
+      daysSinceLastCooked: daysSinceLastCooked,
+    );
+    // BUT-691: typed path bypasses `logEvent`, so probe directly here.
+    _probeWinbackAttribution(AnalyticsEvents.recipeCooked);
+  }
 
   Future<void> logRecipeDeleted({
     required String recipeId,
@@ -324,8 +378,12 @@ class AnalyticsService extends BaseService {
       );
 
   Future<void> logMenuGenerated(
-          {required int recipeCount, required String method}) =>
-      _menuTracker.logMenuGenerated(recipeCount: recipeCount, method: method);
+      {required int recipeCount, required String method}) async {
+    await _menuTracker.logMenuGenerated(
+        recipeCount: recipeCount, method: method);
+    // BUT-691: typed path bypasses `logEvent`, so probe directly here.
+    _probeWinbackAttribution(AnalyticsEvents.menuGenerated);
+  }
 
   Future<void> logMenuGenerationStarted({int? promptLength}) =>
       _menuTracker.logMenuGenerationStarted(promptLength: promptLength);

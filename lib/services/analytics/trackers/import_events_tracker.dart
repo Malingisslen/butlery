@@ -15,6 +15,7 @@ class ImportEventsTracker extends BaseTracker {
     required String source,
     String? platform,
     String? sessionId,
+    String imageFormat = 'unknown',
   }) async {
     if (!await hasAnalyticsConsent()) return;
 
@@ -25,6 +26,7 @@ class ImportEventsTracker extends BaseTracker {
             source: source,
             platform: platform,
             sessionId: sessionId,
+            imageFormat: imageFormat,
           );
         },
         operationName: 'Log import started',
@@ -36,16 +38,24 @@ class ImportEventsTracker extends BaseTracker {
         source: source,
         platform: platform,
         sessionId: sessionId,
+        imageFormat: imageFormat,
       );
     }
   }
 
   /// Log successful import
+  ///
+  /// [imageFormat] / [imageFormatSent] (BUT-662): tag the original
+  /// magic-byte-detected format and the format actually delivered to OCR
+  /// after HEIC→JPEG conversion. Both default to `'unknown'` for non-photo
+  /// import paths.
   Future<void> logImportSuccess({
     required String source,
     String? platform,
     int? recipeLength,
     String? sessionId,
+    String imageFormat = 'unknown',
+    String imageFormatSent = 'unknown',
   }) async {
     if (!await hasAnalyticsConsent()) return;
     await repository.logImportSuccess(
@@ -53,6 +63,8 @@ class ImportEventsTracker extends BaseTracker {
       platform: platform,
       recipeLength: recipeLength,
       sessionId: sessionId,
+      imageFormat: imageFormat,
+      imageFormatSent: imageFormatSent,
     );
   }
 
@@ -76,12 +88,14 @@ class ImportEventsTracker extends BaseTracker {
     required SourcePlatform platform,
     required String error,
     String? errorType,
+    String imageFormat = 'unknown',
   }) async {
     await repository.logExtractionError(
       url: url,
       platform: platform.toString().split('.').last,
       error: error,
       errorType: errorType,
+      imageFormat: imageFormat,
     );
   }
 

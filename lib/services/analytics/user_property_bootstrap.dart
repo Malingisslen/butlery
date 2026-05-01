@@ -25,14 +25,16 @@ class UserPropertyBootstrap {
 
   UserPropertyBootstrap(this._analytics);
 
-  /// Emit all three properties at session start. Failure of any one setter
-  /// is logged but never blocks the others — analytics is best-effort.
+  /// Emit all session-scoped user properties at session start. Failure of
+  /// any one setter is logged but never blocks the others — analytics is
+  /// best-effort.
   Future<void> emitAtSessionStart({
     required Locale locale,
     UserProfile? profile,
     DateTime? lastCookAt,
     int cooksLast14Days = 0,
     DateTime? now,
+    String subscriptionTier = 'free',
   }) async {
     await Future.wait<void>([
       emitLanguage(locale),
@@ -49,8 +51,21 @@ class UserPropertyBootstrap {
         cooksLast14Days: cooksLast14Days,
         now: now,
       ),
+      emitSubscriptionTier(subscriptionTier),
     ]);
   }
+
+  /// Re-emit on tier change (purchase / downgrade / trial start). Cheap;
+  /// idempotent. During beta everyone is `'free'` — wired in now so the
+  /// post-beta paid-cohort slice has data from day 1, not from the day
+  /// the property is first set.
+  Future<void> emitSubscriptionTier(String tier) => _safe(
+        () => _analytics.setUserProperty(
+          name: AnalyticsUserProperties.subscriptionTier,
+          value: tier,
+        ),
+        'subscription_tier',
+      );
 
   /// Re-fire on locale change (Settings → "English"). Cheap; idempotent.
   Future<void> emitLanguage(Locale locale) => _safe(

@@ -37,6 +37,8 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/experiment_assignment.dart';
+import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/services/in_app_review_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
@@ -99,6 +101,8 @@ class CoreModule implements DIModule {
       // Analytics services are available on all platforms (NoOp on web)
       AnalyticsRepository,
       AnalyticsService,
+      ExperimentAssignment,
+      WinbackAttributionService,
       InAppReviewService,
       AccountDeletionService,
       DataExportService,
@@ -211,6 +215,27 @@ class CoreModule implements DIModule {
       // Analytics service for monitoring and tracking (available on all platforms)
       container.registerSingleton<AnalyticsService>(
         AnalyticsService(repository: container<AnalyticsRepository>()),
+      );
+
+      // BUT-657: Experiment assignment helper. Stamps `exp_<name>` user
+      // properties + emits `experiment_assigned` once per session. Lazy
+      // because the only current consumer is win-back attribution at
+      // session-start.
+      container.registerLazySingleton<ExperimentAssignment>(
+        () => ExperimentAssignment(container<AnalyticsService>()),
+      );
+
+      // BUT-691: Win-back conversion attribution. Reads `lastWinBack*`
+      // bridge fields from the user doc at session start, slices the
+      // session via ExperimentAssignment, and emits `winback_converted`
+      // on the first meaningful action within 7 days. Lazy — bootstrap
+      // happens once after login from main.dart.
+      container.registerLazySingleton<WinbackAttributionService>(
+        () => WinbackAttributionService(
+          analytics: container<AnalyticsService>(),
+          experimentAssignment: container<ExperimentAssignment>(),
+          firestoreRepository: container<FirestoreRepository>(),
+        ),
       );
 
       // BUT-678: in-app review prompt service (App Store / Play Store).

@@ -1,5 +1,6 @@
 /**
  * BUT-438: Preference-aware win-back push tests.
+ * BUT-688: Win-back A/B variant + Remote Config integration tests.
  *
  * The detect-lapsed-users scheduled function used to call sendPushToUser
  * directly, bypassing the preference gate. The new contract:
@@ -8,10 +9,16 @@
  *   - User with no token / token failure → NOT counted as sent.
  *   - Normal user, awake, opted in → pinged.
  *
+ * BUT-688 layer:
+ *   - Variant resolution is deterministic (same uid → same variant).
+ *   - User doc gets `lastWinBackVariant` + bridge fields after a send.
+ *   - RC fetch failure falls back to baseline copy with no regression.
+ *
  * We don't run the scheduler trigger end-to-end — that needs the emulator
  * suite. Instead we exercise the preference-aware helper directly with a
  * fake firestore + fake clock, which is the same surface the trigger now
- * funnels through.
+ * funnels through. BUT-688 cases additionally exercise
+ * `runDetectLapsedUsers` with an in-memory db + fake gate.
  *
  * Run with: npx ts-node src/__tests__/detect-lapsed-users.test.ts
  */
@@ -21,6 +28,11 @@ import {
   isInQuietWindow,
   stockholmHourMinute,
 } from "../shared/preference-aware-push";
+import { runDetectLapsedUsers } from "../analytics/detect-lapsed-users";
+import {
+  resolveWinbackVariant,
+  BASELINE_COPY,
+} from "../analytics/winback-variant";
 
 interface SendCall {
   userId: string;
@@ -208,8 +220,409 @@ const unitCases: UnitCase[] = [
   },
 ];
 
+// ----------------------------------------------------------------------
+// BUT-688: integration tests for runDetectLapsedUsers
+// ----------------------------------------------------------------------
+
+interface FakeUserSeed {
+  id: string;
+  /** Days inactive (positive int). Sets lastActiveAt = now - days. */
+  daysInactive: number;
+}
+
+interface FakeStore {
+  /** Doc path → last-written data. */
+  data: Map<string, Record<string, unknown>>;
+  writeCount: number;
+  commitCount: number;
+}
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function tsFromMillis(ms: number) {
+  return {
+    toMillis: () => ms,
+    toDate: () => new Date(ms),
+    _isTimestamp: true,
+  };
+}
+
+function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
+  const nowMs = now.getTime();
+  const userDocs = seeds.map((s) => ({
+    id: s.id,
+    data: () => ({
+      lastActiveAt: tsFromMillis(nowMs - s.daysInactive * MS_PER_DAY),
+    }),
+  }));
+
+  function makeUsersQuery(filter?: { startMs: number; endMs: number }) {
+    return {
+      where(_field: string, op: string, value: unknown) {
+        const v = value as { toMillis: () => number };
+        const ms = v.toMillis();
+        const next = filter
+          ? { ...filter }
+          : { startMs: -Infinity, endMs: Infinity };
+        if (op === ">=") next.startMs = ms;
+        if (op === "<=") next.endMs = ms;
+        return makeUsersQuery(next);
+      },
+      async get() {
+        const docs = userDocs.filter((d) => {
+          if (!filter) return true;
+          const lam = (d.data().lastActiveAt as { toMillis: () => number }).toMillis();
+          return lam >= filter.startMs && lam <= filter.endMs;
+        });
+        return { empty: docs.length === 0, docs };
+      },
+    };
+  }
+
+  const collection = (name: string): unknown => {
+    if (name === "users") {
+      return {
+        ...makeUsersQuery(),
+        doc(uid: string) {
+          return makeUserDocRef(uid);
+        },
+      };
+    }
+    if (name === "analytics") {
+      return makeAnalyticsRoot();
+    }
+    throw new Error(`unexpected collection: ${name}`);
+  };
+
+  function makeUserDocRef(uid: string) {
+    return {
+      _kind: "user" as const,
+      uid,
+      collection(sub: string) {
+        if (sub === "notifications") {
+          return {
+            doc() {
+              return {
+                _kind: "notification" as const,
+                path: `users/${uid}/notifications/auto_${store.writeCount}`,
+              };
+            },
+          };
+        }
+        throw new Error(`unexpected user-subcollection: ${sub}`);
+      },
+    };
+  }
+
+  function makeAnalyticsRoot() {
+    return {
+      doc(docId: string) {
+        return {
+          collection(sub: string) {
+            return {
+              doc() {
+                return {
+                  _kind: "analyticsEvent" as const,
+                  path: `analytics/${docId}/${sub}/auto_${store.writeCount}`,
+                };
+              },
+            };
+          },
+        };
+      },
+    };
+  }
+
+  return {
+    collection,
+    batch() {
+      const ops: { path: string; data: Record<string, unknown> }[] = [];
+      return {
+        set(
+          ref: { _kind: string; uid?: string; path?: string },
+          data: Record<string, unknown>,
+          options?: { merge?: boolean },
+        ) {
+          let path: string;
+          if (ref._kind === "user") {
+            path = `users/${ref.uid}`;
+          } else if (ref.path) {
+            path = ref.path;
+          } else {
+            throw new Error("ref missing path");
+          }
+          const existing = options?.merge
+            ? (store.data.get(path) ?? {})
+            : {};
+          ops.push({ path, data: { ...existing, ...data } });
+        },
+        async commit() {
+          for (const op of ops) {
+            store.data.set(op.path, op.data);
+            store.writeCount++;
+          }
+          store.commitCount++;
+          ops.length = 0;
+        },
+      };
+    },
+  };
+}
+
+/** Helper: deps that bypass RC + push so we can assert on writes alone. */
+function makeRunDeps(
+  fakeDb: ReturnType<typeof makeFakeDb>,
+  now: Date,
+  overrides: {
+    fetchCopy?: (
+      thresholdType: string,
+      variant: string,
+    ) => Promise<{ title: string; body: string }>;
+    sendPush?: () => Promise<{ sent: boolean; reason: string }>;
+    gate?: () => Promise<{ action: string; reason: string }>;
+  } = {},
+) {
+  return {
+    db: fakeDb as never,
+    now,
+    fetchCopy:
+      overrides.fetchCopy ??
+      (async (thresholdType: string, variant: string) => ({
+        title: `T:${thresholdType}:${variant}`,
+        body: `B:${thresholdType}:${variant}`,
+      })),
+    sendPush:
+      (overrides.sendPush ??
+        (async () =>
+          ({ sent: true, reason: "sent" }) as const)) as never,
+    gate:
+      (overrides.gate ??
+        (async () =>
+          ({ action: "proceed", reason: "test" }) as const)) as never,
+    recordEvent: (async () => undefined) as never,
+  };
+}
+
+interface IntCase {
+  name: string;
+  fn: () => Promise<void>;
+}
+
+const integrationCases: IntCase[] = [
+  {
+    name: "user doc receives lastWinBackVariant + bridge fields after run",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      const db = makeFakeDb(
+        [{ id: "user-mild", daysInactive: 7 }],
+        now,
+        store,
+      );
+      await runDetectLapsedUsers(makeRunDeps(db, now));
+
+      const userDoc = store.data.get("users/user-mild");
+      if (!userDoc) {
+        throw new Error("user doc not written");
+      }
+      if (userDoc.lastWinBackChannel !== "push") {
+        throw new Error(
+          `expected lastWinBackChannel=push, got ${userDoc.lastWinBackChannel}`,
+        );
+      }
+      if (userDoc.lastWinBackBucket !== "win_back_mild") {
+        throw new Error(
+          `expected bucket=win_back_mild, got ${userDoc.lastWinBackBucket}`,
+        );
+      }
+      if (typeof userDoc.lastWinBackVariant !== "string") {
+        throw new Error("lastWinBackVariant missing");
+      }
+      if (
+        userDoc.lastWinBackVariant !== "baseline" &&
+        userDoc.lastWinBackVariant !== "curiosity"
+      ) {
+        throw new Error(
+          `unexpected variant: ${userDoc.lastWinBackVariant}`,
+        );
+      }
+      if (!userDoc.lastWinBackSentAt) {
+        throw new Error("lastWinBackSentAt missing");
+      }
+    },
+  },
+  {
+    name: "variant assignment is deterministic across re-runs",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const seeds: FakeUserSeed[] = [
+        { id: "u-deterministic-1", daysInactive: 7 },
+        { id: "u-deterministic-2", daysInactive: 7 },
+        { id: "u-deterministic-3", daysInactive: 14 },
+      ];
+      const storeA: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      await runDetectLapsedUsers(
+        makeRunDeps(makeFakeDb(seeds, now, storeA), now),
+      );
+      const storeB: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      await runDetectLapsedUsers(
+        makeRunDeps(makeFakeDb(seeds, now, storeB), now),
+      );
+
+      for (const seed of seeds) {
+        const a = storeA.data.get(`users/${seed.id}`);
+        const b = storeB.data.get(`users/${seed.id}`);
+        if (!a || !b) throw new Error(`missing user write for ${seed.id}`);
+        if (a.lastWinBackVariant !== b.lastWinBackVariant) {
+          throw new Error(
+            `variant flipped across runs for ${seed.id}: ` +
+              `${a.lastWinBackVariant} vs ${b.lastWinBackVariant}`,
+          );
+        }
+        const expected = resolveWinbackVariant(
+          seed.id,
+          a.lastWinBackBucket as string,
+        );
+        if (a.lastWinBackVariant !== expected) {
+          throw new Error(
+            `variant mismatch with resolveWinbackVariant for ${seed.id}: ` +
+              `stored=${a.lastWinBackVariant} expected=${expected}`,
+          );
+        }
+      }
+    },
+  },
+  {
+    name: "RC fetch failure falls back to baseline body in notification doc",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      const db = makeFakeDb(
+        [{ id: "user-rc-fail", daysInactive: 30 }],
+        now,
+        store,
+      );
+      // Mimic the production fetchWinbackCopy fallback path: when RC is
+      // unreachable, the real implementation returns BASELINE_COPY for
+      // the threshold. We assert the integration writes baseline body.
+      await runDetectLapsedUsers(
+        makeRunDeps(db, now, {
+          fetchCopy: async (thresholdType: string) =>
+            BASELINE_COPY[thresholdType],
+        }),
+      );
+
+      // Find the notification doc — its path includes the user id.
+      let notif: Record<string, unknown> | undefined;
+      for (const [path, data] of store.data.entries()) {
+        if (path.startsWith("users/user-rc-fail/notifications/")) {
+          notif = data;
+          break;
+        }
+      }
+      if (!notif) throw new Error("notification doc not written");
+      const expectedBody = BASELINE_COPY.win_back_strong.body;
+      if (notif.bodyShown !== expectedBody) {
+        throw new Error(
+          `expected baseline body "${expectedBody}", got "${notif.bodyShown}"`,
+        );
+      }
+      if (notif.message !== expectedBody) {
+        throw new Error(
+          `expected message=${expectedBody}, got "${notif.message}"`,
+        );
+      }
+    },
+  },
+  {
+    name: "analytics event includes variant field",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      const db = makeFakeDb(
+        [{ id: "user-evt", daysInactive: 14 }],
+        now,
+        store,
+      );
+      await runDetectLapsedUsers(makeRunDeps(db, now));
+
+      let evt: Record<string, unknown> | undefined;
+      for (const [path, data] of store.data.entries()) {
+        if (path.startsWith("analytics/lapsed_users/events/")) {
+          evt = data;
+          break;
+        }
+      }
+      if (!evt) throw new Error("analytics event not written");
+      if (typeof evt.variant !== "string" || !evt.variant.length) {
+        throw new Error(`event missing variant: ${JSON.stringify(evt)}`);
+      }
+    },
+  },
+  {
+    name: "gate=type_disabled skips push but still writes notification + bridge",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+      };
+      const db = makeFakeDb(
+        [{ id: "user-gated", daysInactive: 7 }],
+        now,
+        store,
+      );
+      let pushCalls = 0;
+      await runDetectLapsedUsers(
+        makeRunDeps(db, now, {
+          gate: async () => ({
+            action: "type_disabled",
+            reason: "rc_flag_disabled",
+          }),
+          sendPush: async () => {
+            pushCalls++;
+            return { sent: false, reason: "should-not-be-called" };
+          },
+        }),
+      );
+      if (pushCalls !== 0) {
+        throw new Error(
+          `gate dropped — push should not have been called, got ${pushCalls}`,
+        );
+      }
+      const userDoc = store.data.get("users/user-gated");
+      if (!userDoc || typeof userDoc.lastWinBackVariant !== "string") {
+        throw new Error(
+          "user bridge fields should still be written even when push is gated",
+        );
+      }
+    },
+  },
+];
+
 async function runTests(): Promise<void> {
-  console.log("BUT-438: Preference-aware win-back push tests\n");
+  console.log("BUT-438 + BUT-688: Win-back push + variant tests\n");
   console.log("==============================================\n");
 
   let failed = 0;
@@ -255,7 +668,18 @@ async function runTests(): Promise<void> {
     }
   }
 
-  const total = unitCases.length + scenarios.length;
+  for (const c of integrationCases) {
+    try {
+      await c.fn();
+      console.log(`  PASS  ${c.name}`);
+    } catch (err) {
+      failed++;
+      console.log(`  FAIL  ${c.name}`);
+      console.log(`        ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
+  const total = unitCases.length + scenarios.length + integrationCases.length;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")
   );

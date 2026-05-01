@@ -1,11 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
 
 import '../../test_support/base_unit_test.dart';
 
@@ -14,6 +18,9 @@ import '../../test_support/base_unit_test.dart';
 class _MockAnalyticsRepo extends Mock implements AnalyticsRepository {}
 
 class _MockConsentService extends Mock implements ConsentService {}
+
+class _MockWinbackAttributionService extends Mock
+    implements WinbackAttributionService {}
 
 void main() {
   group('AnalyticsService', () {
@@ -61,18 +68,22 @@ void main() {
             source: any(named: 'source'),
             platform: any(named: 'platform'),
             sessionId: any(named: 'sessionId'),
+            imageFormat: any(named: 'imageFormat'),
           )).thenAnswer((_) async {});
       when(() => mockRepo.logImportSuccess(
             source: any(named: 'source'),
             platform: any(named: 'platform'),
             recipeLength: any(named: 'recipeLength'),
             sessionId: any(named: 'sessionId'),
+            imageFormat: any(named: 'imageFormat'),
+            imageFormatSent: any(named: 'imageFormatSent'),
           )).thenAnswer((_) async {});
       when(() => mockRepo.logExtractionError(
             url: any(named: 'url'),
             platform: any(named: 'platform'),
             error: any(named: 'error'),
             errorType: any(named: 'errorType'),
+            imageFormat: any(named: 'imageFormat'),
           )).thenAnswer((_) async {});
       when(() => mockRepo.logManualCopyFallback(
             platform: any(named: 'platform'),
@@ -159,6 +170,7 @@ void main() {
               source: 'web',
               platform: 'website',
               sessionId: null,
+              imageFormat: 'unknown',
             )).called(1);
       });
 
@@ -173,6 +185,26 @@ void main() {
               platform: 'instagram',
               recipeLength: 1200,
               sessionId: null,
+              imageFormat: 'unknown',
+              imageFormatSent: 'unknown',
+            )).called(1);
+      });
+
+      // BUT-662: photo OCR path threads original + post-conversion format
+      // through to the repository so HEIC prevalence is measurable.
+      test('should pass imageFormat through to import success', () async {
+        await service.logImportSuccess(
+          source: 'photo',
+          imageFormat: 'heic',
+          imageFormatSent: 'jpeg',
+        );
+        verify(() => mockRepo.logImportSuccess(
+              source: 'photo',
+              platform: null,
+              recipeLength: null,
+              sessionId: null,
+              imageFormat: 'heic',
+              imageFormatSent: 'jpeg',
             )).called(1);
       });
     });
@@ -189,6 +221,7 @@ void main() {
               platform: 'website',
               error: 'timeout',
               errorType: null,
+              imageFormat: 'unknown',
             )).called(1);
       });
 
@@ -204,6 +237,7 @@ void main() {
               platform: 'instagram',
               error: 'blocked',
               errorType: 'custom_error',
+              imageFormat: 'unknown',
             )).called(1);
       });
 
@@ -321,10 +355,120 @@ void main() {
         expect(service.recipe, isNotNull);
         expect(service.menu, isNotNull);
         expect(service.shopping, isNotNull);
-        expect(service.social, isNotNull);
         expect(service.import, isNotNull);
         expect(service.system, isNotNull);
+        expect(service.social, isNotNull);
       });
+    });
+  });
+
+  /// BUT-691 follow-up: typed delegate methods (`logRecipeCooked`,
+  /// `logImportSuccess`, `logMenuGenerated`) bypass `logEvent` and route
+  /// directly to the repository's typed methods. Without their own probe
+  /// site, win-back attribution would silently miss the three events that
+  /// matter most for the conversion funnel. These tests assert each typed
+  /// method fires exactly one probe with the canonical FA event name.
+  group('AnalyticsService — Win-back probe on typed delegate paths', () {
+    late AnalyticsService service;
+    late _MockAnalyticsRepo mockRepo;
+    late _MockWinbackAttributionService mockWinback;
+
+    setUpAll(() async {
+      await BaseUnitTest.setupUnit();
+      registerFallbackValue(<String, Object>{});
+      registerFallbackValue(DateTime.now());
+      registerFallbackValue(ConsentPurpose.analytics);
+      // Production ServiceLocator must be initialized so the probe's
+      // ServiceLocator.get<WinbackAttributionService>() resolves.
+      prod.ServiceLocator.initialize(DIContainer());
+    });
+
+    setUp(() {
+      mockRepo = _MockAnalyticsRepo();
+      mockWinback = _MockWinbackAttributionService();
+
+      when(() => mockRepo.initialize()).thenAnswer((_) async {});
+      when(() => mockRepo.observer).thenReturn(null);
+      when(() => mockRepo.logImportSuccess(
+            source: any(named: 'source'),
+            platform: any(named: 'platform'),
+            recipeLength: any(named: 'recipeLength'),
+            sessionId: any(named: 'sessionId'),
+            imageFormat: any(named: 'imageFormat'),
+            imageFormatSent: any(named: 'imageFormatSent'),
+          )).thenAnswer((_) async {});
+      when(() => mockRepo.logRecipeCooked(
+            recipeId: any(named: 'recipeId'),
+            mealType: any(named: 'mealType'),
+            isFirstTime: any(named: 'isFirstTime'),
+            daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
+          )).thenAnswer((_) async {});
+      when(() => mockRepo.logMenuGenerated(
+            recipeCount: any(named: 'recipeCount'),
+            method: any(named: 'method'),
+          )).thenAnswer((_) async {});
+
+      when(() => mockWinback.attemptAttribution(any()))
+          .thenAnswer((_) async {});
+      // Hot-path optimization in AnalyticsService skips the probe when
+      // hasContext == false — these tests verify probe is INVOKED, so
+      // we stub hasContext to true.
+      when(() => mockWinback.hasContext).thenReturn(true);
+
+      // Register the Winback mock via GetIt so the production
+      // ServiceLocator.get<WinbackAttributionService>() resolves to it.
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<WinbackAttributionService>()) {
+        getIt.unregister<WinbackAttributionService>();
+      }
+      getIt.registerSingleton<WinbackAttributionService>(mockWinback);
+
+      service = AnalyticsService(repository: mockRepo);
+
+      final mockConsent = _MockConsentService();
+      when(() => mockConsent.hasConsent(any())).thenAnswer((_) async => true);
+      service.setConsentService(mockConsent);
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<WinbackAttributionService>()) {
+        getIt.unregister<WinbackAttributionService>();
+      }
+      BaseUnitTest.resetMocks();
+    });
+
+    tearDownAll(() async {
+      prod.ServiceLocator.reset();
+      await BaseUnitTest.teardownUnit();
+    });
+
+    test('logRecipeCooked probes attribution with recipe_cooked', () async {
+      await service.logRecipeCooked(
+        recipeId: 'r1',
+        mealType: 'dinner',
+        isFirstTime: false,
+        daysSinceLastCooked: 7,
+      );
+      // Probe is fire-and-forget — let the unawaited future settle.
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockWinback.attemptAttribution('recipe_cooked')).called(1);
+    });
+
+    test('logImportSuccess probes attribution with import_success', () async {
+      await service.logImportSuccess(
+        source: 'manual',
+        platform: 'instagram',
+        recipeLength: 1200,
+      );
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockWinback.attemptAttribution('import_success')).called(1);
+    });
+
+    test('logMenuGenerated probes attribution with menu_generated', () async {
+      await service.logMenuGenerated(recipeCount: 7, method: 'auto');
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockWinback.attemptAttribution('menu_generated')).called(1);
     });
   });
 }

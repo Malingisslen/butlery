@@ -1833,3 +1833,19 @@ Two distinct sub-lessons surfaced this sprint:
     `cloud_firestore` is the right import (top of file already), and
     `FirebaseException` is the type — same one Firestore throws on
     rule rejection in flutter SDK.
+
+### 2026-05-01 — image_format on analytics events is not new fingerprinting (BUT-662)
+Tagging `image_format` / `image_format_sent` (`'jpeg'|'png'|'heic'|'webp'|'gif'|'unknown'`) on `import_started` / `import_success` / `extraction_error` events does **not** add fingerprinting surface beyond what's already declared:
+
+- `platform` user property already declares iOS/Android/web — and HEIC is essentially an iOS-only signal that the platform property already covers. `image_format` adds at most a 6-way bucket inside an existing 3-way bucket.
+- Format strings are not user-typed and not user-controlled (they come from magic-byte detection on bytes the user just chose to share with the OCR pipeline) — no PII risk.
+- The `_piiHashKeys` / `_piiDropKeys` lists in `FirebaseAnalyticsRepository` deliberately do not need to grow for these — they're closed-set enums, not free text or IDs.
+
+Consent gate path for the BUT-662 emit sites:
+- `AnalyticsService.logImportStarted` → `ImportEventsTracker.logImportStarted` → `hasAnalyticsConsent()` gate → `repository.logImportStarted` ✅ gated
+- `AnalyticsService.logImportSuccess` → `ImportEventsTracker.logImportSuccess` → `hasAnalyticsConsent()` gate → `repository.logImportSuccess` ✅ gated
+- `AnalyticsService.logExtractionError` → `ImportEventsTracker.logExtractionError` → **no consent gate** (pre-existing, intentionally exempt as "error tracking" — same as auth events). This was not introduced by BUT-662.
+
+The error-event consent exemption is a standing GDPR question: is "error tracking" a legitimate-interests basis under Art. 6(1)(f), or does it need consent? Current posture: errors are exempt and parameter values are bounded (URL host only, error truncated to 100 chars, error category bucketed, no user content). The new `image_format` parameter does not change that posture — it's a closed-set enum.
+
+`AnalyticsRepository` is a non-Firestore repository (wraps the Firebase Analytics SDK, not a `BaseFirebaseRepository<Model>`). It has no `validateCreatePermission` etc. and is not subject to PermissionValidationMixin — that requirement targets Firestore-backed repos. Don't flag the absence of the mixin here as Critical.

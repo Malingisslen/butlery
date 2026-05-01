@@ -104,6 +104,18 @@ abstract final class AnalyticsEvents {
   static const notificationPayloadUnknownRoute =
       'notification_payload_unknown_route';
 
+  // --- Win-back attribution (BUT-691) ---
+  /// Emitted once per win-back send, on the first meaningful action
+  /// (cook complete / recipe import / menu generate) within 7 days of
+  /// the server-side send. Parameters: `{ channel, variant, bucket,
+  /// hours_since_send, action_type }`. The win-back send itself is
+  /// driven by `functions/src/analytics/detect-lapsed-users.ts`, which
+  /// stamps `lastWinBack*` bridge fields on the user doc; the client
+  /// reads those at session start (see `WinbackAttributionService`),
+  /// applies the FA experiment slice, and emits this event on the
+  /// next meaningful action — closing the measurement loop.
+  static const winbackConverted = 'winback_converted';
+
   // --- Milestones (once-per-user activation events) ---
   static const firstShare = 'first_share';
   static const firstFriend = 'first_friend';
@@ -160,6 +172,12 @@ abstract final class AnalyticsUserProperties {
   /// Lifecycle cohort bucket: `new | activated | habitual | dormant | churned`.
   /// Recomputed on cold start + after each cook completion.
   static const lifecycleStage = 'lifecycle_stage';
+
+  /// Monetization cohort bucket (BUT-623): `free | pro | family | trial`.
+  /// Set to `free` for all users during beta — costless schema seeding so
+  /// post-beta paid cohorts can be sliced from day 1 without retroactive
+  /// backfill. Re-emitted on purchase / downgrade / trial transitions.
+  static const subscriptionTier = 'subscription_tier';
 
   // --- Experiments (BUT-657) ---
   /// Prefix for per-experiment user properties. Concrete property name is

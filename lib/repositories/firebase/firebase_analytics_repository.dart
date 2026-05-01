@@ -165,6 +165,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     required String source,
     String? platform,
     String? sessionId,
+    String imageFormat = 'unknown',
   }) async {
     await logEvent(
       name: AnalyticsEvents.importStarted,
@@ -172,6 +173,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'source': source,
         if (platform != null) 'platform': platform,
         if (sessionId != null) 'session_id': sessionId,
+        'image_format': imageFormat,
         'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
@@ -183,6 +185,8 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     String? platform,
     int? recipeLength,
     String? sessionId,
+    String imageFormat = 'unknown',
+    String imageFormatSent = 'unknown',
   }) async {
     await logEvent(
       name: AnalyticsEvents.importSuccess,
@@ -191,6 +195,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         if (platform != null) 'platform': platform,
         if (recipeLength != null) 'recipe_length': recipeLength,
         if (sessionId != null) 'session_id': sessionId,
+        // BUT-662: image_format = original (magic-byte-detected),
+        // image_format_sent = what reached OCR after HEIC→JPEG conversion.
+        'image_format': imageFormat,
+        'image_format_sent': imageFormatSent,
         'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );
@@ -202,6 +210,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     required String platform,
     required String error,
     String? errorType,
+    String imageFormat = 'unknown',
   }) async {
     final String category = AnalyticsBuckets.categorizeError(error);
 
@@ -216,6 +225,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
           error.length > 100 ? 100 : error.length,
         ),
         'url_domain': Uri.tryParse(url)?.host ?? 'invalid_url',
+        'image_format': imageFormat,
         'timestamp': DateTime.now().toUtc().toIso8601String(),
       },
     );

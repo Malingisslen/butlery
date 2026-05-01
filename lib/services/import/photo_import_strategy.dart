@@ -8,6 +8,10 @@
 /// - Primary: OCR.space (free tier 25,000/month)
 /// - Secondary: Google Vision API (premium quality)
 /// - Tertiary: Tesseract (self-hosted fallback)
+/// **HEIC handling (BUT-662):** iOS HEIC inputs are detected by magic
+/// bytes and converted to JPEG via flutter_image_compress before OCR.
+/// The original format is preserved as `image_format` on analytics
+/// events; the format actually sent to OCR is `image_format_sent`.
 /// **Swedish Recipe Optimization:**
 /// - Swedish language hints enabled
 /// - Swedish keyword detection (ingredienser, portioner, etc.)
@@ -29,7 +33,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/import/heic_converter.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
@@ -50,6 +56,7 @@ import 'package:butlery/services/ocr_extraction_service.dart';
 class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
   final OCRExtractionService _ocrService;
   final TextImportStrategy _textStrategy;
+  final HeicConverter _heicConverter;
 
   // Confidence thresholds for quality assessment
   static const double _highConfidenceThreshold = 0.85;
@@ -59,8 +66,10 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
   PhotoImportStrategy({
     OCRExtractionService? ocrService,
     TextImportStrategy? textStrategy,
+    HeicConverter? heicConverter,
   })  : _ocrService = ocrService ?? OCRExtractionService.instance,
-        _textStrategy = textStrategy ?? TextImportStrategy();
+        _textStrategy = textStrategy ?? TextImportStrategy(),
+        _heicConverter = heicConverter ?? HeicConverter();
 
   /// Get the LLM enhancement service (lazy initialization with graceful fallback)
   LlmEnhancementService? get _llmService {
@@ -121,17 +130,39 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         );
       }
 
+      // Step 1.5 (BUT-662): magic-byte format detection + HEIC→JPEG
+      // conversion. We tag analytics with both the original format
+      // (`image_format`) and what actually reached OCR (`image_format_sent`)
+      // so HEIC prevalence + conversion success rate is measurable.
+      final formatBefore = ImageFormatUtils.detectFormat(imageBytes);
+      Uint8List bytesToOcr = imageBytes;
+      ImageFormat formatAfter = formatBefore;
+
+      if (formatBefore == ImageFormat.heic) {
+        final converted = await _heicConverter.convertToJpegIfHeic(imageBytes);
+        if (converted != null && !identical(converted, imageBytes)) {
+          bytesToOcr = converted;
+          formatAfter = ImageFormat.jpeg;
+        }
+        // If conversion failed (converted == null), proceed with the
+        // original HEIC bytes — Mistral may still parse them. The point
+        // is to remove the silent-failure class, not introduce a new
+        // error path.
+      }
+
       // Step 2: Initialize OCR service
       await _ocrService.initialize();
 
       // Step 3: Perform OCR text extraction
-      final ocrResult = await _ocrService.extractText(imageBytes);
+      final ocrResult = await _ocrService.extractText(bytesToOcr);
 
       if (!ocrResult.isSuccessful) {
         // OCR failed - try LLM vision as Tier 4 fallback
         final llmResult = await _tryLlmFallback(
-          imageBytes,
+          bytesToOcr,
           options?['sourceType'] as String?,
+          formatBefore: formatBefore,
+          formatAfter: formatAfter,
         );
         if (llmResult != null) {
           return llmResult;
@@ -144,6 +175,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
             ocrResult: ocrResult,
             imageBytes: imageBytes,
             sourceType: options?['sourceType'] as String?,
+            formatBefore: formatBefore,
+            formatAfter: formatAfter,
           ),
         );
       }
@@ -152,8 +185,10 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (ocrResult.text.isEmpty) {
         // No text extracted - try LLM vision as Tier 4 fallback
         final llmResult = await _tryLlmFallback(
-          imageBytes,
+          bytesToOcr,
           options?['sourceType'] as String?,
+          formatBefore: formatBefore,
+          formatAfter: formatAfter,
         );
         if (llmResult != null) {
           return llmResult;
@@ -166,6 +201,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
             ocrResult: ocrResult,
             imageBytes: imageBytes,
             sourceType: options?['sourceType'] as String?,
+            formatBefore: formatBefore,
+            formatAfter: formatAfter,
           ),
         );
       }
@@ -176,8 +213,10 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       if (!textResult.isSuccess || textResult.recipe == null) {
         // Text parsing failed - try LLM vision as Tier 4 fallback
         final llmResult = await _tryLlmFallback(
-          imageBytes,
+          bytesToOcr,
           options?['sourceType'] as String?,
+          formatBefore: formatBefore,
+          formatAfter: formatAfter,
         );
         if (llmResult != null) {
           return llmResult;
@@ -195,6 +234,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
             imageBytes: imageBytes,
             textResult: textResult,
             sourceType: options?['sourceType'] as String?,
+            formatBefore: formatBefore,
+            formatAfter: formatAfter,
           ),
         );
       }
@@ -211,6 +252,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           imageBytes: imageBytes,
           textResult: textResult,
           sourceType: options?['sourceType'] as String?,
+          formatBefore: formatBefore,
+          formatAfter: formatAfter,
         ),
       );
     } catch (e) {
@@ -227,8 +270,10 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// Try LLM vision extraction as Tier 4 fallback when OCR fails.
   Future<ImportResult?> _tryLlmFallback(
     Uint8List imageBytes,
-    String? sourceType,
-  ) async {
+    String? sourceType, {
+    ImageFormat formatBefore = ImageFormat.unknown,
+    ImageFormat formatAfter = ImageFormat.unknown,
+  }) async {
     final llmService = _llmService;
     if (llmService == null) {
       return null; // LLM service not available
@@ -251,6 +296,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
             'usedLlm': true,
             'image_size_bytes': imageBytes.length,
             'source_type': sourceType,
+            'image_format': ImageFormatUtils.wireName(formatBefore),
+            'image_format_sent': ImageFormatUtils.wireName(formatAfter),
             ...?llmResult.metadata,
           },
         );
@@ -264,6 +311,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
             'imageBytes': imageBytes,
             'tier': 4,
             'method': 'llm-vision-partial',
+            'image_format': ImageFormatUtils.wireName(formatBefore),
+            'image_format_sent': ImageFormatUtils.wireName(formatAfter),
           },
         );
       }
@@ -306,11 +355,17 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
     required Uint8List imageBytes,
     ImportResult? textResult,
     String? sourceType,
+    ImageFormat formatBefore = ImageFormat.unknown,
+    ImageFormat formatAfter = ImageFormat.unknown,
   }) {
     final metadata = <String, dynamic>{
       'strategy': strategyName,
       'image_size_bytes': imageBytes.length,
       'image_size_kb': (imageBytes.length / 1024).toStringAsFixed(1),
+      // BUT-662: original format vs format sent to OCR. Both fields ride on
+      // the import result so downstream analytics callers can tag events.
+      'image_format': ImageFormatUtils.wireName(formatBefore),
+      'image_format_sent': ImageFormatUtils.wireName(formatAfter),
     };
 
     // Add source type if available

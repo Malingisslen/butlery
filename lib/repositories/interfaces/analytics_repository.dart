@@ -46,14 +46,22 @@ abstract class AnalyticsRepository {
     required String source,
     String? platform,
     String? sessionId,
+    String imageFormat,
   });
 
   /// Log successful import
+  ///
+  /// [imageFormat] / [imageFormatSent] (BUT-662): for the photo OCR path,
+  /// `imageFormat` is the original magic-byte-detected format and
+  /// `imageFormatSent` is the format actually delivered to OCR. Both
+  /// default to `'unknown'` for non-photo import paths.
   Future<void> logImportSuccess({
     required String source,
     String? platform,
     int? recipeLength,
     String? sessionId,
+    String imageFormat,
+    String imageFormatSent,
   });
 
   /// Log extraction error
@@ -62,6 +70,7 @@ abstract class AnalyticsRepository {
     required String platform,
     required String error,
     String? errorType,
+    String imageFormat,
   });
 
   /// Log manual copy fallback usage
