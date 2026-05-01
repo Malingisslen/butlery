@@ -1,16 +1,33 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show VoidCallback, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show ChangeNotifier, Listenable, VoidCallback, kIsWeb;
+import 'package:get_it/get_it.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
+/// Private subclass that just exposes [ChangeNotifier.notifyListeners] to
+/// the surrounding library. ChangeNotifier marks `notifyListeners` as
+/// `@protected` — only subclasses can fire it. Composition + this thin
+/// shim lets [ConsentService] hold a notifier without itself extending
+/// ChangeNotifier (which would clash with `BaseService.dispose()`'s
+/// `Future<void>` signature).
+class _ConsentChangeNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
+}
+
 /// Service for managing user consent (GDPR Article 7)
 /// Handles consent tracking, storage, and validation for GDPR compliance.
 /// Now uses FirebaseConsentRepository for secure, validated data access.
-class ConsentService extends BaseService {
+///
+/// Implements [Listenable] (BUT-752) so multiple subscribers (FCMService
+/// for push permissions, SearchModule for Algolia delegate re-init) can
+/// observe consent changes via the standard `addListener` /
+/// `removeListener` contract that the rest of the codebase already uses.
+class ConsentService extends BaseService implements Listenable {
   @override
   String get serviceName => 'ConsentService';
   static const String _logTag = 'ConsentService';
@@ -20,9 +37,18 @@ class ConsentService extends BaseService {
   final auth.AuthRepository _authRepository;
   final FirebaseConsentRepository _consentRepository;
 
-  /// Optional callback invoked after any successful consent save.
-  /// Used by FCMService to re-enable push notifications mid-session.
-  VoidCallback? onConsentChanged;
+  /// Notifier fired after any successful consent save (BUT-752). Held by
+  /// composition because `BaseService.dispose()` returns `Future<void>`,
+  /// which conflicts with `ChangeNotifier.dispose()`'s `void` signature.
+  final _ConsentChangeNotifier _changeNotifier = _ConsentChangeNotifier();
+
+  @override
+  void addListener(VoidCallback listener) =>
+      _changeNotifier.addListener(listener);
+
+  @override
+  void removeListener(VoidCallback listener) =>
+      _changeNotifier.removeListener(listener);
 
   // Session cache — consent rarely changes, no need to hit Firestore every call
   UserConsent? _cachedConsent;
@@ -99,7 +125,7 @@ class ConsentService extends BaseService {
               _cachePopulated = true;
               app_logger.AppLogger.info(
                   '[$_logTag] Consent saved for user $userId');
-              onConsentChanged?.call();
+              _changeNotifier.notify();
             }
 
             return success;
@@ -217,5 +243,32 @@ class ConsentService extends BaseService {
           '[$logTag] Failed to check ${purpose.name} consent, denying: $e');
       return false;
     }
+  }
+}
+
+/// Fail-closed analytics consent gate for DI callers that hold a [GetIt]
+/// container (modules, bootstrap stages, `main.dart`).
+///
+/// Returns `true` only when [ConsentService] is registered AND the user has
+/// explicitly granted [ConsentPurpose.analytics]. "Not registered", "no
+/// consent doc", and "lookup threw" all collapse to `false` so a pre-sign-in
+/// init can never enable analytics-bound infrastructure (Firebase Analytics
+/// collection toggle, Algolia provider swap).
+///
+/// Single canonical implementation per BUT-751 — replaces 2 inline copies
+/// of the same pattern (main.dart `_enableCollectionIfConsented`,
+/// search_module.dart `_hasAnalyticsConsent`).
+Future<bool> hasAnalyticsConsent(
+  GetIt container, {
+  String logTag = 'AnalyticsConsentGate',
+}) async {
+  if (!container.isRegistered<ConsentService>()) return false;
+  try {
+    return await container<ConsentService>()
+        .hasConsent(ConsentPurpose.analytics);
+  } catch (e) {
+    app_logger.AppLogger.warning(
+        '[$logTag] Analytics consent check failed, denying: $e');
+    return false;
   }
 }

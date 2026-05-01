@@ -124,11 +124,28 @@ class SocialDeletionOperations {
   /// Remove user from all shared content memberships and delete owned shared recipes.
   Future<bool> removeFromSharedContent(String userId) async {
     try {
-      // Delete user's member subcollection docs and clean up sharedToUserIds
-      final memberDocs = await _firestore
-          .collectionGroup(FirestoreCollections.members)
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Two independent collectionGroup reads — fan out concurrently.
+      final results = await Future.wait([
+        _firestore
+            .collectionGroup(FirestoreCollections.members)
+            .where('userId', isEqualTo: userId)
+            .get(),
+        // BUT-732: scrub the user's engagement metadata across other people's
+        // shared content. Engagement docs live at
+        // `shared_content/{contentId}/engagements/{userId}` and accumulate as
+        // the user views/imports/joins shared items — every doc with
+        // `userId == this user` must go for GDPR Art. 17 erasure.
+        // Permission path: firestore.rules:1552-1554 (collectionGroup
+        // `engagements` read scoped by `request.auth.uid == userId`) allows
+        // this query independent of membership state. Per-doc delete uses the
+        // direct-path rule at firestore.rules:547 (`auth.uid == userId`).
+        _firestore
+            .collectionGroup(FirestoreCollections.engagements)
+            .where('userId', isEqualTo: userId)
+            .get(),
+      ]);
+      final memberDocs = results[0];
+      final engagementDocs = results[1];
 
       // Clean up sharedToUserIds on parent docs (batched)
       var batch = _firestore.batch();
@@ -155,6 +172,15 @@ class SocialDeletionOperations {
         }
       }
       await batchDeleteDocs(_firestore, memberDocs.docs);
+      await batchDeleteDocs(_firestore, engagementDocs.docs);
+
+      // Note: legacy `sharedWith` array cleanup is intentionally NOT done
+      // here. firestore.rules:515-518 only permits `update` on a
+      // shared_content doc to its `sharedByUserId` owner or a member-
+      // subcollection participant — a recipient who only appears in the
+      // legacy `sharedWith` flat array has no `update` permission and the
+      // call would server-side permission-deny. This must be handled by an
+      // admin-context Cloud Function cascade. Filed as a follow-up.
 
       await _deleteOwnedSharedContent(
           FirestoreCollections.sharedContent, userId);

@@ -233,10 +233,11 @@ void main() {
 
       test('should return 0 and do nothing when the user has no plans',
           () async {
-        // Arrange — empty collection.
-
+        // Arrange — empty collection. Caller is the authenticated user
+        // (ownerId) deleting their own data; validateOwnership requires
+        // the targetted userId to match the auth context.
         // Act
-        final deleted = await repository.deleteAllByUser('nonexistent-user');
+        final deleted = await repository.deleteAllByUser(ownerId);
 
         // Assert
         expect(deleted, 0);
@@ -245,16 +246,16 @@ void main() {
       test(
           'should chunk deletes through batchDeleteDocs when the result set '
           'exceeds the 500-op Firestore batch limit', () async {
-        // Arrange — seed 600 docs for a single owner. Weeks are synthesised
-        // across 12 ISO years to stay under the "53 weeks per year" ceiling
-        // while giving us unique doc IDs. Different doc IDs are the only
-        // thing that matters for the prefix-range delete.
-        const targetUser = 'bulk-owner';
+        // Arrange — seed 600 docs for the authenticated user (ownerId).
+        // validateOwnership requires the deleteAllByUser target to match
+        // the caller's auth context. Weeks synthesised across 12 ISO
+        // years to stay under the "53 weeks per year" ceiling while
+        // giving us unique doc IDs.
         for (var i = 0; i < 600; i++) {
-          final docId = '${targetUser}_${2010 + (i ~/ 53)}'
+          final docId = '${ownerId}_${2010 + (i ~/ 53)}'
               '-W${((i % 53) + 1).toString().padLeft(2, '0')}';
           await firestore.collection(_collection).doc(docId).set({
-            'userId': targetUser,
+            'userId': ownerId,
             'weekStartDate': Timestamp.now(),
             'entries': <Map<String, dynamic>>[],
             'createdAt': Timestamp.now(),
@@ -278,7 +279,7 @@ void main() {
 
         // Act — call deleteAllByUser. The implementation's batchDeleteDocs
         // helper has to split >500 docs across >1 batches (500-op limit).
-        final deleted = await repository.deleteAllByUser(targetUser);
+        final deleted = await repository.deleteAllByUser(ownerId);
 
         // Assert — all 600 bulk docs gone, the unrelated user's doc untouched.
         expect(deleted, 600,

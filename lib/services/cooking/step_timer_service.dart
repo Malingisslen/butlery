@@ -116,10 +116,6 @@ class StepTimerService extends BaseService {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Internals
-  // ---------------------------------------------------------------------------
-
   void _startTicker() {
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       final remaining = _computeRemaining();

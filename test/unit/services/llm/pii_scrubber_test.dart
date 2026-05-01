@@ -116,4 +116,84 @@ void main() {
       expect(out['optional'], isNull);
     });
   });
+
+  // BUT-692: scrubUrlParams must also strip path-embedded tracker IDs.
+  group('scrubUrlParams - path-embedded tokens', () {
+    test('strips query and fragment (legacy contract preserved)', () {
+      final out = scrubUrlParams(
+          'https://example.com/recipe?utm_source=x&token=secret#frag');
+      expect(out, isNot(contains('utm_source')));
+      expect(out, isNot(contains('token')));
+      expect(out, isNot(contains('frag')));
+      expect(out, contains('example.com/recipe'));
+    });
+
+    test('redacts mixed-case + digit path token (Algolia object-ID shape)', () {
+      final out =
+          scrubUrlParams('https://example.com/r/7Br2c3DmEIeu61HVcgWa9/title');
+      expect(out, isNot(contains('7Br2c3DmEIeu61HVcgWa9')));
+      expect(out, contains(':redacted'));
+      expect(out, contains('/title'));
+    });
+
+    test('redacts UUID path segment (RFC 4122 layout)', () {
+      final out = scrubUrlParams(
+          'https://example.com/share/f47ac10b-58cc-4372-a567-0e02b2c3d479/view');
+      expect(out, isNot(contains('f47ac10b-58cc-4372-a567-0e02b2c3d479')));
+      expect(out, contains(':redacted'));
+    });
+
+    test('redacts JWT-shaped token in path', () {
+      final out = scrubUrlParams(
+          'https://example.com/auth/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_xx');
+      expect(out, isNot(contains('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_xx')));
+      expect(out, contains(':redacted'));
+    });
+
+    test('redacts 32-char hex hash path segment', () {
+      final out = scrubUrlParams(
+          'https://example.com/tracking/a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5/x');
+      expect(out, isNot(contains('a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5')));
+      expect(out, contains(':redacted'));
+    });
+
+    test('keeps Swedish recipe slug intact', () {
+      final out = scrubUrlParams(
+          'https://recept.se/recept/gulasch-med-svamp-och-russin');
+      expect(out, contains('gulasch-med-svamp-och-russin'));
+      expect(out, isNot(contains(':redacted')));
+    });
+
+    test('keeps long-but-slug-shaped path segments', () {
+      // 34 chars total, all-lowercase, hyphen-separated word groups —
+      // longest unsplit run is 9 chars ("italienska") so under the
+      // 16-char threshold.
+      final out = scrubUrlParams(
+          'https://example.com/super-premium-italienska-tomater');
+      expect(out, contains('super-premium-italienska-tomater'));
+      expect(out, isNot(contains(':redacted')));
+    });
+
+    test('keeps short opaque-looking segments below threshold', () {
+      // 19 chars — one below the 20-char threshold. False-negative bias
+      // is intentional per the BUT-692 ticket.
+      final out = scrubUrlParams('https://example.com/r/AbCdEf1234567890XYZ');
+      expect(out, contains('AbCdEf1234567890XYZ'));
+    });
+
+    test('returns input unchanged when not parseable', () {
+      const garbage = 'not a url at all';
+      expect(scrubUrlParams(garbage), equals(garbage));
+    });
+
+    test('handles multiple opaque segments in same path', () {
+      final out =
+          scrubUrlParams('https://example.com/r/7Br2c3DmEIeu61HVcgWa9/and/'
+              'f47ac10b-58cc-4372-a567-0e02b2c3d479/end');
+      expect(out, isNot(contains('7Br2c3DmEIeu61HVcgWa9')));
+      expect(out, isNot(contains('f47ac10b-58cc-4372-a567-0e02b2c3d479')));
+      expect(out, contains('/and/'));
+      expect(out, contains('/end'));
+    });
+  });
 }

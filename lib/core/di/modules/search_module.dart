@@ -1,5 +1,7 @@
 // lib/core/di/modules/search_module.dart
 
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -10,7 +12,6 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/algolia/algolia_search_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_search_repository.dart';
-import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
@@ -42,9 +43,37 @@ class SearchModule implements DIModule {
   int get priority => 15; // After Core (1), before Content (10)
 
   @override
-  Future<void> configureUserScope(GetIt container) async {}
+  Future<void> configureUserScope(GetIt container) async {
+    // BUT-752: subscribe to mid-session consent changes so granting
+    // analytics consent post-startup flips the Algolia delegate on without
+    // a restart, and revoking it switches us back to Firestore.
+    // Registered here (not in `configure`) because ConsentService itself
+    // is user-scoped — registered post-sign-in by CoreModule's
+    // `configureUserScope`. Pre-emptive `removeListener` keeps re-init
+    // calls (hot reload, sign-out/sign-in) idempotent — Flutter's
+    // ChangeNotifier semantics allow duplicate `addListener` calls,
+    // each fires independently.
+    if (container.isRegistered<ConsentService>()) {
+      final consent = container<ConsentService>();
+      consent.removeListener(_onConsentChanged);
+      consent.addListener(_onConsentChanged);
+    }
+  }
 
   _DelegatingSearchRepository? _proxy;
+
+  /// Tracks the current delegate kind so [_onConsentChanged] / [_evaluate]
+  /// can stay idempotent — re-init only when the desired state differs
+  /// from what the proxy is already serving.
+  bool _algoliaActive = false;
+
+  /// Handler bound on the SearchModule singleton — same instance on every
+  /// add/remove call so listener equality matches and removal is reliable.
+  void _onConsentChanged() {
+    // Async re-eval but fire-and-forget — listeners must return synchronously.
+    // SearchModule is a long-lived DI singleton, no cancellation surface.
+    unawaited(_evaluate(GetIt.instance));
+  }
 
   @override
   Future<void> configure(GetIt container) async {
@@ -84,56 +113,7 @@ class SearchModule implements DIModule {
   Future<void> initialize() async {
     try {
       final container = GetIt.instance;
-
-      final featureFlags = container.isRegistered<FeatureFlagService>()
-          ? container<FeatureFlagService>()
-          : null;
-
-      final useAlgolia =
-          featureFlags?.isEnabled(FeatureFlags.enableAlgoliaSearch) ?? false;
-
-      if (useAlgolia) {
-        // BUT-580: Algolia search-personalisation qualifies as analytics
-        // under our consent model. Even though we never pass `userToken`,
-        // `clickAnalytics`, or `analyticsTags` (queries reach Algolia
-        // anonymously), the query text + IP-level metadata reaching a
-        // third-party EU processor still requires the analytics consent
-        // bucket. If consent is missing or denied, we keep the Firestore
-        // fallback (already wired as the default delegate above).
-        //
-        // ConsentService is registered in `configureUserScope` (post-sign-
-        // in). If it isn't registered yet, treat as "consent unknown" and
-        // hold off on Algolia init until a re-evaluation after sign-in.
-        final hasAnalyticsConsent = await _hasAnalyticsConsent(container);
-        if (!hasAnalyticsConsent) {
-          AppLogger.info('SearchModule: Analytics consent missing/denied, '
-              'keeping Firestore search (BUT-580)');
-        } else {
-          const appId = String.fromEnvironment('ALGOLIA_APP_ID');
-          const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
-
-          if (appId.isNotEmpty && apiKey.isNotEmpty) {
-            try {
-              _proxy!.delegate = AlgoliaSearchRepository(
-                appId: appId,
-                apiKey: apiKey,
-              );
-              AppLogger.info(
-                  'SearchModule: Switched to Algolia search provider '
-                  '(feature flag + analytics consent)');
-            } on ArgumentError catch (e) {
-              // BUT-580: EU-cluster invariant violated. Refuse to init and
-              // stay on Firestore — better degraded search than a Chapter V
-              // cross-border breach.
-              AppLogger.warning('SearchModule: Algolia init refused — $e. '
-                  'Keeping Firestore search.');
-            }
-          } else {
-            AppLogger.warning(
-                'SearchModule: Algolia enabled but credentials missing, keeping Firestore');
-          }
-        }
-      }
+      await _evaluate(container);
 
       final searchRepository = container<SearchRepository>();
       final isHealthy = await searchRepository.healthCheck();
@@ -150,6 +130,63 @@ class SearchModule implements DIModule {
     }
   }
 
+  /// Evaluate feature flag + analytics consent and switch the delegate to
+  /// match. Idempotent: re-runs are no-ops when the desired state already
+  /// equals [_algoliaActive].
+  ///
+  /// Called both at module init and on every consent change (BUT-752).
+  Future<void> _evaluate(GetIt container) async {
+    if (_proxy == null) return; // configure() hasn't run yet.
+
+    final featureFlags = container.isRegistered<FeatureFlagService>()
+        ? container<FeatureFlagService>()
+        : null;
+    final useAlgolia =
+        featureFlags?.isEnabled(FeatureFlags.enableAlgoliaSearch) ?? false;
+
+    // BUT-580: Algolia search-personalisation qualifies as analytics under
+    // our consent model. Even though we never pass `userToken`,
+    // `clickAnalytics`, or `analyticsTags` (queries reach Algolia
+    // anonymously), the query text + IP-level metadata reaching a
+    // third-party EU processor still requires the analytics consent
+    // bucket. BUT-751: shared fail-closed gate.
+    final hasConsent = useAlgolia &&
+        await hasAnalyticsConsent(container, logTag: 'SearchModule');
+    final wantAlgolia = useAlgolia && hasConsent;
+
+    if (wantAlgolia == _algoliaActive) return;
+
+    if (wantAlgolia) {
+      const appId = String.fromEnvironment('ALGOLIA_APP_ID');
+      const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
+      if (appId.isEmpty || apiKey.isEmpty) {
+        AppLogger.warning(
+            'SearchModule: Algolia enabled but credentials missing, keeping Firestore');
+        return;
+      }
+      try {
+        _proxy!.delegate = AlgoliaSearchRepository(
+          appId: appId,
+          apiKey: apiKey,
+        );
+        _algoliaActive = true;
+        AppLogger.info('SearchModule: Switched to Algolia search provider '
+            '(feature flag + analytics consent)');
+      } on ArgumentError catch (e) {
+        // BUT-580: EU-cluster invariant violated. Refuse to init and stay
+        // on Firestore — better degraded search than a Chapter V breach.
+        AppLogger.warning('SearchModule: Algolia init refused — $e. '
+            'Keeping Firestore search.');
+      }
+    } else {
+      _proxy!.delegate = FirestoreSearchRepository();
+      _algoliaActive = false;
+      AppLogger.info(
+          'SearchModule: Reverted to Firestore search (consent revoked '
+          'or feature flag off) (BUT-752)');
+    }
+  }
+
   @override
   Future<bool> healthCheck() async {
     try {
@@ -162,21 +199,6 @@ class SearchModule implements DIModule {
 
       return true;
     } catch (e) {
-      return false;
-    }
-  }
-
-  /// Returns `true` only when ConsentService is registered AND the user has
-  /// explicitly granted analytics consent. "Not registered" and "no consent
-  /// doc" both resolve to `false` (deny by default) so a pre-sign-in
-  /// `initialize()` can never enable Algolia.
-  Future<bool> _hasAnalyticsConsent(GetIt container) async {
-    if (!container.isRegistered<ConsentService>()) return false;
-    try {
-      return await container<ConsentService>()
-          .hasConsent(ConsentPurpose.analytics);
-    } catch (e) {
-      AppLogger.warning('SearchModule: consent check failed, denying: $e');
       return false;
     }
   }

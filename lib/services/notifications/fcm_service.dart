@@ -123,8 +123,10 @@ class FCMService with ErrorHandlingMixin {
         _onMessageOpenedApp = onMessageOpenedApp;
         _consentService = consentService;
 
-        // Listen for mid-session consent changes (BUT-356)
-        _consentService?.onConsentChanged = _onConsentChanged;
+        // Listen for mid-session consent changes (BUT-356). BUT-752:
+        // ConsentService now implements Listenable so multiple subscribers
+        // (this + SearchModule for Algolia re-init) co-exist.
+        _consentService?.addListener(_onConsentChanged);
 
         await _initializeNotificationChannels();
         await _setupMessageHandlers();
@@ -567,7 +569,7 @@ class FCMService with ErrorHandlingMixin {
       _onMessageOpenedAppSubscription = null;
 
       _currentToken = null;
-      _consentService?.onConsentChanged = null;
+      _consentService?.removeListener(_onConsentChanged);
       _consentService = null;
       _pushPermissionsRequested = false;
       _isInitialized = false;

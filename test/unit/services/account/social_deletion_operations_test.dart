@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/services/account/account_deletion/social_deletion_operations.dart';
@@ -147,100 +146,100 @@ void main() {
       expect(remainingMembers.docs.first.data()['userId'], otherUserId);
     });
 
-    test(
-        'should delete views, engagements, and dismissals subcollection docs for user',
+    test('should delete engagement subcollection docs for user (GDPR Art. 17)',
         () async {
-      // Arrange
-      await fakeFirestore
-          .collection(FirestoreCollections.sharedContent)
-          .doc('recipe1')
-          .collection('views')
-          .doc('view1')
-          .set({'userId': testUserId, 'timestamp': Timestamp.now()});
+      // BUT-732: previously the test also seeded `views` and `dismissals`
+      // subcollections, but those don't exist in the production schema —
+      // only `engagements` is a real subcollection of `shared_content/*`
+      // (written by SharedRecipe/Menu/Shopping engagement repositories).
+      // Test now mirrors the actual contract: engagements scrubbed, other
+      // users' engagements untouched.
 
+      // Arrange — user has an engagement on someone else's shared item.
       await fakeFirestore
           .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection('engagements')
-          .doc('eng1')
-          .set({'userId': testUserId});
+          .doc(testUserId)
+          .set({'userId': testUserId, 'action': 'import'});
 
+      // Other user's engagement on the same item must survive.
       await fakeFirestore
           .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
-          .collection('dismissals')
-          .doc('dis1')
-          .set({'userId': testUserId});
+          .collection('engagements')
+          .doc(otherUserId)
+          .set({'userId': otherUserId, 'action': 'view'});
 
       // Act
       final result = await operations.removeFromSharedContent(testUserId);
 
       // Assert
       expect(result, true);
-
-      final views = await fakeFirestore
-          .collection(FirestoreCollections.sharedContent)
-          .doc('recipe1')
-          .collection('views')
-          .get();
-      expect(views.docs, isEmpty);
 
       final engagements = await fakeFirestore
           .collection(FirestoreCollections.sharedContent)
           .doc('recipe1')
           .collection('engagements')
           .get();
-      expect(engagements.docs, isEmpty);
-
-      final dismissals = await fakeFirestore
-          .collection(FirestoreCollections.sharedContent)
-          .doc('recipe1')
-          .collection('dismissals')
-          .get();
-      expect(dismissals.docs, isEmpty);
+      expect(engagements.docs.length, 1);
+      expect(engagements.docs.first.data()['userId'], otherUserId);
     });
 
     test(
-        'should remove user from legacy sharedWith array without affecting other users',
+        'leaves legacy sharedWith array untouched (admin-context responsibility)',
         () async {
-      // Arrange
+      // BUT-732: legacy `sharedWith` cleanup is intentionally NOT done by
+      // the user-side deletion path. firestore.rules:515-518 only permits
+      // `update` on a shared_content doc to its `sharedByUserId` owner or a
+      // member-subcollection participant — a recipient appearing only in
+      // the legacy `sharedWith` flat array has no `update` permission, so
+      // the call would server-side permission-deny. The cleanup must run
+      // in an admin-context Cloud Function cascade (filed as follow-up).
+      // This test pins the contract: the user-driven path is a no-op for
+      // legacy data and reports success without trying.
+
+      // Arrange — user is a recipient via legacy sharedWith (no member doc).
       await fakeFirestore
           .collection(FirestoreCollections.sharedContent)
           .doc('recipe2')
           .set({
         'sharedWith': [testUserId, otherUserId],
-        'ownerId': 'someone-else',
+        'sharedByUserId': 'someone-else',
         'title': 'Shared recipe',
       });
 
       // Act
       final result = await operations.removeFromSharedContent(testUserId);
 
-      // Assert
+      // Assert — operation completes without trying the doomed update.
       expect(result, true);
 
+      // The legacy field is untouched; admin cascade owns this scrub.
       final doc = await fakeFirestore
           .collection(FirestoreCollections.sharedContent)
           .doc('recipe2')
           .get();
       expect(doc.exists, true);
       final sharedWith = List<String>.from(doc.data()!['sharedWith']);
-      expect(sharedWith, contains(otherUserId));
-      expect(sharedWith, isNot(contains(testUserId)));
+      expect(sharedWith, containsAll([testUserId, otherUserId]));
     });
 
     test('should delete owned shared recipes', () async {
+      // BUT-732: production schema field is `sharedByUserId` (17+ sites),
+      // not `ownerId`. Test fixture corrected to match the contract the
+      // production code actually queries on.
       // Arrange
       await fakeFirestore
           .collection(FirestoreCollections.sharedContent)
           .doc('recipe3')
-          .set({'ownerId': testUserId, 'title': 'My shared recipe'});
+          .set({'sharedByUserId': testUserId, 'title': 'My shared recipe'});
 
       // Keep other user's recipe
       await fakeFirestore
           .collection(FirestoreCollections.sharedContent)
           .doc('recipe4')
-          .set({'ownerId': otherUserId, 'title': 'Other recipe'});
+          .set({'sharedByUserId': otherUserId, 'title': 'Other recipe'});
 
       // Act
       final result = await operations.removeFromSharedContent(testUserId);

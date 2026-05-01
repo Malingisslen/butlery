@@ -1884,3 +1884,161 @@ beta). For future "live consent flip" needs, hook
 Firebase. Test the load-bearing invariant (the constructor's EU check)
 directly in `test/unit/repositories/algolia/`. The DI module's role is
 just "catch ArgumentError → keep Firestore", which is a one-liner.
+
+### 2026-05-01 — Member-gated collectionGroup queries must run BEFORE membership deletion (BUT-732)
+
+`removeFromSharedContent` in `social_deletion_operations.dart` runs four
+queries in sequence — order matters when rules gate reads on
+membership:
+
+1. Query memberDocs (`collectionGroup('members').where('userId',==,uid)`).
+2. arrayRemove `sharedToUserIds` on parents.
+3. **batchDeleteDocs(memberDocs)** ← user loses `isSharedMember` access here.
+4. Query engagements (`collectionGroup('engagements').where('userId',==,uid)`).
+
+Step 4 is governed by rule
+`allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);`
+where `hasSharedAccess` = `isSharedOwner || isSharedMember`. Once step 3
+deletes the user's `members/{uid}` docs, `isSharedMember` returns false
+for non-owned content, so the engagements collectionGroup query
+permission-denies on those docs. Firestore aborts collectionGroup
+queries on the FIRST per-doc rule failure — so engagement scrub may
+silently fail for any user who engaged on non-owned shared content.
+
+**Rule of thumb for GDPR cascades:** when scrubbing across
+collectionGroups gated by parent-membership, query EVERY membership-
+dependent collection BEFORE deleting the membership rows. Or move the
+cascade to a Cloud Function with admin SDK (the BUT-407 pings cascade
+runs client-side too but its rule scopes membership differently — pings
+read isn't `hasSharedAccess`-gated).
+
+### 2026-05-01 — Legacy `sharedWith` cleanup needs an update permission path (BUT-732)
+
+`removeFromSharedContent` now also runs
+`shared_content.where('sharedWith', arrayContains: uid)` and writes
+`arrayRemove(uid)`. Problem: `shared_content` update rule requires
+`request.auth.uid == sharedByUserId || isSharedMember(...)`. Legacy
+docs that ONLY use the flat `sharedWith` array (pre-members
+subcollection) have no `members/{uid}` entry — so the user fails
+`isSharedMember`, and unless they're the owner the update is denied.
+Recipient's read access (`request.auth.uid in sharedToUserIds`) is
+get-only, NOT update.
+
+Two options for the fix: (a) add a recipient-self-scrub branch to the
+shared_content update rule mirroring the BUT-749 pattern on `/menus/`
+(allow update IFF `request.auth.uid in resource.data.sharedWith` AND
+the only diff is `arrayRemove(self)` on `sharedWith`), or (b) move the
+legacy scrub to a Cloud Function. (a) is consistent with the existing
+recipient-scrub pattern; (b) is simpler if legacy data volume is low.
+
+### 2026-05-01 — collectionGroup `engagements.userId` index missing (BUT-732)
+
+`firestore.indexes.json` has no entry for
+`collectionGroup: "engagements", fieldPath: "userId"`. The pattern is
+established (`members.userId`, `activeUsers.userId` both have
+`COLLECTION_GROUP` field overrides). Without it the GDPR cascade
+errors with `failed-precondition: query requires an index`. Add to
+`fieldOverrides`:
+
+```json
+{
+  "collectionGroup": "engagements",
+  "fieldPath": "userId",
+  "indexes": [
+    { "order": "ASCENDING", "queryScope": "COLLECTION" },
+    { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+  ]
+}
+```
+
+### 2026-05-01 — Multi-listener pattern for cross-module mid-session signals (BUT-752)
+
+`ConsentService` listener API (`addConsentChangeListener` /
+`removeConsentChangeListener`) is the canonical pattern for any
+service that needs to broadcast state changes to multiple unrelated
+modules. Three invariants the implementation must hold:
+
+1. **Iterate a copy of the list** — listeners may unregister
+   themselves during dispatch (`for (final l in List.of(_listeners))`).
+2. **Try/catch each listener individually** — one bad listener
+   cannot abort sibling notifications (defence-in-depth).
+3. **Cache state BEFORE notifying** — `_cachedConsent = consent` runs
+   before listener loop, so any listener calling back into
+   `hasConsent` sees the new value. No partial-state risk.
+
+**Listener-leak rule.** Modules that are long-lived DI singletons
+(`SearchModule`) can register without removing — leaking is bounded by
+the DI container's lifetime. Modules with shorter lifecycles
+(`FCMService` is also app-scope but disposed on logout in the social
+graph) MUST remove in dispose. SearchModule's missing remove is
+intentional and correct.
+
+### 2026-05-01 — `:redacted` token in path scrubbing — collision-safe (BUT-692)
+
+`scrubUrlParams` writing literal `:redacted` to opaque path segments
+is safe downstream because:
+- Threshold for redaction is segment length ≥ 20, so a real `:redacted`
+  segment (9 chars) never re-triggers double-redaction.
+- Output goes to LLM input (text), no URL parser downstream.
+- Dart `Uri.replace(pathSegments:)` correctly percent-encodes; first
+  segment `:` is unambiguous because the URL has a verified scheme
+  (`parsed.hasScheme` precondition at scrubUrlParams line 65).
+
+No action needed; this is a non-issue.
+
+### 2026-05-01 — Engagements collectionGroup wildcard is the canonical self-scoped GDPR scrub pattern (BUT-732)
+
+`firestore.rules:1552-1554` declares a top-level
+`match /{path=**}/engagements/{userId} { allow read: if auth.uid == userId; }`
+that is INDEPENDENT of the inner `shared_content/{contentId}/engagements/{userId}`
+block at `firestore.rules:542-548` (which gates read on `hasSharedAccess`).
+
+Firestore's permissive-OR semantics across matching path templates mean the
+wildcard alone authorizes a `collectionGroup('engagements').where('userId',
+isEqualTo: uid)` query — even after the user's `members/{uid}` doc has been
+deleted earlier in the same cascade. So order doesn't matter for the
+engagement scrub: members-delete then engagement-collectionGroup-query is
+fine, no permission-deny race.
+
+**Use this pattern for any future self-scoped scrub where the doc ID equals
+the user's UID.** Per-doc deletes go through the direct-path inner rule
+(`auth.uid == userId`). No `hasSharedAccess` membership check needed.
+
+### 2026-05-01 — Legacy `sharedWith` array scrub requires admin context (BUT-732)
+
+The flat `sharedWith: [uid, ...]` array on legacy `shared_content` docs
+CANNOT be cleaned up from the user-side deletion path. `firestore.rules:515-518`
+permits `update` only to (a) the `sharedByUserId` owner or (b) a
+member-subcollection participant. A recipient who only appears in the
+legacy array has neither, so the call permission-denies server-side.
+
+Cleanup MUST run in an admin-context Cloud Function cascade. The user-side
+operation should silently no-op (with a comment block documenting why) and
+report success — failing the whole deletion on a doomed legacy update would
+strand the user mid-erasure. Test pins the no-op contract: legacy field
+stays after `removeFromSharedContent`.
+
+### 2026-05-01 — `engagements.userId` collectionGroup index shape (BUT-732)
+
+Required shape for self-scoped collectionGroup queries on a `userId` field
+(matches `members.userId` and `activeUsers.userId` precedent):
+
+```json
+{ "collectionGroup": "engagements", "fieldPath": "userId",
+  "indexes": [
+    { "order": "ASCENDING", "queryScope": "COLLECTION" },
+    { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+  ] }
+```
+
+Both scopes needed: COLLECTION_GROUP for the cross-parent erasure query,
+COLLECTION for any per-`shared_content` doc listing.
+
+### 2026-05-01 — `firestore.rules` untouched ⇒ no `firestore-rules-tester` handoff
+
+When a sprint adds a new collectionGroup query that relies on an EXISTING
+rule (here, the `engagements` wildcard at line 1552-1554), the
+`firestore-rules-tester` agent is NOT required because no rule branch
+changed. Required-marker triggers in CLAUDE.md key on `firestore.rules`
+file diff, so a clean diff there means the commit can proceed without a
+rules-tester run. Confirmed for BUT-732 commit.

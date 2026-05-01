@@ -49,16 +49,58 @@ String scrubPii(String text) {
   return result;
 }
 
-/// Strip query parameters and fragment from [url], keeping only scheme + host
-/// + path. Returns [url] unchanged if it cannot be parsed.
+/// Strip query parameters, fragment, AND opaque path-embedded tracker IDs
+/// from [url]. Returns [url] unchanged if it cannot be parsed.
+///
+/// BUT-692: previously only scrubbed `?utm_*=...` style query strings, leaving
+/// path-embedded tokens like `/r/<sessionToken>/...` or
+/// `/track/abc-123-XYZ.../...` intact. Path segments judged opaque by
+/// [_looksOpaquePathSegment] are replaced with the literal `:redacted`.
+/// Heuristic, not exhaustive — slugs like `gulasch-med-svamp-russin`
+/// remain intact; opaque tokens (UUIDs, Algolia object IDs, base64-ish
+/// blobs) are stripped.
 String scrubUrlParams(String url) {
   try {
     final parsed = Uri.parse(url);
     if (!parsed.hasScheme) return url;
-    return parsed.replace(query: '', fragment: '').toString();
+    final scrubbedSegments = parsed.pathSegments
+        .map((seg) => _looksOpaquePathSegment(seg) ? ':redacted' : seg)
+        .toList(growable: false);
+    return parsed
+        .replace(pathSegments: scrubbedSegments, query: '', fragment: '')
+        .toString();
   } catch (_) {
     return url;
   }
+}
+
+/// Long unsplit alphanumeric run — typical of hex hashes, base64 tokens,
+/// Algolia object IDs. The 16-char threshold keeps Swedish slug groups
+/// (which top out around 8-10 chars between hyphens) safe.
+final RegExp _longAlphanumericRun = RegExp(r'[A-Za-z0-9]{16,}');
+
+/// 8-4-4-4-12 lowercase hex layout — RFC 4122 / RFC 9562 UUIDs.
+/// Case-insensitive flag handles the all-uppercase Microsoft variant.
+final RegExp _uuidRegex = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+  caseSensitive: false,
+);
+
+/// URL-safe alphanumeric (`A-Z a-z 0-9 _ -`). Path segments containing
+/// other characters (Unicode, percent-encoded bytes, dots) are left alone.
+final RegExp _urlSafeAlphanumeric = RegExp(r'^[A-Za-z0-9_-]+$');
+
+/// Best-effort detector for path segments that look like opaque tracker
+/// IDs rather than human-readable slugs. False-negative-biased: a
+/// title-cased English phrase like `Recipe-Name-Article` still passes
+/// through because we cannot distinguish it from a slug without semantic
+/// analysis. Only segments that are UUID-shaped OR contain a long unsplit
+/// alphanumeric run are redacted.
+bool _looksOpaquePathSegment(String segment) {
+  if (segment.length < 20) return false;
+  if (!_urlSafeAlphanumeric.hasMatch(segment)) return false;
+  if (_uuidRegex.hasMatch(segment)) return true;
+  return _longAlphanumericRun.hasMatch(segment);
 }
 
 /// Keys whose values are opaque binary blobs and must NOT be scrubbed.

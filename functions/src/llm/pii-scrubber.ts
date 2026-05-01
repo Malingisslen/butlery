@@ -96,15 +96,49 @@ export function scrubPii(text: string): string {
   return result;
 }
 
+/** Long unsplit alphanumeric run (hex hashes, base64 tokens, Algolia IDs). */
+const LONG_ALPHANUMERIC_RUN = /[A-Za-z0-9]{16,}/;
+
+/** RFC 4122 / RFC 9562 UUID layout, case-insensitive. */
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** URL-safe alphanumeric (`A-Z a-z 0-9 _ -`). */
+const URL_SAFE_ALPHANUMERIC = /^[A-Za-z0-9_-]+$/;
+
 /**
- * Strip query parameters from a URL, keeping only the base path.
- * Returns the original string if it's not a valid URL.
+ * Best-effort detector for path segments that look like opaque tracker IDs
+ * rather than human-readable slugs. Mirrors the Dart implementation in
+ * lib/services/llm/pii_scrubber.dart — must produce identical decisions.
+ *
+ * False-negative-biased: title-cased English slugs slip through because
+ * we cannot distinguish them from random tokens without semantic analysis.
+ */
+function looksOpaquePathSegment(segment: string): boolean {
+  if (segment.length < 20) return false;
+  if (!URL_SAFE_ALPHANUMERIC.test(segment)) return false;
+  if (UUID_REGEX.test(segment)) return true;
+  return LONG_ALPHANUMERIC_RUN.test(segment);
+}
+
+/**
+ * Strip query parameters, fragment, AND opaque path-embedded tracker IDs
+ * from a URL. Returns the original string if it's not a valid URL.
+ *
+ * BUT-692: prior implementation only stripped `?utm_*=...` style query
+ * strings, leaving path-embedded tokens (`/r/<sessionToken>/...`,
+ * `/track/abc-123-XYZ.../...`) intact. Slugs are preserved; UUIDs and
+ * long opaque tokens are replaced with `:redacted`.
  */
 export function scrubUrlParams(url: string): string {
   try {
     const parsed = new URL(url);
     parsed.search = "";
     parsed.hash = "";
+    const segments = parsed.pathname
+      .split("/")
+      .map((s) => (looksOpaquePathSegment(s) ? ":redacted" : s));
+    parsed.pathname = segments.join("/");
     return parsed.toString();
   } catch {
     return url;

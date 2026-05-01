@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
@@ -622,10 +623,10 @@ void main() {
       });
     });
 
-    group('onConsentChanged callback', () {
-      test('fires after successful save', () async {
+    group('consent change listeners (BUT-752 multi-listener)', () {
+      test('single listener fires after successful save', () async {
         var callbackFired = false;
-        service.onConsentChanged = () => callbackFired = true;
+        service.addListener(() => callbackFired = true);
 
         when(() => mockConsentRepository.getUserConsent(testUserId))
             .thenAnswer((_) async => null);
@@ -639,7 +640,7 @@ void main() {
 
       test('does not fire on failed save', () async {
         var callbackFired = false;
-        service.onConsentChanged = () => callbackFired = true;
+        service.addListener(() => callbackFired = true);
 
         when(() => mockConsentRepository.getUserConsent(testUserId))
             .thenAnswer((_) async => null);
@@ -651,15 +652,70 @@ void main() {
         expect(callbackFired, isFalse);
       });
 
-      test('does not fire when no callback is set', () async {
-        // No exception should be thrown
+      test('save with no listeners is safe', () async {
         when(() => mockConsentRepository.getUserConsent(testUserId))
             .thenAnswer((_) async => null);
         when(() => mockConsentRepository.saveConsent(testUserId, any()))
             .thenAnswer((_) async => true);
 
         await service.saveConsent(testConsentPurposes);
-        // If we get here without error, null callback was handled safely
+      });
+
+      test('multiple listeners all fire (FCM + SearchModule co-subscribe)',
+          () async {
+        // Real-world wiring: FCMService and SearchModule both subscribe.
+        // The prior single-callback API would have lost one of them.
+        var fcmFired = false;
+        var searchFired = false;
+        service.addListener(() => fcmFired = true);
+        service.addListener(() => searchFired = true);
+
+        when(() => mockConsentRepository.getUserConsent(testUserId))
+            .thenAnswer((_) async => null);
+        when(() => mockConsentRepository.saveConsent(testUserId, any()))
+            .thenAnswer((_) async => true);
+
+        await service.saveConsent(testConsentPurposes);
+
+        expect(fcmFired, isTrue);
+        expect(searchFired, isTrue);
+      });
+
+      test('removed listener does not fire', () async {
+        var fired = 0;
+        void listener() => fired++;
+        service.addListener(listener);
+        service.removeListener(listener);
+
+        when(() => mockConsentRepository.getUserConsent(testUserId))
+            .thenAnswer((_) async => null);
+        when(() => mockConsentRepository.saveConsent(testUserId, any()))
+            .thenAnswer((_) async => true);
+
+        await service.saveConsent(testConsentPurposes);
+
+        expect(fired, 0);
+      });
+
+      test('listener that throws does not block other listeners', () async {
+        // Defence in depth — one bad subscriber must not silently
+        // disable consent-change propagation for the others. Flutter's
+        // ChangeNotifier routes listener exceptions to FlutterError.onError
+        // and continues with the next listener.
+        var goodFired = false;
+        service.addListener(() {
+          throw StateError('listener-A blew up');
+        });
+        service.addListener(() => goodFired = true);
+
+        when(() => mockConsentRepository.getUserConsent(testUserId))
+            .thenAnswer((_) async => null);
+        when(() => mockConsentRepository.saveConsent(testUserId, any()))
+            .thenAnswer((_) async => true);
+
+        await service.saveConsent(testConsentPurposes);
+
+        expect(goodFired, isTrue);
       });
     });
 
@@ -734,6 +790,100 @@ void main() {
         expect(result.first.grantedAt, isNotNull);
         expect(result.first.deviceInfo, isNotEmpty);
       });
+    });
+  });
+
+  // BUT-751: shared analytics-consent gate.
+  group('hasAnalyticsConsent (GetIt helper) - BUT-751', () {
+    late GetIt container;
+    late MockAuthRepository mockAuthRepository;
+    late MockFirebaseConsentRepository mockConsentRepository;
+
+    setUp(() {
+      container = GetIt.asNewInstance();
+      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository.setAuthState(userId: 'gate-user');
+      mockConsentRepository = MockFirebaseConsentRepository();
+    });
+
+    test('denies when ConsentService is not registered', () async {
+      // Pre-sign-in / pre-bootstrap path — must fail closed.
+      expect(await hasAnalyticsConsent(container), isFalse);
+    });
+
+    test('denies when consent doc is missing', () async {
+      when(() => mockConsentRepository.getUserConsent(any()))
+          .thenAnswer((_) async => null);
+      container.registerSingleton<ConsentService>(ConsentService(
+        authRepository: mockAuthRepository,
+        consentRepository: mockConsentRepository,
+      ));
+
+      expect(await hasAnalyticsConsent(container), isFalse);
+    });
+
+    test('denies when ConsentService.hasConsent throws', () async {
+      when(() => mockConsentRepository.getUserConsent(any()))
+          .thenThrow(Exception('repo down'));
+      container.registerSingleton<ConsentService>(ConsentService(
+        authRepository: mockAuthRepository,
+        consentRepository: mockConsentRepository,
+      ));
+
+      // Must not propagate — deny by default per GDPR Art. 7.
+      expect(await hasAnalyticsConsent(container), isFalse);
+    });
+
+    test('grants when analytics consent purpose is true', () async {
+      final granted = UserConsent(
+        userId: 'gate-user',
+        purposes: ConsentPurposes(
+          essentialServices: true,
+          dataProcessing: true,
+          analytics: true,
+          marketing: false,
+          socialFeatures: true,
+          pushNotifications: false,
+        ),
+        grantedAt: DateTime(2026, 1, 1),
+        updatedAt: null,
+        consentVersion: '1.1.0',
+        deviceInfo: 'Test',
+      );
+      when(() => mockConsentRepository.getUserConsent(any()))
+          .thenAnswer((_) async => granted);
+      container.registerSingleton<ConsentService>(ConsentService(
+        authRepository: mockAuthRepository,
+        consentRepository: mockConsentRepository,
+      ));
+
+      expect(await hasAnalyticsConsent(container), isTrue);
+    });
+
+    test('denies when analytics consent purpose is false', () async {
+      final denied = UserConsent(
+        userId: 'gate-user',
+        purposes: ConsentPurposes(
+          essentialServices: true,
+          dataProcessing: true,
+          analytics: false,
+          marketing: false,
+          socialFeatures: true,
+          pushNotifications: false,
+        ),
+        grantedAt: DateTime(2026, 1, 1),
+        updatedAt: null,
+        consentVersion: '1.1.0',
+        deviceInfo: 'Test',
+      );
+      when(() => mockConsentRepository.getUserConsent(any()))
+          .thenAnswer((_) async => denied);
+      container.registerSingleton<ConsentService>(ConsentService(
+        authRepository: mockAuthRepository,
+        consentRepository: mockConsentRepository,
+      ));
+
+      expect(await hasAnalyticsConsent(container), isFalse);
     });
   });
 }

@@ -86,7 +86,18 @@ class AppDimensions {
   /// Round border radius (50px) for fully rounded elements (avatars, pills)
   static const double borderRadiusRound = 50.0;
 
-  // All border radius constants set to 0 for sharp corners per UI redesign
+  // BUT-695 / SQUARE design language (memory note 2026-02-17): all named
+  // `borderRadiusN` constants below are intentionally `0.0` regardless of
+  // the `N` in the identifier. The `N` is the radius the call site asked
+  // for, NOT the value it gets — the design language collapses every
+  // requested radius onto sharp corners. Two named exceptions remain:
+  //   - `borderRadiusRound` (50.0) — pills / avatars
+  //   - `borderRadius100` (100.0) — full-circle clip (search box pill)
+  // A wholesale rename to `borderRadiusSquare` was deferred because the
+  // 122 call sites across 39 files want to keep their semantic intent
+  // ("this corner WAS 8px") for the day the design loosens. Until that
+  // day, the 0.0 value is load-bearing — do not change without a
+  // design-system review.
   static const double borderRadius0 = 0.0;
   static const double borderRadius2 = 0.0;
   static const double borderRadius4 = 0.0;

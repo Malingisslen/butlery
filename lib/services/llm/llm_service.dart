@@ -251,10 +251,6 @@ class LlmService extends BaseService {
     return _rateLimiter.getUsageStats();
   }
 
-  // ---------------------------------------------------------------------------
-  // Private helpers
-  // ---------------------------------------------------------------------------
-
   /// Shared pipeline: consent → rate limit → Firebase callable → record usage.
   ///
   /// Encapsulates the boilerplate shared by all LLM operations:

@@ -81,6 +81,7 @@ abstract final class FirestoreCollections {
   static const String receivedMenus = 'received_menus';
   static const String receivedLists = 'received_lists';
   static const String counters = 'counters';
+  static const String engagements = 'engagements';
 
   // ── Other subcollections ──
 

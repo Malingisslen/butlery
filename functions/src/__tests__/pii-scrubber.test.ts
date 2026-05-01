@@ -9,7 +9,7 @@
  * Run with: npx ts-node src/__tests__/pii-scrubber.test.ts
  */
 
-import { scrubPii } from "../llm/pii-scrubber";
+import { scrubPii, scrubUrlParams } from "../llm/pii-scrubber";
 
 interface Case {
   name: string;
@@ -84,9 +84,74 @@ const CASES: Case[] = [
   },
 ];
 
+// BUT-692: scrubUrlParams parity cases. Mirrors the Dart group at
+// test/unit/services/llm/pii_scrubber_test.dart "scrubUrlParams - path-
+// embedded tokens". If these diverge, the two scrubbers are out of sync
+// and the defence-in-depth contract is broken.
+interface UrlCase {
+  name: string;
+  input: string;
+  // Substrings that must be GONE from the output.
+  expectStripped?: string[];
+  // Substrings that must remain in the output.
+  expectKept?: string[];
+}
+
+const URL_CASES: UrlCase[] = [
+  {
+    name: "strips query and fragment (legacy contract preserved)",
+    input: "https://example.com/recipe?utm_source=x&token=secret#frag",
+    expectStripped: ["utm_source", "token", "frag"],
+    expectKept: ["example.com/recipe"],
+  },
+  {
+    name: "redacts mixed-case + digit Algolia-shaped path token",
+    input: "https://example.com/r/7Br2c3DmEIeu61HVcgWa9/title",
+    expectStripped: ["7Br2c3DmEIeu61HVcgWa9"],
+    expectKept: [":redacted", "/title"],
+  },
+  {
+    name: "redacts UUID path segment",
+    input:
+      "https://example.com/share/f47ac10b-58cc-4372-a567-0e02b2c3d479/view",
+    expectStripped: ["f47ac10b-58cc-4372-a567-0e02b2c3d479"],
+    expectKept: [":redacted"],
+  },
+  {
+    name: "redacts JWT-shaped token in path",
+    input:
+      "https://example.com/auth/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_xx",
+    expectStripped: ["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_xx"],
+    expectKept: [":redacted"],
+  },
+  {
+    name: "redacts 32-char hex hash path segment",
+    input: "https://example.com/tracking/a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5/x",
+    expectStripped: ["a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5"],
+    expectKept: [":redacted"],
+  },
+  {
+    name: "keeps Swedish recipe slug intact",
+    input: "https://recept.se/recept/gulasch-med-svamp-och-russin",
+    expectStripped: [":redacted"],
+    expectKept: ["gulasch-med-svamp-och-russin"],
+  },
+  {
+    name: "keeps long-but-slug-shaped path segments",
+    input: "https://example.com/super-premium-italienska-tomater",
+    expectStripped: [":redacted"],
+    expectKept: ["super-premium-italienska-tomater"],
+  },
+  {
+    name: "returns input unchanged when not parseable",
+    input: "not a url at all",
+    expectKept: ["not a url at all"],
+  },
+];
+
 function runTests(): void {
-  console.log("BUT-423: PII Scrubber Tests\n");
-  console.log("===========================\n");
+  console.log("BUT-423/692: PII Scrubber Tests\n");
+  console.log("================================\n");
 
   let failed = 0;
   for (const tc of CASES) {
@@ -107,7 +172,38 @@ function runTests(): void {
     }
   }
 
-  const total = CASES.length;
+  console.log("\nBUT-692: scrubUrlParams\n");
+  console.log("------------------------\n");
+
+  for (const tc of URL_CASES) {
+    const out = scrubUrlParams(tc.input);
+    let ok = true;
+    for (const s of tc.expectStripped ?? []) {
+      if (out.includes(s)) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok) {
+      for (const s of tc.expectKept ?? []) {
+        if (!out.includes(s)) {
+          ok = false;
+          break;
+        }
+      }
+    }
+
+    if (ok) {
+      console.log(`  PASS  ${tc.name}`);
+    } else {
+      failed++;
+      console.log(`  FAIL  ${tc.name}`);
+      console.log(`        input:  ${JSON.stringify(tc.input)}`);
+      console.log(`        output: ${JSON.stringify(out)}`);
+    }
+  }
+
+  const total = CASES.length + URL_CASES.length;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")
   );

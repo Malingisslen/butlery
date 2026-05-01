@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
+import 'package:get_it/get_it.dart';
 
 // Bootstrap system
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
@@ -118,7 +119,6 @@ import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
-import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -307,9 +307,11 @@ Future<void> _enableCollectionIfConsented() async {
     final bootstrap = ApplicationBootstrap();
     if (!bootstrap.isInitialized) return;
 
-    final consentService = bootstrap.container.get<ConsentService>();
-    final hasConsent =
-        await consentService.hasConsent(ConsentPurpose.analytics);
+    // BUT-751: shared fail-closed gate; denies on missing service or error.
+    // `bootstrap.container` is a `DIContainer` wrapping the global GetIt
+    // singleton (`GetIt.instance`); the helper takes the raw GetIt.
+    final hasConsent = await hasAnalyticsConsent(GetIt.instance,
+        logTag: 'EnableCollectionIfConsented');
 
     final analyticsEnabled = hasConsent && !kDebugMode;
 
@@ -337,6 +339,7 @@ Future<void> _enableCollectionIfConsented() async {
     // confirmed and skip in debug to avoid noise in dev.
     if (kIsWeb && hasConsent && !kDebugMode) {
       try {
+        final consentService = bootstrap.container.get<ConsentService>();
         WebErrorReporter(consentService: consentService).install();
         AppLogger.info('Web error reporter installed');
       } catch (e) {

@@ -481,3 +481,96 @@ Coverage gaps documented for follow-up sprint:
 No production bugs caught this run — all sprint changes are additive
 (new attribution service, new format detector, new typed probe sites).
 Tests verify the new contracts cleanly. Sprint approved.
+
+### 2026-05-02 — BUT-751/752/692/732 multi-listener + path-token sprint review [Pattern discovered]
+Sprint reviewed 88/88 green across three test files. Patterns worth not
+losing:
+
+1. **`GetIt.asNewInstance()` for helper-function tests over container.** The
+   new top-level `hasAnalyticsConsent(GetIt)` helper takes a `GetIt`
+   directly so tests don't need the production ServiceLocator bridge.
+   Each test creates `container = GetIt.asNewInstance()` in `setUp` —
+   no shared global state, no `unregister` ceremony, no setUpAll
+   coordination. Use this pattern any time a helper accepts a GetIt
+   container as a parameter rather than calling `GetIt.instance` itself.
+   The deny-on-unregistered case becomes a one-line test instead of a
+   teardown puzzle.
+
+2. **Multi-listener API: test the failure modes the API was designed
+   to fix.** The BUT-752 group covers exactly the bugs the prior
+   single-callback API enabled: (a) two co-subscribers (FCM +
+   SearchModule) — the test name even calls out the real-world wiring
+   that broke; (b) listener-throws-doesn't-block-others — defence in
+   depth against bad subscribers; (c) idempotent-add — pins the contract
+   that `Set<VoidCallback>` (not `List`) is the right backing structure.
+   These aren't structural tests; each one would have caught a real
+   regression if the implementation chose the wrong data structure.
+   Reusable for any "we just migrated single→multi callback" review:
+   the listener-throws and idempotent-add cases are the two most-skipped
+   tests, and they're both load-bearing.
+
+3. **Negative-space slug tests for opaque-token redaction.** The
+   `scrubUrlParams` group pairs each redaction case (Algolia / UUID /
+   JWT / hex hash) with a **slug-keep** counter-case at the *same
+   length range*: 21-char Swedish slug (kept), 19-char opaque (kept,
+   below threshold), 32-char hex (redacted). Without the keep-cases
+   the tests would pass with `s/.*/:redacted/` and prove nothing about
+   the heuristic. The "longest unsplit run is 9 chars" comment on the
+   long-slug test pins the *reason* the heuristic decides keep vs.
+   strip, so a future tweak that flips the rule (e.g. "strip on total
+   length" instead of "longest unsplit run") immediately surfaces.
+   Reusable shape: any redaction-by-heuristic test must pair every
+   "should strip" with a "should keep" at adjacent thresholds.
+
+4. **Schema-correction comments document why the fixture changed.**
+   `social_deletion_operations_test.dart` carries inline `BUT-732:`
+   comments naming the correction (`views`/`dismissals` were phantom,
+   `ownerId` → `sharedByUserId`). This is the right way to mark
+   fixture corrections that aren't behaviour changes — the diff alone
+   would read as "moved fields around" but the comment proves the
+   prior fixture was *wrong*, not that the contract changed. Production
+   code is the source of truth; when test fixtures use field names not
+   in the production schema, the test was passing for the wrong reason.
+   Spot-check pattern for any "delete-cascade" test: grep production
+   for the field/collection name used in the fixture; if it's missing
+   or rare, the fixture is a phantom.
+
+Mock discipline check: `MockFirebaseConsentRepository` mocks the
+**dependency** (the repo) — subject under test is `ConsentService`
+itself. Correct. `_MockMessagingRepository` same shape. No subject-mocking
+anywhere. No Mock-with-`@override`-bodies — clean.
+
+No new bugs caught this run — all three changes are additive (new
+helper, new listener API, fixture corrections). Sprint approved.
+
+### 2026-05-02 — BUT-752 simplify pass: idempotent-add drop [Pattern discovered]
+Re-review of the simplify pass on `consent_service_test.dart`:
+`addConsentChangeListener` / `removeConsentChangeListener` renamed to
+`addListener` / `removeListener` to match `Listenable`, and the
+"duplicate add registers once" test was DROPPED.
+
+Drop is honest, not a weakening. Rule for future "we just adopted
+Flutter's `Listenable`/`ChangeNotifier`" reviews: the contract you
+must test is *Flutter's*, not the prior bespoke API's. `ChangeNotifier`
+documents "identical listener added twice fires twice" — the inverse
+of the prior `Set`-backed idempotent behaviour. A test pinning the old
+behaviour would lock the implementation to a `Set`, defeating the
+point of conforming to `Listenable`. Confirm the call sites don't
+rely on idempotent-add (here: FCMService uses `executeOnce`,
+SearchModule does pre-emptive `removeListener` in `configureUserScope`)
+before dropping. If a consumer DID rely on idempotent-add, the right
+fix is to wrap that consumer's registration, not to pin the service's
+data structure.
+
+The retained 6 listener tests cover the contract that survives the
+next refactor: single fire, no fire on failed save, no-listener safety,
+multi-listener fan-out (the BUT-752 reason the API was migrated),
+removal by identity, and listener-throws-doesn't-block-others. No
+"duplicate-add doesn't crash" test is needed — that's a `ChangeNotifier`
+invariant, not a Butlery one.
+
+Anti-pattern caught & avoided: in BUT-368/369 we deleted ~11.5k LoC
+of structural tests because they pinned the old implementation. The
+idempotent-add test was an early form of that anti-pattern (pin the
+data structure choice rather than the user-visible contract). Drop
+was correct.

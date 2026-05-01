@@ -269,6 +269,14 @@
       ]
     },
     {
+      "collectionGroup": "engagements",
+      "fieldPath": "userId",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
       "collectionGroup": "activeUsers",
       "fieldPath": "userId",
       "indexes": [
