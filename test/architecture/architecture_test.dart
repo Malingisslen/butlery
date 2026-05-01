@@ -93,7 +93,14 @@ void main() {
         }
 
         final content = file.readAsStringSync();
-        if (content.contains('FirebaseFirestore.instance')) {
+        // Strip line + block comments before scanning so prose mentions
+        // ("// not FirebaseFirestore.instance — see CLAUDE.md") don't
+        // trigger false positives. Order matters: block comments first so
+        // a `// ...` inside `/* ... */` doesn't get half-stripped.
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+        if (stripped.contains('FirebaseFirestore.instance')) {
           violations.add(path);
         }
       }
