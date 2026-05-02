@@ -211,6 +211,32 @@ const cases: UnitCase[] = [
       assertNull(result, "no salvageable ingredient with name");
     },
   },
+  {
+    name: "salvage: wrapper truncated before any inner object opens yields null",
+    fn: () => {
+      // Real-world Gemini cutoff: the model emitted the wrapper + opening
+      // bracket but ran out of tokens before producing the first ingredient.
+      // extractTopLevelObjects sees the wrapper `{` but never reaches its
+      // closing `}` (depth stays at 1) so no objects are salvaged.
+      const truncated = '{"ingredients":[';
+      const result = parseIngredientLinesResponse(truncated);
+      assertNull(result, "wrapper truncated before any object");
+    },
+  },
+  {
+    name: "trailing garbage after valid array close still yields full prefix",
+    fn: () => {
+      // Belt-and-braces: prove the bracket counter stops AT depth-0 close
+      // and doesn't keep scanning into trailing junk. JSON.parse would also
+      // fail on this input, so the salvage path must succeed.
+      const garbage =
+        '[{"name":"x","amount":1,"unit":"dl","preparation":null}] this is trailing junk Gemini left behind';
+      const result = parseIngredientLinesResponse(garbage);
+      assertNotNull(result, "trailing garbage after valid array");
+      assertEqual(result.ingredients.length, 1, "ingredient count");
+      assertEqual(result.ingredients[0].name, "x", "ingredient name");
+    },
+  },
 ];
 
 function runTests(): void {
