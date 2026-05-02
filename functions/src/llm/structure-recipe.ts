@@ -241,8 +241,8 @@ export async function runStructureRecipe(
 
     // Parse response — ingredient lines mode returns array, others return recipe
     if (isIngredientLines) {
-      const ingredients = parseIngredientLinesResponse(content);
-      if (!ingredients) {
+      const parsed = parseIngredientLinesResponse(content);
+      if (!parsed) {
         logger.error("[structureRecipe] Failed to parse ingredient lines:", content);
         return {
           success: false,
@@ -250,6 +250,17 @@ export async function runStructureRecipe(
           estimatedCost: actualCost,
           promptVersion,
         };
+      }
+
+      const { ingredients, truncated } = parsed;
+      if (truncated) {
+        // BUT-577: Gemini hit maxOutputTokens mid-array; we recovered the
+        // fully-formed prefix. Surface so ops can spot frequency and consider
+        // raising INGREDIENT_LINE_MAX_TOKENS or chunking the input.
+        logger.warn(
+          "[structureRecipe] Ingredient lines response was truncated; partial recovery used",
+          { recovered: ingredients.length }
+        );
       }
 
       logger.info(
@@ -303,6 +314,11 @@ export async function runStructureRecipe(
       promptVersion,
     };
   } catch (error) {
+    // BUT-566 / ADR-001: server fails fast; the client (llm_tier.dart:120-128)
+    // is the sole retry layer (RetryHelper.retryNetworkOperation, maxRetries: 2).
+    // Do NOT add retry/loop logic here — stacking server retries with client
+    // retries multiplies Gemini API load under the same rate-limit window.
+    // See docs/architecture/ADR-001-gemini-retry-policy.md.
     logger.error("[structureRecipe] Error:", error);
 
     if (error instanceof HttpsError) {

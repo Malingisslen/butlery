@@ -11,6 +11,11 @@ class RecipeEventsTracker extends BaseTracker {
   /// Suffixed with the user uid so household devices don't cross-fire.
   static const String _firstSharePrefsPrefix = 'sharing_activated_v1_';
 
+  /// Per-install dedupe key for the once-per-user `first_search` milestone
+  /// (BUT-588). Same uid-suffix scheme as `_firstSharePrefsPrefix` so two users
+  /// on the same device each get their own milestone fire.
+  static const String _firstSearchPrefsPrefix = 'search_activated_v1_';
+
   /// Log recipe creation
   Future<void> logRecipeCreated({
     required String source,
@@ -85,10 +90,55 @@ class RecipeEventsTracker extends BaseTracker {
       return await SharedPreferences.getInstance();
     } catch (e) {
       AppLogger.warning(
-        'first_share milestone: SharedPreferences unavailable ($e); skipping',
+        'milestone tracker: SharedPreferences unavailable ($e); skipping',
       );
       return null;
     }
+  }
+
+  /// Once-per-user `first_search` milestone (BUT-588). Mirrors the firstShare
+  /// pattern (BUT-584): uid-keyed SharedPreferences flag survives app restarts
+  /// without a Firestore write. Search is a strong engagement signal — users
+  /// who search once are more likely to return — and this milestone gives us
+  /// time-to-first-search and first-search-in-session segmentation.
+  ///
+  /// `recipeCountAtTime` lets the funnel correlate first-search with library
+  /// size (do users with 5 vs 50 vs 500 recipes activate search differently?).
+  /// Compatible with BUT-421 sanitized params — the raw search query is NOT
+  /// included.
+  ///
+  /// Returns true if the milestone fired (first search), false if skipped
+  /// (already activated, no consent, no userId, or prefs unavailable).
+  Future<bool> logFirstSearchIfMilestone({
+    required String? userId,
+    required int recipeCountAtTime,
+    DateTime? joinedAt,
+  }) async {
+    if (userId == null || userId.isEmpty) return false;
+    if (!await hasAnalyticsConsent()) return false;
+
+    final prefs = await _tryGetPrefs();
+    if (prefs == null) return false;
+
+    final key = '$_firstSearchPrefsPrefix$userId';
+    if (prefs.getBool(key) == true) return false;
+
+    final params = <String, Object>{
+      'recipe_count_at_time': recipeCountAtTime,
+    };
+    if (joinedAt != null) {
+      params['minutes_since_signup'] =
+          DateTime.now().difference(joinedAt).inMinutes;
+    }
+
+    await repository.logEvent(
+        name: AnalyticsEvents.firstSearch, parameters: params);
+    await repository.setUserProperty(
+      name: AnalyticsUserProperties.searchActivated,
+      value: 'true',
+    );
+    await prefs.setBool(key, true);
+    return true;
   }
 
   String _bucketRecipientCount(int count) {

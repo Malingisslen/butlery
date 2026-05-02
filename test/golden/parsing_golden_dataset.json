@@ -1,6 +1,7 @@
 [
   {
     "id": "ica-kottbullar",
+    "tier": "schemaOrg",
     "domain": "ica.se",
     "fixture": "IcaTestFixtures.kottbullarComplete",
     "expected": {
@@ -15,6 +16,7 @@
   },
   {
     "id": "ica-kladdkaka-no-jsonld",
+    "tier": "schemaOrg",
     "domain": "ica.se",
     "fixture": "IcaTestFixtures.recipeWithoutJsonLd",
     "schemaOrgOnly": true,
@@ -28,6 +30,7 @@
   },
   {
     "id": "ica-artsoppa-swedish-chars",
+    "tier": "schemaOrg",
     "domain": "ica.se",
     "fixture": "IcaTestFixtures.recipeWithSwedishChars",
     "expected": {
@@ -42,6 +45,7 @@
   },
   {
     "id": "arla-chokladbollar",
+    "tier": "schemaOrg",
     "domain": "arla.se",
     "fixture": "ArlaTestFixtures.chokladbollarComplete",
     "expected": {
@@ -51,6 +55,213 @@
       "instructionCountMin": 3,
       "totalTimeMinutes": 15,
       "minQuality": 0.65
+    }
+  },
+
+  {
+    "id": "rulebased-morotskaka-temp-time",
+    "tier": "ruleBased",
+    "_note": "Exercises temperature mention (175°C as instruction) and total-time extraction from 'i 35 minuter'.",
+    "text": "Saftig morotskaka\n\nDu behöver:\n3 ägg\n3 dl strösocker\n3 dl rivna morötter\n2 dl mjöl\n1 tsk bakpulver\n1 tsk vaniljsocker\n1/2 tsk kanel\n1 dl matolja\n\nGör så här:\n1. Sätt ugnen på 175°C.\n2. Vispa ägg och socker pösigt.\n3. Blanda i morötter och olja.\n4. Sikta ner mjöl, bakpulver, vaniljsocker och kanel.\n5. Häll smeten i en smord form.\n6. Grädda i mitten av ugnen i 35 minuter.",
+    "expected": {
+      "titleContains": "morotskaka",
+      "ingredientCountMin": 8,
+      "ingredientSubstrings": ["ägg", "strösocker", "morötter", "bakpulver", "1/2 tsk kanel"],
+      "instructionCountMin": 4,
+      "instructionSubstrings": ["175°c"],
+      "totalTimeMinutes": 35,
+      "minQuality": 0.3
+    }
+  },
+  {
+    "id": "rulebased-kottgryta-fractional-units",
+    "tier": "ruleBased",
+    "_note": "Quantity/unit edge cases: 1/2 tsk + ½ kg unicode fraction. 'Det här behövs:' header line gets passed through as an ingredient — captures actual tier behaviour.",
+    "text": "Enkel köttgryta\n\nDet här behövs:\n500 g nötfärs\n1 gul lök\n2 vitlöksklyftor\n1 burk krossade tomater\n2 dl vatten\n1 msk tomatpuré\n1/2 tsk salt\n½ kg potatis\n2 dl mjölk\n\nGör så här:\n1. Hacka löken och vitlöken.\n2. Bryn färsen i en gryta.\n3. Tillsätt lök och vitlök.\n4. Häll i krossade tomater, vatten och tomatpuré.\n5. Krydda med salt och peppar.\n6. Låt sjuda i 30 minuter.",
+    "expected": {
+      "titleContains": "köttgryta",
+      "ingredientCountMin": 9,
+      "ingredientSubstrings": ["500 g nötfärs", "1/2 tsk salt", "½ kg potatis", "2 dl mjölk"],
+      "instructionCountMin": 5,
+      "minQuality": 0.3
+    }
+  },
+  {
+    "id": "rulebased-banankladdkaka-numbered-steps",
+    "tier": "ruleBased",
+    "_note": "Clean numbered-step format with metric units (g, dl, tsk, msk).",
+    "text": "Banankladdkaka\n\nIngredienser:\n2 mogna bananer\n2 ägg\n2 dl strösocker\n1 dl vetemjöl\n3 msk kakao\n100 g smör\n1 tsk vaniljsocker\n1 nypa salt\n\nGör så här:\n1. Sätt ugnen på 175°C.\n2. Smält smöret och låt svalna.\n3. Mosa bananerna i en bunke.\n4. Vispa ihop ägg och socker till en luftig smet.\n5. Rör ner banan, vetemjöl, kakao, vaniljsocker och salt.\n6. Tillsätt det smälta smöret.\n7. Häll smeten i en smord form (ca 22 cm).\n8. Grädda i 25 minuter.",
+    "expected": {
+      "titleContains": "banankladdkaka",
+      "ingredientCountMin": 7,
+      "ingredientSubstrings": ["2 dl strösocker", "100 g smör", "3 msk kakao", "1 nypa salt"],
+      "instructionCountMin": 6,
+      "minQuality": 0.3
+    }
+  },
+  {
+    "id": "rulebased-tomatsoppa-paragraph-blob",
+    "tier": "ruleBased",
+    "_note": "Stress test: prose-only paragraph format. RuleBasedTier collapses each paragraph to a single block — quality is low but the tier still produces a result.",
+    "text": "Tomatsoppa\n\nEn enkel tomatsoppa som passar perfekt en kall höstdag. Du behöver 2 burkar krossade tomater, 1 gul lök, 2 vitlöksklyftor, 5 dl vatten, 1 grönsakbuljongtärning, 1 dl grädde, 2 msk olivolja, 1 tsk salt och 1 tsk torkad basilika.\n\nHacka löken och vitlöken fint. Hetta upp olivoljan i en kastrull och fräs löken mjuk. Tillsätt vitlöken och fräs en minut till. Häll i krossade tomater, vatten och buljongtärningen. Låt sjuda i 15 minuter. Mixa soppan slät med en stavmixer. Rör i grädden och smaka av med salt och basilika. Servera med rostat bröd.",
+    "expected": {
+      "titleContains": "tomatsoppa",
+      "ingredientCountMin": 1,
+      "ingredientSubstrings": ["krossade tomater"],
+      "instructionCountMin": 1,
+      "instructionSubstrings": ["löken", "olivolja"]
+    }
+  },
+  {
+    "id": "rulebased-pannkakor-header-list",
+    "tier": "ruleBased",
+    "_note": "Standard 'Ingredienser:' header + bullet list + numbered steps — the canonical Swedish recipe shape.",
+    "text": "Klassiska pannkakor\n\nIngredienser:\n3 dl vetemjöl\n1/2 tsk salt\n2 msk socker\n6 dl mjölk\n3 ägg\n2 msk smält smör\n\nGör så här:\n1. Vispa ihop vetemjöl, salt, socker och hälften av mjölken till en slät smet.\n2. Tillsätt resten av mjölken, äggen och det smälta smöret.\n3. Stek tunna pannkakor i smör i en het stekpanna.\n4. Servera med sylt och grädde.",
+    "expected": {
+      "titleContains": "pannkakor",
+      "ingredientCountMin": 5,
+      "ingredientSubstrings": ["3 dl vetemjöl", "1/2 tsk salt", "6 dl mjölk", "3 ägg"],
+      "instructionCountMin": 3,
+      "instructionSubstrings": ["vispa", "stek"],
+      "minQuality": 0.3
+    }
+  },
+
+  {
+    "id": "llm-prose-recipe-mocked",
+    "tier": "llm",
+    "_note": "Plain prose recipe with no structured markers. Mock response simulates Gemini's structured extraction.",
+    "text": "Köttfärslimpa är en svensk klassiker. För 4 portioner behöver du ungefär 600 gram nötfärs, en gul lök som du hackar fint, två ägg, en deciliter ströbröd och en deciliter mjölk. Krydda med två teskedar salt och en tesked svartpeppar. Blanda allt i en bunke och forma en limpa. Lägg den i en smord form och grädda i 200 grader i 45 minuter.",
+    "mockResponse": {
+      "title": "Köttfärslimpa",
+      "portions": 4,
+      "prepTimeMinutes": 10,
+      "cookTimeMinutes": 45,
+      "ingredients": [
+        {"amount": 600, "unit": "g", "name": "nötfärs"},
+        {"amount": 1, "unit": "st", "name": "gul lök", "preparation": "hackad"},
+        {"amount": 2, "unit": "st", "name": "ägg"},
+        {"amount": 1, "unit": "dl", "name": "ströbröd"},
+        {"amount": 1, "unit": "dl", "name": "mjölk"},
+        {"amount": 2, "unit": "tsk", "name": "salt"},
+        {"amount": 1, "unit": "tsk", "name": "svartpeppar"}
+      ],
+      "instructions": [
+        "Blanda alla ingredienser i en bunke.",
+        "Forma en limpa och lägg i en smord form.",
+        "Grädda i 200°C i 45 minuter."
+      ]
+    },
+    "expected": {
+      "titleContains": "köttfärslimpa",
+      "portions": 4,
+      "ingredientCountMin": 6,
+      "ingredientSubstrings": ["nötfärs", "ströbröd", "mjölk"],
+      "instructionCountMin": 3,
+      "totalTimeMinutes": 55
+    }
+  },
+  {
+    "id": "llm-ingredients-only-blob-mocked",
+    "tier": "llm",
+    "_note": "Ingredients-only input — Gemini infers a title and produces a minimal instruction set.",
+    "text": "400 g högrev, 2 morötter, 1 palsternacka, 1 gul lök, 3 vitlöksklyftor, 5 dl rödvin, 5 dl köttbuljong, 2 lagerblad, 1 tsk timjan, salt, peppar, mjöl till redning.",
+    "mockResponse": {
+      "title": "Klassisk högrevsgryta",
+      "portions": 4,
+      "prepTimeMinutes": 15,
+      "cookTimeMinutes": 120,
+      "ingredients": [
+        {"amount": 400, "unit": "g", "name": "högrev"},
+        {"amount": 2, "unit": "st", "name": "morötter"},
+        {"amount": 1, "unit": "st", "name": "palsternacka"},
+        {"amount": 1, "unit": "st", "name": "gul lök"},
+        {"amount": 3, "unit": "klyfta", "name": "vitlök"},
+        {"amount": 5, "unit": "dl", "name": "rödvin"},
+        {"amount": 5, "unit": "dl", "name": "köttbuljong"},
+        {"amount": 2, "unit": "st", "name": "lagerblad"},
+        {"amount": 1, "unit": "tsk", "name": "timjan"}
+      ],
+      "instructions": [
+        "Bryn köttet i smör.",
+        "Tillsätt grönsaker och stek dem mjuka.",
+        "Häll på rödvin och buljong, krydda och låt sjuda 2 timmar.",
+        "Red av med mjöl och smaka av."
+      ]
+    },
+    "expected": {
+      "titleContains": "högrev",
+      "ingredientCountMin": 8,
+      "ingredientSubstrings": ["högrev", "morötter", "rödvin"],
+      "instructionCountMin": 3,
+      "totalTimeMinutes": 135
+    }
+  },
+  {
+    "id": "llm-imperial-units-normalized-mocked",
+    "tier": "llm",
+    "_note": "Source uses imperial units; mock simulates Gemini normalizing to metric (cups → dl, tbsp → msk, °F → °C).",
+    "text": "American Pancakes\n\nIngredients:\n2 cups all-purpose flour\n2 tablespoons sugar\n1 teaspoon salt\n2 teaspoons baking powder\n1 1/4 cups milk\n2 tablespoons melted butter\n1 large egg\n\nInstructions:\n1. Whisk dry ingredients in a bowl.\n2. Whisk wet ingredients in another bowl.\n3. Combine and stir until just mixed.\n4. Cook on a hot griddle at 375°F for 2 minutes per side.",
+    "mockResponse": {
+      "title": "Amerikanska pannkakor",
+      "portions": 4,
+      "prepTimeMinutes": 5,
+      "cookTimeMinutes": 15,
+      "ingredients": [
+        {"amount": 4.8, "unit": "dl", "name": "vetemjöl"},
+        {"amount": 2, "unit": "msk", "name": "socker"},
+        {"amount": 1, "unit": "tsk", "name": "salt"},
+        {"amount": 2, "unit": "tsk", "name": "bakpulver"},
+        {"amount": 3, "unit": "dl", "name": "mjölk"},
+        {"amount": 2, "unit": "msk", "name": "smält smör"},
+        {"amount": 1, "unit": "st", "name": "ägg"}
+      ],
+      "instructions": [
+        "Vispa torra ingredienser i en bunke.",
+        "Vispa våta ingredienser i en annan bunke.",
+        "Blanda och rör tills precis sammansatt.",
+        "Stek på het stekpanna i ca 190°C i 2 minuter per sida."
+      ]
+    },
+    "expected": {
+      "titleContains": "pannkakor",
+      "portions": 4,
+      "ingredientCountMin": 6,
+      "ingredientSubstrings": ["vetemjöl", "mjölk", "smör"],
+      "instructionCountMin": 3,
+      "totalTimeMinutes": 20
+    }
+  },
+  {
+    "id": "llm-short-recipe-mocked",
+    "tier": "llm",
+    "_note": "Lower-bound on token-cap: terse 1-line-per-step recipe.",
+    "text": "Smörstekta champinjoner. Skiva 250 g champinjoner. Hetta upp 2 msk smör i en stekpanna. Stek champinjonerna i 5 minuter. Salta och peppra.",
+    "mockResponse": {
+      "title": "Smörstekta champinjoner",
+      "portions": 2,
+      "prepTimeMinutes": 2,
+      "cookTimeMinutes": 5,
+      "ingredients": [
+        {"amount": 250, "unit": "g", "name": "champinjoner"},
+        {"amount": 2, "unit": "msk", "name": "smör"},
+        {"name": "salt"},
+        {"name": "peppar"}
+      ],
+      "instructions": [
+        "Skiva champinjonerna.",
+        "Hetta upp smöret i en stekpanna.",
+        "Stek champinjonerna i 5 minuter.",
+        "Krydda med salt och peppar."
+      ]
+    },
+    "expected": {
+      "titleContains": "champinjoner",
+      "portions": 2,
+      "ingredientCountMin": 3,
+      "ingredientSubstrings": ["champinjoner", "smör"],
+      "instructionCountMin": 3,
+      "totalTimeMinutes": 7
     }
   }
 ]

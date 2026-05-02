@@ -14,6 +14,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/models/recipe/recipe_insights.dart';
 
@@ -34,6 +35,7 @@ class RecipeQueryViewModel extends ChangeNotifier
       ServiceLocator.get<UnifiedRecipeService>();
   late final AnalyticsService? _analyticsService =
       ServiceLocator.tryGet<AnalyticsService>();
+  late final UserService? _userService = ServiceLocator.tryGet<UserService>();
 
   String get serviceName => 'RecipeQueryViewModel';
 
@@ -127,6 +129,14 @@ class RecipeQueryViewModel extends ChangeNotifier
             searchQuery: query,
             resultsCount: filteredRecipes.length,
             filtersApplied: hasActiveFilters ? _activeFilterNames : null,
+          );
+          // BUT-588: once-per-user activation milestone. Fires on the first
+          // non-empty search per uid (SharedPreferences-keyed dedup mirrors
+          // the firstShare pattern, BUT-584).
+          _analyticsService?.recipe.logFirstSearchIfMilestone(
+            userId: _userService?.currentUserId,
+            recipeCountAtTime: allRecipes.length,
+            joinedAt: _userService?.currentUserProfile?.joinedAt,
           );
         }
       },

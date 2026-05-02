@@ -793,3 +793,82 @@ seasonal_hero_header, cooking_mode_touch_target). Pre-existing flakes
 (notification_content_manager, notification_preference_manager,
 calendar_weekly_menu_widget week-nav) NOT re-run — already
 characterised in prior sprint, not regressions.
+
+### 2026-05-02 — BUT-600 parsing-golden tier coverage [Pattern discovered]
+Extended `test/golden/parsing_golden_test.dart` (was 4 SchemaOrg-only
+entries) to cover all three substantive parsing tiers: 4 SchemaOrg + 5
+RuleBased + 4 LLM = 13 dataset entries, all green. The dataset JSON
+gained a `tier` discriminator (`schemaOrg` | `ruleBased` | `llm`) plus
+per-tier input keys (HTML `fixture` reference / inline `text` /
+`mockResponse` ExtractedRecipe JSON).
+
+Key patterns / decisions worth not losing:
+
+1. **Service-level seam beats HTTP seam for LLM golden tests.** The
+   `LlmService.structureRecipe` boundary is the cleanest mock point —
+   `LlmTier` calls into `LlmService`, which itself wraps
+   `FirebaseFunctions.httpsCallable`. Mocking at service level keeps the
+   golden suite hermetic (no Firebase init, no `MethodChannel` plumbing,
+   <100ms per test) while still exercising the **tier contract**:
+   validation, normalisation, partial-recipe fallback, suspicious-pattern
+   gating. The `_GoldenMockLlmService implements LlmService` shape (with
+   `noSuchMethod` fall-through and `nextResponse` field) is identical to
+   `MockLlmService` in `test/unit/services/parsing/tiers/llm_tier_test.dart`
+   — copied inline rather than extracted to a shared helper because the
+   golden suite has only one consumer and the unit suite has only one
+   consumer; extracting would have added a 6th file that the BUT-600
+   constraint cap forbade. If a third consumer appears, extract.
+
+2. **Probe-then-pin for RuleBasedTier expected outputs.** Wrote a
+   throwaway `_scratch_rule_based_probe.dart` that ran each candidate
+   plaintext through the real tier and printed actual ingredient/instruction
+   lines, then deleted it before commit. Lets fixtures pin **what the
+   tier actually emits**, not what it "should" emit. Caught one real
+   quirk: the `kottgryta` fixture's `"Det här behövs:"` header line
+   passes through as an ingredient. Fixture documents this in `_note`
+   instead of "fixing" it with an aspirational assertion. Same shape as
+   the BUT-696 sibling-fixtures pattern (probe to discover, then pin).
+
+3. **Loose assertions survive parser tweaks.** Each `expected` block uses
+   `titleContains` / `ingredientCountMin` (not `ingredientCount`) /
+   `ingredientSubstrings` / `instructionCountMin`. A future RuleBased
+   refactor that splits one ingredient into two, or merges two instructions
+   into one, won't break the suite as long as the user-visible recipe is
+   still correct. Tight equality assertions on the exact list lengths
+   would have made this dataset a chore to maintain after every tier
+   tweak — exactly the BUT-368 anti-pattern.
+
+4. **CI invocation needed updating — `test/golden/` was not picked up.**
+   `.github/workflows/test.yml` ran `flutter test test/unit test/widget
+   test/views`. The golden parsing + tagging suites lived in
+   `test/golden/` and were quietly excluded from CI. Extended the
+   command to `flutter test test/unit test/widget test/views test/golden`.
+   Worth checking on every "add a new test directory" sprint — `test/`
+   has accumulated `unit/`, `widget/`, `views/`, `integration/`, `golden/`,
+   `infrastructure/`, `test_support/` over time and each one needs to
+   be either explicitly listed or covered by a wildcard.
+
+5. **Mock-Gemini fixture format = `ExtractedRecipe.toJson()` shape.**
+   `mockResponse` JSON in dataset entries maps directly to
+   `ExtractedRecipe.fromJson` — `title`, `portions`, `prepTimeMinutes`,
+   `cookTimeMinutes`, `ingredients[]` with `amount`/`unit`/`name`/`preparation`,
+   `instructions[]`. Recording from real Gemini = grab the `recipe` field
+   off `StructureRecipeResponse` and paste it into the dataset. README
+   documents the record-vs-replay flow.
+
+Files added/changed (4 of 6 budget):
+- `test/golden/parsing_golden_test.dart` (rewritten — tier dispatch,
+  shared assertion block, `_GoldenMockLlmService`)
+- `test/golden/parsing_golden_dataset.json` (added 9 entries — 5
+  RuleBased + 4 LLM; existing 4 SchemaOrg entries unchanged except
+  for added `tier: "schemaOrg"` field)
+- `test/golden/README.md` (new — entry shape, tier seams,
+  record-from-Gemini flow)
+- `.github/workflows/test.yml` (one-line: added `test/golden` to the
+  `flutter test` command)
+
+No production bugs caught — RuleBasedTier and LlmTier were both already
+behaviourally correct on the candidate fixtures. The value here is
+forward-looking: a future Gemini model bump, prompt edit, or
+SwedishLineClassifier tweak will surface in this suite before it
+silently regresses parse quality on real user imports.

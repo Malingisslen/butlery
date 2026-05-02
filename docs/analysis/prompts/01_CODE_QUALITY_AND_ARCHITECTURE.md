@@ -213,7 +213,7 @@ When reporting file counts and LOC metrics, always provide two numbers: total (i
 | ErrorHandlingMixin / BaseService | Async error handling with retries | 100% services |
 | AsyncOperationMixin | Loading/error states for ViewModels | ~4% by design (simple VMs don't need it) |
 | FirebaseServiceMixin | Centralized Firebase operations | 100% Firebase-accessing services |
-| BaseFirebaseRepository | CRUD + audit logging | ~45% currently (~34 of ~75 repos) |
+| BaseFirebaseRepository | CRUD + audit logging | ~78% of CRUD-eligible repos (35 of 45: 32 direct + 3 transitive via BaseSharedContentRepository). Reconciled 2026-05-02 (BUT-574). |
 | SerializationUtils | Firestore parsing | 100% fromFirestore factories |
 | ValidationUtils | Form validation | All forms |
 | Default Extensions | .orEmpty(), .hasItems, etc. | All null-handling code |
@@ -238,10 +238,21 @@ When reporting file counts and LOC metrics, always provide two numbers: total (i
 
 3. **BaseFirebaseRepository Adoption**
    ```
-   Target: Assess which should adopt (CURRENT: ~45%, ~34 of ~75 repositories)
-   Search: Repository classes not extending BaseFirebaseRepository
-   Find: The ~41 holdouts
-   Assess: Which ones would benefit from adoption vs which are simple enough without it
+   Target: ~78% of CRUD-eligible repos achieved (35 of 45). Reconciled 2026-05-02 (BUT-574).
+   The prior "~45%, ~34 of ~75" claim used an over-broad denominator that included
+   interfaces, NoOp adapters, presence streams, the documented Storage exclusion,
+   and 2 repos with explicit "intentionally not extending" comments (pantry,
+   user_ingredient — interface signature `update(userId, item)` conflicts with
+   `Repository<T>.update(T)`).
+
+   Numerator (35) = 32 direct `extends BaseFirebaseRepository<T>` + 3 transitive
+   via `BaseSharedContentRepository<T>` (firebase_shared_recipe/menu/shopping).
+
+   Remaining 7 candidates tracked on BUT-442:
+   firebase_category_preferences_repository, firebase_cooking_session_repository,
+   firebase_menu_lexicon_repository, firebase_ingredient_repository,
+   parsing_correction_repository, collaborative_recipe_repository,
+   site_config_repository.
    ```
 
 4. **SerializationUtils Adoption**

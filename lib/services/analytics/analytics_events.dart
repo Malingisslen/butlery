@@ -122,6 +122,7 @@ abstract final class AnalyticsEvents {
   static const firstComment = 'first_comment';
   static const firstGroup = 'first_group';
   static const firstMealPlan = 'first_meal_plan';
+  static const firstSearch = 'first_search';
 
   // --- Review prompts ---
   static const inAppReviewRequested = 'in_app_review_requested';
@@ -152,6 +153,7 @@ abstract final class AnalyticsUserProperties {
   static const hasCommented = 'has_commented';
   static const hasGroup = 'has_group';
   static const menuActivated = 'menu_activated';
+  static const searchActivated = 'search_activated';
 
   // --- Acquisition / first-touch ---
   static const acquisitionSource = 'acquisition_source';

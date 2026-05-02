@@ -58,6 +58,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     feedbackCleaned: 0,
     presenceRowsRemoved: 0,
     notificationQueuesPurged: 0,
+    legacySharedWithScrubbed: 0,
   };
 
   // Fetch friends list once (used by steps 1 and 4)
@@ -107,7 +108,94 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   results.notificationQueuesPurged =
     await cleanupNotificationQueues(userId);
 
+  // 10. BUT-753: scrub legacy `sharedWith` flat-array entries on
+  //     `shared_content` docs. The user-driven path (SocialDeletionOperations
+  //     .removeFromSharedContent) cannot do this — firestore.rules:515-518
+  //     gates `update` on owner OR member-subcollection presence; a recipient
+  //     who only appears in the legacy `sharedWith` array satisfies neither
+  //     and the client write would permission-deny. Admin context bypasses
+  //     rules so we can safely scrub.
+  results.legacySharedWithScrubbed = await cleanupLegacySharedWithArrays(userId);
+
   v1.logger.info(`Cleanup results for ${userId}:`, results);
+}
+
+/**
+ * BUT-753: scrub legacy `sharedWith` flat-array entries from top-level
+ * `shared_content` documents. Modern shares track recipients via the
+ * `members` subcollection + `sharedToUserIds` array (handled by the
+ * client-driven path in `SocialDeletionOperations.removeFromSharedContent`).
+ * Pre-migration docs may still carry a parallel `sharedWith: [...uid]`
+ * array that the rules-restricted client cannot touch.
+ *
+ * Idempotency: `array-contains` query returns nothing once scrubbed, AND
+ * `arrayRemove(userId)` is a no-op when the value is absent — so re-runs
+ * are free of side-effects regardless of which guarantee fails first.
+ *
+ * Best-effort per chunk: a failed batch commit logs a warn and continues
+ * with the next chunk. Partial cleanup beats total failure (the unscrubbed
+ * docs will be retried on the next user-delete event for the same uid, or
+ * on the next manual sweep).
+ *
+ * Returns the number of docs queued for update (i.e. matched by the
+ * array-contains query). A successful re-run on already-scrubbed data
+ * returns 0.
+ */
+async function cleanupLegacySharedWithArrays(userId: string): Promise<number> {
+  return cleanupLegacySharedWithArraysWithDb(db, userId);
+}
+
+/**
+ * Test seam — accepts an injected Firestore so the BUT-753 cascade can be
+ * exercised against a stub without an emulator. Only the `shared_content`
+ * top-level collection is scanned; `firestore.rules` has no other
+ * collection that historically used a flat `sharedWith` array, so a
+ * collectionGroup sweep would just be cost without coverage.
+ */
+export async function cleanupLegacySharedWithArraysWithDb(
+  database: admin.firestore.Firestore,
+  userId: string
+): Promise<number> {
+  const snapshot = await database
+    .collection("shared_content")
+    .where("sharedWith", "array-contains", userId)
+    .get();
+
+  if (snapshot.empty) return 0;
+
+  let total = 0;
+  let batch = database.batch();
+  let batchCount = 0;
+
+  const flush = async (): Promise<void> => {
+    if (batchCount === 0) return;
+    try {
+      await batch.commit();
+    } catch (err) {
+      // Best-effort: log and move on. Idempotency makes the next attempt
+      // safe — `arrayRemove` is a no-op on values already absent.
+      v1.logger.warn(
+        `BUT-753: legacy sharedWith chunk commit failed for ${userId}`,
+        { err }
+      );
+    }
+    batch = database.batch();
+    batchCount = 0;
+  };
+
+  for (const doc of snapshot.docs) {
+    batch.update(doc.ref, {
+      sharedWith: admin.firestore.FieldValue.arrayRemove(userId),
+    });
+    batchCount++;
+    total++;
+    if (batchCount >= BATCH_LIMIT) {
+      await flush();
+    }
+  }
+  await flush();
+
+  return total;
 }
 
 /**

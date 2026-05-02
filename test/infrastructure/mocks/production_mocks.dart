@@ -1553,14 +1553,16 @@ class MockOfflineService extends Mock implements OfflineService {
 // return type, this mock will cause a TypeError — add an explicit override.
 class _NoOpFutureMock extends Fake {
   /// Method names whose return type is `Future<bool>` (milestone helpers added
-  /// for BUT-584 / BUT-576 / BUT-593). Default no-op returns false (= "did not
-  /// fire") so analytics-flow tests don't accidentally claim a milestone fired.
+  /// for BUT-584 / BUT-576 / BUT-593 / BUT-588). Default no-op returns false
+  /// (= "did not fire") so analytics-flow tests don't accidentally claim a
+  /// milestone fired.
   static const Set<String> _futureBoolMethodNames = {
     'logFirstShareIfMilestone',
     'logFirstMealPlanIfMilestone',
     'logFirstFriendIfMilestone',
     'logFirstCommentIfMilestone',
     'logFirstGroupIfMilestone',
+    'logFirstSearchIfMilestone',
   };
 
   @override

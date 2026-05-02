@@ -847,3 +847,126 @@ boundaries. Documented that semantics in the field name.
   pressure during the most expensive part of both runs. 30-min offset
   is generous (each CF finishes in <5 min at current scale) but cheap
   insurance against future growth.
+
+### 2026-05-02 — BUT-577 ingredient-lines partial-array salvage [Bug fixed]
+
+`parseIngredientLinesResponse` in `functions/src/llm/gemini-client.ts`
+called `JSON.parse` on the full Gemini response. When the model hit
+`INGREDIENT_LINE_MAX_TOKENS = 1000` mid-array on large recipes (>40
+ingredients), the parse threw and the function returned `null`. The
+single caller in `structure-recipe.ts` then surfaced
+"Kunde inte tolka AI-svaret som ingredienser" to the user — losing
+the entire fully-formed prefix the model HAD produced.
+
+Fix: keep the happy path, add a salvage branch on `JSON.parse` failure
+that strips the `{ "ingredients": [` (or bare `[`) wrapper and walks
+the body with a quote-aware brace counter to extract every top-level
+`{...}` object whose braces balance. Each is parsed independently;
+the unterminated tail object is dropped. Result type widened from
+`ExtractedIngredient[] | null` to `{ ingredients, truncated } | null`
+so callers can distinguish "all good" from "partial recovery — warn
+user". Single caller updated; emits `logger.warn` with the recovered
+count when truncated.
+
+**Patterns worth remembering**:
+
+- **Bracket counter beats regex for partial-JSON salvage.** Regex
+  `/\{[^}]*\}/g` breaks on objects that contain `{` or `}` inside
+  string values (e.g. `"preparation": "med } i strängen"`) or nested
+  objects (which ingredient schemas may grow into). Char-by-char with
+  `inString` + `escape` flags is ~30 lines, exact, and survives any
+  schema additions. Same approach used by every robust streaming-JSON
+  consumer.
+
+- **Stop scanning on first unterminated object, don't try to "fix" it.**
+  When the brace counter never returns to 0, the salvager bails out of
+  the loop rather than trying to append `}` or skip ahead. Synthesizing
+  a closer would silently fabricate data — fail-safe is to drop the
+  partial.
+
+- **Return-shape decision: extend the type, don't add a sibling
+  function.** With one caller, widening the return from `T[] | null` to
+  `{ items: T[]; truncated: boolean } | null` is cheaper than parallel
+  `parseFooWithMeta` + `parseFoo` overloads. The caller change is one
+  destructure. Sibling functions would have meant two near-identical
+  bodies to keep in sync — the salvage loop is non-trivial enough that
+  divergence would be inevitable.
+
+- **Don't widen unless a caller would care.** This applies because
+  user-facing error copy and per-batch token-budget tuning both improve
+  with the truncation signal. For pure-internal helpers with no
+  observable consequence, the bare-array shape would be correct to
+  preserve.
+
+- **Test the depth counter explicitly.** Two cases pin the salvage
+  scanner against (a) `}` inside a string value and (b) escaped
+  quotes inside a string value. Without those, a future "simplification"
+  to regex-based extraction would pass shape tests but corrupt real
+  Gemini output that contains either pattern.
+
+- **`INGREDIENT_LINE_MAX_TOKENS = 1000` is the proximate cause.** A
+  follow-up worth considering: bump to 2000 or chunk the input on the
+  caller side. Salvage is the safety net, not a license to ship a
+  too-tight cap. If `truncated: true` log lines become frequent, that's
+  the signal to revisit.
+
+### 2026-05-02 — BUT-753 admin cascade for legacy `sharedWith` arrays [Pattern discovered]
+
+`functions/src/cleanup/on-user-deleted.ts` gained a 10th cascade step:
+`cleanupLegacySharedWithArrays(userId)` (with the standard
+`...WithDb(database, userId)` test seam). Closes a Right-to-Erasure gap
+where the user-driven path
+(`SocialDeletionOperations.removeFromSharedContent`) cannot scrub a
+legacy `sharedWith: [...uid]` flat-array entry on `shared_content` docs:
+`firestore.rules:515-518` only permits `update` if the caller is the
+sharedByUserId owner OR has a `members/{uid}` doc — a recipient
+present only in the legacy array satisfies neither, the rule denies,
+the user is permanently embedded in another user's doc.
+
+**Patterns worth remembering**:
+
+- **Idempotency from two layers**, not one. `array-contains` query
+  returns nothing once the user is gone (read-side guard) AND
+  `arrayRemove(userId)` is a no-op when the value isn't present
+  (write-side guard). Both being independently safe makes the cascade
+  retry-tolerant regardless of which guarantee fails first — useful
+  when the trigger is `auth.user().onDelete` (v1) which retries on
+  any thrown error.
+
+- **Best-effort per chunk for cleanup-style cascades**: a `flush()`
+  closure that try/catches `batch.commit()` and logs a warn lets
+  partial cleanup land. The next user-delete event for the same uid
+  (or a manual sweep) picks up the residue. Failing the whole cascade
+  on one chunk error means the OTHER 9 cleanup steps re-run too —
+  some of which are not idempotent (presence rows are arguably idem
+  but friend counts use `increment(-1)` which double-decrements on
+  retry). Containing the failure to one step is the more conservative
+  choice.
+
+- **Top-level scan vs collectionGroup**: only `shared_content` (top-
+  level) ever held the legacy `sharedWith` array. Verified by `grep
+  sharedWith\b` returning zero hits in `firestore.rules` and only one
+  unrelated metric-key match in `lib/`. A `collectionGroup` sweep
+  would just be cost without coverage.
+
+- **FieldValue marker hijack pattern for unit tests**: when the test
+  doesn't initialise a real Firestore app, `admin.firestore.FieldValue
+  .arrayRemove` doesn't produce a sentinel the fake batch can recognise.
+  Reassign the static method on `FieldValue` to return a symbol-marked
+  object (`{ [ARRAY_REMOVE_MARKER]: true, values }`); the fake batch
+  type-guards on the marker and applies array-filter semantics on
+  commit. Lets the test exercise real `arrayRemove` SUT code without
+  an emulator, mirroring the logger-hijack pattern from
+  `prompts-config.test.ts`.
+
+- **Existing `auth.user().onDelete` is v1**, not v2. v2 has no
+  equivalent auth-trigger as of `firebase-functions@7.2.5`. Don't try
+  to migrate this one to v2 until the SDK ships an equivalent — the
+  v1 trigger is intentional, not legacy debt.
+
+- **Region pinning via `.region("europe-west1")` chain**: v1 auth
+  triggers don't pick up `setGlobalOptions`. Always chain
+  `.region("europe-west1")` explicitly (same as the existing
+  `onUserDeleted` export). New v1-style functions in this repo MUST
+  do this or they deploy to us-central1 by default and silently miss
+  the auth events for europe-west1 users.

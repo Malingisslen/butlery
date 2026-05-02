@@ -1,6 +1,66 @@
 # Sprint Backlog
 
-## Sprint: Theme migration full sweep — 2026-05-16
+## Sprint: Post-theme cleanup — backend hygiene + parsing resilience + analytics close-out — 2026-05-02
+
+Theme: with the theme migration sweep behind us, knock out the highest-leverage backend cleanup (BUT-753 chains directly from last week's BUT-732 sharedWith scrub), tighten the parsing pipeline (BUT-577 partial-recovery + BUT-566 retry doc + BUT-600 golden coverage), and close two analytics gaps (BUT-560 funnel session_id + BUT-588 activation milestone). **7 tasks, 2 agent groups + 2 standalone.**
+
+**Verify-before-starting flags:**
+- **A1 (BUT-753)** — verify whether `admin_cascade_on_user_delete` already exists in `functions/src/cleanup/` from BUT-732. If yes, this is purely "extend existing function" not "new function." Re-read BUT-732's commit `efac8c5b` body for what landed.
+- **A2 (BUT-442 + BUT-574)** — these are duplicates per Linear. First step is reconciling the metric (32% vs 45%) by re-running the audit grep, then closing one ticket and shipping the migration under the other. Cap migration to top 5 holdouts.
+- **B1 (BUT-577)** — `parseIngredientLines` lives in `functions/src/parsing/`. Confirm the truncation path: does Gemini ever return truncated JSON, or only on token-limit hits? If only token-limit, the recovery is defensive against a ~rare event.
+- **B3 (BUT-600)** — golden dataset extension. Need to confirm SchemaOrg goldens already exist in `functions/src/__tests__/` before adding LlmTier/RuleBasedTier rows.
+- **C1 (BUT-560)** — `session_id` threading: client-side initiation in `lib/services/import/`, server-side echo in `functions/src/llm/`. End-to-end replay needs both sides.
+
+### Agent A: firebase-backend-security + cloud-functions-specialist — backend cleanup
+
+- [x] **A1. Admin-cascade Cloud Function — legacy `sharedWith` cleanup on user delete** — Added step 10 to `cleanupUserSocialData` in `functions/src/cleanup/on-user-deleted.ts`: new `cleanupLegacySharedWithArrays(userId)` does a top-level `shared_content` scan via `where("sharedWith", "array-contains", userId)`, then chunked `FieldValue.arrayRemove(userId)` updates at 500/batch. Test seam `cleanupLegacySharedWithArraysWithDb` exported. New integration test `functions/src/__tests__/but753-legacy-sharedwith-cascade.test.ts` (12 assertions, 4 scenarios: scrub+preserve / idempotent re-run / 501-doc batched chunking / best-effort continue on chunk failure). Each `batch.commit()` wrapped in try/catch with `logger.warn` on failure — partial cleanup beats total failure. Idempotency: `arrayRemove` is a server-side no-op when value absent, and the `array-contains` query returns empty snapshot post-scrub → re-runs short-circuit at read with zero writes. Wired into composite `test` chain. Build clean, 12/12 tests pass. (BUT-753)
+
+- [!] **A2. BaseFirebaseRepository adoption — reconcile metric + migrate top holdouts** — **Partial: reconciliation done, migrations deferred per CLAUDE.md rule #10 (Honesty over completion).** Re-counted: numerator 35 = 32 direct `extends BaseFirebaseRepository<T>` + 3 transitive via `BaseSharedContentRepository<T>`. Denominator 45 = CRUD-eligible repos (excluded: auth/analytics/connectivity/search adapters, NoOp, presence streams, Storage exclusion, FirestoreRepository wrapper, interface declarations, pantry+user_ingredient with explicit "intentionally not extending" comments). **Adoption: 78%** (was reported as 45%; original BUT-574 measurement of 32% used denominator 94 which included interfaces/noop/adapters). Updated `docs/analysis/prompts/01_CODE_QUALITY_AND_ARCHITECTURE.md` lines 216 + 241 with the reconciled metric. Filed migration-candidates list as a comment on BUT-442 (7 candidates: firebase_category_preferences/cooking_session/menu_lexicon/ingredient_repository + parsing_correction + collaborative_recipe + site_config). BUT-574 (reconciliation) ready to close; BUT-442 (actual migrations) carry-over to a focused future sprint — each migration is non-trivial (4 permission methods + fromFirestore/toFirestore/getId + test rewrite) and the agent-timeout memory caps each at 1 sprint task. (BUT-574 done; BUT-442 carry-over)
+
+### Agent B: cloud-functions-specialist — parsing pipeline
+
+- [x] **B1. `parseIngredientLines` partial-array recovery on truncated JSON** — `functions/src/llm/gemini-client.ts`: added `ParsedIngredientLines` type, `extractTopLevelObjects` (quote-aware bracket counter — NOT regex; regex breaks on `}` inside string values), `salvageIngredientObjects`, `stripIngredientsWrapper`. Widened return type from `ExtractedIngredient[] | null` to `{ ingredients: ExtractedIngredient[]; truncated: boolean } | null`. Happy path unchanged; salvage runs only on `JSON.parse` failure. On EOF mid-object the loop drops the partial — never fabricates closing braces. Single caller `structure-recipe.ts` updated to destructure + emit `logger.warn` with `recovered` count. New test `functions/src/__tests__/parse-ingredient-lines.test.ts` (12 cases: wrapped/bare happy + fenced + mid-object salvage + mid-array salvage + 4-of-5 long prefix + brace-inside-string + escaped-quote-inside-string + garbage + empty-array + objects-without-name). Build clean, 12/12 pass. Follow-up: `INGREDIENT_LINE_MAX_TOKENS = 1000` is the proximate cause if `truncated: true` logs become frequent. (BUT-577)
+
+- [x] **B2. Document Gemini 5xx retry policy (client vs server) as ADR** — Created `docs/architecture/ADR-001-gemini-retry-policy.md` documenting the single-retry-layer decision (client retries via `RetryHelper.retryNetworkOperation` in `llm_tier.dart:120-128` with `maxRetries: 2` + exponential backoff base 1s/cap 30s; server fails fast). Rationale: avoid rate-limit amplification (stacked retries multiply Gemini load against the same rate-limit window), Gemini's `generateContent` isn't idempotent (temperature/sampling), cost visibility, operational clarity. Added comment block at `functions/src/llm/structure-recipe.ts:316` (catch handler) cross-referencing BUT-566 + ADR-001 with explicit "Do NOT add retry/loop logic here" guidance. (BUT-566)
+
+- [x] **B3. Extend parsing golden dataset to `LlmTier` and `RuleBasedTier`** — Rewrote `test/golden/parsing_golden_test.dart` as a tier-dispatching loop with a shared assertion block. `parsing_golden_dataset.json` extended 4→13 entries (4 SchemaOrg unchanged + 5 RuleBased + 4 LLM) with a `tier` discriminator and per-tier input keys (`text`, `mockResponse`). RuleBased fixtures cover quantity/unit edge cases (½ kg, 1/2 tsk, 2 dl), temperature mention (175°C), and total-time extraction ("i 35 minuter"). LLM fixtures use `_GoldenMockLlmService implements LlmService` (service-level seam, mirrors existing `MockLlmService` from `llm_tier_test.dart`) — hermetic, no Firebase init, <100ms/test. Loose-assertion shape (`titleContains`, `ingredientCountMin`, `ingredientSubstrings`, etc.) instead of tight equality — tier tweaks don't break tests as long as user-visible output stays correct (deliberately avoiding the BUT-368 anti-pattern). Wired into CI: `.github/workflows/test.yml` now includes `test/golden` in the `flutter test` invocation (was previously excluded). New `test/golden/README.md` documents entry shape, tier seams, and how to record new Gemini fixtures. **13/13 green** including the original 4 SchemaOrg as a regression check; flutter analyze test/golden clean. (BUT-600)
+
+### Standalone
+
+- [x] **C1. Thread `session_id` through import funnel events for end-to-end replay** — `lib/views/receive_share_view.dart`: added `final String _sessionId = const Uuid().v4()` instance field and threaded `sessionId: _sessionId` into both callsites (`_analytics.logImportStarted` line 90 + `_analytics.logImportSuccess` line 156). The `sessionId` param chain was already plumbed through `AnalyticsService` → `ImportEventsTracker` → `AnalyticsRepository.logImportStarted/Success`, just never set by callers. Confirmed via grep that `receive_share_view.dart` is the sole caller of `_analytics.logImport*` in `lib/`. Tier-level events (importTierSucceeded/Failed) and `logExtractionError` not covered in this pass — they fire from `ParseEventLogger` (different funnel) and the error event has no current `sessionId` param; flagged as follow-up scoped to BUT-552. dart analyze clean. (BUT-560)
+
+- [x] **C2. Add `first_search` activation milestone event** — Mirrored the existing `logFirstShareIfMilestone` pattern (BUT-584). Added `firstSearch = 'first_search'` constant to `AnalyticsEvents` (Milestones section) + `searchActivated = 'search_activated'` to `AnalyticsUserProperties` (Activation flags section). Added `_firstSearchPrefsPrefix = 'search_activated_v1_'` (uid-suffix scheme — household devices each get their own milestone fire) and new `logFirstSearchIfMilestone({userId, recipeCountAtTime, joinedAt})` method on `RecipeEventsTracker` — same SharedPreferences-keyed dedup, same `minutes_since_signup` calc, no Firestore writes. Wired call from `recipe_query_viewmodel.dart` after the existing `logRecipeSearchPerformed` (only on non-empty queries — same gate). Threaded `UserService` via `ServiceLocator.tryGet` (matches the pattern used elsewhere). `recipe_count_at_time` correlates first-search activation with library size for the funnel. BUT-421 compatible — raw query NOT included in milestone params. dart analyze clean. (BUT-588)
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` — 0 issues required
+- [ ] `cd functions && npm test` — all parsing + cleanup tests green
+- [ ] Affected unit tests green (`flutter test test/unit/repositories/`, `test/unit/services/analytics/`)
+- [ ] Tier-2 specialist gates: code-reviewer (any `*.dart`), testing-specialist (any `lib/**/*.dart`), firebase-backend-security (A1, A2), cloud-functions-specialist (B1-B3)
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-753/442/574/577/566/600/560/588 → Done (BUT-574 closed as dup of BUT-442)
+
+### Continued blockers (NOT in scope per memory)
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred
+- BUT-498 / BUT-697 — explicitly skipped
+- BUT-686 / BUT-660 / BUT-694 — need feature-level brainstorming first
+- BUT-674 / BUT-721 — need their own scoped sprints
+- BUT-579 — held for button-system sprint
+- BUT-626 — bucket-based A/B infra; big enough to deserve its own sprint
+- All `idea`-labeled monetization scaffolding — post-beta
+
+---
+
+## What this means in plain language
+
+- **Account deletion gets cleaner under the hood.** Last week's work scrubbed sharing data when you delete documents; this week extends that scrub to a corner case: when you delete your *whole account*, any leftover sharing pointers from the old data model get wiped too.
+- **Recipe imports recover from "almost worked" failures.** When the AI parser gets cut off mid-response (rare but real), the app currently throws away everything; after this it salvages the parts that did come through.
+- **Two small analytics holes get filled.** A unique session ID will follow a recipe-import end-to-end so we can debug "why did *that* import fail" instead of guessing. And we'll record the first time a user searches — useful as an activation milestone.
+- **Some refactor cleanup.** A claimed "45% repository adoption" that's actually 32% gets reconciled by migrating the top 5 stragglers, so the architecture metric is honest.
+- **Risk: low.** No UI changes, no data-model changes, no external service contract changes. Each ticket is independently revertable.
+
+---
+
+## ARCHIVED — Sprint: Theme migration full sweep — 2026-05-16
 
 Theme: ship all four BUT-572 wave tickets in one sprint, gated by the prerequisite `ButleryColors.iconMuted` slot addition that the pilot identified. Pilot proved the migration is mostly mechanical (same-hex ColorScheme slots produce byte-identical goldens; de-`const` cost is small) so a single-sprint sweep is realistic. **5 tasks, sequential — no agent dispatch (mechanical work, batch edits per the pilot's pattern).**
 

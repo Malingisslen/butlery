@@ -10,6 +10,7 @@
 // lib/views/receive_share_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import 'package:butlery/services/content_detector_service.dart'
     as content_detector;
 import 'package:butlery/services/social_media_extractor.dart';
@@ -58,6 +59,13 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
   bool _isExtracting = false;
   String? _extractionError;
 
+  // BUT-560: per-mount UUID threaded through this view's import funnel events
+  // (started + success). One ReceiveShareView instance = one import attempt by
+  // construction — `_analyzeContent` runs once from initState and the success
+  // path is a single user-driven extraction tap. If a future change adds a
+  // re-analyze path, mint a fresh UUID at that boundary instead.
+  final String _sessionId = const Uuid().v4();
+
   @override
   void initState() {
     super.initState();
@@ -90,6 +98,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
     _analytics.logImportStarted(
       source: 'share',
       platform: _detectionResult.platform?.toString().split('.').last,
+      sessionId: _sessionId,
     );
   }
 
@@ -157,6 +166,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               source: 'share_extraction',
               platform: _detectionResult.platform?.toString().split('.').last,
               recipeLength: result.extractedText!.length,
+              sessionId: _sessionId,
             );
 
             // Navigera till text import med extraherad text

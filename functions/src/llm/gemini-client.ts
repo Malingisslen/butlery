@@ -418,12 +418,150 @@ function validateIngredient(ing: unknown): ExtractedIngredient | null {
 }
 
 /**
- * Parse LLM response as a JSON array of ingredients.
- * Used by the ingredientLines mode for selective line-level re-parsing.
+ * Result of parsing an ingredient-lines LLM response.
+ *
+ * `truncated` is true when full JSON.parse failed and the result was salvaged
+ * via per-object scanning of a partial array (token-cap mid-stream cutoff).
+ * Callers should surface this so the user can be told the response was partial
+ * and large recipes (>40 ingredients) don't silently lose rows.
  */
-export function parseIngredientLinesResponse(response: string): ExtractedIngredient[] | null {
+export interface ParsedIngredientLines {
+  ingredients: ExtractedIngredient[];
+  truncated: boolean;
+}
+
+/**
+ * Scan a partial JSON array body and extract every top-level `{...}` object
+ * whose braces balance correctly. Used as a salvage path when the outer
+ * `JSON.parse` fails (typically because Gemini hit `maxOutputTokens` mid-array).
+ *
+ * Quote-aware: tracks string state and backslash escapes so braces inside
+ * `"preparation": "med } i strängen"` do not perturb the depth counter.
+ * Non-object junk between objects (commas, whitespace, the trailing
+ * unterminated object) is skipped.
+ *
+ * Pure character-by-character — preferred over regex because object values may
+ * contain nested objects (e.g. future schema additions) and escaped quotes.
+ */
+function extractTopLevelObjects(body: string): string[] {
+  const out: string[] = [];
+  let i = 0;
+  const n = body.length;
+  while (i < n) {
+    // Find next `{` that starts an object.
+    while (i < n && body[i] !== "{") i++;
+    if (i >= n) break;
+
+    const start = i;
+    let depth = 0;
+    let inStr = false;
+    let escape = false;
+    let closed = false;
+
+    for (; i < n; i++) {
+      const ch = body[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (inStr) {
+        if (ch === "\\") {
+          escape = true;
+        } else if (ch === '"') {
+          inStr = false;
+        }
+        continue;
+      }
+      if (ch === '"') {
+        inStr = true;
+      } else if (ch === "{") {
+        depth++;
+      } else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          out.push(body.slice(start, i + 1));
+          i++;
+          closed = true;
+          break;
+        }
+      }
+    }
+
+    if (!closed) {
+      // Hit EOF mid-object — this is the truncation point. Stop scanning.
+      break;
+    }
+  }
+  return out;
+}
+
+/**
+ * Salvage as many ingredient objects as possible from a malformed/truncated
+ * JSON body. Returns the validated subset; caller marks the result as
+ * truncated.
+ */
+function salvageIngredientObjects(body: string): ExtractedIngredient[] {
+  const ingredients: ExtractedIngredient[] = [];
+  for (const objStr of extractTopLevelObjects(body)) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(objStr);
+    } catch {
+      continue;
+    }
+    const validated = validateIngredient(parsed);
+    if (validated) ingredients.push(validated);
+  }
+  return ingredients;
+}
+
+/**
+ * Strip the optional `{ "ingredients": [` wrapper (and trailing `]}` if
+ * present) from a partial response so we're left with just the array body
+ * for object-level scanning. Tolerant of truncation: if the closing bracket
+ * is missing the function still returns the inner body.
+ */
+function stripIngredientsWrapper(jsonStr: string): string {
+  const trimmed = jsonStr.trim();
+  // Look for `{ "ingredients" : [` — schema-enforced shape from Gemini.
+  const wrapperRe = /^\{\s*"ingredients"\s*:\s*\[/;
+  const m = trimmed.match(wrapperRe);
+  if (m) {
+    let body = trimmed.slice(m[0].length);
+    // Drop the trailing `]}` (and any whitespace) if it's there.
+    body = body.replace(/\s*\]\s*\}\s*$/, "");
+    return body;
+  }
+  // Bare array: drop leading `[` and (if present) trailing `]`.
+  if (trimmed.startsWith("[")) {
+    let body = trimmed.slice(1);
+    body = body.replace(/\s*\]\s*$/, "");
+    return body;
+  }
+  return trimmed;
+}
+
+/**
+ * Parse LLM response as a JSON array of ingredients.
+ *
+ * Happy path: full `JSON.parse` succeeds and the wrapped or bare array is
+ * validated and returned with `truncated: false`.
+ *
+ * Salvage path (BUT-577): when `JSON.parse` fails — typically because Gemini
+ * hit `maxOutputTokens` mid-array on large recipes (>40 ingredients) — the
+ * outer `{ "ingredients": [` wrapper (or bare `[`) is stripped and each
+ * top-level `{...}` object is extracted and parsed independently. Successful
+ * parses are returned; the malformed tail is dropped. Result is flagged
+ * `truncated: true` so the caller can warn the user.
+ *
+ * Returns null only when no ingredients could be salvaged at all (empty
+ * array or pure garbage).
+ */
+export function parseIngredientLinesResponse(response: string): ParsedIngredientLines | null {
+  const jsonStr = stripCodeFences(response);
+
+  // Happy path — full parse.
   try {
-    const jsonStr = stripCodeFences(response);
     let parsed = JSON.parse(jsonStr);
 
     // Handle Gemini schema wrapping: { ingredients: [...] }
@@ -454,10 +592,19 @@ export function parseIngredientLinesResponse(response: string): ExtractedIngredi
       return null;
     }
 
-    return ingredients;
+    return { ingredients, truncated: false };
   } catch (error) {
-    console.error("Failed to parse ingredient lines response:", error);
-    return null;
+    // Salvage path — JSON.parse failed, attempt per-object recovery.
+    const body = stripIngredientsWrapper(jsonStr);
+    const ingredients = salvageIngredientObjects(body);
+    if (ingredients.length === 0) {
+      console.error("Failed to parse ingredient lines response (no salvage):", error);
+      return null;
+    }
+    console.warn(
+      `Ingredient lines response was truncated; salvaged ${ingredients.length} item(s)`
+    );
+    return { ingredients, truncated: true };
   }
 }
 

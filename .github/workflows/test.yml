@@ -60,11 +60,14 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y lcov
 
-      # Run unit, widget, and view tests with coverage
-      - name: Run unit, widget, and view tests
+      # Run unit, widget, view, and golden parsing/tagging tests with coverage.
+      # `test/golden/` holds the parsing & tagging golden datasets — they
+      # don't hit Firebase or the network (LLM tier uses a service-level
+      # mock; see test/golden/README.md), so they run alongside unit tests.
+      - name: Run unit, widget, view, and golden tests
         run: |
-          echo "Running unit, widget, and view tests with coverage..."
-          flutter test test/unit test/widget test/views --coverage --reporter=expanded
+          echo "Running unit, widget, view, and golden tests with coverage..."
+          flutter test test/unit test/widget test/views test/golden --coverage --reporter=expanded
 
       # Produce a filtered lcov.info matching codecov.yml's ignore list, so
       # the local "project coverage" number and the Codecov dashboard agree.
