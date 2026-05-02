@@ -200,10 +200,12 @@ class FCMService with ErrorHandlingMixin {
   /// don't depend on each other and the window during which an in-flight
   /// Cloud Function could observe stale state is the same magnitude either
   /// way.
-  /// Follow-up: FCMTokenManager.cleanup() does ~80% of the same work via
-  /// a different path; consolidating into one revocation route is a
-  /// separate refactor (cross-cutting static FCMService ↔ instance
-  /// FCMTokenManager).
+  ///
+  /// Companion: NotificationService.`_handleConsentChange` → FCMTokenManager.
+  /// `clearLocalToken()` covers the per-user SecureStorage cache (BUT-754).
+  /// The split is intentional: FCMService is app-singleton (SDK + Firestore +
+  /// static memory); FCMTokenManager is per-user (SecureStorage + instance
+  /// memory). Each half owns its own lifecycle scope.
   static Future<void> _revokePushAccess() async {
     final hasUserService = ServiceLocator.isRegistered<UserService>();
 

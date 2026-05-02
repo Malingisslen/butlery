@@ -377,5 +377,40 @@ void main() {
         expect(tokenManager.isInitialized, isFalse);
       });
     });
+
+    group('Consent revoke (BUT-754)', () {
+      test('clearLocalToken removes both SecureStorage keys + nulls memory',
+          () async {
+        // Arrange — initialize so the token + timestamp land in secure store.
+        await tokenManager.initialize();
+        expect(secureStore['fcm_token'], equals('test-token-001'),
+            reason: 'precondition: token landed in SecureStorage');
+        expect(secureStore['fcm_token_timestamp'], isNotNull);
+        expect(tokenManager.isInitialized, isTrue);
+
+        // Act — simulate consent revoke (NotificationService calls this).
+        await tokenManager.clearLocalToken();
+
+        // Assert — both keys gone, in-memory cache nulled, but the manager
+        // is NOT torn down (no dispose, no topic unsubscribe — that's
+        // cleanup()'s job, not clearLocalToken()'s).
+        expect(secureStore.containsKey('fcm_token'), isFalse,
+            reason: 'token MUST be deleted from SecureStorage');
+        expect(secureStore.containsKey('fcm_token_timestamp'), isFalse,
+            reason: 'timestamp MUST be deleted from SecureStorage');
+        expect(tokenManager.isInitialized, isFalse,
+            reason: '_currentToken nulled → isInitialized flips false');
+        expect(tokenManager.tokenAgeMinutes, isNull,
+            reason: '_lastTokenRefresh nulled → tokenAgeMinutes is null');
+      });
+
+      test('clearLocalToken is idempotent — safe to call when nothing stored',
+          () async {
+        // No initialize(). secureStore is empty.
+        await expectLater(tokenManager.clearLocalToken(), completes);
+        expect(secureStore.containsKey('fcm_token'), isFalse);
+        expect(tokenManager.isInitialized, isFalse);
+      });
+    });
   });
 }

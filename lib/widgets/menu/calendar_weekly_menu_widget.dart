@@ -13,9 +13,10 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_colors.dart'; // BUT-572 pilot: greenMuted, rustLight, creamDarker kept (no clean colorScheme equivalent — see Linear comment).
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
@@ -25,14 +26,17 @@ const double _kSlotMinHeight = 80;
 const double _kDragFeedbackWidth = 110;
 
 /// Shared border pattern for assigned lunch/middag/övrigt cells — an accent
-/// left border (color varies per slot), divider top/right, and a rust-light
-/// bottom accent. Empty cells use a plain `Border.all` via the theme divider.
-Border _accentedBorder(Color left) => Border(
-      left: BorderSide(color: left, width: 3),
-      top: const BorderSide(color: AppColors.creamDarker),
-      right: const BorderSide(color: AppColors.creamDarker),
-      bottom: const BorderSide(color: AppColors.rustLight, width: 2),
-    );
+/// left border (color varies per slot), divider top/right (theme outline), and
+/// a rust-light bottom accent (decorative-only, no theme equivalent).
+Border _accentedBorder(BuildContext context, Color left) {
+  final outline = Theme.of(context).colorScheme.outlineVariant;
+  return Border(
+    left: BorderSide(color: left, width: 3),
+    top: BorderSide(color: outline),
+    right: BorderSide(color: outline),
+    bottom: const BorderSide(color: AppColors.rustLight, width: 2),
+  );
+}
 
 /// Small-caps slot label used at the top of every cell.
 Text _slotLabel(String text, Color color) => Text(
@@ -87,12 +91,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(top: AppDimensions.spacingXl),
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.spacingXl),
           child: Icon(
             Icons.arrow_upward,
             size: 32,
-            color: AppColors.forestGreen,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         StateWidget.empty(
@@ -156,7 +160,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
-            color: AppColors.forestGreenDark,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
             onPressed: vm.previousWeek,
             tooltip: context.l10n.weeklyMenuPrevWeek,
           ),
@@ -164,14 +168,14 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             child: Text(
               _formatWeekLabel(context, vm.currentWeekStart),
               style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.textDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
           ),
           IconButton(
             icon: const Icon(Icons.chevron_right),
-            color: AppColors.forestGreenDark,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
             onPressed: vm.nextWeek,
             tooltip: context.l10n.weeklyMenuNextWeek,
           ),
@@ -184,15 +188,16 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     BuildContext context,
     WeeklyMenuPlanViewModel vm,
   ) {
+    final butleryColors = context.butleryColors;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.warningContainer,
+      decoration: BoxDecoration(
+        color: butleryColors.warningContainer,
         border: Border(
-          bottom: BorderSide(color: AppColors.warning, width: 2),
+          bottom: BorderSide(color: butleryColors.warning, width: 2),
         ),
       ),
       child: Column(
@@ -200,13 +205,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         children: [
           Row(
             children: [
-              const Icon(Icons.info_outline,
-                  size: 14, color: AppColors.warning),
+              Icon(Icons.info_outline, size: 14, color: butleryColors.warning),
               const SizedBox(width: AppDimensions.spacingXs),
               Text(
                 context.l10n.weeklyMenuOverflowTitle,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   letterSpacing: 1,
                 ),
               ),
@@ -231,6 +235,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     WeeklyMenuPlanViewModel vm,
     Recipe recipe,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final chip = Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingSm,
@@ -238,14 +243,14 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        border: const Border(
-          left: BorderSide(color: AppColors.warning, width: 2),
-          bottom: BorderSide(color: AppColors.rustLight, width: 2),
+        border: Border(
+          left: BorderSide(color: context.butleryColors.warning, width: 2),
+          bottom: const BorderSide(color: AppColors.rustLight, width: 2),
         ),
       ),
       child: Text(
         recipe.title.toLowerCase(),
-        style: AppTextStyles.labelSmall.copyWith(color: AppColors.textDark),
+        style: AppTextStyles.labelSmall.copyWith(color: cs.onSurface),
       ),
     );
     return _wrapAsDraggable(_OverflowPayload(recipe), chip);
@@ -306,11 +311,12 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
   }
 
   Widget _buildDayHeader(BuildContext context, DayOfWeek day, bool isToday) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
-            color: isToday ? AppColors.forestGreen : AppColors.rust,
+            color: isToday ? cs.primary : cs.secondary,
             width: 3,
           ),
         ),
@@ -325,18 +331,18 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             style: AppTextStyles.labelMedium.copyWith(
               letterSpacing: 2,
               fontWeight: FontWeight.w700,
-              color: isToday ? AppColors.forestGreenDark : AppColors.textDark,
+              color: isToday ? cs.onPrimaryContainer : cs.onSurface,
             ),
           ),
           if (isToday) ...[
             const SizedBox(width: AppDimensions.spacingSm),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              color: AppColors.forestGreen.withValues(alpha: 0.12),
+              color: cs.primary.withValues(alpha: 0.12),
               child: Text(
                 context.l10n.weeklyMenuTodayBadge,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.forestGreenDark,
+                  color: cs.onPrimaryContainer,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
                 ),
@@ -396,7 +402,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
               Positioned(
                 top: 0,
                 left: 0,
-                child: _slotLabel(slot.displayLabel, AppColors.textLight),
+                child: _slotLabel(
+                  slot.displayLabel,
+                  Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const Center(
                 child: Text(
@@ -420,6 +429,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     WeeklyMenuPlanViewModel vm,
     WeeklyMenuPlanEntry entry,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final cell = Semantics(
       label: context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
       button: true,
@@ -430,17 +440,21 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            border: _accentedBorder(AppColors.forestGreen),
+            border: _accentedBorder(context, cs.primary),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _slotLabel(entry.slot.displayLabel, AppColors.forestGreenDark),
+              _slotLabel(entry.slot.displayLabel, cs.onPrimaryContainer),
               const SizedBox(height: 4),
               Container(
                 height: 28,
-                color: AppColors.cream,
+                color: cs.surface,
                 alignment: Alignment.center,
+                // greenMuted kept: brand-specific muted decorative icon color
+                // with no clean ColorScheme equivalent (mapping to
+                // onSurfaceVariant would shift hue from green to neutral grey).
+                // BUT-572 follow-up: candidate for new ButleryColors.iconMuted slot.
                 child: const Icon(
                   Icons.restaurant_outlined,
                   size: 18,
@@ -454,7 +468,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
                   style: AppTextStyles.labelSmall.copyWith(
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
+                    color: cs.onSurface,
                     height: 1.15,
                   ),
                   maxLines: 2,
@@ -475,6 +489,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     WeeklyMenuPlan plan,
     DayOfWeek day,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final entries = plan.entriesAt(day, MealSlot.ovrigt);
     final inner = entries.isEmpty
         ? _buildEmptySlot(context, vm, day, MealSlot.ovrigt)
@@ -482,13 +497,13 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.cardWhite,
-              border: _accentedBorder(AppColors.rust),
+              color: cs.surfaceContainerHighest,
+              border: _accentedBorder(context, cs.secondary),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _slotLabel(MealSlot.ovrigt.displayLabel, AppColors.rust),
+                _slotLabel(MealSlot.ovrigt.displayLabel, cs.secondary),
                 const SizedBox(height: 2),
                 for (final entry in entries) ...[
                   _buildOvrigtEntry(context, entry),
@@ -504,16 +519,14 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColors.creamDarker,
-                        ),
+                        border: Border.all(color: cs.outlineVariant),
                       ),
                       child: Text(
                         context.l10n.weeklyMenuOvrigtAddMore,
                         textAlign: TextAlign.center,
                         style: AppTextStyles.labelSmall.copyWith(
                           fontSize: 9,
-                          color: AppColors.rust,
+                          color: cs.secondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -536,6 +549,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     BuildContext context,
     WeeklyMenuPlanEntry entry,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final chip = Semantics(
       label: context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
       button: true,
@@ -543,10 +557,10 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         onTap: () => _navigateToRecipe(context, entry.recipeId),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-          decoration: const BoxDecoration(
-            color: AppColors.cream,
+          decoration: BoxDecoration(
+            color: cs.surface,
             border: Border(
-              left: BorderSide(color: AppColors.rust, width: 2),
+              left: BorderSide(color: cs.secondary, width: 2),
             ),
           ),
           child: Row(
@@ -554,8 +568,9 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
               Container(
                 width: 16,
                 height: 16,
-                color: AppColors.cardWhite,
+                color: cs.surfaceContainerHighest,
                 alignment: Alignment.center,
+                // greenMuted kept — see _buildAssignedSlot above.
                 child: const Icon(
                   Icons.cake_outlined,
                   size: 11,
@@ -569,7 +584,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
                   style: AppTextStyles.labelSmall.copyWith(
                     fontSize: 8,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
+                    color: cs.onSurface,
                     height: 1.1,
                   ),
                   maxLines: 1,
@@ -593,6 +608,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         : payload is _OverflowPayload
             ? payload.recipe.title
             : '?';
+    final cs = Theme.of(context).colorScheme;
     final feedback = Material(
       elevation: 4,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -600,14 +616,14 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
         width: _kDragFeedbackWidth,
         padding: const EdgeInsets.all(AppDimensions.spacingS),
         decoration: BoxDecoration(
-          color: AppColors.cream,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-          border: Border.all(color: AppColors.forestGreen),
+          border: Border.all(color: cs.primary),
         ),
         child: Text(
           label.toLowerCase(),
           style: AppTextStyles.labelSmall.copyWith(
-            color: AppColors.textDark,
+            color: cs.onSurface,
             fontWeight: FontWeight.w600,
           ),
           maxLines: 2,
@@ -670,10 +686,11 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       },
       builder: (context, candidate, rejected) {
         if (candidate.isEmpty) return child;
+        final cs = Theme.of(context).colorScheme;
         return DecoratedBox(
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.rust, width: 2),
-            color: AppColors.rust.withValues(alpha: 0.06),
+            border: Border.all(color: cs.secondary, width: 2),
+            color: cs.secondary.withValues(alpha: 0.06),
           ),
           child: child,
         );

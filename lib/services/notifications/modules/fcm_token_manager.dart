@@ -552,6 +552,31 @@ class FCMTokenManager {
     return DateTime.now().difference(_lastTokenRefresh!).inMinutes;
   }
 
+  /// Clear the locally-cached token from SecureStorage + memory without
+  /// running the full logout teardown (BUT-754).
+  ///
+  /// Called by `NotificationService` when push consent is revoked mid-session.
+  /// Distinct from [cleanup]: does NOT unsubscribe topics, mark device
+  /// inactive, or invalidate the token on Google's servers — those are
+  /// handled by `FCMService._revokePushAccess()` (SDK + Firestore + memory)
+  /// and the persistent device-doc lifecycle. The user remains "logged in"
+  /// after a consent revoke; they just shouldn't have a push token sitting
+  /// in the device keystore that was minted under the old (granted) consent.
+  ///
+  /// Best-effort: SecureStorage failures are logged, not rethrown — partial
+  /// cleanup beats blocking the consent flow on a keystore error.
+  Future<void> clearLocalToken() async {
+    try {
+      await _secureStorage.delete(key: _tokenStorageKey);
+      await _secureStorage.delete(key: _tokenTimestampKey);
+      AppLogger.debug('Cleared FCM token from SecureStorage (BUT-754)');
+    } catch (e) {
+      AppLogger.warning('Failed to clear FCM token from SecureStorage: $e');
+    }
+    _currentToken = null;
+    _lastTokenRefresh = null;
+  }
+
   /// Clean up on user logout
   Future<void> cleanup() async {
     try {

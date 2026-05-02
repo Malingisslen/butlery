@@ -13,6 +13,7 @@ import 'package:butlery/repositories/interfaces/notification_history_repository.
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/modules/notification_content_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_preference_manager.dart';
@@ -69,6 +70,13 @@ class NotificationService extends BaseService {
 
   bool _isInitialized = false;
   bool _modulesCreated = false;
+
+  /// Tracks which ConsentService we subscribed to so we can unsubscribe
+  /// on dispose. BUT-754: we listen to consent changes here (in addition
+  /// to FCMService's own listener) so we can clear the FCMTokenManager's
+  /// SecureStorage cache on revoke — FCMService doesn't reach into the
+  /// per-user FCMTokenManager and shouldn't (different lifecycle).
+  ConsentService? _subscribedConsentService;
 
   NotificationService({
     required interface_repo.NotificationsRepository notificationsRepository,
@@ -153,11 +161,21 @@ class NotificationService extends BaseService {
             '🔔 Initializing NotificationService coordinator for user: $_userId');
 
         // Initialize FCM service (consent-gated for permissions/token)
+        final consentService = ServiceLocator.tryGet<ConsentService>();
         await FCMService.initialize(
           onMessageReceived: _handleForegroundMessage,
           onMessageOpenedApp: _handleMessageOpened,
-          consentService: ServiceLocator.tryGet<ConsentService>(),
+          consentService: consentService,
         );
+
+        // BUT-754: subscribe a parallel consent listener for FCMTokenManager
+        // cleanup on revoke. FCMService owns its own SDK + Firestore + memory
+        // teardown; we own the FCMTokenManager SecureStorage teardown because
+        // FCMService can't reach into the per-user instance manager.
+        if (consentService != null && _subscribedConsentService == null) {
+          consentService.addListener(_handleConsentChange);
+          _subscribedConsentService = consentService;
+        }
 
         // Initialize FCM token manager (may be null if Firebase unavailable)
         await _tokenManager?.initialize();
@@ -617,6 +635,33 @@ class NotificationService extends BaseService {
     await _historyRepository.markNotificationOpened(notificationId);
   }
 
+  /// Handles consent changes for FCMTokenManager-scoped cleanup (BUT-754).
+  /// Sibling to FCMService._onConsentChanged which handles SDK + Firestore
+  /// + memory; this one handles SecureStorage on revoke.
+  bool _consentHandlerInProgress = false;
+
+  Future<void> _handleConsentChange() async {
+    if (_consentHandlerInProgress || _subscribedConsentService == null) return;
+    _consentHandlerInProgress = true;
+    try {
+      final hasConsent = await ConsentService.checkSafely(
+        _subscribedConsentService,
+        ConsentPurpose.pushNotifications,
+        logTag: 'NotificationService',
+      );
+      if (!hasConsent) {
+        AppLogger.info(
+            '🔔 NotificationService: push consent revoked — clearing FCMTokenManager local token (BUT-754)');
+        await _tokenManager?.clearLocalToken();
+      }
+    } catch (e) {
+      AppLogger.error(
+          '❌ NotificationService: consent-change handler failed', e);
+    } finally {
+      _consentHandlerInProgress = false;
+    }
+  }
+
   /// Reset state for logout. Allows re-initialization for a new user session.
   Future<void> resetForLogout() async {
     // Guard on _modulesCreated (not _isInitialized) because modules may have
@@ -646,6 +691,8 @@ class NotificationService extends BaseService {
   }
 
   Future<void> _disposeModules() async {
+    _subscribedConsentService?.removeListener(_handleConsentChange);
+    _subscribedConsentService = null;
     _batchManager.dispose();
     _offlineManager.dispose();
     _tokenManager?.dispose();

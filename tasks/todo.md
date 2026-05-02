@@ -1,6 +1,53 @@
 # Sprint Backlog
 
-## Sprint: Consent gate completion + UI/theme migration sweep — 2026-05-02
+## Sprint: Theme migration pilot + FCM revoke consolidation — 2026-05-09
+
+Theme: ship the BUT-572 mapping-table pilot on the highest-leverage widget (`calendar_weekly_menu_widget.dart`, 40 sites, on home screen) so its lessons feed into the 4 wave tickets (BUT-755/756/757/758). Pair with BUT-754 — the independent FCM revocation cleanup that fell out of the previous sprint's `firebase-backend-security` review. **2 tasks, no parallelization needed (different subsystems).**
+
+Just-shipped sprint `cc17ce23` cleared 6 implementation tickets + 1 deferred (BUT-572 → re-scoped as this pilot, with 4 wave tickets filed as blocked-on dependencies).
+
+**Verify-before-starting flags:**
+- **A1 (BUT-572 pilot)** — confirm `calendar_weekly_menu_widget.dart` site count on the day (recon found 40, but the prior `efac8c5b` directional migration may have moved sites). Re-read the mapping table comment on BUT-572. Look for `const` constructors and static `BoxDecoration` helpers — pilot's first-class job is to surface every "this mapping doesn't quite work because X" instance and patch the table in place via a Linear comment append. After the pilot lands, the 4 wave tickets inherit the corrected table.
+- **B1 (BUT-754)** — pick Option A (NotificationService owns the cascade, 4-6h) vs Option B (FCMTokenManager.clearLocalToken + wire from FCMService, 1-2h). Per "do what's most efficient to get everything right," default to Option A — it removes the architectural duplication that motivated the ticket. Verify the consent-listener wiring complexity first; if FCMTokenManager isn't currently observable from ConsentService's wiring scope (it lives behind NotificationService), Option B is the honest call.
+
+### Agent A: flutter-developer + uiux-designer — theme pilot
+
+- [x] **A1. Migrate `calendar_weekly_menu_widget.dart` from `AppColors.*` → `ColorScheme/ButleryColors` tokens** — 35/40 sites migrated; 5 stay as `AppColors.X` (3 × `greenMuted`, 2 × `rustLight` — no clean ColorScheme equivalent; pre-existing legitimate-keep). `_accentedBorder` top-level helper threaded with `BuildContext` for `outlineVariant` lookup. 3 `const` de-conversions (BoxDecoration/Icon) where decoration moved to `context.butleryColors`. Golden test (`calendar_weekly_menu_populated.png`) **PASSES** post-migration — validates that ColorScheme slots pinned to identical hex values produce byte-identical output. 6/7 widget tests pass; 1 pre-existing flake (`week-nav buttons` tap test fails on pristine `main` too — `find.byIcon(Icons.chevron_right)` returns 0 widgets, unrelated to migration). Mapping-table amendments + wave-ticket adjustments filed on BUT-572. Key wave-ticket recommendation: pre-add `ButleryColors.iconMuted` slot before any wave starts to unlock all `greenMuted` migrations. (BUT-572)
+
+### Agent B: firebase-backend-security + flutter-developer — FCM cleanup
+
+- [x] **B1. Consolidate FCM revocation paths + clear FCMTokenManager SecureStorage** — Chose Option-A spirit with minimal surface (avoids the larger FCMService API refactor): added `FCMTokenManager.clearLocalToken()` (deletes `fcm_token` + `fcm_token_timestamp` from SecureStorage, nulls `_currentToken` + `_lastTokenRefresh`, best-effort with try/log-warn). Wired a parallel consent listener into `NotificationService` — it subscribes via `ConsentService.addListener(_handleConsentChange)` in `onInitialize`, removes on `_disposeModules`, uses a `_consentHandlerInProgress` re-entry guard mirroring FCMService's pattern. On revoke (`hasConsent == false`) it calls `_tokenManager?.clearLocalToken()` — covers the one cleanup gap FCMService can't reach (per-user instance). FCMService's existing listener stays untouched (covers SDK + Firestore + memory; different scope). 2 new unit tests in `fcm_token_manager_test.dart` (the SecureStorage gets cleared; the call is idempotent against an empty store). All 22 FCMTokenManager tests + 23 FCMService tests still green. Two pre-existing test failures in the notifications/ suite (notification_content_manager, notification_preference_manager) are NOT regressions — verified via `git stash` ⊕ pristine-main test run. The deeper FCMService↔FCMTokenManager architectural consolidation (Option A in full) is left for a future ticket — the two-listener arrangement is correct (each owns its scope) and the multi-listener API was designed for exactly this. (BUT-754)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos` — 0 issues required
+- [ ] Affected unit + widget tests green (calendar widget tests + FCM tests + any goldens touched)
+- [ ] Tier-2 specialist gates: code-reviewer, testing-specialist, firebase-backend-security
+- [ ] **Pilot lessons captured** — mapping table appended on BUT-572 with corrections + golden-test cost estimate
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-572 + BUT-754 → Done; verify BUT-755/756/757/758 are unblocked
+
+### Continued blockers (NOT in scope per memory)
+
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred
+- BUT-498 / BUT-697 — explicitly skipped per standing direction
+- BUT-686 / BUT-660 / BUT-694 — need feature-level brainstorming first
+- BUT-674 / BUT-721 — need their own scoped sprints
+- BUT-579 — true High but holding for a focused button-system sprint
+- BUT-755/756/757/758 — blocked on BUT-572 pilot (this sprint), pick up next sprint
+- All `idea`-labeled monetization scaffolding — post-beta per memory
+
+---
+
+## What this means in plain language
+
+- **Dark-mode polish on the home screen.** The weekly-menu calendar widget hardcodes its colors today, which makes dark mode look slightly off and breaks the seasonal accent rotation. This sprint fixes that one widget — it's the most-visible one — and uses it as a test case to prove out the recipe for migrating the other 22 widgets in the coming weeks.
+- **Push-notification consent leaves no trace.** When you revoke notification permission today, the encrypted token gets erased from Google's servers and our backend, but a stale copy lingers in your phone's secure-keystore until next login. Cleaning that up.
+- **Risk: low.** Both changes are localized and have unit tests. The pilot widget is tested with a golden image so any visual regression shows up immediately. FCM revoke is a follow-on to last sprint's well-tested consent gate.
+
+---
+
+## ARCHIVED — Sprint: Consent gate completion + UI/theme migration sweep — 2026-05-02
 
 Theme: finish the privacy/consent stream from the last two sprints (BUT-573 mirrors BUT-751/752 work), tighten supply chain (BUT-434 removes an unverified-publisher package on the share-intent path), pair with a design-system migration cluster (theme tokens + RTL + i18n spot-check). **2 agents + 1 standalone, 7 tasks.** No Urgent/High in non-deferred backlog beyond BUT-572/565 (both High); selected by score + cluster coherence.
 
