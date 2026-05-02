@@ -16,7 +16,7 @@ activation:
 
 - **MTTD** (mean time to detect) for CF errors and CF latency regressions
   drops from "next time the founder logs in" to ~5 minutes.
-- Both policies fire to `malin.gisslen1@gmail.com` (the project's ops mailbox).
+- Both policies fire to `info@butlery.se` (the project's ops mailbox).
 - Re-running the script is safe — it skips policies whose `displayName`
   already exists.
 
@@ -27,7 +27,7 @@ activation:
 | Control | Status | Evidence |
 |---|---|---|
 | Alert policy script | ACTIVE + IDEMPOTENT | `infrastructure/alerting/setup-gcp-alerts.sh` |
-| Notification channel | LIVE | `projects/butlery-app-1/notificationChannels/11860390942781239556` (email: malin.gisslen1@gmail.com) |
+| Notification channel | LIVE | `projects/butlery-app-1/notificationChannels/11860390942781239556` (email: info@butlery.se) |
 | `Cloud Functions - High Error Rate` | LIVE, enabled, routed to channel | verified via `gcloud alpha monitoring policies list` |
 | `Cloud Functions - High Latency` | LIVE, enabled, routed to channel | verified via `gcloud alpha monitoring policies list` |
 | Firestore read-rate alert | NOT SHIPPED | metric/resource-type schema churn — see "Deferred policies" below |
@@ -101,15 +101,14 @@ gcloud auth application-default set-quota-project butlery-app-1
 ### 3. Create the email notification channel
 
 Pick the email address that should receive alerts. For Butlery this is
-the founder address (`malin.gisslen@kommerskollegium.se`) until the team
-grows.
+the project ops alias (`info@butlery.se`) until the team grows.
 
 ```bash
 gcloud alpha monitoring channels create \
   --project=butlery-app-1 \
   --type=email \
   --display-name="Butlery Alerts" \
-  --channel-labels=email_address=malin.gisslen@kommerskollegium.se
+  --channel-labels=email_address=info@butlery.se
 ```
 
 Capture the channel resource name from the output — it looks like

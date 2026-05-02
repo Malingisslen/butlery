@@ -210,7 +210,7 @@ data losses between the export snapshot and the incident.
 
 On any data-loss event (accidental delete, ransomware, bad migration):
 
-1. Notify the product owner (malin.gisslen@kommerskollegium.se) within 1 hour of detection
+1. Notify the product owner (info@butlery.se) within 1 hour of detection
 2. Snapshot the current state immediately — run a manual export before attempting fixes:
    ```bash
    gcloud firestore export gs://butlery-firestore-backups/incidents/INCIDENT_ID/ \

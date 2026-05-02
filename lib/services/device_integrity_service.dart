@@ -89,7 +89,7 @@ class DeviceIntegrityService {
           bundleIds: ['com.butlery.app'],
           teamId: _kTalsecTeamId,
         ),
-        watcherMail: 'malin.gisslen1@gmail.com',
+        watcherMail: 'info@butlery.se',
       );
 
       final callback = ThreatCallback(
