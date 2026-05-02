@@ -12,7 +12,6 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -254,12 +253,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   Widget _buildViewModeToggle(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.cardWhite.withValues(alpha: 0.12),
-          border: Border.all(color: AppColors.cardWhite.withValues(alpha: 0.2)),
+          color: cs.surfaceContainerHighest.withValues(alpha: 0.12),
+          border: Border.all(
+            color: cs.surfaceContainerHighest.withValues(alpha: 0.2),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -288,6 +290,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     required bool active,
     required VoidCallback onTap,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: context.l10n.a11yWeeklyMenuViewModeToggle(label),
       button: true,
@@ -296,13 +299,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          color: active ? AppColors.cream : Colors.transparent,
+          color: active ? cs.surface : Colors.transparent,
           child: Text(
             label.toLowerCase(),
             style: AppTextStyles.labelSmall.copyWith(
-              color: active
-                  ? AppColors.forestGreenDark
-                  : Theme.of(context).colorScheme.onPrimary,
+              color: active ? cs.onPrimaryContainer : cs.onPrimary,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
             ),

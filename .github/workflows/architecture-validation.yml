@@ -53,6 +53,30 @@ jobs:
         echo "🔍 Running Flutter analyze..."
         flutter analyze
 
+    # BUT-758: closes the BUT-572 theme migration. Forbid AppColors.X in
+    # views/widgets except the legitimate-keep set established by the
+    # pilot + Waves A-D. Keep-set rationale:
+    # - brand*, illustration*, overlay*, neutral*, transparent: theme-agnostic
+    # - rustLight, creamDarker, greenMuted: decorative-only retentions
+    # - vegetable_illustration.dart: decorative palette table (no context)
+    # - social_collaborative_components.dart: `?? AppColors` safety-net fallbacks
+    # - personal_tag_color_picker.dart: static `fromHex()` utility, no BuildContext
+    - name: Forbid AppColors outside legitimate-keep set
+      run: |
+        set -e
+        OFFENDERS=$(grep -rn "AppColors\." lib/views/ lib/widgets/ --include="*.dart" \
+          | grep -v -E "AppColors\.(brand|illustration|overlay|neutral|transparent|rustLight|creamDarker|greenMuted)" \
+          | grep -v "vegetable_illustration.dart" \
+          | grep -v "social_collaborative_components.dart" \
+          | grep -v "personal_tag_color_picker.dart" \
+          || true)
+        if [ -n "$OFFENDERS" ]; then
+          echo "::error::AppColors.X used outside the legitimate-keep set:"
+          echo "$OFFENDERS"
+          exit 1
+        fi
+        echo "✅ AppColors usage matches the BUT-572 legitimate-keep set."
+
     - name: Run architecture tests
       run: |
         echo "🏗️ Running architecture compliance tests..."

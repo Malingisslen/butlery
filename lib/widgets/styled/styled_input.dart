@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -327,10 +326,11 @@ class StyledInput extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          // BUT-533: rust focus ring at 3px — matches global InputDecoration
-          // theme so keyboard navigation is visibly trackable on cream.
-          borderSide: const BorderSide(
-            color: AppColors.rust,
+          // BUT-533: rust (secondary) focus ring at 3px — matches global
+          // InputDecoration theme so keyboard navigation is visibly
+          // trackable on cream.
+          borderSide: BorderSide(
+            color: cs.secondary,
             width: AppDimensions.borderWidthThick + 1,
           ),
         ),

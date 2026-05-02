@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Fullscreen image viewer for recipe images
@@ -128,11 +127,12 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                             color: cs.surfaceContainerHighest,
                           ),
                         ),
-                        errorWidget: (_, __, ___) => const Center(
+                        errorWidget: (_, __, ___) => Center(
                           child: Icon(
                             Icons.error_outline,
                             size: AppDimensions.iconSizeXxl,
-                            color: AppColors.cardWhite54,
+                            color: cs.surfaceContainerHighest
+                                .withValues(alpha: 0.54),
                           ),
                         ),
                       ),

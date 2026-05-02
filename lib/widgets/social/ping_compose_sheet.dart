@@ -5,9 +5,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Show the ping compose sheet for [targetUserId] in [groupId].
 ///
@@ -21,7 +21,7 @@ Future<void> showPingComposeSheet({
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: AppColors.cream,
+    backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.zero,
     ),
@@ -107,11 +107,12 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       // can't walk the now-detached element tree.
       final messenger = ScaffoldMessenger.of(context);
       final sentLabel = context.l10n.pingComposeSent;
+      final successColor = context.butleryColors.success;
       Navigator.of(context).pop();
       messenger.showSnackBar(
         SnackBar(
           content: Text(sentLabel),
-          backgroundColor: AppColors.success,
+          backgroundColor: successColor,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -129,7 +130,7 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.errorGeneric),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -187,7 +188,7 @@ class _Header extends StatelessWidget {
     return Text(
       title,
       style: AppTextStyles.titleMedium.copyWith(
-        color: AppColors.forestGreenDark,
+        color: Theme.of(context).colorScheme.onPrimaryContainer,
         fontWeight: FontWeight.w700,
       ),
       textAlign: TextAlign.center,
@@ -259,11 +260,10 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = selected ? AppColors.cream : AppColors.forestGreenDark;
-    final bg = selected ? AppColors.forestGreen : AppColors.creamDark;
-    final border = selected
-        ? AppColors.forestGreen
-        : AppColors.forestGreen.withValues(alpha: 0.3);
+    final cs = Theme.of(context).colorScheme;
+    final fg = selected ? cs.surface : cs.onPrimaryContainer;
+    final bg = selected ? cs.primary : cs.surfaceContainer;
+    final border = selected ? cs.primary : cs.primary.withValues(alpha: 0.3);
 
     return Semantics(
       selected: selected,
@@ -308,6 +308,7 @@ class _MessageField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return TextField(
       key: const Key('ping-message-field'),
       controller: controller,
@@ -317,22 +318,22 @@ class _MessageField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: context.l10n.pingComposeMessageHint,
         hintStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textLight,
+          color: cs.onSurfaceVariant,
         ),
         filled: true,
-        fillColor: AppColors.cardWhite,
-        border: const OutlineInputBorder(
+        fillColor: cs.surfaceContainerHighest,
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AppColors.divider),
+          borderSide: BorderSide(color: cs.outlineVariant),
         ),
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AppColors.forestGreen, width: 2),
+          borderSide: BorderSide(color: cs.primary, width: 2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.zero,
           borderSide: BorderSide(
-            color: AppColors.forestGreen.withValues(alpha: 0.3),
+            color: cs.primary.withValues(alpha: 0.3),
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(
@@ -351,18 +352,19 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       key: const Key('ping-inline-error'),
       padding: const EdgeInsets.all(AppDimensions.spacingSm),
       decoration: BoxDecoration(
-        color: AppColors.errorContainer,
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
+        color: cs.errorContainer,
+        border: Border.all(color: cs.error.withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
-            color: AppColors.error,
+            color: cs.error,
             size: AppDimensions.iconSizeS,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -370,7 +372,7 @@ class _InlineError extends StatelessWidget {
             child: Text(
               message,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.onErrorContainer,
+                color: cs.onErrorContainer,
               ),
             ),
           ),
@@ -393,7 +395,9 @@ class _SendButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = enabled ? AppColors.forestGreenDark : AppColors.greenMuted;
+    final cs = Theme.of(context).colorScheme;
+    final bg =
+        enabled ? cs.onPrimaryContainer : context.butleryColors.iconMuted;
 
     return Semantics(
       label: context.l10n.a11yPingComposeSend,
@@ -409,18 +413,18 @@ class _SendButton extends StatelessWidget {
           decoration: BoxDecoration(color: bg),
           alignment: Alignment.center,
           child: isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.cream),
+                    valueColor: AlwaysStoppedAnimation<Color>(cs.surface),
                   ),
                 )
               : Text(
                   context.l10n.pingComposeSend,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.cream,
+                    color: cs.surface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

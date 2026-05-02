@@ -651,3 +651,145 @@ that proves nothing.
 Sprint approved: 23/23 green for FCM, 85/85 for DeepLinkService, 9/9
 for account-deletion integration. No new test files needed. Marker
 written.
+
+### 2026-05-02 — BUT-754 parallel consent listener wire-up [Pattern discovered]
+Sprint added `NotificationService._handleConsentChange` — a sibling
+consent listener to FCMService's existing one. FCMService handles SDK +
+Firestore + memory teardown on revoke; the new NotificationService
+listener handles the FCMTokenManager SecureStorage cleanup that
+FCMService can't reach (different lifecycle — FCMTokenManager is
+per-user, FCMService is process-wide).
+
+The new `clearLocalToken()` got two direct unit tests in
+`fcm_token_manager_test.dart` (deletes both keys + nulls memory;
+idempotent on empty store). The NotificationService listener wire-up
+got NO new test. Reviewed and confirmed defensible:
+
+1. **Listener wire-up has no behaviour the components don't already
+   cover.** The whole listener body is: read consent state via
+   `ConsentService.checkSafely` (already tested in consent_service tests
+   with the multi-listener BUT-752 group), if revoked call
+   `_tokenManager?.clearLocalToken()` (now tested in
+   fcm_token_manager_test.dart), guarded by `_consentHandlerInProgress`
+   reentrancy bool. There is no transformation, no decision logic, no
+   contract beyond "fan out to the right downstream." A test would have
+   to construct a real `NotificationService` (which constructs ~10
+   modules + hits `production.ServiceLocator`), inject a fake
+   `ConsentService`, fire its listeners, and assert
+   `verify(() => mockTokenManager.clearLocalToken())` — testing the
+   *plumbing*, not the user-visible behaviour. That's the structural
+   anti-pattern BUT-368 deleted ~11.5k LoC of.
+
+2. **Same shape as the FCMService consent listener (which we
+   documented as untestable-by-design in the BUT-573/434 entry above).**
+   Both listeners are private methods triggered by an external
+   listenable. The difference is that FCMService's listener has
+   *unobservable* side effects (`FirebaseMessaging.instance.deleteToken`
+   on a static-final SDK), while NotificationService's listener has
+   *already-tested* side effects. Either way, the "does the listener
+   actually fan out correctly?" question is answered by the
+   ChangeNotifier contract (BUT-752 multi-listener tests) plus the
+   downstream tests, not by a per-listener wire-up test.
+
+3. **The reentrancy guard (`_consentHandlerInProgress`) is the one
+   thing that *would* be worth pinning if the listener got more
+   complex.** Currently the body is `await
+   ConsentService.checkSafely(...)` + optional `await
+   _tokenManager.clearLocalToken()`. Neither call goes back into
+   ConsentService, so re-entrance can't happen via the production
+   call graph — the guard is belt-and-braces against a future
+   refactor that adds a notify cycle. If a future change makes the
+   listener call something that *can* trigger consent change (e.g.
+   updating a setting that's wired to a consent gate), add a single
+   unit test that fires the listener twice quickly and asserts
+   `clearLocalToken` is called exactly once. Today that test would
+   prove only that "false stays false on a flag we just toggled."
+
+Decision rule: **a fan-out listener whose body is `read state →
+forward to one already-tested method` does not need its own test.**
+The risk surface is "is the listener actually subscribed?" (proven by
+BUT-752 multi-listener tests on ConsentService — `addListener` /
+`notifyListeners` behaviour is correct) and "does the downstream
+handle the call?" (proven by `fcm_token_manager_test.dart` BUT-754
+group). The wire-up itself is structural plumbing.
+
+If the listener body grows to include real logic (debouncing, state
+transformation, conditional fan-out to multiple downstreams,
+metric/analytics emission), promote it to a testable seam — extract
+the body into a public method that takes the consent state as a
+parameter, and unit-test that method directly. Today's body doesn't
+warrant that overhead.
+
+Sprint approved: 22/22 green for FCMTokenManager (incl. 2 new
+BUT-754 tests), 23/23 green for FCMService. Pre-existing flakes
+(notification_content_manager, notification_preference_manager,
+calendar_weekly_menu_widget week-nav button) confirmed pre-existing
+via the user's `git stash` check — not regressions.
+
+### 2026-05-02 — BUT-755..758 color-token migration: hardcoded-AppColors finder caught a real regression [Bug found]
+26-file BUT-572 wave migration (115 sites swapping `AppColors.X` → `cs.X`
+or `context.butleryColors.X`). Sample-run of `test/widget/social/`
+exposed `family_presence_bar_test.dart` failing 1/4 dependent tests:
+`findOnlineDot()` predicate compared `decoration.color ==
+AppColors.forestGreen` (the literal `0xFF4A7C59`), but production now
+reads `cs.primary`. The test's `wrap()` built a bare `MaterialApp` with
+no `theme:` — so `cs.primary` resolved to Material's default purple, not
+forestGreen, and the finder returned zero matches.
+
+This is exactly the DO-NOT-WRITE pattern in `testing-specialist.md`:
+"No hardcoded theme values" + "Capture `ColorScheme` via a `Builder`."
+The original test pre-dated the migration and pinned a literal — when
+production stopped using the literal, the finder broke.
+
+Fix: install `theme: AppTheme.lightTheme` on the test's `MaterialApp`.
+That keeps the literal-color predicate valid (because production's
+`lightColorScheme.primary` *is* `forestGreen` — same hex), and as a
+bonus makes the test theme-faithful. Surgical 2-line edit to `wrap()`
++ comment update on `findOnlineDot()`. All 5 family-presence tests
+green post-fix. Surveyed the rest of `test/` for similar patterns —
+only this one file used `AppColors` for production-color matching
+(the other `AppColors` references are contrast/asset tests, not
+migration risk).
+
+Pattern reminder for any future "swap hardcoded colors for theme
+tokens" sprint: **grep `test/` for `== AppColors\.` and `==
+AppDimensions\.` before claiming the diff is mechanically safe.**
+Tests that pin literals on the *production output* break the moment
+the production source-of-truth changes, even when the rendered hex is
+identical. The right long-term fix is to capture `ColorScheme` via
+`Builder` in test setup and assert against `cs.X` directly, but
+"install the matching production theme on the test MaterialApp" is
+the minimal-diff fix that doesn't lock the test to a specific hex.
+
+Sprint coverage assessment:
+- iconMuted unit tests (6/6) cover the right contract — light/dark
+  literal hex (regression gate against accidental brand-color change),
+  `copyWith` preserve+override, lerp interpolation, end-to-end Theme
+  wiring via `context.butleryColors.iconMuted`. Test #6 has a minor
+  smell — uses `runApp` + `endOfFrame.then` instead of
+  `tester.pumpWidget` + sync `expect`, so the `expect` runs in a
+  dangling future after the test completes; if it ever fires it'd be
+  outside the test's reporting window. Not blocking (the resolved
+  value is also pinned by tests 1-2 via the static accessor), but
+  worth converting to a `testWidgets` block on the next touch.
+- 20+ migrated widgets without dedicated golden tests: confirmed
+  byte-identical migration (every replaced color resolves to the same
+  hex via `lightColorScheme`), and BUT-572 pilot's
+  `calendar_weekly_menu_populated.png` golden already proved this.
+  Adding goldens for previously-untested widgets is correctly out of
+  sprint scope — that's a separate "expand golden coverage" ticket.
+- `getSocialColorScheme` API change (optional → required `BuildContext`):
+  zero stray no-arg callers anywhere in `lib/` or `test/`, fallback was
+  dead code. No isolated test needed; the function's behaviour (map of
+  semantic-role → ColorScheme color) is contract-trivial and any caller
+  that ships a regression would break that consuming widget's tests
+  directly.
+
+Tests run this review: 83/83 green across iconMuted unit + 9 sampled
+widget test files (styled_input, step_timer, cooking_session_card,
+substitution_bottom_sheet, family_presence_bar, activity_pings_feed,
+ping_compose_sheet, duplicate_merge_sheet, heirloom_stamp,
+seasonal_hero_header, cooking_mode_touch_target). Pre-existing flakes
+(notification_content_manager, notification_preference_manager,
+calendar_weekly_menu_widget week-nav) NOT re-run — already
+characterised in prior sprint, not regressions.

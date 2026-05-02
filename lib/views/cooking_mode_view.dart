@@ -13,9 +13,9 @@ import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
@@ -469,10 +469,12 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     final service = ServiceLocator.get<StepTimerService>();
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
+    final cs = Theme.of(context).colorScheme;
+    final starGold = context.butleryColors.starGold;
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.cream,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (sheetContext) => StepTimerWidget(
         service: service,
@@ -483,7 +485,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
           messenger?.showSnackBar(
             SnackBar(
               content: Text(l10n.timerExpired),
-              backgroundColor: AppColors.starGold,
+              backgroundColor: starGold,
               behavior: SnackBarBehavior.floating,
             ),
           );

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// BUT-202: Bottom sheet shown on long-press of an ingredient row in cooking
 /// mode. Square corners, cream bg, greenDark text per design system.
@@ -37,7 +37,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
   }) {
     return showModalBottomSheet<IngredientSubstitution>(
       context: context,
-      backgroundColor: AppColors.creamDarker,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       // Square corners everywhere — design-system rule.
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
@@ -52,6 +52,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return SafeArea(
       top: false,
       child: Padding(
@@ -63,7 +64,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
             Text(
               context.l10n.outOfIngredientTitle(ingredientName),
               style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.forestGreenDark,
+                color: cs.onPrimaryContainer,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -104,8 +105,9 @@ class _SuggestionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      color: AppColors.cream,
+      color: cs.surface,
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -116,7 +118,7 @@ class _SuggestionRow extends StatelessWidget {
                 child: Text(
                   suggestion.name,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.forestGreenDark,
+                    color: cs.onPrimaryContainer,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -130,7 +132,7 @@ class _SuggestionRow extends StatelessWidget {
             Text(
               suggestion.context!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.greenMuted,
+                color: context.butleryColors.iconMuted,
               ),
             ),
           ],
@@ -138,7 +140,7 @@ class _SuggestionRow extends StatelessWidget {
           SizedBox(
             height: AppDimensions.minTouchTarget,
             child: Material(
-              color: AppColors.forestGreen,
+              color: cs.primary,
               // Square — sharp corners everywhere.
               borderRadius: BorderRadius.zero,
               child: Semantics(
@@ -150,7 +152,7 @@ class _SuggestionRow extends StatelessWidget {
                     child: Text(
                       context.l10n.replaceInRecipe,
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.textOnPrimary,
+                        color: cs.onPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -176,16 +178,17 @@ class _RatioBadge extends StatelessWidget {
     // Rationale: mixed ratios surface the numeric value; an exact 1.0 reads
     // more naturally as "1:1" on a recipe card than "100%".
     final label = ratio == 1.0 ? '1:1' : '${(ratio * 100).round()}%';
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingSm,
         vertical: AppDimensions.spacingXs,
       ),
-      color: AppColors.forestGreenLight,
+      color: cs.inversePrimary,
       child: Text(
         label,
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textOnPrimary,
+          color: cs.onPrimary,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -198,17 +201,18 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          color: AppColors.cream,
+          color: cs.surface,
           padding: const EdgeInsets.all(AppDimensions.spacingLg),
           alignment: Alignment.center,
           child: Text(
             context.l10n.noSubstitutionSuggestions,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.greenMuted,
+              color: context.butleryColors.iconMuted,
             ),
           ),
         ),
@@ -217,7 +221,7 @@ class _EmptyState extends StatelessWidget {
         SizedBox(
           height: AppDimensions.minTouchTarget,
           child: Material(
-            color: AppColors.creamDark,
+            color: cs.surfaceContainer,
             borderRadius: BorderRadius.zero,
             child: InkWell(
               // null onTap = disabled; kept as a visual placeholder.
@@ -226,7 +230,7 @@ class _EmptyState extends StatelessWidget {
                 child: Text(
                   context.l10n.suggestAlternative,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.textLight,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -245,6 +249,7 @@ class _CancelButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       height: AppDimensions.minTouchTarget,
       child: Material(
@@ -256,15 +261,15 @@ class _CancelButton extends StatelessWidget {
             onTap: onPressed,
             child: Container(
               alignment: Alignment.center,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border.fromBorderSide(
-                  BorderSide(color: AppColors.greenMuted, width: 1),
+                  BorderSide(color: context.butleryColors.iconMuted, width: 1),
                 ),
               ),
               child: Text(
                 context.l10n.commonCancel,
                 style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.forestGreenDark,
+                  color: cs.onPrimaryContainer,
                 ),
               ),
             ),

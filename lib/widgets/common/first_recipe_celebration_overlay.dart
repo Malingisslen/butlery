@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -74,9 +73,10 @@ class _FirstRecipeCelebrationOverlayState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
 
     return Material(
-      color: AppColors.forestGreen,
+      color: cs.primary,
       child: SafeArea(
         child: Center(
           child: Padding(
@@ -89,7 +89,7 @@ class _FirstRecipeCelebrationOverlayState
                 Text(
                   l10n.celebrationFirstRecipeTitle,
                   style: AppTextStyles.headlineBold.copyWith(
-                    color: AppColors.cream,
+                    color: cs.surface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -97,7 +97,7 @@ class _FirstRecipeCelebrationOverlayState
                 Text(
                   l10n.celebrationFirstRecipeMessage(widget.recipeTitle),
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.cream,
+                    color: cs.surface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -108,14 +108,14 @@ class _FirstRecipeCelebrationOverlayState
                   child: FilledButton(
                     onPressed: widget.onDismiss,
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.cream,
-                      foregroundColor: AppColors.forestGreenDark,
+                      backgroundColor: cs.surface,
+                      foregroundColor: cs.onPrimaryContainer,
                       shape: const RoundedRectangleBorder(),
                     ),
                     child: Text(
                       l10n.celebrationFirstRecipeContinue,
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.forestGreenDark,
+                        color: cs.onPrimaryContainer,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

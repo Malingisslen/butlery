@@ -6,7 +6,6 @@
 /// mockup's square design language).
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -31,6 +30,7 @@ class HeirloomStamp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final name = heirloom.writerName;
     final year = heirloom.year;
 
@@ -49,14 +49,14 @@ class HeirloomStamp extends StatelessWidget {
           horizontal: AppDimensions.spacingS,
           vertical: AppDimensions.spacingXs,
         ),
-        decoration: const BoxDecoration(
-          color: AppColors.rust,
+        decoration: BoxDecoration(
+          color: cs.secondary,
           // Square-corner design language — no BorderRadius anywhere.
         ),
         child: Text(
           label,
           style: AppTextStyles.badgeLarge.copyWith(
-            color: AppColors.cream,
+            color: cs.surface,
             fontWeight: FontWeight.w600,
           ),
         ),

@@ -34,6 +34,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     required this.recipeCardLeftBorder,
     required this.recipeCardBottomBorder,
     required this.navAccent,
+    required this.iconMuted,
     // Categories
     required this.categoryMeatFish,
     required this.categoryDairy,
@@ -83,6 +84,11 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
   final Color recipeCardBottomBorder;
   final Color navAccent;
 
+  /// Muted brand-green for decorative icons (BUT-572 pilot follow-up).
+  /// Light: matches legacy `AppColors.greenMuted` (0xFF526A55) so existing
+  /// goldens stay byte-identical. Dark: tone-80 lighter equivalent.
+  final Color iconMuted;
+
   // Categories
   final Color categoryMeatFish;
   final Color categoryDairy;
@@ -129,6 +135,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     recipeCardLeftBorder: Color(0xFF4A7C59), // forestGreen
     recipeCardBottomBorder: Color(0xFFA77B5E), // rustLight per mockup
     navAccent: Color(0xFF8B5A3C), // rust
+    iconMuted: Color(0xFF526A55), // matches AppColors.greenMuted
     // Categories
     categoryMeatFish: Color(0xFF8B5A3C), // rust
     categoryDairy: Color(0xFFD4A03C),
@@ -175,6 +182,8 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     recipeCardLeftBorder: Color(0xFF6B9B7A), // forestGreenLight
     recipeCardBottomBorder: Color(0xFFD4A88A), // rust tone 80
     navAccent: Color(0xFFD4A88A), // rust tone 80
+    iconMuted:
+        Color(0xFF7A9C7E), // muted green tone 80 — readable on dark surfaces
     // Categories: lighter for dark bg contrast
     categoryMeatFish: Color(0xFFD4A88A),
     categoryDairy: Color(0xFFE8C76E),
@@ -216,6 +225,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     Color? recipeCardLeftBorder,
     Color? recipeCardBottomBorder,
     Color? navAccent,
+    Color? iconMuted,
     Color? categoryMeatFish,
     Color? categoryDairy,
     Color? categoryVegetables,
@@ -254,6 +264,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
       recipeCardBottomBorder:
           recipeCardBottomBorder ?? this.recipeCardBottomBorder,
       navAccent: navAccent ?? this.navAccent,
+      iconMuted: iconMuted ?? this.iconMuted,
       categoryMeatFish: categoryMeatFish ?? this.categoryMeatFish,
       categoryDairy: categoryDairy ?? this.categoryDairy,
       categoryVegetables: categoryVegetables ?? this.categoryVegetables,
@@ -307,6 +318,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
       recipeCardBottomBorder:
           Color.lerp(recipeCardBottomBorder, other.recipeCardBottomBorder, t)!,
       navAccent: Color.lerp(navAccent, other.navAccent, t)!,
+      iconMuted: Color.lerp(iconMuted, other.iconMuted, t)!,
       categoryMeatFish:
           Color.lerp(categoryMeatFish, other.categoryMeatFish, t)!,
       categoryDairy: Color.lerp(categoryDairy, other.categoryDairy, t)!,

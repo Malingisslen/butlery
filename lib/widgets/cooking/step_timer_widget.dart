@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/theme_constants.dart';
 
 /// BUT-406: Square, cream-bg widget shown in the bottom sheet triggered by
@@ -14,9 +14,9 @@ import 'package:butlery/theme/theme_constants.dart';
 /// sheet while a timer is still running.
 ///
 /// Visual spec:
-/// - `AppColors.cream` background, `AppColors.forestGreenDark` numerals.
+/// - `colorScheme.surface` background, `colorScheme.onPrimaryContainer` numerals.
 /// - Square container (plain `Container`, no `BorderRadius`).
-/// - On expiry: `AppColors.starGold` pulse via `AnimationController` running
+/// - On expiry: `butleryColors.starGold` pulse via `AnimationController` running
 ///   `ThemeConstants.durationMedium` in reverse-repeat until the user
 ///   dismisses the sheet.
 ///
@@ -158,7 +158,10 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
                 context.l10n.timerDurationHint(widget.sourcePhrase!),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.forestGreenDark.withValues(alpha: 0.7),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onPrimaryContainer
+                      .withValues(alpha: 0.7),
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -196,17 +199,15 @@ class _TimerDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final starGold = context.butleryColors.starGold;
     return AnimatedBuilder(
       animation: pulseController,
       builder: (context, child) {
         final pulseAlpha = isExpired ? pulseController.value : 0.0;
         return Container(
           // Square — no BorderRadius per design system.
-          color: Color.lerp(
-            AppColors.cream,
-            AppColors.starGold,
-            pulseAlpha,
-          ),
+          color: Color.lerp(cs.surface, starGold, pulseAlpha),
           padding: const EdgeInsets.symmetric(
             vertical: AppDimensions.spacingLg,
             horizontal: AppDimensions.spacingMd,
@@ -215,7 +216,7 @@ class _TimerDisplay extends StatelessWidget {
           child: Text(
             _formatRemaining(remaining),
             style: AppTextStyles.titleLarge.copyWith(
-              color: AppColors.forestGreenDark,
+              color: cs.onPrimaryContainer,
               fontSize: 56,
               fontWeight: FontWeight.w700,
               fontFeatures: const [FontFeature.tabularFigures()],
@@ -258,23 +259,27 @@ class _TimerControls extends StatelessWidget {
       children: [
         if (isRunning)
           _controlButton(
+            context: context,
             icon: Icons.pause,
             label: context.l10n.pauseTimer,
             onPressed: onPause,
           )
         else if (isPaused)
           _controlButton(
+            context: context,
             icon: Icons.play_arrow,
             label: context.l10n.resumeTimer,
             onPressed: onResume,
           )
         else
           _controlButton(
+            context: context,
             icon: Icons.play_arrow,
             label: context.l10n.resumeTimer,
             onPressed: null,
           ),
         _controlButton(
+          context: context,
           icon: Icons.refresh,
           label: context.l10n.resetTimer,
           onPressed: onReset,
@@ -284,14 +289,14 @@ class _TimerControls extends StatelessWidget {
   }
 
   Widget _controlButton({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required VoidCallback? onPressed,
   }) {
     final enabled = onPressed != null;
-    final color = enabled
-        ? AppColors.forestGreenDark
-        : AppColors.forestGreenDark.withValues(alpha: 0.4);
+    final base = Theme.of(context).colorScheme.onPrimaryContainer;
+    final color = enabled ? base : base.withValues(alpha: 0.4);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

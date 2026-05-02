@@ -6,9 +6,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cooking/cooking_session.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/indicators/pulse_dot.dart';
 
 /// Compose the primary presence line from one or more [names] cooking a
@@ -85,6 +85,8 @@ class CookingSessionCard extends StatelessWidget {
     );
     final eyebrow = l10n.cookingNowEyebrow;
 
+    final cs = Theme.of(context).colorScheme;
+    final starGold = context.butleryColors.starGold;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingMd,
@@ -100,13 +102,10 @@ class CookingSessionCard extends StatelessWidget {
             button: true,
             label: '$primaryLine. $eyebrow',
             child: Container(
-              decoration: const BoxDecoration(
-                color: AppColors.forestGreenDark,
+              decoration: BoxDecoration(
+                color: cs.onPrimaryContainer,
                 border: Border(
-                  left: BorderSide(
-                    color: AppColors.starGold,
-                    width: 3,
-                  ),
+                  left: BorderSide(color: starGold, width: 3),
                 ),
               ),
               padding: const EdgeInsets.symmetric(
@@ -115,10 +114,7 @@ class CookingSessionCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const PulseDot(
-                    color: AppColors.starGold,
-                    size: 10,
-                  ),
+                  PulseDot(color: starGold, size: 10),
                   const SizedBox(width: AppDimensions.spacingMd),
                   Expanded(
                     child: Column(
@@ -128,7 +124,7 @@ class CookingSessionCard extends StatelessWidget {
                         Text(
                           eyebrow,
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.starGold,
+                            color: starGold,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.8,
                           ),
@@ -137,7 +133,7 @@ class CookingSessionCard extends StatelessWidget {
                         Text(
                           primaryLine,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textOnPrimary,
+                            color: cs.onPrimary,
                             fontWeight: FontWeight.w600,
                           ),
                           maxLines: 1,
@@ -148,7 +144,7 @@ class CookingSessionCard extends StatelessWidget {
                   ),
                   Icon(
                     Icons.chevron_right,
-                    color: AppColors.textOnPrimary.withValues(alpha: 0.6),
+                    color: cs.onPrimary.withValues(alpha: 0.6),
                     size: AppDimensions.iconSizeM,
                   ),
                 ],

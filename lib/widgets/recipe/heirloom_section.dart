@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/widgets/recipe/heirloom_stamp.dart';
@@ -38,6 +37,7 @@ class HeirloomSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final imageUrl = heirloom.sourceImageUrl;
 
     final imageBlock = ConstrainedBox(
@@ -50,7 +50,7 @@ class HeirloomSection extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             ColoredBox(
-              color: AppColors.cream,
+              color: cs.surface,
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
                 cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
@@ -58,9 +58,8 @@ class HeirloomSection extends StatelessWidget {
                 placeholder: (_, __) => const Center(
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                errorWidget: (_, __, ___) => const Center(
-                  child: Icon(Icons.broken_image_outlined,
-                      color: AppColors.textOnCream),
+                errorWidget: (_, __, ___) => Center(
+                  child: Icon(Icons.broken_image_outlined, color: cs.onSurface),
                 ),
               ),
             ),
@@ -95,8 +94,8 @@ class HeirloomSection extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
           child: Text(
             note,
-            style: const TextStyle(
-              color: AppColors.textOnCream,
+            style: TextStyle(
+              color: cs.onSurface,
               fontStyle: FontStyle.italic,
               fontSize: 14,
             ),

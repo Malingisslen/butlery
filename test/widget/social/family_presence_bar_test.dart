@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 
 UserProfile profile(String uid, {String? avatarUrl}) => UserProfile(
@@ -28,7 +29,12 @@ UserProfile profile(String uid, {String? avatarUrl}) => UserProfile(
     );
 
 Widget wrap(Widget child, {bool disableAnimations = false}) {
+  // Pin AppTheme.lightTheme so `colorScheme.primary` resolves to the same
+  // forestGreen the production theme installs — the BUT-755 migration moved
+  // the online-dot from `AppColors.forestGreen` to `cs.primary`, so the bare
+  // MaterialApp default theme would no longer satisfy `findOnlineDot()`.
   return MaterialApp(
+    theme: AppTheme.lightTheme,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     locale: const Locale('sv'),
@@ -42,8 +48,11 @@ Widget wrap(Widget child, {bool disableAnimations = false}) {
 }
 
 /// The online dot is the only widget in the tree whose `decoration` is a
-/// [BoxDecoration] with `AppColors.forestGreen` as the fill — unique enough
-/// to be a reliable finder across both plain Containers and DecoratedBoxes.
+/// [BoxDecoration] with the brand forestGreen as the fill — unique enough to
+/// be a reliable finder across both plain Containers and DecoratedBoxes.
+/// Production now resolves the colour from `colorScheme.primary`; under the
+/// `AppTheme.lightTheme` installed by `wrap()` that's the same hex as
+/// `AppColors.forestGreen`, so the literal comparison still holds.
 Finder findOnlineDot() {
   return find.byWidgetPredicate((w) {
     BoxDecoration? decoration;

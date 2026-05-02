@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social formatting utilities for display names, numbers, and time.
@@ -55,34 +54,19 @@ class SocialFormatters {
     }
   }
 
-  /// Get social color scheme.
-  /// Always pass context for theme-aware colors. The no-context fallback uses
-  /// hardcoded light-mode values and should be migrated away over time.
-  static Map<String, Color> getSocialColorScheme([BuildContext? context]) {
-    if (context != null) {
-      final cs = Theme.of(context).colorScheme;
-      return {
-        'primary': cs.primary,
-        'secondary':
-            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-        'success': cs.primary,
-        'warning': cs.onSurfaceVariant,
-        'danger': cs.error,
-        'info': cs.primary.withValues(alpha: AppDimensions.opacityDark),
-        'muted': cs.onSurfaceVariant,
-      };
-    }
-    // Fallback for callers without context (light-mode hardcoded)
+  /// Get the social color scheme keyed by semantic role. Reads through the
+  /// active theme — pass a real `BuildContext`. The legacy no-context fallback
+  /// was removed in BUT-755; it had zero live callers and broke dark mode.
+  static Map<String, Color> getSocialColorScheme(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return {
-      'primary': AppColors.forestGreen,
-      'secondary': AppColors.forestGreen
-          .withValues(alpha: AppDimensions.opacityVeryLight),
-      'success': AppColors.forestGreen,
-      'warning': AppColors.textMedium,
-      'danger': AppColors.error,
-      'info':
-          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityDark),
-      'muted': AppColors.textMedium,
+      'primary': cs.primary,
+      'secondary': cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+      'success': cs.primary,
+      'warning': cs.onSurfaceVariant,
+      'danger': cs.error,
+      'info': cs.primary.withValues(alpha: AppDimensions.opacityDark),
+      'muted': cs.onSurfaceVariant,
     };
   }
 }

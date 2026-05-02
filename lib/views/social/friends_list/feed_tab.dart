@@ -127,6 +127,7 @@ class FeedTab {
     bool selected,
     VoidCallback onTap,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: context.l10n.a11yFeedFilter(label),
       button: true,
@@ -139,17 +140,15 @@ class FeedTab {
             vertical: AppDimensions.spacingSm,
           ),
           decoration: BoxDecoration(
-            color: selected ? AppColors.forestGreen : Colors.transparent,
+            color: selected ? cs.primary : Colors.transparent,
             border: Border.all(
-              color: selected
-                  ? AppColors.forestGreen
-                  : Theme.of(context).dividerColor,
+              color: selected ? cs.primary : Theme.of(context).dividerColor,
             ),
           ),
           child: Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: selected ? AppColors.cream : AppColors.textDark,
+              color: selected ? cs.onPrimary : cs.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -159,6 +158,7 @@ class FeedTab {
   }
 
   static Widget _buildDateHeader(BuildContext context, DateTime date) {
+    final cs = Theme.of(context).colorScheme;
     final label = _dateLabel(context, date);
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -175,7 +175,7 @@ class FeedTab {
               label,
               style: AppTextStyles.labelSmall.copyWith(
                 letterSpacing: 2,
-                color: AppColors.textLight,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ),
@@ -186,9 +186,9 @@ class FeedTab {
   }
 
   static Widget _buildActivityCard(BuildContext context, ActivityEvent event) {
-    final borderColor = event.type == ActivityEventType.cooked
-        ? AppColors.forestGreen
-        : AppColors.rust;
+    final cs = Theme.of(context).colorScheme;
+    final borderColor =
+        event.type == ActivityEventType.cooked ? cs.primary : cs.secondary;
 
     final actionText = event.type == ActivityEventType.cooked
         ? context.l10n.feedActionCooked
@@ -202,6 +202,8 @@ class FeedTab {
         border: Border(
           left: BorderSide(color: borderColor, width: 4),
           bottom: BorderSide(
+            // Decorative thin rust accent — kept on rustLight per BUT-572
+            // legitimate-keep set (no clean theme-token equivalent).
             color: AppColors.rustLight.withValues(alpha: 0.5),
             width: 3,
           ),
@@ -220,7 +222,7 @@ class FeedTab {
             child: Text(
               initials,
               style: AppTextStyles.labelSmall.copyWith(
-                color: AppColors.cream,
+                color: cs.onPrimary,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -243,7 +245,7 @@ class FeedTab {
                       ),
                       TextSpan(
                         text: ' $actionText',
-                        style: const TextStyle(color: AppColors.textLight),
+                        style: TextStyle(color: cs.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -253,7 +255,7 @@ class FeedTab {
                 Text(
                   _relativeTime(context, event.createdAt),
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textLight,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
@@ -267,12 +269,12 @@ class FeedTab {
                     child: Container(
                       width: double.infinity,
                       height: 140,
-                      color: AppColors.forestGreenDark,
+                      color: cs.onPrimaryContainer,
                       alignment: Alignment.center,
                       child: Icon(
                         Icons.photo_camera,
                         size: 36,
-                        color: AppColors.cream.withValues(alpha: 0.4),
+                        color: cs.onPrimary.withValues(alpha: 0.4),
                       ),
                     ),
                   ),
@@ -285,6 +287,7 @@ class FeedTab {
   }
 
   static Widget _buildRecipePreview(BuildContext context, ActivityEvent event) {
+    final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: context.l10n.a11yFeedRecipePreview(event.recipeTitle),
       button: true,
@@ -292,7 +295,7 @@ class FeedTab {
         onTap: () => _navigateToRecipe(context, event.recipeId),
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.spacingSm),
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          color: cs.surfaceContainerLow,
           child: Row(
             children: [
               Container(
@@ -300,6 +303,8 @@ class FeedTab {
                 height: 48,
                 color: Theme.of(context).dividerColor,
                 alignment: Alignment.center,
+                // greenMuted retained per BUT-572 legitimate-keep set —
+                // muted icon tone with no clean theme-token equivalent.
                 child: const Icon(
                   Icons.restaurant_outlined,
                   color: AppColors.greenMuted,
@@ -323,10 +328,10 @@ class FeedTab {
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
                 size: AppDimensions.iconSizeS,
-                color: AppColors.textLight,
+                color: cs.onSurfaceVariant,
               ),
             ],
           ),

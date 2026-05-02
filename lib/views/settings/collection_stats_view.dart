@@ -7,7 +7,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 class CollectionStatsView extends StatefulWidget {
   const CollectionStatsView({super.key});
@@ -358,17 +358,21 @@ class _CompletenessSection extends StatelessWidget {
     required this.incompleteRecipes,
   });
 
-  static const _segmentDefs = [
-    ('0-25%', AppColors.error),
-    ('25-50%', AppColors.warning),
-    ('50-75%', AppColors.primaryContainer),
-    ('75-100%', AppColors.success),
-  ];
+  // Segment label keys are stable; colors resolve from the theme at build()
+  // time so dark-mode flips and theme overrides flow through.
+  static const _segmentLabels = ['0-25%', '25-50%', '50-75%', '75-100%'];
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final butlery = context.butleryColors;
     final l10n = context.l10n;
+    final segmentColors = <Color>[
+      cs.error,
+      butlery.warning,
+      cs.primaryContainer,
+      butlery.success,
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
       child: Column(
@@ -378,7 +382,7 @@ class _CompletenessSection extends StatelessWidget {
           _StatRow(label: l10n.statsWithoutTime, value: withoutTime),
           _StatRow(label: l10n.statsIncomplete, value: incompleteCount),
           const SizedBox(height: AppDimensions.spacingMd),
-          _buildDistributionBar(),
+          _buildDistributionBar(segmentColors),
           const SizedBox(height: AppDimensions.spacingMd),
           if (incompleteRecipes.isEmpty)
             StateWidget.empty(title: l10n.statsAllComplete)
@@ -389,11 +393,17 @@ class _CompletenessSection extends StatelessWidget {
     );
   }
 
-  Widget _buildDistributionBar() {
+  Widget _buildDistributionBar(List<Color> segmentColors) {
     final total = distribution.values.fold<int>(0, (sum, v) => sum + v);
     if (total == 0) return const SizedBox.shrink();
-    final segments =
-        _segmentDefs.map((d) => (d.$1, distribution[d.$1] ?? 0, d.$2)).toList();
+    final segments = [
+      for (var i = 0; i < _segmentLabels.length; i++)
+        (
+          _segmentLabels[i],
+          distribution[_segmentLabels[i]] ?? 0,
+          segmentColors[i],
+        ),
+    ];
     return Column(children: [
       SizedBox(
         height: AppDimensions.spacingMd + AppDimensions.spacingXs,

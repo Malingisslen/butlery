@@ -8,7 +8,6 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/social/ping_compose_sheet.dart';
@@ -140,7 +139,7 @@ class _PresenceRow extends StatelessWidget {
       container: true,
       child: Container(
         width: double.infinity,
-        color: AppColors.cream,
+        color: Theme.of(context).colorScheme.surface,
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingMd,
           vertical: AppDimensions.spacingSm,
@@ -246,15 +245,16 @@ class _InitialsSquare extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.forestGreenLight,
+      decoration: BoxDecoration(
+        color: cs.inversePrimary,
       ),
       child: Center(
         child: Text(
           profile.initials,
           style: AppTextStyles.labelMedium.copyWith(
-            color: AppColors.textOnPrimary,
+            color: cs.onPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -274,13 +274,14 @@ class _OnlineDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: _kOnlineDotSize,
       height: _kOnlineDotSize,
-      decoration: const BoxDecoration(
-        color: AppColors.forestGreen,
+      decoration: BoxDecoration(
+        color: cs.primary,
         border: Border.fromBorderSide(
-          BorderSide(color: AppColors.cream, width: 1.5),
+          BorderSide(color: cs.surface, width: 1.5),
         ),
       ),
     );
@@ -296,22 +297,23 @@ class _OverflowChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final label = context.l10n.familyPresenceOverflow(count);
     return Container(
       width: _kAvatarSize,
       height: _kAvatarSize,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.creamDark,
+        color: cs.surfaceContainer,
         border: Border.all(
-          color: AppColors.forestGreen.withValues(alpha: 0.4),
+          color: cs.primary.withValues(alpha: 0.4),
           width: 1,
         ),
       ),
       child: Text(
         label,
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.forestGreenDark,
+          color: cs.onPrimaryContainer,
           fontWeight: FontWeight.w700,
         ),
       ),

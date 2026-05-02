@@ -2100,3 +2100,74 @@ executable code. Verify: no embedded API keys, no internal endpoint URLs
 real prompts. PROMPT_CHANGELOG.md ships clean — only public Linear URLs
 (`linear.app/butlery/issue/BUT-XXX`), version constants, and commit
 SHAs (acceptable; SHAs are not secrets).
+
+### 2026-05-02 — FCM consent-revoke gap closed (BUT-754, M1 of BUT-573 follow-up)
+
+The residual-token gap flagged in the BUT-573 entry above is closed by
+this commit. Implementation chose **option B** from the prior note:
+NotificationService owns its own ConsentService listener (parallel to
+FCMService's), and calls `_tokenManager.clearLocalToken()` on revoke.
+Two reasons B beat A (call from FCMService): (1) FCMTokenManager is a
+per-user instance held by NotificationService — FCMService is static
+and would need ServiceLocator chasing, (2) the lifecycle ownership is
+correct: whoever creates the token manager owns its teardown.
+
+**Verified the residual-store map is exhaustive** (no other on-device
+store): canonical = SecureStorage `'fcm_token'` + `'fcm_token_timestamp'`
+(BUT-457 hardened); legacy SharedPreferences keys are scrubbed
+unconditionally on every init by `_migrateFromSharedPreferencesIfNeeded()`
+(lines 409-410 — `prefs.remove()` runs even when there's nothing to
+migrate, so a pre-BUT-457 install can never leave a plaintext residue
+past the first launch); in-memory = FCMService static `_currentToken`
+nulled by `_revokePushAccess` and FCMTokenManager `_currentToken` /
+`_lastTokenRefresh` nulled by `clearLocalToken`. Three stores total,
+all covered.
+
+**Two-listener ordering is fine for GDPR.** FCMService and
+NotificationService both subscribe to the same ConsentService. On
+revoke, ChangeNotifier dispatches listeners synchronously in
+registration order (Flutter foundation guarantee), but both handlers
+are `async` — they return their Futures immediately and run
+interleaved on the microtask queue. The two cleanups touch disjoint
+state (FCMService = SDK token + Firestore profile + static memory;
+NotificationService → FCMTokenManager = SecureStorage + instance
+memory), so order doesn't matter for correctness or for Art. 17. Both
+gate on `ConsentService.checkSafely(...)` re-reading the consent, so
+even if the notify fires before the cache invalidates there's no
+spurious clear.
+
+**Topic subscriptions post-revoke are NOT a separate Art. 17 gap.**
+FCM topic memberships are bound to the token, not the user.
+`_messaging.deleteToken()` (called by FCMService on revoke) makes the
+token unknown to Google's servers — the topic ACLs that referenced it
+are orphaned and broadcasts to those topics no longer reach the
+device. Deferring `unsubscribeFromAllTopics()` to logout/cleanup is a
+hygiene-only deferral, not a personal-data leak. The user's reasoning
+is correct.
+
+**Listener leak audit:** ConsentService and NotificationService are
+both `registerLazySingleton` in the SAME user scope (core_module
+`configureUserScope` + messaging_module `configureUserScope`). They're
+disposed together when the user scope tears down, so ConsentService
+cannot outlive NotificationService. The `_subscribedConsentService`
+field guards against double-subscribe across re-init cycles, and
+`_disposeModules` removes the listener before nulling. Re-entry
+during dispose is safe: `_handleConsentChange` short-circuits on
+`_subscribedConsentService == null`.
+
+**Minor: dispose-time race on `_tokenManager` is benign.** During
+`resetForLogout()`, the call order is `_tokenManager.cleanup()` →
+`_disposeModules()` (which removes the consent listener). If a
+revoke fires in that window, `_handleConsentChange` could run
+`clearLocalToken` concurrently with `cleanup()`. Both methods only
+touch SecureStorage delete (independently atomic) and null the same
+instance fields (idempotent), so worst case is a redundant delete and
+a duplicate "cleared" log. Not worth a guard.
+
+**Test pattern for in-memory secureStore fakes:** the existing
+`fcm_token_manager_test.dart` already uses a `Map<String,String>
+secureStore` with stubbed `read`/`write`/`delete`. The new
+`clearLocalToken` tests reuse this and assert via
+`secureStore.containsKey(...)` — straightforward and the right shape
+for verifying the keystore-side contract. No new mocktail boundary
+needed.

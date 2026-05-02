@@ -6,7 +6,6 @@ import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/validators/form_validators.dart';
@@ -73,11 +72,11 @@ class _AuthViewState extends State<AuthView> {
               children: [
                 SafeArea(
                   bottom: false,
-                  child: _buildGreenHeader(),
+                  child: _buildGreenHeader(cs),
                 ),
                 Container(
                   height: AppDimensions.spacingXs,
-                  color: AppColors.rust,
+                  color: cs.secondary,
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -103,9 +102,9 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  Widget _buildGreenHeader() {
+  Widget _buildGreenHeader(ColorScheme cs) {
     return Container(
-      color: AppColors.forestGreenDark,
+      color: cs.onPrimaryContainer,
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingXl,
@@ -133,7 +132,7 @@ class _AuthViewState extends State<AuthView> {
                     fontSize: 38,
                     fontWeight: FontWeight.w400,
                     letterSpacing: 1,
-                    color: AppColors.cream,
+                    color: cs.onPrimary,
                   ),
                 ),
               ),
@@ -143,7 +142,7 @@ class _AuthViewState extends State<AuthView> {
           Text(
             context.l10n.authTagline,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.cardWhite,
+              color: cs.onPrimary,
             ),
           ),
         ],

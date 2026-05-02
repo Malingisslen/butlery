@@ -473,8 +473,8 @@ class SocialBuilderComponents {
       SocialFormatters.formatRelativeTime(dateTime);
   static String formatNumberWithAbbreviation(int number) =>
       SocialFormatters.formatNumberWithAbbreviation(number);
-  static Map<String, Color> getSocialColorScheme() =>
-      SocialFormatters.getSocialColorScheme();
+  static Map<String, Color> getSocialColorScheme(BuildContext context) =>
+      SocialFormatters.getSocialColorScheme(context);
 
   /// Build responsive social layout
   /// Adapts layout based on screen size

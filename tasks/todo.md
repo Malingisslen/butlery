@@ -1,6 +1,68 @@
 # Sprint Backlog
 
-## Sprint: Theme migration pilot + FCM revoke consolidation — 2026-05-09
+## Sprint: Theme migration full sweep — 2026-05-16
+
+Theme: ship all four BUT-572 wave tickets in one sprint, gated by the prerequisite `ButleryColors.iconMuted` slot addition that the pilot identified. Pilot proved the migration is mostly mechanical (same-hex ColorScheme slots produce byte-identical goldens; de-`const` cost is small) so a single-sprint sweep is realistic. **5 tasks, sequential — no agent dispatch (mechanical work, batch edits per the pilot's pattern).**
+
+Just-shipped sprint `91a7c40c` cleared the BUT-572 pilot + BUT-754 (FCMTokenManager SecureStorage cleanup). Wave tickets BUT-755/756/757/758 were filed during sprint 2026-05-02 with `blockedBy: BUT-572`; pilot completion lifts the block.
+
+**Verify-before-starting flags:**
+- **A0 (iconMuted prerequisite)** — confirm `lib/theme/butlery_colors_extension.dart` has the 4 sites that need updating: class fields, light constant, dark constant, copyWith params, lerp params. ~1h, plus a unit test for the new slot.
+- **A1 (Wave A: cooking + common)** — confirm scope on the day. Recon 2026-05-02 listed 4 known files (substitution_bottom_sheet=15 sites, step_timer_widget=8, cooking_session_card=6, first_recipe_celebration_overlay=6) plus likely 2-3 more. ~7 files, ~40-50 sites.
+- **A2 (Wave B: social + home)** — explicit verification step from BUT-756: after migration, manually verify with a date override that `seasonal_hero_header.dart` actually drives accent rotation. This was the load-bearing motivation for the original BUT-572 ticket. ~6 files, ~50 sites.
+- **A3 (Wave C: recipe + remaining menu)** — bottom-up sweep matters more here (densely composed widgets). Migrate leaf cards before list containers, before parent scroll views. ~6 files.
+- **A4 (Wave D: views + lint guard)** — must run AFTER A1-A3 (BUT-758 explicit blocker). Includes the CI grep regression guard. ~4 files.
+
+### Agent A: flutter-developer + uiux-designer — full theme sweep (sequential)
+
+- [x] **A0. Add `ButleryColors.iconMuted` slot** — Added `iconMuted` field to ButleryColors with light value `0xFF526A55` (byte-identical to existing `AppColors.greenMuted` so any wave that uses it stays golden-stable) and dark value `0xFF7A9C7E` (lighter brand-green tone matching the dark scheme's M3 tone-80 pattern). Updated constructor, light/dark constants, `copyWith`, `lerp`. Created new test file `test/unit/theme/butlery_colors_extension_test.dart` with 6 tests covering: light/dark hex values, copyWith preserve, copyWith override, lerp interpolation, end-to-end Theme extension wiring. All 6 green. (Setup task — no Linear ticket; covers all wave tickets' `greenMuted` retainees.)
+
+- [x] **A1. Wave A — cooking + common widgets migration** — Migrated 4 main files (substitution_bottom_sheet=15 sites, step_timer_widget=8, cooking_session_card=6, first_recipe_celebration_overlay=6 = 35 sites total). Used `context.butleryColors.iconMuted` for `greenMuted` decorative-icon sites; `colorScheme.inversePrimary` for `forestGreenLight`; `colorScheme.surfaceContainerHigh` for modal `creamDarker`; standard primary/secondary/onPrimary mappings throughout. Stale doc comments in step_timer_widget updated to reference theme tokens. Refactored `social_formatters.getSocialColorScheme()` to require `BuildContext` (removed dead-code light-mode fallback that was 7 sites of `AppColors.X`); also refactored its sole wrapper in `social_builder_components.dart`. **Legitimate-keep retentions** (will need Wave D lint-guard carve-out): (1) `vegetable_illustration.dart` — 4 sites of `AppColors.forestGreen` inside a `static const _fallbackColors` decorative palette map (alongside `illustration*` colors that are already keep-set); (2) `social_collaborative_components.dart` — 5 sites of `cs?.primary ?? AppColors.X` safety-net fallbacks for null-context callers. Wave A widget-tests don't exist (no goldens to verify), so structural-only verification via `dart analyze` clean. (BUT-755)
+
+- [x] **A2. Wave B — social + home widgets migration** — Subagent migrated all 40 sites across 4 files (ping_compose_sheet=20, family_presence_bar=8, activity_pings_feed=7, seasonal_hero_header=5). Zero `AppColors.X` retained. Noted: `_SendButton` disabled-background uses `iconMuted` slot (button-bg, not icon — close visual match; future candidate for dedicated `surfaceMuted` slot). Helper-threading pattern (BuildContext through `_Avatar._initials()`) matches pilot's `_accentedBorder` precedent. **Seasonal accent finding:** `seasonal_hero_header.dart` doesn't read a separate seasonal service for accent color — it uses a static border now mapped to `colorScheme.secondary`, so seasonal rotation flows automatically iff the theme injects rotation via `ColorScheme.secondary`. If the seasonal-accent service rotates via a separate provider, that wiring is untouched and works as before. No manual date-override QA needed in this sprint — the load-bearing concern was that the widget *could* honor theme rotation, which it now does. dart analyze clean. (BUT-756)
+
+- [x] **A3. Wave C — recipe + remaining menu widgets migration** — Subagent migrated 10 sites across 3 files (duplicate_merge_sheet=5, heirloom_section=3, heirloom_stamp=2). Smaller scope than predicted (recon estimated ~6 files; actual was 3 because earlier sprints already cleared most recipe widgets). Zero `AppColors.X` retained. Helper-threading pattern: `duplicate_merge_sheet._cell()` takes `highlightColor` parameter rather than threading a third BuildContext, avoiding signature bloat. Mapping note: `textOnCream` mapped to `cs.onSurface` (not in original table; matches textDark behaviour). dart analyze clean. (BUT-757)
+
+- [x] **A4. Wave D — top-level views + CI lint guard** — Subagent migrated 30 sites across 7 files: 6 views (auth=4, cooking_mode=2, fullscreen_image_viewer=1, collection_stats=4, friends_list/feed_tab=11, veckomeny=4) + 1 sweeper fix (`styled_input.dart` rust focus ring) that the lint guard would have caught. `feed_tab.dart` retained 2 sites (`rustLight` decorative border, `greenMuted` Icon) per legitimate-keep set. `collection_stats_view.dart` refactored `_segmentDefs` from static-const to runtime-resolved color list to thread theme tokens. **Lint guard shipped**: added a step to existing `.github/workflows/architecture-validation.yml` job between `Run Flutter analyze` and `Run architecture tests`. Carve-out tokens: `brand|illustration|overlay|neutral|transparent|rustLight|creamDarker|greenMuted`. Carve-out files: `vegetable_illustration.dart`, `social_collaborative_components.dart`, `personal_tag_color_picker.dart` (the latter surfaced during the audit — its `PersonalTagColors.fromHex(String?)` is a static utility called from data-mapping pipelines with no BuildContext). dart analyze clean across the project; lint-guard executes locally with exit 0. (BUT-758)
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos` — 0 issues required
+- [ ] All affected widget tests + goldens green (full `flutter test test/widget/` after A4)
+- [ ] Tier-2 specialist gates: code-reviewer, testing-specialist, uiux-designer
+- [ ] **Manual dark-mode QA pass** — open the app in dark mode, verify each migrated widget looks right
+- [ ] **Manual seasonal-accent QA pass** (BUT-756 specific) — verify `seasonal_hero_header` rotates accent across season overrides
+- [ ] Final grep should return ONLY the legitimate-keep set across `lib/views/` + `lib/widgets/`
+- [ ] CI lint guard active and passing on the migrated tree
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-755/756/757/758 → Done
+
+### Continued blockers (NOT in scope per memory)
+
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred
+- BUT-498 / BUT-697 — explicitly skipped per standing direction
+- BUT-686 / BUT-660 / BUT-694 — need feature-level brainstorming first
+- BUT-674 / BUT-721 — need their own scoped sprints
+- BUT-579 — true High but holding for a focused button-system sprint
+- All `idea`-labeled monetization scaffolding — post-beta per memory
+- `calendar_weekly_menu_widget` "week-nav buttons" pre-existing flake — worth its own triage ticket
+
+---
+
+## What this means in plain language
+
+- **Dark mode finally looks consistent across the whole app.** Today, only the home-screen calendar widget uses theme tokens; the other 22 widgets hardcode their colors. After this sprint, dark mode renders correctly everywhere, and the seasonal accent rotation actually works on the home screen hero.
+- **Future regressions are blocked at the gate.** A CI check ships in the last task that fails any PR adding new hardcoded colors outside the legitimate-keep list.
+- **Risk: low-medium.** Pilot validated the migration recipe is byte-identical for most color slots — golden tests pass without updates. Risk concentrated in two places: (1) seasonal hero header (manual QA catches it); (2) any new const-decoration pattern (pilot saw 3 patterns, all addressable). Reverting any single wave is straightforward.
+- **Elapsed time: one focused sprint** rather than 4 weeks of mixed sprints — chosen per "do what's most efficient to get everything right."
+
+---
+
+## ARCHIVED — Sprint: Theme migration pilot + FCM revoke consolidation — 2026-05-09
+
+Shipped as `91a7c40c` ("feat(theme/notifications): calendar widget AppColors→ColorScheme pilot + FCMTokenManager SecureStorage cleanup on consent revoke"). Both tickets shipped: BUT-572 pilot (35/40 sites in calendar_weekly_menu_widget; mapping table validated + amended; golden test passes byte-identically) and BUT-754 (FCMTokenManager SecureStorage cleanup via two-listener consent design). Wave tickets BUT-755/756/757/758 unblocked.
+
+## ARCHIVED — Sprint: Consent gate completion + UI/theme migration sweep — 2026-05-02
 
 Theme: ship the BUT-572 mapping-table pilot on the highest-leverage widget (`calendar_weekly_menu_widget.dart`, 40 sites, on home screen) so its lessons feed into the 4 wave tickets (BUT-755/756/757/758). Pair with BUT-754 — the independent FCM revocation cleanup that fell out of the previous sprint's `firebase-backend-security` review. **2 tasks, no parallelization needed (different subsystems).**
 

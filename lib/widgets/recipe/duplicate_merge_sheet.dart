@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Actions the user can take when a duplicate is detected.
 enum DuplicateMergeChoice {
@@ -155,12 +155,12 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
                 _threeColumnRow(
                   label: '',
                   existing: Text(l10n.duplicateMergeExisting,
-                      style: AppTextStyles.labelMedium
-                          .copyWith(color: AppColors.forestGreen),
+                      style:
+                          AppTextStyles.labelMedium.copyWith(color: cs.primary),
                       textAlign: TextAlign.center),
                   incoming: Text(l10n.duplicateMergeNew,
                       style: AppTextStyles.labelMedium
-                          .copyWith(color: AppColors.rust),
+                          .copyWith(color: cs.secondary),
                       textAlign: TextAlign.center),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
@@ -290,9 +290,9 @@ class _SimilarityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = percent >= 80 ? AppColors.forestGreen : AppColors.warning;
-    final textColor =
-        percent >= 80 ? AppColors.textOnPrimary : AppColors.textDark;
+    final cs = Theme.of(context).colorScheme;
+    final color = percent >= 80 ? cs.primary : context.butleryColors.warning;
+    final textColor = percent >= 80 ? cs.onPrimary : cs.onSurface;
     return Container(
       padding: AppDimensions.paddingSymmetric8x2,
       color: color,
@@ -322,6 +322,7 @@ class _FieldRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final highlightColor = context.butleryColors.successContainer;
     final isDifferent = existingValue != newValue;
 
     return Padding(
@@ -336,19 +337,23 @@ class _FieldRow extends StatelessWidget {
                     .copyWith(color: cs.onSurfaceVariant)),
           ),
           Expanded(
-              child: _cell(existingValue, isDifferent, highlightExisting, cs)),
+              child: _cell(existingValue, isDifferent, highlightExisting, cs,
+                  highlightColor)),
           const SizedBox(width: AppDimensions.spacingSm),
-          Expanded(child: _cell(newValue, isDifferent, highlightNew, cs)),
+          Expanded(
+              child: _cell(
+                  newValue, isDifferent, highlightNew, cs, highlightColor)),
         ],
       ),
     );
   }
 
-  Widget _cell(String value, bool isDifferent, bool highlight, ColorScheme cs) {
+  Widget _cell(String value, bool isDifferent, bool highlight, ColorScheme cs,
+      Color highlightColor) {
     return Container(
       padding: AppDimensions.paddingSymmetric4x2,
       color: highlight
-          ? AppColors.successContainer
+          ? highlightColor
           : (isDifferent ? cs.surfaceContainerHighest : Colors.transparent),
       child: Text(value,
           style: AppTextStyles.bodySmall.copyWith(

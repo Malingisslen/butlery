@@ -14,7 +14,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -165,15 +164,16 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
     final items = _mergedItems();
     if (items.isEmpty) return const SizedBox.shrink();
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(
         vertical: AppDimensions.spacingSm,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.cream,
+      decoration: BoxDecoration(
+        color: cs.surface,
         border: Border(
           left: BorderSide(
-            color: AppColors.forestGreen,
+            color: cs.primary,
             width: 3,
           ),
         ),
@@ -265,6 +265,7 @@ class _FeedRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final profile = profiles[item.actorId()];
     final actorName = profile?.displayName ??
@@ -296,7 +297,7 @@ class _FeedRow extends StatelessWidget {
                 Text(
                   primary,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textDark,
+                    color: cs.onSurface,
                     fontWeight:
                         item is _PingItem ? FontWeight.w600 : FontWeight.w500,
                   ),
@@ -307,7 +308,7 @@ class _FeedRow extends StatelessWidget {
                   Text(
                     '— "$suffix"',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textMedium,
+                      color: cs.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
                     ),
                     maxLines: 1,
@@ -320,7 +321,7 @@ class _FeedRow extends StatelessWidget {
           Text(
             _relativeLabel(item.createdAt),
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textLight,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -401,25 +402,26 @@ class _Avatar extends StatelessWidget {
         child: Image.network(
           url,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _initials(),
+          errorBuilder: (_, __, ___) => _initials(context),
         ),
       );
     }
-    return _initials();
+    return _initials(context);
   }
 
-  Widget _initials() {
+  Widget _initials(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final label = profile?.initials ?? _deriveInitials(fallbackName);
     return SizedBox(
       width: _size,
       height: _size,
       child: DecoratedBox(
-        decoration: const BoxDecoration(color: AppColors.forestGreenLight),
+        decoration: BoxDecoration(color: cs.inversePrimary),
         child: Center(
           child: Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textOnPrimary,
+              color: cs.onPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
