@@ -17,6 +17,7 @@ import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 import { withTimeout } from "../shared/with-timeout";
 import { cleanUserFromLearnedAliases } from "../analytics/analyze-corrections";
+import { cascadeArrayRemove } from "../shared/batch-update";
 
 const db = admin.firestore();
 const BATCH_LIMIT = 500;
@@ -156,46 +157,20 @@ export async function cleanupLegacySharedWithArraysWithDb(
   database: admin.firestore.Firestore,
   userId: string
 ): Promise<number> {
-  const snapshot = await database
-    .collection("shared_content")
-    .where("sharedWith", "array-contains", userId)
-    .get();
-
-  if (snapshot.empty) return 0;
-
-  let total = 0;
-  let batch = database.batch();
-  let batchCount = 0;
-
-  const flush = async (): Promise<void> => {
-    if (batchCount === 0) return;
-    try {
-      await batch.commit();
-    } catch (err) {
-      // Best-effort: log and move on. Idempotency makes the next attempt
-      // safe — `arrayRemove` is a no-op on values already absent.
-      v1.logger.warn(
-        `BUT-753: legacy sharedWith chunk commit failed for ${userId}`,
-        { err }
-      );
+  return cascadeArrayRemove(
+    database.collection("shared_content").where("sharedWith", "array-contains", userId),
+    "sharedWith",
+    userId,
+    database,
+    {
+      bestEffort: true,
+      onChunkFailure: (err) =>
+        v1.logger.warn(
+          `BUT-753: legacy sharedWith chunk commit failed for ${userId}`,
+          { err }
+        ),
     }
-    batch = database.batch();
-    batchCount = 0;
-  };
-
-  for (const doc of snapshot.docs) {
-    batch.update(doc.ref, {
-      sharedWith: admin.firestore.FieldValue.arrayRemove(userId),
-    });
-    batchCount++;
-    total++;
-    if (batchCount >= BATCH_LIMIT) {
-      await flush();
-    }
-  }
-  await flush();
-
-  return total;
+  );
 }
 
 /**
@@ -342,36 +317,20 @@ async function cleanupFriendRequests(userId: string): Promise<number> {
 /**
  * D3: Remove deleted user from group friendUserIds arrays.
  * Uses collectionGroup query to find all friendCategories containing this user.
+ *
+ * Strict mode: a failed chunk aborts the cascade. The reverse-friendship
+ * cleanup (D1) and friend-count decrement (D4) depend on a converged
+ * friendUserIds state; partial cleanup here would leave stale references
+ * that the rest of the cascade can't compensate for.
  */
 async function cleanupGroupMemberships(userId: string): Promise<number> {
-  const groupsSnapshot = await db
-    .collectionGroup("friend_categories")
-    .where("friendUserIds", "array-contains", userId)
-    .get();
-
-  if (groupsSnapshot.empty) return 0;
-
-  let batch = db.batch();
-  let batchCount = 0;
-
-  for (const doc of groupsSnapshot.docs) {
-    batch.update(doc.ref, {
-      friendUserIds: admin.firestore.FieldValue.arrayRemove(userId),
-    });
-    batchCount++;
-
-    if (batchCount >= BATCH_LIMIT) {
-      await batch.commit();
-      batch = db.batch();
-      batchCount = 0;
-    }
-  }
-
-  if (batchCount > 0) {
-    await batch.commit();
-  }
-
-  return groupsSnapshot.size;
+  return cascadeArrayRemove(
+    db.collectionGroup("friend_categories")
+      .where("friendUserIds", "array-contains", userId),
+    "friendUserIds",
+    userId,
+    db
+  );
 }
 
 /**

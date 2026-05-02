@@ -4,6 +4,7 @@
  */
 
 import * as admin from "firebase-admin";
+import { logger as v1Logger } from "firebase-functions/v1";
 
 export const BATCH_LIMIT = 500;
 
@@ -71,6 +72,77 @@ export async function batchUpdateDocs(
   if (batchCount > 0) {
     await batch.commit();
   }
+
+  return total;
+}
+
+/**
+ * Cascade-remove `value` from an array `field` on every doc matching `query`.
+ * Chunked at BATCH_LIMIT. Idempotent: `arrayRemove` is a no-op when the value
+ * is absent, AND `array-contains` queries return empty once the value has
+ * been scrubbed — so re-runs against already-cleaned data are free of side
+ * effects regardless of which guarantee fails first.
+ *
+ * `opts.bestEffort` (default false) controls failure behavior:
+ *   - false (strict): a failed `batch.commit()` aborts the cascade and
+ *     re-throws. Use when cascade is the only chance to converge.
+ *   - true: a failed chunk calls `opts.onChunkFailure` (or logs a v1 warn
+ *     by default) and the next chunk proceeds. Idempotency makes a future
+ *     retry safe. Use when partial cleanup beats total failure (GDPR
+ *     deletion cascades, where the next user-delete event will retry).
+ *
+ * Returns the number of docs MATCHED (queued for update) — not the number
+ * of commits that succeeded. A re-run on already-scrubbed data returns 0.
+ */
+export async function cascadeArrayRemove(
+  query: admin.firestore.Query,
+  field: string,
+  value: unknown,
+  db: admin.firestore.Firestore,
+  opts: {
+    bestEffort?: boolean;
+    onChunkFailure?: (err: unknown) => void;
+  } = {}
+): Promise<number> {
+  const snapshot = await query.get();
+  if (snapshot.empty) return 0;
+
+  const removeOp = admin.firestore.FieldValue.arrayRemove(value);
+  let total = 0;
+  let batch = db.batch();
+  let batchCount = 0;
+
+  const commitChunk = async (): Promise<void> => {
+    if (batchCount === 0) return;
+    if (opts.bestEffort) {
+      try {
+        await batch.commit();
+      } catch (err) {
+        if (opts.onChunkFailure) {
+          opts.onChunkFailure(err);
+        } else {
+          v1Logger.warn(
+            `cascadeArrayRemove: chunk commit failed (field=${field})`,
+            { err }
+          );
+        }
+      }
+    } else {
+      await batch.commit();
+    }
+    batch = db.batch();
+    batchCount = 0;
+  };
+
+  for (const doc of snapshot.docs) {
+    batch.update(doc.ref, { [field]: removeOp });
+    batchCount++;
+    total++;
+    if (batchCount >= BATCH_LIMIT) {
+      await commitChunk();
+    }
+  }
+  await commitChunk();
 
   return total;
 }
