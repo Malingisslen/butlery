@@ -1,8 +1,8 @@
 # Master Analysis Orchestrator
 
-**Consolidated entry point for 10 analysis prompts covering the entire Butlery Flutter codebase.**
+**Consolidated entry point for 12 analysis prompts covering the entire Butlery Flutter codebase.**
 
-This orchestrator coordinates 10 focused, self-contained prompts: 6 original prompts covering core engineering concerns, plus 4 new prompts covering AI quality, product analytics, trust/safety, and competitive positioning.
+This orchestrator coordinates 12 focused, self-contained prompts: 6 original prompts covering core engineering concerns, 4 prompts covering AI quality, product analytics, trust/safety, and competitive positioning, plus 2 prompts covering legal/regulatory accuracy and documentation/operational drift.
 
 Each prompt can run independently or as part of a coordinated analysis session.
 
@@ -10,7 +10,7 @@ Each prompt can run independently or as part of a coordinated analysis session.
 
 ## Purpose
 
-Run a comprehensive, forensic-level audit of the Butlery codebase across ten dimensions.
+Run a comprehensive, forensic-level audit of the Butlery codebase across twelve dimensions.
 The approach is strictly two-phase:
 
 - **Phase 1: Investigation only.** No code changes. Produce findings with file:line references.
@@ -96,20 +96,24 @@ The prompts are designed to work without optional tooling, but results improve w
 
 ---
 
-## The 10 Prompts
+## The 12 Prompts
 
 | #  | File                                                | Scope                                              | Weight |
 |----|----------------------------------------------------|----------------------------------------------------|--------|
-| 01 | `01_CODE_QUALITY_AND_ARCHITECTURE.md`              | Code correctness, patterns, readability, doc health | 15%    |
-| 02 | `02_SECURITY_AND_COMPLIANCE.md`                    | OWASP, auth, encryption, rules, GDPR               | 14%    |
-| 03 | `03_INFRASTRUCTURE_AND_OPERATIONS.md`              | Build, test, deploy, monitor, recover               | 14%    |
-| 04 | `04_PERFORMANCE_AND_SCALABILITY.md`                | Startup, frame rate, memory, queries, scaling       | 14%    |
-| 05 | `05_DEPENDENCIES_AND_SUPPLY_CHAIN.md`              | CVEs, licenses, maintenance, bloat                  | 8%     |
-| 06 | `06_USER_EXPERIENCE_AND_PLATFORM.md`               | Design, accessibility, i18n, platform compliance    | 10%    |
-| 07 | `07_AI_LLM_QUALITY_AND_RELIABILITY.md`             | AI output quality, NLP accuracy, OCR robustness     | 10%    |
-| 08 | `08_PRODUCT_ANALYTICS_AND_GROWTH.md`               | Analytics, funnels, retention, notifications         | 5%     |
-| 09 | `09_TRUST_SAFETY_AND_PRIVACY.md`                   | UGC moderation, consent sequencing, privacy manifest | 7%    |
-| 10 | `10_MONETIZATION_AND_COMPETITIVE_POSITIONING.md`   | Entitlements, feature completeness, market position  | 3%    |
+| 01 | `01_CODE_QUALITY_AND_ARCHITECTURE.md`              | Code correctness, patterns, readability, doc health | 13%    |
+| 02 | `02_SECURITY_AND_COMPLIANCE.md`                    | OWASP, auth, encryption, rules, GDPR                | 13%    |
+| 03 | `03_INFRASTRUCTURE_AND_OPERATIONS.md`              | Build, test, deploy, monitor, recover               | 12%    |
+| 04 | `04_PERFORMANCE_AND_SCALABILITY.md`                | Startup, frame rate, memory, queries, scaling       | 12%    |
+| 05 | `05_DEPENDENCIES_AND_SUPPLY_CHAIN.md`              | CVEs, licenses, maintenance, bloat                  | 7%     |
+| 06 | `06_USER_EXPERIENCE_AND_PLATFORM.md`               | Design, accessibility, i18n, platform compliance    | 9%     |
+| 07 | `07_AI_LLM_QUALITY_AND_RELIABILITY.md`             | AI output quality, NLP accuracy, OCR robustness     | 9%     |
+| 08 | `08_PRODUCT_ANALYTICS_AND_GROWTH.md`               | Analytics, funnels, retention, notifications        | 4%     |
+| 09 | `09_TRUST_SAFETY_AND_PRIVACY.md`                   | UGC moderation, consent sequencing, privacy manifest| 6%     |
+| 10 | `10_MONETIZATION_AND_COMPETITIVE_POSITIONING.md`   | Entitlements, feature completeness, market position | 3%     |
+| 11 | `11_LEGAL_REVIEW.md`                               | Legal doc accuracy, license compliance, regulatory  | 6%     |
+| 12 | `12_DOCUMENTATION_AND_OPERATIONAL_DRIFT.md`        | Docs/runbooks/agent knowledge vs code reality       | 6%     |
+
+**Weights sum to 100%.** This is a corrected redistribution from the previous 10-prompt system. If an individual prompt file declares a different weight in its header, the orchestrator table above is canonical — update the prompt file to match.
 
 Each prompt is fully self-contained. It includes the shared project context block above
 and its own investigation checklist. No prompt requires output from another to execute.
@@ -120,13 +124,13 @@ and its own investigation checklist. No prompt requires output from another to e
 
 ### Option A: Sequential
 
-Run prompts in numeric order: 01 -> 02 -> ... -> 10.
+Run prompts in numeric order: 01 -> 02 -> ... -> 12.
 
-Simple and reliable. Each session starts fresh. Total time: 10 sessions.
+Simple and reliable. Each session starts fresh. Total time: 12 sessions.
 
 ### Option B: Parallel Agents (Recommended)
 
-Split into three waves to maximize throughput while respecting soft dependencies.
+Split into four waves to maximize throughput while respecting soft dependencies.
 
 **Wave 1** (independent, run in parallel):
 - 01 Code Quality and Architecture
@@ -144,9 +148,16 @@ Split into three waves to maximize throughput while respecting soft dependencies
 - 09 Trust, Safety and Privacy
 - 10 Monetization and Competitive Positioning
 
+**Wave 4** (run LAST — depends on the substance of Waves 1-3):
+- 11 Legal Review (cross-references findings from 02, 05, 06, 07, 09)
+- 12 Documentation & Operational Drift (cross-references findings from all prior waves to detect doc/code mismatches)
+
 Wave 3 prompts have minimal dependencies on Wave 1-2 and can run in parallel with Wave 2
 if preferred. The only soft dependency is that Prompt 09 benefits from Prompt 02's GDPR
 findings, and Prompt 10 benefits from Prompt 06's app store metadata review.
+
+Wave 4 is intentionally last — both prompts gain accuracy from having the other reports'
+file:line evidence to cross-reference. They can still run standalone, but quality drops.
 
 ### Soft Dependencies
 
@@ -206,8 +217,31 @@ Other prompts that touch adjacent areas must defer to the owning prompt.
 | App store rejection risk assessment    | **10 Monetization**       | 06 UX                     |
 | Competitive feature analysis           | **10 Monetization**       | 06 UX                     |
 
+### Wave 4 Deduplication Rules (Prompts 11-12)
+
+| Topic                                   | Owned by                  | Skip in                   |
+|-----------------------------------------|---------------------------|---------------------------|
+| Legal document accuracy vs code         | **11 Legal Review**       | 02, 09                    |
+| Third-party processor disclosure        | **11 Legal Review**       | 02, 09                    |
+| License compliance (GPL/AGPL/etc)       | **11 Legal Review**       | 05 Dependencies           |
+| Font/asset/illustration licensing       | **11 Legal Review**       | 06 UX                     |
+| iOS encryption / privacy declarations   | **11 Legal Review**       | 09 Trust/Safety           |
+| Consent purpose vs implementation       | **11 Legal Review**       | 02 Security               |
+| CLAUDE.md / .claude/rules vs reality    | **12 Doc Drift**          | 01 Code Quality           |
+| docs/ops runbooks vs current code       | **12 Doc Drift**          | 03 Infrastructure         |
+| docs/architecture vs actual file size   | **12 Doc Drift**          | 01 Code Quality           |
+| docs/security vs current rules/services | **12 Doc Drift**          | 02 Security               |
+| docs/performance vs query patterns      | **12 Doc Drift**          | 04 Performance            |
+| .claude/agents/*.knowledge.md staleness | **12 Doc Drift**          | (all)                     |
+| Test count claims (e.g. "100% VM cov")  | **12 Doc Drift**          | 03 Infrastructure         |
+| README/inline doc accuracy              | **12 Doc Drift**          | 01 Code Quality           |
+
 When a prompt encounters a topic owned by another prompt, it should note
 "Deferred to prompt NN" and move on. Do not duplicate the analysis.
+
+**Wave 4 cross-reference rule:** Prompts 11 and 12 should cite the file:line evidence
+already produced by Waves 1-3 rather than re-discovering it. This is what makes Wave 4
+last in the recommended sequence.
 
 ---
 
@@ -218,12 +252,12 @@ After all 10 prompts complete Phase 1, merge their reports into a single executi
 ### Weighted Scoring Formula
 
 ```
-Overall Score = (01 * 0.15) + (02 * 0.14) + (03 * 0.14) + (04 * 0.14)
-              + (05 * 0.08) + (06 * 0.10) + (07 * 0.10) + (08 * 0.05)
-              + (09 * 0.07) + (10 * 0.03)
+Overall Score = (01 * 0.13) + (02 * 0.13) + (03 * 0.12) + (04 * 0.12)
+              + (05 * 0.07) + (06 * 0.09) + (07 * 0.09) + (08 * 0.04)
+              + (09 * 0.06) + (10 * 0.03) + (11 * 0.06) + (12 * 0.06)
 ```
 
-Each prompt produces a score from 0-100. The weighted average yields the overall health score.
+Weights sum to 1.00. Each prompt produces a score from 0-100. The weighted average yields the overall health score.
 
 ### Score Interpretation
 
@@ -237,7 +271,7 @@ Each prompt produces a score from 0-100. The weighted average yields the overall
 
 ### Consolidation Steps
 
-1. **Collect all CRITICAL findings** from all 10 reports into a single list.
+1. **Collect all CRITICAL findings** from all 12 reports into a single list.
    Sort by severity (CRITICAL > HIGH > MEDIUM > LOW), then by effort (quick wins first).
 
 2. **Deduplicate.** If two prompts flagged the same issue despite dedup rules,
@@ -245,7 +279,7 @@ Each prompt produces a score from 0-100. The weighted average yields the overall
 
 3. **Build unified remediation roadmap.**
    Group fixes into sprints:
-   - Sprint 1: All CRITICAL items and quick-win HIGH items (focus: app store blockers from 09, data integrity from 02/07)
+   - Sprint 1: All CRITICAL items and quick-win HIGH items (focus: app store blockers from 09/10, data integrity from 02/07, legal accuracy from 11)
    - Sprint 2: Remaining HIGH items and systemic MEDIUM items
    - Sprint 3: Remaining MEDIUM items and LOW items worth fixing
    - Backlog: LOW items and nice-to-haves
@@ -284,6 +318,15 @@ Added to close gaps identified in the original 6-prompt system:
 | 09 Trust, Safety & Privacy | UGC moderation, SDK consent sequencing, privacy manifests, ATT, data transfers -- previously only GDPR services (02) were checked |
 | 10 Monetization & Competitive | Entitlement readiness, feature completeness, competitive positioning, app store submission risk -- previously not covered |
 
+### New 2 Prompts (v4.2)
+
+Added to close meta-level gaps in the v4.1 system:
+
+| Prompt | Covers gaps in |
+|--------|---------------|
+| 11 Legal Review | Legal-doc accuracy vs code reality, license compliance, third-party processor disclosure, font/asset attribution, iOS encryption declarations -- previously only GDPR service implementation (02) was checked, not the legal documents themselves |
+| 12 Documentation & Operational Drift | CLAUDE.md / .claude/rules / docs/ops runbooks / docs/architecture / agent knowledge files vs current code reality -- previously no prompt verified that documentation still describes the system accurately |
+
 ---
 
 ## Usage Example
@@ -291,19 +334,27 @@ Added to close gaps identified in the original 6-prompt system:
 ```
 1. Run pre-analysis tooling (see above). Save output to a file.
 
-2. Open a new Claude session. Paste:
+2. Open a new analyst session (Claude or Codex). Paste:
    - The contents of this orchestrator (for context)
    - The contents of 01_CODE_QUALITY_AND_ARCHITECTURE.md
    - The pre-analysis tooling output
 
 3. Let the prompt execute Phase 1. Save the report.
 
-4. Repeat for prompts 02-10 (or run in parallel per Option B).
+4. Repeat for prompts 02-12 (or run in parallel per Option B Wave strategy).
 
-5. Open a final session. Paste all 10 reports.
-   Ask: "Synthesize these 10 analysis reports using the Final Synthesis
+5. Open a final session. Paste all 12 reports.
+   Ask: "Synthesize these 12 analysis reports using the Final Synthesis
    instructions from the Master Analysis Orchestrator."
 
 6. The output is your consolidated audit report with overall score
    and unified remediation roadmap.
 ```
+
+### Codex-specific runs
+
+When the analyst is OpenAI Codex (not Claude), pair this orchestrator with
+`docs/analysis/CODEX_RUN_GUIDE.md`. That guide injects the relevant
+`.claude/agents/*.knowledge.md` content per prompt — Codex would otherwise
+miss the accumulated specialist knowledge that Claude sees automatically
+through its subagent system.

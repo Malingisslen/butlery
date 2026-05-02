@@ -1,0 +1,2 @@
+composite indexes: 30
+field overrides: 6
