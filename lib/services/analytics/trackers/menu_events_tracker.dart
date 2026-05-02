@@ -1,5 +1,3 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
@@ -58,52 +56,22 @@ class MenuEventsTracker extends BaseTracker {
     );
   }
 
-  /// Once-per-user `first_meal_plan` milestone (BUT-576). Dedupes via a
-  /// SharedPreferences flag keyed by uid — survives app restarts, no Firestore
-  /// write. If [joinedAt] is null we omit `minutes_since_signup` rather than
-  /// emit a guessed value.
-  ///
-  /// Returns true if the milestone fired, false if skipped (already activated,
-  /// no consent, or no userId).
+  /// Once-per-user `first_meal_plan` milestone (BUT-576). Returns true if the
+  /// milestone fired, false if skipped (already activated, no consent, or no
+  /// userId).
   Future<bool> logFirstMealPlanIfMilestone({
     required String? userId,
     required int recipeCountInPlan,
     DateTime? joinedAt,
   }) async {
-    if (userId == null || userId.isEmpty) return false;
-    if (!await hasAnalyticsConsent()) return false;
-
-    final prefs = await _tryGetPrefs();
-    if (prefs == null) return false;
-
-    final key = '$_firstMealPlanPrefsPrefix$userId';
-    if (prefs.getBool(key) == true) return false;
-
-    final params = <String, Object>{
-      'recipe_count_in_plan': recipeCountInPlan,
-    };
-    if (joinedAt != null) {
-      params['minutes_since_signup'] =
-          DateTime.now().difference(joinedAt).inMinutes;
-    }
-
-    await repository.logEvent(
-        name: AnalyticsEvents.firstMealPlan, parameters: params);
-    await repository.setUserProperty(
-        name: AnalyticsUserProperties.menuActivated, value: 'true');
-    await prefs.setBool(key, true);
-    return true;
-  }
-
-  Future<SharedPreferences?> _tryGetPrefs() async {
-    try {
-      return await SharedPreferences.getInstance();
-    } catch (e) {
-      AppLogger.warning(
-        'first_meal_plan milestone: SharedPreferences unavailable ($e); skipping',
-      );
-      return null;
-    }
+    return fireOnceMilestone(
+      userId: userId,
+      prefsPrefix: _firstMealPlanPrefsPrefix,
+      eventName: AnalyticsEvents.firstMealPlan,
+      userPropertyName: AnalyticsUserProperties.menuActivated,
+      joinedAt: joinedAt,
+      extraParams: {'recipe_count_in_plan': recipeCountInPlan},
+    );
   }
 
   /// Log menu loaded

@@ -1,5 +1,3 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
@@ -46,99 +44,42 @@ class RecipeEventsTracker extends BaseTracker {
     );
   }
 
-  /// Once-per-user `first_share` milestone (BUT-584). Dedupes via a
-  /// SharedPreferences flag keyed by uid — survives app restarts, doesn't
-  /// require a Firestore write. If [joinedAt] is null we omit the field
-  /// rather than emit a guessed value.
-  ///
-  /// Returns true if the milestone fired (first share), false if skipped
-  /// (already activated, no consent, or no userId).
+  /// Once-per-user `first_share` milestone (BUT-584). Returns true if the
+  /// milestone fired (first share), false if skipped (already activated, no
+  /// consent, or no userId).
   Future<bool> logFirstShareIfMilestone({
     required String? userId,
     required String shareMethod,
     DateTime? joinedAt,
   }) async {
-    if (userId == null || userId.isEmpty) return false;
-    if (!await hasAnalyticsConsent()) return false;
-
-    final prefs = await _tryGetPrefs();
-    if (prefs == null) return false;
-
-    final key = '$_firstSharePrefsPrefix$userId';
-    if (prefs.getBool(key) == true) return false;
-
-    final params = <String, Object>{
-      'share_method': shareMethod,
-    };
-    if (joinedAt != null) {
-      params['minutes_since_signup'] =
-          DateTime.now().difference(joinedAt).inMinutes;
-    }
-
-    await repository.logEvent(
-        name: AnalyticsEvents.firstShare, parameters: params);
-    await repository.setUserProperty(
-      name: AnalyticsUserProperties.sharingActivated,
-      value: 'true',
+    return fireOnceMilestone(
+      userId: userId,
+      prefsPrefix: _firstSharePrefsPrefix,
+      eventName: AnalyticsEvents.firstShare,
+      userPropertyName: AnalyticsUserProperties.sharingActivated,
+      joinedAt: joinedAt,
+      extraParams: {'share_method': shareMethod},
     );
-    await prefs.setBool(key, true);
-    return true;
   }
 
-  Future<SharedPreferences?> _tryGetPrefs() async {
-    try {
-      return await SharedPreferences.getInstance();
-    } catch (e) {
-      AppLogger.warning(
-        'milestone tracker: SharedPreferences unavailable ($e); skipping',
-      );
-      return null;
-    }
-  }
-
-  /// Once-per-user `first_search` milestone (BUT-588). Mirrors the firstShare
-  /// pattern (BUT-584): uid-keyed SharedPreferences flag survives app restarts
-  /// without a Firestore write. Search is a strong engagement signal — users
-  /// who search once are more likely to return — and this milestone gives us
-  /// time-to-first-search and first-search-in-session segmentation.
-  ///
-  /// `recipeCountAtTime` lets the funnel correlate first-search with library
-  /// size (do users with 5 vs 50 vs 500 recipes activate search differently?).
-  /// Compatible with BUT-421 sanitized params — the raw search query is NOT
-  /// included.
-  ///
-  /// Returns true if the milestone fired (first search), false if skipped
-  /// (already activated, no consent, no userId, or prefs unavailable).
+  /// Once-per-user `first_search` milestone (BUT-588). Search is a strong
+  /// engagement signal — users who search once are more likely to return —
+  /// so this milestone gives us time-to-first-search and first-search-in-
+  /// session segmentation. `recipeCountAtTime` correlates activation with
+  /// library size. BUT-421-compatible: raw query NEVER included.
   Future<bool> logFirstSearchIfMilestone({
     required String? userId,
     required int recipeCountAtTime,
     DateTime? joinedAt,
   }) async {
-    if (userId == null || userId.isEmpty) return false;
-    if (!await hasAnalyticsConsent()) return false;
-
-    final prefs = await _tryGetPrefs();
-    if (prefs == null) return false;
-
-    final key = '$_firstSearchPrefsPrefix$userId';
-    if (prefs.getBool(key) == true) return false;
-
-    final params = <String, Object>{
-      'recipe_count_at_time': recipeCountAtTime,
-    };
-    if (joinedAt != null) {
-      params['minutes_since_signup'] =
-          DateTime.now().difference(joinedAt).inMinutes;
-    }
-
-    await repository.logEvent(
-        name: AnalyticsEvents.firstSearch, parameters: params);
-    await repository.setUserProperty(
-      name: AnalyticsUserProperties.searchActivated,
-      value: 'true',
+    return fireOnceMilestone(
+      userId: userId,
+      prefsPrefix: _firstSearchPrefsPrefix,
+      eventName: AnalyticsEvents.firstSearch,
+      userPropertyName: AnalyticsUserProperties.searchActivated,
+      joinedAt: joinedAt,
+      extraParams: {'recipe_count_at_time': recipeCountAtTime},
     );
-    await prefs.setBool(key, true);
-    return true;
   }
 
   String _bucketRecipientCount(int count) {
