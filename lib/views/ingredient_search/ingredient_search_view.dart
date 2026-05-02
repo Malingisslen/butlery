@@ -194,8 +194,8 @@ class _IngredientSearchContent extends StatelessWidget {
               children: [
                 if (result.recipe.isCollaborative)
                   Padding(
-                    padding:
-                        const EdgeInsets.only(right: AppDimensions.spacingSm),
+                    padding: const EdgeInsetsDirectional.only(
+                        end: AppDimensions.spacingSm),
                     child: Text(
                       l10n.ingredientSearchSharedBadge,
                       style: AppTextStyles.labelSmall.copyWith(

@@ -84,7 +84,7 @@ dependencies:
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.6.1
-  receive_intent: ^0.2.0     # För hantering av deep links och app launch intents
+  app_links: ^6.3.2          # BUT-434: Deep-link / share-intent handler. Replaces receive_intent (unverified publisher, single maintainer, Android-only). Cross-platform (iOS, Android, web, desktop).
   cloud_functions: ^6.0.4
 
   # ==================== SEARCH (Algolia - migration-ready) ====================

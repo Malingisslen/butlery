@@ -168,7 +168,7 @@ abstract final class RecipeDetailSharedWidgets {
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: TextButton(
               onPressed: () => Navigator.pushNamed(
                 context,

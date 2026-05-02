@@ -427,7 +427,7 @@ class _CollaborativeItemCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final label = canRelease ? context.l10n.lamnaTillbaka : context.l10n.tarJag;
     final background = Container(
-      alignment: Alignment.centerLeft,
+      alignment: AlignmentDirectional.centerStart,
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
       color: cs.primaryContainer,
       child: Text(label, style: AppTextStyles.bodyBold),

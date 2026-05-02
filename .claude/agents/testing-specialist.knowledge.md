@@ -574,3 +574,80 @@ of structural tests because they pinned the old implementation. The
 idempotent-add test was an early form of that anti-pattern (pin the
 data structure choice rather than the user-visible contract). Drop
 was correct.
+
+### 2026-05-02 — BUT-573 / BUT-434 sprint review: untestable-by-design assessment [Pattern discovered]
+Sprint touched two `lib/` files with new behaviour and a clean answer for
+both was "the existing test pattern IS the project norm — not a coverage
+gap to chase."
+
+1. **`fcm_service.dart` `_revokePushAccess()` + revoke branch in
+   `_onConsentChanged()`.** Untestable without a refactor:
+   - `_messaging` is `static final FirebaseMessaging _messaging =
+     FirebaseMessaging.instance` — initialised at class-load, no seam.
+   - `_onConsentChanged()` and `_revokePushAccess()` are private static
+     methods.
+   - Static state (`_pushPermissionsRequested`, `_consentChangeInProgress`)
+     gates whether the new branch even runs.
+   - The call to `ServiceLocator.get<UserService>().clearFCMToken()` could
+     in principle be verified via the GetIt swap pattern (BUT-688/691 entry
+     above), but the test still couldn't trigger `_onConsentChanged` itself
+     — and verifying the second of three side effects while the first
+     (`_messaging.deleteToken()`) is unobservable proves nothing useful.
+
+   The existing 23-test file documents the constraint in its header
+   ("FCMService uses static methods with a static FirebaseMessaging
+   instance. In test environments, the real FirebaseMessaging.instance
+   is used. Methods that interact with Firebase infrastructure will fail
+   gracefully via safeExecute/try-catch."). The new code follows the
+   same pattern (each `await _messaging.deleteToken()` /
+   `await userService.clearFCMToken()` is in its own try/catch with
+   AppLogger.warning on failure). No coverage gap to file.
+
+   If a future refactor needs to make this testable, the minimum-viable
+   seam is to change `_messaging` from a `static final` to a
+   `@visibleForTesting` mutable static (or constructor-inject the
+   service). Don't add `@visibleForTesting` accessors for the private
+   methods alone — that just exposes implementation without providing a
+   way to fake `FirebaseMessaging`.
+
+2. **`deep_link_handler.dart` `receive_intent` → `app_links` migration.**
+   Same shape: `AppLinks()` is constructed inline inside `initialize()`,
+   no seam. The one-line plugin call `await AppLinks().getInitialLink()`
+   is mechanically equivalent to the old `receive_intent.ReceiveIntent.getInitialIntent()`.
+   The interesting behaviour (URL parsing, route resolution, pending-link
+   handling) lives in `DeepLinkService` (85 tests, all green post-migration).
+
+   No `DeepLinkHandler` test file exists — and shouldn't be created for
+   this commit. Adding a test that just asserts "the initialize method
+   doesn't throw on web" would be exactly the structural smoke test
+   BUT-368 deleted 11.5k LoC of. The migration's behavioural risk is
+   "does the initial link still get parsed correctly?" — covered by the
+   DeepLinkService tests, which run the parser on the same input format.
+
+3. **B2 mechanical RTL changes (11 widget/view files).** `EdgeInsets.only(left/right)`
+   → `EdgeInsetsDirectional.only(start/end)`, `Alignment.centerLeft` →
+   `AlignmentDirectional.centerStart`, `TextAlign.left` → `TextAlign.start`.
+   Mechanical directional-aware swap — produces identical visuals in LTR
+   (Swedish app locale), correct visuals in RTL (currently no RTL locale
+   shipped). Per BUT-387 Phase 6, per-view tests aren't a target. Golden
+   tests on these widgets would catch a *visual* regression (none here),
+   not a directional-correctness bug (proven by the swap being mechanical
+   and Flutter's own widget contract).
+
+4. **`app_dimensions.dart` `paddingOnlyLeft8` → `paddingOnlyStart8` +
+   3 dead constants deleted.** Pure constant rename + dead-code removal.
+   Single call site updated. No test target — these are spacing tokens,
+   not behaviour.
+
+Decision rule emerging from this review: **"new lines of production code"
+≠ "new test surface."** When the new code is a private method on a
+class with no DI seam, called from another private method, gated by
+static state, operating on a static-final external dependency — the
+honest answer is "this is architecturally untestable in isolation;
+the integration path catches it." Document the constraint in the
+review (commit body or marker note), don't manufacture a smoke test
+that proves nothing.
+
+Sprint approved: 23/23 green for FCM, 85/85 for DeepLinkService, 9/9
+for account-deletion integration. No new test files needed. Marker
+written.

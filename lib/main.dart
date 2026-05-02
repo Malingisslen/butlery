@@ -398,7 +398,7 @@ class _ErrorApp extends StatelessWidget {
                           fontSize: 12,
                           fontFamily: 'monospace',
                         ),
-                        textAlign: TextAlign.left,
+                        textAlign: TextAlign.start,
                       ),
                     ),
                   ),

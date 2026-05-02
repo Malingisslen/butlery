@@ -278,7 +278,7 @@
   "draftRestore": "Restore",
   "draftStartFresh": "Start fresh",
   "draftRestored": "Draft restored!",
-  "draftCouldNotRestore": "Could not restore draft. Starting with empty form.",
+  "draftCouldNotRestore": "Couldn't restore draft. Starting with an empty form.",
   "draftRestoring": "Restoring draft...",
   "draftUnnamedRecipe": "Unnamed recipe",
   "draftFieldsFilledCount": "{count} fields filled",
@@ -378,7 +378,7 @@
   "messagingViewProfile": "View profile",
   "messagingDeleteConversation": "Delete conversation",
   "messagingLeftGroup": "You have left the group",
-  "messagingCouldNotLeaveGroup": "Could not leave the group: {error}",
+  "messagingCouldNotLeaveGroup": "Couldn't leave the group: {error}",
   "@messagingCouldNotLeaveGroup": {
     "placeholders": {
       "error": {
@@ -388,7 +388,7 @@
   },
   "messagingLeave": "Leave",
   "messagingDeleteConversationConfirm": "Are you sure you want to delete this conversation? All messages will be lost.",
-  "messagingCouldNotShowProfile": "Could not show profile: {error}",
+  "messagingCouldNotShowProfile": "Couldn't open profile: {error}",
   "@messagingCouldNotShowProfile": {
     "placeholders": {
       "error": {
@@ -404,7 +404,7 @@
       }
     }
   },
-  "messagingCouldNotDeleteConversation": "Could not delete conversation: {error}",
+  "messagingCouldNotDeleteConversation": "Couldn't delete conversation: {error}",
   "@messagingCouldNotDeleteConversation": {
     "placeholders": {
       "error": {
@@ -456,28 +456,28 @@
     }
   },
   "chatNotificationSettingsUpdated": "Notification settings updated",
-  "chatCouldNotChangeNotifications": "Could not change notification settings",
+  "chatCouldNotChangeNotifications": "Couldn't change notification settings",
   "chatLeaveConversation": "Leave conversation",
   "chatLeaveConversationConfirm": "Are you sure you want to leave this conversation?",
-  "chatCouldNotLeaveConversation": "Could not leave the conversation",
+  "chatCouldNotLeaveConversation": "Couldn't leave the conversation",
   "chatEditMessage": "Edit message",
   "chatWriteYourMessage": "Write your message...",
-  "chatCouldNotEditMessage": "Could not edit the message",
-  "chatCouldNotDeleteMessage": "Could not delete the message",
+  "chatCouldNotEditMessage": "Couldn't edit the message",
+  "chatCouldNotDeleteMessage": "Couldn't delete the message",
   "chatMessageCopied": "Message copied",
-  "chatCouldNotCopyMessage": "Could not copy the message",
+  "chatCouldNotCopyMessage": "Couldn't copy the message",
   "chatYourRecipes": "Your recipes",
   "chatSharedRecipe": "Shared recipe",
   "chatCheckOutRecipe": "Check out this recipe!",
-  "chatCouldNotShareRecipe": "Could not share recipe",
+  "chatCouldNotShareRecipe": "Couldn't share recipe",
   "chatMenuSharingComingSoon": "Menu sharing coming soon",
-  "chatCouldNotShareMenu": "Could not share menu",
+  "chatCouldNotShareMenu": "Couldn't share menu",
   "chatShoppingListSharingComingSoon": "Shopping list sharing coming soon",
-  "chatCouldNotShareShoppingList": "Could not share shopping list",
+  "chatCouldNotShareShoppingList": "Couldn't share shopping list",
   "chatLoadingImage": "Loading image...",
   "chatImageSent": "Image sent!",
   "chatNoImageSelected": "No image selected",
-  "chatCouldNotSharePhoto": "Could not share photo",
+  "chatCouldNotSharePhoto": "Couldn't share photo",
   "chatDeleteMessage": "Delete",
   "chatDeleteMessageConfirm": "Are you sure you want to delete the message?",
   "statusConnecting": "Connecting...",

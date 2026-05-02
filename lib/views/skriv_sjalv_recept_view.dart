@@ -327,7 +327,8 @@ class _SkrivSjalvReceptViewContentState
           actions: [
             if (viewModel.isAutoSaving)
               const Padding(
-                padding: EdgeInsets.only(right: AppDimensions.paddingM),
+                padding:
+                    EdgeInsetsDirectional.only(end: AppDimensions.paddingM),
                 child: SizedBox(
                   width: AppDimensions.iconSizeS,
                   height: AppDimensions.iconSizeS,
@@ -336,7 +337,8 @@ class _SkrivSjalvReceptViewContentState
               )
             else if (viewModel.hasRecentAutoSave)
               Padding(
-                padding: const EdgeInsets.only(right: AppDimensions.paddingM),
+                padding: const EdgeInsetsDirectional.only(
+                    end: AppDimensions.paddingM),
                 child: Icon(
                   Icons.cloud_done_outlined,
                   size: AppDimensions.iconSizeM,
@@ -692,7 +694,8 @@ class _SkrivSjalvReceptViewContentState
                     ReorderableDragStartListener(
                       index: index,
                       child: const Padding(
-                        padding: EdgeInsets.only(right: AppDimensions.spacingS),
+                        padding: EdgeInsetsDirectional.only(
+                            end: AppDimensions.spacingS),
                         child: Icon(Icons.drag_handle,
                             size: AppDimensions.iconSizeM),
                       ),

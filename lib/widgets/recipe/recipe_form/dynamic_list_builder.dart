@@ -90,7 +90,7 @@ class DynamicListBuilder extends StatelessWidget {
           ReorderableDragStartListener(
             index: index,
             child: const Padding(
-              padding: EdgeInsets.only(right: AppDimensions.spacingS),
+              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
               child: Icon(Icons.drag_handle, size: AppDimensions.iconSizeM),
             ),
           ),

@@ -421,13 +421,13 @@ class AppDimensions {
       EdgeInsets.only(bottom: spacingMd);
   static const EdgeInsets paddingOnlyBottom24 =
       EdgeInsets.only(bottom: spacingLg);
-  static const EdgeInsets paddingOnlyLeft8 = EdgeInsets.only(left: spacingSm);
-  static const EdgeInsets paddingOnlyLeft16 = EdgeInsets.only(left: spacingMd);
-  static const EdgeInsets paddingOnlyRight8 = EdgeInsets.only(right: spacingSm);
-  static const EdgeInsets paddingOnlyRight16 =
-      EdgeInsets.only(right: spacingMd);
 
-  /// Directional EdgeInsets for RTL support (used)
+  /// Directional EdgeInsets for RTL support — flips in Arabic/Hebrew layouts.
+  /// BUT-565: replaced legacy `paddingOnlyLeft/Right{8,16}` constants —
+  /// `paddingOnlyLeft16`, `paddingOnlyRight8`, `paddingOnlyRight16` had zero
+  /// usages; only `paddingOnlyLeft8` was live and migrated to `paddingOnlyStart8`.
+  static const EdgeInsetsDirectional paddingOnlyStart8 =
+      EdgeInsetsDirectional.only(start: spacingSm);
   static const EdgeInsetsDirectional marginDirectionalOnlyStart8 =
       EdgeInsetsDirectional.only(start: spacingSm);
   static const EdgeInsetsDirectional marginDirectionalOnlyEnd8 =

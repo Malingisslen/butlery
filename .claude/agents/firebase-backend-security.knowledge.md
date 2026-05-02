@@ -2042,3 +2042,61 @@ rule (here, the `engagements` wildcard at line 1552-1554), the
 changed. Required-marker triggers in CLAUDE.md key on `firestore.rules`
 file diff, so a clean diff there means the commit can proceed without a
 rules-tester run. Confirmed for BUT-732 commit.
+
+### 2026-05-02 — FCM consent-revoke residual-token gap (BUT-573 follow-up)
+
+`FCMService._revokePushAccess()` deletes the token from three stores:
+SDK (`_messaging.deleteToken()`), user profile Firestore doc
+(`UserService.clearFCMToken()`), and the FCMService in-memory
+`_currentToken` cache. **Gap:** there are TWO local writers — `FCMService`
+(memory only) and `FCMTokenManager._saveTokenLocally()` which writes to
+`FlutterSecureStorage` under key `'fcm_token'` (BUT-457 hardening).
+The revoke path does NOT touch FCMTokenManager's SecureStorage. On revoke
+mid-session the SecureStorage copy lingers until next `_refreshToken()`
+(which only OVERWRITES, not deletes) or `FCMTokenManager.cleanup()` (only
+called on logout — see notification_service.dart line 67 + 114).
+
+GDPR Art. 17 implication: Art. 17 covers **personal data held by the
+controller**. The token in SecureStorage is on the user's own device, in
+encrypted Keychain/Keystore — arguably not "data held by the controller"
+in the strict GDPR sense, and `_messaging.deleteToken()` already
+invalidates it on Google's servers so the SecureStorage copy is dead
+weight (any push attempt with it would 404). However: defence in depth
+says delete it anyway. **Fix in a follow-up:** add a `clearLocalToken()`
+on FCMTokenManager that deletes both `_tokenStorageKey` and
+`_tokenTimestampKey` from SecureStorage + nulls `_currentToken`, and
+call it from `FCMService._revokePushAccess()` (best-effort, same
+swallow-and-log pattern). FCMTokenManager is not statically reachable
+from FCMService — wire via NotificationService façade, or have
+NotificationService listen to ConsentService too and own the cascade.
+
+**Order-of-operations note:** SDK `deleteToken()` BEFORE the Firestore
+clear is the correct order. Reverse order would briefly leave a token in
+Firestore that's already invalid server-side; if a Cloud Function fires a
+push in that window, the send fails noisily (and the token doc is then
+cleared). The current order leaves a window where Firestore still has a
+valid-looking token but Google has invalidated it — same noisy-fail
+outcome, just inverted. Either order is acceptable from a leak standpoint;
+current order minimizes "we sent a notification AFTER consent was
+revoked" exposure, which is the GDPR-relevant failure mode.
+
+**Test infrastructure pattern (BUT-733):** integration tests that
+previously stub-deleted Firestore docs from inside mocktail `then(...)`
+side-effects should be migrated to **real repository against
+FakeFirebaseFirestore + MockAuthRepository for ownership**. The mocktail
+side-effect pattern was "mocking the boundary while replicating the
+boundary's behaviour" — proves nothing because the assertion observes
+the side-effect, not the contract. Real-repo swap exercises actual
+`validateOwnership` (currentUserId from MockAuthRepository.setAuthState
+must match resourceOwnerId). **Caveat:** FakeFirebaseFirestore does NOT
+enforce `firestore.rules` — so this is an SDK-level permission-mixin
+test, not a rules test. For rules behaviour, the `firestore-rules-tester`
+agent against the emulator is still authoritative.
+
+**PROMPT_CHANGELOG.md scan pattern:** a new `functions/src/llm/*.md`
+documentation file is in-scope for security review even though it has no
+executable code. Verify: no embedded API keys, no internal endpoint URLs
+(only public Linear ticket URLs are fine), no PII/sample user text from
+real prompts. PROMPT_CHANGELOG.md ships clean — only public Linear URLs
+(`linear.app/butlery/issue/BUT-XXX`), version constants, and commit
+SHAs (acceptable; SHAs are not secrets).

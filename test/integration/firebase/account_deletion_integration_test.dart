@@ -16,12 +16,12 @@ import 'package:mocktail/mocktail.dart';
 // Production imports
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/presence_service.dart';
 
@@ -47,7 +47,13 @@ class _MockNotificationBatchRepository extends Mock
 
 class _MockDeviceRepository extends Mock implements DeviceRepository {}
 
-class _MockUserRepository extends Mock implements UserRepository {}
+// BUT-733: _MockUserRepository removed in favour of a real
+// FirebaseUserRepository against FakeFirebaseFirestore. The previous mock had
+// to side-effect-delete docs from the fake firestore inside its `then(...)`
+// stubs (so post-state assertions like `userDoc.exists == false` would pass),
+// which mocked the boundary while replicating the boundary's behaviour — the
+// classic "worst of both worlds" mock smell flagged in the BUT-498 close-out
+// quality review.
 
 class _MockConsentRepository extends Mock
     implements FirebaseConsentRepository {}
@@ -76,7 +82,7 @@ void main() {
     late _MockNotificationHistoryRepository mockNotificationHistoryRepository;
     late _MockNotificationBatchRepository mockNotificationBatchRepository;
     late _MockDeviceRepository mockDeviceRepository;
-    late _MockUserRepository mockUserRepository;
+    late FirebaseUserRepository realUserRepository;
     late _MockConsentRepository mockConsentRepository;
     late _MockMessagingRepository mockMessagingRepository;
     late _MockCollaborativeRecipeRepository mockCollaborativeRecipeRepository;
@@ -120,22 +126,22 @@ void main() {
       mockDeviceRepository = _MockDeviceRepository();
       when(() => mockDeviceRepository.deleteAllByUser(any()))
           .thenAnswer((_) async => 0);
-      mockUserRepository = _MockUserRepository();
-      // The integration test asserts on real `FakeFirebaseFirestore` state
-      // (e.g., `userDoc.exists == false`). Stubs must side-effect or those
-      // post-deletion assertions fail despite the mock returning `true`.
-      when(() => mockUserRepository.deletePublicProfile(any()))
-          .thenAnswer((invocation) async {
-        final uid = invocation.positionalArguments.first as String;
-        await firestore.collection('public_profiles').doc(uid).delete();
-        return true;
-      });
-      when(() => mockUserRepository.deleteUserRootDoc(any()))
-          .thenAnswer((invocation) async {
-        final uid = invocation.positionalArguments.first as String;
-        await firestore.collection('users').doc(uid).delete();
-        return true;
-      });
+      // BUT-733: real FirebaseUserRepository against FakeFirebaseFirestore.
+      // `validateOwnership` resolves currentUserId from `mockAuthRepository`
+      // (set below via `setAuthState(user: mockUser)`) and passes because
+      // `currentUserId == resourceOwnerId == 'test-user-123'`. The repo's
+      // real `delete()` calls hit FakeFirebaseFirestore directly, so the
+      // post-state assertions in this file (`userDoc.exists == false`) now
+      // observe genuine repository behaviour instead of mock-stub theatre.
+      //
+      // Note: cross-user / unauthenticated denial is enforced by
+      // firestore.rules and covered by the `firestore-rules-tester` suite
+      // against the emulator. This file's job is the cascade orchestration
+      // contract; FakeFirebaseFirestore does not enforce rules.
+      realUserRepository = FirebaseUserRepository(
+        firestore: firestore,
+        authRepository: mockAuthRepository,
+      );
       mockConsentRepository = _MockConsentRepository();
       when(() => mockConsentRepository.deleteConsent(any()))
           .thenAnswer((_) async => true);
@@ -189,7 +195,7 @@ void main() {
         notificationHistoryRepository: mockNotificationHistoryRepository,
         notificationBatchRepository: mockNotificationBatchRepository,
         deviceRepository: mockDeviceRepository,
-        userRepository: mockUserRepository,
+        userRepository: realUserRepository,
         consentRepository: mockConsentRepository,
         messagingRepository: mockMessagingRepository,
         collaborativeRecipeRepository: mockCollaborativeRecipeRepository,

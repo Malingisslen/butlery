@@ -4,9 +4,9 @@
 /// the main.dart to provide clean separation of concerns.
 library;
 
+import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:receive_intent/receive_intent.dart' as receive_intent;
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
@@ -46,8 +46,8 @@ class DeepLinkHandler {
     }
 
     try {
-      // Check if platform supports deep links via receive_intent
-      // Web platform doesn't support this plugin
+      // Web takes a different path: read deep-link parameters from the
+      // browser URL (web share target writes them as query params).
       if (kIsWeb) {
         // On web, read the browser URL for deep link parameters
         final uri = Uri.base;
@@ -72,22 +72,11 @@ class DeepLinkHandler {
         return;
       }
 
-      // Only attempt to use receive_intent on mobile platforms
-      // We can't check Platform.isAndroid/iOS on web, so we rely on kIsWeb check above
-      // and assume non-web means mobile for now (desktop support can be added later)
+      // `getInitialLinkString` (not `getInitialLink`) avoids Uri.parse
+      // normalization and preserves the prior `receivedIntent.data` String
+      // contract verbatim.
       if (!kIsWeb) {
-        // Get initial deep link from app launch
-        final receivedIntent =
-            await receive_intent.ReceiveIntent.getInitialIntent();
-
-        if (receivedIntent != null && receivedIntent.data != null) {
-          // Store the deep link for processing when context is available
-          _pendingDeepLink = receivedIntent.data;
-        }
-
-        // Note: receive_intent package doesn't support streaming
-        // Deep links while app is running would typically be handled by
-        // the operating system's intent system automatically
+        _pendingDeepLink = await AppLinks().getInitialLinkString();
       }
 
       _isInitialized = true;

@@ -785,7 +785,7 @@ class _ConditionRow extends StatelessWidget {
           items.add(DropdownMenuItem<String>(
             value: prop,
             child: Padding(
-              padding: AppDimensions.paddingOnlyLeft8,
+              padding: AppDimensions.paddingOnlyStart8,
               child: Text(prop, style: AppTextStyles.formOption),
             ),
           ));

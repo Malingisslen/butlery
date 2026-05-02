@@ -164,27 +164,65 @@ class FCMService with ErrorHandlingMixin {
         logTag: 'FCMService');
   }
 
-  /// Called when consent changes mid-session (BUT-356).
-  /// Re-enables push permissions and token registration if consent is now granted.
+  /// Called when consent changes mid-session (BUT-356, BUT-573).
+  /// Handles both directions:
+  ///   - Grant: request OS permission + register token
+  ///   - Revoke: delete token (SDK + Firestore profile) + reset state
   static bool _consentChangeInProgress = false;
 
   static Future<void> _onConsentChanged() async {
-    if (_pushPermissionsRequested || _consentChangeInProgress) return;
+    if (_consentChangeInProgress) return;
     _consentChangeInProgress = true;
     try {
       final hasConsent = await _hasPushConsent();
-      if (hasConsent) {
+      if (hasConsent && !_pushPermissionsRequested) {
         AppLogger.info(
             '🔔 FCM: Push consent granted mid-session — requesting permissions');
         await _requestPermissions();
         await _refreshToken();
         _pushPermissionsRequested = true;
+      } else if (!hasConsent && _pushPermissionsRequested) {
+        AppLogger.info(
+            '🔔 FCM: Push consent revoked mid-session — clearing token (BUT-573)');
+        await _revokePushAccess();
+        _pushPermissionsRequested = false;
       }
     } catch (e) {
       AppLogger.error('❌ FCM: Failed to handle consent change', e);
     } finally {
       _consentChangeInProgress = false;
     }
+  }
+
+  /// Delete FCM token from SDK + Firestore + memory after consent revoke
+  /// (BUT-573). Best-effort: each cleanup is independent so partial success
+  /// beats total failure. SDK + Firestore deletes run in parallel — they
+  /// don't depend on each other and the window during which an in-flight
+  /// Cloud Function could observe stale state is the same magnitude either
+  /// way.
+  /// Follow-up: FCMTokenManager.cleanup() does ~80% of the same work via
+  /// a different path; consolidating into one revocation route is a
+  /// separate refactor (cross-cutting static FCMService ↔ instance
+  /// FCMTokenManager).
+  static Future<void> _revokePushAccess() async {
+    final hasUserService = ServiceLocator.isRegistered<UserService>();
+
+    await Future.wait<void>([
+      _messaging.deleteToken().catchError((e) {
+        AppLogger.warning('⚠️ FCM: Failed to delete SDK token: $e');
+      }),
+      if (hasUserService)
+        ServiceLocator.get<UserService>().clearFCMToken().catchError((e) {
+          AppLogger.warning('⚠️ FCM: Failed to clear profile token: $e');
+        }),
+    ]);
+
+    if (!hasUserService) {
+      AppLogger.info(
+          '🔔 FCM: UserService not registered — skipping profile-token clear');
+    }
+
+    _currentToken = null;
   }
 
   /// Initialize Android notification channels (required for Android 8+)

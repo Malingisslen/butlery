@@ -81,7 +81,8 @@ class _ShelfCard extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: AppDimensions.imageSizeThumbnail + AppDimensions.spacingMd,
-          margin: const EdgeInsets.only(right: AppDimensions.spacingSm),
+          margin:
+              const EdgeInsetsDirectional.only(end: AppDimensions.spacingSm),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

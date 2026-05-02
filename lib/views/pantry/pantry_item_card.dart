@@ -31,7 +31,7 @@ class PantryItemCard extends StatelessWidget {
       onDismissed: (_) => viewModel.removeItem(item.id),
       background: Container(
         color: cs.error,
-        alignment: Alignment.centerRight,
+        alignment: AlignmentDirectional.centerEnd,
         padding:
             const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
         child: Icon(Icons.delete, color: cs.onError),

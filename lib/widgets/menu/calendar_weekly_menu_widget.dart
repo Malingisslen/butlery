@@ -315,7 +315,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           ),
         ),
       ),
-      padding: const EdgeInsets.only(left: AppDimensions.spacingSm),
+      padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingSm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,

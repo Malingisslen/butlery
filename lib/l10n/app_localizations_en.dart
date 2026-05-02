@@ -382,7 +382,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get draftCouldNotRestore =>
-      'Could not restore draft. Starting with empty form.';
+      'Couldn\'t restore draft. Starting with an empty form.';
 
   @override
   String get draftRestoring => 'Restoring draft...';
@@ -624,7 +624,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String messagingCouldNotLeaveGroup(String error) {
-    return 'Could not leave the group: $error';
+    return 'Couldn\'t leave the group: $error';
   }
 
   @override
@@ -636,7 +636,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String messagingCouldNotShowProfile(String error) {
-    return 'Could not show profile: $error';
+    return 'Couldn\'t open profile: $error';
   }
 
   @override
@@ -646,7 +646,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String messagingCouldNotDeleteConversation(String error) {
-    return 'Could not delete conversation: $error';
+    return 'Couldn\'t delete conversation: $error';
   }
 
   @override
@@ -728,7 +728,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatCouldNotChangeNotifications =>
-      'Could not change notification settings';
+      'Couldn\'t change notification settings';
 
   @override
   String get chatLeaveConversation => 'Leave conversation';
@@ -739,7 +739,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatCouldNotLeaveConversation =>
-      'Could not leave the conversation';
+      'Couldn\'t leave the conversation';
 
   @override
   String get chatEditMessage => 'Edit message';
@@ -748,16 +748,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatWriteYourMessage => 'Write your message...';
 
   @override
-  String get chatCouldNotEditMessage => 'Could not edit the message';
+  String get chatCouldNotEditMessage => 'Couldn\'t edit the message';
 
   @override
-  String get chatCouldNotDeleteMessage => 'Could not delete the message';
+  String get chatCouldNotDeleteMessage => 'Couldn\'t delete the message';
 
   @override
   String get chatMessageCopied => 'Message copied';
 
   @override
-  String get chatCouldNotCopyMessage => 'Could not copy the message';
+  String get chatCouldNotCopyMessage => 'Couldn\'t copy the message';
 
   @override
   String get chatYourRecipes => 'Your recipes';
@@ -769,20 +769,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatCheckOutRecipe => 'Check out this recipe!';
 
   @override
-  String get chatCouldNotShareRecipe => 'Could not share recipe';
+  String get chatCouldNotShareRecipe => 'Couldn\'t share recipe';
 
   @override
   String get chatMenuSharingComingSoon => 'Menu sharing coming soon';
 
   @override
-  String get chatCouldNotShareMenu => 'Could not share menu';
+  String get chatCouldNotShareMenu => 'Couldn\'t share menu';
 
   @override
   String get chatShoppingListSharingComingSoon =>
       'Shopping list sharing coming soon';
 
   @override
-  String get chatCouldNotShareShoppingList => 'Could not share shopping list';
+  String get chatCouldNotShareShoppingList => 'Couldn\'t share shopping list';
 
   @override
   String get chatLoadingImage => 'Loading image...';
@@ -794,7 +794,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatNoImageSelected => 'No image selected';
 
   @override
-  String get chatCouldNotSharePhoto => 'Could not share photo';
+  String get chatCouldNotSharePhoto => 'Couldn\'t share photo';
 
   @override
   String get chatDeleteMessage => 'Delete';

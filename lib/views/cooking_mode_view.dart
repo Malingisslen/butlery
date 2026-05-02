@@ -275,7 +275,8 @@ class _IngredientsPanel extends StatelessWidget {
                           Container(
                             width: 6,
                             height: 6,
-                            margin: const EdgeInsets.only(top: 8, right: 12),
+                            margin: const EdgeInsetsDirectional.only(
+                                top: 8, end: 12),
                             decoration: BoxDecoration(
                               color: cs.onPrimary,
                               shape: BoxShape.rectangle,

@@ -207,7 +207,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                                 color: cs.primary,
                                 fontWeight: FontWeight.w600,
                               ),
-                              textAlign: TextAlign.right,
+                              textAlign: TextAlign.end,
                             ),
                           ),
                           const SizedBox(width: AppDimensions.spacingXl),
