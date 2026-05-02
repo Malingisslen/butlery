@@ -1,0 +1,7 @@
+-rw-r--r-- 1 root root 31527 May  1 07:02 .claude/agents/cloud-functions-specialist.knowledge.md
+-rw-r--r-- 1 root root  3856 May  1 07:02 .claude/agents/e2e-test-specialist.knowledge.md
+-rw-r--r-- 1 root root 87976 May  1 07:02 .claude/agents/firebase-backend-security.knowledge.md
+-rw-r--r-- 1 root root  7348 May  1 07:02 .claude/agents/firestore-rules-tester.knowledge.md
+-rw-r--r-- 1 root root  6453 May  1 07:02 .claude/agents/performance-optimizer.knowledge.md
+-rw-r--r-- 1 root root 16896 May  1 07:02 .claude/agents/testing-specialist.knowledge.md
+-rw-r--r-- 1 root root  8595 May  1 07:02 .claude/agents/uiux-designer.knowledge.md
