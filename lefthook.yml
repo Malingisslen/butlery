@@ -16,9 +16,11 @@ pre-commit:
 
     # Scan for potential secrets in staged files
     # firebase_options.dart excluded (standard FlutterFire file with client-side API keys)
+    # Pre-filter the file list because xargs -r is unreliable on Windows MinGW
+    # (incorrectly invokes grep on empty input, falsely tripping the && cascade)
     secret-scan:
       glob: "*.{dart,ts,json,yaml,yml,env}"
-      run: "echo {staged_files} | tr ' ' '\n' | grep -v firebase_options.dart | xargs -r grep -lE '(AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[a-zA-Z0-9]{20,}|-----BEGIN (RSA|EC) PRIVATE KEY|npm_[a-zA-Z0-9]{36}|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|ghs_[a-zA-Z0-9]{36}|\"type\":\\s*\"service_account\")' && echo Potential secrets detected! && exit 1 || true"
+      run: "files=$(echo {staged_files} | tr ' ' '\n' | grep -v firebase_options.dart || true); if [ -z \"$files\" ]; then exit 0; fi; echo \"$files\" | xargs grep -lE '(AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[a-zA-Z0-9]{20,}|-----BEGIN (RSA|EC) PRIVATE KEY|npm_[a-zA-Z0-9]{36}|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|ghs_[a-zA-Z0-9]{36}|\"type\":\\s*\"service_account\")' && echo Potential secrets detected! && exit 1 || true"
 
     # Run Flutter analyze (fatal on infos)
     analyze:

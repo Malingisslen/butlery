@@ -43,7 +43,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBbmWnBxoQ4CYvvoMMFraZTRRD83qp8kew',
-    appId: '1:976357691692:android:4a2e41f5eb04e0c2e4dc89',
+    appId: '1:976357691692:android:768fa70ea3401ac2e4dc89',
     messagingSenderId: '976357691692',
     projectId: 'butlery-app-1',
     storageBucket: 'butlery-app-1.firebasestorage.app',
@@ -51,20 +51,20 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCRlLbFsy43gpKQK5aUmrQP2vQ7lAOd8aY',
-    appId: '1:976357691692:ios:714dacad784ca7b7e4dc89',
+    appId: '1:976357691692:ios:ec2ed533bea26b42e4dc89',
     messagingSenderId: '976357691692',
     projectId: 'butlery-app-1',
     storageBucket: 'butlery-app-1.firebasestorage.app',
-    iosBundleId: 'com.example.butlery',
+    iosBundleId: 'se.butlery.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyCRlLbFsy43gpKQK5aUmrQP2vQ7lAOd8aY',
-    appId: '1:976357691692:ios:714dacad784ca7b7e4dc89',
+    appId: '1:976357691692:ios:ec2ed533bea26b42e4dc89',
     messagingSenderId: '976357691692',
     projectId: 'butlery-app-1',
     storageBucket: 'butlery-app-1.firebasestorage.app',
-    iosBundleId: 'com.example.butlery',
+    iosBundleId: 'se.butlery.app',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
