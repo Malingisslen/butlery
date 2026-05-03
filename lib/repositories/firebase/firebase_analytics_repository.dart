@@ -288,7 +288,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       parameters: {
         'recipe_id': recipeId,
         'meal_type': mealType,
-        'is_first_time': isFirstTime ? 'true' : 'false',
+        'is_first_time': isFirstTime,
         if (daysSinceLastCooked != null) 'days_since_last': daysSinceLastCooked,
         'timestamp': DateTime.now().toUtc().toIso8601String(),
       },

@@ -186,14 +186,16 @@ class FeatureFlagService {
     }
     final result = (hash % 100) < percentage;
 
-    _maybeLogFlagEvaluated(flag, result.toString());
+    _maybeLogFlagEvaluated(flag, result);
 
     return result;
   }
 
   /// Emit `feature_flag_evaluated` once per (flag, variant) per session.
   /// Repeat calls with the same tuple are dropped silently. (BUT-663)
-  void _maybeLogFlagEvaluated(String flag, String variant) {
+  /// `enabled` is emitted as a real `bool` — BigQuery typed filters depend
+  /// on this (BUT-523). Stringified booleans broke `WHERE enabled = true`.
+  void _maybeLogFlagEvaluated(String flag, bool variant) {
     final tuple = '$flag:$variant';
     if (_evaluatedTuples.contains(tuple)) return;
 

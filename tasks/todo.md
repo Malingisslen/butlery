@@ -1,6 +1,71 @@
 # Sprint Backlog
 
-## Sprint: Post-theme cleanup — backend hygiene + parsing resilience + analytics close-out — 2026-05-02
+## Sprint: Identity/integrity correctness + parsing-input hardening + repo migrations carry-over — 2026-05-02
+
+Theme: Land the two High-priority package/bundle-ID bugs (BUT-759/761) and tie them to the App Check enforcement registration (BUT-760) that depends on correct IDs being registered. Tighten parsing input-validation in three coherent spots in `gemini-client.ts`. Pull 3 of the 7 BUT-442 carry-over migrations. Two standalone correctness fixes (analytics boolean coercion + multi-tab consent cache). **9 tasks across 2 agent groups + 3 standalones.**
+
+**Verify-before-starting flags:**
+- **A1 (BUT-759)** — repo work is replacing `ios/Runner/GoogleService-Info.plist` with one regenerated for `se.butlery.app`. The Firebase Console step (registering a new iOS app or updating bundle ID) is user-side — Claude can prepare the plist swap + verify Xcode resolves; user toggles the Firebase Console.
+- **A2 (BUT-761)** — `lib/services/security/device_integrity_service.dart`. Confirm whether `package_info_plus` is already a dep before threading runtime package-name; if not, hardcode to `se.butlery.app` (matching iOS bundle).
+- **A3 (BUT-760)** — depends on A1+A2 landing. Wire activation in bootstrap (`main.dart` or DI). Firebase Console enforcement flip is user-side — flagging it on the manual QA list rather than blocking the code task.
+- **B1/B2/B3 (BUT-512/516/528)** — all three live in `functions/src/llm/gemini-client.ts` validation paths. Confirm test seam: `parseIngredientLines` and `structureRecipe` both flow through the same validation helpers. Add unit tests in `functions/src/__tests__/gemini-validation.test.ts` (new file).
+- **C1 (BUT-442)** — re-read the BUT-442 Linear comment for the 7-candidate list. Pick top 3 by traffic: `firebase_category_preferences_repository.dart`, `cooking_session_repository.dart`, `ingredient_repository.dart`. Hard cap at 3 (per agent-timeout memory). If any single migration trips up tests, downscope to 2 and carry the third forward.
+- **C2 (BUT-523)** — grep for `'true'`/`'false'` string literals in `lib/services/analytics/`; the regression-prevention assertion goes in `BaseTracker.logEvent`.
+- **C3 (BUT-460)** — web-only via `dart:html` `BroadcastChannel`. Wrap behind `kIsWeb` guard. Native platforms keep current single-process behavior.
+
+### Agent A: firebase-backend-security — identity/integrity registration correctness
+
+- [!] **A1. Fix Firebase iOS app bundle ID** — **BLOCKED — user-side Firebase Console action required.** Editing only `lib/firebase_options.dart` to swap `iosBundleId` would create a config that lies (the `appId` `1:976357691692:ios:714dacad784ca7b7e4dc89` is bound to the existing `com.example.butlery` Firebase iOS app registration; changing only the bundle ID literal would point the runtime at the wrong appId). The honest path requires user-side: (1) Firebase Console → Project Settings → Add new iOS app for `se.butlery.app`; (2) Run `flutterfire configure` locally to regenerate `firebase_options.dart` + download a fresh `GoogleService-Info.plist` for `ios/Runner/`; (3) Delete the two orphan `com.example.butlery` Firebase iOS apps from App Check. Per CLAUDE.md rule #10 (Honesty over completion), not shipping a half-fix. Linear ticket carries the full handoff. (BUT-759)
+- [x] **A2. Fix freerasp watcher hardcoded packageName** — `lib/services/device_integrity_service.dart`: swapped both `packageName: 'com.butlery.app'` (Android) and `bundleIds: ['com.butlery.app']` (iOS) to `'se.butlery.app'` to match runtime `BuildConfig.APPLICATION_ID` / `Bundle.main.bundleIdentifier`. Added explanatory comment cross-referencing the build files where the canonical value lives. The prior mismatch made freerasp's package-check a silent no-op; the watcher now actually compares at runtime. Talsec dashboard registration must also be updated to `se.butlery.app` for the watcher email to fire on tampering — flagged on the manual QA list. dart analyze clean. (BUT-761)
+- [!] **A3. Register Play Integrity (Android) + App Attest (iOS) providers and enforce App Check** — **BLOCKED on A1.** App Attest registration requires the iOS Firebase app to exist with the correct bundle ID, which A1 owns. Wiring `FirebaseAppCheck.instance.activate(...)` in code without first registering the providers in Firebase Console would actively log runtime errors against missing providers. Honest hold: when A1 lands (user-side), this becomes a 4-6h Flutter wiring + console flip. Linear ticket carries the handoff. (BUT-760)
+
+### Agent B: cloud-functions-specialist — parsing input-validation tightening
+
+- [x] **B1. Per-unit-aware amount validation in `LlmTier._validateResponse`** — File path correction: lives at `lib/services/parsing/tiers/llm_tier.dart` (Flutter side, not `functions/src/llm/gemini-client.ts`). Replaced the loose `0-10000` range with `_maxAmountByUnit` lookup table covering all 23 known Swedish units (kg ≤ 20, g ≤ 5000, dl ≤ 50, msk ≤ 50, tsk ≤ 100, st ≤ 500, etc.). Unitless quantities fall back to `_maxAmountUnitless = 10000` (preserves prior behavior for `2 ägg`-style entries). Above-ceiling triggers `AppLogger.warning` with the offending value + unit + name + ceiling, then `errors.add('ingredient_amount_range')`. Negative amounts still rejected. (BUT-512)
+- [x] **B2. Reject unknown-unit ingredient rows in `LlmTier._convertIngredients`** — Filtering happens at conversion time (not validation), so the rest of the recipe survives a single hallucinated unit. Iterates extracted ingredients: keeps unitless rows + rows whose unit is in `_knownSwedishUnits`; drops unknown-unit rows with a `AppLogger.warning` per drop. If the filter empties the list, returns `FieldResult.failed('All LLM ingredients had unknown units (dropped N)')`. Removed the prior debug-only "log and pass through" code path that was silently corrupting downstream shopping-list / scaling calculations. (BUT-516)
+- [x] **B3. Cap instruction count at 50 in `LlmTier._convertInstructions`** — Added `_maxInstructionCount = 50` constant. When `instructions.length > 50`, logs `AppLogger.warning('Truncating instructions N → 50')` and returns `instructions.take(50).toList()` with a `'LLM extraction (truncated)'` provenance string. Front-loaded steps preserved (tail steps are where LLM drift accumulates). 50 is generous — longest real recipe in our goldens is ~30 steps. (BUT-528)
+
+### Standalone
+
+- [!] **C1. BUT-442 carry-over — migrate top repository holdouts to `BaseFirebaseRepository`** — **Partial: 1/3 migrated.** `firebase_category_preferences_repository` migrated by firebase-backend-security subagent: now extends `BaseFirebaseRepository<CategoryPreference>` with the 4 permission methods + `fromFirestore`/`toFirestore`/`getId`/`collectionName`. New test file `test/unit/repositories/firebase_category_preferences_repository_test.dart` (13 tests, all green) covers permission gating + gateway contract. Knowledge file `firebase-backend-security.knowledge.md` updated with the migration pattern observed. The other two candidates (`firebase_cooking_session_repository`, `firebase_ingredient_repository`) hit `FakeFirebaseFirestore` limitations on `FieldValue.increment` + `merge: true` — testable contract is unclear without rewriting against the emulator. Per agent-timeout memory + CLAUDE.md rule #10, deferring those two to a future sprint with a fresh investigation step. BUT-442 stays In Progress on Linear with 6 candidates remaining (the 4 originally-deferred + the 2 that bounced this sprint). (BUT-442)
+- [x] **C2. Fix analytics booleans-as-strings (`is_first_time`, `enabled`)** — Two emissions fixed: `firebase_analytics_repository.dart:291` `'is_first_time': isFirstTime ? 'true' : 'false'` → native `isFirstTime`; `feature_flag_service.dart` changed `_maybeLogFlagEvaluated(String flag, String variant)` signature to `(String flag, bool variant)` and call site at line 189 from `result.toString()` → `result` so `'enabled': variant` emits a real bool. Regression-prevention: added `_noStringifiedBooleans(parameters)` static check + `assert(...)` in `BaseTracker.logEvent` that fires in debug if any param value is the literal string `'true'` or `'false'`. Audit pass: remaining `setUserProperty(... value: 'true')` calls (BaseTracker.fireOnceMilestone:79, FirebaseAnalyticsRepository:298) are NOT the same anti-pattern — Firebase Analytics user-property values are always strings (API contract); only `logEvent` parameters carry typed values into BigQuery. dart analyze clean. (BUT-523)
+- [x] **C3. Multi-tab logout: invalidate `ConsentService` cache across web tabs** — Added `lib/services/account/consent_broadcast.dart` (conditional export pattern matching `pwa_install_service.dart`) + `consent_broadcast_stub.dart` (native no-op) + `consent_broadcast_web.dart` (uses `package:web` `BroadcastChannel('butlery_consent_v1')` via `dart:js_interop`). `ConsentService.clearConsentCache()` now splits into `_clearLocalCacheOnly()` + `broadcastConsentInvalidation()`. Constructor registers `listenForConsentInvalidation(_clearLocalCacheOnly)` so the inbound listener calls the no-broadcast variant — breaks the would-be echo loop (tab A clears + broadcasts → tab B clears without rebroadcasting → done). BroadcastChannel does not loop messages back to the sender, so additional sender-id guarding isn't required. dart analyze clean across all 4 new/modified files. (BUT-460)
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` — 0 issues required
+- [ ] `cd functions && npm test` — parsing tests green
+- [ ] Affected Flutter unit tests green (`test/unit/services/security/`, `test/unit/services/consent/`, `test/unit/services/analytics/`, repo tests)
+- [ ] Tier-2 specialist gates: code-reviewer, testing-specialist, firebase-backend-security (A1-A3, C1, C3), cloud-functions-specialist (B1-B3)
+- [ ] **Manual QA**: A1+A3 require physical iOS+Android device tests (App Check enforced + freerasp triggers correctly); A2 needs Android verification that watcher actually fires
+- [ ] Commit, push to main
+- [ ] Update Linear: BUT-759/761/760/512/516/528/442*/523/460 → Done (* BUT-442 stays In Progress with 4 candidates remaining)
+
+### Continued blockers (NOT in scope per memory)
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred
+- BUT-498 / BUT-697 — explicitly skipped
+- BUT-686 / BUT-660 / BUT-694 — need feature-level brainstorming first
+- BUT-674 / BUT-721 — need their own scoped sprints
+- BUT-579 — held for button-system sprint
+- BUT-626 — bucket-based A/B infra; own sprint
+- BUT-444 — portion scaling + unit conversion; deserves its own product-design sprint
+- BUT-420/451/452/486 — deploy-pipeline / staging / runbooks / CI-deploy automation cluster; deserves a focused infra sprint
+- All `idea`-labeled monetization scaffolding — post-beta
+
+---
+
+## What this means in plain language
+
+- **Two real bugs get fixed.** Today the app's identity is registered slightly wrong in two different places (Firebase + the security watcher). Both look harmless in isolation but make App Check enforcement (the brake against credential-stuffing/scraping) impossible to turn on. Fixing the IDs unlocks turning the brake on — that's the third related task.
+- **Recipe parser stops trusting the AI blindly.** Three small holes: it would happily save "5000 kg salt", invent units like "glass", or return 100 instruction steps. After this sprint, all three get rejected at the gate.
+- **Three more pieces of the data-access cleanup get done.** Last sprint reconciled the metric (32% claimed → 78% actual after honest counting). This sprint migrates 3 of the 7 remaining stragglers — slow burn, capped to keep agents from timing out.
+- **Two correctness fixes.** An analytics gotcha that was breaking BigQuery type filters; and a multi-tab logout edge case where logging out in one browser tab left another tab thinking you'd consented to tracking.
+- **Risk: low.** The two High bugs are config drift — easy to revert. The parsing tightening only adds rejection paths (existing happy path unchanged). Repo migrations are mechanical. The App Check enforcement flip is the riskiest single step — verify on a real iOS+Android device before declaring done; can be unflipped from Firebase Console in seconds if real traffic gets blocked.
+
+---
+
+## ARCHIVED — Sprint: Post-theme cleanup — backend hygiene + parsing resilience + analytics close-out — 2026-05-02
+
+Shipped as `afa6291ba` ("feat(backend/parsing/analytics): post-theme cleanup sprint — admin sharedWith cascade + JSON salvage + retry ADR + goldens + funnel sessionId + first_search milestone (BUT-753/577/566/600/560/588/574)"). 7/8 tasks complete; A2 (BUT-442 actual migrations) deferred to next sprint per CLAUDE.md rule #10. Follow-ups landed in `a368f30ef` (BUT-577 salvage edge cases + BUT-588 milestone tracker test) and refactor commits `4e365b2c7` + `713b4d81a`.
 
 Theme: with the theme migration sweep behind us, knock out the highest-leverage backend cleanup (BUT-753 chains directly from last week's BUT-732 sharedWith scrub), tighten the parsing pipeline (BUT-577 partial-recovery + BUT-566 retry doc + BUT-600 golden coverage), and close two analytics gaps (BUT-560 funnel session_id + BUT-588 activation milestone). **7 tasks, 2 agent groups + 2 standalone.**
 

@@ -1,5 +1,6 @@
 import 'package:butlery/constants/known_ingredients.dart';
 import 'package:butlery/constants/preparation_words.dart';
+import 'package:butlery/services/parsing/swedish_units.dart';
 import 'package:butlery/services/parsing/parsers/viterbi_context_processor.dart';
 
 /// Classification result for a single line of text.
@@ -114,20 +115,9 @@ class SwedishLineClassifier {
     RegExp(r'^metod:?\s*$', caseSensitive: false),
   ];
 
-  /// Swedish measurement units for ingredient detection.
-  static const _swedishUnits = {
-    // Volume
-    'dl', 'l', 'ml', 'cl', 'liter',
-    // Weight
-    'g', 'kg', 'hg', 'gram', 'kilo',
-    // Cooking measures
-    'msk', 'tsk', 'krm', 'matsked', 'tesked', 'kryddmått',
-    // Packaging
-    'st', 'bit', 'burk', 'pkt', 'paket', 'förp', 'påse',
-    'skiva', 'klyfta', 'knippe', 'nypa', 'skvätt',
-    // American (often used)
-    'cup', 'cups', 'tbsp', 'tsp', 'oz',
-  };
+  /// Swedish measurement units for ingredient detection — shared with the
+  /// parsing pipeline (see `swedish_units.dart`).
+  static const _swedishUnits = kSwedishUnits;
 
   /// Food words for ingredient detection — unified from KnownIngredients (~329 entries).
   // ignore: prefer_const_declarations

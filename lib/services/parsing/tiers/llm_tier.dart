@@ -6,6 +6,7 @@ import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/services/parsing/ingredient_conversion.dart';
+import 'package:butlery/services/parsing/swedish_units.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/llm/llm_models.dart';
@@ -23,32 +24,11 @@ import 'package:butlery/core/utils/retry_helper.dart';
 ///
 /// **P0-2 Security Fix**: All LLM responses are validated for
 /// suspicious patterns to prevent prompt injection attacks.
-/// Known Swedish measurement units for validation.
-const _knownSwedishUnits = <String>{
-  'dl',
-  'cl',
-  'ml',
-  'l',
-  'msk',
-  'tsk',
-  'krm',
-  'g',
-  'kg',
-  'st',
-  'nypa',
-  'knippe',
-  'klyfta',
-  'skiva',
-  'port',
-  'bit',
-  'burk',
-  'paket',
-  'pkt',
-  'förp',
-  'näve',
-  'klick',
-  'droppe',
-};
+/// Cap on instruction array count. Longest real recipe in our goldens has
+/// ~30 steps; 50 is generous headroom. Above this cap → log + truncate.
+/// Prevents an adversarial 100-step output from blowing up UI rendering
+/// and Firestore writes.
+const _maxInstructionCount = 50;
 
 class LlmTier extends ParsingTier with QualityScoring {
   /// LLM service for making extraction calls.
@@ -452,7 +432,10 @@ class LlmTier extends ParsingTier with QualityScoring {
       errors.add('description_length');
     }
 
-    // Ingredients: ≥1, each name 1-100 chars, amount 0-10000
+    // Ingredients: ≥1, each name 1-100 chars; amount within per-unit ceiling
+    // or `kMaxAmountUnitless` when unit is missing. Unknown-unit rows are
+    // dropped at conversion time (not rejected here) — preserving the rest
+    // of the recipe is more useful than rejecting on a single bad unit.
     if (extracted.ingredients.isEmpty) {
       errors.add('no_ingredients');
     }
@@ -461,20 +444,28 @@ class LlmTier extends ParsingTier with QualityScoring {
         errors.add('ingredient_name_length');
         break;
       }
-      if (ing.amount != null && (ing.amount! < 0 || ing.amount! > 10000)) {
-        errors.add('ingredient_amount_range');
-        break;
-      }
-      // Flag unknown units (non-blocking — lower confidence logged)
-      if (ing.unit != null &&
-          ing.unit!.isNotEmpty &&
-          !_knownSwedishUnits.contains(ing.unit!.toLowerCase())) {
-        AppLogger.debug(
-            '$tierName: Unknown unit "${ing.unit}" for "${ing.name}"');
+      if (ing.amount != null) {
+        if (ing.amount! < 0) {
+          errors.add('ingredient_amount_range');
+          break;
+        }
+        final unitKey = ing.unit?.toLowerCase();
+        final ceiling = (unitKey != null && unitKey.isNotEmpty)
+            ? (kMaxAmountByUnit[unitKey] ?? kMaxAmountUnitless)
+            : kMaxAmountUnitless;
+        if (ing.amount! > ceiling) {
+          AppLogger.warning(
+            '$tierName: Implausible amount ${ing.amount} ${ing.unit ?? "(no unit)"} '
+            'for "${ing.name}" exceeds ceiling $ceiling',
+          );
+          errors.add('ingredient_amount_range');
+          break;
+        }
       }
     }
 
-    // Instructions: ≥1, each 5-2000 chars
+    // Instructions: ≥1, each 5-2000 chars. Total count truncated at
+    // `_maxInstructionCount` in conversion — not rejected here.
     if (extracted.instructions.isEmpty) {
       errors.add('no_instructions');
     }
@@ -607,7 +598,32 @@ class LlmTier extends ParsingTier with QualityScoring {
       return FieldResult.failed('No ingredients from LLM');
     }
 
-    final deduped = _deduplicateIngredients(extracted);
+    // Drop unknown-unit rows so they can't corrupt downstream
+    // shopping-list / scaling / unit-conversion (which silently
+    // mis-interpret or ignore them). Empty/null unit is allowed — many
+    // legitimate ingredients are unitless (e.g. `2 ägg`).
+    final filtered = <ExtractedIngredient>[];
+    var droppedUnknownUnit = 0;
+    for (final ing in extracted) {
+      final unitKey = ing.unit?.toLowerCase();
+      final isUnitless = unitKey == null || unitKey.isEmpty;
+      if (isUnitless || kSwedishUnits.contains(unitKey)) {
+        filtered.add(ing);
+      } else {
+        droppedUnknownUnit++;
+        AppLogger.warning(
+          '$tierName: Dropping ingredient "${ing.name}" — unknown unit "${ing.unit}"',
+        );
+      }
+    }
+
+    if (filtered.isEmpty) {
+      return FieldResult.failed(
+        'All LLM ingredients had unknown units (dropped $droppedUnknownUnit)',
+      );
+    }
+
+    final deduped = _deduplicateIngredients(filtered);
     final parsed = <ParsedIngredient>[];
 
     for (final ing in deduped) {
@@ -651,6 +667,20 @@ class LlmTier extends ParsingTier with QualityScoring {
   FieldResult<List<String>> _convertInstructions(List<String> instructions) {
     if (instructions.isEmpty) {
       return FieldResult.failed('No instructions from LLM');
+    }
+
+    // Cap instruction count. Real recipes top out at ~30 steps; an LLM
+    // returning 100 steps is hallucination — truncate so it can't blow
+    // up UI rendering or Firestore writes. Front-loaded steps are
+    // typically the most accurate; tail steps are where drift accumulates.
+    if (instructions.length > _maxInstructionCount) {
+      AppLogger.warning(
+        '$tierName: Truncating instructions ${instructions.length} → $_maxInstructionCount',
+      );
+      return FieldResult.mediumConfidence(
+        instructions.take(_maxInstructionCount).toList(),
+        'LLM extraction (truncated)',
+      );
     }
 
     return FieldResult.mediumConfidence(instructions, 'LLM extraction');

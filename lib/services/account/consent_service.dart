@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
+import 'package:butlery/services/account/consent_broadcast.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
@@ -59,7 +60,10 @@ class ConsentService extends BaseService implements Listenable {
     required auth.AuthRepository authRepository,
     required FirebaseConsentRepository consentRepository,
   })  : _authRepository = authRepository,
-        _consentRepository = consentRepository;
+        _consentRepository = consentRepository {
+    // Cross-tab cache invalidation (web-only; no-op on native).
+    listenForConsentInvalidation(_clearLocalCacheOnly);
+  }
 
   /// Get current user's consent (cached per session, invalidated on save)
   Future<UserConsent?> getUserConsent() async {
@@ -219,7 +223,18 @@ class ConsentService extends BaseService implements Listenable {
   // This ensures GDPR compliance with Article 30 (Records of Processing Activities)
 
   /// Clear session cache on logout to prevent cross-user data leakage.
+  /// Broadcasts the invalidation to other web tabs so they all drop their
+  /// per-instance caches in lockstep (BUT-460).
   void clearConsentCache() {
+    _clearLocalCacheOnly();
+    broadcastConsentInvalidation();
+  }
+
+  /// Clear only this instance's cache without rebroadcasting. Used by the
+  /// cross-tab listener to break the would-be invalidation echo loop:
+  /// tab A clears + broadcasts → tab B receives → tab B clears (no
+  /// rebroadcast) → done.
+  void _clearLocalCacheOnly() {
     _cachedConsent = null;
     _cachedUserId = null;
     _cachePopulated = false;

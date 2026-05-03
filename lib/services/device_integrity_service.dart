@@ -80,13 +80,19 @@ class DeviceIntegrityService {
     );
 
     try {
+      // Must match runtime applicationId / bundleIdentifier verbatim —
+      // Android `BuildConfig.APPLICATION_ID` is `se.butlery.app`
+      // (android/app/build.gradle.kts:34) and iOS `Bundle.main.bundleIdentifier`
+      // is `se.butlery.app` (ios/Runner.xcodeproj/project.pbxproj). The prior
+      // `com.butlery.app` value caused freerasp's package check to silently
+      // never compare, defeating tampering detection. (BUT-761)
       final config = TalsecConfig(
         androidConfig: AndroidConfig(
-          packageName: 'com.butlery.app',
+          packageName: 'se.butlery.app',
           signingCertHashes: [_kTalsecAndroidCertHash],
         ),
         iosConfig: IOSConfig(
-          bundleIds: ['com.butlery.app'],
+          bundleIds: ['se.butlery.app'],
           teamId: _kTalsecTeamId,
         ),
         watcherMail: 'info@butlery.se',

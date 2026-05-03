@@ -269,5 +269,181 @@ void main() {
       expect(result.success, isFalse);
       expect(result.promptVersion, 'v3.1');
     });
+
+    // BUT-512: per-unit amount validation
+    group('per-unit amount ceilings (BUT-512)', () {
+      test('rejects 5000 kg salt as implausible', () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'salt', amount: 5000, unit: 'kg'),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        // Above-ceiling kg → ingredient_amount_range → no valid ingredients
+        // → partial recipe with failed ingredients → still has title.
+        expect(result.recipe!.ingredients.confidence, ParseConfidence.failed);
+      });
+
+      test('keeps 2 kg flour (below ceiling)', () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'mjol', amount: 2, unit: 'kg'),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isTrue);
+        expect(result.recipe!.ingredients.value!.length, 1);
+      });
+
+      test('keeps unitless 50 (under unitless ceiling)', () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'agg', amount: 50),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isTrue);
+        expect(result.recipe!.ingredients.value!.length, 1);
+      });
+
+      test('rejects 200 dl (above per-unit ceiling 50)', () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'mjolk', amount: 200, unit: 'dl'),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.recipe!.ingredients.confidence, ParseConfidence.failed);
+      });
+    });
+
+    // BUT-516: drop unknown-unit ingredient rows at conversion time
+    group('unknown-unit drop (BUT-516)', () {
+      test('drops ingredient with unknown unit "glass"', () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'mjol', amount: 3, unit: 'dl'),
+              ExtractedIngredient(name: 'vatten', amount: 2, unit: 'glass'),
+              ExtractedIngredient(name: 'agg', amount: 3),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isTrue);
+        // 3 input → 1 dropped (glass) → 2 kept (mjol + agg)
+        final names =
+            result.recipe!.ingredients.value!.map((i) => i.name).toList();
+        expect(names, contains('mjol'));
+        expect(names, contains('agg'));
+        expect(names, isNot(contains('vatten')));
+      });
+
+      test('returns no-data when ALL ingredients have unknown units', () async {
+        // All-unknown drop → empty ingredients → recipe.isComplete false
+        // → TierResult.noData (recipe null).
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'mjol', amount: 3, unit: 'glass'),
+              ExtractedIngredient(name: 'vatten', amount: 2, unit: 'mug'),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isFalse);
+        expect(result.recipe, isNull);
+      });
+
+      test('keeps ingredients with empty/null unit (not unknown)', () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(
+            ingredients: const [
+              ExtractedIngredient(name: 'agg', amount: 3),
+              ExtractedIngredient(name: 'gurka', amount: 1, unit: ''),
+            ],
+          ),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isTrue);
+        expect(result.recipe!.ingredients.value!.length, 2);
+      });
+    });
+
+    // BUT-528: cap instruction count
+    group('instruction count cap (BUT-528)', () {
+      test('keeps recipe with exactly 50 instructions untouched', () async {
+        final fifty = List.generate(
+          50,
+          (i) => 'Step ${i + 1}: do something useful for the recipe.',
+        );
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(instructions: fifty),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isTrue);
+        expect(result.recipe!.instructions.value!.length, 50);
+      });
+
+      test('truncates 100 instructions down to 50', () async {
+        final hundred = List.generate(
+          100,
+          (i) => 'Step ${i + 1}: do something useful for the recipe.',
+        );
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(instructions: hundred),
+          estimatedCost: 0.01,
+        );
+
+        final result = await tier.parse(createContext());
+
+        expect(result.success, isTrue);
+        expect(result.recipe!.instructions.value!.length, 50);
+        // Front-loaded — first 50 retained
+        expect(result.recipe!.instructions.value!.first, contains('Step 1:'));
+        expect(result.recipe!.instructions.value!.last, contains('Step 50:'));
+      });
+    });
   });
 }

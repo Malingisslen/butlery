@@ -30,7 +30,26 @@ abstract class BaseTracker {
     Map<String, Object>? parameters,
   }) async {
     if (!await hasAnalyticsConsent()) return;
+    assert(
+      _noStringifiedBooleans(parameters),
+      'BaseTracker.logEvent: stringified booleans (\'true\'/\'false\') break '
+      'BigQuery typed filters — emit native bool instead. (BUT-523)',
+    );
     await repository.logEvent(name: name, parameters: parameters);
+  }
+
+  /// Asserts the BUT-523 invariant: no analytics param value is the string
+  /// `'true'` or `'false'`. Stringified booleans break BigQuery typed
+  /// filters (`WHERE enabled = true` fails when the column is STRING).
+  /// Debug-only — `assert` strips in release.
+  static bool _noStringifiedBooleans(Map<String, Object>? parameters) {
+    if (parameters == null) return true;
+    for (final value in parameters.values) {
+      if (value is String && (value == 'true' || value == 'false')) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /// Once-per-user activation-milestone primitive. Mirrors the BUT-584 firstShare

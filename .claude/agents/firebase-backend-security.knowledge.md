@@ -2171,3 +2171,65 @@ secureStore` with stubbed `read`/`write`/`delete`. The new
 `secureStore.containsKey(...)` — straightforward and the right shape
 for verifying the keystore-side contract. No new mocktail boundary
 needed.
+
+### 2026-05-02 — BUT-753 legacy sharedWith admin cascade + BUT-577 JSON salvage
+
+**Admin-context cascade pattern (BUT-753):** the canonical shape is now
+`cleanup<Thing>WithDb(database, userId)` test seam + thin `cleanup<Thing>(userId)`
+wrapper that closes over module-level `db = admin.firestore()`. The cascade
+runs inside the existing `onUserDeleted` v1 auth trigger pinned to
+`europe-west1` (region inherited — no separate hook), uses
+`admin.firestore()` (rules bypassed, which is the entire point — owner-or-member
+gate at firestore.rules:515-518 blocks the recipient's own client from
+scrubbing their flat-array entry), and chunks at BATCH_LIMIT=500 with
+`FieldValue.arrayRemove(userId)` (idempotent — no-op when value absent).
+Best-effort wrapper: per-chunk `try/catch` around `batch.commit()` logs
+warn + resets the batch + continues. Idempotency guarantees re-run safety,
+so partial failure beats total failure. **Test seam contract:** export
+`cleanupXWithDb` for the in-memory FakeFirestore stub used by
+`__tests__/but753-legacy-sharedwith-cascade.test.ts` (501-doc batching
+scenario + `failNextCommit` partial-failure scenario both covered).
+
+**Why a top-level `where("sharedWith", "array-contains", userId)` not a
+collectionGroup sweep:** only `shared_content` historically used a flat
+`sharedWith` array. A collectionGroup query would burn reads on irrelevant
+collections without coverage benefit. Document this reasoning in the test
+seam doc-comment so a future agent doesn't "improve" it to a CG sweep.
+
+**JSON salvage parser (BUT-577) DoS analysis:** the quote-aware
+`extractTopLevelObjects` in `gemini-client.ts:446-496` is bounded by
+input length (single forward pass O(n) over a Vertex AI response capped
+by `INGREDIENT_LINE_MAX_TOKENS=1000` ≈ ~4KB). Outer loop and inner loop
+both advance `i` monotonically — no nested rescan, no backtracking, no
+unbounded recursion. String-state machine handles `\\` escape (skip next
+char) and unescaped `"` toggles `inStr`, so `}` inside `"med } i strängen"`
+or `"escaped \"quote\" inside"` does not perturb depth. Salvage runs only
+on `JSON.parse` failure (cold path), and the input is already
+schema-constrained by Gemini's `responseMimeType: "application/json"` +
+`responseSchema`. Not a DoS vector.
+
+**Untrusted-input boundary note:** Gemini output is technically untrusted
+(model could in principle emit anything), but it's bounded both by token
+cap and by the structured-output schema enforcement. The salvage parser
+treats it as adversarial anyway (no eval, no Function ctor, no regex
+backtracking — ReDoS-clean since the only regex `/^\{\s*"ingredients"\s*:\s*\[/`
+is anchored and bounded).
+
+**ADR-001 inline cross-reference pattern (BUT-566):** the catch handler
+in `structure-recipe.ts:316` carries a comment block that names the ADR,
+points to the Dart-side single retry layer (`llm_tier.dart:120-128`,
+`RetryHelper.retryNetworkOperation, maxRetries: 2`), and explicitly
+forbids server retry. Comment is correctly worded — "Do NOT add
+retry/loop logic here — stacking server retries with client retries
+multiplies Gemini API load under the same rate-limit window." This is
+the right shape: it states the contract AND the failure mode, so a future
+agent reading "fix transient errors" won't quietly add a retry loop.
+
+**Best-effort vs all-or-nothing for GDPR cascades:** for Right-to-Erasure
+the legal obligation is "delete on request without undue delay." Partial
+deletion that re-runs on the next trigger satisfies "without undue delay"
+better than total-failure-then-retry. Best-effort + idempotency is the
+correct trade-off — and the integration test exercises this explicitly
+(`scenario_failedChunkContinues` arms `failNextCommit=true` on the first
+of two chunks and asserts the second still commits + total returned
+matches all queued docs). Test coverage is sufficient.
