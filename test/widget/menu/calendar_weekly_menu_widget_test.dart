@@ -9,6 +9,7 @@
 /// state so the next UI refactor surfaces as a golden diff.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -353,24 +354,31 @@ void main() {
         recipeService: recipeService,
       );
       addTearDown(vm.dispose);
-      await vm.loadWeek(weekStart);
 
-      await tester.pumpWidget(
-        _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
-      );
-      await tester.pumpAndSettle();
+      // Pin the wall clock to a date inside thisWeek so the widget's
+      // post-frame `loadWeek(clock.now())` asks for thisWeek (mocked
+      // above) rather than today's actual week (un-mocked). The widget
+      // does the initial load itself — no `vm.loadWeek(weekStart)`
+      // pre-seed needed here.
+      await withClock(Clock.fixed(weekStart.add(const Duration(hours: 12))),
+          () async {
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
 
-      // Nav arrows use Icons.chevron_left / chevron_right.
-      await tester.tap(find.byIcon(Icons.chevron_right));
-      await tester.pumpAndSettle();
-      expect(vm.currentWeekStart, nextWeek.weekStartDate);
+        // Nav arrows use Icons.chevron_left / chevron_right.
+        await tester.tap(find.byIcon(Icons.chevron_right));
+        await tester.pumpAndSettle();
+        expect(vm.currentWeekStart, nextWeek.weekStartDate);
 
-      // Going back twice crosses the anchor to prevWeek.
-      await tester.tap(find.byIcon(Icons.chevron_left));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.chevron_left));
-      await tester.pumpAndSettle();
-      expect(vm.currentWeekStart, prevWeek.weekStartDate);
+        // Going back twice crosses the anchor to prevWeek.
+        await tester.tap(find.byIcon(Icons.chevron_left));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.chevron_left));
+        await tester.pumpAndSettle();
+        expect(vm.currentWeekStart, prevWeek.weekStartDate);
+      });
     });
   });
 

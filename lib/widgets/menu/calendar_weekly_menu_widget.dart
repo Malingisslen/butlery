@@ -6,6 +6,7 @@
 /// `lib/widgets/menu/calendar/`. This file is the orchestrator only.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -43,7 +44,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     _initialLoadStarted = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<WeeklyMenuPlanViewModel>().loadWeek(DateTime.now());
+      context.read<WeeklyMenuPlanViewModel>().loadWeek(clock.now());
     });
   }
 
@@ -96,9 +97,9 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       onRefinePrompt: widget.onRefinePrompt,
     );
 
-    // Compute today's index once — avoids 7× DateTime.now() in DayCell.
+    // Compute today's index once — avoids 7× clock.now() in DayCell.
     // -1 when the visible week isn't the current ISO week.
-    final now = DateTime.now();
+    final now = clock.now();
     final todayIndex = plan.weekStartDate == IsoWeekUtils.weekStartOf(now)
         ? now.weekday - 1
         : -1;

@@ -1,6 +1,8 @@
 /// ViewModel backing the calendar weekly menu view.
 library;
 
+import 'package:clock/clock.dart';
+
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -30,7 +32,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   // Until the first `loadWeek` call completes, fall back to "this week".
   DateTime get currentWeekStart =>
-      _plan?.weekStartDate ?? IsoWeekUtils.weekStartOf(DateTime.now());
+      _plan?.weekStartDate ?? IsoWeekUtils.weekStartOf(clock.now());
 
   bool get hasOverflow => _overflow.isNotEmpty;
   bool get hasEntries => _plan?.isNotEmpty ?? false;
