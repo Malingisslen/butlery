@@ -4,6 +4,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
@@ -99,7 +100,7 @@ class RecipeSearchRouter {
     if (analytics == null) return;
     try {
       await analytics.setUserProperty(
-        name: 'has_algolia_search',
+        name: AnalyticsUserProperties.hasAlgoliaSearch,
         value: active ? 'true' : 'false',
       );
     } catch (e) {

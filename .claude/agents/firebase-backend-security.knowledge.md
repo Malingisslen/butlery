@@ -2348,3 +2348,104 @@ Rule for future analytics-schema reviews: removing client-emitted timestamp
 params from Firebase Analytics is always safe; ADDING them is the smell —
 they duplicate the platform auto-stamp and create joinable identifiers if
 combined with high-cardinality fields.
+
+### 2026-05-04 — `.limit()` defence-in-depth on bounded live streams (BUT-478)
+
+Second sprint in a row a `.limit()` was added purely as defence-in-depth
+on a snapshots() stream where the data is naturally bounded by the
+business model (BUT-484 was the recipe watcher cap last sprint; BUT-478
+is the friend_categories stream and menu_voting watch this sprint). The
+pattern has earned a name and a rule.
+
+**The rule: every `.snapshots()` chain in `lib/repositories/` must end
+in a `.limit(N)` clause.** Even when the collection is "obviously" small.
+The justification is purely defence-in-depth:
+
+1. There is no UI cap on how many docs a user (or a writer with rule
+   permission) can produce — the model contract may say "typical user has
+   <20 categories" but nothing in code or rules enforces that. A bug, a
+   bulk import, or an adversarial peer that has rule-level write access
+   (e.g. members of a shared group) can produce arbitrary growth.
+2. A `snapshots()` listener pays full snapshot cost on every change. An
+   unbounded watch on a 10k-doc collection costs 10k reads on first
+   attach and re-reads the whole resultset on resort/filter operations.
+3. `.limit()` capping at "an order of magnitude above the realistic
+   ceiling" is free in normal operation (the limit never trips) and
+   bounds the worst case to a known constant.
+
+**Sizing heuristic (validated 2x now):**
+- Per-user bounded surface (friend categories, owned recipes, owned
+  shopping lists): `.limit(100)`. Real users have <20.
+- Per-group bounded surface (group voting, group menu slots, group
+  members): `.limit(200)`. Real groups have <30 members and <10 active
+  votes.
+- Per-thread bounded surface (chat messages in a single conversation):
+  paginate, don't `.limit()` to a constant (use BUT-484 cursor pattern).
+- Cross-user collection-group queries (`fetchMemberCategories`,
+  collection-group friend lookups): `.limit(200-500)` and accept that
+  the upper bound is the right defence — collection-group size is
+  unbounded by design.
+
+**Sizes BUT-478 chose and the reasoning:**
+- `friend_category_repository.categoriesStream`: `.limit(100)` — owned
+  categories, per-user surface, typical <20.
+- `firebase_menu_voting_repository.watchVotesForMenu`: `.limit(200)` —
+  votes are bounded by group size × open vote slots, typical <50.
+- `friend_category_repository.memberCategoriesStream`: `.limit(200)` —
+  collection-group query where the user is a member; correctly higher
+  than the owned stream because membership can fan out.
+
+**What the limit does NOT replace:**
+- It is NOT pagination. If the cap is genuinely reachable in normal use,
+  the fix is `loadMore`-style cursor pagination (BUT-484 pattern), not
+  a bigger `.limit()`.
+- It is NOT a permission check. The repository's `validateRead` /
+  Firestore rules still own who-can-read. `.limit()` only bounds the
+  payload size for legitimate-but-pathological cases.
+
+**Review heuristic when reading repository diffs:**
+- Find `.snapshots()` (or `.snapshots(includeMetadataChanges:`).
+- Walk the chain backwards. If there is no `.limit(...)` before the
+  `.snapshots()`, that is a finding. Severity = High if the collection
+  has any writer that's not strictly the current user; Medium otherwise.
+- Don't gate on "is the collection currently small" — the point is
+  bounding the worst case, not the median case.
+
+This is an append-only rule for future repository review: assume every
+new `.snapshots()` without `.limit()` is a regression unless the diff
+explicitly justifies why the writer-set guarantees boundedness.
+
+### 2026-05-04 — DI auth-state read goes through PermissionService, not FirebaseAuth.instance (BUT-510)
+
+`lib/core/di/di_container.dart` Step 2.5 (user-scope-restoration on cold
+boot when Firebase has a persisted session) used to read
+`FirebaseAuth.instance.currentUser` directly. BUT-510 routed it through
+`PermissionService.currentUserId` with an `isRegistered<PermissionService>()`
+guard.
+
+**Why it's a security-neutral but correctness-positive change:**
+- The auth state being read is identical — `PermissionService` is just a
+  thin wrapper exposing `currentUserId` from the same FirebaseAuth
+  instance. No new attack surface, no new GDPR surface, no new
+  data-source split.
+- It enforces the project convention that **only PermissionService is
+  the canonical auth surface for app code.** Direct `FirebaseAuth.instance`
+  reads scattered across the codebase are a code-quality smell because
+  they bypass the seam that mocking and testing rely on.
+- The `isRegistered` guard is the right shape for boot-time code: minimal
+  test setups (rule-tester harnesses, narrow widget tests) instantiate
+  the container without ContentModule, where PermissionService lives.
+  Defaulting `hasPersistedUser = false` in that case is correct — those
+  tests never have a real user session to restore.
+
+**Pattern for future similar refactors:** any code path reading auth
+state outside `lib/services/permission_service.dart` itself should go
+through ServiceLocator/DI to fetch PermissionService. The two exceptions
+are (a) PermissionService's own implementation and (b) the
+FirebaseAuthRepository wrapper — both legitimately wrap the
+SDK-level surface.
+
+**Review heuristic:** grep for `FirebaseAuth.instance.currentUser` outside
+those two files. Each hit is a Medium finding (correctness/testability),
+upgrade to High if the call is in a security-critical decision path
+(permission gate, audit log identity, data-export ownership check).

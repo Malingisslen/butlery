@@ -110,11 +110,11 @@ import 'dart:async';
 
 import 'package:get_it/get_it.dart';
 import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Comprehensive dependency injection container that orchestrates modular service management for the Butlery application.
 /// This class manages the complete DI lifecycle including module registration, dependency resolution, service health
@@ -234,7 +234,15 @@ class DIContainer {
       // Many services were moved to user scope but initialize() still needs
       // them. Pushing the scope here — after configure, before initialize —
       // ensures all registrations are available.
-      if (FirebaseAuth.instance.currentUser != null) {
+      //
+      // BUT-510: route the auth-state read through PermissionService
+      // (the canonical auth surface) rather than `FirebaseAuth.instance`
+      // directly, keeping with the convention that only PermissionService
+      // reads auth state. Defensive `isRegistered` guard handles minimal
+      // test setups that omit ContentModule (where PermissionService lives).
+      final hasPersistedUser = _container.isRegistered<PermissionService>() &&
+          _container<PermissionService>().currentUserId != null;
+      if (hasPersistedUser) {
         await pushUserScope();
         if (kDebugMode) {
           AppLogger.info('🔑 User session scope restored at boot');

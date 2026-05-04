@@ -212,7 +212,13 @@ jobs:
       if: matrix.platform == 'ios'
       run: |
         echo "🍎 Building iOS IPA without code signing..."
-        flutter build ipa --release --no-codesign --dart-define-from-file=.env --export-options-plist=ios/exportOptions.plist
+        # BUT-456: --obfuscate + --split-debug-info match the Android line at
+        # the appbundle build above. ProGuard/R8 only strip Java/Kotlin
+        # identifiers; without these flags Dart symbols remain readable in
+        # the iOS binary. Symbol files in build/debug-info are needed for
+        # Crashlytics symbolication once the deploy pipeline (BUT-420)
+        # uploads them; until then they're build-job artifacts.
+        flutter build ipa --release --no-codesign --obfuscate --split-debug-info=build/debug-info --dart-define-from-file=.env --export-options-plist=ios/exportOptions.plist
 
   # Summary job
   build-summary:

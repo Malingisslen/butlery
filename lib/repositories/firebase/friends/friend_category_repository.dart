@@ -328,10 +328,17 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   }
 
   /// Stream categories for real-time updates (owned by user).
+  ///
+  /// BUT-478: `.limit(100)` is defence-in-depth. Typical users have <20
+  /// categories and there's no realistic upper bound enforced by the UI;
+  /// without the limit a future regression or adversarial write could blow
+  /// up snapshot payload size on every change. 100 is well clear of the
+  /// real ceiling while keeping the listener bounded.
   Stream<List<FriendCategory>> categoriesStream(String userId) {
-    return _categoriesRef(userId).snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
-        .toList());
+    return _categoriesRef(userId).limit(100).snapshots().map((snapshot) =>
+        snapshot.docs
+            .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
+            .toList());
   }
 
   /// BUG-018 FIX: Stream categories where user is a member (across all users).

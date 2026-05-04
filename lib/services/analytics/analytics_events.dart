@@ -17,9 +17,18 @@ library;
 /// review prompts, security.
 abstract final class AnalyticsEvents {
   // --- Auth / lifecycle ---
+  static const appOpened = 'app_opened';
+  static const appBackgrounded = 'app_backgrounded';
   static const logout = 'logout';
+  static const logoutInactivity = 'logout_inactivity';
+  static const authFailed = 'auth_failed';
+  static const mfaEnrolled = 'mfa_enrolled';
   static const mfaUnenrolled = 'mfa_unenrolled';
   static const accountDeleted = 'account_deleted';
+  static const sessionTimeoutPaused = 'session_timeout_paused';
+  static const sessionTimeoutResumed = 'session_timeout_resumed';
+  static const sessionTimeoutWarningShown = 'session_timeout_warning_shown';
+  static const sessionTimeoutLogout = 'session_timeout_logout';
   static const onboardingStarted = 'onboarding_started';
   static const onboardingPageViewed = 'onboarding_page_viewed';
   // BUT-675: emitted when a user re-enters onboarding mid-flow (resume) and
@@ -101,6 +110,19 @@ abstract final class AnalyticsEvents {
   static const networkError = 'network_error';
   static const slowOperation = 'slow_operation';
   static const featureFlagEvaluated = 'feature_flag_evaluated';
+  static const performanceReport = 'performance_report';
+  static const performanceWarnings = 'performance_warnings';
+
+  // --- Tagging system ---
+  static const recipeTagged = 'recipe_tagged';
+  static const unknownIngredients = 'unknown_ingredients';
+  static const personalTagCreated = 'personal_tag_created';
+  static const personalTagRuleTriggered = 'personal_tag_rule_triggered';
+  static const taggingPerformance = 'tagging_performance';
+  static const taggingCoverageAnomaly = 'tagging_coverage_anomaly';
+  static const taggingCacheDesync = 'tagging_cache_desync';
+  static const taggingConfigValidationError = 'tagging_config_validation_error';
+  static const dataIntegrityCheck = 'data_integrity_check';
   // BUT-616: emitted when ParseEventLogger.logEvent's callable invocation
   // fails, so we can measure parse-event loss rate. Params: error_code
   // (Firebase Functions code or 'unknown'), cause (truncated message).

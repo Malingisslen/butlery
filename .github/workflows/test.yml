@@ -261,12 +261,28 @@ jobs:
           
           # Start emulators in background
           firebase emulators:start --only auth,firestore,storage &
-          
-          # Wait for emulators to be ready
-          sleep 10
-          
-          # Check if emulators are running
-          curl -f http://localhost:8080 || echo "Firestore emulator may not be fully ready"
+
+          # BUT-489: real health-gate. The previous `sleep 10 + curl || echo`
+          # pattern reported success regardless of emulator state, so a
+          # failed-to-start emulator silently passed integration tests.
+          # Wait up to 60s on each emulator port, hard-fail if either
+          # never comes up. Pattern mirrors firestore-rules.yml:79-85.
+          wait_for_port() {
+            local name="$1"
+            local url="$2"
+            local timeout=60
+            until curl -sf "$url" >/dev/null 2>&1; do
+              sleep 2
+              timeout=$((timeout - 2))
+              if [ $timeout -le 0 ]; then
+                echo "::error::$name emulator failed to come up at $url within 60s"
+                exit 1
+              fi
+            done
+            echo "$name emulator ready at $url"
+          }
+          wait_for_port "Firestore" "http://localhost:8080/"
+          wait_for_port "Auth" "http://localhost:9099/"
       
       # Run integration tests only
       - name: Run integration tests

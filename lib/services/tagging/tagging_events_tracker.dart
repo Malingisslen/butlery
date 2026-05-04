@@ -1,4 +1,5 @@
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 
 /// Tracks tagging-related analytics events.
 /// Uses AnalyticsRepository to log events without direct Firebase dependency.
@@ -18,7 +19,7 @@ class TaggingEventsTracker {
     required String status,
   }) async {
     await _analytics.logEvent(
-      name: 'tagging_performance',
+      name: AnalyticsEvents.taggingPerformance,
       parameters: {
         'total_ms': totalMs,
         'lookup_ms': lookupMs,
@@ -40,7 +41,7 @@ class TaggingEventsTracker {
     required bool hasDietary,
   }) async {
     await _analytics.logEvent(
-      name: 'recipe_tagged',
+      name: AnalyticsEvents.recipeTagged,
       parameters: {
         'recipe_id': recipeId,
         'tag_count': tagCount,
@@ -57,7 +58,7 @@ class TaggingEventsTracker {
     required int totalIngredients,
   }) async {
     await _analytics.logEvent(
-      name: 'unknown_ingredients',
+      name: AnalyticsEvents.unknownIngredients,
       parameters: {
         'unknown_count': unknownIngredients.length,
         'total_count': totalIngredients,
@@ -75,7 +76,7 @@ class TaggingEventsTracker {
     required int ruleCount,
   }) async {
     await _analytics.logEvent(
-      name: 'personal_tag_created',
+      name: AnalyticsEvents.personalTagCreated,
       parameters: {
         'tag_name_length': tagName.length,
         'has_rules': hasRules,
@@ -91,7 +92,7 @@ class TaggingEventsTracker {
     required int matchedIngredients,
   }) async {
     await _analytics.logEvent(
-      name: 'personal_tag_rule_triggered',
+      name: AnalyticsEvents.personalTagRuleTriggered,
       parameters: {
         'tag_name_length': tagName.length,
         'rule_type': ruleType,
@@ -106,7 +107,7 @@ class TaggingEventsTracker {
     required String status,
   }) async {
     await _analytics.logEvent(
-      name: 'data_integrity_check',
+      name: AnalyticsEvents.dataIntegrityCheck,
       parameters: {
         'recipe_id': recipeId,
         'status': status,
@@ -119,7 +120,7 @@ class TaggingEventsTracker {
   /// This indicates a bug in the tag generator that must be investigated.
   Future<void> logCoverageAnomaly(double invalidValue) async {
     await _analytics.logEvent(
-      name: 'tagging_coverage_anomaly',
+      name: AnalyticsEvents.taggingCoverageAnomaly,
       parameters: {
         'invalid_value': invalidValue,
         'clamped_to': invalidValue.clamp(0.0, 1.0),
@@ -134,7 +135,7 @@ class TaggingEventsTracker {
     required int lruLength,
   }) async {
     await _analytics.logEvent(
-      name: 'tagging_cache_desync',
+      name: AnalyticsEvents.taggingCacheDesync,
       parameters: {
         'cache_length': cacheLength,
         'lru_length': lruLength,
@@ -149,7 +150,7 @@ class TaggingEventsTracker {
   /// This indicates typos in allergen/dietary config properties that need fixing.
   Future<void> logConfigValidationError(String error) async {
     await _analytics.logEvent(
-      name: 'tagging_config_validation_error',
+      name: AnalyticsEvents.taggingConfigValidationError,
       parameters: {
         'error': error.length > 100 ? error.substring(0, 100) : error,
         'severity': 'critical',

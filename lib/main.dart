@@ -116,6 +116,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:butlery/firebase_options.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
@@ -241,7 +242,13 @@ Future<void> main() async {
         // Initialize modular system FIRST - this sets up the DI container and ServiceLocator
         await _initializeModularSystem();
 
-        runApp(const ButleryApp());
+        // BUT-468: pre-read cached theme so the first MaterialApp paint
+        // matches the user's saved preference. Without this, the app paints
+        // through `ThemeMode.system` until the async DI-bootstrapped
+        // ThemeService resolves, producing a visible theme flash.
+        final initialThemeMode = await ThemeService.readCachedThemeMode();
+
+        runApp(ButleryApp(initialThemeMode: initialThemeMode));
       } catch (e, stackTrace) {
         runApp(
           _ErrorApp(
@@ -421,7 +428,13 @@ class _ErrorApp extends StatelessWidget {
 }
 
 class ButleryApp extends StatefulWidget {
-  const ButleryApp({super.key});
+  const ButleryApp({super.key, this.initialThemeMode = ThemeMode.system});
+
+  /// BUT-468: theme mode pre-read from SharedPreferences in `main()` before
+  /// `runApp`. Used as the MaterialApp's `themeMode` until the async-resolved
+  /// `ThemeService` instance lands, eliminating the visible theme-flash on
+  /// startup that occurred when the first paint defaulted to system mode.
+  final ThemeMode initialThemeMode;
 
   @override
   State<ButleryApp> createState() => _ButleryAppState();
@@ -474,7 +487,15 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     }
   }
 
-  /// Initialize theme service
+  /// Initialize theme service.
+  ///
+  /// BUT-468: the MaterialApp paints with `widget.initialThemeMode` (pre-read
+  /// from SharedPreferences in `main()`) until this resolves. The listener
+  /// attached below handles all *subsequent* theme changes (the common
+  /// `setThemeMode()` flow). The `setState` skip is purely a one-frame
+  /// paint optimization for the steady-state startup case where the
+  /// prewarmed value already matches what the service resolved to —
+  /// avoids a redundant initial rebuild.
   Future<void> _initializeTheme() async {
     try {
       final bootstrap = ApplicationBootstrap();
@@ -484,7 +505,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         _themeService = bootstrap.container.get<ThemeService>();
         await _themeService?.initialize();
         _themeService?.addListener(_onThemeChanged);
-        if (mounted) {
+        if (mounted && _themeService?.themeMode != widget.initialThemeMode) {
           setState(() {});
         }
       }
@@ -712,10 +733,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       if (bootstrap.isInitialized) {
         final analyticsService = bootstrap.container.get<AnalyticsService>();
         await analyticsService.logEvent(
-          name: 'app_opened',
+          name: AnalyticsEvents.appOpened,
           parameters: {
             'session_count': sessionCount,
-            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -734,10 +754,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
         final analyticsService = bootstrap.container.get<AnalyticsService>();
         await analyticsService.logEvent(
-          name: 'app_backgrounded',
+          name: AnalyticsEvents.appBackgrounded,
           parameters: {
             'session_duration_seconds': sessionDuration,
-            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -889,7 +908,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         title: 'Butlery',
         theme: AppTheme.lightThemeWith(lightAccent),
         darkTheme: AppTheme.darkThemeWith(darkAccent),
-        themeMode: _themeService?.themeMode ?? ThemeMode.system,
+        themeMode: _themeService?.themeMode ?? widget.initialThemeMode,
         debugShowCheckedModeBanner: false,
         // Localization configuration
         localizationsDelegates: const [

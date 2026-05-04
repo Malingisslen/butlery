@@ -109,7 +109,13 @@ class FirebaseMenuVotingRepository extends BaseFirebaseRepository<MenuSlotVote>
 
   @override
   Stream<List<MenuSlotVote>> watchVotesForMenu(String menuId) {
-    return _votesRef(menuId).snapshots().map((snapshot) => snapshot.docs
+    // BUT-478: `.limit(200)` defence-in-depth — votes are bounded by group
+    // size (a menu's voters are its group members), but without an explicit
+    // limit a future feature change or adversarial write could blow up
+    // snapshot payload on every change. 200 is well clear of any realistic
+    // group size.
+    return _votesRef(menuId).limit(200).snapshots().map((snapshot) => snapshot
+        .docs
         .map((doc) => MenuSlotVote.fromMap(doc.id, doc.data()))
         .toList());
   }

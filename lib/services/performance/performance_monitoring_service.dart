@@ -15,6 +15,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 
 /// Performance metric types
 enum MetricType {
@@ -381,7 +382,7 @@ class PerformanceMonitoringService extends BaseService {
 
       // Log key metrics
       analytics.logEvent(
-        name: 'performance_report',
+        name: AnalyticsEvents.performanceReport,
         parameters: {
           'frame_rate': report.summary['frameRate'],
           'dropped_frames': report.summary['droppedFrames'],
@@ -394,7 +395,7 @@ class PerformanceMonitoringService extends BaseService {
       // Log warnings if any
       if (report.warnings.isNotEmpty) {
         analytics.logEvent(
-          name: 'performance_warnings',
+          name: AnalyticsEvents.performanceWarnings,
           parameters: {
             'warning_count': report.warnings.length,
             'latest_warning': report.warnings.last,

@@ -132,7 +132,7 @@ class AuthMfaService extends ChangeNotifier
 
       AppLogger.info('MFA enrollment completed successfully');
       await _analyticsService.logEvent(
-        name: 'mfa_enrolled',
+        name: AnalyticsEvents.mfaEnrolled,
         parameters: {'method': 'sms'},
       );
       return true;

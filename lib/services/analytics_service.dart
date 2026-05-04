@@ -214,7 +214,7 @@ class AnalyticsService extends BaseService {
     await executeServiceOperation(
       () async {
         await _repository.logEvent(
-          name: 'screen_viewed',
+          name: AnalyticsEvents.screenViewed,
           parameters: {'screen_name': screenName, ...?parameters},
         );
       },

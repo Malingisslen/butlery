@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -105,7 +106,7 @@ class AuthService extends ChangeNotifier
       setLoading(false);
       _handleAuthError(e);
       await _analyticsService.logEvent(
-        name: 'auth_failed',
+        name: AnalyticsEvents.authFailed,
         parameters: {
           'method': 'email',
           'error_code': e.code,
@@ -156,7 +157,7 @@ class AuthService extends ChangeNotifier
       AppLogger.error('Firebase Auth Error: ${e.code} - ${e.message}');
       _handleAuthError(e);
       await _analyticsService.logEvent(
-        name: 'auth_failed',
+        name: AnalyticsEvents.authFailed,
         parameters: {
           'method': 'email',
           'error_code': e.code,
@@ -199,7 +200,7 @@ class AuthService extends ChangeNotifier
       _currentUser = null;
       AppLogger.info('User logged out due to session inactivity');
       await _analyticsService.logEvent(
-        name: 'logout_inactivity',
+        name: AnalyticsEvents.logoutInactivity,
         parameters: {
           'reason': 'session_timeout',
           'timestamp': clock.now().toIso8601String(),

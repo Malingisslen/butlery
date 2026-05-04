@@ -23,6 +23,7 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -170,7 +171,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
 
     // Track app backgrounded event
     _analyticsService.logEvent(
-      name: 'session_timeout_paused',
+      name: AnalyticsEvents.sessionTimeoutPaused,
       parameters: {
         'last_activity': _lastActivityTime?.toIso8601String() ?? 'unknown',
       },
@@ -205,7 +206,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
       _startTimers(remainingDuration: timeoutDuration - elapsed);
 
       _analyticsService.logEvent(
-        name: 'session_timeout_resumed',
+        name: AnalyticsEvents.sessionTimeoutResumed,
         parameters: {
           'elapsed_minutes': elapsed.inMinutes,
           'remaining_minutes': (timeoutDuration - elapsed).inMinutes,
@@ -282,7 +283,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
     AppLogger.info('SessionTimeoutService: Showing timeout warning');
 
     _analyticsService.logEvent(
-      name: 'session_timeout_warning_shown',
+      name: AnalyticsEvents.sessionTimeoutWarningShown,
       parameters: {
         'remaining_minutes': warningOffset.inMinutes,
       },
@@ -310,7 +311,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
 
     // Track timeout logout event
     await _analyticsService.logEvent(
-      name: 'session_timeout_logout',
+      name: AnalyticsEvents.sessionTimeoutLogout,
       parameters: {
         'reason': reason,
         'timeout_minutes': timeoutDuration.inMinutes,

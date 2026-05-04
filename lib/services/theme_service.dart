@@ -10,6 +10,34 @@ import 'package:butlery/core/utils/logger.dart';
 class ThemeService extends ChangeNotifier {
   static const String _themeModeKey = 'theme_mode';
 
+  /// BUT-468: read the persisted theme mode without instantiating the full
+  /// service. Called from `main()` before `runApp()` so the first
+  /// MaterialApp paint matches the user's saved preference instead of
+  /// flashing through `ThemeMode.system` while async DI bootstraps.
+  ///
+  /// Returns `ThemeMode.system` on missing/corrupt input or storage failure.
+  static Future<ThemeMode> readCachedThemeMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_themeModeKey);
+      return _parseThemeMode(saved);
+    } catch (_) {
+      return ThemeMode.system;
+    }
+  }
+
+  static ThemeMode _parseThemeMode(String? value) {
+    switch (value) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
+  }
+
   ThemeMode _themeMode = ThemeMode.system;
   bool _isInitialized = false;
 
@@ -28,8 +56,9 @@ class ThemeService extends ChangeNotifier {
       final savedMode = prefs.getString(_themeModeKey);
 
       if (savedMode != null) {
-        _themeMode = _themeModeFromString(savedMode);
-        AppLogger.info('ThemeService: Loaded theme mode: $_themeMode');
+        _themeMode = _parseThemeMode(savedMode);
+        AppLogger.info(
+            'ThemeService: Loaded theme mode: $_themeMode (raw=$savedMode)');
       }
     } catch (e) {
       AppLogger.warning('ThemeService: Failed to load theme preference: $e');
@@ -71,19 +100,6 @@ class ThemeService extends ChangeNotifier {
         return 'light';
       case ThemeMode.dark:
         return 'dark';
-    }
-  }
-
-  /// Convert string to ThemeMode.
-  ThemeMode _themeModeFromString(String value) {
-    switch (value) {
-      case 'light':
-        return ThemeMode.light;
-      case 'dark':
-        return ThemeMode.dark;
-      case 'system':
-      default:
-        return ThemeMode.system;
     }
   }
 }

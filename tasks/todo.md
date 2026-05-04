@@ -1,6 +1,92 @@
 # Sprint Backlog
 
-## Sprint: Privacy/security tightening + analytics cleanup + content moderation — 2026-05-04 (B)
+## Sprint: Perf hardening + DI cleanup + CI tightening — 2026-05-04 (C)
+
+Theme: prior sprint (commit `5ddfdf035`) shipped 4 privacy/security/moderation tickets. With High-priority backlog still gated on Apple Dev (BUT-415/646/714/731), Fastlane (BUT-420), button-system sprint (BUT-579), portion-scaling (BUT-444), and post-beta deferrals — pull a coherent batch of 6 small/medium concrete fixes across stream-bounding, DI cleanup, startup perf, build security, analytics audit, and CI hardening. **6 tasks, 3 batches.**
+
+**In Progress carry-overs (NOT in this sprint):**
+- BUT-442 — repo migrations (4 candidates remaining; deserves own focused sprint).
+- BUT-760 — App Check enforcement; awaiting Firebase Console flip.
+
+**Step 0 verification — done:**
+- **BUT-478** plan-stale (path) — files were moved from `lib/repositories/firebase/` to `lib/repositories/firebase/friends/` in a prior refactor. Re-scoped: `friends/friend_category_repository.dart:332` (`_categoriesRef(userId).snapshots()` unbounded) + `firebase_menu_voting_repository.dart:112` (`_votesRef(menuId).snapshots()` unbounded). Both confirmed unbounded.
+- **BUT-510** valid — `lib/core/di/di_container.dart:237` confirmed `FirebaseAuth.instance.currentUser != null` direct read in health check.
+- **BUT-468** valid — `lib/main.dart:478` `_initializeTheme` is async; setState fires on resolve causing visible theme flash.
+- **BUT-456** plan-stale (mostly done) — `flutter build appbundle` already has `--obfuscate --split-debug-info` at `build-validation.yml:180`. Missing on iOS `flutter build ipa` at L215. Rescoping to "apply the existing pattern to the iOS build line"; the broader Fastlane/symbol-storage piece stays blocked on BUT-420.
+- **BUT-436** valid — `lib/services/analytics/analytics_events.dart` exists with ~200+ event constants; need to grep for emitter sites and reconcile (audit + delete-or-wire).
+- **BUT-489** valid — `.github/workflows/test.yml:266-269` confirmed `sleep 10` + `curl -f ... || echo "may not be fully ready"` no-op gate; integration tests fall through silently if emulator down.
+
+**Skipped from initial selection:**
+- **BUT-479** — "drop friend_relationship limit 1000 → 100" is a UX regression for power users without the cursor-pagination half. Cursor pagination on a real-time stream is non-trivial design work; deserves a dedicated ticket, not a 1h batch slot.
+
+### Agent A: stream bounding (1 ticket)
+
+- [ ] **A1. BUT-478 — Defensive `.limit()` on two unbounded streams** —
+  - `lib/repositories/firebase/friends/friend_category_repository.dart:332` — add `.limit(100)` before `.snapshots()` (typical user has <20 categories, 100 is generous defence-in-depth).
+  - `lib/repositories/firebase/firebase_menu_voting_repository.dart:112` — add `.limit(200)` before `.snapshots()` (bounded by group size; 200 cap matches the existing limit pattern at `friend_category_repository.dart:345`).
+  - Add unit-test coverage in the corresponding test files asserting the query carries the limit (one assertion per repo). (BUT-478)
+
+### Agent B: DI cleanup + perf + build security (3 tickets)
+
+- [ ] **B1. BUT-510 — Route DI health check through `PermissionService`** — `lib/core/di/di_container.dart:237`. Replace `FirebaseAuth.instance.currentUser != null` with `ServiceLocator.get<PermissionService>().currentUserId != null` (or the equivalent already-injected accessor for the health check site). Verify health check still passes when called pre-auth (no user signed in → still report healthy DI). (BUT-510)
+- [ ] **B2. BUT-468 — Synchronous theme prewarm to avoid flash** — `lib/main.dart:478` `_initializeTheme`. Read the cached theme value from `SharedPreferences.getInstance()` synchronously before `runApp`, pass into root widget as `initialTheme`. Only fire `setState` if the post-`bootstrap.initialized` async-resolved value differs. Test: assert no setState fires when cache matches the eventual resolved value (i.e. on every cold start past the first one). (BUT-468)
+- [ ] **B3. BUT-456 — iOS release build: add `--obfuscate --split-debug-info`** — `.github/workflows/build-validation.yml:215`. Match the Android line at L180 by appending `--obfuscate --split-debug-info=build/debug-info` to the `flutter build ipa` invocation. Web build at L205 is JS-compiled and the flags don't apply — leave alone. Note: full Fastlane lane integration + Crashlytics symbol upload still blocked on BUT-420. (BUT-456)
+
+### Agent C: analytics audit + CI hardening (2 tickets)
+
+- [ ] **C1. BUT-436 — Audit + reconcile dead analytics events** — `lib/services/analytics/analytics_events.dart`. For each `static const xxx = '<event_name>'` in the file, grep for emitter sites (`AnalyticsEvents.xxx` / `'<event_name>'`). For each event with **zero** emit sites: either wire it at the right call site if the missing instrumentation is real, or remove the constant if the event is genuinely unused. Add a TODO if a wire-up is non-trivial; this sprint just removes truly-dead constants. End state: facade reflects real coverage. (BUT-436)
+- [ ] **C2. BUT-489 — Replace fake emulator health check with real wait loop** — `.github/workflows/test.yml:266-269`. Replace `sleep 10` + `curl -f http://localhost:8080 || echo "..."` with a proper wait loop:
+  ```bash
+  timeout=60
+  until curl -sf http://localhost:8080/ >/dev/null 2>&1; do
+    sleep 2
+    timeout=$((timeout - 2))
+    if [ $timeout -le 0 ]; then echo "Firestore emulator failed to start"; exit 1; fi
+  done
+  ```
+  Apply the same pattern to Auth emulator port 9099 if there's an Auth health check. Pattern source: `firestore-rules.yml:79-85` (already follows this shape). (BUT-489)
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` — 0 issues
+- [ ] Affected unit tests: `friend_category_repository_test`, `firebase_menu_voting_repository_test`, `di_container_test` (if exists), `main_test` / theme-init test, analytics-events sanity check
+- [ ] Tier-2 specialist gates: `code-reviewer`, `testing-specialist`, `firebase-backend-security` (di_container + repos), `cloud-functions-specialist` (no functions touched, skip)
+- [ ] Commit, push to main
+- [ ] CI watcher monitors green
+- [ ] Update Linear: BUT-478/510/468/456/436/489 → Done
+
+### Continued blockers (NOT in scope per memory)
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
+- BUT-549 — post-beta (Sign in with Apple lands when social login does)
+- BUT-579 — held for button-system sprint
+- BUT-444 / BUT-445 — own product-design sprints
+- BUT-498 / BUT-697 — explicitly skipped
+- BUT-686 / BUT-660 / BUT-694 — feature-level brainstorming first
+- BUT-674 / BUT-721 — own scoped sprints
+- BUT-626 — bucket-based A/B infra; own sprint
+- BUT-420 / BUT-451 / BUT-452 / BUT-486 — deploy-pipeline / staging cluster; focused infra sprint
+- BUT-550 / BUT-536 / BUT-441 — ACCEPTED_LARGE_FILES drift sprint
+- BUT-558 — DCM install (own sprint)
+- BUT-554 — tracking ticket (blocked on drift_dev upstream)
+- BUT-594 — macOS sandbox audit needs hardware-exercise step
+- BUT-701 — focus traversal (2-day a11y sprint)
+- BUT-479 — cursor-pagination half is non-trivial; needs design ticket
+- BUT-435 + BUT-502/503/507/509 — Dart SDK 3.10 bump cluster (one focused sprint)
+- All `idea`-labeled monetization scaffolding — post-beta
+
+---
+
+## What this means in plain language
+
+- **Stream safety net.** Two real-time queries that streamed all matching docs without a cap get a sensible limit added — no current user is hitting these caps, but adding the limit means a future regression or adversarial input can't blow up Firestore reads.
+- **Cleaner auth check.** A health check that read Firebase auth state directly now goes through the project's standard auth layer — keeps a convention consistent so a future maintainer doesn't have to wonder why one place is special.
+- **No more theme flash on startup.** Today the app boots, paints with the default theme, then re-paints when it figures out your real theme — visible flicker. After this, it remembers your choice across launches and paints right the first time.
+- **iOS release builds finally hide source code.** Android builds were already obfuscating Dart code in releases; iOS wasn't. One missing flag now matched. (Full Fastlane integration + Crashlytics symbol upload still waits on the deploy-pipeline ticket.)
+- **Honest analytics dashboard.** The codebase declared analytics events that were never actually emitted — the dashboard would always show zero for those, looking broken. Audit + remove or wire each one.
+- **CI integration tests can't silently pass.** Today if the test emulator fails to start, the integration tests fall through and report green. After this, the job hard-fails — green only when emulator is genuinely up.
+
+---
+
+## ARCHIVED — Sprint: Privacy/security tightening + analytics cleanup + content moderation — 2026-05-04 (B)
 
 Theme: prior sprint (commit `772910687`) shipped 7 analytics-observability + parsing-hardening + social-UX micro-fixes. Pull in the post-sprint review follow-up (BUT-765, spawned today by `firebase-backend-security` agent), one mechanical analytics cleanup (BUT-518), one content-moderation deepening (BUT-525), and close one premise-gone ticket (BUT-717). **3 implementation tasks + 1 housekeeping closure.**
 

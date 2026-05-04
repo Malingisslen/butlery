@@ -383,6 +383,23 @@ void main() {
         );
       });
 
+      test('BUT-478: stream is bounded to 100 categories (defence-in-depth)',
+          () async {
+        // Seed 110 categories so the limit is observable.
+        for (var i = 0; i < 110; i++) {
+          await seedCategory(
+              testUserId, createTestCategory(id: 'cat-$i', name: 'Cat $i'));
+        }
+
+        final stream = repository.categoriesStream(testUserId);
+
+        await expectLater(
+          stream.first,
+          completion(predicate<List<FriendCategory>>(
+              (categories) => categories.length == 100)),
+        );
+      });
+
       test('should stream empty list if no categories', () async {
         // Act
         final stream = repository.categoriesStream(testUserId);
