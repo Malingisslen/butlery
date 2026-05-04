@@ -147,6 +147,61 @@ const URL_CASES: UrlCase[] = [
     input: "not a url at all",
     expectKept: ["not a url at all"],
   },
+  // BUT-765: opaque-token redaction inside URL fragments.
+  {
+    name: "BUT-765: keeps short slug fragment intact (#method)",
+    input: "https://example.com/recipe#method",
+    expectStripped: [":redacted"],
+    expectKept: ["#method"],
+  },
+  {
+    name: "BUT-765: keeps slug-shaped fragment with hyphens intact",
+    input: "https://example.com/recipe#super-premium-italienska",
+    expectStripped: [":redacted"],
+    expectKept: ["#super-premium-italienska"],
+  },
+  {
+    name: "BUT-765: redacts UUID-shaped fragment wholesale",
+    input:
+      "https://example.com/share#f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    expectStripped: ["f47ac10b-58cc-4372-a567-0e02b2c3d479"],
+    expectKept: ["#:redacted"],
+  },
+  {
+    name: "BUT-765: redacts JWT-shaped value inside keyed fragment",
+    input:
+      "https://example.com/auth#token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+    expectStripped: ["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"],
+    expectKept: ["token=:redacted"],
+  },
+  {
+    name: "BUT-765: redacts long alphanumeric run in unkeyed fragment",
+    input: "https://example.com#abcdefghijklmnopqrstuvwxyz",
+    expectStripped: ["abcdefghijklmnopqrstuvwxyz"],
+    expectKept: [":redacted"],
+  },
+  {
+    name: "BUT-765: redacts 32-char hex hash fragment",
+    input: "https://example.com/r#a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5",
+    expectStripped: ["a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5"],
+    expectKept: [":redacted"],
+  },
+  {
+    name:
+      "BUT-765: mixed keyed fragment redacts opaque values, preserves slug",
+    input:
+      "https://example.com#section=ingredienser&token=eyJhbGciOiJIUzI1NiJ9",
+    expectStripped: ["eyJhbGciOiJIUzI1NiJ9"],
+    expectKept: ["section=ingredienser", "token=:redacted"],
+  },
+  {
+    name:
+      "BUT-765: parity-pin — percent-encoded fragment redacts after decode",
+    input:
+      "https://example.com#token%3DeyJhbGciOiJIUzI1NiJ9_extra",
+    expectStripped: ["eyJhbGciOiJIUzI1NiJ9_extra"],
+    expectKept: [":redacted"],
+  },
 ];
 
 function runTests(): void {

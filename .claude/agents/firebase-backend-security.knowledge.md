@@ -2287,3 +2287,64 @@ applies only to the former.
 Proposed enhancement (not yet applied): split fragment content on `/` and
 `&`, run `_looksOpaquePathSegment` over each chunk — keeps `#ingredienser`
 intact while stripping opaque tokens. Parity required between Dart and TS.
+
+### 2026-05-04 — BUT-765 closes the BUT-534 fragment-token leak (verified)
+
+Follow-up to the previous entry. BUT-765 added `_scrubFragment` (Dart
+`pii_scrubber.dart:99-103`) and `scrubFragment` (TS `pii-scrubber.ts:132-136`)
+with identical decision contract:
+
+1. `fragment.length < 16` → return as-is (preserves `#ingredienser`, `#method`).
+2. UUID-shaped whole fragment → `:redacted` (catches
+   `#550e8400-e29b-41d4-a716-446655440000`).
+3. Otherwise replace each 16+ char `[A-Za-z0-9]{16,}` run with `:redacted`
+   (catches `#token=eyJhbGc...{long}...` → `#token=:redacted`).
+
+Parity verified: same regex source (`[A-Za-z0-9]{16,}`), same UUID layout,
+same length threshold, same replacement token. Threading is symmetric — TS
+goes via `parsed.hash.slice(1)` then re-prefixes `#`; Dart uses
+`Uri.replace(fragment: ...)`.
+
+Known residual (acceptable): JWT segments containing `_`/`.` outside the
+alphanumeric class break the run, so the trailing fragment of a JWT after a
+`_` shorter than 16 chars survives (e.g. `_adQssw5c`). This is fine — that
+tail alone is not the secret material; the signing-input segments before
+the dots are the sensitive part and they redact wholesale. The 16-char floor
+is also required to avoid scrubbing meaningful fragment anchors.
+
+Rule reinforcement: when adding scrubber logic to a defence-in-depth pair,
+always verify the regex SOURCE STRING is byte-identical between Dart and TS
+— Dart raw strings (`r'...'`) and TS regex literals diverge subtly on
+backslash handling, and the `caseSensitive: false` flag in Dart vs the `i`
+flag in TS must be set on the same regex instances.
+
+### 2026-05-04 — Analytics `'timestamp'` parameter removal is GDPR-neutral (BUT-518)
+
+Removed 9 redundant `'timestamp': clock.now().toUtc().toIso8601String()`
+emissions from `firebase_analytics_repository.dart` (importStarted,
+importSuccess, extractionError, manualCopyFallback, recipeCreated,
+recipeShared, recipeCooked, menuGenerated, recipeDeleted).
+
+Why GDPR-neutral:
+- Firebase Analytics auto-stamps every event with a server-side
+  `event_timestamp_micros` field independent of any client param.
+- Grep across `functions/src/` and `lib/` confirms NO consumer reads
+  `params.timestamp` from these analytics events. (The `params['timestamp']`
+  hits in `deep_link_service.dart` are deep-link query params, unrelated.)
+- The removed param never landed in Firestore, never in audit logs, never
+  in user-controlled storage — only in Firebase Analytics' own pipeline,
+  which keeps server timestamps regardless.
+- `recipeDeleted` retains `'created_at'` (a past-action timestamp meaningful
+  for cohort analysis) and only drops the now-time `'timestamp'`. Correct
+  asymmetry: `created_at` is data about the deleted entity, `timestamp` was
+  redundant with the auto-stamp.
+
+No data-deletion-flow regression: GDPR account-delete already wipes the
+Firebase Analytics user via `setAnalyticsCollectionEnabled(false)` +
+`User-ID` reset; reducing per-event redundant fields shrinks the surface,
+not grows it.
+
+Rule for future analytics-schema reviews: removing client-emitted timestamp
+params from Firebase Analytics is always safe; ADDING them is the smell —
+they duplicate the platform auto-stamp and create joinable identifiers if
+combined with high-cardinality fields.

@@ -175,7 +175,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         if (platform != null) 'platform': platform,
         if (sessionId != null) 'session_id': sessionId,
         'image_format': imageFormat,
-        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -200,7 +199,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         // image_format_sent = what reached OCR after HEIC→JPEG conversion.
         'image_format': imageFormat,
         'image_format_sent': imageFormatSent,
-        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -227,7 +225,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         ),
         'url_domain': Uri.tryParse(url)?.host ?? 'invalid_url',
         'image_format': imageFormat,
-        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
 
@@ -244,7 +241,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       parameters: {
         'platform': platform,
         if (reason != null) 'reason': reason,
-        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -259,7 +255,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       parameters: {
         'source': source,
         'has_image': hasImage,
-        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -272,7 +267,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       name: AnalyticsEvents.recipeShared,
       parameters: {
         'method': method,
-        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -291,7 +285,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'meal_type': mealType,
         'is_first_time': isFirstTime,
         if (daysSinceLastCooked != null) 'days_since_last': daysSinceLastCooked,
-        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
 
@@ -309,7 +302,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       parameters: {
         'recipe_count': recipeCount,
         'method': method,
-        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
   }
@@ -334,7 +326,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'recipe_type': isPersonal ? 'personal' : 'collaborative',
         'days_since_created': actualDaysSinceCreated,
         'created_at': createdAt.toIso8601String(),
-        'timestamp': now.toIso8601String(),
       },
     );
 

@@ -271,7 +271,8 @@ void main() {
 
         expect(captured['source'], equals(source));
         expect(captured['platform'], equals(platform));
-        expect(captured.containsKey('timestamp'), isTrue);
+        // BUT-518: redundant — Firebase Analytics server-stamps every event.
+        expect(captured.containsKey('timestamp'), isFalse);
       });
 
       test('should log import success event', () async {
@@ -296,7 +297,8 @@ void main() {
         expect(captured['source'], equals(source));
         expect(captured['platform'], equals(platform));
         expect(captured['recipe_length'], equals(recipeLength));
-        expect(captured.containsKey('timestamp'), isTrue);
+        // BUT-518: redundant — Firebase Analytics server-stamps every event.
+        expect(captured.containsKey('timestamp'), isFalse);
       });
 
       test('should log extraction error with categorization', () async {
@@ -324,7 +326,8 @@ void main() {
         expect(captured['error_category'], equals('timeout'));
         expect(captured['error_type'], equals(errorType));
         expect(captured['url_domain'], equals('example.com'));
-        expect(captured.containsKey('timestamp'), isTrue);
+        // BUT-518: redundant — Firebase Analytics server-stamps every event.
+        expect(captured.containsKey('timestamp'), isFalse);
       });
 
       test('should categorize errors correctly', () async {
@@ -376,7 +379,8 @@ void main() {
 
         expect(captured['platform'], equals(platform));
         expect(captured['reason'], equals(reason));
-        expect(captured.containsKey('timestamp'), isTrue);
+        // BUT-518: redundant — Firebase Analytics server-stamps every event.
+        expect(captured.containsKey('timestamp'), isFalse);
       });
     });
 
@@ -400,7 +404,8 @@ void main() {
 
         expect(captured['source'], equals(source));
         expect(captured['has_image'], equals(hasImage));
-        expect(captured.containsKey('timestamp'), isTrue);
+        // BUT-518: redundant — Firebase Analytics server-stamps every event.
+        expect(captured.containsKey('timestamp'), isFalse);
       });
 
       test('should log recipe shared event', () async {
@@ -417,7 +422,8 @@ void main() {
             )).captured.single as Map<String, Object>;
 
         expect(captured['method'], equals(method));
-        expect(captured.containsKey('timestamp'), isTrue);
+        // BUT-518: redundant — Firebase Analytics server-stamps every event.
+        expect(captured.containsKey('timestamp'), isFalse);
       });
 
       test('should log recipe cooked event with hashed recipe id', () async {
@@ -486,7 +492,8 @@ void main() {
         expect(captured['recipe_type'], equals('personal'));
         expect(captured['days_since_created'], equals(daysSinceCreated));
         expect(captured.containsKey('created_at'), isTrue);
-        expect(captured.containsKey('timestamp'), isTrue);
+        // BUT-518: redundant — Firebase Analytics server-stamps every event.
+        expect(captured.containsKey('timestamp'), isFalse);
       });
 
       test('should calculate days since created if not provided', () async {
@@ -537,7 +544,8 @@ void main() {
 
         expect(captured['recipe_count'], equals(recipeCount));
         expect(captured['method'], equals(method));
-        expect(captured.containsKey('timestamp'), isTrue);
+        // BUT-518: redundant — Firebase Analytics server-stamps every event.
+        expect(captured.containsKey('timestamp'), isFalse);
       });
     });
 

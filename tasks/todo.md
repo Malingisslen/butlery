@@ -1,6 +1,80 @@
 # Sprint Backlog
 
-## Sprint: Analytics observability + parsing/LLM hardening + social UX — 2026-05-04
+## Sprint: Privacy/security tightening + analytics cleanup + content moderation — 2026-05-04 (B)
+
+Theme: prior sprint (commit `772910687`) shipped 7 analytics-observability + parsing-hardening + social-UX micro-fixes. Pull in the post-sprint review follow-up (BUT-765, spawned today by `firebase-backend-security` agent), one mechanical analytics cleanup (BUT-518), one content-moderation deepening (BUT-525), and close one premise-gone ticket (BUT-717). **3 implementation tasks + 1 housekeeping closure.**
+
+**In Progress carry-overs (NOT in this sprint):**
+- BUT-442 — repo migrations (4 candidates remaining; deserves its own focused sprint per ACCEPTED_LARGE_FILES guidance).
+- BUT-760 — App Check enforcement; awaiting user-side Firebase Console enforcement flip.
+
+**Step 0 verification — done:**
+- **BUT-765** valid — `lib/services/llm/pii_scrubber.dart:62-77` is the post-BUT-534 form (preserves fragment via no `replace(fragment: '')`). The `_looksOpaquePathSegment` heuristic at lines 101-106 is what we need to apply to fragments. TS port at `functions/src/llm/pii-scrubber.ts` mirrors the same shape per BUT-534 commit.
+- **BUT-518** valid (scope wider than ticket) — `lib/repositories/firebase/firebase_analytics_repository.dart` has **9** `'timestamp': clock.now().toUtc().toIso8601String()` sites at lines 178/203/230/247/262/275/294/312/337 (ticket said 6). All on `clock.now()` post-migration commit `3c1ddf9f2`, so removal is purely deletion. No `logImportCancelled` exists — ticket overstated. Firebase Analytics already server-stamps every event.
+- **BUT-525** valid — `lib/services/moderation/content_filter_service.dart:90-107` has 16 SV terms; `lib/services/moderation/content_filter_service.dart:110+` has the EN list. Word-boundary regex only — no normalization (diacritics/leetspeak/repeated-chars). Trivially bypassed. Plan: extract lists to `content_filter_words.dart` constants file (file-size pressure on the service), import LDNOOBW EN base + curated SV harassment supplement, add `_normalize` step pre-match.
+- **BUT-717** **PREMISE GONE** — `DynamicColorBuilder` has zero matches in `lib/`, `dynamic_color` is not in `pubspec.yaml`. The 2026-04-26 ticket assumed Material You was already wired in `main.dart` based on a stale UX report; the actual main.dart never adopted it. Adopting Material You is a separate forward decision (own ticket if/when desired), not a "verify existing wiring" task. Close as obsolete.
+
+### Agent A: parsing/security parity (1 ticket)
+
+- [ ] **A1. BUT-765 — Extend `scrubUrlParams` opaque-token redaction to URL fragments** — `lib/services/llm/pii_scrubber.dart` `scrubUrlParams`: parse `parsed.fragment`, apply `_looksOpaquePathSegment` to it, replace with `':redacted'` if opaque, preserve otherwise. Mirror in `functions/src/llm/pii-scrubber.ts`. Add tests:
+  - Dart: `test/unit/services/llm/pii_scrubber_test.dart` — slug fragment (`#ingredienser`) preserved; UUID fragment (`#550e8400-e29b-41d4-a716-446655440000`) redacted; long-alphanumeric fragment (`#token=eyJhbGc...`) redacted; opaque-key=value form preserved as `:redacted`.
+  - TS: `functions/src/__tests__/pii-scrubber.test.ts` — parity assertions. (BUT-765)
+
+### Agent B: analytics cleanup (1 ticket)
+
+- [ ] **B1. BUT-518 — Remove redundant ISO timestamp params from analytics events** — `lib/repositories/firebase/firebase_analytics_repository.dart`: delete `'timestamp': clock.now().toUtc().toIso8601String()` from 9 events (`importStarted` L178, `importSuccess` L203, `extractionError` L230, `manualCopyFallback` L247, `recipeCreated` L262, `recipeShared` L275, `recipeCooked` L294, `menuGenerated` L312, `recipeDeleted` L337). All report present-time actions; Firebase Analytics auto-stamps events server-side. The `recipeDeleted` event keeps `'created_at'` (past action) but drops `'timestamp'` (now). Update the `recipeDeleted` body to remove the unused `now` local variable since `daysSinceCreated` is the only remaining consumer (still computed via `clock.now()` inline). Update affected tests under `test/unit/repositories/firebase/firebase_analytics_repository_test.dart` and any analytics-event integration tests that assert presence of the `timestamp` param. (BUT-518)
+
+### Agent C: content moderation deepening (1 ticket)
+
+- [ ] **C1. BUT-525 — ContentFilterService deepen blocklist + add normalization** — `lib/services/moderation/content_filter_service.dart`. Three changes:
+  1. **Extract word lists** to a new file `lib/services/moderation/content_filter_words.dart` (constants only, no `BaseService` boilerplate) — keeps the service file lean and the lists swappable.
+  2. **Expand lists** — EN: import LDNOOBW (~600 terms, public-domain) as `_englishProfanity`; remove the slur-leak risk by gate-keeping the highest-severity entries behind a separate `_slursDoNotDisplay` constant (filter logic still rejects, but no leak via debug logs). SV: keep the existing 16 + add a curated harassment-term supplement (~30 entries; sourced from public Swedish hate-speech research lists, focusing on misspellings + targeted terms).
+  3. **Normalization** — add `_normalize(String)` that: (a) lowercases, (b) strips combining marks via `String.runes` + Unicode category filter, (c) collapses runs of ≥3 identical chars to 2 (`fuuuuck` → `fuuck`), (d) maps common leet substitutions (`4→a 3→e 1→i 0→o 5→s 7→t`) before regex match. Apply in `containsProfanity` so the regex sees normalized form, but keep the original text intact for `filterText` star-replacement.
+  4. Tests in `test/unit/services/moderation/content_filter_service_test.dart`: assert known-good text still passes (e.g., `kanelbullar`), each new normalization rule is exercised, and at least 3 representative SV+EN harassment-term variants (`fy ttta`, `fcuk`, `5h1t`) are caught.
+  *Scope guard:* if LDNOOBW list inflation pushes the constants file >500 lines, that's expected — it's data, not logic, so no facade needed (constants files are exempt per `code-style.md`'s "facade for complex files" rationale). (BUT-525)
+
+### Standalone — housekeeping
+
+- [ ] **D1. Close BUT-717 as premise-gone** — `DynamicColorBuilder`/`dynamic_color` not present anywhere in repo. Linear comment links to the verification (grep results: zero matches in `lib/`, absent from `pubspec.yaml`). Note that adopting Material You would be a forward decision deserving its own ticket if/when desired, not a verification task. Transition state to Canceled with reason "premise gone — Material You was never wired; ticket assumed false existing state". (BUT-717)
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` — 0 issues
+- [ ] Affected unit tests: `pii_scrubber_test.dart` (Dart + TS), `firebase_analytics_repository_test.dart`, `content_filter_service_test.dart`
+- [ ] Tier-2 specialist gates: `code-reviewer`, `testing-specialist`, `firebase-backend-security` (LLM/parsing services), `cloud-functions-specialist` (TS pii-scrubber parity)
+- [ ] Commit, push to main
+- [ ] CI watcher monitors green
+- [ ] Update Linear: BUT-765/518/525 → Done; BUT-717 → Canceled (premise-gone)
+
+### Continued blockers (NOT in scope per memory)
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
+- BUT-549 — post-beta (Sign in with Apple lands when social login does)
+- BUT-579 — held for button-system sprint
+- BUT-444 / BUT-445 — own product-design sprints
+- BUT-498 / BUT-697 — explicitly skipped
+- BUT-686 / BUT-660 / BUT-694 — need feature-level brainstorming first
+- BUT-674 / BUT-721 — own scoped sprints
+- BUT-626 — bucket-based A/B infra; own sprint
+- BUT-420/451/452/486 — deploy-pipeline / staging cluster; focused infra sprint
+- BUT-550 / BUT-536 — ACCEPTED_LARGE_FILES drift sprint, separate scope (BUT-536 now +161 lines from baseline; deserves its own focused refactor sprint)
+- BUT-558 — DCM install (own sprint)
+- BUT-554 — tracking ticket only (blocked on drift_dev upstream)
+- BUT-594 — macOS sandbox audit needs hardware-exercise step beyond static review
+- BUT-701 — focus traversal (2-day a11y sprint, too big for this batch)
+- All `idea`-labeled monetization scaffolding — post-beta
+
+---
+
+## What this means in plain language
+
+- **Privacy follow-up.** Last sprint we made our sanitizer keep URL anchor text like `#ingredienser` (so recipe section links survive). The security agent flagged that random tokens hidden inside an anchor (`#token=long-opaque-string`) still leak; we'll redact those while keeping the readable anchors.
+- **Analytics cleanup.** Nine of our analytics events ship a redundant timestamp that Firebase already adds for free. Cleaning it up makes our event schema consistent (annoying inconsistencies disappear from BigQuery queries) and frees up the 25-param-per-event budget Firebase enforces.
+- **Stronger profanity filter.** Today's filter has ~36 words and is trivially bypassed (`fcuk`, `5h1t`, `fuuuuck` all pass). We're swapping in a maintained English list, adding a curated Swedish harassment supplement, and normalizing the text (strip accents, collapse repeats, undo basic leetspeak) before matching.
+- **One stale ticket closed.** A ticket asked us to "verify Material You respects our brand colors" — but Material You was never wired here in the first place. Closing it with a note so the backlog reflects reality.
+- **Risk: low across the board.** No data-model changes, no UI structure changes. The profanity-list expansion is the only one with possible false-positive risk; the test suite asserts known-good Swedish food terms (`kanelbullar`) still pass.
+
+---
+
+## ARCHIVED — Sprint: Analytics observability + parsing/LLM hardening + social UX — 2026-05-04
 
 Theme: prior two sprints (commits `207fe7fc5`, `f0aec025d`) cleared the CI/a11y/perf carry-overs. High-priority backlog still blocked on Apple Dev (BUT-415/646/714/731), button-system sprint (BUT-579), and post-beta deferral (BUT-549). Cluster 7 small/medium concrete fixes across analytics observability gaps, parsing/LLM defensive hardening, and one social UX micro-fix. **7 tasks, 3 batches.**
 

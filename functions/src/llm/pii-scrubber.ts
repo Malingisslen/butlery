@@ -16,6 +16,10 @@
 export const REPLACEMENT_EMAIL = "[EMAIL]";
 export const REPLACEMENT_PHONE = "[PHONE]";
 export const REPLACEMENT_PERSONNUMMER = "[PERSONNUMMER]";
+/** Opaque-token marker used by the URL scrubber. Must stay byte-identical
+ *  with the Dart-side `_replacementOpaque` — parity is asserted by the
+ *  shared scrubUrlParams test cases. */
+export const REPLACEMENT_OPAQUE = ":redacted";
 
 /** All PII replacement tokens emitted by `scrubPii`. */
 export const PII_TOKENS = [
@@ -99,6 +103,12 @@ export function scrubPii(text: string): string {
 /** Long unsplit alphanumeric run (hex hashes, base64 tokens, Algolia IDs). */
 const LONG_ALPHANUMERIC_RUN = /[A-Za-z0-9]{16,}/;
 
+/** Same pattern but global. Kept as a separate instance because sharing
+ *  one `/g` regex between `.test()` (path-segment scrub) and `.replace()`
+ *  (fragment scrub) is a JS footgun — `.test()` on a `/g` regex mutates
+ *  `lastIndex`, returning alternating false/true on the same input. */
+const LONG_ALPHANUMERIC_RUN_GLOBAL = /[A-Za-z0-9]{16,}/g;
+
 /** RFC 4122 / RFC 9562 UUID layout, case-insensitive. */
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -122,17 +132,34 @@ function looksOpaquePathSegment(segment: string): boolean {
 }
 
 /**
- * Strip query parameters AND opaque path-embedded tracker IDs from a URL.
- * Returns the original string if it's not a valid URL.
+ * BUT-765: redact opaque tokens inside URL fragments while preserving
+ * recipe section anchors. Mirror of the Dart `_scrubFragment` helper —
+ * keep these in lock-step.
+ */
+function scrubFragment(fragment: string): string {
+  if (fragment.length < 16) return fragment;
+  if (UUID_REGEX.test(fragment)) return REPLACEMENT_OPAQUE;
+  return fragment.replace(LONG_ALPHANUMERIC_RUN_GLOBAL, REPLACEMENT_OPAQUE);
+}
+
+/**
+ * Strip query parameters, opaque path-embedded tracker IDs, and opaque
+ * fragment tokens from a URL. Returns the original string if it's not
+ * a valid URL.
  *
  * BUT-692: prior implementation only stripped `?utm_*=...` style query
  * strings, leaving path-embedded tokens (`/r/<sessionToken>/...`,
  * `/track/abc-123-XYZ.../...`) intact. Slugs are preserved; UUIDs and
  * long opaque tokens are replaced with `:redacted`.
  *
- * BUT-534: fragment identifiers (`#ingredienser`, `#method`) are recipe
- * section anchors on many sites and are not transmitted to servers, so
- * stripping them never gains privacy and only loses signal — preserve.
+ * BUT-534: fragment identifiers (`#ingredienser`, `#method`) survive
+ * because they aren't transmitted in HTTP requests and recipe sites
+ * use them as section anchors.
+ *
+ * BUT-765: but URL strings scrubbed here are also threaded into LLM
+ * prompts + Cloud Logging via `httpsCallable`, so opaque fragment
+ * tokens (`#token=eyJhbGc...`) DO leak even though the HTTP path
+ * doesn't carry them. Apply opaque-token redaction to the fragment.
  */
 export function scrubUrlParams(url: string): string {
   try {
@@ -140,8 +167,27 @@ export function scrubUrlParams(url: string): string {
     parsed.search = "";
     const segments = parsed.pathname
       .split("/")
-      .map((s) => (looksOpaquePathSegment(s) ? ":redacted" : s));
+      .map((s) => (looksOpaquePathSegment(s) ? REPLACEMENT_OPAQUE : s));
     parsed.pathname = segments.join("/");
+    // BUT-765 parity guard: Dart's `Uri.fragment` getter returns the
+    // *decoded* form (`%3D` → `=`); JS's `URL.hash` keeps the percent-
+    // encoded form. Without `decodeURIComponent` here, an adversarial
+    // input like `#token%3DeyJhbGc...{long}...` would redact on the Dart
+    // side but slip through on the TS side because `%` breaks the
+    // 16-char alphanumeric run. Decode first so both ports see the
+    // same matchable content. Malformed escapes (`%xz`) throw URIError;
+    // fall back to the raw form when that happens.
+    if (parsed.hash) {
+      const raw = parsed.hash.slice(1);
+      let decoded = raw;
+      try {
+        decoded = decodeURIComponent(raw);
+      } catch {
+        decoded = raw;
+      }
+      const scrubbed = scrubFragment(decoded);
+      parsed.hash = scrubbed.length > 0 ? `#${scrubbed}` : "";
+    }
     return parsed.toString();
   } catch {
     return url;

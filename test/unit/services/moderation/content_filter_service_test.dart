@@ -173,4 +173,82 @@ void main() {
       expect(service.filterText(''), equals(''));
     });
   });
+
+  // BUT-525: normalization gates that close the trivial-bypass holes
+  // flagged in the Trust & Safety report. The matcher applies a
+  // length-preserving normalize (lowercase → diacritic strip → leet→letter)
+  // before the regex, and the regex uses `c+` quantifiers per character so
+  // run-collapse variants (`fuuuck`) match without a separate normalizer
+  // step. These tests are the contract.
+  group('ContentFilterService.containsProfanity — BUT-525 normalization', () {
+    test('leetspeak: 5h1t (numerals → s/i/t) is rejected', () {
+      expect(service.containsProfanity('this is 5h1t'), isTrue);
+    });
+
+    test('leetspeak: b1tch is rejected', () {
+      expect(service.containsProfanity('what a b1tch'), isTrue);
+    });
+
+    test('leetspeak: f4n (Swedish "fan" with 4→a) is rejected', () {
+      expect(service.containsProfanity('åh f4n'), isTrue);
+    });
+
+    test('run-collapse: fuuuuck is rejected', () {
+      expect(service.containsProfanity('what the fuuuuck'), isTrue);
+    });
+
+    test('run-collapse: shiiit is rejected', () {
+      expect(service.containsProfanity('oh shiiit'), isTrue);
+    });
+
+    test('diacritic strip: bög written as bog still rejected', () {
+      // Risk accepted in content_filter_words.dart: this means the English
+      // word `bog` (marsh / bog roll) ALSO trips. On a Swedish-first cooking
+      // app the FP risk is judged acceptable.
+      expect(service.containsProfanity('what a bog'), isTrue);
+    });
+
+    test('expanded SV slur "svartskalle" is rejected', () {
+      expect(service.containsProfanity('din svartskalle'), isTrue);
+    });
+
+    test('expanded EN slur "twat" is rejected', () {
+      expect(service.containsProfanity('absolute twat'), isTrue);
+    });
+
+    test('legitimate Swedish food vocabulary still passes', () {
+      // Regression guard: the canonical Swedish recipe vocabulary must
+      // not trip after BUT-525's expanded blocklist + normalization.
+      const safe = [
+        'kanelbullar med smör och socker',
+        'pasta carbonara med pancetta',
+        'ärtsoppa och pannkakor',
+        'köttbullar med lingonsylt',
+        'falukorv med stuvade makaroner',
+      ];
+      for (final s in safe) {
+        expect(service.containsProfanity(s), isFalse,
+            reason: 'expected legitimate recipe text to pass: "$s"');
+      }
+    });
+  });
+
+  group('ContentFilterService.filterText — BUT-525 offset preservation', () {
+    test('asterisks the original input span (length-preserving normalize)', () {
+      // `f4n` (3 chars) normalizes to `fan` (3 chars), matches at the same
+      // offsets, replaced with `***`. The user's surrounding casing/spacing
+      // survives intact.
+      final out = service.filterText('Helvete vad f4n');
+      expect(out, equals('******* vad ***'));
+    });
+
+    test('run-collapse variants asterisk the full original run', () {
+      // `fuuuuck` is 7 chars in the original; after normalization
+      // `fuuuuck` is still 7 chars (no run-collapse in the normalizer);
+      // the regex `f+u+c+k+` matches the full 7-char span, replaced
+      // with 7 asterisks.
+      final out = service.filterText('what the fuuuuck dude');
+      expect(out, equals('what the ******* dude'));
+    });
+  });
 }

@@ -14,6 +14,12 @@ const String _replacementEmail = '[EMAIL]';
 const String _replacementPhone = '[PHONE]';
 const String _replacementPersonnummer = '[PERSONNUMMER]';
 
+/// Opaque-token marker used by the URL scrubber. Must stay byte-identical
+/// with the TS-side `REPLACEMENT_OPAQUE` — the parity test cases in
+/// `test/unit/services/llm/pii_scrubber_test.dart` and
+/// `functions/src/__tests__/pii-scrubber.test.ts` assert on this exact string.
+const String _replacementOpaque = ':redacted';
+
 /// Email pattern.
 final RegExp _emailRegex = RegExp(r'[\w.-]+@[\w.-]+\.\w+');
 
@@ -49,8 +55,8 @@ String scrubPii(String text) {
   return result;
 }
 
-/// Strip query parameters, fragment, AND opaque path-embedded tracker IDs
-/// from [url]. Returns [url] unchanged if it cannot be parsed.
+/// Strip query parameters, opaque path-embedded tracker IDs, and opaque
+/// fragment tokens from [url]. Returns [url] unchanged if it cannot be parsed.
 ///
 /// BUT-692: previously only scrubbed `?utm_*=...` style query strings, leaving
 /// path-embedded tokens like `/r/<sessionToken>/...` or
@@ -59,21 +65,47 @@ String scrubPii(String text) {
 /// Heuristic, not exhaustive — slugs like `gulasch-med-svamp-russin`
 /// remain intact; opaque tokens (UUIDs, Algolia object IDs, base64-ish
 /// blobs) are stripped.
+///
+/// BUT-534: fragment identifiers were preserved wholesale because they
+/// aren't transmitted in HTTP requests — recipe sites use `#ingredienser`
+/// / `#method` as section anchors.
+///
+/// BUT-765: but URLs scrubbed here are also threaded into LLM prompts +
+/// Cloud Logging via `httpsCallable`, so opaque fragment tokens
+/// (`#token=eyJhbGc...`) DO leak even though the HTTP path doesn't carry
+/// them. Apply the opaque-detection heuristic to the fragment as well:
+/// short slug-shaped anchors survive, UUID-shaped fragments redact
+/// wholesale, and long alphanumeric runs inside keyed fragments
+/// (`#token=...`) are redacted in-place.
 String scrubUrlParams(String url) {
   try {
     final parsed = Uri.parse(url);
     if (!parsed.hasScheme) return url;
     final scrubbedSegments = parsed.pathSegments
-        .map((seg) => _looksOpaquePathSegment(seg) ? ':redacted' : seg)
+        .map((seg) => _looksOpaquePathSegment(seg) ? _replacementOpaque : seg)
         .toList(growable: false);
-    // BUT-534: drop the query string (tracker params), but keep the fragment
-    // identifier — recipe sites use `#ingredienser`/`#method` as section
-    // anchors and fragments aren't transmitted to servers anyway, so
-    // stripping them never gains privacy and only loses signal.
-    return parsed.replace(pathSegments: scrubbedSegments, query: '').toString();
+    return parsed
+        .replace(
+          pathSegments: scrubbedSegments,
+          query: '',
+          fragment: _scrubFragment(parsed.fragment),
+        )
+        .toString();
   } catch (_) {
     return url;
   }
+}
+
+/// BUT-765: redact opaque tokens inside URL fragments while preserving
+/// recipe section anchors. Short fragments (<16 chars) and slug-shaped
+/// fragments survive; UUID-shaped fragments redact wholesale; long
+/// alphanumeric runs inside the fragment are replaced with `:redacted`,
+/// catching JWT, base64-ish, and Algolia-shaped tokens in `key=value`
+/// fragment forms (`#token=eyJhbGc...` → `#token=:redacted`).
+String _scrubFragment(String fragment) {
+  if (fragment.length < 16) return fragment;
+  if (_uuidRegex.hasMatch(fragment)) return _replacementOpaque;
+  return fragment.replaceAll(_longAlphanumericRun, _replacementOpaque);
 }
 
 /// Long unsplit alphanumeric run — typical of hex hashes, base64 tokens,

@@ -199,4 +199,72 @@ void main() {
       expect(out, contains('/end'));
     });
   });
+
+  // BUT-765: opaque-token redaction inside URL fragments. The BUT-534 test
+  // above asserts that slug fragments survive; these assert that the
+  // tightening for opaque fragments mirrors the path-segment heuristic.
+  group('scrubUrlParams - opaque fragment tokens (BUT-765)', () {
+    test('keeps short slug fragment intact (#method)', () {
+      final out = scrubUrlParams('https://example.com/recipe#method');
+      expect(out, contains('#method'));
+      expect(out, isNot(contains(':redacted')));
+    });
+
+    test('keeps slug-shaped fragment with hyphens intact', () {
+      final out =
+          scrubUrlParams('https://example.com/recipe#super-premium-italienska');
+      expect(out, contains('#super-premium-italienska'));
+      expect(out, isNot(contains(':redacted')));
+    });
+
+    test('redacts UUID-shaped fragment wholesale', () {
+      final out = scrubUrlParams(
+          'https://example.com/share#f47ac10b-58cc-4372-a567-0e02b2c3d479');
+      expect(out, isNot(contains('f47ac10b-58cc-4372-a567-0e02b2c3d479')));
+      expect(out, contains('#:redacted'));
+    });
+
+    test('redacts JWT-shaped value inside keyed fragment', () {
+      final out = scrubUrlParams(
+          'https://example.com/auth#token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
+      expect(out, isNot(contains('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9')));
+      expect(out, contains('token=:redacted'));
+    });
+
+    test('redacts long alphanumeric run in unkeyed fragment', () {
+      final out =
+          scrubUrlParams('https://example.com#abcdefghijklmnopqrstuvwxyz');
+      expect(out, isNot(contains('abcdefghijklmnopqrstuvwxyz')));
+      expect(out, contains(':redacted'));
+    });
+
+    test('redacts 32-char hex hash fragment', () {
+      final out = scrubUrlParams(
+          'https://example.com/r#a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5');
+      expect(out, isNot(contains('a8e4f2b9c1d3e5f7a1b3c5d7e9f1a3b5')));
+      expect(out, contains(':redacted'));
+    });
+
+    test('mixed keyed fragment redacts opaque values, preserves slug values',
+        () {
+      // Production heuristic does not decompose by `&`/`=`; it scans the
+      // whole fragment for 16+ char alphanumeric runs. Slug values stay
+      // intact (under threshold), opaque values redact in-place.
+      final out = scrubUrlParams(
+          'https://example.com#section=ingredienser&token=eyJhbGciOiJIUzI1NiJ9');
+      expect(out, contains('section=ingredienser'));
+      expect(out, isNot(contains('eyJhbGciOiJIUzI1NiJ9')));
+      expect(out, contains('token=:redacted'));
+    });
+
+    test('parity-pin: percent-encoded fragment redacts after decode', () {
+      // Dart's `Uri.fragment` getter returns the decoded form, so
+      // `%3D` arrives as `=` to the heuristic. The TS port mirrors this
+      // via `decodeURIComponent` so both ports redact the same input.
+      final out = scrubUrlParams(
+          'https://example.com#token%3DeyJhbGciOiJIUzI1NiJ9_extra');
+      expect(out, isNot(contains('eyJhbGciOiJIUzI1NiJ9_extra')));
+      expect(out, contains(':redacted'));
+    });
+  });
 }

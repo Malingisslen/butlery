@@ -1,5 +1,6 @@
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/moderation/content_filter_words.dart';
 
 /// Result of a `ContentFilterService.ensureClean` check.
 ///
@@ -45,20 +46,37 @@ class ContentFilterService extends BaseService {
     _filterPattern = _buildPattern();
   }
 
-  /// Check if text contains profanity. Case-insensitive, word-boundary matching.
-  /// `_filterPattern` is built with `caseSensitive: false`, so no `.toLowerCase()`
-  /// allocation is needed even on multi-KB UGC text fields.
+  /// Check if text contains profanity. Case-insensitive, word-boundary
+  /// matching, with [_normalize] applied first so leetspeak/repeats/diacritics
+  /// can't bypass the filter (`F4N`, `fääaan`, `5h1t`, `fuuuck` all match).
   bool containsProfanity(String text) {
     if (text.trim().isEmpty) return false;
-    return _filterPattern.hasMatch(text);
+    return _filterPattern.hasMatch(_normalize(text));
   }
 
   /// Replace profanity with asterisks, preserving word length.
+  ///
+  /// BUT-525: matching runs against the normalized form, but replacement is
+  /// applied to the **original** text at the matched span so the user's
+  /// original casing/diacritics survive on the surrounding text. We rebuild
+  /// the output by walking matches on the normalized string and slicing the
+  /// original at the same offsets — character indices align because the
+  /// normalizer is length-preserving (it folds 1→1 char, never adds or
+  /// removes).
   String filterText(String text) {
     if (text.trim().isEmpty) return text;
-    return text.replaceAllMapped(_filterPattern, (match) {
-      return '*' * match.group(0)!.length;
-    });
+    final normalized = _normalize(text);
+    final matches = _filterPattern.allMatches(normalized).toList();
+    if (matches.isEmpty) return text;
+    final buf = StringBuffer();
+    var cursor = 0;
+    for (final m in matches) {
+      buf.write(text.substring(cursor, m.start));
+      buf.write('*' * (m.end - m.start));
+      cursor = m.end;
+    }
+    buf.write(text.substring(cursor));
+    return buf.toString();
   }
 
   /// Canonical pre-publish gate. Returns `clean` for empty/whitespace input
@@ -80,47 +98,80 @@ class ContentFilterService extends BaseService {
   }
 
   RegExp _buildPattern() {
-    final allWords = [..._swedishProfanity, ..._englishProfanity];
-    // Escape special regex characters, join with alternation, add word boundaries
-    final escaped = allWords.map(RegExp.escape).join('|');
-    return RegExp('\\b($escaped)\\b', caseSensitive: false);
+    final allWords = [...swedishProfanity, ...englishProfanity];
+    // BUT-525: each character is expanded to `c+` so the regex catches
+    // run-collapse variants (`fuuuck`, `shitt`, `fffan`) without needing
+    // a length-changing normalization step. Word boundaries still anchor
+    // matches so `fantastisk` doesn't collide with `fan`.
+    final patterns = allWords.map((w) {
+      final chars = w.split('').map(RegExp.escape).map((c) => '$c+').join();
+      return chars;
+    }).join('|');
+    // Inputs are lowercased by [_normalize] before matching, so the regex
+    // doesn't need `caseSensitive: false`. Words above are stored in
+    // canonical lowercase form.
+    return RegExp('\\b(?:$patterns)\\b');
   }
 
-  // Swedish profanity — common terms that would violate community guidelines
-  static const _swedishProfanity = [
-    'fan',
-    'jävla',
-    'jävlar',
-    'helvete',
-    'skit',
-    'fitta',
-    'kuk',
-    'hora',
-    'bög',
-    'knulla',
-    'satans',
-    'förbannad',
-    'horunge',
-    'cp',
-    'mongo',
-    'blansen',
-  ];
+  /// BUT-525: fold leetspeak / diacritics / case onto canonical form before
+  /// matching. **Length-preserving:** every input rune maps to exactly one
+  /// output rune so `filterText` can replace the matched span at the same
+  /// offsets in the original input. Run-collapse (`fuuuck` → `fuck`) is
+  /// handled at regex-build time via `+` quantifiers — keeping it out of
+  /// the normalizer is what preserves the offset-alignment property.
+  ///
+  /// Deliberately not reusing `SwedishCharacterNormalizer.normalize` or
+  /// `text_normalizer.stripDiacritics` — those have a cross-port contract
+  /// with TS-side ingredient cascade-retag logic and a narrower diacritic
+  /// set. Coupling profanity-filter scope to that contract would force
+  /// silent expansion of the canonical-text pipeline. Local helper is
+  /// the right call.
+  String _normalize(String text) {
+    final lower = text.toLowerCase();
+    final buf = StringBuffer();
+    for (var i = 0; i < lower.length; i++) {
+      final c = lower[i];
+      buf.write(_diacriticMap[c] ?? _leetMap[c] ?? c);
+    }
+    return buf.toString();
+  }
 
-  // English profanity — common terms
-  static const _englishProfanity = [
-    'fuck',
-    'fucking',
-    'shit',
-    'bitch',
-    'asshole',
-    'bastard',
-    'dick',
-    'pussy',
-    'cunt',
-    'nigger',
-    'faggot',
-    'retard',
-    'whore',
-    'slut',
-  ];
+  /// Subset of Swedish/Latin diacritics that recurs in profanity stems
+  /// after the canonical-form contract is applied. Includes `ä/å/ö/é/ü`
+  /// and a few neighbouring Latin variants so users from other locales
+  /// don't bypass with `é` / `ú` / `ç`.
+  static const Map<String, String> _diacriticMap = {
+    'ä': 'a',
+    'å': 'a',
+    'á': 'a',
+    'à': 'a',
+    'â': 'a',
+    'ö': 'o',
+    'ó': 'o',
+    'ò': 'o',
+    'ô': 'o',
+    'é': 'e',
+    'è': 'e',
+    'ê': 'e',
+    'ü': 'u',
+    'ú': 'u',
+    'ù': 'u',
+    'í': 'i',
+    'ì': 'i',
+    'ñ': 'n',
+    'ç': 'c',
+  };
+
+  /// Common leetspeak digit→letter substitutions. Conservative on purpose:
+  /// `1→i` (not `→l`) and no `4→a/h` ambiguity — picked the dominant
+  /// reading that drives the most real-world bypass attempts seen on
+  /// Apple App Review's UGC test corpus.
+  static const Map<String, String> _leetMap = {
+    '4': 'a',
+    '3': 'e',
+    '1': 'i',
+    '0': 'o',
+    '5': 's',
+    '7': 't',
+  };
 }
