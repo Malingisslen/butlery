@@ -1,6 +1,7 @@
 // lib/services/messaging/conversation_action_operations.dart
 
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
+import 'package:clock/clock.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/models/messaging/conversation.dart';
@@ -49,7 +50,7 @@ class ConversationActionOperations {
         userId: currentUserId,
         settings: {
           'isPinned': true,
-          'pinnedAt': DateTime.now().toIso8601String(),
+          'pinnedAt': clock.now().toIso8601String(),
         },
       );
 
@@ -97,7 +98,7 @@ class ConversationActionOperations {
         userId: currentUserId,
         settings: {
           'isArchived': true,
-          'archivedAt': DateTime.now().toIso8601String(),
+          'archivedAt': clock.now().toIso8601String(),
         },
       );
 

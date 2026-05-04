@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:html_unescape/html_unescape.dart';
 
 import 'package:butlery/models/nutrition_info.dart';
@@ -134,7 +135,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       domain: context.domain,
       sourceUrl: context.sourceUrl,
       parserVersion: context.parserVersion,
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
       totalParseTime: context.elapsed,
       tierResults: const [],
     );

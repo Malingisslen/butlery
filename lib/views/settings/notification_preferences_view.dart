@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -501,7 +502,7 @@ class _NotificationPreferencesViewState
           : (quietHoursEnd ?? _preferences.quietHoursEnd),
       soundEnabled: soundEnabled ?? _preferences.soundEnabled,
       vibrationEnabled: vibrationEnabled ?? _preferences.vibrationEnabled,
-      lastUpdated: DateTime.now(),
+      lastUpdated: clock.now(),
     );
   }
 

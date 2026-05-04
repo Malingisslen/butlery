@@ -1,5 +1,6 @@
 // lib/viewmodels/realtime/participant_tracker.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -22,7 +23,7 @@ class ParticipantActivity {
 
   /// Var deltagaren aktiv inom specifik tidsperiod?
   bool wasActiveWithin(Duration period) {
-    return DateTime.now().difference(lastSeen) <= period;
+    return clock.now().difference(lastSeen) <= period;
   }
 
   @override
@@ -96,7 +97,7 @@ class ParticipantTracker {
     final lastSeen = _participantActivity[userId];
     if (lastSeen == null) return false;
 
-    return DateTime.now().difference(lastSeen) <= within;
+    return clock.now().difference(lastSeen) <= within;
   }
 
   /// Get latest activity for participant
@@ -134,7 +135,7 @@ class ParticipantTracker {
 
   /// Markera deltagare som aktiv nu
   void markActiveNow(String userId, String displayName) {
-    _participantActivity[userId] = DateTime.now();
+    _participantActivity[userId] = clock.now();
     _participantNames[userId] = displayName;
     onUpdated?.call();
     AppLogger.debug('✅ ${displayName.maskedName} markerad som aktiv');
@@ -142,7 +143,7 @@ class ParticipantTracker {
 
   /// Clean up old activities (older than 1 hour)
   void _cleanupOldActivity() {
-    final cutoff = DateTime.now().subtract(const Duration(hours: 1));
+    final cutoff = clock.now().subtract(const Duration(hours: 1));
     final oldCount = _participantActivity.length;
 
     _participantActivity

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
@@ -49,7 +50,7 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
         userId: userId,
         recipeId: recipeId,
         operation: operation.name,
-        queuedAt: DateTime.now(),
+        queuedAt: clock.now(),
       ),
     );
   }

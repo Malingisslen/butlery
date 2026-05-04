@@ -3,6 +3,7 @@
 // belongs to. Errors are swallowed — a dropped broadcast must never block
 // the cook itself.
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:butlery/core/providers/application_provider.dart';
@@ -99,7 +100,7 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
       recipeId: recipe.id,
       recipeTitle: recipe.title,
       recipeImageUrl: recipe.primaryImageUrl,
-      startedAt: DateTime.now(),
+      startedAt: clock.now(),
       userId: currentUser.uid,
       userName: displayName,
       userAvatar: avatarUrl,

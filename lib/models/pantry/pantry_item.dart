@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
@@ -145,7 +146,7 @@ class PantryItem {
   bool get isExpired {
     final exp = expiryDate;
     if (exp == null) return false;
-    return DateTime.now().isAfter(exp);
+    return clock.now().isAfter(exp);
   }
 
   /// Whole days until expiry. Negative when already expired, null when
@@ -154,7 +155,7 @@ class PantryItem {
   int? get daysUntilExpiry {
     final exp = expiryDate;
     if (exp == null) return null;
-    final now = DateTime.now();
+    final now = clock.now();
     final nowDay = DateTime(now.year, now.month, now.day);
     final expDay = DateTime(exp.year, exp.month, exp.day);
     return expDay.difference(nowDay).inDays;

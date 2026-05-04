@@ -9,6 +9,7 @@
 
 // lib/views/main_views/mina_recept_view.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -779,8 +780,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   Widget _buildEmptyState() {
     final userService = context.read<UserService>();
     final profile = userService.currentUserProfile;
-    final isNewUser = profile != null &&
-        DateTime.now().difference(profile.joinedAt).inDays < 7;
+    final isNewUser =
+        profile != null && clock.now().difference(profile.joinedAt).inDays < 7;
 
     if (!isNewUser) {
       return StateWidget.noRecipes(

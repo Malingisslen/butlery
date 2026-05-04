@@ -1,5 +1,6 @@
 // lib/services/realtime/modules/menu_operations.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -73,7 +74,7 @@ class MenuOperations {
       );
 
       // Single now reference for consistent comparisons
-      final now = DateTime.now();
+      final now = clock.now();
       final todayDateOnly = DateTime(now.year, now.month, now.day);
 
       // Reject dates >1 year in the future

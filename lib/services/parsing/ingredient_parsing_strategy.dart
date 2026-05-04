@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
@@ -76,7 +77,7 @@ class IngredientParsingStrategy {
 
     // After a failure, wait before retrying
     if (_lastInitFailure != null &&
-        DateTime.now().difference(_lastInitFailure!) < _initRetryDelay) {
+        clock.now().difference(_lastInitFailure!) < _initRetryDelay) {
       return;
     }
 
@@ -100,7 +101,7 @@ class IngredientParsingStrategy {
     } catch (e) {
       AppLogger.warning('$_serviceName: CRF weights unavailable, '
           'using regex fallback: $e');
-      _lastInitFailure = DateTime.now();
+      _lastInitFailure = clock.now();
     }
   }
 
@@ -213,8 +214,7 @@ class IngredientParsingStrategy {
     if (_nerInitStarted) return;
     // Don't retry more often than once per hour
     if (_nerLastAttempt != null &&
-        DateTime.now().difference(_nerLastAttempt!) <
-            const Duration(hours: 1)) {
+        clock.now().difference(_nerLastAttempt!) < const Duration(hours: 1)) {
       return;
     }
     _nerInitStarted = true;
@@ -229,7 +229,7 @@ class IngredientParsingStrategy {
         AppLogger.debug('$_serviceName: NER init failed: $e');
       } finally {
         _nerInitStarted = false;
-        _nerLastAttempt = DateTime.now();
+        _nerLastAttempt = clock.now();
       }
     });
   }

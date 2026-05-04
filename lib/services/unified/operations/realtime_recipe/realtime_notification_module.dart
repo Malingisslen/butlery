@@ -1,5 +1,6 @@
 // lib/services/unified/operations/realtime_recipe/realtime_notification_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -59,7 +60,7 @@ class RealtimeNotificationModule {
             'recipeTitle': recipe.title,
             'joinerUserId': currentUserId,
             'joinerDisplayName': currentUserDisplayName,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -103,7 +104,7 @@ class RealtimeNotificationModule {
             'recipeTitle': recipe.title,
             'leaverUserId': currentUserId,
             'leaverDisplayName': currentUserDisplayName,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -155,7 +156,7 @@ class RealtimeNotificationModule {
             'changeDescription': changeDescription,
             'editDescription': editDescription ?? '',
             'changes': changes,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -209,7 +210,7 @@ class RealtimeNotificationModule {
             'batchDescription':
                 batchDescription ?? AppLocale.current.labelMultipleChanges,
             'editCount': changeList.length,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -250,7 +251,7 @@ class RealtimeNotificationModule {
           additionalData: {
             'recipeId': recipe.id,
             'enablerUserId': currentUserId,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -290,7 +291,7 @@ class RealtimeNotificationModule {
           additionalData: {
             'recipeId': recipe.id,
             'disablerUserId': currentUserId,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -328,7 +329,7 @@ class RealtimeNotificationModule {
             'conflictDescription': conflictDescription,
             'reporterUserId': currentUserId,
             'reporterDisplayName': currentUserDisplayName,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -365,7 +366,7 @@ class RealtimeNotificationModule {
             'resolutionStrategy': resolutionStrategy,
             'resolverUserId': currentUserId,
             'resolverDisplayName': currentUserDisplayName,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -407,7 +408,7 @@ class RealtimeNotificationModule {
             'adderUserId': currentUserId,
             'adderDisplayName': currentUserDisplayName,
             'addedMemberCount': addedMemberIds.length,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -424,7 +425,7 @@ class RealtimeNotificationModule {
           additionalData: {
             'recipeId': recipe.id,
             'adderUserId': currentUserId,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -467,7 +468,7 @@ class RealtimeNotificationModule {
             'removerUserId': currentUserId,
             'removerDisplayName': currentUserDisplayName,
             'removedMemberCount': removedMemberIds.length,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -484,7 +485,7 @@ class RealtimeNotificationModule {
           additionalData: {
             'recipeId': recipe.id,
             'removerUserId': currentUserId,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -522,7 +523,7 @@ class RealtimeNotificationModule {
             'recipeId': recipe.id,
             'recipeTitle': recipe.title,
             'senderUserId': currentUserId,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
             ...data,
           },
         );

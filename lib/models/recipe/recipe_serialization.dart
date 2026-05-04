@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -231,7 +232,7 @@ class RecipeSerialization {
       'imageUrls': recipe.core.imageUrls,
       'thumbnailUrl': recipe.core.thumbnailUrl,
       'sourceUrl': recipe.core.sourceUrl,
-      'exportedAt': DateTime.now().toIso8601String(),
+      'exportedAt': clock.now().toIso8601String(),
       'exportFormat': 'butlery-simple-v1',
     };
   }

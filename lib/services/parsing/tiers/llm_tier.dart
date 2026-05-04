@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:convert';
 
 import 'package:html/dom.dart' as dom;
@@ -554,7 +555,7 @@ class LlmTier extends ParsingTier with QualityScoring {
       domain: context.domain,
       sourceUrl: context.sourceUrl,
       parserVersion: context.parserVersion,
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
       totalParseTime: context.elapsed,
       tierResults: const [],
     );

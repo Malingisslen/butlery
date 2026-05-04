@@ -1,6 +1,9 @@
 /// Extension methods providing convenient default values for nullable types.
 
 /// String null-coalescing extensions.
+
+import 'package:clock/clock.dart';
+
 extension StringDefaults on String? {
   /// Returns the string or empty string if null.
   String orEmpty() => this ?? '';
@@ -60,7 +63,7 @@ extension MapDefaults<K, V> on Map<K, V>? {
 /// DateTime null-coalescing extensions.
 extension DateTimeDefaults on DateTime? {
   /// Returns the datetime or current time if null.
-  DateTime orNow() => this ?? DateTime.now();
+  DateTime orNow() => this ?? clock.now();
 
   /// Returns the datetime or provided default if null.
   DateTime orDefault(DateTime defaultValue) => this ?? defaultValue;

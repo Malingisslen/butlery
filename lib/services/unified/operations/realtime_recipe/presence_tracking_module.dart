@@ -1,5 +1,6 @@
 // lib/services/unified/operations/realtime_recipe/presence_tracking_module.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -127,7 +128,7 @@ class PresenceTrackingModule {
       if (currentUserId == null) return false;
 
       // Update local timestamp
-      _presenceTimestamps['${currentUserId}_$recipeId'] = DateTime.now();
+      _presenceTimestamps['${currentUserId}_$recipeId'] = clock.now();
 
       // Update Firebase presence
       if (_realtimeSyncService != null) {
@@ -159,10 +160,10 @@ class PresenceTrackingModule {
 
       for (final userId in activeUserIds) {
         final timestampKey = '${userId}_$recipeId';
-        final lastSeen = _presenceTimestamps[timestampKey] ?? DateTime.now();
+        final lastSeen = _presenceTimestamps[timestampKey] ?? clock.now();
 
         // Check if user is still active (within last 2 minutes)
-        final isActive = DateTime.now().difference(lastSeen).inMinutes < 2;
+        final isActive = clock.now().difference(lastSeen).inMinutes < 2;
 
         if (isActive) {
           final member = recipe.socialData?.memberPermissions?[userId];
@@ -194,8 +195,8 @@ class PresenceTrackingModule {
               'avatarUrl': _getUserAvatarUrl(editorId),
               'isEditing': true,
               'permission': member.toString().split('.').last,
-              'lastSeen': DateTime.now(),
-              'joinedAt': DateTime.now().subtract(const Duration(minutes: 1)),
+              'lastSeen': clock.now(),
+              'joinedAt': clock.now().subtract(const Duration(minutes: 1)),
             });
           }
         }
@@ -232,7 +233,7 @@ class PresenceTrackingModule {
     final lastSeen = _presenceTimestamps[timestampKey];
     if (lastSeen == null) return false;
 
-    return DateTime.now().difference(lastSeen).inMinutes < 2;
+    return clock.now().difference(lastSeen).inMinutes < 2;
   }
 
   /// Get presence count for recipe
@@ -386,7 +387,7 @@ class PresenceTrackingModule {
   void _updateLocalPresence(String recipeId, String userId, bool isActive) {
     if (isActive) {
       _recipePresence.putIfAbsent(recipeId, () => <String>{}).add(userId);
-      _presenceTimestamps['${userId}_$recipeId'] = DateTime.now();
+      _presenceTimestamps['${userId}_$recipeId'] = clock.now();
     } else {
       _recipePresence[recipeId]?.remove(userId);
       _presenceTimestamps.remove('${userId}_$recipeId');
@@ -428,7 +429,7 @@ class PresenceTrackingModule {
 
   /// Clean up stale presence data
   void _cleanupStalePresence() {
-    final now = DateTime.now();
+    final now = clock.now();
     const staleThreshold =
         Duration(minutes: 10); // Optimized: less aggressive cleanup (#037)
     final keysToRemove = <String>[];

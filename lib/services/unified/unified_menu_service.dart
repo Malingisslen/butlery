@@ -1,5 +1,6 @@
 // lib/services/unified/unified_menu_service.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
@@ -229,7 +230,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
                   sharedByDisplayName:
                       data['ownerDisplayName'] as String? ?? '?',
                   sharedAt: (data['createdAt'] as Timestamp?)?.toDate() ??
-                      DateTime.now(),
+                      clock.now(),
                   allowCollaboration: true,
                   realtimeMenuId: doc.id,
                 );

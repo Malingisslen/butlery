@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -198,7 +199,7 @@ class RecipeFactory {
         activeEditorIds: activeEditorIds,
         lastEditedByUserId: ownerId,
         lastEditedByDisplayName: ownerDisplayName,
-        lastEditedAt: DateTime.now(),
+        lastEditedAt: clock.now(),
         editCount: 0,
         isActive: true,
       ),
@@ -284,7 +285,7 @@ class RecipeFactory {
         lastEditedByUserId: collaborativeRecipe.socialData?.ownerId,
         lastEditedByDisplayName:
             collaborativeRecipe.socialData?.ownerDisplayName,
-        lastEditedAt: DateTime.now(),
+        lastEditedAt: clock.now(),
         editCount: 0,
         isActive: true,
       ),

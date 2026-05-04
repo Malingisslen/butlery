@@ -18,6 +18,7 @@
 /// - Users can request their audit logs via GDPR data export
 /// - Logs are NOT deletable (legal requirement for audit trail)
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -71,7 +72,7 @@ class AuditLog {
       resourceId: SerializationUtils.safeNullableString(data, 'resourceId'),
       granted: SerializationUtils.safeBool(data, 'granted'),
       timestamp:
-          SerializationUtils.safeDateTime(data, 'timestamp') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'timestamp') ?? clock.now(),
       metadata: SerializationUtils.safeNullableMap(data, 'metadata'),
     );
   }
@@ -86,7 +87,7 @@ class AuditLog {
       'granted': granted,
       'timestamp': FieldValue.serverTimestamp(),
       'expireAt':
-          Timestamp.fromDate(DateTime.now().add(const Duration(days: 365))),
+          Timestamp.fromDate(clock.now().add(const Duration(days: 365))),
       'metadata': metadata,
     };
   }
@@ -115,7 +116,7 @@ class AuditLog {
       resourceId: SerializationUtils.safeNullableString(json, 'resourceId'),
       granted: SerializationUtils.safeBool(json, 'granted'),
       timestamp:
-          SerializationUtils.safeDateTime(json, 'timestamp') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(json, 'timestamp') ?? clock.now(),
       metadata: SerializationUtils.safeNullableMap(json, 'metadata'),
     );
   }

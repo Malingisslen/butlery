@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -201,7 +202,7 @@ class AuthService extends ChangeNotifier
         name: 'logout_inactivity',
         parameters: {
           'reason': 'session_timeout',
-          'timestamp': DateTime.now().toIso8601String(),
+          'timestamp': clock.now().toIso8601String(),
         },
       );
     }).catchError((e) {

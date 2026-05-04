@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe_form/image_management/image_upload_validator.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
@@ -73,7 +74,7 @@ class ImageUploadValidator {
     bool Function()? isCancelled,
   }) async {
     final timeoutDuration = timeout ?? const Duration(minutes: 2);
-    final startTime = DateTime.now();
+    final startTime = clock.now();
 
     AppLogger.info(
         'Waiting for uploads to complete (timeout: ${timeoutDuration.inSeconds}s)');
@@ -92,7 +93,7 @@ class ImageUploadValidator {
       }
 
       // Check timeout
-      if (DateTime.now().difference(startTime) > timeoutDuration) {
+      if (clock.now().difference(startTime) > timeoutDuration) {
         AppLogger.warning('Upload wait timeout reached');
         return false;
       }

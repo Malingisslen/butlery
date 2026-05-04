@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -238,7 +239,7 @@ class FriendsManagementOperations extends BaseService {
       // Update request status
       final rejectedRequest = request.copyWith(
         status: FriendRequestStatus.rejected,
-        respondedAt: DateTime.now(),
+        respondedAt: clock.now(),
       );
 
       // Firebase first — local list.remove can't throw
@@ -267,7 +268,7 @@ class FriendsManagementOperations extends BaseService {
       // Update request status
       final cancelledRequest = request.copyWith(
         status: FriendRequestStatus.cancelled,
-        respondedAt: DateTime.now(),
+        respondedAt: clock.now(),
       );
 
       await _updateFriendRequestStatus(cancelledRequest);
@@ -321,14 +322,14 @@ class FriendsManagementOperations extends BaseService {
         // Delete from Firebase (cancelled requests use delete per C2 fix)
         await _updateFriendRequestStatus(request.copyWith(
           status: FriendRequestStatus.cancelled,
-          respondedAt: DateTime.now(),
+          respondedAt: clock.now(),
         ));
       }
       for (final request in outgoingToBlocked) {
         _removeOutgoingRequestInternal(request.id);
         await _updateFriendRequestStatus(request.copyWith(
           status: FriendRequestStatus.cancelled,
-          respondedAt: DateTime.now(),
+          respondedAt: clock.now(),
         ));
       }
 

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/parsing/line_classifier/line_classifier_model_manager.dart';
 import 'package:butlery/services/parsing/line_classifier/onnx_line_classifier_service.dart';
@@ -39,7 +40,7 @@ class NeuralLineClassifier {
     if (_classifierService.isAvailable) return true;
 
     if (_lastInitFailure != null &&
-        DateTime.now().difference(_lastInitFailure!) < _initRetryDelay) {
+        clock.now().difference(_lastInitFailure!) < _initRetryDelay) {
       return false;
     }
 
@@ -47,7 +48,7 @@ class NeuralLineClassifier {
       final modelFiles = await _modelManager.ensureModelAvailable();
       if (modelFiles == null) {
         AppLogger.debug('$_serviceName: Model not available, using rule-based');
-        _lastInitFailure = DateTime.now();
+        _lastInitFailure = clock.now();
         return false;
       }
 
@@ -60,12 +61,12 @@ class NeuralLineClassifier {
         _lastInitFailure = null;
         AppLogger.info('$_serviceName: Neural classifier ready');
       } else {
-        _lastInitFailure = DateTime.now();
+        _lastInitFailure = clock.now();
       }
       return success;
     } catch (e) {
       AppLogger.debug('$_serviceName: Initialization failed: $e');
-      _lastInitFailure = DateTime.now();
+      _lastInitFailure = clock.now();
       return false;
     }
   }

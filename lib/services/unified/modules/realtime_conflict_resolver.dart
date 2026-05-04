@@ -1,5 +1,6 @@
 // lib/services/unified/modules/realtime_conflict_resolver.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -374,8 +375,7 @@ class RealtimeConflictResolver {
     if (lastEditedBy != null && editedBy != null && lastEditedBy != editedBy) {
       final lastEditTime = currentData['editedAt'] as Timestamp?;
       if (lastEditTime != null) {
-        final timeSinceLastEdit =
-            DateTime.now().difference(lastEditTime.toDate());
+        final timeSinceLastEdit = clock.now().difference(lastEditTime.toDate());
         // Consider edits within 5 seconds as potential conflicts
         return timeSinceLastEdit.inSeconds < 5;
       }

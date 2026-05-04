@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -78,12 +79,12 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
 
   bool get _canResend {
     if (_lastResendTime == null) return true;
-    return DateTime.now().difference(_lastResendTime!) >= _resendCooldown;
+    return clock.now().difference(_lastResendTime!) >= _resendCooldown;
   }
 
   int get _resendCooldownRemaining {
     if (_lastResendTime == null) return 0;
-    final elapsed = DateTime.now().difference(_lastResendTime!);
+    final elapsed = clock.now().difference(_lastResendTime!);
     final remaining = _resendCooldown - elapsed;
     return remaining.inSeconds.clamp(0, _resendCooldown.inSeconds);
   }
@@ -98,7 +99,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
 
     try {
       await _authService.sendEmailVerification();
-      _lastResendTime = DateTime.now();
+      _lastResendTime = clock.now();
     } catch (_) {
       if (mounted) {
         // Use service error message if available, fall back to generic

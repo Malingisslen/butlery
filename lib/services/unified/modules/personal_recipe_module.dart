@@ -1,5 +1,6 @@
 // lib/services/unified/modules/personal_recipe_module.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/models/recipe_unified.dart';
@@ -91,7 +92,7 @@ class PersonalRecipeModule with StreamManagementMixin {
       {Duration threshold = const Duration(minutes: 5)}) {
     final lastSync = _lastSyncedAt[recipeId];
     if (lastSync == null) return false;
-    return DateTime.now().difference(lastSync) <= threshold;
+    return clock.now().difference(lastSync) <= threshold;
   }
 
   PersonalRecipeModule({
@@ -704,7 +705,7 @@ class PersonalRecipeModule with StreamManagementMixin {
         AppLogger.success('✅ [Web] $operation completed for: ${recipe.title}');
         _syncStatus[recipe.id] = RecipeSyncStatus.synced;
         // HIGH-11: Record sync timestamp for verification
-        _lastSyncedAt[recipe.id] = DateTime.now();
+        _lastSyncedAt[recipe.id] = clock.now();
         return true;
       } else {
         AppLogger.error('❌ [Web] $operation failed for: ${recipe.title}');
@@ -774,7 +775,7 @@ class PersonalRecipeModule with StreamManagementMixin {
           // HIGH-10: Mark as synced on success
           _syncStatus[recipeId] = RecipeSyncStatus.synced;
           // HIGH-11: Record sync timestamp for verification
-          _lastSyncedAt[recipeId] = DateTime.now();
+          _lastSyncedAt[recipeId] = clock.now();
         } else {
           AppLogger.error(
               '❌ Background $operation failed for: ${recipe.title}');
@@ -918,7 +919,7 @@ class PersonalRecipeModule with StreamManagementMixin {
           dietaryStatus: {},
           coverage: 0.0, // Explicit 0 = needs retagging
           unknownIngredients: [],
-          generatedAt: DateTime.now(),
+          generatedAt: clock.now(),
           generatorVersion: 'failed',
         ),
       ),

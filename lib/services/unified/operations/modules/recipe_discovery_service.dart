@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/recipe_discovery_service.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -361,7 +362,7 @@ class RecipeDiscoveryService extends BaseService {
       // - Number of members
       // - Recent activity (last edited)
       // - Recipe rating
-      final now = DateTime.now();
+      final now = clock.now();
       final timeWindowDays = timeWindow?.inDays ?? 30;
 
       final scoredRecipes = trendingRecipes.map((recipe) {
@@ -411,7 +412,7 @@ class RecipeDiscoveryService extends BaseService {
       if (currentUserId == null) return [];
 
       final cutoffTime =
-          DateTime.now().subtract(timeWindow ?? const Duration(days: 7));
+          clock.now().subtract(timeWindow ?? const Duration(days: 7));
 
       // Get collaborative recipes from parent service
       final allRecipes = _getRecipes();

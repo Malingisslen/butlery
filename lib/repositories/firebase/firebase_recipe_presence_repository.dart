@@ -15,6 +15,8 @@
 /// - Business logic for presence cleanup and expiry (handled by PresenceTrackingModule)
 /// - UI state management (handled by ViewModels)
 /// - Permission checks (presence is view-level, not permission-gated)
+
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/_presence_ttl.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -107,7 +109,7 @@ class FirebaseRecipePresenceRepository {
         'isActive': false,
         'leftAt': _timestampProvider.serverTimestamp(),
         // Force immediate TTL eviction — the user explicitly left.
-        'expiresAt': Timestamp.fromDate(DateTime.now().toUtc()),
+        'expiresAt': Timestamp.fromDate(clock.now().toUtc()),
       });
 
       AppLogger.debug(

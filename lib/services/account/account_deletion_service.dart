@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -415,8 +416,7 @@ class AccountDeletionService extends BaseService {
               'failedCollections': failedCollections,
               'deletionTimestamp': FieldValue.serverTimestamp(),
               'expireAt': Timestamp.fromDate(
-                DateTime.now()
-                    .add(const Duration(days: _auditLogRetentionDays)),
+                clock.now().add(const Duration(days: _auditLogRetentionDays)),
               ),
               'gdprCompliant': failedCollections.isEmpty,
             });

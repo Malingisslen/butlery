@@ -706,7 +706,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       final sessionCount = (prefs.getInt('session_count') ?? 0) + 1;
       await prefs.setInt('session_count', sessionCount);
 
-      _sessionStartTime = DateTime.now();
+      _sessionStartTime = clock.now();
 
       final bootstrap = ApplicationBootstrap();
       if (bootstrap.isInitialized) {
@@ -715,7 +715,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           name: 'app_opened',
           parameters: {
             'session_count': sessionCount,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -730,14 +730,14 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       final bootstrap = ApplicationBootstrap();
       if (bootstrap.isInitialized && _sessionStartTime != null) {
         final sessionDuration =
-            DateTime.now().difference(_sessionStartTime!).inSeconds;
+            clock.now().difference(_sessionStartTime!).inSeconds;
 
         final analyticsService = bootstrap.container.get<AnalyticsService>();
         await analyticsService.logEvent(
           name: 'app_backgrounded',
           parameters: {
             'session_duration_seconds': sessionDuration,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': clock.now().toIso8601String(),
           },
         );
       }
@@ -1140,7 +1140,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         // correctly.
         final createdAt = user.metadata.creationTime;
         final isFreshSignup = createdAt != null &&
-            DateTime.now().difference(createdAt) < const Duration(seconds: 5);
+            clock.now().difference(createdAt) < const Duration(seconds: 5);
         if (isFreshSignup) {
           return KeyedSubtree(
             key: ValueKey('onboarding_${user.uid}'),
@@ -1195,7 +1195,7 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
     final svc = ServiceLocator.get<OnboardingProgressService>();
     final progress = await svc.readProgress(widget.userId);
     final pageIndex = svc.resolveResumePageIndex(progress);
-    final showNudge = svc.shouldShowAbandonedNudge(progress, DateTime.now());
+    final showNudge = svc.shouldShowAbandonedNudge(progress, clock.now());
     // Fire-and-forget analytics — never block UI.
     if (progress.hasProgress && (pageIndex ?? 0) > 0) {
       unawaited(svc.logResumed(lastStep: progress.lastCompletedStep));

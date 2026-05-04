@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -49,8 +50,8 @@ class RecipeSerialization {
         (userId, permission) => MapEntry(
             userId, ResourcePermissionHelper.permissionToString(permission)),
       ),
-      'createdAt': createdAt ?? DateTime.now(),
-      'lastEditedAt': lastEditedAt ?? DateTime.now(),
+      'createdAt': createdAt ?? clock.now(),
+      'lastEditedAt': lastEditedAt ?? clock.now(),
       'lastEditedBy': lastEditedBy,
       'lastEditedByDisplayName': lastEditedByDisplayName,
       'editCount': editCount,
@@ -89,10 +90,10 @@ class RecipeSerialization {
         sourceUrl: SerializationUtils.safeNullableString(coreData, 'sourceUrl'),
         createdAt:
             SerializationUtils.parseDateTimeValue(coreData['createdAt']) ??
-                DateTime.now(),
+                clock.now(),
         updatedAt:
             SerializationUtils.parseDateTimeValue(coreData['updatedAt']) ??
-                DateTime.now(),
+                clock.now(),
         createdBy: SerializationUtils.safeNullableString(coreData, 'createdBy'),
         isPublic: SerializationUtils.safeBool(coreData, 'isPublic'),
         lastCookedAt:
@@ -197,11 +198,9 @@ class RecipeSerialization {
 
     // Timestamp fields
     sanitized['createdAt'] =
-        SerializationUtils.parseDateTimeValue(data['createdAt']) ??
-            DateTime.now();
+        SerializationUtils.parseDateTimeValue(data['createdAt']) ?? clock.now();
     sanitized['updatedAt'] =
-        SerializationUtils.parseDateTimeValue(data['updatedAt']) ??
-            DateTime.now();
+        SerializationUtils.parseDateTimeValue(data['updatedAt']) ?? clock.now();
     sanitized['lastCookedAt'] =
         SerializationUtils.parseDateTimeValue(data['lastCookedAt']);
 

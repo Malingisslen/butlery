@@ -1,5 +1,6 @@
 // lib/services/notifications/modules/notification_analytics_manager.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -47,7 +48,7 @@ class NotificationAnalyticsManager {
         'status': 'sent',
         'sentAt': FieldValue.serverTimestamp(),
         'expireAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
         'metadata': metadata,
       };
 
@@ -118,7 +119,7 @@ class NotificationAnalyticsManager {
         'action': 'opened',
         'timestamp': FieldValue.serverTimestamp(),
         'expireAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
         'context': context ?? {},
       };
 
@@ -151,7 +152,7 @@ class NotificationAnalyticsManager {
         'action': 'dismissed',
         'timestamp': FieldValue.serverTimestamp(),
         'expireAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
         'reason': dismissalReason,
       };
 
@@ -177,7 +178,7 @@ class NotificationAnalyticsManager {
         'actionId': actionId,
         'timestamp': FieldValue.serverTimestamp(),
         'expireAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
         'actionData': actionData ?? {},
       };
 
@@ -195,7 +196,7 @@ class NotificationAnalyticsManager {
     Duration? period,
   }) async {
     try {
-      final since = DateTime.now().subtract(period ?? const Duration(days: 30));
+      final since = clock.now().subtract(period ?? const Duration(days: 30));
 
       // Get delivery stats
       final deliveryQuery = await _firestore

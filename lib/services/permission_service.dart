@@ -1,5 +1,6 @@
 /// Centralized permission management service for authorization and access control.
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart' as models;
@@ -131,8 +132,8 @@ class PermissionService extends BaseService {
       email: firebaseUser.email ?? '',
       avatarUrl: firebaseUser.photoURL,
       isOnline: true, // Always true for current user
-      joinedAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
-      lastActiveAt: DateTime.now(),
+      joinedAt: firebaseUser.metadata.creationTime ?? clock.now(),
+      lastActiveAt: clock.now(),
     );
   }
 

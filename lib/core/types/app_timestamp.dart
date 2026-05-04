@@ -127,6 +127,7 @@
 /// while providing comprehensive time management capabilities throughout the Swedish cooking
 /// application's data layers and cross-platform operations.
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Domain-agnostic timestamp abstraction that wraps platform-specific implementations
@@ -150,10 +151,10 @@ class AppTimestamp {
 
   /// Create AppTimestamp from current time.
   /// Stores internally as UTC for consistency.
-  factory AppTimestamp.now() => AppTimestamp._(DateTime.now().toUtc());
+  factory AppTimestamp.now() => AppTimestamp._(clock.now().toUtc());
 
   /// Create AppTimestamp from current time in UTC.
-  factory AppTimestamp.nowUtc() => AppTimestamp._(DateTime.now().toUtc());
+  factory AppTimestamp.nowUtc() => AppTimestamp._(clock.now().toUtc());
 
   /// Create AppTimestamp from Firestore Timestamp (repository layer only).
   /// Firestore Timestamps are always in UTC.

@@ -1,5 +1,6 @@
 // lib/services/unified/modules/debounced_sync_operations.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -277,7 +278,7 @@ class DebouncedSyncOperations {
     required Recipe recipe,
     required Duration minSyncInterval,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     final timeSinceUpdate = now.difference(recipe.core.updatedAt);
 
     // Always sync if updated recently

@@ -2,6 +2,7 @@
 /// ```dart
 /// Future<void> loadData() => executeAsync(() async { _data = await _service.fetchData(); });
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
@@ -201,7 +202,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     Duration throttleDuration, {
     String? errorPrefix,
   }) async {
-    final now = DateTime.now();
+    final now = clock.now();
     final lastExecution = _getLastExecutionTime(operationName);
 
     if (lastExecution != null &&

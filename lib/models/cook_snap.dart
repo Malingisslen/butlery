@@ -1,6 +1,7 @@
 /// CookSnap model — a photo posted by a user who cooked a recipe.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -27,7 +28,7 @@ class CookSnap {
     this.thumbnailUrl,
     this.caption,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? clock.now();
 
   /// Maximum caption length.
   static const int maxCaptionLength = 200;
@@ -50,7 +51,7 @@ class CookSnap {
       photoUrl: photoUrl,
       thumbnailUrl: thumbnailUrl,
       caption: _sanitizeCaption(caption),
-      createdAt: DateTime.now(),
+      createdAt: clock.now(),
     );
   }
 
@@ -93,7 +94,7 @@ class CookSnap {
       thumbnailUrl: SerializationUtils.safeNullableString(data, 'thumbnailUrl'),
       caption: SerializationUtils.safeNullableString(data, 'caption'),
       createdAt:
-          SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now(),
     );
   }
 

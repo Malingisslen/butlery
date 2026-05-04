@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe_form/recipe_persistence_manager.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -403,7 +404,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       final joinedAt = userService?.currentUserProfile?.joinedAt;
       if (joinedAt == null) return;
 
-      final now = DateTime.now();
+      final now = clock.now();
       final minutesSinceSignup = now.difference(joinedAt).inMinutes;
 
       // P8-20: Time-to-first-value
@@ -462,7 +463,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       fieldsChanged: changed,
       sourceUrl: original.sourceUrl,
       importedAt: original.createdAt,
-      now: DateTime.now(),
+      now: clock.now(),
       tierUsed: tierUsed,
       windowDays: kPostImportEditWindowDays,
     );

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/upload_queue.dart';
@@ -32,7 +33,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
         targetPath: targetPath,
         contentType: Value(contentType),
         fileSizeBytes: fileSizeBytes,
-        queuedAt: DateTime.now(),
+        queuedAt: clock.now(),
         entityId: Value(entityId),
         entityType: Value(entityType),
         metadata: Value(metadata),
@@ -89,7 +90,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
     return (update(uploadQueueEntries)..where((e) => e.id.equals(id))).write(
       UploadQueueEntriesCompanion(
         status: const Value('uploading'),
-        lastAttemptAt: Value(DateTime.now()),
+        lastAttemptAt: Value(clock.now()),
       ),
     );
   }
@@ -111,7 +112,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
           status: const Value('failed'),
           retryCount: Value(entry.retryCount + 1),
           lastError: Value(errorMessage),
-          lastAttemptAt: Value(DateTime.now()),
+          lastAttemptAt: Value(clock.now()),
         ),
       );
     }
@@ -137,7 +138,7 @@ class UploadQueueDao extends DatabaseAccessor<AppDatabase>
 
   /// Remove completed and cancelled uploads older than given duration
   Future<void> cleanupOldEntries(Duration olderThan) {
-    final cutoff = DateTime.now().subtract(olderThan);
+    final cutoff = clock.now().subtract(olderThan);
     return (delete(uploadQueueEntries)
           ..where((e) =>
               (e.status.equals('completed') | e.status.equals('cancelled')) &

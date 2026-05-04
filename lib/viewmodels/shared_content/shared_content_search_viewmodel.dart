@@ -4,6 +4,7 @@
 
 // lib/viewmodels/shared_content/shared_content_search_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/shared_recipe.dart';
@@ -183,7 +184,7 @@ class SharedContentSearchViewModel extends ChangeNotifier {
 
     // Apply date filter
     if (_dateFilter != DateRange.all) {
-      final now = DateTime.now();
+      final now = clock.now();
       results = results.where((result) {
         switch (_dateFilter) {
           case DateRange.today:
@@ -461,7 +462,7 @@ class SharedContentSearchViewModel extends ChangeNotifier {
 
   /// Helper: Recency bonus for recent shares
   double _recencyBonus(DateTime sharedAt) =>
-      DateTime.now().difference(sharedAt).inDays < 7 ? 1.0 : 0.0;
+      clock.now().difference(sharedAt).inDays < 7 ? 1.0 : 0.0;
 
   /// Helper: Shared by name match
   double _sharedByNameScore(String sharedByName, String query) =>

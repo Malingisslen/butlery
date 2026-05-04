@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -113,7 +114,7 @@ class FirebasePantryRepository
   @override
   Future<List<PantryItem>> getExpiringSoon(String userId, int days) async {
     try {
-      final cutoff = DateTime.now().add(Duration(days: days));
+      final cutoff = clock.now().add(Duration(days: days));
       final snapshot = await _col(userId)
           .where('expiryDate', isLessThan: Timestamp.fromDate(cutoff))
           .get();

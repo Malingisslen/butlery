@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:butlery/core/base/base_service.dart';
@@ -123,7 +124,7 @@ class PersonalTagCrudService extends BaseService {
         final nameChanged = oldName != null && oldName != tag.name;
 
         // Update authoritative tag document first — if this fails, nothing changes
-        final updated = tag.copyWith(updatedAt: DateTime.now());
+        final updated = tag.copyWith(updatedAt: clock.now());
         await _tagRepository.update(updated);
 
         // Then cascade name to recipes — stale recipe names are recoverable via retag
@@ -320,7 +321,7 @@ class PersonalTagCrudService extends BaseService {
           );
         }
 
-        final updated = group.copyWith(updatedAt: DateTime.now());
+        final updated = group.copyWith(updatedAt: clock.now());
         await _groupRepository.update(updated);
         clearCache(groupsCacheKey);
         AppLogger.info('Updated personal tag group: ${group.name}');
@@ -427,7 +428,7 @@ class PersonalTagCrudService extends BaseService {
         }
 
         final updatedRules = [...tag.rules];
-        updatedRules[ruleIndex] = rule.copyWith(updatedAt: DateTime.now());
+        updatedRules[ruleIndex] = rule.copyWith(updatedAt: clock.now());
         final updatedTag = tag.copyWith(rules: updatedRules);
         await _tagRepository.update(updatedTag);
         clearCache(tagsCacheKey);
@@ -477,7 +478,7 @@ class PersonalTagCrudService extends BaseService {
         final updatedRules = [...tag.rules];
         updatedRules[ruleIndex] = updatedRules[ruleIndex].copyWith(
           isEnabled: enabled,
-          updatedAt: DateTime.now(),
+          updatedAt: clock.now(),
         );
         final updatedTag = tag.copyWith(rules: updatedRules);
         await _tagRepository.update(updatedTag);

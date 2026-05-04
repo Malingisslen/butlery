@@ -1,5 +1,6 @@
 // lib/repositories/firebase/modules/message_mutation_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
@@ -141,8 +142,8 @@ class MessageMutationModule {
           },
           lastReadTimestamps: {},
           isGroup: false,
-          createdAt: DateTime.now().toUtc(),
-          updatedAt: DateTime.now().toUtc(),
+          createdAt: clock.now().toUtc(),
+          updatedAt: clock.now().toUtc(),
         );
 
         AppLogger.success(
@@ -166,7 +167,7 @@ class MessageMutationModule {
       // 2. Update conversation with lastMessage (keeping original status)
       final updatedConversation = conversation.copyWith(
         lastMessage: message,
-        updatedAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
       );
       final conversationData = ConversationDto.toFirestore(updatedConversation);
       batch.set(
@@ -187,7 +188,7 @@ class MessageMutationModule {
         {
           'lastWrite': timestampProvider.serverTimestamp(),
           'expireAt':
-              Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+              Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
         },
         SetOptions(merge: true),
       );
@@ -291,7 +292,7 @@ class MessageMutationModule {
       await updateMessageStatus(
         messageId: messageId,
         status: MessageStatus.read,
-        timestamp: DateTime.now().toUtc(),
+        timestamp: clock.now().toUtc(),
       );
 
       AppLogger.debug(
@@ -326,7 +327,7 @@ class MessageMutationModule {
         );
       }
 
-      final now = DateTime.now().toUtc();
+      final now = clock.now().toUtc();
       final updatedLastReadTimestamps =
           Map<String, DateTime>.from(conversation.lastReadTimestamps);
       updatedLastReadTimestamps[userId] = now;

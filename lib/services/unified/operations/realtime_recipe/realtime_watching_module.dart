@@ -1,5 +1,6 @@
 // lib/services/unified/operations/realtime_recipe/realtime_watching_module.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
@@ -242,7 +243,7 @@ class RealtimeWatchingModule {
     // Create initial status
     final initialStatus = ConnectionStatus(
       isConnected: isConnected,
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
       hasRealtimeService: _realtimeSyncService != null,
     );
 
@@ -267,7 +268,7 @@ class RealtimeWatchingModule {
             if (!controller.isClosed) {
               controller.add(ConnectionStatus(
                 isConnected: connected,
-                timestamp: DateTime.now(),
+                timestamp: clock.now(),
                 hasRealtimeService: true, // We know it's not null here
               ));
             }

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/offline_recipes.dart';
@@ -41,7 +42,7 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
         id: id,
         userId: userId,
         recipeJson: recipeJson,
-        updatedAt: DateTime.now(),
+        updatedAt: clock.now(),
         needsSync: Value(needsSync),
       ),
     );
@@ -54,7 +55,7 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
         .write(
       OfflineRecipesCompanion(
         needsSync: const Value(false),
-        lastSyncedAt: Value(DateTime.now()),
+        lastSyncedAt: Value(clock.now()),
       ),
     );
   }

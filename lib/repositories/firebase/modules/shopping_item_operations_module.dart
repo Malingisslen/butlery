@@ -1,5 +1,6 @@
 // lib/repositories/firebase/modules/shopping_item_operations_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -82,8 +83,8 @@ class ShoppingItemOperationsModule {
       final updatedItems = [...list.items, item];
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now().toUtc(),
-        lastActivityAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
+        lastActivityAt: clock.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );
@@ -168,8 +169,8 @@ class ShoppingItemOperationsModule {
       final updatedItems = [...list.items, ...items];
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now().toUtc(),
-        lastActivityAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
+        lastActivityAt: clock.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );
@@ -231,8 +232,8 @@ class ShoppingItemOperationsModule {
       }).toList();
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now().toUtc(),
-        lastActivityAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
+        lastActivityAt: clock.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );
@@ -283,8 +284,8 @@ class ShoppingItemOperationsModule {
           list.items.where((item) => item.id != itemId).toList();
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now().toUtc(),
-        lastActivityAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
+        lastActivityAt: clock.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );
@@ -341,8 +342,8 @@ class ShoppingItemOperationsModule {
           list.items.where((item) => !itemIdSet.contains(item.id)).toList();
       final updatedList = list.copyWith(
         items: updatedItems,
-        updatedAt: DateTime.now().toUtc(),
-        lastActivityAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
+        lastActivityAt: clock.now().toUtc(),
         lastActivityByUserId: uid,
         lastActivityByDisplayName: authRepository.currentUser?.displayName,
       );

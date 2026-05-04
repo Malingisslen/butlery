@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart'
@@ -101,7 +102,7 @@ class ConsentService extends BaseService implements Listenable {
     return await safeExecute(
           () async {
             final existingConsent = await getUserConsent();
-            final now = DateTime.now();
+            final now = clock.now();
             final deviceInfo = await _getDeviceInfo();
 
             final consent = existingConsent?.copyWith(

@@ -7,6 +7,9 @@ library;
 /// Interface for services that support health checking.
 /// Services can implement this interface to provide custom health
 /// validation logic beyond simple instantiation checks.
+
+import 'package:clock/clock.dart';
+
 abstract class HealthCheckable {
   /// Perform a health check on this service.
   /// Returns `true` if the service is healthy and ready for use.
@@ -37,7 +40,7 @@ class HealthCheckResult {
     this.message,
     DateTime? checkedAt,
     this.responseTime,
-  }) : checkedAt = checkedAt ?? DateTime.now();
+  }) : checkedAt = checkedAt ?? clock.now();
 
   /// Create a healthy result.
   factory HealthCheckResult.healthy(
@@ -82,7 +85,7 @@ class HealthReport {
   final List<HealthCheckResult> results;
   final DateTime generatedAt;
 
-  HealthReport(this.results) : generatedAt = DateTime.now();
+  HealthReport(this.results) : generatedAt = clock.now();
 
   /// Whether all services are healthy.
   bool get isHealthy => results.every((result) => result.isHealthy);

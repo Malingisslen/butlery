@@ -15,6 +15,7 @@
 /// Connected to: ArchiveImportViewModel, PersonalRecipeOperations
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
+import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -98,8 +99,8 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
           personalTagIds: sourceRecipe.personalTagIds,
           sourceUrl: 'Från Butlerys arkiv',
           imageUrls: sourceRecipe.imageUrls,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: clock.now(),
+          updatedAt: clock.now(),
           createdBy: null,
           isPublic: sourceRecipe.isPublic,
           lastCookedAt: sourceRecipe.lastCookedAt,

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -79,7 +80,7 @@ class IngredientSuggestionService extends BaseService {
           suggestedProperties: suggestedProperties,
           recipeContext: recipeContext,
           status: SuggestionStatus.pending,
-          createdAt: DateTime.now(),
+          createdAt: clock.now(),
         );
 
         final docRef =
@@ -228,7 +229,7 @@ class IngredientSuggestion {
       recipeContext: data['recipeContext'] as String?,
       status: _parseStatus(data['status'] as String?),
       createdAt: SerializationUtils.parseDateTimeValue(data['createdAt']) ??
-          DateTime.now(),
+          clock.now(),
       reviewedAt: SerializationUtils.parseDateTimeValue(data['reviewedAt']),
       reviewedBy: data['reviewedBy'] as String?,
       reviewNotes: data['reviewNotes'] as String?,

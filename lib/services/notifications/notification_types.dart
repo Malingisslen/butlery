@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive notification type system defining intelligent delivery strategies and priority management for cooking-focused notifications.
@@ -356,7 +357,7 @@ class NotificationTemplate {
       'type': strategy.type.toString(),
       'priority': strategy.priority.toString(),
       'category': strategy.category.toString(),
-      'timestamp': DateTime.now().toIso8601String(),
+      'timestamp': clock.now().toIso8601String(),
       ...?additionalData,
     };
 

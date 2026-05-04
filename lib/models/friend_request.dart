@@ -1,4 +1,6 @@
 /// Friend request model with lifecycle management and optional messaging.
+
+import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:uuid/uuid.dart';
@@ -31,16 +33,16 @@ class FriendRequest with JsonSerializableMixin {
     this.respondedAt,
     this.message,
     DateTime? expiresAt,
-  })  : sentAt = sentAt ?? DateTime.now().toUtc(),
-        expiresAt = expiresAt ??
-            (sentAt ?? DateTime.now().toUtc()).add(_expiryDuration);
+  })  : sentAt = sentAt ?? clock.now().toUtc(),
+        expiresAt =
+            expiresAt ?? (sentAt ?? clock.now().toUtc()).add(_expiryDuration);
 
   factory FriendRequest.create({
     required String fromUserId,
     required String toUserId,
     String? message,
   }) {
-    final now = DateTime.now().toUtc();
+    final now = clock.now().toUtc();
     return FriendRequest(
       id: const Uuid().v4(),
       fromUserId: fromUserId,
@@ -67,21 +69,21 @@ class FriendRequest with JsonSerializableMixin {
   FriendRequest accept() {
     return copyWith(
       status: FriendRequestStatus.accepted,
-      respondedAt: DateTime.now().toUtc(),
+      respondedAt: clock.now().toUtc(),
     );
   }
 
   FriendRequest reject() {
     return copyWith(
       status: FriendRequestStatus.rejected,
-      respondedAt: DateTime.now().toUtc(),
+      respondedAt: clock.now().toUtc(),
     );
   }
 
   FriendRequest cancel() {
     return copyWith(
       status: FriendRequestStatus.cancelled,
-      respondedAt: DateTime.now().toUtc(),
+      respondedAt: clock.now().toUtc(),
     );
   }
 
@@ -90,7 +92,7 @@ class FriendRequest with JsonSerializableMixin {
   bool get isRejected => status == FriendRequestStatus.rejected;
   bool get isCancelled => status == FriendRequestStatus.cancelled;
   bool get isCompleted => respondedAt != null;
-  bool get isExpired => isPending && DateTime.now().isAfter(expiresAt);
+  bool get isExpired => isPending && clock.now().isAfter(expiresAt);
 
   String get timeAgoText {
     return TimeAgoFormatter.standard(sentAt);
@@ -112,7 +114,7 @@ class FriendRequest with JsonSerializableMixin {
 
   factory FriendRequest.fromMap(String id, Map<String, dynamic> data) {
     final sentAt = utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
-        DateTime.now().toUtc();
+        clock.now().toUtc();
     return FriendRequest(
       id: id,
       fromUserId: utils.SerializationUtils.safeString(data, 'fromUserId'),

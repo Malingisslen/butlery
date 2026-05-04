@@ -22,6 +22,7 @@
 /// - **Data Integrity**: Maintains data consistency across conversion operations
 /// - **Performance Optimization**: Efficient serialization minimizing Firestore read/write costs
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -84,13 +85,13 @@ class ConversationDto {
       lastReadTimestamps: (data['lastReadTimestamps'] as Map<String, dynamic>?)
               ?.map(
             (key, value) => MapEntry(key,
-                SerializationUtils.parseDateTimeValue(value) ?? DateTime.now()),
+                SerializationUtils.parseDateTimeValue(value) ?? clock.now()),
           ) ??
           {},
       createdAt: SerializationUtils.parseDateTimeValue(data['createdAt']) ??
-          DateTime.now(),
+          clock.now(),
       updatedAt: SerializationUtils.parseDateTimeValue(data['updatedAt']) ??
-          DateTime.now(),
+          clock.now(),
       title: data['title'] as String?,
       isGroup: data['isGroup'] as bool? ?? false,
       metadata: data['metadata'] as Map<String, dynamic>?,

@@ -1,5 +1,6 @@
 // lib/models/user_counters.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Denormalized counters for user-facing metrics.
@@ -48,7 +49,7 @@ class UserCounters {
   factory UserCounters.empty(String userId) {
     return UserCounters(
       userId: userId,
-      lastUpdated: DateTime.now(),
+      lastUpdated: clock.now(),
     );
   }
 
@@ -66,8 +67,8 @@ class UserCounters {
       unreadMessages: SerializationUtils.safeInt(data, 'unreadMessages'),
       pendingFriendRequests:
           SerializationUtils.safeInt(data, 'pendingFriendRequests'),
-      lastUpdated: SerializationUtils.safeDateTime(data, 'lastUpdated') ??
-          DateTime.now(),
+      lastUpdated:
+          SerializationUtils.safeDateTime(data, 'lastUpdated') ?? clock.now(),
     );
   }
 
@@ -185,7 +186,7 @@ class UserCounters {
       unreadMessages: unreadMessages ?? this.unreadMessages,
       pendingFriendRequests:
           pendingFriendRequests ?? this.pendingFriendRequests,
-      lastUpdated: lastUpdated ?? DateTime.now(),
+      lastUpdated: lastUpdated ?? clock.now(),
     );
   }
 

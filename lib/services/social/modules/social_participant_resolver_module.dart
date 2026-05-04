@@ -9,6 +9,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:clock/clock.dart';
 
 /// Module handling participant resolution for shared content.
 /// Provides participant lookup and profile resolution for recipes, menus, and shopping lists.
@@ -83,8 +84,8 @@ class SocialParticipantResolverModule {
       uid: ownerId,
       displayName: ownerDisplayName,
       email: '',
-      joinedAt: DateTime.now(),
-      lastActiveAt: DateTime.now(),
+      joinedAt: clock.now(),
+      lastActiveAt: clock.now(),
     ));
 
     // Add members from denormalized data (no additional fetches needed)

@@ -5,6 +5,7 @@
 /// Supports weighted selection (recency, season boost, cuisine diversity).
 library;
 
+import 'package:clock/clock.dart';
 import 'dart:math';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -69,7 +70,7 @@ class MenuService extends BaseService {
     final lastCooked = recipe.lastCookedAt;
     final daysSince = lastCooked == null
         ? maxDays
-        : DateTime.now().difference(lastCooked).inDays.clamp(0, maxDays);
+        : clock.now().difference(lastCooked).inDays.clamp(0, maxDays);
 
     double weight = daysSince.toDouble();
     if (weight < 1) weight = 1; // Minimum weight to participate

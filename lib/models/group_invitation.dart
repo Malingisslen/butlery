@@ -4,6 +4,7 @@
 
 // lib/models/group_invitation.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
@@ -47,9 +48,9 @@ class GroupInvitation with JsonSerializableMixin {
     this.respondedAt,
     this.personalMessage,
     DateTime? expiresAt,
-  })  : sentAt = sentAt ?? DateTime.now().toUtc(),
+  })  : sentAt = sentAt ?? clock.now().toUtc(),
         expiresAt =
-            expiresAt ?? DateTime.now().toUtc().add(const Duration(days: 7));
+            expiresAt ?? clock.now().toUtc().add(const Duration(days: 7));
 
   /// Factory constructor for creating new group invitations with auto-generated ID.
   /// Creates a new group invitation with automatic ID generation and default timing.
@@ -116,7 +117,7 @@ class GroupInvitation with JsonSerializableMixin {
   GroupInvitation accept() {
     return copyWith(
       status: GroupInvitationStatus.accepted,
-      respondedAt: DateTime.now().toUtc(),
+      respondedAt: clock.now().toUtc(),
     );
   }
 
@@ -127,7 +128,7 @@ class GroupInvitation with JsonSerializableMixin {
   GroupInvitation reject() {
     return copyWith(
       status: GroupInvitationStatus.rejected,
-      respondedAt: DateTime.now().toUtc(),
+      respondedAt: clock.now().toUtc(),
     );
   }
 
@@ -138,7 +139,7 @@ class GroupInvitation with JsonSerializableMixin {
   GroupInvitation cancel() {
     return copyWith(
       status: GroupInvitationStatus.cancelled,
-      respondedAt: DateTime.now().toUtc(),
+      respondedAt: clock.now().toUtc(),
     );
   }
 
@@ -170,8 +171,7 @@ class GroupInvitation with JsonSerializableMixin {
   /// Returns true if the current time is past the expiration time OR if the status
   /// is explicitly set to expired. Used for automatic cleanup and UI state management.
   bool get isExpired =>
-      DateTime.now().isAfter(expiresAt) ||
-      status == GroupInvitationStatus.expired;
+      clock.now().isAfter(expiresAt) || status == GroupInvitationStatus.expired;
 
   /// UI helper methods for Swedish-localized display and user experience optimization.
 
@@ -189,7 +189,7 @@ class GroupInvitation with JsonSerializableMixin {
   /// Returns Swedish countdown format: 'Utgången', '3 dagar kvar', '5 timmar kvar', 'Går ut snart'.
   String get expiresInText {
     if (isExpired) return AppLocale.current.expiresExpired;
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = expiresAt.difference(now);
     final l = AppLocale.current;
     if (difference.inDays > 1) {
@@ -314,12 +314,12 @@ class GroupInvitation with JsonSerializableMixin {
         (e) => e.name,
       ),
       sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
-          DateTime.now().toUtc(),
+          clock.now().toUtc(),
       respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
       personalMessage:
           utils.SerializationUtils.safeNullableString(data, 'personalMessage'),
       expiresAt: utils.SerializationUtils.safeDateTime(data, 'expiresAt') ??
-          DateTime.now().toUtc().add(const Duration(days: 7)),
+          clock.now().toUtc().add(const Duration(days: 7)),
     );
   }
 
@@ -367,12 +367,12 @@ class GroupInvitation with JsonSerializableMixin {
         (e) => e.name,
       ),
       sentAt: utils.SerializationUtils.safeDateTime(json, 'sentAt') ??
-          DateTime.now().toUtc(),
+          clock.now().toUtc(),
       respondedAt: utils.SerializationUtils.safeDateTime(json, 'respondedAt'),
       personalMessage:
           utils.SerializationUtils.safeNullableString(json, 'personalMessage'),
       expiresAt: utils.SerializationUtils.safeDateTime(json, 'expiresAt') ??
-          DateTime.now().toUtc(),
+          clock.now().toUtc(),
     );
   }
 

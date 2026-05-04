@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
@@ -91,7 +92,7 @@ abstract class BaseTracker {
     final params = <String, Object>{...extraParams};
     if (joinedAt != null) {
       params['minutes_since_signup'] =
-          DateTime.now().difference(joinedAt).inMinutes;
+          clock.now().difference(joinedAt).inMinutes;
     }
 
     await repository.logEvent(name: eventName, parameters: params);

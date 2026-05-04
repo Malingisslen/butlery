@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -51,7 +52,7 @@ class ReportService extends BaseService {
               contentOwnerId: contentOwnerId,
               reason: reason,
               description: description,
-              createdAt: DateTime.now(),
+              createdAt: clock.now(),
             );
 
             final docId = await _reportRepository.submitReport(report);

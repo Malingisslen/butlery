@@ -1,5 +1,6 @@
 // lib/views/quick_capture_view.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -222,8 +223,8 @@ class _QuickCaptureViewModel extends ChangeNotifier {
           ingredients: const [],
           instructions: const [],
           mealType: _mealType,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: clock.now(),
+          updatedAt: clock.now(),
         ),
         type: RecipeType.personal,
       );

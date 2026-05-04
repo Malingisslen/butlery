@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:crypto/crypto.dart';
 
 // Use conditional import for platform-specific cache DAO
@@ -123,7 +124,7 @@ class LocalRecipeCache {
       if (entry == null) return null;
 
       // Check age
-      final age = DateTime.now().difference(entry.cachedAt);
+      final age = clock.now().difference(entry.cachedAt);
       if (age.inDays > maxAgeDays) {
         await _cacheDao.deleteParsedRecipe(key);
         return null;

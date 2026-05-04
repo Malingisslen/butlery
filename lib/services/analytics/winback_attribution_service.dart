@@ -40,6 +40,7 @@
 /// to crashing a real-user-action event path.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/base/base_service.dart';
@@ -153,7 +154,7 @@ class WinbackAttributionService extends BaseService {
         final sentAt = _coerceTimestamp(sentAtRaw);
         if (sentAt == null) return;
 
-        final age = DateTime.now().difference(sentAt);
+        final age = clock.now().difference(sentAt);
         if (age > _attributionWindow) {
           // Out-of-window: clear so future sends are not confounded
           // by dead bridge state. Do NOT call ExperimentAssignment —
@@ -201,11 +202,11 @@ class WinbackAttributionService extends BaseService {
     final userId = _userId;
     if (userId == null || userId.isEmpty) return;
 
-    final hoursSinceSend = DateTime.now().difference(ctx.sentAt).inHours;
+    final hoursSinceSend = clock.now().difference(ctx.sentAt).inHours;
 
     // Re-check window — bootstrap may have happened ~6.9d ago and the
     // session held open until day 8. Out-of-window: clear and skip.
-    if (DateTime.now().difference(ctx.sentAt) > _attributionWindow) {
+    if (clock.now().difference(ctx.sentAt) > _attributionWindow) {
       await _safe(() => _clearFields(userId), 'clear stale fields');
       _context = null;
       return;

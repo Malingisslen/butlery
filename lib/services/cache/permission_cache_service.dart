@@ -1,5 +1,6 @@
 // lib/services/cache/permission_cache_service.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
@@ -18,7 +19,7 @@ class CachedPermission {
 
   /// Check if this cached permission has expired.
   bool isExpired(Duration ttl) {
-    return DateTime.now().difference(cachedAt) > ttl;
+    return clock.now().difference(cachedAt) > ttl;
   }
 }
 
@@ -161,7 +162,7 @@ class PermissionCacheService {
 
     final permission = CachedPermission(
       allowed: allowed,
-      cachedAt: DateTime.now(),
+      cachedAt: clock.now(),
       reason: reason,
     );
 

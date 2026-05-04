@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/tables/json_cache.dart';
@@ -50,7 +51,7 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
         userId: userId,
         key: key,
         value: value,
-        cachedAt: DateTime.now(),
+        cachedAt: clock.now(),
       ),
     );
   }
@@ -70,12 +71,12 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
             userId: userId,
             key: entry.key,
             value: entry.value,
-            cachedAt: DateTime.now(),
+            cachedAt: clock.now(),
           ),
           onConflict: DoUpdate(
             (old) => JsonCacheEntriesCompanion(
               value: Value(entry.value),
-              cachedAt: Value(DateTime.now()),
+              cachedAt: Value(clock.now()),
             ),
           ),
         );
@@ -133,7 +134,7 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
         recipeJson: recipeJson,
         parserVersion: parserVersion,
         source: source,
-        cachedAt: DateTime.now(),
+        cachedAt: clock.now(),
       ),
     );
   }
@@ -147,7 +148,7 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
 
   /// Clean up old parse cache entries
   Future<int> cleanupParseCacheOlderThan(int maxAgeDays) async {
-    final cutoff = DateTime.now().subtract(Duration(days: maxAgeDays));
+    final cutoff = clock.now().subtract(Duration(days: maxAgeDays));
     return (delete(parseCacheEntries)
           ..where((e) => e.cachedAt.isSmallerThanValue(cutoff)))
         .go();

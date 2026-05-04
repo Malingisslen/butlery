@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
@@ -70,7 +71,7 @@ class ParsingContext {
     required this.sanitizedContent,
     required this.contentHash,
     required this.sanitizationResult,
-  })  : startTime = DateTime.now(),
+  })  : startTime = clock.now(),
         tierResults = [];
 
   /// Create context from URL input.
@@ -136,7 +137,7 @@ class ParsingContext {
   bool get hasUrl => sourceUrl != null && sourceUrl!.isNotEmpty;
 
   /// Time elapsed since parsing started.
-  Duration get elapsed => DateTime.now().difference(startTime);
+  Duration get elapsed => clock.now().difference(startTime);
 
   /// Best partial result from earlier tiers, for selective LLM enhancement.
   /// When set, the LLM tier can use enhance mode to patch only weak fields

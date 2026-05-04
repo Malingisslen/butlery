@@ -1,5 +1,6 @@
 // lib/models/friend_category_member.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Junction document for friend category membership.
@@ -47,7 +48,7 @@ class FriendCategoryMember {
       friendId: friendId,
       categoryId: categoryId,
       ownerId: ownerId,
-      addedAt: DateTime.now(),
+      addedAt: clock.now(),
       displayName: displayName,
       avatarUrl: avatarUrl,
     );

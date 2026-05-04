@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -169,7 +170,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
       if (_isEditing) {
         result = widget.existingTag!.copyWith(
           name: name,
-          updatedAt: DateTime.now(),
+          updatedAt: clock.now(),
         );
       } else {
         result = PersonalTag.create(name: name);

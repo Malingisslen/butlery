@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -106,10 +107,8 @@ class RecipeRating {
         userId: data['userId'] ?? '',
         rating: (data['rating'] ?? 0.0).toDouble(),
         review: data['review'],
-        createdAt:
-            (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-        updatedAt:
-            (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? clock.now(),
+        updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? clock.now(),
         recipeOwnerId: data['recipeOwnerId'] as String?,
       );
 }

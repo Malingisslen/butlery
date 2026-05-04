@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -206,7 +207,7 @@ class PantryService extends BaseService {
       quantity: quantity,
       unit: unit ?? 'st',
       location: location ?? PantryLocation.fromTypicalStorage(typicalStorage),
-      addedAt: DateTime.now().toUtc(),
+      addedAt: clock.now().toUtc(),
       expiryDate: expiryDate,
       note: note,
     );

@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/social_engagement_metrics.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -37,7 +38,7 @@ class SocialEngagementMetrics {
 
       // Recent activity contributes to engagement
       final daysSinceLastEdit =
-          DateTime.now().difference(recipe.core.updatedAt).inDays;
+          clock.now().difference(recipe.core.updatedAt).inDays;
       if (daysSinceLastEdit <= 7) {
         engagementScore += (7.0 - daysSinceLastEdit.toDouble()) * 5.0;
       }
@@ -261,7 +262,7 @@ class SocialEngagementMetrics {
       };
     }
 
-    final now = DateTime.now();
+    final now = clock.now();
     var recentActivity = 0;
     var olderActivity = 0;
 

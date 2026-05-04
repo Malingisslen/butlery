@@ -1,6 +1,7 @@
 /// Base repository for metadata operations (views, dismissals, engagements) on documents
 /// created elsewhere. Uses subcollections for metadata storage with permission validation.
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -99,7 +100,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
         'userId': userId,
         'timestamp': FieldValue.serverTimestamp(),
         'expireAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
         ...?additionalData,
       });
 

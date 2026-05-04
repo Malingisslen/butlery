@@ -1,5 +1,6 @@
 // lib/services/notifications/modules/notification_preference_manager.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -216,7 +217,7 @@ class NotificationPreferenceManager {
 
       // Cache the preferences
       _cachedPreferences = preferences;
-      _cacheTimestamp = DateTime.now();
+      _cacheTimestamp = clock.now();
 
       // Also save to local storage for offline access
       await _savePreferencesLocally(preferences);
@@ -253,7 +254,7 @@ class NotificationPreferenceManager {
 
       // Update cache
       _cachedPreferences = preferences;
-      _cacheTimestamp = DateTime.now();
+      _cacheTimestamp = clock.now();
 
       // Save locally for offline access
       await _savePreferencesLocally(preferences);
@@ -339,7 +340,7 @@ class NotificationPreferenceManager {
   /// Check if cached preferences are still valid
   bool _isCacheValid() {
     if (_cacheTimestamp == null) return false;
-    return DateTime.now().difference(_cacheTimestamp!) < _cacheExpiry;
+    return clock.now().difference(_cacheTimestamp!) < _cacheExpiry;
   }
 
   /// Save preferences to local storage for offline access

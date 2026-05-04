@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -32,7 +33,7 @@ class UserConsent {
       purposes:
           ConsentPurposes.fromMap(SerializationUtils.safeMap(data, 'purposes')),
       grantedAt:
-          SerializationUtils.safeDateTime(data, 'grantedAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'grantedAt') ?? clock.now(),
       updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
       consentVersion: SerializationUtils.safeString(data, 'consentVersion'),
       ipAddress: SerializationUtils.safeNullableString(data, 'ipAddress'),

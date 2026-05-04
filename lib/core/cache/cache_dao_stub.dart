@@ -2,6 +2,7 @@
 /// Replaces the previous no-op stub so web users retain cache across refreshes.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:sembast_web/sembast_web.dart';
 
 const _dbName = 'butlery_cache.db';
@@ -75,7 +76,7 @@ class CacheDao {
     final record = _jsonStore.record(_jsonKey(boxName, userId, key));
     await record.put(db, {
       'value': value,
-      'cachedAt': DateTime.now().toIso8601String(),
+      'cachedAt': clock.now().toIso8601String(),
     });
   }
 
@@ -85,7 +86,7 @@ class CacheDao {
     required Map<String, String> entries,
   }) async {
     final db = await _database;
-    final now = DateTime.now().toIso8601String();
+    final now = clock.now().toIso8601String();
     await db.transaction((txn) async {
       for (final entry in entries.entries) {
         final record = _jsonStore.record(_jsonKey(boxName, userId, entry.key));
@@ -140,7 +141,7 @@ class CacheDao {
       'recipeJson': recipeJson,
       'parserVersion': parserVersion,
       'source': source,
-      'cachedAt': DateTime.now().toIso8601String(),
+      'cachedAt': clock.now().toIso8601String(),
     });
   }
 
@@ -152,7 +153,7 @@ class CacheDao {
 
   Future<int> cleanupParseCacheOlderThan(int maxAgeDays) async {
     final db = await _database;
-    final cutoff = DateTime.now().subtract(Duration(days: maxAgeDays));
+    final cutoff = clock.now().subtract(Duration(days: maxAgeDays));
     final finder = Finder(
       filter: Filter.custom((record) {
         final cachedAt = DateTime.parse(record['cachedAt'] as String);

@@ -1,5 +1,6 @@
 /// Manager handling UI display helpers for collaborative shopping lists.
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart'; // ShoppingCategory + UnifiedShoppingItem
@@ -106,7 +107,7 @@ class ShoppingDisplayManager {
   }
 
   String _getTimeAgo(DateTime time) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(time);
     final l = AppLocale.current;
 

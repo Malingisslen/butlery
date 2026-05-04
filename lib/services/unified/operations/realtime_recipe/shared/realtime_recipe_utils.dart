@@ -1,5 +1,6 @@
 // lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 
@@ -19,7 +20,7 @@ class RealtimeRecipeUtils {
       'ownerId': recipe.socialData?.ownerId ?? recipe.core.createdBy,
       'ownerDisplayName': recipe.socialData?.ownerDisplayName ?? 'Unknown',
       'editCount': 1,
-      'lastEditedAt': DateTime.now().toIso8601String(),
+      'lastEditedAt': clock.now().toIso8601String(),
       'lastEditedByUserId':
           recipe.realtimeData?.lastEditedByUserId ?? recipe.core.createdBy,
       'lastEditedByDisplayName':
@@ -46,8 +47,8 @@ class RealtimeRecipeUtils {
           instructions: List<String>.from(realtimeRecipe['instructions'] ?? []),
           imageUrls: List<String>.from(realtimeRecipe['imageUrls'] ?? []),
           mealType: realtimeRecipe['mealType'] ?? 'Lunch',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: clock.now(),
+          updatedAt: clock.now(),
         ),
         type: RecipeType.realtime,
       );
@@ -73,7 +74,7 @@ class RealtimeRecipeUtils {
       'ingredients': changes['ingredients'] ?? recipe['ingredients'],
       'instructions': changes['instructions'] ?? recipe['instructions'],
       'imageUrls': changes['imageUrls'] ?? recipe['imageUrls'],
-      'lastEditedAt': DateTime.now().toIso8601String(),
+      'lastEditedAt': clock.now().toIso8601String(),
       'lastEditedByUserId': currentUserId,
       'lastEditedByDisplayName': currentUserDisplayName,
       'editCount': (recipe['editCount'] ?? 0) + 1,
@@ -125,8 +126,7 @@ class RealtimeRecipeUtils {
     try {
       if (!recipe.isCollaborative) return [];
 
-      final recentThreshold =
-          DateTime.now().subtract(const Duration(minutes: 5));
+      final recentThreshold = clock.now().subtract(const Duration(minutes: 5));
       final activeEditors = <String>[];
 
       if (recipe.realtimeData?.lastEditedAt?.isAfter(recentThreshold) == true) {
@@ -151,7 +151,7 @@ class RealtimeRecipeUtils {
       final activeEditors = getActiveEditorsFromRecipe(recipe);
       final lastEditedAt =
           recipe.realtimeData?.lastEditedAt ?? recipe.updatedAt;
-      final daysSinceLastEdit = DateTime.now().difference(lastEditedAt).inDays;
+      final daysSinceLastEdit = clock.now().difference(lastEditedAt).inDays;
 
       return {
         'memberCount': memberCount,

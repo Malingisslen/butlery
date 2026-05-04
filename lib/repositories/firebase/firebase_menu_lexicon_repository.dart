@@ -9,6 +9,7 @@
 /// empty map so the code lexicon remains the safe fallback.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -39,7 +40,7 @@ class FirebaseMenuLexiconRepository {
   Future<Map<LexiconCategory, Map<String, String>>> loadOverrides() async {
     // TTL cache: skip Firestore if fresh enough.
     if (_cache != null && _cachedAt != null) {
-      if (DateTime.now().difference(_cachedAt!) < _cacheDuration) {
+      if (clock.now().difference(_cachedAt!) < _cacheDuration) {
         return _cache!;
       }
     }
@@ -79,7 +80,7 @@ class FirebaseMenuLexiconRepository {
       }
 
       _cache = result;
-      _cachedAt = DateTime.now();
+      _cachedAt = clock.now();
       if (result.isNotEmpty) {
         AppLogger.debug(
           'MenuLexiconRepository: loaded ${result.length} category overrides',

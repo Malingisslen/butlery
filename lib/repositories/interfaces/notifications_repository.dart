@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -121,8 +122,7 @@ class UserNotification {
         body: data['body'] ?? '',
         data: data['data'],
         isRead: data['isRead'] ?? false,
-        createdAt:
-            (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? clock.now(),
         readAt: (data['readAt'] as Timestamp?)?.toDate(),
       );
 }

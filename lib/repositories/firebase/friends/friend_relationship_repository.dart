@@ -22,6 +22,7 @@
 /// - **Count Maintenance**: Automatic friend count updates for profile statistics
 /// - **Optimized Queries**: Efficient Firestore queries with proper indexing for scalability
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -362,7 +363,7 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   /// Get recently added friends (within last N days).
   Future<List<UserProfile>> getRecentFriends(String userId,
       {int days = 7}) async {
-    final cutoffDate = DateTime.now().subtract(Duration(days: days));
+    final cutoffDate = clock.now().subtract(Duration(days: days));
     final snapshot = await _userFriendsRef(userId)
         .where('addedAt', isGreaterThan: Timestamp.fromDate(cutoffDate))
         .orderBy('addedAt', descending: true)

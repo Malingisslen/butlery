@@ -1,6 +1,7 @@
 // lib/services/unified/operations/modules/invitation_statistics_module.dart
 
 import 'package:butlery/models/group_invitation.dart';
+import 'package:clock/clock.dart';
 
 /// Module handling invitation statistics and analytics.
 /// Provides stats calculation, metrics, search, and filtering.
@@ -40,7 +41,7 @@ class InvitationStatisticsModule {
     final stats = getInvitationStats(invitations);
     final recentInvitations = invitations
         .where((i) =>
-            i.sentAt.isAfter(DateTime.now().subtract(const Duration(days: 30))))
+            i.sentAt.isAfter(clock.now().subtract(const Duration(days: 30))))
         .length;
 
     return {
@@ -53,7 +54,7 @@ class InvitationStatisticsModule {
   /// Get expired invitations
   List<GroupInvitation> getExpiredInvitations(
       List<GroupInvitation> invitations) {
-    final now = DateTime.now();
+    final now = clock.now();
     return invitations.where((i) => i.expiresAt.isBefore(now)).toList();
   }
 

@@ -1,5 +1,6 @@
 /// Manager handling shopping item operations with error handling and state management.
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -76,7 +77,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
       if (success) {
         await onListRefresh();
         onActivityUpdate(
-            AppLocale.current.shoppingItemAdded(itemName), DateTime.now());
+            AppLocale.current.shoppingItemAdded(itemName), clock.now());
         AppLogger.success('✅ Artikel tillagd: $itemName');
         return true;
       } else {
@@ -116,7 +117,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
           !item.bought
               ? AppLocale.current.shoppingItemMarkedComplete
               : AppLocale.current.shoppingItemMarkedIncomplete,
-          DateTime.now(),
+          clock.now(),
         );
         AppLogger.success('✅ Artikel status växlad: $itemId');
         return true;
@@ -183,7 +184,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
         await onListRefresh();
         onActivityUpdate(
           AppLocale.current.shoppingItemClaimed(item.name),
-          DateTime.now(),
+          clock.now(),
         );
         return const ClaimResult(ClaimOutcome.claimed);
       }
@@ -227,7 +228,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
         await onListRefresh();
         onActivityUpdate(
           AppLocale.current.shoppingItemUnclaimed(item.name),
-          DateTime.now(),
+          clock.now(),
         );
         return const ClaimResult(ClaimOutcome.unclaimed);
       }

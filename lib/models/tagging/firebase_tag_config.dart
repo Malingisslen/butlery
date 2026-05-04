@@ -4,6 +4,7 @@
 /// replacing the hardcoded Dart configs for admin editability.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
@@ -60,7 +61,7 @@ class FirebaseTagConfig {
         properties.version,
         display.version,
       ),
-      fetchedAt: DateTime.now(),
+      fetchedAt: clock.now(),
     );
   }
 
@@ -144,7 +145,7 @@ class AllergenConfigDocument extends BaseConfigDocument {
       updatedAt: SerializationUtils.safeRequiredDateTime(
         data,
         'updatedAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
       updatedBy: SerializationUtils.safeString(data, 'updatedBy'),
       displayOrder: SerializationUtils.safeStringList(data, 'displayOrder'),
@@ -292,7 +293,7 @@ class DietaryConfigDocument extends BaseConfigDocument {
       updatedAt: SerializationUtils.safeRequiredDateTime(
         data,
         'updatedAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
       updatedBy: SerializationUtils.safeString(data, 'updatedBy'),
       displayOrder: SerializationUtils.safeStringList(data, 'displayOrder'),
@@ -398,7 +399,7 @@ class CuisineConfigDocument extends BaseConfigDocument {
       updatedAt: SerializationUtils.safeRequiredDateTime(
         data,
         'updatedAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
       updatedBy: SerializationUtils.safeString(data, 'updatedBy'),
       displayOrder: SerializationUtils.safeStringList(data, 'displayOrder'),
@@ -529,7 +530,7 @@ class PropertiesConfigDocument extends BaseConfigDocument {
       updatedAt: SerializationUtils.safeRequiredDateTime(
         data,
         'updatedAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
       updatedBy: SerializationUtils.safeString(data, 'updatedBy'),
       validProperties:
@@ -562,7 +563,7 @@ class DisplayConfigDocument extends BaseConfigDocument {
       updatedAt: SerializationUtils.safeRequiredDateTime(
         data,
         'updatedAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
       updatedBy: SerializationUtils.safeString(data, 'updatedBy'),
       categoryOrder: SerializationUtils.safeStringList(data, 'categoryOrder'),

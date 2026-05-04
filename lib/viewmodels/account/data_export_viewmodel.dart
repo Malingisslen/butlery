@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
@@ -60,7 +61,7 @@ class DataExportViewModel extends ChangeNotifier
   /// User-friendly export timestamp
   String get exportTimestampText {
     if (_exportTimestamp == null) return '';
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(_exportTimestamp!);
 
     final l = AppLocale.current;
@@ -88,7 +89,7 @@ class DataExportViewModel extends ChangeNotifier
           final jsonData = await _exportService.exportUserData();
 
           _exportedData = jsonData;
-          _exportTimestamp = DateTime.now();
+          _exportTimestamp = clock.now();
 
           app_logger.AppLogger.success(
             '[$_logTag] Data export completed successfully ($exportSizeText)',

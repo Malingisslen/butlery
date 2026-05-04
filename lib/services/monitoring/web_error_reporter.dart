@@ -21,6 +21,7 @@
 /// native Crashlytics path in `main.dart`.
 library;
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
@@ -176,7 +177,7 @@ class WebErrorReporter {
       if (context != null) 'context': scrubPii(context),
       'fatal': fatal,
       'platform': 'web',
-      'occurredAt': DateTime.now().toUtc().toIso8601String(),
+      'occurredAt': clock.now().toUtc().toIso8601String(),
     };
   }
 

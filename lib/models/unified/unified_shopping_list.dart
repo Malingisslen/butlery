@@ -53,6 +53,7 @@
 
 // lib/models/unified/unified_shopping_list.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -245,8 +246,8 @@ class UnifiedShoppingList {
     this.autoRemoveCompleted = false,
     this.collaborativeOrigin,
   })  : id = id ?? const Uuid().v4(),
-        createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+        createdAt = createdAt ?? clock.now(),
+        updatedAt = updatedAt ?? clock.now();
 
   /// Factory constructors for simplified shopping list creation with specific configurations.
 
@@ -301,7 +302,7 @@ class UnifiedShoppingList {
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     final permissions =
         Map<String, SharedListPermission>.from(memberPermissions);
     permissions[ownerId] = SharedListPermission.admin; // Owner gets admin
@@ -376,7 +377,7 @@ class UnifiedShoppingList {
       return l.shoppingListNoActivity;
     }
 
-    final timeDiff = DateTime.now().difference(lastActivityAt!);
+    final timeDiff = clock.now().difference(lastActivityAt!);
     String timeText;
 
     if (timeDiff.inMinutes < 1) {
@@ -394,7 +395,7 @@ class UnifiedShoppingList {
 
   bool get hasRecentActivity {
     if (lastActivityAt == null) return false;
-    return DateTime.now().difference(lastActivityAt!).inHours < 24;
+    return clock.now().difference(lastActivityAt!).inHours < 24;
   }
 
   UnifiedShoppingList copyWith({
@@ -421,7 +422,7 @@ class UnifiedShoppingList {
       ownerDisplayName: ownerDisplayName,
       items: items ?? List.from(this.items),
       createdAt: createdAt,
-      updatedAt: updatedAt ?? DateTime.now(),
+      updatedAt: updatedAt ?? clock.now(),
       lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
       syncStatus: syncStatus ?? this.syncStatus,
       type: type,
@@ -442,7 +443,7 @@ class UnifiedShoppingList {
   UnifiedShoppingList markAsSynced() {
     return copyWith(
       syncStatus: SyncStatus.synced,
-      lastSyncedAt: DateTime.now(),
+      lastSyncedAt: clock.now(),
     );
   }
 
@@ -465,7 +466,7 @@ class UnifiedShoppingList {
     String? userId,
     String? userDisplayName,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return copyWith(
       items: [...items, item],
       updatedAt: now,
@@ -481,7 +482,7 @@ class UnifiedShoppingList {
     String? userId,
     String? userDisplayName,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return copyWith(
       items: items.where((item) => item.id != itemId).toList(),
       updatedAt: now,
@@ -498,7 +499,7 @@ class UnifiedShoppingList {
     String? userId,
     String? userDisplayName,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     final updatedItems = items.map((item) {
       return item.id == itemId ? updatedItem : item;
     }).toList();
@@ -532,7 +533,7 @@ class UnifiedShoppingList {
     String? userId,
     String? userDisplayName,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     final unboughtItems = items.where((item) => !item.bought).toList();
 
     return copyWith(
@@ -549,7 +550,7 @@ class UnifiedShoppingList {
     String? userId,
     String? userDisplayName,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     final uncheckedItems =
         items.map((item) => item.copyWith(bought: false)).toList();
 

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -264,7 +265,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
               contentType: contentType,
               cacheControl: cacheControl,
               customMetadata: {
-                'uploadedAt': DateTime.now().toIso8601String(),
+                'uploadedAt': clock.now().toIso8601String(),
                 'uploadedBy': userId, // 🔒 SECURITY: Required by storage.rules
                 ...?metadata,
               },

@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe_list/recipe_delete_manager.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -65,7 +66,7 @@ class RecipeDeleteManager {
       recipe: recipe,
       originalIndex: index,
       timer: timer,
-      createdAt: DateTime.now(),
+      createdAt: clock.now(),
     );
   }
 
@@ -110,7 +111,7 @@ class RecipeDeleteManager {
         recipe: recipe,
         originalIndex: index,
         timer: timer,
-        createdAt: DateTime.now(),
+        createdAt: clock.now(),
       );
     }
 

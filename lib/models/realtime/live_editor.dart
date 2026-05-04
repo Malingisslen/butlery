@@ -54,6 +54,7 @@
 
 // lib/models/realtime/live_editor.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Comprehensive live editor model with collaborative presence tracking and field-level editing awareness.
@@ -170,7 +171,7 @@ class LiveEditor {
   /// Returns true if editor is active and has recent activity, false for inactive or timed-out editors.
   bool isRecentlyActive({int timeoutMinutes = 5}) {
     if (!isActive) return false;
-    final now = DateTime.now();
+    final now = clock.now();
     final timeoutDuration = Duration(minutes: timeoutMinutes);
     return now.difference(lastSeen) <= timeoutDuration;
   }
@@ -180,7 +181,7 @@ class LiveEditor {
   /// timeout detection, and activity timeline displays in collaborative editing interfaces.
   /// Returns [Duration] representing time elapsed since last editor activity.
   Duration get timeSinceLastSeen {
-    return DateTime.now().difference(lastSeen);
+    return clock.now().difference(lastSeen);
   }
 
   /// Creates an inactive copy of this editor for session cleanup and timeout handling.
@@ -196,7 +197,7 @@ class LiveEditor {
   /// for activity tracking, presence updates, and collaborative editing session management.
   /// Returns a new [LiveEditor] instance with updated activity timestamp.
   LiveEditor updateActivity() {
-    return copyWith(lastSeen: DateTime.now());
+    return copyWith(lastSeen: clock.now());
   }
 
   /// Checks if the editor is actively editing a specific field for conflict detection.

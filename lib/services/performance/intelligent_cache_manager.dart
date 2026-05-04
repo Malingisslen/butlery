@@ -8,6 +8,7 @@
 /// - Smart cache eviction policies
 /// - Memory pressure handling
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -63,7 +64,7 @@ class UserBehaviorPattern {
 
   double _getRecencyScore(DateTime? lastViewed) {
     if (lastViewed == null) return 0.5;
-    final daysSince = DateTime.now().difference(lastViewed).inDays;
+    final daysSince = clock.now().difference(lastViewed).inDays;
     // Exponential decay: recent views score higher
     return 1.0 / (1.0 + daysSince * 0.1);
   }
@@ -84,8 +85,8 @@ class UserBehaviorPattern {
       userId: json['userId'],
       recipeViews:
           Map<String, int>.from((json['recipeViews'] as Map?).orEmpty()),
-      lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)?.map(
-              (k, v) => MapEntry(k, DateTime.tryParse(v) ?? DateTime.now())))
+      lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)
+              ?.map((k, v) => MapEntry(k, DateTime.tryParse(v) ?? clock.now())))
           .orEmpty(),
       mealTypePreferences: Map<String, int>.from(
           (json['mealTypePreferences'] as Map?).orEmpty()),
@@ -115,19 +116,19 @@ class CacheEntry<T> {
     required this.size,
     DateTime? cachedAt,
   })  : cachedAt = cachedAt.orNow(),
-        lastAccessed = DateTime.now(),
+        lastAccessed = clock.now(),
         accessCount = 0;
 
   /// Update access statistics
   void recordAccess() {
     accessCount++;
-    lastAccessed = DateTime.now();
+    lastAccessed = clock.now();
   }
 
   /// Calculate priority score for eviction (lower = more likely to evict)
   double get evictionScore {
-    final age = DateTime.now().difference(cachedAt).inMinutes;
-    final recency = DateTime.now().difference(lastAccessed).inMinutes;
+    final age = clock.now().difference(cachedAt).inMinutes;
+    final recency = clock.now().difference(lastAccessed).inMinutes;
 
     // Favor frequently accessed and recently accessed items
     return (accessCount * 10.0) / (1.0 + recency * 0.1) / (1.0 + age * 0.01);
@@ -333,7 +334,7 @@ class IntelligentCacheManager {
 
   /// Preload content based on time of day preferences
   Future<void> _preloadTimeBasedContent(UserBehaviorPattern patterns) async {
-    final currentHour = DateTime.now().hour;
+    final currentHour = clock.now().hour;
 
     // Determine meal type based on time
     String mealType;
@@ -370,10 +371,10 @@ class IntelligentCacheManager {
         (_currentPattern!.recipeViews[recipeId]).orZero() + 1;
 
     // Update last viewed time
-    _currentPattern!.lastViewedTimes[recipeId] = DateTime.now();
+    _currentPattern!.lastViewedTimes[recipeId] = clock.now();
 
     // Update time preferences
-    final hour = DateTime.now().hour;
+    final hour = clock.now().hour;
     _currentPattern!.viewTimePreferences[hour] =
         (_currentPattern!.viewTimePreferences[hour]).orZero() + 1;
 

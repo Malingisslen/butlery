@@ -8,6 +8,7 @@
 /// - Messages: Track read receipts for messages
 /// - Shared menus: Track who has viewed each shared menu
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -35,7 +36,7 @@ class ViewMetadata {
   Map<String, dynamic> toFirestore() {
     return {
       'userId': userId,
-      'timestamp': DateTime.now(),
+      'timestamp': clock.now(),
     };
   }
 

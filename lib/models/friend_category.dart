@@ -3,6 +3,7 @@
 
 // lib/models/friend_category.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -33,8 +34,8 @@ class FriendCategory {
     this.sortOrder = 0,
     this.isDefault = false,
     this.isHousehold = false,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  })  : createdAt = createdAt ?? clock.now(),
+        updatedAt = updatedAt ?? clock.now();
 
   /// Factory constructor with auto-generated ID
   factory FriendCategory.create({
@@ -80,7 +81,7 @@ class FriendCategory {
       emoji: emoji ?? this.emoji,
       friendUserIds: friendUserIds ?? List<String>.from(this.friendUserIds),
       createdAt: createdAt,
-      updatedAt: updatedAt ?? DateTime.now(),
+      updatedAt: updatedAt ?? clock.now(),
       sortOrder: sortOrder ?? this.sortOrder,
       isDefault: isDefault ?? this.isDefault,
       isHousehold: isHousehold ?? this.isHousehold,
@@ -93,7 +94,7 @@ class FriendCategory {
 
     return copyWith(
       friendUserIds: [...friendUserIds, friendUserId],
-      updatedAt: DateTime.now(),
+      updatedAt: clock.now(),
     );
   }
 
@@ -103,7 +104,7 @@ class FriendCategory {
 
     return copyWith(
       friendUserIds: friendUserIds.where((id) => id != friendUserId).toList(),
-      updatedAt: DateTime.now(),
+      updatedAt: clock.now(),
     );
   }
 
@@ -119,7 +120,7 @@ class FriendCategory {
       description: description,
       emoji: emoji,
       sortOrder: sortOrder,
-      updatedAt: DateTime.now(),
+      updatedAt: clock.now(),
     );
   }
 
@@ -220,9 +221,9 @@ class FriendCategory {
       emoji: SerializationUtils.safeNullableString(json, 'emoji'),
       friendUserIds: SerializationUtils.safeStringList(json, 'friendUserIds'),
       createdAt:
-          SerializationUtils.safeDateTime(json, 'createdAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(json, 'createdAt') ?? clock.now(),
       updatedAt:
-          SerializationUtils.safeDateTime(json, 'updatedAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(json, 'updatedAt') ?? clock.now(),
       sortOrder: SerializationUtils.safeInt(json, 'sortOrder'),
       isDefault: SerializationUtils.safeBool(json, 'isDefault'),
       isHousehold: SerializationUtils.safeBool(json, 'isHousehold'),

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -81,7 +82,7 @@ class FirebaseNotificationBatchRepository
             'count': 1,
             'lastUpdated': timestampProvider.serverTimestamp(),
             'createdAt': timestampProvider.serverTimestamp(),
-            'scheduledFor': Timestamp.fromDate(DateTime.now().add(batchWindow)),
+            'scheduledFor': Timestamp.fromDate(clock.now().add(batchWindow)),
           });
         } else {
           rethrow;

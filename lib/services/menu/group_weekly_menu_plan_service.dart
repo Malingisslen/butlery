@@ -17,6 +17,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:clock/clock.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
@@ -83,7 +84,7 @@ class GroupWeeklyMenuPlanService extends BaseService {
   }) async {
     _requireEditor(plan, actorId);
     final stamped = plan.copyWith(
-      lastModifiedAt: DateTime.now(),
+      lastModifiedAt: clock.now(),
       lastModifiedBy: actorId,
     );
     await executeServiceOperation(
@@ -181,7 +182,7 @@ class GroupWeeklyMenuPlanService extends BaseService {
     without.add(GroupMenuParticipant(
       userId: participantUserId,
       permission: permission,
-      addedAt: DateTime.now(),
+      addedAt: clock.now(),
     ));
     return plan.copyWith(participants: without);
   }

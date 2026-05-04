@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -115,7 +116,7 @@ class TagGenerator {
       dietaryStatus: phase1Result.dietaryStatus,
       coverage: ingredients.coverage,
       unknownIngredients: ingredients.unmatched,
-      generatedAt: DateTime.now(),
+      generatedAt: clock.now(),
       generatorVersion: kTagGeneratorVersion,
       isPartial: isPartial,
       hasDraftIngredients: hasDraft,
@@ -328,7 +329,7 @@ class TagGenerator {
       dietaryStatus: phase1Result.dietaryStatus,
       coverage: ingredients.coverage,
       unknownIngredients: ingredients.unmatched,
-      generatedAt: DateTime.now(),
+      generatedAt: clock.now(),
       generatorVersion: kTagGeneratorVersion,
       isPartial: isPartial,
       hasDraftIngredients: hasDraft,
@@ -406,7 +407,7 @@ class TagGenerator {
       dietaryStatus: phase1Result.dietaryStatus,
       coverage: ingredients.coverage,
       unknownIngredients: ingredients.unmatched,
-      generatedAt: DateTime.now(),
+      generatedAt: clock.now(),
       generatorVersion: '$kTagGeneratorVersion-phase1',
       isPartial: true, // C3: Phase 1 only is always partial
       // H3: Include decision logs from Phase 1

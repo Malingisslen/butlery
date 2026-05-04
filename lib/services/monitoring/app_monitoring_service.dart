@@ -1,5 +1,6 @@
 // lib/services/monitoring/app_monitoring_service.dart
 
+import 'package:clock/clock.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/foundation.dart';
@@ -160,7 +161,7 @@ class AppMonitoringService {
       isHealthy: true,
       errorCount: _metricCounters['error_count'] ?? 0,
       metrics: Map.from(_metricCounters),
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
     );
   }
 

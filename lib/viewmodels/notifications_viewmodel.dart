@@ -5,6 +5,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/notification_history_entry.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:clock/clock.dart';
 
 /// ViewModel for the in-app notification inbox.
 class NotificationsViewModel extends BaseViewModel {
@@ -71,7 +72,7 @@ class NotificationsViewModel extends BaseViewModel {
 
     _entries[index] = _entries[index].copyWith(
       opened: true,
-      openedAt: DateTime.now(),
+      openedAt: clock.now(),
     );
     notifyListeners();
 

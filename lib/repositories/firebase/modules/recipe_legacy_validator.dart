@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -175,7 +176,7 @@ class RecipeLegacyValidator {
               recipe.createdBy == null || recipe.createdBy!.isEmpty,
           'isOldRecipe': recipe.createdAt.isBefore(DateTime(2022, 6, 1)),
         },
-        'deletedAt': DateTime.now().toIso8601String(),
+        'deletedAt': clock.now().toIso8601String(),
       };
 
       // Log to Firebase audit collection for tracking

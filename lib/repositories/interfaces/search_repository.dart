@@ -1,5 +1,6 @@
 // lib/repositories/interfaces/search_repository.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Provider-agnostic search repository interface.
@@ -155,8 +156,8 @@ class RecipeSearchHit {
         timeMinutes: timeMinutes,
         rating: rating,
         personalTagIds: tags,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
       ),
       type: RecipeType.shared,
     );

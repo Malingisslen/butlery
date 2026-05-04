@@ -1,5 +1,6 @@
 /// Upload queue summary calculator for image upload analytics and UI display text.
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
@@ -85,7 +86,7 @@ class UploadQueueSummaryCalculator {
         : 0.0;
 
     final totalElapsedTime = earliestStartTime != null
-        ? DateTime.now().difference(earliestStartTime)
+        ? clock.now().difference(earliestStartTime)
         : null;
 
     Duration? estimatedTimeRemaining;

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -140,7 +141,7 @@ class TagEditingService extends BaseService {
     required String editedBy,
   }) {
     final clearedOverrides = const TagOverrides().copyWith(
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: editedBy,
     );
 

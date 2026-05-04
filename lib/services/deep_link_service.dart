@@ -22,6 +22,7 @@
 /// - **External Integration**: Extensible framework supporting external URL shortening services
 /// - **Security Features**: Timestamp validation, expiration checking, and secure parameter encoding
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart' as perm_service;
@@ -259,7 +260,7 @@ class DeepLinkService extends BaseService {
     }
 
     final createdAt = DateTime.fromMillisecondsSinceEpoch(linkData.timestamp!);
-    final now = DateTime.now();
+    final now = clock.now();
 
     return now.difference(createdAt) <= maxAge;
   }
@@ -316,7 +317,7 @@ class DeepLinkService extends BaseService {
       final metadata = {
         'isActive': true,
         'expiresAt':
-            DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+            clock.now().add(const Duration(days: 30)).toIso8601String(),
       };
 
       final shortCode = await ServiceLocator.get<DeepLinkService>()
@@ -457,7 +458,7 @@ class DeepLinkService extends BaseService {
 
     final linkTime =
         DateTime.fromMillisecondsSinceEpoch(deepLinkData.timestamp!);
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(linkTime);
 
     return difference.inDays > 7; // Links expire after 7 days

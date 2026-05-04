@@ -1,5 +1,6 @@
 // lib/services/notifications/modules/fcm_token_manager.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -168,7 +169,7 @@ class FCMTokenManager {
 
       final oldToken = _currentToken;
       _currentToken = newToken;
-      _lastTokenRefresh = DateTime.now();
+      _lastTokenRefresh = clock.now();
 
       // Only update if token actually changed
       if (oldToken != newToken) {
@@ -205,7 +206,7 @@ class FCMTokenManager {
           AppLogger.info('🔄 FCM token refreshed automatically');
           final oldToken = _currentToken;
           _currentToken = newToken;
-          _lastTokenRefresh = DateTime.now();
+          _lastTokenRefresh = clock.now();
 
           try {
             await Future.wait([
@@ -353,7 +354,7 @@ class FCMTokenManager {
     try {
       await _secureStorage.write(key: _tokenStorageKey, value: token);
       await _secureStorage.write(
-          key: _tokenTimestampKey, value: DateTime.now().toIso8601String());
+          key: _tokenTimestampKey, value: clock.now().toIso8601String());
       AppLogger.debug('Saved FCM token to secure storage');
     } catch (e) {
       AppLogger.warning('Failed to save token to secure storage: $e');
@@ -464,7 +465,7 @@ class FCMTokenManager {
       // Use repository method for device cleanup
       await _repository.cleanupOldDevices(
         _userId,
-        DateTime.now().subtract(const Duration(days: 30)),
+        clock.now().subtract(const Duration(days: 30)),
       );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to cleanup old devices: $e');
@@ -475,7 +476,7 @@ class FCMTokenManager {
   bool _isTokenFresh() {
     if (_lastTokenRefresh == null) return false;
 
-    final age = DateTime.now().difference(_lastTokenRefresh!);
+    final age = clock.now().difference(_lastTokenRefresh!);
     return age.inHours < 1;
   }
 
@@ -549,7 +550,7 @@ class FCMTokenManager {
   /// Get token age in minutes
   int? get tokenAgeMinutes {
     if (_lastTokenRefresh == null) return null;
-    return DateTime.now().difference(_lastTokenRefresh!).inMinutes;
+    return clock.now().difference(_lastTokenRefresh!).inMinutes;
   }
 
   /// Clear the locally-cached token from SecureStorage + memory without

@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/recipe_rating_system.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -372,7 +373,7 @@ class RecipeRatingSystem {
   static bool isRecentRating(DateTime? createdAt, {int daysThreshold = 7}) {
     if (createdAt == null) return false;
 
-    final now = DateTime.now();
+    final now = clock.now();
     final daysDifference = now.difference(createdAt).inDays;
 
     return daysDifference <= daysThreshold;

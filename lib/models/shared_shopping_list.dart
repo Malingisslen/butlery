@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -39,7 +40,7 @@ class SharedShoppingList
     required this.originalOwnerId,
     required this.originalOwnerDisplayName,
     this.shoppingListId,
-  }) : super(sharedAt: sharedAt ?? DateTime.now());
+  }) : super(sharedAt: sharedAt ?? clock.now());
 
   @override
   String get contentTypeName => 'shopping_list';

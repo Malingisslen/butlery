@@ -1,5 +1,6 @@
 // lib/models/shared_content_member.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Denormalized member info stored in content/{id}/members subcollection.
@@ -46,8 +47,7 @@ class SharedContentMember {
       displayName:
           SerializationUtils.safeString(data, 'displayName', defaultValue: '?'),
       avatarUrl: SerializationUtils.safeNullableString(data, 'avatarUrl'),
-      addedAt:
-          SerializationUtils.safeDateTime(data, 'addedAt') ?? DateTime.now(),
+      addedAt: SerializationUtils.safeDateTime(data, 'addedAt') ?? clock.now(),
       addedBy: SerializationUtils.safeString(data, 'addedBy'),
       role: SerializationUtils.safeString(data, 'role', defaultValue: 'viewer'),
       hasViewed: SerializationUtils.safeBool(data, 'hasViewed'),

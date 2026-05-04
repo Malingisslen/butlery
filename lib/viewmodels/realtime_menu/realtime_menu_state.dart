@@ -1,5 +1,6 @@
 // lib/viewmodels/realtime_menu/realtime_menu_state.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -195,7 +196,7 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
     final l = AppLocale.current;
     if (date == null) return l.dateNoDate;
 
-    final now = DateTime.now();
+    final now = clock.now();
     final today = DateTime(now.year, now.month, now.day);
     final menuDate = DateTime(date.year, date.month, date.day);
 

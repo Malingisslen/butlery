@@ -1,5 +1,6 @@
 /// Year-only age gate (GDPR Art 8). Year granularity is sufficient per
 /// Swedish DPA guidance and minimises PII collection vs. a full DOB.
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -15,7 +16,7 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    final currentYear = DateTime.now().year;
+    final currentYear = clock.now().year;
     // Range: oldest = 100 yrs ago, youngest = 13 (hard floor; 15-year Swedish
     // threshold is enforced by `isAgeGatePassed` after selection).
     final youngestYear = currentYear - 13;

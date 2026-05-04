@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:butlery/core/base/base_service.dart';
@@ -484,7 +485,7 @@ class TaggingService extends BaseService {
     }
 
     // generatedAt should be reasonable (not in future, not too old)
-    final now = DateTime.now();
+    final now = clock.now();
     if (result.generatedAt.isAfter(now.add(const Duration(minutes: 1)))) {
       return false; // Future date indicates clock issue
     }

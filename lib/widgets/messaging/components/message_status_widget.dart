@@ -1,5 +1,6 @@
 // lib/widgets/messaging/components/message_status_widget.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -76,7 +77,7 @@ class MessageTimeFormatter {
 
   /// Format timestamp to relative time string.
   static String format(DateTime timestamp) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {

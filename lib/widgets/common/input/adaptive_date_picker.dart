@@ -2,6 +2,7 @@
 /// Uses CupertinoDatePicker in a bottom sheet on iOS,
 /// Material showDatePicker on Android.
 
+import 'package:clock/clock.dart';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -317,7 +318,7 @@ class AdaptiveDatePicker {
     String? cancelText,
     String? confirmText,
   }) async {
-    final now = DateTime.now();
+    final now = clock.now();
     DateTime selectedDateTime = DateTime(
       now.year,
       now.month,

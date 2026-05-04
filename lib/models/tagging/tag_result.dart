@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
@@ -161,7 +162,7 @@ class TagResult {
       dietaryStatus: {},
       coverage: 0.0, // No ingredients = no data to analyze
       unknownIngredients: [],
-      generatedAt: DateTime.now(),
+      generatedAt: clock.now(),
       generatorVersion: 'empty', // Mark as empty recipe, not failed
       hasCoverageAnomaly: false, // CRIT-2: Explicit normal state
     );
@@ -195,7 +196,7 @@ class TagResult {
       dietaryStatus: {},
       coverage: 0.0, // No known ingredients = 0% coverage
       unknownIngredients: unknownIngredients,
-      generatedAt: DateTime.now(),
+      generatedAt: clock.now(),
       generatorVersion: 'all_unknown', // Distinguishes from 'empty'
       hasCoverageAnomaly: false,
       errorReason: truncatedError,
@@ -212,7 +213,7 @@ class TagResult {
       dietaryStatus: {},
       coverage: 0.0,
       unknownIngredients: [],
-      generatedAt: DateTime.now(),
+      generatedAt: clock.now(),
       generatorVersion: 'pending', // Mark as awaiting tagging
       hasCoverageAnomaly: false, // CRIT-2: Explicit normal state
     );
@@ -238,7 +239,7 @@ class TagResult {
       coverage: 0.0,
       unknownIngredients:
           truncatedReason != null ? [truncatedReason] : [], // Backward compat
-      generatedAt: DateTime.now(),
+      generatedAt: clock.now(),
       generatorVersion: 'failed', // Mark as failed tagging
       errorReason: truncatedReason, // V2: Proper error field (truncated)
       hasCoverageAnomaly: false, // CRIT-2: Explicit normal state
@@ -278,12 +279,12 @@ class TagResult {
             'This may indicate corrupted data.',
         'TagResult',
       );
-      generatedAt = DateTime.now();
+      generatedAt = clock.now();
     } else {
       generatedAt = SerializationUtils.safeRequiredDateTime(
         migratedData,
         'generatedAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       );
     }
 

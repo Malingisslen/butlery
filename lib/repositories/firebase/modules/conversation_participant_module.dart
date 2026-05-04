@@ -1,5 +1,6 @@
 // lib/repositories/firebase/modules/conversation_participant_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/messaging/conversation_membership.dart';
@@ -184,7 +185,7 @@ class ConversationParticipantModule {
   }) async {
     if (!_isEnabled) return;
 
-    final now = DateTime.now().toUtc();
+    final now = clock.now().toUtc();
     final batch = firestore.batch();
 
     // 1. Update in participants subcollection
@@ -220,7 +221,7 @@ class ConversationParticipantModule {
   }) async {
     if (!_isEnabled) return;
 
-    final now = DateTime.now().toUtc();
+    final now = clock.now().toUtc();
     final batch = firestore.batch();
 
     for (final participantId in participantIds) {
@@ -341,8 +342,7 @@ class ConversationParticipantModule {
     for (final participantId in participantIds) {
       final displayName = displayNames[participantId] ?? 'Unknown';
       final avatarUrl = avatarUrls[participantId];
-      final lastRead =
-          lastReadTimestamps[participantId] ?? DateTime.now().toUtc();
+      final lastRead = lastReadTimestamps[participantId] ?? clock.now().toUtc();
       final role = participantId == ownerId
           ? ParticipantRole.owner
           : ParticipantRole.member;
@@ -353,7 +353,7 @@ class ConversationParticipantModule {
         participantId: participantId,
         displayName: displayName,
         avatarUrl: avatarUrl,
-        joinedAt: DateTime.now().toUtc(), // Approximate
+        joinedAt: clock.now().toUtc(), // Approximate
         lastReadAt: lastRead,
         role: role,
       );
@@ -371,8 +371,8 @@ class ConversationParticipantModule {
         conversationId: conversationId,
         conversationTitle: conversationTitle,
         isGroup: isGroup,
-        lastActivityAt: DateTime.now().toUtc(),
-        joinedAt: DateTime.now().toUtc(), // Approximate
+        lastActivityAt: clock.now().toUtc(),
+        joinedAt: clock.now().toUtc(), // Approximate
       );
 
       final membershipRef = firestore

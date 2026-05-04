@@ -2,6 +2,7 @@
 
 // lib/models/recipe_unified.dart
 
+import 'package:clock/clock.dart';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -343,8 +344,8 @@ class RecipeCore with JsonSerializableMixin {
     this.dataIntegrityStatus = DataIntegrityStatus.unverified,
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
-        createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now() {
+        createdAt = createdAt ?? clock.now(),
+        updatedAt = updatedAt ?? clock.now() {
     // Debug-only: verify personalTagIds and personalTags stay in sync.
     // Both null or both non-null, and IDs must match when both present.
     assert(
@@ -452,7 +453,7 @@ class RecipeCore with JsonSerializableMixin {
           ? this.thumbnailUrl
           : thumbnailUrl as String?,
       createdAt: createdAt,
-      updatedAt: updatedAt ?? DateTime.now(),
+      updatedAt: updatedAt ?? clock.now(),
       createdBy: createdBy == _sentinel ? this.createdBy : createdBy as String?,
       isPublic: isPublic ?? this.isPublic,
       lastCookedAt: lastCookedAt == _sentinel
@@ -522,7 +523,7 @@ class RecipeCore with JsonSerializableMixin {
 
   String? get lastCookedText {
     if (lastCookedAt == null) return null;
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(lastCookedAt!);
     if (difference.inDays == 0) return AppLocale.current.recipeLastCookedToday;
     if (difference.inDays == 1) {
@@ -1158,7 +1159,7 @@ class Recipe {
   /// Check if recipe was cooked recently (within last 7 days)
   bool get wasCookedRecently {
     if (lastCookedAt == null) return false;
-    return DateTime.now().difference(lastCookedAt!).inDays < 7;
+    return clock.now().difference(lastCookedAt!).inDays < 7;
   }
 
   // Feature-specific getters
@@ -1404,7 +1405,7 @@ class Recipe {
         heirloom: heirloom,
         personalTagVersion: personalTagVersion,
         isFavorite: isFavorite,
-        updatedAt: DateTime.now(),
+        updatedAt: clock.now(),
       ),
       type: type ?? this.type,
       // When converting to personal recipe, clear social data

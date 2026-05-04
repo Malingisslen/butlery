@@ -4,6 +4,7 @@
 /// BUT-410: Hero feature letting users preserve the visual "story" of a
 /// family recipe alongside the parsed text version. Null for normal recipes.
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
@@ -67,7 +68,7 @@ class HeirloomMetadata {
     // family recipe; upper bound tracks the current year so time can't
     // "run ahead" of validation.
     if (year != null) {
-      final currentYear = DateTime.now().year;
+      final currentYear = clock.now().year;
       if (year! < 1800 || year! > currentYear) {
         throw ArgumentError.value(
           year,

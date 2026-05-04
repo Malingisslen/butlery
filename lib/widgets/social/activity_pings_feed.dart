@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:collection/collection.dart';
@@ -407,7 +408,7 @@ class _FeedRow extends StatelessWidget {
   }
 
   String _relativeLabel(DateTime at) {
-    final clamped = at.isAfter(DateTime.now()) ? DateTime.now() : at;
+    final clamped = at.isAfter(clock.now()) ? clock.now() : at;
     return TimeAgoFormatter.standard(clamped);
   }
 }

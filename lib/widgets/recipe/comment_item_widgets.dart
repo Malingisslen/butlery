@@ -1,5 +1,6 @@
 // lib/widgets/recipe/comment_item_widgets.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/social/content_type.dart';
@@ -146,7 +147,7 @@ class CommentItemWidgets {
 
   /// Format comment time for display.
   static String formatCommentTime(BuildContext context, DateTime timestamp) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {

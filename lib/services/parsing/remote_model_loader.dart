@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
@@ -39,7 +40,7 @@ abstract class RemoteModelLoader {
   bool get isCheckThrottled {
     if (_checking) return true;
     return _lastCheckTime != null &&
-        DateTime.now().difference(_lastCheckTime!) < checkInterval;
+        clock.now().difference(_lastCheckTime!) < checkInterval;
   }
 
   @protected
@@ -47,7 +48,7 @@ abstract class RemoteModelLoader {
 
   @protected
   void endCheck() {
-    _lastCheckTime = DateTime.now();
+    _lastCheckTime = clock.now();
     _checking = false;
   }
 

@@ -6,6 +6,7 @@
 
 // lib/models/realtime/realtime_menu_data.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -55,7 +56,7 @@ class RealtimeMenuData {
   }) {
     return RealtimeMenuData(
       menuTitle: menuTitle,
-      createdForDate: createdForDate ?? DateTime.now(),
+      createdForDate: createdForDate ?? clock.now(),
       menuSnapshot: menuSnapshot,
       menuNotes: menuNotes,
       favoriteRecipeIds: favoriteRecipeIds,
@@ -157,7 +158,7 @@ class RealtimeMenuData {
       menuTitle: SerializationUtils.safeString(data, 'menuTitle'),
       createdForDate: data['createdForDate'] != null
           ? AppTimestamp.fromFirestore(data['createdForDate']).dateTime
-          : DateTime.now(),
+          : clock.now(),
       menuSnapshot: menuSnapshot,
       menuNotes: SerializationUtils.safeNullableString(data, 'menuNotes'),
       favoriteRecipeIds: favoriteIds?.isEmpty == true ? null : favoriteIds,

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
@@ -39,7 +40,7 @@ class RecipeEventsTracker extends BaseTracker {
         'method': method,
         'recipient_count_bucket': _bucketRecipientCount(recipientCount),
         if (recipeId != null && recipeId.isNotEmpty) 'recipe_id': recipeId,
-        'timestamp': DateTime.now().toUtc().toIso8601String(),
+        'timestamp': clock.now().toUtc().toIso8601String(),
       },
     );
   }

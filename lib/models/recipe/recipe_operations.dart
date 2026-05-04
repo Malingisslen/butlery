@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -278,7 +279,7 @@ class RecipeOperations {
     // Legacy recipes (cookCount == null) move to 1 on first optimistic bump —
     // matches the Firestore rule branch that accepts null -> 1.
     return recipe.copyWith(
-      lastCookedAt: DateTime.now(),
+      lastCookedAt: clock.now(),
       cookCount: (recipe.core.cookCount ?? 0) + 1,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,

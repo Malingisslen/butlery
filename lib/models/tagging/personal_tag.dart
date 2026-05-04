@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
@@ -64,7 +65,7 @@ class PersonalTag {
     String? groupId,
     List<PersonalTagRule>? rules,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return PersonalTag(
       id: const Uuid().v4(),
       name: name.trim(),
@@ -93,12 +94,12 @@ class PersonalTag {
       createdAt: SerializationUtils.safeRequiredDateTime(
         data,
         'createdAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
       updatedAt: SerializationUtils.safeRequiredDateTime(
         data,
         'updatedAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
       sortOrder: SerializationUtils.safeInt(data, 'sortOrder', defaultValue: 0),
       groupId: SerializationUtils.safeNullableString(data, 'groupId'),
@@ -181,7 +182,7 @@ class PersonalTag {
       id: id ?? this.id,
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? DateTime.now(),
+      updatedAt: updatedAt ?? clock.now(),
       sortOrder: sortOrder ?? this.sortOrder,
       groupId: clearGroupId ? null : (groupId ?? this.groupId),
       rules: rules ?? this.rules,

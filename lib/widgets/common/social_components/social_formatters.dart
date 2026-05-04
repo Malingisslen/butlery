@@ -1,5 +1,6 @@
 // lib/widgets/common/social_components/social_formatters.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -27,7 +28,7 @@ class SocialFormatters {
 
   /// Format relative time for display (Swedish)
   static String formatRelativeTime(DateTime dateTime) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {

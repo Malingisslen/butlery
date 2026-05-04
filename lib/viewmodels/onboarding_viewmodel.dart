@@ -1,4 +1,6 @@
 /// ViewModel for the onboarding wizard flow.
+
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -66,7 +68,7 @@ class OnboardingViewModel extends ChangeNotifier {
   /// lowest possible age for that year).
   int? get computedAge {
     if (_selectedBirthYear == null) return null;
-    return DateTime.now().year - _selectedBirthYear!;
+    return clock.now().year - _selectedBirthYear!;
   }
 
   bool get isAgeGatePassed {
@@ -187,7 +189,7 @@ class OnboardingViewModel extends ChangeNotifier {
       final isSkip = _currentPage < _lastPageIndex;
       await userService.completeOnboardingWithPreferences(
         prefs,
-        onboardingSkippedAt: isSkip ? DateTime.now() : null,
+        onboardingSkippedAt: isSkip ? clock.now() : null,
         birthYear: _selectedBirthYear,
       );
 

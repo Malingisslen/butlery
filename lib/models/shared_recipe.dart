@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
@@ -73,7 +74,7 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         _copyOnWriteTriggered = copyOnWriteTriggered,
         _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
         _activeCollaboratorCount = activeCollaboratorCount,
-        super(sharedAt: sharedAt ?? DateTime.now());
+        super(sharedAt: sharedAt ?? clock.now());
 
   factory SharedRecipe.create({
     required String originalRecipeId,
@@ -339,10 +340,10 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
                 recipeData, 'sourceUrl'),
             createdAt: utils.SerializationUtils.safeDateTime(
                     recipeData, 'createdAt') ??
-                DateTime.now(),
+                clock.now(),
             updatedAt: utils.SerializationUtils.safeDateTime(
                     recipeData, 'updatedAt') ??
-                DateTime.now(),
+                clock.now(),
             lastCookedAt: utils.SerializationUtils.safeDateTime(
                 recipeData, 'lastCookedAt'),
           ),

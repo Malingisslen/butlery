@@ -2,6 +2,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:clock/clock.dart';
 
 /// Personal shopping operations interface providing individual shopping list management.
 /// Handles personal list CRUD, item management, recipe integration, import/export, and analytics.
@@ -411,7 +412,7 @@ class PersonalShoppingOperations {
 
     return {
       'format': 'personal_shopping_list',
-      'exportDate': DateTime.now().toIso8601String(),
+      'exportDate': clock.now().toIso8601String(),
       'list': {
         'id': list.id,
         'name': list.name,

@@ -1,5 +1,6 @@
 /// OCR service with multi-provider fallback (OCR.space → Google Vision → Tesseract), Swedish optimization, and smart caching.
 
+import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
@@ -44,7 +45,7 @@ class OCRResult {
       confidence: 0.0,
       processingMethod: method,
       metadata: metadata ?? {},
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
       isSuccessful: false,
       errorMessage: error,
     );
@@ -86,7 +87,7 @@ class CircuitBreaker {
     DateTime Function()? timeProvider,
   }) : _timeProvider = timeProvider;
 
-  DateTime get _now => _timeProvider?.call() ?? DateTime.now();
+  DateTime get _now => _timeProvider?.call() ?? clock.now();
 
   bool get canExecute {
     switch (_state) {
@@ -241,7 +242,7 @@ class OCRExtractionService extends BaseService {
     return const String.fromEnvironment('TESSERACT_API_URL');
   }
 
-  DateTime get _now => _testTimeProvider?.call() ?? DateTime.now();
+  DateTime get _now => _testTimeProvider?.call() ?? clock.now();
 
   /// Initialize OCR service
   @override
@@ -718,7 +719,7 @@ class OCRExtractionService extends BaseService {
   /// Get comprehensive OCR service status
   Map<String, dynamic> getServiceStatus() {
     return {
-      'timestamp': DateTime.now().toIso8601String(),
+      'timestamp': clock.now().toIso8601String(),
       'cache_size': _cache.length,
       'circuit_breakers': {
         'ocr_space': {

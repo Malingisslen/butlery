@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe_form/recipe_form_state.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -723,7 +724,7 @@ class RecipeFormState extends ChangeNotifier {
         sourceUrl: _sourceUrl?.trim(),
         createdBy: _originalRecipe?.core.createdBy,
         createdAt: (_originalRecipe?.createdAt).orNow(),
-        updatedAt: DateTime.now(),
+        updatedAt: clock.now(),
         tagResult: _originalRecipe?.tagResult,
         tagOverrides: _tagOverrides,
       ),

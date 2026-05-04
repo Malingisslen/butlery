@@ -2,6 +2,7 @@
 
 // lib/models/realtime/menu_slot_vote.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:uuid/uuid.dart';
@@ -83,9 +84,9 @@ class MenuSlotVote {
       category: category,
       slotIndex: slotIndex,
       alternatives: alternatives,
-      deadline: DateTime.now().add(votingWindow),
+      deadline: clock.now().add(votingWindow),
       createdByUserId: createdByUserId,
-      createdAt: DateTime.now(),
+      createdAt: clock.now(),
     );
   }
 
@@ -113,7 +114,7 @@ class MenuSlotVote {
 
   // --- Computed getters ---
 
-  bool get isExpired => DateTime.now().isAfter(deadline);
+  bool get isExpired => clock.now().isAfter(deadline);
   bool get isActive => !isResolved && !isExpired;
   bool hasVoted(String userId) => votes.containsKey(userId);
   int get totalVotes => votes.length;

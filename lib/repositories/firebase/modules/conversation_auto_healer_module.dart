@@ -1,5 +1,6 @@
 // lib/repositories/firebase/modules/conversation_auto_healer_module.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
@@ -63,7 +64,7 @@ class ConversationAutoHealerModule {
 
           final updated = conversation.copyWith(
             lastMessage: latestMessage,
-            updatedAt: DateTime.now(),
+            updatedAt: clock.now(),
           );
 
           await updateConversation(updated);

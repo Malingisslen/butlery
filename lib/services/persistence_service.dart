@@ -21,6 +21,7 @@
 /// - **Data Migration**: Flexible data format handling supporting application updates and schema changes
 /// - **Swedish Localization**: User-friendly Swedish language logging and error messages
 
+import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -131,7 +132,7 @@ class PersistenceService extends BaseService {
       if (success) {
         await prefs.setString(
           _lastUpdatedKey,
-          DateTime.now().toIso8601String(),
+          clock.now().toIso8601String(),
         );
       }
 

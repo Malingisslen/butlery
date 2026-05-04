@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 
@@ -132,7 +133,7 @@ class ParseMetadata {
         tierResults: const [],
         totalParseTime: Duration.zero,
         parserVersion: parserVersion,
-        timestamp: DateTime.now(),
+        timestamp: clock.now(),
       );
 
   /// The tier that succeeded, if any.

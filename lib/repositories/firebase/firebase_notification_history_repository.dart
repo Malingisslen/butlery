@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/notification_history_entry.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
@@ -72,7 +73,7 @@ class FirebaseNotificationHistoryRepository
         'data': data,
         'sentAt': timestampProvider.serverTimestamp(),
         'expireAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
         'delivered': false,
         'opened': false,
       });

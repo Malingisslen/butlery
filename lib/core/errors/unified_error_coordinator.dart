@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Unified error state management coordinator providing centralized error handling across recipe form components.
@@ -78,7 +79,7 @@ class UnifiedErrorInfo {
       source: ErrorSource.formValidation,
       severity: ErrorSeverity.medium,
       message: message,
-      occurredAt: DateTime.now(),
+      occurredAt: clock.now(),
       availableActions: [ErrorRecoveryAction.ignore],
       context: {'fieldName': fieldName},
       componentId: componentId,
@@ -98,7 +99,7 @@ class UnifiedErrorInfo {
       severity: ErrorSeverity.high,
       message: message,
       technicalDetails: technicalDetails,
-      occurredAt: DateTime.now(),
+      occurredAt: clock.now(),
       availableActions: [ErrorRecoveryAction.retry, ErrorRecoveryAction.ignore],
       context: {'imagePath': imagePath},
       componentId: componentId,
@@ -118,7 +119,7 @@ class UnifiedErrorInfo {
       severity: ErrorSeverity.high,
       message: message,
       technicalDetails: technicalDetails,
-      occurredAt: DateTime.now(),
+      occurredAt: clock.now(),
       availableActions: [
         ErrorRecoveryAction.retry,
         ErrorRecoveryAction.refresh,
@@ -435,7 +436,7 @@ mixin ErrorCoordinatorMixin {
         severity: severity,
         message: message,
         technicalDetails: technicalDetails,
-        occurredAt: DateTime.now(),
+        occurredAt: clock.now(),
         availableActions: actions,
         context: context,
         componentId: _componentId,

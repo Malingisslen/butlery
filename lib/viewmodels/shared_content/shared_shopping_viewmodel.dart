@@ -30,6 +30,7 @@
 
 // lib/viewmodels/shared_content/shared_shopping_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -331,7 +332,7 @@ class SharedShoppingViewModel
 
   /// Get time ago text for shopping list
   String getShoppingListTimeAgo(SharedShoppingList list) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(list.sharedAt);
 
     final l = AppLocale.current;

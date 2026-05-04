@@ -1,5 +1,6 @@
 // lib/views/social/group_detail/group_detail_header.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/common/social_components.dart';
@@ -175,7 +176,7 @@ class GroupDetailHeader {
   }
 
   static String _formatDate(BuildContext context, DateTime date) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {

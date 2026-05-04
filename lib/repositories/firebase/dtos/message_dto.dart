@@ -22,6 +22,7 @@
 /// - **Server Timestamps**: Automatic server timestamp generation for consistency
 /// - **Efficient Queries**: Optimized data structure for Firestore indexing and real-time streams
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
@@ -90,8 +91,8 @@ class MessageDto {
         (s) => s.name == data['status'],
         orElse: () => MessageStatus.sent,
       ),
-      sentAt: SerializationUtils.parseDateTimeValue(data['sentAt']) ??
-          DateTime.now(),
+      sentAt:
+          SerializationUtils.parseDateTimeValue(data['sentAt']) ?? clock.now(),
       deliveredAt: SerializationUtils.parseDateTimeValue(data['deliveredAt']),
       readAt: SerializationUtils.parseDateTimeValue(data['readAt']),
       metadata: data['metadata'] as Map<String, dynamic>?,

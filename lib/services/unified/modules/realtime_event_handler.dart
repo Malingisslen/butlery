@@ -1,5 +1,6 @@
 // lib/services/unified/modules/realtime_event_handler.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -173,7 +174,7 @@ class RealtimeEventHandler {
       'recipeId': recipeId,
       'errorType': error.runtimeType.toString(),
       'errorMessage': error.toString(),
-      'timestamp': DateTime.now().toIso8601String(),
+      'timestamp': clock.now().toIso8601String(),
     };
 
     AppLogger.error('Detailed real-time error: $errorDetails');
@@ -310,7 +311,7 @@ class RealtimeEventHandler {
     if (editedAt == null) return true; // Process if no timestamp
 
     final editTime = editedAt.toDate();
-    final now = DateTime.now();
+    final now = clock.now();
     final timeDifference = now.difference(editTime);
 
     // Process edits from the last 5 minutes

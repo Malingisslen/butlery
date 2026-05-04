@@ -19,6 +19,7 @@
 /// - **Privacy Protection**: Auto-logout protects sensitive recipe and shopping data
 /// - **Compliance**: Meets industry standards for session management security
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -103,7 +104,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   /// Time remaining until timeout (null if not active)
   Duration? get timeRemaining {
     if (!_isActive || _lastActivityTime == null) return null;
-    final elapsed = DateTime.now().difference(_lastActivityTime!);
+    final elapsed = clock.now().difference(_lastActivityTime!);
     final remaining = timeoutDuration - elapsed;
     return remaining.isNegative ? Duration.zero : remaining;
   }
@@ -152,7 +153,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   void recordActivity() {
     if (!_isActive) return;
 
-    _lastActivityTime = DateTime.now();
+    _lastActivityTime = clock.now();
     _warningShown = false;
     _resetTimers();
 
@@ -190,7 +191,7 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
       return;
     }
 
-    final elapsed = DateTime.now().difference(_lastActivityTime!);
+    final elapsed = clock.now().difference(_lastActivityTime!);
 
     if (elapsed >= timeoutDuration) {
       // Timeout occurred while app was in background

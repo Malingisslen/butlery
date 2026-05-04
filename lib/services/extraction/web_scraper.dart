@@ -2,6 +2,7 @@
 /// Provides platform-specific extraction strategies (Instagram, Facebook, TikTok, recipe sites) using
 /// headless browser technology with timeout management and proper resource cleanup.
 
+import 'package:clock/clock.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:async';
 import 'package:butlery/core/constants/http_constants.dart';
@@ -134,7 +135,7 @@ class WebScraper {
                           metadata: {
                             'platform': platform.toString(),
                             'url': url,
-                            'extractedAt': DateTime.now().toIso8601String(),
+                            'extractedAt': clock.now().toIso8601String(),
                           },
                         ),
                       );

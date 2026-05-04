@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -48,7 +49,7 @@ class CacheEntry {
     this.ttlDays = 90,
     this.accessCount = 1,
     this.lastAccessedAt,
-  }) : cachedAt = cachedAt ?? DateTime.now();
+  }) : cachedAt = cachedAt ?? clock.now();
 
   /// Create from Firestore document data.
   factory CacheEntry.fromFirestore(Map<String, dynamic> data) {
@@ -93,8 +94,7 @@ class CacheEntry {
       'extractionMeta': extractionMeta.toMap(),
       'cachedAt': FieldValue.serverTimestamp(),
       'ttlDays': ttlDays,
-      'expireAt':
-          Timestamp.fromDate(DateTime.now().add(Duration(days: ttlDays))),
+      'expireAt': Timestamp.fromDate(clock.now().add(Duration(days: ttlDays))),
       'accessCount': accessCount,
       'lastAccessedAt': FieldValue.serverTimestamp(),
     };
@@ -103,12 +103,12 @@ class CacheEntry {
   /// Check if this cache entry has expired.
   bool get isExpired {
     final expirationDate = cachedAt.add(Duration(days: ttlDays));
-    return DateTime.now().isAfter(expirationDate);
+    return clock.now().isAfter(expirationDate);
   }
 
   /// Get the age of this cache entry in days.
   int get ageInDays {
-    return DateTime.now().difference(cachedAt).inDays;
+    return clock.now().difference(cachedAt).inDays;
   }
 
   /// Create a copy with updated access stats.
@@ -123,7 +123,7 @@ class CacheEntry {
       cachedAt: cachedAt,
       ttlDays: ttlDays,
       accessCount: accessCount + 1,
-      lastAccessedAt: DateTime.now(),
+      lastAccessedAt: clock.now(),
     );
   }
 

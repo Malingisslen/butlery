@@ -1,5 +1,6 @@
 // lib/models/realtime/realtime_recipe.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -398,7 +399,7 @@ class RealtimeRecipe extends RealtimeResource {
       participants: participants ?? this.participants,
       participantIds: participantIds ?? this.participantIds,
       createdAt: createdAt,
-      lastEditedAt: lastEditedAt ?? DateTime.now(),
+      lastEditedAt: lastEditedAt ?? clock.now(),
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,
       lastEditedByDisplayName:
           lastEditedByDisplayName ?? this.lastEditedByDisplayName,
@@ -427,7 +428,7 @@ class RealtimeRecipe extends RealtimeResource {
       participants: participants ?? this.participants,
       participantIds: participantIds ?? this.participantIds,
       createdAt: createdAt,
-      lastEditedAt: lastEditedAt ?? DateTime.now(),
+      lastEditedAt: lastEditedAt ?? clock.now(),
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,
       lastEditedByDisplayName:
           lastEditedByDisplayName ?? this.lastEditedByDisplayName,
@@ -457,8 +458,8 @@ class RealtimeRecipe extends RealtimeResource {
             : null,
         sourceUrl: AppLocale.current.realtimeRecipeSharedFrom(ownerDisplayName),
         imageUrls: [...recipe.imageUrls],
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: newOwnerId,
         isPublic: false,
         lastCookedAt: null,

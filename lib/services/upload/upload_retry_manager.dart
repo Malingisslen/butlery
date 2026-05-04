@@ -12,6 +12,7 @@ import 'dart:math';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:clock/clock.dart';
 
 /// Manages retry logic and circuit breaker for upload resilience.
 /// Core responsibilities:
@@ -234,7 +235,7 @@ class UploadRetryManager {
       state: ImageUploadState.retrying,
       retryAttempts: newAttemptNumber,
       retryDelay: retryDelay,
-      nextRetryAt: DateTime.now().add(retryDelay),
+      nextRetryAt: clock.now().add(retryDelay),
       // Clear progress from previous attempt
       progress: 0.0,
       bytesTransferred: null,

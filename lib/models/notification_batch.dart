@@ -1,5 +1,6 @@
 // lib/models/notification_batch.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -39,12 +40,12 @@ class NotificationBatch {
           ? data['createdAt'] as DateTime
           : data['createdAt'] != null
               ? AppTimestamp.fromFirestore(data['createdAt']).dateTime
-              : DateTime.now(),
+              : clock.now(),
       scheduledFor: data['scheduledFor'] is DateTime
           ? data['scheduledFor'] as DateTime
           : data['scheduledFor'] != null
               ? AppTimestamp.fromFirestore(data['scheduledFor']).dateTime
-              : DateTime.now(),
+              : clock.now(),
     );
   }
 

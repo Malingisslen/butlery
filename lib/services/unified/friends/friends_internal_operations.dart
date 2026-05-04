@@ -1,5 +1,6 @@
 // lib/services/unified/friends/friends_internal_operations.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
@@ -175,7 +176,7 @@ class FriendsInternalOperations {
         ...category.friendUserIds.cast<String>(),
         friendId
       ],
-      updatedAt: DateTime.now(),
+      updatedAt: clock.now(),
     );
 
     _stateManager.updateCategory(categoryId, updatedCategory);
@@ -262,7 +263,7 @@ class FriendsInternalOperations {
         // Recipient accept/reject: update normally
         await repo.updateInvitation(invitationId, {
           'status': status.toString().split('.').last,
-          'respondedAt': DateTime.now(),
+          'respondedAt': clock.now(),
         });
         AppLogger.success(
             '✅ Updated invitation $invitationId status to $status in Firebase');

@@ -2,6 +2,7 @@
 /// Replaces separate FriendRequest and GroupInvitation Firestore collections with a
 /// single collection using a `type` discriminator field.
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -45,9 +46,9 @@ class SocialRequest {
     this.groupName,
     this.groupEmoji,
     this.fromUserName,
-  })  : sentAt = sentAt ?? DateTime.now().toUtc(),
-        expiresAt = expiresAt ??
-            (sentAt ?? DateTime.now().toUtc()).add(_expiryDuration);
+  })  : sentAt = sentAt ?? clock.now().toUtc(),
+        expiresAt =
+            expiresAt ?? (sentAt ?? clock.now().toUtc()).add(_expiryDuration);
 
   /// Create a friend request
   factory SocialRequest.friendRequest({
@@ -55,7 +56,7 @@ class SocialRequest {
     required String toUserId,
     String? message,
   }) {
-    final now = DateTime.now().toUtc();
+    final now = clock.now().toUtc();
     return SocialRequest(
       id: const Uuid().v4(),
       type: SocialRequestType.friend,
@@ -77,7 +78,7 @@ class SocialRequest {
     required String fromUserName,
     String? message,
   }) {
-    final now = DateTime.now().toUtc();
+    final now = clock.now().toUtc();
     return SocialRequest(
       id: const Uuid().v4(),
       type: SocialRequestType.groupInvitation,
@@ -94,8 +95,8 @@ class SocialRequest {
   }
 
   factory SocialRequest.fromMap(String id, Map<String, dynamic> data) {
-    final sentAt = SerializationUtils.safeDateTime(data, 'sentAt') ??
-        DateTime.now().toUtc();
+    final sentAt =
+        SerializationUtils.safeDateTime(data, 'sentAt') ?? clock.now().toUtc();
     return SocialRequest(
       id: id,
       type: SerializationUtils.safeEnum(
@@ -168,8 +169,7 @@ class SocialRequest {
 
   bool get isPending => status == SocialRequestStatus.pending;
   bool get isExpired =>
-      DateTime.now().isAfter(expiresAt) ||
-      status == SocialRequestStatus.expired;
+      clock.now().isAfter(expiresAt) || status == SocialRequestStatus.expired;
   bool get isFriendRequest => type == SocialRequestType.friend;
   bool get isGroupInvitation => type == SocialRequestType.groupInvitation;
 

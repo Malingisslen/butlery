@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -223,7 +224,7 @@ class RuleCondition {
 
   bool _evaluateRecency(Recipe recipe) {
     final createdAt = recipe.core.createdAt;
-    final daysSinceCreated = DateTime.now().difference(createdAt).inDays;
+    final daysSinceCreated = clock.now().difference(createdAt).inDays;
 
     // For recency, withinDays is the primary operator
     if (operator == ConditionOperator.withinDays) {
@@ -238,9 +239,8 @@ class RuleCondition {
   bool _evaluateCookedRecency(Recipe recipe) {
     final lastCooked = recipe.core.lastCookedAt;
     // Never cooked = treat as infinitely old for greaterThan comparisons
-    final daysSinceCooked = lastCooked == null
-        ? 999999
-        : DateTime.now().difference(lastCooked).inDays;
+    final daysSinceCooked =
+        lastCooked == null ? 999999 : clock.now().difference(lastCooked).inDays;
 
     if (operator == ConditionOperator.withinDays) {
       return daysSinceCooked <= numericValue;

@@ -2,6 +2,7 @@
 
 // lib/viewmodels/collaborative_shopping_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
 
   UnifiedShoppingList? _currentList;
   String _lastActivity = '';
-  DateTime _lastActivityTime = DateTime.now();
+  DateTime _lastActivityTime = clock.now();
   StreamSubscription<ShoppingServiceState>? _stateSubscription;
 
   // BUT-238: split-store state
@@ -160,7 +161,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
 
       if (targetList != null) {
         _currentList = targetList;
-        _updateActivity(AppLocale.current.statusListLoaded, DateTime.now());
+        _updateActivity(AppLocale.current.statusListLoaded, clock.now());
         AppLogger.success('✅ Kollaborativ lista laddad: ${targetList.name}');
       } else {
         AppLogger.error('❌ Kollaborativ lista inte hittad: $listId');

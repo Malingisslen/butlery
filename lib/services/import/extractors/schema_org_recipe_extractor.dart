@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/nutrition_info.dart';
@@ -24,8 +25,8 @@ class SchemaOrgRecipeExtractor {
         mealType: extractCategory(data) ?? 'Middag',
         imageUrls: extractImages(data),
         sourceUrl: sourceUrl,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: '',
         prepTimeMinutes: parseDuration(data['prepTime']),
         cookTimeMinutes: parseDuration(data['cookTime']),

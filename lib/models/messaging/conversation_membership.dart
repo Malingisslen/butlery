@@ -1,5 +1,6 @@
 // lib/models/messaging/conversation_membership.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -39,7 +40,7 @@ class ConversationMembership {
     required String conversationTitle,
     required bool isGroup,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return ConversationMembership(
       conversationId: conversationId,
       conversationTitle: conversationTitle,
@@ -94,9 +95,9 @@ class ConversationMembership {
           SerializationUtils.safeString(data, 'conversationTitle'),
       isGroup: SerializationUtils.safeBool(data, 'isGroup'),
       lastActivityAt: SerializationUtils.safeDateTime(data, 'lastActivityAt') ??
-          DateTime.now(),
+          clock.now(),
       joinedAt:
-          SerializationUtils.safeDateTime(data, 'joinedAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'joinedAt') ?? clock.now(),
       hasUnread: SerializationUtils.safeBool(data, 'hasUnread'),
       isMuted: SerializationUtils.safeBool(data, 'isMuted'),
       isPinned: SerializationUtils.safeBool(data, 'isPinned'),

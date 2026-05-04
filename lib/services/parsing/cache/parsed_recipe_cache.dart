@@ -1,4 +1,5 @@
 import 'package:butlery/models/parsing/parsed_recipe.dart';
+import 'package:clock/clock.dart';
 
 /// Temporary in-memory cache for ParsedRecipe objects.
 ///
@@ -22,7 +23,7 @@ class ParsedRecipeCache {
   /// The ParsedRecipe will be retrieved later in RecipeFormViewModel.
   void store(String sourceUrl, ParsedRecipe parsed) {
     _cleanup();
-    _cache[sourceUrl] = _CacheEntry(parsed, DateTime.now());
+    _cache[sourceUrl] = _CacheEntry(parsed, clock.now());
   }
 
   /// Retrieve and remove ParsedRecipe by sourceUrl.
@@ -48,7 +49,7 @@ class ParsedRecipeCache {
 
   /// Remove expired entries.
   void _cleanup() {
-    final now = DateTime.now();
+    final now = clock.now();
     _cache.removeWhere((_, entry) => now.difference(entry.timestamp) > _maxAge);
   }
 }

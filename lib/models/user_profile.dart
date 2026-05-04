@@ -1,4 +1,6 @@
 /// User profile with social networking and notification capabilities.
+
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
@@ -87,7 +89,7 @@ class UserProfile with JsonSerializableMixin {
     this.hiddenAt,
   }) {
     if (birthYear != null) {
-      final currentYear = DateTime.now().year;
+      final currentYear = clock.now().year;
       if (birthYear! < 1900 || birthYear! > currentYear - 13) {
         throw ArgumentError(
           'birthYear must be between 1900 and ${currentYear - 13} (got $birthYear)',
@@ -188,7 +190,7 @@ class UserProfile with JsonSerializableMixin {
 
   /// Time since last active
   String get lastActiveText {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(lastActiveAt);
 
     if (isOnline) {
@@ -211,7 +213,7 @@ class UserProfile with JsonSerializableMixin {
   bool get hasFreshFCMToken {
     if (fcmToken == null || fcmTokenUpdatedAt == null) return false;
 
-    final now = DateTime.now();
+    final now = clock.now();
     final tokenAge = now.difference(fcmTokenUpdatedAt!);
     return tokenAge.inDays < 30; // FCM tokens should be refreshed regularly
   }
@@ -223,7 +225,7 @@ class UserProfile with JsonSerializableMixin {
 
   /// Time since joined
   String get memberSinceText {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(joinedAt);
     final l = AppLocale.current;
     if (difference.inDays < 30) {
@@ -420,7 +422,7 @@ class UserProfile with JsonSerializableMixin {
     if (raw == null) return null;
     final parsed = raw is int ? raw : int.tryParse(raw.toString());
     if (parsed == null) return null;
-    final currentYear = DateTime.now().year;
+    final currentYear = clock.now().year;
     if (parsed < 1900 || parsed > currentYear - 13) return null;
     return parsed;
   }

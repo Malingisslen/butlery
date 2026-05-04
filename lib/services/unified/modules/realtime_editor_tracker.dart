@@ -2,6 +2,7 @@
 
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:clock/clock.dart';
 import 'package:get_it/get_it.dart';
 
 /// Focused module for real-time editor tracking
@@ -26,7 +27,7 @@ class RealtimeEditorTracker {
         await collaborativeRepo.setPresence(recipeId, currentUserId, {
           'displayName': currentUserDisplayName ?? '?',
           'isActive': true,
-          'lastSeen': DateTime.now().toIso8601String(),
+          'lastSeen': clock.now().toIso8601String(),
         });
         AppLogger.debug('✅ Registered as active editor for recipe $recipeId');
       } else {
@@ -141,7 +142,7 @@ class RealtimeEditorTracker {
       return {
         'activeEditorCount': editorCount,
         'hasActiveEditors': editorCount > 0,
-        'lastUpdated': DateTime.now().toIso8601String(),
+        'lastUpdated': clock.now().toIso8601String(),
       };
     } catch (e) {
       AppLogger.error('❌ Error getting editor statistics: $e');

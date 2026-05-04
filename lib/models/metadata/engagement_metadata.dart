@@ -8,6 +8,7 @@
 /// - Groups: Track when users join groups
 /// - Shopping lists: Track when users join collaborative lists
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -41,7 +42,7 @@ class EngagementMetadata {
   Map<String, dynamic> toFirestore() {
     return {
       'userId': userId,
-      'timestamp': DateTime.now(),
+      'timestamp': clock.now(),
       'action': action,
       if (targetId != null) 'targetId': targetId,
     };

@@ -1,6 +1,7 @@
 /// Weekly menu planning view with filter-based generation and social sharing.
 library;
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -183,7 +184,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
-    final weekNumber = IsoWeekUtils.isoWeekNumber(DateTime.now());
+    final weekNumber = IsoWeekUtils.isoWeekNumber(clock.now());
     final menuItemCount = viewModel.hasMenu ? viewModel.totalRecipeCount : 0;
 
     return Scaffold(

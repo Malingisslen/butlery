@@ -1,6 +1,7 @@
 /// Activity event model for the social activity feed.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -46,7 +47,7 @@ class ActivityEvent {
     required this.recipeTitle,
     this.extraData = const {},
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? clock.now();
 
   factory ActivityEvent.create({
     required String actorId,
@@ -64,7 +65,7 @@ class ActivityEvent {
       recipeId: recipeId,
       recipeTitle: recipeTitle,
       extraData: extraData ?? const {},
-      createdAt: DateTime.now(),
+      createdAt: clock.now(),
     );
   }
 
@@ -96,7 +97,7 @@ class ActivityEvent {
       recipeTitle: SerializationUtils.safeString(data, 'recipeTitle'),
       extraData: (data['extraData'] as Map<String, dynamic>?) ?? const {},
       createdAt:
-          SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now(),
     );
   }
 

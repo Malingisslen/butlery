@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -397,7 +398,7 @@ class SocialCollaborativeComponents {
 
   /// Format relative time for last activity
   static String _formatRelativeTime(BuildContext context, DateTime dateTime) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {

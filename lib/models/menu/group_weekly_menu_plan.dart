@@ -10,6 +10,7 @@
 /// their own collaborative plan here.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -132,7 +133,7 @@ class GroupWeeklyMenuPlan {
     List<GroupMenuParticipant>? initialParticipants,
   }) {
     final weekStart = IsoWeekUtils.weekStartOf(date);
-    final now = DateTime.now();
+    final now = clock.now();
     final participants = initialParticipants ??
         [
           GroupMenuParticipant(
@@ -212,7 +213,7 @@ class GroupWeeklyMenuPlan {
       entries: entries ?? this.entries,
       participants: participants ?? this.participants,
       createdAt: createdAt,
-      lastModifiedAt: lastModifiedAt ?? DateTime.now(),
+      lastModifiedAt: lastModifiedAt ?? clock.now(),
       lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
     );
   }
@@ -240,7 +241,7 @@ class GroupWeeklyMenuPlan {
     final weekStart = SerializationUtils.safeRequiredDateTime(
       data,
       'weekStartDate',
-      defaultValue: DateTime.now(),
+      defaultValue: clock.now(),
     );
     return GroupWeeklyMenuPlan(
       id: id,

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -92,7 +93,7 @@ class ContentReport {
         SerializationUtils.safeNullableString(data, 'status'),
       ),
       createdAt:
-          SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now(),
     );
   }
 

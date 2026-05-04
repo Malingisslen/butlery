@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
@@ -353,11 +354,8 @@ class DataExportView extends StatelessWidget {
     if (viewModel.exportedData == null) return;
 
     try {
-      final timestamp = DateTime.now()
-          .toIso8601String()
-          .replaceAll(':', '-')
-          .split('.')
-          .first;
+      final timestamp =
+          clock.now().toIso8601String().replaceAll(':', '-').split('.').first;
       final fileName = 'butlery_data_export_$timestamp.json';
 
       await export_helper.downloadJsonFile(viewModel.exportedData!, fileName);
@@ -399,11 +397,8 @@ class DataExportView extends StatelessWidget {
     final shareText = context.l10n.dataExportShareText;
 
     try {
-      final timestamp = DateTime.now()
-          .toIso8601String()
-          .replaceAll(':', '-')
-          .split('.')
-          .first;
+      final timestamp =
+          clock.now().toIso8601String().replaceAll(':', '-').split('.').first;
       final fileName = 'butlery_data_export_$timestamp.json';
 
       await export_helper.shareJsonFile(

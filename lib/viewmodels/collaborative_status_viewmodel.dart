@@ -1,5 +1,6 @@
 /// lib/viewmodels/collaborative_status_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/widgets.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
@@ -39,7 +40,7 @@ class CollaborativeStatus {
   CollaborativeStatus.error(String errorMessage)
       : isCollaborative = false,
         participants = const [],
-        lastChecked = DateTime.now(),
+        lastChecked = clock.now(),
         error = errorMessage;
 
   bool get isLoading => lastChecked == null && error == null;
@@ -89,7 +90,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     // Kontrollera cache validity
     if (cached.isValid && cached.lastChecked != null) {
-      final age = DateTime.now().difference(cached.lastChecked!);
+      final age = clock.now().difference(cached.lastChecked!);
       if (age > _cacheTtl) {
         _statusCache.remove(key);
         return null;
@@ -223,7 +224,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
       _statusCache[key] = CollaborativeStatus(
         isCollaborative: isShared,
         participants: participants,
-        lastChecked: DateTime.now(),
+        lastChecked: clock.now(),
       );
 
       // Defer notification to avoid setState during build

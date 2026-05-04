@@ -1,5 +1,6 @@
 // lib/services/realtime/conflict_resolution_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -29,8 +30,7 @@ class ConflictResolutionModule {
     if (lastUpdate == null) return false;
 
     // If less than 5 seconds since last local update, check remote
-    final timeSinceUpdate =
-        DateTime.now().difference(lastUpdate).inMilliseconds;
+    final timeSinceUpdate = clock.now().difference(lastUpdate).inMilliseconds;
     if (timeSinceUpdate < conflictResolutionWindowMs) {
       try {
         final remoteResource =
@@ -88,7 +88,7 @@ class ConflictResolutionModule {
 
   /// Record local update for conflict detection
   void recordLocalUpdate(String resourceId) {
-    _lastLocalUpdate[resourceId] = DateTime.now();
+    _lastLocalUpdate[resourceId] = clock.now();
   }
 
   /// Remove tracking for resource

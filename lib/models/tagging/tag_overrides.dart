@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 
@@ -108,7 +109,7 @@ class TagOverrides {
     newOverrides[allergenKey] = status;
     return copyWith(
       allergenOverrides: newOverrides,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: editedBy,
     );
   }
@@ -123,7 +124,7 @@ class TagOverrides {
     newOverrides[dietaryKey] = status;
     return copyWith(
       dietaryOverrides: newOverrides,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: editedBy,
     );
   }
@@ -135,7 +136,7 @@ class TagOverrides {
     return copyWith(
       addedTags: newAdded,
       removedTags: newRemoved,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: editedBy,
     );
   }
@@ -147,7 +148,7 @@ class TagOverrides {
     return copyWith(
       addedTags: newAdded,
       removedTags: newRemoved,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: editedBy,
     );
   }
@@ -161,7 +162,7 @@ class TagOverrides {
       ..remove(allergenKey);
     return copyWith(
       allergenOverrides: newOverrides,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: editedBy,
     );
   }
@@ -175,7 +176,7 @@ class TagOverrides {
       ..remove(dietaryKey);
     return copyWith(
       dietaryOverrides: newOverrides,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: editedBy,
     );
   }
@@ -183,7 +184,7 @@ class TagOverrides {
   /// Clears all overrides.
   TagOverrides cleared({required String editedBy}) {
     return TagOverrides(
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: editedBy,
     );
   }

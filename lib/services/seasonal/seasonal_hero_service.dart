@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:butlery/core/base/base_service.dart';
@@ -35,7 +36,7 @@ class SeasonalHeroService extends BaseService {
   /// `null` if the data couldn't be loaded or the month isn't curated.
   Future<SeasonalMonth?> getCurrentMonth({DateTime? now}) async {
     await _ensureLoaded();
-    final month = (now ?? DateTime.now()).month;
+    final month = (now ?? clock.now()).month;
     return _monthsCache?[month];
   }
 

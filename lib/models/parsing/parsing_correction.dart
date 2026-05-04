@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
@@ -105,7 +106,7 @@ class ParsingCorrection {
       id: const Uuid().v4(),
       recipeId: recipeId,
       userId: userId,
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
       source: source,
       domain: domain,
       successfulTier: successfulTier,

@@ -1,5 +1,6 @@
 /// Service handling beta feedback submission.
 
+import 'package:clock/clock.dart';
 import 'dart:typed_data';
 
 import 'package:get_it/get_it.dart';
@@ -53,7 +54,7 @@ class FeedbackService extends BaseService {
         email: email,
         screenshotUrl: screenshotUrl,
         recentInteractions: _interactionLogger.toJsonList(),
-        createdAt: DateTime.now(),
+        createdAt: clock.now(),
         deviceInfo: _buildDeviceInfo(),
       );
 
@@ -68,6 +69,6 @@ class FeedbackService extends BaseService {
   }
 
   String _buildDeviceInfo() {
-    return 'Flutter Web - ${DateTime.now().timeZoneName}';
+    return 'Flutter Web - ${clock.now().timeZoneName}';
   }
 }

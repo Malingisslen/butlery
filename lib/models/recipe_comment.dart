@@ -1,4 +1,6 @@
 /// Recipe comment with threading, likes, and cached author metadata.
+
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:uuid/uuid.dart';
@@ -57,7 +59,7 @@ class RecipeComment {
     this.reactions = const {},
     this.recipeOwnerId,
     this.sharedWithUserIds = const [],
-  }) : createdAt = createdAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? clock.now();
 
   factory RecipeComment.create({
     required String recipeId,
@@ -76,7 +78,7 @@ class RecipeComment {
       authorDisplayName: authorDisplayName,
       authorAvatarUrl: authorAvatarUrl,
       text: text,
-      createdAt: DateTime.now(),
+      createdAt: clock.now(),
       parentCommentId: parentCommentId,
       recipeOwnerId: recipeOwnerId,
       sharedWithUserIds: sharedWithUserIds,
@@ -119,7 +121,7 @@ class RecipeComment {
   /// [newText] The updated comment text content
   /// Returns a new [RecipeComment] instance with updated text and edit timestamp.
   RecipeComment edit(String newText) {
-    return copyWith(text: newText, editedAt: DateTime.now());
+    return copyWith(text: newText, editedAt: clock.now());
   }
 
   /// Performs soft deletion of the comment while preserving structure.
@@ -203,7 +205,7 @@ class RecipeComment {
           SerializationUtils.safeNullableString(data, 'authorAvatarUrl'),
       text: SerializationUtils.safeString(data, 'text'),
       createdAt:
-          SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now(),
       editedAt: SerializationUtils.safeDateTime(data, 'editedAt'),
       likesCount: SerializationUtils.safeInt(data, 'likesCount'),
       parentCommentId:

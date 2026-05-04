@@ -161,6 +161,7 @@
 /// application, providing reliable, performant, and memory-safe stream management while eliminating
 /// code duplication and ensuring consistent resource lifecycle patterns across the entire service layer.
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -658,7 +659,7 @@ mixin StreamPatternMixin on StreamManagementMixin {
     return listenToStream(
       stream,
       (value) {
-        final now = DateTime.now();
+        final now = clock.now();
         if (lastEmission == null || now.difference(lastEmission!) >= duration) {
           lastEmission = now;
           onData(value);

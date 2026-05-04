@@ -1,5 +1,6 @@
 // lib/models/messaging/poll.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:uuid/uuid.dart';
 
@@ -118,7 +119,7 @@ class Poll {
       allowMultipleChoices: allowMultipleChoices,
       deadline: deadline,
       creatorId: creatorId,
-      createdAt: DateTime.now(),
+      createdAt: clock.now(),
     );
   }
 
@@ -139,7 +140,7 @@ class Poll {
       allowMultipleChoices: allowMultipleChoices,
       deadline: deadline,
       creatorId: creatorId,
-      createdAt: DateTime.now(),
+      createdAt: clock.now(),
     );
   }
 
@@ -199,7 +200,7 @@ class Poll {
   }
 
   /// Whether the poll has expired based on deadline.
-  bool get isExpired => deadline != null && DateTime.now().isAfter(deadline!);
+  bool get isExpired => deadline != null && clock.now().isAfter(deadline!);
 
   /// Whether voting is still allowed.
   bool get isActive => !isClosed && !isExpired;

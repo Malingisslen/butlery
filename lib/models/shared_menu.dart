@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
@@ -50,7 +51,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
           (totalCount, recipes) => totalCount + recipes.length,
         ),
         categories = menuSnapshot.keys.toList(),
-        super(sharedAt: sharedAt ?? DateTime.now());
+        super(sharedAt: sharedAt ?? clock.now());
 
   factory SharedMenu.create({
     required String sharedByUserId,

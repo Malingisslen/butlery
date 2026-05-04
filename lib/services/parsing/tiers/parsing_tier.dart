@@ -6,6 +6,7 @@ import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:clock/clock.dart';
 
 /// Abstract base class for parsing tiers.
 ///
@@ -244,7 +245,7 @@ mixin QualityScoring {
       domain: context.domain,
       sourceUrl: context.sourceUrl,
       parserVersion: context.parserVersion,
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
       totalParseTime: context.elapsed,
       tierResults: const [],
     );

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -129,8 +130,8 @@ class FirebaseUserIngredientRepository
       final doc = _getUserCollection(userId).doc(ingredient.id);
 
       final withTimestamps = ingredient.copyWith(
-        createdAt: DateTime.now().toUtc(),
-        updatedAt: DateTime.now().toUtc(),
+        createdAt: clock.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
         status: 'user-defined',
       );
 
@@ -154,7 +155,7 @@ class FirebaseUserIngredientRepository
       final doc = _getUserCollection(userId).doc(ingredient.id);
 
       final withTimestamp = ingredient.copyWith(
-        updatedAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
       );
 
       await doc.update(withTimestamp.toFirestore());

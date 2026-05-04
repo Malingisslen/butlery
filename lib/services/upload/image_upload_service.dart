@@ -7,6 +7,7 @@
 
 // lib/services/upload/image_upload_service.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -188,7 +189,7 @@ class ImageUploadService extends BaseService {
       // Update status to uploading
       currentStatus = currentStatus.copyWith(
         state: ImageUploadState.uploading,
-        uploadStartTime: DateTime.now(),
+        uploadStartTime: clock.now(),
       );
       _queueManager.updateStatus(filePath, currentStatus);
 
@@ -282,7 +283,7 @@ class ImageUploadService extends BaseService {
       message: AppLocale.current.uploadNotificationCompleteBody,
       priority: NotificationPriority.low,
       data: {'filePath': filePath, 'url': url},
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
     ));
   }
 
@@ -304,7 +305,7 @@ class ImageUploadService extends BaseService {
       state: ImageUploadState.failed,
       error: error.toString(),
       errorType: errorType,
-      errorOccurredAt: DateTime.now(),
+      errorOccurredAt: clock.now(),
     );
     _queueManager.updateStatus(filePath, failedStatus);
 
@@ -337,7 +338,7 @@ class ImageUploadService extends BaseService {
         message: AppLocale.current.uploadNotificationFailedBody,
         priority: NotificationPriority.high,
         data: {'filePath': filePath, 'error': error.toString()},
-        timestamp: DateTime.now(),
+        timestamp: clock.now(),
       ));
 
       return false;

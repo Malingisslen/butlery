@@ -11,6 +11,7 @@
 
 // lib/models/messaging/message.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/messaging/message_type.dart';
 import 'package:uuid/uuid.dart';
@@ -172,7 +173,7 @@ class Message {
       content: content,
       type: MessageType.text,
       status: MessageStatus.sending,
-      sentAt: DateTime.now().toUtc(),
+      sentAt: clock.now().toUtc(),
       replyToMessageId: replyToMessageId,
     );
   }
@@ -207,7 +208,7 @@ class Message {
       content: message ?? AppLocale.current.messageSharedRecipe(recipeTitle),
       type: MessageType.recipeShare,
       status: MessageStatus.sending,
-      sentAt: DateTime.now().toUtc(),
+      sentAt: clock.now().toUtc(),
       metadata: {
         'recipeId': recipeId,
         'recipeTitle': recipeTitle,
@@ -237,7 +238,7 @@ class Message {
       content: message ?? AppLocale.current.messageSharedMenu(menuTitle),
       type: MessageType.menuShare,
       status: MessageStatus.sending,
-      sentAt: DateTime.now().toUtc(),
+      sentAt: clock.now().toUtc(),
       metadata: {
         'menuId': menuId,
         'menuTitle': menuTitle,
@@ -268,7 +269,7 @@ class Message {
           message ?? AppLocale.current.messageSharedShoppingList(listTitle),
       type: MessageType.shoppingListShare,
       status: MessageStatus.sending,
-      sentAt: DateTime.now().toUtc(),
+      sentAt: clock.now().toUtc(),
       metadata: {
         'listId': listId,
         'listTitle': listTitle,
@@ -295,7 +296,7 @@ class Message {
       content: content,
       type: MessageType.system,
       status: MessageStatus.delivered,
-      sentAt: DateTime.now().toUtc(),
+      sentAt: clock.now().toUtc(),
     );
   }
 

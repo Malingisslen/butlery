@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'package:butlery/models/recipe_unified.dart';
@@ -348,8 +349,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         mealType: 'Middag',
         imageUrls: parsed.imageUrl != null ? [parsed.imageUrl!] : [],
         sourceUrl: url,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: '',
       ),
       type: RecipeType.personal,

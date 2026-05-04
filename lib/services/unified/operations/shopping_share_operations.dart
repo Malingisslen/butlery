@@ -1,5 +1,6 @@
 // lib/services/unified/operations/shopping_share_operations.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
@@ -21,7 +22,7 @@ class ShoppingExportModule {
   Map<String, dynamic> exportListAsJson(String listId) => {
         'listId': listId,
         'items': ['Item 1', 'Item 2'],
-        'exported': DateTime.now().toIso8601String(),
+        'exported': clock.now().toIso8601String(),
       };
   String exportListAsCSV(String listId) =>
       'Item,Quantity,Category\nItem 1,1,Food\nItem 2,2,Household';

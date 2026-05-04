@@ -1,5 +1,6 @@
 // lib/viewmodels/realtime/connection_monitor.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -49,13 +50,13 @@ class ConnectionMonitor {
   /// Har vi varit online kontinuerligt senaste X minuter?
   bool hasBeenStableFor(Duration duration) {
     if (!isOnline || _lastConnectionChange == null) return false;
-    return DateTime.now().difference(_lastConnectionChange!) >= duration;
+    return clock.now().difference(_lastConnectionChange!) >= duration;
   }
 
   /// Connection uptime (how long we have been online)
   Duration? get connectionUptime {
     if (!isOnline || _lastConnectionChange == null) return null;
-    return DateTime.now().difference(_lastConnectionChange!);
+    return clock.now().difference(_lastConnectionChange!);
   }
 
   /// Start monitoring connection status
@@ -91,7 +92,7 @@ class ConnectionMonitor {
   void _processConnectionChange(
       bool wasOnline, bool isNowOnline, bool isConnected) {
     if (wasOnline != isNowOnline) {
-      _lastConnectionChange = DateTime.now();
+      _lastConnectionChange = clock.now();
 
       // Uppdatera status
       if (isNowOnline) {

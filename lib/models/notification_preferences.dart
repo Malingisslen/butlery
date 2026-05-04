@@ -1,5 +1,6 @@
 // lib/models/notification_preferences.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
@@ -59,7 +60,7 @@ class NotificationPreferences {
       quietHoursEnd: const TimeOfDay(hour: 8, minute: 0), // 8 AM
       soundEnabled: true,
       vibrationEnabled: true,
-      lastUpdated: DateTime.now(),
+      lastUpdated: clock.now(),
     );
   }
 
@@ -100,7 +101,7 @@ class NotificationPreferences {
           ? data['lastUpdated'] as DateTime
           : (data['lastUpdated'] != null
               ? AppTimestamp.fromFirestore(data['lastUpdated']).dateTime
-              : DateTime.now()),
+              : clock.now()),
     );
   }
 

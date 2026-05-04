@@ -2,6 +2,7 @@
 /// Drives the ingredient autocomplete via [PantryViewModel.searchIngredient].
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -81,7 +82,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
   }
 
   Future<void> _pickExpiryDate() async {
-    final now = DateTime.now();
+    final now = clock.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: _expiryDate ?? now.add(const Duration(days: 7)),

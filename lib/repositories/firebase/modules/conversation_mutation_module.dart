@@ -1,5 +1,6 @@
 // lib/repositories/firebase/modules/conversation_mutation_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
@@ -64,7 +65,7 @@ class ConversationMutationModule {
       }
 
       // Create conversation directly with deterministic ID
-      final now = DateTime.now().toUtc();
+      final now = clock.now().toUtc();
       final conversation = Conversation(
         id: conversationId,
         participantIds: [user1Id, user2Id],
@@ -184,7 +185,7 @@ class ConversationMutationModule {
       final updatedConversation = conversation.copyWith(
         title: title,
         metadata: metadata,
-        updatedAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
       );
 
       await updateFn(updatedConversation);
@@ -233,7 +234,7 @@ class ConversationMutationModule {
       final updatedLastReadTimestamps = {...conversation.lastReadTimestamps};
 
       // Initialize last read timestamps for new participants
-      final now = DateTime.now().toUtc();
+      final now = clock.now().toUtc();
       for (final participantId in participantIds) {
         updatedLastReadTimestamps[participantId] = now;
       }
@@ -315,7 +316,7 @@ class ConversationMutationModule {
         participantDisplayNames: updatedDisplayNames,
         participantAvatarUrls: updatedAvatarUrls,
         lastReadTimestamps: updatedLastReadTimestamps,
-        updatedAt: DateTime.now().toUtc(),
+        updatedAt: clock.now().toUtc(),
       );
 
       await updateFn(updatedConversation);

@@ -2,6 +2,7 @@
 
 // lib/views/photo_import_view.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -575,7 +576,7 @@ class _HeirloomSectionState extends State<_HeirloomSection> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final vm = widget.viewModel;
-    final currentYear = DateTime.now().year;
+    final currentYear = clock.now().year;
 
     return Container(
       width: double.infinity,

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Abstraction for server timestamp generation.
@@ -30,5 +31,5 @@ class TestTimestampProvider implements TimestampProvider {
   const TestTimestampProvider();
 
   @override
-  Object serverTimestamp() => Timestamp.fromDate(DateTime.now());
+  Object serverTimestamp() => Timestamp.fromDate(clock.now());
 }

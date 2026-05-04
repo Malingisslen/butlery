@@ -1,5 +1,6 @@
 // lib/repositories/firebase/firebase_comments_repository.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
@@ -209,7 +210,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       {
         'lastWrite': timestampProvider.serverTimestamp(),
         'expireAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
       },
       SetOptions(merge: true),
     );

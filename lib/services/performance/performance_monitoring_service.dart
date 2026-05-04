@@ -9,6 +9,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -39,7 +40,7 @@ class PerformanceMetric {
     required this.value,
     DateTime? timestamp,
     this.metadata,
-  }) : timestamp = timestamp ?? DateTime.now();
+  }) : timestamp = timestamp ?? clock.now();
 
   Map<String, dynamic> toJson() => {
         'type': type.name,
@@ -119,7 +120,7 @@ class PerformanceMonitoringService extends BaseService {
   final Map<String, Stopwatch> _activeTimers = {};
   final List<String> _warnings = [];
 
-  DateTime _sessionStartTime = DateTime.now();
+  DateTime _sessionStartTime = clock.now();
   Timer? _reportTimer;
   bool _isMonitoring = false;
 
@@ -142,7 +143,7 @@ class PerformanceMonitoringService extends BaseService {
     if (_isMonitoring) return;
 
     _isMonitoring = true;
-    _sessionStartTime = DateTime.now();
+    _sessionStartTime = clock.now();
 
     // Start frame monitoring
     _startFrameMonitoring();
@@ -309,7 +310,7 @@ class PerformanceMonitoringService extends BaseService {
 
   /// Add a performance warning
   void _addWarning(String warning) {
-    _warnings.add('[${DateTime.now().toIso8601String()}] $warning');
+    _warnings.add('[${clock.now().toIso8601String()}] $warning');
     AppLogger.warning('Performance: $warning');
 
     // Keep warnings list manageable
@@ -329,7 +330,7 @@ class PerformanceMonitoringService extends BaseService {
 
   /// Generate a performance report
   PerformanceReport generateReport() {
-    final now = DateTime.now();
+    final now = clock.now();
     final avgFrameTime = _frameCount > 0
         ? _totalFrameTime.inMicroseconds / _frameCount / 1000.0 // ms
         : 0.0;

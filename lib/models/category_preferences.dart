@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -17,7 +18,7 @@ class CategoryPreferences {
     DateTime? updatedAt,
   })  : defaultCategoryOrder =
             defaultCategoryOrder ?? ShoppingCategory.defaultStoreOrder,
-        updatedAt = updatedAt ?? DateTime.now();
+        updatedAt = updatedAt ?? clock.now();
 
   CategoryPreferences copyWith({
     Map<String, String>? itemCategoryOverrides,
@@ -29,7 +30,7 @@ class CategoryPreferences {
       itemCategoryOverrides:
           itemCategoryOverrides ?? this.itemCategoryOverrides,
       defaultCategoryOrder: defaultCategoryOrder ?? this.defaultCategoryOrder,
-      updatedAt: updatedAt ?? DateTime.now(),
+      updatedAt: updatedAt ?? clock.now(),
     );
   }
 

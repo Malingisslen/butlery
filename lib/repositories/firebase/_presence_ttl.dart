@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Shared TTL plumbing for presence repositories (BUT-477).
@@ -14,7 +15,7 @@ class PresenceTtl {
 
   /// `expiresAt` timestamp for a fresh write — `now + ttl`.
   static Timestamp computeExpiresAt() {
-    return Timestamp.fromDate(DateTime.now().toUtc().add(ttl));
+    return Timestamp.fromDate(clock.now().toUtc().add(ttl));
   }
 
   /// Drop rows whose `expiresAt` is in the past. Rows missing the field are
@@ -22,7 +23,7 @@ class PresenceTtl {
   static List<Map<String, dynamic>> filterStaleRows(
     Iterable<Map<String, dynamic>> rows,
   ) {
-    final now = DateTime.now().toUtc();
+    final now = clock.now().toUtc();
     return rows.where((row) {
       final raw = row['expiresAt'];
       if (raw is! Timestamp) return true;

@@ -1,5 +1,6 @@
 // lib/models/messaging/conversation_participant.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -38,7 +39,7 @@ class ConversationParticipant {
     String? avatarUrl,
     ParticipantRole role = ParticipantRole.member,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return ConversationParticipant(
       conversationId: conversationId,
       participantId: participantId,
@@ -93,9 +94,9 @@ class ConversationParticipant {
           defaultValue: 'Unknown'),
       avatarUrl: SerializationUtils.safeNullableString(data, 'avatarUrl'),
       joinedAt:
-          SerializationUtils.safeDateTime(data, 'joinedAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'joinedAt') ?? clock.now(),
       lastReadAt:
-          SerializationUtils.safeDateTime(data, 'lastReadAt') ?? DateTime.now(),
+          SerializationUtils.safeDateTime(data, 'lastReadAt') ?? clock.now(),
       role: SerializationUtils.safeEnum(
         data,
         'role',

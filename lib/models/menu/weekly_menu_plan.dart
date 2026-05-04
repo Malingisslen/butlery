@@ -1,6 +1,7 @@
 /// Weekly menu plan model — calendar view of `MenuGenerator` output.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -183,7 +184,7 @@ class WeeklyMenuPlan {
     required DateTime date,
   }) {
     final weekStart = IsoWeekUtils.weekStartOf(date);
-    final now = DateTime.now();
+    final now = clock.now();
     return WeeklyMenuPlan(
       id: IsoWeekUtils.weekIdFor(userId, weekStart),
       userId: userId,
@@ -227,7 +228,7 @@ class WeeklyMenuPlan {
       weekStartDate: weekStartDate,
       entries: entries ?? this.entries,
       createdAt: createdAt,
-      updatedAt: updatedAt ?? DateTime.now(),
+      updatedAt: updatedAt ?? clock.now(),
     );
   }
 
@@ -246,7 +247,7 @@ class WeeklyMenuPlan {
     final weekStart = SerializationUtils.safeRequiredDateTime(
       data,
       'weekStartDate',
-      defaultValue: DateTime.now(),
+      defaultValue: clock.now(),
     );
     return WeeklyMenuPlan(
       id: id,

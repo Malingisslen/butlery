@@ -8,6 +8,7 @@
 /// - Notifications: Track archived/dismissed notifications
 /// - Discovery content: Allow users to dismiss discovery recommendations
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -39,7 +40,7 @@ class DismissalMetadata {
   Map<String, dynamic> toFirestore() {
     return {
       'userId': userId,
-      'timestamp': DateTime.now(),
+      'timestamp': clock.now(),
       if (reason != null) 'reason': reason,
     };
   }

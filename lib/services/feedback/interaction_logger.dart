@@ -2,6 +2,9 @@
 /// for inclusion in beta feedback submissions.
 
 /// Single interaction entry capturing screen context and action type.
+
+import 'package:clock/clock.dart';
+
 class InteractionEntry {
   final String screenName;
   final String actionType;
@@ -36,7 +39,7 @@ class InteractionLogger {
     _buffer[_head] = InteractionEntry(
       screenName: screenName,
       actionType: actionType,
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
     );
     _head = (_head + 1) % _bufferSize;
     if (_count < _bufferSize) _count++;

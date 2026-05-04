@@ -1,5 +1,6 @@
 // lib/services/unified/friends/friends_firebase_sync.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -57,7 +58,7 @@ class FriendsFirebaseSyncOperations {
           // Recipient accept/reject: update normally
           await querySnapshot.docs.first.reference.update({
             'status': request.status.toString().split('.').last,
-            'respondedAt': request.respondedAt ?? DateTime.now(),
+            'respondedAt': request.respondedAt ?? clock.now(),
           });
           AppLogger.success('Updated friend request status in Firebase');
         }
@@ -85,7 +86,7 @@ class FriendsFirebaseSyncOperations {
           .collection(FirestoreCollections.userFriends)
           .doc(friend.uid)
           .set({
-        'friendSince': DateTime.now(),
+        'friendSince': clock.now(),
         'displayName': friend.displayName,
         'displayNameLower': friend.displayName.toLowerCase(),
       });
@@ -97,7 +98,7 @@ class FriendsFirebaseSyncOperations {
           .collection(FirestoreCollections.userFriends)
           .doc(userId)
           .set({
-        'friendSince': DateTime.now(),
+        'friendSince': clock.now(),
       });
 
       AppLogger.success('Synced friend to Firebase');
@@ -161,7 +162,7 @@ class FriendsFirebaseSyncOperations {
           .doc(userId)
           .collection(FirestoreCollections.userRateLimits)
           .doc('friendSearchMigrated')
-          .set({'migratedAt': DateTime.now()});
+          .set({'migratedAt': clock.now()});
     } catch (e) {
       AppLogger.warning('Failed to backfill displayNameLower: $e');
     }

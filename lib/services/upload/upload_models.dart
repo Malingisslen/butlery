@@ -10,6 +10,7 @@
 import 'dart:io';
 
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:clock/clock.dart';
 
 /// Image upload state tracking for race condition prevention
 enum ImageUploadState {
@@ -299,14 +300,14 @@ class CircuitBreakerState {
   /// Check if circuit breaker should reset (close) after timeout
   bool shouldReset(Duration resetTime) {
     if (!isOpen || lastFailureTime == null) return false;
-    return DateTime.now().difference(lastFailureTime!) >= resetTime;
+    return clock.now().difference(lastFailureTime!) >= resetTime;
   }
 
   /// Create new state with incremented failure count
   CircuitBreakerState withFailure() {
     return CircuitBreakerState(
       failureCount: failureCount + 1,
-      lastFailureTime: DateTime.now(),
+      lastFailureTime: clock.now(),
       isOpen: failureCount + 1 >= _failureThreshold,
     );
   }

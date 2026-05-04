@@ -3,6 +3,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
+import 'package:clock/clock.dart';
 
 /// Handles collaborative shopping list activity tracking, stats, and notifications.
 class ListActivityOperations {
@@ -96,7 +97,7 @@ class ListActivityOperations {
   }
 
   int getNotificationCount() {
-    final recentThreshold = DateTime.now().subtract(const Duration(hours: 24));
+    final recentThreshold = clock.now().subtract(const Duration(hours: 24));
 
     return _lifecycleOps
         .getAllLists()

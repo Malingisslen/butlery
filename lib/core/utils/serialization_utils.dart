@@ -1,4 +1,7 @@
 /// Serialization utilities for safe data transformation
+
+import 'package:clock/clock.dart';
+
 class SerializationUtils {
   SerializationUtils._(); // Private constructor - utility class
 
@@ -114,7 +117,7 @@ class SerializationUtils {
   /// Non-nullable variant — falls back to [defaultValue] or DateTime.now().
   static DateTime parseRequiredDateTimeValue(dynamic value,
       {DateTime? defaultValue}) {
-    return parseDateTimeValue(value) ?? defaultValue ?? DateTime.now();
+    return parseDateTimeValue(value) ?? defaultValue ?? clock.now();
   }
 
   static DateTime? safeDateTime(Map<String, dynamic> map, String key) {
@@ -123,7 +126,7 @@ class SerializationUtils {
 
   static DateTime safeRequiredDateTime(Map<String, dynamic> map, String key,
       {DateTime? defaultValue}) {
-    return parseDateTimeValue(map[key]) ?? defaultValue ?? DateTime.now();
+    return parseDateTimeValue(map[key]) ?? defaultValue ?? clock.now();
   }
 
   static dynamic serializeDateTime(DateTime? dateTime) {

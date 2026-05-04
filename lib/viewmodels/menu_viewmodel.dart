@@ -4,6 +4,7 @@
 
 // lib/viewmodels/menu_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -122,7 +123,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       promptLength: prompt.trim().length,
     );
 
-    final startTime = DateTime.now();
+    final startTime = clock.now();
 
     try {
       final generatedMenu =
@@ -131,8 +132,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _stateManager.clearErrorAfterSuccess();
 
       // Track menu generation success
-      final generationTime =
-          DateTime.now().difference(startTime).inMilliseconds;
+      final generationTime = clock.now().difference(startTime).inMilliseconds;
       await _analyticsService.logMenuGenerated(
         recipeCount: totalRecipeCount,
         method: 'ai_prompt',

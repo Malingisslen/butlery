@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe_form/recipe_auto_save_manager.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -45,7 +46,7 @@ class DraftMetadata {
       );
 
   /// Check if draft is recent (within last 24 hours)
-  bool get isRecent => DateTime.now().difference(lastModifiedAt).inHours < 24;
+  bool get isRecent => clock.now().difference(lastModifiedAt).inHours < 24;
 
   /// Get human-readable time since last modification
   String get timeAgo => TimeAgoFormatter.compact(lastModifiedAt);
@@ -75,7 +76,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   bool get isAutoSaving => _isAutoSaving;
   bool get hasRecentAutoSave =>
       _lastAutoSaveTime != null &&
-      DateTime.now().difference(_lastAutoSaveTime!).inSeconds < 10;
+      clock.now().difference(_lastAutoSaveTime!).inSeconds < 10;
   String? get currentDraftId => _currentDraftId;
 
   /// Initialize auto-save manager and check for existing drafts
@@ -132,7 +133,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     if (!_isDisposed) notifyListeners();
 
     try {
-      final now = DateTime.now();
+      final now = clock.now();
       final draftId = _currentDraftId ?? 'draft_${now.millisecondsSinceEpoch}';
       _currentDraftId = draftId;
 

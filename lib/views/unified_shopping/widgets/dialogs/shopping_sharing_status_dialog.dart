@@ -1,5 +1,6 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -461,7 +462,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   }
 
   String _formatDateTime(BuildContext context, DateTime dateTime) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {

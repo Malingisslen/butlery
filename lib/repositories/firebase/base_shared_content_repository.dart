@@ -1,6 +1,7 @@
 /// Base repository for shared content (recipes, menus, shopping lists) with unified
 /// status management, permission validation, and subcollection-based member tracking.
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/base_view_repository.dart';
@@ -325,7 +326,7 @@ abstract class BaseSharedContentRepository<T>
         // V1-QP-001: Use provided displayName or fallback for legacy callers
         displayName: displayName ?? 'Användare',
         avatarUrl: avatarUrl,
-        addedAt: DateTime.now().toUtc(),
+        addedAt: clock.now().toUtc(),
         addedBy: addedBy,
         role: role,
       );

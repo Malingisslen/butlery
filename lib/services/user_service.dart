@@ -1,5 +1,6 @@
 /// User profile service with 30-min caching, social discovery, real-time auth sync, and privacy controls.
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -138,7 +139,7 @@ class UserService extends ChangeNotifier
           avatarUrl: avatarUrl,
           isSearchable: isSearchable,
           allowEmailSearch: allowEmailSearch,
-          lastActiveAt: DateTime.now(),
+          lastActiveAt: clock.now(),
         );
         if (cookingSkillLevel != null) {
           profile = profile.copyWith(cookingSkillLevel: cookingSkillLevel);
@@ -150,7 +151,7 @@ class UserService extends ChangeNotifier
           profile = profile.copyWith(bio: bio);
         }
       } else {
-        final now = DateTime.now();
+        final now = clock.now();
         profile = UserProfile(
           uid: user.uid,
           displayName: displayName,
@@ -218,8 +219,8 @@ class UserService extends ChangeNotifier
     if (_profileCache.containsKey(userId)) {
       final cached = _profileCache[userId]!;
       final cacheTime = _cacheTimestamps[userId]!;
-      final isExpired = DateTime.now().difference(cacheTime).inMinutes >
-          _cacheDurationMinutes;
+      final isExpired =
+          clock.now().difference(cacheTime).inMinutes > _cacheDurationMinutes;
 
       if (!isExpired) {
         return cached;
@@ -253,8 +254,8 @@ class UserService extends ChangeNotifier
       if (_profileCache.containsKey(userId)) {
         final cached = _profileCache[userId]!;
         final cacheTime = _cacheTimestamps[userId]!;
-        final isExpired = DateTime.now().difference(cacheTime).inMinutes >
-            _cacheDurationMinutes;
+        final isExpired =
+            clock.now().difference(cacheTime).inMinutes > _cacheDurationMinutes;
 
         if (!isExpired) {
           results.add(cached);
@@ -291,7 +292,7 @@ class UserService extends ChangeNotifier
 
       _currentUserProfile = _currentUserProfile!.copyWith(
         isOnline: isOnline,
-        lastActiveAt: DateTime.now(),
+        lastActiveAt: clock.now(),
       );
 
       _cacheProfile(userId, _currentUserProfile!);
@@ -447,7 +448,7 @@ class UserService extends ChangeNotifier
     _profileCache.remove(userId);
     _cacheTimestamps.remove(userId);
     _profileCache[userId] = profile;
-    _cacheTimestamps[userId] = DateTime.now();
+    _cacheTimestamps[userId] = clock.now();
     if (_profileCache.length > _maxCacheSize) {
       final oldest = _profileCache.keys.first;
       _profileCache.remove(oldest);
@@ -476,7 +477,7 @@ class UserService extends ChangeNotifier
 
       _currentUserProfile = _currentUserProfile!.copyWith(
         fcmToken: token,
-        fcmTokenUpdatedAt: DateTime.now(),
+        fcmTokenUpdatedAt: clock.now(),
       );
 
       _cacheProfile(userId, _currentUserProfile!);

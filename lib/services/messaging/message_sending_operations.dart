@@ -1,5 +1,6 @@
 // lib/services/messaging/message_sending_operations.dart
 
+import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
@@ -119,7 +120,7 @@ class MessageSendingOperations {
         content: caption ?? '',
         type: MessageType.image,
         status: MessageStatus.sent,
-        sentAt: DateTime.now(),
+        sentAt: clock.now(),
         metadata: {
           'imageUrl': imageUrl,
           if (caption != null && caption.isNotEmpty) 'caption': caption,

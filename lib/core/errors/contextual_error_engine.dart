@@ -1,5 +1,6 @@
 // lib/core/errors/contextual_error_engine.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -151,7 +152,7 @@ class ErrorContext {
       technicalDetails: technicalDetails,
       recoveryActions: recoveryActions,
       additionalData: additionalData,
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
     );
   }
 }
@@ -412,7 +413,7 @@ class ContextualErrorEngine {
 
   /// Check if current time is during maintenance window (simple heuristic)
   static bool _isMaintenanceTime() {
-    final now = DateTime.now();
+    final now = clock.now();
     // Assume maintenance between 2-4 AM local time
     return now.hour >= 2 && now.hour < 4;
   }

@@ -17,6 +17,7 @@
 /// - Async fire-and-forget: Doesn't block application performance
 /// - Comprehensive context: Captures all relevant security metadata
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/audit_log.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -75,7 +76,7 @@ class FirebaseAuditRepository {
         resourceType: resourceType,
         resourceId: resourceId,
         granted: granted,
-        timestamp: DateTime.now(), // Will be overwritten by server timestamp
+        timestamp: clock.now(), // Will be overwritten by server timestamp
         metadata: metadata,
       );
 
@@ -132,7 +133,7 @@ class FirebaseAuditRepository {
         resourceType: 'recipe',
         resourceId: recipeId,
         granted: true,
-        timestamp: DateTime.now(),
+        timestamp: clock.now(),
         metadata: {
           'source': source,
           'previousAllergenStatus': previousTags?['allergenStatus'],

@@ -1,6 +1,7 @@
 /// Feed tab — shows social activity from friends (CookSnaps, shares).
 // lib/views/social/friends_list/feed_tab.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/models/social/activity_event.dart';
@@ -371,7 +372,7 @@ class FeedTab {
   }
 
   static String _dateLabel(BuildContext context, DateTime date) {
-    final now = DateTime.now();
+    final now = clock.now();
     final today = DateTime(now.year, now.month, now.day);
     final eventDay = DateTime(date.year, date.month, date.day);
     final diff = today.difference(eventDay).inDays;
@@ -382,7 +383,7 @@ class FeedTab {
   }
 
   static String _relativeTime(BuildContext context, DateTime date) {
-    final diff = DateTime.now().difference(date);
+    final diff = clock.now().difference(date);
     if (diff.inMinutes < 1) return context.l10n.feedTimeJustNow;
     if (diff.inMinutes < 60) {
       return context.l10n.feedTimeMinutesAgo(diff.inMinutes);

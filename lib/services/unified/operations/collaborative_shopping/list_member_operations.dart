@@ -4,6 +4,7 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
+import 'package:clock/clock.dart';
 
 /// Handles collaborative shopping list member operations (add, remove, permissions).
 class ListMemberOperations {
@@ -49,7 +50,7 @@ class ListMemberOperations {
 
       final updatedList = list.copyWith(
         memberPermissions: updatedPermissions,
-        updatedAt: DateTime.now(),
+        updatedAt: clock.now(),
       );
 
       await _updateList(updatedList);
@@ -92,7 +93,7 @@ class ListMemberOperations {
 
       final updatedList = list.copyWith(
         memberPermissions: updatedPermissions,
-        updatedAt: DateTime.now(),
+        updatedAt: clock.now(),
       );
 
       await _updateList(updatedList);
@@ -136,7 +137,7 @@ class ListMemberOperations {
 
       final updatedList = list.copyWith(
         memberPermissions: updatedPermissions,
-        updatedAt: DateTime.now(),
+        updatedAt: clock.now(),
       );
 
       await _updateList(updatedList);

@@ -1,6 +1,7 @@
 /// Model representing a user block relationship.
 /// Stored in the `blocks` collection with composite-key documents (`{blockerId}_{blockedId}`).
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 class BlockRecord {
@@ -28,7 +29,7 @@ class BlockRecord {
       id: compositeId(blockerId, blockedId),
       blockerId: blockerId,
       blockedId: blockedId,
-      blockedAt: DateTime.now(),
+      blockedAt: clock.now(),
     );
   }
 

@@ -10,6 +10,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_presence_repository.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:clock/clock.dart';
 
 /// Public contract for shopping presence — used for DI registration so tests
 /// can swap in a fake without reaching into Firestore.
@@ -129,7 +130,7 @@ class FirebaseShoppingPresenceModule implements ShoppingPresenceModule {
   Stream<List<Map<String, dynamic>>> watchListPresence(String listId) {
     return _repository.watchActiveUsers(listId).map((rows) {
       // Recompute cutoff on each tick so stale rows drop as time advances.
-      final cutoff = DateTime.now().subtract(ttl);
+      final cutoff = clock.now().subtract(ttl);
       // Client-side TTL filter — Firestore rule allows stale rows until
       // heartbeat GC catches up. We drop anything older than 2×heartbeat.
       return rows.where((row) {

@@ -4,6 +4,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:clock/clock.dart';
 
 /// ```dart
 /// final timer = CacheOptimization.startPeriodicCleanup(interval, cacheHelper, getUserId);
@@ -130,7 +131,7 @@ class CacheOptimization {
       }
     }
 
-    final now = DateTime.now();
+    final now = clock.now();
     final daysSinceUpdate = now.difference(recipe.core.updatedAt).inDays;
 
     if (recipe.isPersonal && daysSinceUpdate > 365) {
@@ -155,7 +156,7 @@ class CacheOptimization {
       }
     }
 
-    final now = DateTime.now();
+    final now = clock.now();
     final daysSinceUpdate = now.difference(recipe.core.updatedAt).inDays;
     if (recipe.isPersonal && daysSinceUpdate > 365) {
       return 'old';
@@ -224,7 +225,7 @@ class CacheOptimization {
 
       final allKeys = await cacheHelper.getAllKeys();
       int removedCount = 0;
-      final now = DateTime.now();
+      final now = clock.now();
 
       for (final key in allKeys) {
         try {
@@ -397,7 +398,7 @@ class CacheOptimization {
     }
 
     final daysSinceUpdate =
-        DateTime.now().difference(recipe.core.updatedAt).inDays;
+        clock.now().difference(recipe.core.updatedAt).inDays;
     if (daysSinceUpdate < 7) {
       priority += 30;
     } else if (daysSinceUpdate < 30) {
@@ -427,7 +428,7 @@ class CacheOptimization {
         'recommendations': <String>[],
       };
 
-      final now = DateTime.now();
+      final now = clock.now();
 
       for (final key in allKeys) {
         try {

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -50,7 +51,7 @@ class ImportRateLimiter extends BaseService {
 
     try {
       final usage = await _getCurrentUsage(userId);
-      final now = DateTime.now();
+      final now = clock.now();
 
       // Check basic import limits first
       final basicResult = _checkBasicLimits(usage, now);
@@ -96,7 +97,7 @@ class ImportRateLimiter extends BaseService {
     if (userId == null) return;
 
     try {
-      final now = DateTime.now();
+      final now = clock.now();
       final docRef = _getRateLimitDoc(userId);
 
       // Use a transaction to safely update counters
@@ -154,7 +155,7 @@ class ImportRateLimiter extends BaseService {
     // Check cache
     if (_cachedUsage != null &&
         _cacheTimestamp != null &&
-        DateTime.now().difference(_cacheTimestamp!) < _cacheDuration) {
+        clock.now().difference(_cacheTimestamp!) < _cacheDuration) {
       return _cachedUsage!;
     }
 
@@ -165,7 +166,7 @@ class ImportRateLimiter extends BaseService {
     } else {
       _cachedUsage = UsageLimits.fromFirestore(doc.data()!);
     }
-    _cacheTimestamp = DateTime.now();
+    _cacheTimestamp = clock.now();
 
     return _cachedUsage!;
   }

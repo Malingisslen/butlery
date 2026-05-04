@@ -3,6 +3,7 @@
 /// conversation management (pin/archive/mute), and notification integration.
 /// Delegates to specialized operation classes following the facade pattern.
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
@@ -541,7 +542,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
             pollData['question'] as String? ?? AppLocale.current.messagingPoll,
         type: MessageType.poll,
         status: MessageStatus.sending,
-        sentAt: DateTime.now(),
+        sentAt: clock.now(),
         metadata: {'poll': pollData},
       );
 
@@ -733,7 +734,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return;
     }
 
-    final now = DateTime.now();
+    final now = clock.now();
     final plan = await planService.getWeek(now);
     final target = _nextAvailableMiddagSlot(now, plan.isOccupied);
 
@@ -799,7 +800,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return;
     }
 
-    final now = DateTime.now();
+    final now = clock.now();
 
     // Fetch-or-build the group plan. First-time creation seeds every
     // conversation participant as an editor; the closer (creator) is

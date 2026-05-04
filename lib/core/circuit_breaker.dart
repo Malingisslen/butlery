@@ -9,6 +9,9 @@
 /// - Closed: Normal operation, requests pass through
 /// - Open: Failures exceeded threshold, requests rejected immediately
 /// - Half-Open: After reset time, one request allowed to test recovery
+
+import 'package:clock/clock.dart';
+
 class CircuitBreaker {
   /// Number of failures before opening the circuit.
   final int failureThreshold;
@@ -41,7 +44,7 @@ class CircuitBreaker {
 
     // Check if enough time has passed to try recovery
     if (_lastFailureTime != null) {
-      final elapsed = DateTime.now().difference(_lastFailureTime!);
+      final elapsed = clock.now().difference(_lastFailureTime!);
       if (elapsed >= resetTime) {
         _isHalfOpen = true;
         return true;
@@ -74,7 +77,7 @@ class CircuitBreaker {
   /// Increments failure count and opens circuit if threshold exceeded.
   void recordFailure() {
     _failureCount++;
-    _lastFailureTime = DateTime.now();
+    _lastFailureTime = clock.now();
 
     if (_isHalfOpen) {
       // Failed during recovery test, stay open

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/models/parsing/site_config.dart';
@@ -353,8 +354,8 @@ class _CachedConfig {
   final SiteConfig config;
   final DateTime cachedAt;
 
-  _CachedConfig(this.config) : cachedAt = DateTime.now();
+  _CachedConfig(this.config) : cachedAt = clock.now();
 
   bool get isExpired =>
-      DateTime.now().difference(cachedAt) > SiteConfigRepository._cacheDuration;
+      clock.now().difference(cachedAt) > SiteConfigRepository._cacheDuration;
 }

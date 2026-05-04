@@ -7,6 +7,7 @@
 /// }
 /// ```
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -183,7 +184,7 @@ abstract class BaseService with ErrorHandlingMixin {
 
     if (result != null) {
       _cache[cacheKey] = result;
-      _cacheTimestamps[cacheKey] = DateTime.now();
+      _cacheTimestamps[cacheKey] = clock.now();
       AppLogger.debug('💾 Cached result for $cacheKey');
     }
 
@@ -264,7 +265,7 @@ abstract class BaseService with ErrorHandlingMixin {
     final timestamp = _cacheTimestamps[cacheKey];
     if (timestamp == null) return false;
 
-    return DateTime.now().difference(timestamp) < duration;
+    return clock.now().difference(timestamp) < duration;
   }
 
   void _handleUserError(String message) {

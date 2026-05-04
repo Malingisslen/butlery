@@ -1,5 +1,6 @@
 // lib/services/group_shared_content_service.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/permission_service.dart' as perm_service;
@@ -43,7 +44,7 @@ class SharedContentItem {
       sharedByUserId: data['sharedByUserId'] ?? '',
       sharedByDisplayName: data['sharedByDisplayName'] ?? '?',
       sharedByAvatarUrl: data['sharedByAvatarUrl'],
-      sharedAt: (data['sharedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      sharedAt: (data['sharedAt'] as Timestamp?)?.toDate() ?? clock.now(),
       data: data,
     );
   }

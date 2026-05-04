@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -67,7 +68,7 @@ class Ping {
     String? message,
     DateTime? expiresAt,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return Ping(
       id: const Uuid().v4(),
       groupId: groupId,
@@ -116,7 +117,7 @@ class Ping {
   /// Deserialize from Firestore — tolerant to missing/malformed fields.
   factory Ping.fromMap(String id, Map<String, dynamic> data) {
     final createdAt =
-        SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now();
+        SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now();
     return Ping(
       id: id,
       groupId: SerializationUtils.safeString(data, 'groupId'),
@@ -137,7 +138,7 @@ class Ping {
   /// True when the ping has passed its expiry. Clients should hide expired
   /// pings from the in-app feed even if Cloud Functions hasn't cleaned them
   /// up yet.
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
+  bool get isExpired => clock.now().isAfter(expiresAt);
 
   /// True when this is a broadcast ping (toUserId == null).
   bool get isBroadcast => toUserId == null;

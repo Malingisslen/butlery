@@ -15,6 +15,7 @@ import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
 import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:butlery/services/tagging/tagging_phase_budgets.dart';
+import 'package:clock/clock.dart';
 
 /// Outcome of a single phase invocation. Used by the runner's structured
 /// log emit and (in tests) to assert which phases timed out.
@@ -411,7 +412,7 @@ class TaggingPipelineRunner {
       },
       coverage: 0.0,
       unknownIngredients: ingredients,
-      generatedAt: DateTime.now(),
+      generatedAt: clock.now(),
       generatorVersion: 'lookup_${outcome.result}',
       isPartial: true,
       errorReason: 'Ingredient lookup ${outcome.result} '

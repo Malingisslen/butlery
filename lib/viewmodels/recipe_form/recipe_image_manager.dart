@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -1210,7 +1211,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
           state: ImageUploadState.cancelled,
           error: 'Upload cancelled by user',
           errorType: ImageUploadErrorType.cancelled,
-          errorOccurredAt: DateTime.now(),
+          errorOccurredAt: clock.now(),
         );
       }
     });

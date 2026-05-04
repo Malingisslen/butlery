@@ -4,6 +4,7 @@
 /// and stacked entries for the multi-recipe `övrigt` slot.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
@@ -96,14 +97,15 @@ class WeeklyMenuPlanService extends BaseService {
     List<DayPin> dayPins = const [],
   }) {
     final userId = _currentUserId ?? 'anonymous';
-    final clock = now ?? DateTime.now();
+    final evaluationTime = now ?? clock.now();
     final normalizedWeekStart = IsoWeekUtils.weekStartOf(weekStart);
-    final currentWeekStart = IsoWeekUtils.weekStartOf(clock);
+    final currentWeekStart = IsoWeekUtils.weekStartOf(evaluationTime);
     final anchorIsToday = normalizedWeekStart == currentWeekStart;
 
     // Anchor index: 0 = Mon. For current week, start from today's weekday;
     // otherwise start from Monday.
-    final anchorIndex = anchorIsToday ? DayOfWeek.fromDateTime(clock).index : 0;
+    final anchorIndex =
+        anchorIsToday ? DayOfWeek.fromDateTime(evaluationTime).index : 0;
 
     final base = existing ??
         WeeklyMenuPlan.empty(userId: userId, date: normalizedWeekStart);

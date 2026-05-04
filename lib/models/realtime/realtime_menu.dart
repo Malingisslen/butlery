@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -407,7 +408,7 @@ class RealtimeMenu extends RealtimeResource {
 
     return copyWithMetadata(
       participants: updatedParticipants,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: ownerId,
       lastEditedByDisplayName: ownerDisplayName,
       editCount: editCount + 1,
@@ -426,7 +427,7 @@ class RealtimeMenu extends RealtimeResource {
 
     return copyWithMetadata(
       participants: updatedParticipants,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: ownerId,
       lastEditedByDisplayName: ownerDisplayName,
       editCount: editCount + 1,
@@ -448,7 +449,7 @@ class RealtimeMenu extends RealtimeResource {
 
     return copyWithMetadata(
       participants: updatedParticipants,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: ownerId,
       lastEditedByDisplayName: ownerDisplayName,
       editCount: editCount + 1,
@@ -473,7 +474,7 @@ class RealtimeMenu extends RealtimeResource {
       participants: participants ?? this.participants,
       participantIds: participantIds ?? this.participantIds,
       createdAt: createdAt,
-      lastEditedAt: lastEditedAt ?? DateTime.now(),
+      lastEditedAt: lastEditedAt ?? clock.now(),
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,
       lastEditedByDisplayName:
           lastEditedByDisplayName ?? this.lastEditedByDisplayName,
@@ -517,7 +518,7 @@ class RealtimeMenu extends RealtimeResource {
       participants: participants ?? this.participants,
       participantIds: participantIds ?? this.participantIds,
       createdAt: createdAt,
-      lastEditedAt: lastEditedAt ?? DateTime.now(),
+      lastEditedAt: lastEditedAt ?? clock.now(),
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,
       lastEditedByDisplayName:
           lastEditedByDisplayName ?? this.lastEditedByDisplayName,

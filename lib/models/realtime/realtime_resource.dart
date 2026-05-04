@@ -1,6 +1,7 @@
 /// Realtime resource model for collaborative management with permission systems (recipes, menus, shopping lists).
 // lib/models/realtime/realtime_resource.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -109,8 +110,8 @@ abstract class RealtimeResource {
     this.isActive = true,
     Map<String, dynamic>? metadata,
   })  : participantIds = participantIds ?? participants.keys.toList(),
-        createdAt = createdAt ?? DateTime.now(),
-        lastEditedAt = lastEditedAt ?? DateTime.now(),
+        createdAt = createdAt ?? clock.now(),
+        lastEditedAt = lastEditedAt ?? clock.now(),
         metadata = metadata ?? {};
 
   /// Check if a user has a specific permission
@@ -221,7 +222,7 @@ abstract class RealtimeResource {
   }
 
   /// How long since the resource was edited
-  Duration get timeSinceLastEdit => DateTime.now().difference(lastEditedAt);
+  Duration get timeSinceLastEdit => clock.now().difference(lastEditedAt);
 
   /// Text for "last edited"
   String get lastEditedTimeAgo {
@@ -372,10 +373,9 @@ abstract class RealtimeResource {
       'ownerDisplayName': (data['ownerDisplayName'] as String?).orEmpty(),
       'participants': participants,
       'participantIds': participantIds,
-      'createdAt':
-          (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      'createdAt': (data['createdAt'] as Timestamp?)?.toDate() ?? clock.now(),
       'lastEditedAt':
-          (data['lastEditedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          (data['lastEditedAt'] as Timestamp?)?.toDate() ?? clock.now(),
       'lastEditedBy': (data['lastEditedBy'] as String?).orEmpty(),
       'lastEditedByDisplayName':
           (data['lastEditedByDisplayName'] as String?).orEmpty(),
@@ -427,7 +427,7 @@ abstract class RealtimeResource {
     return copyWithMetadata(
       participants: updatedParticipants,
       participantIds: updatedParticipantIds,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: ownerId,
       lastEditedByDisplayName: ownerDisplayName,
       editCount: editCount + 1,
@@ -451,7 +451,7 @@ abstract class RealtimeResource {
     return copyWithMetadata(
       participants: updatedParticipants,
       participantIds: updatedParticipantIds,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: ownerId,
       lastEditedByDisplayName: ownerDisplayName,
       editCount: editCount + 1,
@@ -473,7 +473,7 @@ abstract class RealtimeResource {
 
     return copyWithMetadata(
       participants: updatedParticipants,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: ownerId,
       lastEditedByDisplayName: ownerDisplayName,
       editCount: editCount + 1,
@@ -483,7 +483,7 @@ abstract class RealtimeResource {
   /// Mark as edited by specific user
   RealtimeResource markEditedBy(String userId, String userDisplayName) {
     return copyWithMetadata(
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       lastEditedBy: userId,
       lastEditedByDisplayName: userDisplayName,
       editCount: editCount + 1,
@@ -494,7 +494,7 @@ abstract class RealtimeResource {
   RealtimeResource archive() {
     return copyWithMetadata(
       isActive: false,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       editCount: editCount + 1,
     );
   }
@@ -503,7 +503,7 @@ abstract class RealtimeResource {
   RealtimeResource reactivate() {
     return copyWithMetadata(
       isActive: true,
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
       editCount: editCount + 1,
     );
   }

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Shared time-ago formatting utility using AppLocale for localized output.
@@ -5,7 +6,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class TimeAgoFormatter {
   /// Standard abbreviated format: 'Nu', '5 min sedan', '2 tim sedan'
   static String standard(DateTime dateTime) {
-    final difference = DateTime.now().difference(dateTime);
+    final difference = clock.now().difference(dateTime);
     final l = AppLocale.current;
 
     if (difference.inMinutes < 1) {
@@ -23,7 +24,7 @@ class TimeAgoFormatter {
 
   /// Verbose format used by activity feeds: 'Nyss', '5 minuter sedan'
   static String verbose(DateTime dateTime) {
-    final difference = DateTime.now().difference(dateTime);
+    final difference = clock.now().difference(dateTime);
     final l = AppLocale.current;
 
     if (difference.inDays > 7) {
@@ -41,7 +42,7 @@ class TimeAgoFormatter {
 
   /// Compact format for conversation lists: 'Nu', '5m', '2h', '3d', '1w', '2mån'
   static String compact(DateTime dateTime) {
-    final difference = DateTime.now().difference(dateTime);
+    final difference = clock.now().difference(dateTime);
     final l = AppLocale.current;
 
     if (difference.inMinutes < 1) {

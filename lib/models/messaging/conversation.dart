@@ -56,6 +56,7 @@
 
 // lib/models/messaging/conversation.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -191,7 +192,7 @@ class Conversation {
     required String user2DisplayName,
     String? user2AvatarUrl,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     final conversationId = const Uuid().v4();
 
     return Conversation(
@@ -232,7 +233,7 @@ class Conversation {
     required String title,
     required String creatorId,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     final conversationId = const Uuid().v4();
 
     // Initialize last read timestamps for all participants

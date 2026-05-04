@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
@@ -113,7 +114,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
           widget.recipe.tagOverrides?.allergenOverrides ?? const {},
       dietaryOverrides:
           widget.recipe.tagOverrides?.dietaryOverrides ?? const {},
-      lastEditedAt: DateTime.now(),
+      lastEditedAt: clock.now(),
     );
     Navigator.of(context).pop(overrides);
   }

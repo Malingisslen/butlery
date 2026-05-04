@@ -1,4 +1,6 @@
 /// Backup and restore service for recipe export/import with cross-platform file operations and duplicate detection.
+
+import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -29,7 +31,7 @@ class BackupService extends BaseService {
       final jsonData = {
         'butlery_backup': {
           'version': '1.0',
-          'exported_at': DateTime.now().toIso8601String(),
+          'exported_at': clock.now().toIso8601String(),
           'user_id': FirebaseAuthRepository().currentUser?.uid,
           'recipe_count': recipes.length,
           'recipes': recipes.map((r) => r.toJson()).toList(),
@@ -38,7 +40,7 @@ class BackupService extends BaseService {
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(jsonData);
 
-      final timestamp = DateTime.now();
+      final timestamp = clock.now();
       final filename =
           'butlery_backup_${timestamp.year}${timestamp.month.toString().padLeft(2, '0')}${timestamp.day.toString().padLeft(2, '0')}_${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}.json';
 
@@ -205,9 +207,9 @@ class BackupService extends BaseService {
               rating: recipe.rating,
               personalTagIds: recipe.personalTagIds,
               sourceUrl: AppLocale.current
-                  .backupImportedFromBackup(_formatDate(DateTime.now())),
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
+                  .backupImportedFromBackup(_formatDate(clock.now())),
+              createdAt: clock.now(),
+              updatedAt: clock.now(),
               createdBy: '',
             ),
             type: RecipeType.personal,

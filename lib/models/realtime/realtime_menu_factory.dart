@@ -4,6 +4,8 @@
 
 // ✅ Firebase DocumentSnapshot dependency abstracted to repository layer
 // Note: Repositories handle Firebase-specific parsing and provide clean data maps
+
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
@@ -29,7 +31,7 @@ class RealtimeMenuFactory {
     DateTime? createdForDate,
   }) {
     final id = const Uuid().v4();
-    final now = DateTime.now();
+    final now = clock.now();
 
     // Build participants map
     final participants = <String, ResourcePermission>{
@@ -174,7 +176,7 @@ class RealtimeMenuFactory {
       'ownerDisplayName': ownerDisplayName,
       'participants': participants,
       'createdAt': createdAt,
-      'lastEditedAt': DateTime.now(),
+      'lastEditedAt': clock.now(),
       'lastEditedBy': newLastEditedBy,
       'lastEditedByDisplayName': newLastEditedByDisplayName,
       'editCount': editCount + 1,

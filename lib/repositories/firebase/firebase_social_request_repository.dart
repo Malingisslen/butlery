@@ -2,6 +2,7 @@
 /// Replaces FriendRequestRepository and GroupInvitationRepository with a single
 /// collection using a `type` discriminator field.
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -99,7 +100,7 @@ class FirebaseSocialRequestRepository
       {
         'lastWrite': timestampProvider.serverTimestamp(),
         'expireAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))),
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
       },
       SetOptions(merge: true),
     );
@@ -412,7 +413,7 @@ class FirebaseSocialRequestRepository
 
   /// Cleanup expired requests (mark as expired instead of deleting)
   Future<int> cleanupExpired() async {
-    final now = DateTime.now();
+    final now = clock.now();
     final expiredRefs = await expiredRequests(now);
 
     if (expiredRefs.isNotEmpty) {

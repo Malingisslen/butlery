@@ -1,6 +1,9 @@
 // lib/services/ocr/ocr_usage_tracker.dart
 
 /// Tracks OCR provider usage for cost monitoring and rate limiting.
+
+import 'package:clock/clock.dart';
+
 class OCRUsageTracker {
   final DateTime Function()? _timeProvider;
 
@@ -29,7 +32,7 @@ class OCRUsageTracker {
     _monthStartDate = _now;
   }
 
-  DateTime get _now => _timeProvider?.call() ?? DateTime.now();
+  DateTime get _now => _timeProvider?.call() ?? clock.now();
 
   /// Record usage for tracking and cost monitoring.
   void recordUsage(String provider) {

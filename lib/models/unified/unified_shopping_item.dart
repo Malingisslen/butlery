@@ -57,6 +57,7 @@
 
 // lib/models/unified/unified_shopping_item.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -342,7 +343,7 @@ class UnifiedShoppingItem {
     double? estimatedPrice,
     int priority = 3,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return UnifiedShoppingItem(
       name: name,
       amount: amount,
@@ -548,11 +549,11 @@ class UnifiedShoppingItem {
       purchasedByDisplayName: bought == true
           ? (lastModifiedByDisplayName ?? purchasedByDisplayName)
           : null,
-      purchasedAt: bought == true ? DateTime.now() : null,
+      purchasedAt: bought == true ? clock.now() : null,
       lastModifiedByUserId: lastModifiedByUserId ?? this.lastModifiedByUserId,
       lastModifiedByDisplayName:
           lastModifiedByDisplayName ?? this.lastModifiedByDisplayName,
-      lastModifiedAt: lastModifiedAt ?? DateTime.now(),
+      lastModifiedAt: lastModifiedAt ?? clock.now(),
       note: note ?? this.note,
       estimatedPrice: estimatedPrice ?? this.estimatedPrice,
       priority: priority ?? this.priority,
@@ -571,7 +572,7 @@ class UnifiedShoppingItem {
     required String userId,
     required String displayName,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return UnifiedShoppingItem(
       id: id,
       name: name,
@@ -605,7 +606,7 @@ class UnifiedShoppingItem {
     String? userId,
     String? displayName,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return UnifiedShoppingItem(
       id: id,
       name: name,
@@ -644,7 +645,7 @@ class UnifiedShoppingItem {
     String? userId,
     String? userDisplayName,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     final newBought = !bought;
 
     return UnifiedShoppingItem(

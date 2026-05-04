@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -94,8 +95,8 @@ class FriendsCategoriesOperations {
         name: name.trim(),
         description: description.trim(),
         ownerId: currentUserId,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         emoji: icon,
         friendUserIds: [currentUserId], // Add owner as member
       );
@@ -181,7 +182,7 @@ class FriendsCategoriesOperations {
         name: name?.trim(),
         description: description?.trim(),
         emoji: icon,
-        updatedAt: DateTime.now(),
+        updatedAt: clock.now(),
       );
 
       // Update local state first
@@ -332,7 +333,7 @@ class FriendsCategoriesOperations {
 
       final updatedCategory = category.copyWith(
         friendUserIds: updatedMemberIds,
-        updatedAt: DateTime.now(),
+        updatedAt: clock.now(),
       );
 
       // Use the internal update method that handles caching and notifications
@@ -555,7 +556,7 @@ class FriendsCategoriesOperations {
       if (!category.friendUserIds.contains(category.ownerId)) {
         final updatedCategory = category.copyWith(
           friendUserIds: [...category.friendUserIds, category.ownerId],
-          updatedAt: DateTime.now(),
+          updatedAt: clock.now(),
         );
 
         _updateCategoryInternalCallback(category.id, updatedCategory);

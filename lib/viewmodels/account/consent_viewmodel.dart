@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
@@ -228,7 +229,7 @@ class ConsentViewModel extends ChangeNotifier
     if (_currentConsent == null) return l.displayNoConsent;
 
     final timestamp = _currentConsent!.updatedAt ?? _currentConsent!.grantedAt;
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {

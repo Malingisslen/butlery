@@ -24,6 +24,7 @@
 
 // lib/viewmodels/photo_import_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:crypto/crypto.dart';
 import 'package:image_picker/image_picker.dart';
@@ -368,7 +369,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
         writerName: _heirloomWriterName.isEmpty ? null : _heirloomWriterName,
         year: _heirloomYear,
         note: _heirloomNote.isEmpty ? null : _heirloomNote,
-        addedAt: DateTime.now(),
+        addedAt: clock.now(),
         addedByUserId: userId,
       );
     }, errorPrefix: AppLocale.current.errorGeneric);

@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe/realtime_recipe_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -406,7 +407,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       mealType: changes['mealType'] as String? ?? recipe.mealType,
       sourceUrl: changes['sourceUrl'] as String? ?? recipe.sourceUrl,
       createdAt: recipe.createdAt,
-      updatedAt: DateTime.now(),
+      updatedAt: clock.now(),
       createdBy: recipe.createdBy,
       isPublic: recipe.isPublic,
       lastCookedAt: recipe.lastCookedAt,

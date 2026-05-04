@@ -1,5 +1,6 @@
 // lib/views/recipe_detail/recipe_detail_actions.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -164,7 +165,7 @@ class RecipeDetailActions {
 
   /// Format comment time for display
   String formatCommentTime(DateTime timestamp) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {

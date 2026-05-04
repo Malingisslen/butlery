@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/recipe_member_manager.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -474,7 +475,7 @@ class RecipeMemberManager {
         'memberId': memberId,
         'action': action,
         'performedBy': _getCurrentUserId(),
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': clock.now().toIso8601String(),
       };
 
       if (permission != null) {

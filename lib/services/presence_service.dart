@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:butlery/core/base/base_service.dart';
@@ -37,7 +38,7 @@ class UserPresence {
       status: _parseStatus(data['status'] as String?),
       lastSeen: data['lastSeen'] is int
           ? DateTime.fromMillisecondsSinceEpoch(data['lastSeen'] as int)
-          : DateTime.now(),
+          : clock.now(),
     );
   }
 
@@ -46,7 +47,7 @@ class UserPresence {
     return UserPresence(
       userId: userId,
       status: _parseStatus(data['status'] as String?),
-      lastSeen: (data['lastSeen'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastSeen: (data['lastSeen'] as Timestamp?)?.toDate() ?? clock.now(),
       typingIn: _parseTypingMap(data['typingIn'] as Map<String, dynamic>?),
     );
   }
@@ -66,14 +67,14 @@ class UserPresence {
     if (data == null) return {};
     return data.map((k, v) {
       if (v is Timestamp) return MapEntry(k, v.toDate());
-      return MapEntry(k, DateTime.now());
+      return MapEntry(k, clock.now());
     });
   }
 
   bool isTypingIn(String conversationId) {
     final typingTime = typingIn[conversationId];
     if (typingTime == null) return false;
-    return DateTime.now().difference(typingTime).inSeconds < 5;
+    return clock.now().difference(typingTime).inSeconds < 5;
   }
 }
 
@@ -373,11 +374,11 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       final typingIn = data['typingIn'] as Map<String, dynamic>?;
       if (typingIn == null || typingIn.isEmpty) return;
 
-      final now = DateTime.now();
+      final now = clock.now();
       final updates = <String, dynamic>{};
       for (final entry in typingIn.entries) {
-        final timestamp = SerializationUtils.parseDateTimeValue(entry.value) ??
-            DateTime.now();
+        final timestamp =
+            SerializationUtils.parseDateTimeValue(entry.value) ?? clock.now();
         if (now.difference(timestamp) > _typingTimeout) {
           updates['typingIn.${entry.key}'] = FieldValue.delete();
         }

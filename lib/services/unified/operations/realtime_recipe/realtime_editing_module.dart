@@ -1,5 +1,6 @@
 // lib/services/unified/operations/realtime_recipe/realtime_editing_module.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -396,7 +397,7 @@ class RealtimeEditingModule {
       'isInRealtimeMode': isInRealtimeEditingMode(recipeId),
       'hasRealtimeService': _realtimeSyncService != null,
       'canEdit': _canEditRecipe(recipeId),
-      'lastEditAt': DateTime.now(), // Would track actual last edit time
+      'lastEditAt': clock.now(), // Would track actual last edit time
     };
   }
 

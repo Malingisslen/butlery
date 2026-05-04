@@ -12,6 +12,7 @@ library;
 
 import 'dart:ui' show Locale;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/utils/logger.dart';
@@ -88,7 +89,7 @@ class UserPropertyBootstrap {
       signupAt: profile?.joinedAt,
       lastCookAt: lastCookAt,
       cooksLast14Days: cooksLast14Days,
-      now: now ?? DateTime.now(),
+      now: now ?? clock.now(),
     );
     return _safe(
       () => _analytics.setUserProperty(

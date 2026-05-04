@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
@@ -94,7 +95,7 @@ class PersonalTagRule {
     MatchMode matchMode = MatchMode.all,
     bool isEnabled = true,
   }) {
-    final now = DateTime.now();
+    final now = clock.now();
     return PersonalTagRule(
       id: const Uuid().v4(),
       tagId: tagId,
@@ -133,12 +134,12 @@ class PersonalTagRule {
       createdAt: SerializationUtils.safeRequiredDateTime(
         data,
         'createdAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
       updatedAt: SerializationUtils.safeRequiredDateTime(
         data,
         'updatedAt',
-        defaultValue: DateTime.now(),
+        defaultValue: clock.now(),
       ),
     );
   }
@@ -295,7 +296,7 @@ class PersonalTagRule {
       matchMode: matchMode ?? this.matchMode,
       isEnabled: isEnabled ?? this.isEnabled,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? DateTime.now(),
+      updatedAt: updatedAt ?? clock.now(),
     );
   }
 

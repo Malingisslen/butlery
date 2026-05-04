@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe_form/image_management/image_upload_notification_manager.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/upload/upload_models.dart';
@@ -39,7 +40,7 @@ class ImageUploadNotificationManager {
   /// Check if notification cooldown allows new notification
   bool _canSendNotification() {
     if (_lastNotificationTime == null) return true;
-    return DateTime.now().difference(_lastNotificationTime!) >=
+    return clock.now().difference(_lastNotificationTime!) >=
         _notificationCooldown;
   }
 
@@ -51,7 +52,7 @@ class ImageUploadNotificationManager {
       return;
     }
 
-    _lastNotificationTime = DateTime.now();
+    _lastNotificationTime = clock.now();
     _notificationTriggers.add(event.trigger);
     _safeController.add(event);
 
@@ -72,7 +73,7 @@ class ImageUploadNotificationManager {
       message: AppLocale.current.statusDone,
       priority: NotificationPriority.medium,
       data: {'totalImages': totalImages},
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
     ));
   }
 
@@ -96,7 +97,7 @@ class ImageUploadNotificationManager {
         message: message,
         priority: NotificationPriority.high,
         data: {'failedCount': failedCount, 'totalCount': totalCount},
-        timestamp: DateTime.now(),
+        timestamp: clock.now(),
       ));
     }
   }
@@ -120,7 +121,7 @@ class ImageUploadNotificationManager {
       message: AppLocale.current.statusDone,
       priority: NotificationPriority.low,
       data: {'imagePath': imagePath},
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
     ));
   }
 
@@ -133,7 +134,7 @@ class ImageUploadNotificationManager {
         message: AppLocale.current.commonDone,
         priority: NotificationPriority.low,
         data: {'totalProcessed': totalProcessed},
-        timestamp: DateTime.now(),
+        timestamp: clock.now(),
       ));
       _notificationTriggers.clear(); // Reset triggers
     }
@@ -157,7 +158,7 @@ class ImageUploadNotificationManager {
           'total': total,
           'percentage': percentage,
         },
-        timestamp: DateTime.now(),
+        timestamp: clock.now(),
       ));
     }
   }

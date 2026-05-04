@@ -3,6 +3,7 @@
 
 // lib/viewmodels/user_profile_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -300,7 +301,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
       // No profile yet — create a minimal editable shell preserving any existing edits.
       // This prevents avatar loss during initialization race conditions.
       if (_editedProfile == null) {
-        final now = DateTime.now();
+        final now = clock.now();
         _editedProfile = UserProfile(
           uid: '',
           displayName: '',

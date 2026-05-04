@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
@@ -151,7 +152,7 @@ class FriendsInvitationsOperations {
         fromUserName: currentUserDisplayName,
         toUserId: userId,
         personalMessage: customMessage,
-        sentAt: DateTime.now(),
+        sentAt: clock.now(),
       );
 
       await _friendsRepository.saveInvitation(invitation);
@@ -205,7 +206,7 @@ class FriendsInvitationsOperations {
         fromUserName: senderName ?? currentUserDisplayName!,
         toUserId: email,
         personalMessage: customMessage,
-        sentAt: DateTime.now(),
+        sentAt: clock.now(),
       );
 
       _addSentInvitationInternal(invitation);
@@ -268,7 +269,7 @@ class FriendsInvitationsOperations {
         fromUserName: senderName ?? currentUserDisplayName!,
         toUserId: phoneNumber,
         personalMessage: customMessage,
-        sentAt: DateTime.now(),
+        sentAt: clock.now(),
       );
 
       _addSentInvitationInternal(invitation);
@@ -318,8 +319,8 @@ class FriendsInvitationsOperations {
         fromUserName: currentUserDisplayName!,
         toUserId: '',
         personalMessage: customMessage,
-        sentAt: DateTime.now(),
-        expiresAt: expiresAt ?? DateTime.now().add(const Duration(days: 7)),
+        sentAt: clock.now(),
+        expiresAt: expiresAt ?? clock.now().add(const Duration(days: 7)),
       );
 
       _addSentInvitationInternal(invitation);
@@ -391,7 +392,7 @@ class FriendsInvitationsOperations {
         invitationId,
         invitation.copyWith(
           status: GroupInvitationStatus.cancelled,
-          respondedAt: DateTime.now(),
+          respondedAt: clock.now(),
         ),
       );
       _notifyListeners();
@@ -464,7 +465,7 @@ class FriendsInvitationsOperations {
 
       final viewedInvitation = invitation.copyWith(
         status: GroupInvitationStatus.pending,
-        respondedAt: DateTime.now(),
+        respondedAt: clock.now(),
       );
 
       _updateSentInvitationInternal(invitationId, viewedInvitation);

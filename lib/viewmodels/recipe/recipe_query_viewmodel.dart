@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe/recipe_query_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
@@ -302,7 +303,7 @@ class RecipeQueryViewModel extends ChangeNotifier
   }
 
   List<Recipe> getRecentlyCookedRecipes({int daysBack = 7}) {
-    final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
+    final cutoffDate = clock.now().subtract(Duration(days: daysBack));
     return allRecipes
         .where((recipe) =>
             recipe.lastCookedAt != null &&
@@ -311,14 +312,14 @@ class RecipeQueryViewModel extends ChangeNotifier
   }
 
   List<Recipe> getRecentlyCreatedRecipes({int daysBack = 7}) {
-    final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
+    final cutoffDate = clock.now().subtract(Duration(days: daysBack));
     return allRecipes
         .where((recipe) => recipe.createdAt.isAfter(cutoffDate))
         .toList();
   }
 
   List<Recipe> getRecentlyEditedRecipes({int daysBack = 7}) {
-    final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
+    final cutoffDate = clock.now().subtract(Duration(days: daysBack));
     return allRecipes
         .where((recipe) => recipe.updatedAt.isAfter(cutoffDate))
         .toList();
@@ -550,7 +551,7 @@ class RecipeQueryViewModel extends ChangeNotifier
   }
 
   List<Recipe> getForgottenFavorites({int daysNotCooked = 90, int limit = 10}) {
-    final cutoff = DateTime.now().subtract(Duration(days: daysNotCooked));
+    final cutoff = clock.now().subtract(Duration(days: daysNotCooked));
     return allRecipes
         .where((r) =>
             r.isFavorite &&
@@ -562,7 +563,7 @@ class RecipeQueryViewModel extends ChangeNotifier
 
   /// Recipes never cooked and older than [minDays] days, scored by age.
   List<Recipe> getDormantRecipes({int minDays = 60, int limit = 5}) {
-    final cutoff = DateTime.now().subtract(Duration(days: minDays));
+    final cutoff = clock.now().subtract(Duration(days: minDays));
     final dormant = allRecipes
         .where((r) => r.lastCookedAt == null && r.createdAt.isBefore(cutoff))
         .toList()

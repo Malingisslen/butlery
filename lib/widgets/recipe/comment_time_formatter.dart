@@ -1,6 +1,9 @@
 // lib/widgets/recipe/comment_time_formatter.dart
 
 /// Utility for formatting comment timestamps into human-readable relative time strings.
+
+import 'package:clock/clock.dart';
+
 class CommentTimeFormatter {
   CommentTimeFormatter._();
 
@@ -12,7 +15,7 @@ class CommentTimeFormatter {
   /// - "Xd" for X days ago (< 7 days)
   /// - "DD/MM" for dates 7+ days ago
   static String format(DateTime dateTime) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {

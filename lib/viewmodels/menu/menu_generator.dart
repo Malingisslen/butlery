@@ -1,5 +1,6 @@
 // lib/viewmodels/menu/menu_generator.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/menu_service.dart';
@@ -252,7 +253,7 @@ class MenuGenerator {
 
     if (!wantsFavorites && !wantsRecent) return recipes;
 
-    final now = DateTime.now();
+    final now = clock.now();
     final thirtyDaysAgo = now.subtract(const Duration(days: 30));
 
     List<Recipe> filtered;

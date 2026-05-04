@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -135,8 +136,8 @@ class SocialGroupComponents {
       uid: memberId,
       displayName: memberName,
       email: 'dummy@example.com',
-      joinedAt: DateTime.now(),
-      lastActiveAt: DateTime.now(),
+      joinedAt: clock.now(),
+      lastActiveAt: clock.now(),
     );
     return SocialFacade.showRemoveMemberDialog(
       context,

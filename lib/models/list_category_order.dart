@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -11,7 +12,7 @@ class ListCategoryOrder {
     required this.listId,
     required this.categoryOrder,
     DateTime? updatedAt,
-  }) : updatedAt = updatedAt ?? DateTime.now();
+  }) : updatedAt = updatedAt ?? clock.now();
 
   Map<String, dynamic> toFirestore() {
     return {

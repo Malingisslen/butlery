@@ -1,5 +1,6 @@
 // lib/services/unified/friends/friends_utility_operations.dart
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -199,10 +200,10 @@ class FriendsUtilityOperations {
           email: data['email'] ?? '',
           avatarUrl: data['avatarUrl'],
           joinedAt: SerializationUtils.parseDateTimeValue(data['joinedAt']) ??
-              DateTime.now(),
+              clock.now(),
           lastActiveAt:
               SerializationUtils.parseDateTimeValue(data['lastActiveAt']) ??
-                  DateTime.now(),
+                  clock.now(),
         );
       }
     }

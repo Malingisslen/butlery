@@ -1,5 +1,6 @@
 // lib/services/notifications/modules/notification_content_manager.dart
 
+import 'package:clock/clock.dart';
 import 'dart:math';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -125,7 +126,7 @@ class NotificationContentManager {
         'type': strategy.type.name,
         'priority': strategy.priority.name,
         'category': strategy.category.name,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': clock.now().toIso8601String(),
         'user_id': _userId,
         ...?additionalData,
       };
@@ -168,7 +169,7 @@ class NotificationContentManager {
         'type': strategy.type.name,
         'priority': strategy.priority.name,
         'category': strategy.category.name,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': clock.now().toIso8601String(),
         'user_id': _userId,
         'language': 'en',
         ...?additionalData,
@@ -299,7 +300,7 @@ class NotificationContentManager {
       data: {
         'type': strategy.type.name,
         'category': strategy.category.name,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': clock.now().toIso8601String(),
         'fallback': true,
       },
     );

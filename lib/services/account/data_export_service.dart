@@ -1,5 +1,6 @@
 // lib/services/account/data_export_service.dart
 
+import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
@@ -160,7 +161,7 @@ class DataExportService extends BaseService {
 
     final exportData = <String, dynamic>{
       'export_metadata': {
-        'export_date': DateTime.now().toIso8601String(),
+        'export_date': clock.now().toIso8601String(),
         'export_version': '2.0',
         'gdpr_compliance': {
           'article_15': 'Right of Access',

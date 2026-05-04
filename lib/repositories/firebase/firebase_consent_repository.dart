@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
@@ -175,7 +176,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
         metadata: {
           'consentVersion': consent.consentVersion,
           'purposes': consent.purposes.toMap(),
-          'timestamp': DateTime.now().toUtc().toIso8601String(),
+          'timestamp': clock.now().toUtc().toIso8601String(),
         },
       );
 
@@ -212,7 +213,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
         resourceType: 'user_consent',
         resourceId: userId,
         granted: true,
-        metadata: {'timestamp': DateTime.now().toUtc().toIso8601String()},
+        metadata: {'timestamp': clock.now().toUtc().toIso8601String()},
       );
 
       AppLogger.success('✅ Consent deleted for user ${userId.maskedUserId}');

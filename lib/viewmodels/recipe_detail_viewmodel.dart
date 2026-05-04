@@ -56,6 +56,7 @@
 
 // lib/viewmodels/recipe_detail_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -279,7 +280,7 @@ class RecipeDetailViewModel extends ChangeNotifier
   bool get wasCookedToday {
     final last = _recipe.lastCookedAt;
     if (last == null) return false;
-    final now = DateTime.now();
+    final now = clock.now();
     return last.year == now.year &&
         last.month == now.month &&
         last.day == now.day;

@@ -25,6 +25,7 @@
 /// ```
 library;
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -215,7 +216,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   /// traffic on back-navigation. Use refreshData() for explicit pull-to-refresh.
   Future<void> loadGroupData() async {
     await executeAsync(() async {
-      final now = DateTime.now();
+      final now = clock.now();
       if (_lastRefresh == null ||
           now.difference(_lastRefresh!).inSeconds > 30) {
         await _friendsService.refresh();

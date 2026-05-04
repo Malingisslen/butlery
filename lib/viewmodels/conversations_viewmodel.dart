@@ -1,5 +1,6 @@
 // lib/viewmodels/conversations_viewmodel.dart
 
+import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -235,7 +236,7 @@ class ConversationsViewModel extends ChangeNotifier
     // Optimistic update so the UI responds immediately
     _allConversations[index] = conversation.copyWith(
       isPinned: newPinned,
-      pinnedAt: newPinned ? DateTime.now() : null,
+      pinnedAt: newPinned ? clock.now() : null,
     );
     _applySearch();
     _safeNotifyListeners();
@@ -265,7 +266,7 @@ class ConversationsViewModel extends ChangeNotifier
     // Optimistic update so the UI responds immediately
     _allConversations[index] = conversation.copyWith(
       isArchived: newArchived,
-      archivedAt: newArchived ? DateTime.now() : null,
+      archivedAt: newArchived ? clock.now() : null,
     );
     _applySearch();
     _safeNotifyListeners();

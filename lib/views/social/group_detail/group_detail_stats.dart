@@ -1,5 +1,6 @@
 // lib/views/social/group_detail/group_detail_stats.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -49,7 +50,7 @@ class GroupDetailStats {
   }
 
   static String _calculateDaysActive(DateTime createdAt) {
-    final now = DateTime.now();
+    final now = clock.now();
     final difference = now.difference(createdAt);
     return '${difference.inDays + 1}';
   }

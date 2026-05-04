@@ -7,6 +7,7 @@
 
 // lib/services/upload/upload_progress_tracker.dart
 
+import 'package:clock/clock.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -32,7 +33,7 @@ class UploadProgressTracker {
     required int fileSize,
   }) {
     final filePath = currentStatus.file?.path ?? currentStatus.url ?? '';
-    final now = DateTime.now();
+    final now = clock.now();
     final bytesTransferred = (progress * fileSize).round();
 
     // Get or create progress metrics
@@ -91,9 +92,9 @@ class UploadProgressTracker {
   /// Start tracking progress for an upload
   void startTracking(String filePath) {
     _progressMetrics[filePath] = _ProgressMetrics(
-      lastUpdateTime: DateTime.now(),
+      lastUpdateTime: clock.now(),
       lastBytesTransferred: 0,
-      startTime: DateTime.now(),
+      startTime: clock.now(),
     );
     AppLogger.debug('📊 PROGRESS: Started tracking for $filePath');
   }
@@ -137,7 +138,7 @@ class UploadProgressTracker {
       message: AppLocale.current.uploadNotificationMessage(percentage),
       priority: NotificationPriority.low,
       data: {'milestone': milestone, 'progress': currentProgress},
-      timestamp: DateTime.now(),
+      timestamp: clock.now(),
     );
   }
 
@@ -145,7 +146,7 @@ class UploadProgressTracker {
   Duration? getUploadDuration(String filePath) {
     final metrics = _progressMetrics[filePath];
     if (metrics == null) return null;
-    return DateTime.now().difference(metrics.startTime);
+    return clock.now().difference(metrics.startTime);
   }
 
   /// Get average upload speed across all active uploads

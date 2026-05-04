@@ -8,6 +8,7 @@
 /// - Ratings: Track user ratings and reviews
 /// - Social content: Track any like/favorite interactions
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -44,7 +45,7 @@ class InteractionMetadata {
   Map<String, dynamic> toFirestore() {
     return {
       'userId': userId,
-      'timestamp': DateTime.now(),
+      'timestamp': clock.now(),
       'interactionType': interactionType,
       if (value != null) 'value': value,
       if (comment != null) 'comment': comment,

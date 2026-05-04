@@ -1,6 +1,7 @@
 // lib/data/recipes/recipe_seeds.dart
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 
 class RecipeSeeds {
@@ -35,8 +36,8 @@ class RecipeSeeds {
         rating: 4.5,
         personalTagIds: ['pasta', 'middag', 'italienskt'],
         sourceUrl: 'Butlery recipe collection',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: 'system',
       ),
       type: RecipeType.personal,
@@ -72,8 +73,8 @@ class RecipeSeeds {
         rating: 4.7,
         personalTagIds: ['curry', 'middag', 'kryddigt'],
         sourceUrl: 'Butlery recipe collection',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: 'system',
       ),
       type: RecipeType.personal,
@@ -109,8 +110,8 @@ class RecipeSeeds {
         rating: 4.3,
         personalTagIds: ['vegetariskt', 'snabbt', 'hälsosamt'],
         sourceUrl: 'Butlery recipe collection',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: 'system',
       ),
       type: RecipeType.personal,
@@ -142,8 +143,8 @@ class RecipeSeeds {
         rating: 4.4,
         personalTagIds: ['fisk', 'friterat', 'brittiskt'],
         sourceUrl: 'Butlery recipe collection',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: 'system',
       ),
       type: RecipeType.personal,
@@ -176,8 +177,8 @@ class RecipeSeeds {
         rating: 4.2,
         personalTagIds: ['sallad', 'lunch', 'snabbt'],
         sourceUrl: 'Butlery recipe collection',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: 'system',
       ),
       type: RecipeType.personal,
@@ -213,8 +214,8 @@ class RecipeSeeds {
         rating: 4.6,
         personalTagIds: ['frukost', 'pannkakor', 'söta'],
         sourceUrl: 'Butlery recipe collection',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
         createdBy: 'system',
       ),
       type: RecipeType.personal,

@@ -1,5 +1,6 @@
 // lib/viewmodels/recipe_form/image_management/xfile_upload_handler.dart
 
+import 'package:clock/clock.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
@@ -116,7 +117,7 @@ class XFileUploadHandler {
     int maxRetryAttempts = 3,
   }) async {
     final fileSize = await xFile.length();
-    final startTime = DateTime.now();
+    final startTime = clock.now();
 
     return ImageUploadStatus(
       state: ImageUploadState.uploading,
@@ -150,7 +151,7 @@ class XFileUploadHandler {
     return ImageUploadStatus(
       state: ImageUploadState.failed,
       error: errorMessage,
-      errorOccurredAt: DateTime.now(),
+      errorOccurredAt: clock.now(),
       progress: progress,
     );
   }
