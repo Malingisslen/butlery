@@ -3430,6 +3430,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String get consentAllRevoked => 'Alla valfria samtycken har återkallats';
 
   @override
+  String get consentRenewalTitle => 'Vi har uppdaterat våra användarvillkor';
+
+  @override
+  String get consentRenewalDescription =>
+      'Vi har gjort ändringar i hur vi behandlar dina uppgifter. Granska och bekräfta dina samtycken för att fortsätta.';
+
+  @override
+  String get consentRenewalReview => 'Granska samtycken';
+
+  @override
+  String get consentRenewalLater => 'Senare';
+
+  @override
   String get dataExportTitle => 'Exportera mina data';
 
   @override

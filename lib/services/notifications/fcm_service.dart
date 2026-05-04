@@ -77,7 +77,21 @@ class FCMService with ErrorHandlingMixin {
   static final FCMService _errorHandler = FCMService._();
   FCMService._();
 
-  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  /// BUT-446: test-injection seam. Production code reads via [_getMessaging],
+  /// which falls back to [FirebaseMessaging.instance] when no override is set.
+  /// Tests use [setMessagingForTest] to substitute a mock; clear in `tearDown`.
+  /// Constructor injection isn't possible because this class is all-static.
+  static FirebaseMessaging? _messagingOverride;
+  static FirebaseMessaging _getMessaging() =>
+      _messagingOverride ?? FirebaseMessaging.instance;
+
+  /// Test-only seam for [FirebaseMessaging] (BUT-446). Pass a mock in
+  /// `setUp`; pass `null` in `tearDown` to restore the real instance.
+  @visibleForTesting
+  static void setMessagingForTest(FirebaseMessaging? messaging) {
+    _messagingOverride = messaging;
+  }
+
   static String? _currentToken;
   static bool _isInitialized = false;
   static bool _pushPermissionsRequested = false;
@@ -143,7 +157,7 @@ class FCMService with ErrorHandlingMixin {
         }
 
         _tokenRefreshSubscription =
-            _messaging.onTokenRefresh.listen(_onTokenRefresh);
+            _getMessaging().onTokenRefresh.listen(_onTokenRefresh);
 
         _isInitialized = true;
         AppLogger.success('FCM service initialized successfully');
@@ -210,7 +224,7 @@ class FCMService with ErrorHandlingMixin {
     final hasUserService = ServiceLocator.isRegistered<UserService>();
 
     await Future.wait<void>([
-      _messaging.deleteToken().catchError((e) {
+      _getMessaging().deleteToken().catchError((e) {
         AppLogger.warning('⚠️ FCM: Failed to delete SDK token: $e');
       }),
       if (hasUserService)
@@ -292,7 +306,7 @@ class FCMService with ErrorHandlingMixin {
     try {
       AppLogger.info('🔔 Requesting notification permissions...');
 
-      final settings = await _messaging.requestPermission(
+      final settings = await _getMessaging().requestPermission(
         alert: true, // Show notification alerts
         announcement: false, // Not needed for Butlery
         badge: true, // Update app badge count
@@ -345,7 +359,7 @@ class FCMService with ErrorHandlingMixin {
       });
 
       // Check for messages that opened the app when it was terminated
-      final initialMessage = await _messaging.getInitialMessage();
+      final initialMessage = await _getMessaging().getInitialMessage();
       if (initialMessage != null) {
         AppLogger.info(
             '🔔 App launched from notification: ${initialMessage.messageId}');
@@ -373,7 +387,7 @@ class FCMService with ErrorHandlingMixin {
         return _currentToken;
       }
 
-      _currentToken = await _messaging.getToken();
+      _currentToken = await _getMessaging().getToken();
 
       if (_currentToken != null) {
         AppLogger.info(
@@ -430,7 +444,7 @@ class FCMService with ErrorHandlingMixin {
     await _errorHandler.safeExecute(
       () async {
         AppLogger.info('Subscribing to topic: $topic');
-        await _messaging.subscribeToTopic(topic);
+        await _getMessaging().subscribeToTopic(topic);
         AppLogger.success('Subscribed to topic: $topic');
       },
       operationName: 'FCMService: Subscribe to topic $topic',
@@ -441,7 +455,7 @@ class FCMService with ErrorHandlingMixin {
     await _errorHandler.safeExecute(
       () async {
         AppLogger.info('Unsubscribing from topic: $topic');
-        await _messaging.unsubscribeFromTopic(topic);
+        await _getMessaging().unsubscribeFromTopic(topic);
         AppLogger.success('Unsubscribed from topic: $topic');
       },
       operationName: 'FCMService: Unsubscribe from topic $topic',
@@ -451,7 +465,7 @@ class FCMService with ErrorHandlingMixin {
   /// Get notification settings status
   static Future<NotificationSettings> getNotificationSettings() async {
     try {
-      return await _messaging.getNotificationSettings();
+      return await _getMessaging().getNotificationSettings();
     } catch (e) {
       AppLogger.error('❌ Failed to get notification settings', e);
       rethrow;

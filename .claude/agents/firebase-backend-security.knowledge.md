@@ -2619,3 +2619,44 @@ referencing the rule by collection path + rule type ("the
 number is genuinely needed for a code-review breadcrumb, add a
 trailing comment so future grep can find it: `// see
 firestore.rules match /shared_content/{contentId} allow update`.
+
+### 2026-05-04 — sprint-I review: static test seams, FirestoreBootstrap parity, consent renewal data source
+
+- **Static-class test seams (FCMService BUT-446):** when an all-static
+  service can't take constructor injection, the
+  `static FirebaseMessaging? _messagingOverride` + `_getMessaging()` fallback
+  + `@visibleForTesting setMessagingForTest` pattern is acceptable. Risks:
+  (1) `@visibleForTesting` is analyzer-advisory only (Dart doesn't enforce),
+  so a malicious or accidental production caller in the same package
+  *could* set the override — accept this since the package is solo-dev'd
+  and the analyzer warning is enough; (2) the override is process-global
+  static state, so parallel tests must serialize or each `tearDown` MUST
+  call `setMessagingForTest(null)` to avoid cross-test bleed. Document
+  the tearDown contract in the test file.
+- **Bootstrap parity (BUT-506 FirestoreBootstrap):** the extracted helper
+  preserves the original error-string filter exactly (`INTERNAL ASSERTION` ||
+  `Unexpected state`) and the outer try/catch swallow for "settings
+  already applied" on hot restart. The web-only `kIsWeb` guard around
+  `_recoverWebPersistenceIfCorrupted` is correct — `clearPersistence()`
+  on native platforms requires the SDK to be terminated first AND has
+  different semantics. Pattern is reusable for other startup-side
+  Firestore configuration extractions.
+- **Consent renewal data source (BUT-465):** for the renewal *gate* check
+  at app startup, reading `userService.currentUserId` is correct because
+  the renewal version comparison needs only the auth identity (the
+  consent doc keys off uid), not the profile payload. The
+  `permissionService.currentUserId` rule applies when doing
+  permission/ownership checks; reading auth identity for a "do I have a
+  user at all?" gate is fine via UserService since UserService already
+  exposes `currentUserId` as a thin auth passthrough. The actual save in
+  `ConsentService.saveConsent` re-stamps `consentVersion` (consent_service.dart:111)
+  and the FirebaseConsentRepository writes the audit log on the
+  repository side (per consent_service.dart:223 comment) — GDPR Art. 30
+  trail intact.
+- **Auth race in post-frame consent dialog:** `_initializeConsentRenewalCheck`
+  reads `currentUserId` once, then awaits `needsConsentRenewal()` which
+  itself reads userId again inside `getUserConsent`. If the user signs
+  out between those calls, the dialog can still be scheduled via
+  postFrameCallback. The dialog itself re-reads consent state before
+  saving, so the worst case is a dialog flash for a logged-out user —
+  no data leak, but UX nit. Acceptable; document as a known minor race.

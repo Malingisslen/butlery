@@ -5961,6 +5961,30 @@ abstract class AppLocalizations {
   /// **'Alla valfria samtycken har återkallats'**
   String get consentAllRevoked;
 
+  /// No description provided for @consentRenewalTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har uppdaterat våra användarvillkor'**
+  String get consentRenewalTitle;
+
+  /// No description provided for @consentRenewalDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har gjort ändringar i hur vi behandlar dina uppgifter. Granska och bekräfta dina samtycken för att fortsätta.'**
+  String get consentRenewalDescription;
+
+  /// No description provided for @consentRenewalReview.
+  ///
+  /// In sv, this message translates to:
+  /// **'Granska samtycken'**
+  String get consentRenewalReview;
+
+  /// No description provided for @consentRenewalLater.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senare'**
+  String get consentRenewalLater;
+
   /// No description provided for @dataExportTitle.
   ///
   /// In sv, this message translates to:

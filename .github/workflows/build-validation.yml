@@ -179,6 +179,17 @@ jobs:
         echo "Building Android App Bundle with obfuscation..."
         flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info --dart-define-from-file=.env
 
+    # BUT-490: publish AAB for manual QA. 14-day retention. Naming
+    # includes the commit SHA so multiple PR builds don't collide.
+    - name: Upload AAB artifact
+      if: matrix.platform == 'android'
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-${{ github.sha }}-android.aab
+        path: build/app/outputs/bundle/release/app-release.aab
+        retention-days: 14
+        if-no-files-found: error
+
     - name: Verify AAB signed with release key (not debug)
       if: matrix.platform == 'android'
       env:
@@ -203,6 +214,17 @@ jobs:
       run: |
         echo "🌐 Building for web..."
         flutter build web --release --dart-define-from-file=.env
+
+    # BUT-490: publish web bundle for manual QA. iOS not uploaded — the
+    # build runs --no-codesign and isn't installable; deferred to BUT-447.
+    - name: Upload web bundle artifact
+      if: matrix.platform == 'web'
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-${{ github.sha }}-web
+        path: build/web
+        retention-days: 14
+        if-no-files-found: error
 
     - name: Get Flutter dependencies (iOS)
       if: matrix.platform == 'ios'

@@ -10,12 +10,16 @@
 /// - Platform-specific behavior (iOS vs Android)
 /// - Swedish localization support
 ///
-/// Note: FCMService uses static methods with a static FirebaseMessaging instance.
-/// In test environments, the real FirebaseMessaging.instance is used. Methods that
-/// interact with Firebase infrastructure will fail gracefully via safeExecute/try-catch.
-/// Tests verify that error handling works correctly in this scenario.
+/// Two test surfaces:
+///   1. Error-path tests below assert graceful failure when no
+///      [FirebaseMessaging] mock is registered (real instance unavailable in
+///      a unit-test environment).
+///   2. The "BUT-446 test injection seam" group exercises the positive path
+///      via [FCMService.setMessagingForTest] with a [MockFirebaseMessaging],
+///      proving the seam routes calls to the override.
 library;
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -26,6 +30,30 @@ import 'package:butlery/services/notifications/fcm_service.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
+
+/// MockFirebaseMessaging variant that records subscribe/unsubscribe/getToken
+/// calls — used to verify the BUT-446 test seam routes calls to the override.
+class _RecordingMessaging extends MockFirebaseMessaging {
+  final List<String> subscribedTopics = <String>[];
+  final List<String> unsubscribedTopics = <String>[];
+  int getTokenCalls = 0;
+
+  @override
+  Future<String?> getToken({String? vapidKey}) async {
+    getTokenCalls++;
+    return super.getToken(vapidKey: vapidKey);
+  }
+
+  @override
+  Future<void> subscribeToTopic(String topic) async {
+    subscribedTopics.add(topic);
+  }
+
+  @override
+  Future<void> unsubscribeFromTopic(String topic) async {
+    unsubscribedTopics.add(topic);
+  }
+}
 
 void main() {
   group('FCMService', () {
@@ -257,6 +285,57 @@ void main() {
         final enabled = await FCMService.areNotificationsEnabled();
         expect(enabled, isA<bool>());
         expect(enabled, isFalse);
+      });
+    });
+
+    group('BUT-446 test injection seam', () {
+      // MockFirebaseMessaging uses *concrete* overrides (not stub-based),
+      // so we configure via setFirebaseMessagingState() and use a recording
+      // subclass to assert calls into subscribe/unsubscribe.
+
+      tearDown(() {
+        FCMService.setMessagingForTest(null);
+      });
+
+      test('getToken() returns the override token when set', () async {
+        final mock = MockFirebaseMessaging()
+          ..setFirebaseMessagingState(token: 'mock-token-446');
+        FCMService.setMessagingForTest(mock);
+
+        final token = await FCMService.getToken();
+
+        expect(token, equals('mock-token-446'));
+      });
+
+      test('subscribeToTopic() forwards to the override', () async {
+        final recording = _RecordingMessaging();
+        FCMService.setMessagingForTest(recording);
+
+        await FCMService.subscribeToTopic('recipes_updates');
+
+        expect(recording.subscribedTopics, equals(['recipes_updates']));
+      });
+
+      test('unsubscribeFromTopic() forwards to the override', () async {
+        final recording = _RecordingMessaging();
+        FCMService.setMessagingForTest(recording);
+
+        await FCMService.unsubscribeFromTopic('social_updates');
+
+        expect(recording.unsubscribedTopics, equals(['social_updates']));
+      });
+
+      test('clearing the override (null) restores fallback behavior', () async {
+        final recording = _RecordingMessaging();
+        FCMService.setMessagingForTest(recording);
+        FCMService.setMessagingForTest(null);
+
+        // With no override and no real Firebase, getToken catches and
+        // returns null. The recording mock must not be touched.
+        final token = await FCMService.getToken();
+
+        expect(token, isNull);
+        expect(recording.getTokenCalls, equals(0));
       });
     });
 

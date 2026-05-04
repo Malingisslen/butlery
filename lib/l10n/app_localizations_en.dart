@@ -3429,6 +3429,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get consentAllRevoked => 'All optional consents have been revoked';
 
   @override
+  String get consentRenewalTitle => 'We\'ve updated our terms';
+
+  @override
+  String get consentRenewalDescription =>
+      'We\'ve made changes to how we process your data. Please review and confirm your consents to continue.';
+
+  @override
+  String get consentRenewalReview => 'Review consents';
+
+  @override
+  String get consentRenewalLater => 'Later';
+
+  @override
   String get dataExportTitle => 'Export my data';
 
   @override

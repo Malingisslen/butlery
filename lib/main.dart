@@ -113,14 +113,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:butlery/core/bootstrap/firestore_bootstrap.dart';
 import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -168,44 +169,8 @@ Future<void> main() async {
           options: DefaultFirebaseOptions.currentPlatform,
         );
 
-        // Configure Firestore settings early, before any DI module can
-        // instantiate FirestoreRepository and trigger Firestore operations.
-        try {
-          FirebaseFirestore.instance.settings = const Settings(
-            persistenceEnabled: true,
-            cacheSizeBytes: 100 * 1024 * 1024, // 100 MB
-          );
-
-          // On web, detect and recover from corrupted IndexedDB persistence.
-          // Firestore JS SDK 12.x has a known bug where IndexedDB state machine
-          // gets stuck after unclean shutdown, causing INTERNAL ASSERTION FAILED.
-          if (kIsWeb) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection('_health')
-                  .doc('_')
-                  .get()
-                  .timeout(const Duration(seconds: 5));
-            } catch (healthError) {
-              final msg = healthError.toString();
-              if (msg.contains('INTERNAL ASSERTION') ||
-                  msg.contains('Unexpected state')) {
-                AppLogger.warning(
-                  'Firestore web persistence corrupted — clearing IndexedDB',
-                );
-                await FirebaseFirestore.instance.terminate();
-                await FirebaseFirestore.instance.clearPersistence();
-                FirebaseFirestore.instance.settings = const Settings(
-                  persistenceEnabled: true,
-                  cacheSizeBytes: 100 * 1024 * 1024,
-                );
-              }
-              // permission-denied on non-existent doc is expected — ignore
-            }
-          }
-        } catch (e) {
-          // Settings already applied (e.g. hot restart)
-        }
+        // Must run before any DI module instantiates FirestoreRepository.
+        await FirestoreBootstrap.configure();
 
         // Default Crashlytics to disabled until consent is verified (GDPR)
         // App Check can proceed immediately (security, not analytics)
@@ -465,6 +430,40 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     _initializeSessionTimeout();
     _initializeLocale();
     _initializeTheme();
+    _initializeConsentRenewalCheck();
+  }
+
+  /// BUT-465: prompt the user to re-consent when the consent version has
+  /// rolled forward. Awaits bootstrap so [ConsentService] is registered;
+  /// schedules the dialog via a post-frame callback so the MaterialApp's
+  /// navigator is ready. Failures are non-fatal — a missing consent
+  /// service or network blip shouldn't block app start.
+  Future<void> _initializeConsentRenewalCheck() async {
+    try {
+      final bootstrap = ApplicationBootstrap();
+      await bootstrap.initialized;
+      if (!bootstrap.isInitialized) return;
+
+      final userService = bootstrap.container.get<UserService>();
+      final userId = userService.currentUserId;
+      if (userId == null || userId.isEmpty) return;
+
+      final consentService = bootstrap.container.get<ConsentService>();
+      final shouldRenew = await consentService.needsConsentRenewal();
+      if (!shouldRenew) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Re-check auth in case the user signed out between
+        // needsConsentRenewal() resolving and this callback firing —
+        // avoids a renewal-dialog flash for a logged-out user.
+        if (userService.currentUserId == null) return;
+        final ctx = appNavigatorKey.currentContext;
+        if (ctx == null) return;
+        ConsentRenewalDialog.show(ctx);
+      });
+    } catch (e) {
+      AppLogger.warning('Consent renewal check failed: $e');
+    }
   }
 
   /// Initialize locale provider
