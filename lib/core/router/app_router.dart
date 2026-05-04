@@ -52,6 +52,9 @@ import 'package:butlery/views/legal/terms_of_service_view.dart';
 import 'package:butlery/views/legal/privacy_policy_view.dart';
 import 'package:butlery/views/legal/community_guidelines_view.dart';
 
+// Settings — moderation
+import 'package:butlery/views/settings/my_reports_view.dart';
+
 // Help
 import 'package:butlery/views/faq_view.dart';
 
@@ -327,6 +330,10 @@ class AppRouter {
 
         case Routes.communityGuidelines:
           return _buildRoute(const CommunityGuidelinesView(), settings,
+              RouteAnimationType.slideFromRight);
+
+        case Routes.myReports:
+          return _buildRoute(const MyReportsView(), settings,
               RouteAnimationType.slideFromRight);
 
         case Routes.faq:

@@ -31,6 +31,7 @@ import 'package:butlery/services/messaging/message_sending_operations.dart';
 import 'package:butlery/services/messaging/conversation_action_operations.dart';
 import 'package:butlery/services/messaging/message_management_operations.dart';
 import 'package:butlery/services/messaging/message_reactions_service.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:uuid/uuid.dart';
 
@@ -189,14 +190,19 @@ class MessagingService extends BaseService with StreamManagementMixin {
   }
 
   /// Get messages for a conversation
+  ///
+  /// BUT-544: messages authored by users the viewer has blocked are
+  /// retroactively filtered out before reaching the UI.
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
     int limit = 50,
   }) {
-    return _messagingRepository.getConversationMessages(
-      conversationId: conversationId,
-      limit: limit,
-    );
+    return _messagingRepository
+        .getConversationMessages(
+          conversationId: conversationId,
+          limit: limit,
+        )
+        .asyncMap(_filterBlocked);
   }
 
   /// Get messages for a conversation with pagination support
@@ -206,15 +212,38 @@ class MessagingService extends BaseService with StreamManagementMixin {
     DateTime? startAfter,
   }) async {
     try {
-      return await _messagingRepository.getConversationMessagesPage(
+      final messages = await _messagingRepository.getConversationMessagesPage(
         conversationId: conversationId,
         limit: limit,
         startAfter: startAfter,
       );
+      return _filterBlocked(messages);
     } catch (e) {
       AppLogger.error(
           'Failed to get conversation messages page for $conversationId', e);
       return [];
+    }
+  }
+
+  /// BUT-544: applies the shared block-aware filter to a message list.
+  /// `tryGet` keeps test contexts that don't register the filter unaffected.
+  /// Fail-open: a transient blocked-list fetch error must not blank out
+  /// the conversation; the next snapshot will retry the lookup.
+  Future<List<Message>> _filterBlocked(List<Message> messages) async {
+    if (messages.isEmpty) return messages;
+    final filter = ServiceLocator.tryGet<BlockedUserFilter>();
+    if (filter == null) return messages;
+    try {
+      final blocked = await filter.currentBlockedIds();
+      return BlockedUserFilter.filter<Message>(
+        messages,
+        authorOf: (m) => m.senderId,
+        blockedIds: blocked,
+      );
+    } catch (e) {
+      AppLogger.warning(
+          'MessagingService: block filter failed; serving unfiltered: $e');
+      return messages;
     }
   }
 

@@ -14,6 +14,7 @@ import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_ownership_resolver.dart';
@@ -99,6 +100,7 @@ class SocialModule implements DIModule {
         ReportService,
         ContentFilterService,
         FirebaseBlockRepository,
+        BlockedUserFilter,
         HouseholdService,
       ];
 
@@ -252,6 +254,15 @@ class SocialModule implements DIModule {
       container.registerLazySingleton<FirebaseBlockRepository>(
         () => FirebaseBlockRepository(
             authRepository: container<AuthRepository>()),
+      );
+
+      // BUT-544: shared block-aware filter for comment + chat read paths.
+      // Singleton so the streamed cache is shared across both surfaces.
+      container.registerLazySingleton<BlockedUserFilter>(
+        () => BlockedUserFilter(
+          blockRepository: container<FirebaseBlockRepository>(),
+        ),
+        dispose: (f) => f.dispose(),
       );
 
       container.registerLazySingleton<CommentsRepository>(

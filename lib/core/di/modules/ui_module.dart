@@ -37,6 +37,7 @@ import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
@@ -61,6 +62,7 @@ import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/moderation/report_service.dart';
 
 // Dependencies from other modules
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -143,6 +145,9 @@ class UIModule implements DIModule {
 
         // Onboarding ViewModel
         OnboardingViewModel,
+
+        // Settings ViewModels
+        MyReportsViewModel,
       ];
 
   @override
@@ -369,6 +374,14 @@ class UIModule implements DIModule {
           userId: container.isRegistered<PermissionService>()
               ? container<PermissionService>().currentUserId
               : null,
+        ),
+      );
+
+      // BUT-537: My Reports ViewModel — surfaces the user's submitted
+      // moderation reports for Google Play UGC appeal-policy compliance.
+      container.registerFactory<MyReportsViewModel>(
+        () => MyReportsViewModel(
+          reportService: container<ReportService>(),
         ),
       );
     } catch (e) {

@@ -28,6 +28,7 @@ You agree to:
 - Not misuse the Service
 - Not distribute harmful, threatening, or illegal content
 - Not attempt to damage or disrupt the operation of the Service
+- Follow our Community Guidelines (`community_guidelines_en.md`), which describe acceptable use of social features in detail
 
 5. CONTENT
 

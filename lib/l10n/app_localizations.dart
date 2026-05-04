@@ -20668,6 +20668,90 @@ abstract class AppLocalizations {
   /// **'Skicka rapport'**
   String get reportSubmit;
 
+  /// No description provided for @reportDialogGuidelinesNotePrefix.
+  ///
+  /// In sv, this message translates to:
+  /// **'Genom att rapportera bekräftar du att innehållet bryter mot'**
+  String get reportDialogGuidelinesNotePrefix;
+
+  /// No description provided for @reportDialogGuidelinesLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'våra riktlinjer för communityn'**
+  String get reportDialogGuidelinesLink;
+
+  /// No description provided for @settingsMyReports.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mina rapporter'**
+  String get settingsMyReports;
+
+  /// No description provided for @myReportsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mina rapporter'**
+  String get myReportsTitle;
+
+  /// No description provided for @myReportsEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte skickat in några rapporter än.'**
+  String get myReportsEmpty;
+
+  /// No description provided for @myReportsStatusPending.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkommen'**
+  String get myReportsStatusPending;
+
+  /// No description provided for @myReportsStatusReviewed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Granskad'**
+  String get myReportsStatusReviewed;
+
+  /// No description provided for @myReportsStatusActioned.
+  ///
+  /// In sv, this message translates to:
+  /// **'Åtgärdad'**
+  String get myReportsStatusActioned;
+
+  /// No description provided for @myReportsStatusClosed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avslutad'**
+  String get myReportsStatusClosed;
+
+  /// No description provided for @myReportsLoadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta rapporter'**
+  String get myReportsLoadFailed;
+
+  /// No description provided for @myReportsRetry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen'**
+  String get myReportsRetry;
+
+  /// No description provided for @newAccountSocialBlocked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta din e-post för att lägga till vänner'**
+  String get newAccountSocialBlocked;
+
+  /// No description provided for @newAccountSocialBlockedAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka bekräftelse'**
+  String get newAccountSocialBlockedAction;
+
+  /// No description provided for @duplicateContentRejected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har precis skickat samma meddelande.'**
+  String get duplicateContentRejected;
+
   /// No description provided for @contentFilterWarning.
   ///
   /// In sv, this message translates to:

@@ -53,6 +53,7 @@ class ReportService extends BaseService {
               reason: reason,
               description: description,
               createdAt: clock.now(),
+              guidelineVersion: kCurrentGuidelineVersion,
             );
 
             final docId = await _reportRepository.submitReport(report);

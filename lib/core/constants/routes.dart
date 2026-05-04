@@ -90,6 +90,7 @@ class Routes {
   static const String settingsAccountSecurity = '/settings/account-security';
   static const String collectionStats = '/settings/collection-stats';
   static const String moderatorReview = '/admin/moderation';
+  static const String myReports = '/settings/my-reports';
 
   // Legal routes
   static const String termsOfService = '/legal/terms';

@@ -41,6 +41,11 @@ enum ReportStatus {
       };
 }
 
+/// Version stamp matching `assets/legal/community_guidelines_{sv,en}.md`.
+/// Bump on every guideline edit so historical reports cite the version that
+/// was in force when the user submitted.
+const String kCurrentGuidelineVersion = '2026-02-28';
+
 /// Represents a user-submitted content report for moderation.
 class ContentReport {
   final String id;
@@ -52,6 +57,7 @@ class ContentReport {
   final String? description;
   final ReportStatus status;
   final DateTime createdAt;
+  final String? guidelineVersion;
 
   const ContentReport({
     required this.id,
@@ -63,6 +69,7 @@ class ContentReport {
     this.description,
     this.status = ReportStatus.newReport,
     required this.createdAt,
+    this.guidelineVersion,
   });
 
   /// Best-effort parse. Returns null when the persisted contentType is
@@ -94,6 +101,8 @@ class ContentReport {
       ),
       createdAt:
           SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now(),
+      guidelineVersion:
+          SerializationUtils.safeNullableString(data, 'guidelineVersion'),
     );
   }
 
@@ -118,6 +127,7 @@ class ContentReport {
       'description': description,
       'status': status.wireName,
       'createdAt': Timestamp.fromDate(createdAt),
+      if (guidelineVersion != null) 'guidelineVersion': guidelineVersion,
     };
   }
 
@@ -134,6 +144,7 @@ class ContentReport {
       description: description,
       status: status ?? this.status,
       createdAt: createdAt,
+      guidelineVersion: guidelineVersion,
     );
   }
 }

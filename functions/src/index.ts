@@ -99,6 +99,12 @@ export { onFeedbackCreated } from "./feedback/on-feedback-created";
 // Content Moderation - Report processing
 export { onReportCreated } from "./feedback/on-report-created";
 
+// BUT-654: Duplicate-content rejection on comments + chat
+export {
+  guardDuplicateComment,
+  guardDuplicateMessage,
+} from "./social/duplicate-content-guard";
+
 const db = admin.firestore();
 
 /**

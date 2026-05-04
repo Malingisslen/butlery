@@ -97,6 +97,28 @@ service cloud.firestore {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
     }
 
+    // BUT-659: anti-spam cooldown for high-friction social actions on
+    // brand-new accounts. Returns true when the account is "matured":
+    //   - email is verified, OR
+    //   - the user document was created at least 60 minutes ago.
+    // Treats a missing user doc / missing createdAt as "not matured" so
+    // pre-onboarding bots cannot bypass the gate.
+    //
+    // Constant kept in sync with `kAccountMaturityMinutes` on the Dart
+    // side (lib/services/auth/account_maturity_helper.dart).
+    function isAccountMatured() {
+      return isAuthenticated() && (
+        request.auth.token.email_verified == true ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          'createdAt' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data &&
+          (request.time.toMillis()
+            - get(/databases/$(database)/documents/users/$(request.auth.uid)).data.createdAt.toMillis())
+          >= 60 * 60 * 1000
+        )
+      );
+    }
+
     // CRIT-8: Validate user-defined ingredient structure (allergen safety-critical)
     // Prevents injection of malicious ingredient properties
     function _isValidUserIngredient(ingredient, ingredientId) {
@@ -475,11 +497,16 @@ service cloud.firestore {
         request.auth.uid == resource.data.toUserId
       );
 
+      // BUT-659: gate friend-requests + group-invitations behind the
+      // new-account cooldown. Spam vector is "register, blast, abandon"
+      // — requiring email verification or 60min account age neutralizes
+      // it without blocking organic users (verification is a one-tap path).
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.fromUserId
         && request.resource.data.status == 'pending'
         && hasRequiredFields(['type', 'fromUserId', 'toUserId', 'status', 'sentAt'])
         && isNotBlockedBy(request.resource.data.toUserId)
+        && isAccountMatured()
         && rateLimitWrite('social_requests', 10);
 
       // Recipient can accept/reject/expire
@@ -1064,12 +1091,16 @@ service cloud.firestore {
       allow read: if isAuthenticated()
         && request.auth.uid in get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.participantIds;
 
-      // Can create messages if you're the sender, within rate limit
+      // Can create messages if you're the sender, within rate limit.
+      // BUT-659: also gate behind the new-account cooldown — DMs are a
+      // primary spam vector and per-user 5/min rate limit alone doesn't
+      // stop a freshly-registered bot from blasting 50 unrelated users.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.senderId
         && hasRequiredFields(['senderId', 'conversationId', 'content', 'sentAt'])
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
+        && isAccountMatured()
         && rateLimitWrite('messages', 5);
 
       // Can update your own messages (content only — identity fields are immutable)

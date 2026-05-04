@@ -371,6 +371,12 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           onTap: () => Navigator.pushNamed(context, Routes.communityGuidelines),
         ),
         ListTile(
+          leading: const Icon(Icons.flag_outlined),
+          title: Text(context.l10n.settingsMyReports),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.pushNamed(context, Routes.myReports),
+        ),
+        ListTile(
           leading: const Icon(Icons.code),
           title: Text(context.l10n.legalOpenSourceLicenses),
           trailing: const Icon(Icons.chevron_right),

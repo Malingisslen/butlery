@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/content_type.dart';
@@ -120,6 +122,11 @@ class ReportContentDialog {
                     ),
                   ),
                 ],
+                const SizedBox(height: 12),
+                _GuidelinesNote(
+                  prefix: l10n.reportDialogGuidelinesNotePrefix,
+                  linkText: l10n.reportDialogGuidelinesLink,
+                ),
               ],
             ),
             actions: [
@@ -157,4 +164,57 @@ class _ReportOutcome {
 
   final String reason;
   final String? description;
+}
+
+/// Inline note linking to community guidelines from the report dialog.
+/// Tap on the linked phrase opens the guidelines view; the visible
+/// version is implicitly the version stamped on the resulting report record.
+class _GuidelinesNote extends StatefulWidget {
+  const _GuidelinesNote({required this.prefix, required this.linkText});
+
+  final String prefix;
+  final String linkText;
+
+  @override
+  State<_GuidelinesNote> createState() => _GuidelinesNoteState();
+}
+
+class _GuidelinesNoteState extends State<_GuidelinesNote> {
+  late final TapGestureRecognizer _recognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _recognizer = TapGestureRecognizer()
+      ..onTap =
+          () => Navigator.of(context).pushNamed(Routes.communityGuidelines);
+  }
+
+  @override
+  void dispose() {
+    _recognizer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final base = theme.textTheme.bodySmall ?? const TextStyle(fontSize: 12);
+    return Text.rich(
+      TextSpan(
+        style: base.copyWith(color: base.color?.withValues(alpha: 0.75)),
+        children: [
+          TextSpan(text: '${widget.prefix} '),
+          TextSpan(
+            text: widget.linkText,
+            recognizer: _recognizer,
+            style: base.copyWith(
+              color: theme.colorScheme.primary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -60,6 +60,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     presenceRowsRemoved: 0,
     notificationQueuesPurged: 0,
     legacySharedWithScrubbed: 0,
+    contentGuardSubcollectionsPurged: 0,
   };
 
   // Fetch friends list once (used by steps 1 and 4)
@@ -118,7 +119,63 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   //     rules so we can safely scrub.
   results.legacySharedWithScrubbed = await cleanupLegacySharedWithArrays(userId);
 
+  // 11. GDPR (BUT-651 / BUT-654): purge per-user subcollections introduced by
+  //     the moderation sprint:
+  //       - users/{uid}/notificationCounters/{YYYY-MM-DD}: per-day push
+  //         fatigue counters. PII-linked via path.
+  //       - users/{uid}/recentContentHashes/rolling: rolling SHA-1 hashes
+  //         of comment/chat content the user wrote. SHA-1 + truncation is
+  //         not reversible without the original text, but the doc still
+  //         records authorship metadata under the user path → linked PII.
+  //     Firestore does not cascade-delete subcollections when the parent
+  //     `users/{uid}` is deleted, so an explicit purge is required for
+  //     Right-to-Erasure.
+  results.contentGuardSubcollectionsPurged =
+      await cleanupContentGuardSubcollections(userId);
+
   v1.logger.info(`Cleanup results for ${userId}:`, results);
+}
+
+/**
+ * BUT-651 / BUT-654: delete the per-user `notificationCounters` and
+ * `recentContentHashes` subcollections under `users/{uid}/`.
+ *
+ * Both subcollections are bounded in size:
+ *   - `notificationCounters` accumulates one doc per day; even a year-old
+ *     account has < 400 docs.
+ *   - `recentContentHashes` is a single `rolling` doc.
+ * A single batch (≤ 500 ops) is sufficient. Best-effort per subcollection:
+ * one failure logs a warn and proceeds — partial cleanup beats total
+ * failure for GDPR cascade purposes.
+ */
+async function cleanupContentGuardSubcollections(
+    userId: string,
+): Promise<number> {
+  const userRef = db.collection("users").doc(userId);
+
+  async function purge(subcoll: string): Promise<number> {
+    try {
+      const snap = await userRef.collection(subcoll).get();
+      if (snap.empty) return 0;
+      const batch = db.batch();
+      for (const doc of snap.docs) batch.delete(doc.ref);
+      await batch.commit();
+      return snap.size;
+    } catch (err) {
+      v1.logger.warn(
+          `BUT-651/654: failed to purge users/${userId}/${subcoll}`,
+          {err},
+      );
+      return 0;
+    }
+  }
+
+  // Independent subcollections — purge concurrently.
+  const counts = await Promise.all([
+    purge("notificationCounters"),
+    purge("recentContentHashes"),
+  ]);
+  return counts.reduce((a, b) => a + b, 0);
 }
 
 /**

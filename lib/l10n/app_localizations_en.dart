@@ -12221,6 +12221,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportSubmit => 'Submit report';
 
   @override
+  String get reportDialogGuidelinesNotePrefix =>
+      'By reporting, you confirm the content violates';
+
+  @override
+  String get reportDialogGuidelinesLink => 'our community guidelines';
+
+  @override
+  String get settingsMyReports => 'My reports';
+
+  @override
+  String get myReportsTitle => 'My reports';
+
+  @override
+  String get myReportsEmpty => 'You haven\'t submitted any reports yet.';
+
+  @override
+  String get myReportsStatusPending => 'Submitted';
+
+  @override
+  String get myReportsStatusReviewed => 'Reviewed';
+
+  @override
+  String get myReportsStatusActioned => 'Actioned';
+
+  @override
+  String get myReportsStatusClosed => 'Closed';
+
+  @override
+  String get myReportsLoadFailed => 'Could not load reports';
+
+  @override
+  String get myReportsRetry => 'Retry';
+
+  @override
+  String get newAccountSocialBlocked => 'Verify your email to add friends';
+
+  @override
+  String get newAccountSocialBlockedAction => 'Send verification';
+
+  @override
+  String get duplicateContentRejected => 'You just sent the same message.';
+
+  @override
   String get contentFilterWarning =>
       'The text contains inappropriate language. Please edit before submitting.';
 

@@ -28,6 +28,7 @@ Du förbinder dig att:
 - Inte missbruka Tjänsten
 - Inte distribuera skadligt, hotfullt eller olagligt innehåll
 - Inte försöka skada eller störa Tjänstens drift
+- Följa våra Gemenskapsriktlinjer (`community_guidelines_sv.md`), som beskriver acceptabel användning av sociala funktioner i detalj
 
 5. INNEHÅLL
 

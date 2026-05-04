@@ -12247,6 +12247,51 @@ class AppLocalizationsSv extends AppLocalizations {
   String get reportSubmit => 'Skicka rapport';
 
   @override
+  String get reportDialogGuidelinesNotePrefix =>
+      'Genom att rapportera bekräftar du att innehållet bryter mot';
+
+  @override
+  String get reportDialogGuidelinesLink => 'våra riktlinjer för communityn';
+
+  @override
+  String get settingsMyReports => 'Mina rapporter';
+
+  @override
+  String get myReportsTitle => 'Mina rapporter';
+
+  @override
+  String get myReportsEmpty => 'Du har inte skickat in några rapporter än.';
+
+  @override
+  String get myReportsStatusPending => 'Inkommen';
+
+  @override
+  String get myReportsStatusReviewed => 'Granskad';
+
+  @override
+  String get myReportsStatusActioned => 'Åtgärdad';
+
+  @override
+  String get myReportsStatusClosed => 'Avslutad';
+
+  @override
+  String get myReportsLoadFailed => 'Kunde inte hämta rapporter';
+
+  @override
+  String get myReportsRetry => 'Försök igen';
+
+  @override
+  String get newAccountSocialBlocked =>
+      'Bekräfta din e-post för att lägga till vänner';
+
+  @override
+  String get newAccountSocialBlockedAction => 'Skicka bekräftelse';
+
+  @override
+  String get duplicateContentRejected =>
+      'Du har precis skickat samma meddelande.';
+
+  @override
   String get contentFilterWarning =>
       'Texten innehåller olämpligt språk. Vänligen redigera innan du skickar.';
 

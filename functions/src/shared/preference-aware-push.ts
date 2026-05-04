@@ -35,13 +35,15 @@
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { sendPushToUser } from "./fcm-tokens";
+import { checkAndIncrement, Priority } from "../notifications/notification-rate-cap";
 
 export type PushSkipReason =
   | "sent"
   | "opted_out"
   | "quiet_hours"
   | "no_token"
-  | "master_disabled";
+  | "master_disabled"
+  | "rate_capped"; // BUT-651: per-user 24h fatigue cap
 
 /** Notification categories the helper currently knows how to gate. */
 export type NotificationCategory = "reEngagement";
@@ -186,6 +188,19 @@ export async function sendPushToUserRespectingPreferences(
       );
       return { sent: false, reason: "quiet_hours" };
     }
+  }
+
+  // BUT-651: global per-user 24h fatigue cap. Win-back, digests, and other
+  // category-aware sends are non-critical by definition; critical sends
+  // (security alerts, admin moderation) call sendPushToUser directly and
+  // therefore bypass this gate intentionally.
+  const capDecision = await checkAndIncrement({
+    userId,
+    priority: "noncritical" as Priority,
+    now: getNow(),
+  });
+  if (!capDecision.allowed) {
+    return { sent: false, reason: "rate_capped" };
   }
 
   const result = await send(userId, notification, data);

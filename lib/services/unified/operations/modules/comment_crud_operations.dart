@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -18,14 +19,21 @@ import 'package:butlery/core/providers/application_provider.dart';
 class CommentCrudOperations {
   final CommentsRepository _commentsRepository;
   final AnalyticsService _analyticsService;
+  // BUT-544: tryGet so test contexts that don't register the filter behave
+  // as if no users are blocked (filter is a soft-fail surface, never a
+  // permission gate — rules layer enforces the security contract).
+  final BlockedUserFilter? _blockedFilter;
 
   CommentCrudOperations({
     CommentsRepository? commentsRepository,
     AnalyticsService? analyticsService,
+    BlockedUserFilter? blockedFilter,
   })  : _commentsRepository =
             commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
         _analyticsService =
-            analyticsService ?? ServiceLocator.get<AnalyticsService>();
+            analyticsService ?? ServiceLocator.get<AnalyticsService>(),
+        _blockedFilter =
+            blockedFilter ?? ServiceLocator.tryGet<BlockedUserFilter>();
 
   /// Create comment — access control enforced by Firestore security rules
   Future<String?> createComment({
@@ -77,7 +85,10 @@ class CommentCrudOperations {
     try {
       AppLogger.debug('💬 Getting comments for recipe $recipeId');
 
-      final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
+      var comments = await _commentsRepository.getCommentsForRecipe(recipeId);
+
+      // BUT-544: drop comments authored by users the viewer has blocked.
+      comments = await _applyBlockFilter(comments);
 
       // Sort comments to put replies after their parents
       if (includeReplies) {
@@ -109,17 +120,42 @@ class CommentCrudOperations {
   }) {
     AppLogger.debug('💬 Creating comment stream for recipe $recipeId');
 
-    return _commentsRepository.getCommentsStream(recipeId).map((comments) {
-      try {
-        // Sort with replies
-        final sortedComments = List<RecipeComment>.from(comments);
-        sortedComments.sort(_sortCommentsWithReplies);
-        return sortedComments;
-      } catch (e) {
-        AppLogger.error('❌ Error processing comment stream', e);
-        rethrow;
-      }
-    });
+    return _commentsRepository.getCommentsStream(recipeId).asyncMap(
+      (comments) async {
+        try {
+          // BUT-544: filter blocked-author comments before sorting so the UI
+          // never paints them, even briefly.
+          final visible = await _applyBlockFilter(comments);
+          final sortedComments = List<RecipeComment>.from(visible);
+          sortedComments.sort(_sortCommentsWithReplies);
+          return sortedComments;
+        } catch (e) {
+          AppLogger.error('❌ Error processing comment stream', e);
+          rethrow;
+        }
+      },
+    );
+  }
+
+  Future<List<RecipeComment>> _applyBlockFilter(
+      List<RecipeComment> comments) async {
+    final filter = _blockedFilter;
+    if (filter == null || comments.isEmpty) return comments;
+    try {
+      final blocked = await filter.currentBlockedIds();
+      return BlockedUserFilter.filter<RecipeComment>(
+        comments,
+        authorOf: (c) => c.authorId,
+        blockedIds: blocked,
+      );
+    } catch (e) {
+      // Fail-open: a transient blocked-list fetch failure must never
+      // empty the comment list. Surface the warning and serve the
+      // unfiltered set; the next snapshot will retry.
+      AppLogger.warning(
+          '[CommentCrudOperations] Block filter failed; serving unfiltered: $e');
+      return comments;
+    }
   }
 
   /// Edit comment content with validation
