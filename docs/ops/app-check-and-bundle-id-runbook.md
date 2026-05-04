@@ -127,36 +127,60 @@ to exist with the correct bundle ID first.
    - App Attest → Register
    - Token TTL: keep default (1 hour)
 
-### 2C — Switch products from Unenforced → Monitor → Enforce
+### 2C — Switch products from Unenforced → Enforce
 
-For each Firebase product (Storage, Firestore, Authentication, Functions,
-Realtime Database):
+**Console UX changed (2026):** the explicit "Monitor" toggle was dropped
+from new product flows — it's now binary `Unenforced ↔ Enforce`. The
+Enforce confirmation modal explicitly lists Registered vs Unregistered
+apps and warns that unregistered apps will be denied. Cloud Firestore
+is still in legacy Monitoring mode (configured before the UX change)
+and continues to log iOS verification rates without blocking — leave
+it there as a free dashboard.
 
-1. **Switch to Monitor mode first.**
+**Hard prerequisite:** every platform that sends real traffic to a
+product must be registered before that product is enforced. Today
+that means iOS App Attest (Phase 2B) must land first. Flipping
+Storage / Auth / Firestore / Functions to Enforce while iOS App Check
+is unregistered locks every iOS user out of that product instantly.
+
+For each Firebase product (Storage, Authentication, Firestore,
+Functions, Realtime Database):
+
+1. **Confirm registered apps in the Enforce modal.**
    - <https://console.firebase.google.com/project/butlery-app-1/appcheck>
-   - For each product row → ⋮ → API Settings → Monitor
-   - Monitor logs unverified requests without blocking — lets you see if
-     real users would be locked out before you flip to Enforce.
+   - Click the product row → scroll to bottom of the expanded panel →
+     click the blue `Enforce` button
+   - The modal shows two columns: Registered apps (verified requests
+     allowed) and Unregistered apps (all requests denied). All
+     platforms in production traffic must appear under Registered
+     before clicking the bottom-right `Enforce` button.
 
-2. **Wait 1–2 weeks of normal usage.**
-   - Watch the App Check → Verified Requests dashboard for each product.
-   - Healthy state: ≥99% verified. If <99%, investigate the unverified
-     traffic source before flipping to Enforce — could be old app versions,
-     test traffic, or a misregistration.
+2. **Stage the rollout — easiest first.**
+   - Suggested order: Storage → Authentication → Firestore →
+     Functions → Realtime Database. Storage has the smallest blast
+     radius (file uploads only); Firestore is the highest-traffic
+     and highest-risk to flip last.
+   - After each enforce, watch the per-product dashboard for 24h
+     before flipping the next.
 
-3. **Switch to Enforce.**
-   - Same path: ⋮ → API Settings → Enforce
-   - Per product. Storage and Firestore are highest-leverage; do those
-     first, then Auth, then Functions, then RTDB.
+3. **If a flip causes lockouts, revert in seconds.**
+   - Same path → click the same button (now reads `Don't enforce`
+     or similar) → Confirm. Console-side flips are reversible without
+     code changes.
 
 ### Acceptance for BUT-760
 
-- [ ] Android (`se.butlery.app`) registered with Play Integrity
+- [x] Android (`se.butlery.app`) registered with Play Integrity (2026-05-03)
 - [ ] iOS (`se.butlery.app`) registered with App Attest + DeviceCheck
-      fallback (or skipped pending Apple Dev Program enrollment)
-- [ ] Two `com.example.butlery` orphan apps removed from App Check
-- [ ] Flutter activation code matches above (already done as of 2026-05-03)
-- [ ] All applicable products in Monitor mode for ≥1 week with ≥99% verified
+      fallback — **BLOCKED on Apple Developer Program enrollment**
+      (same blocker as BUT-426 freerasp iOS Team ID)
+- [x] Two `com.example.butlery` orphan apps removed from App Check
+      (30-day pending-delete; auto-purges)
+- [x] Flutter activation code matches above (`main.dart:213` —
+      AppleAppAttestWithDeviceCheckFallbackProvider already wired)
+- [ ] All applicable products in Enforce mode — **blocked on iOS
+      registration** (Cloud Firestore in legacy Monitoring; Storage
+      and Auth still Unenforced)
 - [ ] Then flipped to Enforce per product
 
 ---
