@@ -15,6 +15,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/ping.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -50,13 +51,29 @@ class _FakePermissionService extends Fake implements PermissionService {
   bool get isAuthenticated => _uid != null;
 }
 
+UserProfile _profile(String uid, String displayName) {
+  final t = DateTime(2026, 1, 1);
+  return UserProfile(
+    uid: uid,
+    displayName: displayName,
+    email: '$uid@example.com',
+    joinedAt: t,
+    lastActiveAt: t,
+  );
+}
+
 class _FakeFriendsService extends Fake implements UnifiedFriendsService {
   List<FriendCategory> _categories = const [];
+  List<UserProfile> _friends = const [];
 
   void setCategories(List<FriendCategory> cats) => _categories = cats;
+  void setFriends(List<UserProfile> profiles) => _friends = profiles;
 
   @override
   List<FriendCategory> get categoriesList => List.unmodifiable(_categories);
+
+  @override
+  List<UserProfile> get friends => List.unmodifiable(_friends);
 }
 
 /// Records FCM calls without actually sending — lets us assert push
@@ -64,6 +81,11 @@ class _FakeFriendsService extends Fake implements UnifiedFriendsService {
 class _RecordingNotificationService extends Mock
     implements NotificationService {
   final List<List<String>> calls = [];
+  // BUT-630: capture strategy + variables so tests can assert per-PingType
+  // routing and the resolved sender display name.
+  final List<NotificationStrategy> strategiesCalled = [];
+  final List<Map<String, String>> variablesCalled = [];
+  final List<Map<String, dynamic>?> additionalDataCalled = [];
   bool suppressAll = false;
 
   @override
@@ -77,6 +99,11 @@ class _RecordingNotificationService extends Mock
   }) async {
     if (suppressAll) return;
     calls.add(List<String>.from(targetUserIds));
+    strategiesCalled.add(strategy);
+    variablesCalled.add(Map<String, String>.from(variables));
+    additionalDataCalled.add(
+      additionalData == null ? null : Map<String, dynamic>.from(additionalData),
+    );
   }
 }
 
@@ -308,6 +335,120 @@ void main() {
         () => service.sendPing(groupId: groupId, type: PingType.nudge),
         throwsA(isA<PermissionDeniedException>()),
       );
+    });
+  });
+
+  group('NotificationStrategy routing per PingType (BUT-630)', () {
+    test('PingType.nudge → NotificationStrategy.pingNudge', () async {
+      await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.nudge,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(notifications.strategiesCalled.single,
+          same(NotificationStrategy.pingNudge));
+    });
+
+    test('PingType.timerAlert → NotificationStrategy.pingTimerAlert', () async {
+      await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.timerAlert,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(notifications.strategiesCalled.single,
+          same(NotificationStrategy.pingTimerAlert));
+    });
+
+    test('PingType.helpMe → NotificationStrategy.pingHelpMe', () async {
+      await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.helpMe,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(notifications.strategiesCalled.single,
+          same(NotificationStrategy.pingHelpMe));
+    });
+
+    test('PingType.unknown falls back to pingNudge (forward-compat)', () async {
+      await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.unknown,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(notifications.strategiesCalled.single,
+          same(NotificationStrategy.pingNudge),
+          reason: 'unknown pings render as nudge copy rather than silently '
+              'misattributing a semantic we do not recognize');
+    });
+
+    test('additionalData carries type/pingId/groupId for deep-link round-trip',
+        () async {
+      final ping = await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.nudge,
+      );
+      await Future<void>.delayed(Duration.zero);
+      final additional = notifications.additionalDataCalled.single;
+      expect(additional, isNotNull);
+      expect(additional!['type'], equals(NotificationPayloadType.ping));
+      expect(additional['pingId'], equals(ping.id),
+          reason: 'recipient deep-link needs pingId to ack');
+      expect(additional['groupId'], equals(groupId),
+          reason: 'recipient deep-link needs groupId to scope the read');
+      expect(additional['pingType'], equals(PingType.nudge.name));
+    });
+  });
+
+  group('sender display name resolution (BUT-630)', () {
+    test('resolves sender display name from UnifiedFriendsService.friends',
+        () async {
+      friends.setFriends([_profile(ownerId, 'Anna Andersson')]);
+
+      await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.nudge,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(notifications.variablesCalled.single['senderName'],
+          equals('Anna Andersson'));
+    });
+
+    test('falls back to UID when sender is not in friends list', () async {
+      // friends list intentionally empty — the sender is unknown to the
+      // notification service (e.g. ex-friend, cross-group ping).
+      friends.setFriends(const []);
+
+      await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.nudge,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+          notifications.variablesCalled.single['senderName'], equals(ownerId),
+          reason: 'UID fallback beats a blank name in the notification body');
+    });
+
+    test('whitespace-only display name treated as missing', () async {
+      friends.setFriends([_profile(ownerId, '   ')]);
+
+      await service.sendPing(
+        groupId: groupId,
+        toUserId: memberId,
+        type: PingType.nudge,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+          notifications.variablesCalled.single['senderName'], equals(ownerId));
     });
   });
 }

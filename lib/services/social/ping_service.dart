@@ -210,9 +210,10 @@ class PingService extends BaseService with PermissionValidationMixin {
     }
   }
 
-  // Reuses the existing `friendRequest` strategy — closest match for
-  // immediate + social gating. A dedicated `ping` strategy is a tracked
-  // follow-up.
+  // Routes each ping type to a dedicated strategy and resolves the
+  // sender's display name from the friends service so the recipient sees
+  // "Knuff från Anna" instead of a UID. UID fallback only when the sender
+  // isn't in the recipient's friends list (cross-group, removed friend).
   Future<void> _sendPush(Ping ping) async {
     final svc = _notificationService;
     if (svc == null) return;
@@ -231,17 +232,20 @@ class PingService extends BaseService with PermissionValidationMixin {
 
     if (targets.isEmpty) return;
 
+    final senderName = _resolveSenderDisplayName(ping.fromUserId);
+    final strategy = _strategyFor(ping.type);
+
     try {
       await svc.sendImmediateNotification(
         targetUserIds: targets,
-        strategy: NotificationStrategy.friendRequest,
+        strategy: strategy,
         variables: {
-          'senderName': ping.fromUserId,
+          'senderName': senderName,
           'pingType': ping.type.name,
           'message': ping.message ?? '',
         },
         additionalData: {
-          'type': 'ping',
+          'type': NotificationPayloadType.ping,
           'pingId': ping.id,
           'groupId': ping.groupId,
           'pingType': ping.type.name,
@@ -250,5 +254,26 @@ class PingService extends BaseService with PermissionValidationMixin {
     } catch (e) {
       AppLogger.warning('Ping FCM push failed (non-blocking): $e');
     }
+  }
+
+  String _resolveSenderDisplayName(String uid) {
+    final profile = _friendsService.friends.firstWhereOrNull(
+      (f) => f.uid == uid,
+    );
+    final name = profile?.displayName.trim() ?? '';
+    // Fall back to the UID when the sender isn't a known friend — better
+    // than a blank name. The recipient will at least see SOMETHING.
+    return name.isEmpty ? uid : name;
+  }
+
+  NotificationStrategy _strategyFor(PingType type) {
+    return switch (type) {
+      PingType.nudge => NotificationStrategy.pingNudge,
+      PingType.timerAlert => NotificationStrategy.pingTimerAlert,
+      PingType.helpMe => NotificationStrategy.pingHelpMe,
+      // Newer client wrote a type we don't understand — render the
+      // generic nudge copy rather than silently misattributing semantics.
+      PingType.unknown => NotificationStrategy.pingNudge,
+    };
   }
 }

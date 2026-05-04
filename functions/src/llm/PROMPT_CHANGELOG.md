@@ -36,7 +36,19 @@ Each entry leads with the version + ship date, then four sections:
 
 ---
 
-## v2.0.0 — 2026-04-26 (current)
+## v2.1.0 — 2026-05-04 (current)
+
+**What changed:** `INGREDIENT_LINE_SYSTEM_PROMPT` expanded from 2 to 6 few-shot examples. Added EXEMPEL 3 (unicode-bråkdelar: ½ tsk, ¼ kopp, 1½ dl), EXEMPEL 4 (parenthetical weights: "kycklingfilé (ca 600 g)"), EXEMPEL 5 ("ca"/"cirka"/"ungefär" approximations resolved to numeric amounts with `cirka` in preparation), and EXEMPEL 6 (instruction-text leaking into the ingredient list, recovered as low-info preparation). No schema or output-shape change — additive few-shot bulk only.
+
+**Why:** [BUT-676](https://linear.app/butlery/issue/BUT-676) — parse-quality reports flagged that 2 examples sat at the low end of what a Swedish-specific structured-extraction task needs to lock onto edge cases. The four added cases each correspond to a real failure pattern observed in user imports (fractions in baking recipes, parenthetical brand-pack weights, "ca"-prefixed approximations, and ingredient-list rows that turned out to be instructions).
+
+**Expected impact:** Higher recall + amount accuracy on the four pattern families above; minor token-count increase per request (~120 tokens at p99). Watch parse-correction-rate dashboard for regression — if any worsens, the `EXEMPEL 6` instruction-leak case is the most likely culprit (training the model to extract from instructions can over-extract from clean ingredient lists).
+
+**Linked metrics / tickets:** [BUT-676](https://linear.app/butlery/issue/BUT-676). Re-run parse-quality goldens before/after.
+
+---
+
+## v2.0.0 — 2026-04-26
 
 **What changed:** Remote Config prompts + `promptVersion` threading + OCR cache key fix. The `PROMPT_VERSION` constant in `gemini-client.ts` became the canonical version source; downstream Cloud Functions (`structure-recipe.ts`, `ocr-recipe-image.ts`) now record the version that produced each result onto the parse output (`promptVersion` field), and the OCR result cache keys it so prompt revisions invalidate stale cached extractions automatically.
 

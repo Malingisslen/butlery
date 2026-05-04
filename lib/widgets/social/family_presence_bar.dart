@@ -11,10 +11,10 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/social/ping_compose_sheet.dart';
+import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 
 const int _kMaxVisibleAvatars = 5;
 const double _kAvatarSize = 40.0;
-const double _kOnlineDotSize = 10.0;
 
 /// Horizontal presence row. Hides itself when no group member is online.
 ///
@@ -234,19 +234,12 @@ class _PresenceAvatar extends StatelessWidget {
       child: Semantics(
         label: profile.displayName,
         button: true,
-        child: SizedBox(
-          width: _kAvatarSize,
-          height: _kAvatarSize,
-          child: Stack(
-            children: [
-              Positioned.fill(child: _AvatarThumb(profile: profile)),
-              const Positioned(
-                right: 0,
-                bottom: 0,
-                child: _OnlineDot(),
-              ),
-            ],
-          ),
+        child: UserAvatarWidgets.avatar(
+          imageUrl: profile.avatarUrl,
+          displayName: profile.displayName,
+          explicitSize: _kAvatarSize,
+          showStatus: true,
+          isOnline: true,
         ),
       ),
     );
@@ -257,80 +250,6 @@ class _PresenceAvatar extends StatelessWidget {
       context: context,
       groupId: groupId!,
       targetUserId: profile.uid,
-    );
-  }
-}
-
-/// Avatar image (if we have a URL) falling back to a cream square with the
-/// member's initials. Square edges per design system.
-class _AvatarThumb extends StatelessWidget {
-  const _AvatarThumb({required this.profile});
-
-  final UserProfile profile;
-
-  @override
-  Widget build(BuildContext context) {
-    final url = profile.avatarUrl;
-    if (url != null && url.isNotEmpty) {
-      return Image.network(
-        url,
-        width: _kAvatarSize,
-        height: _kAvatarSize,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _InitialsSquare(profile: profile),
-      );
-    }
-    return _InitialsSquare(profile: profile);
-  }
-}
-
-/// Initials fallback — square (no BorderRadius), forestGreenLight ground.
-class _InitialsSquare extends StatelessWidget {
-  const _InitialsSquare({required this.profile});
-
-  final UserProfile profile;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: cs.inversePrimary,
-      ),
-      child: Center(
-        child: Text(
-          profile.initials,
-          style: AppTextStyles.labelMedium.copyWith(
-            color: cs.onPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Tiny square green dot indicating the member is currently online.
-///
-/// The task spec says a *static* dot is fine, so we intentionally do NOT
-/// pulse even when animations are allowed — that keeps the bar quiet and
-/// avoids fighting with the cooking-session card (which does pulse and is
-/// the primary eye-catcher in the same region).
-class _OnlineDot extends StatelessWidget {
-  const _OnlineDot();
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: _kOnlineDotSize,
-      height: _kOnlineDotSize,
-      decoration: BoxDecoration(
-        color: cs.primary,
-        border: Border.fromBorderSide(
-          BorderSide(color: cs.surface, width: 1.5),
-        ),
-      ),
     );
   }
 }

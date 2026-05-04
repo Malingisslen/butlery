@@ -14,7 +14,8 @@ import 'package:butlery/services/tagging/config/compound_suffixes.dart';
 class CompoundSplitter {
   CompoundSplitter._();
 
-  /// LRU cache for repeated lookups (e.g. same ingredient across recipes)
+  /// FIFO cache, bounded at [_maxCacheSize]. Not LRU — Swedish ingredient
+  /// vocabulary is small enough that recency-tracking adds no value.
   static final Map<String, String> _cache = {};
   static const _maxCacheSize = 200;
 
@@ -24,11 +25,15 @@ class CompoundSplitter {
     ...CompoundSuffixes.primarySuffixes,
   };
 
-  /// Minimum component length to prevent false splits like "r" + "isotto"
+  /// Stricter sub-floor than [_minWordLength] — both halves of a split
+  /// must reach this length, blocking "ris" + "otto"-style false splits.
   static const _minComponentLength = 3;
 
-  /// Minimum word length to attempt splitting — shorter words are unlikely
-  /// to be compounds and risk false positives.
+  /// 6 = shortest length where Swedish compounds reliably decompose into
+  /// two ≥3-char halves (e.g. "laxsås" = lax + sås). Lower → over-splits
+  /// ("salt" → "sa"+"lt"); higher → "potatisgratäng" stays atomic. Tuned
+  /// against [KnownIngredients]; re-run `compound_splitter_test.dart` if
+  /// changed.
   static const _minWordLength = 6;
 
   /// Score bonus when the right part is a known ingredient or suffix

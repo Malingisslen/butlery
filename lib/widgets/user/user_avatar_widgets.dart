@@ -13,10 +13,14 @@ import 'package:butlery/widgets/user/user_display_models.dart';
 /// Avatar widgets and related functionality
 class UserAvatarWidgets {
   /// Optimerad avatar implementation
+  ///
+  /// [explicitSize] overrides [size] when non-null — escape hatch for
+  /// callers that need a pixel value the [ImageSize] enum doesn't carry.
   static Widget avatar({
     String? imageUrl,
     required String displayName,
     ImageSize size = ImageSize.medium,
+    double? explicitSize,
     VoidCallback? onTap,
     Color? borderColor,
     double? borderWidth,
@@ -29,7 +33,7 @@ class UserAvatarWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         final bc = context.butleryColors;
-        final avatarSize = _getAvatarSize(size);
+        final avatarSize = explicitSize ?? _getAvatarSize(size);
         // UI Redesign: Avatar uses rust (secondary) color scheme
         final effectiveBackgroundColor = backgroundColor ?? cs.secondary;
         final effectiveTextColor = textColor ?? cs.surfaceContainerHighest;
@@ -81,8 +85,8 @@ class UserAvatarWidgets {
                 child: Container(
                   width: avatarSize * 0.25,
                   height: avatarSize * 0.25,
+                  // Square per design system — no rounded edges on badges.
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
                     color: isOnline ? bc.success : cs.outline,
                     border: Border.all(
                       color: cs.surfaceContainerHighest,

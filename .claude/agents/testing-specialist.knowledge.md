@@ -936,3 +936,207 @@ neither (no seam, low blast radius — already covered by downstream).
 Don't manufacture structural smoke tests to fill in the matrix.
 
 Sprint approved. Marker written.
+
+### 2026-05-04 — Sprint D (BUT-589 / BUT-670 / BUT-766) review [Pattern discovered]
+3 new test files, 11 tests, all green; `flutter analyze` clean. Reviewed
+for behavioural focus, mock-vs-subject discipline, and seam quality.
+All three files pass. Patterns worth not losing:
+
+1. **Counter on a `Fake HttpsCallable` is the right shape for "did the
+   integration call its dependency?" tests.** `_CountingHttpsCallable
+   extends Fake implements HttpsCallable` with an `int callCount` field
+   and a `call()` body that increments-then-throws. The CB regression
+   gate's load-bearing claim — "4th call does NOT invoke the callable"
+   — is encoded as `expect(callable.callCount, 3)` *after* the 4th
+   `service.structureRecipe(...)` resolves. That's the correct shape:
+   asserting the count *stayed at 3* across the 4th call proves the
+   short-circuit, not just that the breaker reports open. A test that
+   only asserted `breaker.isOpen` would let a refactor that opens the
+   CB but still calls the callable slip through.
+
+2. **Skip the `FirebaseFunctionsException` branch when the constructor
+   is `@protected`.** The test file's comment names this explicitly:
+   "Use a generic Exception (not FirebaseFunctionsException — its
+   constructor is @protected so test code can't instantiate it
+   directly). The CB increments on either branch of the LlmService
+   catch handler; the test only cares that failures count, not which
+   branch." Correct call — production code calls `recordFailure()`
+   from both `on FirebaseFunctionsException catch` and the trailing
+   `catch (e)`, so either branch exercises the breaker. Don't
+   sub-class `FirebaseFunctionsException` to "cover both branches" —
+   that's testing the catch-clause topology, not the breaker
+   contract.
+
+3. **`@visibleForTesting` getter on a private field is a reasonable
+   seam when the field's only test exposure is read-only.**
+   `LlmService.backendBreakerForTest` returns the injected
+   `CircuitBreaker` so the test can assert `isOpen` without poking at
+   `_backendBreaker`. The constructor already accepts an optional
+   `CircuitBreaker? backendBreaker` param, so the test could
+   instantiate its own and hold the reference (which it does) — the
+   getter is belt-and-braces. Acceptable; not strictly needed for
+   this test (the test holds the breaker reference directly via
+   `breaker = CircuitBreaker(...)`), but harmless and cheap. If the
+   test only inspected the locally-held reference, the getter could
+   be removed; keep it as documentation of the test seam.
+
+4. **`featureFlagServiceOverride` constructor parameter is the right
+   widget-test seam.** Same pattern as
+   `viewmodel_test_helpers.dart`-style constructor-injection — the
+   widget exposes an optional override, production wiring leaves it
+   null and falls back to `ServiceLocator.tryGet<FeatureFlagService>()`.
+   Avoids the "register a fake in GetIt before pumping" dance that
+   forces every test to coordinate global state. Confirmed: the
+   `_StubFlagService` is a plain `implements FeatureFlagService` Fake
+   (no Mock-with-`@override`-bodies — clean).
+
+5. **`simulateConfigUpdate()` test helper on the stub is a reasonable
+   seam for "does the gate react to mid-session flag flips?"** The
+   gate registers a `addOnConfigUpdatedListener(_onConfigUpdated)` in
+   `initState`; the stub stores the listener in `_listener` and
+   exposes a public `simulateConfigUpdate()` that fires it. Test
+   flips the flag value + calls `simulateConfigUpdate()` + pumps —
+   asserts the blocker now appears. That's testing the live-update
+   contract (gate must re-evaluate when Remote Config updates),
+   which is the actual user-visible behaviour the BUT-670 listener
+   wiring exists for. Correct shape.
+
+6. **`Future<void>.delayed(Duration.zero)` micro-pump pattern reused
+   for fire-and-forget verification.** The `tryLog` test uses 5
+   zero-delay yields to let the `tryGet → consent check → logEvent`
+   chain complete before `verify(() => repo.logEvent(...)).called(1)`.
+   This mirrors the BUT-688/691 entry's "`Future.delayed(Duration.zero)`
+   IS acceptable in tests for fire-and-forget probes" rule — there's
+   no real clock to advance, just async-microtask scheduling.
+   `fakeAsync` would add ceremony without value. Confirmed working in
+   <100ms.
+
+7. **Pin "no-ops when ServiceLocator has not been initialized" as a
+   distinct test from "no-ops when service is missing."** These look
+   identical at the call-site (`AnalyticsService.tryLog('demo')`) but
+   exercise different code paths inside `tryGet` —
+   "uninitialized container" vs "container present, type missing."
+   Both must be silently safe because `tryLog` is called during
+   bootstrap (where the container isn't yet wired) and during normal
+   degraded mode (web with missing Firebase, etc.). Pinning them
+   separately means a refactor that handles only one path surfaces
+   immediately. Same shape as the 2026-04-30 BUT-458 "test the null
+   contract per failure mode, not just one" pattern.
+
+Coverage gaps explicitly considered, all defensible-skip:
+
+- **CB resetTime expiry / half-open transition.** The CB unit at
+  `lib/core/circuit_breaker.dart` has its own dedicated tests
+  (`circuit_breaker_test.dart` covers the resetTime → half-open →
+  recovery path with `withClock(...)`). The new BUT-589 file
+  intentionally tests *the LlmService integration* (does opening
+  the breaker actually short-circuit the callable?), not the breaker
+  algorithm itself. Adding a half-open test here would duplicate
+  the unit suite and couple the LlmService test to `package:clock`
+  setup. Skip is correct.
+
+- **`MaintenanceModeBlocker` widget at extreme text scale.** The
+  blocker clamps `textScaler` to `[1.0, 1.5]` (production code, line
+  39-46) — worth pinning eventually, but the assertion is on the
+  MediaQuery clamp, which is a Flutter contract. Adding a widget
+  test that shoves `MediaQuery(textScaler: 3.0)` and asserts the
+  button is still on-screen would be a behavioural test (a11y
+  guarantee that the retry button doesn't get pushed off-screen).
+  Defensible skip for this sprint; flag for a follow-up a11y sprint
+  if reduced-motion + text-scale testing gets a sweep.
+
+- **`tryLog` with consent denied.** Production code: `tryLog →
+  ServiceLocator.tryGet → analytics.logEvent` — and `logEvent` itself
+  internally checks `_hasAnalyticsConsent()` before forwarding to the
+  repo. The "consent denied" path is *already tested* in
+  `analytics_service_test.dart` (the BUT-688/691 typed-probe group's
+  "no-op when consent is missing" tests). Re-asserting it through
+  `tryLog` would just exercise the same downstream branch via a
+  thin wrapper. Skip is correct — consent gating is a property of
+  `logEvent`, and `tryLog` is just a null-guarded forwarder.
+
+Mock-vs-subject discipline check (per CLAUDE.md testing
+philosophy point 3 — "Mock dependencies, not the subject"):
+- BUT-589: SUT = `LlmService`. Mocked: `FirebaseFunctions`,
+  `HttpsCallable`, `ImportRateLimiter`, `ConsentService`. Real:
+  `LlmService`, injected real `CircuitBreaker`. Correct.
+- BUT-670: SUT = `MaintenanceModeGate`. Mocked: `FeatureFlagService`.
+  Real: `MaintenanceModeGate`, real `MaintenanceModeBlocker` rendered
+  in the gate's build. Correct.
+- BUT-766: SUT = `AnalyticsService.tryLog` (static helper). Mocked:
+  `AnalyticsRepository`, `ConsentService`. Real: `AnalyticsService`
+  instance + real `ServiceLocator` + real `GetIt`. Correct — the
+  test exercises the actual `tryGet → null-guard → logEvent` chain
+  with the SUT in the loop.
+
+No production bugs caught this run — all three changes are
+additive (new circuit breaker integration, new gate widget, new
+helper method). Tests verify the new contracts cleanly. Sprint
+approved.
+
+### 2026-05-04 — Sprint F (BUT-682 / BUT-630) review [Pattern discovered]
+Two test changes — new `ocr_usage_tracker_test.dart` (7 tests) + extended
+`ping_service_test.dart` (7 new tests across 2 groups). Both green; analyze
+clean. Patterns confirmed and gaps flagged:
+
+1. **`same(<static-const-instance>)` is the correct identity assertion for
+   routing tests against const strategy/config singletons.** The BUT-630
+   strategies (`NotificationStrategy.pingNudge` etc.) are `static const`
+   instances. `same()` pins "the router returns this exact canonical
+   constant" — a `category`/`priority` field-match would pass for any
+   future `pingNudgeV2` with the same attributes, defeating the regression
+   gate. Reusable for any "router returns one of N canonical const
+   instances" test.
+
+2. **`Future<void>.delayed(Duration.zero)` is the established repo
+   convention for fire-and-forget verification in async services** —
+   already documented in BUT-688/691 entry; reaffirmed here for the
+   PingService unawaited push path. Don't reach for `fakeAsync` when
+   there's no clock dependency, just microtask scheduling.
+
+3. **Gap caught — additionalData payload completeness in BUT-630 routing
+   tests.** The new file asserts `additionalData['type'] == ping` but
+   doesn't verify `pingId`/`groupId` round-trip into the FCM payload.
+   The whole point of the additionalData map is the deep-link
+   round-trip (recipient taps notification → app routes to the specific
+   ping doc). A regression that drops `pingId` or `groupId` from the
+   payload would not fail the suite. Worth a small follow-up assertion;
+   not blocking sprint approval.
+
+4. **Gap caught — symmetric negative for "no prefs interaction" test.**
+   `ocr_usage_tracker_test.dart`'s "without loadFromPersistence, tracker
+   is in-memory only" test asserts only that the counter increments. It
+   doesn't pin that prefs are *not* touched. A regression where
+   `_persistDaily()` falls back to `SharedPreferences.getInstance()`
+   when `_prefs == null` would silently start writing to global prefs
+   and the test would stay green. Same shape as BUT-582 "pin both
+   positive AND negative for switchboard" rule — for any
+   "without-init it's in-memory only" test, also assert prefs (or the
+   external store) remains untouched. Recommend creating a separate
+   prefs instance + asserting `getInt(...)` returns null after the
+   in-memory `recordUsage` call.
+
+5. **Concurrent-send tests are NOT a gap for single-isolate Dart
+   services.** Question came up during this review; rule: PingService
+   sends are sequential awaits at the call site (single-isolate event
+   loop). A `Future.wait([...sends])` test would assert Dart's
+   event-loop semantics, not the service contract. Rate-limit ordering
+   is already covered by the burst test. Skip.
+
+Mock-vs-subject discipline check:
+- BUT-682: SUT = `OCRUsageTracker`. Real: `SharedPreferences` mock from
+  the official plugin (`setMockInitialValues`) — not a hand-rolled fake.
+  Correct shape; no over-mocking.
+- BUT-630: SUT = `PingService`. Mocked (Fake): `FirestoreRepository`
+  (wraps `FakeFirebaseFirestore`), `PermissionService`, `UnifiedFriendsService`.
+  Notification service is `_RecordingNotificationService extends Mock`
+  — but with concrete `@override sendImmediateNotification` body, which
+  is the Mock-with-`@override`-bodies anti-pattern flagged in
+  `testing-specialist.md`. Defensible here because the test never calls
+  `when(() => mock...)` on it — it's purely a recorder. Renaming to
+  `extends Fake` would be more honest (no `noSuchMethod` fall-through
+  needed; the class only ever gets `sendImmediateNotification` called
+  on it). Flag for next touch, not blocking.
+
+Sprint approved with two follow-up items recommended (additionalData
+payload assertion + in-memory prefs-untouched negative).

@@ -23,7 +23,7 @@ import {
 import { logger } from "firebase-functions/logger";
 
 /** Prompt version — bump on any prompt change for traceability */
-export const PROMPT_VERSION = "2.0.0";
+export const PROMPT_VERSION = "2.1.0";
 
 /** Vertex AI region — EU data residency (BUT-607). */
 export const VERTEX_LOCATION = "europe-west1";
@@ -381,7 +381,31 @@ EXEMPEL 2 — Input:
 ["200g guanciale, skivad", "löken, finhackad", "1-2 dl grädde"]
 
 EXEMPEL 2 — Output:
-{"ingredients":[{"amount":200,"unit":"g","name":"guanciale","preparation":"skivad"},{"amount":1,"unit":"st","name":"lök","preparation":"finhackad"},{"amount":1.5,"unit":"dl","name":"grädde","preparation":"1-2 dl"}]}`;
+{"ingredients":[{"amount":200,"unit":"g","name":"guanciale","preparation":"skivad"},{"amount":1,"unit":"st","name":"lök","preparation":"finhackad"},{"amount":1.5,"unit":"dl","name":"grädde","preparation":"1-2 dl"}]}
+
+EXEMPEL 3 — Input (unicode-bråkdelar):
+["½ tsk salt", "¼ kopp socker", "1½ dl mjölk"]
+
+EXEMPEL 3 — Output:
+{"ingredients":[{"amount":0.5,"unit":"tsk","name":"salt","preparation":null},{"amount":0.25,"unit":"kopp","name":"socker","preparation":null},{"amount":1.5,"unit":"dl","name":"mjölk","preparation":null}]}
+
+EXEMPEL 4 — Input (parentes med vikt/antal):
+["1 paket kycklingfilé (ca 600 g)", "2 burkar krossade tomater (à 400 g)"]
+
+EXEMPEL 4 — Output:
+{"ingredients":[{"amount":1,"unit":"paket","name":"kycklingfilé","preparation":"ca 600 g"},{"amount":2,"unit":"burk","name":"krossade tomater","preparation":"à 400 g"}]}
+
+EXEMPEL 5 — Input ("ca"/"cirka" approximation):
+["ca 2 dl mjölk", "cirka 200 g pasta", "ungefär 3 msk olja"]
+
+EXEMPEL 5 — Output:
+{"ingredients":[{"amount":2,"unit":"dl","name":"mjölk","preparation":"cirka"},{"amount":200,"unit":"g","name":"pasta","preparation":"cirka"},{"amount":3,"unit":"msk","name":"olja","preparation":"cirka"}]}
+
+EXEMPEL 6 — Input (instruktionstext som läckt in i ingredienslistan):
+["stek löken tills den blir gyllenbrun", "salt och peppar efter smak"]
+
+EXEMPEL 6 — Output:
+{"ingredients":[{"amount":null,"unit":null,"name":"lök","preparation":"stek tills gyllenbrun"},{"amount":null,"unit":null,"name":"salt","preparation":"efter smak"},{"amount":null,"unit":null,"name":"peppar","preparation":"efter smak"}]}`;
 
 /** Maximum tokens for ingredient line responses */
 export const INGREDIENT_LINE_MAX_TOKENS = 1000;

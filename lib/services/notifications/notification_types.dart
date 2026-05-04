@@ -85,6 +85,9 @@ abstract final class NotificationPayloadType {
   static const String recipeShared = 'recipe_shared';
   static const String collaborationInvite = 'collaboration_invite';
   static const String recipeComment = 'recipe_comment';
+  // First-class FCM payload type so receivers can route taps into the
+  // ping ack flow instead of borrowing the friend_request handler.
+  static const String ping = 'ping';
 }
 
 /// Notification delivery strategy configuration
@@ -296,6 +299,45 @@ class NotificationStrategy {
       'title_en': 'Removed from collaboration',
       'body_sv': '{removerName} tog bort dig från "{recipeTitle}"',
       'body_en': '{removerName} removed you from "{recipeTitle}"',
+    },
+  );
+
+  // Ping strategies (nudge / timer-alert / help-me). Same shape — only
+  // localization differs — so the recipient sees ping copy instead of
+  // borrowing the friend-request wording.
+  static const pingNudge = NotificationStrategy(
+    type: NotificationType.immediate,
+    priority: NotificationPriority.high,
+    category: NotificationCategory.social,
+    localization: {
+      'title_sv': 'Knuff från {senderName}',
+      'title_en': 'Nudge from {senderName}',
+      'body_sv': '{senderName} puttar på dig',
+      'body_en': '{senderName} is nudging you',
+    },
+  );
+
+  static const pingTimerAlert = NotificationStrategy(
+    type: NotificationType.immediate,
+    priority: NotificationPriority.high,
+    category: NotificationCategory.social,
+    localization: {
+      'title_sv': 'Timer-alarm från {senderName}',
+      'title_en': 'Timer alert from {senderName}',
+      'body_sv': 'Tid att kolla på maten',
+      'body_en': 'Time to check on the food',
+    },
+  );
+
+  static const pingHelpMe = NotificationStrategy(
+    type: NotificationType.immediate,
+    priority: NotificationPriority.high,
+    category: NotificationCategory.social,
+    localization: {
+      'title_sv': '{senderName} behöver hjälp',
+      'title_en': '{senderName} needs help',
+      'body_sv': 'Tryck för att svara',
+      'body_en': 'Tap to respond',
     },
   );
 

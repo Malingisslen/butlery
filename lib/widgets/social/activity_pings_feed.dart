@@ -17,6 +17,7 @@ import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 
 const int _kMaxItems = 5;
 const Duration _kActivityRefreshInterval = Duration(minutes: 2);
@@ -321,7 +322,11 @@ class _FeedRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _Avatar(profile: profile, fallbackName: actorName),
+          UserAvatarWidgets.avatar(
+            imageUrl: profile?.avatarUrl,
+            displayName: profile?.displayName ?? actorName,
+            explicitSize: 32.0,
+          ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Column(
@@ -410,67 +415,5 @@ class _FeedRow extends StatelessWidget {
   String _relativeLabel(DateTime at) {
     final clamped = at.isAfter(clock.now()) ? clock.now() : at;
     return TimeAgoFormatter.standard(clamped);
-  }
-}
-
-/// Square avatar — matches `FamilyPresenceBar` design language. Image when
-/// we have one, initials fallback otherwise.
-class _Avatar extends StatelessWidget {
-  const _Avatar({
-    required this.profile,
-    required this.fallbackName,
-  });
-
-  final UserProfile? profile;
-  final String fallbackName;
-
-  static const double _size = 32.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final url = profile?.avatarUrl;
-    if (url != null && url.isNotEmpty) {
-      return SizedBox(
-        width: _size,
-        height: _size,
-        child: Image.network(
-          url,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _initials(context),
-        ),
-      );
-    }
-    return _initials(context);
-  }
-
-  Widget _initials(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final label = profile?.initials ?? _deriveInitials(fallbackName);
-    return SizedBox(
-      width: _size,
-      height: _size,
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: cs.inversePrimary),
-        child: Center(
-          child: Text(
-            label,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: cs.onPrimary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  static String _deriveInitials(String name) {
-    final clean = name.trim();
-    if (clean.isEmpty) return '?';
-    final parts = clean.split(RegExp(r'\s+'));
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return clean[0].toUpperCase();
   }
 }

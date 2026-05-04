@@ -2449,3 +2449,47 @@ SDK-level surface.
 those two files. Each hit is a Medium finding (correctness/testability),
 upgrade to High if the call is in a security-critical decision path
 (permission gate, audit log identity, data-export ownership check).
+
+---
+
+### 2026-05-04 — Two consumers of `system/config` have asymmetric fail-modes
+
+The single Firestore doc `system/config` is read by two independent code paths
+in functions/src/. They handle "Firestore unreachable" differently — note this
+when reviewing changes to either:
+
+1. **Kill switch** (`structure-recipe.ts` `defaultLoadKillSwitch`,
+   `runStructureRecipe` outer try/catch at line 335). A Firestore error
+   propagates out of the loader and is converted to an `internal` HttpsError
+   by the outer catch. **Net: fail closed for the user** (request denied) —
+   so operator overrides cannot be silently bypassed by an outage.
+
+2. **Global rate limits** (`rate_limiter.ts` `loadGlobalLimits` at line 302-333).
+   A Firestore error is **caught inside the loader**, warn-logged, defaults
+   (1000/10000) applied. The caller proceeds normally with the default cap.
+   **Net: fail open against operator overrides** — if ops set tighter caps
+   during an incident and Firestore reads start failing, cold-start instances
+   silently revert to defaults (warm instances keep their cached value).
+
+This is acceptable because (a) `aiEnabled=false` total kill is the primary
+incident lever and lives in path #1, (b) global caps are coarse and the
+defaults are conservative, (c) a real Firestore outage breaks the
+`system/llmLimits` write in `checkGlobalLimit` anyway. But when reviewing
+either loader, ask: "would the new behavior change preserve this fail-mode
+asymmetry intentionally?" — flipping #2 to fail-closed could deny all LLM
+traffic during a Firestore blip, flipping #1 to fail-open could let
+operator-killed AI silently restart.
+
+### 2026-05-04 — Module-scope cache lifetime in Cloud Functions
+
+`rate_limiter.ts` `cachedGlobalLimits` is module-scope, never invalidated.
+Lifetime equals warm instance lifetime. Runbook (llm-kill-switch-runbook.md)
+says "~30 minutes typical" — this is optimistic. In practice Cloud Functions
+warm instances live ~15 min idle but several hours under sustained traffic.
+Operators flipping caps during a real incident should expect some warm
+instances to keep serving the old value for an hour. The kill switch
+(`aiEnabled=false`) bypasses this entirely because it gates upstream of
+`checkGlobalLimit`. When reviewing similar module-scope caches in the
+functions/ codebase, prefer either (a) sub-minute TTL backed by Firestore
+read amortization, or (b) explicit "redeploy to refresh" documentation —
+not silent indefinite caching.

@@ -1,92 +1,109 @@
 # Sprint Backlog
 
-## Sprint: pre-beta anti-spam + UGC moderation polish — 2026-05-04 (E)
+## Sprint: parsing/social tech-debt + dependency hygiene — 2026-05-04 (F)
 
-Theme: cluster of 6 P3/P4 social/security tickets that close out Google Play UGC compliance gaps and prevent notification fatigue + spam vectors before opening to beta. **6 implementations + 1 obsolete close. 4 batches.**
+Theme: cluster of 7 P4 tech-debt tickets across parsing (compound splitter doc + LLM few-shots), social widget consolidation, OCR persistence, and dependency hygiene. **7 implementations + 1 obsolete close. 3 batches.**
 
 **In Progress carry-overs (NOT in this sprint):**
 - BUT-442 — repo migrations (4 candidates remaining; deserves own focused sprint).
 - BUT-760 — App Check enforcement; awaiting Firebase Console flip.
 
 **Step 0 verification — done:**
-- **BUT-497** premise-gone (closed as Duplicate) — BUT-670 (commit `ac9020965`) shipped `app_maintenance_mode` Remote Config + `MaintenanceModeBlocker` widget last sprint. `min_supported_version` force-upgrade is a separate UX surface (own ticket if/when relevant).
-- **BUT-537** valid — `ReportService.getMyReports()` exists at `report_service.dart:68`. No "My reports" view exists (greppable: no `MyReportsView`). Add view + Settings entry.
-- **BUT-544** valid — `friends_state_manager.dart` has block filter; comment & chat read paths do not. Comments live in `lib/services/unified/operations/modules/recipe_comments_manager.dart`; chat in `lib/services/messaging/`.
-- **BUT-649** plan-stale (mostly shipped) — `assets/legal/community_guidelines_{sv,en}.md` exist, `community_guidelines_view.dart` exists, Settings entry wired in `account_security_view.dart:369`, router registered in `app_router.dart:329`. **Remaining**: stamp `guidelineVersion` on `ContentReport` + reference text in report dialog + ToS link. Linear ticket description will be updated.
-- **BUT-651** valid — no `notificationCounters` Firestore subcollection or per-user 24h rate cap exists. Add Firestore counter + cap-check + Remote Config keys.
-- **BUT-654** plan-stale (paths) — ticket cites `lib/services/social/comment_service.dart` which doesn't exist. Comments live in `unified/operations/modules/recipe_comments_manager.dart` + `comment_crud_operations.dart`. Chat send: `messaging/message_sending_operations.dart`. Server-side enforcement via Cloud Function trigger (Firestore rules can't efficiently read time-windowed lists). Linear ticket description will be updated.
-- **BUT-659** valid — no `accountAgeMinutes` derivation or rules gate. Implement rules guard + UI message. Verifier helper added to `firestore.rules`.
+- **BUT-698** premise-gone (closed as Duplicate) — `compound_splitter.dart:19` already has `_maxCacheSize = 200` + FIFO eviction (`_cache.remove(_cache.keys.first)`) + `clearCache()` exposed at line 75. Ticket assumed unbounded growth. Two cosmetic follow-ups absorbed into BUT-700: rename "LRU cache" comment to "FIFO cache" (matches code), and full doc-comment on `_minWordLength`.
+- **BUT-700** valid — `_minWordLength = 6` at `compound_splitter.dart:32` has minimal comment. Add full tradeoff doc + test reference.
+- **BUT-682** valid — `OCRUsageTracker` (`ocr_usage_tracker.dart`) is in-memory only. Add SharedPreferences persistence keyed by `YYYY-MM-DD`.
+- **BUT-676** plan-stale (path) — Lives in TS at `functions/src/llm/gemini-client.ts:355`, NOT lib/Dart. Cloud Functions change. Linear ticket re-scoped.
+- **BUT-631** valid — `_Avatar` (size 32) at `activity_pings_feed.dart:418`, `_AvatarThumb`+`_InitialsSquare`+`_OnlineDot` at `family_presence_bar.dart:266+`, both bypass `CachedNetworkImage`. `UserAvatarWidgets.avatar` exists with `showStatus`/`isOnline`. ImageSize enum has 16/48 — add `explicitSize` override.
+- **BUT-630** plan-stale (path) — No `lib/services/notifications/strategies/` dir; strategies are static const fields on `NotificationStrategy` in `notification_types.dart`. l10n keys `pingNudgeFrom`/`pingTimerAlertFrom`/`pingHelpMeFrom` already exist. Linear ticket re-scoped.
+- **BUT-513** valid — `google_sign_in_mocks: ^0.4.1` at `pubspec.yaml:120`. No production `google_sign_in` dep; social-login deferred post-beta. Trivial removal.
+- **BUT-529** valid — `pubspec.yaml:113` has `# Downgraded for drift_dev compatibility` but doesn't reference the specific drift_dev version. Improve to `# Pinned to match drift_dev 2.29.0 — bump together.` and add reciprocal note on drift_dev line.
 
-### Agent A: settings/UI surfaces — flutter-developer + uiux-designer
+### Agent A: parsing tech-debt — flutter-developer + cloud-functions-specialist
 
-- [x] **A1. BUT-649 — Stamp `guidelineVersion` on reports + dialog reference** —
-  - `lib/models/social/content_report.dart`: add `String? guidelineVersion` field, defaults to a `kCurrentGuidelineVersion` constant (e.g. `'2026-05-04'`).
-  - `lib/services/moderation/report_service.dart:31` `submitReport`: stamp `guidelineVersion: kCurrentGuidelineVersion`.
-  - Report dialog (locate via grep `submitReport(` in `lib/views/` / `lib/widgets/`): add a single-line reference "Genom att rapportera bekräftar du att innehållet bryter mot våra [riktlinjer för communityn]". Tap → `Navigator.pushNamed('/community-guidelines')`.
-  - `assets/legal/community_guidelines_sv.md` + `_en.md`: ensure first line declares `Version: <date>` so users can tie reports to the active version.
-  - ToS files (`terms_of_service_{sv,en}.md`): add a one-line reference to community guidelines if not already.
-  - Tests: `test/unit/models/content_report_test.dart` — round-trip `guidelineVersion` through `toMap()`/`fromMap()`. (BUT-649)
+- [ ] **A1. BUT-700 — Document _minWordLength + correct LRU/FIFO comment** —
+  - `lib/utils/text/compound_splitter.dart`:
+    - Line 17 doc: change "LRU cache" → "FIFO cache" (matches the `_cache.keys.first` eviction policy actually implemented).
+    - Line 32 `_minWordLength`: expand doc-comment to cover (1) what it gates, (2) tradeoff direction (lower = more aggressive splitting → over-splits like "salt" → "sa"+"lt"; higher = more conservative → "potatisgratäng" stays whole), (3) chosen value rationale (shortest meaningful Swedish noun where compound-splitting starts paying off — verified via the `_minComponentLength = 3` floor + Swedish-vocabulary scan), (4) reference `test/unit/utils/text/compound_splitter_test.dart` to re-run if tweaked.
+    - Line 28-29 `_minComponentLength`: while there, add a one-line note that this is a stricter sub-floor (component must be ≥3 chars regardless of word length).
+  - No behavior change. No new test needed — existing suite covers behavior. (BUT-700)
 
-- [x] **A2. BUT-537 — "Mina rapporter" view in Settings → Privacy/Safety** —
-  - New view `lib/views/settings/my_reports_view.dart` extending `BaseScaffold` (`lib/widgets/common/scaffolds/`). Stream/Future from `ReportService.getMyReports()`. List items show: content type icon, date (`DateFormat.yMMMd('sv')`), reason, status badge.
-  - Status enum already on `ContentReport` (verify: pending / reviewed / actioned). If missing, derive from existing fields.
-  - Empty state: "Du har inte skickat in några rapporter än." with `EmptyStatePresenter` if exists, else simple Center + Text.
-  - New ViewModel `lib/viewmodels/settings/my_reports_viewmodel.dart` extending `BaseViewModel` (per `lib/services/CLAUDE.md` and project conventions).
-  - Wire route `'/my-reports'` in `lib/core/router/app_router.dart` (place near `community_guidelines_view` import).
-  - Settings entry in `lib/views/settings/account_security_view.dart` (or appropriate Privacy/Safety section): below the community-guidelines tile, add a `ListTile` with title `context.l10n.settingsMyReports` ("Mina rapporter"), trailing chevron, onTap pushes `/my-reports`.
-  - L10n: add `settingsMyReports`, `myReportsTitle`, `myReportsEmpty`, `myReportsStatusPending`, `myReportsStatusReviewed`, `myReportsStatusActioned` to `app_sv.arb` + `app_en.arb`. Run `flutter gen-l10n`.
-  - Tests: `test/widget/views/settings/my_reports_view_test.dart` — empty state, populated list, status badges. (BUT-537)
+- [ ] **A2. BUT-682 — Persist OCR daily counter to SharedPreferences** —
+  - `lib/services/ocr/ocr_usage_tracker.dart`:
+    - Add async `init({SharedPreferences? prefs})` factory or method that loads stored daily count if its date key matches today; otherwise zero. Keep monthly count in-memory (already auto-resets per month from existing logic; persistence isn't critical for monthly).
+    - Storage keys: `ocr_usage_daily_count` (int) + `ocr_usage_daily_date` (string `YYYY-MM-DD`). On read, drop count if date != today.
+    - In `recordUsage(provider)` after the existing increment, write `_dailyRequestCount` + today's date back to SharedPreferences. Best-effort fire-and-forget — don't block the OCR call path.
+    - Constructor stays sync; call sites that want persistence call `await tracker.loadFromPersistence()` (additive, opt-in to keep DI graph simple).
+  - Wire-up: find OCRUsageTracker construction site (likely DI module); add the load call in service init. Grep `OCRUsageTracker(` to locate.
+  - Tests: `test/unit/services/ocr/ocr_usage_tracker_test.dart` — extend or add: persisted-count survives reconstruction, stale-date entry is dropped, write-after-record happens. Use `SharedPreferences.setMockInitialValues({})`. (BUT-682)
 
-### Agent B: social server/client moderation — flutter-developer + cloud-functions-specialist
+- [ ] **A3. BUT-676 — Expand INGREDIENT_LINE_SYSTEM_PROMPT with 4 more few-shots** —
+  - `functions/src/llm/gemini-client.ts:355` — add 4 new EXEMPEL blocks (numbered 3–6) covering uncovered edge cases:
+    - **EXEMPEL 3** (fraction unicode): `["½ tsk salt", "¼ kopp socker"]` → fractions parsed numerically (0.5 / 0.25).
+    - **EXEMPEL 4** (parenthetical weight): `["1 paket kycklingfilé (ca 600 g)", "2 burkar krossade tomater (à 400 g)"]` → numeric amount captured, weight in preparation.
+    - **EXEMPEL 5** (cirka/ca): `["ca 2 dl mjölk", "cirka 200 g pasta"]` → amount captured, "cirka"/"ca" tagged in preparation.
+    - **EXEMPEL 6** (instruction-leak / multi-ingredient): `["stek löken tills den blir gyllenbrun", "salt och peppar efter smak"]` → first line yields null parse (or sentinel), second splits to two ingredients.
+  - Bump `PROMPT_VERSION` at line 26: `2.0.0` → `2.1.0` so analytics correlates parse-quality changes to this revision.
+  - Update `functions/src/llm/PROMPT_CHANGELOG.md` with a 2026-05-04 entry noting the 4 new examples + version bump.
+  - Tests: `functions/src/__tests__/gemini-client.test.ts` (or wherever the prompt is referenced) — verify the prompt string contains the new EXEMPEL markers + new PROMPT_VERSION exported.
+  - No Firestore prompts-config bump needed — fallback constants are the source of truth, and the live Firestore doc (if any) will pick up the new compiled-in fallback on next deploy. (BUT-676)
 
-- [x] **B1. BUT-544 — Block-aware filtering on comments + chat reads** —
-  - Locate the existing block-list source. Read `friends_state_manager.dart` for the canonical `blockedUserIds` getter.
-  - **Comments** (`lib/services/unified/operations/modules/recipe_comments_manager.dart` + `social_recipe_query_service.dart` if it owns the read query): post-filter the result list against `blockedUserIds` before returning. (Firestore `whereNotIn` is 10-cap; result-set filter is cheaper for unbounded blocked counts.)
-  - **Chat** (`lib/services/messaging/message_sending_operations.dart` and the read-path module — find via grep `getMessages\|streamMessages`): same post-filter pattern on the message stream.
-  - Centralize the filter in `lib/services/social/blocking/blocked_user_filter.dart` so both modules share the predicate (`bool shouldHide(authorId, blockedIds)`).
-  - Tests: `test/unit/services/social/blocking/blocked_user_filter_test.dart` (predicate), plus integration-style assertions in existing comment + chat tests that blocked-author content is filtered out. (BUT-544)
+### Agent B: social widget + notification consolidation — flutter-developer
 
-- [x] **B2. BUT-654 — Duplicate-content rejection on comments + chat** —
-  - **Server-side trigger** is the source of truth (rules can't time-window). Add `functions/src/social/duplicate-content-guard.ts`:
-    - Firestore `onDocumentCreated` triggers on the comment + chat-message paths.
-    - Compute `crypto.createHash('sha1').update(authorUid + ':' + body.trim().toLowerCase()).digest('hex').slice(0, 16)`.
-    - Read `users/{uid}/recentContentHashes/{hash}` — if exists and `createdAt > now - windowMs`, delete the new doc (or mark `rejected: true` so client can show toast).
-    - Else write the hash with TTL = 5min (use `expiresAt` for client-side filter; emulate TTL by sweeper or rely on overwrite on re-emit).
-    - Window read from Remote Config key `duplicate_content_window_ms` (default 5 * 60 * 1000).
-  - **Client-side fast-path** (optional but better UX): before sending, hash + check local cache (`SharedPreferences` rolling window of last 20). Reject early with Swedish toast "Du har precis skickat samma meddelande." Sites: `recipe_comments_manager.dart` create path + `message_sending_operations.dart` send path.
-  - **Telemetry**: log `duplicate_content_rejected` analytics event with surface (`comment` | `chat`). Add to `analytics_events.dart`.
-  - Tests: `functions/src/__tests__/duplicate-content-guard.test.ts` — dup within window rejected, dup after window allowed, different content allowed. (BUT-654)
+- [ ] **B1. BUT-631 — Avatar consolidation onto UserAvatarWidgets.avatar** —
+  - `lib/widgets/user/user_avatar_widgets.dart`:
+    - Add optional `double? explicitSize` parameter to `avatar(...)`. When non-null, it overrides `_getAvatarSize(size)`.
+  - `lib/widgets/social/activity_pings_feed.dart`:
+    - Delete private `_Avatar` class (~58 lines) + `_deriveInitials` static helper.
+    - At line 324, replace `_Avatar(profile: profile, fallbackName: actorName)` with `UserAvatarWidgets.avatar(imageUrl: profile?.avatarUrl, displayName: actorName, explicitSize: 32.0)`.
+  - `lib/widgets/social/family_presence_bar.dart`:
+    - Delete `_AvatarThumb` + `_InitialsSquare` + `_OnlineDot` (~70 lines).
+    - At lines 240-249 inside `_PresenceAvatar.build`, replace the Stack with a single `UserAvatarWidgets.avatar(imageUrl: profile.avatarUrl, displayName: profile.displayName, explicitSize: 40.0, showStatus: true, isOnline: true)`. The shared widget already renders the bottom-right status dot.
+    - Keep `_kAvatarSize = 40.0` constant (still used for `SizedBox` sizing in the parent + `_OverflowChip`).
+  - Widget tests: scan `test/widget/widgets/social/` for any `find.byType(_Avatar)` / `find.byType(_AvatarThumb)` probes — those become invalid (private types deleted). Replace with `find.byType(CachedNetworkImage)` or label-based finds.
+  - Tests: `test/widget/widgets/social/avatar_consolidation_test.dart` (new, lightweight) — verify `ActivityPingsFeed` and `FamilyPresenceBar` both render `UserAvatarWidgets`-built avatars (look for `Semantics` label `a11yProfileImage(name)` baked into the shared widget). (BUT-631)
 
-### Agent C: rules + UI gating — firestore-rules-tester + flutter-developer
+- [ ] **B2. BUT-630 — Dedicated ping NotificationStrategy + display-name resolution** —
+  - `lib/services/notifications/notification_types.dart`:
+    - Add 3 new static const fields on `NotificationStrategy`: `pingNudge`, `pingTimerAlert`, `pingHelpMe`. All `type: immediate`, `priority: high`, `category: social`, with sv/en title+body templates using `{senderName}` (and `{recipeTitle}` placeholder support — left as no-op when not provided).
+      - `pingNudge`: title "Knuff från {senderName}" / "Nudge from {senderName}", body "{senderName} puttar på dig" / "{senderName} is nudging you".
+      - `pingTimerAlert`: title "Timer-alarm från {senderName}", body "Tid att kolla på maten".
+      - `pingHelpMe`: title "{senderName} behöver hjälp", body "Tryck för att svara".
+    - Add `static const String ping = 'ping';` to `NotificationPayloadType` for FCM data['type'] consistency.
+  - `lib/services/social/ping_service.dart`:
+    - Rewrite `_sendPush(ping)`: switch on `ping.type` to pick the matching strategy (`PingType.unknown` → fall back to `pingNudge`).
+    - Resolve sender display name: `_friendsService.friends.firstWhereOrNull((f) => f.uid == ping.fromUserId)?.displayName ?? ping.fromUserId`. Pass that as `senderName` instead of the raw UID.
+    - Update doc-comment at line 213-215 (the "reuses friendRequest as closest match" note) since that's no longer true.
+  - Tests: `test/unit/services/social/ping_service_test.dart` — add cases verifying:
+    - `PingType.nudge` routes to `NotificationStrategy.pingNudge`.
+    - `PingType.timerAlert` routes to `pingTimerAlert`.
+    - `PingType.helpMe` routes to `pingHelpMe`.
+    - Display name from `UnifiedFriendsService.friends` is used (mock the service to return a `UserProfile` with `displayName: 'Anna'` for the sender UID).
+    - Fallback to UID if friend not found (e.g. ex-friend / cross-group ping).
+  - No l10n changes — Swedish text lives directly in the strategy templates (consistent with all other strategies in the file). (BUT-630)
 
-- [x] **B3. BUT-659 — New-account restriction (24h or verified email) on high-friction social actions** —
-  - `firestore.rules`: add `function isAccountMatured()` returning `request.auth.token.email_verified == true || (request.time.toMillis() - get(/databases/$(database)/documents/users/$(request.auth.uid)).data.createdAt.toMillis()) >= 60 * 60 * 1000` (60min default — bumpable later). Cache the user-doc fetch via a single helper.
-  - Apply in create-allow rules for: `friend_requests/`, `groups/{gid}/invites/`, `conversations/{cid}/messages/` (DM to non-friend), and group create paths. Read existing rules to find these.
-  - Avoid double-fetch: helpers in firestore.rules already use `getAfter`/`get` patterns — reuse.
-  - **UI message**: when a write is denied, show Swedish snackbar "Bekräfta din e-post för att lägga till vänner" with a "Skicka bekräftelse" CTA → `FirebaseAuth.instance.currentUser?.sendEmailVerification()`. Add a small util `lib/services/auth/account_maturity_helper.dart` that exposes `bool get isMatured` (client-side mirror) so UI can pre-check + disable CTAs.
-  - Constant `kAccountMaturityMinutes = 60` shared between client + rules (rules-side hardcoded; doc the constant).
-  - Tests: `functions/src/__tests__/social-rules.test.ts` (or wherever the rules tests live) — allow after 60min, deny before, allow immediately if `email_verified`. (BUT-659)
+### Agent C: dependency hygiene — no specialist (direct edits)
 
-### Agent D: notifications backend — cloud-functions-specialist
+- [ ] **C1. BUT-513 — Remove unused google_sign_in_mocks** —
+  - `pubspec.yaml`: delete line 120 `google_sign_in_mocks: ^0.4.1` from `dev_dependencies`.
+  - Run `flutter pub get`.
+  - Run `flutter test` smoke (or at least `flutter analyze`) to confirm no transitive use.
+  - Grep `google_sign_in_mocks` and `GoogleSignInMocks` across `test/` to be thorough — if any test file imports it, that's the signal to revert. (Verified during Step 0 — no usages.) (BUT-513)
 
-- [x] **C1. BUT-651 — Global per-user 24h push-notification rate cap** —
-  - Wrapper helper `functions/src/notifications/rate-cap.ts` exposing `async checkAndIncrement(uid, priority): Promise<{allowed: boolean, count: number, cap: number}>`.
-    - Counter at `users/{uid}/notificationCounters/{YYYY-MM-DD}` doc with `count`, `criticalCount`, `lastUpdated` (server time).
-    - Caps from Remote Config: `push_cap_total_per_24h` (default 10), `push_cap_noncritical_per_24h` (default 5). Cache for function warm lifetime.
-    - Critical priority bypasses non-critical cap; total cap still applies.
-    - Atomic increment via `FieldValue.increment(1)` in a transaction (read counter → check cap → either increment + return allowed, or return blocked without incrementing).
-  - Wire into existing senders: `functions/src/notifications/send-notification.ts` + `deliver-scheduled-notifications.ts`. Before each `messaging().send()`, call `checkAndIncrement`. If blocked, log `notification_rate_capped` (Firestore `analytics_events` collection if that's the convention, else just `console.warn`) and skip.
-  - Idempotency: counter increment is part of the per-send transaction; rules already gate creation paths.
-  - Tests: `functions/src/__tests__/notification-rate-cap.test.ts` — increments under cap, blocks at cap, critical bypasses non-critical cap, day-rollover resets. (BUT-651)
+- [ ] **C2. BUT-529 — Document build_runner pin rationale** —
+  - `pubspec.yaml`:
+    - Line 113: replace existing `# Downgraded for drift_dev compatibility` with `# Pinned to match drift_dev 2.29.0 — bump together (codegen breaks otherwise).`
+    - Line 114: replace existing `# Code generator for Drift database (compatible version)` with `# Code generator for Drift — stays in lockstep with build_runner 2.7.1 above.`
+  - Doc-only. (BUT-529)
 
 ### Post-Sprint Steps
 - [ ] `dart analyze --fatal-infos` — 0 issues
-- [ ] Functions: `cd functions && npm run build && npm test -- --testPathPattern='(duplicate-content|notification-rate-cap|social-rules)'`
-- [ ] Affected Dart unit tests: `content_report_test`, `my_reports_view_test`, `blocked_user_filter_test`, plus regenerated l10n
-- [ ] Tier-2 specialist gates: `code-reviewer` (any .dart), `testing-specialist` (any lib/), `firebase-backend-security` (auth/services touched), `cloud-functions-specialist` (functions/), `firestore-rules-tester` (rules changed — required)
+- [ ] Functions: `cd functions && npm run build && npm test -- --testPathPattern='gemini-client'`
+- [ ] Affected Dart unit tests: `compound_splitter_test`, `ocr_usage_tracker_test`, `ping_service_test`, plus widget test for avatar consolidation
+- [ ] `flutter pub get` (clean)
+- [ ] Tier-2 specialist gates: `code-reviewer` (any .dart), `testing-specialist` (any lib/), `firebase-backend-security` (ping_service.dart touched — auth/permission boundary)
 - [ ] Commit, push to main
 - [ ] CI watcher monitors green
-- [ ] Update Linear: BUT-537/544/649/651/654/659 → Done; BUT-497 already Duplicate
+- [ ] Update Linear: BUT-700/682/676/631/630/513/529 → Done
 
 ### Continued blockers (NOT in scope per memory)
 - BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
@@ -109,6 +126,6 @@ Theme: cluster of 6 P3/P4 social/security tickets that close out Google Play UGC
 
 ---
 
-## Archived prior sprint (completed in commit ac9020965)
+## Archived prior sprint (completed in commit 75873d1e1)
 
-LLM resilience + ops kill-switches + DI tech-debt — 2026-05-04 (D) — shipped BUT-589/679/522/687/670/766/515. See git log for full task breakdown.
+Pre-beta moderation + anti-spam + UGC compliance — 2026-05-04 (E) — shipped BUT-537/544/649/651/654/659. See git log for full task breakdown.

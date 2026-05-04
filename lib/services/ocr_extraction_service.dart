@@ -1,6 +1,7 @@
 /// OCR service with multi-provider fallback (OCR.space → Google Vision → Tesseract), Swedish optimization, and smart caching.
 
 import 'package:clock/clock.dart';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
@@ -154,8 +155,10 @@ class OCRExtractionService extends BaseService {
       timeProvider: testTimeProvider,
     );
     _tesseractCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
-    // Initialize usage tracker
     _usageTracker = OCRUsageTracker(timeProvider: testTimeProvider);
+    // First recordUsage on cold start may race with the load; tracker
+    // reconciles via max() so the in-flight increment isn't lost.
+    unawaited(_usageTracker.loadFromPersistence());
   }
 
   /// Create OCR service for testing with injectable dependencies
