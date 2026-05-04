@@ -37,7 +37,7 @@ Commit all changes made during this session to git with an appropriate commit me
 9. After successful commit, check `tasks/todo.md`:
    - If a task matches what was just committed, check it off (`[ ]` → `[x]`)
    - Report sprint progress: "Sprint: X/Y tasks done"
-   - If all tasks are checked: "Sprint complete — run `/triage plan` for next sprint"
+   - If all tasks are checked: "Sprint complete — run `/sprint-execute` to start the next batch"
 10. **Linear ticket update:**
     - Scan the commit message for BUT-XXX patterns
     - For each ticket reference where the corresponding todo.md task is now checked off:

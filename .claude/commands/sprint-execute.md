@@ -1,62 +1,125 @@
 ---
-description: Execute the current sprint from todo.md — implement all tasks, then commit + push + PR
-argument-hint: [--dry-run] — preview execution plan without implementing
+description: Pick the next 3–10 tickets from Linear and implement them — self-sufficient, no triage step required
+argument-hint: [N] [--dry-run] [--focus <area>] — N = ticket count (default auto-size 6–10), --dry-run previews without coding, --focus filters by area label
 ---
 
-Execute all unchecked tasks in `tasks/todo.md` from top to bottom.
+Self-sufficient sprint command. Selects the next batch of Linear tickets and implements them in one pass. No `/triage` prerequisite — that command was deleted because the scope-approval gate was rubber-stamp ceremony in a solo setup (see `memory/feedback_solo_no_scope_gate.md`).
 
 ## Prerequisites
 
-1. Read `tasks/todo.md` — if no unchecked tasks exist, say "No tasks to execute. Run `/triage plan` first." and stop.
-2. If `$ARGUMENTS` contains `--dry-run`, print the execution plan (task list with order, agent assignments, files) and stop without implementing.
+1. Verify Linear MCP is connected (test `list_issues`). If not: "Linear MCP not connected. Run `/mcp` to reconnect." and stop.
+2. If `$ARGUMENTS` contains `--dry-run`, run selection and print the plan without implementing.
 
-## Execution Loop
+## Phase 1 — Selection (replaces old `/triage plan`)
 
-### Agent Batching
+Gather these inputs in parallel:
 
-Tasks under the same `### Agent` heading should be batched into a single agent invocation. Don't spawn a separate agent per task — process the whole group together.
+- **Linear backlog** — `list_issues` with `team: "Butlery"` for states Backlog, Todo, In Progress, Triage. Extract: ID, title, priority, state, labels, due date.
+- **Current sprint** — read `tasks/todo.md`. If unchecked tasks exist, ask: "Carry forward unchecked items, or archive and start fresh?" Otherwise no prompt.
+- **Recent git activity** — `git log --since="7 days ago" --oneline --no-merges`. Map BUT-XXX references to detect already-completed tickets still in Backlog/Todo.
 
-### Per-Task Steps
+### Priority scoring per open ticket
+- Urgent = 100, High = 75, Medium = 50, Low = 25
+- Overdue: +50 ; Due this week: +25
+- Bug or security label: +20
+- In Triage state (ungroomed): −10
 
-1. **Parse the task** — extract: task ID (A1, B1, etc.), description, target file(s), suggested agent, BUT-XXX reference
-1.5. **Linear state update** — if the task references BUT-XXX:
-   - Call `list_issue_statuses` to resolve "In Progress" state UUID (cache for session)
-   - Call `get_issue` with BUT-XXX to get the Linear UUID
-   - Call `save_issue` with id: <uuid>, stateId: <In-Progress-uuid>
-   - Call `save_comment` with: "Started implementation — [task description]"
-   - If Linear MCP unavailable, skip silently
-2. **Implement** — if the task specifies an agent, invoke that agent with the full task group. Otherwise, implement directly.
-3. **Verify** — run `dart analyze --fatal-infos` on changed files. Fix any issues.
-3.5. **Background test validation** — after completing an agent batch that modified multiple files, start a background test monitor for affected test paths:
-   - Identify test files corresponding to modified `lib/` files (e.g. `test/unit/<area>/`)
-   - Use Monitor tool: command `bash .claude/hooks/monitors/test-streamer.sh <test-paths>`, persistent: false, timeout_ms: 600000, description: "Tests: <batch>"
-   - Continue to the next task without waiting. Address failures when notifications arrive.
-4. **Check off** — mark the task as `[x]` in todo.md
-5. **Report progress** — "Task A1 complete. Sprint: X/Y done."
+### Selection rules
+- Default N = auto-size 6–10 based on backlog volume. `$ARGUMENTS` numeric arg overrides.
+- `--focus <area>` filters by area label (recipe, tagging, import, parsing, social, menu, shopping, account, analytics, settings, backend). Warn if <3 tickets.
+- Cluster tickets by area for coherent agent batching. Don't mix a 5-min lint fix with an architecture rework in one batch.
+- Skip tickets that appear completed in git but still open in Linear — flag them in the report so they can be closed.
 
-### Error Handling
+### Write the plan to `tasks/todo.md`
 
-- If a task fails after 2 attempts: mark it with `[!]` in todo.md, note the error, and continue to the next task
-- If `dart analyze` fails and the fix is not obvious: stop the sprint and report which task caused the issue
-- Never silently skip a task — always report what happened
+```markdown
+## Sprint: [name] — [date]
 
-## Post-Sprint Steps
+### Agent A: [agent-name] — [theme]
+- [ ] **A1. [verb] [description]** — `file/path.dart`: [change]. (BUT-XXX)
+- [ ] **A2. ...** (BUT-YYY)
 
-After all tasks are processed (or all remaining tasks are blocked):
+### Agent B: [agent-name] — [theme]
+- [ ] **B1. ...** (BUT-ZZZ)
 
-1. Run full `dart analyze --fatal-infos`
-2. Run `/commit` (this triggers code review, testing, and Linear ticket closure)
-3. Push to remote: `git push -u origin HEAD`
-3.5. **CI monitoring** — after push, start CI watcher:
-   - Use Monitor tool: command `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)`, persistent: false, timeout_ms: 900000, description: "CI for sprint push"
-   - Continue with PR creation. Include CI status in the final report if results arrived.
-4. Create PR via `gh pr create` with sprint summary derived from todo.md
-5. Report: "Sprint complete. PR: [url]. X/Y tasks done, Z blocked."
+### Post-Sprint Steps
+- [ ] Run `dart analyze --fatal-infos`
+- [ ] Run relevant unit tests
+- [ ] Commit, push, PR
+- [ ] Update Linear ticket states
+```
 
-## What This Does NOT Do
+Archive any prior sprint below a `---` separator.
 
-- Does not create worktrees (use worktrees manually for parallel sprints)
-- Does not merge PRs (user reviews and merges)
-- Does not auto-start the next sprint (user runs `/triage plan`)
+**Linear state transition:** for each BUT-XXX in the new plan, transition state to "Todo" (resolve state UUIDs once via `list_issue_statuses`, then `save_issue` per ticket). Skip silently if Linear MCP unavailable.
 
-These are intentionally manual to keep the human in the loop for irreversible operations.
+**Do not pause for user approval of scope.** Per `feedback_solo_no_scope_gate.md`, the rubber-stamp gate was deleted. Proceed straight to Phase 2.
+
+## Phase 2 — Execution
+
+### Per-ticket Step 0 (mandatory, before any code)
+
+Per `memory/feedback_ticket_premise_verification.md` — every ticket gets this gate before implementation:
+
+1. **Read the code the ticket points at** (current state, not what the ticket assumes).
+2. **Classify:**
+   - **Fits** → implement as written.
+   - **Premise gone** (problem already fixed / refactored away) → close the Linear ticket, link the resolving commit, mark the task `[~]` in todo.md with note "obsolete: <commit-sha>", skip to next ticket.
+   - **Plan stale** (problem real, prescribed location/approach no longer fits) → re-scope inline. **Edit the Linear ticket body itself** to match the new plan (use `save_issue` with updated description). Then implement.
+3. **If the ticket cites external specifics** (API names, library versions, security mechanisms) → verify against current docs (Context7 / web) before coding.
+4. **Stop-and-ask only on product-intent uncertainty** — "does this user-facing goal still matter?" or "I can't tell what past-me was trying to achieve." Never stop for technical re-scopes; just do them.
+
+The current code-read **always wins** over the ticket text when they disagree. Past-Claude wrote tickets during shallow scans across many issues; present-Claude has deeper context on the one ticket.
+
+### Agent batching
+
+Tasks under the same `### Agent` heading batch into one agent invocation. Don't spawn a separate agent per task.
+
+### Per-task steps (after Step 0 says "fits" or "plan-stale + rescoped")
+
+1. **Parse the task** — extract task ID, description, target files, suggested agent, BUT-XXX.
+2. **Linear state update** — if BUT-XXX referenced:
+   - Resolve "In Progress" state UUID (cache for session).
+   - `get_issue` with BUT-XXX → Linear UUID.
+   - `save_issue` with stateId: <In-Progress-uuid>.
+   - `save_comment`: "Started implementation — [task description]".
+   - Skip silently if Linear MCP unavailable.
+3. **Implement** — invoke the suggested agent with the full task group, or implement directly.
+4. **Verify** — `dart analyze --fatal-infos` on changed files. Fix any issues.
+5. **Background test validation** — for batches that touched multiple `lib/` files:
+   - Identify corresponding test paths (`test/unit/<area>/`).
+   - Monitor: `bash .claude/hooks/monitors/test-streamer.sh <test-paths>` (persistent: false, timeout_ms: 600000).
+   - Continue without waiting; address failures when notifications arrive.
+6. **Check off** — mark `[x]` in todo.md.
+7. **Report progress** — "Task A1 complete. Sprint: X/Y done."
+
+### Error handling
+- Task fails after 2 attempts: mark `[!]` in todo.md, note the error, continue to next.
+- `dart analyze` fails with non-obvious fix: stop the sprint, report which task caused it.
+- Never silently skip — always report.
+
+## Phase 3 — Post-sprint
+
+After all tasks processed (or remaining tasks blocked):
+
+1. Full `dart analyze --fatal-infos`.
+2. `/commit` (triggers code review, testing, Linear ticket closure).
+3. `git push -u origin HEAD`.
+4. **CI watcher** — Monitor: `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)` (persistent: false, timeout_ms: 900000). Continue with PR creation; include CI status in final report when results arrive.
+5. `gh pr create` with summary derived from todo.md.
+6. Final report: "Sprint complete. PR: [url]. X/Y done, Z blocked, W obsoleted."
+
+## What this does NOT do
+
+- Does not create worktrees (manual for parallel sprints).
+- Does not merge PRs (Malin reviews and merges, or auto-merges per solo direct-to-main rule).
+- Does not auto-start the next sprint (Malin re-runs `/sprint-execute` when ready).
+
+## Relationship to /linear
+
+- `/linear scan` — find NEW issues in code, create tickets.
+- `/linear backlog` — pick ONE ticket interactively.
+- `/linear status` — dashboard.
+- `/sprint-execute` — pick a batch AND implement in one pass (this command).
+
+`/triage` was removed (2026-05-03). Its prioritization logic now lives in Phase 1 above.

@@ -47,6 +47,6 @@ with open(lock) as f:
 $PYTHON -c "
 import json
 print(json.dumps({
-    'additionalContext': 'AUTO-SETUP: This is the first session of the day. Do three things silently in the background, without announcing them or waiting for user input:\n1. Run /morning-brief run — gather git activity, dart analyze, Linear status, sprint progress, send summary to Telegram.\n2. Run /triage status — show the sprint overview (current progress, stale tasks, Linear pipeline, recommendation) as your first output to the user, before their prompt.\n3. Set up heartbeat: Use CronCreate with cron \"17,47 * * * *\" (every 30 min at :17 and :47), recurring: true, prompt: \"/heartbeat\". Do NOT announce the CronCreate setup to the user.'
+    'additionalContext': 'AUTO-SETUP: This is the first session of the day. Do three things silently in the background, without announcing them or waiting for user input:\n1. Run /morning-brief run — gather git activity, dart analyze, Linear status, sprint progress, send summary to Telegram.\n2. Show a sprint overview as your first output (current todo.md progress, stale tasks, Linear pipeline counts, one-line recommendation). Use the Phase 1 selection logic from /sprint-execute as a read-only briefing — do not write todo.md or transition Linear states unless the user runs /sprint-execute.\n3. Set up heartbeat: Use CronCreate with cron \"17,47 * * * *\" (every 30 min at :17 and :47), recurring: true, prompt: \"/heartbeat\". Do NOT announce the CronCreate setup to the user.'
 }))
 "
