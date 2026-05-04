@@ -56,6 +56,7 @@ test/unit/repositories/friends/friend_relationship_repository_test.dart
 test/unit/services/account/consent_service_test.dart
 test/unit/services/account/data_export_service_test.dart
 test/unit/services/analytics/menu_events_tracker_milestone_test.dart
+test/unit/services/analytics/recipe_events_tracker_search_test.dart
 test/unit/services/analytics/recipe_events_tracker_share_test.dart
 test/unit/services/analytics/social_events_tracker_milestone_test.dart
 test/unit/services/analytics/winback_attribution_service_test.dart
