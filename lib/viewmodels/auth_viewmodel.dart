@@ -28,13 +28,13 @@
 /// // Sign in with comprehensive validation
 /// final success = await authViewModel.signIn(
 ///   email: 'erik.svensson@example.com',
-///   password: 'säkertLösenord123',
+///   password: '<password>',
 /// );
 /// // Registration with complete validation
 /// if (authViewModel.isLoginMode == false) {
 ///   final registered = await authViewModel.register(
 ///     email: 'anna.andersson@example.com',
-///     password: 'starkLösenord456',
+///     password: '<password>',
 ///     displayName: 'Anna Andersson',
 ///   );
 /// }
@@ -156,7 +156,7 @@ class AuthViewModel extends ChangeNotifier
   /// ```dart
   /// final success = await authViewModel.signIn(
   ///   email: 'erik.svensson@example.com',
-  ///   password: 'säkertLösenord123',
+  ///   password: '<password>',
   /// );
   /// if (success) {
   ///   // Navigate to main app
@@ -198,7 +198,7 @@ class AuthViewModel extends ChangeNotifier
   /// ```dart
   /// final registered = await authViewModel.register(
   ///   email: 'anna.andersson@example.com',
-  ///   password: 'starkLösenord456',
+  ///   password: '<password>',
   ///   displayName: 'Anna Andersson',
   /// );
   /// if (registered) {

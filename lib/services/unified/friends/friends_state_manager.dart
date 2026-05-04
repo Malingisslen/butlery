@@ -9,11 +9,34 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Consolidated friends state manager handling all friend-related state with real-time synchronization
-class FriendsStateManager extends ChangeNotifier {
+///
+/// BUT-471: stream lifecycle managed by [StreamManagementMixin]. Subscriptions
+/// are tracked by name; reassigning the same name auto-cancels the prior
+/// subscription. Disposal is delegated to [disposeStreamResources].
+class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
+  static const _kIncomingRequests = 'friends_incoming_requests';
+  static const _kSentRequests = 'friends_sent_requests';
+  static const _kGroupInvitations = 'friends_group_invitations';
+  static const _kOwnedCategories = 'friends_owned_categories';
+  static const _kMemberCategories = 'friends_member_categories';
+  static const _kFriendsList = 'friends_friends_list';
+  static const _kBlockedUsers = 'friends_blocked_users';
+
+  static const _kAllSubscriptionNames = <String>[
+    _kIncomingRequests,
+    _kSentRequests,
+    _kGroupInvitations,
+    _kOwnedCategories,
+    _kMemberCategories,
+    _kFriendsList,
+    _kBlockedUsers,
+  ];
+
   final FirebaseFriendsRepository _repository;
   final FriendCategoryRepository _categoryRepository;
   final FirebaseBlockRepository _blockRepository;
@@ -29,15 +52,6 @@ class FriendsStateManager extends ChangeNotifier {
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
-
-  StreamSubscription? _incomingRequestsSubscription;
-  StreamSubscription? _sentRequestsSubscription;
-  StreamSubscription? _groupInvitationsSubscription;
-  StreamSubscription? _categoriesSubscription;
-  StreamSubscription? _memberCategoriesSubscription; // BUG-018 FIX
-  StreamSubscription? _friendsSubscription;
-
-  StreamSubscription? _blockedUsersSubscription;
 
   FriendsStateManager({
     required FirebaseFriendsRepository repository,
@@ -193,22 +207,17 @@ class FriendsStateManager extends ChangeNotifier {
     }
   }
 
-  void clearAllData() {
-    _incomingRequestsSubscription?.cancel();
-    _sentRequestsSubscription?.cancel();
-    _groupInvitationsSubscription?.cancel();
-    _categoriesSubscription?.cancel();
-    _memberCategoriesSubscription?.cancel(); // BUG-018 FIX
-    _friendsSubscription?.cancel();
-    _blockedUsersSubscription?.cancel();
+  Future<void> _cancelAllRealtimeSubscriptions() async {
+    for (final name in _kAllSubscriptionNames) {
+      await cancelNamedSubscription(name);
+    }
+  }
 
-    _incomingRequestsSubscription = null;
-    _sentRequestsSubscription = null;
-    _groupInvitationsSubscription = null;
-    _categoriesSubscription = null;
-    _memberCategoriesSubscription = null; // BUG-018 FIX
-    _friendsSubscription = null;
-    _blockedUsersSubscription = null;
+  void clearAllData() {
+    // Fire-and-forget the cancellation futures — they're cheap and the mixin
+    // handles errors internally. Synchronous return matches the original
+    // signature to avoid forcing every caller to await.
+    unawaited(_cancelAllRealtimeSubscriptions());
 
     _friends.clear();
     _incomingRequests.clear();
@@ -227,36 +236,29 @@ class FriendsStateManager extends ChangeNotifier {
 
   void _setupRealtimeListeners(String userId) {
     try {
-      _incomingRequestsSubscription?.cancel();
-      _sentRequestsSubscription?.cancel();
-      _groupInvitationsSubscription?.cancel();
-      _categoriesSubscription?.cancel();
-      _memberCategoriesSubscription?.cancel(); // BUG-018 FIX
-      _friendsSubscription?.cancel();
-      _blockedUsersSubscription?.cancel();
-      AppLogger.debug(
-          '🧹 Cancelled existing real-time listeners before setting up new ones');
-
-      _incomingRequestsSubscription =
-          _repository.incomingRequestsStream(userId).listen(
+      listenToStream<List<FriendRequest>>(
+        _repository.incomingRequestsStream(userId),
         (requests) {
           _incomingRequests = requests;
           AppLogger.debug(
               'Real-time update: ${_incomingRequests.length} incoming requests');
           notifyListeners();
         },
+        name: _kIncomingRequests,
         onError: (e) {
           AppLogger.warning('Incoming requests stream error: $e');
         },
       );
 
-      _sentRequestsSubscription = _repository.sentRequestsStream(userId).listen(
+      listenToStream<List<FriendRequest>>(
+        _repository.sentRequestsStream(userId),
         (requests) {
           _outgoingRequests = requests;
           AppLogger.debug(
               'Real-time update: ${_outgoingRequests.length} outgoing requests');
           notifyListeners();
         },
+        name: _kSentRequests,
         onError: (e) {
           AppLogger.warning('Sent requests stream error: $e');
         },
@@ -270,18 +272,21 @@ class FriendsStateManager extends ChangeNotifier {
 
       // BUG-011 fix: Add real-time stream for friends list
       // This ensures User A sees User B in friends list immediately when User B accepts
-      _friendsSubscription = _repository.friendProfilesStream(userId).listen(
+      listenToStream<List<UserProfile>>(
+        _repository.friendProfilesStream(userId),
         (friendProfiles) {
           _friends = friendProfiles;
           AppLogger.debug('Real-time update: ${_friends.length} friends');
           notifyListeners();
         },
+        name: _kFriendsList,
         onError: (e) {
           AppLogger.warning('Friends stream error: $e');
         },
       );
 
-      _blockedUsersSubscription = _blockRepository.watchBlockedUserIds().listen(
+      listenToStream<Set<String>>(
+        _blockRepository.watchBlockedUserIds(),
         (blockedIds) {
           _blockedUsers
             ..clear()
@@ -290,6 +295,7 @@ class FriendsStateManager extends ChangeNotifier {
               'Real-time update: ${_blockedUsers.length} blocked users');
           notifyListeners();
         },
+        name: _kBlockedUsers,
         onError: (e) {
           AppLogger.warning('Blocked users stream error: $e');
         },
@@ -303,15 +309,15 @@ class FriendsStateManager extends ChangeNotifier {
   /// Limited to 3 retries to prevent infinite retry loops
   void _setupGroupInvitationsStream(String userId, {int retryCount = 0}) {
     const maxRetries = 3;
-    _groupInvitationsSubscription?.cancel();
-    _groupInvitationsSubscription =
-        _repository.receivedInvitationsStream(userId).listen(
+    listenToStream<List<GroupInvitation>>(
+      _repository.receivedInvitationsStream(userId),
       (invitations) {
         _receivedInvitations = invitations;
         AppLogger.debug(
             'Real-time update: ${invitations.length} received invitations');
         notifyListeners();
       },
+      name: _kGroupInvitations,
       onError: (e) {
         final errorString = e.toString();
         // BUG-017 FIX: Handle Firestore SDK assertion errors with limited retries
@@ -320,9 +326,8 @@ class FriendsStateManager extends ChangeNotifier {
           if (retryCount < maxRetries) {
             AppLogger.warning(
                 '⚠️ Firestore assertion in invitations stream, retry ${retryCount + 1}/$maxRetries...');
-            _groupInvitationsSubscription?.cancel();
             Future.delayed(const Duration(milliseconds: 500), () {
-              if (_isInitialized) {
+              if (_isInitialized && !isStreamDisposed) {
                 _setupGroupInvitationsStream(userId,
                     retryCount: retryCount + 1);
               }
@@ -346,7 +351,6 @@ class FriendsStateManager extends ChangeNotifier {
   /// 2. memberCategoriesStream(userId) - categories where user is a MEMBER (not owner)
   void _setupCategoriesStream(String userId, {int retryCount = 0}) {
     const maxRetries = 3;
-    _categoriesSubscription?.cancel();
 
     // BUG-018 FIX: Pre-populate from existing _categories to avoid race condition
     // When refresh() calls _loadCategories first, the streams may fire with stale
@@ -373,12 +377,13 @@ class FriendsStateManager extends ChangeNotifier {
     }
 
     // Stream 1: Categories user OWNS
-    _categoriesSubscription =
-        _categoryRepository.categoriesStream(userId).listen(
+    listenToStream<List<FriendCategory>>(
+      _categoryRepository.categoriesStream(userId),
       (categories) {
         ownedCategories = categories;
         mergeAndNotify();
       },
+      name: _kOwnedCategories,
       onError: (e) {
         final errorString = e.toString();
         if (errorString.contains('INTERNAL ASSERTION') ||
@@ -386,9 +391,8 @@ class FriendsStateManager extends ChangeNotifier {
           if (retryCount < maxRetries) {
             AppLogger.warning(
                 '⚠️ Firestore assertion in owned categories stream, retry ${retryCount + 1}/$maxRetries...');
-            _categoriesSubscription?.cancel();
             Future.delayed(const Duration(milliseconds: 500), () {
-              if (_isInitialized) {
+              if (_isInitialized && !isStreamDisposed) {
                 _setupCategoriesStream(userId, retryCount: retryCount + 1);
               }
             });
@@ -403,13 +407,13 @@ class FriendsStateManager extends ChangeNotifier {
     );
 
     // Stream 2: Categories where user is a MEMBER (not owner) - BUG-018 FIX
-    _memberCategoriesSubscription?.cancel();
-    _memberCategoriesSubscription =
-        _categoryRepository.memberCategoriesStream(userId).listen(
+    listenToStream<List<FriendCategory>>(
+      _categoryRepository.memberCategoriesStream(userId),
       (categories) {
         memberCategories = categories;
         mergeAndNotify();
       },
+      name: _kMemberCategories,
       onError: (e) {
         AppLogger.warning('Member categories stream error: $e');
       },
@@ -600,30 +604,13 @@ class FriendsStateManager extends ChangeNotifier {
     }
   }
 
-  void removeReceivedInvitation(String invitationId) {
-    final initialLength = _receivedInvitations.length;
-    _receivedInvitations.removeWhere((i) => i.id == invitationId);
-    if (_receivedInvitations.length < initialLength) {
-      AppLogger.debug('Removed received invitation from state: $invitationId');
-      notifyListeners();
-    }
-  }
-
   @override
   void dispose() {
-    _incomingRequestsSubscription?.cancel();
-    _sentRequestsSubscription?.cancel();
-    _groupInvitationsSubscription?.cancel();
-    _categoriesSubscription?.cancel();
-    _memberCategoriesSubscription?.cancel(); // BUG-018 FIX
-    _friendsSubscription?.cancel();
-
-    _incomingRequestsSubscription = null;
-    _sentRequestsSubscription = null;
-    _groupInvitationsSubscription = null;
-    _categoriesSubscription = null;
-    _memberCategoriesSubscription = null; // BUG-018 FIX
-    _friendsSubscription = null;
+    // BUT-471: stream lifecycle owned by StreamManagementMixin.
+    // Fire-and-forget the disposal future — `dispose()` itself is sync per
+    // ChangeNotifier contract, and the mixin's internal cancellation
+    // catches errors per-resource.
+    unawaited(disposeStreamResources());
 
     AppLogger.debug(
         'FriendsStateManager disposed - cleaned up ${_friends.length} friends data');

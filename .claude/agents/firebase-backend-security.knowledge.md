@@ -2534,3 +2534,88 @@ top-level collection with subcollections per category
 (`ping_rate_limit/entries`). Don't conflate the two when writing
 purgers or rules — each needs its own match block and its own
 retention coverage.
+
+---
+
+### 2026-05-04 — Denormalised PII pairs travel together (BUT-466 audit)
+
+`shared_content` docs carry BOTH `sharedByDisplayName` AND
+`sharedByAvatarUrl` (written by `recipe_sharing_manager.dart:531-534`,
+rendered by `shared_content_card.dart:130-133`). When BUT-466 added a
+tombstone cascade for `sharedByDisplayName` in step 12 of
+`cleanupUserSocialData`, the avatar URL was missed — recipient UIs
+will continue rendering the deleted user's face next to "[Raderad
+användare]" after Art 17 erasure. Avatar URLs are themselves linked
+PII (Firebase Storage paths or external photo URLs).
+
+**Pattern: when tombstoning denormalised author/sharer metadata,
+audit the writer for ALL fields prefixed with the same noun
+(`sharedBy*`, `authorName*`, `createdBy*`, etc.) — they're typically
+written together and must be cleared together.** Use
+`FieldValue.delete()` for the avatar (no neutral string fits) and a
+locale-aware tombstone for the name. Idempotency check must verify
+ALL fields, not just one.
+
+**Tripwire pattern:** for every new denormalised-PII tombstone
+cascade, add a positive assertion in
+`account_deletion_residual_test.dart` (BUT-671 style) that fails the
+day someone adds a fourth `sharedBy*` field without extending the
+cascade. The test should iterate the full set of denormalised fields,
+not just the one being added.
+
+---
+
+### 2026-05-04 — Symmetric-difference CEL idiom for self-only set edits (BUT-464)
+
+Pattern that landed in `firestore.rules:333-352` for
+`users/{userId}/friend_categories/{categoryId}` non-owner-member
+updates:
+
+```
+request.resource.data.friendUserIds.toSet()
+  .difference(resource.data.friendUserIds.toSet())
+  .union(resource.data.friendUserIds.toSet()
+    .difference(request.resource.data.friendUserIds.toSet()))
+  .hasOnly([request.auth.uid])
+```
+
+Reads as: "the symmetric difference of before-state and after-state,
+when treated as sets, must be a subset of [auth.uid]." Equivalent to
+"only the requesting user's UID may have moved in or out."
+
+**Coverage matrix (verified by reasoning, not yet tests):**
+- self-add: `(A\B)={uid}, (B\A)=∅` → pass
+- self-remove: `(A\B)=∅, (B\A)={uid}` → pass
+- no-op: symdiff=∅, `hasOnly([])` is true → pass (harmless)
+- foreign-add: symdiff={foreignUid} → fail
+- foreign-remove: symdiff={victimUid} → fail
+- self+foreign in same write: symdiff={uid, foreignUid} → fail
+- self-swap (remove self, add foreign): symdiff={uid, foreignUid} → fail
+
+**When applying:** combine with `affectedKeys().hasOnly([…])` (already
+done in BUT-464) so a malicious member cannot piggy-back arbitrary
+field writes onto a legal self-edit. Hand off to
+`firestore-rules-tester` to add explicit emulator tests for all seven
+matrix cells when the rule is non-trivial — reasoning passes are not
+substitutes for emulator-verified behaviour.
+
+**Limitation worth documenting:** because the gate uses
+`isInList('friendUserIds')` against `resource.data` (BEFORE state), a
+non-member cannot self-add. If a future flow needs "accept invite
+without owner write," this rule will reject it — add an invite-token
+branch then.
+
+---
+
+### 2026-05-04 — Comment line-number drift in cascade code
+
+`on-user-deleted.ts:143` (BUT-466) references `firestore.rules:515-518`
+for the `shared_content` update gate; actual location post-BUT-659 is
+`firestore.rules:554-557`. Lines 515-518 are now the friend-request
+create rule (account-cooldown). Pattern: comments that pin specific
+firestore.rules line numbers go stale every sprint. **Prefer
+referencing the rule by collection path + rule type ("the
+`shared_content` update gate") rather than line number.** When a line
+number is genuinely needed for a code-review breadcrumb, add a
+trailing comment so future grep can find it: `// see
+firestore.rules match /shared_content/{contentId} allow update`.

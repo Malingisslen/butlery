@@ -498,6 +498,31 @@ void main() {
           returnsNormally,
         );
       });
+
+      // BUT-471: with StreamManagementMixin, dispose() should mark the mixin
+      // as disposed, which prevents new subscriptions and clears the registry.
+      // We assert via the public `getStreamStats()` API exposed by the mixin.
+      test(
+          'should report 0 active subscriptions and isDisposed=true after dispose',
+          () async {
+        final disposableManager = FriendsStateManager(
+          repository: mockFriendsRepository,
+          categoryRepository: mockCategoryRepository,
+          blockRepository: mockBlockRepository,
+        );
+        await disposableManager.initialize();
+
+        // Act
+        disposableManager.dispose();
+        // disposeStreamResources is fire-and-forget from dispose(); allow
+        // microtasks + cancellation futures to drain.
+        await Future<void>.delayed(Duration.zero);
+
+        // Assert
+        final stats = disposableManager.getStreamStats();
+        expect(stats['activeSubscriptions'], equals(0));
+        expect(stats['isDisposed'], isTrue);
+      });
     });
 
     group('Notification on State Changes', () {

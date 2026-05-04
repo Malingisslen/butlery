@@ -330,13 +330,25 @@ service cloud.firestore {
         // get requires membership (pendingInviteUserIds removed — dead field)
         allow get: if isAuthenticated() && isInList('friendUserIds');
 
-        // Non-owner members can only modify friendUserIds and updatedAt
+        // Non-owner members can only modify friendUserIds and updatedAt.
+        // BUT-464: tighten so a member can ONLY add or remove their OWN UID.
+        // Without this, any member could bloat the array up to size 200 with
+        // arbitrary userIds, degrading UX / causing client OOM on reads.
+        // Bulk-edit by the owner is unaffected (owner uses the rule above).
         allow update: if isAuthenticated()
           && isInList('friendUserIds')
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['friendUserIds', 'updatedAt'])
-        && request.resource.data.friendUserIds.size() <= 200
-        && rateLimitWrite('friend_category_member', 5);
+          && request.resource.data.friendUserIds.size() <= 200
+          // Symmetric difference of the array (treated as a set) must be a
+          // subset of [auth.uid] — i.e. the only UID that may have moved
+          // in/out of the membership is the requesting user's own.
+          && request.resource.data.friendUserIds.toSet()
+               .difference(resource.data.friendUserIds.toSet())
+               .union(resource.data.friendUserIds.toSet()
+                  .difference(request.resource.data.friendUserIds.toSet()))
+               .hasOnly([request.auth.uid])
+          && rateLimitWrite('friend_category_member', 5);
 
         // Moderation override (BUT-511): admins may read + delete any
         // reported group via the reports workflow. Read is needed so the
@@ -1583,9 +1595,27 @@ service cloud.firestore {
     // Required for collectionGroup('members') queries
     // ========================================
 
-    // Users can read/delete their OWN membership documents across all collections.
-    // NOTE: Matches ALL 'members' subcollections. Safe because only shared content
-    // members have a 'userId' field (friend_category members use 'friendId' instead).
+    // ⚠️ SAFETY CONTRACT (BUT-463): Matches ALL `members/{id}` subcollections
+    // across the database via collection-group. The rule depends on TWO
+    // invariants that must hold for every existing AND future `members`
+    // subcollection:
+    //   (1) Each `members/{id}` doc carries a `userId` field that names the
+    //       owning user (i.e. the row belongs to the user identified by
+    //       `userId`, not to a foreign user the app is "tagging in").
+    //   (2) The doc is created/updated only by trusted server code or by
+    //       a NARROWER explicit rule on the parent path.
+    // Today: only `shared_content/{}/members/{}` and similar shared-content
+    // subcollections use this shape. `friend_categories` does NOT use a
+    // `members` subcollection (membership is inline as `friendUserIds`).
+    //
+    // FAILURE MODE: if a future feature adds a `members/{id}` subcollection
+    // that violates (1) — e.g. stores `userId: foreignUid` to model "users
+    // this row references" rather than ownership — this collection-group
+    // rule would unintentionally allow `foreignUid` to read/delete it.
+    // Mitigation: any new `members` subcollection MUST add a stricter
+    // explicit rule on its parent path BEFORE relying on this catch-all.
+    // The rules unit test in `members-collection-group-rules.test.ts`
+    // enforces this contract by attempting a foreign-userId fixture.
     match /{path=**}/members/{memberId} {
       allow read, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }

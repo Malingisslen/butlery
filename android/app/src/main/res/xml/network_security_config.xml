@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Enforce HTTPS for all connections by default -->
+    <!-- Release: enforce HTTPS for all connections. Cleartext exceptions
+         (localhost / 10.0.2.2) live in src/debug/res/xml/network_security_config.xml
+         and are merged in for debug builds only. (BUT-462) -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
     </base-config>
-
-    <!-- Allow cleartext traffic for localhost during development -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">10.0.2.2</domain>
-    </domain-config>
 </network-security-config>

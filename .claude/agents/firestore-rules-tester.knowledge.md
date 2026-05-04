@@ -298,3 +298,67 @@ alone trigger CI; rules-file edits already triggered it.
 **Local-run gap remains**: Java not on PATH on this dev workstation
 (see 2026-04-26 entry); type-checked the test instead with
 `npx tsc --noEmit ...`. CI is the verification path.
+
+### 2026-05-04 — symmetric-difference + isInList membership-gate pattern (BUT-464)
+
+`users/{uid}/friend_categories/{categoryId}` non-owner update rule:
+
+```
+allow update: if isAuthenticated()
+  && isInList('friendUserIds')                                  // membership gate
+  && diff.affectedKeys().hasOnly(['friendUserIds', 'updatedAt']) // foreign-field gate
+  && request.resource.data.friendUserIds.size() <= 200           // size cap
+  && symmetricDifference(before, after).hasOnly([auth.uid])      // self-only mutation
+  && rateLimitWrite('friend_category_member', 5);
+```
+
+Required coverage matrix (six branches → six deny tests + allow):
+1. **isInList gate** — non-member attempting self-add must DENY.
+2. **affectedKeys gate** — member touching any other field must DENY.
+3. **size cap** — array > 200 must DENY.
+4. **symmetric-difference** — member changing a foreign UID must DENY.
+5. **rate-limit** — second write within window must DENY (per 2026-04-26 entry).
+6. **Allow** — clean self-add and clean self-remove SUCCEED.
+
+**Subtle allow**: `updatedAt`-only update (no `friendUserIds` change) PASSES because
+`{}.toSet().difference({}.toSet())...hasOnly([uid])` evaluates true on empty sets.
+Pin this with an explicit allow test or callers will silently rely on undefined behavior.
+
+### 2026-05-04 — rate-limit collision across same-actor tests (gotcha)
+
+When a test uses `rateLimitWrite(collection, N)` and the **same actor** performs
+two writes in <N seconds across separate `test()` cases, the second write
+DENIES regardless of payload — the rate-limit subcollection at
+`users/{auth.uid}/rate_limits/{collection}` persists across test cases
+within a single run.
+
+Mitigation options:
+1. Use a different `auth.uid` per test (preferred — most isolated).
+2. Clear the rate-limit doc with `withSecurityRulesDisabled` between tests.
+3. Use distinct parent `categoryId`s per test if the rate-limit key
+   discriminates by parent (it does NOT for `friend_category_member` —
+   it's keyed only by collection name).
+
+This bites tests that look semantically independent but share the actor.
+Audit any sprint that adds rate-limit predicates: the test file's first
+test "can add self" and second test "can remove self" with same actor
+will trip this on a real emulator run.
+
+### 2026-05-04 — `members` collection-group catch-all coverage shape (BUT-463)
+
+`match /{path=**}/members/{memberId}` with `allow read, delete` requires
+TWO test categories beyond the basic auth/identity matrix:
+
+1. **Canary test** — seed `userId: bob` at any path, read as bob, assert
+   SUCCESS. Documents that the catch-all gates ONLY on `userId == auth.uid`,
+   not on path. Failure of THIS test signals a parent-path rule has been
+   added that overrides the catch-all (which may or may not be intentional).
+2. **Path-agnostic allow** — seed at a never-before-used path, read as
+   owning user, assert SUCCESS. Failure signals the catch-all has been
+   accidentally narrowed.
+
+Both must coexist; they prove different aspects of "the catch-all is the
+only gate". Comment IDs `M1`–`M5` recommended.
+
+Delete path requires its own allow + deny pair; read-only coverage misses
+the delete branch entirely.

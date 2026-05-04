@@ -61,6 +61,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     notificationQueuesPurged: 0,
     legacySharedWithScrubbed: 0,
     contentGuardSubcollectionsPurged: 0,
+    shareDisplayNameTombstoned: 0,
   };
 
   // Fetch friends list once (used by steps 1 and 4)
@@ -133,7 +134,87 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   results.contentGuardSubcollectionsPurged =
       await cleanupContentGuardSubcollections(userId);
 
+  // 12. BUT-466: tombstone denormalised sharer-PII on top-level
+  //     `shared_content` docs. Rules block recipient/self updates on these
+  //     docs, so the admin path is the only writer that can scrub them.
+  results.shareDisplayNameTombstoned =
+      await tombstoneSharedByDisplayName(userId);
+
   v1.logger.info(`Cleanup results for ${userId}:`, results);
+}
+
+// Swedish locale string — matches the app's UI language. Recipient UIs
+// will render this in place of the deleted user's name.
+const SHARED_BY_DISPLAY_NAME_TOMBSTONE = "[Raderad användare]";
+
+async function tombstoneSharedByDisplayName(userId: string): Promise<number> {
+  return tombstoneSharedByDisplayNameWithDb(db, userId);
+}
+
+/**
+ * Test seam — injected Firestore lets the cascade run against a stub.
+ * Idempotency: skip docs already at tombstone (display name) AND null
+ * (avatar). Best-effort per chunk: commit failure logs warn + continues.
+ */
+export async function tombstoneSharedByDisplayNameWithDb(
+  database: admin.firestore.Firestore,
+  userId: string
+): Promise<number> {
+  const snapshot = await database
+    .collection("shared_content")
+    .where("sharedByUserId", "==", userId)
+    .get();
+
+  if (snapshot.empty) return 0;
+
+  let batch = database.batch();
+  let batchCount = 0;
+  let queued = 0;
+
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    const displayNameAlreadyTombstoned =
+      data.sharedByDisplayName === SHARED_BY_DISPLAY_NAME_TOMBSTONE;
+    const avatarAlreadyCleared =
+      data.sharedByAvatarUrl === null || data.sharedByAvatarUrl === undefined;
+    if (displayNameAlreadyTombstoned && avatarAlreadyCleared) {
+      // Already tombstoned (both fields) — skip to avoid a no-op write.
+      continue;
+    }
+
+    batch.update(doc.ref, {
+      sharedByDisplayName: SHARED_BY_DISPLAY_NAME_TOMBSTONE,
+      sharedByAvatarUrl: null,
+    });
+    batchCount++;
+    queued++;
+
+    if (batchCount >= BATCH_LIMIT) {
+      try {
+        await batch.commit();
+      } catch (err) {
+        v1.logger.warn(
+          `BUT-466: sharedByDisplayName tombstone chunk commit failed for ${userId}`,
+          { err }
+        );
+      }
+      batch = database.batch();
+      batchCount = 0;
+    }
+  }
+
+  if (batchCount > 0) {
+    try {
+      await batch.commit();
+    } catch (err) {
+      v1.logger.warn(
+        `BUT-466: sharedByDisplayName tombstone final commit failed for ${userId}`,
+        { err }
+      );
+    }
+  }
+
+  return queued;
 }
 
 /**
