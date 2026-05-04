@@ -6,6 +6,7 @@ import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// GDPR Article 17 cascade for user-owned content (recipes, menus, shopping
@@ -14,6 +15,15 @@ import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 /// Per-resource collections delete via their repositories. Cross-user scrub
 /// paths (collaborative-list references, group weekly menus) patch foreign
 /// docs and stay direct on Firestore by design.
+///
+/// **Partial-write contract** (BUT-592): each `deleteXxx` method is composed
+/// of one or more committed batches via [_commitIfNeeded]. If batch N
+/// succeeds and N+1 fails, the first N batches are persisted and the method
+/// returns `false` (logged at error level, no exception bubbled to the
+/// caller). The cascade orchestrator's existing retry — re-running account
+/// deletion — is the recovery path: deletes of already-gone docs are no-ops
+/// in Firestore, so a retry completes the remaining work without
+/// double-deleting.
 class ContentDeletionOperations {
   final FirebaseFirestore _firestore;
   // Test seams: production resolves via ServiceLocator on first use; tests
@@ -23,8 +33,7 @@ class ContentDeletionOperations {
   final WeeklyMenuPlanRepository? _weeklyMenuRepo;
   final PantryRepository? _pantryRepo;
   static const String _logTag = 'ContentDeletionOps';
-  // Safety margin under Firestore's 500-op batch limit.
-  static const int _batchLimit = 450;
+  static const int _batchLimit = kFirestoreBatchSafeChunkSize;
 
   ContentDeletionOperations(
     this._firestore, {

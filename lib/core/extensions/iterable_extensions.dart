@@ -6,9 +6,16 @@
 const int kFirestoreWhereInLimit = 30;
 
 /// Firestore's max ops per `WriteBatch` (the SDK rejects batches larger
-/// than this). Pair with [ChunkExtension.chunked] when batching deletes,
-/// updates, or writes across a large doc set.
+/// than this). Use as a boundary check; for chunking, prefer
+/// [kFirestoreBatchSafeChunkSize] which leaves headroom.
 const int kFirestoreBatchOpLimit = 500;
+
+/// Recommended chunk size when splitting a large doc set into multiple
+/// batches. The 50-op safety margin under [kFirestoreBatchOpLimit] absorbs
+/// (a) any auxiliary writes the caller adds inside the loop and (b) the
+/// SDK's own off-by-one strictness near the boundary. Pair with
+/// [ChunkExtension.chunked]. (BUT-592)
+const int kFirestoreBatchSafeChunkSize = 450;
 
 /// Chunking extension. Returns `[receiver in chunks of [size]]` — the last
 /// sublist is shorter if the input length isn't a multiple of [size].

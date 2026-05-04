@@ -249,7 +249,8 @@ class FirebaseNotificationsRepository
         .where('isRead', isEqualTo: false)
         .get();
 
-    for (final chunk in unreadQuery.docs.chunked(kFirestoreBatchOpLimit)) {
+    for (final chunk
+        in unreadQuery.docs.chunked(kFirestoreBatchSafeChunkSize)) {
       final batch = firestore.batch();
       for (final doc in chunk) {
         batch.update(doc.reference, {

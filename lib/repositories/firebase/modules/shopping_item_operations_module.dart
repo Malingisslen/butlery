@@ -360,7 +360,7 @@ class ShoppingItemOperationsModule {
           .doc(listId)
           .collection(FirestoreCollections.items);
 
-      for (final chunk in itemIds.chunked(kFirestoreBatchOpLimit)) {
+      for (final chunk in itemIds.chunked(kFirestoreBatchSafeChunkSize)) {
         final batch = firestore.batch();
         for (final itemId in chunk) {
           batch.delete(itemsCollection.doc(itemId));

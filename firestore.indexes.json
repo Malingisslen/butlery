@@ -249,6 +249,21 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "deliverAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "pings",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pings",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "fromUserId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

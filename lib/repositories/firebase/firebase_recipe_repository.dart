@@ -8,6 +8,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
@@ -481,10 +482,23 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   /// Renames a personal tag across all user recipes that contain it.
   ///
-  /// Uses Firestore FieldValue.arrayRemove/arrayUnion for atomic per-document
-  /// updates the denormalized name in personalTags array.
-  /// personalTagIds (UUIDs) is unchanged since IDs don't change on rename.
+  /// Read-modify-write of the denormalized `personalTags` array (array of maps);
+  /// `personalTagIds` (UUIDs) is unchanged since IDs don't change on rename.
   /// Returns the number of recipes updated.
+  ///
+  /// **Idempotency**: re-running with the same `(tagId, newName)` is a no-op
+  /// for already-renamed entries — the inner map rebuild only mutates the
+  /// `entry['tagId'] == tagId` slot, and an entry already at `newName`
+  /// produces an identical document. Safe to retry on partial failure
+  /// (network drop mid-batch leaves the user with some recipes renamed and
+  /// some not; next rename attempt completes the rest, or the cascade
+  /// re-fires from the next `updateTag` call). Stale recipe names are
+  /// otherwise recoverable via re-tag.
+  ///
+  /// **Scale**: client-side fetch-all + chunked batch writes. Fine for current
+  /// scale (typical user has <500 recipes per tag). Bottleneck at ~10K recipes
+  /// per tag — at that point migrate to a Cloud Function trigger (BUT-480
+  /// deferred CF path).
   @override
   Future<int> renamePersonalTagInRecipes(
     String tagId,
@@ -501,13 +515,11 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
       if (snap.docs.isEmpty) return 0;
 
-      // Read-modify-write for personalTags (array of maps)
-      const batchLimit = 500;
       int updated = 0;
 
-      for (var i = 0; i < snap.docs.length; i += batchLimit) {
+      for (var i = 0; i < snap.docs.length; i += kFirestoreBatchSafeChunkSize) {
         final batch = firestore.batch();
-        final chunk = snap.docs.skip(i).take(batchLimit);
+        final chunk = snap.docs.skip(i).take(kFirestoreBatchSafeChunkSize);
 
         for (final doc in chunk) {
           final data = doc.data();

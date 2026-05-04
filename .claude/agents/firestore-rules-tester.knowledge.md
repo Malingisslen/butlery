@@ -264,3 +264,37 @@ The `unified_shared_shopping_lists` collection uses a `memberPermissions`
 MAP (not a UID list) and has no self-leave branch at all — different shape,
 no analogous tightening needed. Any future GDPR-scrub work there must add a
 NEW branch and gets its own test cluster.
+
+### 2026-05-04 — Sprint G defence-in-depth deny blocks (BUT-627 + BUT-482)
+
+Top-level wildcard match blocks `/audit/{document=**}` and
+`/_internal/{document=**}` set `allow read, write: if false` for paths
+written exclusively by Cloud Functions via the admin SDK (admin SDK
+bypasses rules). Tests live in `audit-logs-rules.test.ts` under section
+banner `SPRINT G — top-level /audit and /_internal defence-in-depth`,
+with comment IDs `D1`–`D11`.
+
+Coverage: 4 ops (read/create/update/delete) × 2 paths × authenticated +
+1 unauthenticated read per path + 1 precedence regression that proves
+the new `/audit/{document=**}` wildcard does NOT shadow the more-specific
+`/audit_logs/{logId}` match (Firestore picks most-specific, but a
+refactor could swap behavior — pin it).
+
+Patterns worth reusing:
+
+- **Seed via `withSecurityRulesDisabled` for read-deny tests.** Reading
+  a non-existent doc can pass `assertFails` for the wrong reason
+  (missing-doc null vs deny). Always seed the path first so the assertion
+  proves the rule, not the absence of the doc.
+- **Precedence regression test.** Whenever a wildcard `match /foo/**`
+  is added next to a more-specific `match /foo_specific/{id}`, add ONE
+  test that the specific path's allow-list still works. Cheap insurance.
+
+No new test file/script needed — extended the existing `audit-logs-rules.test.ts`
+(which already owns `audit_logs/{logId}`). Added the file to the
+`firestore-rules.yml` workflow path filters so edits to the test file
+alone trigger CI; rules-file edits already triggered it.
+
+**Local-run gap remains**: Java not on PATH on this dev workstation
+(see 2026-04-26 entry); type-checked the test instead with
+`npx tsc --noEmit ...`. CI is the verification path.

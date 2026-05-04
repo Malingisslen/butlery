@@ -591,7 +591,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         cacheManager.dispose();
       }
     } catch (e) {
-      // Silently ignore - cache manager may not be available
+      if (kDebugMode) {
+        AppLogger.warning('cacheManager dispose failed: $e');
+      }
     }
   }
 

@@ -3,15 +3,23 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// Handles deletion of social data (friends, messages, shared content, comments/ratings).
+///
+/// **Partial-write contract** (BUT-592): mirrors [ContentDeletionOperations].
+/// Each method drains its target collection in batches via [_commitIfNeeded];
+/// on mid-sequence failure the method returns `false` and logs at error
+/// level without rethrowing. Recovery path is re-running account deletion —
+/// reverse-friend-link removal, anonymisation of comments, and ratings/pings
+/// deletion are all idempotent (anonymisation overwrites with the same
+/// `'deleted'` sentinels; deletes of gone docs no-op).
 class SocialDeletionOperations {
   final FirebaseFirestore _firestore;
   final MessagingRepository _messagingRepo;
   static const String _logTag = 'SocialDeletionOps';
-  static const int _batchLimit =
-      450; // Safety margin under Firestore's 500-op limit
+  static const int _batchLimit = kFirestoreBatchSafeChunkSize;
 
   SocialDeletionOperations(
     this._firestore, {

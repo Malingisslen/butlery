@@ -910,6 +910,97 @@ count when truncated.
   too-tight cap. If `truncated: true` log lines become frequent, that's
   the signal to revisit.
 
+### 2026-05-04 — BUT-482 / BUT-483 / BUT-627 Sprint G [Pattern discovered]
+
+Three Cloud Functions tasks in one sprint: rating aggregation debounce
+(BUT-482), structureRecipe timing log (BUT-483), ping sweeper +
+hourly rate-limit (BUT-627). All shipped clean; build + new tests pass.
+
+**New family**: `triggers/` — generic Firestore-triggered functions that
+don't fit into a domain folder (cleanup/, social/, ratings/, etc.).
+First inhabitant: `triggers/ping_onCreate.ts` (rate-limit enforcement).
+
+**Patterns worth remembering**:
+
+- **Cloud Tasks vs Firestore-marker + scheduler trade-off, again.**
+  BUT-482 originally specced Cloud Tasks for the 5s debounce. Repo still
+  has zero Cloud Tasks usage — same calculation as BUT-647: the
+  `_internal/rating_debounce/markers/{recipeId}` doc + a 1-min drainer
+  is far lighter than introducing `@google-cloud/tasks`, the IAM role,
+  and a queue resource. 1-min latency is acceptable for rating-stats
+  refresh (was: synchronous + throttled at ~1/sec). The trade-off
+  inflection point is roughly the same: ~10k debounced events/min.
+
+- **`_internal/rating_debounce/{recipeId}` was a 3-segment trap.**
+  Spec said "marker doc at `_internal/rating_debounce/{recipeId}`"
+  — but `_internal` (collection) → `rating_debounce` (doc) →
+  `{recipeId}` would have to be a collection name, which is wrong for
+  a single doc. Resolved via subcollection:
+  `_internal/rating_debounce/markers/{recipeId}` (4 segments = doc).
+  Same lesson as BUT-638's `metrics/weekly_north_star/snapshots/{isoWeek}`.
+  Always count segments in plan specs and disambiguate before coding.
+
+- **Claim-by-delete BEFORE aggregating.** Drainer pattern:
+  `await doc.ref.delete(); await aggregate(recipeId);`. Deleting the
+  marker first means a new rating that lands during aggregation creates
+  a fresh marker, which the next drain picks up — re-fire is automatic.
+  Aggregation itself is idempotent (reads the full ratings collection
+  + writes one stats doc), so a rare double-run from a marker race is
+  safe. Avoids needing a transaction across delete + aggregate.
+
+- **count() aggregate for rate-limit checks.** The hourly cap on
+  pings uses `collectionGroup('pings').where('fromUserId', '==', X)
+  .where('createdAt', '>=', windowStart).count().get()`. Single
+  billable read regardless of the user's actual ping volume — at
+  worst $0.000036 per create vs $0.06+ if we had to fetch the docs.
+  Always prefer `.count()` over `.get()` when only the cardinality
+  matters.
+
+- **Audit row goes to `audit/<event>/entries/{auto}` (4 segments).**
+  Spec said `audit/ping_rate_limit/{autoId}` (3 segments) but for the
+  same reason as the debounce marker, a 3-segment doc-id under
+  `audit/ping_rate_limit` doesn't parse. Used
+  `audit/ping_rate_limit/entries/{auto}`. Pattern reusable for any
+  per-event audit collection.
+
+- **Structured timing log = single helper closure, not scattered calls.**
+  BUT-483: `const emitTiming = (success: boolean, extra?: ...) => {
+  logger.info("structure_recipe.complete", { event, durationMs,
+  textLength, mode, success, ...extra }) }` declared once at the top
+  of the function, called at every exit path. Cheaper to maintain than
+  copy-pasting the log object at 9+ exit points, and adding a new field
+  later means one edit, not nine. Pair with per-exit `reason` field for
+  failure-mode breakdown (kill_switch_ai / not_a_recipe /
+  rate_limited / etc.) — a future Logs-Explorer slice on `reason`
+  becomes trivial.
+
+- **Cloud Logging metric filter is GCP console config, not code.**
+  BUT-483's "wire a Cloud Logging metric filter for p95 latency"
+  surfaces in plans as a code task but the actual config lives in
+  Cloud Console (Logging → Logs Explorer → Create Metric). The CF code
+  contribution is just emitting the structured fields cleanly. Ops
+  step belongs in a runbook, not in code. Established
+  `functions/RUNBOOK.md` for this and future ops-only notes.
+
+- **collectionGroup index needs `queryScope: COLLECTION_GROUP`.** Most
+  existing `firestore.indexes.json` entries use `"queryScope":
+  "COLLECTION"` because they're per-parent queries. The new ping
+  indexes (`expiresAt` ASC, `fromUserId` + `createdAt`) MUST be
+  COLLECTION_GROUP because the queries use `db.collectionGroup('pings')`.
+  Wrong scope = `FAILED_PRECONDITION` at first run (emulator silently
+  auto-builds the right one, masking the deploy bug).
+
+- **Pre-existing test failures unrelated to your changes.**
+  `notification-rate-cap.ts:99` calls `admin.firestore()` lazily inside
+  `checkAndIncrement`; tests for `detect-lapsed-users` and
+  `send-activity-digest` don't initialise an app and don't stub
+  `checkAndIncrement` either, so the chain throws `app/no-app`. This
+  was already broken on `main` before this sprint. Document in the
+  hand-off rather than chase fixes outside scope. Lesson: when running
+  the full `npm test` after a multi-task sprint, sanity-check failures
+  by `git log --oneline -1 -- <broken-file>` to see if the test file
+  was last touched in your work or earlier.
+
 ### 2026-05-02 — BUT-753 admin cascade for legacy `sharedWith` arrays [Pattern discovered]
 
 `functions/src/cleanup/on-user-deleted.ts` gained a 10th cascade step:

@@ -2493,3 +2493,44 @@ instances to keep serving the old value for an hour. The kill switch
 functions/ codebase, prefer either (a) sub-minute TTL backed by Firestore
 read amortization, or (b) explicit "redeploy to refresh" documentation —
 not silent indefinite caching.
+
+### 2026-05-04 — admin-only collections need EXPLICIT deny rules + retention coverage (Sprint G review)
+
+Sprint G (BUT-482/483/627) introduced two new server-side collections:
+- `audit/ping_rate_limit/entries/{auto}` — written by `ping_onCreate`
+  trigger when an over-cap ping is deleted.
+- `_internal/rating_debounce/markers/{recipeId}` — debounce markers
+  written by `scheduleRatingAggregation`.
+
+Both are admin-only by design. Both are *implicitly* admin-only via
+Firestore default-deny. Convention in this codebase is to write an
+**explicit** `allow read, write: if false;` for admin-only collections —
+see `deletion_audit_logs/{logId}` (rules:434) and `audit_logs/{logId}`
+(rules:1378, BUT-424). Reasons:
+1. Intent is auditable — grep shows the deny is deliberate, not an
+   oversight.
+2. A future broad collection-group or wildcard rule can accidentally
+   widen access to a default-deny collection. Explicit deny pins the
+   ceiling.
+
+**Action when adding a new admin-only collection:** write an explicit
+`match` block with `allow read, write: if false;` even though
+default-deny would have the same runtime effect.
+
+**Adjacent finding — retention gap:** `audit/ping_rate_limit/entries`
+stores `userId` of rate-limit violators but has no purge job. BUT-665
+covered `audit_logs/{id}` retention via
+`functions/src/audit_logs/purge-expired.ts` but the new `audit/`
+top-level collection is not covered by that purger. Pattern: every
+new audit-style collection that contains user identifiers must be
+listed in the BUT-665 retention sweeper or carry its own `expiresAt`
++ sweeper. Otherwise GDPR Art-15 exports + Art-17 erasure become
+incomplete and rows grow unbounded.
+
+**Naming distinction worth noting:** `audit_logs/` (single underscore
+collection) is the canonical user-action audit trail with
+documented retention. `audit/` (Sprint G addition) is a different
+top-level collection with subcollections per category
+(`ping_rate_limit/entries`). Don't conflate the two when writing
+purgers or rules — each needs its own match block and its own
+retention coverage.

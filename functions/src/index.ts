@@ -14,8 +14,13 @@
 
 import { setGlobalOptions } from "firebase-functions/v2/options";
 import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from "firebase-functions/v2/firestore";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import {
+  scheduleRatingAggregation,
+  drainRatingAggregationQueue,
+} from "./ratings/rating-aggregation";
 
 setGlobalOptions({ region: "europe-west1" });
 
@@ -88,6 +93,10 @@ export { suppressLowPerformers } from "./analytics/suppress-low-performers";
 
 // Scheduled Aggregations - North Star metrics
 export { northStarWeekly } from "./scheduled/north-star-weekly";
+
+// BUT-627: Ping moderation
+export { pingSweeper } from "./scheduled/ping_sweeper";
+export { onPingCreated } from "./triggers/ping_onCreate";
 
 // Correction Analytics - Alias learning and domain stats
 export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corrections";
@@ -247,7 +256,7 @@ export const onRatingCreated = onDocumentCreated(
       `New rating created for recipe ${recipeId} (rating: ${data.rating})`
     );
 
-    await updateRecipeRatingStats(recipeId);
+    await scheduleRatingAggregation(recipeId);
   }
 );
 
@@ -277,7 +286,8 @@ export const onRatingUpdated = onDocumentUpdated(
         `Rating updated for recipe ${recipeId} (${before.rating} -> ${after.rating})`
       );
 
-      await updateRecipeRatingStats(recipeId);
+      // BUT-482: debounce — coalesce bursts on popular recipes within 5s.
+      await scheduleRatingAggregation(recipeId);
     } else {
       logger.info(
         `Rating ${event.data!.after.id} updated but value unchanged, skipping aggregation`
@@ -310,6 +320,31 @@ export const onRatingDeleted = onDocumentDeleted(
       `Rating deleted for recipe ${recipeId} (was: ${data.rating})`
     );
 
-    await updateRecipeRatingStats(recipeId);
+    await scheduleRatingAggregation(recipeId);
+  }
+);
+
+/**
+ * BUT-482: Drain pending rating-aggregation markers every minute.
+ *
+ * The trigger handlers above only WRITE markers; this scheduler is the
+ * single producer of `recipe_social_stats` writes. Per-recipe latency is
+ * 0..60s after the rate-burst settles, which is acceptable for rating
+ * stats display (was: synchronous, throttled at ~1/sec on hot recipes).
+ *
+ * Region pinned via `setGlobalOptions` above.
+ */
+export const drainRatingAggregations = onSchedule(
+  { schedule: "every 1 minutes", timeoutSeconds: 120 },
+  async () => {
+    const result = await drainRatingAggregationQueue({
+      aggregate: updateRecipeRatingStats,
+    });
+    logger.info("rating_aggregation.drain_complete", {
+      event: "rating_aggregation.drain_complete",
+      processed: result.processed,
+      failed: result.failed,
+      durationMs: result.durationMs,
+    });
   }
 );

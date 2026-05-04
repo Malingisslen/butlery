@@ -6,6 +6,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 /// Firebase synchronization operations for friends data.
 /// Handles direct Firebase operations for friend requests, friend relationships,
@@ -143,7 +144,7 @@ class FriendsFirebaseSyncOperations {
               'displayNameLower': displayName.toLowerCase(),
             });
             opCount++;
-            if (opCount >= 450) {
+            if (opCount >= kFirestoreBatchSafeChunkSize) {
               await batch.commit();
               batch = firestore.batch();
               opCount = 0;

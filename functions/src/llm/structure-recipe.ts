@@ -124,12 +124,30 @@ export async function runStructureRecipe(
 ): Promise<StructureRecipeResponse> {
   const { text, partialData, mode = "extract", sourceUrl } = req;
 
+  // Every exit path emits a `structure_recipe.complete` log so a future
+  // Cloud Logging distribution-metric filter on `durationMs` (sliced by
+  // `mode`) costs zero deploy.
+  const startMs = Date.now();
+  const textLength = typeof text === "string" ? text.length : 0;
+  const emitTiming = (success: boolean, extra?: Record<string, unknown>): void => {
+    logger.info("structure_recipe.complete", {
+      event: "structure_recipe.complete",
+      durationMs: Date.now() - startMs,
+      textLength,
+      mode,
+      success,
+      ...(extra ?? {}),
+    });
+  };
+
   // Validate input
   if (!text || typeof text !== "string") {
+    emitTiming(false, { reason: "invalid_text_type" });
     throw new HttpsError("invalid-argument", "Text krävs för extraktion.");
   }
 
   if (text.length > 50000) {
+    emitTiming(false, { reason: "text_too_long" });
     throw new HttpsError(
       "invalid-argument",
       "Texten är för lång (max 50000 tecken)."
@@ -137,6 +155,7 @@ export async function runStructureRecipe(
   }
 
   if (text.length < 20) {
+    emitTiming(false, { reason: "text_too_short" });
     throw new HttpsError(
       "invalid-argument",
       "Texten är för kort för att innehålla ett recept."
@@ -159,6 +178,7 @@ export async function runStructureRecipe(
     const loadKillSwitch = deps?.loadKillSwitch ?? defaultLoadKillSwitch;
     const config = await loadKillSwitch();
     if (config?.aiEnabled === false) {
+      emitTiming(false, { reason: "kill_switch_ai" });
       return {
         success: false,
         error: "AI-funktioner är tillfälligt avstängda.",
@@ -166,6 +186,7 @@ export async function runStructureRecipe(
       };
     }
     if (config?.llmParserEnabled === false) {
+      emitTiming(false, { reason: "kill_switch_llm_parser" });
       return {
         success: false,
         error: "AI-receptolkning är tillfälligt avstängd.",
@@ -229,6 +250,7 @@ export async function runStructureRecipe(
 
     if (!content) {
       logger.error("[structureRecipe] Empty response from Gemini");
+      emitTiming(false, { reason: "empty_response" });
       return {
         success: false,
         error: "Inget svar från AI-tjänsten.",
@@ -245,6 +267,7 @@ export async function runStructureRecipe(
       const parsed = parseIngredientLinesResponse(content);
       if (!parsed) {
         logger.error("[structureRecipe] Failed to parse ingredient lines:", content);
+        emitTiming(false, { reason: "ingredient_lines_parse_failed" });
         return {
           success: false,
           error: "Kunde inte tolka AI-svaret som ingredienser.",
@@ -268,6 +291,7 @@ export async function runStructureRecipe(
         `[structureRecipe] Parsed ${ingredients.length} ingredient lines (cost: $${actualCost.toFixed(6)})`
       );
 
+      emitTiming(true, { ingredientCount: ingredients.length, truncated });
       // Wrap in minimal recipe so existing response type works
       return {
         success: true,
@@ -297,6 +321,7 @@ export async function runStructureRecipe(
       logger.info(
         "[structureRecipe] Input is not a recipe — empty arrays from Gemini"
       );
+      emitTiming(false, { reason: "not_a_recipe" });
       return {
         success: false,
         error:
@@ -309,6 +334,7 @@ export async function runStructureRecipe(
     const recipe = parseRecipeResponse(content, promptVersion);
     if (!recipe) {
       logger.error("[structureRecipe] Failed to parse response:", content);
+      emitTiming(false, { reason: "recipe_parse_failed" });
       return {
         success: false,
         error: "Kunde inte tolka AI-svaret som ett recept.",
@@ -326,6 +352,7 @@ export async function runStructureRecipe(
       `[structureRecipe] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
     );
 
+    emitTiming(true, { ingredientCount: recipe.ingredients.length });
     return {
       success: true,
       recipe,
@@ -341,17 +368,20 @@ export async function runStructureRecipe(
     logger.error("[structureRecipe] Error:", error);
 
     if (error instanceof HttpsError) {
+      emitTiming(false, { reason: "https_error", code: error.code });
       throw error;
     }
 
     // Check for rate limiting
     if (error instanceof Error && error.message.includes("rate limit")) {
+      emitTiming(false, { reason: "rate_limited" });
       throw new HttpsError(
         "resource-exhausted",
         "AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund."
       );
     }
 
+    emitTiming(false, { reason: "internal_error" });
     throw new HttpsError(
       "internal",
       "Ett fel uppstod vid AI-bearbetning. Försök igen."

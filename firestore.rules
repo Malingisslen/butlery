@@ -1401,6 +1401,26 @@ service cloud.firestore {
     }
 
     // ========================================
+    // BUT-627 audit ledger (admin-only) — defence-in-depth deny.
+    // Top-level `audit/{category}/entries/{auto}` rows are written by Cloud
+    // Functions via admin SDK (e.g. ping rate-limit violations). No client
+    // path should reach them; the admin SDK bypasses rules anyway. Explicit
+    // deny ensures a future wildcard rule cannot accidentally widen access.
+    // ========================================
+    match /audit/{document=**} {
+      allow read, write: if false;
+    }
+
+    // ========================================
+    // BUT-482 internal scratch space (admin-only) — defence-in-depth deny.
+    // `_internal/rating_debounce/markers/{recipeId}` is written by the
+    // rating-aggregation debounce path. Functions-only collection.
+    // ========================================
+    match /_internal/{document=**} {
+      allow read, write: if false;
+    }
+
+    // ========================================
     // USER CONSENT - GDPR Article 7 compliance
     // ========================================
 

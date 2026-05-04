@@ -170,6 +170,172 @@ test("audit_logs: nobody can update or delete an existing row", async () => {
   await assertFails(adminCtx.firestore().doc(`audit_logs/al-existing`).delete());
 });
 
+// ============================================================================
+// SPRINT G — top-level /audit and /_internal defence-in-depth deny blocks
+//
+// /audit/{document=**} (BUT-627) and /_internal/{document=**} (BUT-482) are
+// admin-SDK-only namespaces written by Cloud Functions (ping rate-limit
+// audit ledger; rating-aggregation debounce markers). The rules pin every
+// client operation to `false`; the admin SDK bypasses rules. These tests
+// pin the deny so a future wildcard or refactor cannot widen access.
+// ============================================================================
+
+// Seed both deny-only paths via the rules-bypass admin context so the read
+// tests have an existing row to attempt to fetch (assertFails on the read
+// of an existing doc is a stronger assertion than reading a missing one —
+// missing reads can pass for the wrong reason).
+async function seedDenyOnlyPaths(): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`audit/ping_rate_limit/entries/seeded-entry`)
+      .set({ userId: USER_UID, exceededAt: new Date(), reason: "ping-burst" });
+    await ctx
+      .firestore()
+      .doc(`_internal/rating_debounce/markers/recipe-1`)
+      .set({ recipeId: "recipe-1", scheduledAt: new Date() });
+  });
+}
+
+// D1: read deny — authenticated user cannot read an existing audit/ entry.
+test("audit/**: authenticated user cannot read ping_rate_limit entry", async () => {
+  await seedDenyOnlyPaths();
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`audit/ping_rate_limit/entries/seeded-entry`)
+      .get()
+  );
+});
+
+// D2: create deny — authenticated user cannot create at audit/.../entries.
+test("audit/**: authenticated user cannot create a ping_rate_limit entry", async () => {
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`audit/ping_rate_limit/entries/forged-entry`)
+      .set({ userId: USER_UID, exceededAt: new Date(), reason: "spoof" })
+  );
+});
+
+// D3: update deny — authenticated user cannot mutate an existing entry.
+test("audit/**: authenticated user cannot update an existing entry", async () => {
+  await seedDenyOnlyPaths();
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`audit/ping_rate_limit/entries/seeded-entry`)
+      .update({ reason: "rewritten" })
+  );
+});
+
+// D4: delete deny — authenticated user cannot delete an existing entry.
+test("audit/**: authenticated user cannot delete an existing entry", async () => {
+  await seedDenyOnlyPaths();
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`audit/ping_rate_limit/entries/seeded-entry`)
+      .delete()
+  );
+});
+
+// D5: read deny — unauthenticated client cannot read.
+test("audit/**: unauthenticated client cannot read", async () => {
+  await seedDenyOnlyPaths();
+  const ctx = env.unauthenticatedContext();
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`audit/ping_rate_limit/entries/seeded-entry`)
+      .get()
+  );
+});
+
+// D6: read deny — authenticated user cannot read an existing _internal marker.
+test("_internal/**: authenticated user cannot read rating_debounce marker", async () => {
+  await seedDenyOnlyPaths();
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`_internal/rating_debounce/markers/recipe-1`)
+      .get()
+  );
+});
+
+// D7: create deny — authenticated user cannot create a marker.
+test("_internal/**: authenticated user cannot create a marker", async () => {
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`_internal/rating_debounce/markers/recipe-2`)
+      .set({ recipeId: "recipe-2", scheduledAt: new Date() })
+  );
+});
+
+// D8: update deny — authenticated user cannot update an existing marker.
+test("_internal/**: authenticated user cannot update an existing marker", async () => {
+  await seedDenyOnlyPaths();
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`_internal/rating_debounce/markers/recipe-1`)
+      .update({ scheduledAt: new Date() })
+  );
+});
+
+// D9: delete deny — authenticated user cannot delete an existing marker.
+test("_internal/**: authenticated user cannot delete an existing marker", async () => {
+  await seedDenyOnlyPaths();
+  const ctx = env.authenticatedContext(USER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`_internal/rating_debounce/markers/recipe-1`)
+      .delete()
+  );
+});
+
+// D10: read deny — unauthenticated client cannot read _internal.
+test("_internal/**: unauthenticated client cannot read", async () => {
+  await seedDenyOnlyPaths();
+  const ctx = env.unauthenticatedContext();
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`_internal/rating_debounce/markers/recipe-1`)
+      .get()
+  );
+});
+
+// D11: regression — admin can STILL write+read existing /audit_logs/{logId},
+//      proving the new top-level /audit/{document=**} wildcard does NOT
+//      shadow the more-specific /audit_logs/{logId} match. Firestore picks
+//      the most-specific match, but a refactor that renamed the wildcard
+//      could silently swap behavior. This test pins the precedence.
+test("regression: /audit_logs still works after /audit wildcard added", async () => {
+  // Self-create as the user (allowed by audit_logs rule).
+  const userCtx = env.authenticatedContext(USER_UID);
+  await assertSucceeds(
+    userCtx
+      .firestore()
+      .doc(`audit_logs/al-precedence-check`)
+      .set(validAuditBody(USER_UID))
+  );
+  // Admin can still read (allowed by audit_logs rule).
+  const adminCtx = env.authenticatedContext(ADMIN_UID);
+  await assertSucceeds(
+    adminCtx.firestore().doc(`audit_logs/al-precedence-check`).get()
+  );
+});
+
 async function run(): Promise<void> {
   console.log("audit_logs rules tests (BUT-424)\n");
   console.log("================================\n");
