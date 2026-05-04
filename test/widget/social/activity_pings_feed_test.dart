@@ -50,6 +50,7 @@ class _AckCall {
 
 class _FakeActivityRepo implements ActivityEventRepository {
   List<ActivityEvent> events;
+  int fetchCount = 0;
 
   _FakeActivityRepo(this.events);
 
@@ -59,6 +60,7 @@ class _FakeActivityRepo implements ActivityEventRepository {
     int limit = 20,
     DateTime? before,
   }) async {
+    fetchCount++;
     return events;
   }
 
@@ -332,6 +334,64 @@ void main() {
       await tester.pump();
 
       expect(find.text('Sara lade till smör'), findsOneWidget);
+    });
+
+    // BUT-764: regression guard for the BUT-629 lifecycle pause/resume.
+    // Without this, a refactor that breaks the lifecycle wiring would
+    // silently re-introduce the ~30 fetches/hr cost on backgrounded phones.
+    testWidgets('pauses activity polling while app backgrounded',
+        (tester) async {
+      final pings = _FakePingService();
+      final now = DateTime.now();
+      final repo = _FakeActivityRepo([
+        _activity(
+          id: 'a1',
+          actor: 'erik',
+          type: ActivityEventType.startedCooking,
+          at: now,
+        ),
+      ]);
+      final friends = _friendsWithGroup(me: 'me', memberIds: ['erik']);
+
+      await tester.pumpWidget(_wrap(ActivityPingsFeed(
+        groupId: 'g1',
+        pingService: pings,
+        activityRepository: repo,
+        friendsService: friends,
+      )));
+
+      pings.controller.add(const []);
+      // Init fetch has been scheduled — pump twice to flush the microtask.
+      await tester.pump();
+      await tester.pump();
+      expect(repo.fetchCount, 1, reason: 'one fetch on init');
+
+      // App goes background. The 2-min Timer.periodic should be cancelled.
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      // Advance well past the 2-min refresh interval. With the timer
+      // cancelled, no additional fetch should fire.
+      await tester.pump(const Duration(minutes: 5));
+      expect(repo.fetchCount, 1, reason: 'no fetch while backgrounded');
+
+      // App returns to foreground. didChangeAppLifecycleState should fire
+      // an immediate refresh + restart the periodic timer.
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      await tester.pump();
+      expect(repo.fetchCount, 2,
+          reason: 'one immediate fetch on resume (no stale data)');
+
+      // Advance one full refresh interval — the resumed periodic timer
+      // should fire one more fetch.
+      await tester.pump(const Duration(minutes: 2));
+      expect(repo.fetchCount, greaterThanOrEqualTo(3),
+          reason: 'periodic timer resumed after foreground');
+
+      // Tear down cleanly so the periodic timer doesn't leak into the
+      // next test (and to avoid the "Timer is still pending" tester error).
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
     });
 
     testWidgets('startedCooking activity renders Swedish copy', (tester) async {

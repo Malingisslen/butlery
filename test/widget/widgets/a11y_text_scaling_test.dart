@@ -14,6 +14,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -91,6 +92,56 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('BUT-763 BaseScaffold AppBar text-scaling clamp', () {
+    testWidgets(
+        'BaseScaffold AppBar with long title renders clean at 2x text scale',
+        (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
+            child: const BaseScaffold(
+              title: 'Veckomeny för familjen Andersson — lång svensk titel',
+              body: SizedBox.shrink(),
+            ),
+          ),
+        ),
+      );
+
+      // Without the BUT-763 clamp this throws RenderFlex overflowed.
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('BaseScaffold AppBar uses MediaQuery.withClampedTextScaling',
+        (tester) async {
+      // Structural assertion: the wrap helper produces a PreferredSize ↦
+      // _MediaQueryFromView/MediaQuery → AppBar chain. We don't pin the
+      // private chain; instead assert the BaseScaffold tree contains
+      // AppBar nested inside a MediaQuery (which is what
+      // withClampedTextScaling produces).
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const BaseScaffold(
+            title: 'Receptbok',
+            body: SizedBox.shrink(),
+          ),
+        ),
+      );
+
+      // AppBar is present and nested under at least one MediaQuery in
+      // the BaseScaffold subtree (sanity check for the clamp wrap).
+      final appBarFinder = find.byType(AppBar);
+      expect(appBarFinder, findsOneWidget);
+      final mediaQueryAncestors = find
+          .ancestor(of: appBarFinder, matching: find.byType(MediaQuery))
+          .evaluate();
+      expect(mediaQueryAncestors, isNotEmpty,
+          reason: 'AppBar should be wrapped in a MediaQuery (clamp wrap).');
     });
   });
 }

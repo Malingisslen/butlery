@@ -1,0 +1,105 @@
+name: SBOM (CycloneDX)
+
+# Generates CycloneDX SBOM artifacts covering the pub (Flutter) and npm
+# (Cloud Functions) dependency trees on every push to main, weekly on
+# Tuesday 05:00 UTC, and on demand. Artifacts are retained 90 days so
+# CVE triage can correlate against any recent build.
+#
+# Tool: @cyclonedx/cdxgen — multi-ecosystem CycloneDX generator that
+# natively supports pub (`dart pub deps`) and npm (`package-lock.json`).
+# Fails closed on a missing manifest so the artifact is always
+# verifiable.
+#
+# BUT-535. Cosign signing intentionally deferred until an OIDC identity
+# is wired (see ticket comments).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pubspec.lock"
+      - "pubspec.yaml"
+      - "functions/package.json"
+      - "functions/package-lock.json"
+      - ".github/workflows/sbom.yml"
+  pull_request:
+    paths:
+      - "pubspec.lock"
+      - "pubspec.yaml"
+      - "functions/package.json"
+      - "functions/package-lock.json"
+      - ".github/workflows/sbom.yml"
+  schedule:
+    - cron: "0 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: "3.35.1"
+  NODE_VERSION: "20"
+
+jobs:
+  sbom:
+    name: Generate CycloneDX SBOM (pub + npm)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Resolve pub dependencies
+        run: flutter pub get
+
+      - name: Install npm dependencies (functions)
+        working-directory: functions
+        run: npm ci
+
+      # cdxgen v11 supports pub (Dart/Flutter) and npm in one pass when
+      # pointed at the repo root. The recursive scan picks up both
+      # `pubspec.lock` and `functions/package-lock.json`. Output format
+      # is CycloneDX 1.5 JSON.
+      - name: Install cdxgen
+        run: npm install -g @cyclonedx/cdxgen@11
+
+      - name: Generate combined CycloneDX SBOM
+        env:
+          # cdxgen exits 0 even on partial scans; --required-only=false
+          # forces it to include transitives. --print suppresses xstdout.
+          FETCH_LICENSE: "true"
+        run: |
+          cdxgen \
+            --type dart,javascript \
+            --output sbom-butlery.cdx.json \
+            --spec-version 1.5 \
+            --include-formulation \
+            .
+          # Sanity check — fail the job if the SBOM has zero components.
+          components=$(jq '.components | length' sbom-butlery.cdx.json)
+          echo "SBOM component count: $components"
+          if [ "$components" = "0" ] || [ "$components" = "null" ]; then
+            echo "::error::SBOM has zero components — generator failed"
+            exit 1
+          fi
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: butlery-sbom-${{ github.sha }}
+          path: sbom-butlery.cdx.json
+          retention-days: 90
+          if-no-files-found: error

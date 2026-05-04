@@ -2233,3 +2233,30 @@ correct trade-off — and the integration test exercises this explicitly
 (`scenario_failedChunkContinues` arms `failNextCommit=true` on the first
 of two chunks and asserts the second still commits + total returned
 matches all queued docs). Test coverage is sufficient.
+
+---
+
+### 2026-05-04 — LLM enum-drift logging: bound rawValue length (BUT-546)
+
+When emitting `logger.warn` for closed-domain enum drift from LLM responses
+(e.g. `validateDifficulty` in `functions/src/llm/gemini-client.ts`), the
+`JSON.stringify(value)` fallback for non-string `value` is **unbounded**.
+A regressed Gemini response could put a nested object in the `difficulty`
+slot and inflate Cloud Logging size/cost. The rest of the diff is fine:
+
+- **PII**: `rawValue` is a closed-domain enum slot, not free-text. Even if
+  Gemini drifts to a string, drift values are model vocabulary
+  ("advanced", "challenging"), not echoes of user-uploaded recipe text.
+  Schema-enforced output makes PII regurgitation in this specific field
+  effectively impossible. Same posture as the existing error-logging
+  precedent (URL host only, errors truncated to 100 chars, closed-set
+  enums) — consistent.
+- **Cost**: warn-level logs are persistent in Cloud Logging. Drift events
+  are rare (only on prompt regressions or model swaps), so volume is fine
+  — but each event being unbounded in size is the actual risk.
+- **Fix**: cap the stringified value at ~200 chars before logging:
+  `rawValue: (typeof value === "string" ? value : JSON.stringify(value)).slice(0, 200)`
+  Same pattern as the 100-char error truncation already in use elsewhere.
+
+Pattern for future LLM observability: enum-drift telemetry is fine; always
+bound the raw payload length even when the field is "supposed to be" small.

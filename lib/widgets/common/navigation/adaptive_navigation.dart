@@ -12,6 +12,21 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
+/// BUT-557: Wraps a nav region (bottom-bar / rail / drawer) with the
+/// container-level Semantics landmark Material widgets don't expose. WCAG
+/// 1.3.1 (Info and Relationships); `explicitChildNodes: true` keeps each
+/// destination focusable individually.
+Widget _navigationLandmark({
+  required BuildContext context,
+  required Widget child,
+}) =>
+    Semantics(
+      label: context.l10n.a11yNavigationLandmark,
+      container: true,
+      explicitChildNodes: true,
+      child: child,
+    );
+
 /// Navigation item model for adaptive navigation
 class AdaptiveNavigationItem {
   final String label;
@@ -157,37 +172,42 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
   Widget _buildNavigationRail(BuildContext context, bool isDesktop) {
     final extended = isDesktop && extendedRailOnDesktop;
 
-    return NavigationRail(
-      selectedIndex: currentIndex,
-      onDestinationSelected: (index) {
-        if (onNavigationChanged != null) {
-          onNavigationChanged!(index);
-        } else {
-          _navigateToRoute(context, items[index].route, currentIndex, index);
-        }
-      },
-      extended: extended,
-      labelType:
-          extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
-      leading: extended
-          ? Padding(
-              padding: const EdgeInsets.only(
-                top: AppDimensions.spacingLg,
-                bottom: AppDimensions.spacingMd,
-              ),
-              child: Text(
-                'Butlery',
-                style: AppTextStyles.headlineMedium,
-              ),
-            )
-          : null,
-      destinations: items.map((item) {
-        return NavigationRailDestination(
-          icon: _buildBadgedIcon(item.icon, item.badgeCount),
-          selectedIcon: _buildBadgedIcon(item.activeIcon, item.badgeCount),
-          label: Text(item.label),
-        );
-      }).toList(),
+    // BUT-557: navigation landmark wrap (WCAG 1.3.1).
+    return _navigationLandmark(
+      context: context,
+      child: NavigationRail(
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          if (onNavigationChanged != null) {
+            onNavigationChanged!(index);
+          } else {
+            _navigateToRoute(context, items[index].route, currentIndex, index);
+          }
+        },
+        extended: extended,
+        labelType: extended
+            ? NavigationRailLabelType.none
+            : NavigationRailLabelType.all,
+        leading: extended
+            ? Padding(
+                padding: const EdgeInsets.only(
+                  top: AppDimensions.spacingLg,
+                  bottom: AppDimensions.spacingMd,
+                ),
+                child: Text(
+                  'Butlery',
+                  style: AppTextStyles.headlineMedium,
+                ),
+              )
+            : null,
+        destinations: items.map((item) {
+          return NavigationRailDestination(
+            icon: _buildBadgedIcon(item.icon, item.badgeCount),
+            selectedIcon: _buildBadgedIcon(item.activeIcon, item.badgeCount),
+            label: Text(item.label),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -328,68 +348,72 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          if (header != null) header!,
-          if (header == null)
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    'Butlery',
-                    style: AppTextStyles.headlineMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingSm),
-                  Text(
-                    context.l10n.navigationSubtitle,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ...items.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            final isSelected = index == currentIndex;
-
-            return Semantics(
-              identifier: 'nav-${item.route}',
-              label: item.accessibleLabel,
-              button: true,
-              enabled: true,
-              selected: isSelected,
-              child: ListTile(
-                key: ValueKey('test-nav-drawer-${item.route}'),
-                leading: _buildBadgedIcon(
-                  isSelected ? item.activeIcon : item.icon,
-                  item.badgeCount,
-                  context,
+    // BUT-557: navigation landmark for the desktop drawer variant.
+    return _navigationLandmark(
+      context: context,
+      child: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            if (header != null) header!,
+            if (header == null)
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
                 ),
-                title: Text(item.label),
-                selected: isSelected,
-                onTap: () {
-                  Navigator.pop(context); // Close drawer
-                  if (onNavigationChanged != null) {
-                    onNavigationChanged!(index);
-                  } else {
-                    Navigator.pushReplacementNamed(context, item.route);
-                  }
-                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Butlery',
+                      style: AppTextStyles.headlineMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingSm),
+                    Text(
+                      context.l10n.navigationSubtitle,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            );
-          }),
-        ],
+            ...items.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isSelected = index == currentIndex;
+
+              return Semantics(
+                identifier: 'nav-${item.route}',
+                label: item.accessibleLabel,
+                button: true,
+                enabled: true,
+                selected: isSelected,
+                child: ListTile(
+                  key: ValueKey('test-nav-drawer-${item.route}'),
+                  leading: _buildBadgedIcon(
+                    isSelected ? item.activeIcon : item.icon,
+                    item.badgeCount,
+                    context,
+                  ),
+                  title: Text(item.label),
+                  selected: isSelected,
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    if (onNavigationChanged != null) {
+                      onNavigationChanged!(index);
+                    } else {
+                      Navigator.pushReplacementNamed(context, item.route);
+                    }
+                  },
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -440,38 +464,42 @@ class ButleryBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: backgroundColor ??
-            Theme.of(context).colorScheme.surfaceContainerLow,
-      ),
-      child: SafeArea(
-        top: false,
-        child: AccessibilityUtils.clampTextScaling(
-            context: context,
-            child: SizedBox(
-              height: 56 +
-                  AppDimensions.spacingXs, // Standard nav height + indicator
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: items.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final item = entry.value;
-                  final isSelected =
-                      currentIndex != null && index == currentIndex;
+    // BUT-557: navigation landmark wrap (WCAG 1.3.1).
+    return _navigationLandmark(
+      context: context,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: backgroundColor ??
+              Theme.of(context).colorScheme.surfaceContainerLow,
+        ),
+        child: SafeArea(
+          top: false,
+          child: AccessibilityUtils.clampTextScaling(
+              context: context,
+              child: SizedBox(
+                height: 56 +
+                    AppDimensions.spacingXs, // Standard nav height + indicator
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: items.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
+                    final isSelected =
+                        currentIndex != null && index == currentIndex;
 
-                  return Expanded(
-                    child: _BottomNavItem(
-                      item: item,
-                      isSelected: isSelected,
-                      onTap: () => onTap(index),
-                      selectedColor: selectedItemColor,
-                      unselectedColor: unselectedItemColor,
-                    ),
-                  );
-                }).toList(),
-              ),
-            )),
+                    return Expanded(
+                      child: _BottomNavItem(
+                        item: item,
+                        isSelected: isSelected,
+                        onTap: () => onTap(index),
+                        selectedColor: selectedItemColor,
+                        unselectedColor: unselectedItemColor,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              )),
+        ),
       ),
     );
   }

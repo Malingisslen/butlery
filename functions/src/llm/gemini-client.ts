@@ -20,6 +20,7 @@ import {
   type Schema,
   type GenerateContentResponse,
 } from "@google-cloud/vertexai";
+import { logger } from "firebase-functions/logger";
 
 /** Prompt version — bump on any prompt change for traceability */
 export const PROMPT_VERSION = "2.0.0";
@@ -636,7 +637,10 @@ export interface ExtractedRecipe {
  * Parse LLM response as JSON, handling potential markdown code blocks.
  * With Gemini's schema enforcement this should rarely fail, but kept as safety net.
  */
-export function parseRecipeResponse(response: string): ExtractedRecipe | null {
+export function parseRecipeResponse(
+  response: string,
+  promptVersion?: string
+): ExtractedRecipe | null {
   try {
     const jsonStr = stripCodeFences(response);
     const parsed = JSON.parse(jsonStr);
@@ -661,7 +665,7 @@ export function parseRecipeResponse(response: string): ExtractedRecipe | null {
       ingredients: [],
       instructions: [],
       tags: [],
-      difficulty: validateDifficulty(parsed.difficulty),
+      difficulty: validateDifficulty(parsed.difficulty, promptVersion),
       source: typeof parsed.source === "string" ? parsed.source : null,
     };
 
@@ -702,13 +706,34 @@ export function parseRecipeResponse(response: string): ExtractedRecipe | null {
   }
 }
 
-/** Validate difficulty is a known enum value */
-function validateDifficulty(value: unknown): "easy" | "medium" | "hard" | null {
+/**
+ * Validate difficulty is a known enum value.
+ *
+ * BUT-546: emit a `logger.warn` when the LLM returns a non-null value that
+ * doesn't map to the enum, so prompt regressions (e.g. Gemini drifts to
+ * "advanced") become visible. Absent fields (undefined/null) are normal —
+ * silenced. The warn includes `promptVersion` (when threaded by the caller)
+ * so analytics can correlate drift with a prompt rev.
+ */
+function validateDifficulty(
+  value: unknown,
+  promptVersion?: string
+): "easy" | "medium" | "hard" | null {
   if (typeof value === "string") {
     const lower = value.toLowerCase();
     if (lower === "easy" || lower === "medium" || lower === "hard") {
       return lower as "easy" | "medium" | "hard";
     }
+  }
+  if (value !== undefined && value !== null) {
+    // Cap raw payload at 200 chars: a non-string value (object/array
+    // drift) could otherwise log unbounded JSON to Cloud Logging.
+    const raw = typeof value === "string" ? value : JSON.stringify(value);
+    logger.warn("[parseRecipeResponse] Dropped invalid difficulty value", {
+      rawValue: raw.slice(0, 200),
+      rawType: typeof value,
+      promptVersion: promptVersion ?? "unknown",
+    });
   }
   return null;
 }

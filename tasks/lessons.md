@@ -10,6 +10,16 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 <!-- Format: ### [Category] Title -->
 <!-- Date | Trigger | Rule | Example -->
 
+### [Workflow] Bash `cd` persists across calls — use absolute paths for greps
+- **Date**: 2026-05-04
+- **Trigger**: During BUT-555 sembast audit, my `grep -rn "sembast" lib/` returned zero matches even though `lib/core/cache/cache_dao_stub.dart` clearly imports `package:sembast_web/sembast_web.dart`. Reason: the previous Bash call ran `cd functions && npm run build`, so the shell session was inside `functions/` when the grep ran — `lib/` resolved to `functions/lib/`, which doesn't contain those files. I almost dropped the deps thinking they were dead.
+- **Rule**:
+  1. Prefer the **Grep tool** over `bash grep` whenever possible — it always operates from the project root.
+  2. When using `bash grep`/`find`/`ls`, either use absolute paths or `cd /c/Butlery/butlery &&` explicitly.
+  3. Trust **`dart analyze --fatal-infos`** as the final gate before claiming a refactor done. It caught this one.
+- **Example**: After re-running with `grep -rn "sembast" --include="*.dart" /c/Butlery/butlery/lib/`, the consumer was visible immediately. Reverted pubspec changes; BUT-555 outcome = audited & kept (both deps actively used; comments added pointing at consumers).
+- **Files**: `pubspec.yaml` (sembast/sembast_web kept with consumer-pointer comments)
+
 ### [Workflow] Verify ticket premise before implementing — collapse triage gate
 - **Date**: 2026-05-03
 - **Trigger**: Mid-conversation, I noted that BUT-760's prescribed fix (App Attest) might not match current `firebase_app_check 0.4.0` API. Malin asked whether tickets should be deeply re-verified before execution given they may be stale, then pushed further: "you create the linear tickets and implement the fixes" — and "I always just approve [the sprint plan]."

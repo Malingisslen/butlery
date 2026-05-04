@@ -287,7 +287,7 @@ export async function runStructureRecipe(
       };
     }
 
-    const recipe = parseRecipeResponse(content);
+    const recipe = parseRecipeResponse(content, promptVersion);
     if (!recipe) {
       logger.error("[structureRecipe] Failed to parse response:", content);
       return {

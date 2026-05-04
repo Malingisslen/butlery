@@ -12477,6 +12477,18 @@ abstract class AppLocalizations {
   /// **'Visa lösenord'**
   String get a11yShowPassword;
 
+  /// BUT-557: Screen-reader landmark label for the bottom/rail navigation region (WCAG 1.3.1).
+  ///
+  /// In sv, this message translates to:
+  /// **'Huvudnavigering'**
+  String get a11yNavigationLandmark;
+
+  /// BUT-557: Screen-reader header label for app-bar titles (WCAG 1.3.1).
+  ///
+  /// In sv, this message translates to:
+  /// **'Skärmrubrik: {title}'**
+  String a11yAppBarHeaderHint(String title);
+
   /// No description provided for @a11yShareWithFriends.
   ///
   /// In sv, this message translates to:

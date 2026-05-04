@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/accessibility_utils.dart';
 
 export 'loading_scaffold.dart';
 export 'error_scaffold.dart';
@@ -53,7 +54,7 @@ class BaseScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: title != null ? _buildAppBar(context) : null,
+      appBar: title != null ? _clampedAppBar(context) : null,
       body: body,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
@@ -67,9 +68,31 @@ class BaseScaffold extends StatelessWidget {
     );
   }
 
+  // BUT-763: Material AppBar's fixed `kToolbarHeight = 56.0` clips titles
+  // at >2x system text scaling. Clamp text scale at 1.3x for AppBar chrome
+  // only; body content keeps the user's full scaler.
+  PreferredSizeWidget _clampedAppBar(BuildContext context) {
+    final appBar = _buildAppBar(context);
+    return PreferredSize(
+      preferredSize: appBar.preferredSize,
+      child: AccessibilityUtils.clampTextScaling(
+        context: context,
+        child: appBar,
+      ),
+    );
+  }
+
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text(title!),
+      // BUT-557: explicit `header + container` flags so WCAG 1.3.1 audit
+      // tooling sees the landmark; Material's implicit header semantics
+      // already announce correctly to screen readers either way.
+      title: Semantics(
+        header: true,
+        container: true,
+        label: context.l10n.a11yAppBarHeaderHint(title!),
+        child: Text(title!),
+      ),
       centerTitle: centerTitle,
       actions: actions,
       leading: _buildLeading(context),

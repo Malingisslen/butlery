@@ -1,6 +1,77 @@
 # Sprint Backlog
 
-## Sprint: Tech-debt sweep — repo migrations + ValidationUtils + social-widget perf + a11y micro-fixes — 2026-05-04
+## Sprint: CI hygiene + a11y micro-fixes + tech-debt cleanup — 2026-05-04
+
+Theme: BUT-442 + BUT-760 stay In Progress carry-overs (not in this sprint). With High-priority backlog still gated on external dependencies (Apple Dev for BUT-415/646/714/731, button-system sprint for BUT-579, post-beta for BUT-549), pull tightly-scoped Medium tickets across CI/security (BUT-535), backend tooling (BUT-546), UI refactor (BUT-542), a11y micro-fixes (BUT-763, BUT-557), test guard (BUT-764), and dep audit (BUT-555). **7 tasks, 3 batches.**
+
+**Verify-before-starting flags:**
+
+- **A1 (BUT-535)** — confirm no SBOM step exists in any of the 5 GitHub workflows. Decide tool stack: `cyclonedx-bom` (npm side) + a CycloneDX-aware Dart generator (`cyclonedx_lib` or shelling out via `pub deps --json` + `cyclonedx-cli`). Combine into a single bundle. Skip cosign signing (no OIDC identity wired yet — out of scope per ticket).
+- **A2 (BUT-546)** — `functions/src/llm/gemini-client.ts` line ~512-520 `validateDifficulty`. Add `logger.warn` with `promptVersion + raw value` on enum miss. ParseEventLogger aggregation is BUT-543's scope, not this ticket — keep edit minimal.
+- **B1 (BUT-542)** — `lib/widgets/menu/calendar_weekly_menu_widget.dart` 747 lines. Read first to confirm the structure: header row, 7 day cells, outer scaffold. Extract three private widgets within the same file? Or three new files in `lib/widgets/menu/calendar/`? Prefer same-file private classes (less churn for a single-callsite widget) unless the extracted widgets warrant external testing. Hold to <300 line orchestrator.
+- **B2 (BUT-763)** — `lib/widgets/common/scaffolds/`. Identify which scaffold helper(s) wrap AppBar. Single-edit pattern: wrap `appBar:` parameter passthrough with `MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3, child: appBar)`. After landing, drop `wrapInScaffold: false` from `test/widget/widgets/a11y_text_scaling_test.dart`.
+- **B3 (BUT-764)** — `test/widget/social/activity_pings_feed_test.dart` (or wherever ActivityPingsFeed tests live — verify path). Single `fakeAsync` test asserting paused→no-fetch and resumed→fetch. Use existing repo/service mock seams.
+- **C1 (BUT-555)** — `grep -r "package:sembast/" test/ lib/` (excluding `sembast_web`). If zero direct hits, drop `sembast` from `dev_dependencies` in `pubspec.yaml` and run full test suite. Else add an inline comment.
+- **C2 (BUT-557)** — first verify whether BUT-697 a11y sweep already added landmark Semantics. Grep `Semantics(header: true` and `Semantics(label: 'Primary navigation'` in `lib/widgets/common/`. If absent, wrap AppBar host + bottom nav widget. Swedish UI string for nav label: `'Huvudnavigering'` (matches app i18n).
+
+### Agent A: cloud-functions-specialist + general — CI/backend hygiene
+
+- [x] **A1. BUT-535 — Generate CycloneDX SBOM in CI** — New `.github/workflows/sbom.yml` runs `@cyclonedx/cdxgen@11` against the repo (covers pub + npm in one pass), emits CycloneDX 1.5 JSON, sanity-gates on component count > 0, uploads as workflow artifact with 90-day retention. Triggers: push to main on lockfile changes, weekly Tuesday 05:00 UTC, on-demand. Cosign signing deferred per ticket (no OIDC identity wired). (BUT-535)
+- [x] **A2. BUT-546 — Log invalid difficulty values in gemini-client** — `validateDifficulty` now emits `logger.warn` with `rawValue + rawType + promptVersion` when Gemini returns a non-null value outside the `easy|medium|hard` enum. Threaded `promptVersion` through `parseRecipeResponse` from the two call sites (`structure-recipe.ts`, `ocr-recipe-image.ts`). Absent fields stay silent (normal). New `parse-recipe-response-difficulty.test.ts` (7 cases) — 7/7 green. (BUT-546)
+
+### Agent B: uiux-designer + flutter-developer + testing-specialist — UI refactor + a11y + test guard
+
+- [x] **B1. BUT-542 — Decompose calendar_weekly_menu_widget (747 lines)** — Three-file decomposition under `lib/widgets/menu/calendar/`: `calendar_drag.dart` (drag payload sealed types + draggable/droptarget helpers, 135 lines), `calendar_header.dart` (`WeekNavHeader` + `OverflowTray` + `_OverflowChip`, 161 lines), `calendar_cells.dart` (`DayCell` + private slot-cell sub-widgets, 478 lines). Orchestrator slimmed 777→191 lines. Golden test byte-identical (visual output unchanged). Pre-existing failure on `week-nav buttons` test verified to be unrelated to this refactor (failed identically on `git stash` of the refactor). (BUT-542)
+- [x] **B2. BUT-763 — Clamp text scaling on AppBar via BaseScaffold** — `BaseScaffold._wrapClampedTextScaling` wraps the AppBar in `PreferredSize(child: MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3, child: appBar))`. Two new regression tests in `a11y_text_scaling_test.dart`: long-title at 2x renders without overflow + structural assertion that AppBar is nested under a MediaQuery (clamp-wrap sanity). 4/4 green. (BUT-763)
+- [x] **B3. BUT-764 — Lifecycle pause/resume regression test for ActivityPingsFeed** — `_FakeActivityRepo` extended with `fetchCount`. New widget test pumps the feed, asserts 1 fetch on init, drives `AppLifecycleState.paused` + advances 5 min (asserts no extra fetch), drives `resumed` (asserts immediate fetch + periodic resume after 2 min). Fails if `_foregrounded` guard or `addObserver` is removed. 8/8 green. (BUT-764)
+
+### Standalone
+
+- [x] **C1. BUT-555 — Audit sembast dev-dep removal** — Audited; **kept-with-comment** outcome. `sembast` is consumed by `test/unit/core/cache/cache_dao_web_test.dart` (uses `sembast/sembast_memory.dart` for the in-memory DB factory). `sembast_web` is consumed by `lib/core/cache/cache_dao_stub.dart` (web-platform CacheDao backend). Pubspec entries now have inline comments pointing at the consumers so future audits don't repeat the question. Lesson logged (`tasks/lessons.md` — "Bash `cd` persists across calls" — first grep was wrong because shell session had cd'd into `functions/`). (BUT-555)
+- [x] **C2. BUT-557 — A11y landmark Semantics on AppBar/bottom nav** — Two l10n keys added (`a11yNavigationLandmark` + `a11yAppBarHeaderHint` in both `app_sv.arb`/`app_en.arb`). `BaseScaffold._buildAppBar` title now wrapped in `Semantics(header: true, container: true, label: l10n.a11yAppBarHeaderHint(title))`. `ButleryBottomNavigation` + `_buildNavigationRail` + `AdaptiveNavigationDrawer.build` now wrap their roots with `Semantics(label: l10n.a11yNavigationLandmark, container: true, explicitChildNodes: true)` so screen readers can jump directly to the nav region (WCAG 1.3.1 Info and Relationships). Verified BUT-697 hadn't already added landmark Semantics. (BUT-557)
+
+### Post-Sprint Steps
+- [x] `dart analyze --fatal-infos` — 0 issues
+- [x] Affected unit/widget tests green: BUT-546 (7/7), a11y_text_scaling (4/4), activity_pings_feed (8/8 incl. new lifecycle test), calendar golden (1/1). One pre-existing failure on `week-nav buttons` test verified to be unrelated to BUT-542 (fails identically on main).
+- [ ] Tier-2 specialist gates: code-reviewer, testing-specialist, firebase-backend-security (A2), cloud-functions-specialist (A1, A2)
+- [ ] Commit, push to main
+- [ ] CI watcher monitors green
+- [ ] Update Linear: BUT-535/546/542/763/764/555/557 → Done
+
+### Continued blockers (NOT in scope per memory)
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
+- BUT-498 / BUT-697 — explicitly skipped
+- BUT-686 / BUT-660 / BUT-694 — need feature-level brainstorming first
+- BUT-674 / BUT-721 — need their own scoped sprints
+- BUT-579 — held for button-system sprint
+- BUT-626 — bucket-based A/B infra; own sprint
+- BUT-444 — portion scaling + unit conversion; own product-design sprint
+- BUT-420/451/452/486 — deploy-pipeline / staging cluster; focused infra sprint
+- BUT-445 — nutrition view post-beta (Livsmedelsverket API plan)
+- BUT-550 — accepted-large-files drift sprint, separate scope
+- BUT-558 — DCM install (own sprint, half-day setup + per-finding follow-ups)
+- BUT-554 — tracking ticket only (blocked on drift_dev upstream)
+- All `idea`-labeled monetization scaffolding — post-beta
+
+### In Progress carry-overs (NOT in this sprint)
+- BUT-442 — repo migrations (4 candidates remaining; each deserves a focused single-ticket sprint)
+- BUT-760 — App Check enforcement; awaiting user-side Firebase Console enforcement flip after BUT-759 lands
+
+---
+
+## What this means in plain language
+
+- **CI gets a software-bill-of-materials.** Every build will list every dependency (Flutter pub + Cloud Functions npm) so when the next CVE drops we can answer "are we affected?" in minutes instead of grepping by hand.
+- **AI parser stops failing silently.** When Gemini returns an unrecognized difficulty value (e.g., starts saying "advanced" instead of "hard"), we'll see a warning in logs instead of pretending the field never existed.
+- **Weekly menu widget gets split into manageable pieces.** A 747-line widget that nobody could read at a glance becomes a small orchestrator + three named pieces.
+- **Two small accessibility fixes.** Page titles in the top bar stop clipping at 200% text scale. Screen readers get a "navigation" landmark for the bottom tab bar — easier to skip past with VoiceOver/TalkBack.
+- **One test guard added.** The recent battery-saving change (pause polling when app is backgrounded) gets a test so a future refactor can't silently undo it.
+- **One dependency audit.** Verify whether a dev-only library (`sembast`) is still pulled by anything; remove if dead weight.
+- **Risk: low across the board.** No data-model changes, no UI structure changes, no external service contracts. Each ticket independently revertable.
+
+---
+
+## ARCHIVED — Sprint: Tech-debt sweep — repo migrations + ValidationUtils + social-widget perf + a11y micro-fixes — 2026-05-04
 
 Theme: with the High-priority backlog all gated on external dependencies (Apple Dev enrollment for BUT-731/646/714/415, design sprint for BUT-579, post-beta for BUT-549), the highest-leverage work is Medium-tier tech-debt that compounds. Continue BUT-442 carry-over (2 more repos), audit + close one form-validation gap (BUT-586), remove a small CI hygiene smell (BUT-762), tighten two social widgets that polled/rebuilt unnecessarily (BUT-629/628), close two scoped a11y issues (BUT-551/547), and split onboarding-import outcomes from the regular import funnel (BUT-545). **8 tasks, 4 batches.**
 

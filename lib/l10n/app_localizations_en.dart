@@ -7293,6 +7293,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yShowPassword => 'Show password';
 
   @override
+  String get a11yNavigationLandmark => 'Main navigation';
+
+  @override
+  String a11yAppBarHeaderHint(String title) {
+    return 'Page title: $title';
+  }
+
+  @override
   String get a11yShareWithFriends => 'Share with friends';
 
   @override

@@ -303,7 +303,7 @@ export async function runOcrRecipeImage(
     }
 
     // Try to parse as structured recipe
-    const recipe = parseRecipeResponse(content);
+    const recipe = parseRecipeResponse(content, promptVersion);
     if (recipe) {
       logger.info(
         `[ocrRecipeImage] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${ocrCost.toFixed(6)})`
