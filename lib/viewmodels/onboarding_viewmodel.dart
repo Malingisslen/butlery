@@ -42,6 +42,10 @@ class OnboardingViewModel extends ChangeNotifier {
   int? _selectedBirthYear;
   bool _isCompleting = false;
   bool _started = false;
+  // BUT-545: tracks whether the onboarding import page actually landed a
+  // recipe, so [completeOnboarding] can fire `onboarding_import_skipped`
+  // when the user advances past the import page without importing.
+  bool _onboardingImportSucceeded = false;
   late final AnalyticsService? _analytics =
       ServiceLocator.tryGet<AnalyticsService>();
 
@@ -73,6 +77,12 @@ class OnboardingViewModel extends ChangeNotifier {
   void setBirthYear(int? year) {
     _selectedBirthYear = year;
     notifyListeners();
+  }
+
+  /// Called by [OnboardingImportPage] when an import lands successfully so
+  /// the wizard knows not to treat the import page as skipped (BUT-545).
+  void markOnboardingImportSucceeded() {
+    _onboardingImportSucceeded = true;
   }
 
   /// Resume jump applied by the view post-construction. Bypasses `setPage`'s
@@ -206,6 +216,17 @@ class OnboardingViewModel extends ChangeNotifier {
             'allergen_count': _selectedAllergens.length,
             'dietary_count': _selectedDietaryPrefs.length,
           },
+        );
+      }
+
+      // BUT-545: if the user reached the end of the wizard (skip-to-end
+      // counts here too — they did pass through the import step) without
+      // a successful import, record the skip so the activation funnel can
+      // measure import-page conversion separately from the broader skip.
+      if (!_onboardingImportSucceeded) {
+        _analytics?.logEvent(
+          name: AnalyticsEvents.onboardingImportSkipped,
+          parameters: {'completed_via_skip': isSkip},
         );
       }
 

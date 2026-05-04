@@ -41,6 +41,8 @@ class UniversalImageManager extends StatefulWidget {
   final VoidCallback? onRetryAllFailed;
   final VoidCallback? onCancelAllActive;
   final VoidCallback? onClearAllFailed;
+  // Dish name for screen-reader image content description (BUT-551).
+  final String? semanticsLabel;
 
   const UniversalImageManager({
     super.key,
@@ -70,6 +72,7 @@ class UniversalImageManager extends StatefulWidget {
     this.onRetryAllFailed,
     this.onCancelAllActive,
     this.onClearAllFailed,
+    this.semanticsLabel,
   });
 
   /// Avatar constructor
@@ -116,6 +119,7 @@ class UniversalImageManager extends StatefulWidget {
     BorderRadius? borderRadius,
     VoidCallback? onTap,
     Function(int)? onImageTap,
+    String? semanticsLabel,
   }) {
     return UniversalImageManager(
       key: key,
@@ -129,6 +133,7 @@ class UniversalImageManager extends StatefulWidget {
       ),
       onTap: onTap,
       onImageTap: onImageTap,
+      semanticsLabel: semanticsLabel,
     );
   }
 
@@ -142,6 +147,7 @@ class UniversalImageManager extends StatefulWidget {
     String? heroTag,
     VoidCallback? onTap,
     Function(int)? onImageTap,
+    String? semanticsLabel,
   }) {
     return UniversalImageManager(
       key: key,
@@ -155,6 +161,7 @@ class UniversalImageManager extends StatefulWidget {
       onTap: onTap,
       onImageTap: onImageTap,
       heroTag: heroTag,
+      semanticsLabel: semanticsLabel,
     );
   }
 
@@ -470,6 +477,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
       borderRadius: widget.config.borderRadius,
       onTap: widget.onTap,
       onImageTap: widget.onImageTap,
+      semanticsLabel: widget.semanticsLabel,
     );
   }
 
@@ -483,6 +491,7 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
       heroTag: widget.heroTag,
       onTap: widget.onTap,
       onImageTap: widget.onImageTap,
+      semanticsLabel: widget.semanticsLabel,
     );
   }
 

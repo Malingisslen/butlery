@@ -29,6 +29,14 @@ abstract final class AnalyticsEvents {
   static const onboardingSkipped = 'onboarding_skipped';
   static const onboardingCompleted = 'onboarding_completed';
   static const onboardingRecipesSeeded = 'onboarding_recipes_seeded';
+  // BUT-545: dedicated outcome events for the onboarding import page so
+  // the activation funnel can distinguish "tried-and-imported" from
+  // "tried-and-failed" from "skipped". The generic import_started/success
+  // events still fire alongside (with `source: 'onboarding'`) for the
+  // unified import funnel; these add the onboarding-specific dimension.
+  static const onboardingImportAttempted = 'onboarding_import_attempted';
+  static const onboardingImportSucceeded = 'onboarding_import_succeeded';
+  static const onboardingImportSkipped = 'onboarding_import_skipped';
   static const screenViewed = 'screen_viewed';
   static const userActivated = 'user_activated';
   static const timeToFirstRecipe = 'time_to_first_recipe';

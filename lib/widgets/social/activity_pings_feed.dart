@@ -38,7 +38,8 @@ class ActivityPingsFeed extends StatefulWidget {
   State<ActivityPingsFeed> createState() => _ActivityPingsFeedState();
 }
 
-class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
+class _ActivityPingsFeedState extends State<ActivityPingsFeed>
+    with WidgetsBindingObserver {
   StreamSubscription<List<Ping>>? _pingSub;
   Timer? _activityRefreshTimer;
 
@@ -46,6 +47,15 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
   List<ActivityEvent> _activities = const [];
   Map<String, UserProfile> _profileById = const {};
   bool _loading = true;
+  // True while the host app is in the foreground / visible. We pause the
+  // 2-min activity poll while backgrounded (BUT-629) — overnight phones
+  // would otherwise hit fetchFriendActivity 30×/hour for nothing.
+  // Activity events from group members can arrive without an accompanying
+  // ping (added ingredient, started cooking), so we intentionally keep the
+  // periodic refresh rather than dropping it (ticket Option 2 would lose
+  // those updates). On resume we fire one immediate refresh to re-prime
+  // the feed.
+  bool _foregrounded = true;
 
   PingService get _pingService =>
       widget.pingService ?? ServiceLocator.get<PingService>();
@@ -60,12 +70,10 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _subscribeToPings();
     _refreshActivity();
-    _activityRefreshTimer = Timer.periodic(
-      _kActivityRefreshInterval,
-      (_) => _refreshActivity(),
-    );
+    _startActivityTimer();
   }
 
   @override
@@ -80,9 +88,34 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pingSub?.cancel();
     _activityRefreshTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final shouldRun = state == AppLifecycleState.resumed;
+    if (shouldRun == _foregrounded) return;
+    _foregrounded = shouldRun;
+    if (shouldRun) {
+      // Re-prime immediately on resume so the user doesn't see stale data
+      // for up to 2 min, then resume the periodic cadence.
+      _refreshActivity();
+      _startActivityTimer();
+    } else {
+      _activityRefreshTimer?.cancel();
+      _activityRefreshTimer = null;
+    }
+  }
+
+  void _startActivityTimer() {
+    _activityRefreshTimer?.cancel();
+    _activityRefreshTimer = Timer.periodic(
+      _kActivityRefreshInterval,
+      (_) => _refreshActivity(),
+    );
   }
 
   void _subscribeToPings() {

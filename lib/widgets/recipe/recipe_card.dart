@@ -392,26 +392,23 @@ class RecipeCard extends StatelessWidget {
 
     final hasMatchPercent = matchPercent != null;
 
-    return Row(
+    // Wrap (not Row) so the rating + match badges flow to a new line
+    // instead of overflowing at 2x text scaling (BUT-547 / WCAG 1.4.4).
+    // At default scale this lays out identically to a Row.
+    return Wrap(
+      spacing: AppDimensions.spacingSm,
+      runSpacing: AppDimensions.spacingXs,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         if (parts.isNotEmpty)
-          Flexible(
-            child: Text(
-              parts.join(' \u00B7 '),
-              style: AppTextStyles.recipeMeta,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+          Text(
+            parts.join(' \u00B7 '),
+            style: AppTextStyles.recipeMeta,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        if (hasRating) ...[
-          if (parts.isNotEmpty) const SizedBox(width: AppDimensions.spacingSm),
-          _buildRatingPill(context),
-        ],
-        if (hasMatchPercent) ...[
-          if (parts.isNotEmpty || hasRating)
-            const SizedBox(width: AppDimensions.spacingSm),
-          _buildMatchBadge(context, matchPercent!),
-        ],
+        if (hasRating) _buildRatingPill(context),
+        if (hasMatchPercent) _buildMatchBadge(context, matchPercent!),
       ],
     );
   }

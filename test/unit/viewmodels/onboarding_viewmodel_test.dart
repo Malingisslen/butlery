@@ -159,6 +159,32 @@ void main() {
               parameters: {'skipped_at_page': 0},
             )).called(1);
       });
+
+      test(
+          'BUT-545: fires onboarding_import_skipped when import never succeeded',
+          () async {
+        viewModel.setPage(4);
+        await viewModel.completeOnboarding();
+
+        verify(() => mockAnalyticsService.logEvent(
+              name: 'onboarding_import_skipped',
+              parameters: {'completed_via_skip': false},
+            )).called(1);
+      });
+
+      test(
+          'BUT-545: does NOT fire onboarding_import_skipped after successful import',
+          () async {
+        viewModel.setPage(4);
+        viewModel.markOnboardingImportSucceeded();
+
+        await viewModel.completeOnboarding();
+
+        verifyNever(() => mockAnalyticsService.logEvent(
+              name: 'onboarding_import_skipped',
+              parameters: any(named: 'parameters'),
+            ));
+      });
     });
 
     group('page navigation', () {

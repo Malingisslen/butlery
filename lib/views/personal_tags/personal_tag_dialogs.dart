@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -417,6 +418,10 @@ abstract final class PersonalTagDialogs {
     final viewModel = context.read<PersonalTagViewModel>();
     String tagName = tag.name;
 
+    // BUT-586: wrap in Form + GlobalKey + FormValidators.required so the
+    // empty-name path surfaces an inline error instead of silently no-op-ing
+    // when the user taps Save.
+    final formKey = GlobalKey<FormState>();
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -424,15 +429,21 @@ abstract final class PersonalTagDialogs {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagEditTag),
-            content: TextFormField(
-              initialValue: tag.name,
-              onChanged: (v) => tagName = v,
-              enabled: !isLoading,
-              decoration: InputDecoration(
-                labelText: context.l10n.personalTagNameLabel,
+            content: Form(
+              key: formKey,
+              child: TextFormField(
+                initialValue: tag.name,
+                onChanged: (v) => tagName = v,
+                enabled: !isLoading,
+                decoration: InputDecoration(
+                  labelText: context.l10n.personalTagNameLabel,
+                ),
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
+                validator: FormValidators.required(
+                  context.l10n.personalTagNameLabel,
+                ),
               ),
-              autofocus: true,
-              textCapitalization: TextCapitalization.sentences,
             ),
             actions: [
               TextButton(
@@ -444,8 +455,10 @@ abstract final class PersonalTagDialogs {
                 onPressed: isLoading
                     ? null
                     : () async {
+                        if (!(formKey.currentState?.validate() ?? false)) {
+                          return;
+                        }
                         final name = tagName.trim();
-                        if (name.isEmpty) return;
 
                         setState(() => isLoading = true);
                         try {

@@ -1,6 +1,78 @@
 # Sprint Backlog
 
-## Sprint: Identity/integrity correctness + parsing-input hardening + repo migrations carry-over — 2026-05-02
+## Sprint: Tech-debt sweep — repo migrations + ValidationUtils + social-widget perf + a11y micro-fixes — 2026-05-04
+
+Theme: with the High-priority backlog all gated on external dependencies (Apple Dev enrollment for BUT-731/646/714/415, design sprint for BUT-579, post-beta for BUT-549), the highest-leverage work is Medium-tier tech-debt that compounds. Continue BUT-442 carry-over (2 more repos), audit + close one form-validation gap (BUT-586), remove a small CI hygiene smell (BUT-762), tighten two social widgets that polled/rebuilt unnecessarily (BUT-629/628), close two scoped a11y issues (BUT-551/547), and split onboarding-import outcomes from the regular import funnel (BUT-545). **8 tasks, 4 batches.**
+
+**Two follow-up notes from the prior sprint** (verify before scope):
+- **BUT-759** was actually fixed in commit `a14b87735` ("fix(firebase): point native runtime at se.butlery.app apps") — close it on Linear if still open.
+- **BUT-760** Phase 2A done per `a72b4d1f2` ops-runbook commit. Remaining work is user-side Firebase Console enforcement flip — leave In Progress with a status comment; don't include in this sprint.
+
+**Verify-before-starting flags:**
+- **A1 (BUT-442)** — re-read BUT-442 Linear comment for the 6 remaining candidates (last sprint dropped 2 of 3 due to FakeFirebaseFirestore limits on `FieldValue.increment` + `merge: true`). Pick 2 that don't need those (likely `menu_lexicon_repository`, `parsing_correction_repository`, or `site_config_repository`). Hard cap at 2.
+- **A2 (BUT-586)** — `grep -r "TextFormField" lib/` and `grep -r "ValidationUtils" lib/` to compute the 16/45 baseline (or the corrected current ratio). Apply ValidationUtils to forms with text-only validation needs (`required`, `maxLength`, `email`, etc.); document non-trivial holdouts in a Linear comment. Avoid forms with custom validators where ValidationUtils would lose semantics.
+- **A3 (BUT-762)** — `.github/workflows/build-validation.yml`: grep for `FIREBASE_API_KEY_*` references and confirm they aren't consumed by any step (likely vestigial from before AppCheck or `flutterfire configure` flow).
+- **B1 (BUT-629)** — `lib/widgets/social/activity_pings_feed.dart`. Add `WidgetsBindingObserver` mixin; pause `Timer.periodic` on `AppLifecycleState.paused`/`inactive`/`hidden`, resume on `resumed`. Don't conflate route-backgrounded with app-backgrounded (the ticket says "route backgrounded" — verify whether `RouteAware` is the right hook).
+- **B2 (BUT-628)** — `lib/widgets/social/family_presence_bar.dart`. Convert to `StatefulWidget`; cache the stream + `Future` for member resolution in `initState`. Today's StatelessWidget recreates these on every parent rebuild (FCMService notification, theme change, etc.).
+- **C1 (BUT-551)** — `lib/widgets/recipe/recipe_image_widget.dart`. May already be done — verify `Semantics(label: ...)` wraps `Image.network` and pulls from the recipe's title rather than a generic "recipe image" string.
+- **C2 (BUT-547)** — sweep for `SizedBox(height: N)` and `Container(height: N)` containing `Text(...)` in `lib/views/` and `lib/widgets/`. At 2x text scale, fixed heights clip. Apply low-risk fixes (FittedBox, drop the height constraint, IntrinsicHeight); document non-trivial cases.
+- **D1 (BUT-545)** — `lib/views/onboarding/` and `lib/services/import/`. Today onboarding imports likely fire the same `import_attempted/succeeded/failed` events as in-app imports, making activation funnel measurement noisy. Add `onboarding_import_attempted/succeeded/skipped` distinct events under `AnalyticsEvents` and emit from the onboarding view only.
+
+### Agent A: firebase-backend-security + cloud-functions-specialist — backend/CI tech-debt
+
+- [!] **A1. BUT-442 carry-over** — **DEFERRED per CLAUDE.md rule #10**. Re-assessing the 6 candidates: 4 don't fit BaseFirebaseRepository (`menu_lexicon` + `site_config` are read-only caches; `cooking_session` + `ingredient` need emulator-backed tests). Remaining real scope = 2 (`parsing_correction` + `collaborative_recipe`), each deserves a focused single-ticket sprint. Filed honest reassessment on BUT-442; ticket stays In Progress with corrected scope. (BUT-442)
+- [x] **A2. BUT-586 — audit ValidationUtils coverage** — Reconciled the metric (the "16 of 45" stat conflated `ValidationUtils` and `FormValidators`; actual TextFormField host count is 22, with ~95% of them having appropriate validators). Real gap surfaced: `personal_tag_dialogs.showEditTagDialog` had a TextFormField with no Form wrapper + silent no-op on empty submit — wrapped in Form + GlobalKey + `FormValidators.required(...)`. Documented per-file coverage table + minor refactor opportunities on BUT-586. (BUT-586)
+- [x] **A3. BUT-762 — remove stale FIREBASE_API_KEY_* CI secrets** — Stripped 17 unused env entries from `build-validation.yml`'s "Create .env from secrets" step; only `ENV` + `OCR_API_KEY` + `OCR_API_URL` remain (the only secrets actually consumed). Added inline comment cross-referencing `lib/firebase_options.dart` as the canonical source of Firebase platform credentials. (BUT-762)
+
+### Agent B: performance-optimizer — social-widget perf
+
+- [x] **B1. BUT-629 — ActivityPingsFeed pause polling while backgrounded** — Added `WidgetsBindingObserver` mixin; `didChangeAppLifecycleState` pauses the 2-min `_activityRefreshTimer` on `paused`/`inactive`/`hidden`, resumes (with one immediate refresh + restart of the periodic timer) on `resumed`. Documented divergence from ticket Option 2 in code: dropping the timer entirely would lose activity events from group members that arrive without an accompanying ping. 7/7 existing widget tests still green. (BUT-629)
+- [x] **B2. BUT-628 — FamilyPresenceBar StatefulWidget conversion** — Converted `StatelessWidget` → `StatefulWidget` with `_resolveMembers` + `_composePresenceStream` cached in `initState` and re-computed in `didUpdateWidget` only when `groupId`/`memberProfiles`/`onlineUserIdsStream` change. Eliminates the per-parent-rebuild ~1000-iteration walk + RTDB tear-down/setup. Public widget API unchanged; 5/5 existing widget tests still green. (BUT-628)
+
+### Agent C: uiux-designer + flutter-developer — a11y micro-fixes
+
+- [x] **C1. BUT-551 — recipe_image_widget Semantics label uses dish name** — Added optional `String? semanticsLabel` parameter to `RecipeImageWidget` (root + `card`/`detail` factories) and `UniversalImageManager` (root + `recipeCard`/`recipeDetail` factories). When non-null + has images, wraps the rendered image in `Semantics(image: true, label: semanticsLabel)` so screen readers announce the dish name. `_buildEmptyState` (no onTap) wrapped in `ExcludeSemantics` per ticket guidance. Threaded `viewModel.recipe.title` through `recipe_detail_content.dart`. New widget test file `test/widget/widgets/image/recipe_image_widget_a11y_test.dart` (3 cases: detail label, card label, empty-state exclusion) — 3/3 green. (BUT-551)
+- [x] **C2. BUT-547 — text-scaling 200% clipping audit** — Sweep of `lib/widgets/` for `Container/SizedBox(height: N)` with text. **Real offenders fixed:** (1) `RecipeCard._buildMetadataRow` Row → Wrap (rating + match badges flow to next line at 2x scale instead of overflowing); (2) `group_dialog_components.dart` emoji picker wrapped in `MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3)` (44×44 cells holding `Text(emoji)` would clip otherwise). Audit confirmed `*_badge.dart`, bottom nav, tagging widgets all safe. Filed comprehensive findings on BUT-547. New regression-prevention test `test/widget/widgets/a11y_text_scaling_test.dart` exercises RecipeCard at 2x text scale — 2/2 green. (BUT-547)
+
+### Standalone
+
+- [x] **D1. BUT-545 — onboarding import outcome events** — Added 3 event constants to `AnalyticsEvents` (`onboardingImportAttempted`, `onboardingImportSucceeded`, `onboardingImportSkipped`). Wired `attempted` to fire pre-import in `OnboardingImportPage._handleImport`, `succeeded` to fire on `ImportSucceeded` result (with `recipe_title_length` param), and `skipped` to fire from `OnboardingViewModel.completeOnboarding` when the new `_onboardingImportSucceeded` flag is false (set via `markOnboardingImportSucceeded()` from the import page on success). Try/catch around the Provider lookup so the page works standalone (outside the wizard). 2 new VM tests + 8 existing tests — 10/10 green. (BUT-545)
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` — 0 issues required
+- [ ] Affected unit tests green (repo tests, widget tests for ActivityPingsFeed/FamilyPresenceBar/RecipeImageWidget, analytics tests)
+- [ ] Tier-2 specialist gates: code-reviewer, testing-specialist, firebase-backend-security (A1)
+- [ ] Commit, push to main
+- [ ] CI watcher monitors green
+- [ ] Update Linear: BUT-442*/586/762/629/628/551/547/545 → Done (* BUT-442 stays In Progress with 4 candidates remaining if 2 land here)
+- [ ] Close BUT-759 on Linear (already shipped in `a14b87735`); BUT-760 status-comment ("Phase 2A done in `a72b4d1f2`; awaiting user-side Firebase Console enforcement flip")
+
+### Continued blockers (NOT in scope per memory)
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
+- BUT-498 / BUT-697 — explicitly skipped
+- BUT-686 / BUT-660 / BUT-694 — need feature-level brainstorming first
+- BUT-674 / BUT-721 — need their own scoped sprints
+- BUT-579 — held for button-system sprint
+- BUT-626 — bucket-based A/B infra; own sprint
+- BUT-444 — portion scaling + unit conversion; own product-design sprint
+- BUT-420/451/452/486 — deploy-pipeline / staging cluster; focused infra sprint
+- All `idea`-labeled monetization scaffolding — post-beta
+
+---
+
+## What this means in plain language
+
+- **Two more pieces of the data-access cleanup get done.** Slow burn from prior sprints — picking off 2 more of the 6 remaining stragglers without breaking anything.
+- **One form-validation gap audited.** Today only ~36% of forms use the shared validation helper, so error messages and behavior are inconsistent. This sprint computes the real number, applies it to easy wins, and documents what's left.
+- **Two social widgets stop wasting battery.** The "who's online in your family" bar today recreates its connection on every screen rebuild; the "activity feed" bar polls every 2 minutes even when the app is in the background. Both fixed.
+- **Two small accessibility fixes.** Recipe images get the dish name as their screen-reader label (currently generic); fixed-height text containers that crop at 200% text scaling get unfrozen.
+- **Onboarding import events get their own bucket.** Today they're mixed with regular imports, so we can't measure activation funnel cleanly.
+- **One small CI cleanup.** Three never-used Firebase secrets removed from a workflow file.
+- **Risk: low across the board.** No UI structure changes, no data-model changes, no external service contracts. Each ticket independently revertable.
+
+---
+
+## ARCHIVED — Sprint: Identity/integrity correctness + parsing-input hardening + repo migrations carry-over — 2026-05-02
 
 Theme: Land the two High-priority package/bundle-ID bugs (BUT-759/761) and tie them to the App Check enforcement registration (BUT-760) that depends on correct IDs being registered. Tighten parsing input-validation in three coherent spots in `gemini-client.ts`. Pull 3 of the 7 BUT-442 carry-over migrations. Two standalone correctness fixes (analytics boolean coercion + multi-tab consent cache). **9 tasks across 2 agent groups + 3 standalones.**
 

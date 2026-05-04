@@ -17,7 +17,14 @@ const double _kAvatarSize = 40.0;
 const double _kOnlineDotSize = 10.0;
 
 /// Horizontal presence row. Hides itself when no group member is online.
-class FamilyPresenceBar extends StatelessWidget {
+///
+/// StatefulWidget so that member resolution + the RTDB presence stream are
+/// computed once in `initState` and re-computed only when [groupId] changes
+/// (BUT-628). Previously a StatelessWidget rebuilt them on every ancestor
+/// rebuild — for a user in 20 groups × 50 friends that's ~1000 iterations
+/// + a fresh RTDB subscription per parent setState (route animations,
+/// keyboard, etc.).
+class FamilyPresenceBar extends StatefulWidget {
   const FamilyPresenceBar({
     this.groupId,
     this.onlineUserIdsStream,
@@ -41,11 +48,51 @@ class FamilyPresenceBar extends StatelessWidget {
   final List<UserProfile>? memberProfiles;
 
   @override
-  Widget build(BuildContext context) {
-    final resolved = _resolveMembers(context);
-    if (resolved.isEmpty) return const SizedBox.shrink();
+  State<FamilyPresenceBar> createState() => _FamilyPresenceBarState();
+}
 
-    final stream = onlineUserIdsStream ?? _composePresenceStream(resolved);
+class _FamilyPresenceBarState extends State<FamilyPresenceBar> {
+  late List<UserProfile> _resolved;
+  Stream<Set<String>>? _onlineIdsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _rebuildResolution();
+  }
+
+  @override
+  void didUpdateWidget(covariant FamilyPresenceBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final groupChanged = oldWidget.groupId != widget.groupId;
+    final profilesChanged = !identical(
+      oldWidget.memberProfiles,
+      widget.memberProfiles,
+    );
+    final streamChanged = !identical(
+      oldWidget.onlineUserIdsStream,
+      widget.onlineUserIdsStream,
+    );
+    if (groupChanged || profilesChanged || streamChanged) {
+      _rebuildResolution();
+    }
+  }
+
+  void _rebuildResolution() {
+    _resolved = _resolveMembers();
+    if (widget.onlineUserIdsStream != null) {
+      _onlineIdsStream = widget.onlineUserIdsStream;
+    } else if (_resolved.isEmpty) {
+      _onlineIdsStream = null;
+    } else {
+      _onlineIdsStream = _composePresenceStream(_resolved);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_resolved.isEmpty) return const SizedBox.shrink();
+    final stream = _onlineIdsStream;
     if (stream == null) return const SizedBox.shrink();
 
     return StreamBuilder<Set<String>>(
@@ -53,11 +100,11 @@ class FamilyPresenceBar extends StatelessWidget {
       initialData: const <String>{},
       builder: (context, snapshot) {
         final onlineIds = snapshot.data ?? const <String>{};
-        final online = resolved
+        final online = _resolved
             .where((p) => onlineIds.contains(p.uid))
             .toList(growable: false);
         if (online.isEmpty) return const SizedBox.shrink();
-        return _PresenceRow(members: online, groupId: groupId);
+        return _PresenceRow(members: online, groupId: widget.groupId);
       },
     );
   }
@@ -68,8 +115,8 @@ class FamilyPresenceBar extends StatelessWidget {
   /// 1. Test injection via [memberProfiles]
   /// 2. Scoped to [groupId] members (when provided)
   /// 3. Union of every [FriendCategory] the user belongs to
-  List<UserProfile> _resolveMembers(BuildContext context) {
-    if (memberProfiles != null) return memberProfiles!;
+  List<UserProfile> _resolveMembers() {
+    if (widget.memberProfiles != null) return widget.memberProfiles!;
 
     final friends = ServiceLocator.tryGet<UnifiedFriendsService>();
     if (friends == null) return const <UserProfile>[];
@@ -78,7 +125,7 @@ class FamilyPresenceBar extends StatelessWidget {
     if (currentUserId == null) return const <UserProfile>[];
 
     final groups = friends.categoriesList.where((FriendCategory c) {
-      if (groupId != null) return c.id == groupId;
+      if (widget.groupId != null) return c.id == widget.groupId;
       return c.allMemberIds.contains(currentUserId);
     });
 

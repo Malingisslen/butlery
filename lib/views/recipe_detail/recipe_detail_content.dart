@@ -562,6 +562,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                   size: ImageSize.large,
                   showNavigationDots: true,
                   showImageCounter: true,
+                  semanticsLabel: viewModel.recipe.title,
                   onImageTap: (index) =>
                       onImageTap(viewModel.recipe.imageUrls, index),
                 ),

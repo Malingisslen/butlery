@@ -59,57 +59,64 @@ class EmojiSelector extends StatelessWidget {
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        Container(
-          height: 60,
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
+        // Fixed-size emoji grid (44x44 cells) — clamp text-scaling so the
+        // glyph fits inside its cell at 200% system text scale (BUT-547 /
+        // WCAG 1.4.4). Without this clamp the emoji clips at large scales.
+        // The horizontal scroll keeps the picker accessible regardless.
+        MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.3,
+          child: Container(
+            height: 60,
+            padding: const EdgeInsets.all(AppDimensions.spacingS),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          ),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: GroupEmojiConstants.availableEmojis.length,
-            itemBuilder: (context, index) {
-              final emoji = GroupEmojiConstants.availableEmojis[index];
-              final isSelected = emoji == selectedEmoji;
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: GroupEmojiConstants.availableEmojis.length,
+              itemBuilder: (context, index) {
+                final emoji = GroupEmojiConstants.availableEmojis[index];
+                final isSelected = emoji == selectedEmoji;
 
-              return Semantics(
-                label: context.l10n.a11yEmojiPicker(emoji),
-                button: true,
-                selected: isSelected,
-                child: GestureDetector(
-                  onTap: () => onEmojiSelected(emoji),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    margin: const EdgeInsets.only(
-                      right: AppDimensions.spacingS,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : null,
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadius8),
-                      border: isSelected
-                          ? Border.all(
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 2,
-                            )
-                          : null,
-                    ),
-                    child: Center(
-                      child: Text(
-                        emoji,
-                        style: AppTextStyles.groupTitle,
+                return Semantics(
+                  label: context.l10n.a11yEmojiPicker(emoji),
+                  button: true,
+                  selected: isSelected,
+                  child: GestureDetector(
+                    onTap: () => onEmojiSelected(emoji),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      margin: const EdgeInsets.only(
+                        right: AppDimensions.spacingS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primaryContainer
+                            : null,
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadius8),
+                        border: isSelected
+                            ? Border.all(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 2,
+                              )
+                            : null,
+                      ),
+                      child: Center(
+                        child: Text(
+                          emoji,
+                          style: AppTextStyles.groupTitle,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],

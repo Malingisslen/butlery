@@ -16,6 +16,11 @@ class RecipeImageWidget extends StatefulWidget {
   final String? heroTag;
   final String? thumbnailUrl;
 
+  /// Dish name (or equivalent caption) read aloud by screen readers as the
+  /// image's content description. WCAG 1.1.1 — Non-text Content (BUT-551).
+  /// When null, the image content is not labelled (existing behavior).
+  final String? semanticsLabel;
+
   const RecipeImageWidget({
     super.key,
     required this.imageUrls,
@@ -24,6 +29,7 @@ class RecipeImageWidget extends StatefulWidget {
     this.onImageTap,
     this.heroTag,
     this.thumbnailUrl,
+    this.semanticsLabel,
   });
 
   factory RecipeImageWidget.card({
@@ -36,6 +42,7 @@ class RecipeImageWidget extends StatefulWidget {
     BorderRadius? borderRadius,
     VoidCallback? onTap,
     Function(int)? onImageTap,
+    String? semanticsLabel,
   }) {
     return RecipeImageWidget(
       key: key,
@@ -49,6 +56,7 @@ class RecipeImageWidget extends StatefulWidget {
       ),
       onTap: onTap,
       onImageTap: onImageTap,
+      semanticsLabel: semanticsLabel,
     );
   }
 
@@ -62,6 +70,7 @@ class RecipeImageWidget extends StatefulWidget {
     String? thumbnailUrl,
     VoidCallback? onTap,
     Function(int)? onImageTap,
+    String? semanticsLabel,
   }) {
     return RecipeImageWidget(
       key: key,
@@ -76,6 +85,7 @@ class RecipeImageWidget extends StatefulWidget {
       onImageTap: onImageTap,
       heroTag: heroTag,
       thumbnailUrl: thumbnailUrl,
+      semanticsLabel: semanticsLabel,
     );
   }
 
@@ -105,7 +115,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     final dimensions = widget.config.getDimensions();
     final hasImages = widget.imageUrls.isNotEmpty;
 
-    return Container(
+    final container = Container(
       width: dimensions.width == double.infinity ? null : dimensions.width,
       height: dimensions.height == double.infinity ? null : dimensions.height,
       decoration: BoxDecoration(
@@ -114,6 +124,18 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
       ),
       child: hasImages ? _buildImageContent() : _buildEmptyState(),
     );
+
+    // Wrap the rendered image with image-semantics so screen readers describe
+    // *what* the image shows (the dish), separately from the inner button
+    // semantics for tap/swipe interactions (BUT-551 / WCAG 1.1.1).
+    if (hasImages && widget.semanticsLabel != null) {
+      return Semantics(
+        image: true,
+        label: widget.semanticsLabel,
+        child: container,
+      );
+    }
+    return container;
   }
 
   Widget _buildImageContent() {
@@ -278,23 +300,29 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
   }
 
   Widget _buildEmptyState() {
+    // No onTap → purely decorative placeholder (recipe with no image).
+    // ExcludeSemantics so screen readers skip "image" with no description
+    // (BUT-551 / WCAG 1.1.1).
+    if (widget.onTap == null) {
+      return ExcludeSemantics(
+        child: ImageComponents.buildPlaceholder(config: widget.config),
+      );
+    }
     return ImageComponents.buildPlaceholder(
       config: widget.config,
-      child: widget.onTap != null
-          ? Semantics(
-              label: context.l10n.a11yAddImage,
-              button: true,
-              child: GestureDetector(
-                onTap: widget.onTap,
-                child: const Center(
-                  child: Icon(
-                    Icons.add_photo_alternate_outlined,
-                    size: AppDimensions.iconSizeXxl,
-                  ),
-                ),
-              ),
-            )
-          : null,
+      child: Semantics(
+        label: context.l10n.a11yAddImage,
+        button: true,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: const Center(
+            child: Icon(
+              Icons.add_photo_alternate_outlined,
+              size: AppDimensions.iconSizeXxl,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

@@ -1,0 +1,96 @@
+// BUT-547: WCAG 1.4.4 — Resize Text (AA). The user must be able to scale
+// up to 200% without loss of content or function. Flutter honors
+// MediaQuery.textScaler automatically, but fixed-height containers can
+// silently clip when the contained text grows.
+//
+// This test wraps high-traffic surfaces in a 2x text scaler and asserts
+// that no Flutter render-overflow exception is thrown. It does not check
+// pixel-perfect layout — it catches the regression of "I added a fixed
+// height: N container around Text without thinking about scaling".
+//
+// Audit findings filed on BUT-547 cover the broader sweep; this file is
+// the regression-prevention guardrail going forward.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:butlery/widgets/recipe/recipe_card.dart';
+
+import '../../infrastructure/factories/recipe_factory.dart';
+import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../test_support/base_unit_test.dart';
+
+void main() {
+  setUpAll(() async {
+    await BaseUnitTest.setupUnit();
+  });
+
+  tearDown(() async {
+    BaseUnitTest.resetMocks();
+  });
+
+  group('BUT-547 200% text-scaling — no overflow on high-traffic widgets', () {
+    testWidgets('RecipeCard renders without overflow at 2x text scale',
+        (tester) async {
+      final recipe = RecipeFactory.build(
+        id: 'r1',
+        title: 'Köttbullar med potatismos och brunsås — en lång svensk titel',
+        description:
+            'Klassisk svensk husmanskost med en längre beskrivning som '
+            'kan ta plats om text-scalingen är hög.',
+        imageUrls: const [],
+        mealType: 'Middag',
+        portions: 4,
+        timeMinutes: 45,
+        rating: 4.5,
+      );
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
+            child: SizedBox(
+              width: 360,
+              child: RecipeCard(recipe: recipe, onTap: (_) {}),
+            ),
+          ),
+        ),
+      );
+
+      // No render-overflow exceptions surfaced by the framework. Flutter
+      // surfaces overflow as `tester.takeException()` returning a
+      // FlutterError with "RenderFlex overflowed" when present.
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('RecipeCard at 2x text scale with no description still safe',
+        (tester) async {
+      final minimal = RecipeFactory.build(
+        id: 'r2',
+        title: 'Pannkakor',
+        description: '',
+        imageUrls: const [],
+        mealType: '',
+        portions: null,
+        timeMinutes: null,
+        rating: null,
+      );
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
+            child: SizedBox(
+              width: 360,
+              child: RecipeCard(recipe: minimal, onTap: (_) {}),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
+  });
+}

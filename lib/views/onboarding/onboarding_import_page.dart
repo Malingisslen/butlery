@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -202,10 +205,28 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
   }
 
   Future<void> _handleImport(SmartImportViewModel viewModel) async {
+    // BUT-545: dedicated onboarding-import outcome events. Fire attempted
+    // before the import call so we count attempts even when the network
+    // request never resolves.
+    final analytics = ServiceLocator.tryGet<AnalyticsService>();
+    analytics?.logEvent(name: AnalyticsEvents.onboardingImportAttempted);
+
     final result = await viewModel.startImport();
     if (!mounted) return;
 
     if (result is ImportSucceeded) {
+      analytics?.logEvent(
+        name: AnalyticsEvents.onboardingImportSucceeded,
+        parameters: {'recipe_title_length': result.recipe.title.length},
+      );
+      // Mark on the wizard VM so completeOnboarding doesn't fire skipped.
+      // Read via Provider — the OnboardingImportPage is rendered inside the
+      // OnboardingView's ChangeNotifierProvider scope.
+      try {
+        context.read<OnboardingViewModel>().markOnboardingImportSucceeded();
+      } catch (_) {
+        // Standalone page (not inside the wizard) — nothing to mark.
+      }
       Navigator.of(context).pushNamed(
         Routes.skrivSjalv,
         arguments: {'recipe': result.recipe},
