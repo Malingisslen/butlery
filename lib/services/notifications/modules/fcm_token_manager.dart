@@ -40,7 +40,7 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 /// - Comprehensive cleanup ensuring proper token deregistration during logout
 /// **Usage Examples:**
 /// ```dart
-/// final tokenManager = FCMTokenManager(firestore, userId);
+/// final tokenManager = FCMTokenManager(userId: ..., repository: ..., messaging: FirebaseMessaging.instance);
 /// // Initialize token management
 /// await tokenManager.initialize();
 /// // Handle token refresh
@@ -79,10 +79,10 @@ class FCMTokenManager {
   FCMTokenManager({
     required String userId,
     required DeviceRepository repository,
-    FirebaseMessaging? messaging,
+    required FirebaseMessaging messaging,
   })  : _repository = repository,
         _userId = userId,
-        _messaging = messaging ?? FirebaseMessaging.instance;
+        _messaging = messaging;
 
   /// Initialize FCM token management for the user
   /// This should be called after user authentication to ensure tokens are properly managed

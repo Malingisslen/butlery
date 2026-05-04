@@ -62,6 +62,34 @@ class AnalyticsService extends BaseService {
   ParseEventsTracker get parse => _parseTracker;
   SystemEventsTracker get system => _systemTracker;
 
+  /// BUT-766: fire-and-forget null-guarded analytics emission helper.
+  ///
+  /// Centralises the `tryGet → null-guard → logEvent` shape that recurred at
+  /// 7 call sites pre-extraction. Resolves [AnalyticsService] from
+  /// [ServiceLocator], no-ops in degraded mode (service not registered),
+  /// and swallows internal `logEvent` failures so a best-effort metric
+  /// never cascades into a user-visible failure.
+  ///
+  /// Sites that need a different shape (e.g. dedup, async/await on completion,
+  /// custom error reaction) should still call [logEvent] directly. Sites
+  /// using domain-specific tracker methods (e.g. `logRecipeShared`) are
+  /// unaffected.
+  static void tryLog(
+    String name, {
+    Map<String, Object>? parameters,
+  }) {
+    try {
+      final analytics = ServiceLocator.tryGet<AnalyticsService>();
+      if (analytics == null) return;
+      analytics
+          .logEvent(name: name, parameters: parameters)
+          .catchError((Object _) {});
+    } catch (_) {
+      // ServiceLocator.tryGet should not throw, but be defensive — a logging
+      // helper that throws is worse than one that silently misses an event.
+    }
+  }
+
   /// Set consent service for GDPR compliance checking
   void setConsentService(ConsentService consentService) {
     _consentService = consentService;

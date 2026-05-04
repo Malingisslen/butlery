@@ -93,10 +93,8 @@ class _NotificationPreferencesViewState
   /// event's surface. OS-level permission grant outcomes are tracked
   /// separately by `NotificationPermissionService`.
   void _logPreferenceChange({required String category, required bool enabled}) {
-    final analytics = ServiceLocator.tryGet<AnalyticsService>();
-    if (analytics == null) return;
-    analytics.logEvent(
-      name: AnalyticsEvents.notificationPreferenceChanged,
+    AnalyticsService.tryLog(
+      AnalyticsEvents.notificationPreferenceChanged,
       parameters: {
         'category': category,
         'enabled': enabled,

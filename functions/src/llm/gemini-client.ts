@@ -155,7 +155,7 @@ const RECIPE_SCHEMA: Schema = {
     },
     description: {
       type: SchemaType.STRING,
-      description: "Short description (max 200 chars)",
+      description: "Short description (max 300 chars)",
       nullable: true,
     },
     portions: {
@@ -240,6 +240,7 @@ VIKTIGT:
 - Behåll svenska ingrediensnamn exakt som de står
 - Standardisera mått till svenska format (dl, msk, tsk, etc.)
 - Om information saknas, använd null istället för att gissa
+- **Om texten inte innehåller ett komplett recept** (saknar tydlig titel, ingredienser ELLER instruktioner), returnera title="Inget recept hittades" med tomma ingredients- och instructions-arrayer. Hitta INTE på saknade fält. Detta gäller blogginlägg, nyhetsartiklar, inköpslistor och annat icke-receptinnehåll.
 
 ${SWEDISH_MEASUREMENTS}
 
@@ -390,7 +391,7 @@ export const INGREDIENT_LINE_MAX_TOKENS = 1000;
 // =============================================================================
 
 /** Strip markdown code fences from LLM response */
-function stripCodeFences(response: string): string {
+export function stripCodeFences(response: string): string {
   let s = response.trim();
   if (s.startsWith("```json")) {
     s = s.slice(7);
@@ -658,7 +659,7 @@ export function parseRecipeResponse(
     // Validate and coerce field types
     const recipe: ExtractedRecipe = {
       title: String(parsed.title).trim(),
-      description: typeof parsed.description === "string" ? parsed.description.slice(0, 500) : null,
+      description: typeof parsed.description === "string" ? parsed.description.slice(0, 300) : null,
       portions: typeof parsed.portions === "number" && Number.isFinite(parsed.portions) ? Math.round(parsed.portions) : null,
       prepTimeMinutes: typeof parsed.prepTimeMinutes === "number" && Number.isFinite(parsed.prepTimeMinutes) ? Math.round(parsed.prepTimeMinutes) : null,
       cookTimeMinutes: typeof parsed.cookTimeMinutes === "number" && Number.isFinite(parsed.cookTimeMinutes) ? Math.round(parsed.cookTimeMinutes) : null,

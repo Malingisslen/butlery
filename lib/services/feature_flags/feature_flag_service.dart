@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
@@ -66,6 +65,9 @@ class FeatureFlagService {
     'enable_social_features': true,
     'enable_sharing': true,
     'enable_messaging': true,
+    // BUT-670: full-app maintenance kill switch + Swedish copy override
+    'app_maintenance_mode': false,
+    'app_maintenance_message_sv': '',
 
     // Gradual Rollout Flags
     'new_search_rollout_percentage': 0,
@@ -207,18 +209,13 @@ class FeatureFlagService {
     }
     _evaluatedTuples.add(tuple);
 
-    try {
-      final analytics = ServiceLocator.tryGet<AnalyticsService>();
-      analytics?.logEvent(
-        name: AnalyticsEvents.featureFlagEvaluated,
-        parameters: {'flag': flag, 'enabled': variant},
-      );
-    } catch (_) {
-      // Analytics not critical for feature flag evaluation. If logEvent
-      // throws, the tuple stays in the set so we don't retry-spam — the
-      // failure mode is "silently lose this one event," matching the
-      // pre-dedup behavior.
-    }
+    // BUT-766: tryLog swallows internal failures, matching the prior
+    // behavior — a thrown logEvent leaves the tuple in the dedup set so we
+    // don't retry-spam. Side-effect: still "silently lose this one event."
+    AnalyticsService.tryLog(
+      AnalyticsEvents.featureFlagEvaluated,
+      parameters: {'flag': flag, 'enabled': variant},
+    );
   }
 
   /// Clear the per-session dedup so subsequent flag reads emit again.
@@ -301,6 +298,9 @@ abstract final class FeatureFlags {
   static const enableSocialFeatures = 'enable_social_features';
   static const enableSharing = 'enable_sharing';
   static const enableMessaging = 'enable_messaging';
+  // BUT-670: maintenance-mode kill switch
+  static const appMaintenanceMode = 'app_maintenance_mode';
+  static const appMaintenanceMessageSv = 'app_maintenance_message_sv';
 
   // Gradual Rollout Flags
   static const newSearchRolloutPercentage = 'new_search_rollout_percentage';

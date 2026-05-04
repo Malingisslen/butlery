@@ -271,20 +271,99 @@ async function logRateLimitViolation(
 // Global Aggregate Limits
 // =============================================================================
 
-/** Global limits: 1000 calls/hour, 10000 calls/day */
-const GLOBAL_HOURLY_LIMIT = 1000;
-const GLOBAL_DAILY_LIMIT = 10000;
+/**
+ * Hardcoded defaults for the global aggregate caps. Used as fallback when
+ * `system/config` is missing the override fields, malformed, or unreachable.
+ *
+ * BUT-687: live values come from `system/config.globalHourlyLimit` /
+ * `system/config.globalDailyLimit` (same Firestore doc as the BUT-439 kill
+ * switch). Module-scope cache lasts the entire warm-instance lifetime —
+ * which under sustained traffic can be 30+ minutes. Operator overrides
+ * propagate on the *next cold start*, not within the cache TTL. Acceptable
+ * because these caps are a soft cost-shaping lever; the master kill
+ * (`aiEnabled`) is the authoritative emergency brake.
+ */
+const DEFAULT_GLOBAL_HOURLY_LIMIT = 1000;
+const DEFAULT_GLOBAL_DAILY_LIMIT = 10000;
+
+interface GlobalLimits {
+  hourly: number;
+  daily: number;
+}
+
+let cachedGlobalLimits: GlobalLimits | null = null;
+
+/**
+ * Optional override of the Firestore loader for unit tests. When set, takes
+ * precedence over the default `system/config` read. Reset between tests with
+ * `__resetGlobalLimitsCacheForTest()`.
+ */
+let globalLimitsLoaderForTest:
+  | (() => Promise<Partial<GlobalLimits> | null>)
+  | null = null;
+
+function readPositiveNumber(
+  data: unknown,
+  key: string,
+  fallback: number
+): number {
+  const v = (data as Record<string, unknown> | null | undefined)?.[key];
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : fallback;
+}
+
+async function loadGlobalLimits(): Promise<GlobalLimits> {
+  if (cachedGlobalLimits) return cachedGlobalLimits;
+  try {
+    const data = globalLimitsLoaderForTest
+      ? await globalLimitsLoaderForTest()
+      : (await admin.firestore().doc("system/config").get()).data();
+    cachedGlobalLimits = {
+      hourly: readPositiveNumber(
+        data,
+        "globalHourlyLimit",
+        DEFAULT_GLOBAL_HOURLY_LIMIT
+      ),
+      daily: readPositiveNumber(
+        data,
+        "globalDailyLimit",
+        DEFAULT_GLOBAL_DAILY_LIMIT
+      ),
+    };
+  } catch (err) {
+    logger.warn("Failed to load global rate limits, using defaults", err);
+    cachedGlobalLimits = {
+      hourly: DEFAULT_GLOBAL_HOURLY_LIMIT,
+      daily: DEFAULT_GLOBAL_DAILY_LIMIT,
+    };
+  }
+  return cachedGlobalLimits;
+}
+
+/**
+ * Test seam: clear the module-scope cache so a subsequent `checkGlobalLimit`
+ * re-reads from the Firestore stub. Production code never calls this.
+ */
+export function __resetGlobalLimitsCacheForTest(
+  loader?: () => Promise<Partial<GlobalLimits> | null>
+): void {
+  cachedGlobalLimits = null;
+  globalLimitsLoaderForTest = loader ?? null;
+}
 
 /**
  * Check global aggregate LLM call limits.
  * Uses Firestore atomic increments on system/llmLimits document.
+ * Limits themselves come from `system/config` (BUT-687), with hardcoded
+ * fallbacks if the doc / fields are missing.
  *
  * @returns true if within limits, false if exceeded
  */
 export async function checkGlobalLimit(): Promise<boolean> {
-  const limitsRef = admin.firestore().doc("system/llmLimits");
+  // Load limits first (loader may be a test seam that doesn't touch Firestore).
+  const { hourly: hourlyLimit, daily: dailyLimit } = await loadGlobalLimits();
 
   try {
+    const limitsRef = admin.firestore().doc("system/llmLimits");
     const result = await admin.firestore().runTransaction(async (tx) => {
       const doc = await tx.get(limitsRef);
       const now = new Date();
@@ -297,7 +376,7 @@ export async function checkGlobalLimit(): Promise<boolean> {
       const hourlyCount = data.hourKey === currentHour ? (data.hourlyCount ?? 0) : 0;
       const dailyCount = data.dayKey === currentDay ? (data.dailyCount ?? 0) : 0;
 
-      if (hourlyCount >= GLOBAL_HOURLY_LIMIT || dailyCount >= GLOBAL_DAILY_LIMIT) {
+      if (hourlyCount >= hourlyLimit || dailyCount >= dailyLimit) {
         return false;
       }
 

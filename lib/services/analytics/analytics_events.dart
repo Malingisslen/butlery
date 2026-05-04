@@ -112,6 +112,10 @@ abstract final class AnalyticsEvents {
   static const featureFlagEvaluated = 'feature_flag_evaluated';
   static const performanceReport = 'performance_report';
   static const performanceWarnings = 'performance_warnings';
+  // BUT-670: emitted once per session when the maintenance-mode blocker
+  // first appears (Remote Config flag flipped or fetched as true). Used to
+  // measure incident impact — count of users hitting the blocker.
+  static const maintenanceModeShown = 'maintenance_mode_shown';
 
   // --- Tagging system ---
   static const recipeTagged = 'recipe_tagged';

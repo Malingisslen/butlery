@@ -1,6 +1,119 @@
 # Sprint Backlog
 
-## Sprint: Perf hardening + DI cleanup + CI tightening — 2026-05-04 (C)
+## Sprint: LLM resilience + ops kill-switches + DI tech-debt — 2026-05-04 (D)
+
+Theme: prior sprint (commit `920b761ee`) shipped 6 perf/DI/CI tickets. Pull a coherent batch of 7 tickets across LLM resilience (circuit breaker + non-recipe guard + spec drift), backend ops levers (Remote Config rate limit + maintenance mode kill switch), and DI/analytics tech-debt (analytics tryLog helper + FCM messaging injection). **7 tasks, 3 batches.**
+
+**In Progress carry-overs (NOT in this sprint):**
+- BUT-442 — repo migrations (4 candidates remaining; deserves own focused sprint).
+- BUT-760 — App Check enforcement; awaiting Firebase Console flip.
+
+**Step 0 verification — done:**
+- **BUT-589** valid — `LlmService` (`lib/services/llm/llm_service.dart`) has no circuit breaker. The reusable `CircuitBreaker` class lives at `lib/core/circuit_breaker.dart` and is already used by `RecipeParserService` (line 152). Pattern is well-established.
+- **BUT-679** plan-stale (rescoped) — original plan added an `isRecipe` schema field which would cascade through `parseRecipeResponse`, the Dart-side `StructureRecipeResponse`, every fixture, and Remote Config prompts. Rescoped to: (a) prompt instruction to return empty arrays + canonical title for non-recipes, (b) server-side `ingredients.length === 0 || instructions.length === 0` check returning a friendly Swedish error. Linear ticket description updated.
+- **BUT-522** plan-stale (count) — only TWO divergent sites, not three: `gemini-client.ts:158` schema doc says "max 200 chars", `gemini-client.ts:661` slices to 500. The system prompt has no "max 200" instruction (verified by grep). Pick 300 as canonical, update both sites. Linear ticket description updated.
+- **BUT-687** plan-stale (kill switch already exists) — BUT-439 already wired `aiEnabled`/`llmParserEnabled` flags via `system/config` Firestore doc + Remote Config mirror. Don't duplicate. Rescope to ONLY the GLOBAL hourly/daily cap moves to `system/config`. Linear ticket description updated.
+- **BUT-670** valid — no maintenance-mode kill switch exists (greppable: no `app_maintenance_mode` references in lib/). Add Remote Config keys + startup gate + blocking widget. Drop optional `app_read_only_mode` (own ticket — different UX surface).
+- **BUT-766** valid (premise now met) — ticket said "wait until 3rd null-guarded analytics emit site lands". Found 7 sites: `parse_event_logger.dart:74`, `notification_preferences_view.dart:96`, `feature_flag_service.dart:211`, `deep_link_handler.dart:161`, `share_service.dart:413`, `cert_pin_telemetry.dart:19`, `onboarding_import_page.dart:211`. Threshold exceeded.
+- **BUT-515** plan-stale (wrong product) — file uses `FirebaseMessaging.instance` not `FirebaseFirestore.instance` (verified line 85). Same DI principle, different Firebase product. Rescoped to remove `?? FirebaseMessaging.instance` default + update 5 test sites + DI registration. Linear ticket description updated.
+
+### Agent A: parsing/LLM resilience (3 tickets — cloud-functions-specialist + dart side)
+
+- [ ] **A1. BUT-589 — Circuit breaker on LlmService** — `lib/services/llm/llm_service.dart`. Add a `CircuitBreaker` field (3 failures, 60s reset) and wrap `_executeLlmCall` (line 262). On `CircuitBreakerOpenException`, return the operation-typed denied response with Swedish message "AI-tjänsten är tillfälligt otillgänglig. Försök igen om en minut." Tests in `test/unit/services/llm/llm_service_test.dart`: assert 3 consecutive `FirebaseFunctionsException` failures open the circuit; assert 4th call returns the denied message without invoking the callable; assert recovery after `resetTime` elapsed via `fakeAsync`. (BUT-589)
+
+- [ ] **A2. BUT-679 — Empty-recipe guard in structure-recipe** —
+  - `functions/src/llm/gemini-client.ts` `RECIPE_EXTRACTION_SYSTEM_PROMPT` (line 236): append a clause instructing Gemini to return `title: 'Inget recept hittades'` + empty arrays for non-recipe input.
+  - `functions/src/llm/structure-recipe.ts` (after line 290 `parseRecipeResponse`): if `recipe.ingredients.length === 0 || recipe.instructions.length === 0`, return `{success: false, error: 'Den här sidan ser inte ut som ett recept. Prova en annan URL eller klistra in texten manuellt.', estimatedCost, promptVersion}`.
+  - Tests in `functions/src/__tests__/structure-recipe.test.ts`: stub Gemini response with empty arrays, assert empty-recipe path. (BUT-679)
+
+- [ ] **A3. BUT-522 — Description length spec drift (200 → 300)** —
+  - `functions/src/llm/gemini-client.ts:158` → `description: "Short description (max 300 chars)"`
+  - `functions/src/llm/gemini-client.ts:661` → `parsed.description.slice(0, 300)`
+  - Test in `functions/src/__tests__/gemini-client.test.ts` (or wherever `parseRecipeResponse` is exercised): >300-char description truncates to 300. (BUT-522)
+
+### Agent B: backend kill-switches (2 tickets — cloud-functions-specialist + flutter-developer)
+
+- [ ] **B1. BUT-687 — Move GLOBAL aggregate limits to `system/config`** — `functions/src/middleware/rate_limiter.ts`. Module-scope cache for `globalHourlyLimit` + `globalDailyLimit`; populate inside `checkGlobalLimit()` from the `system/config` doc (the BUT-439 doc) with hardcoded fallbacks (1000/10000). Cache for the function's warm lifetime; cold start refreshes. Tests in `functions/src/__tests__/rate-limiter.test.ts`: stubbed Firestore → (a) hardcoded fallback when doc missing, (b) override applied when fields present, (c) malformed values fall back. Update `docs/ops/llm-kill-switch-runbook.md` with the two new optional fields. (BUT-687)
+
+- [ ] **B2. BUT-670 — `app_maintenance_mode` kill switch via Remote Config** —
+  - Add Remote Config keys to `FeatureFlagService._defaults` (`lib/services/feature_flags/feature_flag_service.dart:45`): `'app_maintenance_mode': false`, `'app_maintenance_message_sv': ''`. Add `FeatureFlags.appMaintenanceMode` + `appMaintenanceMessageSv` constants.
+  - New widget `lib/widgets/maintenance_mode_blocker.dart` — full-screen blocking widget with the message + a "Försök igen" retry button that calls `FeatureFlagService.refresh()` then re-evaluates. Use `BaseScaffold` from `lib/widgets/common/scaffolds/`.
+  - Wire in `lib/main.dart` root widget tree: wrap `MaterialApp` (or its child) in a `Consumer`/listener that, when `app_maintenance_mode == true`, replaces the home with `MaintenanceModeBlocker`. Use the existing `addOnConfigUpdatedListener` so a flip propagates without a cold restart.
+  - Fire `AnalyticsEvents.maintenanceModeShown` once per session when the blocker first appears (use a session-scoped flag). Add the constant to `lib/services/analytics/analytics_events.dart`.
+  - Drop `app_read_only_mode` — different UX surface, own ticket.
+  - Tests in `test/widget/widgets/maintenance_mode_blocker_test.dart`: blocker shows when flag flips true via stubbed FeatureFlagService; retry button triggers refresh; blocker disappears when flag flips back. (BUT-670)
+
+  ASCII wireframe:
+  ```
+  ┌─────────────────────────────────────┐
+  │ [forestGreen background]            │
+  │                                     │
+  │     [icon: build/maintenance]       │
+  │                                     │
+  │       Underhållsläge                │
+  │                                     │
+  │   {app_maintenance_message_sv}      │
+  │                                     │
+  │       [Försök igen button]          │
+  │                                     │
+  └─────────────────────────────────────┘
+  ```
+
+### Agent C: tech-debt cleanups (2 tickets — flutter-developer)
+
+- [ ] **C1. BUT-766 — Extract `AnalyticsService.tryLog` helper** —
+  - Add a static method to `AnalyticsService` (or a new `AnalyticsHelpers` utility, whichever respects the existing service surface — verify by reading the service file): `static void tryLog(String name, {Map<String, Object?>? parameters})` that resolves via `ServiceLocator.tryGet<AnalyticsService>()`, no-ops on null, wraps in try/catch.
+  - Refactor 7 sites to use it: `parse_event_logger.dart:74`, `notification_preferences_view.dart:96`, `feature_flag_service.dart:211`, `deep_link_handler.dart:161`, `share_service.dart:413`, `cert_pin_telemetry.dart:19`, `onboarding_import_page.dart:211`. Preserve site-specific behavior (e.g., `parse_event_logger`'s try/catch wrap is the helper's default; `feature_flag_service` should keep its `_evaluatedTuples` dedup outside the helper).
+  - Test in `test/unit/services/analytics_service_test.dart`: helper no-ops when AnalyticsService not registered; logs when registered; swallows logEvent throws. (BUT-766)
+
+- [ ] **C2. BUT-515 — `FCMTokenManager` requires injected `FirebaseMessaging`** —
+  - `lib/services/notifications/modules/fcm_token_manager.dart` line 79-85: change `FirebaseMessaging? messaging` to `required FirebaseMessaging messaging`. Remove the `?? FirebaseMessaging.instance` default. Update doc-comment line 43 (currently mentions `firestore` — wrong product).
+  - `lib/services/notifications/notification_service.dart:122` (single production caller) — pass `FirebaseMessaging.instance` explicitly. If a DI module owns this, prefer registering as a singleton there.
+  - Update 5 test instantiations in `test/unit/services/notifications/modules/fcm_token_manager_test.dart` (lines 110, 144, 173, 226, 336) to pass the existing `MockFirebaseMessaging` explicitly. (BUT-515)
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` — 0 issues
+- [ ] Functions: `cd functions && npm run build && npm test -- --testPathPattern='(structure-recipe|gemini-client|rate-limiter)'`
+- [ ] Affected Dart unit tests: `llm_service_test`, `feature_flag_service_test`, `analytics_service_test`, `fcm_token_manager_test`, plus the new `maintenance_mode_blocker_test`
+- [ ] Tier-2 specialist gates: `code-reviewer`, `testing-specialist`, `firebase-backend-security` (none of these touch repositories/auth/gdpr — verify; if so, skip), `cloud-functions-specialist` (functions/ touched — required), `firestore-rules-tester` (no rules changes — skip)
+- [ ] Commit, push to main
+- [ ] CI watcher monitors green
+- [ ] Update Linear: BUT-589/679/522/687/670/766/515 → Done
+
+### Continued blockers (NOT in scope per memory)
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
+- BUT-549 — post-beta (Sign in with Apple lands when social login does)
+- BUT-579 — held for button-system sprint
+- BUT-444 / BUT-445 — own product-design sprints
+- BUT-498 / BUT-697 — explicitly skipped
+- BUT-686 / BUT-660 / BUT-694 — feature-level brainstorming first
+- BUT-674 / BUT-721 — own scoped sprints
+- BUT-626 — bucket-based A/B infra; own sprint
+- BUT-420 / BUT-451 / BUT-452 / BUT-486 — deploy-pipeline / staging cluster; focused infra sprint
+- BUT-550 / BUT-536 / BUT-441 — ACCEPTED_LARGE_FILES drift sprint
+- BUT-558 — DCM install (own sprint)
+- BUT-554 — tracking ticket (blocked on drift_dev upstream)
+- BUT-594 — macOS sandbox audit needs hardware-exercise step
+- BUT-701 — focus traversal (2-day a11y sprint)
+- BUT-479 — cursor-pagination half is non-trivial; needs design ticket
+- BUT-435 + BUT-502/503/507/509 — Dart SDK 3.10 bump cluster (one focused sprint)
+- All `idea`-labeled monetization scaffolding — post-beta
+
+---
+
+## What this means in plain language
+
+- **AI fails fast when Gemini is down.** Today, if Gemini has an outage, every recipe-import attempt retries 2× before failing — burning money + making users wait ~30s for guaranteed failure. After this, three failures in a row trip a "circuit breaker" that returns instant friendly errors for the next minute, then auto-tries to recover.
+- **No more fake recipes from random pages.** When users paste a non-recipe URL (a news article, a blog about gardening), the AI today fabricates a plausible-looking but invented recipe and pollutes their library. After this, the AI is told to return empty for non-recipes, and the server detects empty responses and surfaces a "this doesn't look like a recipe" message instead.
+- **Description length actually means 300.** A small consistency fix — the AI was told one thing about description length while the parser allowed another. Both now agree on 300 characters.
+- **Cost levers without redeploys.** Today, changing the global "max 1000 AI calls per hour" cap requires a code redeploy (15+ min). After this, you can flip those numbers in the Firebase console — same `system/config` document where you already control the AI kill switch.
+- **Maintenance mode for incidents.** A new full-screen "Underhållsläge" screen that appears when you flip a Remote Config flag. Useful when something is broken and you need to stop users from making it worse — they see a friendly Swedish message + a retry button instead of a degraded app.
+- **Cleaner analytics emit pattern.** Seven places in the codebase repeat the same "try to get the analytics service, no-op if missing, log event" boilerplate. After this, one helper does it for everyone.
+- **One more DI consistency fix.** The FCM token manager defaulted to grabbing `FirebaseMessaging.instance` if not injected. Now it requires explicit injection — matches the rest of the codebase and makes test mocking less fragile.
+
+---
+
+## ARCHIVED — Sprint: Perf hardening + DI cleanup + CI tightening — 2026-05-04 (C)
 
 Theme: prior sprint (commit `5ddfdf035`) shipped 4 privacy/security/moderation tickets. With High-priority backlog still gated on Apple Dev (BUT-415/646/714/731), Fastlane (BUT-420), button-system sprint (BUT-579), portion-scaling (BUT-444), and post-beta deferrals — pull a coherent batch of 6 small/medium concrete fixes across stream-bounding, DI cleanup, startup perf, build security, analytics audit, and CI hardening. **6 tasks, 3 batches.**
 

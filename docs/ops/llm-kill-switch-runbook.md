@@ -133,6 +133,36 @@ firebase remoteconfig:set /tmp/rc.json --project "$PROJECT_ID"
 
 Or via the Console: https://console.firebase.google.com/project/_/config
 
+## Global aggregate caps (`globalHourlyLimit` / `globalDailyLimit`)
+
+**Status:** added in BUT-687.
+
+The middleware's `checkGlobalLimit` reads two optional fields from `system/config` to override the hardcoded defaults (1000 calls/hour, 10000 calls/day) without redeploying:
+
+| Field | Type | Default | Effect |
+|-------|------|---------|--------|
+| `globalHourlyLimit` | number (>0) | 1000 | Hourly aggregate ceiling on all LLM Cloud Function calls. |
+| `globalDailyLimit` | number (>0) | 10000 | Daily aggregate ceiling. Resets at UTC midnight. |
+
+**Caching:** each warm Cloud Function instance reads `system/config` once on first invocation and caches the result for the instance's lifetime (~30 minutes typical). To force a refresh, redeploy or wait for cold start. Acceptable because the caps are coarse-grained — sub-minute propagation is not required.
+
+**When to flip:**
+- Launch surge (more capacity available, raise caps): set `globalHourlyLimit: 5000`, `globalDailyLimit: 50000`.
+- Cost spike at midnight UTC (Mistral pricing change, abuse incident): drop to a known-safe number until you've assessed.
+- Combined with `aiEnabled=false`: if you're already in total-kill, the caps are moot — they only gate calls that pass `aiEnabled`.
+
+**Setting via gcloud:**
+```sh
+gcloud firestore documents update system/config \
+  --update-mask=globalHourlyLimit,globalDailyLimit \
+  --data='{"globalHourlyLimit": {"integerValue": "500"}, "globalDailyLimit": {"integerValue": "5000"}}' \
+  --project="$PROJECT_ID"
+```
+
+**Malformed values fall back silently:** non-numeric, zero, or negative → defaults apply. The Cloud Functions logs emit `"Failed to load global rate limits, using defaults"` on any read error so ops can spot misconfigured fields.
+
+**Fail-mode asymmetry to know about:** the BUT-439 master kill (`aiEnabled=false`) goes the *other* way during a Firestore outage — a missing/unreachable doc fails *open* for the kill-switch (AI proceeds), but the outer `runStructureRecipe` catch turns the Firestore error into an `internal` HttpsError (fail closed for the user). The new global-cap loader, by contrast, fails open against operator overrides on Firestore unreachable: caches the hardcoded defaults (1000/10000) and the per-user middleware proceeds. **Implication:** if you've tightened the global caps and the Firestore link drops, traffic surges back to the hardcoded numbers until the next cold start. Live with this trade-off because the master kill (`aiEnabled`) is the authoritative throttle during a real incident; the global caps are a soft cost-shaping lever, not an emergency brake.
+
 ## Per-user cap (`llmMaxDailyInvocationsPerUser`)
 
 **Status:** **already exists** — implemented in the existing rate

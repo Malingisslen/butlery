@@ -12,8 +12,10 @@ import 'dart:typed_data';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/circuit_breaker.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/llm/pii_scrubber.dart';
@@ -35,6 +37,20 @@ class LlmService extends BaseService {
   final ImportRateLimiter _rateLimiter;
   final ConsentService _consentService;
 
+  /// BUT-589: shared circuit breaker for the Vertex/Gemini backend.
+  /// Trips after [_failureThreshold] consecutive Cloud Function failures and
+  /// short-circuits to a fast denied response for [_resetTime]. One callable
+  /// trip protects every LLM operation (extract / OCR / ingredient lines)
+  /// because they all share the same Gemini backend — if it's down for one,
+  /// it's down for all.
+  ///
+  /// Rate-limit denials and consent denials are NOT failures (they're normal
+  /// flow), so they don't increment the breaker.
+  final CircuitBreaker _backendBreaker;
+
+  static const int _failureThreshold = 3;
+  static const Duration _resetTime = Duration(seconds: 60);
+
   /// Region for Cloud Functions (matches deployment)
   static const _region = 'europe-west1';
 
@@ -45,10 +61,21 @@ class LlmService extends BaseService {
     required ImportRateLimiter rateLimiter,
     required ConsentService consentService,
     FirebaseFunctions? functions,
+    CircuitBreaker? backendBreaker,
   })  : _rateLimiter = rateLimiter,
         _consentService = consentService,
         _functions =
-            functions ?? FirebaseFunctions.instanceFor(region: _region);
+            functions ?? FirebaseFunctions.instanceFor(region: _region),
+        _backendBreaker = backendBreaker ??
+            CircuitBreaker(
+              failureThreshold: _failureThreshold,
+              resetTime: _resetTime,
+            );
+
+  /// Test seam: read-only view of the backend circuit breaker so unit tests
+  /// can assert open/closed transitions without poking the private field.
+  @visibleForTesting
+  CircuitBreaker get backendBreakerForTest => _backendBreaker;
 
   /// Extract structured recipe from text.
   ///
@@ -274,6 +301,20 @@ class LlmService extends BaseService {
       );
     }
 
+    // BUT-589: check the breaker BEFORE the rate-limit Firestore read so an
+    // open circuit short-circuits without paying I/O. This is the exact
+    // scenario the breaker was added to protect — Gemini outage causing
+    // request pile-up — and reading Firestore for a guaranteed-denied call
+    // would defeat the cost protection.
+    if (!_backendBreaker.allowRequest) {
+      AppLogger.warning(
+        'LlmService: backend circuit breaker OPEN, short-circuiting',
+      );
+      return buildDeniedResponse(
+        'AI-tjänsten är tillfälligt otillgänglig. Försök igen om en minut.',
+      );
+    }
+
     final limitCheck = await _rateLimiter.checkLimit(operation);
     if (limitCheck.isDenied) {
       final denied = limitCheck as RateLimitDenied;
@@ -295,6 +336,7 @@ class LlmService extends BaseService {
       final scrubbedJson = scrubPayload(requestJson);
       final result = await callable.call<Map<String, dynamic>>(scrubbedJson);
       final response = parseResponse(result.data);
+      _backendBreaker.recordSuccess();
 
       final success = _isSuccessful(response);
       if (success || recordUsageOnFailure) {
@@ -304,9 +346,11 @@ class LlmService extends BaseService {
 
       return response;
     } on FirebaseFunctionsException catch (e) {
+      _backendBreaker.recordFailure();
       AppLogger.error('LlmService: Firebase error - ${e.code}: ${e.message}');
       throw LlmException.fromFirebase(e);
     } catch (e) {
+      _backendBreaker.recordFailure();
       AppLogger.error('LlmService: Unexpected error - $e');
       throw LlmException(AppLocale.current.llmUnexpectedError('$e'));
     }

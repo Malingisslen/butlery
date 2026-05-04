@@ -90,6 +90,7 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Beta feedback
 import 'package:butlery/widgets/common/feedback_fab.dart';
+import 'package:butlery/widgets/maintenance_mode_gate.dart';
 
 // Web error tracking (BUT-449)
 import 'package:butlery/services/monitoring/web_error_reporter.dart';
@@ -929,25 +930,27 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           // navigator subtree so Esc / Cmd+K / Cmd+1-3 etc. work on every
           // route. `Focus(autofocus)` is required so the Shortcuts widget
           // is the focus root that receives unhandled key events.
-          return Shortcuts(
-            shortcuts: AppShortcuts.bindings,
-            child: Actions(
-              actions: AppActions.dispatch(),
-              child: Focus(
-                autofocus: true,
-                child: SafeArea(
-                  top: false, // Let AppBar handle top
-                  bottom: true, // Always protect bottom from system nav bar
-                  left: false,
-                  right: false,
-                  child: Stack(
-                    children: [
-                      RepaintBoundary(
-                        key: feedbackRepaintBoundaryKey,
-                        child: child,
-                      ),
-                      const FeedbackFAB(),
-                    ],
+          return MaintenanceModeGate(
+            child: Shortcuts(
+              shortcuts: AppShortcuts.bindings,
+              child: Actions(
+                actions: AppActions.dispatch(),
+                child: Focus(
+                  autofocus: true,
+                  child: SafeArea(
+                    top: false, // Let AppBar handle top
+                    bottom: true, // Always protect bottom from system nav bar
+                    left: false,
+                    right: false,
+                    child: Stack(
+                      children: [
+                        RepaintBoundary(
+                          key: feedbackRepaintBoundaryKey,
+                          child: child,
+                        ),
+                        const FeedbackFAB(),
+                      ],
+                    ),
                   ),
                 ),
               ),

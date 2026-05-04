@@ -208,15 +208,14 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
     // BUT-545: dedicated onboarding-import outcome events. Fire attempted
     // before the import call so we count attempts even when the network
     // request never resolves.
-    final analytics = ServiceLocator.tryGet<AnalyticsService>();
-    analytics?.logEvent(name: AnalyticsEvents.onboardingImportAttempted);
+    AnalyticsService.tryLog(AnalyticsEvents.onboardingImportAttempted);
 
     final result = await viewModel.startImport();
     if (!mounted) return;
 
     if (result is ImportSucceeded) {
-      analytics?.logEvent(
-        name: AnalyticsEvents.onboardingImportSucceeded,
+      AnalyticsService.tryLog(
+        AnalyticsEvents.onboardingImportSucceeded,
         parameters: {'recipe_title_length': result.recipe.title.length},
       );
       // Mark on the wizard VM so completeOnboarding doesn't fire skipped.

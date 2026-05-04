@@ -116,12 +116,15 @@ class NotificationService extends BaseService {
       sendBatchCallback: _sendBatchedNotification,
     );
 
-    // FCMTokenManager accesses FirebaseMessaging.instance in its constructor,
-    // which may not be available (e.g. web, tests). Other modules still work.
+    // BUT-515: FCMTokenManager now requires explicit FirebaseMessaging
+    // injection (was a constructor default). Resolve `FirebaseMessaging.instance`
+    // here so a missing Firebase app (e.g. on web before init) is caught at
+    // the same boundary as before — same try/catch, same null fallback.
     try {
       _tokenManager = FCMTokenManager(
         userId: userId,
         repository: _deviceRepository,
+        messaging: FirebaseMessaging.instance,
       );
     } catch (e) {
       _tokenManager = null;
