@@ -99,10 +99,10 @@ interface UrlCase {
 
 const URL_CASES: UrlCase[] = [
   {
-    name: "strips query and fragment (legacy contract preserved)",
-    input: "https://example.com/recipe?utm_source=x&token=secret#frag",
-    expectStripped: ["utm_source", "token", "frag"],
-    expectKept: ["example.com/recipe"],
+    name: "BUT-534: strips query, preserves fragment (recipe section anchors)",
+    input: "https://example.com/recipe?utm_source=x&token=secret#ingredienser",
+    expectStripped: ["utm_source", "token"],
+    expectKept: ["example.com/recipe", "#ingredienser"],
   },
   {
     name: "redacts mixed-case + digit Algolia-shaped path token",

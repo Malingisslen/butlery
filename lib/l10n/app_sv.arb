@@ -6275,6 +6275,10 @@
       }
     }
   },
+  "llmTimeout": "Förfrågan tog för lång tid. Försök igen.",
+  "@llmTimeout": {},
+  "llmTemporarilyUnavailable": "AI-tjänsten är tillfälligt otillgänglig. Försök igen om en stund.",
+  "@llmTemporarilyUnavailable": {},
   "tiktokCouldNotFetchDescription": "Kunde inte hämta videobeskrivningen. Ta en skärmbild av receptet.",
   "tiktokAiQuotaExhausted": "AI-kvoten är slut. Markera receptdelar manuellt.",
   "tiktokCouldNotExtractRecipe": "Kunde inte extrahera receptet automatiskt. Markera receptdelar manuellt.",

@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 /// Fire-and-forget logger for recipe parse events via Cloud Function.
 /// Used by both RecipeParserService and UrlImportStrategy.
@@ -55,10 +58,34 @@ class ParseEventLogger {
             .then((_) {})
             .catchError((Object e) {
           AppLogger.debug('ParseEventLogger: logging failed: $e');
+          _emitFailureMetric(e);
         }),
       );
     } catch (e) {
       AppLogger.debug('ParseEventLogger: payload error: $e');
+      _emitFailureMetric(e);
+    }
+  }
+
+  /// BUT-616: surface the silent loss so dashboards can measure failure rate
+  /// against the success volume. Best-effort — never re-throws.
+  void _emitFailureMetric(Object error) {
+    try {
+      final analytics = ServiceLocator.tryGet<AnalyticsService>();
+      if (analytics == null) return;
+      final code = error is FirebaseFunctionsException ? error.code : 'unknown';
+      final cause = error.toString();
+      analytics.logEvent(
+        name: AnalyticsEvents.parseEventLogFailed,
+        parameters: {
+          'error_code': code,
+          // Firebase Analytics param values cap at 100 chars; truncate well
+          // under the cap to leave headroom and keep cardinality bounded.
+          'cause': cause.length > 50 ? cause.substring(0, 50) : cause,
+        },
+      );
+    } catch (_) {
+      // Never let metric emission cascade into a second failure path.
     }
   }
 }

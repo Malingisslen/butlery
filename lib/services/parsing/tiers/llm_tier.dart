@@ -399,8 +399,11 @@ class LlmTier extends ParsingTier with QualityScoring {
   static final _suspiciousPatterns = [
     RegExp(r'<script', caseSensitive: false),
     RegExp(r'javascript:', caseSensitive: false),
-    RegExp(r'{{.*}}'), // Template injection
-    RegExp(r'\$\{.*\}'), // String interpolation
+    RegExp(r'{{.*}}'), // Mustache / Handlebars template
+    RegExp(r'\$\{.*\}'), // JS template literal / shell interpolation
+    // BUT-540: defensive coverage for additional template-injection vectors.
+    RegExp(r'<%.*%>'), // ERB / EJS / underscore template
+    RegExp(r'{%.*%}'), // Jinja / Twig / Liquid template
     RegExp(r'__proto__'),
     RegExp(r'constructor\s*\('),
   ];

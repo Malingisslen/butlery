@@ -445,5 +445,50 @@ void main() {
         expect(result.recipe!.instructions.value!.last, contains('Step 50:'));
       });
     });
+
+    // BUT-540: defensive coverage for additional template-injection vectors.
+    // _validateForSuspiciousPatterns runs across title, description,
+    // instructions, ingredient names + preparations — any hit returns
+    // failureReason: invalidResponse and drops the recipe.
+    group('BUT-540: suspicious-pattern filter rejects template syntax', () {
+      Future<TierResult> parseWithTitle(String title) async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(title: title),
+          estimatedCost: 0.01,
+        );
+        return tier.parse(createContext());
+      }
+
+      test('rejects ERB / EJS template <% %>', () async {
+        final result = await parseWithTitle('Pannkakor <% user.name %>');
+        expect(result.success, isFalse);
+        expect(result.failureReason, TierFailureReason.invalidResponse);
+      });
+
+      test('rejects Jinja / Twig template {% %}', () async {
+        final result =
+            await parseWithTitle('Pannkakor {% if admin %}leak{% endif %}');
+        expect(result.success, isFalse);
+        expect(result.failureReason, TierFailureReason.invalidResponse);
+      });
+
+      test('still rejects Mustache / Handlebars {{ }} (regression)', () async {
+        final result = await parseWithTitle('Pannkakor {{user.email}}');
+        expect(result.success, isFalse);
+        expect(result.failureReason, TierFailureReason.invalidResponse);
+      });
+
+      test('still rejects JS template literal \${} (regression)', () async {
+        final result = await parseWithTitle(r'Pannkakor ${process.env.KEY}');
+        expect(result.success, isFalse);
+        expect(result.failureReason, TierFailureReason.invalidResponse);
+      });
+
+      test('passes plain title with %-symbol (no template syntax)', () async {
+        final result = await parseWithTitle('100% smör pannkakor');
+        expect(result.success, isTrue);
+      });
+    });
   });
 }

@@ -1,6 +1,81 @@
 # Sprint Backlog
 
-## Sprint: CI hygiene + a11y micro-fixes + tech-debt cleanup — 2026-05-04
+## Sprint: Analytics observability + parsing/LLM hardening + social UX — 2026-05-04
+
+Theme: prior two sprints (commits `207fe7fc5`, `f0aec025d`) cleared the CI/a11y/perf carry-overs. High-priority backlog still blocked on Apple Dev (BUT-415/646/714/731), button-system sprint (BUT-579), and post-beta deferral (BUT-549). Cluster 7 small/medium concrete fixes across analytics observability gaps, parsing/LLM defensive hardening, and one social UX micro-fix. **7 tasks, 3 batches.**
+
+**Step 0 verification — done:**
+- **BUT-640** (track session_duration on foreground/background) — **PREMISE GONE.** `lib/main.dart:728-746` `_trackAppBackgrounded` already logs `session_duration_seconds` on `AppLifecycleState.paused/inactive`. Closing the ticket as obsolete; substituted **BUT-616** (logParseEvent failure rate visibility) into Agent A.
+- **BUT-538** valid — `lib/viewmodels/onboarding_viewmodel.dart:112` fires `onboarding_page_viewed` on every `setPage` including back-nav; existing test at `test/unit/viewmodels/onboarding_viewmodel_test.dart:191-222` asserts un-deduped behavior — will need updating.
+- **BUT-655** valid — zero matches for `notification_preference_changed` in lib/. Need to find settings toggle host in implementation.
+- **BUT-534** valid — `lib/services/llm/pii_scrubber.dart:70` explicitly clears fragment via `parsed.replace(fragment: '')`. Tests at `test/unit/services/llm/pii_scrubber_test.dart:120+` assert legacy strip; need parity update on `functions/src/llm/pii-scrubber.ts:133` + tests.
+- **BUT-540** valid — `lib/services/parsing/tiers/llm_tier.dart:399-406` `_suspiciousPatterns` covers `{{ }}` (Mustache) + `${ }` (template literals); missing `<% %>` (ERB/EJS) + `{% %}` (Jinja). Two RegExp additions.
+- **BUT-582** valid — `lib/services/llm/llm_models.dart:340-371` `LlmException.fromFirebase` has explicit branches for `unauthenticated`/`resource-exhausted`/`invalid-argument`; `deadline-exceeded` and `unavailable` both fall to the generic "unknown" bucket with `llmGenericError` message. Need distinct user-facing messages so retry semantics are clear.
+- **BUT-531** valid — `lib/widgets/social/report_content_dialog.dart:62-106` has 5 radio reasons, no free-text input. `ReportService.submitReport` signature does not accept context.
+
+### Agent A: analytics observability (3 tickets)
+
+- [ ] **A1. BUT-538 — Dedup `onboarding_page_viewed` per session** — `lib/viewmodels/onboarding_viewmodel.dart`. Add `Set<int> _viewedPages = {}`; in `setPage`, fire `AnalyticsEvents.onboardingPageViewed` only if `_viewedPages.add(page)` returns true. Update test at `test/unit/viewmodels/onboarding_viewmodel_test.dart:191-222` to assert dedup (re-visit same page → no second event; visit new page → one event). (BUT-538)
+- [ ] **A2. BUT-616 — Surface `logParseEvent` failure rate** — `lib/services/parsing/parse_event_logger.dart:53`. The current callable wraps `httpsCallable('logParseEvent')` and silently swallows on catch. Add an `AnalyticsEvents.parseEventLogFailed` constant emitted on catch with `error_code` (Firebase code or `'unknown'`) and `cause` (truncated message ≤50 chars), so we can measure loss rate via Firebase Analytics. (BUT-616)
+- [ ] **A3. BUT-655 — Log `notification_preference_changed`** — find category-toggle host (likely `lib/views/settings/notification_settings_view.dart` or similar). Emit `AnalyticsEvents.notificationPreferenceChanged` with `category` (e.g. `friend_request`, `comment`, `chat`) + `enabled` (bool) params on every toggle. Single param-shape, used for opt-in/opt-out funnel measurement. (BUT-655)
+
+### Agent B: parsing/LLM hardening (3 tickets)
+
+- [ ] **B1. BUT-534 — `scrubUrlParams` preserve URL fragment identifier** — `lib/services/llm/pii_scrubber.dart:70` drop the `fragment: ''` clear so anchors like `#ingredienser` survive (recipe sites use them as section anchors; fragments aren't sent to servers anyway). Mirror in `functions/src/llm/pii-scrubber.ts:133`. Update Dart test at `test/unit/services/llm/pii_scrubber_test.dart` and TS test at `functions/src/__tests__/pii-scrubber.test.ts` to assert fragment preserved + opaque path tokens still redacted. (BUT-534)
+- [ ] **B2. BUT-540 — Suspicious-pattern filter ERB/EJS/Jinja** — `lib/services/parsing/tiers/llm_tier.dart:399-406` add two RegExp entries to `_suspiciousPatterns`: `RegExp(r'<%.*%>')` (ERB/EJS) + `RegExp(r'{%.*%}')` (Jinja). New unit test in `test/unit/services/parsing/llm_tier_test.dart` (or sibling) covering each new template syntax. (BUT-540)
+- [ ] **B3. BUT-582 — Distinct `LlmException` for deadline-exceeded vs unavailable** — `lib/services/llm/llm_models.dart:340-371` add two explicit branches above the generic fallback:
+  - `deadline-exceeded` → message `llmTimeout` ("Förfrågan tog för lång tid — försök igen") + code `'deadline-exceeded'`
+  - `unavailable` → message `llmTemporarilyUnavailable` ("Tjänsten är tillfälligt otillgänglig — försök igen om en stund") + code `'unavailable'`
+  Add ARB keys to `app_sv.arb` + `app_en.arb`; run `flutter gen-l10n`. (BUT-582)
+
+### Agent C: social UX micro-fix (1 ticket)
+
+- [ ] **C1. BUT-531 — Report dialog free-text field for "Other" reason** — `lib/widgets/social/report_content_dialog.dart:62-106`. When `selectedReason == reportReasonOther`, render a `TextField` (max 500 chars, required, l10n hint `reportOtherReasonHint`) and pass its content as `additionalContext` to `ReportService.submitReport`. Update `lib/services/moderation/report_service.dart` `submitReport` signature with optional `String? additionalContext` parameter, persisted onto the Firestore report doc as `additionalContext` field. ARB additions: `reportOtherReasonHint` ("Beskriv kort vad som är fel"), `reportOtherReasonRequired` ("Beskrivning krävs när 'Annat' valts"). (BUT-531)
+
+### Standalone
+
+- [ ] **D1. Close BUT-640 as premise-gone** — already shipped in `lib/main.dart:728-746` (`_trackAppBackgrounded` logs `session_duration_seconds`). Add Linear comment + transition state to Done with link to `main.dart:728-746`. (BUT-640)
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` — 0 issues
+- [ ] Affected unit tests: onboarding_viewmodel_test, pii_scrubber_test (Dart + TS), llm_tier_test, llm_models_test (if exists), report_dialog_test (if exists)
+- [ ] Tier-2 specialist gates: code-reviewer, testing-specialist, firebase-backend-security (LLM/parsing services), cloud-functions-specialist (TS pii-scrubber parity)
+- [ ] Commit, push to main
+- [ ] CI watcher monitors green
+- [ ] Update Linear: BUT-538/616/655/534/540/582/531 → Done; BUT-640 → Done (closed as premise-gone)
+
+### Continued blockers (NOT in scope per memory)
+- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
+- BUT-549 — post-beta (Sign in with Apple lands when social login does)
+- BUT-579 — held for button-system sprint
+- BUT-444 / BUT-445 — own product-design sprints
+- BUT-498 / BUT-697 — explicitly skipped
+- BUT-686 / BUT-660 / BUT-694 — need feature-level brainstorming first
+- BUT-674 / BUT-721 — own scoped sprints
+- BUT-626 — bucket-based A/B infra; own sprint
+- BUT-420/451/452/486 — deploy-pipeline / staging cluster; focused infra sprint
+- BUT-550 — accepted-large-files drift sprint, separate scope
+- BUT-558 — DCM install (own sprint, half-day setup + per-finding follow-ups)
+- BUT-554 — tracking ticket only (blocked on drift_dev upstream)
+- All `idea`-labeled monetization scaffolding — post-beta
+
+### In Progress carry-overs (NOT in this sprint)
+- BUT-442 — repo migrations (4 candidates remaining; each deserves a focused single-ticket sprint)
+- BUT-760 — App Check enforcement; awaiting user-side Firebase Console enforcement flip after BUT-759 lands
+
+---
+
+## What this means in plain language
+
+- **Three small analytics gaps closed.** Onboarding step views won't double-count when users go back; we'll know when our recipe-parsing logger is failing silently; we'll see when users toggle individual notification categories on/off.
+- **Three parsing/LLM defensive hardenings.** URL fragment anchors (`#ingredienser`) survive when we sanitize URLs (today they get stripped). Two more "looks like a template-injection attack" patterns added so an adversarial recipe site can't slip ERB/Jinja-style payloads through. AI service errors split into "took too long" vs "service down" so users see actionable retry hints instead of the same generic message.
+- **One social fix.** When someone picks "Other" as a report reason, they finally get a text field to explain (Google Play's appeal policy effectively requires this).
+- **One ticket housekeeping.** BUT-640 is already done — it'll be closed with a pointer to the existing code so the backlog reflects reality.
+- **Risk: low across the board.** No data-model changes, no UI structure changes, no external service contracts beyond extending one Firestore field on the report doc. Each ticket independently revertable.
+
+---
+
+## ARCHIVED — Sprint: CI hygiene + a11y micro-fixes + tech-debt cleanup — 2026-05-04
 
 Theme: BUT-442 + BUT-760 stay In Progress carry-overs (not in this sprint). With High-priority backlog still gated on external dependencies (Apple Dev for BUT-415/646/714/731, button-system sprint for BUT-579, post-beta for BUT-549), pull tightly-scoped Medium tickets across CI/security (BUT-535), backend tooling (BUT-546), UI refactor (BUT-542), a11y micro-fixes (BUT-763, BUT-557), test guard (BUT-764), and dep audit (BUT-555). **7 tasks, 3 batches.**
 

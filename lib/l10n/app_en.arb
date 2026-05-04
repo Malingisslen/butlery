@@ -6254,6 +6254,10 @@
       }
     }
   },
+  "llmTimeout": "The request took too long. Please try again.",
+  "@llmTimeout": {},
+  "llmTemporarilyUnavailable": "The AI service is temporarily unavailable. Try again in a moment.",
+  "@llmTemporarilyUnavailable": {},
   "tiktokCouldNotFetchDescription": "Could not fetch the video description. Take a screenshot of the recipe.",
   "tiktokAiQuotaExhausted": "AI quota exhausted. Mark recipe parts manually.",
   "tiktokCouldNotExtractRecipe": "Could not extract the recipe automatically. Mark recipe parts manually.",

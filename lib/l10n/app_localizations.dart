@@ -16815,6 +16815,18 @@ abstract class AppLocalizations {
   /// **'Ett fel uppstod: {error}'**
   String llmGenericError(String error);
 
+  /// No description provided for @llmTimeout.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förfrågan tog för lång tid. Försök igen.'**
+  String get llmTimeout;
+
+  /// No description provided for @llmTemporarilyUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-tjänsten är tillfälligt otillgänglig. Försök igen om en stund.'**
+  String get llmTemporarilyUnavailable;
+
   /// No description provided for @tiktokCouldNotFetchDescription.
   ///
   /// In sv, this message translates to:

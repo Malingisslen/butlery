@@ -364,6 +364,23 @@ class LlmException implements Exception {
       );
     }
 
+    // BUT-582: deadline-exceeded and unavailable previously fell into the
+    // generic "unknown" bucket with the same opaque message. Split them so
+    // the user sees actionable copy: timeout vs transient outage.
+    if (errorStr.contains('deadline-exceeded')) {
+      return LlmException(
+        l.llmTimeout,
+        code: 'deadline-exceeded',
+      );
+    }
+
+    if (errorStr.contains('unavailable')) {
+      return LlmException(
+        l.llmTemporarilyUnavailable,
+        code: 'unavailable',
+      );
+    }
+
     return LlmException(
       l.llmGenericError(errorStr),
       code: 'unknown',

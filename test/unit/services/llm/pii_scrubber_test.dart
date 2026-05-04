@@ -119,12 +119,15 @@ void main() {
 
   // BUT-692: scrubUrlParams must also strip path-embedded tracker IDs.
   group('scrubUrlParams - path-embedded tokens', () {
-    test('strips query and fragment (legacy contract preserved)', () {
+    test('BUT-534: strips query, preserves fragment (recipe section anchors)',
+        () {
       final out = scrubUrlParams(
-          'https://example.com/recipe?utm_source=x&token=secret#frag');
+          'https://example.com/recipe?utm_source=x&token=secret#ingredienser');
       expect(out, isNot(contains('utm_source')));
       expect(out, isNot(contains('token')));
-      expect(out, isNot(contains('frag')));
+      // Fragment is preserved — anchors like #ingredienser are useful for
+      // section-targeted recipe links and aren't sent to servers anyway.
+      expect(out, contains('#ingredienser'));
       expect(out, contains('example.com/recipe'));
     });
 

@@ -872,3 +872,67 @@ behaviourally correct on the candidate fixtures. The value here is
 forward-looking: a future Gemini model bump, prompt edit, or
 SwedishLineClassifier tweak will surface in this suite before it
 silently regresses parse quality on real user imports.
+
+### 2026-05-04 — BUT-582 LlmException.fromFirebase coverage gap closed [Pattern discovered]
+7-ticket sprint review (BUT-538 / BUT-534 / BUT-540 / BUT-616 / BUT-655 /
+BUT-582 / BUT-531). Four of seven `lib/` files lacked direct test coverage.
+Triaged each:
+
+1. **`LlmException.fromFirebase` (BUT-582) — REAL gap, closed.** Added
+   `test/unit/services/llm/llm_exception_from_firebase_test.dart` (7 tests,
+   green). The function is a pure error-string → user-facing-copy mapping —
+   the cheapest possible test seam (no Firebase init, no mocks, no DI), and
+   the failure mode is high-impact (silent error-copy regression — user sees
+   "Ett fel uppstod" instead of "Förfrågan tog för lång tid"). The new
+   `deadline-exceeded` and `unavailable` branches each get a dedicated
+   "must NOT equal `llmGenericError`" assertion — that's the regression
+   shape: a refactor that accidentally drops the new `if` blocks would
+   silently fall back to the generic bucket with no test failure unless
+   you specifically assert the *negative* (not-generic). The Swedish↔English
+   parity test (6 distinct messages) is the second guard rail: catches the
+   accidental "two codes map to the same template" regression.
+
+   Reusable pattern: **for any error-mapping switchboard, pin both the
+   positive (this code → this message) AND the negative (this code !=
+   generic-fallback message). The positive pins the happy path; the
+   negative pins that future "simplification" doesn't collapse the
+   branches back together.**
+
+2. **`parse_event_logger.dart` `_emitFailureMetric` (BUT-616) — defensible
+   skip.** Fire-and-forget metric emitter inside a `catchError` on an
+   already-fire-and-forget callable. Two layers of try/catch by design
+   ("never let metric emission cascade into a second failure path"). Any
+   test would need to fake `FirebaseFunctions.instance.httpsCallable` to
+   throw, then verify against an injected `AnalyticsService` mock — but
+   the host class has no DI seam (`FirebaseFunctions.instance` accessed
+   directly through `_functionsCache`), and the analytics emit path is
+   already exercised by every other test that registers `AnalyticsService`.
+   Same shape as the FCM/DeepLinkHandler "untestable-by-design" pattern in
+   the 2026-05-02 BUT-573/434 entry.
+
+3. **`notification_preferences_view.dart` `_logPreferenceChange` (BUT-655)
+   — defensible skip.** Per BUT-387 Phase 6 + the `views/` CLAUDE.md, view
+   tests aren't a target. The analytics call is `ServiceLocator.tryGet` +
+   `analytics.logEvent(name: ..., parameters: {category, enabled, source})`
+   — pure forwarding with a null-guard. A test would assert "the toggle
+   handler called the mock analytics" — structural plumbing. The
+   user-visible contract (toggle persists + announces) is covered by the
+   existing notification-preferences manager tests. If the funnel ever
+   shows "preference toggles dropped to zero," that's a dashboard-side
+   alert, not a missing test.
+
+4. **`report_content_dialog.dart` (BUT-531) — defensible skip for now.**
+   New `TextField` + outcome record on a dialog with no existing test
+   file. Same Phase 6 view-layer logic; the dialog's user-visible
+   contract (text → outcome record) is contract-trivial and would be
+   covered by a journey test if and when reporting flow gets one.
+
+Decision rule confirmed: **of N untested production-changes in a sprint,
+the right number to add tests for is "the ones where a regression would
+silently change user-visible behaviour AND the test seam is cheap."**
+Pure-function error-mapping passes both (cheap seam, high blast radius);
+fire-and-forget metric emitters and view-layer fan-out callbacks pass
+neither (no seam, low blast radius — already covered by downstream).
+Don't manufacture structural smoke tests to fill in the matrix.
+
+Sprint approved. Marker written.

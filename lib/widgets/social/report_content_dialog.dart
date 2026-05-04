@@ -23,16 +23,17 @@ class ReportContentDialog {
     required String contentId,
     String? contentOwnerId,
   }) async {
-    final reason = await _showReasonDialog(context);
-    if (reason == null || !context.mounted) return;
+    final outcome = await _showReasonDialog(context);
+    if (outcome == null || !context.mounted) return;
 
     try {
       final reportService = ServiceLocator.get<ReportService>();
       final success = await reportService.submitReport(
         contentType: contentType,
         contentId: contentId,
-        reason: reason,
+        reason: outcome.reason,
         contentOwnerId: contentOwnerId,
+        description: outcome.description,
       );
 
       if (context.mounted) {
@@ -59,49 +60,101 @@ class ReportContentDialog {
     }
   }
 
-  static Future<String?> _showReasonDialog(BuildContext context) async {
+  static Future<_ReportOutcome?> _showReasonDialog(BuildContext context) async {
     String? selectedReason;
+    final descriptionController = TextEditingController();
 
+    final l10n = context.l10n;
     final reasons = [
-      context.l10n.reportReasonInappropriate,
-      context.l10n.reportReasonSpam,
-      context.l10n.reportReasonHarassment,
-      context.l10n.reportReasonCopyright,
-      context.l10n.reportReasonOther,
+      l10n.reportReasonInappropriate,
+      l10n.reportReasonSpam,
+      l10n.reportReasonHarassment,
+      l10n.reportReasonCopyright,
+      l10n.reportReasonOther,
     ];
+    final otherLabel = l10n.reportReasonOther;
 
-    return await showDialog<String>(
+    final result = await showDialog<_ReportOutcome>(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text(context.l10n.reportDialogTitle),
-          content: RadioGroup<String>(
-            groupValue: selectedReason,
-            onChanged: (value) => setState(() => selectedReason = value),
-            child: Column(
+        builder: (context, setState) {
+          // BUT-531: when "Other" is selected, surface a TextField so the
+          // reporter can describe the issue. Required when "Other" is chosen
+          // (Google Play appeal policy expects a reporter description); the
+          // submit button stays disabled until non-empty.
+          final isOther = selectedReason == otherLabel;
+          final descriptionFilled =
+              descriptionController.text.trim().isNotEmpty;
+          final canSubmit =
+              selectedReason != null && (!isOther || descriptionFilled);
+
+          return AlertDialog(
+            title: Text(l10n.reportDialogTitle),
+            content: Column(
               mainAxisSize: MainAxisSize.min,
-              children: reasons
-                  .map((reason) => RadioListTile<String>(
-                        title: Text(reason),
-                        value: reason,
-                      ))
-                  .toList(),
+              children: [
+                RadioGroup<String>(
+                  groupValue: selectedReason,
+                  onChanged: (value) => setState(() => selectedReason = value),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: reasons
+                        .map((reason) => RadioListTile<String>(
+                              title: Text(reason),
+                              value: reason,
+                            ))
+                        .toList(),
+                  ),
+                ),
+                if (isOther) ...[
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: descriptionController,
+                    autofocus: true,
+                    maxLength: 500,
+                    maxLines: 3,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      hintText: l10n.reportDescriptionHint,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(context.l10n.commonCancel),
-            ),
-            ElevatedButton(
-              onPressed: selectedReason != null
-                  ? () => Navigator.pop(context, selectedReason)
-                  : null,
-              child: Text(context.l10n.reportSubmit),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.commonCancel),
+              ),
+              ElevatedButton(
+                onPressed: canSubmit
+                    ? () => Navigator.pop(
+                          context,
+                          _ReportOutcome(
+                            reason: selectedReason!,
+                            description: isOther
+                                ? descriptionController.text.trim()
+                                : null,
+                          ),
+                        )
+                    : null,
+                child: Text(l10n.reportSubmit),
+              ),
+            ],
+          );
+        },
       ),
     );
+
+    descriptionController.dispose();
+    return result;
   }
+}
+
+class _ReportOutcome {
+  const _ReportOutcome({required this.reason, this.description});
+
+  final String reason;
+  final String? description;
 }

@@ -66,9 +66,11 @@ String scrubUrlParams(String url) {
     final scrubbedSegments = parsed.pathSegments
         .map((seg) => _looksOpaquePathSegment(seg) ? ':redacted' : seg)
         .toList(growable: false);
-    return parsed
-        .replace(pathSegments: scrubbedSegments, query: '', fragment: '')
-        .toString();
+    // BUT-534: drop the query string (tracker params), but keep the fragment
+    // identifier — recipe sites use `#ingredienser`/`#method` as section
+    // anchors and fragments aren't transmitted to servers anyway, so
+    // stripping them never gains privacy and only loses signal.
+    return parsed.replace(pathSegments: scrubbedSegments, query: '').toString();
   } catch (_) {
     return url;
   }

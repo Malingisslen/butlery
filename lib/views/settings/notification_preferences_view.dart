@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/notification_preferences.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -12,6 +14,12 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/views/settings/notification_category_items.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+
+/// Sentinel value paired with [AnalyticsEvents.notificationPreferenceChanged]
+/// when the master toggle flips. Per-category toggles emit the
+/// [NotificationCategory.name] (`friends`, `recipes`, ...) so the dashboard
+/// can treat `master` as the special-case row.
+const String _masterPreferenceKey = 'master';
 
 /// Settings view for notification category toggles and quiet hours.
 class NotificationPreferencesView extends StatefulWidget {
@@ -76,6 +84,25 @@ class _NotificationPreferencesViewState
       }
     }
     await _savePreferences(_copyPreferences(enabled: wantEnabled));
+    _logPreferenceChange(category: _masterPreferenceKey, enabled: wantEnabled);
+  }
+
+  /// BUT-655: opt-in / opt-out rate tracking. Fires on category-level boolean
+  /// toggles (master + per-category). Digest frequency, quiet hours, sound,
+  /// and vibration are non-boolean or non-category prefs and stay out of this
+  /// event's surface. OS-level permission grant outcomes are tracked
+  /// separately by `NotificationPermissionService`.
+  void _logPreferenceChange({required String category, required bool enabled}) {
+    final analytics = ServiceLocator.tryGet<AnalyticsService>();
+    if (analytics == null) return;
+    analytics.logEvent(
+      name: AnalyticsEvents.notificationPreferenceChanged,
+      parameters: {
+        'category': category,
+        'enabled': enabled,
+        'source': 'settings',
+      },
+    );
   }
 
   Future<void> _savePreferences(NotificationPreferences updated) async {
@@ -204,6 +231,10 @@ class _NotificationPreferencesViewState
                 updatedSettings[item.category] = value;
                 _savePreferences(
                   _copyPreferences(categorySettings: updatedSettings),
+                );
+                _logPreferenceChange(
+                  category: item.category.name,
+                  enabled: value,
                 );
               }
             : null,

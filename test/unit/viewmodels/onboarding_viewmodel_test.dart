@@ -205,6 +205,39 @@ void main() {
             )).called(1);
       });
 
+      test('BUT-538: setPage dedupes onboarding_page_viewed per session', () {
+        viewModel.setPage(1);
+        viewModel.setPage(2);
+        viewModel.setPage(1); // back-nav — should NOT fire again
+        viewModel.setPage(2); // forward-revisit — should NOT fire again
+
+        verify(() => mockAnalyticsService.logEvent(
+              name: 'onboarding_page_viewed',
+              parameters: {'page': 1},
+            )).called(1);
+        verify(() => mockAnalyticsService.logEvent(
+              name: 'onboarding_page_viewed',
+              parameters: {'page': 2},
+            )).called(1);
+      });
+
+      test(
+          'BUT-538: setInitialPage marks page as already viewed (no re-fire on return)',
+          () {
+        viewModel.setInitialPage(3); // resume at page 3 — no analytics
+        viewModel.setPage(0); // navigate back — fires once for 0
+        viewModel.setPage(3); // forward to 3 — should NOT fire (resumed)
+
+        verifyNever(() => mockAnalyticsService.logEvent(
+              name: 'onboarding_page_viewed',
+              parameters: {'page': 3},
+            ));
+        verify(() => mockAnalyticsService.logEvent(
+              name: 'onboarding_page_viewed',
+              parameters: {'page': 0},
+            )).called(1);
+      });
+
       test('nextPage does not fire analytics directly', () {
         // First setPage to start tracking
         viewModel.setPage(0);

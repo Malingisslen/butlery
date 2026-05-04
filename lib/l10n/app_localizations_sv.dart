@@ -9835,6 +9835,13 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get llmTimeout => 'Förfrågan tog för lång tid. Försök igen.';
+
+  @override
+  String get llmTemporarilyUnavailable =>
+      'AI-tjänsten är tillfälligt otillgänglig. Försök igen om en stund.';
+
+  @override
   String get tiktokCouldNotFetchDescription =>
       'Kunde inte hämta videobeskrivningen. Ta en skärmbild av receptet.';
 

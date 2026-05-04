@@ -9810,6 +9810,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get llmTimeout => 'The request took too long. Please try again.';
+
+  @override
+  String get llmTemporarilyUnavailable =>
+      'The AI service is temporarily unavailable. Try again in a moment.';
+
+  @override
   String get tiktokCouldNotFetchDescription =>
       'Could not fetch the video description. Take a screenshot of the recipe.';
 

@@ -122,19 +122,22 @@ function looksOpaquePathSegment(segment: string): boolean {
 }
 
 /**
- * Strip query parameters, fragment, AND opaque path-embedded tracker IDs
- * from a URL. Returns the original string if it's not a valid URL.
+ * Strip query parameters AND opaque path-embedded tracker IDs from a URL.
+ * Returns the original string if it's not a valid URL.
  *
  * BUT-692: prior implementation only stripped `?utm_*=...` style query
  * strings, leaving path-embedded tokens (`/r/<sessionToken>/...`,
  * `/track/abc-123-XYZ.../...`) intact. Slugs are preserved; UUIDs and
  * long opaque tokens are replaced with `:redacted`.
+ *
+ * BUT-534: fragment identifiers (`#ingredienser`, `#method`) are recipe
+ * section anchors on many sites and are not transmitted to servers, so
+ * stripping them never gains privacy and only loses signal — preserve.
  */
 export function scrubUrlParams(url: string): string {
   try {
     const parsed = new URL(url);
     parsed.search = "";
-    parsed.hash = "";
     const segments = parsed.pathname
       .split("/")
       .map((s) => (looksOpaquePathSegment(s) ? ":redacted" : s));

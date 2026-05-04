@@ -48,6 +48,9 @@ class OnboardingViewModel extends ChangeNotifier {
   // recipe, so [completeOnboarding] can fire `onboarding_import_skipped`
   // when the user advances past the import page without importing.
   bool _onboardingImportSucceeded = false;
+  // BUT-538: per-session dedup so onboarding_page_viewed fires once per
+  // unique page. Back-nav and skip-jumps no longer inflate funnel drop-off.
+  final Set<int> _viewedPages = <int>{};
   late final AnalyticsService? _analytics =
       ServiceLocator.tryGet<AnalyticsService>();
 
@@ -93,6 +96,9 @@ class OnboardingViewModel extends ChangeNotifier {
   void setInitialPage(int page) {
     if (_currentPage == page) return;
     _currentPage = page;
+    // Mark resumed page as already viewed so a later setPage(page) doesn't
+    // re-fire onboarding_page_viewed when the user navigates back to it.
+    _viewedPages.add(page);
     notifyListeners();
   }
 
@@ -108,10 +114,12 @@ class OnboardingViewModel extends ChangeNotifier {
       _persistStepCompletion(_currentPage);
     }
     _currentPage = page;
-    _analytics?.logEvent(
-      name: AnalyticsEvents.onboardingPageViewed,
-      parameters: {'page': _currentPage},
-    );
+    if (_viewedPages.add(_currentPage)) {
+      _analytics?.logEvent(
+        name: AnalyticsEvents.onboardingPageViewed,
+        parameters: {'page': _currentPage},
+      );
+    }
     notifyListeners();
   }
 

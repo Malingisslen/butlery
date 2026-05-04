@@ -2260,3 +2260,30 @@ slot and inflate Cloud Logging size/cost. The rest of the diff is fine:
 
 Pattern for future LLM observability: enum-drift telemetry is fine; always
 bound the raw payload length even when the field is "supposed to be" small.
+
+### 2026-05-04 — `scrubUrlParams` fragment preservation has a transmission-path caveat (BUT-534)
+
+The BUT-534 change preserves URL fragments in both Dart (`pii_scrubber.dart:73`)
+and TS (`pii-scrubber.ts:137`) scrubbers, justified by "fragments aren't
+transmitted to servers" (RFC 3986 §3.5).
+
+That justification is correct ONLY for HTTP fetches. It is FALSE for the
+actual call paths:
+- `llm_service.dart:295` passes scrubbed URLs as JSON string fields to
+  `httpsCallable` — fragments travel verbatim to Cloud Functions, into
+  Cloud Logging (the threat model called out in `pii_scrubber.dart:3-6`),
+  and then interpolated into Gemini prompts at `structure-recipe.ts:199/203/211`.
+- Server-side `scrubUrlParams` output also feeds Vertex AI prompts.
+
+Residual mitigation: `_scrubValue` runs `scrubPii` AFTER `scrubUrlParams`
+(`pii_scrubber.dart:129`), so email/phone/personnummer in fragments are
+still caught. The gap is opaque tokens / SPA-router style fragments
+(`#token=...`, `#/user/123/recipe/456`).
+
+Rule: when reviewing scrubber changes, trace BOTH the URL-as-target path
+AND the URL-as-data-field path. The "fragments don't transmit" axiom
+applies only to the former.
+
+Proposed enhancement (not yet applied): split fragment content on `/` and
+`&`, run `_looksOpaquePathSegment` over each chunk — keeps `#ingredienser`
+intact while stripping opaque tokens. Parity required between Dart and TS.

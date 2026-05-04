@@ -101,6 +101,15 @@ abstract final class AnalyticsEvents {
   static const networkError = 'network_error';
   static const slowOperation = 'slow_operation';
   static const featureFlagEvaluated = 'feature_flag_evaluated';
+  // BUT-616: emitted when ParseEventLogger.logEvent's callable invocation
+  // fails, so we can measure parse-event loss rate. Params: error_code
+  // (Firebase Functions code or 'unknown'), cause (truncated message).
+  static const parseEventLogFailed = 'parse_event_log_failed';
+  // BUT-655: emitted from notification settings when a category toggle
+  // changes. Params: category (e.g. friend_request, comment, chat),
+  // enabled (bool).
+  static const notificationPreferenceChanged =
+      'notification_preference_changed';
 
   // --- Attribution / acquisition ---
   static const campaignClick = 'campaign_click';
