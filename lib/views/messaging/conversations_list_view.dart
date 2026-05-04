@@ -495,9 +495,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
       // Try friends list first, fall back to UserService for non-friend DM partners
-      final profile = friendsService.friends.firstWhereOrNull(
-            (f) => f.uid == otherParticipantId,
-          ) ??
+      final profile = friendsService.friendByUid(otherParticipantId) ??
           await ServiceLocator.get<UserService>()
               .getUserProfile(otherParticipantId);
 

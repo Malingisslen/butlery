@@ -41,6 +41,7 @@
 /// ```
 
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -164,6 +165,12 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   }
 
   List<UserProfile> get friends => _stateManager.friends;
+
+  /// Look up a friend by UID, or null if [uid] isn't in the friends list.
+  /// Centralizes the `friends.firstWhereOrNull` pattern that several
+  /// callers (push senders, deep-link resolvers) need.
+  UserProfile? friendByUid(String uid) =>
+      _stateManager.friends.firstWhereOrNull((f) => f.uid == uid);
   List<FriendRequest> get incomingRequests => _stateManager.incomingRequests;
   List<FriendRequest> get outgoingRequests => _stateManager.outgoingRequests;
   List<FriendCategory> get categoriesList => _stateManager.categories;

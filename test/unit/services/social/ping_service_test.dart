@@ -23,6 +23,8 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
+import '../../../helpers/user_profile_factory.dart';
+
 class _FakeFirestoreRepository extends Fake implements FirestoreRepository {
   final FakeFirebaseFirestore _fake;
   _FakeFirestoreRepository(this._fake);
@@ -51,17 +53,6 @@ class _FakePermissionService extends Fake implements PermissionService {
   bool get isAuthenticated => _uid != null;
 }
 
-UserProfile _profile(String uid, String displayName) {
-  final t = DateTime(2026, 1, 1);
-  return UserProfile(
-    uid: uid,
-    displayName: displayName,
-    email: '$uid@example.com',
-    joinedAt: t,
-    lastActiveAt: t,
-  );
-}
-
 class _FakeFriendsService extends Fake implements UnifiedFriendsService {
   List<FriendCategory> _categories = const [];
   List<UserProfile> _friends = const [];
@@ -74,11 +65,21 @@ class _FakeFriendsService extends Fake implements UnifiedFriendsService {
 
   @override
   List<UserProfile> get friends => List.unmodifiable(_friends);
+
+  @override
+  UserProfile? friendByUid(String uid) {
+    for (final f in _friends) {
+      if (f.uid == uid) return f;
+    }
+    return null;
+  }
 }
 
 /// Records FCM calls without actually sending — lets us assert push
-/// suppression during quiet hours.
-class _RecordingNotificationService extends Mock
+/// suppression during quiet hours. Tests never `when(...)` against this,
+/// so [Fake] (raise on unimplemented) is more honest than [Mock] (auto-stub
+/// to null).
+class _RecordingNotificationService extends Fake
     implements NotificationService {
   final List<List<String>> calls = [];
   // BUT-630: capture strategy + variables so tests can assert per-PingType
@@ -407,7 +408,8 @@ void main() {
   group('sender display name resolution (BUT-630)', () {
     test('resolves sender display name from UnifiedFriendsService.friends',
         () async {
-      friends.setFriends([_profile(ownerId, 'Anna Andersson')]);
+      friends.setFriends(
+          [testUserProfile(uid: ownerId, displayName: 'Anna Andersson')]);
 
       await service.sendPing(
         groupId: groupId,
@@ -438,7 +440,7 @@ void main() {
     });
 
     test('whitespace-only display name treated as missing', () async {
-      friends.setFriends([_profile(ownerId, '   ')]);
+      friends.setFriends([testUserProfile(uid: ownerId, displayName: '   ')]);
 
       await service.sendPing(
         groupId: groupId,

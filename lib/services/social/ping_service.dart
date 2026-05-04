@@ -257,10 +257,7 @@ class PingService extends BaseService with PermissionValidationMixin {
   }
 
   String _resolveSenderDisplayName(String uid) {
-    final profile = _friendsService.friends.firstWhereOrNull(
-      (f) => f.uid == uid,
-    );
-    final name = profile?.displayName.trim() ?? '';
+    final name = _friendsService.friendByUid(uid)?.displayName.trim() ?? '';
     // Fall back to the UID when the sender isn't a known friend — better
     // than a blank name. The recipient will at least see SOMETHING.
     return name.isEmpty ? uid : name;
