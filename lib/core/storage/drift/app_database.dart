@@ -145,14 +145,27 @@ LazyDatabase _openConnection() {
     return NativeDatabase(
       file,
       setup: (db) {
-        // Set the encryption key using SQLCipher PRAGMA via a parameterized
-        // statement so the key never enters the SQL text (avoids leaking it
-        // in crash reports / SQL traces and any quote-escape risk).
-        final stmt = db.prepare('PRAGMA key = ?');
-        try {
-          stmt.execute([encryptionKey]);
-        } finally {
-          stmt.dispose();
+        // SQLite PRAGMAs are parsed at compile time and do NOT support
+        // parameter binding (`PRAGMA key = ?` raises "syntax error near ?").
+        // Use the literal-string form. The encryption key is base64Url-encoded
+        // (alphabet `[A-Za-z0-9_-=]`), so it contains no characters that need
+        // SQL escaping — but we escape single quotes defensively in case the
+        // key generator ever changes format.
+        final escapedKey = encryptionKey.replaceAll("'", "''");
+        db.execute("PRAGMA key = '$escapedKey'");
+
+        // Verify SQLCipher is actually loaded (not stock SQLite). If
+        // libsqlcipher.so failed to load for the device ABI, the override
+        // silently falls back to stock sqlite3 and the database opens
+        // *unencrypted* — fail loudly here instead of silently degrading.
+        final cipherVersionRow = db.select('PRAGMA cipher_version').firstOrNull;
+        final cipherVersion = cipherVersionRow?.values.first?.toString() ?? '';
+        if (cipherVersion.isEmpty) {
+          throw StateError(
+            'SQLCipher library failed to load — database would open unencrypted. '
+            'Check that libsqlcipher.so is present in the APK for this device '
+            'ABI (run "unzip -l <apk> | grep libsqlcipher.so").',
+          );
         }
       },
     );
