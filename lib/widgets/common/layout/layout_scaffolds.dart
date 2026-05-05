@@ -13,6 +13,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_header.dart';
+import 'package:butlery/widgets/common/pwa_install_banner.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 
@@ -278,9 +279,18 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
           // Cmd/Ctrl+1-3 to the same index isn't deduped as a no-op.
           mainTabSwitchRequest.value = index;
         },
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: List.generate(3, _buildTab),
+        body: Column(
+          children: [
+            // Self-hides on non-web (stub returns canPromptInstall=false)
+            // and on web until the 3-session install-prompt heuristic fires.
+            const PwaInstallBanner(),
+            Expanded(
+              child: IndexedStack(
+                index: _selectedIndex,
+                children: List.generate(3, _buildTab),
+              ),
+            ),
+          ],
         ),
       ),
     );

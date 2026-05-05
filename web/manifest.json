@@ -66,5 +66,21 @@
             "type": "image/png",
             "purpose": "maskable"
         }
+    ],
+    "screenshots": [
+        {
+            "src": "icons/screenshot-narrow.png",
+            "sizes": "540x720",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Receptlistan i Butlery"
+        },
+        {
+            "src": "icons/screenshot-wide.png",
+            "sizes": "1024x600",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Veckomeny i Butlery"
+        }
     ]
 }
