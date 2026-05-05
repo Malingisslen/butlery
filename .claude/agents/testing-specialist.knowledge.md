@@ -1140,3 +1140,19 @@ Mock-vs-subject discipline check:
 
 Sprint approved with two follow-up items recommended (additionalData
 payload assertion + in-memory prefs-untouched negative).
+
+### 2026-05-05 — BUT-738 emitter extraction review [Pattern discovered]
+Reviewed Sprint K extraction of `RecipeEditAnalyticsEmitter` from
+`RecipePersistenceManager` (5 emitter tests, all green). No upstream test
+file referenced the manager's analytics behaviour, so nothing needed to
+move — `recipe_edited` / `post_import_edit` had no manager-level coverage
+before the extraction (decider tests existed but not for the orchestration
+layer). Pattern worth keeping: when extracting analytics emitters,
+`grep test/ recipe_edited|post_import_edit|<methodName>` first; if no
+hits, the emitter test is the new contract. `withClock(Clock.fixed(...))`
+is the right tool for synchronous emitters that read `clock.now()` —
+`fakeAsync` is only needed for time-elapsing async work (debounce, retry).
+The 5 cases here capture: (1) recipe_edited with non-empty diff, (2)
+no-sourceUrl gate, (3) within-window emit + tier_used forwarded, (4)
+outside-window gate, (5) tier_used omitted when null — that's the full
+behavioural contract; no implementation-detail asserts.

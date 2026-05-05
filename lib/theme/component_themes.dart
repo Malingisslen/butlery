@@ -67,6 +67,8 @@ class ComponentThemes {
       FeedbackThemes.sliderTheme(cs);
   static ProgressIndicatorThemeData progressIndicatorTheme(ColorScheme cs) =>
       FeedbackThemes.progressIndicatorTheme(cs);
+  static ScrollbarThemeData scrollbarTheme(ColorScheme cs) =>
+      FeedbackThemes.scrollbarTheme(cs);
 
   // Named styles (accept ColorScheme)
   static ButtonStyle primaryButtonStyle(ColorScheme cs) =>

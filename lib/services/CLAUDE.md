@@ -1,12 +1,29 @@
 # Services Layer
 
-Every service must extend `BaseService` from `lib/core/base/base_service.dart`:
+Most services extend `BaseService` from `lib/core/base/base_service.dart` (~98% adoption — 81 of 83 in lib/services/). New services should default to `BaseService` unless they fall into one of the documented exception categories below.
 
 ```dart
 class XxxService extends BaseService {
   @override
   String get serviceName => 'XxxService';
 ```
+
+## Documented non-adopters
+
+These services intentionally don't extend `BaseService` because they're pure-compute, ChangeNotifier-only, or 3rd-party wrappers without async Firebase ops:
+
+- `lib/services/feature_flags/feature_flag_service.dart`
+- `lib/services/device_integrity_service.dart`
+- `lib/services/cache/permission_cache_service.dart`
+- `lib/services/theme/seasonal_accent_service.dart`
+- `lib/services/theme_service.dart` (only ChangeNotifier — needs UI rebuild signal)
+- `lib/services/performance/firebase_performance_service.dart`
+- `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`
+- `lib/services/parsing/ner/onnx_ner_service.dart`
+- `lib/services/tagging/tag_resolution_service.dart`
+- `lib/services/monitoring/app_monitoring_service.dart`
+
+If a new service fits one of these patterns, document the reason inline and skip the `BaseService` extension. Otherwise, extend it.
 
 ## Rules
 - Use `executeServiceOperation()` for all async operations — no manual try/catch

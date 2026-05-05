@@ -1,121 +1,172 @@
 # Sprint Backlog
 
-## Sprint: dep hygiene + PWA polish + Linear cleanup — 2026-05-05 (J)
+## Sprint: tech-debt sweep + dep watch + web polish — 2026-05-05 (K)
 
-Theme: 4 implementations + 3 ticket-state cleanups. Security advisory subscriptions (BUT-519/524), bulk minor-version dep bump (BUT-500), PWA install UX (BUT-718). Plus closing BUT-437 (premise gone), rescoping BUT-431 + BUT-530 (plan-stale).
+Theme: 6 implementations + 1 ticket-state cleanup. Recipe model + viewmodel hygiene (BUT-526/738), CLAUDE.md doc fix (BUT-567), three dep-watch memory entries (BUT-562/564/578), web scrollbar theming (BUT-724). Plus rescoping BUT-581 (plan stale at scope-level).
 
 **In Progress carry-overs (NOT in this sprint):**
 - BUT-442 — repo migrations (own focused sprint).
 - BUT-760 — App Check enforcement; awaiting Firebase Console flip.
 
 **Step 0 verification — done:**
-- **BUT-519** fits — process-only. `pubspec.yaml` confirms `flutter_inappwebview: ^6.1.5` with four importers in `lib/` (web_scraper, recipe_site_content_extractor, instagram_content_extractor, social_platform_content_extractor). Need a tracked memory entry + Malin-action to subscribe via GitHub Watch.
-- **BUT-524** fits — process-only. `pubspec.yaml` confirms `freerasp: ^7.5.1`. `device_integrity_service.dart` is the call path. Same shape as BUT-519: memory entry + GitHub Watch instructions.
-- **BUT-500** fits — `flutter pub upgrade --tighten` is the entry. Verification pass: `flutter analyze --fatal-infos` + `flutter test` after the lockfile updates.
-- **BUT-718 PLAN STALE (most done)** — `web/manifest.json` already has Butlery name/short_name, forestGreen theme_color, maskable 192+512 icons, share_target, shortcuts, Swedish description. Remaining: `screenshots` field (richer install UI) + `beforeinstallprompt` JS hook in `web/index.html` for a custom install banner. Narrow rescope.
-- **BUT-437 PREMISE GONE** — `lib/core/observers/consent_aware_analytics_observer.dart` exists, wraps `FirebaseAnalyticsObserver`, and is registered at `lib/main.dart:898` (`if (_analyticsObserver != null) _analyticsObserver!`). Screen-view events fire on every route push when consent is granted. Likely shipped during the BUT-751 multi-listener consent gate work. → close as Done with evidence.
-- **BUT-431 PLAN STALE** — three of the four bullets in the ticket are done already. `Future.wait([Crashlytics, AppCheck])` parallel at `main.dart:177-191`; web probe moved into `FirestoreBootstrap.configure()` (commit 1e347b4); pre-cached theme read at `main.dart:215` (BUT-468). Remaining lever: split `_initializeModularSystem` into blocking (auth/consent/routing) vs post-first-frame (analytics/remote config) stages. That's its own focused refactor — not a sprint-slot task. Update ticket body to reflect what's left; leave in Backlog.
-- **BUT-530 PLAN STALE** — `lib/main.dart` is 1311 lines vs accepted 954 = +357 drift, not +63 as ticket claims. Bumping the accepted entry alone is sweep-under-rug; real fix is extraction (auth wrapper widget, observer wiring, theme/seasonal logic). Update ticket body to capture true drift + extraction hint; leave in Backlog.
+- **BUT-526** fits — `lib/models/recipe_unified.dart` is 1425 lines vs accepted 1257 (+168, +13%). Modest drift; accept-and-bump is appropriate (distinct from BUT-530's +37% main.dart case which warranted extraction). Document serialization-extraction as a future option in the entry note.
+- **BUT-738** fits — `lib/viewmodels/recipe_form/recipe_persistence_manager.dart` is 534 lines (ticket said 532, basically unchanged). `_logRecipeEdited` still around line 423; emits both `recipe_edited` and `post_import_edit` — extraction unblocks that and prevents drift past the 500-line ceiling.
+- **BUT-567** fits — pure doc update. The 10 non-adopters listed in the ticket all still exist in `lib/services/`. Update CLAUDE.md / mixin-advisor narrative to "98% with documented exceptions".
+- **BUT-562** fits — confirmed pre-1.0 deps in `pubspec.yaml`: `intl: ^0.20.2`, `rxdart: ^0.28.0`, `html: ^0.15.6`, `firebase_app_check: ^0.4.3`, `firebase_performance: ^0.11.3`. Memory entry tracking the watch list.
+- **BUT-564** fits — confirmed: `timeago: ^3.7.1`, `html_unescape: ^2.0.0`. Append to dependency watch memory entry.
+- **BUT-578** fits — confirmed: `cli_util: ^0.4.2`, `meta: ^1.16.0`. Append to dependency watch memory entry; no pubspec change today (premature tightening costs more than it's worth).
+- **BUT-724** fits — `lib/theme/app_theme.dart` has no `scrollbarTheme` configured (verified by grep). Add `ScrollbarThemeData` matching SQUARE design (`Radius.zero`) + forestGreen thumb at 60% alpha.
+- **BUT-581 PLAN STALE AT SCOPE** — actual count is 220 occurrences (not 150 or 203). Two competing extensions exist:
+  - `lib/core/extensions/default_value_extensions.dart:9` — `String orEmpty()` (method on `String?`)
+  - `lib/core/utils/validation_utils.dart:329` — `String get orEmpty` (getter on `String?`)
+  Naive codemod picking the wrong one breaks call sites silently. Needs a canonical-extension decision + dual-removal first. → update ticket body, leave in Backlog.
 
-### Agent A: Dependency hygiene (no Tier-2 code agent — pubspec only)
+### Agent A: Recipe model + viewmodel hygiene
 
-Specialists: `code-reviewer` if pub upgrade lands code-relevant changes (it shouldn't for a clean minor-only bump).
+Specialists: `code-reviewer` + `testing-specialist` (any .dart change).
 
-- [x] **A1. BUT-519 — Document flutter_inappwebview advisory-watch subscription** —
-  - **New file** `C:\Users\malla\.claude\projects\C--Butlery-butlery\memory\security_advisory_subscriptions.md`:
-    - Section "flutter_inappwebview" with: package version pin, importing files (4), GitHub repo URL (`pichillilorenzo/flutter_inappwebview`), Watch path ("Watch → Custom → Security alerts + Releases"), triage rule ("controlled outbound scraping only — no user-supplied URLs at present").
-  - Add `MEMORY.md` index entry: `- [Security Advisory Subscriptions](security_advisory_subscriptions.md) — flutter_inappwebview, freerasp watch list`.
-  - Per-Linear-comment: "Memory entry created at `security_advisory_subscriptions.md`. Manual GitHub Watch action documented for Malin." Then close as Done. (BUT-519)
+- [ ] **A1. BUT-526 — Accept recipe_unified.dart's modest size drift** —
+  - `docs/architecture/ACCEPTED_LARGE_FILES.md`: bump the `recipe_unified.dart` entry from 1257 to 1425. Add a one-line note: "Drift +168 from added fields/copyWith/serialization. Future: extract `recipe_unified_serialization.dart` if drift exceeds +25%."
+  - **No code change** — pure doc update.
+  - **Verification**: read the entry; confirm number matches `wc -l`.
+  - **Rationale for accept-vs-extract**: 13% drift is within "cohesive growth" range (BUT-530's main.dart was +37% which warranted extraction; this isn't). (BUT-526)
 
-- [x] **A2. BUT-524 — Document freerasp release-watch subscription** —
-  - Append "freerasp" section to `memory/security_advisory_subscriptions.md` (created in A1) with: pin (`^7.5.1`), call site (`device_integrity_service.dart`), GitHub repo URL (`talsec/Free-RASP-Community`), Watch path (Releases + Security), pub.dev notification toggle URL pattern, regression test ("re-test `device_integrity_service` on Android + iOS after each minor").
-  - Per-Linear-comment + close as Done. (BUT-524)
+- [ ] **A2. BUT-738 — Extract `RecipeEditAnalyticsEmitter` from `RecipePersistenceManager`** —
+  - **New file** `lib/services/analytics/recipe_edit_analytics_emitter.dart`:
+    ```dart
+    /// Emits recipe-edit analytics events (recipe_edited + post_import_edit)
+    /// from a single diff input. Extracted from RecipePersistenceManager so
+    /// the manager only coordinates persistence; analytics is the emitter's
+    /// sole responsibility.
+    library;
 
-- [x] **A3. BUT-500 — Bulk minor-version dependency bump via `pub upgrade --tighten`** —
-  - Run `flutter pub upgrade --tighten` from repo root.
-  - Diff `pubspec.lock` and `pubspec.yaml`; capture summary in commit message body (top 10 bumps).
-  - Run `flutter analyze --fatal-infos`. If any deprecation warnings surface, fix them inline.
-  - Run `flutter test test/unit/` (sample) and one integration test. If anything regresses → bisect by reverting `firebase_*` family first, then platform plugins, then app deps.
-  - **If a dep refuses to tighten** (e.g. caret floor blocks a minor): leave it on the older minor and note in commit message ("could not tighten X — Y constraint").
-  - **Out of scope**: major-version bumps (those need their own ADR per dep). (BUT-500)
+    import 'package:butlery/models/recipe_unified.dart';
+    import 'package:butlery/models/parsing/parsed_recipe_metadata.dart';
+    import 'package:butlery/services/analytics/analytics_events.dart';
+    import 'package:butlery/services/analytics/post_import_edit_decider.dart';
+    import 'package:butlery/services/analytics_service.dart';
+    import 'package:butlery/services/analytics/recipe_field_diff.dart';
 
-### Agent B: Web/PWA polish
+    class RecipeEditAnalyticsEmitter {
+      final AnalyticsService analytics;
+      final PostImportEditDecider decider;
+      final int postImportWindowDays;
 
-Specialists: `code-reviewer` if `web/index.html` JS changes; `firebase-backend-security` not needed (no Firebase touch).
+      RecipeEditAnalyticsEmitter({
+        required this.analytics,
+        required this.decider,
+        this.postImportWindowDays = 14,
+      });
 
-- [x] **B1. BUT-718 (rescoped) — PWA install prompt + manifest screenshots** —
-  - `web/manifest.json`:
-    - Add a `screenshots` array with at least 1 entry per form factor:
-      ```json
-      "screenshots": [
-        {
-          "src": "icons/screenshot-narrow-540x720.png",
-          "sizes": "540x720",
-          "type": "image/png",
-          "form_factor": "narrow",
-          "label": "Receptlistan i Butlery"
-        },
-        {
-          "src": "icons/screenshot-wide-1024x600.png",
-          "sizes": "1024x600",
-          "type": "image/png",
-          "form_factor": "wide",
-          "label": "Veckomeny i Butlery"
+      Future<void> emit({
+        required Recipe before,
+        required Recipe after,
+        required ParsedRecipeMetadata? originalParsedMetadata,
+      }) async {
+        final fieldsChanged = diffRecipeFields(before, after);
+        // recipe_edited (existing event)
+        await analytics.logEvent(
+          name: AnalyticsEvents.recipeEdited,
+          parameters: {
+            'fields_changed_count': fieldsChanged.length,
+            'fields_changed': fieldsChanged.join(','),
+          },
+        );
+        // post_import_edit (BUT-569)
+        final outcome = decider.decide(
+          recipeAfter: after,
+          fieldsChanged: fieldsChanged,
+          originalParsedMetadata: originalParsedMetadata,
+          windowDays: postImportWindowDays,
+        );
+        if (outcome != null) {
+          await analytics.logEvent(
+            name: AnalyticsEvents.postImportEdit,
+            parameters: outcome.toAnalyticsParams(),
+          );
         }
-      ]
-      ```
-    - **Note**: actual screenshot PNGs may not exist yet. If `web/icons/` lacks them, leave the field referencing the files but flag in commit message that screenshot assets are TODO (icons live separately; this PR only updates manifest). PWA installability is unblocked the moment the assets land.
-  - `web/index.html`:
-    - Add a `<script>` block before `</body>` that listens for `beforeinstallprompt`, stashes the deferred event on `window`, and shows a Swedish-localized "Installera Butlery" button (hidden by default, revealed on event). Click handler triggers `event.prompt()` then awaits `userChoice`.
-    - Keep the script defensively guarded (`if ('BeforeInstallPromptEvent' in window || ...)`); Safari ignores this event entirely, which is fine.
-    - Use a single inline `<script>` rather than an external file — no build pipeline for `web/` JS today.
-  - **Verification**: `flutter build web --release` produces a valid manifest; Chrome DevTools "Application → Manifest" panel shows green check on installability (modulo the screenshot-asset TODO).
-  - No Flutter test (HTML/manifest are static). (BUT-718)
+      }
+    }
+    ```
+    **Note**: actual signatures depend on the existing `_logRecipeEdited` body — Step-1 of implementation reads `recipe_persistence_manager.dart` lines 423-442 and replicates the existing parameter shape exactly. Don't speculate; copy.
+  - `lib/viewmodels/recipe_form/recipe_persistence_manager.dart`:
+    - Add `RecipeEditAnalyticsEmitter` field, instantiate in constructor (or read via `ServiceLocator.get` if pattern matches surrounding services).
+    - Replace `_logRecipeEdited` body with a single `await _editEmitter.emit(...)` call.
+  - Tests:
+    - **New** `test/unit/services/analytics/recipe_edit_analytics_emitter_test.dart` — covers: emits `recipe_edited` with fields-changed count; emits `post_import_edit` only when decider returns non-null; passes correct params through.
+    - **Update** `test/unit/viewmodels/recipe_form/recipe_persistence_manager_test.dart` — analytics assertions move to the emitter test; manager test stubs the emitter and asserts it's called once with the expected `before/after/originalParsedMetadata` triple.
+  - **Verification**: `flutter analyze --fatal-infos` clean; both test files pass; `recipe_persistence_manager.dart` line count drops below 500.
+  - (BUT-738)
 
-### Agent C: Linear ticket cleanups (no code, ticket-state only)
+### Agent B: CLAUDE.md narrative fix (no Tier-2 specialist — doc only)
 
-- [x] **C1. BUT-437 — close as Done (premise gone)** — comment with evidence:
-  - `lib/core/observers/consent_aware_analytics_observer.dart` (full file) wraps `FirebaseAnalyticsObserver`.
-  - Registered at `lib/main.dart:898` inside the `observers` list passed to `MaterialApp.navigatorObservers`.
-  - `FirebaseAnalyticsObserver` natively emits `screen_view` on every route push; the wrapper only gates by consent. So screen-view instrumentation IS in place — the analysis report's "G2 finding" predates the observer.
-  - Transition state to **Done**.
+- [ ] **B1. BUT-567 — Update BaseService narrative to "98% with exceptions"** —
+  - Find the BaseService claim in `CLAUDE.md` and/or `.claude/skills/mixin-advisor/SKILL.md` (grep first).
+  - Update wording from "100% target / all services extend BaseService" → "~98% adoption (81/83). ~10 services legitimately don't adopt because they're pure-compute or 3rd-party wrappers without async Firebase ops".
+  - List the legitimate non-adopters in a bullet block:
+    - `lib/services/feature_flags/feature_flag_service.dart`
+    - `lib/services/device_integrity_service.dart`
+    - `lib/services/cache/permission_cache_service.dart`
+    - `lib/services/theme/seasonal_accent_service.dart`
+    - `lib/services/theme_service.dart` (only ChangeNotifier)
+    - `lib/services/performance/firebase_performance_service.dart`
+    - `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`
+    - `lib/services/parsing/ner/onnx_ner_service.dart`
+    - `lib/services/tagging/tag_resolution_service.dart`
+    - `lib/services/monitoring/app_monitoring_service.dart`
+  - **Verification**: re-read the updated narrative; verify the listed paths still exist.
+  - (BUT-567)
 
-- [x] **C2. BUT-431 — rescope ticket body** — update Linear ticket description to reflect what remains. Keep in Backlog. New body:
+### Agent C: Dependency watch memory entry (process-only, like sprint J's BUT-519/524)
+
+- [ ] **C1. BUT-562 + C2. BUT-564 + C3. BUT-578 — Bundled dep-watch memory entry** —
+  - **New file** `C:\Users\malla\.claude\projects\C--Butlery-butlery\memory\dependency_watch_list.md`:
+    - Section "Pre-1.0 milestone watch (BUT-562)" — list `intl ^0.20.2`, `rxdart ^0.28.0`, `html ^0.15.6`, `firebase_app_check ^0.4.3`, `firebase_performance ^0.11.3`. Re-check quarterly. Note: firebase_app_check + firebase_performance graduate with the next Firebase BOM major.
+    - Section "Dormancy watch (BUT-564)" — `timeago ^3.7.1`, `html_unescape ^2.0.0`. Quarterly pub-points re-check; replacement candidates documented (`timeago` → inline ~30-line Swedish helper; `html_unescape` → use `package:html`'s built-in unescape).
+    - Section "Conditional dev-dep tightening (BUT-578)" — `cli_util ^0.4.2`, `meta ^1.16.0`. Do nothing today; tighten only if a future analyzer regression traces back to one of them.
+  - Add `MEMORY.md` index entry: `- [Dependency Watch List](dependency_watch_list.md) — pre-1.0 milestones, dormancy watch, conditional dev-dep pin tightening`.
+  - Per-Linear-comment + close all three (BUT-562, BUT-564, BUT-578) as Done.
+
+### Agent D: Web scrollbar theming (small UI win)
+
+Specialists: `code-reviewer` (any .dart change). UI-only theme change — no logic.
+
+- [ ] **D1. BUT-724 — Theme web scrollbars to match SQUARE/forestGreen palette** —
+  - `lib/theme/app_theme.dart`:
+    - Add `scrollbarTheme: const ScrollbarThemeData(...)` to BOTH light and dark theme builders.
+    - Settings: `thickness: WidgetStateProperty.all(8)`, `thumbColor: WidgetStateProperty.resolveWith((states) => Color(0x994A7C59))` (forestGreen at ~60% alpha; resolve from the live `ButleryColors` if accessible without breaking const), `radius: Radius.zero` (SQUARE design), `thumbVisibility: WidgetStateProperty.all(true)` for desktop browsers.
+    - **Note**: if `scrollbarTheme` requires non-const because of Color resolution from theme tokens, drop the `const` — use a static getter that returns a fresh instance from `ButleryColors.forestGreen.withValues(alpha: 0.6)`.
+  - **Verification**: `flutter analyze --fatal-infos` clean; manual verify in `flutter run -d chrome` that scrollbar shows green with sharp corners.
+  - **Out of scope**: per-view custom Scrollbar wrappers (centralized theme covers everything that uses `Scrollbar` natively, which is all stock scrolling widgets).
+  - (BUT-724)
+
+### Linear cleanup (no code, ticket-state only)
+
+- [ ] **E1. BUT-581 — rescope ticket body** — update Linear description to capture the dual-extension finding. Stay in Backlog. New body:
   ```
-  Original four-bullet plan partially shipped:
-  - ✅ Crashlytics + AppCheck parallel via Future.wait (main.dart:177-191).
-  - ✅ Web health probe gated behind kIsWeb + 5s timeout, moved into FirestoreBootstrap (commit 1e347b424).
-  - ✅ Pre-cached theme read avoids first-frame flash (main.dart:215, BUT-468).
-  - ❌ DI bootstrap split into blocking vs post-first-frame stages — NOT DONE.
+  Real count: 220 occurrences of `?? ''` across lib/ (verified 2026-05-05). Original ticket said 150/203 — both stale.
 
-  Remaining work: refactor `_initializeModularSystem` (main.dart) into two phases:
-    Phase A (pre-runApp, blocking): platform_stage + core_stage + content_stage + ui_stage minimum subset (auth, consent, routing, theme).
-    Phase B (post-first-frame): social_stage + tagging_module + search_module + pantry_module + analytics + remote-config sync.
-  Use a `WidgetsBinding.instance.addPostFrameCallback` to kick Phase B once the first frame paints.
+  Two competing `.orEmpty` extensions exist; pick canonical before codemod:
+  - `lib/core/extensions/default_value_extensions.dart:9` — `String orEmpty()` (method on `String?`).
+  - `lib/core/utils/validation_utils.dart:329` — `String get orEmpty` (getter on `String?`, delegates to `ValidationUtils.safeString`).
 
-  Effort: ~1 day for the split + tests. Risk: medium — race conditions if a Phase-B service is read before Phase B completes; need an `await container.ready()` in any view that touches a Phase-B service.
-  ```
+  Naive find-replace `?? ''` → `.orEmpty()` would silently bind to whichever extension is in scope at each call site, including the getter that drops trailing whitespace via `safeString`. That's a behavior change, not a refactor.
 
-- [x] **C3. BUT-530 — rescope ticket body** — actual drift is +357 lines (1311 vs accepted 954), not +63. Update Linear ticket description:
-  ```
-  Real drift: lib/main.dart is 1311 lines vs accepted 954 (+357, +37%). Original ticket undercounted by 5x.
+  Sequenced fix:
+  1. Pick one canonical (default_value_extensions.dart's method form preferred — pure pass-through, no ValidationUtils dependency).
+  2. Migrate the loser's call sites to the canonical, delete the loser.
+  3. Codemod `?? ''` → `.orEmpty()` (220 sites; chunk by ~30 per agent batch per memory/feedback_agent_timeout.md).
 
-  This is no longer a 30-min "bump the accepted entry" task. Recommended split:
-  1. Extract `lib/widgets/app/butlery_app.dart` — the `ButleryApp` StatefulWidget + `_ButleryAppState` (currently lines ~245-1100, the bulk of the file).
-  2. Extract `lib/core/observers/observer_registry.dart` — the navigator-observer construction logic from `_ButleryAppState` (~50 lines).
-  3. Move bootstrap orchestration (`_initializeModularSystem`) into a top-level helper in `lib/core/bootstrap/`.
-  4. Target: main.dart back to <300 lines (entry-point only).
-
-  Connects to BUT-431 (DI bootstrap split) — both touch main.dart; bundle into one focused refactor sprint.
+  Effort: 4-6h sequenced (1h step 1, 1h step 2, 2-4h step 3).
   ```
 
 ### Post-Sprint Steps
 - [ ] `dart analyze --fatal-infos` — 0 issues
-- [ ] `flutter test test/unit/` (sample to verify pub-upgrade didn't regress unit tests)
-- [ ] Tier-2 specialist gates: `code-reviewer` only if A3 produces .dart code changes (deprecation fixes); skip otherwise (manifest + memory file aren't .dart)
+- [ ] Affected unit tests: `recipe_edit_analytics_emitter_test`, `recipe_persistence_manager_test`
+- [ ] Tier-2 specialist gates: `code-reviewer` (A2 + D1 are .dart changes), `testing-specialist` (A2 lib/ change)
 - [ ] Commit, push to main
 - [ ] CI watcher monitors green
-- [ ] Update Linear: BUT-519/524/500/718/437 → Done; BUT-431 + BUT-530 stay in Backlog with rescoped descriptions
+- [ ] Update Linear: BUT-526/738/567/562/564/578/724 → Done; BUT-581 stays in Backlog with rescoped description
 
 ### Continued blockers (NOT in scope per memory)
 - BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
@@ -138,22 +189,27 @@ Specialists: `code-reviewer` if `web/index.html` JS changes; `firebase-backend-s
 - BUT-453 / BUT-454 — auth/session security (own sprint with product-design input)
 - BUT-488 — pubspec auto-bump CI workflow (3h, intricate; standalone)
 - BUT-704 — i18n @key ARB descriptions (2-day sweep)
-- BUT-520 — VM-migration sweep (rescoped sprint I; runs as own multi-sprint effort)
-- BUT-431 / BUT-530 — main.dart bootstrap split + extraction (rescoped this sprint; runs as own focused refactor)
+- BUT-520 — VM-migration sweep (rescoped sprint I)
+- BUT-431 / BUT-530 — main.dart bootstrap split + extraction (rescoped sprint J)
+- BUT-581 — `?? ''` migration (rescoped this sprint; sequenced 4-6h effort)
+- BUT-610 — offline-mode hardening (multi-day audit)
+- BUT-723 — tablet master-detail layouts (multi-day refactor)
 - All `idea`-labeled monetization scaffolding — post-beta
 
 ### What this means in plain language
-- **Two tiny "process" tickets**: we add a memory note so we don't forget to subscribe to security alerts for two libraries that touch sensitive parts of the app (the in-app browser used for recipe scraping, and the integrity check that runs on phones). The actual GitHub-subscribe step is something Malin clicks once in a browser; the memory file records what to subscribe to and why.
-- **Bulk dependency refresh**: `flutter pub upgrade --tighten` pulls the latest *minor* versions of ~40 libraries (no breaking changes, by semver). One command. We then run the test suite to make sure nothing broke. If something does break, we revert the offending family and ship the rest. Low risk — minor bumps are routine.
-- **PWA install button**: today the web version of Butlery doesn't show the "Install" prompt cleanly because the app's manifest is missing screenshots and the page has no listener for the install event. After this sprint, Chrome/Edge users on the web get a proper install button in Swedish ("Installera Butlery"). Low risk — purely additive.
-- **Three ticket-state cleanups in Linear**:
-  - One ticket (analytics screen-views) was actually already done — closing it.
-  - Two tickets (cold-start refactor + main.dart size) had outdated descriptions — updating their bodies to reflect the real remaining work, so the next sprint that picks them up doesn't waste time on already-shipped pieces or undersized estimates. They stay in the backlog.
-- **Risk**: low overall. Memory entries and ticket cleanups are cost-free. PWA changes touch only static `web/` files (no Flutter code). The dep bump is the only piece that *could* surface a regression — backed by tests and easy to revert per family.
+- **Cleaner code, less mess**: One file in the recipe save flow has been doing too many jobs (saving + tracking what users edit + measuring how the parser did). We move the "tracking what users edit" piece into its own focused service. Same behavior, easier to test, and prevents the file from getting unwieldy. Also: a doc file (the project's "we follow these patterns" guide) had a stale claim — fixing the wording so the next contributor reads accurate facts.
+- **Web scrollbar polish**: today the web app uses default OS scrollbars (gray, rounded). After this sprint, they'll be forest-green with sharp corners — matching the rest of the app's design.
+- **Three "process" tickets bundled together**: same shape as last sprint's BUT-519/524 — we add a memory note tracking five libraries that haven't hit version 1.0 yet, two libraries that look unmaintained, and two dev-only utilities that we should pin tighter only IF we ever see analyzer flakiness. No code changes; just a watch list so we don't forget to re-check them.
+- **One ticket cleanup**: a code-cleanup ticket (the `?? ''` → `.orEmpty()` migration) turned out to be sneakier than its description claimed — there are two competing extensions in the codebase, so a naive find-replace would silently change behavior. Updating the ticket so the next sprint that picks it up does it in the right order.
+- **Risk**: very low. The recipe-edit refactor preserves identical analytics output (same events, same params); the doc/memory/scrollbar changes are pure additions. Easy to revert per item.
 
 ---
 
-## Archived prior sprint (completed in commit 1e347b424)
+## Archived prior sprint (completed in commit 245b71478 + a5288014f)
+
+Dep hygiene + PWA polish + Linear cleanup — 2026-05-05 (J) — shipped BUT-500/519/524/718 + closed BUT-437 (premise gone) + rescoped BUT-431/530. Plus follow-up CI fix allowlisting `firestore_bootstrap.dart` in the architecture test.
+
+## Archived sprint before (completed in commit 1e347b424)
 
 Backend hygiene + auth security micro-hardening — 2026-05-04 (I) — shipped BUT-446/506/465/490 + closed BUT-716 (premise gone) + rescoped BUT-520. See git log for full task breakdown.
 
@@ -168,7 +224,3 @@ Backend perf + observability hardening — 2026-05-04 (G) — shipped BUT-482/48
 ## Archived sprint before (completed in commit 4fc17758e + d9cb88acf)
 
 Parsing/social tech-debt + dependency hygiene — 2026-05-04 (F) — shipped BUT-700/682/676/631/630/513/529 + BUT-698 closed as Duplicate. See git log for full task breakdown.
-
-## Archived sprint before (completed in commit 75873d1e1)
-
-Pre-beta moderation + anti-spam + UGC compliance — 2026-05-04 (E) — shipped BUT-537/544/649/651/654/659. See git log for full task breakdown.

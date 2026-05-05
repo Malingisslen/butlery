@@ -72,6 +72,7 @@ class AppTheme {
       sliderTheme: ComponentThemes.sliderTheme(colorScheme),
       progressIndicatorTheme:
           ComponentThemes.progressIndicatorTheme(colorScheme),
+      scrollbarTheme: ComponentThemes.scrollbarTheme(colorScheme),
 
       scaffoldBackgroundColor: colorScheme.surface,
 

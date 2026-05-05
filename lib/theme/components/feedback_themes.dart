@@ -110,4 +110,19 @@ class FeedbackThemes {
       circularTrackColor: cs.outlineVariant,
     );
   }
+
+  /// Scrollbar theme — desktop browsers + macOS/Windows. SQUARE design
+  /// (no corner radius), forestGreen thumb at 60% alpha, always visible
+  /// on web/desktop so users discover scrollable regions without hover.
+  static ScrollbarThemeData scrollbarTheme(ColorScheme cs) {
+    return ScrollbarThemeData(
+      thickness: const WidgetStatePropertyAll<double>(8),
+      thumbColor: WidgetStatePropertyAll<Color>(
+        cs.primary.withValues(alpha: 0.6),
+      ),
+      radius: Radius.zero,
+      thumbVisibility: const WidgetStatePropertyAll<bool>(true),
+      trackVisibility: const WidgetStatePropertyAll<bool>(false),
+    );
+  }
 }
