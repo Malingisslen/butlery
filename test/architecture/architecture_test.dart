@@ -87,6 +87,14 @@ void main() {
           continue;
         }
 
+        // Skip the Firestore bootstrap helper extracted from main.dart. Its
+        // whole purpose is to configure FirebaseFirestore.instance and
+        // recover from IndexedDB corruption on web — touching the singleton
+        // is the contract, not a violation. Tests pass an injected instance.
+        if (path.endsWith('lib/core/bootstrap/firestore_bootstrap.dart')) {
+          continue;
+        }
+
         // Skip sync managers that use fallback injection pattern
         if (path.contains('sync_manager')) {
           continue;
