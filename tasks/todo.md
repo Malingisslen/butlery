@@ -1,172 +1,88 @@
 # Sprint Backlog
 
-## Sprint: tech-debt sweep + dep watch + web polish — 2026-05-05 (K)
+## Sprint: release polish + ops doc + Linear reconciliation — 2026-05-05 (L)
 
-Theme: 6 implementations + 1 ticket-state cleanup. Recipe model + viewmodel hygiene (BUT-526/738), CLAUDE.md doc fix (BUT-567), three dep-watch memory entries (BUT-562/564/578), web scrollbar theming (BUT-724). Plus rescoping BUT-581 (plan stale at scope-level).
+Theme: 2 small ship-able items + 1 reconciliation pass + 1 ticket rescope. After sprint K shipped 7 tickets, the picks here are deliberately light — most of the remaining backlog is in declared "own sprint" clusters (auth/security, deploy pipeline, repo discipline, Dart-SDK bump, large-file decompose, button system, A/B infra). This sprint takes the unblocked one-off polish items.
 
-**In Progress carry-overs (NOT in this sprint):**
-- BUT-442 — repo migrations (own focused sprint).
-- BUT-760 — App Check enforcement; awaiting Firebase Console flip.
+**In Progress carry-overs (NOT in this sprint, NOT shipped):**
+- BUT-442 — repo migrations (own focused sprint, mid-flight)
+- BUT-760 — App Check enforcement; awaiting Firebase Console flip
+
+**Linear-state cleanup (E1–E2):** BUT-738 and BUT-724 shipped in commit `25ec5b025` but Linear still shows them as "In Progress". Move to Done.
 
 **Step 0 verification — done:**
-- **BUT-526** fits — `lib/models/recipe_unified.dart` is 1425 lines vs accepted 1257 (+168, +13%). Modest drift; accept-and-bump is appropriate (distinct from BUT-530's +37% main.dart case which warranted extraction). Document serialization-extraction as a future option in the entry note.
-- **BUT-738** fits — `lib/viewmodels/recipe_form/recipe_persistence_manager.dart` is 534 lines (ticket said 532, basically unchanged). `_logRecipeEdited` still around line 423; emits both `recipe_edited` and `post_import_edit` — extraction unblocks that and prevents drift past the 500-line ceiling.
-- **BUT-567** fits — pure doc update. The 10 non-adopters listed in the ticket all still exist in `lib/services/`. Update CLAUDE.md / mixin-advisor narrative to "98% with documented exceptions".
-- **BUT-562** fits — confirmed pre-1.0 deps in `pubspec.yaml`: `intl: ^0.20.2`, `rxdart: ^0.28.0`, `html: ^0.15.6`, `firebase_app_check: ^0.4.3`, `firebase_performance: ^0.11.3`. Memory entry tracking the watch list.
-- **BUT-564** fits — confirmed: `timeago: ^3.7.1`, `html_unescape: ^2.0.0`. Append to dependency watch memory entry.
-- **BUT-578** fits — confirmed: `cli_util: ^0.4.2`, `meta: ^1.16.0`. Append to dependency watch memory entry; no pubspec change today (premature tightening costs more than it's worth).
-- **BUT-724** fits — `lib/theme/app_theme.dart` has no `scrollbarTheme` configured (verified by grep). Add `ScrollbarThemeData` matching SQUARE design (`Radius.zero`) + forestGreen thumb at 60% alpha.
-- **BUT-581 PLAN STALE AT SCOPE** — actual count is 220 occurrences (not 150 or 203). Two competing extensions exist:
-  - `lib/core/extensions/default_value_extensions.dart:9` — `String orEmpty()` (method on `String?`)
-  - `lib/core/utils/validation_utils.dart:329` — `String get orEmpty` (getter on `String?`)
-  Naive codemod picking the wrong one breaks call sites silently. Needs a canonical-extension decision + dual-removal first. → update ticket body, leave in Backlog.
+- **BUT-715** fits — `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` has only background+foreground; no `<monochrome>` layer. The existing `drawable/ic_launcher_foreground.xml` is a vector with named paths (fork, knife, plate-circle, inner-plate). Generating a monochrome variant is mechanical — same paths, force `#FFFFFF`, drop the alpha variants (Android tints the monochrome layer from the wallpaper, so reducing visual richness is preferred).
+- **BUT-493** fits — `docs/operations/RELEASE_POLICY.md` does not exist. Pure doc add. Cite related tickets BUT-420 (Fastlane), BUT-449 (web error tracking) as expected dependencies for the policy to become operational.
+- **BUT-702 PLAN STALE** — recipe delete **already has undo wired** at `lib/views/mina_recept_view.dart:565-577` via `SnackBarUtils.showSuccessWithAction(context, recipeDeleted, actionLabel: commonUndo, onAction: undoDeleteById, duration: 5s)`. The ticket's "wire to recipe delete first" prescription is stale. Rescope the ticket body to focus on the remaining surfaces (group leave/delete, friend remove, shopping-list clear) and leave in Backlog. No code in this sprint.
 
-### Agent A: Recipe model + viewmodel hygiene
+### Reconciliation: Linear ticket states (no code)
 
-Specialists: `code-reviewer` + `testing-specialist` (any .dart change).
+- [ ] **E1. BUT-738 → Done** — shipped in commit `25ec5b025`. Comment with commit SHA, transition state to Done.
+- [ ] **E2. BUT-724 → Done** — shipped in commit `25ec5b025`. Comment with commit SHA, transition state to Done.
 
-- [ ] **A1. BUT-526 — Accept recipe_unified.dart's modest size drift** —
-  - `docs/architecture/ACCEPTED_LARGE_FILES.md`: bump the `recipe_unified.dart` entry from 1257 to 1425. Add a one-line note: "Drift +168 from added fields/copyWith/serialization. Future: extract `recipe_unified_serialization.dart` if drift exceeds +25%."
-  - **No code change** — pure doc update.
-  - **Verification**: read the entry; confirm number matches `wc -l`.
-  - **Rationale for accept-vs-extract**: 13% drift is within "cohesive growth" range (BUT-530's main.dart was +37% which warranted extraction; this isn't). (BUT-526)
+### Agent A: Release polish — Android monochrome icon
 
-- [ ] **A2. BUT-738 — Extract `RecipeEditAnalyticsEmitter` from `RecipePersistenceManager`** —
-  - **New file** `lib/services/analytics/recipe_edit_analytics_emitter.dart`:
-    ```dart
-    /// Emits recipe-edit analytics events (recipe_edited + post_import_edit)
-    /// from a single diff input. Extracted from RecipePersistenceManager so
-    /// the manager only coordinates persistence; analytics is the emitter's
-    /// sole responsibility.
-    library;
+Specialists: none required (no `.dart` change, only Android resource files).
 
-    import 'package:butlery/models/recipe_unified.dart';
-    import 'package:butlery/models/parsing/parsed_recipe_metadata.dart';
-    import 'package:butlery/services/analytics/analytics_events.dart';
-    import 'package:butlery/services/analytics/post_import_edit_decider.dart';
-    import 'package:butlery/services/analytics_service.dart';
-    import 'package:butlery/services/analytics/recipe_field_diff.dart';
+- [ ] **A1. BUT-715 — Add adaptive icon monochrome layer for themed icons (Android 13+)**
+  - **New file** `android/app/src/main/res/drawable/ic_launcher_monochrome.xml`:
+    - Same vector boilerplate as `ic_launcher_foreground.xml` (108×108 viewport, centered 72dp safe zone via `<group translateX="18" translateY="18">`).
+    - Same fork + knife + plate-circle + inner-plate paths.
+    - Replace all `android:fillColor="#FFFFFF"` (the rule body of all four paths) with `android:fillColor="#FFFFFFFF"` (fully opaque — Android tints from wallpaper).
+    - **Drop the `android:fillAlpha` attributes** on plate-circle and inner-plate. The monochrome layer is rendered as a single tinted shape; alpha gradations look muddy under wallpaper tinting. Solid silhouette reads better.
+  - **Edit** `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`:
+    - Add `<monochrome android:drawable="@drawable/ic_launcher_monochrome"/>` inside `<adaptive-icon>` (after `<foreground>`).
+  - **Verification**: visually inspect that monochrome XML parses (XML well-formed, vector valid). Optional `flutter build apk --debug` smoke check that the resource compiles. No analyzer step (no Dart change).
+  - **Out of scope**: regenerating PNG fallbacks for older Android versions — monochrome is API-31+ only and falls back transparently to the existing foreground on older devices.
+  - (BUT-715)
 
-    class RecipeEditAnalyticsEmitter {
-      final AnalyticsService analytics;
-      final PostImportEditDecider decider;
-      final int postImportWindowDays;
+### Agent B: Ops documentation
 
-      RecipeEditAnalyticsEmitter({
-        required this.analytics,
-        required this.decider,
-        this.postImportWindowDays = 14,
-      });
-
-      Future<void> emit({
-        required Recipe before,
-        required Recipe after,
-        required ParsedRecipeMetadata? originalParsedMetadata,
-      }) async {
-        final fieldsChanged = diffRecipeFields(before, after);
-        // recipe_edited (existing event)
-        await analytics.logEvent(
-          name: AnalyticsEvents.recipeEdited,
-          parameters: {
-            'fields_changed_count': fieldsChanged.length,
-            'fields_changed': fieldsChanged.join(','),
-          },
-        );
-        // post_import_edit (BUT-569)
-        final outcome = decider.decide(
-          recipeAfter: after,
-          fieldsChanged: fieldsChanged,
-          originalParsedMetadata: originalParsedMetadata,
-          windowDays: postImportWindowDays,
-        );
-        if (outcome != null) {
-          await analytics.logEvent(
-            name: AnalyticsEvents.postImportEdit,
-            parameters: outcome.toAnalyticsParams(),
-          );
-        }
-      }
-    }
-    ```
-    **Note**: actual signatures depend on the existing `_logRecipeEdited` body — Step-1 of implementation reads `recipe_persistence_manager.dart` lines 423-442 and replicates the existing parameter shape exactly. Don't speculate; copy.
-  - `lib/viewmodels/recipe_form/recipe_persistence_manager.dart`:
-    - Add `RecipeEditAnalyticsEmitter` field, instantiate in constructor (or read via `ServiceLocator.get` if pattern matches surrounding services).
-    - Replace `_logRecipeEdited` body with a single `await _editEmitter.emit(...)` call.
-  - Tests:
-    - **New** `test/unit/services/analytics/recipe_edit_analytics_emitter_test.dart` — covers: emits `recipe_edited` with fields-changed count; emits `post_import_edit` only when decider returns non-null; passes correct params through.
-    - **Update** `test/unit/viewmodels/recipe_form/recipe_persistence_manager_test.dart` — analytics assertions move to the emitter test; manager test stubs the emitter and asserts it's called once with the expected `before/after/originalParsedMetadata` triple.
-  - **Verification**: `flutter analyze --fatal-infos` clean; both test files pass; `recipe_persistence_manager.dart` line count drops below 500.
-  - (BUT-738)
-
-### Agent B: CLAUDE.md narrative fix (no Tier-2 specialist — doc only)
-
-- [ ] **B1. BUT-567 — Update BaseService narrative to "98% with exceptions"** —
-  - Find the BaseService claim in `CLAUDE.md` and/or `.claude/skills/mixin-advisor/SKILL.md` (grep first).
-  - Update wording from "100% target / all services extend BaseService" → "~98% adoption (81/83). ~10 services legitimately don't adopt because they're pure-compute or 3rd-party wrappers without async Firebase ops".
-  - List the legitimate non-adopters in a bullet block:
-    - `lib/services/feature_flags/feature_flag_service.dart`
-    - `lib/services/device_integrity_service.dart`
-    - `lib/services/cache/permission_cache_service.dart`
-    - `lib/services/theme/seasonal_accent_service.dart`
-    - `lib/services/theme_service.dart` (only ChangeNotifier)
-    - `lib/services/performance/firebase_performance_service.dart`
-    - `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`
-    - `lib/services/parsing/ner/onnx_ner_service.dart`
-    - `lib/services/tagging/tag_resolution_service.dart`
-    - `lib/services/monitoring/app_monitoring_service.dart`
-  - **Verification**: re-read the updated narrative; verify the listed paths still exist.
-  - (BUT-567)
-
-### Agent C: Dependency watch memory entry (process-only, like sprint J's BUT-519/524)
-
-- [ ] **C1. BUT-562 + C2. BUT-564 + C3. BUT-578 — Bundled dep-watch memory entry** —
-  - **New file** `C:\Users\malla\.claude\projects\C--Butlery-butlery\memory\dependency_watch_list.md`:
-    - Section "Pre-1.0 milestone watch (BUT-562)" — list `intl ^0.20.2`, `rxdart ^0.28.0`, `html ^0.15.6`, `firebase_app_check ^0.4.3`, `firebase_performance ^0.11.3`. Re-check quarterly. Note: firebase_app_check + firebase_performance graduate with the next Firebase BOM major.
-    - Section "Dormancy watch (BUT-564)" — `timeago ^3.7.1`, `html_unescape ^2.0.0`. Quarterly pub-points re-check; replacement candidates documented (`timeago` → inline ~30-line Swedish helper; `html_unescape` → use `package:html`'s built-in unescape).
-    - Section "Conditional dev-dep tightening (BUT-578)" — `cli_util ^0.4.2`, `meta ^1.16.0`. Do nothing today; tighten only if a future analyzer regression traces back to one of them.
-  - Add `MEMORY.md` index entry: `- [Dependency Watch List](dependency_watch_list.md) — pre-1.0 milestones, dormancy watch, conditional dev-dep pin tightening`.
-  - Per-Linear-comment + close all three (BUT-562, BUT-564, BUT-578) as Done.
-
-### Agent D: Web scrollbar theming (small UI win)
-
-Specialists: `code-reviewer` (any .dart change). UI-only theme change — no logic.
-
-- [ ] **D1. BUT-724 — Theme web scrollbars to match SQUARE/forestGreen palette** —
-  - `lib/theme/app_theme.dart`:
-    - Add `scrollbarTheme: const ScrollbarThemeData(...)` to BOTH light and dark theme builders.
-    - Settings: `thickness: WidgetStateProperty.all(8)`, `thumbColor: WidgetStateProperty.resolveWith((states) => Color(0x994A7C59))` (forestGreen at ~60% alpha; resolve from the live `ButleryColors` if accessible without breaking const), `radius: Radius.zero` (SQUARE design), `thumbVisibility: WidgetStateProperty.all(true)` for desktop browsers.
-    - **Note**: if `scrollbarTheme` requires non-const because of Color resolution from theme tokens, drop the `const` — use a static getter that returns a fresh instance from `ButleryColors.forestGreen.withValues(alpha: 0.6)`.
-  - **Verification**: `flutter analyze --fatal-infos` clean; manual verify in `flutter run -d chrome` that scrollbar shows green with sharp corners.
-  - **Out of scope**: per-view custom Scrollbar wrappers (centralized theme covers everything that uses `Scrollbar` natively, which is all stock scrolling widgets).
-  - (BUT-724)
+- [ ] **B1. BUT-493 — Document staged rollout / phased release strategy**
+  - **New dir** `docs/operations/` (does not exist; create).
+  - **New file** `docs/operations/RELEASE_POLICY.md` — sections:
+    1. **Purpose** — establish the staged-rollout policy and halt thresholds before BUT-420 lands the Fastlane upload pipeline (which would otherwise default to 100% rollout).
+    2. **Per-platform rollout mechanics** — Android (Play Console staged rollout: 1% → 5% → 25% → 50% → 100%), iOS (App Store Connect "Phased Release" toggle: 1% → 2% → 5% → 10% → 20% → 50% → 100% over 7 days), Web (Firebase Hosting channels + manual traffic split, since Hosting has no native staged rollout).
+    3. **Halt thresholds** — concrete numbers a release engineer can act on: crash-free sessions <99.5%, Sentry/Crashlytics velocity >2× 7-day baseline, retention drop >5pp at D1.
+    4. **Halt + rollback procedures** — step-by-step: pause Play rollout (Play Console UI path), pause iOS phased release (ASC UI path), Web rollback (revert Firebase Hosting deploy via `firebase hosting:rollback`).
+    5. **Dependencies / current gaps** — note that automated rollout halt requires BUT-420 (Fastlane integration), BUT-449 (web error tracking), and BUT-492 (Firebase + GCP cost/budget alerts as part of the same observability stack). Until those land, halt is manual via console.
+    6. **Review cadence** — re-check thresholds after first 3 staged releases.
+  - **Verification**: re-read the file end-to-end; confirm all referenced ticket IDs still exist (grep BUT-420, BUT-449, BUT-492 in Linear). No code; no analyzer step.
+  - (BUT-493)
 
 ### Linear cleanup (no code, ticket-state only)
 
-- [ ] **E1. BUT-581 — rescope ticket body** — update Linear description to capture the dual-extension finding. Stay in Backlog. New body:
+- [ ] **C1. BUT-702 — rescope ticket body** — update Linear description to capture that recipe delete already has undo. New body:
   ```
-  Real count: 220 occurrences of `?? ''` across lib/ (verified 2026-05-05). Original ticket said 150/203 — both stale.
+  ## Status update (2026-05-05)
 
-  Two competing `.orEmpty` extensions exist; pick canonical before codemod:
-  - `lib/core/extensions/default_value_extensions.dart:9` — `String orEmpty()` (method on `String?`).
-  - `lib/core/utils/validation_utils.dart:329` — `String get orEmpty` (getter on `String?`, delegates to `ValidationUtils.safeString`).
+  Recipe-delete undo already shipped — `lib/views/mina_recept_view.dart:565-577` uses `SnackBarUtils.showSuccessWithAction` with a 5-second `commonUndo` action that calls `viewModel.undoDeleteById(id)`. The "wire to recipe delete first" prescription in the original ticket is stale.
 
-  Naive find-replace `?? ''` → `.orEmpty()` would silently bind to whichever extension is in scope at each call site, including the getter that drops trailing whitespace via `safeString`. That's a behavior change, not a refactor.
+  ## Remaining destructive surfaces (none of which currently offer undo)
 
-  Sequenced fix:
-  1. Pick one canonical (default_value_extensions.dart's method form preferred — pure pass-through, no ValidationUtils dependency).
-  2. Migrate the loser's call sites to the canonical, delete the loser.
-  3. Codemod `?? ''` → `.orEmpty()` (220 sites; chunk by ~30 per agent batch per memory/feedback_agent_timeout.md).
+  - Group leave/delete (`lib/views/group/...` — verify exact path during scoping)
+  - Friend remove (social/friends views)
+  - Shopping-list clear (shopping-list view)
+  - Calendar event delete (if applicable)
 
-  Effort: 4-6h sequenced (1h step 1, 1h step 2, 2-4h step 3).
+  ## Generalization decision
+
+  Two paths:
+  1. **Lift** the recipe-delete pattern into a generic `UndoableAction` helper (single SnackBar utility + per-VM `undo<Op>` method convention). Wire each surface.
+  2. **Repeat the inline pattern** at each call site. Fast, but drifts.
+
+  Path 1 needs ~30 minutes of design (where does the helper live? `lib/widgets/common/`? `lib/services/ui/`?). Path 2 ships in an afternoon.
+
+  Effort: 4-6h for path 1 (helper + 3-4 surfaces + tests), 2-3h for path 2 (just the wiring).
   ```
+  Stay in Backlog.
 
 ### Post-Sprint Steps
-- [ ] `dart analyze --fatal-infos` — 0 issues
-- [ ] Affected unit tests: `recipe_edit_analytics_emitter_test`, `recipe_persistence_manager_test`
-- [ ] Tier-2 specialist gates: `code-reviewer` (A2 + D1 are .dart changes), `testing-specialist` (A2 lib/ change)
-- [ ] Commit, push to main
-- [ ] CI watcher monitors green
-- [ ] Update Linear: BUT-526/738/567/562/564/578/724 → Done; BUT-581 stays in Backlog with rescoped description
+- [ ] No `dart analyze` needed (no Dart changes this sprint).
+- [ ] No unit-test runs needed (no logic changes).
+- [ ] No Tier-2 specialist gates trigger (no `*.dart` files touched).
+- [ ] Commit: `feat(sprint): release polish + ops doc + Linear cleanup (BUT-715/493/738/724/702)`
+- [ ] Push to main; CI watcher; reconcile Linear states (BUT-738/724 → Done; BUT-715/493 → Done; BUT-702 stays Backlog with rescoped body).
 
 ### Continued blockers (NOT in scope per memory)
 - BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
@@ -190,28 +106,35 @@ Specialists: `code-reviewer` (any .dart change). UI-only theme change — no log
 - BUT-488 — pubspec auto-bump CI workflow (3h, intricate; standalone)
 - BUT-704 — i18n @key ARB descriptions (2-day sweep)
 - BUT-520 — VM-migration sweep (rescoped sprint I)
-- BUT-431 / BUT-530 — main.dart bootstrap split + extraction (rescoped sprint J)
-- BUT-581 — `?? ''` migration (rescoped this sprint; sequenced 4-6h effort)
+- BUT-431 / BUT-530 — main.dart bootstrap split + extraction (rescoped sprint J — only the doc+timeout portions shipped; remaining DI split + ButleryApp extraction live here)
+- BUT-581 — `?? ''` migration (rescoped sprint K; sequenced 4-6h effort)
 - BUT-610 — offline-mode hardening (multi-day audit)
 - BUT-723 — tablet master-detail layouts (multi-day refactor)
+- BUT-702 — undo SnackBar generalization (rescoped this sprint; recipe-delete already shipped)
+- BUT-734 — split FirebaseUserRepository (per ticket: defer until file ≥700 lines; currently 610)
+- BUT-710 / BUT-706 / BUT-711 / BUT-715 (Android) — platform-polish cluster (BUT-715 lands this sprint)
 - All `idea`-labeled monetization scaffolding — post-beta
 
 ### What this means in plain language
-- **Cleaner code, less mess**: One file in the recipe save flow has been doing too many jobs (saving + tracking what users edit + measuring how the parser did). We move the "tracking what users edit" piece into its own focused service. Same behavior, easier to test, and prevents the file from getting unwieldy. Also: a doc file (the project's "we follow these patterns" guide) had a stale claim — fixing the wording so the next contributor reads accurate facts.
-- **Web scrollbar polish**: today the web app uses default OS scrollbars (gray, rounded). After this sprint, they'll be forest-green with sharp corners — matching the rest of the app's design.
-- **Three "process" tickets bundled together**: same shape as last sprint's BUT-519/524 — we add a memory note tracking five libraries that haven't hit version 1.0 yet, two libraries that look unmaintained, and two dev-only utilities that we should pin tighter only IF we ever see analyzer flakiness. No code changes; just a watch list so we don't forget to re-check them.
-- **One ticket cleanup**: a code-cleanup ticket (the `?? ''` → `.orEmpty()` migration) turned out to be sneakier than its description claimed — there are two competing extensions in the codebase, so a naive find-replace would silently change behavior. Updating the ticket so the next sprint that picks it up does it in the right order.
-- **Risk**: very low. The recipe-edit refactor preserves identical analytics output (same events, same params); the doc/memory/scrollbar changes are pure additions. Easy to revert per item.
+- **Two reconciliation closures**: the previous sprint shipped a refactor and a web-scrollbar tweak, but Linear still has them as "in progress." We're just clicking the "done" button (with a comment linking to the commit). No code change.
+- **One Android polish item**: phones running Android 13+ can show app icons that pick up the user's wallpaper colors (the "themed icons" feature). Today Butlery's icon doesn't participate in that — it just shows the colorful version. This sprint adds a stripped-down "monochrome" version that lets the OS tint it. Pure asset addition.
+- **One ops document**: when the future deploy pipeline ships, releases would otherwise go to 100% of users immediately. We write a short policy now (1% → 5% → 25% → 100%, plus when to hit "halt" if crashes spike) so the future self has a checklist. No code; just a markdown file.
+- **One ticket cleanup**: an "undo when deleting" ticket assumed recipe-delete had no undo, but it actually does (we wired it earlier without closing the ticket). Rescoping the ticket so the next picker sees the real remaining work (undo on group/friend/shopping-list deletes), not duplicate work.
+- **Risk**: very low. No `.dart` changes. No tests to run. The Android XML can be reverted in seconds if it breaks an icon variant. The ops doc is text-only.
 
 ---
 
-## Archived prior sprint (completed in commit 245b71478 + a5288014f)
+## Archived prior sprint (completed in commit 25ec5b025)
 
-Dep hygiene + PWA polish + Linear cleanup — 2026-05-05 (J) — shipped BUT-500/519/524/718 + closed BUT-437 (premise gone) + rescoped BUT-431/530. Plus follow-up CI fix allowlisting `firestore_bootstrap.dart` in the architecture test.
+Tech-debt sweep + dep watch + web polish — 2026-05-05 (K) — shipped BUT-526/567/562/564/578/724/738 + rescoped BUT-581.
+
+## Archived sprint before (completed in commits 245b71478 + a5288014f)
+
+Dep hygiene + PWA polish + Linear cleanup — 2026-05-05 (J) — shipped BUT-500/519/524/718 + closed BUT-437 + rescoped BUT-431/530. Plus follow-up CI fix allowlisting `firestore_bootstrap.dart` in the architecture test.
 
 ## Archived sprint before (completed in commit 1e347b424)
 
-Backend hygiene + auth security micro-hardening — 2026-05-04 (I) — shipped BUT-446/506/465/490 + closed BUT-716 (premise gone) + rescoped BUT-520. See git log for full task breakdown.
+Backend hygiene + auth security micro-hardening — 2026-05-04 (I) — shipped BUT-446/506/465/490 + closed BUT-716 + rescoped BUT-520. See git log for full task breakdown.
 
 ## Archived sprint before (completed in commit 44b6f4792)
 
