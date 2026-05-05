@@ -37,7 +37,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      
+
+      # BUT-495: record job start so the Report duration step at the end can
+      # emit a structured timing line. Lives in $GITHUB_ENV so the value
+      # survives between steps.
+      - name: Record job start time
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -207,7 +213,28 @@ jobs:
         with:
           name: unit-test-results-${{ matrix.os }}
           path: test_results/
-  
+
+      # BUT-495: emit job duration to step summary + warn if budget exceeded.
+      # Soft budget = 15 min; hard kill is `timeout-minutes: 20` above.
+      - name: Report job duration
+        if: always()
+        env:
+          BUDGET_MIN: 15
+          JOB_LABEL: "Unit Tests (${{ matrix.os }})"
+        run: |
+          JOB_END=$(date +%s)
+          DURATION_SEC=$((JOB_END - JOB_START))
+          DURATION_MIN=$((DURATION_SEC / 60))
+          DURATION_REM=$((DURATION_SEC % 60))
+          {
+            echo "## Build duration"
+            echo ""
+            echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+            echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+          fi
+
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
@@ -215,7 +242,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      
+
+      # BUT-495: record job start (see unit-tests job for rationale).
+      - name: Record job start time
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -308,3 +339,23 @@ jobs:
         with:
           name: integration-test-results
           path: test_results/
+
+      # BUT-495: emit job duration to step summary + warn if budget exceeded.
+      - name: Report job duration
+        if: always()
+        env:
+          BUDGET_MIN: 15
+          JOB_LABEL: "Integration Tests"
+        run: |
+          JOB_END=$(date +%s)
+          DURATION_SEC=$((JOB_END - JOB_START))
+          DURATION_MIN=$((DURATION_SEC / 60))
+          DURATION_REM=$((DURATION_SEC % 60))
+          {
+            echo "## Build duration"
+            echo ""
+            echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+            echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+          fi

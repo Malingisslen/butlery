@@ -39,6 +39,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v6
 
+    # BUT-495: record job start so the Report duration step at the end can
+    # emit a structured timing line.
+    - name: Record job start time
+      run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
@@ -109,6 +114,26 @@ jobs:
           architecture_report.txt
           architecture_validation_report.json
         retention-days: 30
+
+    # BUT-495: report duration; soft budget 5m — analyzer + arch tests only.
+    - name: Report job duration
+      if: always()
+      env:
+        BUDGET_MIN: 5
+        JOB_LABEL: "Architecture Validation"
+      run: |
+        JOB_END=$(date +%s)
+        DURATION_SEC=$((JOB_END - JOB_START))
+        DURATION_MIN=$((DURATION_SEC / 60))
+        DURATION_REM=$((DURATION_SEC % 60))
+        {
+          echo "## Build duration"
+          echo ""
+          echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+        } >> "$GITHUB_STEP_SUMMARY"
+        if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+          echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+        fi
         
     - name: Comment PR with validation results
       if: github.event_name == 'pull_request' && always()

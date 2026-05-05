@@ -1,88 +1,67 @@
 # Sprint Backlog
 
-## Sprint: release polish + ops doc + Linear reconciliation — 2026-05-05 (L)
+## Sprint: CI duration telemetry + ML runtime memo + ticket-state hygiene — 2026-05-05 (M)
 
-Theme: 2 small ship-able items + 1 reconciliation pass + 1 ticket rescope. After sprint K shipped 7 tickets, the picks here are deliberately light — most of the remaining backlog is in declared "own sprint" clusters (auth/security, deploy pipeline, repo discipline, Dart-SDK bump, large-file decompose, button system, A/B infra). This sprint takes the unblocked one-off polish items.
+Theme: 2 implementations + 2 ticket-rescopes. After sprint L's light touch, this sprint ships CI build-time telemetry across the 4 main workflows (BUT-495), a long-overdue research memo on the on-device ML runtime decision (BUT-571), and rescopes two stale tickets where the premise has drifted.
 
 **In Progress carry-overs (NOT in this sprint, NOT shipped):**
-- BUT-442 — repo migrations (own focused sprint, mid-flight)
-- BUT-760 — App Check enforcement; awaiting Firebase Console flip
-
-**Linear-state cleanup (E1–E2):** BUT-738 and BUT-724 shipped in commit `25ec5b025` but Linear still shows them as "In Progress". Move to Done.
+- BUT-442 — repo migrations (own focused sprint, mid-flight).
+- BUT-760 — App Check enforcement; awaiting Firebase Console flip.
 
 **Step 0 verification — done:**
-- **BUT-715** fits — `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` has only background+foreground; no `<monochrome>` layer. The existing `drawable/ic_launcher_foreground.xml` is a vector with named paths (fork, knife, plate-circle, inner-plate). Generating a monochrome variant is mechanical — same paths, force `#FFFFFF`, drop the alpha variants (Android tints the monochrome layer from the wallpaper, so reducing visual richness is preferred).
-- **BUT-493** fits — `docs/operations/RELEASE_POLICY.md` does not exist. Pure doc add. Cite related tickets BUT-420 (Fastlane), BUT-449 (web error tracking) as expected dependencies for the policy to become operational.
-- **BUT-702 PLAN STALE** — recipe delete **already has undo wired** at `lib/views/mina_recept_view.dart:565-577` via `SnackBarUtils.showSuccessWithAction(context, recipeDeleted, actionLabel: commonUndo, onAction: undoDeleteById, duration: 5s)`. The ticket's "wire to recipe delete first" prescription is stale. Rescope the ticket body to focus on the remaining surfaces (group leave/delete, friend remove, shopping-list clear) and leave in Backlog. No code in this sprint.
+- **BUT-495 fits** — `test.yml`, `build-validation.yml`, `e2e_tests.yml`, `architecture-validation.yml` all currently lack any duration instrumentation. The ticket's 4 named jobs (`validate`, `build-android`, `build-web`, `tests`) map cleanly to those files. Inline 2-step (start-time + report) pattern beats a composite action — no abstraction needed for 4 sites.
+- **BUT-571 fits** — research-only ticket; output is a single memory note. Self-contained.
+- **BUT-488 PLAN STALE (premise wrong)** — `pubspec.yaml` is at `0.9.0+1`, NOT `1.0.0+1` as the ticket claims. Manual bumping has happened. The "stuck since inception" framing is stale, so the ticket's urgency is wrong. Keep the auto-bump idea but rescope the framing. Stays in Backlog.
+- **BUT-397 PREMISE GONE (for now)** — last 7+ `test.yml` runs on main are all `cancelled` (CI billing-quirk per memory), so no successful baseline exists yet to set tightened floors against. The just-pushed `6af9efc88` is the first non-cancelled run. Defer until ≥5 successful runs accumulate. Stays in Backlog with status comment.
 
-### Reconciliation: Linear ticket states (no code)
+### Agent A: CI build-time duration telemetry
 
-- [ ] **E1. BUT-738 → Done** — shipped in commit `25ec5b025`. Comment with commit SHA, transition state to Done.
-- [ ] **E2. BUT-724 → Done** — shipped in commit `25ec5b025`. Comment with commit SHA, transition state to Done.
+Specialists: none required (no `.dart` change, only YAML).
 
-### Agent A: Release polish — Android monochrome icon
+- [ ] **A1. BUT-495 — Instrument 4 workflows with build-time duration telemetry**
+  - **Pattern (applied uniformly):** at the start of each job, record `date +%s` into `JOB_START` via `$GITHUB_ENV`. At the end (`if: always()`), compute duration, emit a `## Build duration` block to `$GITHUB_STEP_SUMMARY`, and emit `::warning::` if duration exceeds the per-job budget.
+  - **Per-workflow budgets (ticket spec):**
+    - `test.yml` `unit-tests` job → 15 min (current `timeout-minutes: 20` is the hard kill; 15 is the soft budget)
+    - `test.yml` `integration-tests` job → 15 min (same kill, same soft)
+    - `build-validation.yml` android job → 15 min
+    - `build-validation.yml` web job → 10 min
+    - `e2e_tests.yml` → 20 min (e2e is naturally slower)
+    - `architecture-validation.yml` → 5 min (analyzer + lint only)
+  - **Files** (all in `.github/workflows/`):
+    1. `test.yml` — instrument both `unit-tests` (matrix, so the warning fires per-OS) and `integration-tests`.
+    2. `build-validation.yml` — instrument each platform job.
+    3. `e2e_tests.yml` — instrument the main job.
+    4. `architecture-validation.yml` — instrument the validate job.
+  - **Verification**: each workflow file YAML-validates (no `flutter analyze` step needed; no Dart change). After push, the next CI run shows the duration block in step summary. Out of scope: pushing to Cloud Monitoring (ticket marks that as optional).
+  - **Out of scope**: `dep-audit.yml`, `firestore-rules.yml`, `sbom.yml` — these run on schedule, not per-commit, and are not the user-facing latency surface the ticket targets. Future ticket if needed.
+  - (BUT-495)
 
-Specialists: none required (no `.dart` change, only Android resource files).
+### Agent B: ML runtime decision memo
 
-- [ ] **A1. BUT-715 — Add adaptive icon monochrome layer for themed icons (Android 13+)**
-  - **New file** `android/app/src/main/res/drawable/ic_launcher_monochrome.xml`:
-    - Same vector boilerplate as `ic_launcher_foreground.xml` (108×108 viewport, centered 72dp safe zone via `<group translateX="18" translateY="18">`).
-    - Same fork + knife + plate-circle + inner-plate paths.
-    - Replace all `android:fillColor="#FFFFFF"` (the rule body of all four paths) with `android:fillColor="#FFFFFFFF"` (fully opaque — Android tints from wallpaper).
-    - **Drop the `android:fillAlpha` attributes** on plate-circle and inner-plate. The monochrome layer is rendered as a single tinted shape; alpha gradations look muddy under wallpaper tinting. Solid silhouette reads better.
-  - **Edit** `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`:
-    - Add `<monochrome android:drawable="@drawable/ic_launcher_monochrome"/>` inside `<adaptive-icon>` (after `<foreground>`).
-  - **Verification**: visually inspect that monochrome XML parses (XML well-formed, vector valid). Optional `flutter build apk --debug` smoke check that the resource compiles. No analyzer step (no Dart change).
-  - **Out of scope**: regenerating PNG fallbacks for older Android versions — monochrome is API-31+ only and falls back transparently to the existing foreground on older devices.
-  - (BUT-715)
-
-### Agent B: Ops documentation
-
-- [ ] **B1. BUT-493 — Document staged rollout / phased release strategy**
-  - **New dir** `docs/operations/` (does not exist; create).
-  - **New file** `docs/operations/RELEASE_POLICY.md` — sections:
-    1. **Purpose** — establish the staged-rollout policy and halt thresholds before BUT-420 lands the Fastlane upload pipeline (which would otherwise default to 100% rollout).
-    2. **Per-platform rollout mechanics** — Android (Play Console staged rollout: 1% → 5% → 25% → 50% → 100%), iOS (App Store Connect "Phased Release" toggle: 1% → 2% → 5% → 10% → 20% → 50% → 100% over 7 days), Web (Firebase Hosting channels + manual traffic split, since Hosting has no native staged rollout).
-    3. **Halt thresholds** — concrete numbers a release engineer can act on: crash-free sessions <99.5%, Sentry/Crashlytics velocity >2× 7-day baseline, retention drop >5pp at D1.
-    4. **Halt + rollback procedures** — step-by-step: pause Play rollout (Play Console UI path), pause iOS phased release (ASC UI path), Web rollback (revert Firebase Hosting deploy via `firebase hosting:rollback`).
-    5. **Dependencies / current gaps** — note that automated rollout halt requires BUT-420 (Fastlane integration), BUT-449 (web error tracking), and BUT-492 (Firebase + GCP cost/budget alerts as part of the same observability stack). Until those land, halt is manual via console.
-    6. **Review cadence** — re-check thresholds after first 3 staged releases.
-  - **Verification**: re-read the file end-to-end; confirm all referenced ticket IDs still exist (grep BUT-420, BUT-449, BUT-492 in Linear). No code; no analyzer step.
-  - (BUT-493)
+- [ ] **B1. BUT-571 — Document `flutter_onnxruntime` vs `tflite_flutter` decision**
+  - **New memory file** `C:\Users\malla\.claude\projects\C--Butlery-butlery\memory\ml_runtime_decision.md`:
+    1. Current state: `flutter_onnxruntime ^1.6.4` powers on-device NER (ingredient parsing) via `lib/services/parsing/ner/onnx_ner_service.dart` and the line classifier (`onnx_line_classifier_service.dart`).
+    2. Why it's the chosen runtime today: on-device, no network round-trip, no privacy footprint, models trained in PyTorch convert cleanly to ONNX.
+    3. Trigger conditions for re-evaluating TFLite: (a) Android AAB exceeds 150 MB Play Console upload limit, (b) iOS IPA exceeds 200 MB OTA download limit (requires Wi-Fi prompt at install), (c) ≥3 user-reported "app too big to download" complaints in a quarter.
+    4. Migration cost if triggered: ONNX → TFLite model conversion (`tf2onnx` reverse pipeline; not always lossless), accuracy parity check, possibly retraining if the conversion drops F1 >2pp on the held-out parsing eval set, plus rewriting `OnnxNerService` and `OnnxLineClassifierService` against `tflite_flutter`'s API surface.
+    5. Estimated effort if triggered: 1-2 days for the runtime swap + 1-3 days for accuracy recovery if the naive conversion regresses.
+    6. Decision: **stay on ONNX Runtime indefinitely** until one of the three trigger conditions fires. No proactive migration.
+  - **Index entry** in `MEMORY.md`:
+    `- [ML Runtime Decision (ONNX vs TFLite)](ml_runtime_decision.md) — staying on flutter_onnxruntime; trigger conditions documented.`
+  - **Verification**: re-read the memo end-to-end; confirm cited paths still exist (`lib/services/parsing/ner/onnx_ner_service.dart`, `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`).
+  - (BUT-571)
 
 ### Linear cleanup (no code, ticket-state only)
 
-- [ ] **C1. BUT-702 — rescope ticket body** — update Linear description to capture that recipe delete already has undo. New body:
-  ```
-  ## Status update (2026-05-05)
-
-  Recipe-delete undo already shipped — `lib/views/mina_recept_view.dart:565-577` uses `SnackBarUtils.showSuccessWithAction` with a 5-second `commonUndo` action that calls `viewModel.undoDeleteById(id)`. The "wire to recipe delete first" prescription in the original ticket is stale.
-
-  ## Remaining destructive surfaces (none of which currently offer undo)
-
-  - Group leave/delete (`lib/views/group/...` — verify exact path during scoping)
-  - Friend remove (social/friends views)
-  - Shopping-list clear (shopping-list view)
-  - Calendar event delete (if applicable)
-
-  ## Generalization decision
-
-  Two paths:
-  1. **Lift** the recipe-delete pattern into a generic `UndoableAction` helper (single SnackBar utility + per-VM `undo<Op>` method convention). Wire each surface.
-  2. **Repeat the inline pattern** at each call site. Fast, but drifts.
-
-  Path 1 needs ~30 minutes of design (where does the helper live? `lib/widgets/common/`? `lib/services/ui/`?). Path 2 ships in an afternoon.
-
-  Effort: 4-6h for path 1 (helper + 3-4 surfaces + tests), 2-3h for path 2 (just the wiring).
-  ```
-  Stay in Backlog.
+- [ ] **C1. BUT-488 — rescope ticket body** — pubspec is at `0.9.0+1`; manual bumping happens. Rewrite description to drop the "stuck since inception" framing. Keep the auto-bump-on-conventional-commit feature as a Low priority improvement, not an urgent fix.
+- [ ] **C2. BUT-397 — defer comment** — note that the last 7+ `test.yml` runs on main are `cancelled` (CI billing-quirk per memory). No successful coverage baseline accumulated yet. Re-pick this ticket once ≥5 successful runs since BUT-392 land. Stays in Backlog.
 
 ### Post-Sprint Steps
 - [ ] No `dart analyze` needed (no Dart changes this sprint).
-- [ ] No unit-test runs needed (no logic changes).
+- [ ] No unit-test runs needed.
 - [ ] No Tier-2 specialist gates trigger (no `*.dart` files touched).
-- [ ] Commit: `feat(sprint): release polish + ops doc + Linear cleanup (BUT-715/493/738/724/702)`
-- [ ] Push to main; CI watcher; reconcile Linear states (BUT-738/724 → Done; BUT-715/493 → Done; BUT-702 stays Backlog with rescoped body).
+- [ ] Commit: `feat(sprint): CI duration telemetry + ML runtime memo + Linear hygiene (BUT-495/571/488/397)`.
+- [ ] Push to main; reconcile Linear states (BUT-495/571 → Done; BUT-488/397 stay Backlog with rescoped/deferred bodies).
 
 ### Continued blockers (NOT in scope per memory)
 - BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
@@ -103,47 +82,49 @@ Specialists: none required (no `.dart` change, only Android resource files).
 - BUT-472 — realtime_session_manager stream/timer migration (next perf sprint)
 - BUT-455 / BUT-440 / BUT-504 — repository discipline cluster (paired with BUT-442)
 - BUT-453 / BUT-454 — auth/session security (own sprint with product-design input)
-- BUT-488 — pubspec auto-bump CI workflow (3h, intricate; standalone)
 - BUT-704 — i18n @key ARB descriptions (2-day sweep)
 - BUT-520 — VM-migration sweep (rescoped sprint I)
-- BUT-431 / BUT-530 — main.dart bootstrap split + extraction (rescoped sprint J — only the doc+timeout portions shipped; remaining DI split + ButleryApp extraction live here)
-- BUT-581 — `?? ''` migration (rescoped sprint K; sequenced 4-6h effort)
+- BUT-431 / BUT-530 — main.dart bootstrap split + extraction (rescoped sprint J)
+- BUT-581 — `?? ''` migration (rescoped sprint K)
 - BUT-610 — offline-mode hardening (multi-day audit)
 - BUT-723 — tablet master-detail layouts (multi-day refactor)
-- BUT-702 — undo SnackBar generalization (rescoped this sprint; recipe-delete already shipped)
-- BUT-734 — split FirebaseUserRepository (per ticket: defer until file ≥700 lines; currently 610)
-- BUT-710 / BUT-706 / BUT-711 / BUT-715 (Android) — platform-polish cluster (BUT-715 lands this sprint)
+- BUT-702 — undo SnackBar generalization (rescoped sprint L)
+- BUT-734 — split FirebaseUserRepository (defer until file ≥700 lines)
+- BUT-710 / BUT-706 / BUT-711 — platform-polish cluster (BUT-715 shipped sprint L)
+- BUT-492 — cost/budget alerts (Console action; doc-only piece needs the alerts to actually be wired)
+- BUT-494 — coverage floor 55→85 (same blocker as BUT-397)
+- BUT-488 — pubspec auto-bump CI (rescoped this sprint; Low priority)
+- BUT-397 — coverage-floor tightening (deferred this sprint; needs ≥5 successful CI baseline runs)
 - All `idea`-labeled monetization scaffolding — post-beta
 
 ### What this means in plain language
-- **Two reconciliation closures**: the previous sprint shipped a refactor and a web-scrollbar tweak, but Linear still has them as "in progress." We're just clicking the "done" button (with a comment linking to the commit). No code change.
-- **One Android polish item**: phones running Android 13+ can show app icons that pick up the user's wallpaper colors (the "themed icons" feature). Today Butlery's icon doesn't participate in that — it just shows the colorful version. This sprint adds a stripped-down "monochrome" version that lets the OS tint it. Pure asset addition.
-- **One ops document**: when the future deploy pipeline ships, releases would otherwise go to 100% of users immediately. We write a short policy now (1% → 5% → 25% → 100%, plus when to hit "halt" if crashes spike) so the future self has a checklist. No code; just a markdown file.
-- **One ticket cleanup**: an "undo when deleting" ticket assumed recipe-delete had no undo, but it actually does (we wired it earlier without closing the ticket). Rescoping the ticket so the next picker sees the real remaining work (undo on group/friend/shopping-list deletes), not duplicate work.
-- **Risk**: very low. No `.dart` changes. No tests to run. The Android XML can be reverted in seconds if it breaks an icon variant. The ops doc is text-only.
+- **CI gets a built-in stopwatch**: today if a slow dependency makes the test pipeline take twice as long, nothing notices except eventually a hard timeout. After this sprint, every CI run prints "this job took N minutes" and pings a yellow warning if it exceeded budget. No code changes, no test changes — just YAML.
+- **One memo on the AI engine**: the app uses a thing called ONNX Runtime to do the on-device ingredient-parsing AI. There's been a lingering "should we switch to a smaller alternative called TFLite?" question. This sprint writes it down: stay on ONNX, here are the three things that would change our mind, here's how much swapping would cost. Future-self gets a clear answer.
+- **Two ticket-state cleanups**: one ticket said "version stuck at 1.0.0+1 forever" but the version is actually 0.9.0+1 (someone bumped it). Another ticket needed 5 good CI runs to set a tighter coverage threshold, but recent CI has been cancelled by an upstream billing quirk. Both rescoped/deferred so the next picker doesn't waste time on stale assumptions.
+- **Risk**: very low. YAML changes are isolated to per-workflow stopwatch lines; can be deleted in seconds if they misbehave. No `.dart` changes; no behavior changes for the running app.
 
 ---
 
-## Archived prior sprint (completed in commit 25ec5b025)
+## Archived prior sprint (completed in commit 6af9efc88)
+
+Release polish + ops doc + Linear cleanup — 2026-05-05 (L) — shipped BUT-715/493 + reconciled BUT-738/724 + rescoped BUT-702.
+
+## Archived sprint before (completed in commit 25ec5b025)
 
 Tech-debt sweep + dep watch + web polish — 2026-05-05 (K) — shipped BUT-526/567/562/564/578/724/738 + rescoped BUT-581.
 
 ## Archived sprint before (completed in commits 245b71478 + a5288014f)
 
-Dep hygiene + PWA polish + Linear cleanup — 2026-05-05 (J) — shipped BUT-500/519/524/718 + closed BUT-437 + rescoped BUT-431/530. Plus follow-up CI fix allowlisting `firestore_bootstrap.dart` in the architecture test.
+Dep hygiene + PWA polish + Linear cleanup — 2026-05-05 (J) — shipped BUT-500/519/524/718 + closed BUT-437 + rescoped BUT-431/530.
 
 ## Archived sprint before (completed in commit 1e347b424)
 
-Backend hygiene + auth security micro-hardening — 2026-05-04 (I) — shipped BUT-446/506/465/490 + closed BUT-716 + rescoped BUT-520. See git log for full task breakdown.
+Backend hygiene + auth security micro-hardening — 2026-05-04 (I) — shipped BUT-446/506/465/490 + closed BUT-716 + rescoped BUT-520.
 
 ## Archived sprint before (completed in commit 44b6f4792)
 
-GDPR cascade + rules tightening + stream lifecycle — 2026-05-04 (H) — shipped BUT-466/464/463/462/461/613/471. See git log for full task breakdown.
+GDPR cascade + rules tightening + stream lifecycle — 2026-05-04 (H) — shipped BUT-466/464/463/462/461/613/471.
 
 ## Archived sprint before (completed in commit b33653c47)
 
-Backend perf + observability hardening — 2026-05-04 (G) — shipped BUT-482/483/473/480/592/627. See git log for full task breakdown.
-
-## Archived sprint before (completed in commit 4fc17758e + d9cb88acf)
-
-Parsing/social tech-debt + dependency hygiene — 2026-05-04 (F) — shipped BUT-700/682/676/631/630/513/529 + BUT-698 closed as Duplicate. See git log for full task breakdown.
+Backend perf + observability hardening — 2026-05-04 (G) — shipped BUT-482/483/473/480/592/627.

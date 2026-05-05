@@ -35,6 +35,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v6
 
+    # BUT-495: record job start so the Report duration step at the end can
+    # emit a structured timing line.
+    - name: Record job start time
+      run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
@@ -56,6 +61,26 @@ jobs:
       run: |
         echo "🏗️ Running architecture tests - must pass to continue..."
         flutter test test/architecture/architecture_test.dart --reporter=expanded
+
+    # BUT-495: report duration; soft budget 10m per ticket spec.
+    - name: Report job duration
+      if: always()
+      env:
+        BUDGET_MIN: 10
+        JOB_LABEL: "validate"
+      run: |
+        JOB_END=$(date +%s)
+        DURATION_SEC=$((JOB_END - JOB_START))
+        DURATION_MIN=$((DURATION_SEC / 60))
+        DURATION_REM=$((DURATION_SEC % 60))
+        {
+          echo "## Build duration"
+          echo ""
+          echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+        } >> "$GITHUB_STEP_SUMMARY"
+        if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+          echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+        fi
 
   # Security scanning - runs in parallel with build after validation
   security-scan:
@@ -99,18 +124,29 @@ jobs:
       matrix:
         platform: [android, web, ios]
         include:
+          # BUT-495 budgets: android 15m, web 10m per ticket spec; iOS 25m
+          # (slow Xcode/CocoaPods even on macos-latest, not in ticket scope
+          # but instrumented for completeness).
           - platform: android
             runs-on: ubuntu-latest
+            budget-min: 15
           - platform: web
             runs-on: ubuntu-latest
+            budget-min: 10
           - platform: ios
             runs-on: macos-latest
+            budget-min: 25
 
     runs-on: ${{ matrix.runs-on }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
+
+    # BUT-495: record job start so the Report duration step at the end can
+    # emit a structured timing line.
+    - name: Record job start time
+      run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
@@ -241,6 +277,26 @@ jobs:
         # Crashlytics symbolication once the deploy pipeline (BUT-420)
         # uploads them; until then they're build-job artifacts.
         flutter build ipa --release --no-codesign --obfuscate --split-debug-info=build/debug-info --dart-define-from-file=.env --export-options-plist=ios/exportOptions.plist
+
+    # BUT-495: report duration; per-platform budget from matrix.budget-min.
+    - name: Report job duration
+      if: always()
+      env:
+        BUDGET_MIN: ${{ matrix.budget-min }}
+        JOB_LABEL: "build (${{ matrix.platform }})"
+      run: |
+        JOB_END=$(date +%s)
+        DURATION_SEC=$((JOB_END - JOB_START))
+        DURATION_MIN=$((DURATION_SEC / 60))
+        DURATION_REM=$((DURATION_SEC % 60))
+        {
+          echo "## Build duration"
+          echo ""
+          echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+        } >> "$GITHUB_STEP_SUMMARY"
+        if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+          echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+        fi
 
   # Summary job
   build-summary:
