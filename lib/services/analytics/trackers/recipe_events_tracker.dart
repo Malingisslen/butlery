@@ -15,6 +15,11 @@ class RecipeEventsTracker extends BaseTracker {
   /// on the same device each get their own milestone fire.
   static const String _firstSearchPrefsPrefix = 'search_activated_v1_';
 
+  /// Per-install dedupe key for the once-per-user `first_cook` milestone
+  /// (BUT-803 PA11). Cooking is the strongest engagement signal in the app —
+  /// time-to-first-cook drops directly into the activation funnel.
+  static const String _firstCookPrefsPrefix = 'cooking_activated_v1_';
+
   /// Log recipe creation
   Future<void> logRecipeCreated({
     required String source,
@@ -80,6 +85,26 @@ class RecipeEventsTracker extends BaseTracker {
       userPropertyName: AnalyticsUserProperties.searchActivated,
       joinedAt: joinedAt,
       extraParams: {'recipe_count_at_time': recipeCountAtTime},
+    );
+  }
+
+  /// Once-per-user `first_cook` milestone (BUT-803 PA11). Cooking — pressing
+  /// "mark as cooked" — is the strongest activation signal in the app, much
+  /// stronger than view/share/search. Time-to-first-cook is the activation
+  /// funnel's bottom step. Caller is `logRecipeCooked` callsite (e.g. the
+  /// mark-cooked handler in the recipe-detail view-model).
+  Future<bool> logFirstCookIfMilestone({
+    required String? userId,
+    required String mealType,
+    DateTime? joinedAt,
+  }) async {
+    return fireOnceMilestone(
+      userId: userId,
+      prefsPrefix: _firstCookPrefsPrefix,
+      eventName: AnalyticsEvents.firstCook,
+      userPropertyName: AnalyticsUserProperties.cookingActivated,
+      joinedAt: joinedAt,
+      extraParams: {'meal_type': mealType},
     );
   }
 

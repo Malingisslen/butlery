@@ -49,6 +49,7 @@ import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/services/theme/seasonal_accent_service.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:clock/clock.dart';
+import 'package:uuid/uuid.dart';
 
 // Material You dynamic color
 
@@ -423,6 +424,11 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   SessionTimeoutService? _sessionTimeoutService;
   SessionActivityObserver? _sessionActivityObserver;
   DateTime? _sessionStartTime;
+  // BUT-786: tracks when we last paused so resume-after-long-background can
+  // mint a fresh `session_id` (analytics convention: 30 min idle = new session).
+  DateTime? _lastBackgroundedAt;
+  static const Duration _sessionIdleResetThreshold = Duration(minutes: 30);
+  static const Uuid _sessionIdGen = Uuid();
   final LocaleProvider _localeProvider = LocaleProvider();
   ThemeService? _themeService;
   UserPropertyBootstrap? _userPropertyBootstrap;
@@ -733,22 +739,34 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   /// Track app opened event with session count
   Future<void> _trackAppOpened() async {
     try {
+      // BUT-786 (review C1): defensively await bootstrap before doing any
+      // analytics work. Cold start already awaits this in `main()` before
+      // `runApp`, so this is a no-op for the cold-start case. But on a
+      // fast resume during a still-initializing bootstrap this prevents
+      // the SharedPreferences write + session-id mint from running while
+      // the analytics chokepoint is missing — keeps `session_count`,
+      // `_sessionStartTime`, and `session_id` in lockstep.
+      final bootstrap = ApplicationBootstrap();
+      await bootstrap.initialized;
+      if (!bootstrap.isInitialized) return;
+
       final prefs = await SharedPreferences.getInstance();
       final sessionCount = (prefs.getInt('session_count') ?? 0) + 1;
       await prefs.setInt('session_count', sessionCount);
 
       _sessionStartTime = clock.now();
 
-      final bootstrap = ApplicationBootstrap();
-      if (bootstrap.isInitialized) {
-        final analyticsService = bootstrap.container.get<AnalyticsService>();
-        await analyticsService.logEvent(
-          name: AnalyticsEvents.appOpened,
-          parameters: {
-            'session_count': sessionCount,
-          },
-        );
-      }
+      // BUT-786: install / refresh the analytics session id BEFORE the first
+      // event of this resume cycle fires so `app_opened` itself carries it.
+      _ensureAnalyticsSessionId();
+
+      final analyticsService = bootstrap.container.get<AnalyticsService>();
+      await analyticsService.logEvent(
+        name: AnalyticsEvents.appOpened,
+        parameters: {
+          'session_count': sessionCount,
+        },
+      );
     } catch (e) {
       AppLogger.error('Failed to track app_opened', e);
     }
@@ -756,6 +774,11 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
   /// Track app backgrounded event with session duration
   Future<void> _trackAppBackgrounded() async {
+    // BUT-786: timestamp the pause so the next resume can decide whether to
+    // mint a new session id. Recorded outside the try-block so a logging
+    // failure can't break the timer.
+    _lastBackgroundedAt = clock.now();
+
     try {
       final bootstrap = ApplicationBootstrap();
       if (bootstrap.isInitialized && _sessionStartTime != null) {
@@ -772,6 +795,35 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       }
     } catch (e) {
       AppLogger.error('Failed to track app_backgrounded', e);
+    }
+  }
+
+  /// BUT-786: install/refresh the analytics `session_id` on cold start and
+  /// resume. A new id is minted when (a) we don't have one yet, or
+  /// (b) the app sat in background for >30min — analytics convention for
+  /// "this is effectively a new session". Cheap enough to call on every
+  /// resume; the no-op path runs in O(1) without touching DI.
+  void _ensureAnalyticsSessionId() {
+    try {
+      final bootstrap = ApplicationBootstrap();
+      if (!bootstrap.isInitialized) return;
+
+      final analytics = bootstrap.container.get<AnalyticsService>();
+      final existing = analytics.currentSessionId;
+      final pausedAt = _lastBackgroundedAt;
+      final now = clock.now();
+
+      final needsNew = existing == null ||
+          (pausedAt != null &&
+              now.difference(pausedAt) >= _sessionIdleResetThreshold);
+
+      if (needsNew) {
+        analytics.setSessionId(_sessionIdGen.v4());
+      }
+      _lastBackgroundedAt = null;
+    } catch (e) {
+      // Best-effort — analytics shouldn't break the resume path.
+      AppLogger.warning('Failed to ensure analytics session id: $e');
     }
   }
 
@@ -935,6 +987,23 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         // Universal fix for Android nav bar overlay + beta feedback FAB overlay
         builder: (context, child) {
           if (child == null) return const SizedBox.shrink();
+          // BUT-800: clamp `textScaler` once at the MaterialApp root so every
+          // descendant widget inherits the clamped MediaQuery automatically.
+          // Without this, users with extreme accessibility text-scale settings
+          // (200%+) clip fixed-height surfaces. 1.4× preserves readability
+          // gains while keeping our layouts intact.
+          //
+          // Per-scaffold `AccessibilityUtils.clampTextScaling` wrappers in
+          // `base_scaffold.dart`, `adaptive_navigation.dart`, and
+          // `unified_badge.dart` become redundant but harmless — a clamp
+          // applied twice still resolves to the tighter bound.
+          final mq = MediaQuery.of(context);
+          final clampedChild = MediaQuery(
+            data: mq.copyWith(
+              textScaler: mq.textScaler.clamp(maxScaleFactor: 1.4),
+            ),
+            child: child,
+          );
           // Keyboard layer (BUT-521): Shortcuts + Actions wrap the entire
           // navigator subtree so Esc / Cmd+K / Cmd+1-3 etc. work on every
           // route. `Focus(autofocus)` is required so the Shortcuts widget
@@ -955,7 +1024,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                       children: [
                         RepaintBoundary(
                           key: feedbackRepaintBoundaryKey,
-                          child: child,
+                          child: clampedChild,
                         ),
                         const FeedbackFAB(),
                       ],

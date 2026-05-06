@@ -376,10 +376,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   // More actions menu
                   Padding(
                     key: const ValueKey('test-recipe-detail-more'),
-                    padding: const EdgeInsets.only(
+                    padding: const EdgeInsetsDirectional.only(
                         top: AppDimensions.spacingSm,
                         bottom: AppDimensions.spacingSm,
-                        right: AppDimensions.spacingSm),
+                        end: AppDimensions.spacingSm),
                     child: Semantics(
                       identifier: 'btn-recipe-more',
                       button: true,

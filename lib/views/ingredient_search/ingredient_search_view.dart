@@ -186,8 +186,8 @@ class _IngredientSearchContent extends StatelessWidget {
         ),
         if (missingText != null || result.recipe.isCollaborative)
           Padding(
-            padding: const EdgeInsets.only(
-              left: AppDimensions.spacingMd,
+            padding: const EdgeInsetsDirectional.only(
+              start: AppDimensions.spacingMd,
               bottom: AppDimensions.spacingSm,
             ),
             child: Row(

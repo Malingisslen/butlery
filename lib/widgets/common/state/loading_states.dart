@@ -163,8 +163,8 @@ class LoadingStates {
                           height: 24,
                           width: 60,
                           borderRadius: BorderRadius.zero,
-                          margin: const EdgeInsets.only(
-                              right: AppDimensions.spacingXs),
+                          margin: const EdgeInsetsDirectional.only(
+                              end: AppDimensions.spacingXs),
                         ),
                         SkeletonComponents.skeletonBox(
                           height: 24,

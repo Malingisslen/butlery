@@ -76,10 +76,10 @@ class DayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
+      padding: const EdgeInsetsDirectional.only(
         top: AppDimensions.spacingSm,
-        left: AppDimensions.spacingMd,
-        right: AppDimensions.spacingMd,
+        start: AppDimensions.spacingMd,
+        end: AppDimensions.spacingMd,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

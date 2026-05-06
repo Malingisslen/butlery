@@ -15,6 +15,8 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -802,11 +804,26 @@ class UnifiedRecipeService
 
   /// Toggle favorite status for a recipe.
   /// Performs optimistic update via copyWith + updateRecipe.
+  ///
+  /// BUT-803 (PA9): emits `recipe_favorited` so favoriting becomes visible in
+  /// analytics. `recipe_id` is hashed by the repository's PII gate; `action`
+  /// is `'add'` or `'remove'`. Fire-and-forget so a logging failure cannot
+  /// fail the actual toggle.
   Future<bool> toggleFavorite(String recipeId, bool isFavorite) async {
     final recipe = getRecipeById(recipeId);
     if (recipe == null) return false;
     final updated = recipe.copyWith(isFavorite: isFavorite);
-    return await updateRecipe(updated);
+    final result = await updateRecipe(updated);
+    if (result) {
+      AnalyticsService.tryLog(
+        AnalyticsEvents.recipeFavorited,
+        parameters: <String, Object>{
+          'recipe_id': recipeId,
+          'action': isFavorite ? 'add' : 'remove',
+        },
+      );
+    }
+    return result;
   }
 
   /// Legacy createRecipe method

@@ -124,6 +124,25 @@ class AnalyticsService extends BaseService {
   /// Get the analytics observer for navigation tracking
   dynamic get observer => _repository.observer;
 
+  /// BUT-786: install/refresh the per-session UUID. Called from `main.dart`
+  /// on cold start AND on resume-after-long-background. Pass `null` to clear.
+  /// Every subsequent event automatically carries `session_id` via the
+  /// repository's sanitize chokepoint — callers don't need to thread it.
+  void setSessionId(String? sessionId) {
+    _repository.setSessionId(sessionId);
+  }
+
+  /// Current session id if installed; `null` until `setSessionId` runs.
+  String? get currentSessionId => _repository.currentSessionId;
+
+  /// BUT-803 (PA5): pin the analytics user identifier. Call on auth-state
+  /// transitions: pass `user.uid` on signed-in, `null` on signed-out.
+  /// GDPR: the underlying SDK only sends this once collection is enabled
+  /// post-consent — calling before consent is a no-op on the wire.
+  Future<void> setUserId(String? userId) async {
+    await _repository.setUserId(userId);
+  }
+
   /// Toggle the underlying analytics SDK's collection flag.
   /// Called from `main._enableCollectionIfConsented()` after the consent
   /// check — not guarded by a consent check here because the caller is the

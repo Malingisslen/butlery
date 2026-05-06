@@ -263,8 +263,8 @@ class _MessageBubbleState extends State<MessageBubble>
 
   Widget _buildSenderName(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: AppDimensions.paddingS,
+      padding: const EdgeInsetsDirectional.only(
+        start: AppDimensions.paddingS,
         bottom: AppDimensions.spacingXs,
       ),
       child: Text(

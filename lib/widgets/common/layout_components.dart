@@ -436,9 +436,9 @@ class LayoutComponents {
               .clamp(0.0, double.infinity);
 
           return Padding(
-            padding: EdgeInsets.only(
-              left: horizontalPadding,
-              right: horizontalPadding,
+            padding: EdgeInsetsDirectional.only(
+              start: horizontalPadding,
+              end: horizontalPadding,
               top: topPadding,
             ),
             child: Column(

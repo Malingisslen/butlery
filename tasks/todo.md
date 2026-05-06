@@ -1,66 +1,66 @@
 # Sprint Backlog
 
-## Sprint: hygiene + supply-chain pins + backend index — 2026-05-06 (S)
+## Sprint: architecture-test broaden + sessionId plumb + UI mechanical sweeps — 2026-05-06 (T)
 
-Theme: post-cleanup tightening. Three batches: hygiene/docs (Batch A), dependency + supply-chain integrity (Batch B), backend index + CF refs (Batch C).
+Theme: tighten the structural floor (arch-test broadening + analytics correctness) and clear directional-padding RTL gap.
 
 ### Step 0 results
-- All 9 tickets **Fit** as written.
+- **BUT-777** — Fits.
+- **BUT-796** — **Premise gone**: firebase-functions 7.2.5 v2 has no `onUserDeleted` (only blocking triggers). Auth `.onDelete()` remains v1-only. Closed Cancelled with explanation.
+- **BUT-786** — Fits. Chokepoint = `FirebaseAnalyticsRepository._sanitize`.
+- **BUT-803** — Fits, partial: PA5/PA8/PA9/PA11 implemented; PA6 rejected as anti-pattern (would break Firebase DebugView); PA7 deferred (needs new repo query) → BUT-830.
+- **BUT-799** — **Plan stale**: bulk migration already done in commit cc17ce235 (RTL sweep). Ticket assumed 39 sites. Re-grep with multi-line regex caught 16 mixed-axis violations the audit missed; migrated those + added regression guard.
+- **BUT-798** — **Scope larger than estimated**: ticket said 34 files, re-grep shows 50+. Deferred bulk sweep to BUT-829; arch-test guard not added (would fail until sweep complete).
+- **BUT-800** — Fits. clampTextScaling lifted to `MaterialApp.builder` root. viewInsets sub-task deferred to BUT-831 (per-scaffold work, breakage risk).
 
-### Agent A: Hygiene + docs
-- [x] **A1. BUT-810** — `tools/measure_adoption.dart` produces `docs/architecture/adoption-status.md` (BaseService 67.0%, BaseFirebaseRepository 50.0%, ErrorHandlingMixin 17.0%, BaseViewModel 23.8%, SerializationUtils 872 sites). Inline percentages stripped from `01_CODE_QUALITY_AND_ARCHITECTURE.md`, `MASTER_ANALYSIS_ORCHESTRATOR.md`, `03_INFRASTRUCTURE_AND_OPERATIONS.md`, `05_DEPENDENCIES_AND_SUPPLY_CHAIN.md` — all reference the auto-generated file.
-- [x] **A2. BUT-809** — `mistral` → `vertex` find-replace across 6 active code files + 1 hook script. CI guard `tools/check_no_mistral_refs.sh` + architecture-validation step. PROMPT_CHANGELOG.md kept as historical record (allowlisted).
-- [x] **A3. BUT-794** — `LICENSE` (proprietary all-rights-reserved), `NOTICE` (Apache-2.0/MIT/BSD attributions + lockfile pointers + regen script stub), `SECURITY.md` (vuln disclosure policy w/ 48h ack / 7d fix timeline + safe-harbor clause).
-- [x] **A4. BUT-791** — `dep-audit.yml` now triggers on `push: branches: [main]` with same path filter as PR trigger.
+### Agent A: Architecture + Backend
+- [x] **A1. BUT-777** — `test/architecture/architecture_test.dart`: 4 new groups added (Firebase{Auth,Storage,Analytics,Functions}.instance, VM cloud_firestore imports, view→firebase-repo imports, .collection(literal) bans). Pre-existing violators allow-listed inline with follow-up references.
+- [~] **A2. BUT-796** — Premise gone. Closed Cancelled.
 
-### Agent B: Dependency / supply-chain integrity
-- [x] **B1. BUT-790** — SHA-pinned 11 references across 6 workflow files: `subosito/flutter-action@1a449444…` (v2.23.0, 7 sites), `aquasecurity/trivy-action@ed142fd0…` (v0.36.0), `codecov/codecov-action@b9fd7d16…` (v4.6.0), `trufflesecurity/trufflehog@17456f8c…` (v3.95.2). CI guard `tools/check_action_pinning.sh` + bump-cadence doc `docs/architecture/action-pinning.md`.
-- [x] **B2. BUT-793** — Pinned `firebase_app_check: 0.4.3`, `freerasp: 7.5.1`, `http_certificate_pinning: 3.0.1` (caret stripped). CI guard `tools/check_security_deps_pinned.sh`.
-- [x] **B3. BUT-792** — `lib/services/parsing/_expected_model_hashes.dart` with `verifyOnnxBytes()` pure function + `ModelIntegrityResult` + `ModelIntegrityCheckFailure`. Both `ner_model_manager.dart` + `line_classifier_model_manager.dart` call `_verifyModelIntegrity()` post-download, before any disk write. Mismatch → AppLogger.error w/ exception (reaches Crashlytics) + abort. Unverified (no registered hash) → log w/ sentinel StateError + accept (transitional). 4 unit tests pass. Runbook: `docs/ops/onnx-model-update.md`.
+### Agent B: Analytics correctness
+- [x] **B1. BUT-786** — `setSessionId`/`currentSessionId` on `AnalyticsRepository` interface; Firebase impl injects `session_id` into every event via `_sanitize` chokepoint; one-time warning when null at emission time. Cold-start + >30min-resume regenerates session via `_ensureAnalyticsSessionId()` in main.dart. NoOp impl tracks locally. 5 unit tests cover fast-path / null-params / PII slow-path / clear / `currentSessionId` getter.
+- [x] **B2. BUT-803 (PA5/PA8/PA9/PA11)** — `setUserId` on interface + Firebase impl + service delegate. `feature_flag_evaluated` now also fires from `isEnabled` path (was only `isInRollout`). `recipe_favorited` event constant + emission from `toggleFavorite`. `first_cook` milestone constant + `logFirstCookIfMilestone` method on RecipeEventsTracker. PA6 (debug drop) rejected: would suppress DebugView. PA7 (cooksLast14Days) deferred to BUT-830.
 
-### Agent C: Backend (Firestore index + CF refs)
-- [x] **C1. BUT-795** — Added `notification_batches` composite (`userId ASC + scheduledFor ASC`) to `firestore.indexes.json`. Matches the query at `firebase_notification_batch_repository.dart:100-103`.
-- [x] **C2. BUT-772** — All 4 CF files migrated. `Collections.friendRequests` → `Collections.socialRequests` (compile-error pattern, not aliased). `cleanupExpiredFriendRequests` → `cleanupExpiredSocialRequests` (file + function + audit-event-type). `cleanupFriendRequests` helper → `cleanupSocialRequests`. CI guard `tools/check_no_friend_requests_refs.sh` (allows historical comments). `npx tsc --noEmit` clean.
+### Agent C: UI mechanical sweeps
+- [x] **C1. BUT-799** — 16 `EdgeInsets.only(...left/right...)` mixed-axis sites migrated to `EdgeInsetsDirectional.only(start/end)`. Arch-test regression guard added. `SkeletonComponents.skeletonBox` `margin:` widened from `EdgeInsets?` to `EdgeInsetsGeometry?` to accept directional callers.
+- [-] **C2. BUT-798** — Deferred. 50+ files exceed sprint slot. Filed BUT-829 follow-up. Returned to Backlog.
+- [x] **C3. BUT-800** — `MaterialApp.builder` now clamps `textScaler` at root (1.4× ceiling). Per-scaffold `clampTextScaling` wrappers become redundant but harmless. viewInsets sub-task deferred to BUT-831.
 
-### Tier-2 agent reviews (all passed clean)
-- [x] code-reviewer — BUT-792 wiring clean; one fix-now nit applied (sentinel exception in unverified path so Crashlytics receives it)
-- [x] testing-specialist — BUT-792 coverage sufficient for acceptance; flagged 3 follow-ups (filed in Linear)
-- [x] firebase-backend-security — BUT-772 + BUT-795 clean; flagged orphaned friend_requests indexes (filed in Linear)
-- [-] firestore-rules-tester — skipped, `firestore.rules` not touched
+### Tier-2 agent reviews
+- [ ] code-reviewer — full Dart diff (run before commit)
+- [ ] testing-specialist — `lib/repositories/firebase/firebase_analytics_repository.dart` + `lib/services/analytics_service.dart` + `lib/main.dart`
+- [-] firebase-backend-security — skip (no rules / functions touched)
+- [-] firestore-rules-tester — skip (rules not touched)
 
 ### Post-Sprint Steps
-- [x] `flutter analyze --no-pub` clean (0 issues, 1287 files)
-- [x] `npx tsc --noEmit` clean in functions/
-- [x] BUT-792 unit tests pass (4/4)
-- [x] CI guards verified locally: action-pinning, security-deps, no-friend-requests, no-mistral
-- [ ] **Touch agent markers manually before commit** — harness blocked auto-touch by safety policy. Run from repo root:
-  ```bash
-  touch .claude/state/code-review-done.marker .claude/state/testing-review-done.marker .claude/state/firebase-security-done.marker
-  ```
-- [ ] /simplify pass on Dart edits (deferred — diffs are small comment-only or new files)
-- [ ] Commit + push
-- [ ] Linear: close 9 tickets to Done with summaries
+- [x] `dart analyze --fatal-infos` clean
+- [x] Architecture test green (8 groups, all pass)
+- [x] BUT-786 unit tests pass (5/5)
+- [x] Feature-flag dedup tests pass (5/5)
+- [ ] Commit (specific paths only — leave MASTER-wave docs / overnight log untouched per parallel-session rule)
+- [ ] Push
+- [ ] Linear close: BUT-777, BUT-786, BUT-803, BUT-799, BUT-800 to Done; BUT-796 already Cancelled; BUT-798 to Backlog (deferred)
+- [ ] File follow-ups: BUT-829 (CPI sweep), BUT-830 (cooksLast14Days), BUT-831 (viewInsets), BUT-832 (recipe_cooked is_first_time test fix)
 
-### Known follow-ups (filed in Linear)
-- BUT-822 — Populate v1 ONNX model hashes in `kExpectedNerModelHashes` + `kExpectedLineClassifierModelHashes` (transitional → mandatory)
-- BUT-823 — Integration test for `_verifyModelIntegrity` short-circuit (assert no `.tmp` file appears on hash mismatch)
-- BUT-824 — Remove orphaned `friend_requests` composite indexes from `firestore.indexes.json` (BUT-761 cleanup)
-- BUT-825 — Wire `dart run tools/measure_adoption.dart` into nightly CI job; commit `adoption-status.md` if changed
-- BUT-826 — Reconcile `lib/services/CLAUDE.md` "~98% BaseService adoption" claim with measured 67.0% (BUT-810 follow-on)
-- BUT-827 — Hash-format guard test (each registry entry must be 64 lowercase hex chars) — add when first hash lands
-- BUT-828 — Re-pre-flight on iOS Build Validation that `firebase_app_check 0.4.3` exact pin doesn't regress against current Flutter 3.35.x
+### Known follow-ups (filed in Linear in Phase 3)
+- **BUT-829** — Bulk-migrate 50+ raw `CircularProgressIndicator` → `StateWidget.loading()`/`LoadingIndicator` + arch-test guard. Replaces deferred BUT-798 scope.
+- **BUT-830** — Compute `cooksLast14Days` user property on session-complete. Needs cookSession repo `countSince(now-14d)`. (BUT-803 PA7 carve-out.)
+- **BUT-831** — Roll out `MediaQuery.viewInsetsOf` to keyboard-affected scaffolds (login, comments, recipe form, chat input). (BUT-800 sub-scope.)
+- **BUT-832** — Fix `recipe_cooked` test assertion: expects string `'false'` but BUT-523 dictates native bool. Pre-existing failure not caused by this sprint.
+- **BUT-833** — Wire `setUserId` on auth state transitions in `AuthService` listener / `AuthWrapper`. (BUT-803 PA5: chokepoint added; caller wiring still needed.)
+- **BUT-834** — Wire `logFirstCookIfMilestone` from `markRecipeAsCooked` callsite. (BUT-803 PA11: tracker method added; emission point still needed.)
 
 ### What this means in plain language
-- **Two repo-hygiene fixes**: stop saying "Mistral" everywhere when we use Gemini, and add the standard `LICENSE` / `NOTICE` / `SECURITY.md` files most repos ship.
-- **One docs fix**: adoption percentages were contradicting themselves inside the same file (45% vs 78% on the same page) — replace inline numbers with one machine-generated source.
-- **Three supply-chain locks**: GitHub Actions pinned to commit hashes (so a hijacked tag can't swap our build), three security-critical Flutter packages pinned to exact versions, and the two ML model downloads now verify a known SHA-256 before we feed bytes to the inference graph.
-- **One Firestore index** added so the notifications dispatcher stops hitting a runtime "missing index" error.
-- **One backend cleanup**: Cloud Functions still wrote to the old `friend_requests` collection name — six places renamed so notifications + cleanup actually find data.
-- **One CI gap**: `dep-audit` workflow only ran on PRs, but solo workflow pushes direct to main, so it never ran. Added a push trigger.
-- **Risk**: low everywhere. Pinning stripped caret → exact for three packages — if pub-resolved minors drift down, build catches it before merge. Honest measurement exposed `BaseService` adoption is 67%, not 96% — that's a doc-truth update, not a regression.
+- **Architectural enforcement**: 4 new arch-test rules catch `FirebaseAuth.instance` etc., view→repo direct imports, VM→firestore imports, and hardcoded collection-name strings at PR time. Pre-existing violators are noted with cleanup tickets.
+- **Analytics now has session IDs**: every event emitted from now on carries a `session_id` field. Funnel analysis (signup → first cook → favorite) can now bucket events to one user-session in BigQuery instead of guessing.
+- **Cross-device user tracking**: `setUserId` is now wired on the analytics chokepoint — once we hook it into auth-state changes (BUT-833), events on phone + tablet will tie to the same user.
+- **Three new analytics events**: `recipe_favorited`, `feature_flag_evaluated` (now fires from both code paths), `first_cook` milestone (method ready, emission point pending).
+- **RTL readiness improved**: 16 padding sites that were stuck in left-to-right are now bidirectional. Arabic/Hebrew users would have seen wrong-side padding without this.
+- **Accessibility**: extreme text-scale settings (250%+) now clamp to 1.4× at the app root, so layouts don't clip.
+- **Risk**: low. Behavior changes are additive (new events) or visual-equivalent in current LTR locale (directional padding looks the same in Swedish/English). Sprint scope adjusted from 7→5 implemented tickets after Step 0 caught two stale-audit cases and one over-large scope.
 
 ---
 
-## Archived prior sprint (completed in commit d43536da8)
+## Archived prior sprint (completed in commit 4f8654b87)
 
-cleanup foundation + storage moderation + audit-log reconcile (BUT-768/775/807/780/808/778/774/789) — 2026-05-06 (R) + follow-ups BUT-814..821.
+hygiene + supply-chain pins + backend index — 2026-05-06 (S) — BUT-810/809/794/791/790/793/792/795/772; follow-ups BUT-822..828.

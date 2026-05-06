@@ -64,6 +64,28 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   /// Salt manager extracted to a helper to keep this file under the 500-line cap.
   final AnalyticsSaltManager _saltManager;
 
+  /// BUT-786: per-session UUID merged into every emitted event under the
+  /// `session_id` key. Mutated via `setSessionId` from `main.dart` on cold
+  /// start and on resume-after-long-background.
+  String? _sessionId;
+
+  /// Suppress repeated "session_id is null" warnings — first occurrence per
+  /// process is enough; spamming the log on every event isn't useful.
+  bool _warnedNullSessionId = false;
+
+  /// BUT-786 / BUT-803 (PA5): tracks whether `setAnalyticsCollectionEnabled(true)`
+  /// has been called. The Firebase SDK's `setUserId` is NOT suppressed by
+  /// the collection-enabled flag on every platform (iOS in particular caches
+  /// the id and attaches it to the next event after consent flips on). Gating
+  /// in-repo gives us a hard guarantee that no user-id is sent pre-consent.
+  bool _collectionEnabled = false;
+
+  /// BUT-803 (PA5) review fix H2: caches a `setUserId` call that arrived
+  /// pre-consent so it can be replayed when `setAnalyticsCollectionEnabled(true)`
+  /// runs. Without this, an auth listener firing before the consent flip
+  /// permanently suppresses the user-id for the rest of the session.
+  String? _pendingUserId;
+
   /// Creates a FirebaseAnalyticsRepository with optional custom FirebaseAnalytics instance.
   /// If no instance is provided, it uses the default FirebaseAnalytics.instance.
   /// This allows for dependency injection in tests while maintaining production simplicity.
@@ -75,6 +97,20 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     String? saltOverride,
   })  : _analytics = analytics ?? FirebaseAnalytics.instance,
         _saltManager = AnalyticsSaltManager(override: saltOverride);
+
+  @override
+  void setSessionId(String? sessionId) {
+    _sessionId = sessionId;
+    // Re-arm the warning on a non-null install only. An explicit
+    // `setSessionId(null)` followed by emission is a real bug worth
+    // re-surfacing, so we deliberately do not reset the flag on clear.
+    if (sessionId != null) {
+      _warnedNullSessionId = false;
+    }
+  }
+
+  @override
+  String? get currentSessionId => _sessionId;
 
   @override
   Future<void> initialize() async {
@@ -131,14 +167,13 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     }
   }
 
+  // BUT-786 (review fix H2): route through the local `logEvent` so the
+  // session_id chokepoint merge applies. `logLogin` / `logSignUp` cannot
+  // benefit from this — they wrap Firebase's reserved `login` / `sign_up`
+  // events which don't accept arbitrary parameters. See `logLogin` /
+  // `logSignUp` doc on the interface for the trade-off.
   @override
-  Future<void> logLogout() async {
-    try {
-      await _analytics.logEvent(name: AnalyticsEvents.logout);
-    } catch (e) {
-      AppLogger.error('Analytics logout logging failed: $e');
-    }
-  }
+  Future<void> logLogout() => logEvent(name: AnalyticsEvents.logout);
 
   @override
   Future<void> setUserProperty({
@@ -152,10 +187,68 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     }
   }
 
+  // BUT-803 (PA5): cross-device identity. Best-effort — a failure to set
+  // the id never blocks the caller (sign-in must succeed even if analytics
+  // is misbehaving).
+  //
+  // GDPR gate (review H1): refuse non-null user-id installs while
+  // `_collectionEnabled` is false. The Firebase SDK caches `setUserId`
+  // independently of the collection flag on iOS; without this gate, a
+  // sign-in that fires before the consent flip would stamp a stable user
+  // identifier into the SDK and have it ride the very next post-consent
+  // event. `null` (sign-out clear) always passes through regardless.
+  @override
+  Future<void> setUserId(String? userId) async {
+    if (userId != null && !_collectionEnabled) {
+      // Review fix H2: cache for replay in `setAnalyticsCollectionEnabled(true)`.
+      // The latest non-null id wins — a sign-in followed quickly by another
+      // sign-in just overwrites the pending value. Sign-out (`null`) below
+      // also clears any pending id so we never replay a stale one.
+      _pendingUserId = userId;
+      AppLogger.info(
+        '[analytics] setUserId queued pre-consent (BUT-803 PA5 review H2)',
+      );
+      return;
+    }
+    if (userId == null) {
+      _pendingUserId = null;
+    }
+    try {
+      await _analytics.setUserId(id: userId);
+    } catch (e) {
+      AppLogger.error('Analytics setUserId failed: $e');
+    }
+  }
+
   @override
   Future<void> setAnalyticsCollectionEnabled(bool enabled) async {
+    // Review fix H1 (firebase-backend-security 2026-05-06): on the DISABLE
+    // path, flip the local flag BEFORE the SDK call. If the SDK call
+    // throws, we still want subsequent `setUserId` calls to be suppressed
+    // — fail-closed on consent revoke. On the ENABLE path keep the
+    // current "set after success" semantics so a failed enable doesn't
+    // pretend consent landed.
+    if (!enabled) {
+      _collectionEnabled = false;
+    }
+
     try {
       await _analytics.setAnalyticsCollectionEnabled(enabled);
+      if (enabled) {
+        _collectionEnabled = true;
+        // Review fix H2: replay any user-id that arrived pre-consent.
+        // Auth state listeners can fire before `_enableCollectionIfConsented`
+        // resolves; without replay, the user-id stays dark for the session.
+        final pending = _pendingUserId;
+        if (pending != null) {
+          _pendingUserId = null;
+          try {
+            await _analytics.setUserId(id: pending);
+          } catch (e) {
+            AppLogger.error('Analytics replay setUserId failed: $e');
+          }
+        }
+      }
     } catch (e) {
       AppLogger.error('Analytics collection setting failed: $e');
     }
@@ -446,14 +539,37 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
 
   /// Defense-in-depth PII gate applied to every `logEvent` parameter map.
   /// See class-level doc for the full policy.
+  ///
+  /// BUT-786: also merges the per-session `session_id` into every event so
+  /// downstream funnel analysis can bucket events by session. The merge runs
+  /// even on the fast-path (no PII keys) — a non-null `_sessionId` is
+  /// always carried through.
   Future<Map<String, Object>?> _sanitize(Map<String, Object>? params) async {
-    if (params == null || params.isEmpty) return params;
+    final sessionId = _sessionId;
+    if (sessionId == null && !_warnedNullSessionId) {
+      AppLogger.warning(
+        '[analytics] event firing without session_id — main.dart should '
+        'install one via setSessionId() before bootstrap completes (BUT-786)',
+      );
+      _warnedNullSessionId = true;
+    }
 
-    // Fast path: if no key is PII-relevant, skip the salt-load + map copy.
+    if (params == null || params.isEmpty) {
+      return sessionId == null
+          ? params
+          : <String, Object>{'session_id': sessionId};
+    }
+
+    // Fast path: if no key is PII-relevant, only the session_id merge is
+    // needed (no salt-load, no per-key copy required when there's nothing
+    // to inject either).
     final hasPii = params.keys.any(
       (k) => _piiDropKeys.contains(k) || _piiHashKeys.contains(k),
     );
-    if (!hasPii) return params;
+    if (!hasPii) {
+      if (sessionId == null) return params;
+      return <String, Object>{...params, 'session_id': sessionId};
+    }
 
     final salt = await _saltManager.get();
     final result = <String, Object>{};
@@ -476,6 +592,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       }
 
       result[key] = value;
+    }
+
+    if (sessionId != null) {
+      result['session_id'] = sessionId;
     }
 
     return result;

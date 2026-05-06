@@ -2779,3 +2779,29 @@ Pattern verified safe:
 ### 2026-05-06 — `storage_upload_rejected` audit-log shape (keep PII out)
 - Pattern: `userId` = uploader uid (or "unknown" when neither metadata.uploadedBy nor a `users/{uid}/...` path prefix yields one), `operation: 'storage_upload_rejected'`, `granted: false`, `metadata: { bucket, contentType, reason }`. Reason codes: `unsupported_content_type`, `magic_byte_unrecognized`, `magic_byte_mismatch_declared_X_actual_Y`. **No** filename body, **no** byte previews — `resourceId` is the object path (`users/{uid}/recipes/abc.jpg`) which already contains the uid by convention; that's intentional and matches every other audit row's resource format.
 - Anonymous-upload edge case: when a malicious actor finds a path that's neither `users/{uid}/...` nor has `metadata.uploadedBy`, `userId='unknown'` is the right tombstone — refusing to write the audit row would be worse (silent rejection). Storage rules currently only permit writes under `users/{uid}/...`, `shared/recipes/{recipeId}/` (uploadedBy required), and `feedback/{uid}/...`, so `unknown` should be effectively unreachable in production; treat any occurrence as a signal of rule drift or admin-SDK upload.
+
+### 2026-05-06 — SDK-state mirror flags: symmetric fail-closed + replay-on-enable
+
+**Pattern:** repositories that mirror an SDK's internal consent/state flag locally
+(because the SDK doesn't expose its own state — Firebase Analytics' collection-enabled
+is the canonical case; `FirebaseAnalyticsRepository._collectionEnabled` does this for
+BUT-786/BUT-803) must handle two failure modes asymmetrically:
+
+1. **Enable path (deny → allow):** only flip the local mirror **after** the SDK
+   call succeeds (fail-closed on enable failure — caller is denied until next try).
+2. **Disable path (allow → deny):** flip the local mirror **before** the SDK call
+   (fail-closed on disable failure — withdrawal is GDPR Art. 7(3); a silent
+   SDK-throw must not leave the consent-gated channel open).
+
+**Companion requirement — replay on enable:** any value cached/dropped during the
+deny window (e.g. a `setUserId(uid)` call suppressed pre-consent) must be replayed
+to the SDK when the local mirror flips to allow. Otherwise the cold-start race
+(auth listener fires before consent flip lands) produces a permanent silent drop
+until the user signs out and back in.
+
+**Anti-pattern:** placing the local flag mutation outside the `try` block on enable
+(opens the channel even when the SDK refused) or inside the `try` block on disable
+(leaves the channel open when the SDK throws on revoke).
+
+**Where to apply:** any future telemetry/Crashlytics/Performance/Remote-Config
+repository that gates user-tied calls on a locally-mirrored consent flag.

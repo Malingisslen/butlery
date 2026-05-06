@@ -60,6 +60,7 @@ abstract final class AnalyticsEvents {
   static const recipeCopied = 'recipe_copied';
   static const recipeImageUploaded = 'recipe_image_uploaded';
   static const recipeSearchPerformed = 'recipe_search_performed';
+  static const recipeFavorited = 'recipe_favorited';
   static const postImportEdit = 'post_import_edit';
 
   // --- Menu / meal plan ---
@@ -166,6 +167,7 @@ abstract final class AnalyticsEvents {
   static const firstGroup = 'first_group';
   static const firstMealPlan = 'first_meal_plan';
   static const firstSearch = 'first_search';
+  static const firstCook = 'first_cook';
 
   // --- Review prompts ---
   static const inAppReviewRequested = 'in_app_review_requested';
@@ -197,6 +199,7 @@ abstract final class AnalyticsUserProperties {
   static const hasGroup = 'has_group';
   static const menuActivated = 'menu_activated';
   static const searchActivated = 'search_activated';
+  static const cookingActivated = 'cooking_activated';
 
   // --- Acquisition / first-touch ---
   static const acquisitionSource = 'acquisition_source';

@@ -337,9 +337,9 @@ class ResponsiveStaggeredGrid extends StatelessWidget {
           columnCount,
           (index) => Expanded(
             child: Padding(
-              padding: EdgeInsets.only(
-                left: index == 0 ? 0 : gridSpacing / 2,
-                right: index == columnCount - 1 ? 0 : gridSpacing / 2,
+              padding: EdgeInsetsDirectional.only(
+                start: index == 0 ? 0 : gridSpacing / 2,
+                end: index == columnCount - 1 ? 0 : gridSpacing / 2,
               ),
               child: Column(
                 children: columns[index]

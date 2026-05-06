@@ -109,10 +109,10 @@ class MessageTimestampWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: EdgeInsets.only(
+      padding: EdgeInsetsDirectional.only(
         top: AppDimensions.spacingXs,
-        left: isFromCurrentUser ? 0 : AppDimensions.paddingS,
-        right: isFromCurrentUser ? AppDimensions.paddingS : 0,
+        start: isFromCurrentUser ? 0 : AppDimensions.paddingS,
+        end: isFromCurrentUser ? AppDimensions.paddingS : 0,
       ),
       child: Text(
         MessageTimeFormatter.format(timestamp),

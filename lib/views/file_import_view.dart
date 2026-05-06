@@ -319,8 +319,8 @@ class _FileImportViewState extends State<FileImportView> {
 
   Widget _buildRequirement(String text) {
     return Padding(
-      padding: const EdgeInsets.only(
-          left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsetsDirectional.only(
+          start: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
           Icon(Icons.check,
@@ -335,8 +335,8 @@ class _FileImportViewState extends State<FileImportView> {
 
   Widget _buildOptional(String text) {
     return Padding(
-      padding: const EdgeInsets.only(
-          left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsetsDirectional.only(
+          start: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
           Icon(Icons.add,

@@ -19,6 +19,25 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   @override
   dynamic get observer => null;
 
+  // BUT-786: NoOp keeps the session id locally so callers can read it back
+  // (debug overlay, app_open emission), even though the underlying analytics
+  // sink is a no-op. Cheap to track; no SDK contract is violated.
+  String? _sessionId;
+
+  @override
+  void setSessionId(String? sessionId) {
+    _sessionId = sessionId;
+  }
+
+  @override
+  String? get currentSessionId => _sessionId;
+
+  // BUT-803 (PA5): no-op user-id setter for parity with the Firebase impl.
+  @override
+  Future<void> setUserId(String? userId) async {
+    // No-op: Analytics not supported
+  }
+
   @override
   Future<void> logEvent({
     required String name,

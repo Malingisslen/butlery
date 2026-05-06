@@ -9,7 +9,7 @@ class SkeletonComponents {
     double? width,
     double? height,
     BorderRadius? borderRadius,
-    EdgeInsets? margin,
+    EdgeInsetsGeometry? margin,
   }) {
     return _SkeletonBox(
       width: width,
@@ -24,7 +24,7 @@ class _SkeletonBox extends StatefulWidget {
   final double? width;
   final double? height;
   final BorderRadius? borderRadius;
-  final EdgeInsets? margin;
+  final EdgeInsetsGeometry? margin;
 
   const _SkeletonBox({
     this.width,

@@ -536,8 +536,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                   )
                                 : null,
                             padding: isActive
-                                ? const EdgeInsets.only(
-                                    left: AppDimensions.spacingSm)
+                                ? const EdgeInsetsDirectional.only(
+                                    start: AppDimensions.spacingSm)
                                 : null,
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,

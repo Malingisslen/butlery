@@ -188,8 +188,8 @@ class TagResultDisplay extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacingXs),
               ...decision.triggeringIngredients!.map(
                 (ingredient) => Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppDimensions.paddingM,
+                  padding: const EdgeInsetsDirectional.only(
+                    start: AppDimensions.paddingM,
                     bottom: AppDimensions.spacingXs,
                   ),
                   child: Row(

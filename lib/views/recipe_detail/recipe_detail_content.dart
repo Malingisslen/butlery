@@ -217,8 +217,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                               children: [
                                 if (isAllergen)
                                   Padding(
-                                    padding: const EdgeInsets.only(
-                                      right: AppDimensions.spacingXs,
+                                    padding: const EdgeInsetsDirectional.only(
+                                      end: AppDimensions.spacingXs,
                                     ),
                                     child: Icon(
                                       Icons.warning_amber,

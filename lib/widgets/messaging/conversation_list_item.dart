@@ -99,8 +99,8 @@ class ConversationListItem extends StatelessWidget {
                           children: [
                             if (conversation.isPinned)
                               Padding(
-                                padding: const EdgeInsets.only(
-                                  right: AppDimensions.spacingXs,
+                                padding: const EdgeInsetsDirectional.only(
+                                  end: AppDimensions.spacingXs,
                                 ),
                                 child: Icon(
                                   Icons.push_pin,

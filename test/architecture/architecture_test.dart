@@ -3,7 +3,18 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 /// Architecture compliance tests that validate MVVM + Repository pattern.
-/// These tests run in CI to ensure architecture rules are maintained.
+/// Runs in CI to ensure architectural rules don't regress.
+///
+/// Each rule below has its own group. When a check needs to allow-list a
+/// pre-existing violation, the allow-list is inline with a follow-up ticket
+/// reference so the exception is auditable rather than invisible.
+///
+/// **Architectural rule sources:**
+/// - `CLAUDE.md` — high-level pattern (MVVM + Repository).
+/// - `lib/services/CLAUDE.md` — services extend `BaseService`.
+/// - `lib/views/CLAUDE.md` — views never reach into repositories directly.
+/// - `lib/viewmodels/CLAUDE.md` — VMs orchestrate; never import Firestore SDK.
+/// - `lib/repositories/CLAUDE.md` — repositories own Firebase singleton access.
 void main() {
   group('Architecture Compliance', () {
     late List<File> dartFiles;
@@ -23,6 +34,22 @@ void main() {
           .where((f) => !f.path.contains('.freezed.dart'))
           .toList();
     });
+
+    /// Returns the path of [f] relative to the repo root, normalized to
+    /// forward slashes and prefixed with `lib/`. Used so allow-list lookups
+    /// are unambiguous on both Windows and Unix.
+    ///
+    /// Why this helper exists (BUT-786 review fix): inline
+    /// `'lib/${path.split('lib/').last}'` is wrong if any subdirectory is
+    /// named `lib` — `.split('lib/').last` returns the segment after the
+    /// LAST occurrence, silently producing the wrong relative path. Using
+    /// `libDir.path` as the prefix to strip is exact and collision-free.
+    String relPathOf(File f) {
+      final p = f.path.replaceAll('\\', '/');
+      final root = libDir.path.replaceAll('\\', '/');
+      if (p.startsWith('$root/')) return 'lib/${p.substring(root.length + 1)}';
+      return p;
+    }
 
     test('lib directory contains Dart files', () {
       expect(dartFiles, isNotEmpty, reason: 'Should have Dart files in lib/');
@@ -119,6 +146,246 @@ void main() {
         reason:
             'Direct FirebaseFirestore.instance usage should only be in repositories.\n'
             'Violations found in:\n${violations.join('\n')}',
+      );
+    });
+
+    // BUT-777: extends the FirebaseFirestore.instance check to the four other
+    // Firebase singletons (Auth, Storage, Analytics, Functions). Same allow-list
+    // policy as Firestore — repositories own the singleton; everyone else must
+    // go through a repository.
+    //
+    // Pre-existing violations are allow-listed inline below with a follow-up
+    // ticket reference. New violations break the test → caught at PR time.
+    test(
+        'no direct Firebase{Auth,Storage,Analytics,Functions}.instance '
+        'outside repositories', () {
+      // Files allowed to touch the four non-Firestore singletons. Each entry
+      // documents the reason. See BUT-777 follow-ups for cleanup tickets.
+      const allowList = <String>{
+        // DI graph — wires Firebase SDKs into repositories.
+        'lib/core/di/di_container.dart',
+        'lib/core/di/modules/content_module.dart',
+
+        // FCM token-manager: structurally a service but named without
+        // "_service" suffix; Firebase Messaging singleton is the contract.
+        // (Tracked in BUT-782 for full DI conversion.)
+        'lib/services/notifications/fcm_token_manager.dart',
+
+        // BUT-777 follow-up cleanup queue (each gets its own ticket):
+        // — services reading FirebaseAuth/Analytics/Storage directly when
+        //   they should consume an AuthService / AnalyticsService /
+        //   StorageRepository wrapper.
+        'lib/services/account/export/compliance_export_manager.dart',
+        'lib/services/llm/llm_service.dart',
+        'lib/services/monitoring/web_error_reporter.dart',
+        'lib/services/notifications/notification_deep_link_router.dart',
+        'lib/services/notifications/notification_service.dart',
+        'lib/services/parsing/feedback/parse_correction_uploader.dart',
+        'lib/services/parsing/parse_event_logger.dart',
+        'lib/services/performance/performance_monitoring_service.dart',
+
+        // View-side: best-effort underage account delete. Justified inline
+        // (GDPR Art 8 cleanup); documented exception, not a follow-up.
+        'lib/views/onboarding/onboarding_age_gate_blocked_view.dart',
+      };
+
+      final pattern = RegExp(
+        r'Firebase(Auth|Storage|Analytics|Functions)\.instance',
+      );
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final path = file.path.replaceAll('\\', '/');
+
+        // Repositories own the singleton — same rule as Firestore check.
+        // Tightened (review fix): only the repositories layer skips, not
+        // anything with the substring "repository" anywhere in its path.
+        if (path.contains('lib/repositories/')) continue;
+        if (path.contains('main_e2e')) continue;
+        if (path.endsWith('lib/main.dart')) continue;
+        if (path.contains('sync_manager')) continue;
+
+        final relPath = relPathOf(file);
+        if (allowList.contains(relPath)) continue;
+
+        final content = file.readAsStringSync();
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+
+        if (pattern.hasMatch(stripped)) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: 'Direct FirebaseAuth/Storage/Analytics/Functions.instance '
+            'usage should be confined to repositories or the explicit allow-list.\n'
+            'New violations:\n${violations.join('\n')}',
+      );
+    });
+
+    // BUT-777: ViewModels orchestrate; they never import the Firestore SDK
+    // directly. All Firestore access must go through a Repository.
+    test('viewmodels do not import cloud_firestore', () {
+      // Pre-existing violation — file is structurally a storage module
+      // mis-located under viewmodels/. Tracked for relocation.
+      const allowList = <String>{
+        'lib/viewmodels/menu/menu_storage.dart',
+      };
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final path = file.path.replaceAll('\\', '/');
+        if (!path.contains('lib/viewmodels/')) continue;
+
+        final relPath = relPathOf(file);
+        if (allowList.contains(relPath)) continue;
+
+        final content = file.readAsStringSync();
+        if (content.contains("import 'package:cloud_firestore/")) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'ViewModels must not import cloud_firestore. Use a Repository.\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
+    // BUT-777: Views render; they never import a Firebase repository directly.
+    // Views talk to ViewModels; ViewModels talk to Repositories.
+    test('views do not import firebase repositories directly', () {
+      // Pre-existing violation — actions helper still pulls the firebase
+      // shared-content repos. Migration to a coordinator is on the follow-up
+      // queue.
+      const allowList = <String>{
+        'lib/views/social/shared_with_me/shared_content_actions.dart',
+      };
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final path = file.path.replaceAll('\\', '/');
+        if (!path.contains('lib/views/')) continue;
+
+        final relPath = relPathOf(file);
+        if (allowList.contains(relPath)) continue;
+
+        final content = file.readAsStringSync();
+        if (content
+            .contains("import 'package:butlery/repositories/firebase/")) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: 'Views must not import lib/repositories/firebase/ directly. '
+            'Route via a ViewModel.\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
+    // BUT-777: hardcoded `.collection('name')` string literals outside
+    // repositories make refactoring collection names a multi-file hunt.
+    // The repo layer pulls names from `lib/core/constants/firestore_collections.dart`;
+    // services should do the same.
+    test('no hardcoded .collection(\'...\') literals outside repositories', () {
+      // Pre-existing violations — each gets a cleanup ticket but the rule is
+      // useful immediately for new code.
+      const allowList = <String>{
+        // Bootstrap helper extracted from main.dart — uses a private
+        // `_health` probe collection at boot. Same exception rationale as
+        // the FirebaseFirestore.instance allow above.
+        'lib/core/bootstrap/firestore_bootstrap.dart',
+        // Doc-comment example, not actual code — false positive.
+        'lib/services/account/export/export_pagination_helper.dart',
+        // Follow-up: route through repositories or a Collections constant.
+        'lib/services/moderation/report_service.dart',
+        'lib/services/onboarding/onboarding_progress_service.dart',
+        'lib/services/realtime/resource_parser_module.dart',
+        'lib/services/unified/operations/modules/rating_statistics.dart',
+        'lib/services/unified/unified_menu_service.dart',
+      };
+
+      // Match `.collection('name')` and `.collection("name")` literals; the
+      // alternative is `.collection(Collections.something)` which we want.
+      final pattern =
+          RegExp(r"""\.collection\(['"][a-z_][a-zA-Z0-9_]*['"]\)""");
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final path = file.path.replaceAll('\\', '/');
+
+        // Repos own the literal — that's their job.
+        if (path.contains('lib/repositories/')) continue;
+        // Constants file *defines* collection names; allowed.
+        if (path.endsWith('firestore_collections.dart')) continue;
+
+        final relPath = relPathOf(file);
+        if (allowList.contains(relPath)) continue;
+
+        final content = file.readAsStringSync();
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+
+        if (pattern.hasMatch(stripped)) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'Use a constant from lib/core/constants/firestore_collections.dart '
+            'instead of a string literal.\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
+    // BUT-799: the bulk migration to `EdgeInsetsDirectional.only(start|end:)`
+    // was already done in commit cc17ce235 (RTL sweep). This guard prevents
+    // regression — `EdgeInsets.only(left:)` / `(right:)` is LTR-fixed and
+    // breaks RTL languages (Arabic, Hebrew). The directional variant flips
+    // automatically when the ambient `Directionality` is RTL.
+    test(
+        'no LTR-fixed EdgeInsets.only(left:|right:) in lib/ '
+        '(use EdgeInsetsDirectional.only)', () {
+      final pattern = RegExp(r'EdgeInsets\.only\([^)]*\b(left|right):');
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        final content = file.readAsStringSync();
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+
+        if (pattern.hasMatch(stripped)) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: 'EdgeInsets.only(left:|right:) breaks RTL. Use '
+            'EdgeInsetsDirectional.only(start:|end:) instead.\n'
+            'Violations:\n${violations.join('\n')}',
       );
     });
 

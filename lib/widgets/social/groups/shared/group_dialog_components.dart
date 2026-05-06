@@ -90,8 +90,8 @@ class EmojiSelector extends StatelessWidget {
                     child: Container(
                       width: 44,
                       height: 44,
-                      margin: const EdgeInsets.only(
-                        right: AppDimensions.spacingS,
+                      margin: const EdgeInsetsDirectional.only(
+                        end: AppDimensions.spacingS,
                       ),
                       decoration: BoxDecoration(
                         color: isSelected

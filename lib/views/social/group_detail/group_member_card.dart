@@ -73,8 +73,8 @@ class GroupMemberCard {
                   ),
                 if (_isGroupCreator(member, group))
                   Container(
-                    margin: EdgeInsets.only(
-                      left: _isGroupOwner(member, group)
+                    margin: EdgeInsetsDirectional.only(
+                      start: _isGroupOwner(member, group)
                           ? AppDimensions.spacingXs
                           : 0,
                     ),

@@ -225,8 +225,8 @@ class ButleryFilterChips extends StatelessWidget {
           final isSelected = index == selectedIndex;
 
           return Padding(
-            padding: EdgeInsets.only(
-              right: index < chips.length - 1 ? AppDimensions.spacingSm : 0,
+            padding: EdgeInsetsDirectional.only(
+              end: index < chips.length - 1 ? AppDimensions.spacingSm : 0,
             ),
             child: _FilterChip(
               label: label,

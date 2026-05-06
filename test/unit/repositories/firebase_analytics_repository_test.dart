@@ -133,6 +133,87 @@ void main() {
       });
     });
 
+    // BUT-786: every emitted event must carry the per-session UUID once
+    // `setSessionId` is installed. Verifies the chokepoint merge — caller
+    // doesn't have to thread `session_id` through every emission.
+    group('session_id plumb-through (BUT-786)', () {
+      test('logEvent merges installed session_id into parameter map', () async {
+        repository.setSessionId('sess-abc');
+
+        await repository.logEvent(
+          name: 'recipe_viewed',
+          parameters: {'mealType': 'dinner'},
+        );
+
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'recipe_viewed',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+
+        expect(captured['session_id'], equals('sess-abc'));
+        expect(captured['mealType'], equals('dinner'));
+      });
+
+      test('logEvent merges session_id even when caller passes null params',
+          () async {
+        repository.setSessionId('sess-xyz');
+
+        await repository.logEvent(name: 'app_opened');
+
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'app_opened',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+
+        expect(captured['session_id'], equals('sess-xyz'));
+      });
+
+      test('logEvent merges session_id even on the PII slow-path', () async {
+        repository.setSessionId('sess-pii');
+
+        await repository.logEvent(
+          name: 'recipe_shared',
+          parameters: {'recipe_id': 'recipe-1', 'method': 'native'},
+        );
+
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'recipe_shared',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+
+        expect(captured['session_id'], equals('sess-pii'));
+        // recipe_id is hashed by the existing PII gate.
+        expect(captured['recipe_id'], isNot(equals('recipe-1')));
+        expect((captured['recipe_id'] as String).length, equals(64));
+        expect(captured['method'], equals('native'));
+      });
+
+      test('clearing session_id (null) suppresses the merge', () async {
+        repository.setSessionId('sess-temp');
+        repository.setSessionId(null);
+
+        await repository.logEvent(
+          name: 'test_event',
+          parameters: {'k': 'v'},
+        );
+
+        final captured = verify(() => mockAnalytics.logEvent(
+              name: 'test_event',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+
+        expect(captured.containsKey('session_id'), isFalse);
+      });
+
+      test('currentSessionId reflects the installed value', () {
+        expect(repository.currentSessionId, isNull);
+        repository.setSessionId('sess-current');
+        expect(repository.currentSessionId, equals('sess-current'));
+        repository.setSessionId(null);
+        expect(repository.currentSessionId, isNull);
+      });
+    });
+
     group('authentication events', () {
       test('should log login event', () async {
         // Arrange

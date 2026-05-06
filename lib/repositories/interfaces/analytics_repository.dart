@@ -17,6 +17,17 @@ abstract class AnalyticsRepository {
   /// Returns null if not supported by the implementation
   dynamic get observer;
 
+  /// BUT-786: install/refresh the per-session UUID that gets merged into
+  /// every emitted event's `session_id` parameter. Pass `null` to clear.
+  /// Caller responsibility — `main.dart` generates one on cold start and on
+  /// resume-after-long-background.
+  void setSessionId(String? sessionId);
+
+  /// Current session id if installed; `null` until `setSessionId` runs.
+  /// Exposed for diagnostics and the `app_open` event so callers can attach
+  /// the same id at the boundary.
+  String? get currentSessionId;
+
   /// Log a custom event with optional parameters
   Future<void> logEvent({
     required String name,
@@ -37,6 +48,11 @@ abstract class AnalyticsRepository {
     required String name,
     required String? value,
   });
+
+  /// BUT-803 (PA5): tie subsequent events to a user across devices.
+  /// Pass `null` on sign-out to reset. Implementations should be a thin
+  /// passthrough to the analytics SDK's `setUserId`.
+  Future<void> setUserId(String? userId);
 
   /// Set whether analytics collection is enabled
   Future<void> setAnalyticsCollectionEnabled(bool enabled);

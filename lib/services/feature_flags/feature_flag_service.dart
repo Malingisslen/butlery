@@ -114,14 +114,21 @@ class FeatureFlagService {
   }
 
   /// Check if a boolean feature flag is enabled.
+  ///
+  /// BUT-803 (PA8): emits `feature_flag_evaluated` once per (flag, variant)
+  /// per session, matching the `isInRollout` path. Without this, flags read
+  /// via `isEnabled` were dark in BigQuery.
   bool isEnabled(String flag) {
+    bool result;
     try {
-      return _remoteConfig.getBool(flag);
+      result = _remoteConfig.getBool(flag);
     } catch (e) {
       AppLogger.warning('Failed to get flag "$flag", using default');
       final defaultValue = _defaults[flag];
-      return defaultValue is bool ? defaultValue : false;
+      result = defaultValue is bool ? defaultValue : false;
     }
+    _maybeLogFlagEvaluated(flag, result);
+    return result;
   }
 
   /// Get an integer feature flag value.
