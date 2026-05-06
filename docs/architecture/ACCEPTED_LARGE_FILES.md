@@ -143,7 +143,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_detail_view.dart` | 777 | Recipe detail screen |
 | `personal_tag_viewmodel.dart` | 715 | Personal tag management VM |
 | `recipe_detail_content.dart` | 734 | Body content widget for recipe detail |
-| `mina_recept_view.dart` | 687 | Main recipe list screen |
+| `mina_recept_view.dart` | 549 | Main recipe list screen — facade-extracted to `lib/views/mina_recept/` per BUT-441 (was 687, drifted to 1017, now 549) |
 | `recipe_card.dart` | 674 | Recipe list card widget |
 | `adaptive_icon.dart` | 652 | Platform-adaptive icon widget |
 | `di_container.dart` | 569 | DI registrations — grows with each new service/repo |

@@ -6,15 +6,20 @@
 /// - Social notifications (friend requests, shared content)
 /// - Offline-first design with sync status
 /// - Multi-provider integration (RecipeListViewModel, FriendsViewModel, SharedContentCoordinatorViewModel)
+///
+/// BUT-441: facade pattern. Per-recipe rendering, empty/onboarding states,
+/// discovery shelves, selection-mode AppBar, and filter-chip helpers live
+/// in `lib/views/mina_recept/`. Was 1017 lines (+48% over the accepted-large
+/// entry of 687 in `docs/architecture/ACCEPTED_LARGE_FILES.md`); now under
+/// that entry. Future slice candidates if the 500-line code-style cap
+/// becomes binding: `_buildCookingSessionCard` + `_safeLoadSocialData` +
+/// `_safeLoadRecipeData`.
 
 // lib/views/main_views/mina_recept_view.dart
 
-import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 // ViewModel integration for comprehensive state management
@@ -29,23 +34,19 @@ import 'package:butlery/views/personal_tags_view.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 // Constants and theming
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Widget components for modern UI architecture
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
 import 'package:butlery/widgets/cooking/cooking_session_card.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
-import 'package:butlery/widgets/recipe/recipe_shelf.dart';
 
 // BUT-408: live cooking session presence
 import 'package:butlery/models/cooking/cooking_session.dart';
@@ -55,24 +56,27 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
 
 // Service integration for functionality and data management
-import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/offline_service.dart' as offline_service;
 import 'package:butlery/services/user_service.dart';
 
 // Theme system integration
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 
 // Core services and utilities
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/models/seasonal/seasonal_month.dart';
 import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
-import 'package:butlery/widgets/home/seasonal_hero_header.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+
+// BUT-441 facade extractions
+import 'package:butlery/views/mina_recept/discovery_shelves_widget.dart';
+import 'package:butlery/views/mina_recept/empty_state_widgets.dart';
+import 'package:butlery/views/mina_recept/filter_chip_helpers.dart';
+import 'package:butlery/views/mina_recept/recipe_card_widget.dart';
+import 'package:butlery/views/mina_recept/selection_app_bar.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-import-recipe`  → empty state "import" CTA
@@ -236,17 +240,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  void _onSortChanged(SortCriteria? criteria) {
-    if (criteria != null) {
-      // Defer to next frame so PopupMenu fully tears down before rebuild
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final viewModel = context.read<RecipeListViewModel>();
-        viewModel.updateSort(criteria);
-      });
-    }
-  }
-
   // Sync with online
   Future<void> _syncWithOnline() async {
     final offlineService = context.read<offline_service.OfflineService>();
@@ -282,147 +275,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  /// Get active quick filter IDs from ViewModel state.
-  Set<String> _getQuickFilterIds(RecipeListViewModel viewModel) {
-    final ids = <String>{};
-    if (viewModel.activeTimeFilters.contains(RecipeFilters.filterQuick)) {
-      ids.add(RecipeFilters.filterQuick);
-    }
-    if (viewModel.activeDietaryFilters
-        .contains(RecipeFilters.filterVegetarian)) {
-      ids.add(RecipeFilters.filterVegetarian);
-    }
-    if (viewModel.favoritesOnly) {
-      ids.add(RecipeFilters.filterFavorites);
-    }
-    if (viewModel.pantryOnly) {
-      ids.add(RecipeFilters.filterPantry);
-    }
-    // Allergen quick-filter chips
-    ids.addAll(viewModel.activeAllergenFilters);
-    return ids;
-  }
-
-  /// Handle quick filter chip toggle.
-  void _onQuickFilterToggle(RecipeListViewModel viewModel, String filterId) {
-    if (RecipeFilters.allergenFilterIds.contains(filterId)) {
-      viewModel.toggleAllergenFilter(filterId);
-      return;
-    }
-    switch (filterId) {
-      case RecipeFilters.filterQuick:
-        viewModel.toggleTimeFilter(RecipeFilters.filterQuick);
-        break;
-      case RecipeFilters.filterVegetarian:
-        viewModel.toggleDietaryFilter(RecipeFilters.filterVegetarian);
-        break;
-      case RecipeFilters.filterFavorites:
-        viewModel.toggleFavoritesFilter();
-        break;
-      case RecipeFilters.filterPantry:
-        viewModel.togglePantryFilter();
-        break;
-      case RecipeFilters.filterIngredientSearch:
-        Navigator.pushNamed(context, Routes.ingredientSearch);
-        return;
-    }
-  }
-
-  /// Chip-styled sort button for the filter chips row.
-  Widget _buildSortChip(RecipeListViewModel viewModel) {
-    final cs = Theme.of(context).colorScheme;
-    return PopupMenuButton<SortCriteria>(
-      onSelected: _onSortChanged,
-      itemBuilder: (context) => SortMenuBuilder.buildItems(
-        context: context,
-        currentSort: viewModel.sortCriteria,
-        sortAscending: viewModel.sortAscending,
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm,
-        ),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
-          border: Border.all(
-            color: cs.outlineVariant,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.sort,
-              size: AppDimensions.iconSizeS,
-              color: cs.onSurfaceVariant,
-            ),
-            const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              context.l10n.commonSort,
-              style: AppTextStyles.labelMedium.copyWith(
-                color: cs.onSurface,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildSelectionAppBar(RecipeListViewModel viewModel) {
-    final cs = Theme.of(context).colorScheme;
-    return AppBar(
-      backgroundColor: cs.primaryContainer,
-      leading: IconButton(
-        icon: const Icon(Icons.close),
-        onPressed: viewModel.clearSelection,
-        tooltip: context.l10n.bulkCancelSelection,
-      ),
-      title: Text(
-        context.l10n.bulkSelectedCount(viewModel.selectedCount),
-        style: AppTextStyles.titleMedium,
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.select_all),
-          tooltip: context.l10n.bulkSelectAll,
-          onPressed: viewModel.selectAll,
-        ),
-        IconButton(
-          icon: const Icon(Icons.delete_outline),
-          tooltip: context.l10n.bulkDelete,
-          onPressed: () async {
-            final count = viewModel.selectedCount;
-            final confirmed = await CommonDialogActions.showDeleteConfirmation(
-              context: context,
-              itemName: '$count recept',
-              itemType: 'recept',
-              warningMessage: context.l10n.bulkDeleteConfirmMessage,
-              icon: Icons.delete_sweep,
-            );
-            if (confirmed == true) {
-              viewModel.deleteSelected();
-              viewModel.clearSelection();
-              if (mounted) {
-                SnackBarUtils.showSuccessWithAction(
-                  context,
-                  context.l10n.bulkDeleteSuccess(count),
-                  actionLabel: context.l10n.commonUndo,
-                  onAction: () => viewModel.undoBulkDelete(),
-                  duration: const Duration(seconds: 7),
-                );
-              }
-            }
-          },
-        ),
-      ],
-    );
-  }
-
   /// Build recipe interface with filtering, search, sorting, and social integration.
   @override
   Widget build(BuildContext context) {
@@ -436,7 +288,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     // Selection mode uses a different app bar
     final PreferredSizeWidget appBar = viewModel.isSelectionMode
-        ? _buildSelectionAppBar(viewModel)
+        ? buildMinaReceptSelectionAppBar(context, viewModel)
         : MainViewHeader(
             title: 'dina\nrecept',
             ghostIllustration: VegetableType.broccoli,
@@ -517,10 +369,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   ...QuickFilterChips.getDefaultRecipeFilters(context),
                   ...QuickFilterChips.getAllergenFilters(trackedAllergens),
                 ],
-                selectedIds: _getQuickFilterIds(viewModel),
-                onFilterToggle: (filterId) =>
-                    _onQuickFilterToggle(viewModel, filterId),
-                trailing: _buildSortChip(viewModel),
+                selectedIds: getMinaReceptQuickFilterIds(viewModel),
+                onFilterToggle: (filterId) => handleMinaReceptQuickFilterToggle(
+                  context,
+                  viewModel,
+                  filterId,
+                ),
+                trailing: MinaReceptSortChip(viewModel: viewModel),
               ),
             ),
           ],
@@ -576,319 +431,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  void _navigateToRecipe(Recipe recipe) {
-    Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
-  }
-
-  Widget _buildDiscoveryShelves(RecipeQueryViewModel queryVm) {
-    return Column(
-      children: [
-        _buildSeasonalHero(queryVm),
-        RecipeShelf(
-          title: context.l10n.dormantRecipesTitle,
-          recipes: queryVm.getDormantRecipes(),
-          onRecipeTap: _navigateToRecipe,
-        ),
-        RecipeShelf(
-          title: context.l10n.seasonalForgottenFavorites,
-          recipes: queryVm.getForgottenFavorites(),
-          onRecipeTap: _navigateToRecipe,
-        ),
-      ],
-    );
-  }
-
-  /// BUT-409 seasonal hero — shown only when ≥2 user recipes match this
-  /// month's curated ingredients. Tap applies an OR-ingredient filter via
-  /// `RecipeQueryViewModel.applySeasonalFilter`; clearing happens through
-  /// the normal clear-all-filters flow.
-  Widget _buildSeasonalHero(RecipeQueryViewModel queryVm) {
-    return FutureBuilder<SeasonalMonth?>(
-      future: _seasonalMonthFuture,
-      builder: (_, snap) {
-        final month = snap.data;
-        if (month == null) return const SizedBox.shrink();
-        final matches = _seasonalHeroService.matchUserRecipes(
-          month,
-          queryVm.personalRecipes,
-        );
-        if (matches.length < 2) return const SizedBox.shrink();
-        return SeasonalHeroHeader(
-          month: month,
-          matchCount: matches.length,
-          onTap: () =>
-              queryVm.applySeasonalFilter(ingredients: month.ingredients),
-        );
-      },
-    );
-  }
-
-  Widget _buildRecipeCard(
-    RecipeListViewModel viewModel,
-    Recipe recipe,
-    UserAllergenPreferences allergenPrefs, {
-    int? index,
-  }) {
-    final isSelected = viewModel.selectedIds.contains(recipe.id);
-    final cs = Theme.of(context).colorScheme;
-
-    Widget card = ContentCard(
-      key: ValueKey(recipe.id),
-      item: recipe,
-      type: ContentCardType.recipe,
-      style: viewModel.isGridView
-          ? ContentCardStyle.grid
-          : ContentCardStyle.detailed,
-      userAllergenPrefs:
-          allergenPrefs.showOnCards ? allergenPrefs.trackedAllergens : null,
-      userDietaryPrefs:
-          allergenPrefs.showOnCards ? allergenPrefs.trackedDietary : null,
-      matchPercent:
-          viewModel.pantryOnly ? viewModel.pantryMatches[recipe.id] : null,
-      onFavoriteToggle: viewModel.isSelectionMode
-          ? null
-          : () => viewModel.toggleFavorite(recipe.id),
-      onTap: viewModel.isSelectionMode
-          ? () => viewModel.toggleSelection(recipe.id)
-          : () async {
-              await Navigator.pushNamed(
-                context,
-                Routes.receptDetalj,
-                arguments: recipe,
-              );
-            },
-      onLongPress: viewModel.isSelectionMode
-          ? null
-          : () => viewModel.enterSelectionMode(recipe.id),
-    );
-
-    // Selection overlay
-    if (viewModel.isSelectionMode) {
-      card = Stack(
-        children: [
-          card,
-          if (isSelected)
-            Positioned.fill(
-              child: Container(
-                color: cs.primary.withValues(alpha: 0.15),
-              ),
-            ),
-          Positioned(
-            top: AppDimensions.spacingSm,
-            left: AppDimensions.spacingSm,
-            child: Semantics(
-              selected: isSelected,
-              label: isSelected
-                  ? context.l10n.a11yRecipeSelected(recipe.title)
-                  : context.l10n.a11yRecipeNotSelected(recipe.title),
-              child: Icon(
-                isSelected ? Icons.check_circle : Icons.circle_outlined,
-                color: isSelected ? cs.primary : cs.outline,
-                size: AppDimensions.iconSizeM,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    // Swipe gestures only in normal mode
-    if (!viewModel.isSelectionMode) {
-      card = Semantics(
-        customSemanticsActions: {
-          CustomSemanticsAction(
-            label: context.l10n.a11ySwipeEditAction,
-          ): () => Navigator.pushNamed(
-                context,
-                Routes.redigeraRecept,
-                arguments: recipe,
-              ),
-          CustomSemanticsAction(
-            label: context.l10n.a11ySwipeDeleteAction,
-          ): () async {
-            final confirmed =
-                await CommonDialogActions.showRecipeDeleteConfirmation(
-              context: context,
-              recipeName: recipe.title,
-            );
-            if (confirmed == true) {
-              _handleDeleteWithUndo(viewModel, recipe);
-            }
-          },
-        },
-        child: Dismissible(
-          key: Key('recipe-${recipe.id}'),
-          direction: DismissDirection.horizontal,
-          confirmDismiss: (direction) async {
-            HapticFeedback.mediumImpact();
-            if (direction == DismissDirection.endToStart) {
-              final confirmed =
-                  await CommonDialogActions.showRecipeDeleteConfirmation(
-                context: context,
-                recipeName: recipe.title,
-              );
-              if (confirmed == true) {
-                _handleDeleteWithUndo(viewModel, recipe);
-              }
-              return false;
-            } else if (direction == DismissDirection.startToEnd) {
-              Navigator.pushNamed(
-                context,
-                Routes.redigeraRecept,
-                arguments: recipe,
-              );
-              return false;
-            }
-            return false;
-          },
-          background: ExcludeSemantics(
-            child: Container(
-              alignment: AlignmentDirectional.centerStart,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingLg),
-              color: cs.primary,
-              child: Icon(Icons.edit,
-                  color: cs.onPrimary, size: AppDimensions.iconSize28),
-            ),
-          ),
-          secondaryBackground: ExcludeSemantics(
-            child: Container(
-              alignment: AlignmentDirectional.centerEnd,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingLg),
-              color: cs.error,
-              child: Icon(Icons.delete,
-                  color: cs.onError, size: AppDimensions.iconSize28),
-            ),
-          ),
-          child: card,
-        ),
-      );
-    }
-
-    if (index != null) {
-      card = Semantics(
-        identifier: 'recipe-card-$index',
-        button: true,
-        child: card,
-      );
-    }
-
-    return card;
-  }
-
-  Widget _buildEmptyState() {
-    final userService = context.read<UserService>();
-    final profile = userService.currentUserProfile;
-    final isNewUser =
-        profile != null && clock.now().difference(profile.joinedAt).inDays < 7;
-
-    if (!isNewUser) {
-      return StateWidget.noRecipes(
-        onAction: () => Navigator.pushNamed(context, Routes.laggTill),
-      );
-    }
-
-    final cs = Theme.of(context).colorScheme;
-    final hasPrefs = profile.allergenPreferences != null &&
-        (profile.allergenPreferences!.trackedAllergens.isNotEmpty ||
-            profile.allergenPreferences!.trackedDietary.isNotEmpty);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const VegetableIllustration(
-              type: VegetableType.broccoli,
-              size: 100,
-            ),
-            const SizedBox(height: AppDimensions.spacingLg),
-            Text(
-              context.l10n.emptyStateNewUserTitle,
-              style: AppTextStyles.headlineMedium.copyWith(color: cs.primary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.spacingSm),
-            Text(
-              hasPrefs
-                  ? context.l10n.emptyStateNewUserWithPrefs
-                  : context.l10n.emptyStateNewUserDescription,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.spacingXl),
-            SizedBox(
-              key: const ValueKey('test-mina-recept-import-recipe'),
-              width: double.infinity,
-              child: Semantics(
-                identifier: 'btn-import-recipe',
-                button: true,
-                child: ActionButtons.primaryButton(
-                  context,
-                  label: context.l10n.emptyStateImportAction,
-                  onPressed: () =>
-                      Navigator.pushNamed(context, Routes.smartImport),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingSm),
-            Semantics(
-              identifier: 'btn-add-recipe',
-              button: true,
-              child: TextButton(
-                key: const ValueKey('test-mina-recept-add-recipe'),
-                onPressed: () => Navigator.pushNamed(context, Routes.laggTill),
-                child: Text(context.l10n.emptyStateOtherOptions),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOnboardingBanner(RecipeListViewModel viewModel) {
-    final cs = Theme.of(context).colorScheme;
-    return Dismissible(
-      key: const Key('onboarding-banner'),
-      direction: DismissDirection.horizontal,
-      onDismissed: (_) => viewModel.dismissOnboardingBanner(),
-      child: Container(
-        margin: AppDimensions.responsiveContentPadding(context),
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
-        decoration: BoxDecoration(
-          color: cs.primaryContainer,
-          border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.info_outline, color: cs.primary),
-            const SizedBox(width: AppDimensions.spacingSm),
-            Expanded(
-              child: Text(
-                context.l10n.onboardingSkippedBanner,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onPrimaryContainer,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                viewModel.dismissOnboardingBanner();
-                Navigator.pushNamed(context, Routes.settingsAllergens);
-              },
-              child: Text(context.l10n.onboardingSkippedBannerAction),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildContent(
     RecipeListViewModel viewModel,
     bool isOnline,
@@ -917,7 +459,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     if (recipes.isEmpty) {
       return viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
-          ? _buildEmptyState()
+          ? const MinaReceptEmptyState()
           : StateWidget.noSearchResults(
               onAction: viewModel.searchQuery.isNotEmpty
                   ? () => viewModel.updateSearch('')
@@ -942,9 +484,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       },
       child: Column(
         children: [
-          if (viewModel.showOnboardingBanner) _buildOnboardingBanner(viewModel),
+          if (viewModel.showOnboardingBanner)
+            MinaReceptOnboardingBanner(viewModel: viewModel),
           if (viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters) ...[
-            _buildDiscoveryShelves(context.read<RecipeQueryViewModel>()),
+            MinaReceptDiscoveryShelves(
+              queryVm: context.read<RecipeQueryViewModel>(),
+              seasonalMonthFuture: _seasonalMonthFuture,
+              seasonalHeroService: _seasonalHeroService,
+            ),
           ],
           Expanded(
             child: viewModel.isGridView
@@ -963,9 +510,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                       childAspectRatio: 0.75,
                     ),
                     itemCount: recipes.length,
-                    itemBuilder: (context, index) => _buildRecipeCard(
-                        viewModel, recipes[index], allergenPrefs,
-                        index: index),
+                    itemBuilder: (context, index) => MinaReceptRecipeCard(
+                      viewModel: viewModel,
+                      recipe: recipes[index],
+                      allergenPrefs: allergenPrefs,
+                      onDelete: (recipe) =>
+                          _handleDeleteWithUndo(viewModel, recipe),
+                      index: index,
+                    ),
                   )
                 : LayoutComponents.responsiveListGrid(
                     items: recipes,
@@ -976,9 +528,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     shrinkWrap: false,
                     gridChildAspectRatio: 0.75,
                     animate: true,
-                    itemBuilder: (context, recipe) => _buildRecipeCard(
-                        viewModel, recipe, allergenPrefs,
-                        index: recipes.indexOf(recipe)),
+                    itemBuilder: (context, recipe) => MinaReceptRecipeCard(
+                      viewModel: viewModel,
+                      recipe: recipe,
+                      allergenPrefs: allergenPrefs,
+                      onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
+                      index: recipes.indexOf(recipe),
+                    ),
                   ),
           ),
           if (viewModel.canLoadMore)

@@ -1,76 +1,63 @@
 # Sprint Backlog
 
-## Sprint: BUT-702 closure + dep tracking-ticket refresh — 2026-05-06 (N)
+## Sprint: BUT-441 mina_recept_view facade extraction — 2026-05-06 (O)
 
-Theme: small process sprint. Sprint M shipped CI duration telemetry yesterday. The remaining tractable backlog clusters into "needs own sprint" (auth/security, deploy pipeline, large-file decompose, SDK 3.10 bump, A/B infra) or "blocked on external" (App Check console flip, Apple Dev enrollment, drift_dev upstream). Honest sprint scope: close one stale ticket with a thorough analysis, and refresh one tracking ticket.
+Theme: large-file decompose cluster, first ticket. `lib/views/mina_recept_view.dart` was the worst drifter on the accepted-large list (687 → 1017 lines, +48%). Facade-extracted into 5 focused files in `lib/views/mina_recept/`. Behavior-preserving structural refactor; no public-surface changes.
 
 **In Progress carry-overs (NOT in this sprint, NOT shipped):**
 - BUT-442 — repo migrations (own focused sprint, mid-flight).
 - BUT-760 — App Check enforcement; awaiting Firebase Console flip.
 
 **Step 0 verification — done:**
-- **BUT-702** rescoped sprint L claimed 4 remaining destructive surfaces (group leave, group delete, friend remove, shopping-list clear). Code-read in this sprint shows:
-  - **Recipe delete** — undo wired (sprint L, `mina_recept_view.dart:565-577`).
-  - **Shopping-list item delete** — undo wired (`unified_shopping_view.dart:227-256`); the undo re-adds the item with all fields. Item-by-item, not whole-list-clear.
-  - **Group leave** (`group_detail_view.dart:343-414`) — confirmation dialog → `_viewModel.leaveGroup()` → success SnackBar (no undo) → navigate away. Asymmetric: re-joining requires invitation acceptance, not click-to-restore.
-  - **Friend remove** (`friend_profile_view.dart:333-350`) — confirmation dialog → `removeFriend(uid)` → success SnackBar (no undo) → navigate back. Asymmetric: re-friending requires friend request flow.
-  - **Group delete / member remove** (`group_detail_actions.dart:55-235`) — same asymmetry.
-  - All asymmetric flows have **confirmation dialogs already** as the safety net — this is the right UX.
-  - **Conclusion**: BUT-702 is effectively done. The ticket should close, not stay Backlog. The "wire to all surfaces" rescope was based on an incomplete read of which destructive operations are *symmetric*. Documenting the analysis in the closing comment so a future picker doesn't re-open this thread.
-- **BUT-554** is a tracking ticket. Pubspec verification: `drift_dev: ^2.29.0` pinned in lockstep with `build_runner: 2.7.1`. `flutter pub deps` confirms `build_runner_core: 9.3.1` and `build_resolvers: 3.0.3` are *still* transitively pulled — both still discontinued upstream. No drift_dev major release since the ticket was filed. Stays Backlog with refreshed status comment + next-check date.
+- **BUT-441 fits.** Current line count 997 (was 1017 in ticket; minor settling). Five clean extraction targets with no `setState` reach-through:
+  - `_buildRecipeCard` (152 lines) — pure widget that takes viewModel/recipe/allergenPrefs/onDelete.
+  - `_buildEmptyState` + `_buildOnboardingBanner` (108 lines combined) — pure presentational.
+  - `_buildDiscoveryShelves` + `_buildSeasonalHero` + `_navigateToRecipe` (~46 lines) — receives the once-resolved seasonal future from parent.
+  - `_buildSelectionAppBar` (48 lines) — top-level builder returning `PreferredSizeWidget`.
+  - `_buildSortChip` + `_getQuickFilterIds` + `_onQuickFilterToggle` (~140 lines) — helpers + sort chip widget.
+- Tests: no widget tests exist for this view (only e2e imports the public class). Internal refactor doesn't break the e2e contract.
 
-### Process: Linear ticket-state hygiene (no code)
+### Agent A: Extraction (lib/views/mina_recept/*.dart, .dart triggers Tier-2 specialists)
 
-- [ ] **A1. BUT-702 → Done** with comprehensive asymmetry analysis comment.
-- [ ] **A2. BUT-554 → status comment** noting drift_dev still at 2.29.0, build_runner_core/build_resolvers still discontinued + still pulled, next check 2026-08-06 (3 months out).
+Specialists: `code-reviewer` + `testing-specialist` (any `.dart` change in `lib/`).
+
+- [x] **A1. New `lib/views/mina_recept/recipe_card_widget.dart`** — `MinaReceptRecipeCard` (188 lines). Stateless. `onDelete` callback so parent retains `_handleDeleteWithUndo` with its `mounted` flow context. Confirmation dialog still gates delete in both swipe path and semantic-action path.
+- [x] **A2. New `lib/views/mina_recept/empty_state_widgets.dart`** — `MinaReceptEmptyState` + `MinaReceptOnboardingBanner` (148 lines).
+- [x] **A3. New `lib/views/mina_recept/discovery_shelves_widget.dart`** — `MinaReceptDiscoveryShelves` (69 lines). Receives the once-resolved `seasonalMonthFuture` from parent.
+- [x] **A4. New `lib/views/mina_recept/selection_app_bar.dart`** — top-level `buildMinaReceptSelectionAppBar` function (68 lines). Bulk-delete confirmation + 7s undo SnackBar preserved; `mounted` → `context.mounted` (top-level fn, no State).
+- [x] **A5. New `lib/views/mina_recept/filter_chip_helpers.dart`** — `getMinaReceptQuickFilterIds`, `handleMinaReceptQuickFilterToggle`, `MinaReceptSortChip` (131 lines).
+- [x] **A6. Edit `lib/views/mina_recept_view.dart`** — main file rewritten with the inline code removed, the new symbols imported, and the call sites updated. 549 lines (was 997, -45%).
+- [x] **A7. Update `docs/architecture/ACCEPTED_LARGE_FILES.md`** — bump entry from 687 → 549 with note explaining the BUT-441 extraction.
+
+### Tier-2 specialist gates (both APPROVED)
+
+- [x] **code-reviewer** — APPROVED with two LOW non-blocking nits (doc comment wording about file size; one cosmetic comment dropped). Both addressed in the commit.
+- [x] **testing-specialist** — APPROVED. No test obligation introduced; original had no widget tests, e2e public-surface contract intact.
 
 ### Post-Sprint Steps
-- [ ] No `dart analyze` needed (no Dart changes).
-- [ ] No unit-test runs needed.
-- [ ] No Tier-2 specialist gates (no `*.dart` files touched).
-- [ ] Commit: `chore(sprint): BUT-702 closure + BUT-554 dep tracking refresh`.
-- [ ] Push to main.
+- [x] `dart analyze --fatal-infos` clean on touched files (verified pre-commit + lefthook will rerun).
+- [x] No new tests required (per testing-specialist verdict).
+- [x] Tier-2 markers touched (`.claude/state/code-review-done.marker`, `testing-review-done.marker`).
+- [ ] Commit + push.
+- [ ] Linear: BUT-441 → Done with summary.
 
 ### Continued blockers (NOT in scope per memory)
-- BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
-- BUT-549 — post-beta (Sign in with Apple lands when social login does)
-- BUT-579 — held for button-system sprint
-- BUT-444 / BUT-445 — own product-design sprints
-- BUT-686 / BUT-660 / BUT-694 — feature-level brainstorming first
-- BUT-674 / BUT-721 — own scoped sprints
-- BUT-626 — bucket-based A/B infra; own sprint
-- BUT-420 / BUT-451 / BUT-452 / BUT-486 — deploy-pipeline / staging cluster; focused infra sprint
-- BUT-550 / BUT-536 / BUT-441 — ACCEPTED_LARGE_FILES drift sprint
-- BUT-558 — DCM install (own sprint)
-- BUT-594 — macOS sandbox audit needs hardware-exercise step
-- BUT-701 — focus traversal (2-day a11y sprint)
-- BUT-479 — cursor-pagination half is non-trivial; needs design ticket
-- BUT-435 + BUT-502/503/507/509 — Dart SDK 3.10 bump cluster (one focused sprint)
-- BUT-472 — realtime_session_manager stream/timer migration (next perf sprint)
-- BUT-455 / BUT-440 / BUT-504 — repository discipline cluster (paired with BUT-442)
-- BUT-453 / BUT-454 — auth/session security (own sprint with product-design input)
-- BUT-704 — i18n @key ARB descriptions (2-day sweep; ARB files are 9585 lines each)
-- BUT-520 — VM-migration sweep (rescoped sprint I; 30 VMs, 6-10 sprints of work)
-- BUT-431 / BUT-530 — main.dart bootstrap split + extraction (rescoped sprint J)
-- BUT-581 — `?? ''` migration (rescoped sprint K)
-- BUT-610 — offline-mode hardening (multi-day audit)
-- BUT-723 — tablet master-detail layouts (multi-day refactor)
-- BUT-734 — split FirebaseUserRepository (defer until file ≥700 lines)
-- BUT-710 / BUT-706 / BUT-711 — platform-polish cluster (BUT-715 shipped sprint L)
-- BUT-492 — cost/budget alerts (Console action; doc-only piece needs the alerts to actually be wired)
-- BUT-494 — coverage floor 55→85 (same blocker as BUT-397)
-- BUT-488 — pubspec auto-bump CI (rescoped sprint M; Low priority)
-- BUT-397 — coverage-floor tightening (deferred sprint M; needs ≥5 successful CI baseline runs)
-- All `idea`-labeled monetization scaffolding — post-beta
+
+(unchanged from sprint N — see archived sprint N below for the full list.)
 
 ### What this means in plain language
-- **One ticket gets a proper closure**: a "make destructive actions undoable" ticket has been open for a while, but reading the code carefully today shows the parts that *can* be undone (recipe deletes, shopping-item deletes) already have undo, and the parts that can't (leaving a group, removing a friend) shouldn't have undo because re-joining/re-friending isn't a click-to-restore action — it's a separate invitation flow. Documenting why and closing the ticket so it doesn't keep coming up in future sprints.
-- **One tracking ticket gets a date refresh**: a "watch for drift_dev to release a fix" ticket was filed in April. We re-check today — still no fix. Adding a comment with today's findings + the next re-check date so this ticket doesn't get forgotten.
-- **Risk**: zero. No code changes. Two Linear comments + one state transition.
+- **One large file got broken into smaller pieces**: the "my recipes" screen was a single 997-line file doing too many things at once (filtering, sorting, recipe cards, empty states, discovery, selection mode). It's now split into a 549-line main file plus 5 focused helper files in a new `mina_recept/` subdirectory.
+- **No behavior changes**: every button, swipe, and animation works exactly the same. This is a "rearrange the furniture" change, not a feature change.
+- **Why now**: a "this file shouldn't grow past 687 lines" rule existed and the file had grown to 1017 lines — 48% over the limit. After this refactor, it's at 549 lines and back inside the rule.
+- **Risk**: low. No tests existed for this view before; the public class is unchanged so the end-to-end tests that drive it as a whole still work; analyzer is clean; both the code-reviewer and testing-specialist agents reviewed and approved.
 
 ---
 
-## Archived prior sprint (completed in commit 5b480e01f)
+## Archived prior sprint (completed in commit 9598e784d)
+
+BUT-702 closure + BUT-554 dep tracking refresh — 2026-05-06 (N) — closed BUT-702 with asymmetric-undo analysis + refreshed BUT-554 with quarterly check date.
+
+## Archived sprint before (completed in commit 5b480e01f)
 
 CI duration telemetry + ML runtime memo + Linear hygiene — 2026-05-05 (M) — shipped BUT-495/571 + rescoped BUT-488 + deferred BUT-397.
 
@@ -85,7 +72,3 @@ Tech-debt sweep + dep watch + web polish — 2026-05-05 (K) — shipped BUT-526/
 ## Archived sprint before (completed in commits 245b71478 + a5288014f)
 
 Dep hygiene + PWA polish + Linear cleanup — 2026-05-05 (J) — shipped BUT-500/519/524/718 + closed BUT-437 + rescoped BUT-431/530.
-
-## Archived sprint before (completed in commit 1e347b424)
-
-Backend hygiene + auth security micro-hardening — 2026-05-04 (I) — shipped BUT-446/506/465/490 + closed BUT-716 + rescoped BUT-520.
