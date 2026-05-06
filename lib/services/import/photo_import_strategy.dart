@@ -145,7 +145,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           formatAfter = ImageFormat.jpeg;
         }
         // If conversion failed (converted == null), proceed with the
-        // original HEIC bytes — Mistral may still parse them. The point
+        // original HEIC bytes — Vertex may still parse them. The point
         // is to remove the silent-failure class, not introduce a new
         // error path.
       }

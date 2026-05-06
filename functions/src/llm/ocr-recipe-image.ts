@@ -403,7 +403,7 @@ export async function runOcrRecipeImage(
 
 /**
  * Build content parts array for Gemini multimodal input.
- * Gemini uses inlineData for base64 images (not image_url like Mistral).
+ * Gemini uses inlineData for base64 images (legacy providers used image_url).
  */
 function buildContentParts(
   base64?: string,

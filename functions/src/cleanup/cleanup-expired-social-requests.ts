@@ -1,8 +1,9 @@
 /**
- * I5: Clean up expired friend requests.
+ * I5: Clean up expired social requests.
  *
- * Friend requests have a 7-day expiry (matching the isExpired getter on the
- * FriendRequest model). This scheduled function deletes requests that have
+ * Social requests (renamed from friend_requests in BUT-761; CF refs migrated
+ * in BUT-772) have a 7-day expiry matching the isExpired getter on the
+ * SocialRequest model. This scheduled function expires requests that have
  * been pending for more than 7 days.
  */
 
@@ -15,13 +16,13 @@ import { Collections } from "../shared/collections";
 const db = admin.firestore();
 
 /**
- * Runs weekly on Sundays at 4 AM. Deletes pending friend requests
- * older than 7 days.
+ * Runs weekly on Sundays at 4 AM. Marks pending social requests
+ * older than 7 days as expired.
  */
-export const cleanupExpiredFriendRequests = onSchedule(
+export const cleanupExpiredSocialRequests = onSchedule(
   { schedule: "0 4 * * 0", timeZone: "Europe/Stockholm" },
   async () => {
-    logger.info("Starting expired friend request cleanup");
+    logger.info("Starting expired social request cleanup");
 
     const sevenDaysAgo = admin.firestore.Timestamp.fromDate(
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -29,7 +30,7 @@ export const cleanupExpiredFriendRequests = onSchedule(
 
     try {
       const query = db
-        .collection(Collections.friendRequests)
+        .collection(Collections.socialRequests)
         .where("status", "==", "pending")
         .where("sentAt", "<", sevenDaysAgo);
 
@@ -43,17 +44,17 @@ export const cleanupExpiredFriendRequests = onSchedule(
       );
 
       logger.info(
-        `Expired ${totalExpired} friend requests older than 7 days`
+        `Expired ${totalExpired} social requests older than 7 days`
       );
 
       // Log cleanup event
       await db.collection("system_events").add({
-        type: "cleanup_expired_friend_requests",
+        type: "cleanup_expired_social_requests",
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
         details: { expiredCount: totalExpired },
       });
     } catch (error) {
-      logger.error("Failed to cleanup expired friend requests:", error);
+      logger.error("Failed to cleanup expired social requests:", error);
       throw error;
     }
   }

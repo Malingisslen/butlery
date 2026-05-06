@@ -31,10 +31,12 @@ DI system:           ServiceLocator.get<T>(), modular DI modules
 Key patterns:
   - BaseService              (pre-flight checks, caching)
   - BaseFirebaseRepository   (CRUD + audit logging)
-  - ErrorHandlingMixin       (async error handling, retries) -- 100% adopted
-  - SerializationUtils       (Firestore parsing)            -- 100% adopted
+  - ErrorHandlingMixin       (async error handling, retries)
+  - SerializationUtils       (Firestore parsing)
   - AsyncOperationMixin      (loading/error states)
   - PermissionValidationMixin (security on all repositories)
+
+  Current adoption % — see docs/architecture/adoption-status.md (BUT-810).
 
 Firebase services:   Firestore, Auth, Storage, FCM, Cloud Functions
 Platforms:           Android, iOS, Web, macOS, Windows

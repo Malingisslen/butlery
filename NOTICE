@@ -1,0 +1,78 @@
+Butlery
+Copyright (c) 2026 Malin Gisslén
+
+This product includes software developed by third parties. Each is governed
+by its own license. The full machine-generated dependency tree (with exact
+versions) is available in:
+
+  - pubspec.lock                         (Flutter / Dart packages)
+  - functions/package-lock.json          (Cloud Functions / Node packages)
+
+================================================================================
+Apache License 2.0 attributions
+================================================================================
+
+This product includes software developed by Google LLC and the Firebase team:
+
+  - firebase_core, firebase_auth, firebase_app_check, firebase_analytics,
+    firebase_crashlytics, firebase_messaging, firebase_remote_config,
+    firebase_storage, firebase_performance, firebase_database,
+    firebase_dynamic_links, cloud_firestore, cloud_functions,
+    google_sign_in, vertexai_firebase
+    Copyright Google LLC. Licensed under the Apache License, Version 2.0.
+
+  - firebase-admin, firebase-functions
+    Copyright Google LLC. Licensed under the Apache License, Version 2.0.
+
+  - @google-cloud/firestore, @google-cloud/storage, googleapis
+    Copyright Google LLC. Licensed under the Apache License, Version 2.0.
+
+  - flutter, dart, flutter_localizations
+    Copyright Google LLC. Licensed under the BSD 3-Clause License.
+
+  - protobufjs, grpc, google-auth-library, gtoken, google-gax
+    Copyright Google LLC. Licensed under Apache License, Version 2.0 / BSD-3.
+
+================================================================================
+MIT License attributions
+================================================================================
+
+The majority of remaining packages (provider, http, shared_preferences,
+path_provider, intl, rxdart, image, image_picker, shimmer, freezed_annotation,
+json_annotation, sqflite, drift, sqlite3, get_it, mockito, build_runner,
+… and the corresponding Node packages: jsonwebtoken, lru-cache, semver,
+debug, mime, etc.) are MIT-licensed.
+
+Full text of the MIT License: https://opensource.org/licenses/MIT
+Full text of the Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0
+Full text of the BSD 3-Clause License: https://opensource.org/licenses/BSD-3-Clause
+
+================================================================================
+Other licenses
+================================================================================
+
+  - sqlcipher_flutter_libs / sqlcipher (BSD-style — Zetetic LLC).
+  - flutter_onnxruntime (MIT).
+  - freerasp (proprietary; see https://github.com/talsec/Free-RASP-Community).
+  - http_certificate_pinning (Apache-2.0).
+  - feature flags via GrowthBook SDK (MIT).
+  - Algolia / algoliasearch_helper_flutter (MIT).
+  - share_plus, url_launcher, package_info_plus (BSD-3, Flutter ecosystem).
+  - flutter_inappwebview (Apache-2.0).
+  - workmanager (MIT).
+  - google_fonts (Apache-2.0).
+  - flutter_local_notifications (BSD-3).
+
+================================================================================
+Regenerating this file
+================================================================================
+
+This NOTICE was authored manually for clarity. To rebuild a strict
+machine-generated attribution list:
+
+  flutter pub deps --json > /tmp/pub-deps.json
+  cd functions && npm ls --all --json > /tmp/npm-deps.json
+
+Each entry's license metadata can then be pulled from pub.dev / npmjs.com
+and emitted in a NOTICE section. A `tools/build_notice.dart` generator is
+filed as a follow-up improvement.

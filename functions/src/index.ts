@@ -7,7 +7,7 @@
  * - Calculates: ratingCount, averageRating, ratingDistribution, lastRatedAt
  * - Prevents N+1 query problems and ensures O(1) rating stat access
  *
- * LLM Services (Mistral AI):
+ * LLM Services (Vertex AI / Gemini):
  * - structureRecipe: Extract structured recipe from text
  * - ocrRecipeImage: Extract recipe from images using vision AI
  */
@@ -26,7 +26,7 @@ setGlobalOptions({ region: "europe-west1" });
 
 admin.initializeApp();
 
-// LLM Functions - Mistral AI integration
+// LLM Functions - Vertex AI / Gemini integration
 export { structureRecipe } from "./llm/structure-recipe";
 export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 
@@ -57,7 +57,7 @@ export { purgeExpiredAuditLogs } from "./audit_logs/purge-expired";
 export { cleanupDeletedIngredients, getDeletedIngredientStats } from "./cleanup/cleanup-deleted-ingredients";
 export { cleanupOldNotifications } from "./cleanup/cleanup-old-notifications";
 export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
-export { cleanupExpiredFriendRequests } from "./cleanup/cleanup-expired-friend-requests";
+export { cleanupExpiredSocialRequests } from "./cleanup/cleanup-expired-social-requests";
 export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
 
 // Social Cleanup - User deletion and moderation

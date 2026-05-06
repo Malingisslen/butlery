@@ -45,7 +45,7 @@ jobs:
       run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
     - name: Setup Flutter
-      uses: subosito/flutter-action@v2
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
         cache: true
@@ -64,6 +64,30 @@ jobs:
     # percentages. Guard catches re-introduction at PR time.
     - name: Forbid Python artifacts under lib/
       run: bash tools/check_no_python_artifacts.sh
+
+    # BUT-772: fail PR if functions/src/ re-introduces the legacy
+    # `friend_requests` / `friendRequests` collection name. Use
+    # `social_requests` / `Collections.socialRequests` instead.
+    - name: Forbid legacy friend_requests refs in functions/src/
+      run: bash tools/check_no_friend_requests_refs.sh
+
+    # BUT-793: security-primitive deps (firebase_app_check, freerasp,
+    # http_certificate_pinning) must stay pinned to exact versions so a
+    # silent `pub upgrade` can't change attestation / RASP / cert-pinning
+    # semantics without an explicit review.
+    - name: Forbid caret-loose security-primitive deps
+      run: bash tools/check_security_deps_pinned.sh
+
+    # BUT-790: high-blast-radius GitHub Actions must reference a 40-char
+    # commit SHA, not a tag. See docs/architecture/action-pinning.md.
+    - name: Require SHA pinning for high-blast-radius actions
+      run: bash tools/check_action_pinning.sh
+
+    # BUT-809: the app migrated from Mistral to Vertex AI / Gemini.
+    # Stale `mistral` references in active code mislead readers and
+    # imply a processor relationship that no longer exists.
+    - name: Forbid stale 'mistral' references in active code
+      run: bash tools/check_no_mistral_refs.sh
 
     # BUT-758: closes the BUT-572 theme migration. Forbid AppColors.X in
     # views/widgets except the legitimate-keep set established by the

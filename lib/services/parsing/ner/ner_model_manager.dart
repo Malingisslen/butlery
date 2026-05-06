@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/parsing/_expected_model_hashes.dart';
 import 'package:butlery/services/parsing/remote_model_loader.dart';
 
 /// Manages download, caching, and versioning of the BERT NER ONNX model.
@@ -41,7 +42,6 @@ class NerModelManager extends RemoteModelLoader {
   @override
   Duration get checkInterval => const Duration(hours: 12);
 
-  /// Whether a cached model exists locally.
   bool get isModelAvailable => _cachedModelPath != null;
 
   String? _cachedModelPath;
@@ -71,11 +71,9 @@ class NerModelManager extends RemoteModelLoader {
       final modelFile = File(modelPath);
       if (!await modelFile.exists()) return null;
 
-      // Validate file isn't corrupted (zero-byte or truncated)
       final fileSize = await modelFile.length();
       if (fileSize == 0 || fileSize > _maxModelSize) return null;
 
-      // Verify vocab and version files exist before reading
       final vocabFile = File('${dir.path}/$_vocabFileName');
       final versionFile = File('${dir.path}/$_versionFileName');
       if (!await vocabFile.exists() || !await versionFile.exists()) return null;
@@ -137,6 +135,17 @@ class NerModelManager extends RemoteModelLoader {
         AppLogger.warning('$serviceName: Download returned null');
         return null;
       }
+
+      // BUT-792: verify SHA-256 against the registered hash before any disk
+      // write. Mismatched bytes never touch the cache.
+      final ok = await verifyModelDownload(
+        modelBytes: modelData,
+        version: latestVersion,
+        hashRegistry: kExpectedNerModelHashes,
+        modelName: 'ingredient_ner',
+        registryConstantName: 'kExpectedNerModelHashes',
+      );
+      if (!ok) return null;
 
       final vocabContent = utf8.decode(vocabData);
 

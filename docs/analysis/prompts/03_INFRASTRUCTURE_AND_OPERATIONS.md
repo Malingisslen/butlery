@@ -393,7 +393,7 @@ Without backups: RPO = infinity (complete data loss possible).
 
 Document existing resilience patterns:
 - Offline persistence: ENABLED (persistenceEnabled: true, CACHE_SIZE_UNLIMITED)
-- ErrorHandlingMixin: 100% adoption across all services (retry logic)
+- ErrorHandlingMixin: see `docs/architecture/adoption-status.md` (BUT-810; auto-generated)
 - DNS-aware resilience: `executeFirebaseOperationWithDNSResilience()`
 - Circuit breaker-like patterns: via FirebaseServiceMixin
 - Rate limiting: `lib/core/rate_limiting/rate_limiter.dart`
@@ -428,7 +428,7 @@ Document error tracking integrations:
 - `FlutterError.onError` handler setup
 - `PlatformDispatcher.onError` handler setup
 - `Zone.runZonedGuarded` usage
-- ErrorHandlingMixin error reporting (100% adopted)
+- ErrorHandlingMixin error reporting (see `docs/architecture/adoption-status.md`)
 - Error grouping, tagging, and context capture (breadcrumbs, device info)
 
 **5.2 Performance Monitoring**

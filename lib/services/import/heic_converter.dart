@@ -1,6 +1,6 @@
 /// HEIC → JPEG converter for the OCR import boundary (BUT-662).
 ///
-/// iOS defaults to HEIC since iOS 11. Mistral's vision endpoint and our
+/// iOS defaults to HEIC since iOS 11. Vertex's vision endpoint and our
 /// other OCR providers accept HEIC inconsistently — explicit conversion
 /// here removes the silent-failure class. If conversion fails we return
 /// null and let the caller fall through to the original bytes (failure

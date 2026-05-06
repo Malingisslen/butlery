@@ -566,7 +566,7 @@ class OCRExtractionService extends BaseService {
   /// identical output bytes, enabling stable cache keys):
   /// 1. EXIF-orientation correction via `bakeOrientation()` so phone photos
   ///    taken sideways are uprighted before OCR.
-  /// 2. Downscale so the long edge is at most [_maxLongEdge]. Mistral / OCR.space
+  /// 2. Downscale so the long edge is at most [_maxLongEdge]. Vertex / OCR.space
   ///    don't benefit beyond ~2K and uploading larger only burns bandwidth/cost.
   /// 3. Greyscale + mild contrast stretch — helps OCR on low-light and
   ///    low-contrast cookbook photos.

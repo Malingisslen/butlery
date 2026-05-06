@@ -1,0 +1,18 @@
+Butlery — Proprietary License
+
+Copyright (c) 2026 Malin Gisslén. All rights reserved.
+
+This software and its source code, including all files in this repository
+unless explicitly marked otherwise, are the proprietary work of the
+copyright holder.
+
+No license, express or implied, is granted to copy, modify, distribute,
+sublicense, or create derivative works of this software without the prior
+written consent of the copyright holder.
+
+Third-party components included in this repository (under node_modules/,
+build artifacts, generated NOTICE attributions, and packages declared in
+pubspec.yaml / functions/package.json) remain subject to their respective
+upstream licenses. See NOTICE for attributions.
+
+For security disclosures, see SECURITY.md.

@@ -71,7 +71,7 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   },
   { name: "shared_content" },
   { name: "shared_personal_tags" },
-  { name: "friend_requests" },
+  { name: "social_requests" },
   { name: "group_invitations" },
   {
     name: "conversations",

@@ -16,6 +16,18 @@ on:
       # drift can't sneak in via a workflow-only PR.
       - ".github/workflows/*.yml"
       - "tools/check_node_version_consistency.sh"
+  # BUT-791: solo-dev pushes direct to main, so PR-only triggering meant
+  # this workflow never ran in practice. Mirror the path filter on push.
+  push:
+    branches: [main]
+    paths:
+      - "pubspec.lock"
+      - "pubspec.yaml"
+      - "functions/package.json"
+      - "functions/package-lock.json"
+      - ".github/workflows/dep-audit.yml"
+      - ".github/workflows/*.yml"
+      - "tools/check_node_version_consistency.sh"
   schedule:
     - cron: "0 5 * * 1"
   workflow_dispatch:
@@ -49,7 +61,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true

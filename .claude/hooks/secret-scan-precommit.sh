@@ -15,7 +15,7 @@
 # AND surfaces stderr to the model — so Claude sees why and can fix the
 # commit (e.g. unstage the leaking file) instead of retrying blindly.
 #
-# Why hard-block instead of soft warn: a leaked Mistral / Firebase key on
+# Why hard-block instead of soft warn: a leaked Vertex / Firebase key on
 # this project means uncapped billing exposure on a solo-dev account.
 
 set -euo pipefail
@@ -88,7 +88,7 @@ for p in "${PATTERNS[@]}"; do
 done
 
 # Generic high-entropy assignments to known sensitive var names.
-# Catches Mistral, custom APIs, anything not on the explicit list above.
+# Catches Vertex, custom APIs, anything not on the explicit list above.
 while IFS= read -r line; do
   # Strip variable name + operator to inspect the value.
   VALUE=$(printf '%s' "$line" | sed -E 's/^[^=:]*[=:]\s*//; s/^[\x27"]//; s/[\x27"]\s*[;,]?\s*$//')

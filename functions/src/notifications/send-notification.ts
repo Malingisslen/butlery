@@ -122,12 +122,12 @@ export const sendNotification = onCall(
         // Check pending friend request in either direction
         const [sentRequest, receivedRequest] = await Promise.all([
           admin.firestore()
-            .collection('friend_requests')
+            .collection('social_requests')
             .where('fromUserId', '==', callerUid)
             .where('toUserId', '==', targetUserId)
             .limit(1).get(),
           admin.firestore()
-            .collection('friend_requests')
+            .collection('social_requests')
             .where('fromUserId', '==', targetUserId)
             .where('toUserId', '==', callerUid)
             .limit(1).get(),
@@ -536,12 +536,12 @@ export const sendNotificationBatch = onCall(
           // Check pending friend request in either direction
           const [sentRequest, receivedRequest] = await Promise.all([
             admin.firestore()
-              .collection('friend_requests')
+              .collection('social_requests')
               .where('fromUserId', '==', callerUid)
               .where('toUserId', '==', targetId)
               .limit(1).get(),
             admin.firestore()
-              .collection('friend_requests')
+              .collection('social_requests')
               .where('fromUserId', '==', targetId)
               .where('toUserId', '==', callerUid)
               .limit(1).get(),

@@ -53,7 +53,7 @@ export const onUserDeleted = v1
 async function cleanupUserSocialData(userId: string): Promise<void> {
   const results = {
     friendsRemoved: 0,
-    friendRequestsCleaned: 0,
+    socialRequestsCleaned: 0,
     groupMembershipsRemoved: 0,
     friendCountsUpdated: 0,
     feedbackCleaned: 0,
@@ -75,8 +75,8 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   // 1. Remove reverse friendship documents
   results.friendsRemoved = await cleanupReverseFriendships(userId, friendsSnapshot);
 
-  // 2. Clean up friend requests (sent and received)
-  results.friendRequestsCleaned = await cleanupFriendRequests(userId);
+  // 2. Clean up social requests (sent and received) — formerly friend_requests
+  results.socialRequestsCleaned = await cleanupSocialRequests(userId);
 
   // 3. Remove from group member arrays
   results.groupMembershipsRemoved = await cleanupGroupMemberships(userId);
@@ -421,20 +421,21 @@ async function cleanupReverseFriendships(
 }
 
 /**
- * Clean up friend requests involving the deleted user.
+ * Clean up social requests (renamed from friend_requests in BUT-761) involving
+ * the deleted user.
  */
-async function cleanupFriendRequests(userId: string): Promise<number> {
+async function cleanupSocialRequests(userId: string): Promise<number> {
   let count = 0;
 
   // Requests sent by the deleted user
   const sentRequests = await db
-    .collection(Collections.friendRequests)
+    .collection(Collections.socialRequests)
     .where("fromUserId", "==", userId)
     .get();
 
   // Requests received by the deleted user
   const receivedRequests = await db
-    .collection(Collections.friendRequests)
+    .collection(Collections.socialRequests)
     .where("toUserId", "==", userId)
     .get();
 

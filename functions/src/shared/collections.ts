@@ -17,7 +17,11 @@ export const Collections = {
   unifiedShoppingLists: "unified_shopping_lists",
   unifiedSharedShoppingLists: "unified_shared_shopping_lists",
   groupInvitations: "group_invitations",
-  friendRequests: "friend_requests",
+  // BUT-772: collection renamed friend_requests → social_requests in BUT-761
+  // (clients + rules already migrated). The const name follows the same path
+  // so that a stale `Collections.friendRequests` lookup is a compile error,
+  // not a silent zero-results read.
+  socialRequests: "social_requests",
   notifications: "notifications",
   feedback: "feedback",
 } as const;

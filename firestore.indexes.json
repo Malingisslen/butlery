@@ -251,6 +251,14 @@
       ]
     },
     {
+      "collectionGroup": "notification_batches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "scheduledFor", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "pings",
       "queryScope": "COLLECTION_GROUP",
       "fields": [

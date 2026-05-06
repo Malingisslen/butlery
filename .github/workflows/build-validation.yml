@@ -41,7 +41,7 @@ jobs:
       run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
     - name: Setup Flutter
-      uses: subosito/flutter-action@v2
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
         cache: true
@@ -92,7 +92,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@v0.36.0
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0 — BUT-790 SHA-pin
       with:
         scan-type: 'fs'
         scan-ref: '.'
@@ -110,7 +110,7 @@ jobs:
         fetch-depth: 0
 
     - name: Run TruffleHog secret scanner
-      uses: trufflesecurity/trufflehog@v3.95.2
+      uses: trufflesecurity/trufflehog@17456f8c7d042d8c82c9a8ca9e937231f9f42e26 # v3.95.2 — BUT-790 SHA-pin
       with:
         extra_args: --only-verified
 
@@ -149,7 +149,7 @@ jobs:
       run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
     - name: Setup Flutter
-      uses: subosito/flutter-action@v2
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
         cache: true
