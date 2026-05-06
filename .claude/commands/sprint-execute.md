@@ -103,11 +103,34 @@ Tasks under the same `### Agent` heading batch into one agent invocation. Don't 
 After all tasks processed (or remaining tasks blocked):
 
 1. Full `dart analyze --fatal-infos`.
-2. `/commit` (triggers code review, testing, Linear ticket closure).
-3. `git push -u origin HEAD`.
-4. **CI watcher** — Monitor: `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)` (persistent: false, timeout_ms: 900000). Continue with PR creation; include CI status in final report when results arrive.
-5. `gh pr create` with summary derived from todo.md.
-6. Final report: "Sprint complete. PR: [url]. X/Y done, Z blocked, W obsoleted."
+2. **File follow-ups as Linear tickets — MANDATORY before commit.** See "Follow-up rule" below. `tasks/todo.md` is overwritten by the next sprint, so any deferred work captured only there is silently lost. Linear is the durable backlog.
+3. `/commit` (triggers code review, testing, Linear ticket closure).
+4. `git push -u origin HEAD`.
+5. **CI watcher** — Monitor: `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)` (persistent: false, timeout_ms: 900000). Continue with PR creation; include CI status in final report when results arrive.
+6. `gh pr create` with summary derived from todo.md.
+7. Final report: "Sprint complete. PR: [url]. X/Y done, Z blocked, W obsoleted. Follow-ups filed: BUT-XXX, BUT-YYY, ..."
+
+## Follow-up rule (mandatory, applies in every phase)
+
+**`tasks/todo.md` is sprint-scratch, not a backlog.** The next `/sprint-execute` overwrites it. Anything that needs to outlive the current sprint must land in Linear before the commit.
+
+**File a Linear ticket for every:**
+
+- **Deferred sub-scope** that an in-flight ticket explicitly drops (e.g. SafeSearch deferred from BUT-780; cert-pin fingerprints deferred from BUT-769).
+- **Tier-2 reviewer finding** flagged "follow-up" or "out of scope" — code-reviewer / testing-specialist / firebase-backend-security / firestore-rules-tester gaps that aren't fixed inline.
+- **ADR / decision-only ticket** whose execution is a future sprint (e.g. BUT-789 → ADR-002 → execution ticket).
+- **Ops task** that requires production access this session can't reach (cert capture, console verification, Cloud Monitoring alert wiring, restore drill).
+- **Test gap** the testing-specialist names but the sprint can't fill (CF integration tests requiring emulator, etc.).
+- **"Refactor on the third repetition"** patterns identified during simplify pass.
+
+**Don't file tickets for:**
+- Work that fits in the current sprint — just do it.
+- Speculative future ideas without a concrete trigger.
+- Doc-only nits inside the just-shipped code (fix inline).
+
+**Format:** create via `mcp__linear__save_issue` with `team: "Butlery"`, a meaningful priority (High for blockers / fail-loud security gates, Medium for active improvement, Low for "when convenient"), and labels matching the area + type (`backend`, `security`, `tech-debt`, `Bug`, `test-gap`, `Improvement`, `performance`, `dependency`, etc.). Body must include: source ("BUT-XXX follow-up" + commit SHA), what's needed, acceptance bullets, why deferred.
+
+**Reference filed tickets in the commit message** under a "Known follow-ups (filed in Linear)" section — list `BUT-XXX — title` for each. The `Known follow-ups` section in `tasks/todo.md` is fine for the in-sprint working notes, but the Linear tickets are the source of truth.
 
 ## What this does NOT do
 
