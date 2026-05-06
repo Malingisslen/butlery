@@ -98,17 +98,52 @@ Tasks under the same `### Agent` heading batch into one agent invocation. Don't 
 - `dart analyze` fails with non-obvious fix: stop the sprint, report which task caused it.
 - Never silently skip — always report.
 
-## Phase 3 — Post-sprint
+## Phase 3 — Post-sprint (MANDATORY — sprint is not done until every step here completes)
+
+**Failure mode being prevented:** prior sprints have ended with uncommitted changes and Linear tickets still in "In Progress." Phase 3 is non-optional. If you reach the end of Phase 2 and skip Phase 3, you have not finished the sprint.
 
 After all tasks processed (or remaining tasks blocked):
 
-1. Full `dart analyze --fatal-infos`.
+1. **Full analyze** — `dart analyze --fatal-infos`. Fix anything fatal before continuing.
+
 2. **File follow-ups as Linear tickets — MANDATORY before commit.** See "Follow-up rule" below. `tasks/todo.md` is overwritten by the next sprint, so any deferred work captured only there is silently lost. Linear is the durable backlog.
-3. `/commit` (triggers code review, testing, Linear ticket closure).
-4. `git push -u origin HEAD`.
-5. **CI watcher** — Monitor: `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)` (persistent: false, timeout_ms: 900000). Continue with PR creation; include CI status in final report when results arrive.
-6. `gh pr create` with summary derived from todo.md.
-7. Final report: "Sprint complete. PR: [url]. X/Y done, Z blocked, W obsoleted. Follow-ups filed: BUT-XXX, BUT-YYY, ..."
+
+3. **Commit (inline, not delegated).** `/commit` is a slash command — invoking it from inside this command is a prose instruction, not an auto-execution. Run the commit workflow yourself, here, in this session:
+   - `git status` and `git diff --staged` (stage with `git add` if needed).
+   - Run `code-reviewer` agent on staged `.dart` files; fix Critical/High before proceeding.
+   - Run `testing-specialist` agent on staged `lib/**/*.dart` files; fix failing tests before proceeding.
+   - Write a conventional commit message (`feat:` / `fix:` / `refactor:` / etc.) with body explaining *why* + key changes + the "Known follow-ups (filed in Linear)" section listing the BUT-XXX tickets created in step 2. Footer: `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`.
+   - `git commit`. If lefthook reformats and the commit fails, re-stage and commit again — never `--amend`, never `--no-verify`.
+   - **Verification gate:** after commit, `git status` MUST show a clean working tree for tracked files. If it doesn't, the commit didn't capture everything — repeat step 3 until clean.
+
+4. **Push** — `git push -u origin HEAD`.
+
+5. **Close Linear tickets (inline, mandatory).** Do not assume `/commit` handled this — close them here too. For each BUT-XXX in the just-pushed commit whose corresponding todo.md task is checked `[x]`:
+   - Resolve "Done" state UUID once via `list_issue_statuses` (cache for the session).
+   - `get_issue` with BUT-XXX → Linear UUID.
+   - `save_issue` with `stateId: <Done-uuid>`.
+   - `save_comment`: "Fixed in commit `<7-char short hash>`. Changes: <commit subject>".
+   - Report inline: "Closed BUT-XXX in Linear".
+   - Tickets marked `[~]` (obsolete via Step 0): close with comment "Obsolete — already resolved by `<commit-sha>`".
+   - Tickets marked `[!]` (failed): leave open, transition back to "Todo", post a comment with the failure reason.
+   - Skip silently only if Linear MCP is genuinely disconnected — and report that fact in the final summary so the user knows to close manually.
+
+6. **CI watcher** — Monitor: `bash .claude/hooks/monitors/ci-watcher.sh $(git rev-parse HEAD)` (persistent: false, timeout_ms: 900000). Continue without waiting; include CI status in final report when results arrive.
+
+7. **PR (only if a PR is wanted)** — solo direct-to-main is the default per `CLAUDE.local.md`; skip `gh pr create` unless the sprint touched something risky enough to warrant review.
+
+8. **Final report — must include explicit confirmation of every gate:**
+   ```
+   Sprint complete.
+   - Tasks: X/Y done, Z blocked, W obsoleted
+   - Commit: <short-sha> "<subject>"
+   - Pushed: yes/no
+   - Linear closed: BUT-XXX, BUT-YYY (N tickets)
+   - Linear left open: BUT-ZZZ (failed — see comment)
+   - Follow-ups filed: BUT-AAA, BUT-BBB
+   - CI: pending / green / red
+   ```
+   If any line of that report is "skipped" or "n/a" without a real reason, you have not finished the sprint — go back and complete it.
 
 ## Follow-up rule (mandatory, applies in every phase)
 

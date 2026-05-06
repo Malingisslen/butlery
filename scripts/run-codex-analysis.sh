@@ -83,21 +83,56 @@ Additional inputs (Wave 4): Read every existing report in $RUN_DIR/ before start
   fi
 
   cat <<PROMPT
-You are running a forensic Phase 1 investigation on the Butlery codebase. Document findings only — make ZERO code changes. The ONLY file you may write is your final report at $RUN_DIR/${n}-${topic}.md. Use file:line references for every claim.
+You are running a TIME-BOXED forensic triage of the Butlery codebase for prompt $n ($topic). This is a TRIANGULATION pass — Claude has already produced a deep report; your job is to surface findings Claude may have missed, not to re-derive everything.
 
-Read these files in order before producing any output:
+HARD BUDGET: ChatGPT Team buckets are ~500-700k tokens per 5h window. You MUST fit within that. Concretely:
+- Read fewer than 30 files total
+- Skip exhaustive grep/enumeration — favor targeted reads of high-risk locations
+- Output a max-150-line report
+- Do NOT compute dimension scores, executive summary, remediation roadmap, or low-severity (MEDIUM/LOW) findings
 
-1. docs/analysis/prompts/MASTER_ANALYSIS_ORCHESTRATOR.md  (cross-prompt boundaries + dedup rules)
-2. docs/analysis/prompts/${prompt_file}  (your specific prompt — follow its Output Format section exactly)
-3. Knowledge files (treat the most recent dated entry as authoritative when entries conflict):
-${kfiles_block}4. Pre-analysis tooling outputs in $RUN_DIR/_pre-analysis/  (already captured — do not re-run flutter commands)
+SCOPE: Cover ONLY the TOP 3 highest-severity findings (CRITICAL or HIGH). For each, provide:
+- One-line title
+- 2-4 bullets of evidence with file:line references
+- One-line remediation hint
 
-Important context already known from the pre-analysis run:
-- flutter analyze surfaced 1 real bug: ConsentPurpose undefined at lib/services/notifications/notification_service.dart:648.
-- flutter test --coverage was terminated at ~45 min because test/views/helpers/infrastructure_integration_test.dart hangs every test on the 10-min default test timeout. 10122 tests passed cleanly before that file (89 skipped, 200 failed). The hang itself is a finding for testing infrastructure quality.
+Read these files in order before producing output:
+
+1. docs/analysis/prompts/${prompt_file}  (read the Output Format section to know the dimensions; pick the 3 highest-impact ones)
+2. Knowledge files (treat most recent dated entry as authoritative):
+${kfiles_block}3. Pre-analysis tooling outputs in $RUN_DIR/_pre-analysis/  (already captured — do not re-run flutter commands)
+
+Pre-known context (do not re-discover):
+- flutter analyze's ConsentPurpose error is RESOLVED on disk — verified in earlier waves. Do not flag it.
+- test/views/helpers/infrastructure_integration_test.dart is 124 lines / 4 tests — NOT the hanger. Real cause: missing per-test timeout default in dart_test.yaml. Do not re-blame the named file.
+- Dart LOC is 76 325 across 1 257 hand-written files (NOT 327k — lib/site-packages/ is a Pillow/pip side-load that pollutes the count).
 ${extra_inputs}
 
-Begin Phase 1 investigation now. Output the report in the format defined by the prompt's Output Format section. Save the final report to $RUN_DIR/${n}-${topic}.md and nothing else.
+Output format (max 150 lines):
+
+\`\`\`
+# $n — $topic — Codex Triangulation Pass
+
+**Source:** OpenAI Codex (GPT-5), bucket-bounded triangulation against Claude deep run.
+**Scope:** Top 3 CRITICAL/HIGH findings only.
+
+## Top finding 1: <title>
+- Evidence: \\\`<file>:<line>\\\` — <what>
+- Evidence: \\\`<file>:<line>\\\` — <what>
+- Severity: CRITICAL | HIGH
+- Remediation: <one-line hint>
+
+## Top finding 2: <title>
+[same shape]
+
+## Top finding 3: <title>
+[same shape]
+
+## Notes
+- (Optional) 2-3 lines about what you deferred to claude-deep due to scope cap.
+\`\`\`
+
+Save the report to $RUN_DIR/${n}-${topic}.md. Stop as soon as you have 3 findings — do NOT continue exploring. Better to stop early than to 429 mid-write.
 PROMPT
 }
 
