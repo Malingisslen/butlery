@@ -140,6 +140,13 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     _emitState();
   }
 
+  /// BUT-797: named so `dispose` can `_stateManager.removeListener` it —
+  /// otherwise the inline closure form leaked the facade across service-
+  /// replacement flows (re-DI, user-switch) where a fresh facade was
+  /// constructed but the previous state manager kept firing into the
+  /// disposed instance.
+  void _emitStateOnStateManagerChange() => notifyListeners();
+
   void _emitState() {
     if (_stateSubject.isClosed) return;
     if (!_stateManager.isInitialized) {
@@ -277,10 +284,12 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     // Connect internal operations to state manager
     _internalOps.setStateManager(_stateManager);
 
-    // Forward state manager notifications to facade
-    _stateManager.addListener(() {
-      notifyListeners();
-    });
+    // Forward state manager notifications to facade. BUT-797: holding the
+    // closure as a named field lets dispose() unregister it; an inline
+    // anonymous closure cannot be removed from the ChangeNotifier and would
+    // keep `this` alive (and continue firing into a disposed facade) until
+    // the state manager itself was GCed.
+    _stateManager.addListener(_emitStateOnStateManagerChange);
 
     AppLogger.debug(
         'Focused modules initialized with Firebase repository and category repository');
@@ -559,6 +568,11 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   }
 
   void dispose() {
+    // BUT-797: detach the named ChangeNotifier listener before tearing the
+    // state manager down. Skipping this kept the facade alive whenever a
+    // replaced service instance still saw notifications fire from the
+    // previous state manager.
+    _stateManager.removeListener(_emitStateOnStateManagerChange);
     _stateManager.clearAllData();
     _stateSubject.close();
     disposeStreamResources();

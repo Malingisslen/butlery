@@ -266,12 +266,19 @@ class StructureRecipeResponse {
   final double estimatedCost;
   final String? promptVersion;
 
+  /// BUT-785: pinned Vertex model id used for the call (e.g.
+  /// `gemini-2.0-flash-001`). Threaded through so analytics events can
+  /// stamp the actual model version, not a derived alias — quality and
+  /// cost regressions become correlatable to model rotations.
+  final String? modelId;
+
   const StructureRecipeResponse({
     required this.success,
     this.recipe,
     this.error,
     required this.estimatedCost,
     this.promptVersion,
+    this.modelId,
   });
 
   factory StructureRecipeResponse.fromJson(Map<String, dynamic> json) {
@@ -283,6 +290,7 @@ class StructureRecipeResponse {
       error: json['error'] as String?,
       estimatedCost: (json['estimatedCost'] as num?)?.toDouble() ?? 0.0,
       promptVersion: json['promptVersion'] as String?,
+      modelId: json['modelId'] as String?,
     );
   }
 }
@@ -296,6 +304,9 @@ class OcrRecipeImageResponse {
   final double estimatedCost;
   final String? promptVersion;
 
+  /// BUT-785: pinned Vertex model id (see StructureRecipeResponse.modelId).
+  final String? modelId;
+
   const OcrRecipeImageResponse({
     required this.success,
     this.recipe,
@@ -303,6 +314,7 @@ class OcrRecipeImageResponse {
     this.error,
     required this.estimatedCost,
     this.promptVersion,
+    this.modelId,
   });
 
   factory OcrRecipeImageResponse.fromJson(Map<String, dynamic> json) {
@@ -315,6 +327,7 @@ class OcrRecipeImageResponse {
       error: json['error'] as String?,
       estimatedCost: (json['estimatedCost'] as num?)?.toDouble() ?? 0.0,
       promptVersion: json['promptVersion'] as String?,
+      modelId: json['modelId'] as String?,
     );
   }
 }

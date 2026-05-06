@@ -2690,3 +2690,77 @@ Pattern verified safe:
   logPermissionCheck" rule applies to the four base validate*Permission
   hooks, which are unchanged here. GDPR export delegates remain
   audit-equivalent to pre-extraction.
+
+---
+
+## 2026-05-06 — BUT-781 / BUT-770 / BUT-773 / BUT-769 sprint review
+
+### Pattern: rate-limit sentinel collections must charge an extra read per create
+- /reports create rule uses `exists()` + `get()` against
+  `/users/{reporter}/report_throttle/{ownerId}`. Each such rule
+  evaluation is billed as 1 doc read; `exists()` then `get()` is two
+  reads if both fire. Here the rule shortcircuits with `!exists() ||
+  ...get().data...` which still costs 1 read for the exists, plus 1 for
+  the get when present — so steady-state legitimate flow is 2 reads per
+  /reports create. Acceptable for moderation, but document it on any
+  future high-frequency collection.
+
+### Pattern: `request.time` + `duration.value` is the canonical "now − X" check
+- `request.time - duration.value(24, 'h')` is the right idiom for rules
+  rate-limit windows. Server-time comparison; no client clock skew.
+  `request.resource.data.lastReportAt == request.time` on the throttle
+  write enforces the same server clock, so the next-create rule reads a
+  trustworthy timestamp.
+
+### Pattern: deny-orphan-self-throttle even if parent rule already covers it
+- The /reports rule blocks self-reports independently. The throttle
+  rule still blocks `ownerId == request.auth.uid` writes — keeps the
+  collection structurally clean and avoids "junk doc" grooming work.
+
+### Pattern: subcollection rules must be explicit (no parent inheritance)
+- realtime_menus/{menuId}/votes had no rule block before BUT-773;
+  default-deny silently masked the missing rule. Whenever a new
+  subcollection is added, search for its path in firestore.rules — a
+  missing match block is *the* most common rules bug because the
+  failure mode is "feature silently broken" not "crash".
+
+### Pattern: `audit_logs` Article-15 export via callable
+- audit_logs is admin-only at the rules layer (BUT-424 invariant: a
+  compromised account that could read its own log could craft attacks
+  around the gaps it sees). Article 15 is satisfied via Admin-SDK
+  callable `exportAuditLogs` (functions/src/exports/audit-logs.ts).
+  Server-side admin reads on behalf of `request.auth.uid` only — the
+  rules invariant is preserved because no user-side direct read path
+  was added.
+- No App Check on this callable. Rationale documented in the source:
+  authenticated session already passed App Check at sign-in; second
+  gate doesn't raise the bar against the "user reads their own data"
+  threat model. If App Check enforcement becomes mandatory across the
+  board (future ops decision), revisit.
+- Cursor pagination is server-timestamp-based with `startAfter` on
+  `desc` order. Risk: two rows with identical timestamps would get the
+  pagination boundary tied to a single timestamp value — `startAfter`
+  would skip subsequent rows with the exact same timestamp on the next
+  page. In practice audit log writes are server-timestamped on append
+  and conflict-resolution is millisecond-fine, so collisions are
+  essentially zero. If high-throughput admin-action audit becomes a
+  thing, switch to `startAfterDocument(snapshot)` with a doc-id
+  tiebreak.
+
+### Pattern: cert pinning fail-loud needs a `throw`, not `assert`
+- `assert` is stripped in release. BUT-769 wires a runtime
+  `StateError` via `CertPinConfig.assertReleaseModeSafety()` gated on
+  `kReleaseMode`. Called before `Firebase.initializeApp` in
+  `lib/main.dart`. Debug/profile skipped — devs run with empty pin
+  maps regularly.
+
+### GDPR cascade: anonymize, don't delete, when the row is also someone else's evidence
+- BUT-781 step 13 anonymizes /reports rows where deletedUid ==
+  contentOwnerId. Rationale: the report is the *reporter's*
+  Article-15 evidence. Deleting it would erase the reporter's record
+  while satisfying the deletee's Article 17 — net negative for the
+  reporter. Anonymization (contentOwnerId → null +
+  contentOwnerAnonymizedAt tombstone) preserves both rights.
+- Generalize: any document that is jointly authored / has
+  cross-subject GDPR claims should anonymize the deletee's identifiers,
+  not delete the row.

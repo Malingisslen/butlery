@@ -6099,6 +6099,12 @@ abstract class AppLocalizations {
   /// **'Aktivitetshistorik'**
   String get dataExportIncludesActivity;
 
+  /// No description provided for @dataExportIncludesAuditLogs.
+  ///
+  /// In sv, this message translates to:
+  /// **'Säkerhets- och åtkomsthistorik (GDPR Artikel 15)'**
+  String get dataExportIncludesAuditLogs;
+
   /// No description provided for @dataExportOnlyYourData.
   ///
   /// In sv, this message translates to:

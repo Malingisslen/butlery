@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 
+import 'package:butlery/core/cache/lru_map.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -21,8 +22,16 @@ class FirebaseUserIngredientRepository
   final FirebaseFirestore _firestore;
   final AuthRepository _authRepository;
 
-  /// In-memory cache per user.
-  final Map<String, Map<String, IngredientData>> _userCache = {};
+  /// In-memory cache per user. BUT-779: outer map LRU-bounded so user-switch
+  /// flows don't accumulate stale per-user maps for the lifetime of the app.
+  /// Inner per-user map is content-bounded (a user's ingredient count), not
+  /// session-bounded — not a leak target.
+  static const int _userCacheMaxSize = 50;
+  late final LruMap<String, Map<String, IngredientData>> _userCache = LruMap(
+    maxSize: _userCacheMaxSize,
+    onEvict: (key, _) => AppLogger.info(
+        'cache_eviction service=FirebaseUserIngredientRepository key=$key bound=$_userCacheMaxSize'),
+  );
 
   FirebaseUserIngredientRepository({
     FirebaseFirestore? firestore,
@@ -49,22 +58,18 @@ class FirebaseUserIngredientRepository
 
   @override
   Future<IngredientData?> getById(String userId, String ingredientId) async {
-    // Check cache first
-    if (_userCache.containsKey(userId) &&
-        _userCache[userId]!.containsKey(ingredientId)) {
-      return _userCache[userId]![ingredientId];
-    }
+    // BUT-779: single outer-map promotion per call (the LruMap `[]` operator
+    // moves the entry to the most-recent slot, so doing it once and caching
+    // the inner reference avoids a redundant remove+reinsert on the hit path).
+    final cached = _userCache[userId]?[ingredientId];
+    if (cached != null) return cached;
 
     try {
       final doc = await _getUserCollection(userId).doc(ingredientId).get();
       if (!doc.exists) return null;
 
       final ingredient = IngredientData.fromFirestore(doc);
-
-      // Cache it
-      _userCache[userId] ??= {};
-      _userCache[userId]![ingredientId] = ingredient;
-
+      (_userCache[userId] ??= {})[ingredientId] = ingredient;
       return ingredient;
     } catch (e, stack) {
       AppLogger.error('Failed to get user ingredient: $e', stack);

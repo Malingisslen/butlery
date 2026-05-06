@@ -100,7 +100,6 @@ class DataExportService extends BaseService {
       feedbackRepository: feedbackRepository,
     );
     _complianceManager = ComplianceExportManager(
-      firestore: _firestoreRepository.firestore,
       dataExportRepository: _exportRepo,
     );
     _preferencesManager = PreferencesExportManager(

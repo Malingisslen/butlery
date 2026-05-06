@@ -18,6 +18,7 @@ import {
   calculateGeminiCost,
   stripCodeFences,
   ExtractedRecipe,
+  MODEL_ID,
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
 import { withRateLimit } from "../middleware/rate_limiter";
@@ -47,6 +48,12 @@ export interface StructureRecipeResponse {
   estimatedCost: number;
   /** Prompt version used for this extraction */
   promptVersion?: string;
+  /**
+   * BUT-785: pinned model id used for this call. Threaded through to clients
+   * so on-device analytics (`recipe_parse_completed`) can correlate quality
+   * and cost regressions to specific Vertex model versions.
+   */
+  modelId?: string;
 }
 
 // =============================================================================
@@ -136,6 +143,7 @@ export async function runStructureRecipe(
       textLength,
       mode,
       success,
+      modelId: MODEL_ID,
       ...(extra ?? {}),
     });
   };
@@ -183,6 +191,7 @@ export async function runStructureRecipe(
         success: false,
         error: "AI-funktioner är tillfälligt avstängda.",
         estimatedCost: 0,
+        modelId: MODEL_ID,
       };
     }
     if (config?.llmParserEnabled === false) {
@@ -191,6 +200,7 @@ export async function runStructureRecipe(
         success: false,
         error: "AI-receptolkning är tillfälligt avstängd.",
         estimatedCost: 0,
+        modelId: MODEL_ID,
       };
     }
 
@@ -256,6 +266,7 @@ export async function runStructureRecipe(
         error: "Inget svar från AI-tjänsten.",
         estimatedCost: 0.01,
         promptVersion,
+        modelId: MODEL_ID,
       };
     }
 
@@ -273,6 +284,7 @@ export async function runStructureRecipe(
           error: "Kunde inte tolka AI-svaret som ingredienser.",
           estimatedCost: actualCost,
           promptVersion,
+          modelId: MODEL_ID,
         };
       }
 
@@ -309,6 +321,7 @@ export async function runStructureRecipe(
         },
         estimatedCost: actualCost,
         promptVersion,
+        modelId: MODEL_ID,
       };
     }
 
@@ -328,6 +341,7 @@ export async function runStructureRecipe(
           "Den här sidan ser inte ut som ett recept. Prova en annan URL eller klistra in texten manuellt.",
         estimatedCost: actualCost,
         promptVersion,
+        modelId: MODEL_ID,
       };
     }
 
@@ -340,6 +354,7 @@ export async function runStructureRecipe(
         error: "Kunde inte tolka AI-svaret som ett recept.",
         estimatedCost: actualCost,
         promptVersion,
+        modelId: MODEL_ID,
       };
     }
 
@@ -358,6 +373,7 @@ export async function runStructureRecipe(
       recipe,
       estimatedCost: actualCost,
       promptVersion,
+      modelId: MODEL_ID,
     };
   } catch (error) {
     // BUT-566 / ADR-001: server fails fast; the client (llm_tier.dart:120-128)

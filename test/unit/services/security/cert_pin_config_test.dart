@@ -75,6 +75,73 @@ void main() {
       }
     });
 
+    group('assertReleaseModeSafety (BUT-769)', () {
+      test('debug mode is a no-op even with empty pins', () {
+        // Daily dev work runs with empty pin maps — the check must NOT block
+        // it. `releaseModeOverrideForTest: false` mimics a debug build.
+        expect(
+          () => CertPinConfig.assertReleaseModeSafety(
+            pinsForTest: const <String, List<String>>{
+              'example.com': <String>[],
+            },
+            releaseModeOverrideForTest: false,
+          ),
+          returnsNormally,
+        );
+      });
+
+      test('release mode throws when any host has an empty pin list', () {
+        // The whole point: a release build with empty pins is silently
+        // insecure (wrapper falls through to platform trust). Throw-loud
+        // on boot forces the rotation procedure to run.
+        expect(
+          () => CertPinConfig.assertReleaseModeSafety(
+            pinsForTest: const <String, List<String>>{
+              'a.example.com': <String>['AA:BB:CC'],
+              'b.example.com': <String>[],
+            },
+            releaseModeOverrideForTest: true,
+          ),
+          throwsStateError,
+        );
+      });
+
+      test('release mode passes when every host has at least one pin', () {
+        expect(
+          () => CertPinConfig.assertReleaseModeSafety(
+            pinsForTest: const <String, List<String>>{
+              'a.example.com': <String>['AA:BB:CC'],
+              'b.example.com': <String>['DD:EE:FF', '11:22:33'],
+            },
+            releaseModeOverrideForTest: true,
+          ),
+          returnsNormally,
+        );
+      });
+
+      test('error message names every empty host', () {
+        // Ops uses the message to know which fingerprints to capture.
+        // Burying any host inside an aggregate count would force ops to
+        // re-derive the list from the source — wasted minutes during a
+        // release-blocked moment.
+        try {
+          CertPinConfig.assertReleaseModeSafety(
+            pinsForTest: const <String, List<String>>{
+              'host-a.example.com': <String>[],
+              'host-b.example.com': <String>[],
+              'host-c.example.com': <String>['present'],
+            },
+            releaseModeOverrideForTest: true,
+          );
+          fail('Expected StateError when pins are empty in release mode');
+        } on StateError catch (e) {
+          expect(e.message, contains('host-a.example.com'));
+          expect(e.message, contains('host-b.example.com'));
+          expect(e.message, isNot(contains('host-c.example.com')));
+        }
+      });
+    });
+
     test('hostPins covers all three BUT-427 surface categories', () {
       // Sanity check: the wiring contract is "Algolia + OCR + URL scrape".
       // If any of these three categories goes missing the wiring is broken.

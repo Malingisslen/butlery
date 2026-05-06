@@ -38,7 +38,9 @@ permissions:
 
 env:
   FLUTTER_VERSION: "3.35.1"
-  NODE_VERSION: "20"
+  # BUT-771: must match functions/package.json `engines.node`. Drift is
+  # caught by tools/check_node_version_consistency.sh (dep-audit workflow).
+  NODE_VERSION: "22"
 
 jobs:
   sbom:

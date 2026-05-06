@@ -2194,6 +2194,7 @@
   "dataExportIncludesLists": "Shopping lists and menus",
   "dataExportIncludesComments": "Comments and ratings",
   "dataExportIncludesActivity": "Activity history",
+  "dataExportIncludesAuditLogs": "Security and access history (GDPR Article 15)",
   "dataExportOnlyYourData": "Note: The export only contains your own data. No data from other users is included.",
   "dateToday": "Today",
   "dateYesterday": "Yesterday",

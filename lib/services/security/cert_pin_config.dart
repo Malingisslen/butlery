@@ -18,6 +18,8 @@
 /// flag from a malicious config response). Pin updates are a code change.
 library;
 
+import 'package:flutter/foundation.dart';
+
 /// Map of host (lowercase, no scheme/port) → list of allowed SHA-256
 /// fingerprints in colon-separated uppercase hex form (the openssl default
 /// for `openssl x509 -fingerprint -sha256`).
@@ -92,6 +94,40 @@ class CertPinConfig {
 
   /// Returns true when the host has at least one active pin configured.
   static bool isPinnedHost(String host) => pinsForHost(host).isNotEmpty;
+
+  /// BUT-769: throw on boot in release mode if any configured host has an
+  /// empty pin list. Cert pinning is a defense-in-depth control; a release
+  /// build with empty pins is silently insecure (the wrapper falls through
+  /// to platform trust). Failing loud here forces the ops fingerprint-rotation
+  /// procedure (`docs/operations/cert-pin-rotation.md`) to run before each
+  /// release.
+  ///
+  /// Intentionally a runtime `throw` rather than a Dart `assert` — `assert`
+  /// statements are stripped in release builds, which would defeat the whole
+  /// point of a release-mode safety check.
+  ///
+  /// Debug + profile builds skip the check (developers regularly run with
+  /// empty pin maps; the check would block daily work for no security gain).
+  ///
+  /// Test injection: pass a pre-built pin map via [pinsForTest] to validate
+  /// the method without touching the global config.
+  static void assertReleaseModeSafety({
+    Map<String, List<String>>? pinsForTest,
+    bool? releaseModeOverrideForTest,
+  }) {
+    final isRelease = releaseModeOverrideForTest ?? kReleaseMode;
+    if (!isRelease) return;
+    final pins = pinsForTest ?? hostPins;
+    final empties =
+        pins.entries.where((e) => e.value.isEmpty).map((e) => e.key).toList();
+    if (empties.isEmpty) return;
+    throw StateError(
+      'Cert pin lists empty in release build for ${empties.length} host(s): '
+      '${empties.join(', ')}. '
+      'Run the rotation procedure in docs/operations/cert-pin-rotation.md '
+      'before shipping. Pinning is non-functional until pins are populated.',
+    );
+  }
 
   static String? _hostOf(String url) {
     try {

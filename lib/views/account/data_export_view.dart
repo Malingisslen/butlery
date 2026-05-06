@@ -302,6 +302,7 @@ class DataExportView extends StatelessWidget {
             _buildInfoItem(context, context.l10n.dataExportIncludesLists),
             _buildInfoItem(context, context.l10n.dataExportIncludesComments),
             _buildInfoItem(context, context.l10n.dataExportIncludesActivity),
+            _buildInfoItem(context, context.l10n.dataExportIncludesAuditLogs),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
               context.l10n.dataExportOnlyYourData,

@@ -2194,6 +2194,7 @@
   "dataExportIncludesLists": "Inköpslistor och menyer",
   "dataExportIncludesComments": "Kommentarer och betyg",
   "dataExportIncludesActivity": "Aktivitetshistorik",
+  "dataExportIncludesAuditLogs": "Säkerhets- och åtkomsthistorik (GDPR Artikel 15)",
   "dataExportOnlyYourData": "OBS: Exporten innehåller endast din egen data. Ingen data från andra användare inkluderas.",
   "dateToday": "Idag",
   "dateYesterday": "Igår",

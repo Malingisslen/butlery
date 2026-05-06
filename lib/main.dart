@@ -124,6 +124,7 @@ import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/services/security/cert_pin_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -164,6 +165,13 @@ Future<void> main() async {
       }
 
       try {
+        // BUT-769: fail-loud in release mode if any pinned host has an empty
+        // fingerprint list. Cert pinning silently degrades to platform-trust
+        // when pins are empty; a release build in that state is insecure
+        // without an obvious error. The check is no-op in debug/profile so
+        // daily dev work is unaffected. See docs/operations/cert-pin-rotation.md.
+        CertPinConfig.assertReleaseModeSafety();
+
         // Initialize Firebase with configuration from compile-time --dart-define
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,

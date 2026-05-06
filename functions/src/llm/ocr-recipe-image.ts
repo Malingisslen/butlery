@@ -24,6 +24,7 @@ import {
   calculateGeminiCost,
   ExtractedRecipe,
   IMAGE_OCR_SYSTEM_PROMPT,
+  MODEL_ID,
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
 import { withRateLimit } from "../middleware/rate_limiter";
@@ -59,6 +60,12 @@ interface OcrRecipeImageResponse {
   estimatedCost: number;
   /** Prompt version used for this extraction */
   promptVersion?: string;
+  /**
+   * BUT-785: pinned Vertex model id used for the OCR call. Threaded through
+   * to clients so on-device analytics can correlate OCR quality / cost
+   * regressions to model version rotations.
+   */
+  modelId?: string;
   /**
    * BUT-559: how many times we retried via `structureRecipe` after the
    * initial image-mode parse failed. 0 = no retry (image parse succeeded
@@ -269,6 +276,7 @@ export async function runOcrRecipeImage(
         estimatedCost: 0,
         retryCount: 0,
         retryOutcome: null,
+        modelId: MODEL_ID,
       };
     }
 
@@ -299,6 +307,7 @@ export async function runOcrRecipeImage(
         promptVersion,
         retryCount: 0,
         retryOutcome: null,
+        modelId: MODEL_ID,
       };
     }
 
@@ -315,6 +324,7 @@ export async function runOcrRecipeImage(
         promptVersion,
         retryCount: 0,
         retryOutcome: null,
+        modelId: MODEL_ID,
       };
     }
 
@@ -349,6 +359,7 @@ export async function runOcrRecipeImage(
         promptVersion: retryResult.promptVersion ?? promptVersion,
         retryCount: retryResult.retryCount,
         retryOutcome: retryResult.retryOutcome,
+        modelId: MODEL_ID,
       };
     }
 
@@ -362,6 +373,7 @@ export async function runOcrRecipeImage(
       promptVersion: retryResult.promptVersion ?? promptVersion,
       retryCount: retryResult.retryCount,
       retryOutcome: retryResult.retryOutcome,
+      modelId: MODEL_ID,
     };
   } catch (error) {
     logger.error("[ocrRecipeImage] Error:", error);

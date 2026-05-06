@@ -1,77 +1,100 @@
 // lib/services/account/export/compliance_export_manager.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
-import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of GDPR compliance data: audit logs, consent records.
-/// Implements Article 7 (Consent) and Article 30 (Records of Processing).
+/// Implements Article 7 (Consent), Article 15 (Right of Access), and
+/// Article 30 (Records of Processing).
 ///
 /// BUT-501 (closed): consent reads route through
-/// [FirebaseDataExportRepository]. The audit_logs read remains on direct
-/// Firestore — by design — because BUT-424 documented that the
-/// `audit_logs` rule branch denies user-side reads (the collection is
-/// admin-only), so this method is currently a "best effort, expect to
-/// catch and report 'unavailable'" path. A Cloud Function exporter is
-/// the proper long-term fix; tracked under the BUT-424 follow-up.
+/// [FirebaseDataExportRepository].
+///
+/// BUT-770: audit logs are admin-only at the rules layer (BUT-424 tampering-
+/// detection invariant). This manager now calls the `exportAuditLogs`
+/// Cloud Function (Admin SDK, region europe-west1) which can read the
+/// collection on the user's behalf. Pages until the CF reports `nextCursor:
+/// null` so the bundle includes the full actor history rather than a
+/// recent-1000 snapshot.
 class ComplianceExportManager {
-  final FirebaseFirestore _firestore;
   final FirebaseDataExportRepository? _exportRepo;
+  final FirebaseFunctions _functions;
   static const String _logTag = 'ComplianceExportManager';
+  // BUT-770: cap total entries we'll page through to avoid runaway exports
+  // for power users with multi-year history. 50,000 covers ~5 years of
+  // typical activity; anything beyond is still a real GDPR concern but
+  // can be served via an admin-tools manual export.
+  static const int _maxAuditLogPages = 10;
 
   ComplianceExportManager({
-    required FirebaseFirestore firestore,
     FirebaseDataExportRepository? dataExportRepository,
-  })  : _firestore = firestore,
-        _exportRepo = dataExportRepository;
+    FirebaseFunctions? functions,
+  })  : _exportRepo = dataExportRepository,
+        _functions =
+            functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1');
 
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
-  /// Export audit logs for GDPR Article 30 compliance.
+  /// Export audit logs for GDPR Article 15 (Right of Access) +
+  /// Article 30 (Records of Processing) compliance.
   ///
-  /// **BUT-424 known limitation:** the `audit_logs` collection is admin-only
-  /// at the rules layer. This method attempts the read but expects deny
-  /// for non-admin callers; the response then carries the error and a
-  /// note. A Cloud Function exporter (admin-credentialed) is the proper
-  /// fix and is tracked separately.
+  /// BUT-770: routes through the `exportAuditLogs` Cloud Function so the
+  /// admin-only `audit_logs` collection is reachable for the data subject
+  /// without breaking BUT-424's tampering-detection invariant (the rule
+  /// still denies direct user-side reads). Pages via the CF's `nextCursor`
+  /// to capture the full actor history, capped at [_maxAuditLogPages] to
+  /// avoid runaway exports.
   Future<Map<String, dynamic>> exportAuditLogs(String userId) async {
     try {
       final auditLogs = <Map<String, dynamic>>[];
+      final callable = _functions.httpsCallable(
+        'exportAuditLogs',
+        options: HttpsCallableOptions(timeout: const Duration(seconds: 120)),
+      );
 
-      // Direct Firestore read — see class docstring for rationale.
-      // Caller (DataExportService) has already verified the auth uid IS
-      // userId, so the rules-layer deny is the only failure mode.
-      final auditSnapshot = await _firestore
-          .collection(FirestoreCollections.auditLogs)
-          .where('userId', isEqualTo: userId)
-          .orderBy('timestamp', descending: true)
-          .limit(1000)
-          .get();
-
-      for (final doc in auditSnapshot.docs) {
-        final data = doc.data();
-        auditLogs.add({
-          'audit_log_id': doc.id,
-          'timestamp':
-              ((data['timestamp']?.toDate()?.toIso8601String()) ?? 'unknown'),
-          'operation': ((data['operation']) ?? 'unknown'),
-          'resource_type': ((data['resourceType']) ?? 'unknown'),
-          'resource_id': data['resourceId'],
-          'granted': ((data['granted']) ?? false),
-          'metadata': sanitizeForJson(data['metadata']),
-        });
+      String? cursor;
+      var pages = 0;
+      while (true) {
+        if (pages >= _maxAuditLogPages) {
+          app_logger.AppLogger.warning(
+              '[$_logTag] Audit-log export hit page cap; further entries omitted');
+          break;
+        }
+        final result = await callable.call<Map<dynamic, dynamic>>(
+            cursor != null ? <String, dynamic>{'before': cursor} : null);
+        final data = Map<String, dynamic>.from(result.data);
+        final rows =
+            (data['rows'] as List?)?.cast<Map<dynamic, dynamic>>() ?? const [];
+        for (final row in rows) {
+          final r = Map<String, dynamic>.from(row);
+          auditLogs.add({
+            'audit_log_id': r['id'],
+            'timestamp': r['timestamp'] ?? 'unknown',
+            'operation': r['operation'] ?? 'unknown',
+            'resource_type': r['resourceType'] ?? 'unknown',
+            'resource_id': r['resourceId'],
+            'granted': r['granted'] ?? false,
+            'metadata': sanitizeForJson(r['metadata']),
+          });
+        }
+        cursor = data['nextCursor'] as String?;
+        pages++;
+        if (cursor == null) break;
       }
 
       return {
         'total_count': auditLogs.length,
         'audit_logs': auditLogs,
-        'note': 'Limited to last 1000 audit entries for export size',
-        'gdpr_article': 'Article 30 - Records of Processing Activities',
+        'note': pages >= _maxAuditLogPages
+            ? 'Capped at $_maxAuditLogPages pages (~50,000 entries); contact support for older history'
+            : 'Full actor history exported via server-side admin export',
+        'gdpr_article':
+            'Article 15 - Right of Access; Article 30 - Records of Processing',
         'summary': {
           'total_granted':
               auditLogs.where((log) => log['granted'] == true).length,
@@ -85,7 +108,7 @@ class ComplianceExportManager {
       app_logger.AppLogger.error('[$_logTag] Failed to export audit logs', e);
       return {
         'error': e.toString(),
-        'note': 'Audit logs may not be available or accessible',
+        'note': 'Audit logs could not be exported via the server-side endpoint',
       };
     }
   }

@@ -50,13 +50,42 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
       true; // Own reports can be deleted via account deletion
 
   /// Submit a new report. Returns the document ID.
+  ///
+  /// BUT-781: writes the report and the per-(reporter, contentOwner) throttle
+  /// sentinel in one batch. The Firestore rules for `/reports` consult the
+  /// throttle on the next create attempt to enforce the 24h rate limit; without
+  /// this batched write the rule's exists()/get() check finds no doc and the
+  /// limit silently never engages. The report's `contentOwnerId` is now
+  /// required by the rule, so a missing value is rejected before this code
+  /// path runs.
   Future<String?> submitReport(ContentReport report) async {
+    if (report.contentOwnerId == null || report.contentOwnerId!.isEmpty) {
+      AppLogger.error(
+          '[ReportRepository] contentOwnerId is required; rejecting submitReport');
+      return null;
+    }
+    if (report.contentOwnerId == report.reporterId) {
+      AppLogger.error(
+          '[ReportRepository] self-reports blocked at rules layer; rejecting client-side');
+      return null;
+    }
+
     try {
-      final docRef =
-          await firestore.collection(collectionName).add(report.toFirestore());
+      final reportRef = firestore.collection(collectionName).doc();
+      final throttleRef = firestore
+          .collection(FirestoreCollections.users)
+          .doc(report.reporterId)
+          .collection(FirestoreCollections.userReportThrottle)
+          .doc(report.contentOwnerId);
+
+      final batch = firestore.batch();
+      batch.set(reportRef, report.toFirestore());
+      batch.set(throttleRef, {'lastReportAt': FieldValue.serverTimestamp()});
+      await batch.commit();
+
       AppLogger.info(
-          '[ReportRepository] Report submitted: ${docRef.id} for ${report.contentType}');
-      return docRef.id;
+          '[ReportRepository] Report submitted: ${reportRef.id} for ${report.contentType}');
+      return reportRef.id;
     } catch (e) {
       AppLogger.error('[ReportRepository] Failed to submit report', e);
       return null;

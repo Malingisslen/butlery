@@ -12,6 +12,10 @@ on:
       - "functions/package.json"
       - "functions/package-lock.json"
       - ".github/workflows/dep-audit.yml"
+      # BUT-771: also run on workflow / guard-script edits so node-version
+      # drift can't sneak in via a workflow-only PR.
+      - ".github/workflows/*.yml"
+      - "tools/check_node_version_consistency.sh"
   schedule:
     - cron: "0 5 * * 1"
   workflow_dispatch:
@@ -24,6 +28,18 @@ env:
   FLUTTER_VERSION: "3.35.1"
 
 jobs:
+  # BUT-771: assert every workflow's node-version matches functions/package.json
+  # engines.node. Drift means CI tests under a different Node than prod runs.
+  node-version-consistency:
+    name: Node version consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run node-version consistency guard
+        run: bash tools/check_node_version_consistency.sh
+
   pub-audit:
     name: Pub vulnerability scan
     runs-on: ubuntu-latest
@@ -86,7 +102,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # BUT-771: must match functions/package.json `engines.node`. Drift is
+          # caught in CI via tools/check_node_version_consistency.sh (the
+          # node-version-consistency job below).
+          node-version: "22"
           cache: "npm"
           cache-dependency-path: functions/package-lock.json
 

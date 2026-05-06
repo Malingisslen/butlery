@@ -19,6 +19,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
+import { serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = "butlery-rules-test";
 const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
@@ -163,6 +164,245 @@ test(
     const userCtx = env.authenticatedContext(USER_A_UID);
     await assertFails(
       userCtx.firestore().doc("admins/self-promote").set({ addedAt: new Date() })
+    );
+  }
+);
+
+// ----- BUT-781: brigade rate-limit + reason enum + self-report block -----
+
+// Test 6: BUT-781 — invalid `reason` is rejected at create time. Without the
+// enum constraint, typo values pollute analytics and the admin dispatcher
+// can't trust the field.
+test(
+  "BUT-781: report with non-enum reason is rejected",
+  async () => {
+    const userCtx = env.authenticatedContext(USER_A_UID);
+    await assertFails(
+      userCtx.firestore().collection("reports").add({
+        reporterId: USER_A_UID,
+        contentType: "comment",
+        contentId: "c-bad-reason",
+        contentOwnerId: USER_B_UID,
+        reason: "smap",  // typo — not in enum
+        status: "new",
+        createdAt: new Date(),
+      })
+    );
+  }
+);
+
+// Test 7: BUT-781 — self-report blocked. A user crafting a report against
+// themselves (contentOwnerId == reporter) is denied so attackers can't
+// manufacture a paper trail of "complaints" against their own target.
+test(
+  "BUT-781: self-report (contentOwnerId == reporter) is rejected",
+  async () => {
+    const userCtx = env.authenticatedContext(USER_A_UID);
+    await assertFails(
+      userCtx.firestore().collection("reports").add({
+        reporterId: USER_A_UID,
+        contentType: "comment",
+        contentId: "c-self",
+        contentOwnerId: USER_A_UID,  // self
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      })
+    );
+  }
+);
+
+// Test 8: BUT-781 — missing contentOwnerId rejected. The cascade in
+// on-user-deleted.ts can't anonymize a report it can't query for, so the
+// rule requires the field at create time (reverses the previously-nullable
+// schema position).
+test(
+  "BUT-781: report without contentOwnerId is rejected",
+  async () => {
+    const userCtx = env.authenticatedContext(USER_A_UID);
+    await assertFails(
+      userCtx.firestore().collection("reports").add({
+        reporterId: USER_A_UID,
+        contentType: "comment",
+        contentId: "c-missing-owner",
+        // contentOwnerId omitted
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      })
+    );
+  }
+);
+
+// Test 9: BUT-781 — valid first report (no throttle yet) is accepted.
+// Pins the create path: with all four new constraints satisfied, the rule
+// must still allow legitimate reports through.
+test(
+  "BUT-781: valid report with no throttle is accepted",
+  async () => {
+    const userCtx = env.authenticatedContext(USER_A_UID);
+    await assertSucceeds(
+      userCtx.firestore().collection("reports").add({
+        reporterId: USER_A_UID,
+        contentType: "comment",
+        contentId: "c-first-valid",
+        contentOwnerId: USER_B_UID,
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      })
+    );
+  }
+);
+
+// Test 10: BUT-781 — brigade rate-limit. After a fresh throttle sentinel is
+// in place, a second report against the same target inside 24h is rejected.
+// This is the core of CRIT-TS1: an attacker can no longer file arbitrary-
+// many reports to amplify a complaint against one target.
+test(
+  "BUT-781: report rejected when fresh throttle exists (rate limit)",
+  async () => {
+    // Seed a fresh throttle sentinel via admin context.
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx
+        .firestore()
+        .doc(`users/${USER_A_UID}/report_throttle/${USER_B_UID}`)
+        .set({ lastReportAt: new Date() });
+    });
+    const userCtx = env.authenticatedContext(USER_A_UID);
+    await assertFails(
+      userCtx.firestore().collection("reports").add({
+        reporterId: USER_A_UID,
+        contentType: "comment",
+        contentId: "c-second-blocked",
+        contentOwnerId: USER_B_UID,
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      })
+    );
+  }
+);
+
+// Test 11: BUT-781 — stale (>24h) throttle does NOT block a new report.
+// Without this carve-out the rate limit would be a permanent ban after the
+// first report.
+test(
+  "BUT-781: report accepted when throttle is older than 24h",
+  async () => {
+    const stale = new Date(Date.now() - 25 * 60 * 60 * 1000); // 25h ago
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx
+        .firestore()
+        .doc(`users/${USER_A_UID}/report_throttle/${USER_B_UID}`)
+        .set({ lastReportAt: stale });
+    });
+    const userCtx = env.authenticatedContext(USER_A_UID);
+    await assertSucceeds(
+      userCtx.firestore().collection("reports").add({
+        reporterId: USER_A_UID,
+        contentType: "comment",
+        contentId: "c-stale-throttle",
+        contentOwnerId: USER_B_UID,
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      })
+    );
+  }
+);
+
+// Test 13 (gap fill): admin can delete a report; non-admin cannot.
+// Pins the `allow delete: if isAdmin()` clause — without coverage, a regression
+// that broadened delete to reporters or removed the gate altogether would slip
+// through CI silently.
+test(
+  "BUT-781 (gap): admin deletes a report; non-admin denied",
+  async () => {
+    const reportId = "r-delete-test";
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`reports/${reportId}`).set({
+        reporterId: USER_A_UID,
+        contentType: "comment",
+        contentId: "c1",
+        contentOwnerId: USER_B_UID,
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      });
+    });
+    const reporterCtx = env.authenticatedContext(USER_A_UID);
+    await assertFails(
+      reporterCtx.firestore().doc(`reports/${reportId}`).delete()
+    );
+    const adminCtx = env.authenticatedContext(ADMIN_UID);
+    await assertSucceeds(
+      adminCtx.firestore().doc(`reports/${reportId}`).delete()
+    );
+  }
+);
+
+// Test 14 (gap fill): admin update cannot mutate immutable identity fields.
+// Pins `cannotModify(['reporterId','contentType','contentId','createdAt'])`.
+// A regression here would let an admin (or a future role expansion) rewrite
+// who reported what — destroying the audit trail.
+test(
+  "BUT-781 (gap): admin update cannot rewrite immutable identity fields",
+  async () => {
+    const reportId = "r-immutable-test";
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc(`reports/${reportId}`).set({
+        reporterId: USER_A_UID,
+        contentType: "comment",
+        contentId: "c-orig",
+        contentOwnerId: USER_B_UID,
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      });
+    });
+    const adminCtx = env.authenticatedContext(ADMIN_UID);
+    // Forward state-machine transition is allowed (covered by Test 2),
+    // so test the mutation-of-immutable-field deny path explicitly.
+    await assertFails(
+      adminCtx.firestore().doc(`reports/${reportId}`).update({
+        status: "in_review",
+        reporterId: USER_B_UID, // immutable — must be rejected
+      })
+    );
+  }
+);
+
+// Test 12: BUT-781 — report_throttle subcollection allows owner writes
+// with serverTimestamp; foreign UID writes are denied. This pins the
+// throttle-doc rules so a future change can't accidentally make the
+// throttle world-writable (which would let an attacker pre-seed throttles
+// against another reporter to silence them).
+test(
+  "BUT-781: report_throttle accepts owner write, denies foreign write",
+  async () => {
+    const ownerCtx = env.authenticatedContext(USER_A_UID);
+    await assertSucceeds(
+      ownerCtx
+        .firestore()
+        .doc(`users/${USER_A_UID}/report_throttle/${USER_B_UID}`)
+        .set({ lastReportAt: serverTimestamp() })
+    );
+    // Foreign UID cannot seed a throttle under another user's account.
+    const foreignCtx = env.authenticatedContext(USER_B_UID);
+    await assertFails(
+      foreignCtx
+        .firestore()
+        .doc(`users/${USER_A_UID}/report_throttle/${USER_B_UID}`)
+        .set({ lastReportAt: serverTimestamp() })
+    );
+    // Self-throttle (ownerId == reporter) is rejected — keeps the
+    // collection clean (no orphan self-throttles).
+    await assertFails(
+      ownerCtx
+        .firestore()
+        .doc(`users/${USER_A_UID}/report_throttle/${USER_A_UID}`)
+        .set({ lastReportAt: serverTimestamp() })
     );
   }
 );

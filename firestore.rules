@@ -799,6 +799,43 @@ service cloud.firestore {
           && request.auth.uid == userId
           && isRealtimeParticipant('realtime_menus', menuId);
       }
+
+      // BUT-773: explicit rule block for the votes subcollection. Firestore
+      // does NOT inherit parent rules into subcollections — the absence of
+      // this match block left the path on default-deny, which masks the
+      // missing rule (clients silently failed) but also blocks the intended
+      // collaborative-vote flow without an obvious reason.
+      //
+      // Doc-id == voter uid by convention. That keeps the per-user-one-vote
+      // constraint enforceable at the rules layer (the rule rejects writes
+      // where voteId != request.auth.uid), and means no extra `userId` field
+      // is needed for spoof-prevention — though we still validate it on
+      // update for defence in depth.
+      match /votes/{voteId} {
+        allow read: if isAuthenticated()
+          && isRealtimeParticipant('realtime_menus', menuId);
+
+        allow create: if isAuthenticated()
+          && request.auth.uid == voteId
+          && isRealtimeParticipant('realtime_menus', menuId);
+
+        // Update: same uid as the doc id, AND the existing doc's `userId`
+        // (if present) matches — defence-in-depth against legacy votes
+        // written without the doc-id-as-uid convention. `cannotModify(['userId'])`
+        // (BUT-781 review): keeps the field structurally immutable post-create
+        // so a regression that loosened the userId match couldn't also let a
+        // voter rewrite the field.
+        allow update: if isAuthenticated()
+          && request.auth.uid == voteId
+          && (
+            !('userId' in resource.data)
+            || resource.data.userId == request.auth.uid
+          )
+          && cannotModify(['userId'])
+          && isRealtimeParticipant('realtime_menus', menuId);
+
+        allow delete: if isAuthenticated() && request.auth.uid == voteId;
+      }
     }
 
     // ========================================
@@ -1482,6 +1519,40 @@ service cloud.firestore {
     }
 
     // ========================================
+    // REPORT THROTTLE (BUT-781)
+    // Per-(reporter, contentOwner) sentinel doc that powers the brigade
+    // rate-limit on /reports. The reporter writes one of these alongside
+    // each report (in a single batch) so the next /reports create-rule
+    // evaluation sees the fresh `lastReportAt` and denies a follow-up
+    // report against the same owner inside the 24h window.
+    //
+    // Doc id is the contentOwnerId being reported. Self-report attempts
+    // (doc id == reporter uid) are blocked at the rules layer too — even
+    // if a buggy client tried to write one, /reports would still reject
+    // the parent report on the contentOwnerId != reporter check.
+    // ========================================
+    match /users/{userId}/report_throttle/{ownerId} {
+      // Owner reads their own throttle (used by the client to know if a
+      // re-report is allowed without round-tripping through a denied
+      // create attempt).
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+
+      // Owner writes the throttle alongside each /reports create.
+      // `ownerId == request.auth.uid` would be a self-report — the parent
+      // /reports rule blocks it independently, but rejecting here keeps
+      // the throttle collection clean (no orphan self-throttle docs).
+      allow create, update: if isAuthenticated()
+        && request.auth.uid == userId
+        && ownerId != request.auth.uid
+        && hasRequiredFields(['lastReportAt'])
+        && request.resource.data.lastReportAt == request.time;
+
+      // Throttle docs are append/update-only from the client; deletion is
+      // admin-driven (e.g. report-retention sweeps). Deny client deletes.
+      allow delete: if false;
+    }
+
+    // ========================================
     // MENU TEMPLATES - Reusable menu templates
     // ========================================
 
@@ -1674,10 +1745,39 @@ service cloud.firestore {
 
       // Authenticated users can create reports (must be reporting as themselves)
       // and the report must start in the 'new' state of the moderation machine.
+      //
+      // BUT-781: tightened against brigade abuse + analytics-polluting typos
+      // + GDPR-erasure dangling owner refs. Four additional constraints over
+      // the original create rule:
+      //   1. `contentOwnerId` is required (was nullable). Without it the
+      //      cascade in on-user-deleted.ts cannot find the report on the
+      //      target user's deletion → GDPR Art. 17 gap.
+      //   2. Self-report block (`contentOwnerId != reporter`). Some
+      //      moderation pipelines treat self-reports as plausible evidence,
+      //      so an attacker self-reporting to manufacture a paper trail is
+      //      a real concern.
+      //   3. `reason` enum constraint. The previous free-form string let
+      //      typos pollute analytics (`'spamm'`, `'sapm'`) and made the
+      //      admin-side dispatcher unreliable.
+      //   4. Rate-limit per (reporter, contentOwner) at most one report per
+      //      24h via the /users/{reporter}/report_throttle/{owner} sentinel.
+      //      Client must write the throttle in the same batch as the report
+      //      (rules can't write atomically); without the throttle, the limit
+      //      doesn't engage but the per-create cost stays the same.
       allow create: if isAuthenticated()
         && request.resource.data.reporterId == request.auth.uid
         && request.resource.data.status == 'new'
-        && hasRequiredFields(['reporterId', 'contentType', 'contentId', 'reason', 'status', 'createdAt']);
+        && hasRequiredFields(['reporterId', 'contentType', 'contentId', 'contentOwnerId', 'reason', 'status', 'createdAt'])
+        && request.resource.data.contentOwnerId is string
+        && request.resource.data.contentOwnerId != request.auth.uid
+        && request.resource.data.reason in [
+          'spam', 'abuse', 'harassment', 'csam',
+          'copyright', 'misinformation', 'other'
+        ]
+        && (
+          !exists(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId))
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId)).data.lastReportAt < request.time - duration.value(24, 'h')
+        );
 
       // Admin-only, forward-only state machine:
       //   new -> in_review -> actioned -> closed

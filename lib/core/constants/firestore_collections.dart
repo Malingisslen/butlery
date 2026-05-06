@@ -72,6 +72,9 @@ abstract final class FirestoreCollections {
   static const String categoryPreferences = 'category_preferences';
   static const String listCategoryOrders = 'list_category_orders';
   static const String pantry = 'pantry';
+  // BUT-781: per-(reporter, contentOwner) brigade-rate-limit sentinel
+  // doc id is the contentOwnerId; field is `lastReportAt: serverTimestamp()`.
+  static const String userReportThrottle = 'report_throttle';
 
   // ── Shared content subcollections ──
 

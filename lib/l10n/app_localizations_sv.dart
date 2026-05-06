@@ -3501,6 +3501,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dataExportIncludesActivity => 'Aktivitetshistorik';
 
   @override
+  String get dataExportIncludesAuditLogs =>
+      'Säkerhets- och åtkomsthistorik (GDPR Artikel 15)';
+
+  @override
   String get dataExportOnlyYourData =>
       'OBS: Exporten innehåller endast din egen data. Ingen data från andra användare inkluderas.';
 

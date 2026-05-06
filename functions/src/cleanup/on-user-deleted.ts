@@ -62,6 +62,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     legacySharedWithScrubbed: 0,
     contentGuardSubcollectionsPurged: 0,
     shareDisplayNameTombstoned: 0,
+    reportsAnonymized: 0,
   };
 
   // Fetch friends list once (used by steps 1 and 4)
@@ -139,6 +140,13 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   //     docs, so the admin path is the only writer that can scrub them.
   results.shareDisplayNameTombstoned =
       await tombstoneSharedByDisplayName(userId);
+
+  // 13. BUT-781: anonymize reports where the deleted user was the reported
+  //     `contentOwnerId`. We don't delete — reports are moderation evidence
+  //     and reporters retain their right to read their own submissions. We
+  //     only erase the linked PII (contentOwnerId → null + tombstone date).
+  results.reportsAnonymized =
+      await anonymizeReportsByContentOwner(userId);
 
   v1.logger.info(`Cleanup results for ${userId}:`, results);
 }
@@ -570,6 +578,71 @@ export async function cleanupPresenceRowsWithDb(
   }
 
   return total;
+}
+
+/**
+ * BUT-781: anonymize /reports rows where the deleted user was the reported
+ * `contentOwnerId`. The reports themselves are moderation evidence (and the
+ * reporter retains read access to their own submissions), so deletion would
+ * destroy a record the reporter is GDPR-entitled to access. Anonymizing
+ * removes the linked PII (contentOwnerId → null, plus a `contentOwnerAnonymizedAt`
+ * tombstone for audit) while keeping the rest of the row intact.
+ *
+ * Best-effort per chunk: a failed batch commit logs a warn and continues.
+ */
+async function anonymizeReportsByContentOwner(userId: string): Promise<number> {
+  return anonymizeReportsByContentOwnerWithDb(db, userId);
+}
+
+/** Test seam — accepts an injected Firestore so the cascade can run against a stub. */
+export async function anonymizeReportsByContentOwnerWithDb(
+  database: admin.firestore.Firestore,
+  userId: string
+): Promise<number> {
+  const snapshot = await database
+    .collection("reports")
+    .where("contentOwnerId", "==", userId)
+    .get();
+  if (snapshot.empty) return 0;
+
+  let batch = database.batch();
+  let batchCount = 0;
+  let queued = 0;
+
+  for (const doc of snapshot.docs) {
+    batch.update(doc.ref, {
+      contentOwnerId: null,
+      contentOwnerAnonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    batchCount++;
+    queued++;
+
+    if (batchCount >= BATCH_LIMIT) {
+      try {
+        await batch.commit();
+      } catch (err) {
+        v1.logger.warn(
+          `BUT-781: report anonymize chunk commit failed for ${userId}`,
+          { err }
+        );
+      }
+      batch = database.batch();
+      batchCount = 0;
+    }
+  }
+
+  if (batchCount > 0) {
+    try {
+      await batch.commit();
+    } catch (err) {
+      v1.logger.warn(
+        `BUT-781: report anonymize final commit failed for ${userId}`,
+        { err }
+      );
+    }
+  }
+
+  return queued;
 }
 
 /**

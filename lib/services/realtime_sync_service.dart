@@ -9,6 +9,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/cache/lru_map.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -50,7 +51,19 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   // ignore: close_sinks - Disposed in onDispose() via disposeStreamResources()
   late final StreamController<SyncError> _errorController;
   final Map<String, StreamSubscription<DocumentSnapshot>> _activeListeners = {};
-  final Map<String, RealtimeResource> _cachedResources = {};
+
+  /// BUT-779: bounded so power-user sessions don't grow this map linearly
+  /// with activity. 200 covers typical sessions (50-100 resources observed)
+  /// with headroom; eviction telemetry surfaces if the bound is too tight.
+  static const int _cachedResourcesMaxSize = 200;
+  late final LruMap<String, RealtimeResource> _cachedResources = LruMap(
+    maxSize: _cachedResourcesMaxSize,
+    // BUT-779 review: info-level so the bound-tuning signal is visible in
+    // production logs (debug is silenced/stripped in release builds, defeating
+    // the whole purpose of the eviction telemetry).
+    onEvict: (key, _) => AppLogger.info(
+        'cache_eviction service=$serviceName key=$key bound=$_cachedResourcesMaxSize'),
+  );
   SyncError? _lastError;
   void _initializeModules() {
     _connectionModule = ConnectionStateModule(

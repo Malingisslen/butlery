@@ -3500,6 +3500,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataExportIncludesActivity => 'Activity history';
 
   @override
+  String get dataExportIncludesAuditLogs =>
+      'Security and access history (GDPR Article 15)';
+
+  @override
   String get dataExportOnlyYourData =>
       'Note: The export only contains your own data. No data from other users is included.';
 

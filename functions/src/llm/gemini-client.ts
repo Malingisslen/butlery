@@ -767,8 +767,23 @@ function validateDifficulty(
 // Model Configuration
 // =============================================================================
 
-/** Single model for both text and vision — Gemini Flash is natively multimodal */
-export const TEXT_MODEL = "gemini-2.0-flash";
+/**
+ * Single model for both text and vision — Gemini Flash is natively multimodal.
+ *
+ * BUT-785: pinned to a specific version snapshot (`-001`) rather than the
+ * moving `gemini-2.0-flash` alias. Google rotates the alias without notice;
+ * a pinned version means the model behind the call doesn't change silently
+ * underneath quality/cost monitoring (CRIT-AI2). Bump cadence: quarterly,
+ * gated by golden-test review — see `docs/architecture/llm-versions.md`.
+ *
+ * `MODEL_ID` is exported separately so analytics events can stamp the
+ * actual model used per call (rather than re-deriving it from a name).
+ */
+export const TEXT_MODEL = "gemini-2.0-flash-001";
+
+/** Stable identifier for the model used in analytics events. Same value as
+ * `TEXT_MODEL` today; if vision/text diverge we'll add a per-mode mapping. */
+export const MODEL_ID = TEXT_MODEL;
 
 /** Maximum tokens for responses */
 export const MAX_TOKENS = 2000;

@@ -30,6 +30,12 @@ admin.initializeApp();
 export { structureRecipe } from "./llm/structure-recipe";
 export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 
+// GDPR Article 15 Right of Access — server-side export of admin-only data
+// (BUT-770). The audit_logs collection is unreadable by users at the rules
+// layer (BUT-424 tampering-detection invariant); this callable runs under
+// Admin SDK to satisfy the user's right to access their own actor history.
+export { exportAuditLogs } from "./exports/audit-logs";
+
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
 

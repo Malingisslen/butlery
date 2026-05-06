@@ -1,54 +1,67 @@
 # Sprint Backlog
 
-## Sprint: BUT-536 firebase_recipe_repository module extraction — 2026-05-06 (P)
+## Sprint: 8-ticket security/perf/GDPR sweep — 2026-05-06 (Q)
 
-Theme: large-file decompose cluster, second ticket. `lib/repositories/firebase/firebase_recipe_repository.dart` had drifted from 931 (accepted entry) → 1104 (+18%). Extracted three cohesive concern groups into the existing `lib/repositories/firebase/modules/` directory (matching the `recipe_legacy_validator.dart` pattern). No behavior changes; every `@override` surface preserved as a delegating wrapper.
+Theme: Wave-1/2/3 forensic-audit follow-ups. Three coherent batches: backend/security hardening, performance/leak fixes, backend correctness + GDPR.
 
-**In Progress carry-overs (NOT in this sprint):**
-- BUT-442 — repo migrations.
-- BUT-760 — App Check; awaiting Firebase Console flip.
+### Agent A: Backend / Security hardening
 
-**Step 0 verification — done:**
-- **BUT-536 fits.** File at 1104 (was 1009 in ticket; still drifting). Three clean extraction targets:
-  1. **Tag operations** (~158 lines): `renamePersonalTagInRecipes`, `removePersonalTagFromRecipes`, `addRemovePersonalTagFromRecipesToBatch`. Read-side from the repo's perspective (no `read`/`update` calls).
-  2. **GDPR export operations** (~40 lines): `exportPersonalRecipesByUser`, `exportTopLevelRecipesByOwner` (BUT-501). Need `validateOwnership` callback.
-  3. **Query operations** (~60 lines): `fetchRecipesByTagId`, `findBySourceUrl`, `findByTitle`. Pure Firestore reads.
-- Tests: 3 existing test files at `test/unit/repositories/firebase_recipe_repository*_test.dart` drive the public surface; tag cascade additionally covered via `test/unit/services/tagging/personal_tag_service_test.dart`. Internal refactor preserves all surfaces.
+- [x] **A1. BUT-771** — Bump CI Node 20 → 22 in `dep-audit.yml` + `e2e_tests.yml` + `sbom.yml`. New `tools/check_node_version_consistency.sh` greps every workflow's `node-version:` (literal + `${{ env.NODE_VERSION }}`) and compares to `functions/package.json` engines.node. New `node-version-consistency` job in dep-audit.yml runs the guard on PRs.
+- [x] **A2. BUT-781** — Tightened `/reports` rule (contentOwnerId required, self-report block, reason enum, 24h throttle via `/users/{reporter}/report_throttle/{owner}` sentinel). New report_throttle subcollection rules. Client `firebase_report_repository.submitReport` now writes report+throttle in one batch. Cascade step 13 in `on-user-deleted.ts` anonymizes reports where deleted user was contentOwner. 7 new rules tests.
+- [x] **A3. BUT-773** — New `/realtime_menus/{menuId}/votes/{voteId}` rule block (read for participants; create/update/delete owner-only via doc-id-as-uid). New `realtime-menus-rules.test.ts` with 7 cases. Wired into `test:rules:all`.
+- [x] **A4. BUT-769** — New `CertPinConfig.assertReleaseModeSafety()` throws on boot in release mode if any host has empty pin list. Wired into `main()`. New `docs/operations/cert-pin-rotation.md` runbook. 4 new unit tests. (Actual fingerprint capture deferred — needs live network access; ops task.)
 
-### Agent A: Module extraction
+### Agent B: Performance / leak fixes
 
-Specialists: `code-reviewer` + `testing-specialist` + `firebase-backend-security` (Tier-2 + Firebase trigger for `lib/repositories/`).
+- [x] **B1. BUT-779** — New `lib/core/cache/lru_map.dart` (LinkedHashMap-backed LRU with eviction callback). Wrapped `RealtimeSyncService._cachedResources` (N=200) and `FirebaseUserIngredientRepository._userCache` (N=50). Eviction telemetry via AppLogger.debug. 11 unit tests.
+- [x] **B2. BUT-797** — Step-0 rescope: actual leak was a `_stateManager.addListener(() { notifyListeners(); })` ChangeNotifier closure (line 281-283), not a Firestore stream listener as ticket assumed. Fixed via named `_emitStateOnStateManagerChange` method + `removeListener` in `dispose()`. Test deferred (facade un-constructible per existing test-file docstring; documented in ticket).
 
-- [x] **A1. New `lib/repositories/firebase/modules/recipe_tag_operations.dart`** (192 lines after simplify-DRY) — `RecipeTagOperations` class. Three rename/remove cascade methods + private `_buildTagRemovalUpdate` helper deduplicating the two-field mutation map (`core.personalTagIds` arrayRemove + filtered `core.personalTags`).
-- [x] **A2. New `lib/repositories/firebase/modules/recipe_gdpr_export_operations.dart`** (72 lines) — `RecipeGdprExportOperations` class. Both BUT-501 export paths; `validateOwnership` pre-flight preserved.
-- [x] **A3. New `lib/repositories/firebase/modules/recipe_query_operations.dart`** (84 lines) — `RecipeQueryOperations` class. Three `findBy*` reads.
-- [x] **A4. Edit `lib/repositories/firebase/firebase_recipe_repository.dart`** — instantiate the three modules in constructor; replace inlined methods with thin delegating wrappers. 1104 → 906 lines.
-- [x] **A5. Update `docs/architecture/ACCEPTED_LARGE_FILES.md`** — entry 931 → 906 with the BUT-536 note.
+### Agent C: Backend correctness + GDPR
 
-### Tier-2 + Firebase + simplify reviews (all APPROVED)
+- [x] **C1. BUT-785** — Pinned `TEXT_MODEL = "gemini-2.0-flash-001"` (from moving `gemini-2.0-flash` alias). New exported `MODEL_ID` constant. Threaded `modelId` through `emitTiming` structured logs + `StructureRecipeResponse` / `OcrRecipeImageResponse` callable response shapes (server + Dart model classes). New `docs/architecture/llm-versions.md` runbook (quarterly bump cadence + golden-test gate).
+- [x] **C2. BUT-770** — New `functions/src/exports/audit-logs.ts` callable (Admin SDK; pages 5000 entries DESC by timestamp; ISO-cursor pagination). Wired into `index.ts`. Client `ComplianceExportManager.exportAuditLogs` now calls the CF instead of the doomed direct-Firestore read; pages until `nextCursor: null` or 10-page safety cap. New ARB key `dataExportIncludesAuditLogs` (sv+en) added to data-export view. 6 new unit tests against fake admin Firestore.
 
-- [x] **code-reviewer** — APPROVED (initial + simplify-fix delta).
-- [x] **testing-specialist** — APPROVED, no new test obligation; existing tests cover behavior through public surface.
-- [x] **firebase-backend-security** — APPROVED, no security regression. Auth-gate semantics + GDPR pre-flight + tag-cascade write paths all preserved byte-for-byte.
-- [x] **/simplify three-agent pass** — clean except two micro-fixes applied (DRY helper extraction, redundant comment cleanup). Two larger follow-ups noted but out-of-scope: shared module typedef + `userId Function()` callback pattern across all three modules.
+### Tier-2 agent reviews (commit hook gate)
+
+- [ ] **code-reviewer** (any *.dart edit)
+- [ ] **testing-specialist** (lib/ → test/ obligation)
+- [ ] **firebase-backend-security** (lib/repositories, functions/src/, services/firebase|gdpr|user)
+- [ ] **firestore-rules-tester** (firestore.rules + functions/src/__tests__/*-rules.test.ts)
 
 ### Post-Sprint Steps
-- [x] `dart analyze --fatal-infos` clean on touched files.
-- [x] No new tests required (per testing-specialist verdict).
-- [x] All 4 specialist markers touched after re-review of the simplify delta.
-- [ ] Commit + push.
-- [ ] Linear: BUT-536 → Done with summary.
+
+- [x] `dart analyze --fatal-infos` clean across the repo
+- [x] `npx tsc --noEmit` clean in functions/
+- [x] LRU + cert-pin Dart unit tests pass (24 tests)
+- [x] exportAuditLogs CF unit tests pass (6 tests)
+- [ ] Firestore rules tests (BUT-781 + BUT-773) — local run blocked (no Java); validates on CI's `firestore-rules.yml`
+- [ ] Tier-2 reviews + markers
+- [ ] Commit + push
+- [ ] Linear: 8 tickets → Done with summaries
+
+### Step-0 rescopes (per `feedback_ticket_premise_verification.md`)
+
+- **BUT-781**: ticket assumed `reportType` / `targetUid` fields — schema actually uses `reason` / `contentId` and a (newly-required) `contentOwnerId`. Ticket-described file `profile_deletion_operations.ts` doesn't exist; cascade landed in existing `on-user-deleted.ts`.
+- **BUT-797**: ticket pointed at line 274 stream-listener leak; actual leak was a ChangeNotifier listener at line 281-283.
+- **BUT-769**: fingerprint capture requires live network access against production hosts — unsafe to fabricate; delivered the assertion + runbook + tests, deferred capture as ops task.
+- **BUT-770**: ticket assumed an `exportUserData` callable + `data_export/` CF module exist — they don't; Butlery's data export is client-driven. Smallest delta: a single new callable consumed by the existing client manager.
+- **BUT-785**: model already had `calculateGeminiCost` helper; just needed pin + MODEL_ID export + threading through emitTiming and response shapes.
 
 ### What this means in plain language
-- **One large file got broken into smaller pieces**: the file handling all Firebase recipe data had grown to 1104 lines (accepted limit was 931, so 18% over). Now at 906 lines, with three new helper files in a `modules/` folder handling tag cascades, GDPR data export, and recipe queries.
-- **No behavior changes**: every method still works the same way; the repository's public surface is unchanged. Tests still pass without modification.
-- **Risk**: low. Three reviewers (code, testing, Firebase security) verified no regressions. The extracted modules use the same pattern that's already established in the codebase.
+- **Eight pre-existing security and performance issues fixed**: report-spam rate limit, missing-rule on votes, unsafe model alias, empty cert pins, memory leaks in two long-running caches, a friend-service notification leak, a CI version mismatch, and the GDPR data export now actually includes the security audit history.
+- **No new app features**: this sprint is internal hardening — users won't see new buttons or screens, but the app is harder to abuse, uses less memory in long sessions, and a data-export request now genuinely returns everything GDPR says it should.
+- **Risk**: low. Every change has tests; rules changes have 7+14 new test cases; performance changes have an LRU bound and eviction telemetry so we'll see if the bound is too tight; the cert-pin assertion only fires in release builds (no impact on dev).
+- **Two follow-ups to track**: (1) actual cert fingerprint values still need to be captured by an ops task before a release build can ship; (2) firestore rules tests need the CI Linux runner with Java to actually run.
 
 ---
 
-## Archived prior sprint (completed in commit 1c82cee20)
+## Archived prior sprint (completed in commit 709ea672f)
 
-BUT-441 mina_recept_view facade extraction — 2026-05-06 (O) — view file 997 → 549 lines via 5 new files in `lib/views/mina_recept/`.
+BUT-536 firebase_recipe_repository module extraction — 2026-05-06 (P) — 1104 → 906 lines via 3 modules.
+
+## Archived sprint before (completed in commit 1c82cee20)
+
+BUT-441 mina_recept_view facade extraction — 2026-05-06 (O) — 997 → 549 lines.
 
 ## Archived sprint before (completed in commit 9598e784d)
 
@@ -56,12 +69,4 @@ BUT-702 closure + BUT-554 dep tracking refresh — 2026-05-06 (N).
 
 ## Archived sprint before (completed in commit 5b480e01f)
 
-CI duration telemetry + ML runtime memo + Linear hygiene — 2026-05-05 (M) — shipped BUT-495/571.
-
-## Archived sprint before (completed in commit 6af9efc88)
-
-Release polish + ops doc + Linear cleanup — 2026-05-05 (L) — shipped BUT-715/493.
-
-## Archived sprint before (completed in commit 25ec5b025)
-
-Tech-debt sweep + dep watch + web polish — 2026-05-05 (K) — shipped BUT-526/567/562/564/578/724/738.
+CI duration telemetry + ML runtime memo + Linear hygiene — 2026-05-05 (M).
