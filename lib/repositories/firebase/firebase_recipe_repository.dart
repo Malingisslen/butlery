@@ -5,10 +5,12 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/modules/recipe_gdpr_export_operations.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
+import 'package:butlery/repositories/firebase/modules/recipe_query_operations.dart';
+import 'package:butlery/repositories/firebase/modules/recipe_tag_operations.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
@@ -69,6 +71,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   static const int _defaultWatchPageSize = 100;
 
   late final RecipeLegacyValidator _legacyValidator;
+  late final RecipeTagOperations _tagOperations;
+  late final RecipeGdprExportOperations _gdprExportOperations;
+  late final RecipeQueryOperations _queryOperations;
 
   FirebaseRecipeRepository({
     super.firestore,
@@ -81,6 +86,20 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       getUserRecipeDoc: (userId, recipeId) async =>
           getCollectionForUser(userId).doc(recipeId).get(),
       validateOwnership: validateOwnership,
+    );
+    _tagOperations = RecipeTagOperations(
+      firestore: firestore,
+      getCollectionForUser: getCollectionForUser,
+    );
+    _gdprExportOperations = RecipeGdprExportOperations(
+      firestore: firestore,
+      getCollectionForUser: getCollectionForUser,
+      requireCurrentUserId: requireCurrentUserId,
+      validateOwnership: validateOwnership,
+    );
+    _queryOperations = RecipeQueryOperations(
+      getCollectionForUser: getCollectionForUser,
+      fromFirestore: fromFirestore,
     );
   }
   @override
@@ -460,227 +479,31 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
-  Future<List<Recipe>> fetchRecipesByTagId(
-    String tagId, {
-    int limit = 100,
-  }) async {
-    final userId = currentUserId;
-    if (userId == null) return [];
+  Future<List<Recipe>> fetchRecipesByTagId(String tagId, {int limit = 100}) =>
+      _queryOperations.fetchRecipesByTagId(currentUserId, tagId, limit: limit);
 
-    try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: tagId)
-          .orderBy('core.updatedAt', descending: true)
-          .limit(limit)
-          .get();
-      return snap.docs.map(fromFirestore).toList();
-    } catch (e) {
-      AppLogger.warning('Failed to get recipes with tag "$tagId": $e');
-      return [];
-    }
-  }
-
-  /// Renames a personal tag across all user recipes that contain it.
-  ///
-  /// Read-modify-write of the denormalized `personalTags` array (array of maps);
-  /// `personalTagIds` (UUIDs) is unchanged since IDs don't change on rename.
-  /// Returns the number of recipes updated.
-  ///
-  /// **Idempotency**: re-running with the same `(tagId, newName)` is a no-op
-  /// for already-renamed entries — the inner map rebuild only mutates the
-  /// `entry['tagId'] == tagId` slot, and an entry already at `newName`
-  /// produces an identical document. Safe to retry on partial failure
-  /// (network drop mid-batch leaves the user with some recipes renamed and
-  /// some not; next rename attempt completes the rest, or the cascade
-  /// re-fires from the next `updateTag` call). Stale recipe names are
-  /// otherwise recoverable via re-tag.
-  ///
-  /// **Scale**: client-side fetch-all + chunked batch writes. Fine for current
-  /// scale (typical user has <500 recipes per tag). Bottleneck at ~10K recipes
-  /// per tag — at that point migrate to a Cloud Function trigger (BUT-480
-  /// deferred CF path).
   @override
-  Future<int> renamePersonalTagInRecipes(
-    String tagId,
-    String newName,
-  ) async {
-    if (tagId.isEmpty || newName.isEmpty) return 0;
-    final userId = currentUserId;
-    if (userId == null) return 0;
+  Future<int> renamePersonalTagInRecipes(String tagId, String newName) =>
+      _tagOperations.renamePersonalTagInRecipes(currentUserId, tagId, newName);
 
-    try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: tagId)
-          .get();
-
-      if (snap.docs.isEmpty) return 0;
-
-      int updated = 0;
-
-      for (var i = 0; i < snap.docs.length; i += kFirestoreBatchSafeChunkSize) {
-        final batch = firestore.batch();
-        final chunk = snap.docs.skip(i).take(kFirestoreBatchSafeChunkSize);
-
-        for (final doc in chunk) {
-          final data = doc.data();
-          final coreData = data['core'] as Map<String, dynamic>? ?? {};
-          final personalTags = coreData['personalTags'] as List?;
-
-          if (personalTags != null) {
-            // Update the name field in the matching personalTags entry
-            final updatedTags = personalTags.map((entry) {
-              if (entry is Map && entry['tagId'] == tagId) {
-                return {...entry, 'name': newName};
-              }
-              return entry;
-            }).toList();
-
-            batch.update(doc.reference, {
-              'core.personalTags': updatedTags,
-            });
-          }
-        }
-
-        await batch.commit();
-        updated += chunk.length;
-      }
-
-      return updated;
-    } catch (e) {
-      AppLogger.warning('Failed to rename tag "$tagId" to "$newName": $e');
-      return 0;
-    }
-  }
-
-  /// Removes a personal tag from all user recipes that contain it.
-  ///
-  /// Removes from both personalTagIds (UUID array) and personalTags (rich objects).
-  /// Returns the number of recipes updated.
   @override
-  Future<int> removePersonalTagFromRecipes(String tagId) async {
-    if (tagId.isEmpty) return 0;
-    final userId = currentUserId;
-    if (userId == null) return 0;
+  Future<int> removePersonalTagFromRecipes(String tagId) =>
+      _tagOperations.removePersonalTagFromRecipes(currentUserId, tagId);
 
-    try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: tagId)
-          .get();
-
-      if (snap.docs.isEmpty) return 0;
-
-      const batchLimit = 500; // 1 op per doc (consolidated update)
-      int updated = 0;
-
-      for (var i = 0; i < snap.docs.length; i += batchLimit) {
-        final batch = firestore.batch();
-        final chunk = snap.docs.skip(i).take(batchLimit);
-
-        for (final doc in chunk) {
-          final data = doc.data();
-          final coreData = data['core'] as Map<String, dynamic>? ?? {};
-          final personalTags = coreData['personalTags'] as List?;
-
-          // Single update with both field changes
-          final updates = <String, dynamic>{
-            'core.personalTagIds': FieldValue.arrayRemove([tagId]),
-          };
-
-          if (personalTags != null) {
-            updates['core.personalTags'] = personalTags
-                .where((entry) => entry is Map && entry['tagId'] != tagId)
-                .toList();
-          }
-
-          batch.update(doc.reference, updates);
-        }
-
-        await batch.commit();
-        updated += chunk.length;
-      }
-
-      return updated;
-    } catch (e) {
-      AppLogger.warning('Failed to remove tag "$tagId" from recipes: $e');
-      return 0;
-    }
-  }
-
-  /// Adds remove-personal-tag operations to an external batch without committing.
-  /// Queries for affected recipes, then adds update operations to [batch].
-  /// Returns the number of recipe updates added.
-  /// Caller is responsible for committing the batch and respecting the 500-op limit.
   Future<int> addRemovePersonalTagFromRecipesToBatch(
     WriteBatch batch,
     String tagId,
-  ) async {
-    if (tagId.isEmpty) return 0;
-    final userId = currentUserId;
-    if (userId == null) return 0;
-
-    final snap = await getCollectionForUser(userId)
-        .where('core.personalTagIds', arrayContains: tagId)
-        .get();
-
-    if (snap.docs.isEmpty) return 0;
-
-    for (final doc in snap.docs) {
-      final data = doc.data();
-      final coreData = data['core'] as Map<String, dynamic>? ?? {};
-      final personalTags = coreData['personalTags'] as List?;
-
-      final updates = <String, dynamic>{
-        'core.personalTagIds': FieldValue.arrayRemove([tagId]),
-      };
-
-      if (personalTags != null) {
-        updates['core.personalTags'] = personalTags
-            .where((entry) => entry is Map && entry['tagId'] != tagId)
-            .toList();
-      }
-
-      batch.update(doc.reference, updates);
-    }
-
-    return snap.docs.length;
-  }
+  ) =>
+      _tagOperations.addRemovePersonalTagFromRecipesToBatch(
+          currentUserId, batch, tagId);
 
   @override
-  Future<List<Recipe>> findBySourceUrl(String url) async {
-    if (url.isEmpty) return [];
-    final userId = currentUserId;
-    if (userId == null) return [];
-
-    try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.sourceUrl', isEqualTo: url)
-          .limit(5)
-          .get();
-      return snap.docs.map(fromFirestore).toList();
-    } catch (e) {
-      AppLogger.warning('Failed to find recipes by source URL: $e');
-      return [];
-    }
-  }
+  Future<List<Recipe>> findBySourceUrl(String url) =>
+      _queryOperations.findBySourceUrl(currentUserId, url);
 
   @override
-  Future<List<Recipe>> findByTitle(String title) async {
-    final normalized = title.trim().toLowerCase();
-    if (normalized.isEmpty) return [];
-    final userId = currentUserId;
-    if (userId == null) return [];
-
-    try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.titleLower', isEqualTo: normalized)
-          .limit(5)
-          .get();
-      return snap.docs.map(fromFirestore).toList();
-    } catch (e) {
-      AppLogger.warning('Failed to find recipes by title: $e');
-      return [];
-    }
-  }
+  Future<List<Recipe>> findByTitle(String title) =>
+      _queryOperations.findByTitle(currentUserId, title);
 
   @override
   Future<bool> incrementCookCount(String recipeId, DateTime cookedAt) async {
@@ -1067,18 +890,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Map<String, dynamic>>> exportPersonalRecipesByUser(
     String userId, {
     int maxDocuments = 1000,
-  }) async {
-    await validateOwnership(
-      currentUserId: requireCurrentUserId(),
-      resourceOwnerId: userId,
-      resourceType: 'recipes',
-    );
-    final snapshot =
-        await getCollectionForUser(userId).limit(maxDocuments).get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _gdprExportOperations.exportPersonalRecipesByUser(userId,
+          maxDocuments: maxDocuments);
 
   /// BUT-501: Export every top-level `recipes` doc owned by [userId]
   /// (legacy `userId` field). Used alongside [exportPersonalRecipesByUser]
@@ -1086,19 +900,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Map<String, dynamic>>> exportTopLevelRecipesByOwner(
     String userId, {
     int maxDocuments = 1000,
-  }) async {
-    await validateOwnership(
-      currentUserId: requireCurrentUserId(),
-      resourceOwnerId: userId,
-      resourceType: 'recipes',
-    );
-    final snapshot = await firestore
-        .collection(FirestoreCollections.recipes)
-        .where('userId', isEqualTo: userId)
-        .limit(maxDocuments)
-        .get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
+  }) =>
+      _gdprExportOperations.exportTopLevelRecipesByOwner(userId,
+          maxDocuments: maxDocuments);
 }

@@ -2660,3 +2660,33 @@ firestore.rules match /shared_content/{contentId} allow update`.
   postFrameCallback. The dialog itself re-reads consent state before
   saving, so the worst case is a dialog flash for a logged-out user —
   no data leak, but UX nit. Acceptable; document as a known minor race.
+
+### 2026-05-05 — Recipe repo facade extraction (BUT-536)
+Three modules carved out of `firebase_recipe_repository.dart`:
+`RecipeTagOperations`, `RecipeQueryOperations`, `RecipeGdprExportOperations`.
+Pattern verified safe:
+- Modules take `String? userId` as parameter rather than reading auth
+  state. Repo wrapper passes `currentUserId` (nullable getter). Each
+  module method early-returns the empty/zero response on null userId,
+  preserving the original "unauthenticated → empty list" semantics
+  rather than throwing a Firestore PERMISSION_DENIED.
+- All collection access goes through the injected `getCollectionForUser`
+  callback — no module can construct a path to another user's
+  subcollection. `findBySourceUrl`/`findByTitle`/`fetchRecipesByTagId`
+  scope by `getCollectionForUser(userId)` only.
+- GDPR module receives `requireCurrentUserId` + `validateOwnership` as
+  injected callbacks, and both export methods call `validateOwnership(
+  currentUserId: requireCurrentUserId(), resourceOwnerId: userId, ...)`
+  BEFORE any Firestore read. The mixin's `validateOwnership` throws
+  `PermissionDeniedException` on null currentUserId or mismatch — so
+  cross-user export is structurally impossible. Modules are private
+  `late final` fields; callers can only reach them via the repo.
+- Tag-cascade write paths preserve identical Firestore mutations
+  (`FieldValue.arrayRemove([tagId])` + filtered `core.personalTags`
+  rebuild). No new write surface, no security-rule implications.
+- `validateOwnership` in this codebase does NOT itself emit a
+  `logPermissionCheck` audit entry — it only logs a warning on
+  mismatch. The CLAUDE.md "every custom permission check must call
+  logPermissionCheck" rule applies to the four base validate*Permission
+  hooks, which are unchanged here. GDPR export delegates remain
+  audit-equivalent to pre-extraction.
