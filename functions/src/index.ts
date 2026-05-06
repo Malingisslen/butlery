@@ -36,6 +36,17 @@ export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 // Admin SDK to satisfy the user's right to access their own actor history.
 export { exportAuditLogs } from "./exports/audit-logs";
 
+// Storage upload moderation (BUT-780): magic-byte verification of every
+// `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG
+// or executable past the Storage rule's contentType allow-list.
+export { moderateUpload } from "./storage/moderate-upload";
+
+// BUT-778: server-side conversation.lastMessage sync. Replaces the deprecated
+// client-side ConversationAutoHealerModule, which spawned ~50 per-conversation
+// `messages` listeners per active user. CF triggers once per message
+// create/update/delete and updates the parent conversation atomically.
+export { syncConversationLastMessage } from "./messaging/sync-conversation-last-message";
+
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
 

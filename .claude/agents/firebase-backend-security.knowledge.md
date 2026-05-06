@@ -2764,3 +2764,18 @@ Pattern verified safe:
 - Generalize: any document that is jointly authored / has
   cross-subject GDPR claims should anonymize the deletee's identifiers,
   not delete the row.
+
+### 2026-05-06 — Storage moderation CF: shouldReplaceLastMessage `>=` is correct for edit-refresh
+- BUT-778 server-side conversation lastMessage sync uses `candidate.sentAt.toMillis() >= current.sentAt.toMillis()` so an edit (same sentAt as the original) overwrites the stored snapshot. Strict `>` would silently drop edit-refresh when the original message is still the lastMessage — a real footgun. Idempotent because the projection of the same id+sentAt+content is identical.
+- TOCTOU on the delete-recompute path is closed by reading the replacement query inside the same `runTransaction` (read-then-write atomic). Required index `messages(conversationId ASC, sentAt DESC)` is present in firestore.indexes.json.
+
+### 2026-05-06 — Storage upload moderation: fail-open is acceptable when the rule layer is the actual gate
+- BUT-780 `moderate-upload.ts` returns silently when `bucket.file(name).download()` throws. Defensible because `storage.rules isValidImage()` is an explicit allow-list (jpeg/png/webp/heic/heif) — the CF only catches MIME spoofing past the rule, never the rule's own invariants. Worst case on download failure: the spoofed-bytes-but-allowed-MIME object survives + no audit row. Mitigation note: ops should monitor `[moderateUpload] failed to read head bytes` warning rate; spike = either bucket permission drift or systematic abuse worth investigating.
+- Rule + CF must keep MIME allow-list in sync. Document this contract in BOTH files (already done via mirrored comment).
+
+### 2026-05-06 — `enforceAppCheck` on Firestore/Storage triggers
+- `enforceAppCheck` is only meaningful on **callables** and HTTPS endpoints (where a client token is presented). For `onObjectFinalized` / `onDocumentWritten` background triggers, the invocation source is GCP itself — there is no client token to enforce. App Check belongs on the *write path* (callable that produces the trigger event), not the trigger handler. Don't add it to triggers.
+
+### 2026-05-06 — `storage_upload_rejected` audit-log shape (keep PII out)
+- Pattern: `userId` = uploader uid (or "unknown" when neither metadata.uploadedBy nor a `users/{uid}/...` path prefix yields one), `operation: 'storage_upload_rejected'`, `granted: false`, `metadata: { bucket, contentType, reason }`. Reason codes: `unsupported_content_type`, `magic_byte_unrecognized`, `magic_byte_mismatch_declared_X_actual_Y`. **No** filename body, **no** byte previews — `resourceId` is the object path (`users/{uid}/recipes/abc.jpg`) which already contains the uid by convention; that's intentional and matches every other audit row's resource format.
+- Anonymous-upload edge case: when a malicious actor finds a path that's neither `users/{uid}/...` nor has `metadata.uploadedBy`, `userId='unknown'` is the right tombstone — refusing to write the audit row would be worse (silent rejection). Storage rules currently only permit writes under `users/{uid}/...`, `shared/recipes/{recipeId}/` (uploadedBy required), and `feedback/{uid}/...`, so `unknown` should be effectively unreachable in production; treat any occurrence as a signal of rule drift or admin-SDK upload.

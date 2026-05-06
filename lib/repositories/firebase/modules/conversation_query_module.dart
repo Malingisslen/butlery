@@ -13,19 +13,21 @@ class ConversationQueryModule {
   final String collectionName;
   final Conversation Function(DocumentSnapshot<Map<String, dynamic>>)
       fromFirestore;
-  final void Function(String) startAutoHealer;
   final ConversationParticipantModule? participantModule;
 
   ConversationQueryModule({
     required this.firestore,
     required this.collectionName,
     required this.fromFirestore,
-    required this.startAutoHealer,
     this.participantModule,
   });
 
   /// Stream all conversations for a user with real-time updates.
-  /// Auto-starts healers for all conversations.
+  ///
+  /// BUT-778: previously also fanned out per-conversation auto-healer
+  /// listeners (~50 per active user). lastMessage sync now happens
+  /// server-side via the `syncConversationLastMessage` CF trigger; this
+  /// stream is a single arrayContains snapshot listener and nothing else.
   Stream<List<Conversation>> getUserConversations(String userId) {
     try {
       return firestore
@@ -34,16 +36,7 @@ class ConversationQueryModule {
           .orderBy('updatedAt', descending: true)
           .limit(50) // Limit to 50 most recent conversations
           .snapshots()
-          .map((snapshot) {
-        final conversations = snapshot.docs.map(fromFirestore).toList();
-
-        // Auto-start healers for all conversations
-        for (final conversation in conversations) {
-          startAutoHealer(conversation.id);
-        }
-
-        return conversations;
-      });
+          .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
     } catch (e) {
       AppLogger.error(
           'Failed to get user conversations for ${userId.maskedUserId}', e);

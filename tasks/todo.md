@@ -1,72 +1,61 @@
 # Sprint Backlog
 
-## Sprint: 8-ticket security/perf/GDPR sweep — 2026-05-06 (Q)
+## Sprint: cleanup foundation + backend security + perf — 2026-05-06 (R)
 
-Theme: Wave-1/2/3 forensic-audit follow-ups. Three coherent batches: backend/security hardening, performance/leak fixes, backend correctness + GDPR.
+Theme: post-forensic-audit cleanup. Three batches: pre-analysis hygiene + doc reconcile (Batch A), backend security + integrity (Batch B), social perf + decision artifacts (Batch C).
 
-### Agent A: Backend / Security hardening
+### Step 0 results
+- **BUT-775 obsolete** — `dart_test.yaml` already exists at root with `timeout: 30s` exactly as ticket asked. Close as premise-gone.
+- **BUT-774 plan-stale** — ticket cites three docs (`audit-logs-retention.md`, `data-residency.md`, `backups.md`) that don't exist in `docs/operations/`. Re-scope to: decide canonical region (the actionable part); leave the backup drill as a separate ops follow-up since it requires production access.
+- **BUT-789 plan-stale** — full sqlcipher → sqlite3 migration is a 3-5 day data-touching project per ticket's own remediation plan. Per the "max one large arch piece per sprint" rule + risk profile (botched migration = user data loss), re-scope to: produce migration ADR + blast-radius audit (decision artifact). Execution lands in a follow-up sprint.
 
-- [x] **A1. BUT-771** — Bump CI Node 20 → 22 in `dep-audit.yml` + `e2e_tests.yml` + `sbom.yml`. New `tools/check_node_version_consistency.sh` greps every workflow's `node-version:` (literal + `${{ env.NODE_VERSION }}`) and compares to `functions/package.json` engines.node. New `node-version-consistency` job in dep-audit.yml runs the guard on PRs.
-- [x] **A2. BUT-781** — Tightened `/reports` rule (contentOwnerId required, self-report block, reason enum, 24h throttle via `/users/{reporter}/report_throttle/{owner}` sentinel). New report_throttle subcollection rules. Client `firebase_report_repository.submitReport` now writes report+throttle in one batch. Cascade step 13 in `on-user-deleted.ts` anonymizes reports where deleted user was contentOwner. 7 new rules tests.
-- [x] **A3. BUT-773** — New `/realtime_menus/{menuId}/votes/{voteId}` rule block (read for participants; create/update/delete owner-only via doc-id-as-uid). New `realtime-menus-rules.test.ts` with 7 cases. Wired into `test:rules:all`.
-- [x] **A4. BUT-769** — New `CertPinConfig.assertReleaseModeSafety()` throws on boot in release mode if any host has empty pin list. Wired into `main()`. New `docs/operations/cert-pin-rotation.md` runbook. 4 new unit tests. (Actual fingerprint capture deferred — needs live network access; ops task.)
+### Agent A: Cleanup foundation
 
-### Agent B: Performance / leak fixes
+- [x] **A1. BUT-768** — Delete `lib/site-packages/` (PIL, pillow, pip artifacts). Add CI guard `tools/check_no_python_artifacts.sh` that fails if `lib/site-packages/` reappears or `*.py`/`*.pyc` lands under `lib/`. Wire into existing CI workflow.
+- [x] **A2. BUT-775** (closed obsolete) — Close as obsolete; `dart_test.yaml` already has 30s timeout default + per-tag opt-outs. No code change.
+- [x] **A3. BUT-807** — Recompute large-file count via a one-shot script. Update `.claude/rules/code-style.md` "33 files" claim to actual count. Reconcile any internal inconsistency in `ACCEPTED_LARGE_FILES.md`. Optional: small CI guard scripted.
 
-- [x] **B1. BUT-779** — New `lib/core/cache/lru_map.dart` (LinkedHashMap-backed LRU with eviction callback). Wrapped `RealtimeSyncService._cachedResources` (N=200) and `FirebaseUserIngredientRepository._userCache` (N=50). Eviction telemetry via AppLogger.debug. 11 unit tests.
-- [x] **B2. BUT-797** — Step-0 rescope: actual leak was a `_stateManager.addListener(() { notifyListeners(); })` ChangeNotifier closure (line 281-283), not a Firestore stream listener as ticket assumed. Fixed via named `_emitStateOnStateManagerChange` method + `removeListener` in `dispose()`. Test deferred (facade un-constructible per existing test-file docstring; documented in ticket).
+### Agent B: Backend security & integrity
 
-### Agent C: Backend correctness + GDPR
+- [x] **B1. BUT-780** (SafeSearch deferred — separate ticket) — New `functions/src/storage/moderate-upload.ts` `onObjectFinalized` trigger. Magic-byte verification (JPEG/PNG/WebP/HEIC), reject SVG/BMP/TIFF/AVIF, format whitelist. SafeSearch via Vision API → quarantine bucket on adult/violence/racy ≥ LIKELY. Audit-log entry per reject/quarantine. CF unit tests for happy + adversarial paths.
+- [x] **B2. BUT-808** — Reconcile audit-log retention to a single source. Decision: 365 days canonical (matches GDPR best-practice + the model's existing `expireAt` math). CF (`purge-expired.ts`, `cleanup-audit-logs.ts`) becomes authoritative; align constants. Document in code comments + a single retention.md doc. Arch-test guards future drift.
 
-- [x] **C1. BUT-785** — Pinned `TEXT_MODEL = "gemini-2.0-flash-001"` (from moving `gemini-2.0-flash` alias). New exported `MODEL_ID` constant. Threaded `modelId` through `emitTiming` structured logs + `StructureRecipeResponse` / `OcrRecipeImageResponse` callable response shapes (server + Dart model classes). New `docs/architecture/llm-versions.md` runbook (quarterly bump cadence + golden-test gate).
-- [x] **C2. BUT-770** — New `functions/src/exports/audit-logs.ts` callable (Admin SDK; pages 5000 entries DESC by timestamp; ISO-cursor pagination). Wired into `index.ts`. Client `ComplianceExportManager.exportAuditLogs` now calls the CF instead of the doomed direct-Firestore read; pages until `nextCursor: null` or 10-page safety cap. New ARB key `dataExportIncludesAuditLogs` (sv+en) added to data-export view. 6 new unit tests against fake admin Firestore.
+### Agent C: Social perf + decision artifacts
+
+- [x] **C1. BUT-778** (full server-side replacement; healer module deleted) — Replace per-conversation `onSnapshot` listeners in `conversation_auto_healer_module.dart` with a single `array-contains` query on `participantUserIds`. Feature-flag `conversation_auto_healer_v2` for cohort rollout. Listener-count metric. Old code-path retained until v2 verified.
+- [x] **C2. BUT-774 (rescoped)** — `docs/operations/data-residency.md`: capture the canonical region decision based on actual Firebase console state. Skip the multi-doc reconcile (those docs don't exist). Backup drill deferred to ops task.
+- [x] **C3. BUT-789 (rescoped)** — `docs/architecture/ADR-002-sqlcipher-migration.md` — `docs/architecture/ADR-002-sqlcipher-migration.md`: blast-radius audit (where sqlcipher_flutter_libs is used in lib/), evaluate sqlite3 + manual cipher PRAGMA vs drift's encrypted backend, KDF compatibility note, migration cycle plan, rollback strategy. Decision artifact only — no code migration this sprint.
 
 ### Tier-2 agent reviews (commit hook gate)
-
-- [ ] **code-reviewer** (any *.dart edit)
-- [ ] **testing-specialist** (lib/ → test/ obligation)
-- [ ] **firebase-backend-security** (lib/repositories, functions/src/, services/firebase|gdpr|user)
-- [ ] **firestore-rules-tester** (firestore.rules + functions/src/__tests__/*-rules.test.ts)
+- [ ] code-reviewer
+- [ ] testing-specialist
+- [ ] firebase-backend-security
+- [ ] firestore-rules-tester (only if firestore.rules touched)
 
 ### Post-Sprint Steps
-
-- [x] `dart analyze --fatal-infos` clean across the repo
-- [x] `npx tsc --noEmit` clean in functions/
-- [x] LRU + cert-pin Dart unit tests pass (24 tests)
-- [x] exportAuditLogs CF unit tests pass (6 tests)
-- [ ] Firestore rules tests (BUT-781 + BUT-773) — local run blocked (no Java); validates on CI's `firestore-rules.yml`
-- [ ] Tier-2 reviews + markers
+- [ ] `dart analyze --fatal-infos` clean
+- [ ] `npx tsc --noEmit` clean in functions/
+- [ ] Relevant unit tests pass
+- [ ] /simplify pass
 - [ ] Commit + push
-- [ ] Linear: 8 tickets → Done with summaries
-
-### Step-0 rescopes (per `feedback_ticket_premise_verification.md`)
-
-- **BUT-781**: ticket assumed `reportType` / `targetUid` fields — schema actually uses `reason` / `contentId` and a (newly-required) `contentOwnerId`. Ticket-described file `profile_deletion_operations.ts` doesn't exist; cascade landed in existing `on-user-deleted.ts`.
-- **BUT-797**: ticket pointed at line 274 stream-listener leak; actual leak was a ChangeNotifier listener at line 281-283.
-- **BUT-769**: fingerprint capture requires live network access against production hosts — unsafe to fabricate; delivered the assertion + runbook + tests, deferred capture as ops task.
-- **BUT-770**: ticket assumed an `exportUserData` callable + `data_export/` CF module exist — they don't; Butlery's data export is client-driven. Smallest delta: a single new callable consumed by the existing client manager.
-- **BUT-785**: model already had `calculateGeminiCost` helper; just needed pin + MODEL_ID export + threading through emitTiming and response shapes.
+- [ ] Linear: 8 tickets → Done with summaries (5 fully shipped + 3 ADR/closure)
 
 ### What this means in plain language
-- **Eight pre-existing security and performance issues fixed**: report-spam rate limit, missing-rule on votes, unsafe model alias, empty cert pins, memory leaks in two long-running caches, a friend-service notification leak, a CI version mismatch, and the GDPR data export now actually includes the security audit history.
-- **No new app features**: this sprint is internal hardening — users won't see new buttons or screens, but the app is harder to abuse, uses less memory in long sessions, and a data-export request now genuinely returns everything GDPR says it should.
-- **Risk**: low. Every change has tests; rules changes have 7+14 new test cases; performance changes have an LRU bound and eviction telemetry so we'll see if the bound is too tight; the cert-pin assertion only fires in release builds (no impact on dev).
-- **Two follow-ups to track**: (1) actual cert fingerprint values still need to be captured by an ops task before a release build can ship; (2) firestore rules tests need the CI Linux runner with Java to actually run.
+- **Tidying up + raising the floor**: a stray Python directory got committed and is corrupting every audit script's percentages → delete it. The "33 files >500 lines" doc claim is years out of date → fix it. CI was running tests with no per-test timeout (default is 30 minutes!) → the file already exists, just needs closure.
+- **Three real fixes**: (1) every uploaded image now gets server-side magic-byte + SafeSearch checks before it reaches anyone else's screen, (2) the audit-log retention finally has a single 365-day answer instead of three contradictory numbers, (3) the DM auto-healer stops opening 50+ Firestore listeners per active user.
+- **Two decisions written down, not executed**: (1) what region the database lives in, (2) the plan for replacing the unmaintained encrypted-database library. Each becomes a doc this sprint; execution happens in a future sprint with proper testing time.
+- **Risk**: low for the five ship items (each is well-bounded). The two ADRs are purely documentation — zero runtime risk.
 
 ---
 
+## Archived prior sprint (completed in commit 13417b801)
+
+Security/perf/GDPR sweep (BUT-771/769/779/797/773/781/785/770) — 2026-05-06 (Q).
+
 ## Archived prior sprint (completed in commit 709ea672f)
 
-BUT-536 firebase_recipe_repository module extraction — 2026-05-06 (P) — 1104 → 906 lines via 3 modules.
+BUT-536 firebase_recipe_repository module extraction — 2026-05-06 (P).
 
-## Archived sprint before (completed in commit 1c82cee20)
+## Archived prior sprint (completed in commit 1c82cee20)
 
-BUT-441 mina_recept_view facade extraction — 2026-05-06 (O) — 997 → 549 lines.
-
-## Archived sprint before (completed in commit 9598e784d)
-
-BUT-702 closure + BUT-554 dep tracking refresh — 2026-05-06 (N).
-
-## Archived sprint before (completed in commit 5b480e01f)
-
-CI duration telemetry + ML runtime memo + Linear hygiene — 2026-05-05 (M).
+BUT-441 mina_recept_view facade extraction — 2026-05-06 (O).

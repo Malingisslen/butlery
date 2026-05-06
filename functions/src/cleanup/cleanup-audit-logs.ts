@@ -1,31 +1,20 @@
 /**
- * Audit Log Cleanup Cloud Function
+ * BUT-808: Reconciled to single-source retention. The `audit_logs` collection
+ * is now exclusively purged by `purgeExpiredAuditLogs` in
+ * `audit_logs/purge-expired.ts` (730d for consent_* operations, 180d general).
+ * This CF formerly also purged `audit_logs` on a 90d Remote-Config default,
+ * which silently DEFEATED the BUT-665 730d consent retention because it ran
+ * 2 hours earlier on the same Sunday schedule.
  *
- * Scheduled to run weekly on Sunday at 3 AM UTC to delete old audit logs
- * based on the configured retention period.
+ * What's left here: cleanup of the `deletion_audit_logs` collection via its
+ * `expireAt` TTL field (GDPR Art. 5). That collection has its own schema
+ * (records of erasure events keyed by deletedUid) and is unrelated to the
+ * `audit_logs` actor history.
  *
- * GDPR Compliance Notes (Articles 5, 17, 30):
- * - Article 5(1)(e): Data should not be kept longer than necessary (data minimization)
- * - Article 17: Right to erasure - audit logs of deleted user data should eventually be cleaned
- * - Article 30: Records of processing must be maintained (but not forever)
- *
- * Retention Recommendations by Data Type:
- * - Security/access logs: 90 days default (sufficient for incident investigation)
- * - User data modification logs: Consider 1-2 years for legal compliance
- * - Financial/transaction logs: May require 7 years depending on jurisdiction
- *
- * Current Settings:
- * - Default: 90 days (configurable via Remote Config 'audit_log_retention_days')
- * - Minimum: 30 days (safety floor)
- *
- * To increase retention for legal compliance, set 'audit_log_retention_days'
- * in Firebase Remote Config. For Swedish law (Bokföringslagen), financial
- * records typically require 7 years (2555 days).
- *
- * Security:
- * - Only deletes logs older than the retention period
- * - Logs deletion activity for compliance audit trail
- * - Runs with admin privileges (via service account)
+ * The export name `cleanupOldAuditLogs` is preserved so the deployed
+ * scheduler binding doesn't churn (renaming the function changes its
+ * resource id, causing a re-deploy gap). The body now only handles
+ * `deletion_audit_logs`.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
@@ -35,72 +24,24 @@ import * as admin from "firebase-admin";
 import { batchDeleteDocs } from "../shared/batch-delete";
 import { requireAdmin } from "../shared/require-admin";
 
-// Retention period defaults (can be overridden by Remote Config)
-const DEFAULT_RETENTION_DAYS = 90;
-const MINIMUM_RETENTION_DAYS = 30; // Safety minimum
-
 /**
- * Weekly cleanup of old audit logs
+ * Weekly cleanup of expired `deletion_audit_logs` (NOT `audit_logs` — see
+ * file docstring for the BUT-808 reconcile).
  *
- * Schedule: 0 3 * * 0 (Weekly on Sunday at 3 AM UTC)
- *
- * Batch processing:
- * - Queries logs older than retention period
- * - Deletes in batches of 500 (Firestore limit)
- * - Logs cleanup metrics for monitoring
+ * Schedule: 0 3 * * 0 (Sunday 03:00 UTC). Runs 2h before
+ * `purgeExpiredAuditLogs` (Sunday 05:00 UTC); the two CFs operate on
+ * independent collections so order is irrelevant for correctness.
  */
 export const cleanupOldAuditLogs = onSchedule(
   { schedule: "0 3 * * 0", timeZone: "UTC" },
   async () => {
     const db = admin.firestore();
-    const auditLogsRef = db.collection("audit_logs");
 
-    logger.info("Starting audit log cleanup...");
-
-    // Get retention days from Remote Config or use default
-    let retentionDays = DEFAULT_RETENTION_DAYS;
-    try {
-      const remoteConfig = admin.remoteConfig();
-      const template = await remoteConfig.getTemplate();
-      const retentionParam = template.parameters["audit_log_retention_days"];
-      if (retentionParam?.defaultValue) {
-        const value = (retentionParam.defaultValue as { value: string }).value;
-        const parsed = parseInt(value, 10);
-        if (!isNaN(parsed) && parsed >= MINIMUM_RETENTION_DAYS) {
-          retentionDays = parsed;
-        }
-      }
-    } catch (e) {
-      logger.warn(
-        `Could not fetch Remote Config, using default retention: ${DEFAULT_RETENTION_DAYS} days`,
-        e
-      );
-    }
-
-    logger.info(`Retention period: ${retentionDays} days`);
-
-    // Calculate cutoff timestamp
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
-    const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
-
-    logger.info(`Deleting audit logs older than ${cutoffDate.toISOString()}`);
+    logger.info("Starting deletion_audit_logs TTL cleanup...");
 
     try {
-      // Query old audit logs
-      const snapshot = await auditLogsRef
-        .where("timestamp", "<", cutoffTimestamp)
-        .limit(10000) // Process up to 10k per run
-        .get();
-
-      if (snapshot.empty) {
-        logger.info("No old audit logs to delete");
-        return;
-      }
-
-      const deletedCount = await batchDeleteDocs(db, snapshot);
-
-      // Clean up deletion_audit_logs using expireAt TTL field (GDPR Art.5)
+      // GDPR Art. 5: deletion_audit_logs carries an `expireAt` TTL set at
+      // write time. Delete entries past their TTL.
       const deletionAuditRef = db.collection("deletion_audit_logs");
       const now = admin.firestore.Timestamp.now();
       const deletionAuditSnapshot = await deletionAuditRef
@@ -114,31 +55,23 @@ export const cleanupOldAuditLogs = onSchedule(
 
       if (deletionAuditCount > 0) {
         logger.info(
-          `Deletion audit log cleanup: deleted ${deletionAuditCount} expired entries`
+          `deletion_audit_logs cleanup: deleted ${deletionAuditCount} expired entries`
         );
       }
 
-      // Log cleanup for monitoring/alerting
-      const cleanupLog = {
-        type: "audit_log_cleanup",
-        deletedCount,
+      // Observability — one row per run.
+      await db.collection("system_events").add({
+        type: "deletion_audit_log_cleanup",
         deletionAuditDeletedCount: deletionAuditCount,
-        totalScanned: snapshot.size,
-        retentionDays,
-        cutoffDate: cutoffDate.toISOString(),
         executedAt: admin.firestore.FieldValue.serverTimestamp(),
-      };
-
-      // Store cleanup event in a separate collection for tracking
-      await db.collection("system_events").add(cleanupLog);
+      });
 
       logger.info(
-        `Audit log cleanup complete: deleted ${deletedCount} entries older than ${retentionDays} days`
+        `deletion_audit_logs cleanup complete: deleted ${deletionAuditCount} expired entries`
       );
-
     } catch (e) {
-      logger.error("Audit log cleanup failed", e);
-      throw e; // Let Cloud Functions retry
+      logger.error("deletion_audit_logs cleanup failed", e);
+      throw e;
     }
   }
 );

@@ -1,14 +1,16 @@
 # Accepted Large Files
 
-**Last Updated**: 2026-04-25 (133 files reviewed and accepted)
+**Last Updated**: 2026-05-06 (135 files >500 lines, re-counted post BUT-768 cleanup)
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
+Recount with `bash tools/count_large_files.sh` to keep this header honest.
+
 ## Refactoring Summary
 
-- **29 files refactored** across 8 batches (latest: personal_tag_rule.dart decomposition)
-- **8,879 lines reduced** total
-- **133 files currently >500 lines** in lib/ (documented below with reasons)
+- **31 files refactored** across 10 batches (latest two: facade-extract `mina_recept_view`, module-extract `firebase_recipe_repository`)
+- **~9,500 lines reduced** total (cumulative across the program)
+- **135 files currently >500 lines** in lib/ (documented below with reasons; expect ±2 churn as new module extractions land their helper files above the threshold)
 
 ## Generated / Data Files
 

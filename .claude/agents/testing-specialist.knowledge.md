@@ -1156,3 +1156,36 @@ The 5 cases here capture: (1) recipe_edited with non-empty diff, (2)
 no-sourceUrl gate, (3) within-window emit + tier_used forwarded, (4)
 outside-window gate, (5) tier_used omitted when null — that's the full
 behavioural contract; no implementation-detail asserts.
+
+### 2026-05-06 — CF helper unit tests + integration gap (BUT-778, BUT-780)
+**Trigger**: Pattern discovered + Coverage gap flagged
+
+When Cloud Functions extract pure decision helpers (e.g. `detectFormat`,
+`resolveUploaderUid`, `shouldReplaceLastMessage`), the unit-test pattern
+in `functions/src/__tests__/` is to stub `process.env.FIREBASE_CONFIG`
++ `admin.initializeApp({ projectId: ... })` before `require()`-ing the
+module — `firebase-functions` resolves trigger declarations eagerly at
+module load and demands a bucket name. `require` (not `import`) the
+helpers so the module-load hack runs first. Pattern is in
+`moderate-upload.test.ts` and `sync-conversation-last-message.test.ts`.
+
+**Coverage gap to remember**: pure-helper unit tests prove the helper is
+correct in isolation but DON'T prove the CF actually calls it. A wiring
+bug ("CF doesn't invoke `detectFormat` and just deletes nothing", "CF
+calls helper but ignores null result") passes unit tests green. For any
+CF where the security/cost decision lives in a helper, an emulator-lane
+integration test (`*.integration.test.ts` gated on `USE_EMULATOR=true`,
+Linux CI only) is the missing layer. Skip on Java-less dev boxes,
+required on CI. Mirrors the Flutter `emulatorOnlySkip` pattern.
+
+**Also remember**: when a helper resolves identity from path conventions
+(e.g. `users/{uid}/...`, `feedback/{uid}/...`), audit the path patterns
+against `storage.rules` / `firestore.rules` — if rules permit a path
+the helper doesn't recognize, identity resolution silently returns null
+in production. Test set must enumerate every permitted prefix.
+
+**Deletion-test pairing rule**: when production code deletes a method,
+deleting its tests is correct, not a coverage loss. The replacement test
+should guard the *remaining* contract (e.g. "dispose without throwing"
+after auto-healer removal in BUT-778 messaging repo). Don't add a
+"verify the method doesn't exist" test — the absent-grep is the proof.

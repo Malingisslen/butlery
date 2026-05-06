@@ -16,7 +16,6 @@ import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 // Module imports
-import 'package:butlery/repositories/firebase/modules/conversation_auto_healer_module.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_mutation_module.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
@@ -29,8 +28,9 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     with UserScopedFirebaseRepository<Conversation>
     implements MessagingRepository {
-  // Modules
-  late final ConversationAutoHealerModule _autoHealerModule;
+  // Modules. BUT-778: ConversationAutoHealerModule deleted; lastMessage
+  // sync now happens server-side via the `syncConversationLastMessage`
+  // Cloud Function trigger.
   late final ConversationQueryModule _conversationQueryModule;
   late final ConversationMutationModule _conversationMutationModule;
   late final ConversationParticipantModule? _participantModule;
@@ -55,17 +55,10 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
         : null;
 
     // Initialize modules
-    _autoHealerModule = ConversationAutoHealerModule(
-      messagesRef: _messagesRef,
-      readConversation: read,
-      updateConversation: update,
-    );
-
     _conversationQueryModule = ConversationQueryModule(
       firestore: firestore,
       collectionName: collectionName,
       fromFirestore: fromFirestore,
-      startAutoHealer: _autoHealerModule.startAutoHealer,
       participantModule: _participantModule,
     );
 
@@ -406,20 +399,10 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
         userId: userId,
       );
 
-  /// Start real-time self-healing for a conversation.
-  void startConversationAutoHealer(String conversationId) =>
-      _autoHealerModule.startAutoHealer(conversationId);
-
-  /// Stop auto-healer for a conversation (cleanup).
-  void stopConversationAutoHealer(String conversationId) =>
-      _autoHealerModule.stopAutoHealer(conversationId);
-
-  /// Stop all auto-healers (call on repository disposal).
-  void stopAllAutoHealers() => _autoHealerModule.stopAllAutoHealers();
-
-  /// Dispose repository and cleanup all resources including active stream subscriptions.
+  /// Called by the DI module's dispose hook (`messaging_module.dart`).
+  /// BUT-778: lastMessage sync moved to the `syncConversationLastMessage`
+  /// CF trigger; no client-side subscriptions to tear down here.
   void dispose() {
-    stopAllAutoHealers();
     AppLogger.debug('FirebaseMessagingRepository disposed');
   }
 

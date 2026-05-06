@@ -622,49 +622,12 @@ void main() {
       });
     });
 
-    group('Auto-Healer Management', () {
-      test('should start auto-healer for conversation', () {
-        // Act & Assert - Should not throw
-        expect(
-          () => repository.startConversationAutoHealer('conv-1'),
-          returnsNormally,
-        );
-      });
-
-      test('should stop auto-healer for conversation', () {
-        // Arrange
-        repository.startConversationAutoHealer('conv-1');
-
-        // Act & Assert - Should not throw
-        expect(
-          () => repository.stopConversationAutoHealer('conv-1'),
-          returnsNormally,
-        );
-      });
-
-      test('should stop all auto-healers', () {
-        // Arrange
-        repository.startConversationAutoHealer('conv-1');
-        repository.startConversationAutoHealer('conv-2');
-
-        // Act & Assert - Should not throw
-        expect(
-          () => repository.stopAllAutoHealers(),
-          returnsNormally,
-        );
-      });
-    });
-
+    // BUT-778: Auto-Healer Management + the auto-healer-coupled Repository
+    // Disposal tests were deleted along with the client-side healer module.
+    // lastMessage sync moved server-side (`syncConversationLastMessage` CF).
     group('Repository Disposal', () {
-      test('should dispose repository and cleanup resources', () {
-        // Arrange
-        repository.startConversationAutoHealer('conv-1');
-
-        // Act & Assert - Should not throw
-        expect(
-          () => repository.dispose(),
-          returnsNormally,
-        );
+      test('should dispose repository without throwing', () {
+        expect(() => repository.dispose(), returnsNormally);
       });
     });
   });

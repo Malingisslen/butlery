@@ -58,6 +58,13 @@ jobs:
         echo "🔍 Running Flutter analyze..."
         flutter analyze
 
+    # BUT-768: fail PR if Python artifacts (Pillow / pip side-loads,
+    # __pycache__, .pyc, .py) land under lib/. Past introduction of
+    # lib/site-packages/ skewed every grep-based audit script's adoption
+    # percentages. Guard catches re-introduction at PR time.
+    - name: Forbid Python artifacts under lib/
+      run: bash tools/check_no_python_artifacts.sh
+
     # BUT-758: closes the BUT-572 theme migration. Forbid AppColors.X in
     # views/widgets except the legitimate-keep set established by the
     # pilot + Waves A-D. Keep-set rationale:

@@ -2,16 +2,26 @@
 /// Represents a single audit log entry recording a permission check or security event.
 /// These logs are persisted to Firestore to satisfy GDPR Article 30 (Records of Processing)
 /// requirements, enabling data subject access requests and security auditing.
+///
+/// **Retention** (BUT-808 reconcile, single source of truth):
+/// Authority: `functions/src/audit_logs/purge-expired.ts` (`purgeExpiredAuditLogs`).
+/// - `consent_*` operations: 730 days (GDPR Art. 7(1) — must be able to demonstrate consent)
+/// - all other operations: 180 days (Art. 5(1)(c) data minimisation + SOC2-style incident window)
+/// This model deliberately does NOT compute an `expireAt` field; the CF queries by
+/// `timestamp` directly so the retention policy can change in one place.
+///
 /// **GDPR Compliance:**
 /// - Article 30: Records of Processing Activities
-/// - Article 15: Right of Access by the Data Subject
+/// - Article 15: Right of Access by the Data Subject (export via `exportAuditLogs` callable, BUT-770)
 /// - Article 17: Right to Erasure (audit logs retained per legal requirements)
+///
 /// **Security Use Cases:**
 /// - Permission check auditing (granted and denied)
 /// - Unauthorized access detection
 /// - User activity monitoring
 /// - Compliance reporting
 /// - Forensic investigation
+///
 /// **Privacy Notes:**
 /// - Audit logs are write-only for users (prevents tampering)
 /// - Only admins can read audit logs
@@ -79,6 +89,10 @@ class AuditLog {
 
   /// Convert AuditLog to Firestore data
   Map<String, dynamic> toFirestore() {
+    // BUT-808: no `expireAt` field. Retention is enforced server-side by
+    // `purgeExpiredAuditLogs` querying on `timestamp` directly (730d consent,
+    // 180d general). Computing a model-side TTL re-introduced the triple-
+    // source drift the reconcile was meant to eliminate.
     return {
       'userId': userId,
       'operation': operation,
@@ -86,8 +100,6 @@ class AuditLog {
       'resourceId': resourceId,
       'granted': granted,
       'timestamp': FieldValue.serverTimestamp(),
-      'expireAt':
-          Timestamp.fromDate(clock.now().add(const Duration(days: 365))),
       'metadata': metadata,
     };
   }

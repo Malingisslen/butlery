@@ -4,9 +4,20 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // Helper function to validate image files
+    // Helper function to validate image files. BUT-780: tightened from
+    // `image/.*` to a whitelist. SVG can carry inline JavaScript (XSS when
+    // rendered in <img src=...> by some viewers); BMP/TIFF/AVIF aren't part
+    // of the supported display path and accepting them is attack surface
+    // for free. The accepted list mirrors the CF magic-byte verifier in
+    // `functions/src/storage/moderate-upload.ts` — keep them in sync.
     function isValidImage() {
-      return request.resource.contentType.matches('image/.*');
+      return request.resource.contentType in [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/heic',
+        'image/heif'
+      ];
     }
 
     // Helper function to check file size (in MB)
