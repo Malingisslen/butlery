@@ -1,67 +1,35 @@
 # Sprint Backlog
 
-## Sprint: CI duration telemetry + ML runtime memo + ticket-state hygiene — 2026-05-05 (M)
+## Sprint: BUT-702 closure + dep tracking-ticket refresh — 2026-05-06 (N)
 
-Theme: 2 implementations + 2 ticket-rescopes. After sprint L's light touch, this sprint ships CI build-time telemetry across the 4 main workflows (BUT-495), a long-overdue research memo on the on-device ML runtime decision (BUT-571), and rescopes two stale tickets where the premise has drifted.
+Theme: small process sprint. Sprint M shipped CI duration telemetry yesterday. The remaining tractable backlog clusters into "needs own sprint" (auth/security, deploy pipeline, large-file decompose, SDK 3.10 bump, A/B infra) or "blocked on external" (App Check console flip, Apple Dev enrollment, drift_dev upstream). Honest sprint scope: close one stale ticket with a thorough analysis, and refresh one tracking ticket.
 
 **In Progress carry-overs (NOT in this sprint, NOT shipped):**
 - BUT-442 — repo migrations (own focused sprint, mid-flight).
 - BUT-760 — App Check enforcement; awaiting Firebase Console flip.
 
 **Step 0 verification — done:**
-- **BUT-495 fits** — `test.yml`, `build-validation.yml`, `e2e_tests.yml`, `architecture-validation.yml` all currently lack any duration instrumentation. The ticket's 4 named jobs (`validate`, `build-android`, `build-web`, `tests`) map cleanly to those files. Inline 2-step (start-time + report) pattern beats a composite action — no abstraction needed for 4 sites.
-- **BUT-571 fits** — research-only ticket; output is a single memory note. Self-contained.
-- **BUT-488 PLAN STALE (premise wrong)** — `pubspec.yaml` is at `0.9.0+1`, NOT `1.0.0+1` as the ticket claims. Manual bumping has happened. The "stuck since inception" framing is stale, so the ticket's urgency is wrong. Keep the auto-bump idea but rescope the framing. Stays in Backlog.
-- **BUT-397 PREMISE GONE (for now)** — last 7+ `test.yml` runs on main are all `cancelled` (CI billing-quirk per memory), so no successful baseline exists yet to set tightened floors against. The just-pushed `6af9efc88` is the first non-cancelled run. Defer until ≥5 successful runs accumulate. Stays in Backlog with status comment.
+- **BUT-702** rescoped sprint L claimed 4 remaining destructive surfaces (group leave, group delete, friend remove, shopping-list clear). Code-read in this sprint shows:
+  - **Recipe delete** — undo wired (sprint L, `mina_recept_view.dart:565-577`).
+  - **Shopping-list item delete** — undo wired (`unified_shopping_view.dart:227-256`); the undo re-adds the item with all fields. Item-by-item, not whole-list-clear.
+  - **Group leave** (`group_detail_view.dart:343-414`) — confirmation dialog → `_viewModel.leaveGroup()` → success SnackBar (no undo) → navigate away. Asymmetric: re-joining requires invitation acceptance, not click-to-restore.
+  - **Friend remove** (`friend_profile_view.dart:333-350`) — confirmation dialog → `removeFriend(uid)` → success SnackBar (no undo) → navigate back. Asymmetric: re-friending requires friend request flow.
+  - **Group delete / member remove** (`group_detail_actions.dart:55-235`) — same asymmetry.
+  - All asymmetric flows have **confirmation dialogs already** as the safety net — this is the right UX.
+  - **Conclusion**: BUT-702 is effectively done. The ticket should close, not stay Backlog. The "wire to all surfaces" rescope was based on an incomplete read of which destructive operations are *symmetric*. Documenting the analysis in the closing comment so a future picker doesn't re-open this thread.
+- **BUT-554** is a tracking ticket. Pubspec verification: `drift_dev: ^2.29.0` pinned in lockstep with `build_runner: 2.7.1`. `flutter pub deps` confirms `build_runner_core: 9.3.1` and `build_resolvers: 3.0.3` are *still* transitively pulled — both still discontinued upstream. No drift_dev major release since the ticket was filed. Stays Backlog with refreshed status comment + next-check date.
 
-### Agent A: CI build-time duration telemetry
+### Process: Linear ticket-state hygiene (no code)
 
-Specialists: none required (no `.dart` change, only YAML).
-
-- [ ] **A1. BUT-495 — Instrument 4 workflows with build-time duration telemetry**
-  - **Pattern (applied uniformly):** at the start of each job, record `date +%s` into `JOB_START` via `$GITHUB_ENV`. At the end (`if: always()`), compute duration, emit a `## Build duration` block to `$GITHUB_STEP_SUMMARY`, and emit `::warning::` if duration exceeds the per-job budget.
-  - **Per-workflow budgets (ticket spec):**
-    - `test.yml` `unit-tests` job → 15 min (current `timeout-minutes: 20` is the hard kill; 15 is the soft budget)
-    - `test.yml` `integration-tests` job → 15 min (same kill, same soft)
-    - `build-validation.yml` android job → 15 min
-    - `build-validation.yml` web job → 10 min
-    - `e2e_tests.yml` → 20 min (e2e is naturally slower)
-    - `architecture-validation.yml` → 5 min (analyzer + lint only)
-  - **Files** (all in `.github/workflows/`):
-    1. `test.yml` — instrument both `unit-tests` (matrix, so the warning fires per-OS) and `integration-tests`.
-    2. `build-validation.yml` — instrument each platform job.
-    3. `e2e_tests.yml` — instrument the main job.
-    4. `architecture-validation.yml` — instrument the validate job.
-  - **Verification**: each workflow file YAML-validates (no `flutter analyze` step needed; no Dart change). After push, the next CI run shows the duration block in step summary. Out of scope: pushing to Cloud Monitoring (ticket marks that as optional).
-  - **Out of scope**: `dep-audit.yml`, `firestore-rules.yml`, `sbom.yml` — these run on schedule, not per-commit, and are not the user-facing latency surface the ticket targets. Future ticket if needed.
-  - (BUT-495)
-
-### Agent B: ML runtime decision memo
-
-- [ ] **B1. BUT-571 — Document `flutter_onnxruntime` vs `tflite_flutter` decision**
-  - **New memory file** `C:\Users\malla\.claude\projects\C--Butlery-butlery\memory\ml_runtime_decision.md`:
-    1. Current state: `flutter_onnxruntime ^1.6.4` powers on-device NER (ingredient parsing) via `lib/services/parsing/ner/onnx_ner_service.dart` and the line classifier (`onnx_line_classifier_service.dart`).
-    2. Why it's the chosen runtime today: on-device, no network round-trip, no privacy footprint, models trained in PyTorch convert cleanly to ONNX.
-    3. Trigger conditions for re-evaluating TFLite: (a) Android AAB exceeds 150 MB Play Console upload limit, (b) iOS IPA exceeds 200 MB OTA download limit (requires Wi-Fi prompt at install), (c) ≥3 user-reported "app too big to download" complaints in a quarter.
-    4. Migration cost if triggered: ONNX → TFLite model conversion (`tf2onnx` reverse pipeline; not always lossless), accuracy parity check, possibly retraining if the conversion drops F1 >2pp on the held-out parsing eval set, plus rewriting `OnnxNerService` and `OnnxLineClassifierService` against `tflite_flutter`'s API surface.
-    5. Estimated effort if triggered: 1-2 days for the runtime swap + 1-3 days for accuracy recovery if the naive conversion regresses.
-    6. Decision: **stay on ONNX Runtime indefinitely** until one of the three trigger conditions fires. No proactive migration.
-  - **Index entry** in `MEMORY.md`:
-    `- [ML Runtime Decision (ONNX vs TFLite)](ml_runtime_decision.md) — staying on flutter_onnxruntime; trigger conditions documented.`
-  - **Verification**: re-read the memo end-to-end; confirm cited paths still exist (`lib/services/parsing/ner/onnx_ner_service.dart`, `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`).
-  - (BUT-571)
-
-### Linear cleanup (no code, ticket-state only)
-
-- [ ] **C1. BUT-488 — rescope ticket body** — pubspec is at `0.9.0+1`; manual bumping happens. Rewrite description to drop the "stuck since inception" framing. Keep the auto-bump-on-conventional-commit feature as a Low priority improvement, not an urgent fix.
-- [ ] **C2. BUT-397 — defer comment** — note that the last 7+ `test.yml` runs on main are `cancelled` (CI billing-quirk per memory). No successful coverage baseline accumulated yet. Re-pick this ticket once ≥5 successful runs since BUT-392 land. Stays in Backlog.
+- [ ] **A1. BUT-702 → Done** with comprehensive asymmetry analysis comment.
+- [ ] **A2. BUT-554 → status comment** noting drift_dev still at 2.29.0, build_runner_core/build_resolvers still discontinued + still pulled, next check 2026-08-06 (3 months out).
 
 ### Post-Sprint Steps
-- [ ] No `dart analyze` needed (no Dart changes this sprint).
+- [ ] No `dart analyze` needed (no Dart changes).
 - [ ] No unit-test runs needed.
-- [ ] No Tier-2 specialist gates trigger (no `*.dart` files touched).
-- [ ] Commit: `feat(sprint): CI duration telemetry + ML runtime memo + Linear hygiene (BUT-495/571/488/397)`.
-- [ ] Push to main; reconcile Linear states (BUT-495/571 → Done; BUT-488/397 stay Backlog with rescoped/deferred bodies).
+- [ ] No Tier-2 specialist gates (no `*.dart` files touched).
+- [ ] Commit: `chore(sprint): BUT-702 closure + BUT-554 dep tracking refresh`.
+- [ ] Push to main.
 
 ### Continued blockers (NOT in scope per memory)
 - BUT-415 / BUT-714 / BUT-646 / BUT-731 — store/Play submission deferred (Apple Dev enrollment gated)
@@ -74,7 +42,6 @@ Specialists: none required (no `.dart` change, only YAML).
 - BUT-420 / BUT-451 / BUT-452 / BUT-486 — deploy-pipeline / staging cluster; focused infra sprint
 - BUT-550 / BUT-536 / BUT-441 — ACCEPTED_LARGE_FILES drift sprint
 - BUT-558 — DCM install (own sprint)
-- BUT-554 — tracking ticket (blocked on drift_dev upstream)
 - BUT-594 — macOS sandbox audit needs hardware-exercise step
 - BUT-701 — focus traversal (2-day a11y sprint)
 - BUT-479 — cursor-pagination half is non-trivial; needs design ticket
@@ -82,30 +49,32 @@ Specialists: none required (no `.dart` change, only YAML).
 - BUT-472 — realtime_session_manager stream/timer migration (next perf sprint)
 - BUT-455 / BUT-440 / BUT-504 — repository discipline cluster (paired with BUT-442)
 - BUT-453 / BUT-454 — auth/session security (own sprint with product-design input)
-- BUT-704 — i18n @key ARB descriptions (2-day sweep)
-- BUT-520 — VM-migration sweep (rescoped sprint I)
+- BUT-704 — i18n @key ARB descriptions (2-day sweep; ARB files are 9585 lines each)
+- BUT-520 — VM-migration sweep (rescoped sprint I; 30 VMs, 6-10 sprints of work)
 - BUT-431 / BUT-530 — main.dart bootstrap split + extraction (rescoped sprint J)
 - BUT-581 — `?? ''` migration (rescoped sprint K)
 - BUT-610 — offline-mode hardening (multi-day audit)
 - BUT-723 — tablet master-detail layouts (multi-day refactor)
-- BUT-702 — undo SnackBar generalization (rescoped sprint L)
 - BUT-734 — split FirebaseUserRepository (defer until file ≥700 lines)
 - BUT-710 / BUT-706 / BUT-711 — platform-polish cluster (BUT-715 shipped sprint L)
 - BUT-492 — cost/budget alerts (Console action; doc-only piece needs the alerts to actually be wired)
 - BUT-494 — coverage floor 55→85 (same blocker as BUT-397)
-- BUT-488 — pubspec auto-bump CI (rescoped this sprint; Low priority)
-- BUT-397 — coverage-floor tightening (deferred this sprint; needs ≥5 successful CI baseline runs)
+- BUT-488 — pubspec auto-bump CI (rescoped sprint M; Low priority)
+- BUT-397 — coverage-floor tightening (deferred sprint M; needs ≥5 successful CI baseline runs)
 - All `idea`-labeled monetization scaffolding — post-beta
 
 ### What this means in plain language
-- **CI gets a built-in stopwatch**: today if a slow dependency makes the test pipeline take twice as long, nothing notices except eventually a hard timeout. After this sprint, every CI run prints "this job took N minutes" and pings a yellow warning if it exceeded budget. No code changes, no test changes — just YAML.
-- **One memo on the AI engine**: the app uses a thing called ONNX Runtime to do the on-device ingredient-parsing AI. There's been a lingering "should we switch to a smaller alternative called TFLite?" question. This sprint writes it down: stay on ONNX, here are the three things that would change our mind, here's how much swapping would cost. Future-self gets a clear answer.
-- **Two ticket-state cleanups**: one ticket said "version stuck at 1.0.0+1 forever" but the version is actually 0.9.0+1 (someone bumped it). Another ticket needed 5 good CI runs to set a tighter coverage threshold, but recent CI has been cancelled by an upstream billing quirk. Both rescoped/deferred so the next picker doesn't waste time on stale assumptions.
-- **Risk**: very low. YAML changes are isolated to per-workflow stopwatch lines; can be deleted in seconds if they misbehave. No `.dart` changes; no behavior changes for the running app.
+- **One ticket gets a proper closure**: a "make destructive actions undoable" ticket has been open for a while, but reading the code carefully today shows the parts that *can* be undone (recipe deletes, shopping-item deletes) already have undo, and the parts that can't (leaving a group, removing a friend) shouldn't have undo because re-joining/re-friending isn't a click-to-restore action — it's a separate invitation flow. Documenting why and closing the ticket so it doesn't keep coming up in future sprints.
+- **One tracking ticket gets a date refresh**: a "watch for drift_dev to release a fix" ticket was filed in April. We re-check today — still no fix. Adding a comment with today's findings + the next re-check date so this ticket doesn't get forgotten.
+- **Risk**: zero. No code changes. Two Linear comments + one state transition.
 
 ---
 
-## Archived prior sprint (completed in commit 6af9efc88)
+## Archived prior sprint (completed in commit 5b480e01f)
+
+CI duration telemetry + ML runtime memo + Linear hygiene — 2026-05-05 (M) — shipped BUT-495/571 + rescoped BUT-488 + deferred BUT-397.
+
+## Archived sprint before (completed in commit 6af9efc88)
 
 Release polish + ops doc + Linear cleanup — 2026-05-05 (L) — shipped BUT-715/493 + reconciled BUT-738/724 + rescoped BUT-702.
 
@@ -120,11 +89,3 @@ Dep hygiene + PWA polish + Linear cleanup — 2026-05-05 (J) — shipped BUT-500
 ## Archived sprint before (completed in commit 1e347b424)
 
 Backend hygiene + auth security micro-hardening — 2026-05-04 (I) — shipped BUT-446/506/465/490 + closed BUT-716 + rescoped BUT-520.
-
-## Archived sprint before (completed in commit 44b6f4792)
-
-GDPR cascade + rules tightening + stream lifecycle — 2026-05-04 (H) — shipped BUT-466/464/463/462/461/613/471.
-
-## Archived sprint before (completed in commit b33653c47)
-
-Backend perf + observability hardening — 2026-05-04 (G) — shipped BUT-482/483/473/480/592/627.
