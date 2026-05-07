@@ -38,6 +38,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/experiment_assignment.dart';
+import 'package:butlery/services/analytics/user_property_bootstrap.dart';
 import 'package:butlery/services/analytics/winback_attribution_service.dart';
 import 'package:butlery/services/in_app_review_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
@@ -215,6 +216,14 @@ class CoreModule implements DIModule {
       // Analytics service for monitoring and tracking (available on all platforms)
       container.registerSingleton<AnalyticsService>(
         AnalyticsService(repository: container<AnalyticsRepository>()),
+      );
+
+      // BUT-639/830: lifecycle-stage emitter. Single instance shared by
+      // session-start bootstrap (main.dart) and post-cook hooks (recipe-detail
+      // VM) — see `UserPropertyBootstrap.emitLifecycle` for the contract.
+      // Lazy because cold-start bootstrap reaches for it after consent.
+      container.registerLazySingleton<UserPropertyBootstrap>(
+        () => UserPropertyBootstrap(container<AnalyticsService>()),
       );
 
       // BUT-657: Experiment assignment helper. Stamps `exp_<name>` user

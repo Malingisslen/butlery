@@ -54,6 +54,11 @@ class AuthService extends ChangeNotifier
     _authStateSubscription = _authRepository.authStateChanges().listen(
       (User? user) {
         _currentUser = user;
+        // BUT-833: pin analytics user identifier to the authoritative auth
+        // stream — fires on cold-start (cached user), sign-in, sign-out, and
+        // forced revocation. SDK suppresses the call pre-consent, so calling
+        // unconditionally is safe.
+        unawaited(_analyticsService.setUserId(user?.uid));
         notifyListeners();
       },
       onError: (error) {

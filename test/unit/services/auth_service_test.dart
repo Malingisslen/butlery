@@ -7,6 +7,8 @@ library;
 // Tests need to call clearError() which is @protected
 // ignore_for_file: invalid_use_of_protected_member
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -55,6 +57,53 @@ void main() {
         expect(authService.isAuthenticated, false);
         expect(authService.currentUser, null);
         expect(authService.currentUserId, null);
+      });
+
+      test('BUT-833: pins analytics user identifier on auth state transitions',
+          () async {
+        // Arrange — tear down the setUp's `authService` (subscribed to a
+        // single-shot `Stream.value(null)`) before we re-stub the mock,
+        // so its dangling subscription doesn't keep ChangeNotifier state
+        // around for the lifetime of this test.
+        authService.dispose();
+        // Push a sequence of auth states through the stream and assert
+        // the analytics chokepoint received each transition.
+        final controller = StreamController<User?>();
+        when(() => mockAuthRepository.authStateChanges())
+            .thenAnswer((_) => controller.stream);
+
+        final localAuthService = AuthService(
+          authRepository: mockAuthRepository,
+          analyticsService: mockAnalyticsService,
+        );
+
+        final signedInUser = MockFactory.createMockUser(
+          uid: 'auth_state_user_42',
+          email: 'state@example.com',
+          displayName: 'State User',
+        );
+
+        // Act — emit signed-in then signed-out.
+        controller.add(signedInUser);
+        await Future<void>.delayed(Duration.zero);
+
+        // Assert signed-in propagated.
+        expect(
+          mockAnalyticsService.capturedUserId,
+          'auth_state_user_42',
+        );
+
+        controller.add(null);
+        await Future<void>.delayed(Duration.zero);
+
+        // Assert sign-out cleared.
+        expect(
+          mockAnalyticsService.capturedUserId,
+          isNull,
+        );
+
+        await controller.close();
+        localAuthService.dispose();
       });
 
       test('should update authentication state when user signs in', () async {

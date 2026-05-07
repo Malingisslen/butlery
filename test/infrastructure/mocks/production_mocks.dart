@@ -1652,6 +1652,23 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
       {required String recipientId, String? source}) async {}
   @override
   Future<void> logFriendRequestAccepted({required String senderId}) async {}
+  @override
+  Future<void> setUserId(String? userId) async {
+    _currentUserId = userId;
+  }
+
+  String? get capturedUserId => _currentUserId;
+
+  @override
+  Future<void> setUserProperty({
+    required String name,
+    required String? value,
+  }) async {
+    _userProperties[name] = value;
+  }
+
+  Map<String, dynamic> get capturedUserProperties =>
+      Map.unmodifiable(_userProperties);
 }
 
 // ============= IMPORT STRATEGY MOCKS =============

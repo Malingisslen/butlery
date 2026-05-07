@@ -63,8 +63,10 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/user_property_bootstrap.dart';
 import 'package:butlery/services/in_app_review_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -308,6 +310,53 @@ class RecipeDetailViewModel extends ChangeNotifier
           mealType: _recipe.mealType,
           isFirstTime: isFirstTime,
         );
+
+        // BUT-834 + BUT-830: post-cook analytics enrichment. Resolve the
+        // user lazily — the VM doesn't take UserService as a constructor dep
+        // because most VM callsites don't need it. ServiceLocator returns
+        // null in degraded modes (tests, cold-start race) and the helpers
+        // tolerate null inputs.
+        final userService = ServiceLocator.tryGet<UserService>();
+        final profile = userService?.currentUserProfile;
+        final userId = userService?.currentUserId;
+
+        // BUT-834: idempotent first_cook milestone (SharedPreferences-deduped).
+        unawaited(_analyticsService.recipe.logFirstCookIfMilestone(
+          userId: userId,
+          mealType: _recipe.mealType,
+          joinedAt: profile?.joinedAt,
+        ));
+
+        // BUT-830: re-emit lifecycle_stage so cohort progression
+        // (`new_` → `activated` → `habitual`) propagates without waiting
+        // for the next session-start bootstrap. The cook just performed
+        // mutates `_recipe` locally but the underlying `_recipeService`
+        // cache only updates when the Firestore stream echoes back, so
+        // we exclude the current recipe id from the snapshot count and
+        // add 1 explicitly — otherwise the 3rd cook trips the habitual
+        // threshold one cook late. cooks-in-14d is a distinct-recipe
+        // proxy (one row per recipe in the local cache); the classifier's
+        // ≥3 threshold accepts this approximation per `MASTER-wave3-08-
+        // product-analytics-data.md` guidance — see BUT-836 for the
+        // event-log upgrade path.
+        final now = clock.now();
+        final since = now.subtract(const Duration(days: 14));
+        final cooksLast14d = _recipeService.personalRecipes
+                .where((r) =>
+                    r.id != _recipe.id &&
+                    r.lastCookedAt != null &&
+                    r.lastCookedAt!.isAfter(since))
+                .length +
+            1;
+        final bootstrap = ServiceLocator.tryGet<UserPropertyBootstrap>();
+        if (bootstrap != null) {
+          unawaited(bootstrap.emitLifecycle(
+            profile: profile,
+            lastCookAt: now,
+            cooksLast14Days: cooksLast14d,
+            now: now,
+          ));
+        }
 
         return true;
       } else {

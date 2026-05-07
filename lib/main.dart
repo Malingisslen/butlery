@@ -873,7 +873,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         // consent is denied these calls silently no-op. lifecycle_stage uses
         // whatever profile data is loaded; if no UserService session yet
         // (cold start before login), classifier falls back to `new_`.
-        _userPropertyBootstrap = UserPropertyBootstrap(analyticsService);
+        _userPropertyBootstrap =
+            bootstrap.container.get<UserPropertyBootstrap>();
         UserProfile? profile;
         try {
           profile = bootstrap.container.get<UserService>().currentUserProfile;
