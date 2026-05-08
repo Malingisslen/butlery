@@ -17,7 +17,7 @@ import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
 import { withTimeout } from "../shared/with-timeout";
 import { cleanUserFromLearnedAliases } from "../analytics/analyze-corrections";
-import { cascadeArrayRemove } from "../shared/batch-update";
+import { cascadeArrayRemove, commitInChunks } from "../shared/batch-update";
 
 const db = admin.firestore();
 const BATCH_LIMIT = 500;
@@ -175,54 +175,27 @@ export async function tombstoneSharedByDisplayNameWithDb(
 
   if (snapshot.empty) return 0;
 
-  let batch = database.batch();
-  let batchCount = 0;
-  let queued = 0;
-
-  for (const doc of snapshot.docs) {
+  // Pre-filter already-tombstoned docs so the queued count reflects real work.
+  const docsToUpdate = snapshot.docs.filter((doc) => {
     const data = doc.data();
     const displayNameAlreadyTombstoned =
       data.sharedByDisplayName === SHARED_BY_DISPLAY_NAME_TOMBSTONE;
     const avatarAlreadyCleared =
       data.sharedByAvatarUrl === null || data.sharedByAvatarUrl === undefined;
-    if (displayNameAlreadyTombstoned && avatarAlreadyCleared) {
-      // Already tombstoned (both fields) — skip to avoid a no-op write.
-      continue;
-    }
+    return !(displayNameAlreadyTombstoned && avatarAlreadyCleared);
+  });
 
-    batch.update(doc.ref, {
-      sharedByDisplayName: SHARED_BY_DISPLAY_NAME_TOMBSTONE,
-      sharedByAvatarUrl: null,
-    });
-    batchCount++;
-    queued++;
-
-    if (batchCount >= BATCH_LIMIT) {
-      try {
-        await batch.commit();
-      } catch (err) {
-        v1.logger.warn(
-          `BUT-466: sharedByDisplayName tombstone chunk commit failed for ${userId}`,
-          { err }
-        );
-      }
-      batch = database.batch();
-      batchCount = 0;
-    }
-  }
-
-  if (batchCount > 0) {
-    try {
-      await batch.commit();
-    } catch (err) {
-      v1.logger.warn(
-        `BUT-466: sharedByDisplayName tombstone final commit failed for ${userId}`,
-        { err }
-      );
-    }
-  }
-
-  return queued;
+  return commitInChunks(
+    database,
+    docsToUpdate,
+    (batch, doc) => {
+      batch.update(doc.ref, {
+        sharedByDisplayName: SHARED_BY_DISPLAY_NAME_TOMBSTONE,
+        sharedByAvatarUrl: null,
+      });
+    },
+    { label: `BUT-466: sharedByDisplayName tombstone for ${userId}` }
+  );
 }
 
 /**
@@ -358,21 +331,17 @@ export async function cleanupNotificationQueuesWithDb(
       .get();
     if (snapshot.empty) continue;
 
-    let batch = database.batch();
-    let batchCount = 0;
-    for (const doc of snapshot.docs) {
-      batch.delete(doc.ref);
-      batchCount++;
-      total++;
-      if (batchCount >= BATCH_LIMIT) {
-        await batch.commit();
-        batch = database.batch();
-        batchCount = 0;
+    // Strict semantics preserved: prior loop didn't catch — a failed commit
+    // bubbled up, the cascade aborted, and onUserDeleted retried.
+    total += await commitInChunks(
+      database,
+      snapshot.docs,
+      (batch, doc) => batch.delete(doc.ref),
+      {
+        label: `BUT-647: ${collection} purge for ${userId}`,
+        strict: true,
       }
-    }
-    if (batchCount > 0) {
-      await batch.commit();
-    }
+    );
   }
   return total;
 }
@@ -606,44 +575,17 @@ export async function anonymizeReportsByContentOwnerWithDb(
     .get();
   if (snapshot.empty) return 0;
 
-  let batch = database.batch();
-  let batchCount = 0;
-  let queued = 0;
-
-  for (const doc of snapshot.docs) {
-    batch.update(doc.ref, {
-      contentOwnerId: null,
-      contentOwnerAnonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    batchCount++;
-    queued++;
-
-    if (batchCount >= BATCH_LIMIT) {
-      try {
-        await batch.commit();
-      } catch (err) {
-        v1.logger.warn(
-          `BUT-781: report anonymize chunk commit failed for ${userId}`,
-          { err }
-        );
-      }
-      batch = database.batch();
-      batchCount = 0;
-    }
-  }
-
-  if (batchCount > 0) {
-    try {
-      await batch.commit();
-    } catch (err) {
-      v1.logger.warn(
-        `BUT-781: report anonymize final commit failed for ${userId}`,
-        { err }
-      );
-    }
-  }
-
-  return queued;
+  return commitInChunks(
+    database,
+    snapshot.docs,
+    (batch, doc) => {
+      batch.update(doc.ref, {
+        contentOwnerId: null,
+        contentOwnerAnonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    },
+    { label: `BUT-781: report anonymize for ${userId}` }
+  );
 }
 
 /**

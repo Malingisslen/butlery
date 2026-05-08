@@ -533,7 +533,7 @@ void main() {
         expect(captured['recipe_id'], isA<String>());
         expect((captured['recipe_id'] as String).length, equals(64));
         expect(captured['meal_type'], equals(mealType));
-        expect(captured['is_first_time'], equals('false'));
+        expect(captured['is_first_time'], equals(false));
         expect(captured['days_since_last'], equals(daysSinceLastCooked));
 
         // Also verify user property was set

@@ -62,6 +62,36 @@ void main() {
     });
   });
 
+  group('hash-format guard (BUT-827)', () {
+    final hexSha256 = RegExp(r'^[0-9a-f]{64}$');
+
+    test('every kExpectedNerModelHashes entry is 64 lowercase hex chars', () {
+      for (final entry in kExpectedNerModelHashes.entries) {
+        expect(
+          hexSha256.hasMatch(entry.value),
+          isTrue,
+          reason: 'kExpectedNerModelHashes[v${entry.key}] = "${entry.value}" '
+              'must be 64 lowercase hex chars (SHA-256). A typo, uppercase, '
+              'or whitespace would silently turn a real mismatch into '
+              '`unverified` because the registry lookup would never match.',
+        );
+      }
+    });
+
+    test(
+        'every kExpectedLineClassifierModelHashes entry is 64 lowercase hex chars',
+        () {
+      for (final entry in kExpectedLineClassifierModelHashes.entries) {
+        expect(
+          hexSha256.hasMatch(entry.value),
+          isTrue,
+          reason: 'kExpectedLineClassifierModelHashes[v${entry.key}] = '
+              '"${entry.value}" must be 64 lowercase hex chars (SHA-256).',
+        );
+      }
+    });
+  });
+
   group('ModelIntegrityCheckFailure', () {
     test('toString includes model name, version, and both hashes', () {
       const failure = ModelIntegrityCheckFailure(

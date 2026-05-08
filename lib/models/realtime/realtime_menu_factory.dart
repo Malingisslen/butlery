@@ -101,9 +101,9 @@ class RealtimeMenuFactory {
           SerializationUtils.safeString(data, 'ownerDisplayName'),
       'participants': participants,
       'createdAt':
-          data['createdAt'] as DateTime, // Repository provides DateTime
+          SerializationUtils.parseRequiredDateTimeValue(data['createdAt']),
       'lastEditedAt':
-          data['lastEditedAt'] as DateTime, // Repository provides DateTime
+          SerializationUtils.parseRequiredDateTimeValue(data['lastEditedAt']),
       'lastEditedBy': SerializationUtils.safeString(data, 'lastEditedBy'),
       'lastEditedByDisplayName':
           SerializationUtils.safeString(data, 'lastEditedByDisplayName'),

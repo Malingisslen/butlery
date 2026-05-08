@@ -1,48 +1,49 @@
 # Sprint Backlog
 
-## Sprint: analytics caller-wiring + backend correctness sweeps — 2026-05-07 (Th)
+## Sprint: test-gap closure + tech-debt sweeps — 2026-05-08 (F)
 
-Theme: close BUT-803 caller-wiring carve-outs that left analytics dark, plus two correctness sweeps that the wave-1 audit flagged as crash-tail risks.
+Theme: close 5 follow-up tickets filed by the 2026-05-06/07 sprints (BUT-815/816/827/831/832/836/837) — most are small, targeted scopes that would otherwise rot in the backlog. No store-submission, no ops-only work.
 
-### Step 0 results
+### Step 0 results (filled per ticket during execution)
 
-- **BUT-833** Fits.
-- **BUT-834** Plan stale: `markRecipeAsCooked` in `personal_recipe_module.dart:351` is a stub — real cook flow is `recipe_detail_viewmodel.markAsCooked` line 289-317 (calls `RecipeCookingService.markAsCooked` then `logRecipeCooked`). Re-scoped emission point inline.
-- **BUT-830** Plan stale: cooking-session repo holds ephemeral collab data, not historical cook events. Counted from `_recipeService.personalRecipes` lastCookedAt (one row per recipe — distinct-day proxy matching classifier's ≥3 habitual semantics). Re-classifier emitted post-cook.
-- **BUT-824** Fits.
-- **BUT-826** Fits.
-- **BUT-787** Scope larger than slot: audit said "7+ models", grep finds 33 sites + 40+ across `lib/models/`. Most use `as Type? ?? default` (relatively safe). The dangerous unguarded `as DateTime` casts are inside layers that pre-coerce. Re-scope ticket needed.
-- **BUT-783** Scope uncertain: ticket cites "14 write paths"; repo grep finds ~5 read paths and 8 write-key occurrences (mostly Firestore field-name keys, not bypass writes). BUT-466 cleaned `sharedByDisplayName`. Re-audit needed before sweep.
+- **BUT-832** — pending Step 0 read.
+- **BUT-827** — pending Step 0 read.
+- **BUT-815** — Dart-only carve-out: 3 unit tests in scope, 2 CF integration tests deferred (emulator-bound).
+- **BUT-816** — pending Step 0 read.
+- **BUT-836** — pending Step 0 read (will run grep against current `lib/models/`).
+- **BUT-837** — analysis-only ticket (output is updated Linear body, not code).
+- **BUT-831** — pending Step 0 read (5 surfaces listed in ticket body).
 
-### Agent A: Analytics caller wiring (BUT-803 carve-outs)
-- [x] **A1. BUT-833** — `auth_service.dart` constructor's `authStateChanges()` listener now calls `_analyticsService.setUserId(user?.uid)` unconditionally. Unit test added (push signed-in → asserts uid pinned; push null → asserts cleared). MockAnalyticsService gained `capturedUserId` capture-helper.
-- [x] **A2. BUT-834** — `recipe_detail_viewmodel.markAsCooked` post-success now calls `_analyticsService.recipe.logFirstCookIfMilestone(userId, mealType, joinedAt)` (idempotent via SharedPreferences). UserService resolved via ServiceLocator; null-tolerant.
-- [x] **A3. BUT-830** — Same VM site: counts `personalRecipes.where(lastCookedAt > now-14d)` and calls new `_analyticsService.reclassifyLifecycleStage(signupAt, lastCookAt, cooksLast14Days)`. Method delegates to pure `classifyLifecycleStage` and emits via `setUserProperty`. MockAnalyticsService stubs the new method.
+### Agent A: testing-specialist — test-gap closure
+- [ ] **A1. BUT-832** — `test/unit/repositories/firebase_analytics_repository_test.dart:455`: `equals('false')` → `equals(false)`. Verify pass.
+- [ ] **A2. BUT-827** — new `test/unit/services/expected_model_hashes_test.dart`: assert each map value matches `^[0-9a-f]{64}$`. Empty maps pass vacuously.
+- [ ] **A3. BUT-815** — 3 Dart unit tests: report-repo batch+throttle, compliance-export pagination+cap, FriendsStateManager listener-cleanup. CF integration tests filed as follow-up.
 
-### Agent B: Backend correctness sweeps
-- [-] **B1. BUT-787** — Deferred (scope ≥4× ticket estimate). Filed re-scope ticket in Phase 3.
-- [-] **B2. BUT-783** — Deferred (premise-check inconclusive). Filed re-audit ticket in Phase 3.
-- [x] **B3. BUT-824** — Removed two `friend_requests` composite-index blocks from `firestore.indexes.json`. `social_requests` has equivalent shape. JSON validates.
+### Agent B: cloud-functions-specialist + dart-tech-debt — refactor + targeted sweep
+- [ ] **B1. BUT-816** — `functions/src/shared/batch-update.ts`: add `commitInChunks(database, refs, mutate, label, {strict})`. Refactor 3 sites in `on-user-deleted.ts`. Preserve best-effort/strict semantics.
+- [ ] **B2. BUT-836** — Phase 1 only: grep raw `as DateTime|as Timestamp|as int|as double` in `lib/models/`, find unguarded sites lacking upstream coercion, migrate to `SerializationUtils.safeXxx`. Add arch-test guard.
 
-### Agent C: Documentation reconciliation
-- [x] **C1. BUT-826** — `lib/services/CLAUDE.md` no longer claims "~98%"; now links to auto-generated `docs/architecture/adoption-status.md` (reads "67.0% (59/88)" as of 2026-05-06).
+### Agent C: analysis-only — re-audit
+- [ ] **C1. BUT-837** — re-grep `lib/repositories/` + `functions/src/` for `displayName`/`avatarUrl` writes. Update Linear ticket body with file:line table distinguishing legit denorm vs bypass. Code-side sweep stays a separate ticket once scope is concrete.
+
+### Agent D: flutter-developer — UI keyboard padding
+- [ ] **D1. BUT-831** — apply `MediaQuery.viewInsetsOf(context).bottom` (or `resizeToAvoidBottomInset`) to: login/signup forms, comment composer, recipe form (`skriv_sjalv_recept_view`, `edit_recipe_view`), chat input, group dialogs. Manual smoke note in commit body.
 
 ### Tier-2 agent reviews (run before commit)
 - [ ] code-reviewer — full Dart diff
 - [ ] testing-specialist — staged `lib/**/*.dart`
-- [ ] firebase-backend-security — if any `lib/repositories/` or `firestore.indexes.json` changes
+- [ ] firebase-backend-security — only if `lib/repositories/` or `functions/src/` (excl tests) staged
 - [ ] firestore-rules-tester — skip unless `firestore.rules` touched
 
 ### Post-Sprint Steps
 - [ ] `dart analyze --fatal-infos`
 - [ ] Relevant unit tests pass
-- [ ] `firebase deploy --only firestore:indexes` (B3) — manual ops if MCP can't
-- [ ] Commit, push
-- [ ] Linear close: BUT-833, BUT-834, BUT-830, BUT-787, BUT-783, BUT-824, BUT-826
-- [ ] File any deferred follow-ups
+- [ ] Commit (inline), push
+- [ ] Linear close: BUT-832, BUT-827, BUT-815, BUT-816, BUT-836, BUT-837, BUT-831
+- [ ] File any deferred follow-ups (BUT-815 CF integration tests; BUT-836 Phase 2 if warranted)
 
 ---
 
-## Archived prior sprint (completed in commit 80cefdb64)
+## Archived prior sprint (completed in commit fd9c8ea17 + bed18c4cd + aef8968c7)
 
-architecture-test broaden + sessionId plumb + UI mechanical sweeps — 2026-05-06 (T) — BUT-777/786/803/799/800; BUT-796 obsolete; BUT-798 deferred to BUT-829; follow-ups BUT-829..834 filed.
+analytics caller-wiring + backend correctness sweeps — 2026-05-07 (Th) — BUT-833/834/830/824/826 done; BUT-787/783 deferred → BUT-836/837 filed; CI fix BUT-835 + mocks refactor BUT-838 follow-up.

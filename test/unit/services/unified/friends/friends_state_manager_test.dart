@@ -5,6 +5,7 @@
 library;
 
 import 'dart:async';
+import 'package:flutter/foundation.dart' show FlutterError;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
@@ -563,6 +564,66 @@ void main() {
 
         // Assert
         expect(notified, isTrue);
+      });
+    });
+
+    // BUT-815 (BUT-797 leak class regression gate): after dispose() the
+    // manager must not fan state changes out to its listeners. We don't
+    // assert "the underlying repository stream is unsubscribed" — that's
+    // an implementation detail covered by the StreamManagementMixin tests.
+    // We assert the user-visible contract: a stale ViewModel listener
+    // can't be re-entered post-dispose.
+    group('BUT-815: listener cleanup on dispose', () {
+      test(
+          'addListener callback does not fire after dispose, even if a state '
+          'mutation method is called', () async {
+        // Use a dedicated instance so the outer-group tearDown's
+        // stateManager.dispose() doesn't double-dispose this one.
+        final disposableManager = FriendsStateManager(
+          repository: mockFriendsRepository,
+          categoryRepository: mockCategoryRepository,
+          blockRepository: mockBlockRepository,
+        );
+        await disposableManager.initialize();
+
+        var fireCount = 0;
+        disposableManager.addListener(() => fireCount++);
+
+        // Sanity: pre-dispose, the listener does fire.
+        disposableManager.addFriend(
+          SocialFactory.createUserProfile(
+            uid: 'friend_pre',
+            email: 'pre@test.com',
+            displayName: 'Pre',
+          ),
+        );
+        expect(fireCount, greaterThanOrEqualTo(1),
+            reason: 'pre-dispose mutation must reach the listener');
+        final preDisposeCount = fireCount;
+
+        // Act: dispose, then attempt to mutate state.
+        disposableManager.dispose();
+        await Future<void>.delayed(Duration.zero);
+
+        // ChangeNotifier contract (debug mode): notifyListeners() throws
+        // FlutterError after dispose. addFriend calls notifyListeners()
+        // unconditionally on a new friend, so we expect the throw. Either
+        // way — throw OR silent no-op — the listener MUST NOT fire.
+        try {
+          disposableManager.addFriend(
+            SocialFactory.createUserProfile(
+              uid: 'friend_post',
+              email: 'post@test.com',
+              displayName: 'Post',
+            ),
+          );
+        } on FlutterError {
+          // Acceptable: ChangeNotifier guards against post-dispose notifies.
+        }
+
+        expect(fireCount, equals(preDisposeCount),
+            reason: 'post-dispose mutation must NOT reach the listener — '
+                'BUT-797 leak regression gate');
       });
     });
   });

@@ -148,6 +148,61 @@ export async function cascadeArrayRemove(
 }
 
 /**
+ * BUT-816: chunked best-effort/strict batch commit over an arbitrary item
+ * list. Each item is fed to `mutate(batch, item)` which queues exactly one
+ * batch op (update, delete, set, ...). Items are committed in `BATCH_LIMIT`
+ * chunks.
+ *
+ * `opts.strict` (default false) controls failure behavior:
+ *   - false (best-effort): a failed `batch.commit()` logs a warn with
+ *     `opts.label` and the next chunk proceeds. The cascade caller is
+ *     responsible for providing an idempotent retry path.
+ *   - true: a failed chunk re-throws. Use when partial state is unsafe.
+ *
+ * Returns the number of items queued (not commits succeeded). Useful for
+ * "matched and attempted" metrics in cascade results.
+ */
+export async function commitInChunks<T>(
+  database: admin.firestore.Firestore,
+  items: readonly T[],
+  mutate: (batch: admin.firestore.WriteBatch, item: T) => void,
+  opts: { label: string; strict?: boolean }
+): Promise<number> {
+  if (items.length === 0) return 0;
+
+  let batch = database.batch();
+  let batchCount = 0;
+  let queued = 0;
+
+  const commitChunk = async (): Promise<void> => {
+    if (batchCount === 0) return;
+    if (opts.strict) {
+      await batch.commit();
+    } else {
+      try {
+        await batch.commit();
+      } catch (err) {
+        v1Logger.warn(`${opts.label}: chunk commit failed`, { err });
+      }
+    }
+    batch = database.batch();
+    batchCount = 0;
+  };
+
+  for (const item of items) {
+    mutate(batch, item);
+    batchCount++;
+    queued++;
+    if (batchCount >= BATCH_LIMIT) {
+      await commitChunk();
+    }
+  }
+  await commitChunk();
+
+  return queued;
+}
+
+/**
  * Batch-update explicit document refs with per-ref update maps.
  * Type-safe alternative to batchUpdateDocs when working with refs directly.
  */

@@ -11,6 +11,7 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
     super.firestore,
     required super.authRepository,
     super.auditRepository,
+    super.timestampProvider,
   });
 
   @override
@@ -80,7 +81,8 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
 
       final batch = firestore.batch();
       batch.set(reportRef, report.toFirestore());
-      batch.set(throttleRef, {'lastReportAt': FieldValue.serverTimestamp()});
+      batch.set(
+          throttleRef, {'lastReportAt': timestampProvider.serverTimestamp()});
       await batch.commit();
 
       AppLogger.info(

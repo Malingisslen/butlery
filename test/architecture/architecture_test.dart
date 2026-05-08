@@ -389,6 +389,63 @@ void main() {
       );
     });
 
+    // BUT-836: forbid raw `data['x'] as DateTime` / `as Timestamp` casts in
+    // lib/models/. They crash if the repository forwards a raw Firestore
+    // Timestamp/Map shape rather than a pre-coerced DateTime. The safe path
+    // is `SerializationUtils.parseRequiredDateTimeValue(data['x'])` (or
+    // `safeRequiredDateTime` / `safeDateTime` for the Map variant), which
+    // handles every shape we've seen in production.
+    //
+    // Allowed (line-level exemptions kept inline):
+    //   * Nullable casts (`as DateTime?` / `as Timestamp?`) — used in
+    //     copyWith sentinel patterns, never crash.
+    //   * Guarded ternaries (`x is DateTime ? data['x'] as DateTime : ...`).
+    //   * Casts off a non-`data[...]` source (`params[...]`, `commonFields[...]`)
+    //     — those reads are pre-coerced upstream by the parsing helpers.
+    test(
+        'no unguarded `data[...] as DateTime|Timestamp` casts in lib/models/ '
+        '(use SerializationUtils.parseRequiredDateTimeValue or safeDateTime)',
+        () {
+      final pattern =
+          RegExp(r'''data\[[^\]]+\]\s+as\s+(?:DateTime|Timestamp)\b(?!\?)''');
+      // Guard pattern: `is DateTime` / `is Timestamp` indicates a runtime
+      // type check, which is the safe ternary form. The `?` of the ternary
+      // can land on the same OR the next line depending on the formatter.
+      final guardPattern = RegExp(r'\bis\s+(?:DateTime|Timestamp)\b');
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        if (!relPath.startsWith('lib/models/')) continue;
+
+        final lines = file.readAsLinesSync();
+        for (var i = 0; i < lines.length; i++) {
+          final raw = lines[i];
+          // Strip line comments so commented-out examples don't trip us.
+          final code = raw.replaceAll(RegExp(r'//.*'), '');
+          if (!pattern.hasMatch(code)) continue;
+          if (guardPattern.hasMatch(code)) continue;
+          // Multi-line ternary: `is DateTime` may live on a previous line.
+          // 2 lines back covers the common formatter break.
+          final lookback =
+              lines.sublist((i - 2).clamp(0, lines.length), i).join('\n');
+          if (guardPattern.hasMatch(lookback)) continue;
+          violations.add('$relPath:${i + 1}: ${raw.trim()}');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: 'Raw `data[...] as DateTime|Timestamp` casts crash on raw '
+            'Firestore Timestamp/Map shapes. Use '
+            'SerializationUtils.parseRequiredDateTimeValue(data[\'x\']) '
+            'or safeDateTime/safeRequiredDateTime instead.\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
     test('widgets directory exists under lib', () {
       expect(
         Directory('lib/widgets').existsSync(),

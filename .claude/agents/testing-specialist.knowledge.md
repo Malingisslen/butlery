@@ -1189,3 +1189,67 @@ deleting its tests is correct, not a coverage loss. The replacement test
 should guard the *remaining* contract (e.g. "dispose without throwing"
 after auto-healer removal in BUT-778 messaging repo). Don't add a
 "verify the method doesn't exist" test — the absent-grep is the proof.
+
+### 2026-05-08 — BUT-815 testability tweak: timestampProvider on submitReport [Pattern discovered]
+Adding the batch+throttle test for `FirebaseReportRepository.submitReport`
+hit the documented `fake_cloud_firestore` 4.x limitation with
+`FieldValue.serverTimestamp()` — `batch.commit()` throws and the production
+catch returns `null`, so the report doc never lands. The fix: route the
+throttle write through the existing `BaseFirebaseRepository.timestampProvider`
+(which already exists for exactly this reason — see
+`lib/core/utils/timestamp_provider.dart`'s class doc). One-line production
+change:
+
+  `batch.set(throttleRef, {'lastReportAt': FieldValue.serverTimestamp()});`
+  →
+  `batch.set(throttleRef, {'lastReportAt': timestampProvider.serverTimestamp()});`
+
+Plus `super.timestampProvider,` on the repo's constructor. Production
+behaviour unchanged (default is `ServerTimestampProvider`). Tests inject
+`TestTimestampProvider` and assert both docs land in the same batch.
+
+Rule for future "I want to assert a batch wrote both docs" tests against a
+repo that uses `serverTimestamp()`: prefer routing through `timestampProvider`
+over working around fake_cloud_firestore. Several other repos in
+`lib/repositories/firebase/` still use raw `FieldValue.serverTimestamp()`
+in batches (e.g. `firebase_deeplink_repository.dart`, audit) — same testability
+pattern would unblock those if a similar test is needed.
+
+### 2026-05-08 — HttpsCallable Fake pattern for paginated CF tests [Pattern discovered]
+Testing `ComplianceExportManager.exportAuditLogs` (which pages via the
+`exportAuditLogs` Cloud Function's `nextCursor`) needs a way to return
+canned `HttpsCallableResult` objects across multiple calls. `HttpsCallableResult`
+has a private constructor → cannot be `Mock`'d directly. Pattern that worked:
+
+```dart
+class _FakeHttpsCallableResult<T> implements HttpsCallableResult<T> {
+  _FakeHttpsCallableResult(this.data);
+  @override final T data;
+}
+
+class _ScriptedHttpsCallable extends Fake implements HttpsCallable {
+  _ScriptedHttpsCallable(this._responses);
+  final List<Map<String, dynamic>> _responses;
+  int callCount = 0;
+  final List<Object?> receivedParameters = [];
+
+  @override
+  Future<HttpsCallableResult<T>> call<T>([Object? parameters]) async {
+    if (callCount >= _responses.length) {
+      throw StateError('Scripted callable exhausted at page ${callCount + 1}');
+    }
+    receivedParameters.add(parameters);
+    return _FakeHttpsCallableResult<T>(_responses[callCount++] as T);
+  }
+}
+```
+
+Loud-fail on exhaustion (StateError, not return-empty) catches "production
+asked for more pages than expected" — important for cap/overflow tests.
+`receivedParameters` lets you assert the cursor wiring (page 1 = no cursor,
+pages 2+ = `{'before': cursor}`).
+
+Sister pattern: `test/unit/services/llm/llm_service_circuit_breaker_test.dart`
+has `_CountingHttpsCallable` for failure-injection. The two patterns
+together — failure-counting Fake and scripted-response Fake — cover most
+CF test needs without pulling in mocktail wrappers around private types.

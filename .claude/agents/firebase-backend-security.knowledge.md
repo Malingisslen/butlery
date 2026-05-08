@@ -2805,3 +2805,20 @@ until the user signs out and back in.
 
 **Where to apply:** any future telemetry/Crashlytics/Performance/Remote-Config
 repository that gates user-tied calls on a locally-mirrored consent flag.
+
+### 2026-05-08 — commitInChunks helper (BUT-816): best-effort vs strict semantics
+
+**Where**: `functions/src/shared/batch-update.ts` adds `commitInChunks(db, items, mutate, {label, strict?})`. Refactor in `functions/src/cleanup/on-user-deleted.ts` migrates 3 GDPR cascade sites.
+
+**Semantics map** (must preserve when reviewing future call sites):
+- BUT-466 sharedByDisplayName tombstone — best-effort (`strict` omitted). PII-clean is monotonically idempotent; chunk failures retry on next deletion run.
+- BUT-647 notification queue purge — `strict: true`. A partial purge would leave PII-bearing notification rows; cascade abort + retry is the correct contract.
+- BUT-781 report contentOwner anonymize — best-effort. Same idempotence rationale as BUT-466.
+
+**API safety**: helper does not select refs or scope queries; mis-use can only happen if a caller hands it a cross-tenant `items` list. Same risk surface as raw `db.batch()`. The mandatory `opts.label` self-identifies every chunked op in logs — good defensive design; keep it required.
+
+**Counting contract**: returns `queued` (items enqueued), not commits succeeded. Matches the prior implementations' "matched and attempted" metric. Don't change to "commits succeeded" without auditing callers — at least the cascade-result reporter uses this count for GDPR-compliance audit lines.
+
+### 2026-05-08 — timestampProvider as test seam in repos: established pattern, not a bypass
+
+`firebase_report_repository.dart` adding `super.timestampProvider` in its ctor and routing `lastReportAt` through `timestampProvider.serverTimestamp()` is the same pattern already in `firebase_comments_repository`, `firebase_deeplink_repository`, `firebase_device_repository`, etc. Default is `ServerTimestampProvider()` → `FieldValue.serverTimestamp()` in prod. No permission/audit bypass — `BaseFirebaseRepository`'s validate*/audit hooks are unchanged. When you see this added to a repo for tests, it's safe by construction.
