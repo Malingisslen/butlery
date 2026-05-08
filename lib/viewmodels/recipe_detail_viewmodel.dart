@@ -337,8 +337,8 @@ class RecipeDetailViewModel extends ChangeNotifier
         // threshold one cook late. cooks-in-14d is a distinct-recipe
         // proxy (one row per recipe in the local cache); the classifier's
         // ≥3 threshold accepts this approximation per `MASTER-wave3-08-
-        // product-analytics-data.md` guidance — see BUT-836 for the
-        // event-log upgrade path.
+        // product-analytics-data.md` guidance — see BUT-838 for the
+        // event-log upgrade path that fixes the repeat-cooker undercount.
         final now = clock.now();
         final since = now.subtract(const Duration(days: 14));
         final cooksLast14d = _recipeService.personalRecipes

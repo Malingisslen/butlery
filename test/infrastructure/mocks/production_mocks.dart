@@ -1553,27 +1553,22 @@ class MockOfflineService extends Mock implements OfflineService {
 // All tracker methods return Future<void>. If a tracker adds a non-void
 // return type, this mock will cause a TypeError — add an explicit override.
 class _NoOpFutureMock extends Fake {
-  /// Method names whose return type is `Future<bool>` (milestone helpers added
-  /// for BUT-584 / BUT-576 / BUT-593 / BUT-588). Default no-op returns false
-  /// (= "did not fire") so analytics-flow tests don't accidentally claim a
-  /// milestone fired.
-  static const Set<String> _futureBoolMethodNames = {
-    'logFirstShareIfMilestone',
-    'logFirstMealPlanIfMilestone',
-    'logFirstFriendIfMilestone',
-    'logFirstCommentIfMilestone',
-    'logFirstGroupIfMilestone',
-    'logFirstSearchIfMilestone',
-    'logFirstCookIfMilestone',
-  };
+  /// Tracker milestone helpers (`logFirstXyzIfMilestone`) all return
+  /// `Future<bool>` — the convention is enforced by `BaseTracker.fireOnceMilestone`.
+  /// Match the suffix once instead of maintaining a hand-curated list (the
+  /// list bit-rotted on BUT-803 when `logFirstCookIfMilestone` was added
+  /// without updating it). Default no-op returns false (= "did not fire")
+  /// so analytics-flow tests don't accidentally claim a milestone fired.
+  static final RegExp _milestoneMethodPattern =
+      RegExp(r'logFirst\w+IfMilestone');
 
   @override
   dynamic noSuchMethod(Invocation invocation) {
     if (invocation.isMethod) {
       final name = invocation.memberName.toString();
       // Symbols stringify as `Symbol("name")` — substring match is enough.
-      for (final m in _futureBoolMethodNames) {
-        if (name.contains(m)) return Future<bool>.value(false);
+      if (_milestoneMethodPattern.hasMatch(name)) {
+        return Future<bool>.value(false);
       }
       return Future<void>.value();
     }
@@ -1600,7 +1595,13 @@ class MockImportEventsTracker extends _NoOpFutureMock
 class MockAnalyticsService extends Mock implements AnalyticsService {
   // Configuration state
   bool _isInitialized = false;
-  String? _currentUserId;
+  // Two distinct slots so a test that arranges a baseline via
+  // `setAnalyticsState(currentUserId:)` can't be confused with one that
+  // captures what production code actually called `setUserId(...)` with.
+  // The old shared `_currentUserId` made `capturedUserId == 'foo'` pass
+  // even when production never ran — a footgun the new split eliminates.
+  String? _configuredUserId;
+  String? _capturedUserId;
   Map<String, dynamic> _userProperties = {};
 
   final _recipe = MockRecipeEventsTracker();
@@ -1626,7 +1627,7 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
     Map<String, dynamic>? userProperties,
   }) {
     _isInitialized = isInitialized;
-    _currentUserId = currentUserId;
+    _configuredUserId = currentUserId;
     if (userProperties != null) _userProperties = userProperties;
   }
 
@@ -1656,10 +1657,17 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
   Future<void> logFriendRequestAccepted({required String senderId}) async {}
   @override
   Future<void> setUserId(String? userId) async {
-    _currentUserId = userId;
+    _capturedUserId = userId;
   }
 
-  String? get capturedUserId => _currentUserId;
+  /// What production code actually called `setUserId(...)` with —
+  /// distinct from `setAnalyticsState(currentUserId:)`'s baseline slot.
+  String? get capturedUserId => _capturedUserId;
+
+  /// Baseline configured by `setAnalyticsState(currentUserId:)`. Falls
+  /// back to the captured value so legacy callers reading "what's the
+  /// user id?" get the latest signal regardless of which path wrote it.
+  String? get currentUserId => _configuredUserId ?? _capturedUserId;
 
   @override
   Future<void> setUserProperty({

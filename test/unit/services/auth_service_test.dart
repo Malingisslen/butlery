@@ -9,6 +9,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show FlutterError;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -48,6 +49,17 @@ void main() {
     });
 
     tearDown(() async {
+      // Dispose the fixture's `authService` so its `_authStateSubscription`
+      // is cancelled — otherwise each test leaks one ChangeNotifier + one
+      // subscription handle on a (usually completed) stream. Catch only
+      // the `FlutterError` raised by `ChangeNotifier.dispose()`'s
+      // already-disposed assert (BUT-833 test path); real failures from
+      // mock teardown or stream cancel still surface.
+      try {
+        authService.dispose();
+      } on FlutterError {
+        // Already disposed (e.g. BUT-833 test path).
+      }
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
