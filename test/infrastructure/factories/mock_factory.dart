@@ -318,6 +318,15 @@ class MockFactory {
     return mock;
   }
 
+  /// Create mock recipe cooking service. Pre-configured to return true
+  /// from `markAsCooked` — override via `mock.setMarkAsCookedResult(false)`
+  /// when a test wants to exercise the failure branch.
+  static production.MockRecipeCookingService createRecipeCookingService() {
+    final mock = production.MockRecipeCookingService();
+    when(() => mock.markAsCooked(any())).thenAnswer((_) async => true);
+    return mock;
+  }
+
   /// Create mock unified shopping service
   static production.MockUnifiedShoppingService createUnifiedShoppingService() {
     return production.MockUnifiedShoppingService();

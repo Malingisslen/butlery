@@ -27,11 +27,17 @@ env:
 
 jobs:
   unit-tests:
-    name: Unit Tests
+    name: ${{ matrix.suite }} (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        # BUT-835 follow-up: split test/unit (~435 files) from test/widget
+        # (~97), test/views (~14), and test/golden (~2) so each suite gets
+        # its own 20-min budget. The combined run was hitting the cap at
+        # ~19 min and getting cancelled, masking real test signal.
+        # Coverage is still aggregated post-job by Codecov via flag merging.
+        suite: [unit, widget, views, golden]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
 
@@ -61,19 +67,30 @@ jobs:
 
       # lcov isn't preinstalled on ubuntu-latest. Install before we run
       # tests so the summary step below can actually produce a number.
-      # Ubuntu-only: coverage summary + Codecov upload only run on ubuntu.
+      # Coverage summary + Codecov upload only run on ubuntu + the `unit`
+      # suite (the largest one — its line numbers dominate the dashboard).
       - name: Install lcov
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         run: sudo apt-get update && sudo apt-get install -y lcov
 
-      # Run unit, widget, view, and golden parsing/tagging tests with coverage.
-      # `test/golden/` holds the parsing & tagging golden datasets — they
-      # don't hit Firebase or the network (LLM tier uses a service-level
-      # mock; see test/golden/README.md), so they run alongside unit tests.
-      - name: Run unit, widget, view, and golden tests
+      # Run a single suite. The 4-way split (unit / widget / views / golden)
+      # gives each its own 20-min job budget — see matrix comment above.
+      # Coverage instrumentation is only collected for the `unit` suite on
+      # ubuntu (the suite that drives the dashboard); other suites skip
+      # `--coverage` to save runtime. `test/golden/` holds parsing & tagging
+      # golden datasets that don't hit Firebase or the network (LLM tier
+      # uses a service-level mock; see test/golden/README.md).
+      - name: Run ${{ matrix.suite }} tests (with coverage)
+        if: matrix.suite == 'unit' && matrix.os == 'ubuntu-latest'
         run: |
-          echo "Running unit, widget, view, and golden tests with coverage..."
-          flutter test test/unit test/widget test/views test/golden --coverage --reporter=expanded
+          echo "Running test/${{ matrix.suite }} with coverage..."
+          flutter test test/${{ matrix.suite }} --coverage --reporter=expanded
+
+      - name: Run ${{ matrix.suite }} tests
+        if: matrix.suite != 'unit' || matrix.os != 'ubuntu-latest'
+        run: |
+          echo "Running test/${{ matrix.suite }}..."
+          flutter test test/${{ matrix.suite }} --reporter=expanded
 
       # Produce a filtered lcov.info matching codecov.yml's ignore list, so
       # the local "project coverage" number and the Codecov dashboard agree.
@@ -82,7 +99,7 @@ jobs:
       # real baseline from CI, a follow-up PR adds a local floor check
       # that guards against the Codecov token being unavailable.
       - name: Summarise filtered coverage
-        if: always() && matrix.os == 'ubuntu-latest'
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         run: |
           if [ ! -f coverage/lcov.info ]; then
             echo "No coverage/lcov.info — skipping summary" >> "$GITHUB_STEP_SUMMARY"
@@ -124,7 +141,7 @@ jobs:
       # in. Floors are intentionally loose until we've logged ~5 runs and
       # can tighten to observed-baseline-minus-2pp.
       - name: Enforce coverage floors
-        if: always() && matrix.os == 'ubuntu-latest'
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         run: |
           if [ ! -f coverage/lcov_filtered.info ]; then
             echo "No filtered lcov — skipping floor check"
@@ -187,7 +204,7 @@ jobs:
 
       # Upload coverage to Codecov — this is the real gate (see codecov.yml).
       - name: Upload coverage to Codecov
-        if: success() && matrix.os == 'ubuntu-latest'
+        if: success() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0 — BUT-790 SHA-pin
         with:
           files: coverage/lcov_filtered.info
@@ -199,7 +216,7 @@ jobs:
       # Keep the filtered lcov as an artifact so a maintainer can download
       # and inspect line-by-line coverage from any run.
       - name: Upload coverage artifact
-        if: always() && matrix.os == 'ubuntu-latest'
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         uses: actions/upload-artifact@v7
         with:
           name: coverage-lcov
@@ -211,7 +228,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: unit-test-results-${{ matrix.os }}
+          name: ${{ matrix.suite }}-test-results-${{ matrix.os }}
           path: test_results/
 
       # BUT-495: emit job duration to step summary + warn if budget exceeded.
@@ -220,7 +237,7 @@ jobs:
         if: always()
         env:
           BUDGET_MIN: 15
-          JOB_LABEL: "Unit Tests (${{ matrix.os }})"
+          JOB_LABEL: "${{ matrix.suite }} (${{ matrix.os }})"
         run: |
           JOB_END=$(date +%s)
           DURATION_SEC=$((JOB_END - JOB_START))

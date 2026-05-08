@@ -4,6 +4,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -18,6 +19,7 @@ void main() {
     late RecipeDetailViewModel viewModel;
     late MockUnifiedRecipeService mockRecipeService;
     late MockAnalyticsService mockAnalyticsService;
+    late MockRecipeCookingService mockCookingService;
     late Recipe testRecipe;
     late Recipe updatedRecipe;
 
@@ -37,6 +39,7 @@ void main() {
       // Create mocks
       mockRecipeService = MockFactory.createUnifiedRecipeService();
       mockAnalyticsService = MockFactory.createAnalyticsService();
+      mockCookingService = MockFactory.createRecipeCookingService();
 
       // Create test recipe with comprehensive data
       testRecipe = RecipeBuilder()
@@ -102,12 +105,15 @@ void main() {
       // Register mocks
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       TestServiceLocator.registerMock<AnalyticsService>(mockAnalyticsService);
+      TestServiceLocator.registerMock<RecipeCookingService>(mockCookingService);
 
-      // Create viewModel
+      // Create viewModel — passes cookingService explicitly so the VM's
+      // ServiceLocator default doesn't kick in (BUT-835).
       viewModel = RecipeDetailViewModel(
         recipe: testRecipe,
         recipeService: mockRecipeService,
         analyticsService: mockAnalyticsService,
+        cookingService: mockCookingService,
       );
     });
 
@@ -176,6 +182,7 @@ void main() {
           recipe: minimalRecipe,
           recipeService: mockRecipeService,
           analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
         );
 
         // Assert
@@ -198,6 +205,7 @@ void main() {
           recipe: recipeNoTags,
           recipeService: mockRecipeService,
           analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
         );
 
         // Assert
@@ -215,6 +223,7 @@ void main() {
           recipe: recipeEmptyTags,
           recipeService: mockRecipeService,
           analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
         );
 
         // Assert
@@ -281,16 +290,13 @@ void main() {
       });
 
       test('should mark recipe as cooked', () async {
-        // Arrange
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
-
-        // Act
+        // Act — VM delegates to RecipeCookingService.markAsCooked (which
+        // owns the atomic Firestore increment + per-day session dedup).
         final result = await viewModel.markAsCooked();
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockRecipeService.updateRecipe(any())).called(1);
+        verify(() => mockCookingService.markAsCooked(testRecipeId)).called(1);
         verify(() => mockAnalyticsService.logRecipeCooked(
               recipeId: testRecipeId,
               mealType: 'Middag',
@@ -299,11 +305,11 @@ void main() {
       });
 
       test('should handle mark as cooked failure', () async {
-        // Arrange
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((_) async => false);
+        // Arrange — cooking service returns false (write rejected by
+        // session guard or underlying repo failure).
+        mockCookingService.setMarkAsCookedResult(false);
 
-        // Act - executeAsync rethrows, so wrap in try/catch
+        // Act — executeAsync rethrows, so wrap in try/catch.
         bool result = true;
         try {
           result = await viewModel.markAsCooked();
@@ -316,7 +322,7 @@ void main() {
       });
 
       test('should track first time cooking correctly', () async {
-        // Arrange - recipe already cooked before
+        // Arrange — recipe already cooked before.
         final cookedRecipe = RecipeBuilder()
             .withId(testRecipeId)
             .withTitle('Already Cooked Recipe')
@@ -327,10 +333,8 @@ void main() {
           recipe: cookedRecipe,
           recipeService: mockRecipeService,
           analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
         );
-
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
 
         // Act
         await viewModel.markAsCooked();
@@ -338,7 +342,6 @@ void main() {
         // Assert
         verify(() => mockAnalyticsService.logRecipeCooked(
               recipeId: any(named: 'recipeId'),
-
               mealType: any(named: 'mealType'),
               isFirstTime: false, // Should be false since already cooked
             )).called(1);
@@ -461,9 +464,9 @@ void main() {
       });
 
       test('should handle update recipe exception', () async {
-        // Arrange
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenThrow(Exception('Update failed'));
+        // Arrange — VM delegates to RecipeCookingService; throw from there.
+        when(() => mockCookingService.markAsCooked(any()))
+            .thenThrow(Exception('Cook failed'));
 
         // Act - executeAsync rethrows, so wrap in try/catch
         bool result = true;
@@ -485,6 +488,7 @@ void main() {
           recipe: testRecipe,
           recipeService: mockRecipeService,
           analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
         );
 
         // Act & Assert - should not throw
@@ -497,6 +501,7 @@ void main() {
           recipe: testRecipe,
           recipeService: mockRecipeService,
           analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
         );
 
         // Act & Assert - In debug mode, Flutter will throw on double dispose
@@ -519,6 +524,7 @@ void main() {
           recipe: emptyRecipe,
           recipeService: mockRecipeService,
           analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
         );
 
         // Assert
@@ -538,6 +544,7 @@ void main() {
           recipe: singleImageRecipe,
           recipeService: mockRecipeService,
           analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
         );
 
         // Assert
@@ -551,8 +558,9 @@ void main() {
           await Future.delayed(Duration(milliseconds: 50));
           return true;
         });
-        when(() => mockRecipeService.updateRecipe(any()))
-            .thenAnswer((_) async => false);
+        // Cooking service rejects the cook (write rejected) so we can
+        // assert cookResult is false even when run concurrently with delete.
+        mockCookingService.setMarkAsCookedResult(false);
 
         // Act - start deletion
         final deletionFuture = viewModel.deleteRecipe();

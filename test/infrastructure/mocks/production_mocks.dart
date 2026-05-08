@@ -103,6 +103,7 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/file_content_provider.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/social_media_extractor.dart'; // For SourcePlatform and ExtractionResult
 import 'package:butlery/services/extraction/web_scraper.dart'; // For WebScraper interface
 import 'package:butlery/services/social_recipe_service.dart'; // For SocialRecipeService interface
@@ -1563,6 +1564,7 @@ class _NoOpFutureMock extends Fake {
     'logFirstCommentIfMilestone',
     'logFirstGroupIfMilestone',
     'logFirstSearchIfMilestone',
+    'logFirstCookIfMilestone',
   };
 
   @override
@@ -1669,6 +1671,20 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
 
   Map<String, dynamic> get capturedUserProperties =>
       Map.unmodifiable(_userProperties);
+}
+
+/// Mock implementation of RecipeCookingService.
+///
+/// `RecipeCookingService` extends `BaseService` (not an interface), so this
+/// mock implements the class directly. Built as a pure mocktail Mock — no
+/// concrete overrides — so callers can both `verify(() => mock.markAsCooked(...))`
+/// AND override the return via `setMarkAsCookedResult`. The factory
+/// pre-stubs the default success case.
+class MockRecipeCookingService extends Mock implements RecipeCookingService {
+  /// Re-stub the value returned by `markAsCooked` (default: true via factory).
+  void setMarkAsCookedResult(bool result) {
+    when(() => markAsCooked(any())).thenAnswer((_) async => result);
+  }
 }
 
 // ============= IMPORT STRATEGY MOCKS =============
