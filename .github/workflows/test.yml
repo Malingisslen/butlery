@@ -53,8 +53,11 @@ jobs:
 
       # BUT-495: record job start so the Report duration step at the end can
       # emit a structured timing line. Lives in $GITHUB_ENV so the value
-      # survives between steps.
+      # survives between steps. Force bash so the same `$(date +%s)` /
+      # `>> "$GITHUB_ENV"` syntax works on the windows runner too (default
+      # there is PowerShell, which silently mangles the subshell capture).
       - name: Record job start time
+        shell: bash
         run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
@@ -240,8 +243,12 @@ jobs:
 
       # BUT-495: emit job duration to step summary + warn if budget exceeded.
       # Soft budget = 15 min; hard kill is `timeout-minutes: 20` above.
+      # `shell: bash` so the bash `if [ ... ]; then` conditional works on
+      # the windows runner too — the default PowerShell parses `if [` as a
+      # generic-type call and bails (was the widget (windows) red lane).
       - name: Report job duration
         if: always()
+        shell: bash
         env:
           BUDGET_MIN: 15
           JOB_LABEL: "${{ matrix.suite }} (${{ matrix.os }})"
