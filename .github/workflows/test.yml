@@ -38,6 +38,13 @@ jobs:
         # ~19 min and getting cancelled, masking real test signal.
         # Coverage is still aggregated post-job by Codecov via flag merging.
         suite: [unit, widget, views, golden]
+        # BUT-849: golden tests are deterministic structure/JSON checks,
+        # not pixel diffs. Running on three platforms is redundant, and the
+        # Windows lane was producing line-ending/encoding noise that
+        # masked real signal from ubuntu+macos. Gate it off here.
+        exclude:
+          - os: windows-latest
+            suite: golden
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
 
