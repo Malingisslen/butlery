@@ -25,13 +25,110 @@ class ArlaRecipeParser extends RecipeSiteParser {
   @override
   Map<String, dynamic> enhanceRecipe(Map<String, dynamic> recipe, String html) {
     try {
-      // Only clean up formatting quirks, no additional field extraction
+      final doc = html_parser.parse(html);
+
+      final difficulty = _extractArlaDifficulty(doc);
+      if (difficulty != null) {
+        recipe['difficulty'] = difficulty;
+      }
+
+      final tips = _extractArlaCookingTips(doc);
+      if (tips.isNotEmpty) {
+        recipe['cookingTips'] = tips;
+      }
+
+      final nutrition = _extractArlaNutrition(doc);
+      if (nutrition.isNotEmpty) {
+        recipe['nutrition'] = nutrition;
+      }
+
       recipe = _cleanArlaFormatting(recipe);
       return recipe;
     } catch (e) {
-      // Enhancement failed, return recipe as-is
       return recipe;
     }
+  }
+
+  /// Extract Arla difficulty level from `.recipe-difficulty` selectors.
+  /// Returns 'Enkel' | 'Medel' | 'Avancerad' or null.
+  String? _extractArlaDifficulty(Document doc) {
+    final selectors = [
+      '.recipe-difficulty',
+      '.arla-difficulty',
+      '[data-difficulty]',
+      '.difficulty-level',
+    ];
+    for (final selector in selectors) {
+      final element = doc.querySelector(selector);
+      if (element != null) {
+        final difficulty = extractDifficulty(element.text.trim());
+        if (difficulty != null) return difficulty;
+      }
+    }
+    return null;
+  }
+
+  /// Extract cooking tips from `.recipe-tips` / `.arla-tips` blocks.
+  /// Strips a leading `Tips:` prefix when present so the stored value is
+  /// the body of the tip, matching what the test fixture's "Låt smeten kallna"
+  /// assertion looks for.
+  List<String> _extractArlaCookingTips(Document doc) {
+    final tips = <String>[];
+    final selectors = [
+      '.recipe-tips',
+      '.arla-tips',
+      '.cooking-tips',
+      '.recipe-notes',
+    ];
+    for (final selector in selectors) {
+      for (final element in doc.querySelectorAll(selector)) {
+        var tip = element.text.trim();
+        if (tip.isEmpty) continue;
+        tip = tip.replaceFirst(
+            RegExp(r'^Tips?\s*:\s*', caseSensitive: false), '');
+        if (tip.length > 5) tips.add(cleanSwedishText(tip));
+      }
+    }
+    return tips;
+  }
+
+  /// Extract nutrition map from `.nutrition-info` / `.arla-nutrition`.
+  /// Handles both inline (`Per portion: 120 kcal, Protein: 2 g, ...`) and
+  /// per-line (`<p>Energi: 185 kcal</p>` etc.) formats. Returns integer
+  /// kcal/protein/fat/carbohydrates; an unparseable value is omitted.
+  Map<String, int> _extractArlaNutrition(Document doc) {
+    final result = <String, int>{};
+    final selectors = ['.nutrition-info', '.arla-nutrition', '.nutrition'];
+    for (final selector in selectors) {
+      final element = doc.querySelector(selector);
+      if (element == null) continue;
+      final text = element.text;
+
+      final calories = _matchNutritionInt(
+          text, RegExp(r'(\d+)\s*kcal', caseSensitive: false));
+      if (calories != null) result['calories'] = calories;
+
+      final protein = _matchNutritionInt(
+          text, RegExp(r'Protein\s*:?\s*(\d+)', caseSensitive: false));
+      if (protein != null) result['protein'] = protein;
+
+      final fat = _matchNutritionInt(
+          text, RegExp(r'Fett\s*:?\s*(\d+)', caseSensitive: false));
+      if (fat != null) result['fat'] = fat;
+
+      final carbs = _matchNutritionInt(
+          text, RegExp(r'Kolhydrater\s*:?\s*(\d+)', caseSensitive: false));
+      if (carbs != null) result['carbohydrates'] = carbs;
+
+      if (result.isNotEmpty) break;
+    }
+    return result;
+  }
+
+  int? _matchNutritionInt(String text, RegExp pattern) {
+    final match = pattern.firstMatch(text);
+    if (match == null) return null;
+    return int.tryParse(match.group(1) ?? '');
   }
 
   @override
