@@ -3,11 +3,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:clock/clock.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
+
+// Pinned mid-day so the time-ago formatter can't drift across a day
+// boundary while the test runs. Both fixture and production resolve
+// `clock.now()` to this instant inside withClock — no drift possible.
+final DateTime _kFixedNow = DateTime(2026, 5, 9, 12, 0, 0);
 
 void main() {
   setUp(() async {
@@ -382,42 +388,46 @@ void main() {
 
       testWidgets('displays yesterday for one day ago',
           (WidgetTester tester) async {
-        final yesterdayList = UnifiedShoppingList(
-          id: testShoppingList.id,
-          name: testShoppingList.name,
-          ownerId: testShoppingList.ownerId,
-          ownerDisplayName: testShoppingList.ownerDisplayName,
-          items: testShoppingList.items,
-          createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        );
+        await withClock(Clock.fixed(_kFixedNow), () async {
+          final yesterdayList = UnifiedShoppingList(
+            id: testShoppingList.id,
+            name: testShoppingList.name,
+            ownerId: testShoppingList.ownerId,
+            ownerDisplayName: testShoppingList.ownerDisplayName,
+            items: testShoppingList.items,
+            createdAt: clock.now().subtract(const Duration(days: 1)),
+          );
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: yesterdayList,
-          showMetadata: true,
-        ));
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(createCardApp(
+            shoppingList: yesterdayList,
+            showMetadata: true,
+          ));
+          await tester.pumpAndSettle();
 
-        expect(find.textContaining('Ig\u00e5r'), findsOneWidget);
+          expect(find.textContaining('Ig\u00e5r'), findsOneWidget);
+        });
       });
 
       testWidgets('displays days ago for recent lists',
           (WidgetTester tester) async {
-        final oldList = UnifiedShoppingList(
-          id: testShoppingList.id,
-          name: testShoppingList.name,
-          ownerId: testShoppingList.ownerId,
-          ownerDisplayName: testShoppingList.ownerDisplayName,
-          items: testShoppingList.items,
-          createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        );
+        await withClock(Clock.fixed(_kFixedNow), () async {
+          final oldList = UnifiedShoppingList(
+            id: testShoppingList.id,
+            name: testShoppingList.name,
+            ownerId: testShoppingList.ownerId,
+            ownerDisplayName: testShoppingList.ownerDisplayName,
+            items: testShoppingList.items,
+            createdAt: clock.now().subtract(const Duration(days: 5)),
+          );
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: oldList,
-          showMetadata: true,
-        ));
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(createCardApp(
+            shoppingList: oldList,
+            showMetadata: true,
+          ));
+          await tester.pumpAndSettle();
 
-        expect(find.textContaining('5 dagar sedan'), findsOneWidget);
+          expect(find.textContaining('5 dagar sedan'), findsOneWidget);
+        });
       });
     });
 
