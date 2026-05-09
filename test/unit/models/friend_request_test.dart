@@ -1,6 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:clock/clock.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'helpers/model_test_base.dart';
+
+// Mid-day pin so day/hour/minute boundaries can't be straddled by CI lane
+// drift. Both fixture and production resolve `clock.now()` to this exact
+// instant under withClock — no relative-time drift possible.
+final DateTime _kFixedNow = DateTime(2026, 5, 9, 12, 0, 0);
+
+void _atFixedClock(void Function() body) =>
+    withClock(Clock.fixed(_kFixedNow), body);
 
 void main() {
   ModelTestBase.testModelGroup('FriendRequest', () {
@@ -247,116 +256,136 @@ void main() {
 
     group('Expiration Detection', () {
       test('should not be expired when sent recently', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now(),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now(),
+          );
 
-        expect(request.isExpired, isFalse);
+          expect(request.isExpired, isFalse);
+        });
       });
 
       test('should not be expired when sent 6 days ago', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(days: 6)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(days: 6)),
+          );
 
-        expect(request.isExpired, isFalse);
+          expect(request.isExpired, isFalse);
+        });
       });
 
       test('should be expired when sent 8 days ago', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(days: 8)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(days: 8)),
+          );
 
-        expect(request.isExpired, isTrue);
+          expect(request.isExpired, isTrue);
+        });
       });
 
       test('should not be expired when sent exactly 7 days ago', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(days: 7)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(days: 7)),
+          );
 
-        expect(
-            request.isExpired, isFalse); // Not expired until > 7 complete days
+          expect(request.isExpired,
+              isFalse); // Not expired until > 7 complete days
+        });
       });
     });
 
     group('Time Display Formatting', () {
       test('should display "Nu" for very recent requests', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(seconds: 30)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(seconds: 30)),
+          );
 
-        expect(request.timeAgoText, equals('Nu'));
+          expect(request.timeAgoText, equals('Nu'));
+        });
       });
 
       test('should display minutes for requests less than 1 hour old', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(minutes: 30)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(minutes: 30)),
+          );
 
-        expect(request.timeAgoText, equals('30 min sedan'));
+          expect(request.timeAgoText, equals('30 min sedan'));
+        });
       });
 
       test('should display hours for requests less than 1 day old', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(hours: 5)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(hours: 5)),
+          );
 
-        expect(request.timeAgoText, equals('5 tim sedan'));
+          expect(request.timeAgoText, equals('5 tim sedan'));
+        });
       });
 
       test('should display days for requests less than 1 week old', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(days: 3)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(days: 3)),
+          );
 
-        expect(request.timeAgoText, equals('3 dagar sedan'));
+          expect(request.timeAgoText, equals('3 dagar sedan'));
+        });
       });
 
       test('should display weeks for older requests', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(days: 14)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(days: 14)),
+          );
 
-        expect(request.timeAgoText, equals('2 veckor sedan'));
+          expect(request.timeAgoText, equals('2 veckor sedan'));
+        });
       });
 
       test('should handle edge case of exactly 1 week', () {
-        final request = FriendRequest(
-          id: 'req_123',
-          fromUserId: 'user_1',
-          toUserId: 'user_2',
-          sentAt: DateTime.now().subtract(Duration(days: 7)),
-        );
+        _atFixedClock(() {
+          final request = FriendRequest(
+            id: 'req_123',
+            fromUserId: 'user_1',
+            toUserId: 'user_2',
+            sentAt: clock.now().subtract(Duration(days: 7)),
+          );
 
-        expect(request.timeAgoText, equals('1 veckor sedan'));
+          expect(request.timeAgoText, equals('1 veckor sedan'));
+        });
       });
     });
 

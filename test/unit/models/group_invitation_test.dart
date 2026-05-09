@@ -2,8 +2,17 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:clock/clock.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'helpers/model_test_base.dart';
+
+// Pinned mid-day so `_kvar`/`_sedan` formatters never straddle a day boundary
+// regardless of CI lane scheduling. Both fixture and production resolve
+// `clock.now()` to this exact instant under withClock — no drift possible.
+final DateTime _kFixedNow = DateTime(2026, 5, 9, 12, 0, 0);
+
+void _atFixedClock(void Function() body) =>
+    withClock(Clock.fixed(_kFixedNow), body);
 
 void main() {
   ModelTestBase.testModelGroup('GroupInvitation', () {
@@ -224,206 +233,231 @@ void main() {
 
     group('Expiration Handling', () {
       test('should detect expired invitation', () {
-        final expired = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
-        );
+        _atFixedClock(() {
+          final expired = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().subtract(const Duration(hours: 1)),
+          );
 
-        expect(expired.isExpired, isTrue);
-        expect(expired.isPending, isFalse); // Pending checks expiration
+          expect(expired.isExpired, isTrue);
+          expect(expired.isPending, isFalse); // Pending checks expiration
+        });
       });
 
       test('should detect non-expired invitation', () {
-        final valid = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().add(const Duration(days: 3)),
-        );
+        _atFixedClock(() {
+          final valid = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().add(const Duration(days: 3)),
+          );
 
-        expect(valid.isExpired, isFalse);
-        expect(valid.isPending, isTrue);
+          expect(valid.isExpired, isFalse);
+          expect(valid.isPending, isTrue);
+        });
       });
 
       test('should detect expired status enum', () {
-        final expired = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          status: GroupInvitationStatus.expired,
-          expiresAt:
-              DateTime.now().add(const Duration(days: 3)), // Still has time
-        );
+        _atFixedClock(() {
+          final expired = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            status: GroupInvitationStatus.expired,
+            expiresAt: clock.now().add(const Duration(days: 3)),
+          );
 
-        expect(expired.isExpired, isTrue);
+          expect(expired.isExpired, isTrue);
+        });
       });
     });
 
     group('Swedish Localization - Time Ago', () {
       test('should show "Nu" for recent invitation', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          sentAt: DateTime.now(),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            sentAt: clock.now(),
+          );
 
-        expect(invitation.timeAgoText, equals('Nu'));
+          expect(invitation.timeAgoText, equals('Nu'));
+        });
       });
 
       test('should show minutes for recent time', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          sentAt: DateTime.now().subtract(const Duration(minutes: 30)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            sentAt: clock.now().subtract(const Duration(minutes: 30)),
+          );
 
-        expect(invitation.timeAgoText, equals('30 min sedan'));
+          expect(invitation.timeAgoText, equals('30 min sedan'));
+        });
       });
 
       test('should show hours for same day', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          sentAt: DateTime.now().subtract(const Duration(hours: 5)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            sentAt: clock.now().subtract(const Duration(hours: 5)),
+          );
 
-        expect(invitation.timeAgoText, equals('5 tim sedan'));
+          expect(invitation.timeAgoText, equals('5 tim sedan'));
+        });
       });
 
       test('should show days for recent days', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          sentAt: DateTime.now().subtract(const Duration(days: 3)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            sentAt: clock.now().subtract(const Duration(days: 3)),
+          );
 
-        expect(invitation.timeAgoText, equals('3 dagar sedan'));
+          expect(invitation.timeAgoText, equals('3 dagar sedan'));
+        });
       });
 
       test('should show weeks for old invitations', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          sentAt: DateTime.now().subtract(const Duration(days: 14)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            sentAt: clock.now().subtract(const Duration(days: 14)),
+          );
 
-        expect(invitation.timeAgoText, equals('2 veckor sedan'));
+          expect(invitation.timeAgoText, equals('2 veckor sedan'));
+        });
       });
     });
 
     group('Swedish Localization - Expires In', () {
       test('should show "Utgången" for expired', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().subtract(const Duration(hours: 1)),
+          );
 
-        expect(invitation.expiresInText, equals('Utgången'));
+          expect(invitation.expiresInText, equals('Utgången'));
+        });
       });
 
       test('should show days remaining', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().add(const Duration(days: 5)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().add(const Duration(days: 5)),
+          );
 
-        expect(invitation.expiresInText, equals('5 dagar kvar'));
+          expect(invitation.expiresInText, equals('5 dagar kvar'));
+        });
       });
 
       test('should show hours remaining', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().add(const Duration(hours: 12)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().add(const Duration(hours: 12)),
+          );
 
-        expect(invitation.expiresInText, equals('12 timmar kvar'));
+          expect(invitation.expiresInText, equals('12 timmar kvar'));
+        });
       });
 
       test('should show minutes remaining', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().add(const Duration(minutes: 45)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().add(const Duration(minutes: 45)),
+          );
 
-        expect(invitation.expiresInText, equals('45 minuter kvar'));
+          expect(invitation.expiresInText, equals('45 minuter kvar'));
+        });
       });
 
       test('should show "Går ut snart" for imminent expiry', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().add(const Duration(seconds: 30)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().add(const Duration(seconds: 30)),
+          );
 
-        expect(invitation.expiresInText, equals('Går ut snart'));
+          expect(invitation.expiresInText, equals('Går ut snart'));
+        });
       });
     });
 
@@ -495,18 +529,20 @@ void main() {
       });
 
       test('should return warning color for expired pending', () {
-        final expired = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
-        );
+        _atFixedClock(() {
+          final expired = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().subtract(const Duration(hours: 1)),
+          );
 
-        expect(expired.statusColorName, equals('warning'));
+          expect(expired.statusColorName, equals('warning'));
+        });
       });
 
       test('should return success color for accepted', () {
@@ -925,20 +961,22 @@ void main() {
       });
 
       test('should handle already expired invitation on creation', () {
-        final invitation = GroupInvitation(
-          id: 'inv_123',
-          groupId: 'group_456',
-          groupName: 'Test Group',
-          groupEmoji: '👥',
-          fromUserId: 'user_789',
-          fromUserName: 'Test User',
-          toUserId: 'user_abc',
-          expiresAt: DateTime.now().subtract(const Duration(days: 1)),
-        );
+        _atFixedClock(() {
+          final invitation = GroupInvitation(
+            id: 'inv_123',
+            groupId: 'group_456',
+            groupName: 'Test Group',
+            groupEmoji: '👥',
+            fromUserId: 'user_789',
+            fromUserName: 'Test User',
+            toUserId: 'user_abc',
+            expiresAt: clock.now().subtract(const Duration(days: 1)),
+          );
 
-        expect(invitation.isExpired, isTrue);
-        expect(invitation.isPending, isFalse);
-        expect(invitation.expiresInText, equals('Utgången'));
+          expect(invitation.isExpired, isTrue);
+          expect(invitation.isPending, isFalse);
+          expect(invitation.expiresInText, equals('Utgången'));
+        });
       });
 
       test('should handle concurrent status updates', () {
