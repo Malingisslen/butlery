@@ -502,7 +502,13 @@ void main() {
         );
 
         // Assert
-        expect(capturedActions, contains(NotificationAction.viewRecipe));
+        // NotificationAction has no value-equality (`viewRecipe` is a getter
+        // that constructs a fresh instance each call, with default identity
+        // hash). Compare on the stable `id` field instead.
+        expect(
+          capturedActions?.map((a) => a.id),
+          contains(NotificationAction.viewRecipe.id),
+        );
       });
     });
   });

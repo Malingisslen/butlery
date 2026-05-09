@@ -133,12 +133,29 @@ void main() {
         // Arrange
         final userIds = ['user1', 'user2', 'user3'];
 
-        // Set different preferences for each user
+        // user1 + user3 keep defaults (recipes ON). user2 disables recipes
+        // so the filter must exclude them — that's what verifies the
+        // "based on their preferences" claim. (Without this divergence,
+        // all three users would pass and the assertion would tautologise.)
         mockRepository.userPreferences['user1'] =
             NotificationPreferences.defaults();
 
-        mockRepository.userPreferences['user2'] =
-            NotificationPreferences.defaults();
+        final defaults = NotificationPreferences.defaults();
+        mockRepository.userPreferences['user2'] = NotificationPreferences(
+          enabled: defaults.enabled,
+          categorySettings: {
+            ...defaults.categorySettings,
+            NotificationCategory.recipes: false, // ← divergence under test
+          },
+          typeSettings: defaults.typeSettings,
+          allowBatching: defaults.allowBatching,
+          digestFrequency: defaults.digestFrequency,
+          quietHoursStart: defaults.quietHoursStart,
+          quietHoursEnd: defaults.quietHoursEnd,
+          soundEnabled: defaults.soundEnabled,
+          vibrationEnabled: defaults.vibrationEnabled,
+          lastUpdated: defaults.lastUpdated,
+        );
 
         mockRepository.userPreferences['user3'] =
             NotificationPreferences.defaults();

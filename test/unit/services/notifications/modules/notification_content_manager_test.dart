@@ -365,7 +365,8 @@ void main() {
         expect(digest['title'], equals('Daglig sammanfattning'));
         expect(digest['body'], contains('4 nya aktiviteter'));
         expect(digest['body'], contains('2 recept'));
-        expect(digest['body'], contains('1 vänaktiviteter'));
+        // Plural-aware in Swedish: 1 -> singular form.
+        expect(digest['body'], contains('1 vänaktivitet'));
         expect(digest['body'], contains('1 inköpslistor'));
         expect(digest['count'], equals('4'));
       });

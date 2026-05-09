@@ -702,9 +702,13 @@ void main() {
         });
 
         // Assert
+        // Production deliberately surfaces a user-friendly generic message
+        // ("Could not extract recipe from photo. Please try again.") rather
+        // than leaking underlying exception details to the UI. Original
+        // exception is logged via AppLogger.error.
         expect(result.isSuccess, isFalse);
         expect(result.errorMessage, isNotEmpty);
-        expect(result.errorMessage, contains('Network error'));
+        expect(result.errorMessage, contains('Could not extract recipe'));
       });
 
       test('should handle text parsing exception', () async {
