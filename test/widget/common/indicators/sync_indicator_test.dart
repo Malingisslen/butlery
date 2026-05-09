@@ -67,6 +67,11 @@ void main() {
           ),
         );
 
+        // Production guards offline state behind a 3s debounce to avoid
+        // boot-time cache snapshots flashing the offline icon. Pump past
+        // the grace period so the timer fires.
+        await tester.pump(const Duration(seconds: 4));
+
         expect(find.byIcon(Icons.cloud_off_outlined), findsOneWidget);
       });
 
@@ -125,6 +130,9 @@ void main() {
           ),
         );
 
+        // Wait past the 3s offline-debounce so the indicator renders.
+        await tester.pump(const Duration(seconds: 4));
+
         final icon = tester.widget<Icon>(find.byType(Icon));
         expect(icon.color, equals(cs.onSurfaceVariant));
       });
@@ -164,6 +172,8 @@ void main() {
           ),
         );
 
+        await tester.pump(const Duration(seconds: 4));
+
         final icon = tester.widget<Icon>(find.byType(Icon));
         expect(icon.size, equals(AppDimensions.iconSizeS));
       });
@@ -198,6 +208,8 @@ void main() {
           ),
         );
 
+        await tester.pump(const Duration(seconds: 4));
+
         expect(find.bySemanticsLabel('Offline-läge'), findsOneWidget);
       });
 
@@ -229,6 +241,8 @@ void main() {
             ),
           ),
         );
+
+        await tester.pump(const Duration(seconds: 4));
 
         final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
         expect(tooltip.message, equals('Offline'));
@@ -267,7 +281,7 @@ void main() {
           ),
         );
 
-        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(seconds: 4));
 
         final opacity = tester.widget<Opacity>(find.byType(Opacity));
         expect(opacity.opacity, equals(1.0));
