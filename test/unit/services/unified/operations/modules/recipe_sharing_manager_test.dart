@@ -150,7 +150,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
               descriptionCollaborative: any(named: 'descriptionCollaborative'),
               allowGuestViewing: any(named: 'allowGuestViewing'),
@@ -231,7 +231,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
               descriptionCollaborative: any(named: 'descriptionCollaborative'),
               allowGuestViewing: any(named: 'allowGuestViewing'),
@@ -240,16 +240,18 @@ void main() {
             ));
       });
 
-      test('should fail when recipe already collaborative', () async {
-        // Act
+      test('should re-share when recipe already collaborative', () async {
+        // Production now supports re-sharing an already-collaborative recipe
+        // (syncs to shared_recipes collection for the new group instead of
+        // failing). The previous "should fail" expectation predated that
+        // feature; the recipe id flows through unchanged.
         final newId = await sharingManager.shareRecipe(
           recipeId: 'collab_1',
           memberIds: ['user_999'],
           memberDisplayNames: {'user_999': 'New Member'},
         );
 
-        // Assert
-        expect(newId, isNull);
+        expect(newId, equals('collab_1'));
       });
 
       test('should handle creation failure', () async {
@@ -265,7 +267,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
               descriptionCollaborative: any(named: 'descriptionCollaborative'),
               allowGuestViewing: any(named: 'allowGuestViewing'),
@@ -297,7 +299,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
               imageUrls: any(named: 'imageUrls'),
             )).thenAnswer((_) async => 'new_personal_id');
@@ -320,7 +322,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
               imageUrls: any(named: 'imageUrls'),
             )).called(1);
@@ -337,7 +339,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
               imageUrls: any(named: 'imageUrls'),
             )).thenAnswer((_) async => 'new_personal_id');
@@ -358,7 +360,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
+              personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
               imageUrls: any(named: 'imageUrls'),
             )).called(1);

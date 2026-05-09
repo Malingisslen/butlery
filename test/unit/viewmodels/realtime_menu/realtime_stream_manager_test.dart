@@ -317,7 +317,10 @@ void main() {
         streamCtrl.add(_buildMenu(title: 'A'));
         streamCtrl.add(_buildMenu(title: 'B'));
         streamCtrl.add(_buildMenu(title: 'C'));
-        await Future.microtask(() {});
+        // Each StreamController.add() schedules a separate microtask, so
+        // waiting one microtask only delivers the first event. Drain the
+        // event queue so all three arrive before the assertion.
+        await pumpEventQueue();
 
         // Stream may debounce rapid updates — at least the last one arrives
         expect(updates, isNotEmpty);

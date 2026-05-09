@@ -106,7 +106,11 @@ void main() {
             'mealType': 'Lunch',
             'createdBy': editedBy,
           },
-          'type': 'personal',
+          // RecipeSerialization writes `recipe.type.index` (int) and reads
+          // via `as int?`. Wire format is int; using the string 'personal'
+          // here would throw inside Recipe.fromJson and silently bypass
+          // saveToCache. 0 = RecipeType.personal.
+          'type': 0,
         };
 
         // Act

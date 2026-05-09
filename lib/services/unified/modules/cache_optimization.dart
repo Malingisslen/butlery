@@ -275,7 +275,17 @@ class CacheOptimization {
             continue;
           }
 
-          Recipe.fromJson(recipeData);
+          // Recipe.fromJson uses SerializationUtils.safeString defaults so
+          // it never throws on missing fields — an entry like
+          // `{'invalid': 'data'}` deserializes to a Recipe with id=''. Treat
+          // empty id as the corrupted-entry signal so the cleanup actually
+          // removes malformed payloads.
+          final recipe = Recipe.fromJson(recipeData);
+          if (recipe.id.isEmpty) {
+            await cacheHelper.delete(key);
+            removedCount++;
+            AppLogger.debug('Removed corrupted entry (empty id): $key');
+          }
         } catch (e) {
           await cacheHelper.delete(key);
           removedCount++;
@@ -313,7 +323,10 @@ class CacheOptimization {
           final recipeData = await cacheHelper.loadJson(key);
           if (recipeData != null) {
             final recipe = Recipe.fromJson(recipeData);
-            recipesByAge[key] = recipe.core.updatedAt;
+            // Empty id signals corrupted payload (lenient deserializer
+            // doesn't throw). Force-evict by sorting first.
+            recipesByAge[key] =
+                recipe.id.isEmpty ? DateTime(2000) : recipe.core.updatedAt;
           }
         } catch (e) {
           recipesByAge[key] = DateTime(2000);
@@ -440,6 +453,15 @@ class CacheOptimization {
           }
 
           final recipe = Recipe.fromJson(recipeData);
+
+          // Lenient deserializer means a payload like `{'invalid': 'data'}`
+          // returns a Recipe with id=''. Treat that as corrupted too,
+          // matching cleanupCorruptedEntries' definition.
+          if (recipe.id.isEmpty) {
+            assessment['corrupted_entries'] =
+                (assessment['corrupted_entries'] as int) + 1;
+            continue;
+          }
 
           if (_shouldRemoveFromCache(recipe, currentUserId)) {
             assessment['permission_issues'] =

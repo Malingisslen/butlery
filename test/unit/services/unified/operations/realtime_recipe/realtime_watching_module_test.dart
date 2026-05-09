@@ -172,8 +172,11 @@ void main() {
         final stream =
             watchingModule.watchMultipleRecipes(['recipe_1', 'recipe_2']);
 
-        // Assert
-        final recipes = await stream.first;
+        // Assert — production emits whenever any subscription updates
+        // currentRecipes. The first emission contains 1 recipe (whichever
+        // sub fired first); the second contains both. Wait for the
+        // both-arrived state instead of racing the microtask order.
+        final recipes = await stream.firstWhere((r) => r.length == 2);
         expect(recipes.length, equals(2));
       });
 

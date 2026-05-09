@@ -816,21 +816,18 @@ void main() {
     });
 
     group('User Activity', () {
-      test('should simulate user activity viewing', () async {
-        // Act - Run multiple times with small delays to test randomness
-        int activeCount = 0;
-        for (int i = 0; i < 30; i++) {
-          if (RealtimeRecipeUtils.isUserActivelyViewing(
-              'user-123', 'recipe-456')) {
-            activeCount++;
-          }
-          // Small delay to ensure different millisecond values
-          await Future.delayed(const Duration(milliseconds: 1));
+      test('isUserActivelyViewing returns false until presence tracking lands',
+          () {
+        // Production code is a documented placeholder: "Returns false until
+        // real presence tracking is implemented." Guard against accidental
+        // drift back to a fake-randomness implementation that would mislead
+        // callers into trusting the result.
+        for (int i = 0; i < 10; i++) {
+          expect(
+            RealtimeRecipeUtils.isUserActivelyViewing('user-123', 'recipe-456'),
+            isFalse,
+          );
         }
-
-        // Assert - Should get some active and some inactive
-        expect(activeCount, greaterThan(0)); // At least some activity
-        expect(activeCount, lessThan(30)); // But not always active
       });
     });
   });

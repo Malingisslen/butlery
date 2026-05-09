@@ -80,8 +80,10 @@ void main() {
 
     group('Editing Session Management', () {
       test('should start realtime editing session', () async {
-        // Act
-        final result = await editingModule.startRealtimeEditing('recipe_1');
+        // Act — recipe_2 is the collaborative fixture; production guards
+        // realtime editing behind `recipe.isCollaborative`. Calling against
+        // recipe_1 (personal) would correctly return false.
+        final result = await editingModule.startRealtimeEditing('recipe_2');
 
         // Assert
         expect(result, isTrue);
@@ -180,6 +182,22 @@ void main() {
           getRecipes: () => mockParentService.recipes,
           updateRecipeContent: mockParentService.updateRecipeContent,
         );
+        // Stub the underlying update to succeed; without this mocktail
+        // returns the default (false) and the fallback path appears broken.
+        when(() => mockParentService.updateRecipeContent(
+              recipeId: any(named: 'recipeId'),
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              imageUrls: any(named: 'imageUrls'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              rating: any(named: 'rating'),
+              personalTagIds: any(named: 'personalTagIds'),
+              sourceUrl: any(named: 'sourceUrl'),
+            )).thenAnswer((_) async => true);
         final changes = {'title': 'Updated Title'};
 
         // Act

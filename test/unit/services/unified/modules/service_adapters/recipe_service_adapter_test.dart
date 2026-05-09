@@ -136,6 +136,11 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
 
+        // Production calls .read() first to fetch imageUrls before delete.
+        // Without a stub mocktail throws on the unstubbed call, which the
+        // adapter's broad catch swallows -> result returns false silently.
+        when(() => mockRecipeRepository.read(any()))
+            .thenAnswer((_) async => null);
         when(() => mockRecipeRepository.delete(any())).thenAnswer((_) async {});
 
         // Act

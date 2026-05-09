@@ -256,6 +256,22 @@ class RealtimeRecipeUtils {
       ));
     }
 
+    // One entry per added collaborator. We don't have per-member join
+    // timestamps, so attribute to recipe.updatedAt (latest known mutation).
+    final memberPermissions = recipe.socialData?.memberPermissions;
+    if (memberPermissions != null) {
+      for (final entry in memberPermissions.entries) {
+        history.add(createEditHistoryEntry(
+          timestamp: recipe.updatedAt,
+          userId: recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '',
+          userName: recipe.socialData?.ownerDisplayName ?? 'Unknown',
+          action: 'Added collaborator',
+          details: 'Granted ${entry.value.name} permission to ${entry.key}',
+          targetUserId: entry.key,
+        ));
+      }
+    }
+
     // Sort by timestamp (newest first)
     history.sort((a, b) =>
         (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
