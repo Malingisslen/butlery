@@ -307,12 +307,13 @@ void main() {
         final editButton = tester.widget<IconButton>(
           find.widgetWithIcon(IconButton, Icons.edit),
         );
-        expect(editButton.tooltip, 'Redigera');
+        // Tooltip mirrors a11yEditItem(name) per AppIconButton — "Redigera <name>".
+        expect(editButton.tooltip, 'Redigera Mjölk');
 
         final deleteButton = tester.widget<IconButton>(
           find.widgetWithIcon(IconButton, Icons.delete),
         );
-        expect(deleteButton.tooltip, 'Ta bort');
+        expect(deleteButton.tooltip, 'Ta bort Mjölk');
       });
     });
 
@@ -518,8 +519,9 @@ void main() {
         final editButtonWidget = tester.widget<IconButton>(editButton);
         final deleteButtonWidget = tester.widget<IconButton>(deleteButton);
 
-        expect(editButtonWidget.tooltip, 'Redigera');
-        expect(deleteButtonWidget.tooltip, 'Ta bort');
+        // Tooltips mirror a11yEditItem/a11yDeleteItem(name) — "<verb> <name>".
+        expect(editButtonWidget.tooltip, 'Redigera Mjölk');
+        expect(deleteButtonWidget.tooltip, 'Ta bort Mjölk');
       });
 
       testWidgets('maintains minimum touch target size',
@@ -537,11 +539,16 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final editButton = tester.widget<IconButton>(
-          find.widgetWithIcon(IconButton, Icons.edit),
-        );
-        expect(editButton.constraints?.minWidth, AppDimensions.minTouchTarget);
-        expect(editButton.constraints?.minHeight, AppDimensions.minTouchTarget);
+        // AppIconButton doesn't pass explicit constraints to its inner
+        // IconButton — it relies on Material's built-in 48dp interactive
+        // minimum. Assert the rendered hit-area instead, which is what
+        // actually matters for WCAG 2.5.5.
+        final editButtonSize =
+            tester.getSize(find.widgetWithIcon(IconButton, Icons.edit));
+        expect(editButtonSize.width,
+            greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+        expect(editButtonSize.height,
+            greaterThanOrEqualTo(AppDimensions.minTouchTarget));
       });
     });
 

@@ -49,7 +49,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Inget innehåll att visa'), findsOneWidget);
+        // Title uses l10n.emptyGenericTitle.
+        expect(find.text('Inget innehåll finns att visa'), findsOneWidget);
         // Generic variant has no illustration, so shows icon
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
       });
@@ -93,9 +94,10 @@ void main() {
         expect(find.text('Inga resultat hittades.'), findsOneWidget);
         // Has VegetableIllustration (broccoli) by default
         expect(find.byType(VegetableIllustration), findsOneWidget);
-        // Subtitle includes 'Lägg till ditt första recept...'
-        expect(find.textContaining('Lägg till ditt första recept'),
-            findsOneWidget);
+        // Subtitle uses l10n.emptyNoRecipesSubtitle('Lägg till') ->
+        // 'Första receptet läggs till via "Lägg till".'
+        expect(
+            find.textContaining('Första receptet läggs till'), findsOneWidget);
       });
 
       testWidgets('shows action button when provided', (tester) async {
@@ -162,9 +164,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Ingen meny genererad ännu'), findsOneWidget);
+        // l10n.emptyNoMenuTitle / emptyNoMenuSubtitle.
+        expect(find.text('Ingen meny är ännu uppdukad'), findsOneWidget);
         expect(
-          find.text('Skriv vad du vill ha eller tryck på knappen nedan'),
+          find.text('Ange önskemål, eller använd knappen nedan'),
           findsOneWidget,
         );
       });
@@ -177,10 +180,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(
-            find.text('Ingen meny att skapa inköpslista från'), findsOneWidget);
-        expect(find.text('Gå tillbaka och skapa en veckomeny först'),
+        // l10n.emptyNoShoppingListTitle / emptyNoShoppingListSubtitle.
+        expect(find.text('Ingen meny finns att avleda en inköpslista från'),
             findsOneWidget);
+        expect(find.text('En veckomeny behövs först'), findsOneWidget);
       });
     });
 
@@ -193,9 +196,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Inga vänner ännu'), findsOneWidget);
+        // l10n.emptyNoFriendsTitle / emptyNoFriendsSubtitle.
+        expect(find.text('Ingen är bjuden ännu'), findsOneWidget);
         expect(
-          find.text('Lägg till vänner för att dela recept och menyer'),
+          find.text('Vänner inbjuds för att dela recept och menyer'),
           findsOneWidget,
         );
         // No illustration for social states — shows icon
