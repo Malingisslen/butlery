@@ -71,28 +71,50 @@ jobs:
         working-directory: functions
         run: npm ci
 
-      # cdxgen v11 supports pub (Dart/Flutter) and npm in one pass when
-      # pointed at the repo root. The recursive scan picks up both
-      # `pubspec.lock` and `functions/package-lock.json`. Output format
-      # is CycloneDX 1.5 JSON.
+      # cdxgen v11 doesn't reliably auto-detect both pub and npm from a
+      # single root scan (the previous combined `--type dart,javascript .`
+      # produced empty SBOMs since the BUT-810 lockfile bump). Switching
+      # to two passes — one per ecosystem, each pointed at its own
+      # manifest — and merging via jq. Output is still a single
+      # CycloneDX 1.5 JSON for downstream tooling.
       - name: Install cdxgen
         run: npm install -g @cyclonedx/cdxgen@11
 
-      - name: Generate combined CycloneDX SBOM
+      - name: Generate pub SBOM (Flutter/Dart)
         env:
-          # cdxgen exits 0 even on partial scans; --required-only=false
-          # forces it to include transitives. --print suppresses xstdout.
           FETCH_LICENSE: "true"
         run: |
           cdxgen \
-            --type dart,javascript \
-            --output sbom-butlery.cdx.json \
+            --type dart \
+            --output sbom-pub.cdx.json \
             --spec-version 1.5 \
             --include-formulation \
             .
-          # Sanity check — fail the job if the SBOM has zero components.
+
+      - name: Generate npm SBOM (Cloud Functions)
+        working-directory: functions
+        env:
+          FETCH_LICENSE: "true"
+        run: |
+          cdxgen \
+            --type javascript \
+            --output ../sbom-npm.cdx.json \
+            --spec-version 1.5 \
+            --include-formulation \
+            .
+
+      - name: Merge SBOMs and gate on component count
+        run: |
+          # Concatenate the two `.components` arrays into a single SBOM
+          # rooted at the pub metadata. Names collide rarely (different
+          # ecosystem prefixes) so we deliberately don't dedupe.
+          jq -s '.[0] + {components: (.[0].components + .[1].components)}' \
+            sbom-pub.cdx.json sbom-npm.cdx.json > sbom-butlery.cdx.json
+
           components=$(jq '.components | length' sbom-butlery.cdx.json)
-          echo "SBOM component count: $components"
+          pub=$(jq '.components | length' sbom-pub.cdx.json)
+          npm=$(jq '.components | length' sbom-npm.cdx.json)
+          echo "SBOM components — pub: $pub, npm: $npm, merged: $components"
           if [ "$components" = "0" ] || [ "$components" = "null" ]; then
             echo "::error::SBOM has zero components — generator failed"
             exit 1
