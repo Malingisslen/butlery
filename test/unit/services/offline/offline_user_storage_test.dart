@@ -591,5 +591,9 @@ void main() {
 
 /// Helper to convert Recipe to JSON string
 String _recipeToJson(Recipe recipe) {
-  return '{"id":"${recipe.id}","title":"${recipe.title}","description":"${recipe.description}","ingredients":[],"instructions":[],"mealType":"${recipe.mealType}","imageUrls":[],"createdAt":"${recipe.createdAt.toIso8601String()}","updatedAt":"${recipe.updatedAt.toIso8601String()}","isPublic":false,"type":"personal"}';
+  // `type` is serialized as RecipeType.index (int) on the wire, NOT a
+  // string. Using "personal" here makes RecipeSerialization.fromJson
+  // throw on `as int?`, the inner catch in OfflineUserStorage swallows
+  // it, and the recipe is silently dropped. 0 = RecipeType.personal.
+  return '{"id":"${recipe.id}","title":"${recipe.title}","description":"${recipe.description}","ingredients":[],"instructions":[],"mealType":"${recipe.mealType}","imageUrls":[],"createdAt":"${recipe.createdAt.toIso8601String()}","updatedAt":"${recipe.updatedAt.toIso8601String()}","isPublic":false,"type":0}';
 }

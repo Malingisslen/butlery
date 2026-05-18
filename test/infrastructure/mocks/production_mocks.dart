@@ -865,6 +865,14 @@ class FakeFirestoreRepository extends Fake implements FirestoreRepository {
   @override
   DocumentReference<Map<String, dynamic>> doc(String path) =>
       _fakeFirestore.doc(path);
+
+  // Production builds users/{uid}/recipes. Mirror the path here so the
+  // fake firestore returns a real collection ref (otherwise Fake's
+  // noSuchMethod throws UnimplementedError and tests can't proceed).
+  @override
+  CollectionReference<Map<String, dynamic>> userRecipesCollection(String uid) {
+    return _fakeFirestore.collection('users').doc(uid).collection('recipes');
+  }
 }
 
 /// Mock implementation of CollaborativeRecipeRepository
