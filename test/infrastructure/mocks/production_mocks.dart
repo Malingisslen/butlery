@@ -1312,12 +1312,21 @@ class FakePermissionService extends Fake implements PermissionService {
   // profiles via setProfile(); production calls fall back to _currentUser
   // when the uid matches it (covers the common "look me up" case).
   final Map<String, UserProfile> _profiles = {};
+  // Optional error to throw from getUserProfile (for testing error paths
+  // without `when(...).thenThrow(...)`, which Fake doesn't support).
+  Object? _profileError;
 
   /// Configure the profile that `getUserProfile(profile.uid)` returns.
   /// Used in place of `when(...).thenAnswer(...)` since this class extends
   /// Fake (no noSuchMethod plumbing for mocktail stubs).
   void setProfile(UserProfile profile) {
     _profiles[profile.uid] = profile;
+  }
+
+  /// Configure `getUserProfile` to throw [error] for ALL calls. Pass null
+  /// to clear. Tests use this in place of `when(...).thenThrow(...)`.
+  void setProfileError(Object? error) {
+    _profileError = error;
   }
 
   void setPermissionState({
@@ -1375,6 +1384,7 @@ class FakePermissionService extends Fake implements PermissionService {
 
   @override
   Future<UserProfile?> getUserProfile(String userId) async {
+    if (_profileError != null) throw _profileError!;
     if (_profiles.containsKey(userId)) return _profiles[userId];
     if (_currentUser != null && _currentUser!.uid == userId) {
       return _currentUser;
