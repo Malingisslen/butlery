@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import '../../fixtures/ocr_test_data.dart';
 
@@ -29,8 +30,15 @@ class FakeUri extends Fake implements Uri {}
 class FakeBaseRequest extends Fake implements http.BaseRequest {}
 
 void main() {
-  // Register fallback values for mocktail
+  // OCRExtractionService.instance reads ServicesBinding during init;
+  // initializing the test binding first lets every test in this file
+  // construct the service.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Register fallback values for mocktail + stub SharedPreferences
+  // (OcrUsageTracker reads it during service init).
   setUpAll(() {
+    SharedPreferences.setMockInitialValues({});
     registerFallbackValue(FakeUri());
     registerFallbackValue(FakeBaseRequest());
   });

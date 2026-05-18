@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -151,6 +152,10 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
+      // PhotoImportViewModel touches SharedPreferences during construction
+      // (via OcrUsageTracker / OCRExtractionService). Stub the platform
+      // channel with empty initial values so getInstance() succeeds.
+      SharedPreferences.setMockInitialValues({});
       registerFallbackValue(ImageSource.camera);
       registerFallbackValue(RecipeFactory.build());
       registerFallbackValue(Uint8List(0));
