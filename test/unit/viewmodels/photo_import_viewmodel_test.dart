@@ -108,6 +108,10 @@ class TestablePhotoImportViewModel extends PhotoImportViewModel {
 }
 
 void main() {
+  // ImagePicker plugin lookups require the test binding to be initialized
+  // before any service that captures it is constructed.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('PhotoImportViewModel', () {
     late TestablePhotoImportViewModel viewModel;
     late MockImportManager mockImportManager;
