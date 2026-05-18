@@ -21,7 +21,6 @@ import 'package:butlery/models/user_profile.dart';
 // Import interfaces that factory methods return
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 
 // Import models
@@ -280,8 +279,10 @@ class MockFactory {
     return production.MockUserService();
   }
 
-  /// Create mock permission service
-  static PermissionService createPermissionService({
+  /// Create mock permission service. Returns the concrete
+  /// [production.FakePermissionService] so callers can use
+  /// `setProfile()` / other config setters without casts.
+  static production.FakePermissionService createPermissionService({
     String? currentUserId = 'test-user-123',
     String? userDisplayName = 'Test User',
     bool defaultHasPermission = true,

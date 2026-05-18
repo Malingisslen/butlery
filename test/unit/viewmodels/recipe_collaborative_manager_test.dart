@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
-import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -34,7 +33,9 @@ void main() {
 
   group('RecipeCollaborativeManager - Ultrathink Enhanced Tests', () {
     late RecipeCollaborativeManager manager;
-    late PermissionService mockPermissionService;
+    // Concrete type so setProfile() is reachable (FakePermissionService
+    // adds it on top of the PermissionService interface).
+    late FakePermissionService mockPermissionService;
     late MockCollaborativeRecipeRepository mockRepository;
     late ConnectivityMonitoringService mockConnectivityService;
 
@@ -98,11 +99,10 @@ void main() {
         isActive: true,
       );
 
-      // Configure permission service using ultrathink state configuration methods
-      // FakePermissionService has concrete implementations that use configured state
-      // getUserProfile can be stubbed since it's not part of concrete state management
-      when(() => mockPermissionService.getUserProfile(any()))
-          .thenAnswer((_) async => testParticipant);
+      // FakePermissionService is a Fake (not Mock), so mocktail's when()
+      // can't stub its methods — the dispatch isn't routed through
+      // noSuchMethod. Use the dedicated setProfile() config method instead.
+      mockPermissionService.setProfile(testParticipant);
 
       // Configure repository defaults
       when(() => mockRepository.createRealtimeRecipe(any()))
@@ -191,7 +191,7 @@ void main() {
 
       test('should handle null current user gracefully', () {
         // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
-        (mockPermissionService as FakePermissionService).reset();
+        mockPermissionService.reset();
 
         // Act & Assert - should not throw
         expect(() => manager.canEdit, returnsNormally);
@@ -225,7 +225,7 @@ void main() {
           'should throw exception when enabling collaborative mode without user',
           () async {
         // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
-        (mockPermissionService as FakePermissionService).reset();
+        mockPermissionService.reset();
 
         // Act & Assert
         await expectLater(
@@ -608,7 +608,7 @@ void main() {
 
       test('should not update presence if user is null', () async {
         // Arrange - use reset() since currentUserId is a concrete override (can't stub with when())
-        (mockPermissionService as FakePermissionService).reset();
+        mockPermissionService.reset();
 
         // Act - Try to enable collaborative mode (should fail)
         try {

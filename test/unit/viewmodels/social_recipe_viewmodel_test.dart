@@ -10,6 +10,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/repositories/interfaces/comments_repository.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -92,6 +93,19 @@ void main() {
         isAuthenticated: true,
       );
       TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
+
+      // SocialEngagementManager.toggleCommentLike eventually calls
+      // CommentLikesSystem.toggleCommentLike, which reads CommentsRepository
+      // from GetIt via a static field. Without a registration the call
+      // throws → returns null → the manager rolls back its optimistic
+      // local add → hasLikedComment returns false. Register a minimal
+      // stub so the persistence path succeeds.
+      final mockCommentsRepo = MockCommentsRepository();
+      when(() => mockCommentsRepo.hasUserLikedComment(any(), any()))
+          .thenAnswer((_) async => false);
+      when(() => mockCommentsRepo.toggleCommentLike(any(), any()))
+          .thenAnswer((_) async {});
+      TestServiceLocator.registerMock<CommentsRepository>(mockCommentsRepo);
 
       // Configure friends via state setter (concrete override — no when())
       mockFriendsService.setFriendsState(

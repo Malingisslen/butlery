@@ -614,8 +614,10 @@ void main() {
         // Act
         viewModel.clearError();
 
-        // Assert
-        verify(() => mockRecipeService.clearError()).called(1);
+        // Assert — MockUnifiedRecipeService.clearError is a concrete
+        // override (not Mock-routed), so mocktail's verify() can't observe
+        // the invocation. Assert the observable effect instead.
+        expect(viewModel.hasError, isFalse);
       });
 
       test('should notify listeners on service changes', () {
