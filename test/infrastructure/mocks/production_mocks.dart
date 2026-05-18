@@ -1333,6 +1333,9 @@ class FakePermissionService extends Fake implements PermissionService {
   // common "owner is admin" path works without explicit setup.
   final Map<String, bool> _groupAdminFlags = {};
   bool _defaultGroupAdmin = true;
+  // Per-group delete-permission flags. Same default-true convention.
+  final Map<String, bool> _groupDeleteFlags = {};
+  bool _defaultCanDeleteGroup = true;
 
   /// Configure whether the current user is admin of [groupId]. Pass
   /// [groupId] = null to set the default for unconfigured groups.
@@ -1341,6 +1344,16 @@ class FakePermissionService extends Fake implements PermissionService {
       _defaultGroupAdmin = isAdmin;
     } else {
       _groupAdminFlags[groupId] = isAdmin;
+    }
+  }
+
+  /// Configure whether the current user can delete [groupId]. Pass
+  /// [groupId] = null to set the default for unconfigured groups.
+  void setCanDeleteGroup({String? groupId, required bool canDelete}) {
+    if (groupId == null) {
+      _defaultCanDeleteGroup = canDelete;
+    } else {
+      _groupDeleteFlags[groupId] = canDelete;
     }
   }
 
@@ -1410,6 +1423,11 @@ class FakePermissionService extends Fake implements PermissionService {
   @override
   bool isGroupAdmin(String groupId) {
     return _groupAdminFlags[groupId] ?? _defaultGroupAdmin;
+  }
+
+  @override
+  bool canDeleteGroup(String groupId) {
+    return _groupDeleteFlags[groupId] ?? _defaultCanDeleteGroup;
   }
 
   @override

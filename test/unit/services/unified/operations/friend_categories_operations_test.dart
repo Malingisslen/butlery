@@ -123,8 +123,11 @@ void main() {
         currentUserId: 'user_123',
         defaultHasPermission: true,
       );
-      when(() => mockPermissionService.isGroupAdmin(any())).thenReturn(true);
-      when(() => mockPermissionService.canDeleteGroup(any())).thenReturn(true);
+      // isGroupAdmin and canDeleteGroup are concrete overrides on
+      // FakePermissionService (Fake doesn't support mocktail when()).
+      // Default `true` mirrors the prior blanket stubs.
+      mockPermissionService.setGroupAdmin(isAdmin: true);
+      mockPermissionService.setCanDeleteGroup(canDelete: true);
 
       // Mock internal methods - Fix addCategoryInternal to work properly
       when(() => mockParentService.addCategoryInternal(any())).thenAnswer(
@@ -281,10 +284,10 @@ void main() {
         );
         mockParentService.updateCategoriesList(
             [testCategory1, testCategory2, otherCategory]);
-        when(() => mockPermissionService.isGroupAdmin('other_cat'))
-            .thenReturn(false);
-        when(() => mockPermissionService.canDeleteGroup('other_cat'))
-            .thenReturn(false);
+        mockPermissionService.setGroupAdmin(
+            groupId: 'other_cat', isAdmin: false);
+        mockPermissionService.setCanDeleteGroup(
+            groupId: 'other_cat', canDelete: false);
 
         // Act
         final result = await operations.deleteCategory('other_cat');
