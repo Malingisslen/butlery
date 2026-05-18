@@ -3,10 +3,12 @@
 /// Tests data export functionality and GDPR compliance.
 library;
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
+import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
@@ -28,6 +30,13 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 
 // Mocks
 class MockFirestoreRepository extends Mock implements FirestoreRepository {}
+
+// Bare FirebaseFunctions stub. ComplianceExportManager's constructor
+// otherwise calls FirebaseFunctions.instanceFor() which throws
+// "[core/no-app] No Firebase App '[DEFAULT]' has been created" in the
+// unit-test runtime. The unit tests in this file don't exercise the
+// httpsCallable code paths, so a Fake is sufficient.
+class _FakeFirebaseFunctions extends Fake implements FirebaseFunctions {}
 
 void main() {
   group('DataExportService - GDPR Data Export', () {
@@ -66,6 +75,11 @@ void main() {
       service = DataExportService(
         authRepository: mockAuthRepository,
         firestoreRepository: mockFirestoreRepository,
+        // Inject a manager wired to the fake-functions stub so the
+        // constructor doesn't hit FirebaseFunctions.instanceFor().
+        complianceExportManager: ComplianceExportManager(
+          functions: _FakeFirebaseFunctions(),
+        ),
         commentsRepository: FirebaseCommentsRepository(
           firestore: fakeFirestore,
           authRepository: mockAuthRepository,

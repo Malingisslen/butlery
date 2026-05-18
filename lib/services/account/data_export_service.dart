@@ -75,6 +75,11 @@ class DataExportService extends BaseService {
     FirebasePersonalTagRepository? personalTagRepository,
     FirebasePersonalTagGroupRepository? personalTagGroupRepository,
     FirebaseDataExportRepository? dataExportRepository,
+    // Test seam: ComplianceExportManager's default ctor calls
+    // FirebaseFunctions.instanceFor() which requires Firebase.initializeApp.
+    // Tests inject a pre-built manager with a mocked FirebaseFunctions
+    // to bypass the Firebase.app dependency.
+    ComplianceExportManager? complianceExportManager,
   })  : _authRepository = authRepository,
         _firestoreRepository = firestoreRepository {
     _exportRepo = dataExportRepository ??
@@ -99,9 +104,10 @@ class DataExportService extends BaseService {
       ratingsRepository: ratingsRepository,
       feedbackRepository: feedbackRepository,
     );
-    _complianceManager = ComplianceExportManager(
-      dataExportRepository: _exportRepo,
-    );
+    _complianceManager = complianceExportManager ??
+        ComplianceExportManager(
+          dataExportRepository: _exportRepo,
+        );
     _preferencesManager = PreferencesExportManager(
       dataExportRepository: _exportRepo,
     );
