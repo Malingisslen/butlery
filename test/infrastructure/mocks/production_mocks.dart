@@ -1329,6 +1329,21 @@ class FakePermissionService extends Fake implements PermissionService {
     _profileError = error;
   }
 
+  // Per-group admin flags. Defaults to true when no entry is set so the
+  // common "owner is admin" path works without explicit setup.
+  final Map<String, bool> _groupAdminFlags = {};
+  bool _defaultGroupAdmin = true;
+
+  /// Configure whether the current user is admin of [groupId]. Pass
+  /// [groupId] = null to set the default for unconfigured groups.
+  void setGroupAdmin({String? groupId, required bool isAdmin}) {
+    if (groupId == null) {
+      _defaultGroupAdmin = isAdmin;
+    } else {
+      _groupAdminFlags[groupId] = isAdmin;
+    }
+  }
+
   void setPermissionState({
     Map<String, Map<ResourcePermission, bool>>? permissions,
     bool defaultHasPermission = true,
@@ -1390,6 +1405,11 @@ class FakePermissionService extends Fake implements PermissionService {
       return _currentUser;
     }
     return null;
+  }
+
+  @override
+  bool isGroupAdmin(String groupId) {
+    return _groupAdminFlags[groupId] ?? _defaultGroupAdmin;
   }
 
   @override

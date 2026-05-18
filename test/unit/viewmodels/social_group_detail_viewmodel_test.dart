@@ -100,8 +100,10 @@ void main() {
         isAuthenticated: true,
       );
 
-      // isGroupAdmin is not a concrete override -- stub it
-      when(() => mockPermissionService.isGroupAdmin(any())).thenReturn(true);
+      // isGroupAdmin is now a concrete override on FakePermissionService;
+      // use the dedicated setter (Fake doesn't support mocktail when()).
+      // Default is `true` for all groups, matching the prior stub intent.
+      mockPermissionService.setGroupAdmin(isAdmin: true);
 
       when(() => mockCategoriesOps.removeFriendFromCategory(any(), any()))
           .thenAnswer((_) async => true);
@@ -151,8 +153,8 @@ void main() {
       });
 
       test('isAdmin returns false when user is not admin', () async {
-        when(() => mockPermissionService.isGroupAdmin(testGroupId))
-            .thenReturn(false);
+        mockPermissionService.setGroupAdmin(
+            groupId: testGroupId, isAdmin: false);
 
         await viewModel.loadGroupData();
 
@@ -209,8 +211,8 @@ void main() {
 
     group('checkLeaveGroupRequirements', () {
       test('returns no transfer needed for non-owner', () async {
-        when(() => mockPermissionService.isGroupAdmin(testGroupId))
-            .thenReturn(false);
+        mockPermissionService.setGroupAdmin(
+            groupId: testGroupId, isAdmin: false);
 
         await viewModel.loadGroupData();
         final decision = viewModel.checkLeaveGroupRequirements();
