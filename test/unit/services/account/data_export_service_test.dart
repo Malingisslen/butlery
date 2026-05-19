@@ -50,7 +50,17 @@ class _EmptyHttpsCallable extends Fake implements HttpsCallable {
   Future<HttpsCallableResult<T>> call<T extends Object?>([
     Object? parameters,
   ]) async {
-    // ComplianceExportManager casts to Map<dynamic, dynamic>; widen to T.
+    // BUT-866: production call site is always
+    // `httpsCallable.call<Map<dynamic, dynamic>>(...)`
+    // (compliance_export_manager.dart:108). The cast below assumes that exact
+    // generic — if a future refactor changes it to a typed result, the cast
+    // fails with an opaque `_TypeError`. The assert keeps the failure mode
+    // loud + located.
+    assert(
+        T == Map<dynamic, dynamic>,
+        '_EmptyHttpsCallable: production call site must use '
+        'call<Map<dynamic, dynamic>>(); got T=$T. Update this fake when the '
+        'production generic changes.');
     return _EmptyHttpsCallableResult<T>(
         <String, dynamic>{'rows': const [], 'nextCursor': null} as T);
   }
@@ -88,6 +98,52 @@ class _TransientFirebaseFunctions extends Fake implements FirebaseFunctions {
     HttpsCallableOptions? options,
   }) =>
       _TransientHttpsCallable();
+}
+
+/// BUT-865: HttpsCallable that succeeds on call #1 (returns one row + a
+/// `nextCursor`, forcing the manager to loop) and throws a transient
+/// `FirebaseFunctionsException` on call #2. Used to pin the contract for
+/// mid-pagination-loop failures.
+class _SuccessThenTransientHttpsCallable extends Fake implements HttpsCallable {
+  int _callCount = 0;
+
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    _callCount++;
+    if (_callCount == 1) {
+      return _EmptyHttpsCallableResult<T>(<String, dynamic>{
+        'rows': [
+          <String, dynamic>{
+            'id': 'log-page1',
+            'operation': 'read',
+            'resourceType': 'recipes',
+            'resourceId': 'r1',
+            'timestamp': '2026-05-19T00:00:00Z',
+            'granted': true,
+          },
+        ],
+        'nextCursor': 'cursor-after-page-1',
+      } as T);
+    }
+    throw FirebaseFunctionsException(
+      code: 'unavailable',
+      message: 'page #2 transient',
+    );
+  }
+}
+
+class _SuccessThenTransientFirebaseFunctions extends Fake
+    implements FirebaseFunctions {
+  final _SuccessThenTransientHttpsCallable _callable =
+      _SuccessThenTransientHttpsCallable();
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) =>
+      _callable;
 }
 
 void main() {
@@ -459,6 +515,55 @@ void main() {
             reason: 'warnings key is only set when at least one section '
                 'reports an error_code; happy-path bundles must not carry '
                 'an empty array.');
+      });
+    });
+
+    group(
+        'BUT-865: partial-recovery contract (page #1 success + page #2 '
+        'transient throw)', () {
+      test(
+          'partial rows from page #1 are discarded when page #2 throws — '
+          'try/catch wraps the whole pagination loop', () async {
+        final partialService = DataExportService(
+          authRepository: mockAuthRepository,
+          firestoreRepository: mockFirestoreRepository,
+          complianceExportManager: ComplianceExportManager(
+            functions: _SuccessThenTransientFirebaseFunctions(),
+            dataExportRepository: FirebaseDataExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+          ),
+          dataExportRepository: FirebaseDataExportRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          ),
+        );
+
+        final jsonString = await partialService.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        // Section carries the transient envelope only — accumulated page-1
+        // rows are NOT preserved. The `try` block in
+        // compliance_export_manager.dart:92-178 wraps the entire pagination
+        // loop, so any throw inside it discards `auditLogs` and returns the
+        // bare {error, error_code, note} envelope.
+        expect(data['audit_logs']['error_code'], 'unavailable',
+            reason: 'Section reports the transient backend code.');
+        expect(data['audit_logs'].containsKey('audit_logs'), isFalse,
+            reason: 'Current contract: partial rows from page #1 are '
+                'discarded on mid-loop throw. If this fails because partial '
+                'recovery has been implemented, update the assertion to '
+                'verify the new shape (rows preserved + partial:true flag).');
+
+        // Top-level warnings still surface the section error so consumers
+        // see the partial-bundle signal without scanning every section.
+        final warnings = data['export_metadata']['warnings'] as List<dynamic>?;
+        expect(warnings, isNotNull);
+        expect(warnings, hasLength(1));
+        final entry = warnings!.single as Map<String, dynamic>;
+        expect(entry['section'], 'audit_logs');
+        expect(entry['error_code'], 'unavailable');
       });
     });
 

@@ -6725,6 +6725,8 @@
   "ocrUseHigherResolution": "Use higher resolution",
   "ocrImageFormatNotOptimal": "Image format not optimally supported",
   "ocrUseJpegOrPng": "Use JPEG or PNG",
+  "ocrImageResolutionTooLow": "Image resolution is too low",
+  "ocrImageRejected": "Image is too blurry or too small — try again in better lighting.",
   "syncErrorParsingResource": "Error parsing resource",
   "syncErrorWatchingResource": "Error watching resource {resourceId}",
   "@syncErrorWatchingResource": {

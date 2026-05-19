@@ -6746,6 +6746,8 @@
   "ocrUseHigherResolution": "Använd högre upplösning",
   "ocrImageFormatNotOptimal": "Bildformat stöds inte optimalt",
   "ocrUseJpegOrPng": "Använd JPEG eller PNG",
+  "ocrImageResolutionTooLow": "Bildens upplösning är för låg",
+  "ocrImageRejected": "Bilden är för suddig eller för liten — försök igen i bättre ljus.",
   "syncErrorParsingResource": "Fel vid parsing av resurs",
   "syncErrorWatchingResource": "Fel vid watching av resurs {resourceId}",
   "@syncErrorWatchingResource": {

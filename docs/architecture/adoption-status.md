@@ -4,7 +4,7 @@
 > the tool and commit the result. Inline adoption % anywhere else in the repo
 > is forbidden by `tools/check_no_inline_adoption_pct.sh` (BUT-776).
 
-**Measured:** 2026-05-06T20:02:47.659495Z (UTC).
+**Measured:** 2026-05-19T21:19:09.548856Z (UTC).
 **Source ticket:** BUT-810. **Tool:** `tools/measure_adoption.dart`.
 **Scope:** every `*.dart` file under `lib/` except `lib/site-packages/`.
 
@@ -15,10 +15,23 @@
 | `extends BaseService` (services) | 67.0% (59/88) | `lib/services/` classes |
 | `with ErrorHandlingMixin` (services) | 17.0% (15/88) | `lib/services/` classes |
 | `extends BaseFirebaseRepository` (repos) | 50.0% (31/62) | `lib/repositories/firebase/` classes |
+| `PermissionValidationMixin` effective coverage (repos) | 53.2% (33/62) | `lib/repositories/firebase/` classes — direct `with` OR via BFR |
+| `PermissionValidationMixin` direct adoption (repos) | 3.2% (2/62) | `lib/repositories/firebase/` classes — base classes / non-BFR adopters |
 | `extends BaseViewModel` (viewmodels) | 23.8% (15/63) | `lib/viewmodels/` classes |
-| `SerializationUtils.safe*(` (call sites) | 872 | 76 files use it |
+| `SerializationUtils.safe*(` (call sites) | 876 | 77 files use it |
 
-**Total Dart files under `lib/` (excl. `site-packages/`):** 1287.
+**Total Dart files under `lib/` (excl. `site-packages/`):** 1286.
+
+### Why `PermissionValidationMixin` has two rows
+
+The mixin is applied to `BaseFirebaseRepository` itself
+(`lib/repositories/firebase/base_firebase_repository.dart:17`), so every
+concrete repo extending BFR inherits it transitively. The **effective
+coverage** row is the security-relevant number — it answers "what % of
+Firebase repos have `validatePermission*` checks available." The **direct
+adoption** row counts only files that name the mixin in their `with` clause
+(typically base classes, or non-BFR repos that opted in manually); it's an
+implementation detail, not a security signal.
 
 ## How to use
 

@@ -10365,6 +10365,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ocrUseJpegOrPng => 'Använd JPEG eller PNG';
 
   @override
+  String get ocrImageResolutionTooLow => 'Bildens upplösning är för låg';
+
+  @override
+  String get ocrImageRejected =>
+      'Bilden är för suddig eller för liten — försök igen i bättre ljus.';
+
+  @override
   String get syncErrorParsingResource => 'Fel vid parsing av resurs';
 
   @override

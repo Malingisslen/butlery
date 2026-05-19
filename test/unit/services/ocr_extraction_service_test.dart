@@ -591,17 +591,7 @@ void main() {
 
       // Extract 101 unique images
       for (var i = 0; i < 101; i++) {
-        final uniqueImage = Uint8List.fromList([
-          0x89,
-          0x50,
-          0x4E,
-          0x47,
-          0x0D,
-          0x0A,
-          0x1A,
-          0x0A,
-          ...List.generate(100, (j) => (i + j) % 256),
-        ]);
+        final uniqueImage = OCRTestImages.uniqueImage(i);
         await service.extractText(uniqueImage);
         testTime = testTime.add(const Duration(seconds: 1));
       }
@@ -679,17 +669,7 @@ void main() {
 
       // Fill cache to 100 entries.
       for (var i = 0; i < 100; i++) {
-        final uniqueImage = Uint8List.fromList([
-          0x89,
-          0x50,
-          0x4E,
-          0x47,
-          0x0D,
-          0x0A,
-          0x1A,
-          0x0A,
-          ...List.generate(100, (j) => (i + j) % 256),
-        ]);
+        final uniqueImage = OCRTestImages.uniqueImage(i);
         await service.extractText(uniqueImage);
         testTime = testTime.add(const Duration(seconds: 1));
       }
@@ -697,17 +677,7 @@ void main() {
       expect(service.getServiceStatus()['cache_size'], equals(100));
 
       // Add one more — bound holds.
-      final newImage = Uint8List.fromList([
-        0x89,
-        0x50,
-        0x4E,
-        0x47,
-        0x0D,
-        0x0A,
-        0x1A,
-        0x0A,
-        ...List.generate(100, (j) => (200 + j) % 256),
-      ]);
+      final newImage = OCRTestImages.uniqueImage(200);
       await service.extractText(newImage);
 
       expect(service.getServiceStatus()['cache_size'], equals(100));
@@ -1106,33 +1076,13 @@ void main() {
           .thenThrow(Exception('OCR.space error'));
 
       for (var i = 0; i < 5; i++) {
-        final uniqueImage = Uint8List.fromList([
-          0x89,
-          0x50,
-          0x4E,
-          0x47,
-          0x0D,
-          0x0A,
-          0x1A,
-          0x0A,
-          ...List.generate(100, (j) => (i + j) % 256),
-        ]);
+        final uniqueImage = OCRTestImages.uniqueImage(i);
         await service.extractText(uniqueImage);
         testTime = testTime.add(const Duration(seconds: 1));
       }
 
       // Now OCR.space circuit breaker is open — should fall through to Google Vision
-      final uniqueImage = Uint8List.fromList([
-        0x89,
-        0x50,
-        0x4E,
-        0x47,
-        0x0D,
-        0x0A,
-        0x1A,
-        0x0A,
-        ...List.generate(100, (j) => (99 + j) % 256),
-      ]);
+      final uniqueImage = OCRTestImages.uniqueImage(99);
       final result = await service.extractText(uniqueImage);
 
       expect(result.processingMethod, equals('google_vision'));
@@ -1374,17 +1324,7 @@ void main() {
 
       // 20 requests out of 500 limit = 4%, well under 80% warning threshold
       for (var i = 0; i < 20; i++) {
-        final uniqueImage = Uint8List.fromList([
-          0x89,
-          0x50,
-          0x4E,
-          0x47,
-          0x0D,
-          0x0A,
-          0x1A,
-          0x0A,
-          ...List.generate(100, (j) => (i + j) % 256),
-        ]);
+        final uniqueImage = OCRTestImages.uniqueImage(i);
         await service.extractText(uniqueImage);
       }
 
@@ -1405,17 +1345,7 @@ void main() {
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
       for (var i = 0; i < 10; i++) {
-        final uniqueImage = Uint8List.fromList([
-          0x89,
-          0x50,
-          0x4E,
-          0x47,
-          0x0D,
-          0x0A,
-          0x1A,
-          0x0A,
-          ...List.generate(100, (j) => (i + j) % 256),
-        ]);
+        final uniqueImage = OCRTestImages.uniqueImage(i);
         await service.extractText(uniqueImage);
       }
 
@@ -1503,17 +1433,7 @@ void main() {
 
       // Create 101 unique images (no cache hits)
       for (var i = 0; i < 101; i++) {
-        final uniqueImage = Uint8List.fromList([
-          0x89,
-          0x50,
-          0x4E,
-          0x47,
-          0x0D,
-          0x0A,
-          0x1A,
-          0x0A,
-          ...List.generate(100, (j) => (i + j) % 256),
-        ]);
+        final uniqueImage = OCRTestImages.uniqueImage(i);
         await service.extractText(uniqueImage);
       }
 

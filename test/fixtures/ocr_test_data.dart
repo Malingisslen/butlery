@@ -17,10 +17,31 @@ class OCRTestImages {
         ...List.generate(1024, (i) => i % 256), // 1KB of data
       ]);
 
-  /// Create a valid JPEG image (minimal header + data)
+  /// Create a valid JPEG image (minimal header + data).
+  ///
+  /// BUT-660: bumped to 60KB so the pre-OCR quality gate (which rejects
+  /// images below `UploadConstants.minOcrImageBytes` = 50KB) doesn't filter
+  /// this fixture out before the test reaches its OCR-mock assertions.
   static Uint8List get validJPEG => Uint8List.fromList([
         0xFF, 0xD8, 0xFF, 0xE0, // JPEG signature
-        ...List.generate(1024, (i) => i % 256), // 1KB of data
+        ...List.generate(60 * 1024, (i) => i % 256), // 60KB of data
+      ]);
+
+  /// BUT-660: produce a unique 60KB PNG-header'd image for tests that need
+  /// distinct cache keys. Inputs below 50KB are rejected by the pre-OCR
+  /// quality gate (see `OCRExtractionService.assessImageQuality`); use this
+  /// helper instead of inline 100-byte blobs so the gate doesn't filter
+  /// the test image out before reaching the OCR-mock assertions.
+  static Uint8List uniqueImage(int seed) => Uint8List.fromList([
+        0x89,
+        0x50,
+        0x4E,
+        0x47,
+        0x0D,
+        0x0A,
+        0x1A,
+        0x0A,
+        ...List.generate(60 * 1024, (j) => (seed + j) % 256),
       ]);
 
   /// Create an invalid image format
@@ -29,7 +50,12 @@ class OCRTestImages {
         ...List.generate(100, (i) => i % 256),
       ]);
 
-  /// Create a very small image (poor quality)
+  /// Create a very small image (poor quality).
+  ///
+  /// BUT-660: 10KB triggers the hard-reject path in `extractText` (gate
+  /// rejects < 50KB). Use only for `assessImageQuality`-direct tests; if you
+  /// pass this to `extractText` the result will be a `pre_ocr_quality_gate`
+  /// failure, not the advisory-warning path the fixture name suggests.
   static Uint8List get tooSmall => Uint8List.fromList([
         0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
         ...List.generate(

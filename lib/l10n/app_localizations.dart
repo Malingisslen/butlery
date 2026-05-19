@@ -17643,6 +17643,18 @@ abstract class AppLocalizations {
   /// **'Använd JPEG eller PNG'**
   String get ocrUseJpegOrPng;
 
+  /// No description provided for @ocrImageResolutionTooLow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildens upplösning är för låg'**
+  String get ocrImageResolutionTooLow;
+
+  /// No description provided for @ocrImageRejected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden är för suddig eller för liten — försök igen i bättre ljus.'**
+  String get ocrImageRejected;
+
   /// No description provided for @syncErrorParsingResource.
   ///
   /// In sv, this message translates to:

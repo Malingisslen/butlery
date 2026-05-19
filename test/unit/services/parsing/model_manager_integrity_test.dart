@@ -155,6 +155,60 @@ void main() {
     });
   });
 
+  group('NerModelManager transient FirebaseException mid-download (BUT-872)',
+      () {
+    late Directory tempDir;
+    late MockFirebaseStorage mockStorage;
+    late _TestNerModelManager manager;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('but872_ner_');
+      mockStorage = MockFirebaseStorage();
+    });
+
+    tearDown(() async {
+      if (tempDir.existsSync()) await tempDir.delete(recursive: true);
+    });
+
+    test(
+        'transient FirebaseException on model.onnx getData() leaves no '
+        '.tmp file and no committed cache files', () async {
+      // Stage version metadata + vocab so latestVersion resolves. The
+      // throwing-storage wrapper intercepts only model.onnx.
+      await mockStorage
+          .ref('models/ingredient_ner/latest_version.txt')
+          .putData(Uint8List.fromList(utf8.encode('1')));
+      await mockStorage
+          .ref('models/ingredient_ner/v1/vocab.txt')
+          .putData(Uint8List.fromList(utf8.encode('vocab')));
+
+      final throwingStorage = _ThrowingPathStorage(
+        delegate: mockStorage,
+        throwingPath: 'models/ingredient_ner/v1/model.onnx',
+        error: FirebaseException(
+          plugin: 'firebase_storage',
+          code: 'unavailable',
+          message: 'transient backend error',
+        ),
+      );
+      manager =
+          _TestNerModelManager(storage: throwingStorage, cacheDir: tempDir);
+
+      final result = await manager.ensureModelAvailable();
+
+      expect(result, isNull,
+          reason: 'Mid-download FirebaseException must short-circuit the '
+              'download — the `on FirebaseException catch` block in '
+              'ner_model_manager.dart:186 returns null.');
+
+      final committed =
+          tempDir.listSync(recursive: true).whereType<File>().toList();
+      expect(committed, isEmpty,
+          reason: 'No files (including .tmp) should land when getData() '
+              'throws — the hash + write phase never runs.');
+    });
+  });
+
   group('LineClassifierModelManager integrity short-circuit (BUT-823)', () {
     late Directory tempDir;
     late MockFirebaseStorage mockStorage;
@@ -201,6 +255,58 @@ void main() {
       expect(committed, isEmpty);
     });
   });
+
+  group(
+      'LineClassifierModelManager transient FirebaseException mid-download '
+      '(BUT-872)', () {
+    late Directory tempDir;
+    late MockFirebaseStorage mockStorage;
+    late _TestLineClassifierModelManager manager;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('but872_lc_');
+      mockStorage = MockFirebaseStorage();
+    });
+
+    tearDown(() async {
+      if (tempDir.existsSync()) await tempDir.delete(recursive: true);
+    });
+
+    test(
+        'transient FirebaseException on model.onnx getData() leaves no '
+        '.tmp file and no committed cache files', () async {
+      await mockStorage
+          .ref('models/line_classifier/latest_version.txt')
+          .putData(Uint8List.fromList(utf8.encode('1')));
+      await mockStorage
+          .ref('models/line_classifier/v1/vocab.txt')
+          .putData(Uint8List.fromList(utf8.encode('vocab')));
+
+      final throwingStorage = _ThrowingPathStorage(
+        delegate: mockStorage,
+        throwingPath: 'models/line_classifier/v1/model.onnx',
+        error: FirebaseException(
+          plugin: 'firebase_storage',
+          code: 'unavailable',
+          message: 'transient backend error',
+        ),
+      );
+      manager = _TestLineClassifierModelManager(
+          storage: throwingStorage, cacheDir: tempDir);
+
+      final result = await manager.ensureModelAvailable();
+
+      expect(result, isNull,
+          reason: 'Mid-download FirebaseException must short-circuit the '
+              'download (line_classifier_model_manager.dart:174).');
+
+      final committed =
+          tempDir.listSync(recursive: true).whereType<File>().toList();
+      expect(committed, isEmpty,
+          reason: 'No files (including .tmp) should land when getData() '
+              'throws.');
+    });
+  });
 }
 
 class _TestNerModelManager extends NerModelManager {
@@ -227,4 +333,43 @@ class _TestLineClassifierModelManager extends LineClassifierModelManager {
 
   @override
   Future<Directory> getCacheDir() async => _testCacheDir;
+}
+
+/// BUT-872: a Reference that throws on `getData()` — used to simulate a
+/// transient Storage failure mid-download. `firebase_storage_mocks` doesn't
+/// expose a throw hook, so we wrap one ref in a Fake that delegates nothing
+/// and just throws.
+class _ThrowingReference extends Fake implements Reference {
+  final FirebaseException _error;
+
+  _ThrowingReference(this._error);
+
+  @override
+  Future<Uint8List?> getData([int maxSize = 10485760]) async {
+    throw _error;
+  }
+}
+
+/// BUT-872: wraps a `MockFirebaseStorage` and routes ALL calls to it EXCEPT
+/// `.ref(throwingPath)`, which returns a [_ThrowingReference]. Lets the test
+/// stage `latest_version.txt` + `vocab.txt` normally while triggering the
+/// `on FirebaseException catch` branch in `_downloadModel`.
+class _ThrowingPathStorage extends Fake implements FirebaseStorage {
+  final FirebaseStorage _delegate;
+  final String _throwingPath;
+  final FirebaseException _error;
+
+  _ThrowingPathStorage({
+    required FirebaseStorage delegate,
+    required String throwingPath,
+    required FirebaseException error,
+  })  : _delegate = delegate,
+        _throwingPath = throwingPath,
+        _error = error;
+
+  @override
+  Reference ref([String? path]) {
+    if (path == _throwingPath) return _ThrowingReference(_error);
+    return _delegate.ref(path);
+  }
 }

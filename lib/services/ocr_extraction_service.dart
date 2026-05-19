@@ -62,11 +62,21 @@ class ImageQualityAssessment {
   final List<String> issues;
   final List<String> recommendations;
 
+  /// BUT-660: hard-reject signal — OCR will not be attempted when this is
+  /// true. The caller must surface [rejectionReason] to the user instead of
+  /// spending OCR budget on an image that effectively cannot yield text.
+  final bool isRejected;
+
+  /// Localized actionable message shown to the user when [isRejected] is true.
+  final String? rejectionReason;
+
   const ImageQualityAssessment({
     required this.isGoodQuality,
     required this.qualityScore,
     required this.issues,
     required this.recommendations,
+    this.isRejected = false,
+    this.rejectionReason,
   });
 }
 
@@ -295,6 +305,23 @@ class OCRExtractionService extends BaseService {
     }
 
     final qualityAssessment = await assessImageQuality(imageBytes);
+
+    // BUT-660: hard-reject before any preprocessing or OCR call. Saves
+    // Mistral/OCR.space quota on inputs that cannot yield usable text
+    // (bytes too small, resolution below [_minOcrShortEdgePx]).
+    if (qualityAssessment.isRejected) {
+      return OCRResult.failure(
+        method: 'pre_ocr_quality_gate',
+        error: qualityAssessment.rejectionReason ??
+            'Image rejected by quality gate before OCR',
+        metadata: {
+          'quality_assessment': qualityAssessment.qualityScore,
+          'recommendations': qualityAssessment.recommendations,
+          'rejected_by_gate': true,
+        },
+      );
+    }
+
     final preprocessedImage = await _preprocessImage(
       imageBytes,
       qualityAssessment,
@@ -550,27 +577,73 @@ class OCRExtractionService extends BaseService {
   ) async {
     final issues = <String>[], recommendations = <String>[];
     double qualityScore = 1.0;
+    bool isRejected = false;
+    String? rejectionReason;
+
     if (imageBytes.length > _maxImageSize) {
       issues.add(AppLocale.current.ocrImageTooLarge);
       recommendations.add(AppLocale.current.ocrCompressImage);
       qualityScore -= 0.2;
     }
     if (imageBytes.length < UploadConstants.minOcrImageBytes) {
+      // BUT-660: bytes below minOcrImageBytes (50 KB) is a hard reject. OCR
+      // backends produce garbage on inputs this small, and the call would
+      // burn Mistral/OCR.space quota on a guaranteed-fail attempt.
       issues.add(AppLocale.current.ocrImageTooSmall);
       recommendations.add(AppLocale.current.ocrUseHigherResolution);
       qualityScore -= 0.3;
+      isRejected = true;
+      rejectionReason = AppLocale.current.ocrImageRejected;
     }
     if (!ImageFormatUtils.isSupportedImage(imageBytes)) {
       issues.add(AppLocale.current.ocrImageFormatNotOptimal);
       recommendations.add(AppLocale.current.ocrUseJpegOrPng);
       qualityScore -= 0.1;
     }
+
+    // BUT-660: short-edge resolution check — images below
+    // [_minOcrShortEdgePx] reliably fail OCR even when bytes pass the size
+    // gate (e.g. a heavily-compressed 800 KB JPEG can still be 400px wide).
+    // Skip the decode when the bytes-size gate already rejected (saves the
+    // decode cost on guaranteed-fail inputs).
+    if (!isRejected) {
+      final shortEdge = _shortEdgePixels(imageBytes);
+      if (shortEdge != null && shortEdge < _minOcrShortEdgePx) {
+        issues.add(AppLocale.current.ocrImageResolutionTooLow);
+        recommendations.add(AppLocale.current.ocrUseHigherResolution);
+        qualityScore -= 0.3;
+        isRejected = true;
+        rejectionReason = AppLocale.current.ocrImageRejected;
+      }
+    }
+
     return ImageQualityAssessment(
       isGoodQuality: qualityScore >= 0.6 && issues.isEmpty,
       qualityScore: math.max(0.0, qualityScore),
       issues: issues,
       recommendations: recommendations,
+      isRejected: isRejected,
+      rejectionReason: rejectionReason,
     );
+  }
+
+  /// BUT-660: minimum short-edge resolution for OCR to have any chance of
+  /// succeeding. Backends produce garbage below this — the gate prevents
+  /// burning OCR budget on inputs guaranteed to fail.
+  static const int _minOcrShortEdgePx = 600;
+
+  /// Decode just enough of [imageBytes] to read pixel dimensions and return
+  /// the short edge. Returns null on decode failure (format check above will
+  /// catch the bad-format case separately). The decode is heavier than a
+  /// header-only read but matches the existing preprocessing path.
+  int? _shortEdgePixels(Uint8List imageBytes) {
+    try {
+      final decoded = img.decodeImage(imageBytes);
+      if (decoded == null) return null;
+      return math.min(decoded.width, decoded.height);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Preprocess image for optimal OCR results.

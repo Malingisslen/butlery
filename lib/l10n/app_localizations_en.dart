@@ -10342,6 +10342,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ocrUseJpegOrPng => 'Use JPEG or PNG';
 
   @override
+  String get ocrImageResolutionTooLow => 'Image resolution is too low';
+
+  @override
+  String get ocrImageRejected =>
+      'Image is too blurry or too small — try again in better lighting.';
+
+  @override
   String get syncErrorParsingResource => 'Error parsing resource';
 
   @override

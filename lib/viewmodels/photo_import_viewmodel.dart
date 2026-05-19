@@ -516,6 +516,15 @@ class PhotoImportViewModel extends ImportBaseViewModel {
       _lastQualityScore = qualityAssessment.qualityScore;
       _lastRecommendations = qualityAssessment.recommendations;
 
+      // BUT-660: hard-reject before OCR — saves quota on images that cannot
+      // yield usable text (bytes too small, resolution too low). The OCR
+      // service has a defense-in-depth gate too, but throwing here surfaces
+      // the message via the standard error path the UI already renders.
+      if (qualityAssessment.isRejected) {
+        throw Exception(qualityAssessment.rejectionReason ??
+            AppLocale.current.ocrImageRejected);
+      }
+
       // Perform OCR
       await _performOcr(bytes);
     }, errorPrefix: AppLocale.current.errorGeneric);

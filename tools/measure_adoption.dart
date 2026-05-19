@@ -59,6 +59,18 @@ void main(List<String> args) async {
       cache, services, RegExp(r'\bwith[^;{]*\bErrorHandlingMixin\b'));
   final baseFirebaseRepo = _countMatching(
       cache, repos, RegExp(r'\bextends BaseFirebaseRepository<'));
+  // BUT-873: PermissionValidationMixin is mixed into BaseFirebaseRepository
+  // (lib/repositories/firebase/base_firebase_repository.dart:17), so most
+  // adopters get it transitively without naming it. Effective coverage =
+  // files that either declare the mixin directly OR extend BFR. Reporting
+  // only the direct-mixin count would understate the security guarantee.
+  final permissionValidationDirect = _countMatching(
+      cache, repos, RegExp(r'\bwith[^;{]*\bPermissionValidationMixin\b'));
+  final permissionValidationEffective = _countMatching(
+      cache,
+      repos,
+      RegExp(r'\bextends BaseFirebaseRepository<|'
+          r'\bwith[^;{]*\bPermissionValidationMixin\b'));
   final baseViewModel =
       _countMatching(cache, viewmodels, RegExp(r'\bextends BaseViewModel\b'));
 
@@ -79,6 +91,8 @@ void main(List<String> args) async {
     errorHandlingMixinAdoption: errorHandlingMixin,
     repoClassCount: repoClassCount,
     baseFirebaseRepoAdoption: baseFirebaseRepo,
+    permissionValidationDirect: permissionValidationDirect,
+    permissionValidationEffective: permissionValidationEffective,
     vmClassCount: vmClassCount,
     baseViewModelAdoption: baseViewModel,
     serUtilsCallSites: serUtilsCallSites,
@@ -137,6 +151,8 @@ String _buildReport({
   required int errorHandlingMixinAdoption,
   required int repoClassCount,
   required int baseFirebaseRepoAdoption,
+  required int permissionValidationDirect,
+  required int permissionValidationEffective,
   required int vmClassCount,
   required int baseViewModelAdoption,
   required int serUtilsCallSites,
@@ -162,10 +178,23 @@ String _buildReport({
 | `extends BaseService` (services) | ${_pct(baseServiceAdoption, serviceClassCount)} | `lib/services/` classes |
 | `with ErrorHandlingMixin` (services) | ${_pct(errorHandlingMixinAdoption, serviceClassCount)} | `lib/services/` classes |
 | `extends BaseFirebaseRepository` (repos) | ${_pct(baseFirebaseRepoAdoption, repoClassCount)} | `lib/repositories/firebase/` classes |
+| `PermissionValidationMixin` effective coverage (repos) | ${_pct(permissionValidationEffective, repoClassCount)} | `lib/repositories/firebase/` classes — direct `with` OR via BFR |
+| `PermissionValidationMixin` direct adoption (repos) | ${_pct(permissionValidationDirect, repoClassCount)} | `lib/repositories/firebase/` classes — base classes / non-BFR adopters |
 | `extends BaseViewModel` (viewmodels) | ${_pct(baseViewModelAdoption, vmClassCount)} | `lib/viewmodels/` classes |
 | `SerializationUtils.safe*(` (call sites) | $serUtilsCallSites | $serUtilsFiles files use it |
 
 **Total Dart files under `lib/` (excl. `site-packages/`):** $totalDartFiles.
+
+### Why `PermissionValidationMixin` has two rows
+
+The mixin is applied to `BaseFirebaseRepository` itself
+(`lib/repositories/firebase/base_firebase_repository.dart:17`), so every
+concrete repo extending BFR inherits it transitively. The **effective
+coverage** row is the security-relevant number — it answers "what % of
+Firebase repos have `validatePermission*` checks available." The **direct
+adoption** row counts only files that name the mixin in their `with` clause
+(typically base classes, or non-BFR repos that opted in manually); it's an
+implementation detail, not a security signal.
 
 ## How to use
 
