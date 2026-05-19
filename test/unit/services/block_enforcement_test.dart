@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -39,6 +40,11 @@ void main() {
 
       mockFirestoreRepo = FakeFirestoreRepository();
       mockAuthRepo = MockFirebaseAuthRepository();
+      // UnifiedFriendsService.initialize() subscribes to authStateChanges;
+      // empty stream is enough — no actual auth events are needed for the
+      // block-enforcement assertions.
+      when(() => mockAuthRepo.authStateChanges())
+          .thenAnswer((_) => const Stream<User?>.empty());
       mockPermissionService = FakePermissionService();
 
       mockPermissionService.setPermissionState(

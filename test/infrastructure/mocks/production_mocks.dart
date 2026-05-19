@@ -943,21 +943,10 @@ class MockFirebaseAuthRepository extends Mock
   @override
   String? get currentUserId => _currentUserId;
 
-  // Default authStateChanges returns an empty broadcast stream. Production
-  // code (e.g. UnifiedFriendsService.initialize) subscribes to this in
-  // constructors/init paths; tests that don't override it shouldn't crash
-  // with a null-Stream cast. Tests that want specific User? events can
-  // stub via when() — concrete getter falls back to the default below.
-  final StreamController<User?> _authStateController =
-      StreamController<User?>.broadcast();
-
-  @override
-  Stream<User?> authStateChanges() => _authStateController.stream;
-
-  /// Push an auth state event to subscribers of authStateChanges().
-  void emitAuthState(User? user) => _authStateController.add(user);
-
-  // Other methods left without implementation to allow stubbing
+  // authStateChanges() is intentionally left unimplemented so tests can
+  // stub it via when() — unified_recipe_service_test does this. Tests
+  // whose code-under-test subscribes to authStateChanges (e.g.
+  // UnifiedFriendsService.initialize) must stub it themselves.
 }
 
 // ============= SERVICE MOCKS =============

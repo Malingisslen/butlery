@@ -201,24 +201,9 @@ void main() {
 
         // Assert
         expect(newId, isNull);
-        verifyNever(() => mockParentService.createCollaborativeRecipe(
-              title: any(named: 'title'),
-              memberIds: any(named: 'memberIds'),
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              imageUrls: any(named: 'imageUrls'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-              descriptionCollaborative: any(named: 'descriptionCollaborative'),
-              allowGuestViewing: any(named: 'allowGuestViewing'),
-              allowMemberInvites: any(named: 'allowMemberInvites'),
-              categoryIds: any(named: 'categoryIds'),
-            ));
+        // createCollaborativeRecipe is a concrete spy on the mock — assert
+        // no call was recorded instead of using mocktail verifyNever().
+        expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
       });
 
       test('should re-share when recipe already collaborative', () async {
@@ -236,25 +221,9 @@ void main() {
       });
 
       test('should handle creation failure', () async {
-        // Arrange
-        when(() => mockParentService.createCollaborativeRecipe(
-              title: any(named: 'title'),
-              memberIds: any(named: 'memberIds'),
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              imageUrls: any(named: 'imageUrls'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-              descriptionCollaborative: any(named: 'descriptionCollaborative'),
-              allowGuestViewing: any(named: 'allowGuestViewing'),
-              allowMemberInvites: any(named: 'allowMemberInvites'),
-              categoryIds: any(named: 'categoryIds'),
-            )).thenAnswer((_) async => null);
+        // Arrange — concrete spy returns null when shouldSucceed=false
+        // (the default), so no stub is needed for the failure path.
+        mockParentService.setCollaborativeState(shouldSucceed: false);
 
         // Act
         final newId = await sharingManager.shareRecipe(
