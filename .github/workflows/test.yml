@@ -46,7 +46,11 @@ jobs:
           - os: windows-latest
             suite: golden
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    # Bumped 20 → 30. unit (macos) was finishing in 16-17 min in green
+    # runs but landing right at the 20 cap on slower runners → silent
+    # cancels that looked like real failures. 30 leaves ~10 min headroom
+    # while still failing fast on truly hung jobs.
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v6
@@ -242,7 +246,7 @@ jobs:
           path: test_results/
 
       # BUT-495: emit job duration to step summary + warn if budget exceeded.
-      # Soft budget = 15 min; hard kill is `timeout-minutes: 20` above.
+      # Soft budget = 15 min; hard kill is `timeout-minutes: 30` above.
       # `shell: bash` so the bash `if [ ... ]; then` conditional works on
       # the windows runner too — the default PowerShell parses `if [` as a
       # generic-type call and bails (was the widget (windows) red lane).
