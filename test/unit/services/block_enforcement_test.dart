@@ -135,20 +135,9 @@ void main() {
       );
       friendsService.addFriendInternal(friendProfile);
 
-      // Pre-create user docs for the friend removal Firebase sync
-      await mockFirestoreRepo.firestore
-          .collection('users')
-          .doc('test-user-id')
-          .set({'displayName': 'Test User', 'friendsCount': 1});
-      await mockFirestoreRepo.firestore
-          .collection('users')
-          .doc('friend-to-block')
-          .set({'displayName': 'Friend To Block', 'friendsCount': 1});
-
-      // Pre-create the mutual friendship subdocs so
-      // FriendRelationshipRepository.removeMutualFriends actually finds them
-      // (its transaction only touches existing sides; otherwise the
-      // state-cleanup branch inside removeFriend isn't reached).
+      // Pre-create the mutual friendship subdocs at users/<a>/friends/<b>
+      // so FriendRelationshipRepository.removeMutualFriends actually finds
+      // work to do — its transaction is no-op when both sides are missing.
       await mockFirestoreRepo.firestore
           .collection('users')
           .doc('test-user-id')
@@ -161,6 +150,18 @@ void main() {
           .collection('friends')
           .doc('test-user-id')
           .set({'friendId': 'test-user-id'});
+
+      // Pre-create the public profile docs (separate collection from /users)
+      // with friendsCount: 1 so the FieldValue.increment(-1) update inside
+      // removeMutualFriends commits without "document not found".
+      await mockFirestoreRepo.firestore
+          .collection('public_profiles')
+          .doc('test-user-id')
+          .set({'displayName': 'Test User', 'friendsCount': 1});
+      await mockFirestoreRepo.firestore
+          .collection('public_profiles')
+          .doc('friend-to-block')
+          .set({'displayName': 'Friend To Block', 'friendsCount': 1});
 
       // Verify the friend exists before blocking
       expect(
