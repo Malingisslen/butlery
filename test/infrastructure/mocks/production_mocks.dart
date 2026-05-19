@@ -853,7 +853,13 @@ class MockGroupsRepository extends Mock {
 /// stubbable behaviour should use a local `class FooMock extends Mock
 /// implements FirestoreRepository`.
 class FakeFirestoreRepository extends Fake implements FirestoreRepository {
-  FakeFirebaseFirestore get _fakeFirestore => FirestoreSingleton.instance;
+  // Tests that need to inspect documents on their own FakeFirebaseFirestore
+  // instance (rather than the shared singleton) pass it via the constructor.
+  // Defaults to the singleton so existing callers keep working unchanged.
+  FakeFirestoreRepository({FakeFirebaseFirestore? firestore})
+      : _fakeFirestore = firestore ?? FirestoreSingleton.instance;
+
+  final FakeFirebaseFirestore _fakeFirestore;
 
   @override
   FirebaseFirestore get firestore => _fakeFirestore;
@@ -872,6 +878,14 @@ class FakeFirestoreRepository extends Fake implements FirestoreRepository {
   @override
   CollectionReference<Map<String, dynamic>> userRecipesCollection(String uid) {
     return _fakeFirestore.collection('users').doc(uid).collection('recipes');
+  }
+
+  @override
+  Future<void> setDocument(
+    DocumentReference<Map<String, dynamic>> ref,
+    Map<String, dynamic> data,
+  ) async {
+    await ref.set(data, SetOptions(merge: true));
   }
 }
 

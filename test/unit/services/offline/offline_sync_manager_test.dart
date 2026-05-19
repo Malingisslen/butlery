@@ -67,10 +67,14 @@ void main() {
       mockDatabase = MockAppDatabase();
       mockRecipeDao = MockRecipeDao();
       mockSyncQueueDao = MockSyncQueueDao();
-      mockFirestoreRepo = FakeFirestoreRepository();
+      fakeFirestore = FakeFirebaseFirestore();
+      // Pass our per-test fake instance so userRecipesCollection +
+      // setDocument route through it (FakeFirestoreRepository's concrete
+      // overrides bypass mocktail when() — Fake doesn't support that
+      // dispatch).
+      mockFirestoreRepo = FakeFirestoreRepository(firestore: fakeFirestore);
       mockAuthRepo =
           TestServiceLocator.get<AuthRepository>() as MockAuthRepository;
-      fakeFirestore = FakeFirebaseFirestore();
 
       // Wire up database DAOs
       when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);
@@ -78,16 +82,6 @@ void main() {
 
       // Setup auth state
       mockAuthRepo.setAuthState(userId: 'test_user_123');
-
-      // Setup Firestore repository
-      final mockCollectionRef = fakeFirestore
-          .collection('users')
-          .doc('test_user_123')
-          .collection('recipes');
-      when(() => mockFirestoreRepo.userRecipesCollection(any()))
-          .thenReturn(mockCollectionRef);
-      when(() => mockFirestoreRepo.setDocument(any(), any()))
-          .thenAnswer((_) async {});
 
       // Create sync manager with mock database
       syncManager = OfflineSyncManager(
