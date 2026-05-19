@@ -272,8 +272,18 @@ class FileImportStrategy extends ImportStrategy {
       final excel = Excel.decodeBytes(bytes);
 
       // Get first sheet
-      final sheet = excel.tables.values.firstOrNull;
-      if (sheet == null || sheet.rows.isEmpty) {
+      // Pick the first sheet that actually has rows. Excel.createExcel()
+      // pre-seeds an empty default sheet, so workbooks where data was
+      // appended to a named sheet would otherwise silently parse zero
+      // recipes.
+      if (excel.tables.values.isEmpty) {
+        throw Exception('Excel file is empty');
+      }
+      final sheet = excel.tables.values.firstWhere(
+        (s) => s.rows.isNotEmpty,
+        orElse: () => excel.tables.values.first,
+      );
+      if (sheet.rows.isEmpty) {
         throw Exception('Excel file is empty');
       }
 
@@ -300,8 +310,18 @@ class FileImportStrategy extends ImportStrategy {
     try {
       final excel = Excel.decodeBytes(bytes);
 
-      final sheet = excel.tables.values.firstOrNull;
-      if (sheet == null || sheet.rows.isEmpty) {
+      // Pick the first sheet that actually has rows. Excel.createExcel()
+      // pre-seeds an empty default sheet, so workbooks where data was
+      // appended to a named sheet would otherwise silently parse zero
+      // recipes.
+      if (excel.tables.values.isEmpty) {
+        throw Exception('Excel file is empty');
+      }
+      final sheet = excel.tables.values.firstWhere(
+        (s) => s.rows.isNotEmpty,
+        orElse: () => excel.tables.values.first,
+      );
+      if (sheet.rows.isEmpty) {
         throw Exception('Excel file is empty');
       }
 

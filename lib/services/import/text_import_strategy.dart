@@ -277,9 +277,15 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       final line = lines[i].trim();
       final lowerLine = line.toLowerCase();
 
-      if (line.isEmpty || RecipeSectionDetector.isGarbage(line)) continue;
+      if (line.isEmpty) continue;
       if (line == recipeName) continue;
 
+      // Check section headers BEFORE isGarbage. The garbage detector
+      // filters short section-header-like strings ("Steg", "Instruktion")
+      // as orphan fragments, but that also catches legitimate
+      // "Instructions:" / "Ingredients:" markers. Consuming them as
+      // section flips first preserves the inIngredients / inInstructions
+      // state machine that the rest of the loop depends on.
       if (RecipeSectionDetector.isIngredientHeader(lowerLine)) {
         inIngredients = true;
         inInstructions = false;
@@ -291,6 +297,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         inInstructions = true;
         continue;
       }
+
+      if (RecipeSectionDetector.isGarbage(line)) continue;
 
       if (RecipeSectionDetector.isSectionHeader(line)) {
         final headerKey = lowerLine.trim();
