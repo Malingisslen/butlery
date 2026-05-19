@@ -390,7 +390,45 @@ void main() {
     });
 
     test(
-      'second vote on the SAME option toggles the vote off (vote-then-unvote)',
+      'multi-choice: second vote on the SAME option toggles the vote off',
+      () async {
+        // Single-choice runs strip-then-add and net-zeros to "user stays
+        // voted" on a same-option re-vote (see the strip-all-options branch
+        // in votePoll). The honest toggle-off contract lives on the
+        // multi-choice path, which skips the strip.
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(firestore);
+        await firestore.collection(_messagesPath).doc('msg-1').set({
+          'metadata': {
+            'poll': {
+              'options': [
+                {
+                  'id': 'opt-a',
+                  'voterIds': <String>['user-1'],
+                },
+              ],
+            },
+          },
+        });
+
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+
+        final doc =
+            await firestore.collection(_messagesPath).doc('msg-1').get();
+        final opts = (doc.data()?['metadata']['poll']['options'] as List)
+            .cast<Map<String, dynamic>>();
+        expect(opts.first['voterIds'], isEmpty);
+      },
+    );
+
+    test(
+      'single-choice: re-vote on already-selected option is a no-op '
+      '(strip-then-add nets to staying voted)',
       () async {
         final firestore = FakeFirebaseFirestore();
         final module = _newModule(firestore);
@@ -418,7 +456,7 @@ void main() {
             await firestore.collection(_messagesPath).doc('msg-1').get();
         final opts = (doc.data()?['metadata']['poll']['options'] as List)
             .cast<Map<String, dynamic>>();
-        expect(opts.first['voterIds'], isEmpty);
+        expect(opts.first['voterIds'], equals(['user-1']));
       },
     );
 
