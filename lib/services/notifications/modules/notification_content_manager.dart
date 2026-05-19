@@ -66,7 +66,10 @@ class NotificationContentManager {
       String targetUserId, NotificationStrategy strategy) {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final random = _secureRandom.nextInt(1000);
+      // Wider random domain so two calls in the same millisecond don't
+      // collide on the random suffix — nextInt(1000) gave a 1/1000
+      // collision per same-ms pair, which fast CI runners hit reliably.
+      final random = _secureRandom.nextInt(1000000000);
       final id =
           '${strategy.category.name}_${targetUserId}_${timestamp}_$random';
 

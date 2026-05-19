@@ -387,13 +387,18 @@ void main() {
           rawPrompt: 'en middag',
         );
 
+        // 1000 trials so the statistical separation between "no boost"
+        // (~500/1000) and "1.5x boost" (~600/1000) is wide enough that
+        // a single unlucky run doesn't flake the assertion.
+        // greaterThan(550) safely distinguishes the two — no-boost
+        // mean+5σ ≈ 540, boost mean-5σ ≈ 560.
         var seasonalCount = 0;
-        for (var i = 0; i < 100; i++) {
+        for (var i = 0; i < 1000; i++) {
           final menu =
               await menuService.generateMenuFromParsedRequest(parsed, pool);
           if (menu['middag']?.first.id == 'seasonal') seasonalCount++;
         }
-        expect(seasonalCount, greaterThan(50),
+        expect(seasonalCount, greaterThan(550),
             reason: 'Seasonal recipes should be preferred (1.5x weight)');
       });
 
