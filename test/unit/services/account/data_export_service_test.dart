@@ -31,12 +31,39 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 // Mocks
 class MockFirestoreRepository extends Mock implements FirestoreRepository {}
 
-// Bare FirebaseFunctions stub. ComplianceExportManager's constructor
-// otherwise calls FirebaseFunctions.instanceFor() which throws
+// FirebaseFunctions stub. ComplianceExportManager's constructor otherwise
+// calls FirebaseFunctions.instanceFor() which throws
 // "[core/no-app] No Firebase App '[DEFAULT]' has been created" in the
-// unit-test runtime. The unit tests in this file don't exercise the
-// httpsCallable code paths, so a Fake is sufficient.
-class _FakeFirebaseFunctions extends Fake implements FirebaseFunctions {}
+// unit-test runtime. BUT-842: the manager now re-throws unexpected
+// exceptions from `httpsCallable(...).call(...)` (previously swallowed), so
+// the fake must return a no-op callable that yields an empty audit-log
+// page — otherwise every `exportUserData()` test in this file would abort
+// on the audit-log slot.
+class _EmptyHttpsCallableResult<T> implements HttpsCallableResult<T> {
+  _EmptyHttpsCallableResult(this.data);
+  @override
+  final T data;
+}
+
+class _EmptyHttpsCallable extends Fake implements HttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    // ComplianceExportManager casts to Map<dynamic, dynamic>; widen to T.
+    return _EmptyHttpsCallableResult<T>(
+        <String, dynamic>{'rows': const [], 'nextCursor': null} as T);
+  }
+}
+
+class _FakeFirebaseFunctions extends Fake implements FirebaseFunctions {
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) =>
+      _EmptyHttpsCallable();
+}
 
 void main() {
   group('DataExportService - GDPR Data Export', () {
@@ -77,8 +104,15 @@ void main() {
         firestoreRepository: mockFirestoreRepository,
         // Inject a manager wired to the fake-functions stub so the
         // constructor doesn't hit FirebaseFunctions.instanceFor().
+        // BUT-842: also inject a fake-firestore-backed dataExportRepository so
+        // exportConsentRecords doesn't fall through to ServiceLocator (the
+        // manager re-throws unknown errors instead of swallowing them).
         complianceExportManager: ComplianceExportManager(
           functions: _FakeFirebaseFunctions(),
+          dataExportRepository: FirebaseDataExportRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          ),
         ),
         commentsRepository: FirebaseCommentsRepository(
           firestore: fakeFirestore,

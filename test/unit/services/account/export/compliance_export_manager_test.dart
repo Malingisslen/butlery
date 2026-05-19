@@ -26,12 +26,17 @@ class _FakeHttpsCallableResult<T> implements HttpsCallableResult<T> {
 }
 
 class _ScriptedHttpsCallable extends Fake implements HttpsCallable {
-  _ScriptedHttpsCallable(this._responses);
+  _ScriptedHttpsCallable(this._responses, {this.throwOnCall});
 
   // Each entry is the full Map<String,dynamic> the CF would return. The
   // call iterator consumes them in order; if exhausted, the test fails fast
   // (we never want a silent "happens to return empty" case).
   final List<Map<String, dynamic>> _responses;
+
+  // BUT-842: optional error to throw instead of returning a scripted page.
+  // Lets us cover the "CF rejected the call" branches without scripting
+  // success pages.
+  final Object? throwOnCall;
   int callCount = 0;
   final List<Object?> receivedParameters = [];
 
@@ -39,14 +44,17 @@ class _ScriptedHttpsCallable extends Fake implements HttpsCallable {
   Future<HttpsCallableResult<T>> call<T extends Object?>([
     Object? parameters,
   ]) async {
-    if (callCount >= _responses.length) {
+    callCount++;
+    receivedParameters.add(parameters);
+    if (throwOnCall != null) {
+      throw throwOnCall as Object;
+    }
+    if (callCount > _responses.length) {
       throw StateError(
           'ScriptedHttpsCallable exhausted: production code asked for page '
-          '${callCount + 1} but only ${_responses.length} responses scripted');
+          '$callCount but only ${_responses.length} responses scripted');
     }
-    receivedParameters.add(parameters);
-    final response = _responses[callCount];
-    callCount++;
+    final response = _responses[callCount - 1];
     // ComplianceExportManager calls `callable.call<Map<dynamic, dynamic>>(...)`,
     // so the cast target is Map<dynamic, dynamic>; we widen to satisfy T.
     return _FakeHttpsCallableResult<T>(response as T);
@@ -145,6 +153,113 @@ void main() {
           reason: 'cap path must surface the "Capped at" warning so downstream '
               'GDPR bundle consumers know the export is partial');
       expect(result['note'], contains('contact support'));
+    });
+  });
+
+  group('ComplianceExportManager.exportAuditLogs error handling (BUT-842)', () {
+    test('transient FirebaseFunctionsException returns recoverable error map',
+        () async {
+      // 'unavailable' / 'deadline-exceeded' / etc. are network/backend hiccups
+      // — the user can retry, so the rest of the bundle should still ship.
+      final callable = _ScriptedHttpsCallable(
+        const [],
+        throwOnCall: FirebaseFunctionsException(
+          code: 'unavailable',
+          message: 'Backend temporarily unavailable',
+        ),
+      );
+      final manager = ComplianceExportManager(
+        functions: _FakeFunctions(callable),
+      );
+
+      final result = await manager.exportAuditLogs('user-uid');
+
+      expect(result['error'], equals('Backend temporarily unavailable'));
+      expect(result['error_code'], equals('unavailable'));
+      expect(result['note'], contains('Transient backend error'));
+    });
+
+    test('resource-exhausted (rate limit) is transient, not fatal', () async {
+      // BUT-842 code-review follow-up: rate-limit/quota responses are
+      // canonically "retry later" — fatal-handling would scatter half-
+      // bundles every time a daily cap was hit.
+      final callable = _ScriptedHttpsCallable(
+        const [],
+        throwOnCall: FirebaseFunctionsException(
+          code: 'resource-exhausted',
+          message: 'Daily quota exceeded',
+        ),
+      );
+      final manager = ComplianceExportManager(
+        functions: _FakeFunctions(callable),
+      );
+
+      final result = await manager.exportAuditLogs('user-uid');
+
+      expect(result['error_code'], equals('resource-exhausted'));
+      expect(result['note'], contains('Transient backend error'));
+    });
+
+    test(
+        'fatal FirebaseFunctionsException (permission-denied) throws '
+        'ComplianceExportException', () async {
+      // permission-denied means the CF rejected the caller (e.g. App Check
+      // blocked) — partial GDPR bundle would mask an Article 15 failure.
+      final callable = _ScriptedHttpsCallable(
+        const [],
+        throwOnCall: FirebaseFunctionsException(
+          code: 'permission-denied',
+          message: 'App Check token missing',
+        ),
+      );
+      final manager = ComplianceExportManager(
+        functions: _FakeFunctions(callable),
+      );
+
+      expect(
+        () => manager.exportAuditLogs('user-uid'),
+        throwsA(isA<ComplianceExportException>()
+            .having((e) => e.code, 'code', 'permission-denied')
+            .having((e) => e.message, 'message',
+                contains('Audit-log export failed'))),
+      );
+    });
+
+    test('fatal FirebaseFunctionsException (failed-precondition) re-throws',
+        () async {
+      final callable = _ScriptedHttpsCallable(
+        const [],
+        throwOnCall: FirebaseFunctionsException(
+          code: 'failed-precondition',
+          message: 'User not authenticated',
+        ),
+      );
+      final manager = ComplianceExportManager(
+        functions: _FakeFunctions(callable),
+      );
+
+      await expectLater(
+        manager.exportAuditLogs('user-uid'),
+        throwsA(isA<ComplianceExportException>()),
+      );
+    });
+
+    test(
+        'unexpected non-FirebaseFunctions error wraps as ComplianceExportException',
+        () async {
+      final callable = _ScriptedHttpsCallable(
+        const [],
+        throwOnCall: StateError('something else broke'),
+      );
+      final manager = ComplianceExportManager(
+        functions: _FakeFunctions(callable),
+      );
+
+      await expectLater(
+        manager.exportAuditLogs('user-uid'),
+        throwsA(isA<ComplianceExportException>().having(
+            (e) => e.cause, 'cause underlying error', isA<StateError>())),
+      );
     });
   });
 }

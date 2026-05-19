@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:butlery/core/cache/lru_map.dart';
 import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -13,8 +14,13 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 class SiteConfigRepository {
   final FirebaseFirestore _firestore;
 
-  /// In-memory cache of site configs.
-  final Map<String, _CachedConfig> _cache = {};
+  /// In-memory LRU cache of site configs (BUT-817 — migrated from manual
+  /// FIFO eviction).
+  late final LruMap<String, _CachedConfig> _cache = LruMap(
+    maxSize: _maxCacheSize,
+    onEvict: (key, _) => AppLogger.info(
+        'cache_eviction service=SiteConfigRepository key=$key bound=$_maxCacheSize'),
+  );
 
   /// Whether default configs have been ensured this session.
   bool _defaultsEnsured = false;
@@ -212,11 +218,7 @@ class SiteConfigRepository {
   ];
 
   void _cacheConfig(String domain, _CachedConfig config) {
-    _cache.remove(domain);
     _cache[domain] = config;
-    if (_cache.length > _maxCacheSize) {
-      _cache.remove(_cache.keys.first);
-    }
   }
 
   /// Load a site config for a domain.

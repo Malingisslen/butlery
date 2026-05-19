@@ -161,6 +161,35 @@ void main() {
       expect(evictedValues, equals([1]));
     });
 
+    test('removeWhere removes matching entries and returns the count', () {
+      // Caller-driven invalidation (e.g. "drop every entry for user X") needs
+      // a bulk path that doesn't fire onEvict — eviction telemetry must stay
+      // a clean signal for size-driven evictions only (BUT-817).
+      final evictions = <String>[];
+      final cache = LruMap<String, int>(
+        maxSize: 10,
+        onEvict: (key, _) => evictions.add(key),
+      );
+      cache['a:1'] = 1;
+      cache['a:2'] = 2;
+      cache['b:1'] = 3;
+
+      final removed = cache.removeWhere((k, _) => k.startsWith('a:'));
+      expect(removed, 2);
+      expect(cache.length, 1);
+      expect(cache.containsKey('b:1'), isTrue);
+      expect(evictions, isEmpty,
+          reason: 'removeWhere is invalidation, not size-driven eviction');
+    });
+
+    test('removeWhere is safe when the predicate matches nothing', () {
+      final cache = LruMap<String, int>(maxSize: 3);
+      cache['a'] = 1;
+      cache['b'] = 2;
+      expect(cache.removeWhere((_, __) => false), 0);
+      expect(cache.length, 2);
+    });
+
     test('multiple inserts past maxSize evict in FIFO order absent reads', () {
       // Stress check: under a write-only workload an LRU degenerates to a
       // FIFO. Ensures the eviction loop doesn't skip entries.

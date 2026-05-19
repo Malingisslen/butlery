@@ -1,59 +1,53 @@
 # Sprint Backlog
 
-## Sprint: high-priority backlog drain — 2026-05-19 (Tu)
+## Sprint: CI-test verification sweep + LRU/GDPR hardening — 2026-05-19 (Tu)
 
-Theme: 7-ticket batch drawn from current Backlog after confirming the 2026-05-08 sprint shipped (commit c5e53cb53). Mix of 1 Urgent + 6 High, clustered by area. Skipped: ops-only tickets (BUT-760 App Check, BUT-731 Apple cert), legal/doc tickets (BUT-811), and BUT-784 (LLM golden-set needs its own focused sprint).
+Theme: Step 0 caught 4 stale CI-fix tickets (all premise-gone — work already shipped). Real-work delivered for BUT-817 (5-cache LruMap migration) + BUT-842 (GDPR catch-swallow → transient/fatal split).
 
 ### Step 0 results
+- **BUT-855** — premise gone. `flutter test` shows 58/58 tests pass; commit 8ebcb75a7 explicitly fixed this.
+- **BUT-856** — premise gone. 7/7 sharing-manager tests pass; commits 751151488 + 34e02e1f7 addressed the concrete-override mock pattern.
+- **BUT-853** — premise gone. 15/15 Drift tests pass; commit 310f95cad fixed Drift setup.
+- **BUT-857** — premise gone. 334/334 tests across all 11 listed residual files pass; commits b09dc9c7a, 36c334b7b, 814d2cc75, 94420f3e5, 7065682e1, cbbbbd40a, 5a70c8ba1, 4d0b6fdc6 cleared the cluster.
 
-- **BUT-812** — pending → all 5 sub-fixes actionable. INFRA13 already done (retention-days: 14 in build-validation.yml lines 226, 262); IPA upload doesn't exist by design (BUT-447 deferral).
-- **BUT-787** — premise gone. BUT-836 already shipped Phase 1 (factory hardening + arch-test for `data[...] as DateTime|Timestamp` in `lib/models/`); Phase 2 is BUT-841 (Low).
-- **BUT-798** — scope expanded ~4× (126 sites across 95 files vs 34 in original audit). Re-scoped in Linear with Phase 1-4 follow-up plan.
-- **BUT-805** — 5 sites in current code (not 7). Image-cache part fits this sprint; PERF5 isolate offload deferred.
-- **BUT-806** — HIGH-TS3 premise gone (ContentType.fromWire already handles retired values); HIGH-TS4 needs legal/PM input on App Check consent gating.
-- **BUT-822** — Firebase MCP enabled fetching production model bytes; hashes computed and populated locally.
-- **BUT-782** — confirmed real (660 lines + 30+ test sites). Too big to bundle safely; deferred to focused single-item sprint.
+### Agent B: performance-optimizer — LRU cache migration (BUT-817)
+- [x] **B1. BUT-817** — All 5 caches migrated to `LruMap`:
+  - `lib/utils/text/compound_splitter.dart` — FIFO Map → LruMap (200)
+  - `lib/services/parsing/cache/parsed_recipe_cache.dart` — TTL-only Map → LruMap (50) + TTL retained
+  - `lib/repositories/site_config_repository.dart` — manual FIFO → LruMap (50)
+  - `lib/services/cache/permission_cache_service.dart` — Map+List<Key> manual LRU → LruMap (deletes ~30 lines of bookkeeping)
+  - `lib/services/ocr_extraction_service.dart` — timestamp-sort batch eviction (O(n log n)) → LruMap (O(1)) on both `_cache` and `_rawHashToPreprocessedHash`; also fixed pre-existing dispose() leak of `_rawHashToPreprocessedHash`
+  - Added `LruMap.removeWhere` to enable the permission_cache_service migration
+  - All caches emit `cache_eviction service=… key=… bound=…` at `info` level (matches BUT-779 precedent)
 
-### Agent A: infra + verify
-- [x] **A1. BUT-812** — dep-audit concurrency added; lefthook regex extended (Stripe sk_live/sk_test, Slack xoxb-, Slack webhook URLs); 5× `actions/checkout@v4 → @v6` (dep-audit ×3, sbom, firestore-rules); setup.sh/.ps1 Flutter `3.32.4 → 3.35.1`; INFRA13 already shipped.
-- [~] **A2. BUT-787** — obsolete; BUT-836 (commit c5e53cb53) covered Phase 1 + arch-test; BUT-841 holds Phase 2 sweep at Low priority.
-
-### Agent B: flutter-developer — UI migrations
-- [!] **B1. BUT-798** — DEFERRED. Step 0 found 126 sites across 95 files (4× the audit's 34). Re-scoped Linear body lists Phase 1–4 sub-tickets to file as follow-ups.
-- [x] **B2. BUT-805 (image part)** — 5 `Image.network` sites migrated to `CachedNetworkImage` with `FirebaseUrlUtils.stableCacheKey` + placeholder/errorWidget. Arch-test guard added with `// arch-allow: Image.network` escape hatch.
-
-### Agent C: firebase-backend-security — security/rules
-- [!] **C1. BUT-806 (code part)** — DEFERRED. HIGH-TS3 premise gone (graceful filtering already implemented); HIGH-TS4 needs legal input. Re-scoped Linear body captures findings.
-- [x] **C2. BUT-822** — Production ONNX hashes computed via Firebase MCP + sha256sum. Populated both `kExpectedNerModelHashes[1]` and `kExpectedLineClassifierModelHashes[1]` in `_expected_model_hashes.dart`. BUT-827 hash-format guard will now do real work.
-
-### Agent D: backend refactor
-- [!] **D1. BUT-782** — DEFERRED. 660-line static class + 30+ test sites; full refactor is single-sprint scope. Linear ticket reverted to Todo with re-scoped plan for next sprint.
+### Agent C: firebase-backend-security — GDPR export error handling (BUT-842)
+- [x] **C1. BUT-842** — `ComplianceExportManager` broad catch-swallow → typed differentiation:
+  - New `ComplianceExportException` raised on fatal CF errors so `Future.wait(...eagerError: true)` aborts cleanly
+  - Transient `FirebaseFunctionsException` codes (`unavailable`, `deadline-exceeded`, `internal`, `cancelled`, `aborted`, `resource-exhausted`) return recoverable `{error, error_code, note}` map so the rest of the bundle still ships
+  - `unauthenticated` deliberately stays fatal (session-level breakage affects every export call)
+  - Consent path (no CF) re-throws on all failures (no transient distinction without a network call to disambiguate)
+  - 4 new tests pin transient + fatal + unexpected branches; `data_export_service_test` upgraded with a real empty-page CF fake + injected `FirebaseDataExportRepository`
 
 ### Tier-2 agent reviews
-- [x] code-reviewer — full Dart diff. Verdict: clean.
-- [x] testing-specialist — staged `lib/**/*.dart` + arch-test. Verdict: clean.
-- [skip] firebase-backend-security — no `lib/repositories/` or `functions/src/` (excl tests) staged.
-- [skip] firestore-rules-tester — `firestore.rules` not touched.
+- [x] code-reviewer (BUT-817) — clean.
+- [x] code-reviewer (BUT-842 + remaining BUT-817) — 3 findings. H1: added `resource-exhausted` to transient set (clear fix). H3: kept `info` log level per BUT-779 explicit precedent. H2 (downstream surfacing of `error_code`) → filed as follow-up.
+- [x] testing-specialist — clean. Two non-blocking nits (partial-recovery shape test + cast assumption doc) → filed as follow-ups.
+- [x] firebase-backend-security — knowledge file updated.
 
 ### Post-Sprint Steps
-- [x] `dart analyze --fatal-infos` — clean.
-- [x] Tier-2 markers written (code-review, testing-review).
-- [ ] File follow-ups: BUT-XXX (BUT-798 Phase 1), BUT-XXX (BUT-805 PERF5 isolate offload), BUT-XXX (BUT-806 legal review).
-- [ ] Commit (inline), push.
-- [ ] Linear close: BUT-812, BUT-787, BUT-805, BUT-806, BUT-822 (shipped or premise gone). BUT-798 + BUT-782 stay open with re-scoped bodies.
+- [x] `dart analyze --fatal-infos` — clean
+- [x] Tier-2 markers written
+- [ ] File follow-ups (3) in Linear before commit
+- [ ] Commit (inline), push
+- [ ] Linear close: BUT-855, BUT-856, BUT-853, BUT-857 (premise gone), BUT-817, BUT-842 (shipped)
 
-### Known follow-ups (will be filed in Linear before commit)
-
-- BUT-798 Phase 1 follow-up — centered full-screen `CircularProgressIndicator` → `StateWidget.loading` in `lib/views/` (~25 sites).
-- BUT-805 PERF5 follow-up — isolate offload for parser/CRF/OCR hot paths (~3-4h, needs profiling).
-- BUT-806 legal-review follow-up — App Check consent gating + full data-processors enumeration in privacy policy (blocked on legal review opening up).
+### Known follow-ups (filed in Linear before commit)
+- **BUT-842 surfacing** — DataExportService should aggregate per-section `error_code` markers into a top-level `warnings: []` array so partial-bundle consumers see the failure prominently rather than buried.
+- **BUT-842 partial-recovery test** — add a test where the first audit-log page succeeds and the second throws transient: bundle should ship page-1 rows alongside the `error_code` marker.
+- **Test infra hardening** — document the `T == Map<dynamic, dynamic>` assumption on `_EmptyHttpsCallable.call` in `data_export_service_test.dart`.
 
 ---
 
-## Archived prior sprint (completed in commit c5e53cb53)
+## Archived prior sprint (commit c11afc720)
 
-test-gap closure + tech-debt sweeps — 2026-05-08 (F) — BUT-832/827/815/816/836/837/831 done.
-
-## Archived earlier sprint (completed in commit fd9c8ea17 + bed18c4cd + aef8968c7)
-
-analytics caller-wiring + backend correctness sweeps — 2026-05-07 (Th) — BUT-833/834/830/824/826 done; BUT-787/783 deferred → BUT-836/837 filed.
+high-priority backlog drain — 2026-05-19 (Tu) — BUT-812/805/822 done; BUT-787/806 obsolete; BUT-798/782 deferred. Follow-ups BUT-861/862/863 filed.

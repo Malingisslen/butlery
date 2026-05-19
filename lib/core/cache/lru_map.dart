@@ -90,6 +90,20 @@ class LruMap<K, V> {
   /// fire [onEvict] — that callback is reserved for size-driven evictions.
   V? remove(K key) => _entries.remove(key);
 
+  /// Removes every entry whose `(key, value)` satisfies [test]. Returns the
+  /// number of entries removed. Does NOT fire [onEvict] — caller-driven
+  /// invalidation, not size-driven eviction.
+  int removeWhere(bool Function(K key, V value) test) {
+    final toRemove = <K>[];
+    _entries.forEach((k, v) {
+      if (test(k, v)) toRemove.add(k);
+    });
+    for (final k in toRemove) {
+      _entries.remove(k);
+    }
+    return toRemove.length;
+  }
+
   /// Clears every entry. Does NOT fire [onEvict].
   void clear() => _entries.clear();
 

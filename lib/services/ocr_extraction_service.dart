@@ -9,9 +9,11 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as img;
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/cache/lru_map.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/security/pinned_http_client_factory.dart';
@@ -202,15 +204,26 @@ class OCRExtractionService extends BaseService {
   late final CircuitBreaker _tesseractCircuitBreaker;
   late final OCRUsageTracker _usageTracker;
 
+  static const int _maxCacheSize = 100;
+
   /// Primary cache: keyed by SHA-256 of *preprocessed* bytes (BUT-666 — same
   /// logical image with different EXIF/quality collapses to one entry).
-  final Map<String, OCRResult> _cache = {};
+  /// BUT-817: migrated from timestamp-sort eviction (O(n log n) per evict) to
+  /// LRU (O(1) per evict + recency awareness).
+  late final LruMap<String, OCRResult> _cache = LruMap(
+    maxSize: _maxCacheSize,
+    onEvict: (key, _) => AppLogger.info(
+        'cache_eviction service=OCRExtractionService cache=preprocessed key=$key bound=$_maxCacheSize'),
+  );
 
   /// Fast-path index: SHA-256 of *raw* bytes → preprocessed-bytes hash. Lets
   /// repeat-of-same-bytes (the common case) skip the preprocess pipeline and
   /// jump straight to `_cache`. Bounded the same way as `_cache`.
-  final Map<String, String> _rawHashToPreprocessedHash = {};
-  static const int _maxCacheSize = 100;
+  late final LruMap<String, String> _rawHashToPreprocessedHash = LruMap(
+    maxSize: _maxCacheSize,
+    onEvict: (key, _) => AppLogger.info(
+        'cache_eviction service=OCRExtractionService cache=raw_index key=$key bound=$_maxCacheSize'),
+  );
   static const Duration _cacheExpiry = Duration(hours: 24);
   static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
   static const double _minConfidenceThreshold = 0.6;
@@ -693,28 +706,12 @@ class OCRExtractionService extends BaseService {
     return null;
   }
 
-  /// Cache OCR result with size management. When a [rawHash] is supplied,
-  /// also populates the fast-path index so a repeat of the exact same input
-  /// bytes can skip preprocessing.
+  /// Cache OCR result. When a [rawHash] is supplied, also populates the
+  /// fast-path index so a repeat of the exact same input bytes can skip
+  /// preprocessing. LruMap handles size-bound eviction per insertion.
   void _cacheResult(String imageHash, OCRResult result, {String? rawHash}) {
-    if (_cache.length >= _maxCacheSize) {
-      final sortedEntries = _cache.entries.toList()
-        ..sort((a, b) => a.value.timestamp.compareTo(b.value.timestamp));
-      for (final entry in sortedEntries.take(_maxCacheSize ~/ 4)) {
-        _cache.remove(entry.key);
-      }
-    }
     _cache[imageHash] = result;
     if (rawHash != null) {
-      if (_rawHashToPreprocessedHash.length >= _maxCacheSize) {
-        // Drop a few oldest mappings — order is insertion order in Dart's
-        // default Map. Cheap maintenance to keep the index bounded.
-        final toRemove =
-            _rawHashToPreprocessedHash.keys.take(_maxCacheSize ~/ 4).toList();
-        for (final k in toRemove) {
-          _rawHashToPreprocessedHash.remove(k);
-        }
-      }
       _rawHashToPreprocessedHash[rawHash] = imageHash;
     }
   }
@@ -762,6 +759,7 @@ class OCRExtractionService extends BaseService {
   @override
   Future<void> dispose() async {
     _cache.clear();
+    _rawHashToPreprocessedHash.clear();
     await super.dispose();
   }
 }

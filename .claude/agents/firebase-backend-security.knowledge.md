@@ -2822,3 +2822,23 @@ repository that gates user-tied calls on a locally-mirrored consent flag.
 ### 2026-05-08 — timestampProvider as test seam in repos: established pattern, not a bypass
 
 `firebase_report_repository.dart` adding `super.timestampProvider` in its ctor and routing `lastReportAt` through `timestampProvider.serverTimestamp()` is the same pattern already in `firebase_comments_repository`, `firebase_deeplink_repository`, `firebase_device_repository`, etc. Default is `ServerTimestampProvider()` → `FieldValue.serverTimestamp()` in prod. No permission/audit bypass — `BaseFirebaseRepository`'s validate*/audit hooks are unchanged. When you see this added to a repo for tests, it's safe by construction.
+
+
+## Discovered patterns — 2026-05-19
+
+### GDPR export: FirebaseFunctionsException code triage
+
+When a Cloud Function backs a GDPR Art. 15 export (audit logs, etc.) and the call site uses `Future.wait(..., eagerError: true)` to bundle multiple collections, splitting CF errors into transient (return recoverable stub with `error_code` marker) vs fatal (throw → abort bundle) is defensible IF the partial nature is explicitly surfaced in the bundle. Silent partial exports were the BUT-842 root cause.
+
+Transient set (retry-safe, user keeps other 30+ collections):
+- `unavailable`, `deadline-exceeded`, `cancelled`, `aborted` — infra/transport hiccups
+- `resource-exhausted` — quota wobble; the error_code marker prevents silent rate-limiting from looking like a clean export
+
+Fatal-by-design (must abort whole bundle):
+- `permission-denied`, `unauthenticated` — masking these = hiding an authz bug
+- `failed-precondition`, `invalid-argument`, `not-found` — contract violations
+- `internal` — SDK catch-all for unhandled server exceptions; broken CF deploys would silently ship empty sections to every user otherwise
+
+When the GDPR data source is the repository (not a CF callable), there is no network-transience dimension — all errors are fatal (Art. 7 consent records: a stub `{error: ...}` in the bundle is worse than a clean abort + retry).
+
+`ComplianceExportException.toString()` deliberately omits userId — PII belongs in the structured logger (AppLogger.error → Crashlytics non-fatal), not in stack-trace surfaces that may reach user-visible error UI.

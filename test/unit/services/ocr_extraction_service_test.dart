@@ -664,7 +664,11 @@ void main() {
       // Cannot check cache size after dispose, but verified in implementation
     });
 
-    test('should evict 25% of entries when cache is full', () async {
+    test('should cap cache at maxSize with LRU eviction', () async {
+      // BUT-817: cache backed by LruMap — bound holds at maxSize (100); each
+      // insert past the bound evicts exactly the eldest entry, not a 25%
+      // batch. The contract that callers actually depend on is "cache stays
+      // bounded", and that's what this test pins.
       final mockResponse = MockStreamedResponse();
 
       when(() => mockResponse.statusCode).thenReturn(200);
@@ -673,7 +677,7 @@ void main() {
 
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
 
-      // Fill cache to 100 entries
+      // Fill cache to 100 entries.
       for (var i = 0; i < 100; i++) {
         final uniqueImage = Uint8List.fromList([
           0x89,
@@ -692,7 +696,7 @@ void main() {
 
       expect(service.getServiceStatus()['cache_size'], equals(100));
 
-      // Add one more (should trigger eviction of 25 entries)
+      // Add one more — bound holds.
       final newImage = Uint8List.fromList([
         0x89,
         0x50,
@@ -706,8 +710,7 @@ void main() {
       ]);
       await service.extractText(newImage);
 
-      // Cache should be at 76 (100 - 25 + 1)
-      expect(service.getServiceStatus()['cache_size'], equals(76));
+      expect(service.getServiceStatus()['cache_size'], equals(100));
     });
   });
 

@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'dart:async';
+import 'package:butlery/core/cache/lru_map.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
@@ -68,11 +69,19 @@ class PermissionCacheKey {
 class PermissionCacheService {
   final FeatureFlagService _featureFlags;
 
-  /// In-memory cache storage with LRU ordering
-  final Map<PermissionCacheKey, CachedPermission> _cache = {};
-
-  /// Order of keys for LRU eviction (most recently used at end)
-  final List<PermissionCacheKey> _lruOrder = [];
+  /// BUT-817: in-memory LRU cache storage. [LruMap] subsumes the previous
+  /// `Map<K,V> + List<K>` pair that hand-tracked recency, removing ~30 lines
+  /// of bookkeeping.
+  ///
+  /// Late init so [_maxSize] (resolved from feature flags) is consulted at
+  /// construction time. The bound is fixed for the service lifetime — runtime
+  /// flag changes don't resize an existing cache (acceptable; the cache
+  /// repopulates on the next read).
+  late final LruMap<PermissionCacheKey, CachedPermission> _cache = LruMap(
+    maxSize: _maxSize,
+    onEvict: (key, _) => AppLogger.info(
+        'cache_eviction service=PermissionCacheService key=$key bound=$_maxSize'),
+  );
 
   /// Cleanup timer
   Timer? _cleanupTimer;
@@ -115,6 +124,8 @@ class PermissionCacheService {
       operation: operation,
     );
 
+    // operator[] promotes recency in LruMap — exactly the previous behaviour
+    // (manual _lruOrder bump after a successful read).
     final cached = _cache[key];
     if (cached == null) {
       _misses++;
@@ -123,14 +134,9 @@ class PermissionCacheService {
 
     if (cached.isExpired(_ttl)) {
       _cache.remove(key);
-      _lruOrder.remove(key);
       _misses++;
       return null;
     }
-
-    // Move to end of LRU list (most recently used)
-    _lruOrder.remove(key);
-    _lruOrder.add(key);
 
     _hits++;
     return cached;
@@ -154,21 +160,11 @@ class PermissionCacheService {
       operation: operation,
     );
 
-    // Evict if at max size
-    while (_cache.length >= _maxSize && _lruOrder.isNotEmpty) {
-      final evictKey = _lruOrder.removeAt(0);
-      _cache.remove(evictKey);
-    }
-
-    final permission = CachedPermission(
+    _cache[key] = CachedPermission(
       allowed: allowed,
       cachedAt: clock.now(),
       reason: reason,
     );
-
-    _cache[key] = permission;
-    _lruOrder.remove(key); // Remove if exists
-    _lruOrder.add(key); // Add to end (most recent)
   }
 
   /// Invalidate cache entries for a specific resource.
@@ -179,19 +175,12 @@ class PermissionCacheService {
   }) {
     if (!isEnabled) return;
 
-    final keysToRemove = _cache.keys
-        .where(
-            (k) => k.resourceType == resourceType && k.resourceId == resourceId)
-        .toList();
+    final count = _cache.removeWhere(
+        (k, _) => k.resourceType == resourceType && k.resourceId == resourceId);
 
-    for (final key in keysToRemove) {
-      _cache.remove(key);
-      _lruOrder.remove(key);
-    }
-
-    if (keysToRemove.isNotEmpty) {
+    if (count > 0) {
       AppLogger.debug(
-          'Permission cache: invalidated ${keysToRemove.length} entries for $resourceType:$resourceId');
+          'Permission cache: invalidated $count entries for $resourceType:$resourceId');
     }
   }
 
@@ -200,16 +189,11 @@ class PermissionCacheService {
   void invalidateUser(String userId) {
     if (!isEnabled) return;
 
-    final keysToRemove = _cache.keys.where((k) => k.userId == userId).toList();
+    final count = _cache.removeWhere((k, _) => k.userId == userId);
 
-    for (final key in keysToRemove) {
-      _cache.remove(key);
-      _lruOrder.remove(key);
-    }
-
-    if (keysToRemove.isNotEmpty) {
+    if (count > 0) {
       AppLogger.debug(
-          'Permission cache: invalidated ${keysToRemove.length} entries for user $userId');
+          'Permission cache: invalidated $count entries for user $userId');
     }
   }
 
@@ -217,7 +201,6 @@ class PermissionCacheService {
   void invalidateAll() {
     final count = _cache.length;
     _cache.clear();
-    _lruOrder.clear();
 
     if (count > 0) {
       AppLogger.debug('Permission cache: invalidated all $count entries');
@@ -260,22 +243,10 @@ class PermissionCacheService {
     if (!isEnabled || _cache.isEmpty) return;
 
     final ttl = _ttl;
-    final expiredKeys = <PermissionCacheKey>[];
+    final count = _cache.removeWhere((_, v) => v.isExpired(ttl));
 
-    for (final entry in _cache.entries) {
-      if (entry.value.isExpired(ttl)) {
-        expiredKeys.add(entry.key);
-      }
-    }
-
-    for (final key in expiredKeys) {
-      _cache.remove(key);
-      _lruOrder.remove(key);
-    }
-
-    if (expiredKeys.isNotEmpty) {
-      AppLogger.debug(
-          'Permission cache: cleaned up ${expiredKeys.length} expired entries');
+    if (count > 0) {
+      AppLogger.debug('Permission cache: cleaned up $count expired entries');
     }
   }
 
@@ -283,6 +254,5 @@ class PermissionCacheService {
   void dispose() {
     _cleanupTimer?.cancel();
     _cache.clear();
-    _lruOrder.clear();
   }
 }

@@ -1,4 +1,6 @@
 import 'package:butlery/constants/known_ingredients.dart';
+import 'package:butlery/core/cache/lru_map.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/tagging/config/compound_suffixes.dart';
 
 /// Intelligent compound word splitter for Swedish ingredients.
@@ -14,10 +16,15 @@ import 'package:butlery/services/tagging/config/compound_suffixes.dart';
 class CompoundSplitter {
   CompoundSplitter._();
 
-  /// FIFO cache, bounded at [_maxCacheSize]. Not LRU — Swedish ingredient
-  /// vocabulary is small enough that recency-tracking adds no value.
-  static final Map<String, String> _cache = {};
+  /// BUT-817: bounded via [LruMap]. Swedish ingredient vocabulary is small
+  /// enough that 200 captures essentially all repeat lookups; eviction
+  /// telemetry surfaces if the bound is too tight in practice.
   static const _maxCacheSize = 200;
+  static final LruMap<String, String> _cache = LruMap(
+    maxSize: _maxCacheSize,
+    onEvict: (key, _) => AppLogger.info(
+        'cache_eviction service=CompoundSplitter key=$key bound=$_maxCacheSize'),
+  );
 
   /// Suffix set built once from CompoundSuffixes for O(1) lookup
   static final Set<String> _suffixSet = {
@@ -61,18 +68,11 @@ class CompoundSplitter {
       return word;
     }
 
-    // Check cache
-    final cacheKey = word;
-    if (_cache.containsKey(cacheKey)) return _cache[cacheKey]!;
+    final cached = _cache[word];
+    if (cached != null) return cached;
 
     final result = _findBestSplit(word, knownIngredients);
-
-    // Update LRU cache
-    if (_cache.length >= _maxCacheSize) {
-      _cache.remove(_cache.keys.first);
-    }
-    _cache[cacheKey] = result;
-
+    _cache[word] = result;
     return result;
   }
 

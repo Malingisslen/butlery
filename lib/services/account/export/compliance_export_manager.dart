@@ -7,6 +7,46 @@ import 'package:butlery/repositories/firebase/firebase_data_export_repository.da
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
 
+/// Thrown when a GDPR compliance export hits a non-recoverable error.
+///
+/// BUT-842: the prior implementation wrapped a broad `catch (e)` and returned
+/// `{'error': '...'}` in the bundle, which silently produced partial GDPR
+/// exports — a regulatory risk. Fatal errors (permission denied, contract
+/// violations, unexpected exceptions) now surface as this exception so
+/// [DataExportService.exportAllUserData] aborts cleanly via its
+/// `Future.wait(..., eagerError: true)` rather than emitting a half-bundle.
+class ComplianceExportException implements Exception {
+  final String message;
+  final Object? cause;
+  final String? code;
+
+  const ComplianceExportException(this.message, {this.cause, this.code});
+
+  @override
+  String toString() => code != null
+      ? 'ComplianceExportException($code): $message'
+      : 'ComplianceExportException: $message';
+}
+
+/// Cloud Function error codes that indicate a transient failure (network,
+/// timeout, backend hiccup, rate limit). Transient errors permit a
+/// recoverable empty bundle entry instead of aborting the whole GDPR export
+/// — the user can retry without losing their other (successfully-exported)
+/// data.
+///
+/// `unauthenticated` deliberately stays fatal: an auth-token failure at the
+/// CF call site implies session-level breakage that's likely affecting every
+/// other export call in the same `Future.wait`, so aborting cleanly produces
+/// a better user signal than scattering half-bundles.
+const _transientFunctionsErrorCodes = <String>{
+  'unavailable',
+  'deadline-exceeded',
+  'internal',
+  'cancelled',
+  'aborted',
+  'resource-exhausted',
+};
+
 /// Handles export of GDPR compliance data: audit logs, consent records.
 /// Implements Article 7 (Consent), Article 15 (Right of Access), and
 /// Article 30 (Records of Processing).
@@ -104,12 +144,36 @@ class ComplianceExportManager {
           'resource_types': _summarizeResourceTypes(auditLogs),
         },
       };
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export audit logs', e);
-      return {
-        'error': e.toString(),
-        'note': 'Audit logs could not be exported via the server-side endpoint',
-      };
+    } on FirebaseFunctionsException catch (e, st) {
+      // BUT-842: AppLogger.error already routes to Crashlytics as non-fatal.
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export audit logs (code=${e.code})',
+          e,
+          _logTag,
+          st);
+      if (_transientFunctionsErrorCodes.contains(e.code)) {
+        // Transient — let the rest of the bundle ship; user can retry.
+        return {
+          'error': e.message ?? e.code,
+          'error_code': e.code,
+          'note':
+              'Transient backend error — retry the export; other collections are unaffected',
+        };
+      }
+      // Fatal — abort the whole GDPR bundle rather than ship an integrity-
+      // compromised export.
+      throw ComplianceExportException(
+        'Audit-log export failed: ${e.message ?? e.code}',
+        cause: e,
+        code: e.code,
+      );
+    } catch (e, st) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Unexpected error exporting audit logs', e, _logTag, st);
+      throw ComplianceExportException(
+        'Audit-log export failed: $e',
+        cause: e,
+      );
     }
   }
 
@@ -169,13 +233,18 @@ class ComplianceExportManager {
         'gdpr_article': 'Article 7 - Conditions for Consent',
         'note': 'Complete history of consent decisions and purposes',
       };
-    } catch (e) {
+    } catch (e, st) {
+      // BUT-842: consent history comes from the repository (not a CF callable)
+      // so there's no FirebaseFunctionsException dimension to split on.
+      // Treat all failures as fatal — consent records are an Article 7
+      // compliance surface and an "error: …" stub in the bundle is worse
+      // than a clean abort + retry.
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export consent records', e);
-      return {
-        'error': e.toString(),
-        'note': 'Consent records may not be available',
-      };
+          '[$_logTag] Failed to export consent records', e, _logTag, st);
+      throw ComplianceExportException(
+        'Consent-record export failed: $e',
+        cause: e,
+      );
     }
   }
 }

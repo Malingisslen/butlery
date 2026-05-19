@@ -1,3 +1,5 @@
+import 'package:butlery/core/cache/lru_map.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:clock/clock.dart';
 
@@ -10,12 +12,19 @@ import 'package:clock/clock.dart';
 /// - Stores ParsedRecipe keyed by sourceUrl
 /// - Auto-expires entries after 30 minutes
 /// - Removes entries on retrieval (one-time use)
+/// - Bounded at [_maxSize] entries (BUT-817 — TTL alone permits unbounded
+///   growth between cleanup passes during rapid imports).
 ///
 /// Used by the parser feedback loop to capture user corrections
 /// as training data for parser improvement.
 class ParsedRecipeCache {
-  final _cache = <String, _CacheEntry>{};
   static const _maxAge = Duration(minutes: 30);
+  static const _maxSize = 50;
+  late final LruMap<String, _CacheEntry> _cache = LruMap(
+    maxSize: _maxSize,
+    onEvict: (key, _) => AppLogger.info(
+        'cache_eviction service=ParsedRecipeCache key=$key bound=$_maxSize'),
+  );
 
   /// Store ParsedRecipe keyed by sourceUrl.
   ///
