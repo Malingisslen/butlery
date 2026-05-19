@@ -8,7 +8,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Shopping List Selection Dialog
 /// Allows users to select an existing shopping list or create a new one
@@ -249,12 +250,14 @@ class _ShoppingListSelectionDialogState
         ),
       ),
       actions: [
-        StyledButton.secondary(
-          text: context.l10n.commonCancel,
+        ActionButtons.secondaryButton(
+          context,
+          label: context.l10n.commonCancel,
           onPressed: () => Navigator.pop(context),
         ),
-        StyledButton.primary(
-          text: _isCreatingNew
+        ActionButtons.primaryButton(
+          context,
+          label: _isCreatingNew
               ? context.l10n.dialogCreateList
               : context.l10n.commonAdd,
           onPressed:

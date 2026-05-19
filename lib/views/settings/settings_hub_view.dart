@@ -64,7 +64,7 @@ class SettingsHubView extends StatelessWidget {
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionLanguage),
-                _LanguageTile(),
+                const LanguageTile(),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionAbout),
                 _SettingsTile(
@@ -192,12 +192,18 @@ class _SettingsTile extends StatelessWidget {
 
 /// Language tile that listens to LocaleProvider so the subtitle updates
 /// immediately after a switch (no need to back out + re-enter settings).
-class _LanguageTile extends StatefulWidget {
+///
+/// Public (rather than `_LanguageTile`) so widget tests can render it in
+/// isolation without spinning up the full `SettingsHubView` dependency graph
+/// (`ReportService.watchIsAdmin()` stream, route table, etc.).
+class LanguageTile extends StatefulWidget {
+  const LanguageTile({super.key});
+
   @override
-  State<_LanguageTile> createState() => _LanguageTileState();
+  State<LanguageTile> createState() => _LanguageTileState();
 }
 
-class _LanguageTileState extends State<_LanguageTile> {
+class _LanguageTileState extends State<LanguageTile> {
   late final LocaleProvider _localeProvider;
 
   @override

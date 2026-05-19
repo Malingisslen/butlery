@@ -103,7 +103,7 @@ Investigate:
 ### M6: Insecure Authorization
 
 Investigate:
-- PermissionValidationMixin adoption: KNOWN only 20% of repositories use it -- audit all remaining repositories
+- PermissionValidationMixin adoption: see [docs/architecture/adoption-status.md](../../architecture/adoption-status.md) for the live number; audit all repositories that don't apply the mixin
 - Client-side only validation: identify CRUD operations with no server-side rule enforcement
 - Insecure Direct Object References (IDOR): can user A access user B's data by manipulating document IDs?
 - Privilege escalation: can a group member perform owner-only operations?
@@ -531,7 +531,7 @@ Use this intelligence to focus the audit:
 - Jailbreak/root detection: `flutter_jailbreak_detection` package
 - Biometric authentication: `local_auth` package
 - Field encryption service: client-side field encryption before Firestore storage
-- Permission validation: `PermissionValidationMixin` (KNOWN: only 20% repository adoption)
+- Permission validation: `PermissionValidationMixin` (live adoption — see [docs/architecture/adoption-status.md](../../architecture/adoption-status.md))
 
 ### Firebase Rules Statistics
 - Firestore rules: 1465 lines, 74 match rules
@@ -546,7 +546,7 @@ Use this intelligence to focus the audit:
 - Overall GDPR compliance test coverage: 100%
 
 ### Known Security Gaps
-- PermissionValidationMixin adoption at 20% -- 80% of repositories lack explicit mixin usage
+- PermissionValidationMixin adoption gap -- a meaningful share of repositories lack explicit mixin usage (see [docs/architecture/adoption-status.md](../../architecture/adoption-status.md) for the current number)
 - Subcollection-based sharing pattern (post Issue #014) needs rule verification
 - Cloud Functions use Admin SDK -- verify no callable functions expose sensitive operations
 
@@ -582,7 +582,7 @@ VULNERABILITY SUMMARY:
 - LOW (CVSS 0.1-3.9): X vulnerabilities
 
 TOP 5 SECURITY RISKS:
-1. [Description -- e.g., "PermissionValidationMixin at 20% adoption"]
+1. [Description -- e.g., "PermissionValidationMixin adoption gap (see adoption-status.md)"]
 2. [Description]
 3. [Description]
 4. [Description]

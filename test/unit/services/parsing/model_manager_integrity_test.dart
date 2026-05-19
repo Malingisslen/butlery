@@ -87,6 +87,74 @@ void main() {
     });
   });
 
+  group('NerModelManager error-envelope coverage (BUT-870)', () {
+    late Directory tempDir;
+    late MockFirebaseStorage mockStorage;
+    late _TestNerModelManager manager;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('but870_ner_');
+      mockStorage = MockFirebaseStorage();
+      manager = _TestNerModelManager(storage: mockStorage, cacheDir: tempDir);
+    });
+
+    tearDown(() async {
+      if (tempDir.existsSync()) await tempDir.delete(recursive: true);
+    });
+
+    test('latest version absent from hash registry aborts without disk write',
+        () async {
+      // Version 999 is not in `kExpectedNerModelHashes`. `verifyModelDownload`
+      // must treat any unregistered version as untrusted and refuse to land
+      // bytes on disk, regardless of whether the bytes themselves are valid.
+      await mockStorage
+          .ref('models/ingredient_ner/latest_version.txt')
+          .putData(Uint8List.fromList(utf8.encode('999')));
+      await mockStorage
+          .ref('models/ingredient_ner/v999/model.onnx')
+          .putData(Uint8List.fromList(utf8.encode('arbitrary-bytes')));
+      await mockStorage
+          .ref('models/ingredient_ner/v999/vocab.txt')
+          .putData(Uint8List.fromList(utf8.encode('vocab')));
+
+      final result = await manager.ensureModelAvailable();
+
+      expect(result, isNull,
+          reason: 'Unregistered version must short-circuit the download.');
+
+      final committed =
+          tempDir.listSync(recursive: true).whereType<File>().toList();
+      expect(committed, isEmpty,
+          reason: 'No files (including .tmp) should land on unregistered '
+              'versions — the hash check must precede every disk write.');
+    });
+
+    test('cached load deletes leftover .tmp from prior interrupted write',
+        () async {
+      // Stage a valid-looking cache + a leftover `.tmp` file from a previous
+      // interrupted write. `_tryLoadCached` should return the cached files
+      // and clean up the stale `.tmp` (see ner_model_manager.dart:82-83).
+      final modelPath = '${tempDir.path}/model.onnx';
+      await File(modelPath).writeAsBytes(
+          Uint8List.fromList(List<int>.generate(1024, (i) => i & 0xff)));
+      await File('${tempDir.path}/vocab.txt').writeAsString('vocab');
+      await File('${tempDir.path}/version.txt').writeAsString('1');
+      final staleTmp = File('$modelPath.tmp');
+      await staleTmp.writeAsBytes(Uint8List.fromList([0xde, 0xad]));
+      expect(staleTmp.existsSync(), isTrue,
+          reason: 'Pre-condition: stale .tmp exists before cache load.');
+
+      final result = await manager.ensureModelAvailable();
+
+      expect(result, isNotNull,
+          reason: 'Valid cache should be returned even with stale .tmp '
+              'present.');
+      expect(staleTmp.existsSync(), isFalse,
+          reason: 'Stale .tmp from interrupted prior write must be deleted '
+              'as part of cache load.');
+    });
+  });
+
   group('LineClassifierModelManager integrity short-circuit (BUT-823)', () {
     late Directory tempDir;
     late MockFirebaseStorage mockStorage;

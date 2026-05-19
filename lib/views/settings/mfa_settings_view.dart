@@ -6,7 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/styled/styled_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -357,13 +357,12 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
-            SizedBox(
-              width: double.infinity,
-              child: StyledButton.primary(
-                text: context.l10n.mfaSendCode,
-                onPressed: _isLoading ? null : _startEnrollment,
-                isLoading: _isLoading,
-              ),
+            ActionButtons.primaryButton(
+              context,
+              label: context.l10n.mfaSendCode,
+              onPressed: _isLoading ? null : _startEnrollment,
+              isLoading: _isLoading,
+              isExpanded: true,
             ),
           ],
         ),
@@ -399,8 +398,9 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
             Row(
               children: [
                 Expanded(
-                  child: StyledButton.secondary(
-                    text: context.l10n.commonCancel,
+                  child: ActionButtons.secondaryButton(
+                    context,
+                    label: context.l10n.commonCancel,
                     onPressed: () {
                       setState(() {
                         _isEnrolling = false;
@@ -408,14 +408,17 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                         _codeController.clear();
                       });
                     },
+                    isExpanded: true,
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
-                  child: StyledButton.primary(
-                    text: context.l10n.mfaVerify,
+                  child: ActionButtons.primaryButton(
+                    context,
+                    label: context.l10n.mfaVerify,
                     onPressed: _isLoading ? null : _completeEnrollment,
                     isLoading: _isLoading,
+                    isExpanded: true,
                   ),
                 ),
               ],

@@ -16,7 +16,6 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 // Widgets
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
-import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -166,13 +165,15 @@ class FriendRequestCard {
                       ),
                       const SizedBox(width: AppDimensions.spacingL),
                       Expanded(
-                        child: StyledButton.primary(
-                          text: context.l10n.commonAccept,
-                          icon: const Icon(Icons.check),
+                        child: ActionButtons.primaryButton(
+                          context,
+                          label: context.l10n.commonAccept,
+                          icon: Icons.check,
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
                                   _acceptRequest(context, request, viewModel),
+                          isExpanded: true,
                         ),
                       ),
                     ],

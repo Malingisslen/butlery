@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/styled/styled_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 
 /// Soft-gate verification screen shown to new users after registration.
@@ -185,8 +185,9 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                     ),
                   ],
                   const SizedBox(height: AppDimensions.spacingXxl),
-                  StyledButton(
-                    text: cooldownText,
+                  ActionButtons.primaryButton(
+                    context,
+                    label: cooldownText,
                     onPressed: resendDisabled ? null : _resendVerification,
                     isLoading: _isSending,
                   ),

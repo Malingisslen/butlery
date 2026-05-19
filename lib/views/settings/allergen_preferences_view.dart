@@ -12,7 +12,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/styled/styled_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
@@ -291,19 +291,23 @@ class _AllergenPreferencesContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        StyledButton.primary(
-          text: context.l10n.allergenSaveSettings,
+        ActionButtons.primaryButton(
+          context,
+          label: context.l10n.allergenSaveSettings,
           onPressed: viewModel.hasChanges && !viewModel.isLoading
               ? () => _save(context)
               : null,
           isLoading: viewModel.isLoading,
+          isExpanded: true,
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        StyledButton.secondary(
-          text: context.l10n.allergenResetToDefaults,
+        ActionButtons.secondaryButton(
+          context,
+          label: context.l10n.allergenResetToDefaults,
           onPressed: viewModel.isLoading
               ? null
               : () => _confirmReset(context, viewModel),
+          isExpanded: true,
         ),
       ],
     );
@@ -367,13 +371,12 @@ class _AllergenPreferencesContent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            SizedBox(
-              width: double.infinity,
-              child: StyledButton.secondary(
-                text: context.l10n.allergenUpdateAllRecipes,
-                icon: const Icon(Icons.sync, size: AppDimensions.iconSizeM),
-                onPressed: () => _showRetagDialog(context),
-              ),
+            ActionButtons.secondaryButton(
+              context,
+              label: context.l10n.allergenUpdateAllRecipes,
+              icon: Icons.sync,
+              onPressed: () => _showRetagDialog(context),
+              isExpanded: true,
             ),
           ],
         ),

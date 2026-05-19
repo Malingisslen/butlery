@@ -12,7 +12,6 @@ import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
-import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -156,8 +155,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             icon: Icons.error_outline,
             title: l10n.errorGeneric,
             subtitle: vm.conversationsError!,
-            customAction: StyledButton.primary(
-              text: l10n.commonRetry,
+            customAction: ActionButtons.primaryButton(
+              context,
+              label: l10n.commonRetry,
               onPressed: vm.refresh,
             ),
           );
@@ -179,8 +179,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               icon: Icons.chat_bubble_outline,
               title: l10n.messagingNoConversationsYet,
               subtitle: l10n.messagingStartFirstConversation,
-              customAction: StyledButton.primary(
-                text: l10n.messagingNewConversation,
+              customAction: ActionButtons.primaryButton(
+                context,
+                label: l10n.messagingNewConversation,
                 onPressed: _showNewConversationDialog,
               ),
             );

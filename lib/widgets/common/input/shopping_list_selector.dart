@@ -13,7 +13,6 @@ import 'package:butlery/widgets/common/input/shopping_list_card.dart';
 import 'package:butlery/widgets/common/input/shopping_list_actions.dart';
 import 'package:butlery/widgets/common/input/editable_menu_items_preview_dialog.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/utils/text/shopping_list_generator.dart';
@@ -122,10 +121,12 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         Flexible(
           child: SizedBox(
             height: 40,
-            child: StyledButton.primary(
-              text: context.l10n.shoppingNewList,
-              icon: const Icon(Icons.add),
+            child: ActionButtons.primaryButton(
+              context,
+              label: context.l10n.shoppingNewList,
+              icon: Icons.add,
               onPressed: () => _createNewList(context),
+              isExpanded: true,
             ),
           ),
         ),
@@ -224,20 +225,20 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(
-                child: StyledButton.primary(
-                  text: _isAddingToList
+                child: ActionButtons.primaryButton(
+                  context,
+                  label: _isAddingToList
                       ? context.l10n.shoppingAdding
                       : menuItems.isEmpty
                           ? context.l10n.shoppingNoItemsToAdd
                           : context.l10n.shoppingAddItems,
-                  icon: _isAddingToList
-                      ? null
-                      : const Icon(Icons.add_shopping_cart),
+                  icon: _isAddingToList ? null : Icons.add_shopping_cart,
                   onPressed: (_isAddingToList || menuItems.isEmpty)
                       ? null
                       : () => _addMenuToList(
                           context, viewModel, selectedList, menuItems),
                   isLoading: _isAddingToList,
+                  isExpanded: true,
                 ),
               ),
             ],

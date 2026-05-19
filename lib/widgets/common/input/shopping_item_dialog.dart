@@ -6,7 +6,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Dialog for adding/editing unified shopping items
 /// This dialog provides a form for creating or editing shopping items with
@@ -318,13 +319,15 @@ class _AddUnifiedShoppingItemDialogState
         ),
       ),
       actions: [
-        StyledButton.secondary(
-          text: context.l10n.commonCancel,
+        ActionButtons.secondaryButton(
+          context,
+          label: context.l10n.commonCancel,
           onPressed: () => Navigator.pop(context),
         ),
-        StyledButton.primary(
-          text: isEditing ? context.l10n.commonSave : context.l10n.commonAdd,
-          icon: Icon(isEditing ? Icons.save : Icons.add),
+        ActionButtons.primaryButton(
+          context,
+          label: isEditing ? context.l10n.commonSave : context.l10n.commonAdd,
+          icon: isEditing ? Icons.save : Icons.add,
           onPressed: _submitForm,
         ),
       ],

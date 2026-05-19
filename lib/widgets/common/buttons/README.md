@@ -23,20 +23,20 @@ lib/widgets/common/buttons/
 | Overlay on image/card (remove, edit)             | `OverlayButton`                |
 | Custom press animation around any tap target     | `AnimatedPressable`            |
 
-## Deprecated — do NOT use in new code
+## Removed — historical reference
 
-- **`lib/widgets/styled/styled_button.dart`** (`StyledButton`): 15 call-sites
-  exist (2026-05-19). Slated for migration to `ActionButtons.actionButton`
-  per the follow-up filed alongside BUT-579. New code MUST use the
-  `common/buttons/` family instead.
+- **`lib/widgets/styled/styled_button.dart`** (`StyledButton`): deleted in
+  BUT-867 (2026-05-19 wave 4) after all 28 production call-sites migrated to
+  `ActionButtons.primaryButton` / `.secondaryButton`. The `StyledButtons`
+  static helper class (`.cancel`, `.save`, `.delete`, etc.) was also removed —
+  it had zero call-sites at the time of the audit.
 
 ## Why a separate family was retired
 
-`StyledButton` predates the `common/buttons/` consolidation. It has its own
-press-animation logic and its own style enums (`StyledButton.primary`,
-`.secondary`, `.danger`). `ActionButtons.actionButton` covers the same surface
-via `ActionButtonStyle` (primary | secondary | danger | dangerOutlined) with
-consistent loading-state + a11y handling.
+`StyledButton` predated the `common/buttons/` consolidation. It carried its
+own press-animation logic and a parallel style enum (`StyledButton.primary`,
+`.secondary`, `.destructive`). `ActionButtons` covers the live surface
+(`primary`, `secondary`) with consistent loading-state + a11y handling.
 
 Bringing every site under `common/buttons/` lets one design-system change
-propagate without `grep` and three diff'd implementations.
+propagate without `grep` and parallel implementations to diff.

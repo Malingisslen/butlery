@@ -65,6 +65,31 @@ class _FakeFirebaseFunctions extends Fake implements FirebaseFunctions {
       _EmptyHttpsCallable();
 }
 
+/// BUT-864: HttpsCallable stub that simulates a transient backend failure on
+/// the audit-log call. ComplianceExportManager catches this and returns a
+/// `{error_code: 'unavailable', ...}` envelope; DataExportService then has
+/// to surface it as a top-level warning.
+class _TransientHttpsCallable extends Fake implements HttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async {
+    throw FirebaseFunctionsException(
+      code: 'unavailable',
+      message: 'Backend temporarily unavailable',
+    );
+  }
+}
+
+class _TransientFirebaseFunctions extends Fake implements FirebaseFunctions {
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) =>
+      _TransientHttpsCallable();
+}
+
 void main() {
   group('DataExportService - GDPR Data Export', () {
     late DataExportService service;
@@ -375,6 +400,65 @@ void main() {
     group('Service Info', () {
       test('should return service name', () {
         expect(service.serviceName, 'DataExportService');
+      });
+    });
+
+    group('BUT-864: transient per-section errors surface as top-level warnings',
+        () {
+      test(
+          'audit-log unavailable produces export_metadata.warnings entry with '
+          'error_code', () async {
+        // Replace the default service with one whose audit-log call throws a
+        // transient FirebaseFunctionsException. ComplianceExportManager will
+        // catch + return the BUT-842 envelope; DataExportService should then
+        // aggregate it into a top-level `warnings` array on export_metadata.
+        final transientService = DataExportService(
+          authRepository: mockAuthRepository,
+          firestoreRepository: mockFirestoreRepository,
+          complianceExportManager: ComplianceExportManager(
+            functions: _TransientFirebaseFunctions(),
+            dataExportRepository: FirebaseDataExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+          ),
+          dataExportRepository: FirebaseDataExportRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          ),
+        );
+
+        final jsonString = await transientService.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        // The audit_logs section itself still carries the transient envelope.
+        expect(data['audit_logs']['error_code'], 'unavailable');
+
+        // The aggregated top-level warnings array is the new contract.
+        final warnings = data['export_metadata']['warnings'] as List<dynamic>?;
+        expect(warnings, isNotNull,
+            reason: 'A transient section error must surface as a top-level '
+                'warning entry so the consuming UI can flag the partial '
+                'bundle without scanning every section.');
+        expect(warnings, hasLength(1));
+        final entry = warnings!.single as Map<String, dynamic>;
+        expect(entry['section'], 'audit_logs');
+        expect(entry['error_code'], 'unavailable');
+        expect(entry['message'], isNotEmpty);
+      });
+
+      test(
+          'no transient errors → no warnings array (avoids polluting '
+          'happy-path bundles)', () async {
+        // The default `service` (built in setUp) uses _FakeFirebaseFunctions
+        // which returns empty audit-log pages — no error_code anywhere.
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        expect(data['export_metadata'].containsKey('warnings'), isFalse,
+            reason: 'warnings key is only set when at least one section '
+                'reports an error_code; happy-path bundles must not carry '
+                'an empty array.');
       });
     });
 

@@ -206,7 +206,7 @@ void main() {
         await tester.pumpWidget(createDialogApp());
         await tester.pumpAndSettle();
 
-        // Find and tap the submit button (StyledButton.primary)
+        // Find and tap the submit button (ActionButtons.primaryButton)
         // It contains an Icon(Icons.add) — find the button's parent
         final addIcon = find.byIcon(Icons.add);
         await tester.tap(addIcon);
@@ -344,15 +344,15 @@ void main() {
         await tester.tap(find.text('Open Dialog'));
         await tester.pumpAndSettle();
 
-        // Find the StyledButton.secondary (cancel) — it's the first action button
-        // The cancel button uses StyledButton.secondary which renders an OutlinedButton
+        // Find the ActionButtons.secondaryButton (cancel) — it's the first action button
+        // The cancel button uses ActionButtons.secondaryButton which renders an ElevatedButton
         // Just find by the dialog actions and tap the first one
         // Production cancel button calls Navigator.pop(context) without result
         // Find the cancel action — it's a widget in the actions row
         final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
         expect(dialog.actions!.length, equals(2));
 
-        // Both StyledButton.secondary and .primary render as ElevatedButton
+        // Both ActionButtons.secondaryButton and .primaryButton render as ElevatedButton
         // The cancel button is the first ElevatedButton in the dialog actions
         // Find it by locating the first ElevatedButton within the dialog
         final elevatedButtons = find.descendant(

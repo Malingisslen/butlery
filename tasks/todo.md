@@ -1,29 +1,28 @@
 # Sprint Backlog
 
-## Sprint: tech-debt sweep + UI consolidation — 2026-05-19 (Tu) wave 3
+## Sprint: wave-3 follow-ups + UI consolidation continuation — 2026-05-19 (Tu) wave 4
 
-Theme: 7 backlog tickets across UI consolidation, CI hardening, and refactor cleanup. Prior sprint (BUT-817/842) fully closed in Linear (BUT-855/856/853/857 also closed as premise-gone).
+Theme: 7 tickets, heavy on test-gap closure for wave 3 (BUT-868/869/870/871) plus a UI consolidation continuation (BUT-867) and two backend hygiene items (BUT-776/864). All small/medium scope; the follow-ups were filed in fresh context so files and call-sites are already named.
 
-### Agent A: flutter-developer — UI widget consolidation
-- [ ] **A1. BUT-861** — Migrate centered full-screen `CircularProgressIndicator` → `StateWidget.loading()` (Phase 1 of BUT-798). Grep `Center(\s*child:\s*CircularProgressIndicator` in `lib/views/`. ~25 sites.
-- [ ] **A2. BUT-579** — Consolidate parallel button systems (`styled_button` + `common/buttons` + `adaptive`). Pick canonical family, `@Deprecated` the others, document in `lib/widgets/common/buttons/README.md`.
-- [ ] **A3. BUT-801** — Settings → locale switcher (sv/en); fix macOS `APP_NAME` placeholder in Info.plist (×6); fix Windows `L"butlery"` → `L"Butlery"` in `windows/runner/main.cpp`.
+### Agent A: testing-specialist — wave 3 test-gap closure
+- [x] **A1. BUT-868** — `test/unit/core/di/locale_provider_singleton_test.dart` asserts `identical()` between `DIContainer.get` and `ServiceLocator.get` paths.
+- [x] **A2. BUT-869** — `test/widget/views/settings/language_tile_test.dart` covers render + dialog + setLocale (`_LanguageTile` made public for testability).
+- [x] **A3. BUT-870** — `test/unit/services/parsing/model_manager_integrity_test.dart` extended with 2 scenarios: unregistered version aborts; stale-`.tmp` cleanup on cache load. (Transient-throw scenario deferred — `firebase_storage_mocks` can't fake mid-call throws.)
+- [x] **A4. BUT-871** — `test/unit/models/notification_history_entry_test.dart` covers `displayTitle` / `displayBody` getters + BUT-841 coercion contract.
 
-### Agent B: testing-specialist — CI + integration test
-- [ ] **B1. BUT-825** — Wire `dart run tools/measure_adoption.dart` into nightly CI (`.github/workflows/adoption-status-nightly.yml`, `0 3 * * *` cron, auto-commit `docs/architecture/adoption-status.md` on diff).
-- [ ] **B2. BUT-823** — Integration test for `_verifyModelIntegrity` short-circuit: assert no `.tmp` on hash mismatch, `ensureModelAvailable()` returns null, Crashlytics non-fatal `ModelIntegrityCheckFailure` emitted. Both `ner_model_manager` + `line_classifier_model_manager`.
+### Agent B: flutter-developer — UI consolidation
+- [x] **B1. BUT-867** — All 28 `StyledButton.primary` / `.secondary` / bare-ctor sites migrated to `ActionButtons.primaryButton` / `.secondaryButton`. `styled_button.dart` + `StyledButtons` helper + `styled_button_test.dart` deleted. `styled_widgets.dart` barrel + `lib/widgets/common/buttons/README.md` updated.
 
-### Agent C: refactor cluster
-- [ ] **C1. BUT-530** — Extract `lib/widgets/app/butlery_app.dart` from `lib/main.dart` (~+357 line drift, real number; ticket said +63 but stale). Bring imports + tests.
-- [ ] **C2. BUT-841** — Bulk migrate `as String? ?? default` (and `as int? ?? …`) in `lib/models/` to `SerializationUtils.safeString/safeInt` etc. Cosmetic but consistent.
+### Agent C: backend hygiene + tooling
+- [x] **C1. BUT-776 (rescoped inline)** — Step 0 found site-packages exclusion + adoption-status.md migration already shipped in BUT-825. Remaining scope: created `tools/check_no_inline_adoption_pct.sh` (narrowed regex — keyword + %) + wired into `architecture-validation.yml`. Fixed 4 actual violations in `docs/analysis/prompts/02_SECURITY_AND_COMPLIANCE.md`.
+- [x] **C2. BUT-864** — `DataExportService.exportUserData` now aggregates per-section `error_code` markers into `export_metadata.warnings[]`. Two unit tests in `data_export_service_test.dart` pin the contract (transient → warning; happy-path → no warnings key).
 
 ### Step 0 status
-- All 7 tickets need Step 0 verification before implementation (read current code, classify fits/premise-gone/stale).
-- **Dropped:** BUT-520 (multi-sprint EPIC, not in-sprint scope — reverted to Backlog).
+- All 7 tickets need Step 0 verification before implementation. Wave-3 follow-ups (A1–A4, B1, C2) are recent context so most should classify as "fits"; C1 (BUT-776) is older and may need rescoping.
 
 ### Post-Sprint Steps
 - [ ] `dart analyze --fatal-infos` clean
-- [ ] Tier-2 agent reviews (code-reviewer + testing-specialist) — markers written before commit
+- [ ] Tier-2 agent reviews (code-reviewer + testing-specialist + firebase-backend-security on C2) — markers written before commit
 - [ ] File follow-ups in Linear (mandatory before commit, see Follow-up rule)
 - [ ] Commit (inline) + push direct to main (solo workflow)
 - [ ] Close Linear tickets for completed work
@@ -31,6 +30,10 @@ Theme: 7 backlog tickets across UI consolidation, CI hardening, and refactor cle
 
 ---
 
-## Archived prior sprint (commit 4b2cea116)
+## Archived prior sprint (commit 8e54f68f2)
 
-CI-test verification sweep + LRU/GDPR hardening — 2026-05-19 (Tu) — BUT-817 (5 LruMap caches) + BUT-842 (GDPR catch-swallow → transient/fatal split) shipped. BUT-855/856/853/857 closed as premise-gone (Step 0 re-verification). Follow-ups BUT-864/865/866 filed.
+UI consolidation + CI + model integrity tests — 2026-05-19 (Tu) wave 3 — BUT-861/579/801/841/825/823 shipped. BUT-520/530 reverted as multi-sprint EPICs. Follow-ups BUT-867/868/869/870/871 filed (now this sprint).
+
+## Archived two-sprints-ago (commit 4b2cea116)
+
+CI-test verification sweep + LRU/GDPR hardening — BUT-817 + BUT-842 shipped. BUT-855/856/853/857 closed as premise-gone. Follow-ups BUT-864/865/866 filed.

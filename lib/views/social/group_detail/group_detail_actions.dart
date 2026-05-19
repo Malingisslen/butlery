@@ -11,7 +11,8 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
-import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -139,12 +140,14 @@ class GroupDetailActions {
           ),
         ),
         actions: [
-          StyledButton.secondary(
-            text: context.l10n.commonCancel,
+          ActionButtons.secondaryButton(
+            context,
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
-          StyledButton.primary(
-            text: context.l10n.commonSave,
+          ActionButtons.primaryButton(
+            context,
+            label: context.l10n.commonSave,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],

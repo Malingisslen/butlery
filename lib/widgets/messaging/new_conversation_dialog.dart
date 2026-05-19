@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/styled/styled_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -157,8 +157,9 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(context.l10n.commonCancel),
         ),
-        StyledButton.primary(
-          text: context.l10n.commonCreate,
+        ActionButtons.primaryButton(
+          context,
+          label: context.l10n.commonCreate,
           onPressed: _selectedFriendIds.isEmpty || _isCreating
               ? null
               : _createConversation,

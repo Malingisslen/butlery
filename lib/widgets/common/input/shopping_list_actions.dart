@@ -8,7 +8,8 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Shopping list actions handler
 /// This module provides action handling for shopping lists including
@@ -113,12 +114,14 @@ class ShoppingListActions {
           ],
         ),
         actions: [
-          StyledButton.secondary(
-            text: context.l10n.commonCancel,
+          ActionButtons.secondaryButton(
+            context,
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context),
           ),
-          StyledButton.primary(
-            text: context.l10n.commonSave,
+          ActionButtons.primaryButton(
+            context,
+            label: context.l10n.commonSave,
             onPressed: () => Navigator.pop(context, controller.text.trim()),
           ),
         ],
@@ -236,12 +239,14 @@ class ShoppingListActions {
           ],
         ),
         actions: [
-          StyledButton.secondary(
-            text: context.l10n.commonCancel,
+          ActionButtons.secondaryButton(
+            context,
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context),
           ),
-          StyledButton.primary(
-            text: context.l10n.commonCreate,
+          ActionButtons.primaryButton(
+            context,
+            label: context.l10n.commonCreate,
             onPressed: () => Navigator.pop(context, controller.text.trim()),
           ),
         ],

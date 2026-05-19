@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
-import 'package:butlery/widgets/styled/styled_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -231,8 +231,9 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
             child: Text(context.l10n.mfaResend),
           ),
         if (_codeSent)
-          StyledButton.primary(
-            text: context.l10n.mfaVerify,
+          ActionButtons.primaryButton(
+            context,
+            label: context.l10n.mfaVerify,
             onPressed: _isLoading ? null : _verifyCode,
             isLoading: _isLoading,
           ),

@@ -184,11 +184,22 @@ class DataExportService extends BaseService {
 
     // Aggregate truncation flags into metadata
     final truncatedCollections = <String>[];
+    final warnings = <Map<String, dynamic>>[];
     for (final entry in exportData.entries) {
       if (entry.key == 'export_metadata') continue;
       final value = entry.value;
       if (value['truncated'] == true) {
         truncatedCollections.add(entry.key);
+      }
+      // BUT-864: surface BUT-842 transient-error markers as top-level
+      // warnings so the consuming UI flags partial bundles prominently
+      // (vs. requiring the user to scan every section for an `error_code`).
+      if (value is Map && value['error_code'] != null) {
+        warnings.add({
+          'section': entry.key,
+          'error_code': value['error_code'],
+          'message': value['error'] ?? value['note'] ?? 'Unknown error',
+        });
       }
       // Check nested maps (e.g., messages with per-conversation truncation)
       for (final nested in value.values) {
@@ -206,6 +217,10 @@ class DataExportService extends BaseService {
       (exportData['export_metadata']
               as Map<String, dynamic>)['data_completeness'] =
           'Some collections were truncated due to size limits: ${truncatedCollections.join(', ')}';
+    }
+    if (warnings.isNotEmpty) {
+      (exportData['export_metadata'] as Map<String, dynamic>)['warnings'] =
+          warnings;
     }
 
     // Convert to pretty-printed JSON

@@ -11,7 +11,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
@@ -362,13 +363,15 @@ class _CreateSharedShoppingListViewState
 
           SizedBox(
             width: 120,
-            child: StyledButton.primary(
-              text: viewModel.createButtonText,
-              icon: viewModel.isCreating ? null : const Icon(Icons.group_add),
+            child: ActionButtons.primaryButton(
+              context,
+              label: viewModel.createButtonText,
+              icon: viewModel.isCreating ? null : Icons.group_add,
               onPressed: viewModel.canCreate
                   ? () => _createSharedList(context, viewModel)
                   : null,
               isLoading: viewModel.isCreating,
+              isExpanded: true,
             ),
           ),
         ],
