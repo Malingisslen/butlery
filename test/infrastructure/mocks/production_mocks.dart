@@ -943,7 +943,21 @@ class MockFirebaseAuthRepository extends Mock
   @override
   String? get currentUserId => _currentUserId;
 
-  // Methods left without implementation to allow stubbing
+  // Default authStateChanges returns an empty broadcast stream. Production
+  // code (e.g. UnifiedFriendsService.initialize) subscribes to this in
+  // constructors/init paths; tests that don't override it shouldn't crash
+  // with a null-Stream cast. Tests that want specific User? events can
+  // stub via when() — concrete getter falls back to the default below.
+  final StreamController<User?> _authStateController =
+      StreamController<User?>.broadcast();
+
+  @override
+  Stream<User?> authStateChanges() => _authStateController.stream;
+
+  /// Push an auth state event to subscribers of authStateChanges().
+  void emitAuthState(User? user) => _authStateController.add(user);
+
+  // Other methods left without implementation to allow stubbing
 }
 
 // ============= SERVICE MOCKS =============
@@ -1061,12 +1075,60 @@ class MockUnifiedRecipeService extends Mock
     _stateController.add(state);
   }
 
-  // createCollaborativeRecipe is intentionally left to mocktail's
-  // noSuchMethod routing so individual tests can stub it via when().
-  // The earlier _collaborativeShouldSucceed shortcut was unused
-  // anywhere in the suite (verified by grep), and providing a concrete
-  // override breaks when()/verify() for the one test that actually
-  // exercises the method.
+  // Spy-style hook for the few tests that want to verify the args passed
+  // to createCollaborativeRecipe (mocktail's verify() can't be used here
+  // because the method has a concrete override — needed so VM tests get a
+  // real Future<String?> rather than a noSuchMethod-null cast crash).
+  final List<Map<String, dynamic>> _createCollaborativeRecipeCalls = [];
+  List<Map<String, dynamic>> get createCollaborativeRecipeCalls =>
+      List.unmodifiable(_createCollaborativeRecipeCalls);
+
+  bool _collaborativeShouldSucceed = false;
+  void setCollaborativeState({bool? shouldSucceed}) {
+    if (shouldSucceed != null) _collaborativeShouldSucceed = shouldSucceed;
+  }
+
+  @override
+  Future<String?> createCollaborativeRecipe({
+    required String title,
+    required List<String> memberIds,
+    String description = '',
+    List<String> ingredients = const [],
+    List<String> instructions = const [],
+    List<String> imageUrls = const [],
+    String mealType = 'Lunch',
+    int? portions,
+    int? timeMinutes,
+    double? rating,
+    List<String>? personalTagIds,
+    String? sourceUrl,
+    String? descriptionCollaborative,
+    bool allowGuestViewing = false,
+    bool allowMemberInvites = true,
+    List<String>? categoryIds,
+  }) async {
+    _createCollaborativeRecipeCalls.add({
+      'title': title,
+      'memberIds': List<String>.from(memberIds),
+      'description': description,
+      'ingredients': List<String>.from(ingredients),
+      'instructions': List<String>.from(instructions),
+      'imageUrls': List<String>.from(imageUrls),
+      'mealType': mealType,
+      'portions': portions,
+      'timeMinutes': timeMinutes,
+      'rating': rating,
+      'personalTagIds':
+          personalTagIds == null ? null : List<String>.from(personalTagIds),
+      'sourceUrl': sourceUrl,
+      'descriptionCollaborative': descriptionCollaborative,
+      'allowGuestViewing': allowGuestViewing,
+      'allowMemberInvites': allowMemberInvites,
+      'categoryIds':
+          categoryIds == null ? null : List<String>.from(categoryIds),
+    });
+    return _collaborativeShouldSucceed ? 'collab-$title' : null;
+  }
 
   @override
   Map<String, dynamic> getServiceStatus() {

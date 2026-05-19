@@ -98,21 +98,10 @@ void main() {
 
     group('Collaboration Lifecycle', () {
       test('should enable collaborative editing for personal recipe', () async {
-        // Arrange
-        when(() => mockParentService.createCollaborativeRecipe(
-              title: any(named: 'title'),
-              memberIds: any(named: 'memberIds'),
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              imageUrls: any(named: 'imageUrls'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
-              sourceUrl: any(named: 'sourceUrl'),
-            )).thenAnswer((_) async => 'collab_recipe_1');
+        // Arrange — createCollaborativeRecipe has a concrete spy override on
+        // MockUnifiedRecipeService (mocktail when() doesn't work for it);
+        // configure success and assert on the captured call list.
+        mockParentService.setCollaborativeState(shouldSucceed: true);
 
         when(() => mockParentService.deleteRecipe('recipe_1'))
             .thenAnswer((_) async => true);
@@ -125,20 +114,10 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.createCollaborativeRecipe(
-              title: 'Personal Recipe',
-              memberIds: ['user_456', 'user_789'],
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              imageUrls: any(named: 'imageUrls'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTags'),
-              sourceUrl: any(named: 'sourceUrl'),
-            )).called(1);
+        expect(mockParentService.createCollaborativeRecipeCalls, hasLength(1));
+        final call = mockParentService.createCollaborativeRecipeCalls.first;
+        expect(call['title'], equals('Personal Recipe'));
+        expect(call['memberIds'], equals(['user_456', 'user_789']));
       });
 
       test('should not enable collaboration for already collaborative recipe',

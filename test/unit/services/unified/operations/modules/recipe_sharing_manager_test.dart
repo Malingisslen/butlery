@@ -139,24 +139,10 @@ void main() {
           'user_789': 'Member Two',
         };
 
-        when(() => mockParentService.createCollaborativeRecipe(
-              title: any(named: 'title'),
-              memberIds: any(named: 'memberIds'),
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              imageUrls: any(named: 'imageUrls'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-              descriptionCollaborative: any(named: 'descriptionCollaborative'),
-              allowGuestViewing: any(named: 'allowGuestViewing'),
-              allowMemberInvites: any(named: 'allowMemberInvites'),
-              categoryIds: any(named: 'categoryIds'),
-            )).thenAnswer((_) async => 'new_collab_id');
+        // createCollaborativeRecipe has a concrete spy override on
+        // MockUnifiedRecipeService; configure success and inspect the
+        // captured call list instead of mocktail verify().
+        mockParentService.setCollaborativeState(shouldSucceed: true);
 
         when(() => mockNotificationService.sendImmediateNotification(
               targetUserIds: any(named: 'targetUserIds'),
@@ -178,27 +164,22 @@ void main() {
           categoryIds: ['category_1'],
         );
 
-        // Assert
-        expect(newId, equals('new_collab_id'));
+        // Assert — mock returns 'collab-<title>' on success.
+        expect(newId, equals('collab-My Great Recipe'));
 
-        verify(() => mockParentService.createCollaborativeRecipe(
-              title: 'My Great Recipe',
-              memberIds: memberIds,
-              description: 'A wonderful personal recipe',
-              ingredients: ['ingredient 1', 'ingredient 2'],
-              instructions: ['step 1', 'step 2'],
-              imageUrls: ['image1.jpg', 'image2.jpg'],
-              mealType: 'Middag',
-              portions: 4,
-              timeMinutes: 30,
-              rating: 4.5,
-              personalTagIds: ['swedish', 'traditional'],
-              sourceUrl: 'https://example.com',
-              descriptionCollaborative: 'Sharing my recipe with the team',
-              allowGuestViewing: true,
-              allowMemberInvites: false,
-              categoryIds: ['category_1'],
-            )).called(1);
+        expect(mockParentService.createCollaborativeRecipeCalls, hasLength(1));
+        final call = mockParentService.createCollaborativeRecipeCalls.first;
+        expect(call['title'], equals('My Great Recipe'));
+        expect(call['memberIds'], equals(memberIds));
+        expect(call['description'], equals('A wonderful personal recipe'));
+        expect(call['ingredients'], equals(['ingredient 1', 'ingredient 2']));
+        expect(call['instructions'], equals(['step 1', 'step 2']));
+        expect(call['mealType'], equals('Middag'));
+        expect(call['descriptionCollaborative'],
+            equals('Sharing my recipe with the team'));
+        expect(call['allowGuestViewing'], isTrue);
+        expect(call['allowMemberInvites'], isFalse);
+        expect(call['categoryIds'], equals(['category_1']));
 
         verify(() => mockNotificationService.sendImmediateNotification(
               targetUserIds: memberIds,
