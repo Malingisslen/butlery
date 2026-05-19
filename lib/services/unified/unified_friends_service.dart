@@ -112,18 +112,27 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     required AuthRepository authRepository,
   })  : _firestoreRepository = firestoreRepository,
         _authRepository = authRepository {
+    // Forward the firestore instance from the injected repo into the
+    // sub-repos so tests can wire a FakeFirebaseFirestore end-to-end
+    // without each sub-repo falling through to FirebaseFirestore.instance
+    // (which throws when no Firebase.app exists in the unit-test runtime).
+    final firestore = firestoreRepository.firestore;
+
     // Create Firebase friends repository
     _friendsRepository = FirebaseFriendsRepository(
+      firestore: firestore,
       authRepository: _authRepository,
     );
 
     // Create friend relationship repository (for counter updates)
     _relationshipRepository = FriendRelationshipRepository(
+      firestore: firestore,
       authRepository: _authRepository,
     );
 
     // Create friend category repository (for group/category management)
     _categoryRepository = FriendCategoryRepository(
+      firestore: firestore,
       authRepository: _authRepository,
     );
 
