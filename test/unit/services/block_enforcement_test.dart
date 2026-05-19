@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -68,6 +69,12 @@ void main() {
 
       TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
       TestServiceLocator.registerMock<user_svc.UserService>(mockUserService);
+      // BaseService.executeServiceOperation runs an _isAuthenticated()
+      // pre-flight check that resolves AuthRepository from the global
+      // ServiceLocator. Register the same mock under the interface type
+      // so FriendsManagementOperations.removeFriend doesn't short-circuit
+      // before touching the relationship repository.
+      TestServiceLocator.registerMock<AuthRepository>(mockAuthRepo);
 
       // UnifiedFriendsService._initializeModules() resolves FirebaseBlockRepository
       // from ServiceLocator. Register one wired to the same FakeFirebaseFirestore
