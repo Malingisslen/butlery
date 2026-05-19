@@ -4,8 +4,10 @@
 /// and four action choices: keep existing, replace, save as new, or merge.
 library;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -245,15 +247,21 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
     }
     return SizedBox(
       height: AppDimensions.heightThumbnail,
-      child: Image.network(url,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
-                height: AppDimensions.heightThumbnail,
-                color: cs.surfaceContainerHighest,
-                alignment: Alignment.center,
-                child: Icon(Icons.broken_image_outlined,
-                    color: cs.onSurfaceVariant),
-              )),
+      child: CachedNetworkImage(
+        imageUrl: url,
+        cacheKey: FirebaseUrlUtils.stableCacheKey(url),
+        fit: BoxFit.cover,
+        placeholder: (_, __) => Container(
+          height: AppDimensions.heightThumbnail,
+          color: cs.surfaceContainerHighest,
+        ),
+        errorWidget: (_, __, ___) => Container(
+          height: AppDimensions.heightThumbnail,
+          color: cs.surfaceContainerHighest,
+          alignment: Alignment.center,
+          child: Icon(Icons.broken_image_outlined, color: cs.onSurfaceVariant),
+        ),
+      ),
     );
   }
 

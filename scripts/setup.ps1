@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$REQUIRED_FLUTTER = "3.32.4"
+$REQUIRED_FLUTTER = "3.35.1"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectDir = Split-Path -Parent $ScriptDir
 

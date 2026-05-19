@@ -2,7 +2,9 @@
 
 // lib/widgets/menu/suggest_alternative_sheet.dart
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -154,8 +156,11 @@ class _SheetContentState extends State<_SheetContent> {
                                 onTap: () => Navigator.pop(context, recipe),
                                 leading: recipe.imageUrls.isNotEmpty
                                     ? ClipRRect(
-                                        child: Image.network(
-                                          recipe.imageUrls.first,
+                                        child: CachedNetworkImage(
+                                          imageUrl: recipe.imageUrls.first,
+                                          cacheKey:
+                                              FirebaseUrlUtils.stableCacheKey(
+                                                  recipe.imageUrls.first),
                                           width: AppDimensions.avatarSizeM,
                                           height: AppDimensions.avatarSizeM,
                                           fit: BoxFit.cover,

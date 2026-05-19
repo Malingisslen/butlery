@@ -29,15 +29,20 @@ import 'package:crypto/crypto.dart';
 /// SHA-256 hashes of the BERT NER ONNX model, keyed by Firebase Storage
 /// version directory (`models/ingredient_ner/v{N}/model.onnx`).
 const Map<int, String> kExpectedNerModelHashes = <int, String>{
-  // v1: TODO — populate after computing the hash of the production model.onnx.
-  // Until populated, NerModelManager logs a non-fatal warning on download
-  // (see transitional rollout note above) and accepts the bytes.
+  // BUT-822: hash captured 2026-05-19 from the production
+  // `models/ingredient_ner/v1/model.onnx` bytes via Firebase Storage
+  // signed-URL download (size: 20,654,344 B).
+  1: 'f4f81738b25278c77c2aa9ba0a40128dcb67700da2685ea0e5fe510a33a1fe1c',
 };
 
 /// SHA-256 hashes of the line-classifier ONNX model, keyed by Firebase
 /// Storage version directory (`models/line_classifier/v{N}/model.onnx`).
 const Map<int, String> kExpectedLineClassifierModelHashes = <int, String>{
-  // v1: TODO — populate after computing the hash of the production model.onnx.
+  // BUT-822: hash captured 2026-05-19 from the production
+  // `models/line_classifier/v1/model.onnx` bytes via Firebase Storage
+  // signed-URL download (size: 20,754,122 B). Matches local
+  // `scripts/line_classifier/output/onnx/model.onnx` exactly.
+  1: 'd155becda1cf586d9e1ee86fac6e81c5f999404aa8741d0f1a9223ec5f57f085',
 };
 
 /// Thrown when a downloaded ONNX model fails its SHA-256 integrity check.

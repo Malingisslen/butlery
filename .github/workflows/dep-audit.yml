@@ -36,6 +36,11 @@ permissions:
   contents: read
   security-events: write
 
+# BUT-812: cancel superseded runs on rapid pushes so audit lanes don't pile up.
+concurrency:
+  group: dep-audit-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   FLUTTER_VERSION: "3.35.1"
 
@@ -48,7 +53,7 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run node-version consistency guard
         run: bash tools/check_node_version_consistency.sh
 
@@ -58,7 +63,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
@@ -109,7 +114,7 @@ jobs:
         working-directory: functions
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
         uses: actions/setup-node@v4

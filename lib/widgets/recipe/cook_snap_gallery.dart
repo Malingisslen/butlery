@@ -1,9 +1,11 @@
 /// Horizontal gallery of cooking photos posted on a recipe.
 library;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -165,10 +167,14 @@ class _SnapThumbnail extends StatelessWidget {
               SizedBox(
                 width: 100,
                 height: 100,
-                child: Image.network(
-                  imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => ColoredBox(
+                  placeholder: (_, __) => ColoredBox(
+                    color: colorScheme.surfaceContainerHighest,
+                  ),
+                  errorWidget: (_, __, ___) => ColoredBox(
                     color: colorScheme.surfaceContainerHighest,
                     child: Icon(
                       Icons.broken_image,

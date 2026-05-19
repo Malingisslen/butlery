@@ -1,7 +1,9 @@
 // lib/widgets/messaging/poll_creation_dialog.dart
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -281,10 +283,13 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                 width: 40,
                 height: 40,
                 child: recipe.primaryImageUrl != null
-                    ? Image.network(
-                        recipe.primaryImageUrl!,
+                    ? CachedNetworkImage(
+                        imageUrl: recipe.primaryImageUrl!,
+                        cacheKey: FirebaseUrlUtils.stableCacheKey(
+                            recipe.primaryImageUrl!),
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _fallbackThumb(cs),
+                        placeholder: (_, __) => _fallbackThumb(cs),
+                        errorWidget: (_, __, ___) => _fallbackThumb(cs),
                       )
                     : _fallbackThumb(cs),
               ),

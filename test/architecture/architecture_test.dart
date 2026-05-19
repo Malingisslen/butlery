@@ -446,6 +446,43 @@ void main() {
       );
     });
 
+    // BUT-805: forbid raw `Image.network(` in `lib/` — bypasses cache and
+    // re-downloads on every scroll. The canonical wrapper is
+    // `CachedNetworkImage(imageUrl: ..., cacheKey:
+    // FirebaseUrlUtils.stableCacheKey(url), placeholder: ..., errorWidget: ...)`.
+    //
+    // Allowed: `lib/` files in test fixtures (none currently), or any future
+    // exemption added inline with a justification comment ending in
+    // `// arch-allow: Image.network` on the SAME line.
+    test('no raw `Image.network(` calls in lib/ (use CachedNetworkImage)', () {
+      final pattern = RegExp(r'\bImage\.network\(');
+      final allowMarker = '// arch-allow: Image.network';
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        if (!relPath.startsWith('lib/')) continue;
+
+        final lines = file.readAsLinesSync();
+        for (var i = 0; i < lines.length; i++) {
+          final raw = lines[i];
+          final code = raw.replaceAll(RegExp(r'//.*'), '');
+          if (!pattern.hasMatch(code)) continue;
+          if (raw.contains(allowMarker)) continue;
+          violations.add('$relPath:${i + 1}: ${raw.trim()}');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: 'Raw `Image.network(...)` bypasses the cache and re-downloads '
+            'on every scroll. Use CachedNetworkImage with '
+            'FirebaseUrlUtils.stableCacheKey(url) for cache hits.\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
     test('widgets directory exists under lib', () {
       expect(
         Directory('lib/widgets').existsSync(),

@@ -1,5 +1,6 @@
 /// Public profile view showing a user's display name, avatar, bio, cooking skill, and public recipes.
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/public_profile_viewmodel.dart';
@@ -7,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -330,10 +332,13 @@ class _PublicRecipeCard extends StatelessWidget {
                       width: 64,
                       height: 64,
                       child: recipe.primaryImageUrl != null
-                          ? Image.network(
-                              recipe.primaryImageUrl!,
+                          ? CachedNetworkImage(
+                              imageUrl: recipe.primaryImageUrl!,
+                              cacheKey: FirebaseUrlUtils.stableCacheKey(
+                                  recipe.primaryImageUrl!),
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
+                              placeholder: (_, __) => _imagePlaceholder(cs),
+                              errorWidget: (_, __, ___) =>
                                   _imagePlaceholder(cs),
                             )
                           : _imagePlaceholder(cs),
