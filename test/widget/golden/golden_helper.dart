@@ -1,8 +1,29 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+
+/// Installs a method-channel stub for path_provider so widgets that use
+/// flutter_cache_manager (CachedNetworkImage, etc.) can resolve a temp dir
+/// during render — otherwise DefaultCacheManager throws inside
+/// IOFileSystem.createDirectory and bubbles up as a pending exception that
+/// `FlutterError.onError = (_) {}` can't swallow (async / outside the zone).
+void _installPathProviderStub() {
+  final tempDir = Directory.systemTemp.createTempSync('butlery_golden_cache');
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+    const MethodChannel('plugins.flutter.io/path_provider'),
+    (call) async {
+      // The cache manager only needs a writable path — same temp dir for
+      // every documented method keeps things simple.
+      return tempDir.path;
+    },
+  );
+}
 
 /// Canonical runner for visual golden tests in the Butlery project.
 ///
@@ -41,6 +62,8 @@ void butleryGolden(
   Finder? target,
 }) {
   testWidgets(description, (tester) async {
+    _installPathProviderStub();
+
     final surfaceWidth = width;
     final surfaceHeight = height ?? 800; // tall enough for intrinsic layouts
 
