@@ -40,6 +40,9 @@ void main() {
 
       mockFirestoreRepo = FakeFirestoreRepository();
       mockAuthRepo = MockFirebaseAuthRepository();
+      // Auth state mirrors the permission service; FirebaseBlockRepository
+      // (registered below) calls requireCurrentUserId() on every write.
+      mockAuthRepo.setAuthState(userId: 'test-user-id');
       // UnifiedFriendsService.initialize() subscribes to authStateChanges;
       // empty stream is enough — no actual auth events are needed for the
       // block-enforcement assertions.
