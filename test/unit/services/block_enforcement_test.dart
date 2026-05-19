@@ -132,11 +132,28 @@ void main() {
       await mockFirestoreRepo.firestore
           .collection('users')
           .doc('test-user-id')
-          .set({'displayName': 'Test User'});
+          .set({'displayName': 'Test User', 'friendsCount': 1});
       await mockFirestoreRepo.firestore
           .collection('users')
           .doc('friend-to-block')
-          .set({'displayName': 'Friend To Block'});
+          .set({'displayName': 'Friend To Block', 'friendsCount': 1});
+
+      // Pre-create the mutual friendship subdocs so
+      // FriendRelationshipRepository.removeMutualFriends actually finds them
+      // (its transaction only touches existing sides; otherwise the
+      // state-cleanup branch inside removeFriend isn't reached).
+      await mockFirestoreRepo.firestore
+          .collection('users')
+          .doc('test-user-id')
+          .collection('friends')
+          .doc('friend-to-block')
+          .set({'friendId': 'friend-to-block'});
+      await mockFirestoreRepo.firestore
+          .collection('users')
+          .doc('friend-to-block')
+          .collection('friends')
+          .doc('test-user-id')
+          .set({'friendId': 'test-user-id'});
 
       // Verify the friend exists before blocking
       expect(
