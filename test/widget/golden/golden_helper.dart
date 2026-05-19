@@ -7,20 +7,41 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
-/// Installs a method-channel stub for path_provider so widgets that use
-/// flutter_cache_manager (CachedNetworkImage, etc.) can resolve a temp dir
-/// during render — otherwise DefaultCacheManager throws inside
-/// IOFileSystem.createDirectory and bubbles up as a pending exception that
-/// `FlutterError.onError = (_) {}` can't swallow (async / outside the zone).
-void _installPathProviderStub() {
+/// Installs method-channel stubs that widgets using flutter_cache_manager
+/// (CachedNetworkImage, etc.) hit during render:
+///   * path_provider — returns a real temp dir so DefaultCacheManager's
+///     IOFileSystem.createDirectory call doesn't throw;
+///   * com.tekartik.sqflite — returns no-op responses so CacheStore can
+///     "open" its database and "read" zero rows. On macOS runners the
+///     sqflite native plugin isn't initialised in widget-test mode and
+///     the call surfaces an unhandled exception that bypasses
+///     `FlutterError.onError`.
+/// In both cases the goal is to let the cache pipeline proceed all the way
+/// to "we don't have this image cached, place placeholder/errorWidget" —
+/// which is what the golden actually captures.
+void _installCacheStubs() {
   final tempDir = Directory.systemTemp.createTempSync('butlery_golden_cache');
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(
+  final messenger =
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+
+  messenger.setMockMethodCallHandler(
     const MethodChannel('plugins.flutter.io/path_provider'),
+    (call) async => tempDir.path,
+  );
+
+  messenger.setMockMethodCallHandler(
+    const MethodChannel('com.tekartik.sqflite'),
     (call) async {
-      // The cache manager only needs a writable path — same temp dir for
-      // every documented method keeps things simple.
-      return tempDir.path;
+      switch (call.method) {
+        case 'openDatabase':
+          return 1; // database handle id; any int will do
+        case 'query':
+          return <Map<String, Object?>>[];
+        case 'getDatabasesPath':
+          return tempDir.path;
+        default:
+          return null;
+      }
     },
   );
 }
@@ -62,7 +83,7 @@ void butleryGolden(
   Finder? target,
 }) {
   testWidgets(description, (tester) async {
-    _installPathProviderStub();
+    _installCacheStubs();
 
     final surfaceWidth = width;
     final surfaceHeight = height ?? 800; // tall enough for intrinsic layouts
