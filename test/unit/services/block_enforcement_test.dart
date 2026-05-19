@@ -95,8 +95,9 @@ void main() {
     test('sendFriendRequest rejects when target is blocked', () async {
       await friendsService.initialize();
 
-      // Block a user first
-      friendsService.blockedUsers.add('blocked-target');
+      // Seed the blocked-users state via the internal helper —
+      // blockedUsers is exposed as Set.unmodifiable so direct .add throws.
+      friendsService.addBlockedUserInternal('blocked-target');
 
       // Attempt to send friend request to blocked user
       final result = await friendsService.management.sendFriendRequest(

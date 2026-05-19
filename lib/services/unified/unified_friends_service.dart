@@ -516,6 +516,13 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
         '✅ Removed friend ${friendId.maskedUserId} via state manager');
   }
 
+  /// Internal method to seed the blocked-users state — used by tests and
+  /// by internal operations that have already persisted the block but need
+  /// the in-memory roster to reflect it. Mirrors addFriendInternal.
+  void addBlockedUserInternal(String userId) {
+    _stateManager.addBlockedUser(userId);
+  }
+
   /// Sync friend request to Firebase
   Future<void> syncFriendRequestToFirebase(FriendRequest request) async =>
       await _firebaseSyncOps.syncFriendRequestToFirebase(request);
