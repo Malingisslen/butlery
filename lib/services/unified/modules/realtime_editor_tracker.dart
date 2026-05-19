@@ -25,7 +25,7 @@ class RealtimeEditorTracker {
 
       if (isActive) {
         await collaborativeRepo.setPresence(recipeId, currentUserId, {
-          'displayName': currentUserDisplayName ?? '?',
+          'displayName': currentUserDisplayName ?? 'Okänd användare',
           'isActive': true,
           'lastSeen': clock.now().toIso8601String(),
         });

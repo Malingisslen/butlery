@@ -359,9 +359,10 @@ void main() {
           currentUserId: 'user_123',
         );
 
-        // Assert
-        // Collaborative sync is currently in development, so no repository call
-        verifyNever(() => mockRecipeRepository.update(any()));
+        // Assert — collaborative recipes now sync through the same repository
+        // until the dedicated collaborative repo is wired in (see
+        // _syncCollaborativeRecipe in debounced_sync_operations.dart).
+        verify(() => mockRecipeRepository.update(any())).called(1);
       });
     });
 

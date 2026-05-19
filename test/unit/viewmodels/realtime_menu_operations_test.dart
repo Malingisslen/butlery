@@ -486,15 +486,18 @@ void main() {
             ));
       });
 
-      test('should rollback on partial failure in batch add', () {
+      test('should rollback on partial failure in batch add', () async {
         when(() => mockMenuService.addRecipeToCategory(
               resourceId: testMenuId,
               categoryName: testCategory,
               recipe: testRecipe2,
             )).thenThrow(Exception('second failed'));
 
-        expect(
-          () => operations.addMultipleRecipesToCategory(
+        // expect(() => future, throwsA) doesn't await; verify() then runs
+        // before the catch-block fires. expectLater awaits the future so
+        // rollback() has actually been called by the time we verify.
+        await expectLater(
+          operations.addMultipleRecipesToCategory(
             menuId: testMenuId,
             categoryName: testCategory,
             recipes: [testRecipe, testRecipe2],

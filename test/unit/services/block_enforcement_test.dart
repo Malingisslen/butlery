@@ -7,11 +7,13 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/viewmodels/social_recipe/social_comments_manager.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/mocks/firestore_singleton.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
 import 'package:butlery/core/providers/application_provider.dart'
@@ -57,6 +59,17 @@ void main() {
 
       TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
       TestServiceLocator.registerMock<user_svc.UserService>(mockUserService);
+
+      // UnifiedFriendsService._initializeModules() resolves FirebaseBlockRepository
+      // from ServiceLocator. Register one wired to the same FakeFirebaseFirestore
+      // that FakeFirestoreRepository falls through to (FirestoreSingleton.instance)
+      // so the block repo, the friends repo, and the test all see one Firestore.
+      TestServiceLocator.registerMock<FirebaseBlockRepository>(
+        FirebaseBlockRepository(
+          firestore: FirestoreSingleton.instance,
+          authRepository: mockAuthRepo,
+        ),
+      );
 
       friendsService = UnifiedFriendsService(
         firestoreRepository: mockFirestoreRepo,

@@ -284,15 +284,19 @@ void main() {
           mentionedUserIds: mentions,
         );
 
-        // Assert
+        // Assert — mocktail any() can't be nested inside a Map literal; match
+        // the variables map by predicate instead (asserts the static fields,
+        // tolerates whatever the implementation generates for commentPreview).
         verify(() => mockNotificationService.sendBatchableNotification(
               targetUserIds: mentions,
               strategy: NotificationStrategy.recipeComment,
-              variables: {
-                'mentionerName': 'Test Commenter',
-                'recipeName': 'Test Recipe',
-                'commentPreview': any(),
-              },
+              variables: any(
+                named: 'variables',
+                that: predicate<Map<String, dynamic>>((v) =>
+                    v['mentionerName'] == 'Test Commenter' &&
+                    v['recipeName'] == 'Test Recipe' &&
+                    v.containsKey('commentPreview')),
+              ),
               additionalData: {
                 'recipeId': 'recipe_1',
                 'commentId': 'comment_1',

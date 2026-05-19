@@ -1245,6 +1245,12 @@ void main() {
     late DateTime testTime;
 
     setUp(() {
+      // OCRUsageTracker.loadFromPersistence() reads SharedPreferences. Earlier
+      // tests in this file call recordUsage(), which persists incrementing
+      // counters into the same mock prefs (setMockInitialValues only runs once
+      // in setUpAll). Reset prefs here so this group's counter assertions
+      // observe a clean slate.
+      SharedPreferences.setMockInitialValues({});
       testTime = DateTime(2025, 1, 15, 12, 0, 0);
       mockClient = MockHttpClient();
       service = OCRExtractionService.createForTesting(

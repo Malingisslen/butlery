@@ -1061,32 +1061,12 @@ class MockUnifiedRecipeService extends Mock
     _stateController.add(state);
   }
 
-  bool _collaborativeShouldSucceed = false;
-
-  void setCollaborativeState({bool? shouldSucceed}) {
-    if (shouldSucceed != null) _collaborativeShouldSucceed = shouldSucceed;
-  }
-
-  @override
-  Future<String?> createCollaborativeRecipe({
-    required String title,
-    required List<String> memberIds,
-    String description = '',
-    List<String> ingredients = const [],
-    List<String> instructions = const [],
-    List<String> imageUrls = const [],
-    String mealType = 'Lunch',
-    int? portions,
-    int? timeMinutes,
-    double? rating,
-    List<String>? personalTagIds,
-    String? sourceUrl,
-    String? descriptionCollaborative,
-    bool allowGuestViewing = false,
-    bool allowMemberInvites = true,
-    List<String>? categoryIds,
-  }) async =>
-      _collaborativeShouldSucceed ? 'collab-$title' : null;
+  // createCollaborativeRecipe is intentionally left to mocktail's
+  // noSuchMethod routing so individual tests can stub it via when().
+  // The earlier _collaborativeShouldSucceed shortcut was unused
+  // anywhere in the suite (verified by grep), and providing a concrete
+  // override breaks when()/verify() for the one test that actually
+  // exercises the method.
 
   @override
   Map<String, dynamic> getServiceStatus() {

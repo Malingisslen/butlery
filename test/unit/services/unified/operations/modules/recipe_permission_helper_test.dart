@@ -512,8 +512,9 @@ void main() {
 
     group('Performance and Concurrency', () {
       test('should handle large permission matrix efficiently', () {
-        // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_perf');
+        // Arrange — currentUserId is a concrete getter on MockUnifiedRecipeService,
+        // so when() can't intercept it. Use the state setter instead.
+        mockParentService.setRecipeState(currentUserId: 'user_perf');
 
         // Create recipe with many members
         final largeRecipe = RecipeBuilder()
@@ -551,9 +552,8 @@ void main() {
       });
 
       test('should handle concurrent permission operations', () async {
-        // Arrange
-        when(() => mockParentService.currentUserId)
-            .thenReturn('user_concurrent');
+        // Arrange — see note above; concrete getter, use setter.
+        mockParentService.setRecipeState(currentUserId: 'user_concurrent');
 
         // Act
         final operations = [
