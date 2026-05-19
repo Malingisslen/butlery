@@ -19,17 +19,17 @@ dependencies:
   cupertino_icons: ^1.0.9
 
   # ==================== FIREBASE & BACKEND ====================
-  firebase_core: ^4.7.0        # Updated for CVE-2025-0838 fix
-  firebase_auth: ^6.4.0        # Updated for security patches
-  cloud_firestore: ^6.3.0      # Updated for CVE-2024-7254 fix
-  firebase_database: ^12.3.0   # Realtime Database for presence onDisconnect
-  firebase_storage: ^13.3.0    # Updated for bug fixes
-  firebase_analytics: ^12.3.0  # Updated for tracking improvements
-  firebase_app_check: 0.4.3        # PINNED — security primitive (BUT-793). Bump explicitly via Dependabot review, never via `pub upgrade`.
-  firebase_messaging: ^16.2.0  # Updated for FCM improvements
-  firebase_performance: ^0.11.3  # For performance monitoring
-  firebase_crashlytics: ^5.2.0  # Updated for reporting improvements
-  firebase_remote_config: ^6.4.0  # Feature flags and A/B testing
+  firebase_core: ^4.9.0        # Updated for CVE-2025-0838 fix
+  firebase_auth: ^6.5.1        # Updated for security patches
+  cloud_firestore: ^6.4.1      # Updated for CVE-2024-7254 fix
+  firebase_database: ^12.4.1   # Realtime Database for presence onDisconnect
+  firebase_storage: ^13.4.1    # Updated for bug fixes
+  firebase_analytics: ^12.4.1  # Updated for tracking improvements
+  firebase_app_check: 0.4.4+1        # PINNED — security primitive (BUT-793). Bump explicitly via Dependabot review, never via `pub upgrade`.
+  firebase_messaging: ^16.2.2  # Updated for FCM improvements
+  firebase_performance: ^0.11.4+1  # For performance monitoring
+  firebase_crashlytics: ^5.2.2  # Updated for reporting improvements
+  firebase_remote_config: ^6.5.1  # Feature flags and A/B testing
   flutter_local_notifications: ^20.1.0  # For Android notification channels (21.x needs Dart 3.10+)
   device_info_plus: 12.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. See BUT-750.
   freerasp: 7.5.1  # PINNED — RASP rules / Frida detection (BUT-793). Bump explicitly; minor versions can change tampering thresholds.
@@ -85,7 +85,7 @@ dependencies:
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.7.1
   app_links: ^6.4.1          # BUT-434: Deep-link / share-intent handler. Replaces receive_intent (unverified publisher, single maintainer, Android-only). Cross-platform (iOS, Android, web, desktop).
-  cloud_functions: ^6.2.0
+  cloud_functions: ^6.3.1
 
   # ==================== SEARCH (Algolia - migration-ready) ====================
   algoliasearch: ^1.46.2     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
@@ -103,7 +103,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   # ==================== CORE TESTING ====================
-  test: ^1.26.2
+  test: ^1.31.0
   integration_test:
     sdk: flutter
   coverage: ^1.15.0
@@ -114,8 +114,8 @@ dev_dependencies:
   drift_dev: ^2.29.0    # Code generator for Drift — stays in lockstep with build_runner 2.7.1 above.
   
   # ==================== FIREBASE MOCKING ====================
-  fake_cloud_firestore: ^4.1.0+1
-  firebase_auth_mocks: ^0.15.1
+  fake_cloud_firestore: ^4.1.1
+  firebase_auth_mocks: ^0.15.2
   firebase_storage_mocks: ^0.8.0+1
   # ==================== TEST DATA GENERATION ====================
   fake_async: ^1.3.3  # For controlling time in tests
@@ -132,7 +132,7 @@ dev_dependencies:
   # ==================== BUILD TOOLS ====================
   # analyzer provided by test package - let pub determine compatible version
   cli_util: ^0.4.2  # For CLI utilities
-  meta: ^1.16.0  # For annotations
+  meta: ^1.18.0  # For annotations
   # sembast: needed by test/unit/core/cache/cache_dao_web_test.dart for the
   # in-memory factory (sembast/sembast_memory.dart) used to drive the web
   # CacheDao under test (BUT-555 audit 2026-05-04 — kept).
