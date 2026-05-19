@@ -1193,6 +1193,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionAbout => 'About';
 
   @override
+  String get settingsSectionLanguage => 'Language';
+
+  @override
+  String get settingsLanguageTitle => 'Language';
+
+  @override
+  String get settingsLanguageDialogTitle => 'Choose language';
+
+  @override
   String get commonLogout => 'Log out';
 
   @override

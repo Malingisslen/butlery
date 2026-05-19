@@ -42,10 +42,11 @@ class NotificationHistoryEntry {
   }
 
   /// Display title derived from notification data.
-  String get displayTitle => data['title'] as String? ?? category;
+  String get displayTitle =>
+      SerializationUtils.safeString(data, 'title', defaultValue: category);
 
   /// Display body derived from notification data.
-  String get displayBody => data['body'] as String? ?? '';
+  String get displayBody => SerializationUtils.safeString(data, 'body');
 
   NotificationHistoryEntry copyWith({
     bool? opened,

@@ -186,7 +186,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final viewModel = widget.viewModel;
 
     if (viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return StateWidget.loading();
     }
 
     if (viewModel.hasError) {

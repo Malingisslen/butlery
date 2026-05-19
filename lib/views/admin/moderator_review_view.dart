@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/moderator_review_viewmodel.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -51,7 +52,7 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
         builder: (context, snapshot) {
           final isAdmin = snapshot.data ?? false;
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return StateWidget.loading();
           }
           if (!isAdmin) {
             return _NotAuthorized();
@@ -97,7 +98,7 @@ class _ReportsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ModeratorReviewViewModel>();
     if (vm.isLoading && vm.reports.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return StateWidget.loading();
     }
     if (vm.error != null) {
       return Center(

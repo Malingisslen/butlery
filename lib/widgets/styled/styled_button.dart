@@ -6,8 +6,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
 
-/// Pre-styled button widgets to eliminate design-in-views violations
-/// Provides consistent button styling patterns used throughout the app
+/// **BUT-579 (2026-05-19):** legacy button widget — DO NOT USE in new code.
+/// Migrate to `ActionButtons.actionButton` (in
+/// `lib/widgets/common/buttons/action_buttons.dart`), which is the canonical
+/// button family per `lib/widgets/common/buttons/README.md`. 15 call-sites
+/// remain (BUT-579 follow-up tracks the migration). Pre-styled button widgets
+/// to eliminate design-in-views violations.
 class StyledButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;

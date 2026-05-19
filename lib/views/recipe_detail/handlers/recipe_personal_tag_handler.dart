@@ -13,6 +13,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -274,9 +275,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
     final colorScheme = Theme.of(context).colorScheme;
 
     if (!_initialized) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return StateWidget.loading();
     }
 
     if (!_viewModel.hasTags) {

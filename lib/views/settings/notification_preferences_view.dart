@@ -130,7 +130,7 @@ class _NotificationPreferencesViewState
           LayoutComponents.offlineIndicator(),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? StateWidget.loading()
                 : _hasError
                     ? StateWidget.error(
                         message: context.l10n

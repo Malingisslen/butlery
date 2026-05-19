@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/legal/legal_contact_footer.dart';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -90,7 +91,7 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return StateWidget.loading();
     }
 
     if (_errorMessage != null) {

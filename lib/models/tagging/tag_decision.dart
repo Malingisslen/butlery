@@ -1,5 +1,6 @@
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// H3: Structured decision log for allergen/dietary tag decisions.
 ///
@@ -81,7 +82,8 @@ class TagDecision {
   /// Creates from JSON.
   factory TagDecision.fromJson(Map<String, dynamic> json) {
     return TagDecision(
-      type: json['type'] as String? ?? 'unknown',
+      type:
+          SerializationUtils.safeString(json, 'type', defaultValue: 'unknown'),
       key: (json['key'] as String?).orEmpty(),
       result: TriStateExtension.fromFirestore(json['result']),
       reason: (json['reason'] as String?).orEmpty(),

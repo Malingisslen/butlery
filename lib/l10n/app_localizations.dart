@@ -2150,6 +2150,24 @@ abstract class AppLocalizations {
   /// **'Om'**
   String get settingsSectionAbout;
 
+  /// No description provided for @settingsSectionLanguage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Språk'**
+  String get settingsSectionLanguage;
+
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Språk'**
+  String get settingsLanguageTitle;
+
+  /// No description provided for @settingsLanguageDialogTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj språk'**
+  String get settingsLanguageDialogTitle;
+
   /// No description provided for @commonLogout.
   ///
   /// In sv, this message translates to:

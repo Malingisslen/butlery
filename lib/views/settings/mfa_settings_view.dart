@@ -5,6 +5,7 @@ import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
@@ -231,7 +232,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         title: Text(context.l10n.mfaTitle),
       ),
       body: _isLoading && !_isEnrolling
-          ? const Center(child: CircularProgressIndicator())
+          ? StateWidget.loading()
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 700),

@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
@@ -50,7 +51,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
         ],
       ),
       body: viewModel.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? StateWidget.loading()
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 700),

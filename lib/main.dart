@@ -429,7 +429,11 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   DateTime? _lastBackgroundedAt;
   static const Duration _sessionIdleResetThreshold = Duration(minutes: 30);
   static const Uuid _sessionIdGen = Uuid();
-  final LocaleProvider _localeProvider = LocaleProvider();
+  // Resolved from DI in initState — same instance that views/services
+  // access via ServiceLocator. BUT-801: previously a local field, which
+  // meant the settings hub's locale switcher (via ServiceLocator) wrote
+  // to a different LocaleProvider than the one MaterialApp listened to.
+  late final LocaleProvider _localeProvider;
   ThemeService? _themeService;
   UserPropertyBootstrap? _userPropertyBootstrap;
   String? _lastPromptedClipboardUrl;
@@ -439,6 +443,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // ApplicationBootstrap completed before runApp(), so DI is ready here.
+    _localeProvider = ApplicationBootstrap().container.get<LocaleProvider>();
     _initializeUI();
     _trackAppOpened();
     _initializeSessionTimeout();

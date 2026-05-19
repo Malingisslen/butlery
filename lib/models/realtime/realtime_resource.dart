@@ -367,7 +367,7 @@ abstract class RealtimeResource {
     return {
       'id': documentId,
       'type': RealtimeResourceType.fromString(
-        data['type'] as String? ?? 'recipe',
+        SerializationUtils.safeString(data, 'type', defaultValue: 'recipe'),
       ),
       'ownerId': (data['ownerId'] as String?).orEmpty(),
       'ownerDisplayName': (data['ownerDisplayName'] as String?).orEmpty(),

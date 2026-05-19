@@ -1193,6 +1193,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsSectionAbout => 'Om';
 
   @override
+  String get settingsSectionLanguage => 'Språk';
+
+  @override
+  String get settingsLanguageTitle => 'Språk';
+
+  @override
+  String get settingsLanguageDialogTitle => 'Välj språk';
+
+  @override
   String get commonLogout => 'Logga ut';
 
   @override

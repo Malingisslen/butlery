@@ -1253,3 +1253,78 @@ Sister pattern: `test/unit/services/llm/llm_service_circuit_breaker_test.dart`
 has `_CountingHttpsCallable` for failure-injection. The two patterns
 together — failure-counting Fake and scripted-response Fake — cover most
 CF test needs without pulling in mocktail wrappers around private types.
+
+### 2026-05-19 — Sprint wave 3 coverage review (BUT-801 / 823 / 841 / 861) [Pattern discovered]
+Reviewed 7-ticket sprint. Test gaps catalogued (none blocking):
+
+1. **BUT-801 DI dedup** (`lib/main.dart` `_localeProvider` now from
+   `ApplicationBootstrap().container.get<LocaleProvider>()`): the failure
+   mode "DI not initialised before initState" is implicitly covered by any
+   widget test that pumps `ButleryApp` — `test/e2e/bootstrap_diagnostic_test.dart`
+   does pump the real app. No targeted assertion that
+   `ServiceLocator.get<LocaleProvider>() == ApplicationBootstrap().container.get<LocaleProvider>()`
+   (the actual BUT-801 contract: same instance). Cheap follow-up:
+   `test('LocaleProvider is a singleton across DI and ServiceLocator')`
+   in `test/unit/core/di/`. Identity test, not behaviour — but it directly
+   guards the regression class that caused the bug.
+
+2. **BUT-801 `_LanguageTile`** (new `StatefulWidget` in `settings_hub_view.dart`):
+   no widget test. The user-visible contract is "tap tile → AlertDialog with
+   `LocaleProvider.supportedLocales` rows → tap row → `setLocale(code)` → subtitle
+   refreshes". Worth a single widget test using `createLocalizedTestApp` +
+   a fake `LocaleProvider` registered via `ServiceLocator`. Filed as gap, not
+   blocker — the locale-switch journey is exercisable from settings hub.
+
+3. **BUT-823 integrity short-circuit** (the new test file). Coverage of the
+   primary security claim ("mismatched bytes never touch disk") is solid:
+   asserts both `result == null` AND empty cache dir (no `.tmp`, no committed).
+   **Non-blocking gaps to file**:
+   - **Empty registry path** — `verifyOnnxBytes` with no expected hash returns
+     `ok=true, unverified=true`. The integration test doesn't cover the
+     "unverified bytes still get written" path; covered in
+     `expected_model_hashes_test.dart` at unit level but not wired through
+     `_downloadModel`. Asymmetry: if a future refactor flipped the
+     unverified-bytes branch to "abort", silent regression.
+   - **Transient FirebaseException mid-download** — `_downloadModel`'s
+     try/catch returns null on FirebaseException, but no test asserts the
+     cache stays clean if Storage throws between model and vocab fetch.
+     Likely benign (both fetched in parallel `Future.wait`) but unproven.
+   - **Pre-existing `.tmp` from a prior interrupted run** — `_tryLoadCached`
+     deletes leftover tmp files; no test for the "downloaded once, version
+     file missing, tmp left over" recovery path.
+
+   These are coverage gaps in `_downloadModel`'s error envelope, not in the
+   BUT-823 security guarantee itself. The current test correctly isolates
+   "mismatched SHA-256 → no disk write" which is the only thing BUT-823
+   needs to prove.
+
+4. **BUT-841 `SerializationUtils.safeString` migration** (4 sites in 3
+   models): behaviour delta vs old `as String? ?? default` is non-zero —
+   wrong-type input now coerces via `.toString()` instead of throwing
+   `TypeError`. Old tests in `tag_decision_test.dart` and
+   `realtime_resource_test.dart` cover the null→default path (still passing).
+   No test in the repo asserts the new wrong-type coercion (e.g. int in a
+   String field → string-rendered int). For pure Firestore-roundtrip code
+   the wrong-type case never happens; this is defence-in-depth only.
+   No new test needed; existing coverage is sufficient for the documented
+   contract.
+
+   `NotificationHistoryEntry.displayTitle/displayBody` have **zero test
+   coverage** — pre-existing gap, not caused by this sprint. Worth filing
+   separately (5-line test file).
+
+5. **BUT-861 CircularProgressIndicator → StateWidget.loading()** (10
+   sites across 11 view files). Verified by grep: no existing test asserts
+   `find.byType(CircularProgressIndicator)` against any of the 11 migrated
+   views (allergen_preferences / mfa_settings / notification_preferences /
+   consent_management / moderator_review / recipe_detail / community_guidelines /
+   terms_of_service / shopping_list_content / recipe_personal_tag_handler /
+   settings_hub). The 40+ existing CircularProgressIndicator assertions are
+   in unrelated widget tests (loading_widgets, styled_button, friend_category_manager,
+   etc.). Migration is test-safe.
+
+**Lesson**: when filing follow-up coverage tickets, distinguish
+"coverage gap" (no test exists for a path) from "regression risk"
+(test exists but is wrong / could go green incorrectly). BUT-823's
+extra paths are coverage gaps with low regression risk — file them
+P3, not P1. BUT-801's identity invariant is a regression risk — file P2.
