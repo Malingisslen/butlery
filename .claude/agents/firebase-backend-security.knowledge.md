@@ -2842,3 +2842,16 @@ Fatal-by-design (must abort whole bundle):
 When the GDPR data source is the repository (not a CF callable), there is no network-transience dimension — all errors are fatal (Art. 7 consent records: a stub `{error: ...}` in the bundle is worse than a clean abort + retry).
 
 `ComplianceExportException.toString()` deliberately omits userId — PII belongs in the structured logger (AppLogger.error → Crashlytics non-fatal), not in stack-trace surfaces that may reach user-visible error UI.
+
+---
+
+### 2026-05-21 — Cross-user cascade audit pattern (BUT-455)
+
+When a Cloud Function triggered by `auth.user().onDelete` cascades writes onto OTHER users' documents (GDPR Art. 17 right-to-erasure), each cross-user mutation needs a paired `audit_logs` row. The proven pattern (see `functions/src/cleanup/cascade-audit-log.ts`):
+
+- **In-batch staging** (`stageCascadeAuditEntry`) is correct transactionality for Art. 17: the auditable claim is "we made this cascade write" — if the write rolled back, there is nothing to audit. A separate best-effort write would create false positives (audit row saying we deleted data we didn't). Loud retry > silent skew.
+- **Schema must match existing audit_logs writers** (`storage/moderate-upload.ts`, `triggers/ping_onCreate.ts`): top-level `userId / operation / resourceType / resourceId / granted / timestamp / metadata`. Existing compound indexes (`firestore.indexes.json:122-153`) on `userId+timestamp`, `resourceType+timestamp`, `granted+timestamp`, `resourceType+resourceId+timestamp` cover both client `logPermissionCheck` and system cascade entries — no new index needed.
+- **`granted: true`** for system-authorized cascades (not a permission denial). `metadata.actor='system'`, `metadata.reason='gdpr_article_17'`, `metadata.targetUid` = the OTHER user affected. Subject (`userId` top-level) is always the user being deleted.
+- **Batch-limit accounting**: each audited write doubles the per-friend op count. When the cascade is `delete + audit`, cap iteration at `BATCH_LIMIT/2 = 250` to stay under Firestore's 500-op-per-batch ceiling. Worst-case 2× more `batch.commit()` calls — still linear, no algorithmic regression, dominated by the `get()` round-trip for users with thousands of friends.
+- **Admin SDK bypasses rules** — no `firestore.rules` change required for system cascade writes. `firestore.rules:1443-1446` only gates client-initiated `audit_logs.create` (auth.uid match + rate-limit), which Admin SDK ignores. Confirmed: zero rules update needed for BUT-455.
+- **`on-user-deleted.ts` is the single cascade entry point** — the ticket-cited `social_deletion_operations.ts` / `profile_deletion_operations.ts` paths don't exist. When auditing the BUT-886 follow-up (remaining 10 cascades), wire `stageCascadeAuditEntry` into the existing batch loops in this one file. Pattern is uniform: build batch → stage delete/update → stage audit → commit when reaching half-limit.
