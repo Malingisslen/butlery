@@ -231,6 +231,26 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
+		<!--
+			BUT-811 (HIGH-LEGAL7): allergen + dietary-preference data the user
+			supplies during onboarding and edits in account settings. Apple's
+			Privacy Manifest categorises these under Health & Fitness; we
+			collect them to filter recipes (e.g. hide gluten-containing
+			ingredients for a gluten-intolerant user) — strictly app
+			functionality, never marketing, never tracking.
+		-->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeHealthAndFitness</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

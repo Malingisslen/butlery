@@ -212,6 +212,7 @@ class FriendsViewModel extends ChangeNotifier
   Future<bool> unblockUser(String userId) async {
     final success = await _friendsService.management.unblockUser(userId);
     if (success) {
+      await _analyticsService.social.logUserUnblocked(unblockedUserId: userId);
       notifyListeners();
     }
     return success;
@@ -245,7 +246,21 @@ class FriendsViewModel extends ChangeNotifier
 
   /// Reject incoming friend request
   Future<bool> rejectFriendRequest(String requestId) async {
-    return await _friendsService.management.rejectFriendRequest(requestId);
+    // Look up sender id from the request before mutation removes it from state.
+    final request = incomingRequests.firstWhere(
+      (r) => r.id == requestId,
+      orElse: () => throw Exception('Request not found'),
+    );
+
+    final success =
+        await _friendsService.management.rejectFriendRequest(requestId);
+
+    if (success) {
+      await _analyticsService.social
+          .logFriendRequestRejected(senderId: request.fromUserId);
+    }
+
+    return success;
   }
 
   /// Cancel sent friend request
@@ -260,6 +275,7 @@ class FriendsViewModel extends ChangeNotifier
     if (success) {
       // Clear selection if removed friend was selected
       _selectionManager.removeFromSelection(friendUserId);
+      await _analyticsService.social.logFriendRemoved(friendId: friendUserId);
       notifyListeners();
     }
 

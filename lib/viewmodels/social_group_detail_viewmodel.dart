@@ -45,6 +45,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 
 /// Information about ownership succession when owner leaves group.
@@ -313,6 +314,9 @@ class SocialGroupDetailViewModel extends ChangeNotifier
       );
 
       if (success) {
+        await ServiceLocator.tryGet<AnalyticsService>()
+            ?.social
+            .logGroupLeft(groupId: groupId);
         _group = null;
         notifyListeners();
       }

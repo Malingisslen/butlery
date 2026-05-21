@@ -7,6 +7,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -280,6 +281,11 @@ class ChatViewModel extends ChangeNotifier
         replyToMessageId: _replyToMessage?.id,
       );
 
+      await ServiceLocator.tryGet<AnalyticsService>()?.social.logMessageSent(
+            conversationId: conversationId,
+            messageType: 'text',
+          );
+
       // Clear reply if we had one
       if (_replyToMessage != null) {
         _replyToMessage = null;
@@ -318,6 +324,11 @@ class ChatViewModel extends ChangeNotifier
         recipeTitle: recipeTitle,
         message: message,
       );
+
+      await ServiceLocator.tryGet<AnalyticsService>()?.social.logMessageSent(
+            conversationId: conversationId,
+            messageType: 'recipe_share',
+          );
 
       _isSending = false;
       _safeNotifyListeners();

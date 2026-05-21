@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -204,6 +205,10 @@ class ConversationsViewModel extends ChangeNotifier
         conversationId: conversationId,
         participantId: currentUser,
       );
+
+      await ServiceLocator.tryGet<AnalyticsService>()
+          ?.social
+          .logGroupLeft(groupId: conversationId);
 
       AppLogger.success('Left group conversation: $conversationId');
       return true;

@@ -18,6 +18,7 @@ import { Collections } from "../shared/collections";
 import { withTimeout } from "../shared/with-timeout";
 import { cleanUserFromLearnedAliases } from "../analytics/analyze-corrections";
 import { cascadeArrayRemove, commitInChunks } from "../shared/batch-update";
+import { stageCascadeAuditEntry } from "./cascade-audit-log";
 
 const db = admin.firestore();
 const BATCH_LIMIT = 500;
@@ -350,12 +351,23 @@ export async function cleanupNotificationQueuesWithDb(
  * D1: Remove reverse friendship documents.
  * For each friend of the deleted user, remove the deleted user's doc
  * from their friends subcollection.
+ *
+ * BUT-455: each reverse-friendship delete is a cross-user write — the
+ * cascade mutates `users/{friendId}/friends/{deletedUid}` which `friendId`
+ * is the data subject of. GDPR Art. 17 requires a demonstrable audit trail
+ * for these system-initiated mutations. We stage one `audit_logs` entry per
+ * friend in the same batch as the delete, so the audit commits iff the
+ * cascade write commits. BATCH_LIMIT covers both ops (worst case ~250 friends).
  */
 async function cleanupReverseFriendships(
   userId: string,
   friendsSnapshot: admin.firestore.QuerySnapshot
 ): Promise<number> {
   if (friendsSnapshot.empty) return 0;
+
+  // Each friend contributes 2 ops (delete + audit), so halve the per-batch
+  // friend cap to stay under Firestore's 500-op-per-batch limit.
+  const FRIENDS_PER_BATCH = Math.floor(BATCH_LIMIT / 2);
 
   let count = 0;
   let batch = db.batch();
@@ -372,10 +384,21 @@ async function cleanupReverseFriendships(
       .doc(userId);
 
     batch.delete(reverseRef);
+
+    // BUT-455: audit the cross-user cascade write.
+    stageCascadeAuditEntry(db, batch, {
+      subjectUserId: userId,
+      targetUid: friendId,
+      operation: "cascade_delete",
+      resourceType: "friends",
+      resourceId: friendId,
+      extra: { sourceCollection: `users/${friendId}/friends/${userId}` },
+    });
+
     count++;
     batchCount++;
 
-    if (batchCount >= BATCH_LIMIT) {
+    if (batchCount >= FRIENDS_PER_BATCH) {
       await batch.commit();
       batch = db.batch();
       batchCount = 0;

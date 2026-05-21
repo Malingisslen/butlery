@@ -7,6 +7,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -312,6 +313,10 @@ class GroupDetailViewModel extends ChangeNotifier
       );
 
       if (_isDisposed) return false;
+
+      await ServiceLocator.tryGet<AnalyticsService>()
+          ?.social
+          .logGroupLeft(groupId: _conversationId);
 
       AppLogger.success('Successfully left group');
 
