@@ -63,6 +63,12 @@ abstract final class AnalyticsEvents {
   static const recipeFavorited = 'recipe_favorited';
   static const postImportEdit = 'post_import_edit';
 
+  // --- Cooking mode (BUT-802 HIGH-PA4) ---
+  static const cookingSessionStarted = 'cooking_session_started';
+  static const cookingStepAdvanced = 'cooking_step_advanced';
+  static const cookingSessionCompleted = 'cooking_session_completed';
+  static const cookingSessionAbandoned = 'cooking_session_abandoned';
+
   // --- Menu / meal plan ---
   static const menuGenerated = 'menu_generated';
   static const menuGenerationStarted = 'menu_generation_started';

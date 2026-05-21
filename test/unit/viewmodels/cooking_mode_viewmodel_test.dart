@@ -1,17 +1,24 @@
 // test/unit/viewmodels/cooking_mode_viewmodel_test.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/trackers/recipe_events_tracker.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
 
 class MockPersistenceService extends Mock implements PersistenceService {}
+
+class _MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class _MockRecipeEventsTracker extends Mock implements RecipeEventsTracker {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -345,6 +352,248 @@ void main() {
 
       vm.updatePortions(12);
       expect(vm.scaleFactor, 3.0);
+
+      vm.dispose();
+    });
+  });
+
+  // BUT-802 HIGH-PA4: cooking-mode analytics lifecycle. Tests verify the
+  // viewmodel emits the documented events at the documented lifecycle points,
+  // not the analytics-service implementation (that's covered in the tracker
+  // test). The `try`/`catchError` swallowing in the viewmodel means a missing
+  // tracker registration won't fail the test silently — we register one
+  // explicitly per test so verify() can assert call shape.
+  group('CookingModeViewModel - BUT-802 analytics', () {
+    late _MockAnalyticsService mockAnalytics;
+    late _MockRecipeEventsTracker mockTracker;
+
+    setUp(() {
+      mockAnalytics = _MockAnalyticsService();
+      mockTracker = _MockRecipeEventsTracker();
+      when(() => mockAnalytics.recipe).thenReturn(mockTracker);
+      when(() => mockTracker.logCookingSessionStarted(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+          )).thenAnswer((_) async {});
+      when(() => mockTracker.logCookingStepAdvanced(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            fromStep: any(named: 'fromStep'),
+            toStep: any(named: 'toStep'),
+          )).thenAnswer((_) async {});
+      when(() => mockTracker.logCookingSessionCompleted(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            durationSec: any(named: 'durationSec'),
+            stepsViewed: any(named: 'stepsViewed'),
+          )).thenAnswer((_) async {});
+      when(() => mockTracker.logCookingSessionAbandoned(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            durationSec: any(named: 'durationSec'),
+            lastStep: any(named: 'lastStep'),
+          )).thenAnswer((_) async {});
+
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+      getIt.registerSingleton<AnalyticsService>(mockAnalytics);
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+    });
+
+    test('onEnter fires cooking_session_started with recipe id + uuid',
+        () async {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+
+      await vm.onEnter();
+
+      final captured = verify(() => mockTracker.logCookingSessionStarted(
+            recipeId: captureAny(named: 'recipeId'),
+            sessionId: captureAny(named: 'sessionId'),
+          )).captured;
+      expect(captured[0], 'recipe-1');
+      expect(captured[1], isA<String>());
+      expect((captured[1] as String).length, 36,
+          reason: 'sessionId is a v4 UUID — 36 chars with dashes.');
+
+      vm.dispose();
+    });
+
+    test('onEnter twice does not regenerate sessionId', () async {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+
+      await vm.onEnter();
+      await vm.onEnter();
+
+      // Only one started event; the second onEnter is a no-op because the
+      // session is already active.
+      verify(() => mockTracker.logCookingSessionStarted(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+          )).called(1);
+
+      vm.dispose();
+    });
+
+    test('nextStep emits cooking_step_advanced with from/to + sessionId',
+        () async {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+      await vm.onEnter();
+
+      vm.nextStep();
+
+      final captured = verify(() => mockTracker.logCookingStepAdvanced(
+            recipeId: captureAny(named: 'recipeId'),
+            sessionId: captureAny(named: 'sessionId'),
+            fromStep: captureAny(named: 'fromStep'),
+            toStep: captureAny(named: 'toStep'),
+          )).captured;
+      expect(captured[0], 'recipe-1');
+      expect(captured[2], 0);
+      expect(captured[3], 1);
+
+      vm.dispose();
+    });
+
+    test('step events do not fire before onEnter (no session)', () async {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+
+      vm.nextStep();
+
+      verifyNever(() => mockTracker.logCookingStepAdvanced(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            fromStep: any(named: 'fromStep'),
+            toStep: any(named: 'toStep'),
+          ));
+
+      vm.dispose();
+    });
+
+    test('onExit at last step fires session_completed with steps_viewed',
+        () async {
+      // Two fixed-clock blocks: onEnter at T=0 captures startedAt; onExit
+      // 90s later computes duration_sec = 90. Hoisting `vm` out of both
+      // closures keeps the same instance across the timeline.
+      late CookingModeViewModel vm;
+      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
+          () async {
+        vm = CookingModeViewModel(recipe: testRecipe);
+        await vm.onEnter();
+        vm.nextStep(); // step 1
+        vm.nextStep(); // step 2 (last — totalSteps - 1 = 2)
+      });
+      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 1, 30)),
+          () async {
+        await vm.onExit();
+      });
+
+      final captured = verify(() => mockTracker.logCookingSessionCompleted(
+            recipeId: captureAny(named: 'recipeId'),
+            sessionId: captureAny(named: 'sessionId'),
+            durationSec: captureAny(named: 'durationSec'),
+            stepsViewed: captureAny(named: 'stepsViewed'),
+          )).captured;
+      expect(captured[0], 'recipe-1');
+      expect(captured[2], 90, reason: '90s between fixed clocks.');
+      expect(captured[3], 3, reason: 'Reached steps 0, 1, 2 — all 3 viewed.');
+
+      verifyNever(() => mockTracker.logCookingSessionAbandoned(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            durationSec: any(named: 'durationSec'),
+            lastStep: any(named: 'lastStep'),
+          ));
+
+      vm.dispose();
+    });
+
+    test('onExit mid-recipe fires session_abandoned with last_step', () async {
+      late CookingModeViewModel vm;
+      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
+          () async {
+        vm = CookingModeViewModel(recipe: testRecipe);
+        await vm.onEnter();
+        vm.nextStep(); // step 1
+      });
+      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 45)),
+          () async {
+        await vm.onExit();
+      });
+
+      final captured = verify(() => mockTracker.logCookingSessionAbandoned(
+            recipeId: captureAny(named: 'recipeId'),
+            sessionId: captureAny(named: 'sessionId'),
+            durationSec: captureAny(named: 'durationSec'),
+            lastStep: captureAny(named: 'lastStep'),
+          )).captured;
+      expect(captured[0], 'recipe-1');
+      expect(captured[2], 45);
+      expect(captured[3], 1, reason: 'Abandoned at step 1, not last (2).');
+
+      verifyNever(() => mockTracker.logCookingSessionCompleted(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            durationSec: any(named: 'durationSec'),
+            stepsViewed: any(named: 'stepsViewed'),
+          ));
+
+      vm.dispose();
+    });
+
+    test('onExit without prior onEnter is a no-op (no session emitted)',
+        () async {
+      final vm = CookingModeViewModel(recipe: testRecipe);
+
+      await vm.onExit();
+
+      verifyNever(() => mockTracker.logCookingSessionCompleted(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            durationSec: any(named: 'durationSec'),
+            stepsViewed: any(named: 'stepsViewed'),
+          ));
+      verifyNever(() => mockTracker.logCookingSessionAbandoned(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            durationSec: any(named: 'durationSec'),
+            lastStep: any(named: 'lastStep'),
+          ));
+
+      vm.dispose();
+    });
+
+    test('revisiting a step does not double-count steps_viewed', () async {
+      late CookingModeViewModel vm;
+      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 0, 0)),
+          () async {
+        vm = CookingModeViewModel(recipe: testRecipe);
+        await vm.onEnter();
+        vm.nextStep(); // step 1
+        vm.previousStep(); // back to 0 (already in set)
+        vm.nextStep(); // step 1 again (already in set)
+        vm.nextStep(); // step 2 (last)
+      });
+      await withClock(Clock.fixed(DateTime.utc(2026, 5, 21, 12, 1, 0)),
+          () async {
+        await vm.onExit();
+      });
+
+      final captured = verify(() => mockTracker.logCookingSessionCompleted(
+            recipeId: any(named: 'recipeId'),
+            sessionId: any(named: 'sessionId'),
+            durationSec: any(named: 'durationSec'),
+            stepsViewed: captureAny(named: 'stepsViewed'),
+          )).captured;
+      expect(captured.single, 3,
+          reason: 'Steps 0, 1, 2 visited — set semantics dedupe revisits.');
 
       vm.dispose();
     });
