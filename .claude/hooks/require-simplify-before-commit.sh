@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# PreToolUse hook: gate `git commit` on a fresh /simplify run.
+# PreToolUse hook: gate `git commit` on a fresh /code-review run.
 #
-# /simplify is a plugin skill we can't instrument, so we rely on Claude
-# writing a timestamp file (.claude/state/simplify-done.marker) after it
-# runs. Stale marker = edits happened after the last simplify.
+# /code-review (formerly /simplify, renamed in CLI 2.1.146) is a built-in
+# skill we can't instrument, so we rely on Claude writing a timestamp file
+# (.claude/state/simplify-done.marker — kept the legacy name for stability)
+# after it runs. Stale marker = edits happened after the last review.
 
 set -euo pipefail
 
@@ -78,14 +79,16 @@ BLOCK() {
 [require-simplify-before-commit] $1
 
 To unblock:
-  1. Run the /simplify skill; fix any issues it finds.
+  1. Run /code-review (or /simplify on CLI < 2.1.146); fix any issues it finds.
+     For Dart-heavy diffs, prefer /code-review high (xhigh on Opus 4.7 if the
+     diff touches lib/repositories/, lib/services/, or firestore.rules).
   2. Run: touch .claude/state/simplify-done.marker
   3. Retry the commit.
 EOF
   exit 2
 }
 
-[[ -f "$MARKER" ]] || BLOCK "No /simplify marker — /simplify has not run."
+[[ -f "$MARKER" ]] || BLOCK "No code-review marker — /code-review has not run."
 
 MARKER_MTIME="$(stat -c '%Y' -- "$MARKER" 2>/dev/null || echo 0)"
 NEWEST_MTIME="$(

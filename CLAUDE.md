@@ -62,6 +62,18 @@ When stop hook blocks with a `reason`, fix it immediately — don't ask the user
 
 Session-aware: only blocks on errors in files THIS session modified. Ignore errors from parallel sessions.
 
+## Pre-commit /code-review effort
+
+The `/code-review` built-in (renamed from `/simplify` in CLI 2.1.146) gates `git commit` via `.claude/hooks/require-simplify-before-commit.sh`. When the hook blocks, run:
+
+- `/code-review high` — default for Dart diffs
+- `/code-review xhigh` — on Opus 4.7 when the diff touches `lib/repositories/`, `lib/services/{firebase|firestore|auth|user|gdpr}`, `functions/src/`, or `firestore.rules`
+- `/code-review` (no arg) — only for trivial single-file diffs
+
+Then `touch .claude/state/simplify-done.marker` and retry. The marker filename keeps the legacy `simplify-` prefix to avoid colliding with the `code-reviewer` agent's marker below — they are different reviewers gating different things.
+
+If on CLI < 2.1.146, use `/simplify` (same effect, no effort param).
+
 ## Agent Usage Rules
 
 **Tier 1 — Strongly Recommended (debugging / investigation):**
