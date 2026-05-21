@@ -109,6 +109,14 @@ nul
 # Temp analysis files
 *tmp_analyze*
 
+# Scratch dumps at repo root (Linear paginator output, overnight logs, etc.)
+# Anchored to root so subdirs can still have legitimate `_helper.txt` files.
+/_*.txt
+/_*.log*
+
+# Cloud Functions TypeScript build output (tsc emits here; regenerated per build)
+/functions/build/
+
 # Python artifacts (pip installs for tooling)
 lib/site-packages/
 scripts/*.exe
