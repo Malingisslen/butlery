@@ -1,11 +1,33 @@
 # Sprint Backlog
 
-## Sprint: wave-9 — FCM static-singleton refactor + server-side account-deletion + LLM golden runners — 2026-05-22 (Fr)
+## Sprint: wave-10 — FCM static-singleton refactor + server-side account-deletion (carried from wave-9) — TBD
 
-Theme: clear the wave-8 Urgent carryover (BUT-782, FCM refactor), close the wave-1 SEC5 race (BUT-788, server-side account deletion), and finish the wave-8 LLM golden foundation by wiring the on-device runners (BUT-888). Three coherent tickets, mid-scope.
+Theme: focused single-item sprint for BUT-782 per its own ticket guidance (660-line refactor + 30+ test rewrites — won't fit alongside other work). Then BUT-788 (server-side account-deletion) once FCM lands.
 
-### Pre-sprint (1)
-- [ ] **P0. Commit 3 orphan test files** — wave-8 coverage continuation:
+### Agent A: cloud-functions-specialist + testing-specialist — BUT-782 (URGENT) FCMService → instance + DI
+- [ ] Convert `lib/services/notifications/fcm_service.dart` to instance + `BaseService`
+- [ ] Create `lib/core/di/notifications_module.dart`
+- [ ] Migrate 2 production callers in `notification_service.dart`
+- [ ] Rewrite 30+ test sites in `fcm_service_test.dart`
+- [ ] testing-specialist + firebase-backend-security sign-offs
+
+### Agent B (next sprint or same sprint if A finishes early): cloud-functions-specialist + firebase-backend-security — BUT-788 server-side account-deletion
+- [ ] Audit current flow + map current CF
+- [ ] Server-side single-callable (cascades → Storage → `auth.deleteUser`)
+- [ ] Client becomes one-call (remove `firebaseAuth.user.delete()`)
+- [ ] Re-auth `< 5min` enforcement on the CF
+- [ ] CF integration test + client unit test
+
+---
+
+## Archived wave-9 (commits 55d49d993 + 602420b91) — 2026-05-22 (Fr)
+
+wave-9 — LLM golden runners + repo test-coverage continuation. **Shipped:** BUT-888 (categorize_ingredient + ner runners wired, 10/10 baseline locked in, ner skip-gated on env vars). Pre-sprint: BaseFirebaseRepository batch + FirebaseMessagingRepository facade test coverage (52 tests). **Filed follow-ups:** BUT-1003 (batch ops catch-swallow), BUT-1004 (categorizer enhancement), BUT-1005 (NER fixture model). **Deferred:** BUT-782 + BUT-788 → wave-10 (each merits a focused sprint).
+
+### Original wave-9 plan (kept for context)
+
+#### Pre-sprint (1)
+- [x] **P0. Commit 3 orphan test files** — wave-8 coverage continuation:
   - `test/unit/repositories/firebase/base_firebase_repository_extra_test.dart` (CRUD + batch + cache contract)
   - `test/unit/repositories/firebase/firebase_messaging_repository_facade_test.dart` (delegation + validate quartet)
   - `test/unit/repositories/firebase/firebase_user_repository_gaps_test.dart` (formatter-only diff)
@@ -44,31 +66,18 @@ Theme: clear the wave-8 Urgent carryover (BUT-782, FCM refactor), close the wave
   - CF integration test exercises full path on emulator (re-auth → cascade → admin auth delete → audit-log assertions).
   - Client unit test: deletion service no longer references `user.delete()`.
 
-### Agent C: testing-specialist + flutter-developer — BUT-888 (test-gap) wire 2 on-device LLM golden runners
-- [ ] **C1. Promote categorizer.**
-  - Extract `_categorizeIngredient(String)` from `lib/utils/text/shopping_list_generator.dart` → new public class `IngredientCategorizer` in `lib/services/tagging/ingredient_categorizer.dart`.
-  - `ShoppingListGenerator` becomes a consumer (no behaviour change).
-  - Keep same return shape; one test that the consumer path still works.
-- [ ] **C2. Wire categorize_ingredient runner.**
-  - Update `test/golden/llm/_golden_runner.dart` (or add `test/golden/llm/categorize_ingredient_test.dart`) — load `cases.json`, run each through `IngredientCategorizer.categorize`, assert exact-match category.
-  - First baseline: log PASS/FAIL per case.
-- [ ] **C3. Wire ner runner.**
-  - Load current production NER model via `NerInferenceService` (same path as runtime).
-  - Run each case's `input` through `extractEntities(sentence)`, convert to `[{text, label}]` shape, assert jaccard ≥ 0.80.
-  - Note: model loading may be heavy in test — gate with `@Tags(['golden-llm'])` so it only runs in the nightly workflow, not on every `flutter test`.
-- [ ] **C4. Nightly workflow stays green.**
-  - Confirm `.github/workflows/golden-llm.yml` invocation still resolves to the runners (no path change needed if runners are added under `test/golden/llm/`).
+### Agent C: testing-specialist + flutter-developer — BUT-888 (test-gap) wire 2 on-device LLM golden runners — DONE
+- [x] **C1.** `IngredientCategorizer` extracted to `lib/services/tagging/`; ShoppingListGenerator updated (35/35 tests pass).
+- [x] **C2.** `test/golden/llm/categorize_ingredient_test.dart` ships — set-equality baseline (10/10 passing).
+- [x] **C3.** `test/golden/llm/ner_test.dart` ships — gated on `NER_MODEL_PATH` env var; skips cleanly (see BUT-1005).
+- [x] **C4.** Workflow wired with corpus_filter fall-through for unwired choices.
 
-### Post-Sprint Steps
-- [ ] `dart analyze --fatal-infos` clean
-- [ ] Tier-2 reviewer markers — `code-reviewer` (.dart), `testing-specialist` (lib/**/*.dart), `firebase-backend-security` (FCM + account-deletion CF + repos), `cloud-functions-specialist` (functions/src/ touches)
-- [ ] **File follow-up Linear tickets (mandatory before commit):**
-  - If `IngredientCategorizer` promotion uncovers tag-resolution duplications → ticket for consolidation
-  - If FCM refactor exposes test seams that should be removed from production → ticket
-  - If server-side account-deletion CF exceeds current CF timeout budget → ticket for chunked-cascade follow-up
-  - Any reviewer-flagged "out-of-scope" findings
-- [ ] Commit (inline, conventional `feat:` / `refactor:` / `test:` mix) + push direct to main
-- [ ] Close Linear BUT-782/788/888 (done)
+### Post-Sprint Status
+- [x] `dart analyze --fatal-infos` clean
+- [x] code-reviewer + testing-specialist agents reviewed BUT-888 + pre-sprint coverage
+- [x] Follow-up Linear tickets filed: BUT-1003 (batch ops catch-swallow), BUT-1004 (categorizer enhancement), BUT-1005 (NER fixture model)
+- [x] Commits 55d49d993 + 602420b91 (BUT-888) pushed
+- [ ] BUT-888 closed in Linear
 - [ ] CI watcher
 
 ---
