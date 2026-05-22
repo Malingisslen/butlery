@@ -1,22 +1,38 @@
 # Sprint Backlog
 
-## Sprint: wave-10 — FCM static-singleton refactor + server-side account-deletion (carried from wave-9) — TBD
+## Sprint: wave-11 — server-side account-deletion (carried from wave-10) — TBD
 
-Theme: focused single-item sprint for BUT-782 per its own ticket guidance (660-line refactor + 30+ test rewrites — won't fit alongside other work). Then BUT-788 (server-side account-deletion) once FCM lands.
+Theme: BUT-788 server-side account-deletion. Deferred from wave-10 because BUT-782 (URGENT, 660-line refactor) consumed the focused single-item sprint per its own ticket guidance.
 
-### Agent A: cloud-functions-specialist + testing-specialist — BUT-782 (URGENT) FCMService → instance + DI
-- [ ] Convert `lib/services/notifications/fcm_service.dart` to instance + `BaseService`
-- [ ] Create `lib/core/di/notifications_module.dart`
-- [ ] Migrate 2 production callers in `notification_service.dart`
-- [ ] Rewrite 30+ test sites in `fcm_service_test.dart`
-- [ ] testing-specialist + firebase-backend-security sign-offs
+### Agent A: cloud-functions-specialist + firebase-backend-security — BUT-788 server-side account-deletion
+- [ ] Audit current flow + map current CF (likely `functions/src/account/request-account-deletion.ts` + client in `lib/services/account/account_deletion_service.dart` or `lib/services/gdpr/*`)
+- [ ] Server-side single-callable: all Firestore cascades → Storage cleanup → `auth.deleteUser(uid)` via Admin SDK (LAST step)
+- [ ] Client becomes one-call (remove `firebaseAuth.user.delete()`); sign out locally after CF responds
+- [ ] Re-auth `< 5min` enforcement on the CF (verify `auth_time` of ID token)
+- [ ] CF integration test on emulator + client unit test
 
-### Agent B (next sprint or same sprint if A finishes early): cloud-functions-specialist + firebase-backend-security — BUT-788 server-side account-deletion
-- [ ] Audit current flow + map current CF
-- [ ] Server-side single-callable (cascades → Storage → `auth.deleteUser`)
-- [ ] Client becomes one-call (remove `firebaseAuth.user.delete()`)
-- [ ] Re-auth `< 5min` enforcement on the CF
-- [ ] CF integration test + client unit test
+---
+
+## Archived wave-10 (commit 826dceed1) — 2026-05-22 (Fr)
+
+wave-10 — focused single-item sprint for BUT-782 (URGENT FCMService static→instance + DI refactor) per its own ticket guidance. **Shipped:** BUT-782 (660-line rewrite, 23 tests up from 19, 218/218 in test/unit/services/notifications/). **Follow-ups filed:** BUT-1006 (High, re-bind consent listener on re-login — pre-existing latent bug), BUT-1007 (Medium, cover consent-change + token-refresh stream paths), BUT-1008 (Low, make MockFirebaseMessaging composable). **Deferred:** BUT-788 → wave-11.
+
+### Original wave-10 plan (kept for context)
+
+#### Agent A: cloud-functions-specialist + testing-specialist — BUT-782 (URGENT) FCMService → instance + DI
+- [x] Convert `lib/services/notifications/fcm_service.dart` to instance + `BaseService`
+- [x] Register in `MessagingModule` (not new `notifications_module.dart` — ticket permitted this; one less module)
+- [x] Migrate 2 production callers in `notification_service.dart`
+- [x] Rewrite 30+ test sites in `fcm_service_test.dart` (23 tests final count)
+- [x] code-reviewer + testing-specialist + firebase-backend-security sign-offs
+
+#### Post-sprint
+- [x] `dart analyze --fatal-infos` clean
+- [x] Full notifications/ test suite green (218/218)
+- [x] Follow-up Linear tickets filed (BUT-1006, BUT-1007, BUT-1008)
+- [x] Commit 826dceed1 (BUT-782) pushed
+- [x] BUT-782 closed in Linear
+- [ ] CI watcher (running in background)
 
 ---
 
