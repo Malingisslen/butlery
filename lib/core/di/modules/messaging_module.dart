@@ -38,6 +38,7 @@ import 'package:butlery/services/presence_service.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
+import 'package:butlery/services/notifications/fcm_service.dart';
 
 // Firestore repository
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -77,6 +78,7 @@ class MessagingModule implements DIModule {
         DeviceRepository,
         NotificationService,
         NotificationPermissionService,
+        FCMService,
       ];
 
   @override
@@ -171,6 +173,14 @@ class MessagingModule implements DIModule {
       // App-scoped because it holds no user state — it only wraps the plugin.
       container.registerLazySingleton<NotificationPermissionService>(
         () => NotificationPermissionService(),
+      );
+
+      // BUT-782: FCMService is app-scoped (Firebase Messaging singleton +
+      // notification channels are app-level). User-scoped callbacks +
+      // ConsentService are passed via initialize() from NotificationService.
+      container.registerLazySingleton<FCMService>(
+        () => FCMService(),
+        dispose: (s) => s.dispose(),
       );
     } catch (e) {
       throw DIModuleException(

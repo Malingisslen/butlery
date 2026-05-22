@@ -163,9 +163,10 @@ class NotificationService extends BaseService {
         AppLogger.info(
             '🔔 Initializing NotificationService coordinator for user: $_userId');
 
-        // Initialize FCM service (consent-gated for permissions/token)
+        // Initialize FCM service (consent-gated for permissions/token).
+        // BUT-782: FCMService is now instance-based, resolved via DI.
         final consentService = ServiceLocator.tryGet<ConsentService>();
-        await FCMService.initialize(
+        await ServiceLocator.get<FCMService>().initialize(
           onMessageReceived: _handleForegroundMessage,
           onMessageOpenedApp: _handleMessageOpened,
           consentService: consentService,
@@ -427,8 +428,9 @@ class NotificationService extends BaseService {
       AppLogger.info(
           '🔔 Coordinator: Handling foreground message: ${message.notification?.title}');
 
-      // Show in-app notification or update UI
-      FCMService.showForegroundNotification(message);
+      // Show in-app notification or update UI.
+      // BUT-782: FCMService is now instance-based, resolved via DI.
+      ServiceLocator.get<FCMService>().showForegroundNotification(message);
 
       // Record analytics
       final notificationId = message.data['notificationId'] as String?;

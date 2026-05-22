@@ -1,49 +1,20 @@
-/// Advanced Firebase Cloud Messaging service providing comprehensive push notification functionality with deep linking.
-/// This service implements sophisticated FCM integration for reliable push notification delivery across iOS and Android
-/// platforms. It provides comprehensive token management, message handling, permission management, and deep linking
-/// capabilities with intelligent background processing and seamless integration with the broader notification system
-/// for enhanced user engagement and cooking-focused notifications.
-/// **Architecture Integration:**
-/// - Integrates with [FirebaseMessaging] for cloud push notification delivery and cross-platform compatibility
-/// - Uses [AppLogger] for comprehensive logging and debugging capabilities during development and production
-/// - Coordinates with [UserService] for user-specific token management and notification personalization
-/// - Implements static service pattern for app-wide FCM functionality and lifecycle management
-/// **Core FCM Responsibilities:**
-/// - **Token Management**: Device token registration, renewal, and cross-device synchronization
-/// - **Message Handling**: Foreground and background message processing with intelligent routing
-/// - **Permission Management**: iOS and Android permission requests with graceful handling of user choices
-/// - **Deep Link Navigation**: Notification-triggered navigation with context preservation and state management
-/// - **Background Processing**: Reliable message handling when app is backgrounded or terminated
-/// **Push Notification Features:**
-/// - **Recipe Sharing Notifications**: Rich recipe sharing alerts with preview content and social context
-/// - **Cooking Reminders**: Timer-based notifications and meal planning alerts with actionable content
-/// - **Social Engagement**: Friend interactions, cooking collaborations, and community notifications
-/// - **System Messages**: App updates, feature announcements, and important system communications
-/// - **Swedish Localized Content**: Complete Swedish language support for culturally appropriate messaging
-/// **Platform Optimization:**
-/// - **iOS Integration**: APNs integration with proper badge management and notification categories
-/// - **Android Integration**: FCM optimization with notification channels and adaptive delivery
-/// - **Cross-Platform Consistency**: Unified notification experience across different device types
-/// - **Background Reliability**: Robust background message handling ensuring delivery in all app states
-/// **Usage Examples:**
-/// ```dart
-/// // Initialize FCM service during app startup
-/// await FCMService.initialize(
-///   onMessageReceived: (message) {
-///     showInAppNotification(message);
-///   },
-///   onMessageOpenedApp: (message) {
-///     navigateToNotificationContent(message);
-///   },
-/// );
-/// // Get current FCM token for user registration
-/// final token = await FCMService.getToken();
-/// await registerTokenWithBackend(token);
-/// // Handle token refresh for reliable delivery
-/// FCMService.onTokenRefresh.listen((newToken) {
-///   updateTokenOnBackend(newToken);
-/// });
-/// ```
+/// Firebase Cloud Messaging service providing push notification functionality
+/// with deep linking. Instance-based, extends [BaseService] (BUT-782).
+///
+/// **Architecture:**
+/// - Constructor-injected [FirebaseMessaging] + [FlutterLocalNotificationsPlugin]
+///   — production code passes nothing (defaults to platform instances), tests
+///   pass mocks.
+/// - Permission requests and token registration are gated behind the
+///   `pushNotifications` consent purpose (GDPR Art. 6.1.a). [ConsentService]
+///   is user-scoped, so it's passed via [initialize] rather than the
+///   constructor (FCMService itself is app-scoped).
+/// - Subscriptions are cancelled in [onDispose] per [BaseService] contract.
+///
+/// **Companion:** `NotificationService` coordinates the higher-level
+/// notification flow; `FCMTokenManager` (per-user) owns the SecureStorage
+/// cache. The split keeps app-singleton lifecycle (this class) separate from
+/// per-user lifecycle (token manager).
 
 import 'dart:async';
 import 'dart:io';
@@ -52,8 +23,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
@@ -66,60 +37,52 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
 
-/// Firebase Cloud Messaging service for push notifications with deep linking.
-///
-/// Uses static pattern for app-wide FCM functionality. ErrorHandlingMixin is
-/// available via [_errorHandler] for consistent error classification and logging.
-/// Permission requests and token registration are gated behind the
-/// pushNotifications consent purpose (GDPR Art. 6.1.a).
-class FCMService with ErrorHandlingMixin {
-  // Static instance for accessing ErrorHandlingMixin methods from static context
-  static final FCMService _errorHandler = FCMService._();
-  FCMService._();
+class FCMService extends BaseService {
+  FCMService({
+    FirebaseMessaging? messaging,
+    FlutterLocalNotificationsPlugin? localNotifications,
+  })  : _messaging = messaging ?? FirebaseMessaging.instance,
+        _localNotifications =
+            localNotifications ?? FlutterLocalNotificationsPlugin();
 
-  /// BUT-446: test-injection seam. Production code reads via [_getMessaging],
-  /// which falls back to [FirebaseMessaging.instance] when no override is set.
-  /// Tests use [setMessagingForTest] to substitute a mock; clear in `tearDown`.
-  /// Constructor injection isn't possible because this class is all-static.
-  static FirebaseMessaging? _messagingOverride;
-  static FirebaseMessaging _getMessaging() =>
-      _messagingOverride ?? FirebaseMessaging.instance;
+  @override
+  String get serviceName => 'FCMService';
 
-  /// Test-only seam for [FirebaseMessaging] (BUT-446). Pass a mock in
-  /// `setUp`; pass `null` in `tearDown` to restore the real instance.
-  @visibleForTesting
-  static void setMessagingForTest(FirebaseMessaging? messaging) {
-    _messagingOverride = messaging;
-  }
+  final FirebaseMessaging _messaging;
+  final FlutterLocalNotificationsPlugin _localNotifications;
 
-  static String? _currentToken;
-  static bool _isInitialized = false;
-  static bool _pushPermissionsRequested = false;
-  static ConsentService? _consentService;
+  String? _currentToken;
+  bool _isInitialized = false;
+  bool _isDisposed = false;
+  bool _pushPermissionsRequested = false;
+  ConsentService? _consentService;
 
-  // Callbacks for handling different notification scenarios
-  static Function(RemoteMessage)? _onMessageReceived;
-  static Function(RemoteMessage)? _onMessageOpenedApp;
+  Function(RemoteMessage)? _onMessageReceived;
+  Function(RemoteMessage)? _onMessageOpenedApp;
 
-  // Subscription tracking for proper disposal
-  static StreamSubscription<String>? _tokenRefreshSubscription;
-  static StreamSubscription<RemoteMessage>? _onMessageSubscription;
-  static StreamSubscription<RemoteMessage>? _onMessageOpenedAppSubscription;
+  StreamSubscription<String>? _tokenRefreshSubscription;
+  StreamSubscription<RemoteMessage>? _onMessageSubscription;
+  StreamSubscription<RemoteMessage>? _onMessageOpenedAppSubscription;
 
-  // Android notification channels
+  bool _consentChangeInProgress = false;
+
   static const String _generalChannelId = 'butlery_general';
   static const String _socialChannelId = 'butlery_social';
   static const String _messagingChannelId = 'butlery_messaging';
 
-  // Flutter local notifications plugin
-  static final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
-
-  /// Initialize FCM service with permission handling
-  /// Should be called during app startup after Firebase initialization.
-  /// Permission requests and token registration are gated behind
-  /// pushNotifications consent via [consentService].
-  static Future<void> initialize({
+  /// Initialize FCM. Permission requests + token registration are gated
+  /// behind `pushNotifications` consent via [consentService].
+  ///
+  /// Callbacks and consent are per-init parameters (not constructor params)
+  /// because they originate from the user-scoped [NotificationService] while
+  /// this service is app-scoped.
+  ///
+  /// Shadows [BaseService.initialize] (which is parameterless) because FCM
+  /// init needs callbacks; [BaseService]'s standard lifecycle is bypassed
+  /// — we use [safeExecute] for error handling and [onDispose] for cleanup,
+  /// which is what extending [BaseService] is actually for.
+  @override
+  Future<void> initialize({
     Function(RemoteMessage)? onMessageReceived,
     Function(RemoteMessage)? onMessageOpenedApp,
     ConsentService? consentService,
@@ -129,7 +92,7 @@ class FCMService with ErrorHandlingMixin {
       return;
     }
 
-    final result = await _errorHandler.safeExecute(
+    final result = await safeExecute(
       () async {
         AppLogger.info('Initializing FCM service...');
 
@@ -138,14 +101,13 @@ class FCMService with ErrorHandlingMixin {
         _consentService = consentService;
 
         // Listen for mid-session consent changes (BUT-356). BUT-752:
-        // ConsentService now implements Listenable so multiple subscribers
+        // ConsentService implements Listenable so multiple subscribers
         // (this + SearchModule for Algolia re-init) co-exist.
         _consentService?.addListener(_onConsentChanged);
 
         await _initializeNotificationChannels();
         await _setupMessageHandlers();
 
-        // Gate permission request and token registration behind consent
         final hasConsent = await _hasPushConsent();
         if (hasConsent) {
           await _requestPermissions();
@@ -157,7 +119,7 @@ class FCMService with ErrorHandlingMixin {
         }
 
         _tokenRefreshSubscription =
-            _getMessaging().onTokenRefresh.listen(_onTokenRefresh);
+            _messaging.onTokenRefresh.listen(_onTokenRefresh);
 
         _isInitialized = true;
         AppLogger.success('FCM service initialized successfully');
@@ -170,21 +132,15 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Check if user has granted push notification consent (GDPR Art. 6.1.a).
-  /// Fails closed: if consent cannot be determined, deny by default.
-  static Future<bool> _hasPushConsent() async {
+  /// Fails closed — if consent cannot be determined, deny by default.
+  Future<bool> _hasPushConsent() async {
     return ConsentService.checkSafely(
         _consentService, ConsentPurpose.pushNotifications,
         logTag: 'FCMService');
   }
 
-  /// Called when consent changes mid-session (BUT-356, BUT-573).
-  /// Handles both directions:
-  ///   - Grant: request OS permission + register token
-  ///   - Revoke: delete token (SDK + Firestore profile) + reset state
-  static bool _consentChangeInProgress = false;
-
-  static Future<void> _onConsentChanged() async {
+  /// BUT-356, BUT-573 — handle grant *and* revoke mid-session.
+  Future<void> _onConsentChanged() async {
     if (_consentChangeInProgress) return;
     _consentChangeInProgress = true;
     try {
@@ -211,20 +167,18 @@ class FCMService with ErrorHandlingMixin {
   /// Delete FCM token from SDK + Firestore + memory after consent revoke
   /// (BUT-573). Best-effort: each cleanup is independent so partial success
   /// beats total failure. SDK + Firestore deletes run in parallel — they
-  /// don't depend on each other and the window during which an in-flight
-  /// Cloud Function could observe stale state is the same magnitude either
-  /// way.
+  /// don't depend on each other.
   ///
-  /// Companion: NotificationService.`_handleConsentChange` → FCMTokenManager.
-  /// `clearLocalToken()` covers the per-user SecureStorage cache (BUT-754).
-  /// The split is intentional: FCMService is app-singleton (SDK + Firestore +
-  /// static memory); FCMTokenManager is per-user (SecureStorage + instance
-  /// memory). Each half owns its own lifecycle scope.
-  static Future<void> _revokePushAccess() async {
+  /// Companion: NotificationService.`_handleConsentChange` →
+  /// FCMTokenManager.`clearLocalToken()` covers the per-user SecureStorage
+  /// cache (BUT-754). The split is intentional: FCMService is app-singleton
+  /// (SDK + Firestore + memory); FCMTokenManager is per-user (SecureStorage +
+  /// instance memory). Each half owns its own lifecycle scope.
+  Future<void> _revokePushAccess() async {
     final hasUserService = ServiceLocator.isRegistered<UserService>();
 
     await Future.wait<void>([
-      _getMessaging().deleteToken().catchError((e) {
+      _messaging.deleteToken().catchError((e) {
         AppLogger.warning('⚠️ FCM: Failed to delete SDK token: $e');
       }),
       if (hasUserService)
@@ -241,15 +195,12 @@ class FCMService with ErrorHandlingMixin {
     _currentToken = null;
   }
 
-  /// Initialize Android notification channels (required for Android 8+)
-  static Future<void> _initializeNotificationChannels() async {
-    // Only initialize on Android
+  Future<void> _initializeNotificationChannels() async {
     if (kIsWeb || !Platform.isAndroid) return;
 
     try {
       AppLogger.info('🔔 Initializing Android notification channels...');
 
-      // Define notification channels
       final generalChannel = AndroidNotificationChannel(
         _generalChannelId,
         AppLocale.current.fcmChannelGeneralTitle,
@@ -273,7 +224,6 @@ class FCMService with ErrorHandlingMixin {
         playSound: true,
       );
 
-      // Create channels using flutter_local_notifications
       final androidPlugin =
           _localNotifications.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
@@ -285,7 +235,6 @@ class FCMService with ErrorHandlingMixin {
         AppLogger.success('✅ Android notification channels created');
       }
 
-      // Initialize flutter_local_notifications
       const initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
       const initializationSettings =
@@ -297,23 +246,22 @@ class FCMService with ErrorHandlingMixin {
       );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to initialize notification channels: $e');
-      // Non-critical - FCM will still work with default channel
+      // Non-critical — FCM still works with default channel
     }
   }
 
-  /// Request notification permissions from user
-  static Future<NotificationSettings> _requestPermissions() async {
+  Future<NotificationSettings> _requestPermissions() async {
     try {
       AppLogger.info('🔔 Requesting notification permissions...');
 
-      final settings = await _getMessaging().requestPermission(
-        alert: true, // Show notification alerts
-        announcement: false, // Not needed for Butlery
-        badge: true, // Update app badge count
-        carPlay: false, // Not applicable
-        criticalAlert: false, // Only for emergency apps
-        provisional: false, // Don't use provisional authorization
-        sound: true, // Play notification sounds
+      final settings = await _messaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
       );
 
       AppLogger.info(
@@ -335,41 +283,31 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Set up foreground, background, and opened app message handlers
-  static Future<void> _setupMessageHandlers() async {
+  Future<void> _setupMessageHandlers() async {
     try {
-      // Handle messages when app is in foreground (store subscription for disposal)
       _onMessageSubscription =
           FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         AppLogger.info('🔔 Received foreground message: ${message.messageId}');
         _logMessageDetails(message);
-
-        // Show in-app notification or update UI
         _onMessageReceived?.call(message);
       });
 
-      // Handle messages when app is opened from notification (store subscription for disposal)
       _onMessageOpenedAppSubscription =
           FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         AppLogger.info('🔔 App opened from notification: ${message.messageId}');
         _logMessageDetails(message);
-
-        // Navigate to relevant screen
         _onMessageOpenedApp?.call(message);
       });
 
-      // Check for messages that opened the app when it was terminated
-      final initialMessage = await _getMessaging().getInitialMessage();
+      final initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
         AppLogger.info(
             '🔔 App launched from notification: ${initialMessage.messageId}');
         _logMessageDetails(initialMessage);
-
-        // Handle app launch navigation
         _onMessageOpenedApp?.call(initialMessage);
       }
 
-      // Handle background messages (must be top-level function)
+      // Background handler must be top-level (Firebase isolate requirement).
       FirebaseMessaging.onBackgroundMessage(
           _firebaseMessagingBackgroundHandler);
 
@@ -380,14 +318,13 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Get current FCM token for this device
-  static Future<String?> getToken() async {
+  Future<String?> getToken() async {
     try {
       if (_currentToken != null) {
         return _currentToken;
       }
 
-      _currentToken = await _getMessaging().getToken();
+      _currentToken = await _messaging.getToken();
 
       if (_currentToken != null) {
         AppLogger.info(
@@ -403,8 +340,7 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Refresh FCM token and update user profile
-  static Future<void> _refreshToken() async {
+  Future<void> _refreshToken() async {
     try {
       final token = await getToken();
       if (token != null) {
@@ -415,8 +351,7 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Handle FCM token refresh events
-  static Future<void> _onTokenRefresh(String token) async {
+  Future<void> _onTokenRefresh(String token) async {
     try {
       AppLogger.info(
           '🔔 FCM token refreshed: ${token.substring(0, token.length.clamp(0, 20))}...');
@@ -427,8 +362,8 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  static Future<void> _updateUserToken(String token) async {
-    await _errorHandler.safeExecute(
+  Future<void> _updateUserToken(String token) async {
+    await safeExecute(
       () async {
         AppLogger.info(
             'Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...');
@@ -440,40 +375,38 @@ class FCMService with ErrorHandlingMixin {
     );
   }
 
-  static Future<void> subscribeToTopic(String topic) async {
-    await _errorHandler.safeExecute(
+  Future<void> subscribeToTopic(String topic) async {
+    await safeExecute(
       () async {
         AppLogger.info('Subscribing to topic: $topic');
-        await _getMessaging().subscribeToTopic(topic);
+        await _messaging.subscribeToTopic(topic);
         AppLogger.success('Subscribed to topic: $topic');
       },
       operationName: 'FCMService: Subscribe to topic $topic',
     );
   }
 
-  static Future<void> unsubscribeFromTopic(String topic) async {
-    await _errorHandler.safeExecute(
+  Future<void> unsubscribeFromTopic(String topic) async {
+    await safeExecute(
       () async {
         AppLogger.info('Unsubscribing from topic: $topic');
-        await _getMessaging().unsubscribeFromTopic(topic);
+        await _messaging.unsubscribeFromTopic(topic);
         AppLogger.success('Unsubscribed from topic: $topic');
       },
       operationName: 'FCMService: Unsubscribe from topic $topic',
     );
   }
 
-  /// Get notification settings status
-  static Future<NotificationSettings> getNotificationSettings() async {
+  Future<NotificationSettings> getNotificationSettings() async {
     try {
-      return await _getMessaging().getNotificationSettings();
+      return await _messaging.getNotificationSettings();
     } catch (e) {
       AppLogger.error('❌ Failed to get notification settings', e);
       rethrow;
     }
   }
 
-  /// Check if notifications are enabled
-  static Future<bool> areNotificationsEnabled() async {
+  Future<bool> areNotificationsEnabled() async {
     try {
       final settings = await getNotificationSettings();
       return settings.authorizationStatus == AuthorizationStatus.authorized ||
@@ -484,19 +417,13 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Show local notification for foreground messages
-  /// Note: This is a basic implementation - you might want to use flutter_local_notifications
-  static void showForegroundNotification(RemoteMessage message) {
-    // For now, just log the notification
-    // In a production app, you'd use flutter_local_notifications or similar
+  void showForegroundNotification(RemoteMessage message) {
     AppLogger.info(
         '🔔 Should show foreground notification: ${message.notification?.title}');
   }
 
-  /// Navigate to appropriate screen based on notification data.
-  /// Uses appNavigatorKey to avoid stale BuildContext crashes.
-  static Future<void> handleNotificationNavigation(
-      RemoteMessage message) async {
+  /// Uses [appNavigatorKey] to avoid stale BuildContext crashes.
+  Future<void> handleNotificationNavigation(RemoteMessage message) async {
     try {
       final data = message.data;
       final notificationType = data['type'];
@@ -534,20 +461,17 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Handle local notification tap via appNavigatorKey.
-  static void _onLocalNotificationTapped(NotificationResponse response) {
+  void _onLocalNotificationTapped(NotificationResponse response) {
     final payload = response.payload;
     if (payload == null || payload.isEmpty) return;
 
-    // Delegate to onNotificationTapped if wired
     NotificationService.onNotificationTapped?.call(
       payload,
       <String, String?>{},
     );
   }
 
-  /// Navigate to recipe detail, optionally with comments auto-expanded.
-  static Future<void> _navigateToSharedRecipe(
+  Future<void> _navigateToSharedRecipe(
       NavigatorState navigator, Map<String, dynamic> data,
       {bool scrollToComments = false}) async {
     final recipeId = data['recipeId'] as String?;
@@ -563,8 +487,7 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Navigate to collaboration screen
-  static Future<void> _navigateToCollaboration(
+  Future<void> _navigateToCollaboration(
       NavigatorState navigator, Map<String, dynamic> data) async {
     final resourceId = data['resourceId'] as String?;
     final resourceType = data['resourceType'] as String?;
@@ -596,8 +519,7 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Log detailed message information for debugging
-  static void _logMessageDetails(RemoteMessage message) {
+  void _logMessageDetails(RemoteMessage message) {
     if (kDebugMode) {
       AppLogger.debug('🔔 Message details: '
           'messageId=${message.messageId}, '
@@ -608,12 +530,16 @@ class FCMService with ErrorHandlingMixin {
     }
   }
 
-  /// Clean up resources
-  static Future<void> dispose() async {
+  @override
+  Future<void> onDispose() async {
+    // Idempotent — guards against container + manual dispose double-fire.
+    if (_isDisposed) {
+      return;
+    }
+    _isDisposed = true;
     try {
       AppLogger.info('🔔 Disposing FCM service...');
 
-      // Cancel all subscriptions to prevent memory leaks
       await _tokenRefreshSubscription?.cancel();
       await _onMessageSubscription?.cancel();
       await _onMessageOpenedAppSubscription?.cancel();
@@ -629,32 +555,25 @@ class FCMService with ErrorHandlingMixin {
       _isInitialized = false;
       _onMessageReceived = null;
       _onMessageOpenedApp = null;
-      AppLogger.success('✅ FCM service disposed');
     } catch (e) {
       AppLogger.error('❌ Failed to dispose FCM service', e);
     }
   }
 }
 
-/// Top-level function for handling background messages
-/// This must be a top-level function, not a class method
+/// Top-level background handler. Firebase SDK requires this to be a top-level
+/// function (or static method) annotated `@pragma('vm:entry-point')` because
+/// it runs in a background isolate without app context.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
     AppLogger.info('🔔 Handling background message: ${message.messageId}');
 
-    // Handle background message processing
-    // This runs in an isolate, so has limited access to app state
-
-    // Log message for debugging
     if (kDebugMode) {
       AppLogger.debug('🔔 Background message: '
           'title=${message.notification?.title}, '
           'body=${message.notification?.body}');
     }
-
-    // Process background-specific logic here
-    // E.g., update local database, sync data, etc.
   } catch (e) {
     AppLogger.error('❌ Failed to handle background message', e);
   }
