@@ -9,6 +9,7 @@ import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -142,7 +143,7 @@ class DataExportView extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           children: [
-            const CircularProgressIndicator(),
+            const LoadingIndicator(),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               context.l10n.dataExportExporting,

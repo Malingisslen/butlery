@@ -2855,3 +2855,22 @@ When a Cloud Function triggered by `auth.user().onDelete` cascades writes onto O
 - **Batch-limit accounting**: each audited write doubles the per-friend op count. When the cascade is `delete + audit`, cap iteration at `BATCH_LIMIT/2 = 250` to stay under Firestore's 500-op-per-batch ceiling. Worst-case 2× more `batch.commit()` calls — still linear, no algorithmic regression, dominated by the `get()` round-trip for users with thousands of friends.
 - **Admin SDK bypasses rules** — no `firestore.rules` change required for system cascade writes. `firestore.rules:1443-1446` only gates client-initiated `audit_logs.create` (auth.uid match + rate-limit), which Admin SDK ignores. Confirmed: zero rules update needed for BUT-455.
 - **`on-user-deleted.ts` is the single cascade entry point** — the ticket-cited `social_deletion_operations.ts` / `profile_deletion_operations.ts` paths don't exist. When auditing the BUT-886 follow-up (remaining 10 cascades), wire `stageCascadeAuditEntry` into the existing batch loops in this one file. Pattern is uniform: build batch → stage delete/update → stage audit → commit when reaching half-limit.
+
+### 2026-05-21 — commitInChunks lacks ops-per-item awareness (BUT-886 wave-8)
+
+When wiring `stageCascadeAuditEntry` into cascades that go through `functions/src/shared/batch-update.ts::commitInChunks`, the helper counts ITEMS, not OPS — its `batchCount >= BATCH_LIMIT (500)` check assumes one op per item. If the `mutate` callback stages two ops per item (e.g. `batch.delete(doc.ref)` + `stageCascadeAuditEntry`), the batch reaches 1000 staged ops before the first commit fires, blowing Firestore's hard 500-write-per-batch cap.
+
+This is **not** a problem in:
+
+- Hand-rolled batch loops in `on-user-deleted.ts` (e.g. `cleanupReverseFriendships`, `cleanupSocialRequests`, `updateFriendCounts`, `cleanupPresenceRows`, `cleanupFeedback`) — they explicitly set `const X_PER_BATCH = Math.floor(BATCH_LIMIT / 2) = 250`.
+- `cascadeArrayRemove` — it computes `perChunkCap = onItemOp ? Math.floor(BATCH_LIMIT / 2) : BATCH_LIMIT` (correct).
+
+It **IS** a problem in `commitInChunks` callers that stage audit + mutation:
+
+- `tombstoneSharedByDisplayNameWithDb` — `shared_content` docs the user authored. Heavy sharers (500+ shares) trigger the overflow; best-effort mode swallows the error so it shows up as silent partial cleanup.
+- `cleanupNotificationQueuesWithDb` — `scheduled_notifications` + `notification_send_events` + `notification_opened_events`. Strict mode (`strict: true`), so the 501st item makes the entire `onUserDeleted` cascade throw and the auth.user().onDelete retry loop kicks in indefinitely until the queue is below 500 (which never happens if the cascade itself can't drain it). Active users accumulate analytics events fast — this is the highest-impact one.
+- `anonymizeReportsByContentOwnerWithDb` — `/reports` where `contentOwnerId == userId`. Heavily-moderated user could hit 500+.
+
+**Fix shape**: extend `commitInChunks` with `opts.opsPerItem?: number` (default 1) and gate the chunk on `batchCount * opsPerItem >= BATCH_LIMIT`. Callers wiring audit pass `opsPerItem: 2`. The wirings test in `cascade-audit-log-wirings.test.ts` should add a "500-item batch splits at 250" assertion to lock the contract.
+
+**Detection rule for future reviews**: any `commitInChunks(... (batch, item) => { ... })` whose mutate body contains more than one `batch.*` call MUST pass a matching `opsPerItem` once the param exists (or halve the input list manually until then). Grep for `commitInChunks` callers in `functions/src/` after the helper is updated to confirm coverage.

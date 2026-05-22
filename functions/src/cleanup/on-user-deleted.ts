@@ -18,7 +18,10 @@ import { Collections } from "../shared/collections";
 import { withTimeout } from "../shared/with-timeout";
 import { cleanUserFromLearnedAliases } from "../analytics/analyze-corrections";
 import { cascadeArrayRemove, commitInChunks } from "../shared/batch-update";
-import { stageCascadeAuditEntry } from "./cascade-audit-log";
+import {
+  stageCascadeAuditEntry,
+  writeCascadeAuditEntry,
+} from "./cascade-audit-log";
 
 const db = admin.firestore();
 const BATCH_LIMIT = 500;
@@ -83,7 +86,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   results.groupMembershipsRemoved = await cleanupGroupMemberships(userId);
 
   // 4. Update friend counts
-  results.friendCountsUpdated = await updateFriendCounts(friendsSnapshot);
+  results.friendCountsUpdated = await updateFriendCounts(userId, friendsSnapshot);
 
   // 5. Clean up feedback submissions and screenshots
   results.feedbackCleaned = await cleanupFeedback(userId);
@@ -92,7 +95,16 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   await cleanUserFromLearnedAliases(userId);
 
   // 7. Delete public profile
+  // BUT-886: own-data delete — audit row records the cascade for GDPR Art. 17
+  // traceability. Standalone (single doc, no batch context here).
   await db.collection("public_profiles").doc(userId).delete();
+  await writeCascadeAuditEntry(db, {
+    subjectUserId: userId,
+    targetUid: null,
+    operation: "cascade_delete",
+    resourceType: "public_profiles",
+    resourceId: userId,
+  });
 
   // 8. GDPR (BUT-477): purge per-user presence rows across all collaborative
   //    surfaces. Per-doc TTL would catch these within 60s, but GDPR Right-to-
@@ -194,8 +206,24 @@ export async function tombstoneSharedByDisplayNameWithDb(
         sharedByDisplayName: SHARED_BY_DISPLAY_NAME_TOMBSTONE,
         sharedByAvatarUrl: null,
       });
+      // BUT-886: anonymize cascade — the user's denormalized PII is being
+      // scrubbed from shared_content docs THEY authored. Recipients of those
+      // shares will see the tombstone in place of the deleted name/avatar.
+      // targetUid: null (own-data PII removal across own docs).
+      stageCascadeAuditEntry(database, batch, {
+        subjectUserId: userId,
+        targetUid: null,
+        operation: "cascade_anonymize",
+        resourceType: "shared_content",
+        resourceId: doc.id,
+        extra: { fields: ["sharedByDisplayName", "sharedByAvatarUrl"] },
+      });
     },
-    { label: `BUT-466: sharedByDisplayName tombstone for ${userId}` }
+    {
+      label: `BUT-466: sharedByDisplayName tombstone for ${userId}`,
+      // BUT-886: mutate stages update + audit = 2 ops per item.
+      opsPerItem: 2,
+    }
   );
 }
 
@@ -221,7 +249,19 @@ async function cleanupContentGuardSubcollections(
       const snap = await userRef.collection(subcoll).get();
       if (snap.empty) return 0;
       const batch = db.batch();
-      for (const doc of snap.docs) batch.delete(doc.ref);
+      for (const doc of snap.docs) {
+        batch.delete(doc.ref);
+        // BUT-886: own-data delete under users/{userId}/{subcoll}. Bounded
+        // size (counters <400, recentContentHashes is a single doc) — within
+        // the 500-op cap even doubled for audit rows.
+        stageCascadeAuditEntry(db, batch, {
+          subjectUserId: userId,
+          targetUid: null,
+          operation: "cascade_delete",
+          resourceType: `users/${subcoll}`,
+          resourceId: doc.id,
+        });
+      }
       await batch.commit();
       return snap.size;
     } catch (err) {
@@ -289,6 +329,20 @@ export async function cleanupLegacySharedWithArraysWithDb(
           `BUT-753: legacy sharedWith chunk commit failed for ${userId}`,
           { err }
         ),
+      // BUT-886: each scrub mutates another user's shared_content doc.
+      // Stage an audit row in the same batch; targetUid is the sharer
+      // (the doc owner), pulled from doc.data().sharedByUserId.
+      onItemOp: (batch, doc) => {
+        const sharerUid = doc.data().sharedByUserId;
+        stageCascadeAuditEntry(database, batch, {
+          subjectUserId: userId,
+          targetUid: typeof sharerUid === "string" ? sharerUid : null,
+          operation: "cascade_delete",
+          resourceType: "shared_content",
+          resourceId: doc.id,
+          extra: { field: "sharedWith", legacy: true },
+        });
+      },
     }
   );
 }
@@ -334,13 +388,26 @@ export async function cleanupNotificationQueuesWithDb(
 
     // Strict semantics preserved: prior loop didn't catch — a failed commit
     // bubbled up, the cascade aborted, and onUserDeleted retried.
+    // BUT-886: stage an audit row per delete in the same batch. Own-data
+    // delete — targetUid is null.
     total += await commitInChunks(
       database,
       snapshot.docs,
-      (batch, doc) => batch.delete(doc.ref),
+      (batch, doc) => {
+        batch.delete(doc.ref);
+        stageCascadeAuditEntry(database, batch, {
+          subjectUserId: userId,
+          targetUid: null,
+          operation: "cascade_delete",
+          resourceType: collection,
+          resourceId: doc.id,
+        });
+      },
       {
         label: `BUT-647: ${collection} purge for ${userId}`,
         strict: true,
+        // BUT-886: mutate stages delete + audit = 2 ops per item.
+        opsPerItem: 2,
       }
     );
   }
@@ -415,6 +482,12 @@ async function cleanupReverseFriendships(
 /**
  * Clean up social requests (renamed from friend_requests in BUT-761) involving
  * the deleted user.
+ *
+ * BUT-886: each request delete is a cross-user write — the request doc carries
+ * both `fromUserId` and `toUserId`. We stage one audit_logs row per delete
+ * with `targetUid` set to the OTHER party (the one whose participation in the
+ * request is being scrubbed). Per-doc op count is 2 (delete + audit), so halve
+ * the chunk cap to stay under the 500-op Firestore batch limit.
  */
 async function cleanupSocialRequests(userId: string): Promise<number> {
   let count = 0;
@@ -431,15 +504,27 @@ async function cleanupSocialRequests(userId: string): Promise<number> {
     .where("toUserId", "==", userId)
     .get();
 
+  const REQUESTS_PER_BATCH = Math.floor(BATCH_LIMIT / 2);
+
   let batch = db.batch();
   let batchCount = 0;
 
   for (const doc of [...sentRequests.docs, ...receivedRequests.docs]) {
+    const data = doc.data();
+    const otherParty =
+      data.fromUserId === userId ? data.toUserId : data.fromUserId;
     batch.delete(doc.ref);
+    stageCascadeAuditEntry(db, batch, {
+      subjectUserId: userId,
+      targetUid: typeof otherParty === "string" ? otherParty : null,
+      operation: "cascade_delete",
+      resourceType: Collections.socialRequests,
+      resourceId: doc.id,
+    });
     count++;
     batchCount++;
 
-    if (batchCount >= BATCH_LIMIT) {
+    if (batchCount >= REQUESTS_PER_BATCH) {
       await batch.commit();
       batch = db.batch();
       batchCount = 0;
@@ -461,6 +546,10 @@ async function cleanupSocialRequests(userId: string): Promise<number> {
  * cleanup (D1) and friend-count decrement (D4) depend on a converged
  * friendUserIds state; partial cleanup here would leave stale references
  * that the rest of the cascade can't compensate for.
+ *
+ * BUT-886: each parent doc is a `users/{ownerUid}/friend_categories/{groupId}`
+ * — the cascade mutates that owner's data. We stage an audit row per affected
+ * doc in the same batch via the `onItemOp` hook.
  */
 async function cleanupGroupMemberships(userId: string): Promise<number> {
   return cascadeArrayRemove(
@@ -468,17 +557,38 @@ async function cleanupGroupMemberships(userId: string): Promise<number> {
       .where("friendUserIds", "array-contains", userId),
     "friendUserIds",
     userId,
-    db
+    db,
+    {
+      onItemOp: (batch, doc) => {
+        // Path: users/{ownerUid}/friend_categories/{groupId}
+        const ownerUid = doc.ref.parent.parent?.id ?? null;
+        stageCascadeAuditEntry(db, batch, {
+          subjectUserId: userId,
+          targetUid: ownerUid,
+          operation: "cascade_delete",
+          resourceType: "friend_categories",
+          resourceId: doc.id,
+          extra: { field: "friendUserIds" },
+        });
+      },
+    }
   );
 }
 
 /**
  * D4: Decrement friend counts on remaining users' public profiles.
+ *
+ * BUT-886: each decrement is a cross-user write on
+ * `public_profiles/{friendId}`. Stage an audit row per friend; halve the
+ * batch cap since each friend contributes 2 ops (update + audit).
  */
 async function updateFriendCounts(
+  userId: string,
   friendsSnapshot: admin.firestore.QuerySnapshot
 ): Promise<number> {
   if (friendsSnapshot.empty) return 0;
+
+  const FRIENDS_PER_BATCH = Math.floor(BATCH_LIMIT / 2);
 
   let batch = db.batch();
   let batchCount = 0;
@@ -490,9 +600,17 @@ async function updateFriendCounts(
     batch.update(profileRef, {
       friendsCount: admin.firestore.FieldValue.increment(-1),
     });
+    stageCascadeAuditEntry(db, batch, {
+      subjectUserId: userId,
+      targetUid: friendId,
+      operation: "cascade_delete",
+      resourceType: "public_profiles",
+      resourceId: friendId,
+      extra: { field: "friendsCount", op: "decrement" },
+    });
     batchCount++;
 
-    if (batchCount >= BATCH_LIMIT) {
+    if (batchCount >= FRIENDS_PER_BATCH) {
       await batch.commit();
       batch = db.batch();
       batchCount = 0;
@@ -550,16 +668,33 @@ export async function cleanupPresenceRowsWithDb(
 
   if (snapshot.empty) return 0;
 
+  // BUT-886: each presence row delete is a cascade under another user's
+  // recipePresence/shoppingPresence parent doc. Stage an audit row per
+  // delete; halve the chunk cap since each row contributes 2 ops.
+  const ROWS_PER_BATCH = Math.floor(BATCH_LIMIT / 2);
+
   let batch = database.batch();
   let batchCount = 0;
   let total = 0;
 
   for (const doc of snapshot.docs) {
+    // Path: {recipePresence|shoppingPresence}/{parentId}/activeUsers/{userId}
+    const parentRef = doc.ref.parent.parent;
+    const parentCollection = parentRef?.parent.id ?? "unknown_presence";
+    const parentId = parentRef?.id ?? "unknown";
     batch.delete(doc.ref);
+    stageCascadeAuditEntry(database, batch, {
+      subjectUserId: userId,
+      targetUid: null,
+      operation: "cascade_delete",
+      resourceType: parentCollection,
+      resourceId: parentId,
+      extra: { subCollection: "activeUsers", rowId: doc.id },
+    });
     batchCount++;
     total++;
 
-    if (batchCount >= BATCH_LIMIT) {
+    if (batchCount >= ROWS_PER_BATCH) {
       await batch.commit();
       batch = database.batch();
       batchCount = 0;
@@ -606,13 +741,35 @@ export async function anonymizeReportsByContentOwnerWithDb(
         contentOwnerId: null,
         contentOwnerAnonymizedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+      // BUT-886: anonymize cascade — the deleted user's id is being scrubbed
+      // from /reports rows authored by other users (reporters). The report
+      // itself is moderation evidence retained for the reporter's GDPR
+      // access right; targetUid is null since the reporter is not the
+      // direct subject of the anonymization.
+      stageCascadeAuditEntry(database, batch, {
+        subjectUserId: userId,
+        targetUid: null,
+        operation: "cascade_anonymize",
+        resourceType: "reports",
+        resourceId: doc.id,
+        extra: { field: "contentOwnerId" },
+      });
     },
-    { label: `BUT-781: report anonymize for ${userId}` }
+    {
+      label: `BUT-781: report anonymize for ${userId}`,
+      // BUT-886: mutate stages update + audit = 2 ops per item.
+      opsPerItem: 2,
+    }
   );
 }
 
 /**
  * Clean up feedback submissions and screenshots for the deleted user.
+ *
+ * BUT-886: own-data delete (feedback authored by the deleted user). Stage
+ * an audit row per delete in the same batch; halve the chunk cap since each
+ * doc contributes 2 ops. Storage delete (screenshots) is a single bucket
+ * operation and gets a separate standalone audit entry.
  */
 async function cleanupFeedback(userId: string): Promise<number> {
   const feedbackDocs = await db
@@ -622,13 +779,22 @@ async function cleanupFeedback(userId: string): Promise<number> {
 
   if (feedbackDocs.empty) return 0;
 
+  const FEEDBACK_PER_BATCH = Math.floor(BATCH_LIMIT / 2);
+
   let batch = db.batch();
   let batchCount = 0;
 
   for (const doc of feedbackDocs.docs) {
     batch.delete(doc.ref);
+    stageCascadeAuditEntry(db, batch, {
+      subjectUserId: userId,
+      targetUid: null,
+      operation: "cascade_delete",
+      resourceType: "feedback",
+      resourceId: doc.id,
+    });
     batchCount++;
-    if (batchCount >= BATCH_LIMIT) {
+    if (batchCount >= FEEDBACK_PER_BATCH) {
       await batch.commit();
       batch = db.batch();
       batchCount = 0;
@@ -639,10 +805,19 @@ async function cleanupFeedback(userId: string): Promise<number> {
     await batch.commit();
   }
 
-  // Also delete feedback screenshots from Storage
+  // Also delete feedback screenshots from Storage.
+  // BUT-886: standalone audit entry for the bucket-level delete since
+  // this isn't part of a Firestore batch.
   try {
     await admin.storage().bucket().deleteFiles({
       prefix: `feedback/${userId}/`,
+    });
+    await writeCascadeAuditEntry(db, {
+      subjectUserId: userId,
+      targetUid: null,
+      operation: "cascade_delete",
+      resourceType: "storage:feedback",
+      resourceId: `feedback/${userId}/`,
     });
   } catch (error) {
     v1.logger.warn(`Failed to delete feedback storage for ${userId}: ${error}`);

@@ -3,6 +3,7 @@ import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -246,7 +247,7 @@ class _FileImportViewState extends State<FileImportView> {
                   if (_state.isLoading)
                     Column(
                       children: [
-                        const CircularProgressIndicator(),
+                        const LoadingIndicator(),
                         const SizedBox(height: AppDimensions.spacingL),
                         if (_state.statusMessage != null)
                           Text(

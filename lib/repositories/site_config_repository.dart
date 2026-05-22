@@ -11,6 +11,18 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// Site configs are stored in Firestore under `/site_configs/{domain}` and
 /// contain CSS selectors and metadata for extracting recipe data from
 /// specific websites. This allows updating parsing logic without app releases.
+///
+/// BUT-886 (wave-7 audit gap): intentional bypass of [BaseFirebaseRepository]
+/// + [PermissionValidationMixin] + audit logging.
+///
+/// CLIENT-SIDE READ-ONLY. The `/site_configs/{domain}` collection is
+/// rules-gated to public read + admin-only write. The client never mutates
+/// this collection — every `_collection.doc(...).set()` here is unreachable
+/// because the security rules deny it. Writes happen via admin SDK / CI
+/// deploy scripts, which have their own audit trail.
+///
+/// If a future feature lets users contribute site configs, reassess this
+/// bypass and add appropriate user-scoped validation.
 class SiteConfigRepository {
   final FirebaseFirestore _firestore;
 

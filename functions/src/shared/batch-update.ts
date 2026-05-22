@@ -102,6 +102,18 @@ export async function cascadeArrayRemove(
   opts: {
     bestEffort?: boolean;
     onChunkFailure?: (err: unknown) => void;
+    /**
+     * BUT-886: optional per-doc hook invoked just after the arrayRemove update
+     * is staged. Use it to stage additional same-batch writes (e.g. an
+     * audit_logs row via stageCascadeAuditEntry) so they commit atomically
+     * with the cascade mutation. The hook MUST keep its own writes within
+     * the BATCH_LIMIT budget — staging more than one extra op per doc will
+     * blow the 500-op cap.
+     */
+    onItemOp?: (
+      batch: admin.firestore.WriteBatch,
+      doc: admin.firestore.QueryDocumentSnapshot,
+    ) => void;
   } = {}
 ): Promise<number> {
   const snapshot = await query.get();
@@ -111,6 +123,13 @@ export async function cascadeArrayRemove(
   let total = 0;
   let batch = db.batch();
   let batchCount = 0;
+
+  // BUT-886: when an onItemOp hook is provided, each doc contributes 2 ops
+  // (arrayRemove + hook), so halve the per-chunk cap to stay under the
+  // 500-op Firestore batch limit.
+  const perChunkCap = opts.onItemOp
+    ? Math.floor(BATCH_LIMIT / 2)
+    : BATCH_LIMIT;
 
   const commitChunk = async (): Promise<void> => {
     if (batchCount === 0) return;
@@ -136,9 +155,12 @@ export async function cascadeArrayRemove(
 
   for (const doc of snapshot.docs) {
     batch.update(doc.ref, { [field]: removeOp });
+    if (opts.onItemOp) {
+      opts.onItemOp(batch, doc);
+    }
     batchCount++;
     total++;
-    if (batchCount >= BATCH_LIMIT) {
+    if (batchCount >= perChunkCap) {
       await commitChunk();
     }
   }
@@ -149,15 +171,21 @@ export async function cascadeArrayRemove(
 
 /**
  * BUT-816: chunked best-effort/strict batch commit over an arbitrary item
- * list. Each item is fed to `mutate(batch, item)` which queues exactly one
- * batch op (update, delete, set, ...). Items are committed in `BATCH_LIMIT`
- * chunks.
+ * list. Each item is fed to `mutate(batch, item)` which queues `opts.opsPerItem`
+ * batch ops (update, delete, set, ...). Items are committed in chunks sized
+ * so the per-batch op total stays under `BATCH_LIMIT`.
  *
  * `opts.strict` (default false) controls failure behavior:
  *   - false (best-effort): a failed `batch.commit()` logs a warn with
  *     `opts.label` and the next chunk proceeds. The cascade caller is
  *     responsible for providing an idempotent retry path.
  *   - true: a failed chunk re-throws. Use when partial state is unsafe.
+ *
+ * `opts.opsPerItem` (default 1) — declare when the mutate callback stages
+ * more than one batch op per item. BUT-886 added this: cascade audit callers
+ * pass `opsPerItem: 2` because they stage `mutation + stageCascadeAuditEntry`
+ * per item. Without it, a 500-item input would queue 1000 ops and Firestore
+ * would reject the batch with INVALID_ARGUMENT.
  *
  * Returns the number of items queued (not commits succeeded). Useful for
  * "matched and attempted" metrics in cascade results.
@@ -166,9 +194,12 @@ export async function commitInChunks<T>(
   database: admin.firestore.Firestore,
   items: readonly T[],
   mutate: (batch: admin.firestore.WriteBatch, item: T) => void,
-  opts: { label: string; strict?: boolean }
+  opts: { label: string; strict?: boolean; opsPerItem?: number }
 ): Promise<number> {
   if (items.length === 0) return 0;
+
+  const opsPerItem = Math.max(1, opts.opsPerItem ?? 1);
+  const itemsPerChunk = Math.max(1, Math.floor(BATCH_LIMIT / opsPerItem));
 
   let batch = database.batch();
   let batchCount = 0;
@@ -193,7 +224,7 @@ export async function commitInChunks<T>(
     mutate(batch, item);
     batchCount++;
     queued++;
-    if (batchCount >= BATCH_LIMIT) {
+    if (batchCount >= itemsPerChunk) {
       await commitChunk();
     }
   }

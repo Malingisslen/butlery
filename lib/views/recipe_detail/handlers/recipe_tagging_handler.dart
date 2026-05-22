@@ -8,6 +8,7 @@ import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -49,7 +50,7 @@ class RecipeTaggingHandler {
         child: AlertDialog(
           content: Row(
             children: [
-              const CircularProgressIndicator(),
+              const LoadingIndicator.small(),
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Text(

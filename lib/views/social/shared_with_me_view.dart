@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -136,11 +137,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(
-                width: AppDimensions.iconSizeL,
-                height: AppDimensions.iconSizeL,
-                child: CircularProgressIndicator(),
-              ),
+              const LoadingIndicator(size: AppDimensions.iconSizeL),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
                 context.l10n.sharedLoadingContent,

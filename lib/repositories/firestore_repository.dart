@@ -46,6 +46,26 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// // Real-time resource management
 /// final realtimeDoc = firestoreRepo.realtimeResourceDoc(resourceId);
 /// ```
+/// BUT-886 (wave-7 audit gap): intentional bypass of [BaseFirebaseRepository]
+/// + [PermissionValidationMixin].
+///
+/// This class is the low-level Firestore infrastructure layer — a generic
+/// untyped wrapper, not a model-typed repository. It pre-dates the
+/// `BaseFirebaseRepository<T>` pattern and provides direct DocumentReference /
+/// QuerySnapshot access for services that need raw Firestore (DataExport,
+/// AccountDeletionService, FirestoreRecipeRepository factory bootstrap).
+///
+/// Permission validation + audit logging are the responsibility of the
+/// *typed* repositories built on top of this wrapper (every other class in
+/// `lib/repositories/firebase/` extends `BaseFirebaseRepository<T>`). Adding
+/// `PermissionValidationMixin` here would force every helper method to
+/// resolve a model type — but there is no model type at this layer.
+///
+/// Callers that perform user-data writes through this wrapper (DataExport,
+/// AccountDeletion) emit their own audit-log entries — DataExport via the
+/// GDPR Art. 20 portability log, AccountDeletion via `audit_logs` entries
+/// staged by `functions/src/cleanup/cascade-audit-log.ts` server-side. So
+/// the audit trail exists, it just doesn't live here.
 class FirestoreRepository {
   /// The underlying Firebase Firestore instance for all database operations.
   final FirebaseFirestore _firestore;

@@ -1,0 +1,65 @@
+[
+  {
+    "id": "ci-001",
+    "input": "lök",
+    "expected": "grönsaker",
+    "tolerance": "exact",
+    "notes": "Common Swedish vegetable — high-frequency lookup"
+  },
+  {
+    "id": "ci-002",
+    "input": "vitlök",
+    "expected": "grönsaker",
+    "tolerance": "exact"
+  },
+  {
+    "id": "ci-003",
+    "input": "kycklingfilé",
+    "expected": "kött",
+    "tolerance": "exact"
+  },
+  {
+    "id": "ci-004",
+    "input": "mjölk",
+    "expected": "mejeri",
+    "tolerance": "exact"
+  },
+  {
+    "id": "ci-005",
+    "input": "smör",
+    "expected": "mejeri",
+    "tolerance": "exact"
+  },
+  {
+    "id": "ci-006",
+    "input": "vetemjöl",
+    "expected": "skafferi",
+    "tolerance": "exact",
+    "notes": "Pantry staple — must not classify as 'mejeri' despite -mjöl suffix"
+  },
+  {
+    "id": "ci-007",
+    "input": "äpple",
+    "expected": "frukt",
+    "tolerance": "exact"
+  },
+  {
+    "id": "ci-008",
+    "input": "lax",
+    "expected": "fisk",
+    "tolerance": "exact"
+  },
+  {
+    "id": "ci-009",
+    "input": "olivolja",
+    "expected": "skafferi",
+    "tolerance": "exact"
+  },
+  {
+    "id": "ci-010",
+    "input": "färska basilikablad",
+    "expected": "kryddor",
+    "tolerance": "exact",
+    "notes": "Composite phrase — categorizer should strip qualifier"
+  }
+]

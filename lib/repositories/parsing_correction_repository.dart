@@ -15,6 +15,19 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// - Users can only read/delete their own corrections
 /// - Prevents data poisoning and unauthorized access
 ///
+/// BUT-886 (wave-7 audit gap): intentional bypass of [BaseFirebaseRepository]
+/// + [PermissionValidationMixin] + audit logging.
+///
+/// Every mutation is the caller's OWN data (`userId == auth.uid` enforced
+/// by Firestore rules in `firestore.rules:parsing_corrections`). There is
+/// no cross-user write surface, no permission boundary to validate, and
+/// audit logging would be a per-keystroke storm during interactive parser
+/// correction without serving any GDPR Art. 17 / Art. 30 purpose. Reads are
+/// also rule-gated to the caller's own docs.
+///
+/// If this repository ever gains a cross-user write (e.g. shared parser
+/// corrections), reassess this bypass.
+///
 /// Firestore structure:
 /// ```
 /// parsing_corrections/{correctionId}

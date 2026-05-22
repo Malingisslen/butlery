@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/notifications_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// In-app notification inbox showing notification history.
 class NotificationsView extends StatelessWidget {
@@ -80,7 +81,7 @@ class _NotificationsContent extends StatelessWidget {
             if (index == vm.entries.length) {
               return const Padding(
                 padding: EdgeInsets.all(AppDimensions.paddingL),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: LoadingIndicator()),
               );
             }
             return _NotificationTile(

@@ -5,6 +5,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_shopping_list_card.dart';
@@ -182,7 +183,7 @@ class SharedContentLists {
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
       child: Center(
         child: isLoading
-            ? const CircularProgressIndicator()
+            ? const LoadingIndicator()
             : ElevatedButton.icon(
                 onPressed: onPressed,
                 icon: const Icon(Icons.expand_more),

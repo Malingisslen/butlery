@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ner-001",
+    "input": "2 dl mjölk och 1 msk smör",
+    "expected": [
+      { "text": "mjölk", "label": "INGREDIENT" },
+      { "text": "smör", "label": "INGREDIENT" }
+    ],
+    "tolerance": "jaccard",
+    "notes": "Baseline — two distinct ingredients with quantities + units"
+  },
+  {
+    "id": "ner-002",
+    "input": "Stek löken tills den blir mjuk",
+    "expected": [
+      { "text": "löken", "label": "INGREDIENT" }
+    ],
+    "tolerance": "jaccard",
+    "notes": "Definite form 'löken' — model must lemmatize or accept inflected form"
+  },
+  {
+    "id": "ner-003",
+    "input": "Tillsätt vitlök, ingefära och chili",
+    "expected": [
+      { "text": "vitlök", "label": "INGREDIENT" },
+      { "text": "ingefära", "label": "INGREDIENT" },
+      { "text": "chili", "label": "INGREDIENT" }
+    ],
+    "tolerance": "jaccard",
+    "notes": "Three-ingredient list — span boundary detection"
+  },
+  {
+    "id": "ner-004",
+    "input": "Servera med ris",
+    "expected": [
+      { "text": "ris", "label": "INGREDIENT" }
+    ],
+    "tolerance": "jaccard"
+  },
+  {
+    "id": "ner-005",
+    "input": "Sätt ugnen på 200 grader",
+    "expected": [],
+    "tolerance": "jaccard",
+    "notes": "Negative case — instruction with no ingredient. Empty expected set = NER must NOT hallucinate."
+  }
+]

@@ -15,6 +15,23 @@ import 'package:butlery/services/security/cert_pin_telemetry.dart';
 /// - Can be swapped with MeilisearchSearchRepository or TypesenseSearchRepository
 /// - Feature flag controlled via FeatureFlagService
 ///
+/// BUT-886 (wave-7 audit gap): intentional bypass of [BaseFirebaseRepository]
+/// + [PermissionValidationMixin] + Firestore audit logging.
+///
+/// This repository does not touch Firestore — every query goes to Algolia
+/// via the `SearchClient`. Firestore audit logging would be incoherent
+/// (no Firestore op to audit). Index population is server-side via Cloud
+/// Functions (`functions/src/algolia/`) which have their own logging.
+///
+/// Algolia-side telemetry (`userToken`, `clickAnalytics`, `analyticsTags`)
+/// is intentionally NOT sent per BUT-580 (GDPR — queries reach Algolia
+/// anonymously). If query-level audit ever becomes required, the right
+/// surface is a Firestore `search_audit_logs` row written here per call,
+/// NOT a `PermissionValidationMixin` extension.
+///
+/// Feature-flagged off in production (`FeatureFlagService.algoliaEnabled`).
+/// Reassess this bypass when the feature flips on.
+///
 /// Index structure:
 /// - `recipes` index: Public/shared recipes for discovery
 /// - `users` index: Public user profiles for search

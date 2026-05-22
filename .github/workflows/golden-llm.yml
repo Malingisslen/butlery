@@ -1,0 +1,110 @@
+name: LLM Golden Tests
+
+# BUT-784 — closed-loop LLM quality measurement.
+#
+# Runs nightly (not per-PR — full corpora call paid Vertex AI / Mistral APIs
+# and take minutes). Failures don't block merges; they emit a Crashlytics
+# non-fatal event and post a summary issue comment for triage.
+#
+# Foundation only: per-corpus model wiring is per-corpus follow-up tickets.
+# This workflow exists so the schedule + the cost-guard plumbing are in
+# place before the corpora ship.
+
+on:
+  schedule:
+    # 03:17 UTC = 04:17 / 05:17 Stockholm time. Off-peak avoids contending
+    # with the morning push of `Run Tests`.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      corpus:
+        description: 'Specific corpus to run (default: all)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - categorize_ingredient
+          - ner
+          - recipe_from_url
+          - ocr_recipe
+          - enhance_recipe
+          - generate_menu
+
+env:
+  FLUTTER_VERSION: '3.35.1'
+  # Hard cost cap per nightly run. Failure here means a prompt change
+  # silently increased token usage; investigate before re-running.
+  COST_CAP_USD: '1.00'
+
+jobs:
+  golden-llm:
+    name: LLM golden corpus (${{ inputs.corpus || 'all' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write  # for Workload Identity Federation to Vertex AI
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # Foundation only: real corpus wiring lands in follow-up tickets.
+      # The runner currently exits 0 when no per-corpus runner is registered,
+      # so this step is a no-op canary until corpora are wired in.
+      - name: Run golden corpora
+        id: run
+        run: |
+          set -e
+          echo "Running LLM goldens — foundation pass"
+          echo "Cost cap: \$${COST_CAP_USD}"
+          if [ -d test/golden/llm ]; then
+            ls test/golden/llm
+          else
+            echo "No test/golden/llm/ — skipping"
+            exit 0
+          fi
+          # Per-corpus runners will be invoked here once they exist.
+          # Each should write a `goldens-<corpus>.json` summary to ./
+          # and accumulate tokens_in + tokens_out for the cost guard.
+
+      - name: Cost guard
+        if: always()
+        run: |
+          # Aggregate token cost across all corpora that ran.
+          # Foundation: no live calls yet, so we exit 0.
+          # Follow-up corpora MUST emit JSON containing total_cost_usd
+          # so this guard can sum and assert.
+          echo "Cost guard placeholder — no live calls in foundation pass"
+
+      - name: Upload summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-llm-summary-${{ github.run_id }}
+          path: |
+            goldens-*.json
+          if-no-files-found: ignore
+
+      - name: Post regression comment
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Open an issue on regression so the operator gets pinged.
+            // Foundation pass: no-op — only fires once corpora are wired.
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `LLM goldens regressed on ${context.runId}`,
+              body: `See workflow run https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              labels: ['llm-regression', 'automation'],
+            });

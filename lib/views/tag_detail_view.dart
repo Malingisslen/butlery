@@ -21,6 +21,7 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/tagging/tag_detail_header.dart';
@@ -475,7 +476,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       builder: (dialogContext) => AlertDialog(
         content: Row(
           children: [
-            const CircularProgressIndicator(),
+            const LoadingIndicator.small(),
             const SizedBox(width: AppDimensions.spacingMd),
             Text(context.l10n.tagDetailApplyingRules),
           ],

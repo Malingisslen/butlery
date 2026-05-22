@@ -16,6 +16,7 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -168,7 +169,7 @@ class _UserProfileEditViewContentState
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(),
+            const LoadingIndicator(),
             const SizedBox(height: AppDimensions.spacingL),
             Text(context.l10n.profileUploadingAvatar),
           ],
@@ -327,7 +328,7 @@ class _UserProfileEditViewContentState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(),
+            const LoadingIndicator(),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(context.l10n.profileLoading),
           ],

@@ -3,6 +3,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -168,7 +169,7 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
               ],
               if (_isLoading) ...[
                 const SizedBox(height: AppDimensions.spacingMd),
-                const Center(child: CircularProgressIndicator()),
+                const Center(child: LoadingIndicator()),
               ],
             ] else ...[
               Text(
