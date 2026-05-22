@@ -43,6 +43,7 @@ import 'package:butlery/utils/text/swedish_pluralization.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/tagging/ingredient_categorizer.dart';
 
 /// Intelligent shopping list generation system providing ingredient consolidation and optimization for menu planning.
 /// This class serves as the central shopping list generation engine for the Butlery cooking application,
@@ -236,8 +237,8 @@ class ShoppingListGenerator {
           quantities[key] = (quantities[key] ?? 0.0) + processed.quantity;
           units.putIfAbsent(key, () => processed.unit);
           displayNames.putIfAbsent(key, () => processed.originalName.trim());
-          categories.putIfAbsent(
-              key, () => _categorizeIngredient(processed.normalizedName));
+          categories.putIfAbsent(key,
+              () => IngredientCategorizer.categorize(processed.normalizedName));
         }
       }
     }
@@ -307,7 +308,8 @@ class ShoppingListGenerator {
 
         // Determine category using normalized name for better accuracy
         // Example: "hackad lök" → normalized to "lök" → correctly categorized as vegetable
-        final category = _categorizeIngredient(processed.normalizedName);
+        final category =
+            IngredientCategorizer.categorize(processed.normalizedName);
 
         // Create UnifiedShoppingItem with original name for display
         // but use normalized name for better categorization
@@ -339,90 +341,5 @@ class ShoppingListGenerator {
     }
 
     return shoppingItems;
-  }
-
-  /// Categorize ingredient based on Swedish ingredient name patterns.
-  /// Uses intelligent pattern matching to assign appropriate Swedish shopping categories
-  /// based on ingredient names. Provides fallback to ShoppingCategory.other for unknown ingredients.
-  /// [ingredientName] Raw ingredient name to categorize
-  /// Returns Swedish category string suitable for shopping organization
-  static String _categorizeIngredient(String ingredientName) {
-    final name = ingredientName.toLowerCase().trim();
-
-    // Mejeri (Dairy)
-    if (name.contains('mjölk') ||
-        name.contains('grädde') ||
-        RegExp(r'\bfil\b').hasMatch(name) ||
-        name.contains('yoghurt') ||
-        name.contains('ost') ||
-        name.contains('smör') ||
-        name.contains('ägg')) {
-      return ShoppingCategory.dairy;
-    }
-
-    // Meat & Fish
-    if (name.contains('kött') ||
-        name.contains('fläsk') ||
-        name.contains('nöt') ||
-        name.contains('kyckling') ||
-        name.contains('fisk') ||
-        name.contains('räk') ||
-        name.contains('korv') ||
-        name.contains('bacon') ||
-        name.contains('skinka')) {
-      return ShoppingCategory.meatFish;
-    }
-
-    // Fruits & Vegetables
-    if (name.contains('tomat') ||
-        name.contains('lök') ||
-        name.contains('vitlök') ||
-        name.contains('potatis') ||
-        name.contains('morot') ||
-        name.contains('gurka') ||
-        name.contains('paprika') ||
-        name.contains('sallad') ||
-        name.contains('äpple') ||
-        name.contains('banan') ||
-        name.contains('citron') ||
-        name.contains('lime')) {
-      return ShoppingCategory.fruitVeg;
-    }
-
-    // Dry Goods
-    if (name.contains('mjöl') ||
-        name.contains('socker') ||
-        name.contains('salt') ||
-        name.contains('pasta') ||
-        name.contains('ris') ||
-        name.contains('bröd') ||
-        name.contains('havr') ||
-        name.contains('müsli')) {
-      return ShoppingCategory.dryGoods;
-    }
-
-    // Spices
-    if (name.contains('peppar') ||
-        name.contains('krydda') ||
-        name.contains('basilika') ||
-        name.contains('oregano') ||
-        name.contains('timjan') ||
-        name.contains('rosmarin') ||
-        name.contains('paprika') ||
-        name.contains('curry')) {
-      return ShoppingCategory.spices;
-    }
-
-    // Canned Goods
-    if (name.contains('konserv') ||
-        name.contains('burk') ||
-        name.contains('tomatpuré') ||
-        name.contains('kokosmjölk') ||
-        name.contains('bönor')) {
-      return ShoppingCategory.canned;
-    }
-
-    // Default fallback
-    return ShoppingCategory.other;
   }
 }

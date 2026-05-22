@@ -57,24 +57,43 @@ jobs:
 
       - run: flutter pub get
 
-      # Foundation only: real corpus wiring lands in follow-up tickets.
-      # The runner currently exits 0 when no per-corpus runner is registered,
-      # so this step is a no-op canary until corpora are wired in.
+      # BUT-888: on-device runners are wired (categorize_ingredient runs
+      # for real; ner skips until NER_MODEL_PATH is provided — see BUT-1005).
+      # BUT-889 / BUT-1006-1008: paid-API corpora still pending.
       - name: Run golden corpora
         id: run
         run: |
           set -e
-          echo "Running LLM goldens — foundation pass"
+          echo "Running LLM goldens"
           echo "Cost cap: \$${COST_CAP_USD}"
-          if [ -d test/golden/llm ]; then
-            ls test/golden/llm
-          else
+          if [ ! -d test/golden/llm ]; then
             echo "No test/golden/llm/ — skipping"
             exit 0
           fi
-          # Per-corpus runners will be invoked here once they exist.
-          # Each should write a `goldens-<corpus>.json` summary to ./
-          # and accumulate tokens_in + tokens_out for the cost guard.
+
+          corpus_filter='${{ inputs.corpus || 'all' }}'
+
+          case "$corpus_filter" in
+            all|categorize_ingredient|ner) ;;
+            recipe_from_url|ocr_recipe|enhance_recipe|generate_menu)
+              echo "::warning::Corpus '$corpus_filter' is wired in the dispatch dropdown but not yet implemented (BUT-889 / BUT-1006-1008). Skipping."
+              exit 0
+              ;;
+            *)
+              echo "::error::Unknown corpus filter: $corpus_filter"
+              exit 1
+              ;;
+          esac
+
+          if [ "$corpus_filter" = "all" ] || [ "$corpus_filter" = "categorize_ingredient" ]; then
+            echo "▶ categorize_ingredient"
+            flutter test test/golden/llm/categorize_ingredient_test.dart
+          fi
+
+          if [ "$corpus_filter" = "all" ] || [ "$corpus_filter" = "ner" ]; then
+            echo "▶ ner (skips without NER_MODEL_PATH — see BUT-1005)"
+            flutter test test/golden/llm/ner_test.dart
+          fi
 
       - name: Cost guard
         if: always()

@@ -68,6 +68,19 @@ class GoldenResult {
 /// hand the result to [scoreCase].
 typedef ModelRunner = Future<Object> Function(Object input);
 
+/// Resolve a corpus directory path relative to the repo root, with a
+/// fallback for runners that resolve cwd to the test file's directory.
+///
+/// Shared by per-corpus test files so neither has to reimplement cwd
+/// resilience.
+String resolveCorpusPath(String corpus) {
+  final repoRelative = 'test/golden/llm/$corpus';
+  if (Directory(repoRelative).existsSync()) return repoRelative;
+  final testLocal = './$corpus';
+  if (Directory(testLocal).existsSync()) return testLocal;
+  return repoRelative;
+}
+
 /// Load + parse a corpus directory's `cases.json`.
 List<GoldenCase> loadCases(String corpusPath) {
   final file = File('$corpusPath/cases.json');
