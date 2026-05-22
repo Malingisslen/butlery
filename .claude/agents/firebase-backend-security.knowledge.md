@@ -2874,3 +2874,11 @@ It **IS** a problem in `commitInChunks` callers that stage audit + mutation:
 **Fix shape**: extend `commitInChunks` with `opts.opsPerItem?: number` (default 1) and gate the chunk on `batchCount * opsPerItem >= BATCH_LIMIT`. Callers wiring audit pass `opsPerItem: 2`. The wirings test in `cascade-audit-log-wirings.test.ts` should add a "500-item batch splits at 250" assertion to lock the contract.
 
 **Detection rule for future reviews**: any `commitInChunks(... (batch, item) => { ... })` whose mutate body contains more than one `batch.*` call MUST pass a matching `opsPerItem` once the param exists (or halve the input list manually until then). Grep for `commitInChunks` callers in `functions/src/` after the helper is updated to confirm coverage.
+
+### 2026-05-22 — BUT-788 server-side account deletion: composition pattern with onUserDeleted
+- Trigger: CF callable for account deletion (`requestAccountDeletion`) plus existing v1 auth `onUserDeleted` trigger
+- Pattern: callable owns OWN-data (cascade + Storage `users/{uid}/`); trigger owns CROSS-USER cleanup (reverse friendships, public_profile, feedback storage `feedback/{uid}/`, friend counts, presence). Boundary is explicit in code comments.
+- Re-auth gate: 5-minute `auth_time` window for destructive callables. TOCTOU safe because `admin.auth().deleteUser` is one-shot and idempotent under retry.
+- Audit log ordering: write BEFORE `auth.deleteUser`-triggered cross-user cleanup completes is acceptable for Art. 17 — the audit row records the cascade outcome we control synchronously; cross-user cleanup is the trigger's own auditing surface (`writeCascadeAuditEntry`).
+- App Check deferral acceptable when re-auth gate + CORS allowlist are present, but only as a temporary bridge to mobile attestation rollout.
+- Cascade idempotency rule: every step must be deletes / `arrayRemove` / `set-merge` so retries on partial failure converge. Avoid `arrayUnion` / counter-increment shapes here.
