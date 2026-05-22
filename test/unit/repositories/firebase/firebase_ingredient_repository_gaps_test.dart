@@ -79,9 +79,7 @@ void main() {
     test('finds via search term index', () async {
       final firestore = FakeFirebaseFirestore();
       await _seedBasic(firestore,
-          id: 'tomato',
-          swedish: 'tomat',
-          searchTerms: const ['röd frukt']);
+          id: 'tomato', swedish: 'tomat', searchTerms: const ['röd frukt']);
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
       // 'röd frukt' → normalize → 'rod frukt'. Search by the normalized term.
@@ -209,8 +207,7 @@ void main() {
           aliasesSv: const ['kycklingfile']);
       await _seedBasic(firestore,
           id: 'kycklingbrost', swedish: 'kycklingbrost');
-      await _seedBasic(firestore,
-          id: 'andkyckling', swedish: 'andkyckling');
+      await _seedBasic(firestore, id: 'andkyckling', swedish: 'andkyckling');
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
       final results = await repo.searchIngredients('kyckling');

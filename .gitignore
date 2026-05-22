@@ -163,3 +163,7 @@ scripts/line_classifier/output_v2/
 
 # flutter_test golden-image regression debug artifacts (per-test failures dir)
 test/**/failures/
+
+# LLM golden corpus artifacts (written by test/golden/llm/*_test.dart to repo
+# root for the nightly workflow to upload — regenerated per run).
+/goldens-*.json
