@@ -832,6 +832,58 @@ void main() {
       expect(viewModel.hasError, isTrue);
     });
 
+    // BUT-924: re-parse failure must not wipe the previously-parsed recipe
+    // (user may have manually edited it since the last successful parse).
+    // executeAsync rethrows on failure, so the bug surface is "what state is
+    // left when the throw escapes performImport." Contract: recipe preserved,
+    // error visible.
+    test('re-parse failure preserves previous recipe + sets error (BUT-924)',
+        () async {
+      final firstRecipe = RecipeFactory.build(title: 'First parse');
+
+      // Successful first parse.
+      when(() => mockTextStrategy.import(any())).thenAnswer(
+        (_) async => ImportResult.success(firstRecipe),
+      );
+      textViewModel.updateInputText('initial');
+      await textViewModel.performImport();
+      expect(textViewModel.parsedRecipe?.title, 'First parse');
+
+      // User edits — simulated by updating the parsed recipe in place.
+      textViewModel.setParsedRecipe(
+        firstRecipe.copyWith(title: 'User-edited title'),
+      );
+
+      // Re-parse fails (Cloud Function error, timeout, etc). performImport
+      // rethrows via executeAsync — caller must catch.
+      when(() => mockTextStrategy.import(any())).thenAnswer(
+        (_) async => ImportResult.failure('Parse exception'),
+      );
+      textViewModel.updateInputText('updated input');
+      try {
+        await textViewModel.performImport();
+      } catch (_) {
+        // Expected: executeAsync rethrows.
+      }
+
+      // BUT-924 contract: previous parse + user edit survives.
+      expect(textViewModel.hasParsedRecipe, isTrue);
+      expect(textViewModel.parsedRecipe?.title, 'User-edited title');
+      expect(textViewModel.hasError, isTrue);
+    });
+
+    // BUT-924: defensive guard — preserveOrSetParsedRecipe(null) is a no-op
+    // covers the future case where parseTextToRecipe returns null instead of
+    // throwing (e.g. if executeAsync swallowed via a future API change).
+    test('preserveOrSetParsedRecipe(null) is a no-op (BUT-924)', () {
+      final recipe = RecipeFactory.build(title: 'Keep me');
+      viewModel.setParsedRecipe(recipe);
+
+      viewModel.preserveOrSetParsedRecipe(null);
+
+      expect(viewModel.parsedRecipe?.title, 'Keep me');
+    });
+
     test('should handle URL fetch error', () async {
       final timeoutViewModel =
           TestUrlImportViewModel(importManager: mockImportManager);

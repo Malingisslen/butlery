@@ -834,6 +834,17 @@
       }
     }
   },
+  "personalTagDeleteTagMessageWithCount": "Are you sure you want to delete \"{name}\"? {count, plural, =0{No recipes will be affected.} =1{It will be untagged from 1 recipe.} other{It will be untagged from {count} recipes.}}",
+  "@personalTagDeleteTagMessageWithCount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "personalTagDeleted": "Tag deleted",
   "personalTagNoGroup": "No group",
   "personalTagCreateNewGroup": "Create new group",
@@ -5518,6 +5529,7 @@
   "errorRecipeMustHaveInstruction": "Recipe must have at least one instruction",
   "errorImportConditionsNotMet": "Import conditions not met",
   "errorImportFailed": "Import failed",
+  "errorImportTimeout": "This is taking longer than usual. Try again, or import the text manually.",
   "errorNoRecipesSelected": "No recipes selected",
   "errorEnterMenuDescription": "Enter what kind of menu you want",
   "errorNoMoreRecipesForSwap": "No more recipes available for swap",

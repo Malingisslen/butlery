@@ -115,6 +115,54 @@ class FirebaseWeeklyMenuPlanRepository
   }
 
   @override
+  Future<int> removeRecipeFromAllPlans({
+    required String userId,
+    required String recipeId,
+  }) async {
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    // Doc-ID prefix range gives us only this user's plans — same trick as
+    // deleteAllByUser. Typical user has 4–12 plans so a single read +
+    // in-memory filter is cheap; saves an extra denormalized index.
+    final snapshot = await collection
+        .where(FieldPath.documentId, isGreaterThanOrEqualTo: '${userId}_')
+        .where(FieldPath.documentId, isLessThan: '${userId}_')
+        .get();
+
+    if (snapshot.docs.isEmpty) return 0;
+
+    final affected = <DocumentSnapshot<Map<String, dynamic>>>[];
+    final updates = <Map<String, dynamic>>[];
+
+    for (final doc in snapshot.docs) {
+      final plan = fromFirestore(doc);
+      final filteredEntries =
+          plan.entries.where((e) => e.recipeId != recipeId).toList();
+      if (filteredEntries.length == plan.entries.length) continue;
+      affected.add(doc);
+      final scrubbed = plan.copyWith(entries: filteredEntries);
+      updates.add(toFirestore(scrubbed));
+    }
+
+    if (affected.isEmpty) return 0;
+
+    final batch = firestore.batch();
+    for (var i = 0; i < affected.length; i++) {
+      batch.set(affected[i].reference, updates[i]);
+    }
+    await batch.commit();
+
+    AppLogger.info(
+      'Scrubbed recipe $recipeId from ${affected.length} weekly plan(s) for $userId',
+    );
+    return affected.length;
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> exportAllByUser(
     String userId, {
     int maxDocuments = 260,

@@ -452,7 +452,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     }
 
     final recipe = await parseTextToRecipe(_ocrText);
-    setParsedRecipe(recipe);
+    preserveOrSetParsedRecipe(recipe);
   }
 
   /// Performs unified image selection and OCR processing with comprehensive workflow coordination.

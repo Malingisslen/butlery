@@ -132,6 +132,64 @@ class FCMService extends BaseService {
     }
   }
 
+  /// BUT-1006: re-bind user-scoped state (consent listener, foreground
+  /// callbacks, permission-request gate) without re-running the
+  /// channel/message-handler setup that [initialize] does.
+  ///
+  /// Called by [NotificationService.onInitialize] on every user push —
+  /// the `_isInitialized` early-return in [initialize] would otherwise
+  /// leave the FCM service pointing at the previous user's disposed
+  /// `ConsentService` and `_handleForegroundMessage` closure (which
+  /// captures the prior user's `_userId`), causing:
+  /// * mid-session consent revoke to silently no-op for user B
+  /// * foreground push analytics to log under user A's `_userId`
+  /// * `StateError: No authenticated user` from
+  ///   `notification_service.dart` if user A's closure runs after logout
+  ///
+  /// Safe to call before [initialize] — the listener add becomes a
+  /// no-op when [consentService] is null, and the callbacks just stay
+  /// null until set by a real bind. Safe to call after [onDispose] too —
+  /// `_isDisposed` short-circuits the work.
+  Future<void> bindUserContext({
+    Function(RemoteMessage)? onMessageReceived,
+    Function(RemoteMessage)? onMessageOpenedApp,
+    ConsentService? consentService,
+  }) async {
+    if (_isDisposed) return;
+
+    // Short-circuit when nothing actually changed (re-entering an already-
+    // bound user's session). `identical()` is correct here — ConsentService
+    // and the callbacks are per-user instances, so the same user keeps the
+    // same object identity.
+    final sameConsent = identical(_consentService, consentService);
+    final sameOnMessage = _onMessageReceived == onMessageReceived;
+    final sameOnOpened = _onMessageOpenedApp == onMessageOpenedApp;
+    if (sameConsent && sameOnMessage && sameOnOpened) return;
+
+    // Detach the prior user's listener before swapping — failing to do this
+    // would leave user A's ConsentService holding `_onConsentChanged` after
+    // its `dispose()`, leaking a callback into a teardown phase.
+    if (!sameConsent) {
+      _consentService?.removeListener(_onConsentChanged);
+      _consentService = consentService;
+      _consentService?.addListener(_onConsentChanged);
+    }
+
+    _onMessageReceived = onMessageReceived;
+    _onMessageOpenedApp = onMessageOpenedApp;
+
+    // Reset the permission-request gate so user B's first consent grant
+    // triggers a fresh `requestPermission()` instead of being short-circuited
+    // by user A's prior request.
+    _pushPermissionsRequested = false;
+
+    AppLogger.info(
+      '🔔 FCM: bindUserContext — consentService=${consentService != null}, '
+      'onMessage=${onMessageReceived != null}, '
+      'onOpened=${onMessageOpenedApp != null}',
+    );
+  }
+
   /// Fails closed — if consent cannot be determined, deny by default.
   Future<bool> _hasPushConsent() async {
     return ConsentService.checkSafely(

@@ -513,11 +513,19 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
   }
 
   Future<void> _deleteTag(BuildContext context, PersonalTag tag) async {
+    // BUT-929: cascade preview — show how many recipes will lose this tag.
+    final viewModel = context.read<PersonalTagViewModel>();
+    final affectedCount = viewModel.getUsageCount(tag.name);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(context.l10n.tagDetailDeleteTagConfirm),
-        content: Text(context.l10n.tagDetailDeleteTagMessage(tag.name)),
+        content: Text(
+          context.l10n.personalTagDeleteTagMessageWithCount(
+            tag.name,
+            affectedCount,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),

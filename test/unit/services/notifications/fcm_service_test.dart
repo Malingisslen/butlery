@@ -318,6 +318,86 @@ void main() {
       });
     });
 
+    // BUT-1006: re-binding user-scoped state across logout → login.
+    group('bindUserContext (BUT-1006)', () {
+      test('detaches listener from prior consent and attaches to new',
+          () async {
+        final consentA = MockConsentService();
+        final consentB = MockConsentService();
+        when(() => consentA.addListener(any())).thenReturn(null);
+        when(() => consentA.removeListener(any())).thenReturn(null);
+        when(() => consentB.addListener(any())).thenReturn(null);
+        when(() => consentB.removeListener(any())).thenReturn(null);
+
+        await service.bindUserContext(
+          consentService: consentA,
+          onMessageReceived: (_) {},
+          onMessageOpenedApp: (_) {},
+        );
+        verify(() => consentA.addListener(any())).called(1);
+        verifyNever(() => consentA.removeListener(any()));
+
+        await service.bindUserContext(
+          consentService: consentB,
+          onMessageReceived: (_) {},
+          onMessageOpenedApp: (_) {},
+        );
+        // Previous user's listener must be torn down before swap.
+        verify(() => consentA.removeListener(any())).called(1);
+        verify(() => consentB.addListener(any())).called(1);
+      });
+
+      test('identical args are a no-op (no add/remove churn)', () async {
+        final consent = MockConsentService();
+        when(() => consent.addListener(any())).thenReturn(null);
+        when(() => consent.removeListener(any())).thenReturn(null);
+
+        void onMsg(_) {}
+        void onOpen(_) {}
+
+        await service.bindUserContext(
+          consentService: consent,
+          onMessageReceived: onMsg,
+          onMessageOpenedApp: onOpen,
+        );
+        await service.bindUserContext(
+          consentService: consent,
+          onMessageReceived: onMsg,
+          onMessageOpenedApp: onOpen,
+        );
+
+        // Only the first bind attaches; second is a short-circuit.
+        verify(() => consent.addListener(any())).called(1);
+        verifyNever(() => consent.removeListener(any()));
+      });
+
+      test('post-dispose bind is a silent no-op', () async {
+        final consent = MockConsentService();
+        when(() => consent.addListener(any())).thenReturn(null);
+        when(() => consent.removeListener(any())).thenReturn(null);
+
+        await service.dispose();
+
+        await service.bindUserContext(
+          consentService: consent,
+          onMessageReceived: (_) {},
+          onMessageOpenedApp: (_) {},
+        );
+
+        verifyNever(() => consent.addListener(any()));
+        verifyNever(() => consent.removeListener(any()));
+      });
+
+      test('null consent is allowed (no add invoked)', () async {
+        await service.bindUserContext(
+          consentService: null,
+          onMessageReceived: (_) {},
+          onMessageOpenedApp: (_) {},
+        );
+        // Nothing to verify on a null consent; the assertion is "no throw."
+      });
+    });
+
     group('Edge Cases', () {
       test('null notification + empty data still logs cleanly', () {
         when(() => mockMessage.notification).thenReturn(null);

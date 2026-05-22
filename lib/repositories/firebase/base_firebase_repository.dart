@@ -251,21 +251,25 @@ abstract class BaseFirebaseRepository<T>
   }
 
   Future<void> createBatch(List<T> entities) async {
-    try {
-      final userId = requireCurrentUserId();
-      final ref = getCollectionRef();
-      final batch = _firestore.batch();
+    // BUT-1003: permission denials must propagate as PermissionDeniedException
+    // so callers can distinguish "user did something they shouldn't" from
+    // "Firebase died." Only the commit goes through the wrap-as-Exception
+    // outer catch — the permission loop runs outside it.
+    final userId = requireCurrentUserId();
+    final ref = getCollectionRef();
+    final batch = _firestore.batch();
 
-      for (final entity in entities) {
-        final canCreate = await validateCreatePermission(userId, entity);
-        if (!canCreate) {
-          throw PermissionDeniedException(
-            'User $userId does not have permission to create ${T.toString()} ${getId(entity)}',
-          );
-        }
-        batch.set(ref.doc(getId(entity)), toFirestore(entity));
+    for (final entity in entities) {
+      final canCreate = await validateCreatePermission(userId, entity);
+      if (!canCreate) {
+        throw PermissionDeniedException(
+          'User $userId does not have permission to create ${T.toString()} ${getId(entity)}',
+        );
       }
+      batch.set(ref.doc(getId(entity)), toFirestore(entity));
+    }
 
+    try {
       await batch.commit();
       AppLogger.info('${T.toString()} batch created: ${entities.length} items');
     } catch (e, stackTrace) {
@@ -412,22 +416,24 @@ mixin UserScopedFirebaseRepository<T> on BaseFirebaseRepository<T> {
 /// Mixin for repositories that need batch operations.
 mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
   Future<void> updateBatch(List<T> entities) async {
-    try {
-      final userId = requireCurrentUserId();
-      final ref = getCollectionRef();
-      final batch = _firestore.batch();
+    // BUT-1003: see createBatch comment — permission throws must escape
+    // typed, not get re-wrapped.
+    final userId = requireCurrentUserId();
+    final ref = getCollectionRef();
+    final batch = _firestore.batch();
 
-      for (final entity in entities) {
-        final docId = getId(entity);
-        final canUpdate = await validateUpdatePermission(userId, docId, entity);
-        if (!canUpdate) {
-          throw PermissionDeniedException(
-            'User $userId does not have permission to update ${T.toString()} $docId',
-          );
-        }
-        batch.update(ref.doc(docId), toFirestore(entity));
+    for (final entity in entities) {
+      final docId = getId(entity);
+      final canUpdate = await validateUpdatePermission(userId, docId, entity);
+      if (!canUpdate) {
+        throw PermissionDeniedException(
+          'User $userId does not have permission to update ${T.toString()} $docId',
+        );
       }
+      batch.update(ref.doc(docId), toFirestore(entity));
+    }
 
+    try {
       await batch.commit();
       AppLogger.info('${T.toString()} batch updated: ${entities.length} items');
     } catch (e, stackTrace) {
@@ -437,21 +443,23 @@ mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
   }
 
   Future<void> deleteBatch(List<String> ids) async {
-    try {
-      final userId = requireCurrentUserId();
-      final ref = getCollectionRef();
-      final batch = _firestore.batch();
+    // BUT-1003: see createBatch comment — permission throws must escape
+    // typed, not get re-wrapped.
+    final userId = requireCurrentUserId();
+    final ref = getCollectionRef();
+    final batch = _firestore.batch();
 
-      for (final id in ids) {
-        final canDelete = await validateDeletePermission(userId, id);
-        if (!canDelete) {
-          throw PermissionDeniedException(
-            'User $userId does not have permission to delete ${T.toString()} $id',
-          );
-        }
-        batch.delete(ref.doc(id));
+    for (final id in ids) {
+      final canDelete = await validateDeletePermission(userId, id);
+      if (!canDelete) {
+        throw PermissionDeniedException(
+          'User $userId does not have permission to delete ${T.toString()} $id',
+        );
       }
+      batch.delete(ref.doc(id));
+    }
 
+    try {
       await batch.commit();
       AppLogger.info('${T.toString()} batch deleted: ${ids.length} items');
     } catch (e, stackTrace) {

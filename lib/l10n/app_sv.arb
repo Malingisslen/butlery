@@ -834,6 +834,17 @@
       }
     }
   },
+  "personalTagDeleteTagMessageWithCount": "Är du säker på att du vill ta bort \"{name}\"? {count, plural, =0{Inga recept påverkas.} =1{Den tas bort från 1 recept.} other{Den tas bort från {count} recept.}}",
+  "@personalTagDeleteTagMessageWithCount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "personalTagDeleted": "Tagg borttagen",
   "personalTagNoGroup": "Ingen grupp",
   "personalTagCreateNewGroup": "Skapa ny grupp",
@@ -5518,6 +5529,7 @@
   "errorRecipeMustHaveInstruction": "Receptet måste ha minst en instruktion",
   "errorImportConditionsNotMet": "Importvillkor inte uppfyllda",
   "errorImportFailed": "Import misslyckades",
+  "errorImportTimeout": "Det här tar längre tid än vanligt. Försök igen, eller importera texten manuellt.",
   "errorNoRecipesSelected": "Inga recept valda",
   "errorEnterMenuDescription": "Ange vad du vill ha för meny",
   "errorNoMoreRecipesForSwap": "Inga fler recept tillgängliga för byte",

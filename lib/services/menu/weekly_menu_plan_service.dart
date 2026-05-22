@@ -74,6 +74,25 @@ class WeeklyMenuPlanService extends BaseService {
     );
   }
 
+  /// BUT-893: scrub [recipeId] from every weekly plan owned by the current
+  /// user. Returns the number of plans actually changed. Safe to call on a
+  /// recipe that was never on any plan (returns 0). Designed to be invoked
+  /// fire-and-forget from the recipe-delete cascade — failures are logged
+  /// but never thrown, so the user's delete never fails because of menu
+  /// cleanup glitches.
+  Future<int> removeRecipeFromAllPlans(String recipeId) async {
+    final userId = _currentUserId;
+    if (userId == null) return 0;
+    final result = await executeServiceOperation<int>(
+      () => _repository.removeRecipeFromAllPlans(
+        userId: userId,
+        recipeId: recipeId,
+      ),
+      operationName: 'removeRecipeFromAllPlans',
+    );
+    return result ?? 0;
+  }
+
   /// Auto-distribute the result of `MenuGenerator.generateMenuFromPrompt`
   /// onto a weekly plan using the today-anchored chronological algorithm.
   ///

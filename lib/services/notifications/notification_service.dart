@@ -166,7 +166,20 @@ class NotificationService extends BaseService {
         // Initialize FCM service (consent-gated for permissions/token).
         // BUT-782: FCMService is now instance-based, resolved via DI.
         final consentService = ServiceLocator.tryGet<ConsentService>();
-        await ServiceLocator.get<FCMService>().initialize(
+        final fcmService = ServiceLocator.get<FCMService>();
+        await fcmService.initialize(
+          onMessageReceived: _handleForegroundMessage,
+          onMessageOpenedApp: _handleMessageOpened,
+          consentService: consentService,
+        );
+        // BUT-1006: FCMService is app-singleton; ConsentService + the
+        // foreground callbacks belong to the current user scope. On a
+        // re-login, `initialize` returns early via `_isInitialized` and
+        // would leave the previous user's bindings in place — re-bind
+        // unconditionally so user B's listeners + callbacks are wired.
+        // No-op on the very first init (identical to what initialize just
+        // set).
+        await fcmService.bindUserContext(
           onMessageReceived: _handleForegroundMessage,
           onMessageOpenedApp: _handleMessageOpened,
           consentService: consentService,

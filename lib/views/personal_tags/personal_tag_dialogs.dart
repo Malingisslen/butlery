@@ -495,11 +495,15 @@ abstract final class PersonalTagDialogs {
   }
 
   /// Shows a confirmation dialog to delete a tag.
+  ///
+  /// BUT-929: the body shows the affected recipe count (cascade preview)
+  /// so a misclick on a heavily-used tag is visible before commit.
   static Future<void> showDeleteTagDialog(
     BuildContext context,
     PersonalTag tag,
   ) async {
     final viewModel = context.read<PersonalTagViewModel>();
+    final affectedCount = viewModel.getUsageCount(tag.name);
 
     await showDialog<void>(
       context: context,
@@ -508,7 +512,12 @@ abstract final class PersonalTagDialogs {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagDeleteTagConfirm),
-            content: Text(context.l10n.personalTagDeleteTagMessage(tag.name)),
+            content: Text(
+              context.l10n.personalTagDeleteTagMessageWithCount(
+                tag.name,
+                affectedCount,
+              ),
+            ),
             actions: [
               TextButton(
                 onPressed:

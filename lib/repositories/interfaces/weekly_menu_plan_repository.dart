@@ -30,4 +30,13 @@ abstract class WeeklyMenuPlanRepository {
     String userId, {
     int maxDocuments = 260,
   });
+
+  /// BUT-893: scrub [recipeId] from every weekly plan owned by [userId].
+  /// Returns the number of plans actually changed (no-op when the recipe
+  /// was never referenced). Used to keep menu slots from going blank when
+  /// the source recipe is deleted.
+  Future<int> removeRecipeFromAllPlans({
+    required String userId,
+    required String recipeId,
+  });
 }

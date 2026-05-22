@@ -2426,6 +2426,12 @@ abstract class AppLocalizations {
   /// **'Är du säker på att du vill ta bort \"{name}\"? Taggen tas bort från alla recept.'**
   String personalTagDeleteTagMessage(String name);
 
+  /// No description provided for @personalTagDeleteTagMessageWithCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Är du säker på att du vill ta bort \"{name}\"? {count, plural, =0{Inga recept påverkas.} =1{Den tas bort från 1 recept.} other{Den tas bort från {count} recept.}}'**
+  String personalTagDeleteTagMessageWithCount(String name, int count);
+
   /// No description provided for @personalTagDeleted.
   ///
   /// In sv, this message translates to:
@@ -14930,6 +14936,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Import misslyckades'**
   String get errorImportFailed;
+
+  /// No description provided for @errorImportTimeout.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här tar längre tid än vanligt. Försök igen, eller importera texten manuellt.'**
+  String get errorImportTimeout;
 
   /// No description provided for @errorNoRecipesSelected.
   ///

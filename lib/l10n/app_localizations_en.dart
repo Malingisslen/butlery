@@ -1355,6 +1355,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String personalTagDeleteTagMessageWithCount(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'It will be untagged from $count recipes.',
+      one: 'It will be untagged from 1 recipe.',
+      zero: 'No recipes will be affected.',
+    );
+    return 'Are you sure you want to delete \"$name\"? $_temp0';
+  }
+
+  @override
   String get personalTagDeleted => 'Tag deleted';
 
   @override
@@ -8666,6 +8678,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorImportFailed => 'Import failed';
+
+  @override
+  String get errorImportTimeout =>
+      'This is taking longer than usual. Try again, or import the text manually.';
 
   @override
   String get errorNoRecipesSelected => 'No recipes selected';

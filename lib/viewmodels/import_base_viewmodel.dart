@@ -57,7 +57,14 @@ abstract class ImportBaseViewModel extends BaseViewModel
     return await executeAsync<Recipe?>(
       () async {
         final strategy = importManager.getTextImportStrategy();
-        final result = await strategy.import(text);
+        // BUT-960: parse is a Cloud Function round-trip. Without a client
+        // timeout, a server-side hang leaves the spinner forever. 60s is
+        // generous vs. the 30s OCR timeout — recipe parsing is heavier.
+        final result = await strategy.import(text).timeout(
+              const Duration(seconds: 60),
+              onTimeout: () =>
+                  throw Exception(AppLocale.current.errorImportTimeout),
+            );
 
         if (result.isSuccess && result.recipe != null) {
           // Apply source URL attribution if provided
@@ -73,6 +80,17 @@ abstract class ImportBaseViewModel extends BaseViewModel
         }
       },
     );
+  }
+
+  /// BUT-924: assigns a freshly-parsed recipe but preserves the prior
+  /// parsedRecipe (and any user edits) when [recipe] is null. A null
+  /// here means parseTextToRecipe failed inside executeAsync — the error
+  /// state is already set, so the UI banner shows; we just shouldn't wipe
+  /// what the user was working on.
+  @protected
+  void preserveOrSetParsedRecipe(Recipe? recipe) {
+    if (recipe == null) return;
+    setParsedRecipe(recipe);
   }
 
   Future<bool> saveImportedRecipe() async {
@@ -230,7 +248,7 @@ mixin TextImportMixin on ImportBaseViewModel {
     }
 
     final recipe = await parseTextToRecipe(_inputText.trim(), url: sourceUrl);
-    setParsedRecipe(recipe);
+    preserveOrSetParsedRecipe(recipe);
   }
 
   @override
@@ -308,7 +326,7 @@ mixin UrlImportMixin on ImportBaseViewModel {
     }
 
     final recipe = await parseTextToRecipe(_extractedText, url: sourceUrl);
-    setParsedRecipe(recipe);
+    preserveOrSetParsedRecipe(recipe);
   }
 
   @override

@@ -1,7 +1,12 @@
 // lib/services/unified/helpers/personal_recipe_crud.dart
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/utils/retry_policy.dart';
@@ -121,9 +126,27 @@ class PersonalRecipeCrud {
       // Remove from local list
       recipes.removeWhere((r) => r.id == recipeId);
       notifyListeners();
+
+      // BUT-893: scrub the recipe from any weekly menu plan that referenced
+      // it so users don't see blank slots / 404 taps. Fire-and-forget — a
+      // menu-cleanup failure is logged but must not surface as a failed
+      // delete to the user (the recipe IS gone from Firestore at this point).
+      unawaited(_cascadeRemoveFromWeeklyMenus(recipeId));
     }
 
     return success;
+  }
+
+  Future<void> _cascadeRemoveFromWeeklyMenus(String recipeId) async {
+    try {
+      final menuService = ServiceLocator.tryGet<WeeklyMenuPlanService>();
+      if (menuService == null) return;
+      await menuService.removeRecipeFromAllPlans(recipeId);
+    } catch (e, st) {
+      AppLogger.warning(
+        'BUT-893 cascade failed for recipe $recipeId: $e\n$st',
+      );
+    }
   }
 
   /// Mark recipe as cooked.

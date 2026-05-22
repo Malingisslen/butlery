@@ -160,16 +160,13 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
 
-      // createBatch wraps the typed PermissionDeniedException in a generic
-      // Exception via its outer catch-swallow. See BUT-1003 — until that
-      // production catch-swallow is fixed, the test can only assert the
-      // looser matcher honestly.
+      // BUT-1003: typed PermissionDeniedException now propagates.
       await expectLater(
         () => repo.createBatch([
           _Item(id: 'b1', name: 'A', ownerId: 'alice'),
           _Item(id: 'b2', name: 'B', ownerId: 'bob'), // wrong owner
         ]),
-        throwsException,
+        throwsA(isA<PermissionDeniedException>()),
       );
     });
   });
@@ -313,12 +310,12 @@ void main() {
       final repo = _repo(firestore);
       await _seed(firestore, id: 'i1', name: 'A', owner: 'alice');
 
-      // See BUT-1003 — same catch-swallow as createBatch.
+      // BUT-1003: typed PermissionDeniedException now propagates.
       await expectLater(
         () => repo.updateBatch([
           _Item(id: 'i1', name: 'A-new', ownerId: 'bob'), // wrong owner
         ]),
-        throwsException,
+        throwsA(isA<PermissionDeniedException>()),
       );
     });
 
@@ -339,10 +336,10 @@ void main() {
       final repo = _repo(firestore, authedUserId: 'bob');
       await _seed(firestore, id: 'i1', name: 'A', owner: 'alice');
 
-      // See BUT-1003 — same catch-swallow as createBatch.
+      // BUT-1003: typed PermissionDeniedException now propagates.
       await expectLater(
         () => repo.deleteBatch(['i1']),
-        throwsException,
+        throwsA(isA<PermissionDeniedException>()),
       );
     });
   });

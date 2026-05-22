@@ -1356,6 +1356,18 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String personalTagDeleteTagMessageWithCount(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Den tas bort från $count recept.',
+      one: 'Den tas bort från 1 recept.',
+      zero: 'Inga recept påverkas.',
+    );
+    return 'Är du säker på att du vill ta bort \"$name\"? $_temp0';
+  }
+
+  @override
   String get personalTagDeleted => 'Tagg borttagen';
 
   @override
@@ -8682,6 +8694,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get errorImportFailed => 'Import misslyckades';
+
+  @override
+  String get errorImportTimeout =>
+      'Det här tar längre tid än vanligt. Försök igen, eller importera texten manuellt.';
 
   @override
   String get errorNoRecipesSelected => 'Inga recept valda';
