@@ -41,6 +41,12 @@ abstract class BaseFirebaseRepository<T>
   @protected
   TimestampProvider get timestampProvider => _timestampProvider;
 
+  /// BUT-893: exposed to subclasses so they can call [logPermissionCheck]
+  /// inside their own custom permission flows without a separate plumbing
+  /// layer. Nullable because audit-logging is opt-in per DI module.
+  @protected
+  FirebaseAuditRepository? get auditRepository => _auditRepository;
+
   String get collectionName;
   T fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc);
   Map<String, dynamic> toFirestore(T entity);

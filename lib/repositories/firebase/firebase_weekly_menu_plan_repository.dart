@@ -119,10 +119,22 @@ class FirebaseWeeklyMenuPlanRepository
     required String userId,
     required String recipeId,
   }) async {
+    final actorId = requireCurrentUserId();
     await validateOwnership(
-      currentUserId: requireCurrentUserId(),
+      currentUserId: actorId,
       resourceOwnerId: userId,
       resourceType: collectionName,
+    );
+
+    // BUT-893 / lib/repositories/CLAUDE.md: every custom permission gate
+    // logs an audit trail. We log once at the user level (not per-plan) to
+    // keep audit volume reasonable — the cascade is naturally one-per-user.
+    await logPermissionCheck(
+      userId: actorId,
+      resource: '$collectionName/user:$userId',
+      operation: 'removeRecipeFromAllPlans',
+      granted: true,
+      auditRepository: auditRepository,
     );
 
     // Doc-ID prefix range gives us only this user's plans — same trick as
@@ -136,7 +148,7 @@ class FirebaseWeeklyMenuPlanRepository
     if (snapshot.docs.isEmpty) return 0;
 
     final affected = <DocumentSnapshot<Map<String, dynamic>>>[];
-    final updates = <Map<String, dynamic>>[];
+    final scrubbedEntries = <List<dynamic>>[];
 
     for (final doc in snapshot.docs) {
       final plan = fromFirestore(doc);
@@ -144,15 +156,21 @@ class FirebaseWeeklyMenuPlanRepository
           plan.entries.where((e) => e.recipeId != recipeId).toList();
       if (filteredEntries.length == plan.entries.length) continue;
       affected.add(doc);
+      // Run through toFirestore so the entries match the on-disk shape
+      // (timestamps, sentinels, etc.) but only extract the entries field
+      // — see batch.update below.
       final scrubbed = plan.copyWith(entries: filteredEntries);
-      updates.add(toFirestore(scrubbed));
+      final asMap = toFirestore(scrubbed);
+      scrubbedEntries.add(asMap['entries'] as List<dynamic>);
     }
 
     if (affected.isEmpty) return 0;
 
     final batch = firestore.batch();
     for (var i = 0; i < affected.length; i++) {
-      batch.set(affected[i].reference, updates[i]);
+      // batch.update (not set) so concurrent writers can't lose fields
+      // added outside the entries array — partial update by design.
+      batch.update(affected[i].reference, {'entries': scrubbedEntries[i]});
     }
     await batch.commit();
 

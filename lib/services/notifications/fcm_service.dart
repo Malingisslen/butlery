@@ -158,9 +158,13 @@ class FCMService extends BaseService {
     if (_isDisposed) return;
 
     // Short-circuit when nothing actually changed (re-entering an already-
-    // bound user's session). `identical()` is correct here — ConsentService
-    // and the callbacks are per-user instances, so the same user keeps the
-    // same object identity.
+    // bound user's session). `identical()` is correct for the ConsentService
+    // (per-user instance). For the callbacks, the current call sites pass
+    // method tear-offs (`_handleForegroundMessage`) which Dart guarantees
+    // equal across re-evaluations; if a future caller switches to an inline
+    // closure (`(m) => _handleForegroundMessage(m)`) this short-circuit
+    // silently stops firing — that's a correctness-neutral perf cost (we
+    // re-bind the same handler), not a bug.
     final sameConsent = identical(_consentService, consentService);
     final sameOnMessage = _onMessageReceived == onMessageReceived;
     final sameOnOpened = _onMessageOpenedApp == onMessageOpenedApp;
