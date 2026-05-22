@@ -63,6 +63,12 @@ export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-m
 // Social Cleanup - User deletion and moderation
 export { onUserDeleted } from "./cleanup/on-user-deleted";
 
+// BUT-788: server-side account-deletion callable. Replaces the prior
+// client-side `firebaseAuth.user.delete()` + 30-collection Flutter cascade.
+// Runs own-data cleanup under Admin SDK, then calls `admin.auth().deleteUser`
+// which triggers `onUserDeleted` for cross-user cleanup.
+export { requestAccountDeletion } from "./account/request-account-deletion";
+
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";
 

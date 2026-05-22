@@ -30,6 +30,7 @@ import 'package:butlery/repositories/firebase/firebase_data_export_repository.da
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_acquisition_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 // Core services
@@ -287,30 +288,18 @@ class CoreModule implements DIModule {
         () => PersistenceService(),
       );
 
-      // Account deletion service for GDPR Article 17 (Right to Erasure)
+      // Account deletion service for GDPR Article 17 (Right to Erasure).
+      // BUT-788: now a thin wrapper around the `requestAccountDeletion`
+      // Cloud Function. Pre-CF deps: SearchRepository (Algolia cleanup),
+      // OfflineService (local cache cleanup). Post-CF: AuthService signs out.
       container.registerLazySingleton<AccountDeletionService>(() {
         return AccountDeletionService(
-          authRepository: container<AuthRepository>(),
-          firestoreRepository: container<FirestoreRepository>(),
           authService: container<AuthService>(),
-          userService: container(), // Will be provided by content module
-          recipeService: container(), // Will be provided by content module
-          offlineService: container(), // Will be provided by content module
-          presenceService: container(), // Provided by messaging module
-          notificationsRepository: container(), // Provided by messaging module
-          notificationHistoryRepository:
-              container(), // Provided by messaging module
-          notificationBatchRepository:
-              container(), // Provided by messaging module
-          deviceRepository: container(), // Provided by messaging module
-          userRepository: container(), // Provided by social module
-          consentRepository: container<FirebaseConsentRepository>(),
-          messagingRepository: container(), // Provided by messaging module
-          collaborativeRecipeRepository:
-              container(), // Provided by content module
-          analyticsService: container<AnalyticsService>(),
           searchRepository: container.isRegistered<SearchRepository>()
               ? container<SearchRepository>()
+              : null,
+          offlineService: container.isRegistered<OfflineService>()
+              ? container<OfflineService>()
               : null,
         );
       });

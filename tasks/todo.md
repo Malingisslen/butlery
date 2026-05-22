@@ -1,15 +1,31 @@
 # Sprint Backlog
 
-## Sprint: wave-11 — server-side account-deletion (carried from wave-10) — TBD
+## Sprint: wave-11 — server-side account-deletion (BUT-788) — 2026-05-22 (Fr)
 
-Theme: BUT-788 server-side account-deletion. Deferred from wave-10 because BUT-782 (URGENT, 660-line refactor) consumed the focused single-item sprint per its own ticket guidance.
+Theme: BUT-788 server-side account-deletion. Eliminates the auth-context race in the prior client-driven cascade by moving Firestore cleanup to a new `requestAccountDeletion` callable Cloud Function that calls `admin.auth().deleteUser(uid)` LAST.
 
 ### Agent A: cloud-functions-specialist + firebase-backend-security — BUT-788 server-side account-deletion
-- [ ] Audit current flow + map current CF (likely `functions/src/account/request-account-deletion.ts` + client in `lib/services/account/account_deletion_service.dart` or `lib/services/gdpr/*`)
-- [ ] Server-side single-callable: all Firestore cascades → Storage cleanup → `auth.deleteUser(uid)` via Admin SDK (LAST step)
-- [ ] Client becomes one-call (remove `firebaseAuth.user.delete()`); sign out locally after CF responds
-- [ ] Re-auth `< 5min` enforcement on the CF (verify `auth_time` of ID token)
-- [ ] CF integration test on emulator + client unit test
+- [x] Step 0: read current code + classify (verdict: **fits** — destination matches ticket intent; existing `onUserDeleted` v1 trigger already owns cross-user cleanup, so the new CF only ports own-data cascade)
+- [x] New CF `functions/src/account/request-account-deletion.ts` — callable, re-auth gate (`auth_time` < 5min), audit log, Storage cleanup, `admin.auth().deleteUser(uid)` LAST
+- [x] New cascade module `functions/src/account/account-deletion-cascade.ts` — 24 own-data delete steps mirroring prior Flutter modules (3-tier orchestration: own-content → user-subcoll → user-root)
+- [x] Registered in `functions/src/index.ts`; `tsc --noEmit` clean
+- [x] Client `lib/services/account/account_deletion_service.dart` rewritten as ~190-line CF wrapper (was 430). Deleted: 4 `*DeletionOperations` modules (~1,050 lines)
+- [x] DI in `core_module.dart` reduced from 17 deps to 4
+- [x] Client unit test rewritten (6 tests pass): success path, `requires-recent-login` translation, search-index + offline-cache pre-cleanup ordering, no-auth short-circuit, failed-cascade still-signs-out
+- [x] TS orchestrator test (4 tests pass): full-step shape, audit-log schema, auth-delete-failure handling, 180-day expireAt
+- [x] `flutter analyze --fatal-infos` clean on lib/ + test/
+- [x] Existing `profile_viewmodel_test.dart` (105 tests) + `account_deletion_journey_test.dart` (3 tests) still green
+
+### Follow-ups filed in Linear
+- BUT-1009 (Medium) — per-step Firestore integration test against emulator (current orchestrator test uses empty-snapshot fake)
+- BUT-1010 (High, blocked on BUT-760) — enforce App Check on `requestAccountDeletion` once mobile attestation is registered
+- BUT-1011 (Low) — async status-polling for very large account deletion (only if 9-min timeout is hit in prod telemetry)
+
+### Post-sprint
+- [ ] code-reviewer / firebase-backend-security / testing-specialist sign-offs (in progress)
+- [ ] Commit + push
+- [ ] Close BUT-788 in Linear
+- [ ] CI watcher
 
 ---
 

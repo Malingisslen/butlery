@@ -1,430 +1,201 @@
-import 'package:clock/clock.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
     as notif;
-import 'package:butlery/services/user_service.dart' as user_svc;
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/services/presence_service.dart';
-import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/account/account_deletion/content_deletion_operations.dart';
-import 'package:butlery/services/account/account_deletion/social_deletion_operations.dart';
-import 'package:butlery/services/account/account_deletion/profile_deletion_operations.dart';
-import 'package:butlery/services/account/account_deletion/storage_deletion_operations.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart'
-    as auth_repo;
-import 'package:butlery/repositories/interfaces/device_repository.dart';
-import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
-import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
-import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
-import 'package:butlery/repositories/interfaces/user_repository.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/utils/crypto_utils.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
-import 'package:butlery/core/constants/firestore_collections.dart';
 
-/// GDPR-compliant account deletion orchestrator delegating to focused deletion modules.
-/// Uses repository pattern for database access to improve testability and maintain
-/// architectural consistency. Delegates to focused deletion operation modules for
-/// different data categories (content, social, profile, storage).
+/// BUT-788: client wrapper for the server-side account-deletion callable.
+///
+/// The cascade itself lives in `functions/src/account/request-account-
+/// deletion.ts`. This class is now a thin orchestrator:
+///
+///   1. Pre-CF: clean third-party indexes the CF can't reach (Algolia /
+///      MeiliSearch search index, local offline cache).
+///   2. Invoke the `requestAccountDeletion` callable. The CF runs the
+///      Firestore cascade + Storage cleanup as Admin SDK, then calls
+///      `admin.auth().deleteUser(uid)` LAST.
+///   3. Post-CF: reset local notification state and sign the user out.
+///
+/// **No client-side `user.delete()` call** — that was the source of the
+/// auth-context race the rewrite eliminated.
+///
+/// **Re-auth requirement**: the CF rejects requests when the ID token's
+/// `auth_time` claim is older than 5 minutes. The error surfaces here as
+/// `result['requiresReauth'] = true`; callers prompt for re-authentication
+/// and retry.
 class AccountDeletionService extends BaseService {
   @override
   String get serviceName => 'AccountDeletionService';
-  final auth_repo.AuthRepository _authRepository;
-  final FirestoreRepository _firestoreRepository;
-  final AnalyticsService?
-      _analyticsService; // Optional - may not be available on web
+
+  final AuthService _authService;
+  final FirebaseFunctions _functions;
   final SearchRepository? _searchRepository;
+  final OfflineService? _offlineService;
   static const String _logTag = 'AccountDeletionService';
-
-  /// GDPR Art.5(1)(e) — audit log retention period.
-  /// Must align with cleanup-audit-logs.ts expireAt TTL query.
-  static const int _auditLogRetentionDays = 180;
-  static const int _searchIndexDeleteChunkSize = 50;
-
-  late final ContentDeletionOperations _contentOps;
-  late final SocialDeletionOperations _socialOps;
-  late final ProfileDeletionOperations _profileOps;
-  late final StorageDeletionOperations _storageOps;
+  static const String _callableName = 'requestAccountDeletion';
 
   AccountDeletionService({
-    required auth_repo.AuthRepository authRepository,
-    required FirestoreRepository firestoreRepository,
     required AuthService authService,
-    required user_svc.UserService userService,
-    required UnifiedRecipeService recipeService,
-    required OfflineService offlineService,
-    required PresenceService presenceService,
-    required NotificationsRepository notificationsRepository,
-    required NotificationHistoryRepository notificationHistoryRepository,
-    required NotificationBatchRepository notificationBatchRepository,
-    required DeviceRepository deviceRepository,
-    required UserRepository userRepository,
-    required FirebaseConsentRepository consentRepository,
-    required MessagingRepository messagingRepository,
-    required CollaborativeRecipeRepository collaborativeRecipeRepository,
-    AnalyticsService?
-        analyticsService, // Optional - may not be available on web
+    FirebaseFunctions? functions,
     SearchRepository? searchRepository,
-  })  : _authRepository = authRepository,
-        _firestoreRepository = firestoreRepository,
-        _analyticsService = analyticsService,
-        _searchRepository = searchRepository {
-    // Initialize deletion operations with Firestore instance from repository
-    final firestore = _firestoreRepository.firestore;
-    _contentOps = ContentDeletionOperations(firestore);
-    _socialOps = SocialDeletionOperations(
-      firestore,
-      messagingRepository: messagingRepository,
-    );
-    _profileOps = ProfileDeletionOperations(
-      firestore,
-      notificationsRepository: notificationsRepository,
-      notificationHistoryRepository: notificationHistoryRepository,
-      notificationBatchRepository: notificationBatchRepository,
-      deviceRepository: deviceRepository,
-      userRepository: userRepository,
-      consentRepository: consentRepository,
-    );
-    _storageOps = StorageDeletionOperations(
-      offlineService: offlineService,
-      presenceService: presenceService,
-      collaborativeRecipeRepository: collaborativeRecipeRepository,
-      authRepository: authRepository,
-      // Note: audit repository could be injected here for GDPR Article 30 compliance
-    );
-  }
+    OfflineService? offlineService,
+  })  : _authService = authService,
+        _functions =
+            functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        _searchRepository = searchRepository,
+        _offlineService = offlineService;
 
-  /// Access Firestore instance from repository
-  FirebaseFirestore get _firestore => _firestoreRepository.firestore;
-
+  /// Delete this user's account.
+  ///
+  /// Result map shape preserved for backwards compatibility with
+  /// `ProfileViewModel`:
+  ///   - `success` (bool) — overall outcome.
+  ///   - `deletedCollections` (`List<String>`) — collections the CF deleted.
+  ///   - `failedCollections` (`List<String>`) — collections that failed.
+  ///   - `errors` (`List<String>`) — error messages.
+  ///   - `auditLogId` (String?) — id of the deletion-audit row.
+  ///   - `requiresReauth` (bool) — set when the CF rejects on stale
+  ///     `auth_time`; caller must trigger re-authentication and retry.
   Future<Map<String, dynamic>> deleteUserAccount({
     required String reason,
     bool createAuditLog = true,
   }) async {
     final result = <String, dynamic>{
       'success': false,
-      'deletedCollections': [],
-      'failedCollections': [],
-      'errors': [],
+      'deletedCollections': <String>[],
+      'failedCollections': <String>[],
+      'errors': <String>[],
       'auditLogId': null,
     };
 
-    try {
-      final user = _authRepository.currentUser;
-      if (user == null) {
-        throw Exception('No authenticated user found');
-      }
+    final uid = _authService.currentUserId;
+    if (uid == null) {
+      result['errors'] = ['No authenticated user'];
+      return result;
+    }
 
-      final userId = user.uid;
-      final userEmail = user.email ?? 'unknown';
+    app_logger.AppLogger.info('[$_logTag] Starting account deletion');
 
-      app_logger.AppLogger.info(
-        '[$_logTag] Starting account deletion for user: $userId',
-      );
+    // Pre-CF: search-index cleanup. Once `auth.deleteUser` runs server-side,
+    // the client's search-SDK credentials are tied to a now-gone user, so
+    // any Algolia/Meili call would fail. Run this BEFORE the CF call.
+    if (_searchRepository != null) {
+      await _cleanupSearchIndex(uid, result);
+    }
 
-      // Search index cleanup must complete before Firestore deletion (needs IDs)
-      if (_searchRepository != null) {
-        await _runDeletionStep(
-            'search_index_user', result, () => _deleteSearchIndexUser(userId));
-        await _runDeletionStep('search_index_recipes', result,
-            () => _deleteSearchIndexRecipes(userId));
-      }
-
-      // Delete auth entry FIRST — if reauth is required, abort before
-      // touching any Firestore data. Orphaned Firestore data can be cleaned
-      // by scheduled Cloud Functions, but a zombie auth entry cannot.
+    // Pre-CF: clear local offline cache. Client-only — no CF equivalent.
+    if (_offlineService != null) {
       try {
-        await user.delete();
-      } catch (authError) {
-        app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete auth entry',
-          authError,
-        );
-        result['errors'].add('auth_deletion: ${authError.toString()}');
-        if (authError is FirebaseAuthException &&
-            authError.code == 'requires-recent-login') {
-          result['requiresReauth'] = true;
-        }
-        // Auth deletion failed — abort entire operation
-        return result;
-      }
-
-      // Auth deleted — now clean up Firestore data in parallel tiers.
-      // Tier 1: All independent content, social, notification, and storage deletions.
-      final tier1 = <String, Future<bool> Function()>{
-        'recipes': () => _contentOps.deleteRecipes(userId),
-        'menus': () => _contentOps.deleteMenus(userId),
-        'shopping_lists': () => _contentOps.deleteShoppingLists(userId),
-        'personal_tags': () => _contentOps.deletePersonalTags(userId),
-        'personal_tag_groups': () =>
-            _contentOps.deletePersonalTagGroups(userId),
-        'cook_snaps': () => _contentOps.deleteCookSnaps(userId),
-        'activity_events': () => _contentOps.deleteActivityEvents(userId),
-        'weekly_menu_plans': () => _contentOps.deleteWeeklyMenuPlans(userId),
-        'pantry_items': () => _contentOps.deletePantryItems(userId),
-        'friend_connections': () => _socialOps.removeFriendConnections(userId),
-        'messages': () => _socialOps.deleteMessages(userId),
-        'shared_content': () => _socialOps.removeFromSharedContent(userId),
-        'comments_ratings': () => _socialOps.deleteCommentsAndRatings(userId),
-        // shared_menus + shared_shopping_lists deleted via removeFromSharedContent (unified shared_content collection)
-        // BUT-407: pings authored by user — GDPR erasure cascade.
-        'pings': () => _socialOps.deletePingsByUser(userId),
-        'reports': () => _socialOps.deleteUserReports(userId),
-        'block_records': () => _deleteBlockRecords(userId),
-        'preferences': () => _profileOps.deleteUserPreferences(userId),
-        'fcm_tokens': () => _profileOps.deleteFcmTokens(userId),
-        'notification_preferences': () =>
-            _profileOps.deleteNotificationPreferences(userId),
-        'notifications': () => _profileOps.deleteNotifications(userId),
-        'notification_analytics': () =>
-            _profileOps.deleteNotificationAnalytics(userId),
-        'offline_cache': () => _storageOps.clearOfflineData(userId),
-        'public_profile': () => _profileOps.deletePublicProfile(userId),
-        'realtime_recipes': () => _storageOps.deleteRealtimeRecipes(userId),
-        'presence': () => _storageOps.deletePresence(userId),
-        'storage_files': () => _storageOps.deleteUserStorageFiles(userId),
-      };
-
-      // Tier 2: Subcollections under users/{uid} (must complete before doc deletion).
-      final tier2 = <String, Future<bool> Function()>{
-        'consent_records': () => _profileOps.deleteConsentRecords(userId),
-        'user_subcollections': () =>
-            _profileOps.deleteUserSubcollections(userId),
-      };
-
-      // Tier 3: The user document itself (must be last).
-      final tier3 = <String, Future<bool> Function()>{
-        'profile': () => _profileOps.deleteUserProfile(userId),
-      };
-
-      // Execute each tier in parallel, tiers sequentially
-      for (final tier in [tier1, tier2, tier3]) {
-        await Future.wait(
-          tier.entries.map((e) => _runDeletionStep(e.key, result, e.value)),
-        );
-      }
-
-      // GDPR canary: re-query the highest-risk collections AFTER the cascade.
-      // Any non-zero count means a deletion path silently dropped data.
-      // Surfaces both regressions in this migration AND any future bug that
-      // adds a userId-keyed collection without wiring it into the cascade.
-      await _probeResidualData(userId, result);
-
-      // Audit log AFTER auth deletion succeeds — no lying audit on failure
-      if (createAuditLog) {
-        result['auditLogId'] = await _createDeletionAuditLog(
-          userId: userId,
-          email: userEmail,
-          reason: reason,
-          deletedCollections: result['deletedCollections'],
-          failedCollections: result['failedCollections'],
-        );
-      }
-
-      // Log analytics if available (may not be on web)
-      await _analyticsService?.logAccountDeleted({
-        'reason': reason,
-        'collections_deleted': result['deletedCollections'].length,
-        'collections_failed': result['failedCollections'].length,
-      });
-
-      // Invalidate FCM token at SDK level via NotificationService
-      try {
-        await ServiceLocator.get<notif.NotificationService>().resetForLogout();
+        await _offlineService.clearUserData(uid);
       } catch (e) {
         app_logger.AppLogger.warning(
-          '[$_logTag] Failed to reset notification service: $e',
-        );
+            '[$_logTag] Offline cache cleanup failed: $e');
+        // Non-fatal — proceeds to CF call.
       }
+    }
 
-      result['success'] = true;
-      if (result['failedCollections'].isNotEmpty) {
-        app_logger.AppLogger.warning(
-          '[$_logTag] Auth deleted but some Firestore collections failed: '
-          '${result['failedCollections']}',
-        );
-      } else {
-        app_logger.AppLogger.info(
-          '[$_logTag] Account deletion completed successfully for user: $userId',
-        );
-      }
-
+    // Server-side cascade + admin.auth().deleteUser(uid).
+    try {
+      final callable = _functions.httpsCallable(
+        _callableName,
+        options: HttpsCallableOptions(
+          timeout: const Duration(minutes: 9),
+        ),
+      );
+      final response = await callable.call<Map<dynamic, dynamic>>({
+        'reason': reason,
+      });
+      _mergeCfResult(response.data, result);
+    } on FirebaseFunctionsException catch (e) {
+      _handleCfException(e, result);
       return result;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Account deletion failed', e);
-      result['errors'].add('Main process: ${e.toString()}');
-
-      if (e is FirebaseAuthException && e.code == 'requires-recent-login') {
-        result['requiresReauth'] = true;
-      }
-
+      app_logger.AppLogger.error('[$_logTag] CF call failed', e);
+      result['errors'] = [...(result['errors'] as List<String>), 'cf_call: $e'];
       return result;
     }
-  }
 
-  /// GDPR canary — fires `.count()` queries against the highest-risk
-  /// collections after the cascade completes. Any non-zero count means
-  /// a deletion path silently dropped data. Appends
-  /// `'residual_data_detected'` to `failedCollections` so the audit log
-  /// records `gdprCompliant: false`. Errors are logged but never abort
-  /// the wider deletion (the probe is the safety net, not the cascade).
-  ///
-  /// The collections probed are the ones a regression here would be
-  /// most painful for: long-term content (`recipes`), unbounded notification
-  /// streams, and the rotating-secret token cluster. Adding a new high-risk
-  /// collection? Add it here too.
-  Future<void> _probeResidualData(
-      String userId, Map<String, dynamic> result) async {
-    const probedCollections = [
-      FirestoreCollections.recipes,
-      FirestoreCollections.userNotifications,
-      FirestoreCollections.userFcmTokens,
-    ];
-
-    var residual = 0;
-    for (final col in probedCollections) {
-      try {
-        final snapshot = await _firestore
-            .collection(col)
-            .where('userId', isEqualTo: userId)
-            .count()
-            .get();
-        final count = snapshot.count ?? 0;
-        if (count > 0) {
-          residual += count;
-          app_logger.AppLogger.warning(
-            '[$_logTag] Residual data in $col after deletion: $count docs',
-          );
-        }
-      } catch (e) {
-        // Probe failure is itself suspicious — record it but don't abort.
-        residual += 1;
-        app_logger.AppLogger.error(
-          '[$_logTag] Residual probe failed for $col',
-          e,
-        );
-      }
+    // Post-CF: reset local notification state, then sign out.
+    try {
+      await ServiceLocator.get<notif.NotificationService>().resetForLogout();
+    } catch (e) {
+      app_logger.AppLogger.warning(
+          '[$_logTag] Failed to reset notification service: $e');
+    }
+    try {
+      await _authService.signOut();
+    } catch (e) {
+      app_logger.AppLogger.warning(
+          '[$_logTag] Sign-out after deletion failed: $e');
     }
 
-    if (residual > 0 &&
-        !result['failedCollections'].contains('residual_data_detected')) {
-      result['failedCollections'].add('residual_data_detected');
-    }
+    app_logger.AppLogger.info(
+        '[$_logTag] Account deletion completed: success=${result['success']}');
+    return result;
   }
 
-  Future<void> _runDeletionStep(
-    String name,
+  Future<void> _cleanupSearchIndex(
+    String userId,
     Map<String, dynamic> result,
-    Future<bool> Function() task,
   ) async {
     try {
-      final success = await task();
-      if (success) {
-        result['deletedCollections'].add(name);
-      } else {
-        result['failedCollections'].add(name);
-      }
-    } catch (e) {
-      result['failedCollections'].add(name);
-      result['errors'].add('$name: ${e.toString()}');
-      app_logger.AppLogger.error('[$_logTag] Failed to delete $name', e);
-    }
-  }
-
-  Future<bool> _deleteBlockRecords(String userId) async {
-    try {
-      final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
-      await blockRepo.deleteAllBlocksForUser(userId);
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete block records', e);
-      return false;
-    }
-  }
-
-  Future<bool> _deleteSearchIndexUser(String userId) async {
-    try {
       await _searchRepository!.removeUser(userId);
-      return true;
+      (result['deletedCollections'] as List).add('search_index_user');
     } catch (e) {
       app_logger.AppLogger.error(
-        '[$_logTag] Failed to remove user from search index',
-        e,
-      );
-      return false;
+          '[$_logTag] search index user removal failed', e);
+      (result['failedCollections'] as List).add('search_index_user');
     }
   }
 
-  Future<bool> _deleteSearchIndexRecipes(String userId) async {
-    try {
-      // note: bounded by per-user account-deletion (one user's recipes,
-      // one-time op). Search-index cleanup must be exhaustive — no pagination.
-      final recipesSnapshot = await _firestore
-          .collection(FirestoreCollections.recipes)
-          .where('userId', isEqualTo: userId)
-          .limit(10000)
-          .get();
-
-      final recipeIds = recipesSnapshot.docs.map((d) => d.id).toList();
-      for (var i = 0; i < recipeIds.length; i += _searchIndexDeleteChunkSize) {
-        final chunk = recipeIds.sublist(
-          i,
-          (i + _searchIndexDeleteChunkSize).clamp(0, recipeIds.length),
-        );
-        await Future.wait(
-          chunk.map((id) => _searchRepository!.removeRecipe(id)),
-        );
-      }
-      return true;
-    } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to remove recipes from search index',
-        e,
-      );
-      return false;
+  /// Translate a `FirebaseFunctionsException` into the result-map shape.
+  /// `failed-precondition` with `code: requires-recent-login` becomes
+  /// `requiresReauth: true` so the caller can prompt the user.
+  void _handleCfException(
+    FirebaseFunctionsException e,
+    Map<String, dynamic> result,
+  ) {
+    app_logger.AppLogger.error(
+        '[$_logTag] CF rejected request: ${e.code} — ${e.message}', e);
+    final details = e.details;
+    final code = details is Map ? details['code'] : null;
+    if (e.code == 'failed-precondition' && code == 'requires-recent-login') {
+      result['requiresReauth'] = true;
+    } else if (e.code == 'unauthenticated') {
+      result['requiresReauth'] = true;
     }
+    (result['errors'] as List).add('cf_${e.code}: ${e.message ?? ''}');
   }
 
-  Future<String> _createDeletionAuditLog({
-    required String userId,
-    required String email,
-    required String reason,
-    required List<dynamic> deletedCollections,
-    required List<dynamic> failedCollections,
-  }) async {
-    return await safeExecute(
-          () async {
-            final emailHash = CryptoUtils.sha256Hash(email);
-            final auditDoc = await _firestore
-                .collection(FirestoreCollections.deletionAuditLogs)
-                .add({
-              'userId': userId,
-              'emailHash': emailHash,
-              'reason': reason,
-              'deletedCollections': deletedCollections,
-              'failedCollections': failedCollections,
-              'deletionTimestamp': FieldValue.serverTimestamp(),
-              'expireAt': Timestamp.fromDate(
-                clock.now().add(const Duration(days: _auditLogRetentionDays)),
-              ),
-              'gdprCompliant': failedCollections.isEmpty,
-            });
-            return auditDoc.id;
-          },
-          operationName: 'Create deletion audit log',
-          defaultValue: 'error',
-        ) ??
-        'error';
+  void _mergeCfResult(
+      Map<dynamic, dynamic>? data, Map<String, dynamic> result) {
+    if (data == null) return;
+    if (data['success'] is bool) {
+      result['success'] = data['success'];
+    }
+    // whereType<String>() returns Iterable<String> directly. The earlier
+    // `.cast<String>()` approach produced a lazy CastList<dynamic, String>
+    // whose runtime type didn't match the `List<String>` addAll target — the
+    // iterable check fired at addAll time, swallowing the CF response.
+    if (data['deletedCollections'] is List) {
+      (result['deletedCollections'] as List<String>)
+          .addAll((data['deletedCollections'] as List).whereType<String>());
+    }
+    if (data['failedCollections'] is List) {
+      (result['failedCollections'] as List<String>)
+          .addAll((data['failedCollections'] as List).whereType<String>());
+    }
+    if (data['errors'] is List) {
+      (result['errors'] as List<String>).addAll(
+        (data['errors'] as List).map<String>((e) => e.toString()),
+      );
+    }
+    if (data['auditLogId'] is String) {
+      result['auditLogId'] = data['auditLogId'];
+    }
   }
 }
