@@ -20,6 +20,7 @@
       "Bash(firebase functions:log *)",
       "Bash(unzip -l *)",
       "Bash(tasklist)",
+      "Bash(touch:.claude/state/*-done.marker)",
       "mcp__claude-in-chrome__navigate",
       "mcp__claude-in-chrome__tabs_context_mcp",
       "mcp__claude-in-chrome__read_console_messages",
