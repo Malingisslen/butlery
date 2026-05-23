@@ -105,8 +105,13 @@ void main() {
 
         final result = await operations.addUnifiedRecipe(testRecipe);
 
+        // BUT-968: when createRecipe returns null (non-exception failure
+        // path), the message is the localized "could not add" string, not
+        // the raw "Failed: ..." that used to leak. Assert the contract,
+        // not the literal English text — the locale could change.
         expect(result.isSuccess, isFalse);
-        expect(result.message, contains('Failed'));
+        expect(result.message, isNotNull);
+        expect(result.message, isNot(contains('Exception')));
       });
 
       test('should update unified recipe successfully', () async {
@@ -126,8 +131,11 @@ void main() {
 
         final result = await operations.updateUnifiedRecipe(testRecipe);
 
+        // BUT-968: failure message is the localized "could not update"
+        // fallback, not the raw exception text. Assert the contract.
         expect(result.isSuccess, isFalse);
-        expect(result.message, contains('Failed'));
+        expect(result.message, isNotNull);
+        expect(result.message, isNot(contains('Exception')));
       });
 
       test('should delete recipe', () async {
@@ -477,8 +485,17 @@ void main() {
 
         final result = await operations.addUnifiedRecipe(testRecipe);
 
+        // BUT-968 contract: raw exception text MUST NOT leak to the user.
+        // Previously this test asserted `contains('Database error')` —
+        // the new mapFirebaseErrorMessage helper returns the localized
+        // fallback ("Could not add the recipe.") for non-FirebaseException
+        // throwables. The negated assertion locks the contract: if anyone
+        // bypasses the mapper and surfaces raw `e.toString()` again, this
+        // test breaks.
         expect(result.isSuccess, isFalse);
-        expect(result.message, contains('Database error'));
+        expect(result.message, isNotNull);
+        expect(result.message, isNot(contains('Database error')));
+        expect(result.message, isNot(contains('Exception')));
       });
     });
   });
