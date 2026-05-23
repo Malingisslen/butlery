@@ -896,6 +896,113 @@ void main() {
       });
     });
 
+    group('Bulk Tag (BUT-1012)', () {
+      test(
+          'bulkApplyPersonalTag returns count of recipes that did not already '
+          'have the tag and skips ones that did', () async {
+        // Arrange — three recipes, one already tagged with 'travel'.
+        final recipes = [
+          RecipeFactory.build(id: 'r1', personalTagIds: []),
+          RecipeFactory.build(id: 'r2', personalTagIds: ['travel']),
+          RecipeFactory.build(id: 'r3', personalTagIds: []),
+        ];
+        mockRecipeService.setRecipeState(recipes: recipes);
+        mockRecipeService.notifyListeners();
+
+        viewModel.enterSelectionMode('r1');
+        viewModel.toggleSelection('r2');
+        viewModel.toggleSelection('r3');
+
+        // Act
+        final modified = await viewModel.bulkApplyPersonalTag(
+          tagId: 'travel',
+          tagName: 'Travel',
+        );
+
+        // Assert — r1 + r3 modified; r2 already tagged so skipped.
+        expect(modified, equals(2));
+      });
+
+      test(
+          'bulkApplyPersonalTag returns 0 when every selected recipe already '
+          'has the tag', () async {
+        final recipes = [
+          RecipeFactory.build(id: 'r1', personalTagIds: ['weeknight']),
+          RecipeFactory.build(id: 'r2', personalTagIds: ['weeknight']),
+        ];
+        mockRecipeService.setRecipeState(recipes: recipes);
+        mockRecipeService.notifyListeners();
+
+        viewModel.enterSelectionMode('r1');
+        viewModel.toggleSelection('r2');
+
+        final modified = await viewModel.bulkApplyPersonalTag(
+          tagId: 'weeknight',
+          tagName: 'Weeknight',
+        );
+
+        expect(modified, equals(0));
+      });
+
+      test(
+          'bulkApplyPersonalTag returns 0 when selection was entered then '
+          'fully deselected (realistic empty-selection path)', () async {
+        final recipes = [
+          RecipeFactory.build(id: 'r1', personalTagIds: []),
+        ];
+        mockRecipeService.setRecipeState(recipes: recipes);
+        mockRecipeService.notifyListeners();
+
+        viewModel.enterSelectionMode('r1');
+        viewModel.clearSelection();
+
+        final modified = await viewModel.bulkApplyPersonalTag(
+          tagId: 'anything',
+          tagName: 'Anything',
+        );
+
+        expect(modified, equals(0));
+      });
+
+      test('undoBulkApplyPersonalTag is a no-op when nothing was applied',
+          () async {
+        // Snapshot is empty until bulkApplyPersonalTag captures one.
+        expect(viewModel.undoBulkApplyPersonalTag, returnsNormally);
+        await viewModel.undoBulkApplyPersonalTag();
+      });
+
+      test(
+          'undoBulkApplyPersonalTag is safe after an apply and the second '
+          'undo on the consumed snapshot is also safe', () async {
+        // Note: this test does NOT prove restoration semantics. The shared
+        // `MockUnifiedRecipeService.updateRecipe` is a concrete @override
+        // returning true without mutating its internal _recipes list, so
+        // `getRecipeById` during undo returns the original pre-apply state
+        // and the restore call is a no-op end-to-end. What this test proves
+        // is the snapshot lifecycle: first undo runs cleanly, second undo
+        // on the cleared snapshot is also a no-op (no null deref). A real
+        // restoration test needs a mock that mutates on updateRecipe — see
+        // BUT-1030 follow-up.
+        final recipes = [
+          RecipeFactory.build(id: 'r1', personalTagIds: []),
+          RecipeFactory.build(id: 'r2', personalTagIds: []),
+        ];
+        mockRecipeService.setRecipeState(recipes: recipes);
+        mockRecipeService.notifyListeners();
+
+        viewModel.enterSelectionMode('r1');
+        viewModel.toggleSelection('r2');
+
+        await viewModel.bulkApplyPersonalTag(
+          tagId: 'quick',
+          tagName: 'Quick',
+        );
+
+        await viewModel.undoBulkApplyPersonalTag();
+        await viewModel.undoBulkApplyPersonalTag();
+      });
+    });
+
     group('Lifecycle', () {
       test('should cleanup on dispose', () {
         // Arrange

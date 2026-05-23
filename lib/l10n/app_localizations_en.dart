@@ -12214,6 +12214,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get bulkTag => 'Tag Selected';
+
+  @override
+  String bulkTagDialogTitle(int count) {
+    return 'Add tag to $count recipes';
+  }
+
+  @override
+  String get bulkTagNoTagsAvailable => 'No personal tags available';
+
+  @override
+  String bulkTagSuccess(int count) {
+    return 'Tag added to $count recipes';
+  }
+
+  @override
+  String get bulkTagAllAlreadyTagged =>
+      'All selected recipes already have this tag';
+
+  @override
   String get profileFaq => 'FAQ';
 
   @override

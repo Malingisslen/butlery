@@ -20626,6 +20626,36 @@ abstract class AppLocalizations {
   /// **'{count} recept borttagna'**
   String bulkDeleteSuccess(int count);
 
+  /// No description provided for @bulkTag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tagga valda'**
+  String get bulkTag;
+
+  /// No description provided for @bulkTagDialogTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till tagg på {count} recept'**
+  String bulkTagDialogTitle(int count);
+
+  /// No description provided for @bulkTagNoTagsAvailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga personliga taggar att välja'**
+  String get bulkTagNoTagsAvailable;
+
+  /// No description provided for @bulkTagSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggen lades till på {count} recept'**
+  String bulkTagSuccess(int count);
+
+  /// No description provided for @bulkTagAllAlreadyTagged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla valda recept har redan denna tagg'**
+  String get bulkTagAllAlreadyTagged;
+
   /// No description provided for @profileFaq.
   ///
   /// In sv, this message translates to:

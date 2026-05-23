@@ -75,11 +75,12 @@ void main() {
       when(() => mockPermission.checkPermission(Permission.camera))
           .thenAnswer((_) async => PermissionStatus.granted);
 
+      // BUT-992: defaults are 1600 / 80 since wave-16.
       when(() => mockPicker.pickImage(
             source: ImageSource.camera,
-            maxWidth: 2400,
-            maxHeight: 2400,
-            imageQuality: 90,
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageQuality: 80,
           )).thenAnswer((_) async => XFile(path));
 
       when(() => mockValidator.isValidImageFile(any())).thenReturn(true);
@@ -89,6 +90,14 @@ void main() {
       expect(result, isNotNull);
       expect(result!.path, equals(path));
       verify(() => mockPermission.checkPermission(Permission.camera)).called(1);
+      // BUT-992: confirm the picker was actually called with the new
+      // bandwidth-friendly defaults (regression guard).
+      verify(() => mockPicker.pickImage(
+            source: ImageSource.camera,
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageQuality: 80,
+          )).called(1);
     });
 
     test('should request camera permission when denied then granted', () async {
@@ -153,11 +162,12 @@ void main() {
       when(() => mockPermission.checkPermission(Permission.photos))
           .thenAnswer((_) async => PermissionStatus.limited);
 
+      // BUT-992: defaults are 1600 / 80 since wave-16.
       when(() => mockPicker.pickImage(
             source: ImageSource.gallery,
-            maxWidth: 2400,
-            maxHeight: 2400,
-            imageQuality: 90,
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageQuality: 80,
           )).thenAnswer((_) async => XFile(path));
 
       when(() => mockValidator.isValidImageFile(any())).thenReturn(true);
@@ -232,10 +242,11 @@ void main() {
       when(() => mockPermission.checkPermission(Permission.photos))
           .thenAnswer((_) async => PermissionStatus.granted);
 
+      // BUT-992: defaults are 1600 / 80 since wave-16.
       when(() => mockPicker.pickMultiImage(
-            maxWidth: 2400,
-            maxHeight: 2400,
-            imageQuality: 90,
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageQuality: 80,
           )).thenAnswer((_) async => paths.map((p) => XFile(p)).toList());
 
       when(() => mockValidator.isValidImageFile(any())).thenReturn(true);
@@ -243,6 +254,12 @@ void main() {
       final result = await service.pickMultipleImages(maxImages: 5);
 
       expect(result, hasLength(3));
+      // BUT-992: regression guard — pickMultiImage must use the new defaults.
+      verify(() => mockPicker.pickMultiImage(
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageQuality: 80,
+          )).called(1);
     });
 
     test('should limit to maxImages', () async {

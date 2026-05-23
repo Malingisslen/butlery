@@ -1,35 +1,38 @@
 # Sprint Backlog
 
-## Sprint: wave-15 — wave-13/14 follow-up cleanup + quick refactors — 2026-05-23 (Sa)
+## Sprint: wave-16 — fresh batch (wave-15 fully shipped by parallel session) — 2026-05-23 (Sa)
 
-Theme: 2 wave-14 stragglers (BUT-1022, BUT-1026) + 3-ticket wave-13 backend follow-up cluster + 3 quick wins / remaining test follow-up. All single-area-per-batch, no architectural changes, 90-min time-box on the one investigation item.
+Theme: 2 High tickets + 1 obsoletion. Wave-15 was found 8/8 Done in Linear at sprint start (parallel session shipped without checking off `todo.md`). BUT-1013 was deferred mid-sprint after Step 0 verification revealed the prereq picker dialog doesn't exist; filed BUT-1029 for the prereq.
 
-### Agent A — wave-14 stragglers (`testing-specialist` for A1, `debugger` for A2)
-- [ ] **A1. BUT-1022 (High)** — `test/unit/services/ocr_extraction_service_test.dart` + `test/unit/viewmodels/photo_import_viewmodel_test.dart`: integration-style tests for `_classifyProviderErrors` → `_buildEnhancedErrorMessage` metadata-string contract. Cases: 429 → `errorOcrRateLimit`, `TimeoutException` → `errorOcrTimeout`, `SocketException` → `errorOcrTimeout`, generic → `errorNoTextExtracted`.
-- [ ] **A2. BUT-1026 (Medium, investigation — TIME-BOX 90 min)** — pull failing E2E run log, locate the test, reproduce locally. Fix if root cause is identified inside the box; otherwise file follow-ups and abandon.
+### Batch A — Recipe-list bulk tag (`flutter-developer`)
+- [x] **A1. BUT-1012 (High)** — `lib/views/mina_recept/selection_app_bar.dart` + `lib/viewmodels/recipe_list_viewmodel.dart`: new bulk-tag IconButton + inline `_BulkTagPicker` modal sheet + `bulkApplyPersonalTag` (merge, skip already-tagged) + `undoBulkApplyPersonalTag` with per-recipe snapshot. l10n: 5 new bulk-tag keys (sv + en + generated). Tests: 5 new VM unit tests covering modified-count, already-tagged skip, empty selection, undo safety.
 
-### Agent B — wave-13 backend follow-up cluster (`flutter-developer` for B1/B2, `firebase-backend-security` for B3)
-- [ ] **B1. BUT-1020 (Medium)** — `lib/services/storage_service.dart`: restore network pre-flight UX on `uploadImageFile`. Check `NetworkService.isOnline` before typed-exception path; throw `StorageUploadException(code: 'no-network')`. Coverage in `storage_service_test.dart`.
-- [ ] **B2. BUT-1015 (Medium)** — `lib/viewmodels/recipe_list_viewmodel.dart` + `PersistenceService` keys: extend wave-13's filter-persistence to rating/allergen/dietary/personalTag filters + scroll offset. Mirror the existing two-filter persistence pattern verbatim.
-- [ ] **B3. BUT-1017 (Medium, scope-limited)** — apply `mapFirebaseErrorMessage` across remaining repos/services. Audit list first (>6 files → stop and file follow-up). Only files where raw Firebase exceptions reach UI.
+### Batch B — Image upload size reduction (`flutter-developer`)
+- [x] **B1. BUT-992 (High)** — `lib/services/image_picker_service.dart`: defaults `2400→1600`, `quality 90→80` across `pickImage`, `pickMultipleImages`, `cropImage.compressQuality`. Existing tests updated + 2 regression-guard assertions added that the new literals are passed through.
 
-### Agent C — quick wins + remaining wave-13 test follow-up (`flutter-developer` for C1/C2, `testing-specialist` for C3)
-- [ ] **C1. BUT-1019 (Low)** — `lib/viewmodels/onboarding_viewmodel.dart`: migrate `extends ChangeNotifier` → `extends BaseViewModel`. Verify no method conflict.
-- [ ] **C2. BUT-1018 (Low)** — `lib/viewmodels/recipe_list_viewmodel.dart`: wrap `_persistActiveFilters` in existing `Debouncer` (300ms).
-- [ ] **C3. BUT-1027 (Medium)** — `test/unit/repositories/firebase/firebase_storage_repository_simple_test.dart` + `test/unit/services/storage_service_test.dart`: end-to-end propagation chain tests (`FirebaseException` quota-exceeded → `StorageUploadException` → `UploadRetryManager.classifyError` → `ImageUploadErrorType.quotaExceeded`).
+### Batch C — Obsoletion housekeeping
+- [x] **BUT-938** — closed as obsolete (multi-image carousel already shipped via `UniversalImageManager.recipeDetail` at `recipe_detail_content.dart:560-567`).
+
+### Mid-sprint scope changes
+- [~] **BUT-1013** — deferred. Plan-stale: ticket assumed a single-recipe slot picker existed for reuse, but no such picker exists. Filed prereq BUT-1029 (SlotPickerDialog widget), blocked BUT-1013 on it.
 
 ### Post-Sprint Steps
-- [ ] `dart analyze --fatal-infos` clean across `lib/` + `test/`
-- [ ] `dart format --set-exit-if-changed lib test` clean
-- [ ] Tier-2 agent reviews on staged `.dart` files (per CLAUDE.md hook map)
+- [x] `dart analyze --fatal-infos` clean across all changed files
+- [x] `dart format --set-exit-if-changed` clean
+- [x] Tier-2 agent reviews: `code-reviewer` PASS + `testing-specialist` PASS (non-blocker polish applied inline, marker re-touched)
 - [ ] Commit + push to main
 - [ ] Close Linear tickets to Done
 - [ ] CI watcher
 
 ### Known follow-ups (filed in Linear)
-_None yet — will append during sprint as Tier-2 review surfaces additional gaps._
+- **BUT-1029** (Medium) — SlotPickerDialog widget, prereq for BUT-1013 bulk-add-to-menu
+- **BUT-1030** (Medium) — Test harness: make `MockUnifiedRecipeService.updateRecipe` actually mutate `_recipes` (blocks "restoration after undo" tests for BUT-1012)
 
 ---
+
+## Archived wave-15 (parallel-session ships) — 2026-05-23 (Sa)
+
+wave-15 — 8 tickets planned (BUT-1022, 1026, 1020, 1015, 1017, 1019, 1018, 1027). A parallel Claude session shipped all 8 in a single window at 2026-05-23T17:59:51–17:59:57 without checking off this file. Pattern escalated from wave-14's 5/7 to 8/8. Lesson re-reinforced: Linear state is authoritative; local `todo.md` lies when two sessions run concurrently. `/sprint-execute` Step 0 verification caught this before wave-16 wasted any implementation time.
 
 ## Archived wave-14 (parallel-session ships) — 2026-05-23 (Sa)
 

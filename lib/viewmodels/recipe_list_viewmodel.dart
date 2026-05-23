@@ -8,6 +8,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/persistence_service.dart';
@@ -42,6 +43,16 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// BUT-1018: coalesces rapid filter toggles into one prefs write.
   Timer? _persistFiltersDebounceTimer;
+
+  /// BUT-1012: snapshot of (tagIds, personalTags) per recipeId captured before
+  /// the most recent bulk-tag apply, so the undo snackbar can restore exactly
+  /// what was there. Cleared on the next bulk-apply or once undo runs.
+  ///
+  /// Reentrancy: a second `bulkApplyPersonalTag` before undo overwrites this
+  /// snapshot (last-write-wins). The earlier snackbar's undo therefore reverts
+  /// only the *most recent* apply — matching the snackbar's own single-action
+  /// affordance.
+  Map<String, _RecipeTagSnapshot>? _lastBulkTagSnapshot;
   SortCriteria _sortCriteria = SortCriteria.title;
   bool _sortAscending = true;
   static const int _initialPageSize = 50;
@@ -627,6 +638,101 @@ class RecipeListViewModel extends ChangeNotifier {
     _selectionManager.clearSelection();
   }
 
+  /// BUT-1012: append [tagId] (named [tagName]) to every selected recipe whose
+  /// personalTagIds doesn't already contain it. Recipes already tagged are
+  /// silently skipped — they're not "changed". Returns the count actually
+  /// modified, so the caller can show "tag added to N recipes" or a
+  /// "all already tagged" snackbar when 0.
+  ///
+  /// Snapshot of each modified recipe's prior tag state is captured into
+  /// [_lastBulkTagSnapshot] so [undoBulkApplyPersonalTag] can restore it.
+  /// Per-recipe save errors are swallowed: one bad recipe must not block
+  /// the rest of the bulk apply. The stream-driven optimistic update via
+  /// `UnifiedRecipeService.updateRecipe` repaints the list as each save lands.
+  Future<int> bulkApplyPersonalTag({
+    required String tagId,
+    required String tagName,
+  }) async {
+    if (_isDisposed) return 0;
+    final targets = selectedRecipes;
+    if (targets.isEmpty) return 0;
+
+    final snapshot = <String, _RecipeTagSnapshot>{};
+    var modified = 0;
+    for (final recipe in targets) {
+      final currentIds = recipe.core.personalTagIds ?? const <String>[];
+      if (currentIds.contains(tagId)) continue;
+
+      snapshot[recipe.id] = _RecipeTagSnapshot(
+        personalTagIds: recipe.core.personalTagIds == null
+            ? null
+            : List<String>.from(recipe.core.personalTagIds!),
+        personalTags: recipe.core.personalTags == null
+            ? null
+            : List<RecipePersonalTag>.from(recipe.core.personalTags!),
+      );
+
+      final newIds = <String>[...currentIds, tagId];
+      final newTags = <RecipePersonalTag>[
+        ...?recipe.core.personalTags,
+        RecipePersonalTag.manual(tagId: tagId, name: tagName),
+      ];
+      final updated = Recipe(
+        core: recipe.core.copyWith(
+          personalTagIds: newIds,
+          personalTags: newTags,
+        ),
+        type: recipe.type,
+        socialData: recipe.socialData,
+        realtimeData: recipe.realtimeData,
+        offlineData: recipe.offlineData,
+      );
+      try {
+        await _recipeService.updateRecipe(updated);
+        modified++;
+      } catch (_) {
+        snapshot.remove(recipe.id);
+      }
+      if (_isDisposed) break;
+    }
+
+    _lastBulkTagSnapshot = snapshot.isEmpty ? null : snapshot;
+    return modified;
+  }
+
+  /// BUT-1012: revert the most recent [bulkApplyPersonalTag] using the
+  /// snapshot taken at apply time. Restores `personalTagIds` and
+  /// `personalTags` to exactly their prior values per recipe. Clears the
+  /// snapshot once consumed.
+  Future<void> undoBulkApplyPersonalTag() async {
+    if (_isDisposed) return;
+    final snapshot = _lastBulkTagSnapshot;
+    if (snapshot == null || snapshot.isEmpty) return;
+
+    for (final entry in snapshot.entries) {
+      final recipe = _recipeService.getRecipeById(entry.key);
+      if (recipe == null) continue;
+      final restored = Recipe(
+        core: recipe.core.copyWith(
+          personalTagIds: entry.value.personalTagIds,
+          personalTags: entry.value.personalTags,
+        ),
+        type: recipe.type,
+        socialData: recipe.socialData,
+        realtimeData: recipe.realtimeData,
+        offlineData: recipe.offlineData,
+      );
+      try {
+        await _recipeService.updateRecipe(restored);
+      } catch (_) {
+        // Best-effort restore: skip recipes that fail.
+      }
+      if (_isDisposed) break;
+    }
+
+    _lastBulkTagSnapshot = null;
+  }
+
   /// Refreshes recipe data with pull-to-refresh coordination and service integration.
   /// Performs comprehensive data refresh through UnifiedRecipeService for pull-to-refresh
   /// functionality with automatic state management and UI synchronization.
@@ -991,4 +1097,17 @@ class RecipeListViewModel extends ChangeNotifier {
     _recipeServiceSubscription?.cancel();
     super.dispose();
   }
+}
+
+/// BUT-1012: per-recipe snapshot of the personal-tag fields before a bulk
+/// apply, used to drive undo. Lists are defensively copied so later mutations
+/// to the live recipe object don't leak into the saved state.
+class _RecipeTagSnapshot {
+  final List<String>? personalTagIds;
+  final List<RecipePersonalTag>? personalTags;
+
+  const _RecipeTagSnapshot({
+    required this.personalTagIds,
+    required this.personalTags,
+  });
 }

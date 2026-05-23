@@ -8268,6 +8268,25 @@
   "bulkCancelSelection": "Avbryt val",
   "bulkDelete": "Ta bort valda",
   "bulkShare": "Dela valda",
+  "bulkTag": "Tagga valda",
+  "bulkTagDialogTitle": "Lägg till tagg på {count} recept",
+  "@bulkTagDialogTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkTagNoTagsAvailable": "Inga personliga taggar att välja",
+  "bulkTagSuccess": "Taggen lades till på {count} recept",
+  "@bulkTagSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkTagAllAlreadyTagged": "Alla valda recept har redan denna tagg",
   "viewModeGrid": "Rutnätsvy",
   "viewModeList": "Listvy",
   "duplicateImportTitle": "Receptet kan redan finnas",

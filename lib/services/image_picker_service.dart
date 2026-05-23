@@ -92,11 +92,11 @@ class ImagePickerService extends BaseService {
   /// 1. **Permission Validation**: Checks and requests appropriate permissions for the selected source
   /// 2. **Image Selection**: Uses native image picker with optimized quality and dimension settings
   /// 3. **File Validation**: Verifies file existence, accessibility, and format validity
-  /// 4. **Quality Optimization**: Applies configurable quality settings (90% quality, max 2400x2400)
+  /// 4. **Quality Optimization**: Applies configurable quality settings (80% quality, max 1600x1600 by default — BUT-992)
   /// 5. **Size Verification**: Validates file size and provides detailed logging information
-  /// **Image Optimization Settings:**
-  /// - Maximum dimensions: 2400x2400 pixels to prevent memory issues
-  /// - Quality setting: 90% for optimal balance between quality and file size
+  /// **Image Optimization Settings (BUT-992):**
+  /// - Maximum dimensions: 1600x1600 pixels (still exceeds the OCR pipeline's 2048px resize)
+  /// - Quality setting: 80% — saves ~2-3MB per upload vs the previous 90/2400 defaults
   /// - Format validation: Ensures selected images are in supported formats
   /// **Error Handling:**
   /// - Comprehensive error logging with detailed stack traces
@@ -130,11 +130,16 @@ class ImagePickerService extends BaseService {
 
       AppLogger.debug('📱 IMAGE_PICKER: Calling image picker provider...');
       AppLogger.info('📱 Calling image picker...');
+      // BUT-992: defaults tuned for upload cost — 1600px @ JPEG-80 still
+      // exceeds the OCR pipeline's downstream 2048px @ 85 resize, so the
+      // post-upload step becomes a no-op for most photos while every photo
+      // saves ~2-3MB on the upload itself. Callers needing higher fidelity
+      // can still override.
       final XFile? pickedFile = await _imagePickerProvider.pickImage(
         source: source,
-        maxWidth: maxWidth ?? 2400,
-        maxHeight: maxHeight ?? 2400,
-        imageQuality: imageQuality ?? 90,
+        maxWidth: maxWidth ?? 1600,
+        maxHeight: maxHeight ?? 1600,
+        imageQuality: imageQuality ?? 80,
       );
 
       if (pickedFile == null) {
@@ -239,10 +244,11 @@ class ImagePickerService extends BaseService {
 
       AppLogger.info('📱 Calling multiple image picker...');
 
+      // BUT-992: same defaults as the single-pick path above.
       final List<XFile> pickedFiles = await _imagePickerProvider.pickMultiImage(
-        maxWidth: 2400,
-        maxHeight: 2400,
-        imageQuality: 90,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 80,
       );
 
       if (pickedFiles.isEmpty) {
@@ -310,7 +316,8 @@ class ImagePickerService extends BaseService {
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: imageFile.path,
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        compressQuality: 90,
+        // BUT-992: match the picker's new JPEG-80 default.
+        compressQuality: 80,
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: AppLocale.current.imageCropTitle,

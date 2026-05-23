@@ -8247,6 +8247,25 @@
   "bulkCancelSelection": "Cancel selection",
   "bulkDelete": "Delete Selected",
   "bulkShare": "Share Selected",
+  "bulkTag": "Tag Selected",
+  "bulkTagDialogTitle": "Add tag to {count} recipes",
+  "@bulkTagDialogTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkTagNoTagsAvailable": "No personal tags available",
+  "bulkTagSuccess": "Tag added to {count} recipes",
+  "@bulkTagSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkTagAllAlreadyTagged": "All selected recipes already have this tag",
   "viewModeGrid": "Grid View",
   "viewModeList": "List View",
   "duplicateImportTitle": "Recipe may already exist",

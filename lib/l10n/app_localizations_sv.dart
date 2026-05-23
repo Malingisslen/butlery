@@ -12240,6 +12240,26 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get bulkTag => 'Tagga valda';
+
+  @override
+  String bulkTagDialogTitle(int count) {
+    return 'Lägg till tagg på $count recept';
+  }
+
+  @override
+  String get bulkTagNoTagsAvailable => 'Inga personliga taggar att välja';
+
+  @override
+  String bulkTagSuccess(int count) {
+    return 'Taggen lades till på $count recept';
+  }
+
+  @override
+  String get bulkTagAllAlreadyTagged =>
+      'Alla valda recept har redan denna tagg';
+
+  @override
   String get profileFaq => 'Vanliga frågor';
 
   @override

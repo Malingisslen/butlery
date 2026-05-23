@@ -2882,3 +2882,28 @@ It **IS** a problem in `commitInChunks` callers that stage audit + mutation:
 - Audit log ordering: write BEFORE `auth.deleteUser`-triggered cross-user cleanup completes is acceptable for Art. 17 — the audit row records the cascade outcome we control synchronously; cross-user cleanup is the trigger's own auditing surface (`writeCascadeAuditEntry`).
 - App Check deferral acceptable when re-auth gate + CORS allowlist are present, but only as a temporary bridge to mobile attestation rollout.
 - Cascade idempotency rule: every step must be deletes / `arrayRemove` / `set-merge` so retries on partial failure converge. Avoid `arrayUnion` / counter-increment shapes here.
+
+---
+
+### 2026-05-22 — Storage upload error code is NOT PII (BUT-971 review)
+
+`StorageUploadException.code` carries Firebase storage codes like `quota-exceeded`, `unauthorized`, `canceled`. These are bounded enum-shaped tokens with no user identifier content — safe to log to analytics. Same applies to `FirebaseAuthException.code` values surfaced in `sessionTimeoutLogout` analytics events (`user-token-expired`, `user-disabled`, etc.).
+
+The `message` field IS a potential leak surface: Firebase storage SDK occasionally embeds the bucket-relative path (which starts `users/{uid}/...`) into the human-readable message. Rule: log `message` to `AppLogger` only; never to `_analyticsService.logEvent` parameters. The Wave-13 implementation correctly only puts `error_code` (not message) into analytics.
+
+### 2026-05-22 — Bypassing executeServiceOperation for typed-error propagation is safe IF auth is enforced downstream
+
+`StorageService.uploadImageFile` skips `executeServiceOperation` so `StorageUploadException` survives the call boundary (safeExecute would swallow to null). This trades the pre-flight `requiresAuth`/`requiresNetwork` checks for typed-error visibility.
+
+Acceptable because: the repository `_validateUploadPermission` is the *authoritative* auth gate (logs to audit, throws `PermissionDeniedException`). The pre-flight `requiresAuth` check in `executeServiceOperation` was a UX nicety — it converted an unauthenticated call into a localized error early instead of letting the repo throw. Removing it does NOT open new attack surface; the repo gate stands. The only regression is UX: unauthenticated users now see a generic "upload failed" toast (null return) instead of a localized auth-required message. Rate: Medium UX, NOT a security issue.
+
+Network pre-flight: same story — `requiresNetwork` was a fail-fast nicety; without it, Firebase Storage SDK still fails the upload, just with a less specific error.
+
+### 2026-05-22 — AuthService stream-error path has no concurrent-sign-in race
+
+`_handleAuthStreamError` calls `forceSignOut()` (which clears errors in `finally`) then `setError(errorSessionExpired)`. Ordering is intentional and documented. Race concern: could a concurrent `signInWithEmail` complete between forceSignOut and setError, leaving stale error text on a now-authed session?
+
+Analysis: a successful `signInWithEmail` calls `clearError()` at its start AND fires the auth-state stream with the new user. The stream callback overwrites `_currentUser` and notifies. So even if `setError` lands after a concurrent sign-in, the next auth-stream emission clobbers it OR the user sees an error string on a successful session — purely cosmetic, not a security issue. The actual auth state (`_currentUser`, `isAuthenticated`) is driven by the stream, not by `error`.
+
+The real risk is the opposite: if `setError` runs before `forceSignOut`'s `finally`, the error is wiped. The current ordering (`await forceSignOut(); setError(...)`) is correct *because* forceSignOut awaits the entire body including its `finally` before returning.
+

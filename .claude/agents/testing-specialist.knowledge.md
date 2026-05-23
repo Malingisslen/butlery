@@ -1328,3 +1328,61 @@ Reviewed 7-ticket sprint. Test gaps catalogued (none blocking):
 (test exists but is wrong / could go green incorrectly). BUT-823's
 extra paths are coverage gaps with low regression risk — file them
 P3, not P1. BUT-801's identity invariant is a regression risk — file P2.
+
+### 2026-05-23 — Wave-14 BUT-1021 stream-error test pattern [Pattern discovered]
+Reviewed three wave-14 test additions: storage-upload exception getters
+(19 pure-Dart tests), `MockAnalyticsService.capturedEvents` slot, and the
+AuthService stream-error group (`BUT-966 / BUT-1021`). All cleared review;
+no production bugs found. Patterns worth reusing:
+
+1. **Recording-Fake pattern for fire-and-forget analytics.** When a method
+   on a `Mock` class is documented "semantically a Fake, don't stub with
+   `when()`," but tests still need to assert *whether* it was called and
+   with what payload, add a parallel `_captured*` slot + immutable getter +
+   `clear*` reset. Don't switch to `verify()` — that pulls the class back
+   into Mock-semantics and the comment lies. The pattern is already in
+   `MockAnalyticsService` for `_capturedUserId` (BUT-833) and now
+   `_capturedEvents` (BUT-1021). Both keep the concrete body fire-and-forget
+   for callers that don't care, while letting BUT-833/1021-style tests
+   assert the analytics chokepoint.
+
+2. **Real-time `Future.delayed(10ms)` IS acceptable for draining an unawaited
+   microtask chain in non-Flutter tests.** `pumpEventQueue()` would couple
+   the test to `flutter_test`; `fakeAsync` doesn't help because there's no
+   `DateTime.now()`/timer to advance — the chain is just awaits on mocked
+   `thenAnswer` Futures. 10ms of wall-clock drains them all. The DO-NOT-WRITE
+   rule against `Future.delayed` targets *production-timing waits* (debounce,
+   throttle, retry windows), not microtask-chain drains. Document the
+   chain in a helper comment (`forceSignOut → setError → notify → logEvent`)
+   so future readers don't shorten it.
+
+3. **`contains('Sessionen')` over full-string equality for localized copy.**
+   The test claims "the session-expired Swedish surface fired," not "the
+   exact 2026-05 copy fired." Equality couples the test to copywriting.
+   `contains` on a stable noun pins the contract. Same reasoning applies
+   to any future test of localized error messages — assert the *anchor*
+   word, not the sentence.
+
+4. **Stream teardown order: `streamController.close()` *before*
+   `streamAuthService.dispose()`.** Close emits `onDone` cleanly through
+   the still-live subscription; dispose then cancels. Reverse order risks
+   a `Bad state: Cannot add new events after calling close` if any
+   post-dispose code re-touches the controller, and loses the chance
+   for the subscription to observe done.
+
+5. **Mutual-exclusivity invariant tests for classifier getters.** When a
+   set of `is*` getters partition an error/state space (e.g.
+   `isQuotaExceeded` / `isUnauthorized` / `isCanceled` / `isNetworkError`
+   on `StorageUploadException`), add a final group that asserts each
+   canonical code matches *exactly one* bucket — plus an "unknown code →
+   all-false" test pinning the caller's fallback path. Catches a future
+   refactor that overlaps the buckets (e.g. moves `unauthenticated` into
+   *both* `isUnauthorized` and a new `isAuthGap`) before the
+   misclassification reaches the UI as the wrong Swedish copy.
+
+6. **Architecture-allow-list additions need an inline rationale comment.**
+   `test/architecture/architecture_test.dart` is the chokepoint preventing
+   ad-hoc `Firebase{X}.instance` usage outside DI. New entries should
+   document *which* singleton and *why it can't be mocked at the call
+   site* — see the BUT-1025 `core_module.dart` comment for the template
+   (CF-callable construction, must stay mockable via the wrapping service).
