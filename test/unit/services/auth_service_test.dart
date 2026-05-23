@@ -1554,8 +1554,8 @@ void main() {
             .where((e) => e.name == 'session_timeout_logout')
             .toList();
         expect(events, hasLength(1));
-        expect(events.single.parameters?['reason'],
-            equals('auth_stream_error'));
+        expect(
+            events.single.parameters?['reason'], equals('auth_stream_error'));
         expect(events.single.parameters?['error_code'],
             equals('user-token-expired'));
       });
@@ -1575,7 +1575,8 @@ void main() {
             .where((e) => e.name == 'session_timeout_logout')
             .toList();
         expect(events, hasLength(1));
-        expect(events.single.parameters?['error_code'], equals('user-disabled'));
+        expect(
+            events.single.parameters?['error_code'], equals('user-disabled'));
       });
 
       test('non-FirebaseAuthException: empty error_code, still invalidates',
@@ -1596,8 +1597,8 @@ void main() {
             .where((e) => e.name == 'session_timeout_logout')
             .toList();
         expect(events, hasLength(1));
-        expect(events.single.parameters?['reason'],
-            equals('auth_stream_error'));
+        expect(
+            events.single.parameters?['reason'], equals('auth_stream_error'));
         expect(events.single.parameters?['error_code'], equals(''));
       });
 

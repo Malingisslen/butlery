@@ -27,7 +27,8 @@ void main() {
 
     group('isQuotaExceeded', () {
       test('true for quota-exceeded', () {
-        expect(const StorageUploadException('quota-exceeded', '').isQuotaExceeded,
+        expect(
+            const StorageUploadException('quota-exceeded', '').isQuotaExceeded,
             isTrue);
       });
 
@@ -52,8 +53,7 @@ void main() {
 
     group('isUnauthorized', () {
       test('true for unauthorized', () {
-        expect(
-            const StorageUploadException('unauthorized', '').isUnauthorized,
+        expect(const StorageUploadException('unauthorized', '').isUnauthorized,
             isTrue);
       });
 
@@ -82,8 +82,7 @@ void main() {
 
     group('isCanceled', () {
       test('true for canceled (US spelling)', () {
-        expect(
-            const StorageUploadException('canceled', '').isCanceled, isTrue);
+        expect(const StorageUploadException('canceled', '').isCanceled, isTrue);
       });
 
       test('true for cancelled (UK spelling — defensive)', () {
