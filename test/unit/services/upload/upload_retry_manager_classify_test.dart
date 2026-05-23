@@ -158,8 +158,7 @@ void main() {
       );
     });
 
-    test('"server cancel" still routes to cancelled (cancel branch order)',
-        () {
+    test('"server cancel" still routes to cancelled (cancel branch order)', () {
       // Pins priority: the cancel branch sits AFTER server/firebase/storage
       // in the substring matcher, but "cancel" wins because "server" only
       // matches on its own substring presence and the cancel branch is
