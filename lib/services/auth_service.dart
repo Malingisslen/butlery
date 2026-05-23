@@ -65,10 +65,15 @@ class AuthService extends ChangeNotifier
         final code = error is FirebaseAuthException ? error.code : '';
         AppLogger.warning('Auth state stream error (code: $code): $error');
         // Invalidate session on any auth stream error to prevent
-        // fake-authenticated state where UI shows logged-in but session is broken
+        // fake-authenticated state where UI shows logged-in but session is broken.
         _currentUser = null;
+        // BUT-966: surface session expiry to the UI. Without this, the user
+        // sees a silent forced sign-out (the snackbar/banner had nothing to
+        // bind to). `_sessionExpired` lets the login view show a banner;
+        // the error message gives ViewModels something to watch.
+        _sessionExpired = true;
         notifyListeners();
-        forceSignOut();
+        unawaited(_handleAuthStreamError(code));
       },
     );
   }
@@ -215,6 +220,27 @@ class AuthService extends ChangeNotifier
       AppLogger.error('Session timeout logout failed', e);
       setError(AppLocale.current.errorCouldNotLogOut);
     });
+  }
+
+  /// BUT-966: surface the auth-stream error to the user, then complete the
+  /// sign-out. [forceSignOut] clears errors in its `finally`, so the
+  /// localized message is set *after* forceSignOut and a second
+  /// notifyListeners fires so observers can react.
+  Future<void> _handleAuthStreamError(String code) async {
+    try {
+      await forceSignOut();
+      setError(AppLocale.current.errorSessionExpired);
+      notifyListeners();
+      await _analyticsService.logEvent(
+        name: AnalyticsEvents.sessionTimeoutLogout,
+        parameters: {
+          'reason': 'auth_stream_error',
+          'error_code': code,
+        },
+      );
+    } catch (e) {
+      AppLogger.error('Failed to handle auth stream error: $e');
+    }
   }
 
   Future<void> forceSignOut() async {

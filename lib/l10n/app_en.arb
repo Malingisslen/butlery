@@ -5893,6 +5893,8 @@
     }
   },
   "errorCouldNotImportRecipes": "Could not import recipes",
+  "errorCouldNotAddRecipe": "Could not add the recipe.",
+  "errorCouldNotUpdateRecipe": "Could not update the recipe.",
   "errorCouldNotExportRecipes": "Could not export recipes",
   "errorCouldNotMarkAsCooked": "Could not mark recipe as cooked",
   "errorCouldNotAddIngredient": "Could not add ingredient",
@@ -6242,6 +6244,7 @@
   "uploadFailureValidation": "Image could not be validated",
   "uploadFailureServer": "Server error - try again",
   "uploadFailureCancelled": "Upload cancelled",
+  "uploadFailureQuotaExceeded": "You've hit your photo storage limit. Delete some recipe images to upload more.",
   "uploadFailureGeneric": "Upload failed",
   "uploadRetryCheckInternet": "Check your internet connection and tap to retry",
   "uploadRetryCheckImage": "Make sure the image is valid and not too large",
@@ -6667,6 +6670,8 @@
     }
   },
   "errorOcrServicesUnavailable": "OCR services are temporarily unavailable. Try again in a few minutes.",
+  "errorOcrRateLimit": "Too many requests right now. Please wait a minute and try again.",
+  "errorOcrTimeout": "Couldn't reach the recipe parser. Check your connection and try again.",
   "errorNoTextExtracted": "No text could be extracted from the image.",
   "labelImprovementSuggestions": "Improvement suggestions:",
   "ocrQualityTips": "Tips for better results:\n• Make sure the image is well-lit and sharp\n• Avoid shadows and reflections\n• Hold the camera straight at the text",

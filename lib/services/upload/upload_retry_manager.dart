@@ -11,6 +11,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:clock/clock.dart';
 
@@ -60,6 +61,12 @@ class UploadRetryManager {
       maxAttempts: 0,
       description: 'Cancelled uploads are not retried',
     ),
+    ImageUploadErrorType.quotaExceeded: RetryStrategy(
+      autoRetry: false,
+      maxAttempts: 0,
+      description:
+          'Quota-exceeded uploads cannot succeed until the user frees space',
+    ),
     ImageUploadErrorType.unknown: RetryStrategy(
       autoRetry: true,
       maxAttempts: 2,
@@ -69,6 +76,19 @@ class UploadRetryManager {
 
   /// Classify error from exception for targeted handling
   ImageUploadErrorType classifyError(dynamic error) {
+    // BUT-971: typed storage-domain failures carry precise codes — branch
+    // on them first so we don't fall back to lossy substring matching.
+    if (error is StorageUploadException) {
+      if (error.isQuotaExceeded) return ImageUploadErrorType.quotaExceeded;
+      if (error.isUnauthorized) return ImageUploadErrorType.validation;
+      if (error.isCanceled) return ImageUploadErrorType.cancelled;
+      // BUT-971 reviewer follow-up: route network-domain storage failures
+      // through the existing network retry path so the user gets the
+      // "check your connection" copy + auto-retry, not the unknown-fallback.
+      if (error.isNetworkError) return ImageUploadErrorType.network;
+      return ImageUploadErrorType.server;
+    }
+
     final errorString = error.toString().toLowerCase();
 
     if (errorString.contains('network') ||

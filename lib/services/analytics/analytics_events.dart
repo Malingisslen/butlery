@@ -38,6 +38,11 @@ abstract final class AnalyticsEvents {
   static const onboardingSkipped = 'onboarding_skipped';
   static const onboardingCompleted = 'onboarding_completed';
   static const onboardingRecipesSeeded = 'onboarding_recipes_seeded';
+  // BUT-926: emitted when one or more starter recipes fail to seed during
+  // onboarding completion. Parameters: `failed` (int), `attempted` (int).
+  // Distinct from `onboardingRecipesSeeded` (success-side counter) so the
+  // failure-rate metric is queryable without `attempted - seeded` math.
+  static const onboardingRecipesSeedFailed = 'onboarding_recipes_seed_failed';
   // BUT-545: dedicated outcome events for the onboarding import page so
   // the activation funnel can distinguish "tried-and-imported" from
   // "tried-and-failed" from "skipped". The generic import_started/success

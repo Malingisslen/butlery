@@ -625,12 +625,22 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     // Build specific error message based on failure reasons
     final messageParts = <String>[];
 
-    // Primary message based on quality score
+    // BUT-963: typed failure classification from the OCR service. Wins over
+    // the "no text extracted" generic fallback when the providers actually
+    // threw a recognizable error (rate limit, timeout, network). Quality
+    // gate still wins over classification — if the image was unreadable to
+    // begin with, the user should fix the image, not retry blindly.
+    final classification = result.metadata['failure_classification'] as String?;
+
     if (_lastQualityScore != null && _lastQualityScore! < 0.6) {
       final l = AppLocale.current;
       messageParts.add(
         l.errorImageQualityTooLow((_lastQualityScore! * 100).toInt()),
       );
+    } else if (classification == 'rate_limit') {
+      messageParts.add(AppLocale.current.errorOcrRateLimit);
+    } else if (classification == 'timeout' || classification == 'network') {
+      messageParts.add(AppLocale.current.errorOcrTimeout);
     } else if (allProvidersDown) {
       messageParts.add(
         AppLocale.current.errorOcrServicesUnavailable,

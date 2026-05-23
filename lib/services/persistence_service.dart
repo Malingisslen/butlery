@@ -76,6 +76,10 @@ class PersistenceService extends BaseService {
   static const String _sortCriteriaKey = 'butlery_sort_criteria';
   static const String _sortAscendingKey = 'butlery_sort_ascending';
   static const String _defaultPortionsKey = 'butlery_default_portions';
+  // BUT-921: persist active recipe-list filters across navigations.
+  static const String _recipeTimeFiltersKey = 'butlery_recipe_time_filters';
+  static const String _recipeMealTypeFiltersKey =
+      'butlery_recipe_mealtype_filters';
 
   /// Provides access to the SharedPreferences instance for cross-platform local storage operations.
   /// This getter manages the SharedPreferences singleton instance providing the underlying
@@ -346,6 +350,50 @@ class PersistenceService extends BaseService {
       ]);
     } catch (e) {
       AppLogger.error('Failed to save sort preferences', e, 'Persistence');
+    }
+  }
+
+  /// BUT-921: load persisted recipe-list time filters. Empty list when none.
+  Future<List<String>> getRecipeTimeFilters() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getStringList(_recipeTimeFiltersKey) ?? const [];
+    } catch (e) {
+      AppLogger.error('Failed to load recipe time filters', e, 'Persistence');
+      return const [];
+    }
+  }
+
+  /// BUT-921: persist recipe-list time filters. Pass empty to clear.
+  Future<void> setRecipeTimeFilters(List<String> ids) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setStringList(_recipeTimeFiltersKey, ids);
+    } catch (e) {
+      AppLogger.error('Failed to save recipe time filters', e, 'Persistence');
+    }
+  }
+
+  /// BUT-921: load persisted recipe-list meal-type filters. Empty list when none.
+  Future<List<String>> getRecipeMealTypeFilters() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getStringList(_recipeMealTypeFiltersKey) ?? const [];
+    } catch (e) {
+      AppLogger.error(
+          'Failed to load recipe meal-type filters', e, 'Persistence');
+      return const [];
+    }
+  }
+
+  /// BUT-921: persist recipe-list meal-type filters. Pass empty to clear.
+  Future<void> setRecipeMealTypeFilters(List<String> ids) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setStringList(_recipeMealTypeFiltersKey, ids);
+    } catch (e) {
+      AppLogger.error(
+          'Failed to save recipe meal-type filters', e, 'Persistence');
     }
   }
 

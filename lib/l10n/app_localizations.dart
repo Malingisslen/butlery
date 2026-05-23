@@ -16035,6 +16035,18 @@ abstract class AppLocalizations {
   /// **'Kunde inte importera recept'**
   String get errorCouldNotImportRecipes;
 
+  /// No description provided for @errorCouldNotAddRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte läggas till.'**
+  String get errorCouldNotAddRecipe;
+
+  /// No description provided for @errorCouldNotUpdateRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte uppdateras.'**
+  String get errorCouldNotUpdateRecipe;
+
   /// No description provided for @errorCouldNotExportRecipes.
   ///
   /// In sv, this message translates to:
@@ -16809,6 +16821,12 @@ abstract class AppLocalizations {
   /// **'Uppladdning avbruten'**
   String get uploadFailureCancelled;
 
+  /// No description provided for @uploadFailureQuotaExceeded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagringsutrymmet för bilder är fullt. Radera några receptbilder för att ladda upp fler.'**
+  String get uploadFailureQuotaExceeded;
+
   /// No description provided for @uploadFailureGeneric.
   ///
   /// In sv, this message translates to:
@@ -17546,6 +17564,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.'**
   String get errorOcrServicesUnavailable;
+
+  /// No description provided for @errorOcrRateLimit.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många förfrågningar just nu. Vänta en minut och försök igen.'**
+  String get errorOcrRateLimit;
+
+  /// No description provided for @errorOcrTimeout.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptläsaren kunde inte nås. Kontrollera anslutningen och försök igen.'**
+  String get errorOcrTimeout;
 
   /// No description provided for @errorNoTextExtracted.
   ///

@@ -147,9 +147,39 @@ class RecipeListViewModel extends ChangeNotifier {
         _sortAscending = await persistence.getSortAscending();
         _invalidateCache();
       }
+      // BUT-921: restore active filters so navigating away + back doesn't
+      // erase the user's filter context. Same persistence pattern as sort.
+      final savedTimeFilters = await persistence.getRecipeTimeFilters();
+      if (savedTimeFilters.isNotEmpty) {
+        _activeTimeFilters
+          ..clear()
+          ..addAll(savedTimeFilters);
+        _invalidateCache();
+      }
+      final savedMealTypeFilters = await persistence.getRecipeMealTypeFilters();
+      if (savedMealTypeFilters.isNotEmpty) {
+        _activeMealTypeFilters
+          ..clear()
+          ..addAll(savedMealTypeFilters);
+        _invalidateCache();
+      }
       notifyListeners();
     } catch (_) {
       // Persistence not available, keep defaults
+    }
+  }
+
+  /// BUT-921: fire-and-forget persistence of active filters. Called from
+  /// the toggle methods and clear-all so writes happen at the natural
+  /// debounce point (single user gesture → single batched prefs write).
+  void _persistActiveFilters() {
+    try {
+      final persistence = ServiceLocator.get<PersistenceService>();
+      unawaited(persistence.setRecipeTimeFilters(_activeTimeFilters.toList()));
+      unawaited(persistence
+          .setRecipeMealTypeFilters(_activeMealTypeFilters.toList()));
+    } catch (_) {
+      // Persistence not available — keep in-memory filters working.
     }
   }
 
@@ -316,6 +346,7 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeTimeFilters.add(filterId);
     }
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -331,6 +362,7 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeMealTypeFilters.add(filterId);
     }
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -457,6 +489,7 @@ class RecipeListViewModel extends ChangeNotifier {
     _pantryOnly = false;
     _pantryMatches = const {};
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -495,6 +528,20 @@ class RecipeListViewModel extends ChangeNotifier {
   bool get isSelectionMode => _selectionManager.isSelectionMode;
   Set<String> get selectedIds => _selectionManager.selectedIds;
   int get selectedCount => _selectionManager.selectedCount;
+
+  /// BUT-933: resolve selected ids to full Recipe objects for bulk actions
+  /// (share, tag, add-to-menu, export). Returns recipes in iteration order
+  /// of the selection set; callers that need a stable order should sort
+  /// themselves. Skips ids whose recipe is missing (e.g. mid-delete).
+  List<Recipe> get selectedRecipes {
+    final result = <Recipe>[];
+    for (final id in _selectionManager.selectedIds) {
+      final recipe = _recipeService.getRecipeById(id);
+      if (recipe != null) result.add(recipe);
+    }
+    return result;
+  }
+
   void enterSelectionMode(String firstId) =>
       _selectionManager.enterSelectionMode(firstId);
   void toggleSelection(String id) => _selectionManager.toggleSelection(id);

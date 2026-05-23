@@ -118,6 +118,20 @@ class QuantityParser {
       return 1.0;
     }
 
+    // BUT-959: clamp negative values to the same default as an unparseable
+    // input. LLM extraction occasionally hallucinates "-2 dl flour" — a
+    // negative quantity has no kitchen semantics and would scale into more
+    // nonsense (negative grams after unit conversion). Defaulting to 1.0
+    // matches the existing invalid-input contract; the warning lets us
+    // catch this in observability if it spikes.
+    if (parsed < 0) {
+      AppLogger.warning(
+        'Negative quantity "$qtyString" coerced to 1.0',
+        'QuantityParser',
+      );
+      return 1.0;
+    }
+
     return parsed;
   }
 }

@@ -335,6 +335,10 @@ class OCRExtractionService extends BaseService {
       return cachedResult;
     }
     OCRResult result;
+    // BUT-963: capture each provider's last exception so the failure path
+    // can classify the cause (rate limit / timeout / network / generic)
+    // instead of collapsing every failure to "try better lighting."
+    final providerErrors = <String, String>{};
 
     if (_ocrSpaceCircuitBreaker.canExecute && _ocrApiKey.isNotEmpty) {
       try {
@@ -348,6 +352,7 @@ class OCRExtractionService extends BaseService {
         }
       } catch (e) {
         _ocrSpaceCircuitBreaker.recordFailure();
+        providerErrors['ocr_space'] = e.toString();
       }
     }
 
@@ -363,6 +368,7 @@ class OCRExtractionService extends BaseService {
         }
       } catch (e) {
         _googleVisionCircuitBreaker.recordFailure();
+        providerErrors['google_vision'] = e.toString();
       }
     }
 
@@ -378,9 +384,14 @@ class OCRExtractionService extends BaseService {
         }
       } catch (e) {
         _tesseractCircuitBreaker.recordFailure();
+        providerErrors['tesseract'] = e.toString();
       }
     }
 
+    // BUT-963: aggregate the captured provider exceptions into one of a
+    // small enum of failure causes. The viewmodel picks user-facing copy
+    // from this classification rather than mapping raw exception strings.
+    final classification = _classifyProviderErrors(providerErrors);
     final failureResult = OCRResult.failure(
       method: 'user_recovery',
       error: 'OCR failed. Try: better lighting, clearer image, or manual input',
@@ -392,6 +403,8 @@ class OCRExtractionService extends BaseService {
           'google_vision_state': _googleVisionCircuitBreaker.state.name,
           'tesseract_state': _tesseractCircuitBreaker.state.name,
         },
+        'failure_classification': classification,
+        'provider_errors': providerErrors,
       },
     );
 
@@ -399,6 +412,39 @@ class OCRExtractionService extends BaseService {
     // temporary provider outages) and caching them for 24h would
     // prevent successful retries.
     return failureResult;
+  }
+
+  /// BUT-963: classify a map of {provider → error string} into one of
+  /// {rate_limit, timeout, network, unavailable, generic}. The viewmodel
+  /// uses the result to pick localized copy. We pick the FIRST matching
+  /// category in priority order — rate_limit wins over timeout wins over
+  /// network — because the user-facing remedy differs (wait-then-retry vs
+  /// check-connection).
+  ///
+  /// `unavailable` is reserved for "no provider could even be attempted"
+  /// (caller decides via circuit-breaker states); this helper only sees
+  /// providers that actually threw.
+  static String _classifyProviderErrors(Map<String, String> errors) {
+    if (errors.isEmpty) return 'generic';
+    final joined = errors.values.join(' | ').toLowerCase();
+    if (joined.contains('429') ||
+        joined.contains('rate limit') ||
+        joined.contains('rate-limit') ||
+        joined.contains('too many requests') ||
+        joined.contains('quota')) {
+      return 'rate_limit';
+    }
+    if (joined.contains('timeout') || joined.contains('timed out')) {
+      return 'timeout';
+    }
+    if (joined.contains('socketexception') ||
+        joined.contains('connection') ||
+        joined.contains('network') ||
+        joined.contains('unreachable') ||
+        joined.contains('failed host lookup')) {
+      return 'network';
+    }
+    return 'generic';
   }
 
   /// Extract text using OCR.space API (Primary - Universal compatibility)

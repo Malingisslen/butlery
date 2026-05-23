@@ -9335,6 +9335,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorCouldNotImportRecipes => 'Kunde inte importera recept';
 
   @override
+  String get errorCouldNotAddRecipe => 'Receptet kunde inte läggas till.';
+
+  @override
+  String get errorCouldNotUpdateRecipe => 'Receptet kunde inte uppdateras.';
+
+  @override
   String get errorCouldNotExportRecipes => 'Kunde inte exportera recept';
 
   @override
@@ -9834,6 +9840,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get uploadFailureCancelled => 'Uppladdning avbruten';
 
   @override
+  String get uploadFailureQuotaExceeded =>
+      'Lagringsutrymmet för bilder är fullt. Radera några receptbilder för att ladda upp fler.';
+
+  @override
   String get uploadFailureGeneric => 'Uppladdning misslyckades';
 
   @override
@@ -10309,6 +10319,14 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get errorOcrServicesUnavailable =>
       'OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.';
+
+  @override
+  String get errorOcrRateLimit =>
+      'För många förfrågningar just nu. Vänta en minut och försök igen.';
+
+  @override
+  String get errorOcrTimeout =>
+      'Receptläsaren kunde inte nås. Kontrollera anslutningen och försök igen.';
 
   @override
   String get errorNoTextExtracted => 'Ingen text kunde extraheras från bilden.';

@@ -1,5 +1,6 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/firebase_error_messages.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -69,10 +70,15 @@ class PersonalRecipeOperations {
 
       return recipeId != null
           ? RecipeOperationResult.success('Recipe added successfully')
-          : RecipeOperationResult.failure('Failed to add recipe');
+          : RecipeOperationResult.failure(
+              AppLocale.current.errorCouldNotAddRecipe);
     } catch (e) {
-      return RecipeOperationResult.failure(
-          'Failed to add recipe: ${e.toString()}');
+      // BUT-968: don't leak the raw FirebaseException to the UI — translate
+      // known codes (permission-denied, network-request-failed, ...) into
+      // localized copy. Logging keeps the raw cause for triage.
+      AppLogger.error('Failed to add unified recipe', e);
+      return RecipeOperationResult.failure(mapFirebaseErrorMessage(e,
+          fallback: AppLocale.current.errorCouldNotAddRecipe));
     }
   }
 
@@ -84,10 +90,13 @@ class PersonalRecipeOperations {
 
       return success
           ? RecipeOperationResult.success('Recipe updated successfully')
-          : RecipeOperationResult.failure('Failed to update recipe');
+          : RecipeOperationResult.failure(
+              AppLocale.current.errorCouldNotUpdateRecipe);
     } catch (e) {
-      return RecipeOperationResult.failure(
-          'Failed to update recipe: ${e.toString()}');
+      // BUT-968: same translation as addUnifiedRecipe.
+      AppLogger.error('Failed to update unified recipe', e);
+      return RecipeOperationResult.failure(mapFirebaseErrorMessage(e,
+          fallback: AppLocale.current.errorCouldNotUpdateRecipe));
     }
   }
 

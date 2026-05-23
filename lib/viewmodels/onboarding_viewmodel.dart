@@ -211,8 +211,15 @@ class OnboardingViewModel extends ChangeNotifier {
         ));
       }
 
-      // Seed starter recipes for new users (fire-and-forget, never blocks onboarding)
-      _seedStarterRecipes();
+      // BUT-926: await seeding so the spinner stays up until the user has
+      // something to land on. Fire-and-forget previously left users arriving
+      // at an empty home if the writes hadn't finished. Per-recipe failures
+      // are still tolerated inside `_seedStarterRecipes` — only an outer
+      // infrastructure error (e.g. UnifiedRecipeService not registered) gets
+      // caught by the method's outer try/catch, and that just degrades to
+      // zero-seeded silently. Outcome is surfaced via analytics so a
+      // post-launch failure-rate is observable.
+      await _seedStarterRecipes();
 
       if (isSkip) {
         _analytics?.logEvent(
@@ -252,11 +259,18 @@ class OnboardingViewModel extends ChangeNotifier {
   }
 
   /// Seeds starter recipes so new users don't see an empty app.
-  /// Runs in the background — failures are logged but never surface to the user.
-  Future<void> _seedStarterRecipes() async {
+  ///
+  /// Awaited from [completeOnboarding] so the onboarding spinner reflects
+  /// the true wait. Per-recipe failures are tolerated (logged + counted);
+  /// when at least one fails, a typed analytics event surfaces the partial
+  /// failure for observability. Outer infrastructure errors (e.g. service
+  /// not registered in tests) are swallowed — onboarding must not fail
+  /// because seeding can't run.
+  Future<int> _seedStarterRecipes() async {
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
       final seeds = RecipeSeeds.allRecipes;
+      var seeded = 0;
 
       for (final seed in seeds) {
         try {
@@ -270,6 +284,7 @@ class OnboardingViewModel extends ChangeNotifier {
             timeMinutes: seed.core.timeMinutes,
             sourceUrl: 'Butlery starter recipes',
           );
+          seeded++;
         } catch (e) {
           AppLogger.warning('Failed to seed recipe "${seed.core.title}": $e');
         }
@@ -277,9 +292,16 @@ class OnboardingViewModel extends ChangeNotifier {
 
       _analytics?.logEvent(
         name: AnalyticsEvents.onboardingRecipesSeeded,
-        parameters: {'count': seeds.length},
+        parameters: {'count': seeded, 'attempted': seeds.length},
       );
-      AppLogger.info('Seeded ${seeds.length} starter recipes');
+      final failed = seeds.length - seeded;
+      if (failed > 0) {
+        _analytics?.logEvent(
+          name: AnalyticsEvents.onboardingRecipesSeedFailed,
+          parameters: {'failed': failed, 'attempted': seeds.length},
+        );
+      }
+      AppLogger.info('Seeded $seeded/${seeds.length} starter recipes');
 
       // BUT-618: stamp `first_recipe_source = 'seed'` if this is the user's
       // first recipe surface. Dedupe is handled inside the helper.
@@ -289,8 +311,10 @@ class OnboardingViewModel extends ChangeNotifier {
         userId: userService?.currentUserId,
         source: 'seed',
       );
+      return seeded;
     } catch (e) {
       AppLogger.warning('Failed to seed starter recipes: $e');
+      return 0;
     }
   }
 }

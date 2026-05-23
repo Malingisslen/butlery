@@ -5914,6 +5914,8 @@
     }
   },
   "errorCouldNotImportRecipes": "Kunde inte importera recept",
+  "errorCouldNotAddRecipe": "Receptet kunde inte läggas till.",
+  "errorCouldNotUpdateRecipe": "Receptet kunde inte uppdateras.",
   "errorCouldNotExportRecipes": "Kunde inte exportera recept",
   "errorCouldNotMarkAsCooked": "Kunde inte markera recept som tillagat",
   "errorCouldNotAddIngredient": "Kunde inte lägga till ingrediens",
@@ -6263,6 +6265,7 @@
   "uploadFailureValidation": "Bilden kunde inte valideras",
   "uploadFailureServer": "Serverfel - försök igen",
   "uploadFailureCancelled": "Uppladdning avbruten",
+  "uploadFailureQuotaExceeded": "Lagringsutrymmet för bilder är fullt. Radera några receptbilder för att ladda upp fler.",
   "uploadFailureGeneric": "Uppladdning misslyckades",
   "uploadRetryCheckInternet": "Kontrollera internetanslutningen och tryck för att försöka igen",
   "uploadRetryCheckImage": "Kontrollera att bilden är giltig och inte för stor",
@@ -6688,6 +6691,8 @@
     }
   },
   "errorOcrServicesUnavailable": "OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.",
+  "errorOcrRateLimit": "För många förfrågningar just nu. Vänta en minut och försök igen.",
+  "errorOcrTimeout": "Receptläsaren kunde inte nås. Kontrollera anslutningen och försök igen.",
   "errorNoTextExtracted": "Ingen text kunde extraheras från bilden.",
   "labelImprovementSuggestions": "Förbättringsförslag:",
   "ocrQualityTips": "Tips för bättre resultat:\n• Se till att bilden är välbelyst och skarp\n• Undvik skuggor och reflektioner\n• Håll kameran rakt mot texten",

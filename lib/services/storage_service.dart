@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
@@ -54,48 +55,54 @@ class StorageService extends BaseService
   FirestoreRepository get firestoreRepository => _firestoreRepository;
 
   /// Upload an image file to storage, returning both the full image URL and thumbnail URL.
+  ///
+  /// BUT-971: uses direct try/catch instead of [executeServiceOperation] so
+  /// `StorageUploadException`s (quota / unauthorized / canceled) propagate
+  /// up to the upload-service classifier. `safeExecute` would swallow them
+  /// and collapse to null, leaving the UI unable to differentiate causes.
+  /// Other exceptions still collapse to null, preserving the existing
+  /// nullable-result contract for callers that don't care about cause.
+  /// Auth is enforced at the repository layer via `_validateUploadPermission`.
   Future<ImageUploadResult?> uploadImageFile(
     File imageFile,
     String userId, {
     Function(double)? onProgress,
   }) async {
-    return await executeServiceOperation<ImageUploadResult?>(
-      () async {
-        // Generate unique filename
-        final fileName = _repository.generateFileName(
-          originalPath: imageFile.path,
-          prefix: 'recipe',
-        );
-        final path = 'users/$userId/recipes/$fileName';
+    try {
+      final fileName = _repository.generateFileName(
+        originalPath: imageFile.path,
+        prefix: 'recipe',
+      );
+      final path = 'users/$userId/recipes/$fileName';
 
-        final url = await _repository.uploadImage(
+      final url = await _repository.uploadImage(
+        imageFile: imageFile,
+        userId: userId,
+        path: path,
+        onProgress: onProgress,
+      );
+
+      if (url == null) return null;
+
+      // Await thumbnail creation — ~30KB, <1 second
+      String? thumbUrl;
+      try {
+        thumbUrl = await _repository.createAndUploadThumbnail(
           imageFile: imageFile,
           userId: userId,
-          path: path,
-          onProgress: onProgress,
+          originalPath: path,
         );
+      } catch (e) {
+        AppLogger.error('Thumbnail creation failed: $e');
+      }
 
-        if (url == null) return null;
-
-        // Await thumbnail creation — ~30KB, <1 second
-        String? thumbUrl;
-        try {
-          thumbUrl = await _repository.createAndUploadThumbnail(
-            imageFile: imageFile,
-            userId: userId,
-            originalPath: path,
-          );
-        } catch (e) {
-          AppLogger.error('Thumbnail creation failed: $e');
-        }
-
-        return ImageUploadResult(imageUrl: url, thumbnailUrl: thumbUrl);
-      },
-      operationName: 'Upload image file',
-      requiresAuth: true,
-      requiresNetwork: true,
-      defaultValue: null,
-    );
+      return ImageUploadResult(imageUrl: url, thumbnailUrl: thumbUrl);
+    } on StorageUploadException {
+      rethrow;
+    } catch (e) {
+      AppLogger.error('Upload image file failed: $e');
+      return null;
+    }
   }
 
   /// Upload image from bytes (for web platform and avatar uploads).

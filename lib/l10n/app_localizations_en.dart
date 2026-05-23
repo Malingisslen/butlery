@@ -9314,6 +9314,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCouldNotImportRecipes => 'Could not import recipes';
 
   @override
+  String get errorCouldNotAddRecipe => 'Could not add the recipe.';
+
+  @override
+  String get errorCouldNotUpdateRecipe => 'Could not update the recipe.';
+
+  @override
   String get errorCouldNotExportRecipes => 'Could not export recipes';
 
   @override
@@ -9810,6 +9816,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadFailureCancelled => 'Upload cancelled';
 
   @override
+  String get uploadFailureQuotaExceeded =>
+      'You\'ve hit your photo storage limit. Delete some recipe images to upload more.';
+
+  @override
   String get uploadFailureGeneric => 'Upload failed';
 
   @override
@@ -10285,6 +10295,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorOcrServicesUnavailable =>
       'OCR services are temporarily unavailable. Try again in a few minutes.';
+
+  @override
+  String get errorOcrRateLimit =>
+      'Too many requests right now. Please wait a minute and try again.';
+
+  @override
+  String get errorOcrTimeout =>
+      'Couldn\'t reach the recipe parser. Check your connection and try again.';
 
   @override
   String get errorNoTextExtracted =>

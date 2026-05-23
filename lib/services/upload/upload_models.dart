@@ -28,6 +28,7 @@ enum ImageUploadErrorType {
   validation, // File size, format, permission issues
   server, // Firebase/storage server errors
   cancelled, // User cancelled upload
+  quotaExceeded, // BUT-971: Firebase Storage quota reached
   unknown // Unclassified errors
 }
 
@@ -165,6 +166,8 @@ class ImageUploadStatus {
         return l.uploadFailureServer;
       case ImageUploadErrorType.cancelled:
         return l.uploadFailureCancelled;
+      case ImageUploadErrorType.quotaExceeded:
+        return l.uploadFailureQuotaExceeded;
       case ImageUploadErrorType.unknown:
       case null:
         return l.uploadFailureGeneric;
@@ -185,6 +188,9 @@ class ImageUploadStatus {
         return l.uploadRetryTryLater;
       case ImageUploadErrorType.cancelled:
         return null; // No retry for cancelled uploads
+      case ImageUploadErrorType.quotaExceeded:
+        // No useful retry — the user must free up space first.
+        return null;
       case ImageUploadErrorType.unknown:
       case null:
         return l.uploadRetryTapToRetry;

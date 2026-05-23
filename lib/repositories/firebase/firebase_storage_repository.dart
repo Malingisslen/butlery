@@ -9,6 +9,7 @@ import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/repositories/base/base_storage_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
@@ -232,6 +233,11 @@ class FirebaseStorageRepository extends BaseStorageRepository
         onProgress: onProgress,
         cacheControl: cacheControl,
       );
+    } on StorageUploadException {
+      // BUT-971: typed storage error from uploadImageData — propagate so the
+      // upload service classifier can map quota / unauthorized / canceled
+      // to user-facing copy. Don't collapse to null here.
+      rethrow;
     } catch (e) {
       AppLogger.error('Image upload failed: $e');
       return null;
@@ -297,6 +303,19 @@ class FirebaseStorageRepository extends BaseStorageRepository
           AppLogger.error('Image data upload failed: $e');
           trace.putAttribute('success', 'false');
           trace.putAttribute('error', e.toString());
+          // BUT-971: surface typed storage-domain failures so the UI can
+          // distinguish "your photo storage is full" from generic "upload
+          // failed." `FirebaseException.code` from the `firebase_storage`
+          // plugin is already the bare token (e.g. `quota-exceeded`,
+          // `unauthorized`, `canceled`, `retry-limit-exceeded`); the
+          // `storage/` prefix only appears in `.toString()`. Callers
+          // match on the bare token via `StorageUploadException.is*`.
+          if (e is FirebaseException && e.plugin == 'firebase_storage') {
+            throw StorageUploadException(
+              e.code,
+              e.message ?? e.toString(),
+            );
+          }
           return null;
         }
       },
