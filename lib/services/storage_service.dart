@@ -108,12 +108,12 @@ class StorageService extends BaseService
   /// Upload image from bytes (for web platform and avatar uploads).
   /// Compresses bytes before uploading when possible.
   ///
-  /// BUT-1016 / BUT-971: bypasses [executeServiceOperation] for the same
-  /// reason `uploadImageFile` does — `StorageUploadException`s (quota,
-  /// unauthorized, canceled) must reach the upload-service classifier so
-  /// the avatar / web upload UI surfaces actionable copy. Other exceptions
-  /// still collapse to null, preserving the nullable-result contract.
-  /// Auth is enforced at the repository layer via `_validateUploadPermission`.
+  /// BUT-1016: same direct-try/catch + `on StorageUploadException { rethrow; }`
+  /// pattern as `uploadImageFile` (BUT-971). Typed storage errors (quota,
+  /// unauthorized, canceled) must reach `image_upload_service`'s
+  /// `_uploadFromBytes → _retryManager.classifyError` so the avatar / web
+  /// upload UI surfaces actionable copy instead of "unknown error." Auth is
+  /// enforced at the repository layer via `_validateUploadPermission`.
   Future<String?> uploadImageBytes(
     Uint8List imageBytes,
     String userId,

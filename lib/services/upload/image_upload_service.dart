@@ -413,11 +413,15 @@ class ImageUploadService extends BaseService {
       AppLogger.success('✅ $prefix image uploaded: $url');
       return UploadResult.success(url);
     } catch (e) {
+      // BUT-1016: classify so the UI surfaces actionable copy ("photo storage
+      // is full" / "permission denied" / "cancelled") instead of generic
+      // "unknown error." `StorageUploadException` now propagates from
+      // `storage_service.uploadImageBytes` → `firebase_storage_repository.
+      // uploadImageData`; `_retryManager.classifyError` recognizes the typed
+      // exception via its `is*` helper getters. Mirrors the file-path branch.
+      final errorType = _retryManager.classifyError(e);
       AppLogger.error('❌ $prefix image upload failed: $e');
-      return UploadResult.failure(
-        e.toString(),
-        ImageUploadErrorType.unknown,
-      );
+      return UploadResult.failure(e.toString(), errorType);
     }
   }
 
