@@ -46,6 +46,57 @@
   "navExitAppConfirmation": "Vill du verkligen avsluta appen?",
   "navExit": "Avsluta",
   "imageAddImage": "Lägg till bild",
+  "imageRemovedUndoMessage": "Foto borttaget",
+  "@imageRemovedUndoMessage": {
+    "description": "BUT-932: snackbar shown after image deletion; pairs with commonUndo action button."
+  },
+  "slotPickerDialogTitle": "Välj plats i veckomenyn",
+  "@slotPickerDialogTitle": {
+    "description": "BUT-1029: SlotPickerDialog header title."
+  },
+  "slotPickerPreviousWeek": "Föregående vecka",
+  "slotPickerNextWeek": "Nästa vecka",
+  "slotPickerWeekLabel": "v.{week}",
+  "@slotPickerWeekLabel": {
+    "description": "BUT-1029: ISO week-number label shown between the prev/next arrows in the slot picker. Format: v.42",
+    "placeholders": {
+      "week": { "type": "int" }
+    }
+  },
+  "bulkAddToMenu": "Lägg till i veckomeny",
+  "@bulkAddToMenu": {
+    "description": "BUT-1013: selection-app-bar tooltip for the bulk-add-to-menu action."
+  },
+  "bulkAddToMenuSuccess": "{count} recept tillagda i {slot} {day}",
+  "@bulkAddToMenuSuccess": {
+    "description": "BUT-1013: snackbar after bulk-add success.",
+    "placeholders": {
+      "count": { "type": "int" },
+      "slot": { "type": "String" },
+      "day": { "type": "String" }
+    }
+  },
+  "bulkAddToMenuOverflowed": "{added} av {requested} lades till — resten ryms inte i veckan",
+  "@bulkAddToMenuOverflowed": {
+    "description": "BUT-1013: snackbar when not all selected recipes fit (single-slot run-out).",
+    "placeholders": {
+      "added": { "type": "int" },
+      "requested": { "type": "int" }
+    }
+  },
+  "bulkExport": "Exportera valda",
+  "@bulkExport": {
+    "description": "BUT-1014: selection-app-bar tooltip for bulk-export action."
+  },
+  "bulkExportCopyClipboard": "Kopiera till urklipp",
+  "bulkExportShareFile": "Dela som fil",
+  "bulkExportCopied": "{count} recept kopierade till urklipp",
+  "@bulkExportCopied": {
+    "description": "BUT-1014: snackbar after clipboard copy.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "imageTakePhoto": "Ta foto",
   "imageUseCamera": "Använd kameran",
   "imageFromGallery": "Välj från galleri",

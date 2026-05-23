@@ -206,6 +206,83 @@ class WeeklyMenuPlanService extends BaseService {
     return WeeklyMenuDistributionResult(plan: newPlan, overflow: overflow);
   }
 
+  /// BUT-1013: append multiple recipes to a weekly plan starting at
+  /// (day, slot). Semantic differs by slot kind:
+  ///
+  /// **Multi-slot (övrigt)** — all recipes stack at (startDay, slot). No
+  /// overflow possible (övrigt has no per-day capacity).
+  ///
+  /// **Single-slot (lunch/middag)** — walks forward day-by-day from
+  /// `startDay`, placing one recipe per empty cell. Cells already occupied
+  /// in the loaded plan are **skipped** (the existing entry is preserved
+  /// — bulk-add must never silently overwrite a user's deliberate
+  /// placement). Recipes that run out of empty days before Sunday count
+  /// as `overflowed`.
+  ///
+  /// Loads + saves the plan via this service. Returns counts so the UI can
+  /// render an accurate snackbar.
+  Future<({int added, int overflowed})> bulkAssignRecipes({
+    required DateTime weekStart,
+    required DayOfWeek startDay,
+    required MealSlot slot,
+    required List<Recipe> recipes,
+  }) async {
+    if (recipes.isEmpty) {
+      return (added: 0, overflowed: 0);
+    }
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw StateError('No authenticated user for bulkAssignRecipes');
+    }
+    final normalizedWeekStart = IsoWeekUtils.weekStartOf(weekStart);
+    final fetched = await _repository.fetchForWeek(
+      userId: userId,
+      weekStart: normalizedWeekStart,
+    );
+    var plan = fetched ??
+        WeeklyMenuPlan.empty(userId: userId, date: normalizedWeekStart);
+
+    var added = 0;
+    var overflowed = 0;
+    if (slot.isMulti) {
+      for (final recipe in recipes) {
+        plan = addEntry(plan: plan, day: startDay, slot: slot, recipe: recipe);
+        added++;
+      }
+    } else {
+      var dayIdx = startDay.index;
+      for (final recipe in recipes) {
+        // Skip occupied cells without consuming a recipe slot; advance the
+        // cursor until we find an empty day or fall off the end of the week.
+        while (dayIdx <= DayOfWeek.sun.index) {
+          final candidate = DayOfWeek.values[dayIdx];
+          final occupied = plan.entriesAt(candidate, slot).isNotEmpty;
+          if (!occupied) break;
+          dayIdx++;
+        }
+        if (dayIdx > DayOfWeek.sun.index) {
+          overflowed++;
+          continue;
+        }
+        plan = addEntry(
+          plan: plan,
+          day: DayOfWeek.values[dayIdx],
+          slot: slot,
+          recipe: recipe,
+        );
+        added++;
+        dayIdx++;
+      }
+    }
+    // Use `_repository.save` directly (not `save()`), bypassing
+    // `executeServiceOperation` which gates on service-initialised state
+    // and is unfriendly to mock-only unit tests. The error surface for a
+    // failed bulk-assign save is intentionally raw — the caller (snackbar
+    // handler) catches and surfaces; we don't want a swallow-and-return-null.
+    if (added > 0) await _repository.save(plan);
+    return (added: added, overflowed: overflowed);
+  }
+
   /// Add a single recipe to a (day, slot). For lunch/middag, replaces any
   /// existing entry; for övrigt, appends a new entry.
   WeeklyMenuPlan addEntry({

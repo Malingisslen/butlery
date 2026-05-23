@@ -46,6 +46,53 @@
   "navExitAppConfirmation": "Are you sure you want to exit the app?",
   "navExit": "Exit",
   "imageAddImage": "Add image",
+  "imageRemovedUndoMessage": "Photo removed",
+  "@imageRemovedUndoMessage": {
+    "description": "BUT-932: snackbar shown after image deletion; pairs with commonUndo action button."
+  },
+  "slotPickerDialogTitle": "Pick a menu slot",
+  "@slotPickerDialogTitle": {
+    "description": "BUT-1029: SlotPickerDialog header title."
+  },
+  "slotPickerPreviousWeek": "Previous week",
+  "slotPickerNextWeek": "Next week",
+  "slotPickerWeekLabel": "w.{week}",
+  "@slotPickerWeekLabel": {
+    "placeholders": {
+      "week": { "type": "int" }
+    }
+  },
+  "bulkAddToMenu": "Add to weekly menu",
+  "@bulkAddToMenu": {
+    "description": "BUT-1013."
+  },
+  "bulkAddToMenuSuccess": "{count} recipes added to {slot} {day}",
+  "@bulkAddToMenuSuccess": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "slot": { "type": "String" },
+      "day": { "type": "String" }
+    }
+  },
+  "bulkAddToMenuOverflowed": "{added} of {requested} added — the rest don't fit this week",
+  "@bulkAddToMenuOverflowed": {
+    "placeholders": {
+      "added": { "type": "int" },
+      "requested": { "type": "int" }
+    }
+  },
+  "bulkExport": "Export selected",
+  "@bulkExport": {
+    "description": "BUT-1014."
+  },
+  "bulkExportCopyClipboard": "Copy to clipboard",
+  "bulkExportShareFile": "Share as file",
+  "bulkExportCopied": "{count} recipes copied to clipboard",
+  "@bulkExportCopied": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "imageTakePhoto": "Take photo",
   "imageUseCamera": "Use camera",
   "imageFromGallery": "Choose from gallery",

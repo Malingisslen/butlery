@@ -145,6 +145,50 @@ class AppLocalizationsSv extends AppLocalizations {
   String get imageAddImage => 'Lägg till bild';
 
   @override
+  String get imageRemovedUndoMessage => 'Foto borttaget';
+
+  @override
+  String get slotPickerDialogTitle => 'Välj plats i veckomenyn';
+
+  @override
+  String get slotPickerPreviousWeek => 'Föregående vecka';
+
+  @override
+  String get slotPickerNextWeek => 'Nästa vecka';
+
+  @override
+  String slotPickerWeekLabel(int week) {
+    return 'v.$week';
+  }
+
+  @override
+  String get bulkAddToMenu => 'Lägg till i veckomeny';
+
+  @override
+  String bulkAddToMenuSuccess(int count, String slot, String day) {
+    return '$count recept tillagda i $slot $day';
+  }
+
+  @override
+  String bulkAddToMenuOverflowed(int added, int requested) {
+    return '$added av $requested lades till — resten ryms inte i veckan';
+  }
+
+  @override
+  String get bulkExport => 'Exportera valda';
+
+  @override
+  String get bulkExportCopyClipboard => 'Kopiera till urklipp';
+
+  @override
+  String get bulkExportShareFile => 'Dela som fil';
+
+  @override
+  String bulkExportCopied(int count) {
+    return '$count recept kopierade till urklipp';
+  }
+
+  @override
   String get imageTakePhoto => 'Ta foto';
 
   @override
@@ -12208,6 +12252,26 @@ class AppLocalizationsSv extends AppLocalizations {
   String get bulkShare => 'Dela valda';
 
   @override
+  String get bulkTag => 'Tagga valda';
+
+  @override
+  String bulkTagDialogTitle(int count) {
+    return 'Lägg till tagg på $count recept';
+  }
+
+  @override
+  String get bulkTagNoTagsAvailable => 'Inga personliga taggar att välja';
+
+  @override
+  String bulkTagSuccess(int count) {
+    return 'Taggen lades till på $count recept';
+  }
+
+  @override
+  String get bulkTagAllAlreadyTagged =>
+      'Alla valda recept har redan denna tagg';
+
+  @override
   String get viewModeGrid => 'Rutnätsvy';
 
   @override
@@ -12238,26 +12302,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String bulkDeleteSuccess(int count) {
     return '$count recept borttagna';
   }
-
-  @override
-  String get bulkTag => 'Tagga valda';
-
-  @override
-  String bulkTagDialogTitle(int count) {
-    return 'Lägg till tagg på $count recept';
-  }
-
-  @override
-  String get bulkTagNoTagsAvailable => 'Inga personliga taggar att välja';
-
-  @override
-  String bulkTagSuccess(int count) {
-    return 'Taggen lades till på $count recept';
-  }
-
-  @override
-  String get bulkTagAllAlreadyTagged =>
-      'Alla valda recept har redan denna tagg';
 
   @override
   String get profileFaq => 'Vanliga frågor';

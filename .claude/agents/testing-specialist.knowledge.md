@@ -1386,3 +1386,44 @@ no production bugs found. Patterns worth reusing:
    document *which* singleton and *why it can't be mocked at the call
    site* — see the BUT-1025 `core_module.dart` comment for the template
    (CF-callable construction, must stay mockable via the wrapping service).
+
+### 2026-05-23 — Wave-17 BUT-932/BUT-1013 audit (Pattern discovered)
+
+**Trigger:** Wave-17 ship audit of `recipe_image_manager.removeImageAndCleanup`
+and `WeeklyMenuPlanService.bulkAssignRecipes`.
+
+**Pattern: when behavior contract changes, existing tests in the same file
+may become stale assertions, not just incomplete coverage.** The pre-existing
+`test/unit/viewmodels/recipe_image_manager_test.dart` "Image Cleanup and
+Storage Management" group (lines ~607-680) verifies
+`verify(() => mockStorageService.deleteRecipeImage(...)).called(1)`
+synchronously after `removeImageAndCleanup`. Under BUT-932 this now happens
+only after `commitPendingStorageDeletes()` — these tests will pass in green
+build only because the captured call count from prior setUp interactions is
+non-zero, or will outright fail. They were left in place during this audit
+because rewriting them is out of scope for the new-coverage pass; flagged
+as follow-up. **Lesson:** when an audit finds pre-existing tests asserting
+the OLD contract, rewrite or delete them in the same PR as the new tests —
+otherwise next-touch sees a confusing mix of "delete must happen now" and
+"delete must NOT happen now" assertions in the same file.
+
+**Pattern: record-typed return values + mocktail.** For
+`Future<({int added, int overflowed})>` you assert via
+`expect(result.added, 3); expect(result.overflowed, 7);` or as a whole
+`expect(result, (added: 0, overflowed: 0));` — direct record comparison
+works because Dart records are value-equal.
+
+**Pattern: `verify(() => repo.save(captureAny())).captured.single as Plan`**
+is the clean way to inspect the persisted plan in bulk-write tests instead
+of stubbing `save` with a side-effecting `thenAnswer` that stores into a
+local var. Requires `registerFallbackValue(_FakeWeeklyMenuPlan())` in a
+`setUpAll`.
+
+**Pattern: BUT-932 undo invariants worth re-asserting on any image-manager
+refactor:** (1) `removeImageAndCleanup` must `verifyNever` the storage
+mock — the whole point is deferral. (2) After `commitPendingStorageDeletes`,
+`pendingDeleteCount` must be 0 even when the queue was empty (local-file
+removals snapshot for undo but never enqueue). (3) Storage errors during
+commit must NOT throw — the recipe save already succeeded, orphan blobs
+are tolerated.
+

@@ -145,6 +145,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageAddImage => 'Add image';
 
   @override
+  String get imageRemovedUndoMessage => 'Photo removed';
+
+  @override
+  String get slotPickerDialogTitle => 'Pick a menu slot';
+
+  @override
+  String get slotPickerPreviousWeek => 'Previous week';
+
+  @override
+  String get slotPickerNextWeek => 'Next week';
+
+  @override
+  String slotPickerWeekLabel(int week) {
+    return 'w.$week';
+  }
+
+  @override
+  String get bulkAddToMenu => 'Add to weekly menu';
+
+  @override
+  String bulkAddToMenuSuccess(int count, String slot, String day) {
+    return '$count recipes added to $slot $day';
+  }
+
+  @override
+  String bulkAddToMenuOverflowed(int added, int requested) {
+    return '$added of $requested added — the rest don\'t fit this week';
+  }
+
+  @override
+  String get bulkExport => 'Export selected';
+
+  @override
+  String get bulkExportCopyClipboard => 'Copy to clipboard';
+
+  @override
+  String get bulkExportShareFile => 'Share as file';
+
+  @override
+  String bulkExportCopied(int count) {
+    return '$count recipes copied to clipboard';
+  }
+
+  @override
   String get imageTakePhoto => 'Take photo';
 
   @override
@@ -12182,6 +12226,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bulkShare => 'Share Selected';
 
   @override
+  String get bulkTag => 'Tag Selected';
+
+  @override
+  String bulkTagDialogTitle(int count) {
+    return 'Add tag to $count recipes';
+  }
+
+  @override
+  String get bulkTagNoTagsAvailable => 'No personal tags available';
+
+  @override
+  String bulkTagSuccess(int count) {
+    return 'Tag added to $count recipes';
+  }
+
+  @override
+  String get bulkTagAllAlreadyTagged =>
+      'All selected recipes already have this tag';
+
+  @override
   String get viewModeGrid => 'Grid View';
 
   @override
@@ -12212,26 +12276,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String bulkDeleteSuccess(int count) {
     return '$count recipes deleted';
   }
-
-  @override
-  String get bulkTag => 'Tag Selected';
-
-  @override
-  String bulkTagDialogTitle(int count) {
-    return 'Add tag to $count recipes';
-  }
-
-  @override
-  String get bulkTagNoTagsAvailable => 'No personal tags available';
-
-  @override
-  String bulkTagSuccess(int count) {
-    return 'Tag added to $count recipes';
-  }
-
-  @override
-  String get bulkTagAllAlreadyTagged =>
-      'All selected recipes already have this tag';
 
   @override
   String get profileFaq => 'FAQ';

@@ -223,6 +223,11 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           AppLogger.info(
               '✅ Recipe saved atomically with ${savedRecipe.imageUrls.length} images: ${savedRecipe.id}');
 
+          // BUT-932: commit deferred Storage deletions now that the recipe
+          // write has landed. If this fails per-URL, the orphan bytes stay
+          // in Storage but the save is preserved.
+          await _imageManager.commitPendingStorageDeletes();
+
           if (isCollaborative && !_disposed) {
             try {
               await _collaborativeManager.updateRecipeInFirebase(savedRecipe);

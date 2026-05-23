@@ -1,6 +1,35 @@
 # Sprint Backlog
 
-## Sprint: wave-16 — fresh batch (wave-15 fully shipped by parallel session) — 2026-05-23 (Sa)
+## Sprint: wave-17 — Settings UX + bulk recipe→menu + backend hygiene — 2026-05-23 (Sa)
+
+Theme: 8 tickets across three batches. Settings/account UX visibility (BUT-913, 958, 932), bulk recipe→menu suite completion (BUT-1029→1013, 1014), backend hygiene (BUT-995 prompt caching, BUT-970 dead-code decision). Wave-16 verified closed in Linear by parallel session.
+
+### Batch A — Settings/Account UX (`flutter-developer`)
+- [ ] **A1. BUT-913 (High)** — Surface Sign-out + Delete-Account in Settings UI (GDPR). `lib/views/settings/settings_view.dart` + new account section. Delete-Account calls server-side `requestAccountDeletion` CF.
+- [ ] **A2. BUT-958 (High)** — Sync conflict resolution visible to user. New `sync_conflict_banner.dart` widget + wire to `offline_sync_manager.dart`.
+- [ ] **A3. BUT-932 (Medium)** — Recipe photo deletion undo. SnackBar-with-Ångra pattern in `recipe_edit_form.dart` + viewmodel snapshot.
+
+### Batch B — Bulk recipe→menu suite (`flutter-developer`, sequenced)
+- [ ] **B1. BUT-1029 (Medium)** — SlotPickerDialog widget (prereq for B2). `lib/widgets/menu/slot_picker_dialog.dart` + 5–6 l10n keys.
+- [ ] **B2. BUT-1013 (High)** — Bulk add-to-menu on selection. Uses B1. `selection_app_bar.dart` + `bulkAddRecipesToMenuSlots` on menu VM with undo.
+- [ ] **B3. BUT-1014 (Medium)** — Bulk export selected recipes (clipboard markdown + file JSON). `selection_app_bar.dart` + `recipe_export_service.dart`.
+
+### Batch C — Backend hygiene
+- [ ] **C1. BUT-995 (High)** — Adopt prompt caching on LLM calls (`cloud-functions-specialist`). `functions/src/llm/` Anthropic `cache_control: ephemeral` wrap.
+- [ ] **C2. BUT-970 (High)** — Wire or delete `backup_service.dart` (`flutter-developer`). Decision in commit message.
+
+### Post-Sprint Steps
+- [ ] `dart analyze --fatal-infos` clean across all changed files
+- [ ] `dart format --set-exit-if-changed lib test` clean
+- [ ] Tier-2 reviews: `code-reviewer` + `testing-specialist` + `firebase-backend-security` (A1+C2 touch auth/account)
+- [ ] File follow-ups in Linear (anything deferred / reviewer findings / test gaps)
+- [ ] Commit + push to main
+- [ ] Close Linear tickets to Done
+- [ ] CI watcher
+
+---
+
+## Archived wave-16 (commit ae7cc297e + tier-2 follow-ups) — 2026-05-23 (Sa)
 
 Theme: 2 High tickets + 1 obsoletion. Wave-15 was found 8/8 Done in Linear at sprint start (parallel session shipped without checking off `todo.md`). BUT-1013 was deferred mid-sprint after Step 0 verification revealed the prereq picker dialog doesn't exist; filed BUT-1029 for the prereq.
 
@@ -14,65 +43,51 @@ Theme: 2 High tickets + 1 obsoletion. Wave-15 was found 8/8 Done in Linear at sp
 - [x] **BUT-938** — closed as obsolete (multi-image carousel already shipped via `UniversalImageManager.recipeDetail` at `recipe_detail_content.dart:560-567`).
 
 ### Mid-sprint scope changes
-- [~] **BUT-1013** — deferred. Plan-stale: ticket assumed a single-recipe slot picker existed for reuse, but no such picker exists. Filed prereq BUT-1029 (SlotPickerDialog widget), blocked BUT-1013 on it.
-
-### Post-Sprint Steps
-- [x] `dart analyze --fatal-infos` clean across all changed files
-- [x] `dart format --set-exit-if-changed` clean
-- [x] Tier-2 agent reviews: `code-reviewer` PASS + `testing-specialist` PASS (non-blocker polish applied inline, marker re-touched)
-- [ ] Commit + push to main
-- [ ] Close Linear tickets to Done
-- [ ] CI watcher
-
-### Known follow-ups (filed in Linear)
-- **BUT-1029** (Medium) — SlotPickerDialog widget, prereq for BUT-1013 bulk-add-to-menu
-- **BUT-1030** (Medium) — Test harness: make `MockUnifiedRecipeService.updateRecipe` actually mutate `_recipes` (blocks "restoration after undo" tests for BUT-1012)
-
----
+- [~] **BUT-1013** — deferred. Plan-stale: ticket assumed a single-recipe slot picker existed for reuse, but no such picker exists. Filed prereq BUT-1029 (SlotPickerDialog widget), blocked BUT-1013 on it. Re-picked in wave-17.
 
 ## Archived wave-15 (parallel-session ships) — 2026-05-23 (Sa)
 
-wave-15 — 8 tickets planned (BUT-1022, 1026, 1020, 1015, 1017, 1019, 1018, 1027). A parallel Claude session shipped all 8 in a single window at 2026-05-23T17:59:51–17:59:57 without checking off this file. Pattern escalated from wave-14's 5/7 to 8/8. Lesson re-reinforced: Linear state is authoritative; local `todo.md` lies when two sessions run concurrently. `/sprint-execute` Step 0 verification caught this before wave-16 wasted any implementation time.
+wave-15 — 8 tickets planned (BUT-1022, 1026, 1020, 1015, 1017, 1019, 1018, 1027). Parallel session shipped 8/8 at 2026-05-23T17:59 without checking off this file. Lesson re-reinforced: Linear state is authoritative; local `todo.md` lies when two sessions run concurrently.
 
 ## Archived wave-14 (parallel-session ships) — 2026-05-23 (Sa)
 
-wave-14 — 7 tickets planned (3 CI + 4 test-debt). A parallel Claude session shipped 5/7 today **without checking off this file**: BUT-1024 (SHA-pin), BUT-1025 (account_deletion `FirebaseAuth.instance` → `AuthRepository`), BUT-1021 (AuthService stream-error tests), BUT-1023 (Storage upload exception tests), BUT-1016 (typed-exception in `uploadImageBytes`). All five moved to Linear Done at 2026-05-23T11:06. Carry-over to wave-15: **BUT-1022** (OCR error-chain tests) + **BUT-1026** (E2E `_FocusInheritedScope` investigation). Lesson reinforced: trust Linear state over local todo.md when they disagree.
+wave-14 — 7 planned, 5 shipped by parallel session (BUT-1024, 1025, 1021, 1023, 1016). Carry-over BUT-1022 + BUT-1026 absorbed into wave-15.
 
 ## Archived wave-13 (commits 3fc2d1edc + 66a786479 + 3f7d40412) — 2026-05-22 (Fr)
 
-wave-13 — 9 Bug/UX tickets across onboarding/error-UX/import/recipe-list. 7 shipped (BUT-926, 971, 968, 966, 963, 959, 921), 2 marked obsolete/rescoped ([~] BUT-942 premise gone, [~] BUT-933 split into 1012/1013/1014). Follow-ups filed: BUT-1012, 1013, 1014, 1015, 1016, 1017. Per backlog dump, all wave-13 BUT-IDs already absent from Backlog — confirming Linear-Done state was reached.
+wave-13 — 9 Bug/UX tickets. 7 shipped, 2 obsoleted/rescoped. Follow-ups BUT-1012–1017.
 
 ## Archived wave-12 (commits 185ba807e + eb4562bc6) — 2026-05-22 (Fr)
 
-wave-12 — 7 done + 2 deferred. Implementation bundled into 185ba807e (parallel session ate the message); tier-2 review findings in eb4562bc6. Linear tickets closed at 2026-05-22T20:13 (BUT-960/924/927/929/893/1003/1006 → Done; BUT-953/1009 → Backlog with re-scoped bodies).
+wave-12 — 7 done + 2 deferred.
 
 ## Archived wave-11 (commits 7551c14c2 + bca2f5bc7) — 2026-05-22 (Fr)
 
-wave-11 — BUT-788 server-side account-deletion. Shipped: new `requestAccountDeletion` CF (re-auth gate, 24-step cascade, audit logs), client wrapper reduced 430→190 lines, 4 deletion modules deleted (~1,050 LOC), tests green. Follow-ups filed: BUT-1009 (integration test), BUT-1010 (App Check blocked on BUT-760), BUT-1011 (async polling for very-large accounts). BUT-788 closed in Linear.
+wave-11 — BUT-788 server-side account-deletion. New `requestAccountDeletion` CF. Follow-ups BUT-1009/1010/1011.
 
 ## Archived wave-10 (commit 826dceed1) — 2026-05-22 (Fr)
 
-wave-10 — BUT-782 FCMService static→instance + DI refactor. 660-line rewrite, 23 tests up from 19. Follow-ups: BUT-1006 (re-bind on re-login, completed in wave-12), BUT-1007 (consent/token stream tests), BUT-1008 (composable MockFirebaseMessaging).
+wave-10 — BUT-782 FCMService static→instance + DI refactor.
 
 ## Archived wave-9 (commits 55d49d993 + 602420b91) — 2026-05-22 (Fr)
 
-wave-9 — LLM golden runners + repo test-coverage. Shipped BUT-888. Follow-ups: BUT-1003 (batch ops catch-swallow, completed in wave-12), BUT-1004, BUT-1005.
+wave-9 — LLM golden runners + repo test-coverage. BUT-888.
 
 ## Archived wave-8 (commit 633595561) — 2026-05-22
 
-wave-8 — BUT-784/886/882/887 shipped.
+wave-8 — BUT-784/886/882/887.
 
 ## Archived wave-7 (commit 5bd98f8e8 / 7ed82246c)
 
-wave-7 — BUT-878/455/811/798 shipped.
+wave-7 — BUT-878/455/811/798.
 
 ## Archived wave-6 (commit 273152149)
 
-wave-6 — BUT-876/802/452 shipped.
+wave-6 — BUT-876/802/452.
 
 ## Archived wave-5 (commit b66f5892f)
 
-wave-5 — BUT-660/872/865/866/873 shipped.
+wave-5 — BUT-660/872/865/866/873.
 
 ## Archived wave-4 (commit 90d88cfca / b115d7519)
 

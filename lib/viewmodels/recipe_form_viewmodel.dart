@@ -279,6 +279,13 @@ class RecipeFormViewModel extends ChangeNotifier
     await _imageManager.removeImageAndCleanup(pathOrUrl);
   }
 
+  /// BUT-932: restore the most recently removed image (undo path for the
+  /// trash-icon mis-tap). Returns true if a restoration happened.
+  bool restoreLastImageDeletion() => _imageManager.restoreLastImageDeletion();
+
+  /// BUT-932: whether an undo is currently available.
+  bool get hasPendingImageDeletion => _imageManager.pendingDeleteCount > 0;
+
   Future<void> retryAllFailedUploads() async {
     await _imageManager.retryAllFailedUploads();
   }

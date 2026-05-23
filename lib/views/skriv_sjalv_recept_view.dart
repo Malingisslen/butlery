@@ -15,6 +15,7 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -446,7 +447,21 @@ class _SkrivSjalvReceptViewContentState
                           // Enhanced Upload Progress Parameters
                           uploadStatuses: viewModel.imageUploadStatuses,
                           onRetryUpload: viewModel.retryImageUpload,
-                          onCancelUpload: viewModel.cancelImageUpload,
+                          onCancelUpload: (pathOrUrl) async {
+                            // BUT-932: wrap remove with undo SnackBar. The
+                            // VM defers Storage deletion until save, so undo
+                            // restores the image without re-uploading.
+                            await viewModel.cancelImageUpload(pathOrUrl);
+                            if (!context.mounted) return;
+                            if (!viewModel.hasPendingImageDeletion) return;
+                            SnackBarUtils.showSuccessWithAction(
+                              context,
+                              context.l10n.imageRemovedUndoMessage,
+                              actionLabel: context.l10n.commonUndo,
+                              onAction: viewModel.restoreLastImageDeletion,
+                              duration: const Duration(seconds: 5),
+                            );
+                          },
                           uploadQueueStatus: viewModel.uploadQueueStatusText,
                           // Bulk Upload Management Parameters
                           uploadManagementSummary:

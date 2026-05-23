@@ -8,6 +8,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
+import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsHubView extends StatelessWidget {
@@ -61,6 +63,33 @@ class SettingsHubView extends StatelessWidget {
                   title: context.l10n.accountSecurityTitle,
                   onTap: () => Navigator.pushNamed(
                       context, Routes.settingsAccountSecurity),
+                ),
+                // BUT-970: surface backup_service from ProfileMenu into formal
+                // Settings (it was already wired via BackupRestoreHandler, just
+                // not discoverable from /settings).
+                _SettingsTile(
+                  icon: Icons.download_outlined,
+                  title: context.l10n.profileDownloadBackup,
+                  onTap: () => BackupRestoreHandler.handleBackup(context),
+                ),
+                _SettingsTile(
+                  icon: Icons.upload_outlined,
+                  title: context.l10n.profileRestoreFromBackup,
+                  onTap: () => BackupRestoreHandler.handleRestore(context),
+                ),
+                // BUT-913: GDPR-required Sign-out + Delete-Account surfaces.
+                // Handlers already exist on AuthActionHandler (used by
+                // ProfileMenu bottom-sheet) — this just makes them findable
+                // from /settings.
+                _SettingsTile(
+                  icon: Icons.logout,
+                  title: context.l10n.profileLogout,
+                  onTap: () => AuthActionHandler.handleLogout(context),
+                ),
+                _DangerSettingsTile(
+                  icon: Icons.delete_forever,
+                  title: context.l10n.profileDeleteAccount,
+                  onTap: () => AuthActionHandler.handleDeleteAccount(context),
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionLanguage),
@@ -184,6 +213,35 @@ class _SettingsTile extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: cs.onSurfaceVariant),
       title: Text(title, style: AppTextStyles.bodyMedium),
+      trailing: Icon(Icons.chevron_right, color: cs.outline),
+      onTap: onTap,
+    );
+  }
+}
+
+/// BUT-913: Variant for destructive actions (Delete Account). Renders icon
+/// and title in the error color so the irreversibility is visually flagged
+/// before the confirmation dialog opens. Same tap semantics otherwise.
+class _DangerSettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _DangerSettingsTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return ListTile(
+      leading: Icon(icon, color: cs.error),
+      title: Text(
+        title,
+        style: AppTextStyles.bodyMedium.copyWith(color: cs.error),
+      ),
       trailing: Icon(Icons.chevron_right, color: cs.outline),
       onTap: onTap,
     );

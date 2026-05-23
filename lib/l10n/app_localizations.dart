@@ -368,6 +368,78 @@ abstract class AppLocalizations {
   /// **'Lägg till bild'**
   String get imageAddImage;
 
+  /// BUT-932: snackbar shown after image deletion; pairs with commonUndo action button.
+  ///
+  /// In sv, this message translates to:
+  /// **'Foto borttaget'**
+  String get imageRemovedUndoMessage;
+
+  /// BUT-1029: SlotPickerDialog header title.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj plats i veckomenyn'**
+  String get slotPickerDialogTitle;
+
+  /// No description provided for @slotPickerPreviousWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Föregående vecka'**
+  String get slotPickerPreviousWeek;
+
+  /// No description provided for @slotPickerNextWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nästa vecka'**
+  String get slotPickerNextWeek;
+
+  /// BUT-1029: ISO week-number label shown between the prev/next arrows in the slot picker. Format: v.42
+  ///
+  /// In sv, this message translates to:
+  /// **'v.{week}'**
+  String slotPickerWeekLabel(int week);
+
+  /// BUT-1013: selection-app-bar tooltip for the bulk-add-to-menu action.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till i veckomeny'**
+  String get bulkAddToMenu;
+
+  /// BUT-1013: snackbar after bulk-add success.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept tillagda i {slot} {day}'**
+  String bulkAddToMenuSuccess(int count, String slot, String day);
+
+  /// BUT-1013: snackbar when not all selected recipes fit (single-slot run-out).
+  ///
+  /// In sv, this message translates to:
+  /// **'{added} av {requested} lades till — resten ryms inte i veckan'**
+  String bulkAddToMenuOverflowed(int added, int requested);
+
+  /// BUT-1014: selection-app-bar tooltip for bulk-export action.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exportera valda'**
+  String get bulkExport;
+
+  /// No description provided for @bulkExportCopyClipboard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera till urklipp'**
+  String get bulkExportCopyClipboard;
+
+  /// No description provided for @bulkExportShareFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela som fil'**
+  String get bulkExportShareFile;
+
+  /// BUT-1014: snackbar after clipboard copy.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept kopierade till urklipp'**
+  String bulkExportCopied(int count);
+
   /// No description provided for @imageTakePhoto.
   ///
   /// In sv, this message translates to:
@@ -20572,6 +20644,36 @@ abstract class AppLocalizations {
   /// **'Dela valda'**
   String get bulkShare;
 
+  /// No description provided for @bulkTag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tagga valda'**
+  String get bulkTag;
+
+  /// No description provided for @bulkTagDialogTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till tagg på {count} recept'**
+  String bulkTagDialogTitle(int count);
+
+  /// No description provided for @bulkTagNoTagsAvailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga personliga taggar att välja'**
+  String get bulkTagNoTagsAvailable;
+
+  /// No description provided for @bulkTagSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggen lades till på {count} recept'**
+  String bulkTagSuccess(int count);
+
+  /// No description provided for @bulkTagAllAlreadyTagged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla valda recept har redan denna tagg'**
+  String get bulkTagAllAlreadyTagged;
+
   /// No description provided for @viewModeGrid.
   ///
   /// In sv, this message translates to:
@@ -20625,36 +20727,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count} recept borttagna'**
   String bulkDeleteSuccess(int count);
-
-  /// No description provided for @bulkTag.
-  ///
-  /// In sv, this message translates to:
-  /// **'Tagga valda'**
-  String get bulkTag;
-
-  /// No description provided for @bulkTagDialogTitle.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till tagg på {count} recept'**
-  String bulkTagDialogTitle(int count);
-
-  /// No description provided for @bulkTagNoTagsAvailable.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga personliga taggar att välja'**
-  String get bulkTagNoTagsAvailable;
-
-  /// No description provided for @bulkTagSuccess.
-  ///
-  /// In sv, this message translates to:
-  /// **'Taggen lades till på {count} recept'**
-  String bulkTagSuccess(int count);
-
-  /// No description provided for @bulkTagAllAlreadyTagged.
-  ///
-  /// In sv, this message translates to:
-  /// **'Alla valda recept har redan denna tagg'**
-  String get bulkTagAllAlreadyTagged;
 
   /// No description provided for @profileFaq.
   ///

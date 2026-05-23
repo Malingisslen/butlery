@@ -57,6 +57,14 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   //Comprehensive state tracking to prevent race conditions
   final Map<String, ImageUploadStatus> _imageStates = {};
 
+  /// BUT-932: URLs queued for Firebase Storage deletion, performed only when
+  /// the form save commits (via [commitPendingStorageDeletes]). Per-key entry
+  /// in [_lastDeletedStatus] lets [restoreLastImageDeletion] put an undo'd
+  /// image back into `_imageStates` exactly as it was — including its
+  /// uploaded URL — without re-uploading bytes that already live in Storage.
+  final List<String> _pendingStorageDeletes = [];
+  final Map<String, ImageUploadStatus> _lastDeletedStatus = {};
+
   String? _temporaryRecipeId; // Temporary ID for immediate uploads
 
   bool _isUploadingImage = false;
@@ -531,17 +539,36 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Note: No finally block setting _setUploadingImage(false) - each individual upload handles its own state
   }
 
-  /// Remove image and cleanup storage
+  /// BUT-932: Remove image with deferred storage cleanup.
+  ///
+  /// Storage deletion is queued in [_pendingStorageDeletes] and only commits
+  /// when the recipe save flow calls [commitPendingStorageDeletes]. This makes
+  /// the action undoable via [restoreLastImageDeletion] — a mis-tap on the
+  /// trash icon no longer destroys the Storage bytes, and abandoning the form
+  /// without saving leaves Storage untouched (so the persisted recipe's
+  /// `imageUrls` still resolves correctly).
   Future<void> removeImageAndCleanup(String pathOrUrl) async {
     try {
       final imageStatus = _imageStates[pathOrUrl];
+      if (imageStatus != null) {
+        // Re-inserting after a remove guarantees `keys.last` returns the
+        // truly most-recently-deleted key, even if the same pathOrUrl was
+        // deleted twice in the same form session (mis-tap + restore + tap
+        // again). Without the remove, the second insertion would overwrite
+        // in-place and `keys.last` would still point at the FIRST entry.
+        _lastDeletedStatus.remove(pathOrUrl);
+        _lastDeletedStatus[pathOrUrl] = imageStatus;
+      }
 
-      // Remove from state
+      // Remove from in-memory state for immediate UI feedback.
       removeImageByPath(pathOrUrl);
 
-      // Only delete from Firebase storage if it's an uploaded URL
+      // Queue storage deletion for uploaded URLs only. Local files / blob
+      // URLs never reached Storage; nothing to schedule.
       if (imageStatus?.url != null && _isUploadedUrl(imageStatus!.url!)) {
-        await _storageService.deleteRecipeImage(imageStatus.url!);
+        if (!_pendingStorageDeletes.contains(imageStatus.url!)) {
+          _pendingStorageDeletes.add(imageStatus.url!);
+        }
         AppLogger.info(
             'â˜ï¸ ðŸ—‘ï¸ Bild borttagen frÃ¥n Firebase storage: ${imageStatus.url}');
       } else {
@@ -551,6 +578,55 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     } catch (e) {
       AppLogger.error('âŒ Fel vid borttagning av bild: $e');
       // Continue anyway, image is removed from the list
+    }
+  }
+
+  /// BUT-932: number of removals available for undo in the current form
+  /// session. Resets to zero after each [commitPendingStorageDeletes] (save
+  /// flow) or after each call to [restoreLastImageDeletion].
+  int get pendingDeleteCount => _lastDeletedStatus.length;
+
+  /// BUT-932: restore the most recently deleted image back into
+  /// `_imageStates`, cancelling its pending storage deletion. Returns true
+  /// when a restoration happened, false when nothing was queued. Multiple
+  /// calls walk LIFO through the deletion history.
+  bool restoreLastImageDeletion() {
+    if (_lastDeletedStatus.isEmpty) return false;
+
+    final lastKey = _lastDeletedStatus.keys.last;
+    final restored = _lastDeletedStatus.remove(lastKey)!;
+
+    _imageStates[lastKey] = restored;
+    if (restored.url != null) {
+      _pendingStorageDeletes.remove(restored.url);
+    }
+
+    AppLogger.info('Restored deleted image: $lastKey');
+    notifyListeners();
+    return true;
+  }
+
+  /// BUT-932: invoked by the save flow after the recipe write succeeds.
+  /// Performs the queued Firebase Storage deletions. Per-URL errors are
+  /// logged but never thrown — a Storage delete failure must not break a
+  /// successful recipe save (the recipe's `imageUrls` already excludes the
+  /// removed URL, so the orphan is just unused bytes in Storage).
+  Future<void> commitPendingStorageDeletes() async {
+    if (_pendingStorageDeletes.isEmpty) {
+      _lastDeletedStatus.clear();
+      return;
+    }
+    final toDelete = List<String>.from(_pendingStorageDeletes);
+    _pendingStorageDeletes.clear();
+    _lastDeletedStatus.clear();
+
+    for (final url in toDelete) {
+      try {
+        await _storageService.deleteRecipeImage(url);
+        AppLogger.info('Storage delete committed: $url');
+      } catch (e) {
+        AppLogger.error('Storage delete failed (orphan in Storage): $url', e);
+      }
     }
   }
 

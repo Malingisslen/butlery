@@ -605,61 +605,79 @@ void main() {
     });
 
     group('Image Cleanup and Storage Management', () {
-      test('should remove image and cleanup storage for uploaded images',
-          () async {
-        // Arrange
+      // BUT-932: `removeImageAndCleanup` no longer deletes from Storage
+      // synchronously — it queues the URL for deletion via
+      // `commitPendingStorageDeletes` (called from the save flow). These
+      // tests now assert the deferred contract; the truly-undeleted-yet
+      // invariant matters because mid-form abandonment must leave Storage
+      // intact. End-to-end undo + commit behaviour is covered in
+      // `recipe_image_deletion_undo_test.dart`.
+      test(
+          'should remove image from state and DEFER storage cleanup '
+          '(BUT-932)', () async {
         const firebaseImageUrl = 'https://firebase.com/storage/image.jpg';
         imageManager.addUploadedImageUrl(firebaseImageUrl);
 
-        // Act
         await imageManager.removeImageAndCleanup(firebaseImageUrl);
 
-        // Assert
         expect(imageManager.imageUrls, isNot(contains(firebaseImageUrl)));
+        verifyNever(() => mockStorageService.deleteRecipeImage(any()));
+        expect(imageManager.pendingDeleteCount, 1);
+
+        // The deferred delete fires only on explicit commit.
+        await imageManager.commitPendingStorageDeletes();
         verify(() => mockStorageService.deleteRecipeImage(firebaseImageUrl))
             .called(1);
+        expect(imageManager.pendingDeleteCount, 0);
       });
 
-      test('should attempt cleanup for all HTTP URLs', () async {
+      test('should defer cleanup for all HTTP URLs (BUT-932)', () async {
         // _isUploadedUrl treats all http:// URLs as uploaded (broad matching)
         const externalUrl = 'https://example.com/image.jpg';
         imageManager.addUploadedImageUrl(externalUrl);
 
-        // Act
         await imageManager.removeImageAndCleanup(externalUrl);
 
-        // Assert - image removed, cleanup attempted for any HTTP URL
         expect(imageManager.imageUrls, isNot(contains(externalUrl)));
+        verifyNever(() => mockStorageService.deleteRecipeImage(any()));
+
+        await imageManager.commitPendingStorageDeletes();
         verify(() => mockStorageService.deleteRecipeImage(externalUrl))
             .called(1);
       });
 
-      test('should cleanup google storage images', () async {
-        // Arrange
+      test('should defer cleanup for google storage images (BUT-932)',
+          () async {
         const storageUrl = 'https://storage.googleapis.com/image.jpg';
         imageManager.addUploadedImageUrl(storageUrl);
 
-        // Act
         await imageManager.removeImageAndCleanup(storageUrl);
 
-        // Assert
         expect(imageManager.imageUrls, isNot(contains(storageUrl)));
+        verifyNever(() => mockStorageService.deleteRecipeImage(any()));
+
+        await imageManager.commitPendingStorageDeletes();
         verify(() => mockStorageService.deleteRecipeImage(storageUrl))
             .called(1);
       });
 
-      test('should handle cleanup failure gracefully', () async {
-        // Arrange
+      test('should handle commit cleanup failure gracefully (BUT-932)',
+          () async {
+        // Failure surface moved from `removeImageAndCleanup` to
+        // `commitPendingStorageDeletes`: a Storage delete error must NOT
+        // break a successful recipe save. Orphan bytes in Storage are
+        // acceptable; data loss in the recipe is not.
         const firebaseImageUrl = 'https://firebase.com/storage/image.jpg';
         imageManager.addUploadedImageUrl(firebaseImageUrl);
         when(() => mockStorageService.deleteRecipeImage(any()))
             .thenThrow(Exception('Delete error'));
 
-        // Act
         await imageManager.removeImageAndCleanup(firebaseImageUrl);
+        // commit must not throw even when the Storage call fails.
+        await imageManager.commitPendingStorageDeletes();
 
-        // Assert - image should still be removed from list even if cleanup fails
         expect(imageManager.imageUrls, isNot(contains(firebaseImageUrl)));
+        expect(imageManager.pendingDeleteCount, 0);
       });
 
       test('should clear all images and cleanup storage', () async {

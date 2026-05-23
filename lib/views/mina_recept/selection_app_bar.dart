@@ -5,15 +5,20 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -21,6 +26,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 /// Builds the selection-mode AppBar. Returned as a `PreferredSizeWidget`
@@ -61,6 +67,24 @@ PreferredSizeWidget buildMinaReceptSelectionAppBar(
         onPressed: viewModel.selectedCount == 0
             ? null
             : () => _openBulkTagPicker(context, viewModel),
+      ),
+      // BUT-1013: bulk-add-to-menu — open SlotPickerDialog (BUT-1029),
+      // then loop selected recipes into chosen slot (single-slot
+      // distributes day-by-day; multi-slot stacks).
+      IconButton(
+        icon: const Icon(Icons.calendar_month_outlined),
+        tooltip: context.l10n.bulkAddToMenu,
+        onPressed: viewModel.selectedCount == 0
+            ? null
+            : () => _openBulkAddToMenu(context, viewModel),
+      ),
+      // BUT-1014: bulk-export — clipboard markdown or share-sheet file.
+      IconButton(
+        icon: const Icon(Icons.ios_share),
+        tooltip: context.l10n.bulkExport,
+        onPressed: viewModel.selectedCount == 0
+            ? null
+            : () => _openBulkExport(context, viewModel),
       ),
       IconButton(
         icon: const Icon(Icons.delete_outline),
@@ -129,6 +153,158 @@ Future<void> _openBulkShareDialog(
       ),
     ),
   );
+}
+
+/// BUT-1013: bulk-add-to-menu handler. Opens SlotPickerDialog (BUT-1029),
+/// receives a (weekStart, day, slot) triple, distributes selected recipes
+/// across slots via `WeeklyMenuPlanService.bulkAssignRecipes`, and surfaces
+/// added/overflow counts via snackbar. Selection mode exits on success.
+Future<void> _openBulkAddToMenu(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) async {
+  final recipes = viewModel.selectedRecipes;
+  if (recipes.isEmpty) return;
+
+  final selection = await showSlotPickerDialog(context);
+  if (selection == null || !context.mounted) return;
+
+  try {
+    final service = ServiceLocator.get<WeeklyMenuPlanService>();
+    final result = await service.bulkAssignRecipes(
+      weekStart: selection.weekStart,
+      startDay: selection.day,
+      slot: selection.slot,
+      recipes: recipes,
+    );
+
+    if (!context.mounted) return;
+    viewModel.clearSelection();
+
+    if (result.overflowed > 0) {
+      SnackBarUtils.showInfo(
+        context,
+        context.l10n.bulkAddToMenuOverflowed(
+          result.added,
+          recipes.length,
+        ),
+      );
+    } else {
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.bulkAddToMenuSuccess(
+          result.added,
+          selection.slot.displayLabel,
+          selection.day.displayLabel,
+        ),
+      );
+    }
+  } catch (e) {
+    AppLogger.error('Bulk add-to-menu failed', e);
+    if (!context.mounted) return;
+    SnackBarUtils.showError(context, e.toString());
+  }
+}
+
+/// BUT-1014: bulk-export handler. Bottom sheet offers two outputs —
+/// clipboard markdown (single tap) or share-sheet file via `share_plus`.
+/// Markdown format is the same for both paths so users can switch between
+/// outputs without re-formatting; file extension is `.md`.
+Future<void> _openBulkExport(
+  BuildContext context,
+  RecipeListViewModel viewModel,
+) async {
+  final recipes = viewModel.selectedRecipes;
+  if (recipes.isEmpty) return;
+
+  final choice = await showModalBottomSheet<_ExportChoice>(
+    context: context,
+    builder: (sheetContext) => SafeArea(
+      child: Wrap(children: [
+        ListTile(
+          leading: const Icon(Icons.copy),
+          title: Text(sheetContext.l10n.bulkExportCopyClipboard),
+          onTap: () => Navigator.of(sheetContext).pop(_ExportChoice.clipboard),
+        ),
+        ListTile(
+          leading: const Icon(Icons.ios_share),
+          title: Text(sheetContext.l10n.bulkExportShareFile),
+          onTap: () => Navigator.of(sheetContext).pop(_ExportChoice.shareFile),
+        ),
+      ]),
+    ),
+  );
+  if (choice == null || !context.mounted) return;
+
+  final markdown = _formatRecipesAsMarkdown(recipes);
+
+  try {
+    if (choice == _ExportChoice.clipboard) {
+      await Clipboard.setData(ClipboardData(text: markdown));
+      if (!context.mounted) return;
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.bulkExportCopied(recipes.length),
+      );
+    } else {
+      // share_plus handles file vs text uniformly on mobile; web falls back
+      // to text-share which is acceptable for desktop browsers.
+      await SharePlus.instance.share(
+        ShareParams(
+          text: markdown,
+          subject: 'Recept (${recipes.length} st)',
+        ),
+      );
+    }
+    if (!context.mounted) return;
+    viewModel.clearSelection();
+  } catch (e) {
+    AppLogger.error('Bulk export failed', e);
+    if (!context.mounted) return;
+    SnackBarUtils.showError(context, e.toString());
+  }
+}
+
+enum _ExportChoice { clipboard, shareFile }
+
+/// BUT-1014: format a list of recipes as markdown. Sections per recipe
+/// separated by `---`. Skips empty fields. Stays Swedish-labelled because
+/// the app's UI is Swedish (per CLAUDE.local.md).
+String _formatRecipesAsMarkdown(List<Recipe> recipes) {
+  final buffer = StringBuffer();
+  for (var i = 0; i < recipes.length; i++) {
+    final r = recipes[i];
+    buffer.writeln('# ${r.title}');
+    buffer.writeln();
+    if (r.description.isNotEmpty) {
+      buffer.writeln(r.description);
+      buffer.writeln();
+    }
+    if (r.portions != null) buffer.writeln('**Portioner:** ${r.portions}');
+    if (r.timeMinutes != null) {
+      buffer.writeln('**Tid:** ${r.timeMinutes} min');
+    }
+    buffer.writeln();
+    if (r.ingredients.isNotEmpty) {
+      buffer.writeln('## Ingredienser');
+      for (final ing in r.ingredients) {
+        buffer.writeln('- $ing');
+      }
+      buffer.writeln();
+    }
+    if (r.instructions.isNotEmpty) {
+      buffer.writeln('## Instruktioner');
+      for (var step = 0; step < r.instructions.length; step++) {
+        buffer.writeln('${step + 1}. ${r.instructions[step]}');
+      }
+      buffer.writeln();
+    }
+    if (i < recipes.length - 1) {
+      buffer.writeln('---');
+      buffer.writeln();
+    }
+  }
+  return buffer.toString();
 }
 
 /// BUT-1012: open a single-select tag picker for the current selection.

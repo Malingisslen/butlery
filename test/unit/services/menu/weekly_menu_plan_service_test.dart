@@ -2,6 +2,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -9,6 +10,16 @@ import 'package:mocktail/mocktail.dart';
 class _MockRepo extends Mock implements WeeklyMenuPlanRepository {}
 
 class _MockUserService extends Mock implements UserService {}
+
+class _FakeWeeklyMenuPlan extends Fake implements WeeklyMenuPlan {}
+
+UserProfile _profile(String uid) => UserProfile(
+      uid: uid,
+      displayName: 'Test',
+      email: 't@example.com',
+      joinedAt: DateTime(2026, 1, 1),
+      lastActiveAt: DateTime(2026, 1, 1),
+    );
 
 Recipe _recipe(String label) {
   // The distribution tests don't assert on `recipe.id`, only on the
@@ -371,6 +382,221 @@ void main() {
       ]);
       final updated = service.clearWeek(existing);
       expect(updated.entries, isEmpty);
+    });
+  });
+
+  // BUT-1013: bulk-add semantics. The recipe-list selection bar now lets
+  // users push N recipes onto the menu in a single action. The contract:
+  // single-slot targets walk forward day-by-day and overflow past Sunday;
+  // multi-slot targets stack everything at the start cell; nothing is
+  // written when added==0; pre-existing single-slot occupants are replaced
+  // (no duplicates) so the user can re-tap "add to menu" idempotently.
+  group('bulkAssignRecipes — BUT-1013', () {
+    setUpAll(() {
+      registerFallbackValue(_FakeWeeklyMenuPlan());
+    });
+
+    setUp(() {
+      when(() => userService.currentUserProfile).thenReturn(_profile('u'));
+      when(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          )).thenAnswer((_) async => null);
+      when(() => repo.save(any())).thenAnswer((_) async {});
+    });
+
+    test('single-slot Friday start: 10 dinners → added 3, overflowed 7',
+        () async {
+      // Proves the cursor-past-Sunday overflow path. Fri/Sat/Sun = 3 days
+      // of capacity; everything after must land in overflowed, never silently
+      // wrap to Monday.
+      final recipes = List.generate(10, (i) => _recipe('r${i + 1}')).toList();
+
+      final result = await service.bulkAssignRecipes(
+        weekStart: mon,
+        startDay: DayOfWeek.fri,
+        slot: MealSlot.middag,
+        recipes: recipes,
+      );
+
+      expect(result.added, 3);
+      expect(result.overflowed, 7);
+
+      final captured = verify(() => repo.save(captureAny())).captured;
+      expect(captured, hasLength(1)); // save called exactly once when added > 0
+      final saved = captured.single as WeeklyMenuPlan;
+      final placedDays = saved.entries
+          .where((e) => e.slot == MealSlot.middag)
+          .map((e) => e.day)
+          .toList();
+      expect(placedDays, [DayOfWeek.fri, DayOfWeek.sat, DayOfWeek.sun]);
+    });
+
+    test('single-slot Sunday start: 5 dinners → added 1, overflowed 4',
+        () async {
+      // Edge case: starting on the last possible day, only one fits.
+      final recipes = List.generate(5, (i) => _recipe('r${i + 1}')).toList();
+
+      final result = await service.bulkAssignRecipes(
+        weekStart: mon,
+        startDay: DayOfWeek.sun,
+        slot: MealSlot.middag,
+        recipes: recipes,
+      );
+
+      expect(result.added, 1);
+      expect(result.overflowed, 4);
+    });
+
+    test('empty recipe list returns (0,0) without touching the repository',
+        () async {
+      // No save call when added == 0 — prevents wasted Firestore writes
+      // when the UI invokes with an empty selection.
+      final result = await service.bulkAssignRecipes(
+        weekStart: mon,
+        startDay: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipes: const [],
+      );
+
+      expect(result, (added: 0, overflowed: 0));
+      verifyNever(() => repo.save(any()));
+      verifyNever(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          ));
+    });
+
+    test(
+        'single-slot: pre-existing entry at start day is PRESERVED; bulk skips occupied cells',
+        () async {
+      // BUT-1013 critical invariant (caught by Batch B code reviewer):
+      // bulk-add-to-menu must NEVER silently overwrite an existing
+      // single-slot entry. Placeholder on Monday remains; new recipes
+      // walk forward and land on Tue + Wed.
+      final placeholder = WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipeId: 'old-recipe',
+        recipeTitle: 'Old',
+      );
+      when(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          )).thenAnswer(
+        (_) async => _emptyPlan(mon).copyWith(entries: [placeholder]),
+      );
+
+      final result = await service.bulkAssignRecipes(
+        weekStart: mon,
+        startDay: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipes: [_recipe('new1'), _recipe('new2')],
+      );
+
+      expect(result.added, 2);
+      expect(result.overflowed, 0);
+
+      final saved = verify(() => repo.save(captureAny())).captured.single
+          as WeeklyMenuPlan;
+      final monMid = saved.entriesAt(DayOfWeek.mon, MealSlot.middag);
+      expect(monMid, hasLength(1), reason: 'Monday must keep the placeholder');
+      expect(monMid.single.recipeTitle, 'Old',
+          reason: 'Existing user placement must not be overwritten');
+      expect(
+        saved.entries.any((e) => e.id == placeholder.id),
+        isTrue,
+        reason: 'Placeholder id must be preserved verbatim',
+      );
+
+      // The two new recipes cascade onto the next two empty days.
+      final tueMid = saved.entriesAt(DayOfWeek.tue, MealSlot.middag);
+      final wedMid = saved.entriesAt(DayOfWeek.wed, MealSlot.middag);
+      expect(tueMid, hasLength(1));
+      expect(tueMid.single.recipeTitle, 'Recipe new1');
+      expect(wedMid, hasLength(1));
+      expect(wedMid.single.recipeTitle, 'Recipe new2');
+    });
+
+    test(
+        'single-slot: skips multiple consecutive occupied cells then overflows',
+        () async {
+      // Stress the skip-cursor: Mon/Tue/Wed all booked → new recipes land
+      // on Thu/Fri/Sat/Sun; recipe #5 overflows.
+      final preBooked = [
+        WeeklyMenuPlanEntry.create(
+            day: DayOfWeek.mon,
+            slot: MealSlot.middag,
+            recipeId: 'r0a',
+            recipeTitle: 'A'),
+        WeeklyMenuPlanEntry.create(
+            day: DayOfWeek.tue,
+            slot: MealSlot.middag,
+            recipeId: 'r0b',
+            recipeTitle: 'B'),
+        WeeklyMenuPlanEntry.create(
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+            recipeId: 'r0c',
+            recipeTitle: 'C'),
+      ];
+      when(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          )).thenAnswer(
+        (_) async => _emptyPlan(mon).copyWith(entries: preBooked),
+      );
+
+      final result = await service.bulkAssignRecipes(
+        weekStart: mon,
+        startDay: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipes: List.generate(5, (i) => _recipe('n${i + 1}')),
+      );
+
+      expect(result.added, 4);
+      expect(result.overflowed, 1);
+    });
+
+    test('multi-slot övrigt Monday: 5 recipes stack at (Mon, övrigt)',
+        () async {
+      // Övrigt is the multi-recipe bucket — the bulk action must NOT walk
+      // forward across days; everything piles onto the start cell.
+      final recipes = List.generate(5, (i) => _recipe('r${i + 1}')).toList();
+
+      final result = await service.bulkAssignRecipes(
+        weekStart: mon,
+        startDay: DayOfWeek.mon,
+        slot: MealSlot.ovrigt,
+        recipes: recipes,
+      );
+
+      expect(result.added, 5);
+      expect(result.overflowed, 0);
+
+      final saved = verify(() => repo.save(captureAny())).captured.single
+          as WeeklyMenuPlan;
+      final ovrigt = saved.entriesAt(DayOfWeek.mon, MealSlot.ovrigt);
+      expect(ovrigt, hasLength(5));
+      // Insertion order preserved.
+      expect(
+        ovrigt.map((e) => e.recipeTitle).toList(),
+        ['Recipe r1', 'Recipe r2', 'Recipe r3', 'Recipe r4', 'Recipe r5'],
+      );
+    });
+
+    test('throws StateError when no authenticated user', () async {
+      when(() => userService.currentUserProfile).thenReturn(null);
+
+      expect(
+        () => service.bulkAssignRecipes(
+          weekStart: mon,
+          startDay: DayOfWeek.mon,
+          slot: MealSlot.middag,
+          recipes: [_recipe('r1')],
+        ),
+        throwsA(isA<StateError>()),
+      );
     });
   });
 }
