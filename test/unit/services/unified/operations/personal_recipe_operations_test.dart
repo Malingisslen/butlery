@@ -111,6 +111,7 @@ void main() {
         // not the literal English text — the locale could change.
         expect(result.isSuccess, isFalse);
         expect(result.message, isNotNull);
+        expect(result.message, isNotEmpty);
         expect(result.message, isNot(contains('Exception')));
       });
 
@@ -135,6 +136,7 @@ void main() {
         // fallback, not the raw exception text. Assert the contract.
         expect(result.isSuccess, isFalse);
         expect(result.message, isNotNull);
+        expect(result.message, isNotEmpty);
         expect(result.message, isNot(contains('Exception')));
       });
 
@@ -494,6 +496,7 @@ void main() {
         // test breaks.
         expect(result.isSuccess, isFalse);
         expect(result.message, isNotNull);
+        expect(result.message, isNotEmpty);
         expect(result.message, isNot(contains('Database error')));
         expect(result.message, isNot(contains('Exception')));
       });
