@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -525,6 +526,187 @@ void main() {
 
         // Assert
         expect(identical(instance1, instance2), isFalse);
+      });
+    });
+
+    // BUT-1027 (acceptance #2 of BUT-1023): `StorageUploadException` must
+    // propagate through both upload service methods — wave-13 (BUT-971)
+    // deliberately stopped collapsing them to null so the upload-service
+    // classifier can map quota/unauthorized/canceled to user copy. A
+    // regression here silently routes "your storage is full" back to
+    // "unknown error."
+    group('StorageUploadException propagation (BUT-971/BUT-1027)', () {
+      test('uploadImageFile rethrows quota-exceeded', () async {
+        when(() => mockRepository.generateFileName(
+              originalPath: any(named: 'originalPath'),
+              prefix: any(named: 'prefix'),
+            )).thenReturn('recipe_quota.jpg');
+        when(() => mockRepository.uploadImage(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              onProgress: any(named: 'onProgress'),
+            )).thenThrow(const StorageUploadException(
+          'quota-exceeded',
+          'storage full',
+        ));
+
+        await expectLater(
+          () => storageService.uploadImageFile(mockFile, 'test_user_123'),
+          throwsA(isA<StorageUploadException>()
+              .having((e) => e.code, 'code', 'quota-exceeded')),
+        );
+      });
+
+      test('uploadImageFile rethrows unauthorized', () async {
+        when(() => mockRepository.generateFileName(
+              originalPath: any(named: 'originalPath'),
+              prefix: any(named: 'prefix'),
+            )).thenReturn('recipe_unauth.jpg');
+        when(() => mockRepository.uploadImage(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              onProgress: any(named: 'onProgress'),
+            )).thenThrow(const StorageUploadException(
+          'unauthorized',
+          'not allowed',
+        ));
+
+        await expectLater(
+          () => storageService.uploadImageFile(mockFile, 'test_user_123'),
+          throwsA(isA<StorageUploadException>()
+              .having((e) => e.code, 'code', 'unauthorized')),
+        );
+      });
+
+      test('uploadImageFile rethrows canceled', () async {
+        when(() => mockRepository.generateFileName(
+              originalPath: any(named: 'originalPath'),
+              prefix: any(named: 'prefix'),
+            )).thenReturn('recipe_cancel.jpg');
+        when(() => mockRepository.uploadImage(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              onProgress: any(named: 'onProgress'),
+            )).thenThrow(const StorageUploadException(
+          'canceled',
+          'user cancelled',
+        ));
+
+        await expectLater(
+          () => storageService.uploadImageFile(mockFile, 'test_user_123'),
+          throwsA(isA<StorageUploadException>()
+              .having((e) => e.code, 'code', 'canceled')),
+        );
+      });
+
+      test('uploadImageFile collapses non-StorageUploadException to null',
+          () async {
+        // Non-typed exceptions preserve the legacy nullable-return contract.
+        when(() => mockRepository.generateFileName(
+              originalPath: any(named: 'originalPath'),
+              prefix: any(named: 'prefix'),
+            )).thenReturn('recipe_oops.jpg');
+        when(() => mockRepository.uploadImage(
+              imageFile: any(named: 'imageFile'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              onProgress: any(named: 'onProgress'),
+            )).thenThrow(Exception('something else'));
+
+        final result =
+            await storageService.uploadImageFile(mockFile, 'test_user_123');
+        expect(result, isNull);
+      });
+
+      test('uploadImageBytes rethrows quota-exceeded (BUT-1016 parity)',
+          () async {
+        when(() => mockRepository.compressImageBytes(any())).thenAnswer(
+            (invocation) async =>
+                invocation.positionalArguments.first as Uint8List);
+        when(() => mockRepository.generateFileName(
+              originalPath: any(named: 'originalPath'),
+              prefix: any(named: 'prefix'),
+            )).thenReturn('avatar_quota.jpg');
+        when(() => mockRepository.uploadImageData(
+              imageData: any(named: 'imageData'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              metadata: any(named: 'metadata'),
+              onProgress: any(named: 'onProgress'),
+            )).thenThrow(const StorageUploadException(
+          'quota-exceeded',
+          'storage full',
+        ));
+
+        await expectLater(
+          () => storageService.uploadImageBytes(
+            Uint8List.fromList([1, 2, 3]),
+            'test_user_123',
+            'avatar.jpg',
+          ),
+          throwsA(isA<StorageUploadException>()
+              .having((e) => e.code, 'code', 'quota-exceeded')),
+        );
+      });
+
+      test('uploadImageBytes rethrows network-request-failed', () async {
+        when(() => mockRepository.compressImageBytes(any())).thenAnswer(
+            (invocation) async =>
+                invocation.positionalArguments.first as Uint8List);
+        when(() => mockRepository.generateFileName(
+              originalPath: any(named: 'originalPath'),
+              prefix: any(named: 'prefix'),
+            )).thenReturn('avatar_net.jpg');
+        when(() => mockRepository.uploadImageData(
+              imageData: any(named: 'imageData'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              metadata: any(named: 'metadata'),
+              onProgress: any(named: 'onProgress'),
+            )).thenThrow(const StorageUploadException(
+          'network-request-failed',
+          'offline',
+        ));
+
+        await expectLater(
+          () => storageService.uploadImageBytes(
+            Uint8List.fromList([1, 2, 3]),
+            'test_user_123',
+            'avatar.jpg',
+          ),
+          throwsA(isA<StorageUploadException>()
+              .having((e) => e.code, 'code', 'network-request-failed')),
+        );
+      });
+
+      test(
+          'uploadImageFile pre-flights offline state — throws network-request-failed (BUT-1020)',
+          () async {
+        // Flip MockOfflineService to offline before the call so the new
+        // BUT-1020 pre-flight short-circuits before reaching the repository.
+        final mockOffline =
+            GetIt.instance.get<OfflineService>() as MockOfflineService;
+        when(() => mockOffline.isOnline).thenReturn(false);
+
+        try {
+          expect(
+            () => storageService.uploadImageFile(mockFile, 'test_user_123'),
+            throwsA(isA<StorageUploadException>()
+                .having((e) => e.code, 'code', 'network-request-failed')),
+          );
+          // Repository must not have been touched — pre-flight short-circuits.
+          verifyNever(() => mockRepository.uploadImage(
+                imageFile: any(named: 'imageFile'),
+                userId: any(named: 'userId'),
+                path: any(named: 'path'),
+                onProgress: any(named: 'onProgress'),
+              ));
+        } finally {
+          when(() => mockOffline.isOnline).thenReturn(true);
+        }
       });
     });
   });

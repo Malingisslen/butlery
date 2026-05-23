@@ -8,6 +8,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
 
 // Re-export StorageInfo from repository interface
@@ -69,6 +70,21 @@ class StorageService extends BaseService
     Function(double)? onProgress,
   }) async {
     try {
+      // BUT-1020: surface offline state immediately so the user sees the
+      // network-error copy without waiting ~1-2s for the Firebase SDK to
+      // exhaust its retry budget. Uses the same typed exception path as
+      // BUT-971 storage failures so the existing classifier routes this to
+      // `ImageUploadErrorType.network`. Reads from `OfflineService` (DI-
+      // registered) rather than a static connectivity utility so tests can
+      // toggle the state without DNS-mocking.
+      final offline = ServiceLocator.tryGet<OfflineService>();
+      if (offline != null && !offline.isOnline) {
+        throw const StorageUploadException(
+          'network-request-failed',
+          'No internet connection available',
+        );
+      }
+
       final fileName = _repository.generateFileName(
         originalPath: imageFile.path,
         prefix: 'recipe',
@@ -122,6 +138,15 @@ class StorageService extends BaseService
     String? prefix,
   }) async {
     try {
+      // BUT-1020: same offline pre-flight as `uploadImageFile`.
+      final offline = ServiceLocator.tryGet<OfflineService>();
+      if (offline != null && !offline.isOnline) {
+        throw const StorageUploadException(
+          'network-request-failed',
+          'No internet connection available',
+        );
+      }
+
       final imagePrefix = prefix ?? 'avatar';
       final pathFolder = imagePrefix == 'avatar' ? 'avatars' : 'recipes';
 

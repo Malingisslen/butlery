@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/firebase_error_messages.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart'
     show RecipeOperationResult;
 import 'package:butlery/models/recipe_unified.dart';
@@ -216,7 +218,16 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
           ? RecipeOperationResult.success('Recipe deleted successfully')
           : RecipeOperationResult.failure('Failed to delete recipe');
     } catch (e) {
-      return RecipeOperationResult.failure('$e');
+      // BUT-1017: don't leak raw FirebaseException to the UI — map known
+      // codes (permission-denied, network-request-failed, ...) to localized
+      // copy. Falls back to the generic recipe-delete copy when no code
+      // matches.
+      return RecipeOperationResult.failure(
+        mapFirebaseErrorMessage(
+          e,
+          fallback: AppLocale.current.errorCouldNotDelete('recept'),
+        ),
+      );
     }
   }
 

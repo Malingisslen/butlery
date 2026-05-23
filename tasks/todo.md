@@ -1,23 +1,27 @@
 # Sprint Backlog
 
-## Sprint: wave-14 — CI hygiene + wave-13 test-debt tail — 2026-05-23 (Sa)
+## Sprint: wave-15 — wave-13/14 follow-up cleanup + quick refactors — 2026-05-23 (Sa)
 
-Theme: 3 CI-blocking issues + 4 test-gap follow-ups from wave-13's shipped error-UX work. All low-risk, two coherent agent batches.
+Theme: 2 wave-14 stragglers (BUT-1022, BUT-1026) + 3-ticket wave-13 backend follow-up cluster + 3 quick wins / remaining test follow-up. All single-area-per-batch, no architectural changes, 90-min time-box on the one investigation item.
 
-### Agent A — CI hygiene (`firebase-backend-security` for BUT-1025, `code-reviewer` for the rest)
-- [ ] **A1. BUT-1024** — `.github/workflows/`: SHA-pin `subosito/flutter-action@v2` to a specific commit SHA. Apply same pattern to any other third-party actions not yet pinned.
-- [ ] **A2. BUT-1025** — `lib/services/account/account_deletion_service.dart`: replace `FirebaseAuth.instance` direct access with injected `AuthService` / `AuthRepository`. Constructor injection, update DI registration.
-- [ ] **A3. BUT-1026** — Investigate E2E `StateError in _FocusInheritedScope` from CI. Likely a widget-test teardown ordering issue. Find offending test, add proper `tearDown` / wrap with `runAsync`.
+### Agent A — wave-14 stragglers (`testing-specialist` for A1, `debugger` for A2)
+- [ ] **A1. BUT-1022 (High)** — `test/unit/services/ocr_extraction_service_test.dart` + `test/unit/viewmodels/photo_import_viewmodel_test.dart`: integration-style tests for `_classifyProviderErrors` → `_buildEnhancedErrorMessage` metadata-string contract. Cases: 429 → `errorOcrRateLimit`, `TimeoutException` → `errorOcrTimeout`, `SocketException` → `errorOcrTimeout`, generic → `errorNoTextExtracted`.
+- [ ] **A2. BUT-1026 (Medium, investigation — TIME-BOX 90 min)** — pull failing E2E run log, locate the test, reproduce locally. Fix if root cause is identified inside the box; otherwise file follow-ups and abandon.
 
-### Agent B — Wave-13 test-debt tail (`testing-specialist`)
-- [ ] **B1. BUT-1021** — `test/unit/services/auth_service_test.dart`: cover the new `authStateChanges` onError handler from BUT-966. Cases: stream emits error → `_sessionExpired=true` set, analytics event fires, `errorSessionExpired` surfaced after forceSignOut.
-- [ ] **B2. BUT-1022** — `test/unit/viewmodels/photo_import_viewmodel_test.dart`: cover the `_classifyProviderErrors` branches from BUT-963 (rate_limit / timeout / network / generic) → enhanced error message routing.
-- [ ] **B3. BUT-1023** — `test/unit/services/storage_service_test.dart`: cover `StorageUploadException` propagation from BUT-971. Cases: FirebaseException(plugin: firebase_storage) → typed exception → quotaExceeded classification.
-- [ ] **B4. BUT-1016** — `lib/repositories/firebase/firebase_storage_repository.dart`: extend BUT-971 typed-exception propagation to `uploadImageBytes` (currently only `uploadImageFile` rethrows correctly). Add coverage in storage_service_test.
+### Agent B — wave-13 backend follow-up cluster (`flutter-developer` for B1/B2, `firebase-backend-security` for B3)
+- [ ] **B1. BUT-1020 (Medium)** — `lib/services/storage_service.dart`: restore network pre-flight UX on `uploadImageFile`. Check `NetworkService.isOnline` before typed-exception path; throw `StorageUploadException(code: 'no-network')`. Coverage in `storage_service_test.dart`.
+- [ ] **B2. BUT-1015 (Medium)** — `lib/viewmodels/recipe_list_viewmodel.dart` + `PersistenceService` keys: extend wave-13's filter-persistence to rating/allergen/dietary/personalTag filters + scroll offset. Mirror the existing two-filter persistence pattern verbatim.
+- [ ] **B3. BUT-1017 (Medium, scope-limited)** — apply `mapFirebaseErrorMessage` across remaining repos/services. Audit list first (>6 files → stop and file follow-up). Only files where raw Firebase exceptions reach UI.
+
+### Agent C — quick wins + remaining wave-13 test follow-up (`flutter-developer` for C1/C2, `testing-specialist` for C3)
+- [ ] **C1. BUT-1019 (Low)** — `lib/viewmodels/onboarding_viewmodel.dart`: migrate `extends ChangeNotifier` → `extends BaseViewModel`. Verify no method conflict.
+- [ ] **C2. BUT-1018 (Low)** — `lib/viewmodels/recipe_list_viewmodel.dart`: wrap `_persistActiveFilters` in existing `Debouncer` (300ms).
+- [ ] **C3. BUT-1027 (Medium)** — `test/unit/repositories/firebase/firebase_storage_repository_simple_test.dart` + `test/unit/services/storage_service_test.dart`: end-to-end propagation chain tests (`FirebaseException` quota-exceeded → `StorageUploadException` → `UploadRetryManager.classifyError` → `ImageUploadErrorType.quotaExceeded`).
 
 ### Post-Sprint Steps
-- [ ] `dart analyze --fatal-infos` clean
-- [ ] Tier-2 agent reviews on staged `.dart` files
+- [ ] `dart analyze --fatal-infos` clean across `lib/` + `test/`
+- [ ] `dart format --set-exit-if-changed lib test` clean
+- [ ] Tier-2 agent reviews on staged `.dart` files (per CLAUDE.md hook map)
 - [ ] Commit + push to main
 - [ ] Close Linear tickets to Done
 - [ ] CI watcher
@@ -26,6 +30,10 @@ Theme: 3 CI-blocking issues + 4 test-gap follow-ups from wave-13's shipped error
 _None yet — will append during sprint as Tier-2 review surfaces additional gaps._
 
 ---
+
+## Archived wave-14 (parallel-session ships) — 2026-05-23 (Sa)
+
+wave-14 — 7 tickets planned (3 CI + 4 test-debt). A parallel Claude session shipped 5/7 today **without checking off this file**: BUT-1024 (SHA-pin), BUT-1025 (account_deletion `FirebaseAuth.instance` → `AuthRepository`), BUT-1021 (AuthService stream-error tests), BUT-1023 (Storage upload exception tests), BUT-1016 (typed-exception in `uploadImageBytes`). All five moved to Linear Done at 2026-05-23T11:06. Carry-over to wave-15: **BUT-1022** (OCR error-chain tests) + **BUT-1026** (E2E `_FocusInheritedScope` investigation). Lesson reinforced: trust Linear state over local todo.md when they disagree.
 
 ## Archived wave-13 (commits 3fc2d1edc + 66a786479 + 3f7d40412) — 2026-05-22 (Fr)
 

@@ -39,6 +39,9 @@ class RecipeListViewModel extends ChangeNotifier {
   // State
   String _searchQuery = '';
   Timer? _searchDebounceTimer;
+
+  /// BUT-1018: coalesces rapid filter toggles into one prefs write.
+  Timer? _persistFiltersDebounceTimer;
   SortCriteria _sortCriteria = SortCriteria.title;
   bool _sortAscending = true;
   static const int _initialPageSize = 50;
@@ -147,8 +150,9 @@ class RecipeListViewModel extends ChangeNotifier {
         _sortAscending = await persistence.getSortAscending();
         _invalidateCache();
       }
-      // BUT-921: restore active filters so navigating away + back doesn't
-      // erase the user's filter context. Same persistence pattern as sort.
+      // BUT-921 / BUT-1015: restore active filters so navigating away + back
+      // doesn't erase the user's filter context. Same persistence pattern as
+      // sort, extended in BUT-1015 to cover all filter dimensions.
       final savedTimeFilters = await persistence.getRecipeTimeFilters();
       if (savedTimeFilters.isNotEmpty) {
         _activeTimeFilters
@@ -163,24 +167,82 @@ class RecipeListViewModel extends ChangeNotifier {
           ..addAll(savedMealTypeFilters);
         _invalidateCache();
       }
+      final savedRatingFilters = await persistence.getRecipeRatingFilters();
+      if (savedRatingFilters.isNotEmpty) {
+        _activeRatingFilters
+          ..clear()
+          ..addAll(savedRatingFilters);
+        _invalidateCache();
+      }
+      final savedAllergenFilters = await persistence.getRecipeAllergenFilters();
+      if (savedAllergenFilters.isNotEmpty) {
+        _activeAllergenFilters
+          ..clear()
+          ..addAll(savedAllergenFilters);
+        _invalidateCache();
+      }
+      final savedDietaryFilters = await persistence.getRecipeDietaryFilters();
+      if (savedDietaryFilters.isNotEmpty) {
+        _activeDietaryFilters
+          ..clear()
+          ..addAll(savedDietaryFilters);
+        _invalidateCache();
+      }
+      final savedPersonalTagFilters =
+          await persistence.getRecipePersonalTagFilters();
+      if (savedPersonalTagFilters.isNotEmpty) {
+        _activePersonalTagFilters
+          ..clear()
+          ..addAll(savedPersonalTagFilters);
+        _invalidateCache();
+      }
+      final savedExcludedPersonalTagFilters =
+          await persistence.getRecipeExcludedPersonalTagFilters();
+      if (savedExcludedPersonalTagFilters.isNotEmpty) {
+        _excludedPersonalTagFilters
+          ..clear()
+          ..addAll(savedExcludedPersonalTagFilters);
+        _invalidateCache();
+      }
+      final savedFavoritesOnly = await persistence.getRecipeFavoritesOnly();
+      if (savedFavoritesOnly) {
+        _favoritesOnly = true;
+        _invalidateCache();
+      }
       notifyListeners();
     } catch (_) {
       // Persistence not available, keep defaults
     }
   }
 
-  /// BUT-921: fire-and-forget persistence of active filters. Called from
-  /// the toggle methods and clear-all so writes happen at the natural
-  /// debounce point (single user gesture → single batched prefs write).
+  /// BUT-921 / BUT-1015 / BUT-1018: fire-and-forget persistence of active
+  /// filters across ALL filter dimensions. Coalesced via a 300ms debounce
+  /// so rapid chip taps produce one disk write instead of N.
   void _persistActiveFilters() {
-    try {
-      final persistence = ServiceLocator.get<PersistenceService>();
-      unawaited(persistence.setRecipeTimeFilters(_activeTimeFilters.toList()));
-      unawaited(persistence
-          .setRecipeMealTypeFilters(_activeMealTypeFilters.toList()));
-    } catch (_) {
-      // Persistence not available — keep in-memory filters working.
-    }
+    _persistFiltersDebounceTimer?.cancel();
+    _persistFiltersDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (_isDisposed) return;
+      try {
+        final persistence = ServiceLocator.get<PersistenceService>();
+        unawaited(
+            persistence.setRecipeTimeFilters(_activeTimeFilters.toList()));
+        unawaited(persistence
+            .setRecipeMealTypeFilters(_activeMealTypeFilters.toList()));
+        unawaited(
+            persistence.setRecipeRatingFilters(_activeRatingFilters.toList()));
+        unawaited(persistence
+            .setRecipeAllergenFilters(_activeAllergenFilters.toList()));
+        unawaited(persistence
+            .setRecipeDietaryFilters(_activeDietaryFilters.toList()));
+        unawaited(persistence
+            .setRecipePersonalTagFilters(_activePersonalTagFilters.toList()));
+        unawaited(persistence.setRecipeExcludedPersonalTagFilters(
+            _excludedPersonalTagFilters.toList()));
+        unawaited(persistence.setRecipeFavoritesOnly(_favoritesOnly));
+      } catch (_) {
+        // Persistence not available — keep in-memory filters working.
+      }
+    });
   }
 
   List<Recipe> get recipes => _getFilteredAndSortedRecipes();
@@ -378,6 +440,7 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeRatingFilters.add(filterId);
     }
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -390,6 +453,7 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeAllergenFilters.add(filterId);
     }
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -402,6 +466,7 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeDietaryFilters.add(filterId);
     }
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -415,6 +480,7 @@ class RecipeListViewModel extends ChangeNotifier {
       _activePersonalTagFilters.add(tagId);
     }
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -428,6 +494,7 @@ class RecipeListViewModel extends ChangeNotifier {
       _excludedPersonalTagFilters.add(tagId);
     }
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -435,6 +502,7 @@ class RecipeListViewModel extends ChangeNotifier {
   void toggleFavoritesFilter() {
     _favoritesOnly = !_favoritesOnly;
     _invalidateCache();
+    _persistActiveFilters();
     notifyListeners();
   }
 
@@ -916,6 +984,7 @@ class RecipeListViewModel extends ChangeNotifier {
   void dispose() {
     _isDisposed = true;
     _searchDebounceTimer?.cancel();
+    _persistFiltersDebounceTimer?.cancel();
     _deleteManager.dispose();
     _selectionManager.removeListener(notifyListeners);
     _selectionManager.dispose();

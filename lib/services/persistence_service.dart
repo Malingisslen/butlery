@@ -80,6 +80,17 @@ class PersistenceService extends BaseService {
   static const String _recipeTimeFiltersKey = 'butlery_recipe_time_filters';
   static const String _recipeMealTypeFiltersKey =
       'butlery_recipe_mealtype_filters';
+  // BUT-1015: extended filter persistence (rating/allergen/dietary/personalTag).
+  static const String _recipeRatingFiltersKey = 'butlery_recipe_rating_filters';
+  static const String _recipeAllergenFiltersKey =
+      'butlery_recipe_allergen_filters';
+  static const String _recipeDietaryFiltersKey =
+      'butlery_recipe_dietary_filters';
+  static const String _recipePersonalTagFiltersKey =
+      'butlery_recipe_personaltag_filters';
+  static const String _recipeExcludedPersonalTagFiltersKey =
+      'butlery_recipe_excluded_personaltag_filters';
+  static const String _recipeFavoritesOnlyKey = 'butlery_recipe_favorites_only';
 
   /// Provides access to the SharedPreferences instance for cross-platform local storage operations.
   /// This getter manages the SharedPreferences singleton instance providing the underlying
@@ -394,6 +405,137 @@ class PersistenceService extends BaseService {
     } catch (e) {
       AppLogger.error(
           'Failed to save recipe meal-type filters', e, 'Persistence');
+    }
+  }
+
+  /// BUT-1015: extended filter persistence (rating).
+  Future<List<String>> getRecipeRatingFilters() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getStringList(_recipeRatingFiltersKey) ?? const [];
+    } catch (e) {
+      AppLogger.error('Failed to load recipe rating filters', e, 'Persistence');
+      return const [];
+    }
+  }
+
+  Future<void> setRecipeRatingFilters(List<String> ids) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setStringList(_recipeRatingFiltersKey, ids);
+    } catch (e) {
+      AppLogger.error('Failed to save recipe rating filters', e, 'Persistence');
+    }
+  }
+
+  /// BUT-1015: extended filter persistence (allergen-free).
+  Future<List<String>> getRecipeAllergenFilters() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getStringList(_recipeAllergenFiltersKey) ?? const [];
+    } catch (e) {
+      AppLogger.error(
+          'Failed to load recipe allergen filters', e, 'Persistence');
+      return const [];
+    }
+  }
+
+  Future<void> setRecipeAllergenFilters(List<String> ids) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setStringList(_recipeAllergenFiltersKey, ids);
+    } catch (e) {
+      AppLogger.error(
+          'Failed to save recipe allergen filters', e, 'Persistence');
+    }
+  }
+
+  /// BUT-1015: extended filter persistence (dietary).
+  Future<List<String>> getRecipeDietaryFilters() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getStringList(_recipeDietaryFiltersKey) ?? const [];
+    } catch (e) {
+      AppLogger.error(
+          'Failed to load recipe dietary filters', e, 'Persistence');
+      return const [];
+    }
+  }
+
+  Future<void> setRecipeDietaryFilters(List<String> ids) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setStringList(_recipeDietaryFiltersKey, ids);
+    } catch (e) {
+      AppLogger.error(
+          'Failed to save recipe dietary filters', e, 'Persistence');
+    }
+  }
+
+  /// BUT-1015: extended filter persistence (personal tag UUIDs, AND-include).
+  Future<List<String>> getRecipePersonalTagFilters() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getStringList(_recipePersonalTagFiltersKey) ?? const [];
+    } catch (e) {
+      AppLogger.error(
+          'Failed to load recipe personal-tag filters', e, 'Persistence');
+      return const [];
+    }
+  }
+
+  Future<void> setRecipePersonalTagFilters(List<String> ids) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setStringList(_recipePersonalTagFiltersKey, ids);
+    } catch (e) {
+      AppLogger.error(
+          'Failed to save recipe personal-tag filters', e, 'Persistence');
+    }
+  }
+
+  /// BUT-1015: extended filter persistence (excluded personal tag UUIDs, OR-exclude).
+  Future<List<String>> getRecipeExcludedPersonalTagFilters() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getStringList(_recipeExcludedPersonalTagFiltersKey) ??
+          const [];
+    } catch (e) {
+      AppLogger.error('Failed to load recipe excluded personal-tag filters', e,
+          'Persistence');
+      return const [];
+    }
+  }
+
+  Future<void> setRecipeExcludedPersonalTagFilters(List<String> ids) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setStringList(_recipeExcludedPersonalTagFiltersKey, ids);
+    } catch (e) {
+      AppLogger.error('Failed to save recipe excluded personal-tag filters', e,
+          'Persistence');
+    }
+  }
+
+  /// BUT-1015: extended filter persistence (favorites-only bool).
+  Future<bool> getRecipeFavoritesOnly() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getBool(_recipeFavoritesOnlyKey) ?? false;
+    } catch (e) {
+      AppLogger.error(
+          'Failed to load recipe favorites-only flag', e, 'Persistence');
+      return false;
+    }
+  }
+
+  Future<void> setRecipeFavoritesOnly(bool value) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setBool(_recipeFavoritesOnlyKey, value);
+    } catch (e) {
+      AppLogger.error(
+          'Failed to save recipe favorites-only flag', e, 'Persistence');
     }
   }
 

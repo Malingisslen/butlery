@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
@@ -13,6 +14,22 @@ import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
+
+/// BUT-1027: extracted from `FirebaseStorageRepository.uploadImageData` so
+/// the FirebaseException→StorageUploadException mapping can be unit tested
+/// without SDK-mock injection. Production callers use the inline path; the
+/// `@visibleForTesting` annotation surfaces it as a seam only.
+///
+/// Returns the typed exception when [e] is a storage-domain
+/// FirebaseException (bare `code`, no `storage/` prefix); returns null
+/// otherwise (caller falls back to its legacy nullable-return contract).
+@visibleForTesting
+StorageUploadException? mapFirebaseStorageException(Object e) {
+  if (e is FirebaseException && e.plugin == 'firebase_storage') {
+    return StorageUploadException(e.code, e.message ?? e.toString());
+  }
+  return null;
+}
 
 /// Firebase implementation of the StorageRepository interface with security validation.
 /// This repository provides Firebase Storage functionality while maintaining
@@ -303,19 +320,13 @@ class FirebaseStorageRepository extends BaseStorageRepository
           AppLogger.error('Image data upload failed: $e');
           trace.putAttribute('success', 'false');
           trace.putAttribute('error', e.toString());
-          // BUT-971: surface typed storage-domain failures so the UI can
-          // distinguish "your photo storage is full" from generic "upload
-          // failed." `FirebaseException.code` from the `firebase_storage`
-          // plugin is already the bare token (e.g. `quota-exceeded`,
-          // `unauthorized`, `canceled`, `retry-limit-exceeded`); the
-          // `storage/` prefix only appears in `.toString()`. Callers
-          // match on the bare token via `StorageUploadException.is*`.
-          if (e is FirebaseException && e.plugin == 'firebase_storage') {
-            throw StorageUploadException(
-              e.code,
-              e.message ?? e.toString(),
-            );
-          }
+          // BUT-971 / BUT-1027: surface typed storage-domain failures so
+          // the UI can distinguish "your photo storage is full" from
+          // generic "upload failed." Mapping extracted to the file-level
+          // `mapFirebaseStorageException` helper so the transform is
+          // directly unit-testable.
+          final typed = mapFirebaseStorageException(e);
+          if (typed != null) throw typed;
           return null;
         }
       },

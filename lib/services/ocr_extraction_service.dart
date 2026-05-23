@@ -424,6 +424,14 @@ class OCRExtractionService extends BaseService {
   /// `unavailable` is reserved for "no provider could even be attempted"
   /// (caller decides via circuit-breaker states); this helper only sees
   /// providers that actually threw.
+  /// BUT-1022: testing seam — the metadata-string contract between this
+  /// classifier and `PhotoImportViewModel._buildEnhancedErrorMessage` is
+  /// load-bearing. Direct unit coverage avoids the heavy HTTP-mocking dance
+  /// that integration tests would require.
+  @visibleForTesting
+  static String classifyProviderErrorsForTesting(Map<String, String> errors) =>
+      _classifyProviderErrors(errors);
+
   static String _classifyProviderErrors(Map<String, String> errors) {
     if (errors.isEmpty) return 'generic';
     final joined = errors.values.join(' | ').toLowerCase();

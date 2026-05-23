@@ -3,7 +3,6 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/data/recipes/recipe_seeds.dart';
@@ -14,8 +13,9 @@ import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/first_recipe_source_milestone.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 
-class OnboardingViewModel extends ChangeNotifier {
+class OnboardingViewModel extends BaseViewModel {
   // Swedish parental-consent threshold for data processing on social apps
   // (GDPR Art 8). Under this, sign-up is blocked.
   static const int minAgeYears = 15;
@@ -42,7 +42,6 @@ class OnboardingViewModel extends ChangeNotifier {
   final Set<String> _selectedAllergens = {};
   final Set<String> _selectedDietaryPrefs = {};
   int? _selectedBirthYear;
-  bool _isCompleting = false;
   bool _started = false;
   // BUT-545: tracks whether the onboarding import page actually landed a
   // recipe, so [completeOnboarding] can fire `onboarding_import_skipped`
@@ -59,7 +58,7 @@ class OnboardingViewModel extends ChangeNotifier {
   Set<String> get selectedDietaryPrefs =>
       Set.unmodifiable(_selectedDietaryPrefs);
   int? get selectedBirthYear => _selectedBirthYear;
-  bool get isCompleting => _isCompleting;
+  bool get isCompleting => isLoading;
   // Page order: age-gate (0), welcome (1), allergen (2), dietary (3), import (4)
   static const int _lastPageIndex = 4;
   bool get isLastPage => _currentPage == _lastPageIndex;
@@ -180,8 +179,7 @@ class OnboardingViewModel extends ChangeNotifier {
   /// Saves preferences and marks onboarding as completed.
   /// Returns true on success.
   Future<bool> completeOnboarding() async {
-    _isCompleting = true;
-    notifyListeners();
+    setLoading(true);
 
     try {
       final userService = ServiceLocator.get<UserService>();
@@ -253,8 +251,7 @@ class OnboardingViewModel extends ChangeNotifier {
       AppLogger.error('Failed to complete onboarding', e);
       return false;
     } finally {
-      _isCompleting = false;
-      notifyListeners();
+      setLoading(false);
     }
   }
 

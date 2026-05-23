@@ -607,6 +607,14 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// - quality_assessment: Image quality score (0.0-1.0)
   /// - recommendations: List of actionable quality improvements
   /// - circuit_breakers: Provider availability status (OCR.space, Google Vision, Tesseract)
+  /// BUT-1022: testing seam — the metadata-string contract between
+  /// `OCRExtractionService._classifyProviderErrors` and this method is
+  /// load-bearing for the Swedish error copy the user sees. Direct unit
+  /// coverage avoids needing to mock the singleton OCR service.
+  @visibleForTesting
+  String buildEnhancedErrorMessageForTesting(OCRResult result) =>
+      _buildEnhancedErrorMessage(result);
+
   String _buildEnhancedErrorMessage(OCRResult result) {
     // Store quality data for UI access
     _lastQualityScore = result.metadata['quality_assessment'] as double?;

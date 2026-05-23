@@ -16,6 +16,7 @@ import 'package:butlery/services/upload/upload_queue_manager.dart';
 import 'package:butlery/services/upload/upload_retry_manager.dart';
 import 'package:butlery/services/upload/upload_progress_tracker.dart';
 import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/core/utils/firebase_error_messages.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -225,8 +226,14 @@ class ImageUploadService extends BaseService {
         );
 
         if (!shouldRetry) {
-          // No more retries, return failure
-          return UploadResult.failure(error.toString(), errorType);
+          // BUT-1017: don't leak the raw FirebaseException to the UI —
+          // `errorType` already drives copy selection, but the `message`
+          // field is the fallback render. Map known Firebase codes to a
+          // localized string so the fallback path is also user-safe.
+          return UploadResult.failure(
+            mapFirebaseErrorMessage(error),
+            errorType,
+          );
         }
 
         // Prepare for retry
@@ -421,7 +428,9 @@ class ImageUploadService extends BaseService {
       // exception via its `is*` helper getters. Mirrors the file-path branch.
       final errorType = _retryManager.classifyError(e);
       AppLogger.error('❌ $prefix image upload failed: $e');
-      return UploadResult.failure(e.toString(), errorType);
+      // BUT-1017: same mapping as the file-path branch above — keep the
+      // user-safe fallback message consistent across both upload surfaces.
+      return UploadResult.failure(mapFirebaseErrorMessage(e), errorType);
     }
   }
 
