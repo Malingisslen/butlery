@@ -1484,5 +1484,138 @@ void main() {
         expect(ok, isFalse);
       });
     });
+
+    // BUT-1021: AuthService stream-error contract (BUT-966 follow-up).
+    //
+    // A silent-regression risk: a broken session-expiry path means users
+    // continue using the app with a dead token until a server call rejects
+    // them. Each test below pushes an error onto the mocked
+    // `authStateChanges` stream and asserts:
+    //   1. `sessionExpired == true` is set synchronously.
+    //   2. `_authRepository.signOut()` runs (via `forceSignOut()`).
+    //   3. `errorMessage` contains the Swedish `errorSessionExpired` copy.
+    //   4. The `sessionTimeoutLogout` analytics event fired with
+    //      `{reason: 'auth_stream_error', error_code: <code>}`.
+    group('Auth Stream Error Handling (BUT-966 / BUT-1021)', () {
+      late StreamController<User?> streamController;
+      late AuthService streamAuthService;
+
+      setUp(() async {
+        // Dispose setUp()'s default fixture so its dangling subscription
+        // doesn't race the controller emission below. Pattern lifted from
+        // the BUT-833 test in 'Authentication State'.
+        authService.dispose();
+
+        streamController = StreamController<User?>();
+        when(() => mockAuthRepository.authStateChanges())
+            .thenAnswer((_) => streamController.stream);
+        when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
+
+        streamAuthService = AuthService(
+          authRepository: mockAuthRepository,
+          analyticsService: mockAnalyticsService,
+        );
+        mockAnalyticsService.clearCapturedEvents();
+      });
+
+      tearDown(() async {
+        await streamController.close();
+        try {
+          streamAuthService.dispose();
+        } on FlutterError {
+          // Already disposed.
+        }
+      });
+
+      /// Wait for `_handleAuthStreamError`'s microtask chain to complete.
+      /// `forceSignOut() → setError() → notifyListeners() → logEvent()`
+      /// crosses several awaits; one microtask flush isn't enough.
+      Future<void> settleStreamError() async {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+
+      test('user-token-expired: invalidates session and surfaces Swedish copy',
+          () async {
+        streamController.addError(
+          FirebaseAuthException(code: 'user-token-expired'),
+        );
+        await settleStreamError();
+
+        expect(streamAuthService.sessionExpired, isTrue,
+            reason: 'session must be marked expired so login view can banner');
+        expect(streamAuthService.currentUser, isNull,
+            reason: 'no fake-authenticated state');
+        expect(streamAuthService.errorMessage, isNotNull);
+        expect(streamAuthService.errorMessage, contains('Sessionen'),
+            reason: 'errorSessionExpired Swedish copy must surface');
+        verify(() => mockAuthRepository.signOut()).called(1);
+
+        final events = mockAnalyticsService.capturedEvents
+            .where((e) => e.name == 'session_timeout_logout')
+            .toList();
+        expect(events, hasLength(1));
+        expect(events.single.parameters?['reason'],
+            equals('auth_stream_error'));
+        expect(events.single.parameters?['error_code'],
+            equals('user-token-expired'));
+      });
+
+      test('user-disabled: same contract as token-expired', () async {
+        streamController.addError(
+          FirebaseAuthException(code: 'user-disabled'),
+        );
+        await settleStreamError();
+
+        expect(streamAuthService.sessionExpired, isTrue);
+        expect(streamAuthService.currentUser, isNull);
+        expect(streamAuthService.errorMessage, contains('Sessionen'));
+        verify(() => mockAuthRepository.signOut()).called(1);
+
+        final events = mockAnalyticsService.capturedEvents
+            .where((e) => e.name == 'session_timeout_logout')
+            .toList();
+        expect(events, hasLength(1));
+        expect(events.single.parameters?['error_code'], equals('user-disabled'));
+      });
+
+      test('non-FirebaseAuthException: empty error_code, still invalidates',
+          () async {
+        // A StateError reaching the auth stream is unexpected — the contract
+        // is that the session must still be invalidated to prevent
+        // fake-authenticated state, with an empty `error_code` so the
+        // analytics row distinguishes "Firebase rejected" from "stream broke".
+        streamController.addError(StateError('stream broken'));
+        await settleStreamError();
+
+        expect(streamAuthService.sessionExpired, isTrue);
+        expect(streamAuthService.currentUser, isNull);
+        expect(streamAuthService.errorMessage, contains('Sessionen'));
+        verify(() => mockAuthRepository.signOut()).called(1);
+
+        final events = mockAnalyticsService.capturedEvents
+            .where((e) => e.name == 'session_timeout_logout')
+            .toList();
+        expect(events, hasLength(1));
+        expect(events.single.parameters?['reason'],
+            equals('auth_stream_error'));
+        expect(events.single.parameters?['error_code'], equals(''));
+      });
+
+      test('forceSignOut failure does not crash the stream error handler',
+          () async {
+        when(() => mockAuthRepository.signOut())
+            .thenAnswer((_) async => throw Exception('signOut blew up'));
+
+        streamController.addError(
+          FirebaseAuthException(code: 'user-token-expired'),
+        );
+        await settleStreamError();
+
+        // forceSignOut catches its own errors in finally — service still
+        // ends up with sessionExpired=true and currentUser=null.
+        expect(streamAuthService.sessionExpired, isTrue);
+        expect(streamAuthService.currentUser, isNull);
+      });
+    });
   });
 }

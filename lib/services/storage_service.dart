@@ -107,6 +107,13 @@ class StorageService extends BaseService
 
   /// Upload image from bytes (for web platform and avatar uploads).
   /// Compresses bytes before uploading when possible.
+  ///
+  /// BUT-1016 / BUT-971: bypasses [executeServiceOperation] for the same
+  /// reason `uploadImageFile` does — `StorageUploadException`s (quota,
+  /// unauthorized, canceled) must reach the upload-service classifier so
+  /// the avatar / web upload UI surfaces actionable copy. Other exceptions
+  /// still collapse to null, preserving the nullable-result contract.
+  /// Auth is enforced at the repository layer via `_validateUploadPermission`.
   Future<String?> uploadImageBytes(
     Uint8List imageBytes,
     String userId,
@@ -114,40 +121,34 @@ class StorageService extends BaseService
     Function(double)? onProgress,
     String? prefix,
   }) async {
-    return await executeServiceOperation<String?>(
-      () async {
-        // Use provided prefix or default to avatar
-        final imagePrefix = prefix ?? 'avatar';
-        final pathFolder = imagePrefix == 'avatar' ? 'avatars' : 'recipes';
+    try {
+      final imagePrefix = prefix ?? 'avatar';
+      final pathFolder = imagePrefix == 'avatar' ? 'avatars' : 'recipes';
 
-        // Compress bytes before uploading (dimension + quality reduction)
-        final uploadBytes = await _repository.compressImageBytes(imageBytes);
+      final uploadBytes = await _repository.compressImageBytes(imageBytes);
 
-        // Generate unique filename
-        final uniqueFileName = _repository.generateFileName(
-          originalPath: fileName,
-          prefix: imagePrefix,
-        );
-        final path = 'users/$userId/$pathFolder/$uniqueFileName';
+      final uniqueFileName = _repository.generateFileName(
+        originalPath: fileName,
+        prefix: imagePrefix,
+      );
+      final path = 'users/$userId/$pathFolder/$uniqueFileName';
 
-        final url = await _repository.uploadImageData(
-          imageData: uploadBytes,
-          userId: userId,
-          path: path,
-          metadata: {
-            'originalSize': imageBytes.length.toString(),
-            'compressedSize': uploadBytes.length.toString(),
-          },
-          onProgress: onProgress,
-        );
-
-        return url;
-      },
-      operationName: 'Upload image bytes',
-      requiresAuth: true,
-      requiresNetwork: true,
-      defaultValue: null,
-    );
+      return await _repository.uploadImageData(
+        imageData: uploadBytes,
+        userId: userId,
+        path: path,
+        metadata: {
+          'originalSize': imageBytes.length.toString(),
+          'compressedSize': uploadBytes.length.toString(),
+        },
+        onProgress: onProgress,
+      );
+    } on StorageUploadException {
+      rethrow;
+    } catch (e) {
+      AppLogger.error('Upload image bytes failed: $e');
+      return null;
+    }
   }
 
   /// Upload multiple images

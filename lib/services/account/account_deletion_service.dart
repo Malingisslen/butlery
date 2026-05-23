@@ -40,12 +40,11 @@ class AccountDeletionService extends BaseService {
 
   AccountDeletionService({
     required AuthService authService,
-    FirebaseFunctions? functions,
+    required FirebaseFunctions functions,
     SearchRepository? searchRepository,
     OfflineService? offlineService,
   })  : _authService = authService,
-        _functions =
-            functions ?? FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        _functions = functions,
         _searchRepository = searchRepository,
         _offlineService = offlineService;
 

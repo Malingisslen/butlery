@@ -1724,6 +1724,12 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
   String? _configuredUserId;
   String? _capturedUserId;
   Map<String, dynamic> _userProperties = {};
+  // BUT-1021: capture logEvent calls so tests can assert that production
+  // code emitted the expected analytics event (e.g. sessionTimeoutLogout
+  // from the auth-stream error path). Stays parallel to _capturedUserId —
+  // semantically a Fake, not a Mock with when()/verify().
+  final List<({String name, Map<String, Object>? parameters})> _capturedEvents =
+      [];
 
   final _recipe = MockRecipeEventsTracker();
   final _menu = MockMenuEventsTracker();
@@ -1770,7 +1776,17 @@ class MockAnalyticsService extends Mock implements AnalyticsService {
   Future<void> logEvent({
     required String name,
     Map<String, Object>? parameters,
-  }) async {}
+  }) async {
+    _capturedEvents.add((name: name, parameters: parameters));
+  }
+
+  /// All `logEvent` invocations observed since construction or
+  /// [clearCapturedEvents]. Useful for asserting analytics chokepoints
+  /// from BUT-1021 (auth stream-error path) and similar flows.
+  List<({String name, Map<String, Object>? parameters})> get capturedEvents =>
+      List.unmodifiable(_capturedEvents);
+
+  void clearCapturedEvents() => _capturedEvents.clear();
   @override
   Future<void> logFriendRequestSent(
       {required String recipientId, String? source}) async {}

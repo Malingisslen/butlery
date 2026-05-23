@@ -7,6 +7,7 @@
 /// This is the foundation module that other modules depend on.
 library;
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
@@ -295,6 +296,9 @@ class CoreModule implements DIModule {
       container.registerLazySingleton<AccountDeletionService>(() {
         return AccountDeletionService(
           authService: container<AuthService>(),
+          // BUT-1025: singleton access lives in the DI module (allow-listed),
+          // not in the service. Region pin matches the CF deployment.
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
           searchRepository: container.isRegistered<SearchRepository>()
               ? container<SearchRepository>()
               : null,

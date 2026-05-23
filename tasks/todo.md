@@ -1,44 +1,35 @@
 # Sprint Backlog
 
-## Sprint: wave-13 — bug/UX correctness across onboarding, error UX, import, recipe-list — 2026-05-22 (Fr)
+## Sprint: wave-14 — CI hygiene + wave-13 test-debt tail — 2026-05-23 (Sa)
 
-Theme: nine Bug/UX tickets across four file-coherent batches. No new infra, no architectural changes — pure correctness wins.
+Theme: 3 CI-blocking issues + 4 test-gap follow-ups from wave-13's shipped error-UX work. All low-risk, two coherent agent batches.
 
-### Agent A — Onboarding correctness (`lib/viewmodels/onboarding_viewmodel.dart`)
-- [~] **A1. BUT-942** — Premise gone. Codebase already gates analytics at 4 layers (repo init / SDK enable / service logEvent / per-tracker). Ticket cancelled with verification comment.
-- [x] **A2. BUT-926** — `_seedStarterRecipes()` now returns `Future<int>` and is awaited; new `onboardingRecipesSeedFailed` analytics event fires on partial failure.
+### Agent A — CI hygiene (`firebase-backend-security` for BUT-1025, `code-reviewer` for the rest)
+- [ ] **A1. BUT-1024** — `.github/workflows/`: SHA-pin `subosito/flutter-action@v2` to a specific commit SHA. Apply same pattern to any other third-party actions not yet pinned.
+- [ ] **A2. BUT-1025** — `lib/services/account/account_deletion_service.dart`: replace `FirebaseAuth.instance` direct access with injected `AuthService` / `AuthRepository`. Constructor injection, update DI registration.
+- [ ] **A3. BUT-1026** — Investigate E2E `StateError in _FocusInheritedScope` from CI. Likely a widget-test teardown ordering issue. Find offending test, add proper `tearDown` / wrap with `runAsync`.
 
-### Agent B — Error UX polish (service-layer error surfacing)
-- [x] **B1. BUT-971** — `StorageUploadException` typed exception. `FirebaseStorageRepository` rethrows on `FirebaseException(plugin: 'firebase_storage')`; `StorageService.uploadImageFile` bypasses `executeServiceOperation` so the typed exception reaches the classifier. New `ImageUploadErrorType.quotaExceeded` + `uploadFailureQuotaExceeded` localized copy.
-- [x] **B2. BUT-968** — New `mapFirebaseErrorMessage` helper at `lib/core/utils/firebase_error_messages.dart`. Wired into `personal_recipe_operations.dart` catch blocks. Recognizes permission-denied, unauthorized, unauthenticated, unavailable, deadline-exceeded, network-request-failed.
-- [x] **B3. BUT-966** — `auth_service.dart` onError handler now sets `_sessionExpired = true`, fires `sessionTimeoutLogout` analytics, then surfaces `errorSessionExpired` via setError after forceSignOut clears.
-
-### Agent C — Import robustness (OCR/parser layer)
-- [x] **C1. BUT-963** — Per-provider errors captured in `providerErrors` map; new `_classifyProviderErrors` returns `rate_limit | timeout | network | generic`. `photo_import_viewmodel.dart::_buildEnhancedErrorMessage` branches on this BEFORE the generic "no text extracted" fallback. New `errorOcrRateLimit` + `errorOcrTimeout` localized copy.
-- [x] **C2. BUT-959** — `QuantityParser.parse` clamps negative values to 1.0 with warning. Matches existing invalid-input contract.
-
-### Agent D — Recipe-list UX completion
-- [~] **D1. BUT-933** — Re-scoped per Step 0. Wave-13 ships bulk-share only (the existing `UniversalShareDialog.bulkShare` factory takes a list). Tag / add-to-menu / export split into BUT-1012, BUT-1013, BUT-1014. New `selectedRecipes` getter on `RecipeListViewModel`.
-- [x] **D2. BUT-921** — `PersistenceService.{get,set}Recipe{Time,MealType}Filters` added. `_loadDisplayPreferences` restores filters on init; toggle methods + `clearAllFilters` call new `_persistActiveFilters`. Rating/allergen/dietary/personalTag + scroll filed as BUT-1015.
+### Agent B — Wave-13 test-debt tail (`testing-specialist`)
+- [ ] **B1. BUT-1021** — `test/unit/services/auth_service_test.dart`: cover the new `authStateChanges` onError handler from BUT-966. Cases: stream emits error → `_sessionExpired=true` set, analytics event fires, `errorSessionExpired` surfaced after forceSignOut.
+- [ ] **B2. BUT-1022** — `test/unit/viewmodels/photo_import_viewmodel_test.dart`: cover the `_classifyProviderErrors` branches from BUT-963 (rate_limit / timeout / network / generic) → enhanced error message routing.
+- [ ] **B3. BUT-1023** — `test/unit/services/storage_service_test.dart`: cover `StorageUploadException` propagation from BUT-971. Cases: FirebaseException(plugin: firebase_storage) → typed exception → quotaExceeded classification.
+- [ ] **B4. BUT-1016** — `lib/repositories/firebase/firebase_storage_repository.dart`: extend BUT-971 typed-exception propagation to `uploadImageBytes` (currently only `uploadImageFile` rethrows correctly). Add coverage in storage_service_test.
 
 ### Post-Sprint Steps
-- [x] `dart analyze --fatal-infos` clean (full repo)
-- [ ] Impacted tests pass
-- [ ] Tier-2 agent reviews on changed `.dart` files
-- [x] Follow-ups filed in Linear: BUT-1012, 1013, 1014 (BUT-933 split); BUT-1015 (BUT-921 rest); BUT-1016 (BUT-971 bytes path); BUT-1017 (BUT-968 broad sweep)
+- [ ] `dart analyze --fatal-infos` clean
+- [ ] Tier-2 agent reviews on staged `.dart` files
 - [ ] Commit + push to main
 - [ ] Close Linear tickets to Done
 - [ ] CI watcher
 
 ### Known follow-ups (filed in Linear)
-- BUT-1012 — Bulk tag on recipe-list selection
-- BUT-1013 — Bulk add-to-menu on recipe-list selection
-- BUT-1014 — Bulk export of selected recipes
-- BUT-1015 — BUT-921 follow-up: persist remaining filters + scroll offset
-- BUT-1016 — BUT-971 follow-up: typed-exception propagation in uploadImageBytes
-- BUT-1017 — BUT-968 follow-up: apply `mapFirebaseErrorMessage` across remaining repos/services
+_None yet — will append during sprint as Tier-2 review surfaces additional gaps._
 
 ---
+
+## Archived wave-13 (commits 3fc2d1edc + 66a786479 + 3f7d40412) — 2026-05-22 (Fr)
+
+wave-13 — 9 Bug/UX tickets across onboarding/error-UX/import/recipe-list. 7 shipped (BUT-926, 971, 968, 966, 963, 959, 921), 2 marked obsolete/rescoped ([~] BUT-942 premise gone, [~] BUT-933 split into 1012/1013/1014). Follow-ups filed: BUT-1012, 1013, 1014, 1015, 1016, 1017. Per backlog dump, all wave-13 BUT-IDs already absent from Backlog — confirming Linear-Done state was reached.
 
 ## Archived wave-12 (commits 185ba807e + eb4562bc6) — 2026-05-22 (Fr)
 

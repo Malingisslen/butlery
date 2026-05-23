@@ -165,6 +165,10 @@ void main() {
         // DI graph — wires Firebase SDKs into repositories.
         'lib/core/di/di_container.dart',
         'lib/core/di/modules/content_module.dart',
+        // BUT-1025: core_module instantiates FirebaseFunctions for the
+        // account-deletion CF callable. Singleton access lives here so the
+        // service stays mockable.
+        'lib/core/di/modules/core_module.dart',
 
         // FCM token-manager: structurally a service but named without
         // "_service" suffix; Firebase Messaging singleton is the contract.
