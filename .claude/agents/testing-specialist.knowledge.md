@@ -1691,3 +1691,215 @@ No production bugs found — limiter's contract held under all 27 assertions
 (boundary, multi-counter independence, cost-vs-count semantic split,
 fail-closed). The `case null: break` in `_checkLlmLimits` correctly
 falls through to the cost gate; both sides verified.
+
+### 2026-05-24 — SharedContentSearchViewModel intent tests [Pattern discovered]
+
+Batch 2 of the Intent-Test Sprint. Wrote 19 behavioural tests covering
+`lib/viewmodels/shared_content/shared_content_search_viewmodel.dart` (0%→
+~full coverage of public contract). All green, all pass intent gate.
+
+**Patterns reused / re-confirmed:**
+
+- **Debounced search via `fakeAsync` + 300ms `async.elapse`**. The
+  CLAUDE.md note about VM debounce holds for this VM even though it
+  extends `ChangeNotifier` directly (NOT `BaseViewModel`/`executeAsync`).
+  Internal `Timer(_debounceDuration, _performSearch)` is fake-async friendly.
+- **Listener-capture pattern for parent VMs that subscribe to collaborator
+  VMs**: stub `addListener(any())` with a `thenAnswer` that captures
+  `invocation.positionalArguments.first as VoidCallback`, then invoke it
+  manually in the test to simulate a collaborator firing
+  `notifyListeners()`. Cleaner than constructing a real `ChangeNotifier`
+  and dealing with its own state.
+- **Strengthening "exactly one debounced call" assertions**: don't rely on
+  `verifyNever(...).called(1)` alone — record the actual query strings
+  passed to `contentMatchesSearch` via a captured list. This proves the
+  intermediate keystrokes ('a', 'ab') NEVER reached the search method,
+  not just that the FINAL count is 1.
+- **`withClock(Clock.fixed(...), () { fakeAsync(...) })`** nests correctly
+  for date-filter tests that need both a deterministic "now" AND a fake
+  Timer. Pin clock OUTSIDE the fakeAsync block (relevance scoring reads
+  `clock.now()` synchronously when building results).
+
+**Whitespace-query observation (NOT filed as a bug — intentional pin):**
+`SharedContentSearchViewModel.updateSearchQuery('   ')` is treated as a
+real non-empty query: it goes into history, triggers `_performSearch`,
+and the underlying repository `contentMatchesSearch` is called with
+'   '. If the product intent is "trim whitespace and treat as empty,"
+add `query.trim()` in production and update the test. Pinned the
+current behaviour explicitly so a silent change is detectable.
+
+**Testability friction surfaced:**
+
+- The generic helper `_searchContent<T>(dynamic viewModel, ...)` casts
+  `viewModel.content as List<T>`. This means mocked content getters MUST
+  return a typed `List<SharedRecipe>` etc. — a `List<dynamic>` will
+  succeed at compile-time but cast-fail at runtime. Worth flagging if
+  someone tries the same pattern on a future search-style VM.
+- `SearchResult.relevanceScore` is computed at result-build time using
+  `clock.now()` for the recency bonus. To pin tie-break tests, you must
+  push all `sharedAt` values >7 days into the past relative to
+  `clock.now()` so recency contribution is 0 for all candidates. The
+  scoring is otherwise opaque from outside.
+- No `permissionService`/auth boundary here — the VM defers all data
+  access to collaborator VMs. Nice clean seam for unit-level tests, no
+  ServiceLocator bridge needed.
+
+No production bugs found. The race-protection guard
+(`if (_searchQuery == query)` inside `_performSearch`) was visually
+verified but not deeply tested — the public API doesn't expose a way to
+inject a slow-vs-fast sequence without making `_searchContent` async-
+suspendable, and `contentMatchesSearch` is synchronous. Documented but
+not tested.
+
+---
+
+### 2026-05-24 — UnifiedShoppingService unit testing (Intent-Test Sprint Batch 2)
+
+Trigger: Existing test file (402 LoC) declared the service "cannot be
+constructed in unit tests" and tested mock-on-mock + model factories.
+That was wrong — the service *can* be wired up with a `_FakeShoppingRepository`
++ ServiceLocator bridge, and doing so catches the orchestration bugs that
+the previous file was structurally incapable of catching.
+
+Wiring recipe (reusable for any unified service that lazy-resolves via
+`ServiceLocator.get<T>()` inside `_initializeModules`):
+
+```dart
+// 1. Construct fakes/mocks
+fakeRepo = _FakeShoppingRepository();           // in-memory Fake
+fakePrefsRepo = _FakeCategoryPreferencesRepository();
+fakePermissionService = _FakePermissionService();
+fakeFirestoreRepo = mocks.FakeFirestoreRepository();
+mockAuthRepository = _MockFirebaseAuthRepository();
+when(() => mockAuthRepository.currentUser).thenReturn(null);
+when(() => mockAuthRepository.getCurrentUser()).thenReturn(null);
+
+// 2. Register every ServiceLocator.get<T> dependency the ctor or lazy
+//    getters can hit:
+TestServiceLocator.registerMock<CategoryPreferencesRepository>(fakePrefsRepo);
+TestServiceLocator.registerMock<PermissionService>(fakePermissionService);
+TestServiceLocator.registerMock<IngredientLookupService>(MockILS());
+// + OfflineService → AppDatabase → CacheDao chain for lazy cacheHelper
+
+// 3. Bridge production ServiceLocator → TestServiceLocator
+app_provider.ServiceLocator.reset();
+app_provider.ServiceLocator.initialize(mocks.MockDIContainer());
+
+// 4. Construct the real service
+service = UnifiedShoppingService(...);
+```
+
+Gotchas surfaced:
+
+- `_startCollaborativeStream()` only runs from `initialize()`. Tests that
+  assert on the collab stream listener MUST call `await service.initialize()`
+  first — emitting on the controller before that is a silent no-op.
+- `addItemsBatch` dedup uses `name.trim().toLowerCase()` AND
+  `unit.trim().toLowerCase()` — both must match. The "1 dl mjölk" vs
+  "1 ml mjölk" case is preserved as separate rows (verified by test).
+- `_FakeShoppingRepository` should expose per-method `throwOnX` switches
+  rather than a global throw flag — lets a single test arm exactly one
+  failure mode (e.g. `throwOnUpdateItem` for toggleBought rollback).
+- `MockOfflineService` requires stubbing the `.database` getter chain
+  (`when(() => mockOfflineService.database).thenReturn(mockDatabase)`
+  + `when(() => mockDatabase.cacheDao).thenReturn(mockCacheDao)`) even
+  if cache calls are never exercised — the lazy getter still resolves.
+- `extends Fake` works fine for the in-memory repo because there's no
+  need to stub via `when()` — the throw-flag pattern is more readable
+  for failure modes anyway.
+
+No production bugs found. The optimistic-then-rollback contract in
+`toggleItemBought` and `clearCompletedItems` is well-implemented; the
+batch dedup in `ShoppingItemManagementModule` correctly handles the
+case/whitespace boundary. The "error-with-cached-data → still emit
+ShoppingStateData" branch is tested via inverse (no error + lists → Data)
+because there's no public way to set `_error` without exercising a
+different code path; a follow-up could add a direct `setError` hook for
+testability but it's not blocking.
+
+Testability friction (flagged, not fixed):
+- The service can't easily simulate "list disappeared between activeListId
+  being set and removeItemFromActiveList being called". The defensive
+  return-false path is reachable only via the no-active-list case in unit
+  tests; the race-condition case would need an emulator test.
+- `_emitState` has the AND-with-lists-empty branch but no public setter
+  for `_error` — coverage of the Error→Data fallback is partial.
+
+---
+
+## 2026-05-24 — UnifiedMenuService: Firebase platform-channel scaffolding for services with eager FirebaseAuth init (BUT Intent-Test Sprint, Batch 2)
+
+**Trigger:** writing unit tests for `lib/services/unified/unified_menu_service.dart`. The constructor eagerly instantiates `FirebaseSharedMenuRepository()` → `FirebaseAuthRepository()` → `FirebaseAuth.instance.currentUser`. No DI seam to avoid it. Without Firebase init, the constructor throws `[core/no-app] No Firebase App '[DEFAULT]' has been created`. After init, the auth pigeon channels throw `PlatformException(channel-error, ...)` across an async gap that no synchronous try/catch in production code can catch.
+
+**Pattern that works** (paste into `setUpAll` for any unit test whose SUT eagerly touches `FirebaseAuth.instance`):
+
+```dart
+import 'package:firebase_core/firebase_core.dart';
+// ignore: depend_on_referenced_packages
+import 'package:firebase_core_platform_interface/test.dart';
+import 'package:flutter/services.dart';
+
+class _MockFirebaseHostApi extends Fake implements TestFirebaseCoreHostApi {
+  @override
+  Future<CoreInitializeResponse> initializeApp(name, _) async =>
+      CoreInitializeResponse(name: name, options: _opts(), pluginConstants: const {});
+  @override
+  Future<List<CoreInitializeResponse>> initializeCore() async => [
+        CoreInitializeResponse(
+          name: defaultFirebaseAppName,
+          options: _opts(),
+          pluginConstants: const <String, dynamic>{
+            'plugins.flutter.io/firebase_crashlytics': {'isCrashlyticsCollectionEnabled': false},
+            'isCrashlyticsCollectionEnabled': false,
+          },
+        ),
+      ];
+  @override
+  Future<CoreFirebaseOptions> optionsFromResource() async => _opts();
+}
+CoreFirebaseOptions _opts() => CoreFirebaseOptions(
+      apiKey: 'mock', projectId: 'mock', appId: 'mock', messagingSenderId: 'mock');
+
+setUpAll(() async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  TestFirebaseCoreHostApi.setUp(_MockFirebaseHostApi());
+  await Firebase.initializeApp();
+
+  final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+  // Crashlytics is MethodChannel — log() is fire-and-forget from AppLogger.error.
+  messenger.setMockMethodCallHandler(
+    const MethodChannel('plugins.flutter.io/firebase_crashlytics'),
+    (call) async => null,
+  );
+  // FirebaseAuth pigeon channels are BasicMessageChannel — one per method.
+  // Must return non-null encoded list because the listener registrations have
+  // a non-nullable String return type in the pigeon schema.
+  const codec = StandardMessageCodec();
+  for (final name in const [
+    'dev.flutter.pigeon.firebase_auth_platform_interface.FirebaseAuthHostApi.registerIdTokenListener',
+    'dev.flutter.pigeon.firebase_auth_platform_interface.FirebaseAuthHostApi.registerAuthStateListener',
+  ]) {
+    messenger.setMockMessageHandler(
+      name,
+      (msg) async => codec.encodeMessage(<Object?>['mock-listener-handle']),
+    );
+  }
+});
+```
+
+**Three things that all bit me in sequence:**
+
+1. **Firebase Core init**: `Firebase.initializeApp()` needs `TestFirebaseCoreHostApi.setUp(...)` first. The `firebase_core_platform_interface/test.dart` import is needed but it's a transitive dep, so add `// ignore: depend_on_referenced_packages`.
+
+2. **Crashlytics async-gap fire-and-forget**: `AppLogger.error()` in `lib/core/utils/logger.dart` calls `FirebaseCrashlytics.instance.log()` and `recordError()` without awaiting. The synchronous try/catch around them CANNOT catch a `MissingPluginException` raised across the async gap. Tests will fail for any prod method that hits `AppLogger.error`. **This is a production bug worth flagging** — `_logToCrashlytics` should `.catchError((_) {})` the futures.
+
+3. **Pigeon = BasicMessageChannel, not MethodChannel**: `setMockMethodCallHandler` triggers `StandardMethodCodec.decodeMethodCall` which corrupts the pigeon binary frame. Use `setMockMessageHandler` (raw bytes) and encode `[result]` with `StandardMessageCodec` — pigeon's success envelope is a 1-element list. Listener registrations return a non-null `String` handle, not `null` — returning `[null]` yields `PlatformException(null-error, ...)`.
+
+**Testability friction discovered (FLAGGED, not fixed):**
+
+- `UnifiedMenuService` constructor takes ONLY `FirestoreRepository?` — no seam for `FirebaseSharedMenuRepository` or `MenuService`. Production tests must use Firebase platform-channel mocking. Recommend adding `sharedMenuRepository` + `menuService` constructor params (with defaults) so tests can inject fakes.
+- `AppLogger.error → _logToCrashlytics` has a try/catch that can't catch async exceptions (see #2 above). Concrete bug — every call site that hits an error path will throw an unhandled exception under test if Crashlytics isn't channel-mocked.
+
+**No production bugs found in the menu service logic itself** — _loadMenus dedup (skip realtime menus where `ownerId == userId`), the corrupt-doc-skip in the realtime loop, and the unauth short-circuit on every repo-backed method all held. The state machine in `_emitState` correctly emits Loading-vs-Error-vs-Data based on `_isInitialized` / `_error` / `_menus.isEmpty`.
+
+**Test output cosmetic note:** flutter reports `+23 ~3: All tests passed!` — the `~3` count is "passed with handled platform-exception noise during teardown", not skips. The headline "All tests passed!" is authoritative.
