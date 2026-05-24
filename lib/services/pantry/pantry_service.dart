@@ -4,6 +4,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 import 'package:butlery/services/ingredient_match_service.dart';
@@ -99,6 +100,34 @@ class PantryService extends BaseService {
       throw StateError('addFromText failed');
     }
     return result;
+  }
+
+  /// BUT-991: hook for the shopping-checkoff → pantry flow.
+  ///
+  /// Delegates to [addFromText] because [UnifiedShoppingItem] doesn't
+  /// carry an `ingredientId` link — the fuzzy match against the
+  /// ingredient DB picks up canonical matches and falls back to raw
+  /// text for orphans (same shape as a user typing the pantry add box
+  /// manually).
+  ///
+  /// Caller is the shopping-checkoff flow OR a settings-gated
+  /// "auto-add to pantry" toggle. This service-level helper makes no
+  /// policy decisions — it always adds. Settings-gating + dedup live
+  /// at the caller, where the user's preference is known.
+  Future<PantryItem> addFromShoppingItem(
+    String userId,
+    UnifiedShoppingItem item, {
+    PantryLocation? location,
+    String? note,
+  }) {
+    return addFromText(
+      userId,
+      item.name,
+      quantity: item.amount,
+      unit: item.unit,
+      location: location,
+      note: note,
+    );
   }
 
   Future<void> updateItem(String userId, PantryItem item) async {
